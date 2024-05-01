@@ -16,6 +16,8 @@
     "@remix-run/serve": "^2.9.1",
     "autoprefixer": "^10.4.19",
     "clsx": "^2.1.1",
+    "embla-carousel-autoplay": "^8.0.2",
+    "embla-carousel-react": "^8.0.2",
     "isbot": "^4.1.0",
     "postcss": "^8.4.38",
     "react": "^18.2.0",
