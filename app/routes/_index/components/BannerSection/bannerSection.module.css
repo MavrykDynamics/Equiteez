@@ -1,0 +1,17 @@
+.bannerContainer {
+  display: grid;
+  grid-template-columns: 549px 1fr;
+  column-gap: 140px;
+}
+
+.bannerImageWrapper {
+  height: 809px;
+  width: auto;
+  overflow: hidden;
+  border-radius: 32px;
+}
+
+.bannerImageWrapper > img {
+  width: 100%;
+  height: 100%;
+}

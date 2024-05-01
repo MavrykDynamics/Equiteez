@@ -5,11 +5,13 @@
     "**/.server/**/*.ts",
     "**/.server/**/*.tsx",
     "**/.client/**/*.ts",
-    "**/.client/**/*.tsx"
+    "**/.client/**/*.tsx",
+    "tailwind.configjs",
+    "postcss.config.js"
   ],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["@remix-run/node", "vite/client"],
+    "types": ["@remix-run/node", "vite/client", "vite-plugin-svgr/client"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",

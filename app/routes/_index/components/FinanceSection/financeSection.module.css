@@ -1,0 +1,17 @@
+.financeBlockWrapper {
+  display: grid;
+  grid-template-columns: 662px 1fr;
+  column-gap: 44px;
+}
+
+.financeBlockImageWrapper {
+  height: 498px;
+  width: auto;
+  overflow: hidden;
+  border-radius: 32px;
+}
+
+.financeBlockImageWrapper > img {
+  width: 100%;
+  height: 100%;
+}

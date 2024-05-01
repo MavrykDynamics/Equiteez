@@ -4,7 +4,15 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
+} from '@remix-run/react';
+import ErrorBoundary from './templates/ErrorBoundary';
+
+import stylesheet from '~/index.css?url';
+import { LinksFunction } from '@remix-run/node';
+
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: stylesheet },
+];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +24,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
+          {children}
+        </ErrorBoundary>
         <ScrollRestoration />
         <Scripts />
       </body>
