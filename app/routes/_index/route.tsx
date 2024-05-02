@@ -7,6 +7,7 @@ import { BannerSection } from './components/BannerSection/BannerSection';
 import { Spacer } from 'app/atoms/Spacer';
 import { FinanceSection } from './components/FinanceSection/FinanceSection';
 import { PropertiesSlider } from './components/PropertiesSlider';
+import { PortfolioSection } from './components/PortfolioSection';
 
 export const meta: MetaFunction = () => {
   return [
@@ -23,6 +24,8 @@ export default function Index() {
       <FinanceSection />
       <Spacer />
       <PropertiesSlider />
+      <Spacer />
+      <PortfolioSection />
       <Spacer />
     </PageLayout>
   );
