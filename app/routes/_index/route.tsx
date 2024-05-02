@@ -9,6 +9,7 @@ import { FinanceSection } from './components/FinanceSection/FinanceSection';
 import { PropertiesSlider } from './components/PropertiesSlider';
 import { PortfolioSection } from './components/PortfolioSection';
 import { RealEstateSection } from './components/RealEstateSection';
+import { IntegrationSection } from './components/IntegrationSection';
 
 export const meta: MetaFunction = () => {
   return [
@@ -29,6 +30,8 @@ export default function Index() {
       <PortfolioSection />
       <Spacer />
       <RealEstateSection />
+      <Spacer />
+      <IntegrationSection />
       <Spacer />
     </PageLayout>
   );
