@@ -6,6 +6,7 @@ import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 import { BannerSection } from './components/BannerSection/BannerSection';
 import { Spacer } from 'app/atoms/Spacer';
 import { FinanceSection } from './components/FinanceSection/FinanceSection';
+import { PropertiesSlider } from './components/PropertiesSlider';
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,6 +21,8 @@ export default function Index() {
       <BannerSection />
       <Spacer />
       <FinanceSection />
+      <Spacer />
+      <PropertiesSlider />
       <Spacer />
     </PageLayout>
   );

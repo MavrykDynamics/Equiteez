@@ -1,5 +1,3 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
-
 export default {
   content: ['./app/**/*.{js,jsx,ts,tsx}'],
   separator: ':',
@@ -9,7 +7,6 @@ export default {
         poppins: ['Poppins', 'sans-serif', 'system-ui'],
       },
       fontSize: {
-        ...defaultTheme.fontSize,
         hero: [
           '3.25rem', // 52px
           {
@@ -68,7 +65,6 @@ export default {
         ],
       },
       colors: {
-        ...defaultTheme.colors,
         white: '#FFFFFF',
         'green-main': '#33CB98',
         'green-secondary': '#28AD80',
@@ -85,8 +81,10 @@ export default {
         error: '#DB1414',
         success: '#1E945C',
       },
+      borderRadius: {
+        '4xl': '2rem',
+      },
       transitionProperty: {
-        ...defaultTheme.transitionProperty,
         none: 'none',
         all: 'all',
         DEFAULT:

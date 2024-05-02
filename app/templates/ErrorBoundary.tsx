@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import { PropsWithChildren, Component, ErrorInfo, memo } from 'react';
 
 import clsx from 'clsx';
