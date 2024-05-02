@@ -1,0 +1,47 @@
+.estateContainer {
+  width: 100%;
+  height: 937px;
+  position: relative;
+}
+.estateContainer::before {
+  content: '';
+  inset: 0;
+  position: absolute;
+
+  background: linear-gradient(
+    0deg,
+    rgba(1, 1, 1, 0.7) 19.75%,
+    rgba(1, 1, 1, 0) 100%
+  );
+  z-index: 1;
+}
+
+.estateContainer img {
+  width: 100%;
+  height: 100%;
+  /* object-fit: cover; */
+}
+
+.estateTextBlock {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 44px;
+  width: 100%;
+  z-index: 2;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 2.5s;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
