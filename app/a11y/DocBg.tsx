@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect } from 'react';
+import { FC, useEffect } from 'react';
 import { IS_WEB } from '~/consts/general';
 
 type DocBgProps = {
@@ -6,7 +6,7 @@ type DocBgProps = {
 };
 
 const DocBg: FC<DocBgProps> = ({ bgClassName }) => {
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (IS_WEB) {
       const doc = document.documentElement;
       const toReturn: string[] = [];

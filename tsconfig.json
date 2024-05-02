@@ -6,7 +6,7 @@
     "**/.server/**/*.tsx",
     "**/.client/**/*.ts",
     "**/.client/**/*.tsx",
-    "tailwind.configjs",
+    "tailwind.config.js",
     "postcss.config.js"
   ],
   "compilerOptions": {
