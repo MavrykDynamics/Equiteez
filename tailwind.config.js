@@ -71,6 +71,7 @@ export default {
         content: '#021A12',
         'content-secondary': '#354841',
         background: '#FFFFFF',
+        'background-secondary': '#F4FBF8',
         divider: '#E6E8E7',
         tabs: '#CCF2E5',
         'active-tab': '#054731',
@@ -80,6 +81,9 @@ export default {
         links: '#194C98',
         error: '#DB1414',
         success: '#1E945C',
+      },
+      gridTemplateColumns: {
+        footer: '420px 1fr',
       },
       borderRadius: {
         '4xl': '2rem',

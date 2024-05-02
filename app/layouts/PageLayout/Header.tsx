@@ -12,7 +12,7 @@ export const Header = () => {
 
 const HeaderLinksBlock = () => {
   return (
-    <div className="flex gap-x-9 items-center h-full">
+    <header className="flex gap-x-9 items-center h-full">
       <Link to="/" className="text-body-xs text-content">
         New Listings
       </Link>
@@ -22,6 +22,6 @@ const HeaderLinksBlock = () => {
       <Link to="/" className="text-body-xs text-content">
         Sign Up
       </Link>
-    </div>
+    </header>
   );
 };

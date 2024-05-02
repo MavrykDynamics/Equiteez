@@ -37,7 +37,7 @@ export default function Index() {
       <IntegrationSection />
       <Spacer />
       <FAQSection data={homeFAQ} />
-      <Spacer />
+      <Spacer className="h-[200px]" />
     </PageLayout>
   );
 }
