@@ -96,6 +96,7 @@ export default {
         opacity: 'opacity',
         shadow: 'box-shadow',
         transform: 'transform',
+        height: 'height',
       },
       transitionTimingFunction: {
         linear: 'linear',
