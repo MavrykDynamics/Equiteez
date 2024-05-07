@@ -84,3 +84,18 @@
   gap: 1.2rem;
   margin-top: 1.8rem;
 }
+
+.lastSlide {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    ),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%),
+    rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}

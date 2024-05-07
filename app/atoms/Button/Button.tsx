@@ -1,11 +1,14 @@
+/* eslint-disable react/prop-types */
 import clsx from 'clsx';
 import React, { FC } from 'react';
 import LoadingSvg from 'app/icons/small-spinner.svg?react';
 
 type ButtonSize = 'small' | 'default' | 'large';
+type Variant = 'green' | 'white';
 
 type ButtonProps = {
   size?: ButtonSize;
+  variant?: Variant;
   isLoading?: boolean;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
@@ -15,8 +18,14 @@ const btnSizeClassNames = {
   large: 'p-x-8 py-4',
 };
 
+const variants = {
+  green: 'text-content bg-green-main hover:bg-green-secondary',
+  white: 'text-content bg-background hover:bg-tabs',
+};
+
 export const Button: FC<ButtonProps> = ({
   size = 'default',
+  variant = 'green',
   children,
   className,
   disabled,
@@ -28,8 +37,8 @@ export const Button: FC<ButtonProps> = ({
       className={clsx(
         'transition ease-in-out duration-200',
         'flex justify-center items-center rounded-lg',
-        'text-buttons text-content bg-green-main',
-        'hover:bg-green-secondary',
+        'text-buttons ',
+        variants[variant],
         btnSizeClassNames[size],
         disabled && 'opacity-50 pointer-events-none',
         className

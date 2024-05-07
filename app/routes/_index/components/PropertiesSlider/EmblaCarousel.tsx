@@ -11,6 +11,7 @@ import styles from './embla.module.css';
 import { EstateType } from '~/mocks/estates.type';
 import clsx from 'clsx';
 import { LinkWithIcon } from '~/atoms/LinkWithIcon';
+import { Button } from '~/atoms/Button';
 
 type PropType = {
   slides: EstateType[];
@@ -41,7 +42,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
       </div>
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
-          {slides.map((estate) => (
+          {slides.map((estate, idx) => (
             <div className={styles.embla__slide} key={estate.imgSrc}>
               <div className={styles.embla__slide__number}>
                 <img
@@ -49,30 +50,48 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                   alt="house"
                   className={styles.embla__slide__image}
                 />
-                <div
-                  className={clsx(
-                    styles.embla__slide__content,
-                    'flex flex-col justify-end'
-                  )}
-                >
-                  <div className="px-4 pb-4 flex gap-x-4 justify-between">
-                    <div className="flex flex-col items-start">
-                      <h4 className="text-white text-slider-headline truncate max-w-[300px]">
-                        {estate.title}
-                      </h4>
-                      <p className="text-white text-body-xs">
-                        {estate.details.fullAddress}
-                      </p>
-                    </div>
 
-                    <div className="flex flex-col items-start">
-                      <h4 className="text-white text-slider-headline truncate max-w-[300px]">
-                        {estate.details.APY}%
+                {nextBtnDisabled && idx === slides.length - 1 ? (
+                  <div
+                    className={clsx(
+                      styles.lastSlide,
+                      'flex items-center justify-center'
+                    )}
+                  >
+                    <div className="flex flex-col items-center gap-y-6">
+                      <h4 className="text-white text-card-headline text-center">
+                        Want to see more? <br />
+                        Check out our marketplace
                       </h4>
-                      <p className="text-white text-body-xs">APY</p>
+                      <Button variant="white">Explore</Button>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className={clsx(
+                      styles.embla__slide__content,
+                      'flex flex-col justify-end'
+                    )}
+                  >
+                    <div className="px-4 pb-4 flex gap-x-4 justify-between">
+                      <div className="flex flex-col items-start">
+                        <h4 className="text-white text-slider-headline truncate max-w-[300px]">
+                          {estate.title}
+                        </h4>
+                        <p className="text-white text-body-xs">
+                          {estate.details.fullAddress}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col items-start">
+                        <h4 className="text-white text-slider-headline truncate max-w-[300px]">
+                          {estate.details.APY}%
+                        </h4>
+                        <p className="text-white text-body-xs">APY</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
