@@ -82,6 +82,9 @@ export default {
         error: '#DB1414',
         success: '#1E945C',
       },
+      spacing: {
+        container: '1440px',
+      },
       gridTemplateColumns: {
         footer: '420px 1fr',
       },

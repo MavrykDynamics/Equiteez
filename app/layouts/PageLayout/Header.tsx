@@ -3,10 +3,12 @@ import { Logo } from '../Logo';
 
 export const Header = () => {
   return (
-    <div className="px-11 flex items-center justify-between h-[60px] border-b border-divider">
-      <Logo />
-      <HeaderLinksBlock />
-    </div>
+    <section className="flex justify-center border-b border-divider w-full">
+      <div className="px-11 flex items-center justify-between h-[60px] w-container">
+        <Logo />
+        <HeaderLinksBlock />
+      </div>
+    </section>
   );
 };
 

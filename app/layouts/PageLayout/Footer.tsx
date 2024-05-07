@@ -9,8 +9,10 @@ import { FOOTER_LINKS } from './pagelayout.consts';
 
 export const Footer = () => {
   return (
-    <footer className={clsx('bg-background-secondary')}>
-      <div className="flex justify-between px-[100px] pt-9">
+    <footer
+      className={clsx('bg-background-secondary flex flex-col items-center')}
+    >
+      <div className="flex justify-between px-[100px] pt-9 w-container">
         <div className="max-w-[420px] flex flex-col items-start">
           <Logo />
           <p className="text-body text-content mt-[26px] mb-8">
@@ -43,7 +45,7 @@ export const Footer = () => {
           ))}
         </div>
       </div>
-      <div className="bg-green-main h-10 mt-[72px]" />
+      <div className="bg-green-main h-10 mt-[72px] w-full" />
     </footer>
   );
 };
