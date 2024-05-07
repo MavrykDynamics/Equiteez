@@ -10,6 +10,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import styles from './embla.module.css';
 import { EstateType } from '~/mocks/estates.type';
 import clsx from 'clsx';
+import { LinkWithIcon } from '~/atoms/LinkWithIcon';
 
 type PropType = {
   slides: EstateType[];
@@ -29,8 +30,11 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
 
   return (
     <section className={styles.embla}>
-      <div className={styles.embla__controls}>
-        <div className={styles.embla__buttons}>
+      <div className={'w-full flex justify-between items-center mb-11'}>
+        <LinkWithIcon to={'/'} className="text-white hover:text-white">
+          View All
+        </LinkWithIcon>
+        <div className="flex items-center gap-x-3">
           <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
           <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
         </div>
