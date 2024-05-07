@@ -1,8 +1,7 @@
 .embla {
-  max-width: 70rem;
   margin: auto;
-  --slide-height: 19rem;
-  --slide-spacing: 1rem;
+  --slide-height: 280px;
+  --slide-spacing: 24px;
   --slide-size: 100%;
   --slide-spacing-sm: 1.6rem;
   --slide-size-sm: 50%;
@@ -11,12 +10,14 @@
 }
 .embla__viewport {
   overflow: hidden;
+  border-radius: 16px;
 }
 .embla__container {
   backface-visibility: hidden;
   display: flex;
   touch-action: pan-y;
   margin-left: calc(var(--slide-spacing) * -1);
+  border-radius: 16px;
 }
 @media (min-width: 750px) {
   .embla__container {
@@ -32,6 +33,7 @@
   min-width: 0;
   flex: 0 0 var(--slide-size);
   padding-left: var(--slide-spacing);
+  border-radius: 16px;
 }
 @media (min-width: 750px) {
   .embla__slide {
@@ -46,15 +48,35 @@
   }
 }
 .embla__slide__number {
-  box-shadow: inset 0 0 0 0.2rem var(--detail-medium-contrast);
-  border-radius: 1.8rem;
-  font-size: 4rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   height: var(--slide-height);
+
+  border-radius: 16px;
+
+  overflow: hidden;
 }
+
+.embla__slide__image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  inset: 0;
+  z-index: 1;
+}
+
+.embla__slide__content {
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(1, 1, 1, 0.1) 31.35%,
+    rgba(1, 1, 1, 0.75) 100%
+  );
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
 .embla__controls {
   display: grid;
   grid-template-columns: auto 1fr;

@@ -21,6 +21,13 @@ export default {
             fontWeight: '700',
           },
         ],
+        'slider-headline': [
+          '1.5rem',
+          {
+            fontWeight: 600,
+            lineHeight: '2rem',
+          },
+        ],
         'card-headline': [
           '1.25rem', // 20px
           {
