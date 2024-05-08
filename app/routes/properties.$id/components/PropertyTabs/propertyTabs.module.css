@@ -1,0 +1,12 @@
+.mapBlockNumber {
+  position: absolute;
+  content: '';
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -35%);
+  @apply text-active-tab;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 28px;
+}

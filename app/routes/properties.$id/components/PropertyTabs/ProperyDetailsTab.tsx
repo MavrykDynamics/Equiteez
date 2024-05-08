@@ -1,72 +1,19 @@
-import { FC, useCallback, useMemo, useState } from 'react';
-import { TabType } from '~/atoms/Tab';
+import { FC } from 'react';
 import { Table } from '~/atoms/Table/Table';
 import { TableDescription } from '~/atoms/Table/TableDescription';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
-import { TabSwitcher } from '~/organisms/TabSwitcher';
 
-export const PropertyDetailsTabs = () => {
-  const [activetabId, setAvtiveTabId] = useState('propertyDetails');
+// Icons
+import WalkIcon from 'app/assets/propertyId/icons/walk.svg?react';
+import TransportIcon from 'app/assets/propertyId/icons/transport.svg?react';
+import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
 
-  const handleTabClick = useCallback((id: string) => {
-    setAvtiveTabId(id);
-  }, []);
+// styles
+import styles from './propertyTabs.module.css';
+import clsx from 'clsx';
 
-  const tabs: TabType[] = useMemo(
-    () => [
-      {
-        id: 'propertyDetails',
-        label: 'Property Details',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'financials',
-        label: 'Financials',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'blockchain',
-        label: 'Blockchain',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'offering',
-        label: 'Offering',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'valuation',
-        label: 'Valuation',
-        handleClick: handleTabClick,
-      },
-    ],
-    [handleTabClick]
-  );
-
-  return (
-    <section className="flex flex-col">
-      <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-      <div className="mt-11">
-        <PropertyDetailsByTab tabId={activetabId} />
-      </div>
-    </section>
-  );
-};
-
-type PropertytabKey = keyof typeof propertyTabsComponents;
-
-type ProprtyDetailsByTabProps = {
-  tabId: string;
-};
-
-const PropertyDetailsByTab: FC<ProprtyDetailsByTabProps> = ({ tabId }) => {
-  const Component = propertyTabsComponents[tabId as PropertytabKey];
-
-  return Component;
-};
-
-const PropertyDetailsComponent = () => {
+export const PropertyDetailsTab = () => {
   return (
     <div>
       <Table>
@@ -163,14 +110,82 @@ const PropertyDetailsComponent = () => {
           <p>Entirely Renovated</p>
         </TableItem>
       </Table>
+      <PropertyDetailsMap />
     </div>
   );
 };
 
-const propertyTabsComponents = {
-  propertyDetails: <PropertyDetailsComponent />,
-  financials: null,
-  blockchain: null,
-  offering: null,
-  valuation: null,
+/**
+ *
+ * Maps section -------------------
+ */
+const PropertyDetailsMap = () => {
+  return (
+    <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8">
+      <h3 className="text-content text-card-headline mb-6">Neighborhood</h3>
+      <div className="grid grid-cols-2 gap-x-6">
+        <div>
+          <p className="text-body mb-8">
+            Lorem ipsum dolor sit amet consectetur. Odio et consectetur vitae
+            bibendum nec pellentesque eu tellus pellentesque. Pellentesque et
+            sapien nibh faucibus ut leo sagittis egestas.
+          </p>
+
+          <div className="flex flex-col gap-y-4">
+            <DistanceBlock type="walk" />
+            <DistanceBlock type="transport" />
+            <DistanceBlock type="bicycle" />
+          </div>
+        </div>
+        <div>Map</div>
+      </div>
+    </section>
+  );
+};
+
+type DistanceBlockProps = {
+  type: keyof typeof distanceData;
+};
+
+const distanceData = {
+  walk: {
+    distance: 44,
+    Icon: WalkIcon,
+    label: 'Walk',
+    description: 'Most errands require a car.',
+  },
+  transport: {
+    distance: 52,
+    Icon: TransportIcon,
+    label: 'Transport',
+    description: 'A few nearby public transportation options.',
+  },
+  bicycle: {
+    distance: 29,
+    Icon: BicycleIcon,
+    label: 'Bike',
+    description: 'Minimal bike infrastructure',
+  },
+};
+
+const DistanceBlock: FC<DistanceBlockProps> = ({ type }) => {
+  const { Icon, distance, label, description } = distanceData[type];
+
+  return (
+    <div className="flex items-center gap-x-4">
+      <div
+        className={clsx(
+          'w-[52px] h-[52px] rounded-full overflow-hidden bg-green-opacity',
+          'flex items-center justify-center relative'
+        )}
+      >
+        <Icon />
+        <p className={styles.mapBlockNumber}>{distance}</p>
+      </div>
+      <div className="flex flex-col gap-y-[2px] items-start">
+        <p className="text-content text-buttons">{label}</p>
+        <p className="text-body-xs text-content-secondary">{description}</p>
+      </div>
+    </div>
+  );
 };
