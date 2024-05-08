@@ -14,6 +14,7 @@ import { Gallery } from './components/Gallery/Gallery';
 import styles from './propertyId.module.css';
 import { IconsBlock } from './components/IconsBlock';
 import { Divider } from '~/atoms/Divider';
+import { PropertyDetailsTabs } from './components/PropertyDetails/PropertyDetailsTabs';
 
 export const meta: MetaFunction = () => {
   return [
@@ -57,6 +58,7 @@ export default function PropertyDetails() {
         <div className="flex flex-col">
           <IconsBlock />
           <Divider className="my-6" />
+          <PropertyDetailsTabs />
         </div>
         <div></div>
       </section>

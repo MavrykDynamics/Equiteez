@@ -4,7 +4,6 @@ import { FC } from 'react';
 export type TabType = {
   id: string;
   label: string;
-  Component: () => JSX.Element;
   disabled?: boolean;
   handleClick: (id: string) => void;
 };

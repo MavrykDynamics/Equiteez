@@ -21,19 +21,16 @@ export const FinanceSection = () => {
       {
         id: 'buying',
         label: 'Buying',
-        Component: () => <TabsStepper tabId="buying" />,
         handleClick: handleTabClick,
       },
       {
         id: 'selling',
         label: 'Selling',
-        Component: () => <TabsStepper tabId="selling" />,
         handleClick: handleTabClick,
       },
       {
         id: 'borrowing',
         label: 'Borrowing',
-        Component: () => <TabsStepper tabId="borrowing" />,
         handleClick: handleTabClick,
       },
     ],
