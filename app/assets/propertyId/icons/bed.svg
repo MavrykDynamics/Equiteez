@@ -1,0 +1,12 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Property Icons">
+<path id="Rectangle 18" d="M2.66602 18.6667C2.66602 17.9303 3.26297 17.3334 3.99935 17.3334H27.9993C28.7357 17.3334 29.3327 17.9303 29.3327 18.6667V26.6667H2.66602V18.6667Z" stroke="#054731" stroke-width="1.5" stroke-linejoin="round"/>
+<rect id="Rectangle 17" x="14.666" y="12" width="5.33333" height="8" rx="1.33333" transform="rotate(90 14.666 12)" stroke="#054731" stroke-width="1.5" stroke-linejoin="round"/>
+<rect id="Rectangle 19" x="25.334" y="12" width="5.33333" height="8" rx="1.33333" transform="rotate(90 25.334 12)" stroke="#054731" stroke-width="1.5" stroke-linejoin="round"/>
+<path id="Rectangle 7" d="M25.334 26.6666H28.0007V29.3333H26.6673L25.334 26.6666Z" stroke="#054731" stroke-width="1.5" stroke-linejoin="round"/>
+<path id="Rectangle 8" d="M4 26.6666H6.66667L5.33333 29.3333H4V26.6666Z" stroke="#054731" stroke-width="1.5" stroke-linejoin="round"/>
+<path id="Vector 30" d="M4 16.6667V6" stroke="#054731" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector 31" d="M28 16.6667V6" stroke="#054731" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector 32" d="M4.66602 8.66671C5.99935 8.66671 7.99935 8.00004 9.33268 7.33337C10.7829 6.60827 12.666 5.33337 15.9993 5.33337C19.3327 5.33337 21.3327 6.66671 22.666 7.33337C24.0971 8.04892 26.4438 8.66671 27.3327 8.66671" stroke="#054731" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

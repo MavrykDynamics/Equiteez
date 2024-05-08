@@ -10,6 +10,11 @@ import { LinkWithIcon } from '~/atoms/LinkWithIcon';
 import { FC } from 'react';
 import { Gallery } from './components/Gallery/Gallery';
 
+// styles
+import styles from './propertyId.module.css';
+import { IconsBlock } from './components/IconsBlock';
+import { Divider } from '~/atoms/Divider';
+
 export const meta: MetaFunction = () => {
   return [
     { title: 'Property' },
@@ -48,10 +53,18 @@ export default function PropertyDetails() {
         </p>
       </div>
       <Gallery mainImgsrc={estateData.imgSrc} thumbs={estateData.thumbs} />
+      <section className={styles.detailsSection}>
+        <div className="flex flex-col">
+          <IconsBlock />
+          <Divider className="my-6" />
+        </div>
+        <div></div>
+      </section>
     </PageLayout>
   );
 }
 
+// components
 const HeadLineTabs: FC<{ issuance: string; houseType: string }> = ({
   issuance,
   houseType,

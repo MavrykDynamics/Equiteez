@@ -18,6 +18,12 @@ type SyncFn<T, R = void> = (arg: T) => R;
 
 type StringRecord<T = string> = Record<string, T>;
 
+type IconSVG = React.FunctionComponent<
+  React.SVGProps<SVGSVGElement> & {
+    title?: string | undefined;
+  }
+>;
+
 interface PropsWithChildren {
   children: import('react').ReactNode;
 }

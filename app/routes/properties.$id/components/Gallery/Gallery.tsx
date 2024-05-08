@@ -1,7 +1,6 @@
-import { FC, useMemo } from 'react';
+import { FC } from 'react';
 
 import styles from './gallery.module.css';
-import { ImageStacked } from '~/molecules/ImageStacked';
 
 type GalleryProps = {
   mainImgsrc: string;
