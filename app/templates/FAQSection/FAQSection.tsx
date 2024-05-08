@@ -60,7 +60,7 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
         {data.map((item, idx) => (
           <div
             key={item.title}
-            className="text-content text-card-headline pt-3 pb-8 border-b border-divider flex-1"
+            className="text-content text-card-headline py-8 border-b border-divider flex-1"
             id={`faq-${idx + 1}`}
           >
             <div

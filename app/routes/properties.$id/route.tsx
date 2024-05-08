@@ -15,9 +15,13 @@ import { Divider } from '~/atoms/Divider';
 import { PropertyTabs } from './components/PropertyTabs/PropertyTabs';
 import { Spacer } from '~/atoms/Spacer';
 import { SimilarProperties } from './components/SimilarProperties/SimilarProperties';
+import { FAQSection } from '~/templates/FAQSection';
 
 // styles
 import styles from './propertyId.module.css';
+
+// mocked faq data
+import { homeFAQ } from '../_index/index.const';
 
 export const meta: MetaFunction = () => {
   return [
@@ -67,6 +71,8 @@ export default function PropertyDetails() {
       <Spacer />
       <SimilarProperties />
       <Spacer />
+      <FAQSection data={homeFAQ} />
+      <Spacer className="h-[200px]" />
     </PageLayout>
   );
 }
