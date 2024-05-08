@@ -22,6 +22,7 @@ import styles from './propertyId.module.css';
 
 // mocked faq data
 import { homeFAQ } from '../_index/index.const';
+import { PriceSection } from './components/PriceSection/PriceSection';
 
 export const meta: MetaFunction = () => {
   return [
@@ -67,6 +68,7 @@ export default function PropertyDetails() {
           <Divider className="my-6" />
           <PropertyTabs />
         </div>
+        <PriceSection />
       </section>
       <Spacer />
       <SimilarProperties />

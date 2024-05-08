@@ -1,6 +1,6 @@
 .detailsSection {
   display: grid;
   grid-template-columns: 1fr 435px;
-  row-gap: 24px;
+  column-gap: 24px;
   padding-inline: 44px;
 }
