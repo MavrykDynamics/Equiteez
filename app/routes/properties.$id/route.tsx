@@ -10,11 +10,14 @@ import { LinkWithIcon } from '~/atoms/LinkWithIcon';
 import { FC } from 'react';
 import { Gallery } from './components/Gallery/Gallery';
 
-// styles
-import styles from './propertyId.module.css';
 import { IconsBlock } from './components/IconsBlock';
 import { Divider } from '~/atoms/Divider';
 import { PropertyTabs } from './components/PropertyTabs/PropertyTabs';
+import { Spacer } from '~/atoms/Spacer';
+import { SimilarProperties } from './components/SimilarProperties/SimilarProperties';
+
+// styles
+import styles from './propertyId.module.css';
 
 export const meta: MetaFunction = () => {
   return [
@@ -60,8 +63,10 @@ export default function PropertyDetails() {
           <Divider className="my-6" />
           <PropertyTabs />
         </div>
-        <div></div>
       </section>
+      <Spacer />
+      <SimilarProperties />
+      <Spacer />
     </PageLayout>
   );
 }
