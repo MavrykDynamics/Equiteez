@@ -1,8 +1,13 @@
 import type { MetaFunction } from '@remix-run/node';
 import { Navigate } from '@remix-run/react';
+import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
+import LikeIcon from 'app/icons/like.svg?react';
+import ShareIcon from 'app/icons/share.svg?react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 import { usePropertyById } from './hooks/use-property-by-id';
+import { LinkWithIcon } from '~/atoms/LinkWithIcon';
+import { FC } from 'react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,7 +23,50 @@ export default function PropertyDetails() {
 
   return (
     <PageLayout>
-      <h1 className="text-content text-hero">{estateData.id}</h1>
+      <div className="my-6 flex items-start px-11">
+        <LinkWithIcon
+          iconPosition="start"
+          CustomIcon={ArrowLeftIcon}
+          to="/properties"
+          variant="content"
+        >
+          Back to Properties
+        </LinkWithIcon>
+      </div>
+      <div className="flex items-center gap-x-3 px-11">
+        <h3 className="text-content text-section-headline">
+          {estateData.title}
+        </h3>
+        <HeadLineTabs issuance="Primary Issuance" houseType="Single Family" />
+        <Options />
+      </div>
     </PageLayout>
   );
 }
+
+const HeadLineTabs: FC<{ issuance: string; houseType: string }> = ({
+  issuance,
+  houseType,
+}) => {
+  return (
+    <section className="flex items-center gap-x-2 text-body-xs">
+      <div className="py-1 px-2 bg-green-opacity rounded">{issuance}</div>
+      <div className="py-1 px-2 bg-yellow-opacity rounded">{houseType}</div>
+    </section>
+  );
+};
+
+const Options: FC = () => {
+  return (
+    <section className="flex items-center gap-x-4 ml-auto">
+      <button className="text-content text-body flex items-center gap-x-1">
+        <LikeIcon />
+        <p>Save</p>
+      </button>
+      <button className="text-content text-body flex items-center gap-x-1">
+        <ShareIcon />
+        <p>Share</p>
+      </button>
+    </section>
+  );
+};

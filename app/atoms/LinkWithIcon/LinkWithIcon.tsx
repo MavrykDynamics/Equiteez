@@ -7,9 +7,17 @@ type LinkWithIconProps = {
   disabled?: boolean;
   CustomIcon?: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
   iconPosition?: 'start' | 'end';
+  variant?: Variant;
   iconClassName?: string;
 } & LinkProps &
   React.RefAttributes<HTMLAnchorElement>;
+
+type Variant = 'green' | 'content';
+
+const variants = {
+  green: 'text-green-main hover:text-green-secondary',
+  content: 'text-content hover:opacity-50',
+};
 
 export const LinkWithIcon: FC<LinkWithIconProps> = ({
   to,
@@ -19,6 +27,7 @@ export const LinkWithIcon: FC<LinkWithIconProps> = ({
   CustomIcon,
   iconClassName,
   iconPosition = 'end',
+  variant = 'green',
   ...rest
 }) => {
   const Icon = useMemo(
@@ -30,8 +39,8 @@ export const LinkWithIcon: FC<LinkWithIconProps> = ({
       to={to}
       className={clsx(
         'transition ease-in-out duration-200',
-        'text-buttons text-green-main',
-        'hover:text-green-secondary',
+        'text-buttons',
+        variants[variant],
         'flex items-center',
         disabled && 'opacity-50 pointer-events-none',
         className

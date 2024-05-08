@@ -75,6 +75,8 @@ export default {
         white: '#FFFFFF',
         'green-main': '#33CB98',
         'green-secondary': '#28AD80',
+        'green-opacity': 'rgba(51, 203, 152, 0.25)',
+        'yellow-opacity': 'rgba(246, 201, 42, 0.25)',
         content: '#021A12',
         'content-secondary': '#354841',
         background: '#FFFFFF',
