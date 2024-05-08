@@ -8,6 +8,7 @@ import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 import { usePropertyById } from './hooks/use-property-by-id';
 import { LinkWithIcon } from '~/atoms/LinkWithIcon';
 import { FC } from 'react';
+import { Gallery } from './components/Gallery/Gallery';
 
 export const meta: MetaFunction = () => {
   return [
@@ -33,13 +34,20 @@ export default function PropertyDetails() {
           Back to Properties
         </LinkWithIcon>
       </div>
-      <div className="flex items-center gap-x-3 px-11">
-        <h3 className="text-content text-section-headline">
-          {estateData.title}
-        </h3>
-        <HeadLineTabs issuance="Primary Issuance" houseType="Single Family" />
-        <Options />
+      <div className="mb-6">
+        <div className="flex items-center gap-x-3 px-11">
+          <h3 className="text-content text-section-headline">
+            {estateData.title}
+          </h3>
+
+          <HeadLineTabs issuance="Primary Issuance" houseType="Single Family" />
+          <Options />
+        </div>
+        <p className="text-body text-content px-11">
+          {estateData.details.fullAddress}
+        </p>
       </div>
+      <Gallery mainImgsrc={estateData.imgSrc} thumbs={estateData.thumbs} />
     </PageLayout>
   );
 }
