@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { useDidUpdate } from 'app/hooks/use-did-update';
+import { IS_NODE } from '~/consts/general';
 
 /**
  * @arg sources // Memoize
@@ -8,7 +9,7 @@ import { useDidUpdate } from 'app/hooks/use-did-update';
 export const useImagesStackLoading = (sources: string[]) => {
   const emptyStack = sources.length < 1;
 
-  const [isLoading, setIsLoading] = useState(emptyStack === false);
+  const [isLoading, setIsLoading] = useState(IS_NODE || emptyStack === false);
   const [isStackFailed, setIsStackFailed] = useState(emptyStack);
 
   useDidUpdate(() => {
