@@ -6,7 +6,7 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
-import { json, LinksFunction } from '@remix-run/node';
+import { json, LinksFunction } from '@remix-run/cloudflare';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
