@@ -12,6 +12,7 @@ import { EstateType } from '~/mocks/estates.type';
 import clsx from 'clsx';
 import { LinkWithIcon } from '~/atoms/LinkWithIcon';
 import { Button } from '~/atoms/Button';
+import { useNavigate } from '@remix-run/react';
 
 type PropType = {
   slides: EstateType[];
@@ -21,6 +22,7 @@ type PropType = {
 const EmblaCarousel: React.FC<PropType> = (props) => {
   const { slides, options } = props;
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
+  const navigate = useNavigate();
 
   const {
     prevBtnDisabled,
@@ -28,6 +30,11 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
     onPrevButtonClick,
     onNextButtonClick,
   } = usePrevNextButtons(emblaApi);
+
+  const handleSlideClick = (id: string, isLastSlide: boolean) => {
+    if (isLastSlide) return;
+    navigate(`/properties/${id}`);
+  };
 
   return (
     <section className={styles.embla}>
@@ -43,7 +50,14 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
           {slides.map((estate, idx) => (
-            <div className={styles.embla__slide} key={estate.imgSrc}>
+            <div
+              role="presentation"
+              className={clsx(styles.embla__slide, 'cursor-pointer')}
+              key={estate.imgSrc}
+              onClick={() =>
+                handleSlideClick(estate.id, idx === slides.length - 1)
+              }
+            >
               <div className={styles.embla__slide__number}>
                 <img
                   src={estate.imgSrc}
