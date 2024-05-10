@@ -143,7 +143,7 @@ const PropertyDetailsMap = () => {
   const { env } = useEnvContext();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: env.temp,
+    googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

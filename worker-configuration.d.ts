@@ -2,5 +2,5 @@
 // by running `wrangler types`
 
 interface Env {
-  temp: string;
+  GOOGLE_MAPS_API_KEY: string;
 }
