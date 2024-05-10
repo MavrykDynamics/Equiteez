@@ -6,7 +6,7 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
-import { json, LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
+import { LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
@@ -20,11 +20,11 @@ export const links: LinksFunction = () => [
 ];
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  return json({
+  return {
     env: {
       GOOGLE_MAPS_API_KEY: context.cloudflare.env.GOOGLE_MAPS_API_KEY,
     },
-  });
+  };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
