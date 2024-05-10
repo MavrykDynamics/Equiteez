@@ -6,13 +6,6 @@ compatibility_flags = [ "nodejs_compat" ]
 
 
 
-[env.preview.vars]
-GOOGLE_MAPS_API_KEY = "AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
-
-[env.production.vars]
-GOOGLE_MAPS_API_KEY = "AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
-
-
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Pages Function, running it closer to your back-end infrastructure
 # rather than the end user may result in better performance.

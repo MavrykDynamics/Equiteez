@@ -4,7 +4,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  // useLoaderData,
+  useLoaderData,
 } from '@remix-run/react';
 import { LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
 
@@ -13,7 +13,7 @@ import ErrorBoundary from './templates/ErrorBoundary';
 
 // global styles
 import stylesheet from '~/index.css?url';
-// import { EnvProvider } from './providers/EnvProvider/EnvProvider';
+import { EnvProvider } from './providers/EnvProvider/EnvProvider';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
@@ -22,13 +22,13 @@ export const links: LinksFunction = () => [
 export async function loader({ context }: LoaderFunctionArgs) {
   return {
     env: {
-      ...context.cloudflare.env,
+      GOOGLE_MAPS_API_KEY: context.cloudflare.env.GOOGLE_MAPS_API_KEY,
     },
   };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  // const { env } = useLoaderData<typeof loader>();
+  const { env } = useLoaderData<typeof loader>();
 
   return (
     <html lang="en">
@@ -40,8 +40,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
-          {/* <EnvProvider env={env}>{children}</EnvProvider> */}
-          {children}
+          <EnvProvider env={env}>{children}</EnvProvider>
         </ErrorBoundary>
         <ScrollRestoration />
         <Scripts />
