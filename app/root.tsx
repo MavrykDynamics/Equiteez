@@ -22,7 +22,7 @@ export const links: LinksFunction = () => [
 export async function loader({ context }: LoaderFunctionArgs) {
   return {
     env: {
-      GOOGLE_MAPS_API_KEY: context.cloudflare.env.GOOGLE_MAPS_API_KEY,
+      ...context.cloudflare.env,
     },
   };
 }
