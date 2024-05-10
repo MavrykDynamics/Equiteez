@@ -4,36 +4,31 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  // useLoaderData,
+  useLoaderData,
 } from '@remix-run/react';
-import { LinksFunction } from '@remix-run/node';
+import { json, LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
-// import { EnvProvider } from './providers/EnvProvider/EnvProvider';
-
-// helpers
-// import { environment } from './providers/EnvProvider/environment.server';
 
 // global styles
 import stylesheet from '~/index.css?url';
+import { EnvProvider } from './providers/EnvProvider/EnvProvider';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
 ];
 
-// loaders
-// export function loader() {
-//   return json({
-//     publicKeys: {
-//       NODE_ENV: environment().NODE_ENV,
-//       GOOGLE_MAPS_API_KEY: environment().GOOGLE_MAPS_API_KEY,
-//     },
-//   });
-// }
+export async function loader({ context }: LoaderFunctionArgs) {
+  return json({
+    env: {
+      GOOGLE_MAPS_API_KEY: context.cloudflare.env.GOOGLE_MAPS_API_KEY,
+    },
+  });
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  // const { publicKeys } = useLoaderData<typeof loader>();
+  const { env } = useLoaderData<typeof loader>();
 
   return (
     <html lang="en">
@@ -45,8 +40,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
-          {/* <EnvProvider publicKeys={publicKeys}>{children}</EnvProvider> */}
-          {children}
+          <EnvProvider env={env}>{children}</EnvProvider>
         </ErrorBoundary>
         <ScrollRestoration />
         <Scripts />

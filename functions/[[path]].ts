@@ -7,7 +7,7 @@ import * as build from '../build/server';
 
 export const onRequest = createPagesFunctionHandler({
   build,
-  getLoadContext({ env }) {
-    return env;
+  getLoadContext({ context }) {
+    return context;
   },
 });

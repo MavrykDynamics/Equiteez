@@ -2,7 +2,13 @@
 name = "equiteez"
 compatibility_date = "2024-04-23"
 pages_build_output_dir = "./build/client"
-compatibility_flags = [ "nodejs_compat" ]
+
+
+[env.preview.vars]
+GOOGLE_MAPS_API_KEY = "AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
+
+[env.production.vars]
+GOOGLE_MAPS_API_KEY = "AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
 
 
 # Automatically place your workloads in an optimal location to minimize latency.

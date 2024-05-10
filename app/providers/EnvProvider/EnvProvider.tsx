@@ -1,21 +1,17 @@
 import { createContext, FC, useContext, useMemo } from 'react';
-import { environment } from './environment.server';
 
 type EnvContent = {
-  env: ReturnType<typeof environment>;
+  env: Env;
 };
 
 const context = createContext<EnvContent>(undefined!);
 
 type EnvProviderProps = {
-  publicKeys: ReturnType<typeof environment>;
+  env: Env;
 } & PropsWithChildren;
 
-export const EnvProvider: FC<EnvProviderProps> = ({ publicKeys, children }) => {
-  const memoizedContextValue = useMemo(
-    () => ({ env: publicKeys }),
-    [publicKeys]
-  );
+export const EnvProvider: FC<EnvProviderProps> = ({ env, children }) => {
+  const memoizedContextValue = useMemo(() => ({ env }), [env]);
 
   return (
     <context.Provider value={memoizedContextValue}>{children}</context.Provider>
