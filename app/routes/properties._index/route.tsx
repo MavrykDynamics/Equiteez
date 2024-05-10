@@ -1,4 +1,4 @@
-import type { MetaFunction } from '@remix-run/cloudflare';
+import type { MetaFunction } from '@remix-run/node';
 import PageLayout from '~/layouts/PageLayout/Pagelayout';
 
 export const meta: MetaFunction = () => {

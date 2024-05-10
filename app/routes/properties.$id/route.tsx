@@ -1,4 +1,4 @@
-import type { MetaFunction } from '@remix-run/cloudflare';
+import type { MetaFunction } from '@remix-run/node';
 import { Navigate } from '@remix-run/react';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 import LikeIcon from 'app/icons/like.svg?react';
