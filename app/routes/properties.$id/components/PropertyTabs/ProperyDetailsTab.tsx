@@ -8,7 +8,7 @@ import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 
 // context
-import { useEnvContext } from '~/providers/EnvProvider/EnvProvider';
+// import { useEnvContext } from '~/providers/EnvProvider/EnvProvider';
 
 // Goodle maps
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
@@ -142,10 +142,10 @@ const center = {
 };
 
 const PropertyDetailsMap = () => {
-  const { env } = useEnvContext();
+  // const { env } = useEnvContext();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: 'AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w',
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
