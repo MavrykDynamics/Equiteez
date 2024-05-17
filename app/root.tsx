@@ -14,6 +14,7 @@ import ErrorBoundary from './templates/ErrorBoundary';
 // global styles
 import stylesheet from '~/index.css?url';
 import { EnvProvider } from './providers/EnvProvider/EnvProvider';
+import { UserProvider } from './providers/UserProvider/user.provider';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
@@ -40,7 +41,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
-          <EnvProvider env={env}>{children}</EnvProvider>
+          <EnvProvider env={env}>
+            <UserProvider>{children}</UserProvider>
+          </EnvProvider>
         </ErrorBoundary>
         <ScrollRestoration />
         <Scripts />

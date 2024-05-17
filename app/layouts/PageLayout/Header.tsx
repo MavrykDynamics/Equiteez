@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import { Logo } from '../Logo';
+import { ConnectWallet } from './ConnectWallet';
 
 export const Header = () => {
   return (
@@ -21,9 +22,7 @@ const HeaderLinksBlock = () => {
       <Link to="/" className="text-body-xs text-content">
         Marketplace
       </Link>
-      <Link to="/" className="text-body-xs text-content">
-        Sign Up
-      </Link>
+      <ConnectWallet />
     </header>
   );
 };
