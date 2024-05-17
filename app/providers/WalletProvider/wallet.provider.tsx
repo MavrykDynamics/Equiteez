@@ -1,5 +1,5 @@
 import { FC, createContext, useEffect, useState, useContext } from 'react';
-import { dappClient } from './WalletCore';
+import { dappClient } from './WalletCore.client';
 
 type WalletContext = {
   dapp: ReturnType<typeof dappClient> | null;
