@@ -3,13 +3,6 @@ import { NetworkType } from '@mavrykdynamics/beacon-dapp';
 import { TezosToolkit } from '@mavrykdynamics/taquito';
 import type { BeaconWallet as BeaconWalletType } from '@mavrykdynamics/taquito-beacon-wallet';
 
-// MAINNET = "mainnet",
-// BASENET = "basenet",
-// WEEKLYNET = "weeklynet",
-// DAILYNET = "dailynet",
-// ATLASNET = "atlasnet",
-// CUSTOM = "custom"
-
 // consts
 import {
   RPCNodeType,

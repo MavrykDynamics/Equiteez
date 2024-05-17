@@ -11,4 +11,7 @@ installGlobals();
 
 export default defineConfig({
   plugins: [remixCloudflareDevProxy(), remix(), tsconfigPaths(), svgr()],
+  resolve: {
+    alias: {},
+  },
 });

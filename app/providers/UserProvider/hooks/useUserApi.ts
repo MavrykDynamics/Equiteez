@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
 // consts
-import { DAPP_INSTANCE } from '../user.provider';
 import { DEFAULT_USER } from '../helpers/user.consts';
 
 // types
@@ -19,6 +18,7 @@ import {
   fetchTzktUserBalances,
   openTzktWebSocket,
 } from '../helpers/userBalances.helpers';
+import { dappClient } from '~/providers/WalletProvider/WalletCore';
 
 /**
  * hook to handle CRUD with user (connect, changeWallet, signOut)
@@ -26,6 +26,7 @@ import {
  * SHOULD BE USED ONLY IN UserProvider
  */
 export const useUserApi = ({
+  DAPP_INSTANCE,
   setUserLoading,
   setIsTzktBalancesLoading,
   setUserCtxState,
@@ -36,6 +37,7 @@ export const useUserApi = ({
 
   userCtxState,
 }: {
+  DAPP_INSTANCE: ReturnType<typeof dappClient> | null;
   // setters for loadings in user provider
   setUserLoading: (newLoading: boolean) => void;
   setIsTzktBalancesLoading: (newLoading: boolean) => void;
@@ -78,7 +80,7 @@ export const useUserApi = ({
 
       setUserTzktTokens({
         userAddress,
-        tokens: fetchedTokens,
+        tokens: fetchedTokens ?? {},
       });
 
       if (isUsingLoader) setIsTzktBalancesLoading(false);
@@ -144,7 +146,7 @@ export const useUserApi = ({
    */
   const connect = useCallback(async () => {
     try {
-      const userAddress = await DAPP_INSTANCE.connectAccount();
+      const userAddress = await DAPP_INSTANCE?.connectAccount();
 
       if (userAddress) {
         setUserLoading(true);
@@ -167,8 +169,11 @@ export const useUserApi = ({
       // bug('Failed to connect wallet', TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title'])
     }
   }, [
-    updateUserTzktTokenBalances,
+    DAPP_INSTANCE,
+    setUserLoading,
     loadInitialTzktTokensForNewlyConnectedUser,
+    tzktSocket,
+    updateUserTzktTokenBalances,
     handleDisconnect,
     handleOnReconnected,
   ]);
@@ -178,7 +183,7 @@ export const useUserApi = ({
    */
   const signOut = useCallback(async () => {
     try {
-      await DAPP_INSTANCE.disconnectWallet();
+      await DAPP_INSTANCE?.disconnectWallet();
 
       setUserCtxState(DEFAULT_USER);
 
@@ -198,7 +203,7 @@ export const useUserApi = ({
    */
   const changeUser = useCallback(async () => {
     try {
-      const newUserAddress = await DAPP_INSTANCE.swapAccount();
+      const newUserAddress = await DAPP_INSTANCE?.swapAccount();
 
       if (newUserAddress && newUserAddress !== userCtxState.userAddress) {
         setUserLoading(true);

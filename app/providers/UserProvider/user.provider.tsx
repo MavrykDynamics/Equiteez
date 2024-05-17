@@ -10,7 +10,6 @@ import * as signalR from '@microsoft/signalr';
 
 // consts
 import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from './helpers/user.consts';
-import { dappClient } from './wallet/WalletCore';
 
 // hooks
 import { useUserApi } from './hooks/useUserApi';
@@ -23,7 +22,8 @@ import {
   UserContextStateType,
   UserTzKtTokenBalances,
 } from './user.provider.types';
-import { IS_WEB } from '~/consts/general';
+import { useWalletContext } from '../WalletProvider/wallet.provider';
+// import { getItemFromStorage } from '~/utils/local-storage';
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -31,18 +31,12 @@ type Props = {
   children: React.ReactNode;
 };
 
-// Instance of Dapp wallet
-export const DAPP_INSTANCE = dappClient();
-const hasUserInLocalStorage =
-  IS_WEB &&
-  localStorage.getItem('beacon:active-account') &&
-  localStorage.getItem('beacon:active-account') !== 'undefined';
-
 /**
  * ADJUSTMENTS:
  * 1. on changing user do not reopen socket, just update filter (invoke), currently hadn't found any example of it
  */
 export const UserProvider = ({ children }: Props) => {
+  const { dapp } = useWalletContext();
   // track whether we've loaded user on init, if we have his wallet data in local storage
   const isUserRestored = useRef<boolean>(false);
 
@@ -54,6 +48,12 @@ export const UserProvider = ({ children }: Props) => {
     DEFAULT_USER_TZKT_TOKENS
   );
 
+  // const hasUserInLocalStorage = useMemo(
+  //   () => getItemFromStorage('beacon:active-account') !== null,
+  //   []
+  // );
+
+  const hasUserInLocalStorage = false;
   const [isTzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(
     hasUserInLocalStorage && !isUserRestored.current
@@ -95,6 +95,7 @@ export const UserProvider = ({ children }: Props) => {
   );
 
   const { changeUser, connect, signOut } = useUserApi({
+    DAPP_INSTANCE: dapp,
     setUserLoading,
     setIsTzktBalancesLoading,
     setUserCtxState,
@@ -143,10 +144,12 @@ export const UserProvider = ({ children }: Props) => {
       changeUser,
     };
   }, [
-    userCtxState,
-    userTzktTokens,
     isUserLoading,
     isTzktBalancesLoading,
+    userCtxState,
+    hasUserInLocalStorage,
+    userTzktTokens.userAddress,
+    userTzktTokens.tokens,
     connect,
     signOut,
     changeUser,
