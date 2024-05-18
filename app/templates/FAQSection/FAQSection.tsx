@@ -3,7 +3,7 @@ import styles from './faqSection.module.css';
 import clsx from 'clsx';
 
 import ArrowDown from 'app/icons/arrow-down.svg?react';
-import { useEnvContext } from '~/providers/EnvProvider/EnvProvider';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 export type FaqType = {
   data: { title: string; description: string | JSX.Element }[];
@@ -12,7 +12,7 @@ export type FaqType = {
 export const FAQSection: FC<FaqType> = ({ data }) => {
   const [activeArticleIdx, setActiveArticleIdx] = useState(-1);
   const [isScrollAllowed, setIsScrollAllowed] = useState(false);
-  const { IS_WEB } = useEnvContext();
+  const { IS_WEB } = useAppContext();
 
   const handleHeaderClick = (idx: number) => {
     const idxToSet = idx === activeArticleIdx ? -1 : idx;

@@ -14,6 +14,9 @@ export const getItemFromStorage = <T extends unknown>(
 ): T | null => {
   try {
     const itemFromStorage = localStorage.getItem(item);
+
+    if (typeof itemFromStorage === 'string') return itemFromStorage as T;
+
     return itemFromStorage ? schema.parse(JSON.parse(itemFromStorage)) : null;
   } catch (e) {
     console.error(e);

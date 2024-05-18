@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react';
 
 import { useDidUpdate } from 'app/hooks/use-did-update';
-import { useEnvContext } from '~/providers/EnvProvider/EnvProvider';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 /**
  * @arg sources // Memoize
  */
 export const useImagesStackLoading = (sources: string[]) => {
-  const { IS_WEB } = useEnvContext();
+  const { IS_WEB } = useAppContext();
   const emptyStack = sources.length < 1;
 
   const [isLoading, setIsLoading] = useState(!IS_WEB || emptyStack === false);

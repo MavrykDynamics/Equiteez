@@ -18,7 +18,7 @@ export default defineConfig({
     svgr(),
     nodePolyfills({ exclude: ['fs', 'util'] }),
   ],
-  resolve: {
-    alias: {},
+  define: {
+    'process.env': process.env,
   },
 });

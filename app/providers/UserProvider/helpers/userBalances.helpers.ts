@@ -6,10 +6,6 @@ import {
   UserTzktTokensBalancesType,
 } from './../user.provider.types';
 
-// libs
-
-// process env
-
 // helpers
 import { api } from 'app/utils/api';
 // import { ApiError, unknownToError } from 'errors/error';
@@ -20,8 +16,8 @@ import {
 } from './user.schemes';
 
 // consts
-const REACT_APP_TZKT_API = 'https://atlasnet.api.mavryk.network';
-const REACT_APP_ENV = 'dev';
+const REACT_APP_TZKT_API = process.env.REACT_APP_TZKT_API;
+const REACT_APP_ENV = process.env.REACT_APP_ENV;
 
 /**
  * function to get token balance of the user
@@ -66,10 +62,11 @@ export const fetchTzktUserBalances = async ({
       userTzktAccountSchema.safeParse(accountData);
 
     if (parsedUserTzktTokensData.success && parsedUserXtzTokenBalance.success) {
-      console.log(
-        parsedUserTzktTokensData.data,
-        'parsedUserTzktTokensData.data,'
-      );
+      // return normalizeUserTzktTokensBalances({
+      //   indexerData: parsedUserTzktTokensData.data,
+      //   userAddress,
+      //   tokensMetadata,
+      // });
       return {};
     }
 
@@ -101,7 +98,7 @@ export const openTzktWebSocket = async (): Promise<signalR.HubConnection> => {
 
     return tzktSocket;
   } catch (e) {
-    // throw new ApiError("Couldn't open tzkt socket connection");
+    throw new Error("Couldn't open tzkt socket connection");
     console.error(e);
   }
 };

@@ -12,6 +12,9 @@ declare namespace NodeJS {
   interface ProcessEnv {
     readonly NODE_ENV: 'development' | 'production' | 'test';
     readonly PUBLIC_URL: string;
+    readonly GOOGLE_MAPS_API_KEY: string;
+    readonly REACT_APP_TZKT_API: string;
+    readonly REACT_APP_ENV: 'dev' | 'prod' | 'test';
   }
 }
 

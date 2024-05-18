@@ -7,39 +7,33 @@ import {
   useState,
 } from 'react';
 
-type EnvContent = {
-  env: Env;
+type AppContext = {
   IS_WEB: boolean;
 };
 
-const context = createContext<EnvContent>(undefined!);
+export const context = createContext<AppContext>(undefined!);
 
-type EnvProviderProps = {
-  env: Env;
-} & PropsWithChildren;
+type AppProviderProps = PropsWithChildren;
 
-export const EnvProvider: FC<EnvProviderProps> = ({ env, children }) => {
+export const AppProvider: FC<AppProviderProps> = ({ children }) => {
   const [isWeb, setIsWeb] = useState(false);
 
   useEffect(() => {
     setIsWeb(typeof window !== 'undefined');
   }, []);
 
-  const memoizedContextValue = useMemo(
-    () => ({ env, IS_WEB: isWeb }),
-    [env, isWeb]
-  );
+  const memoizedContextValue = useMemo(() => ({ IS_WEB: isWeb }), [isWeb]);
 
   return (
     <context.Provider value={memoizedContextValue}>{children}</context.Provider>
   );
 };
 
-export function useEnvContext() {
+export function useAppContext() {
   const envContext = useContext(context);
 
   if (!envContext) {
-    throw new Error('Env context must be used within EnvProvider');
+    throw new Error('App context must be used within AppProvider');
   }
 
   return envContext;

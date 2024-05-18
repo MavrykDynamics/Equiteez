@@ -17,7 +17,7 @@ import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
 
 // styles
 import styles from './propertyTabs.module.css';
-import { useEnvContext } from '~/providers/EnvProvider/EnvProvider';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 export const PropertyDetailsTab = () => {
   return (
@@ -138,10 +138,10 @@ const center = {
 };
 
 const PropertyDetailsMap = () => {
-  const { env, IS_WEB } = useEnvContext();
+  const { IS_WEB } = useAppContext();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

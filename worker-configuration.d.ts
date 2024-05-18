@@ -3,4 +3,6 @@
 
 interface Env {
   GOOGLE_MAPS_API_KEY: string;
+  REACT_APP_TZKT_API: string;
+  REACT_APP_ENV: string;
 }
