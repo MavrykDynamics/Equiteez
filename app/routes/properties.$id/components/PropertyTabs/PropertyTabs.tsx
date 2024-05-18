@@ -2,6 +2,7 @@ import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/atoms/Tab';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
 import { PropertyDetailsTab } from './ProperyDetailsTab';
+import { PropertyFinanceTab } from './PropertyFinance';
 
 export const PropertyTabs = () => {
   const [activetabId, setAvtiveTabId] = useState('propertyDetails');
@@ -65,7 +66,7 @@ const PropertyTab: FC<PropertyTabProps> = ({ tabId }) => {
 
 const propertyTabsComponents = {
   propertyDetails: <PropertyDetailsTab />,
-  financials: null,
+  financials: <PropertyFinanceTab />,
   blockchain: null,
   offering: null,
   valuation: null,

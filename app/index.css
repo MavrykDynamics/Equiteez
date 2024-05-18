@@ -143,6 +143,10 @@
   box-sizing: inherit;
 }
 
+html {
+  font-family: Poppins;
+}
+
 body {
   box-sizing: border-box;
 }

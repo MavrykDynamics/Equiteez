@@ -6,6 +6,7 @@ type TextVariant = 'body' | 'bold';
 type TableItemProps = {
   isLast?: boolean;
   textVariant?: TextVariant;
+  customBorder?: string;
 } & PropsWithChildren;
 
 const textVariants = {
@@ -16,6 +17,7 @@ const textVariants = {
 export const TableItem: FC<TableItemProps> = ({
   children,
   isLast,
+  customBorder,
   textVariant = 'body',
 }) => {
   return (
@@ -23,7 +25,12 @@ export const TableItem: FC<TableItemProps> = ({
       className={clsx(
         'flex items-center justify-between w-full text-content',
         textVariants[textVariant],
-        !isLast ? 'border-b border-divider py-4' : 'pt-4'
+        !isLast
+          ? clsx(
+              'py-4',
+              customBorder ? customBorder : 'border-b border-divider'
+            )
+          : 'pt-4'
       )}
     >
       {children}
