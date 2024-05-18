@@ -15,8 +15,6 @@ import WalkIcon from 'app/assets/propertyId/icons/walk.svg?react';
 import TransportIcon from 'app/assets/propertyId/icons/transport.svg?react';
 import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
 
-import { IS_WEB } from '~/consts/general';
-
 // styles
 import styles from './propertyTabs.module.css';
 import { useEnvContext } from '~/providers/EnvProvider/EnvProvider';
@@ -140,7 +138,7 @@ const center = {
 };
 
 const PropertyDetailsMap = () => {
-  const { env } = useEnvContext();
+  const { env, IS_WEB } = useEnvContext();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,

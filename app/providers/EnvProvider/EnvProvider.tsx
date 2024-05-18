@@ -1,7 +1,15 @@
-import { createContext, FC, useContext, useMemo } from 'react';
+import {
+  createContext,
+  FC,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 type EnvContent = {
   env: Env;
+  IS_WEB: boolean;
 };
 
 const context = createContext<EnvContent>(undefined!);
@@ -11,7 +19,16 @@ type EnvProviderProps = {
 } & PropsWithChildren;
 
 export const EnvProvider: FC<EnvProviderProps> = ({ env, children }) => {
-  const memoizedContextValue = useMemo(() => ({ env }), [env]);
+  const [isWeb, setIsWeb] = useState(false);
+
+  useEffect(() => {
+    setIsWeb(typeof window !== 'undefined');
+  }, []);
+
+  const memoizedContextValue = useMemo(
+    () => ({ env, IS_WEB: isWeb }),
+    [env, isWeb]
+  );
 
   return (
     <context.Provider value={memoizedContextValue}>{children}</context.Provider>

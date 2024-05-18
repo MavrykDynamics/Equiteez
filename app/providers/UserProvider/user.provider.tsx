@@ -23,7 +23,8 @@ import {
   UserTzKtTokenBalances,
 } from './user.provider.types';
 import { useWalletContext } from '../WalletProvider/wallet.provider';
-// import { getItemFromStorage } from '~/utils/local-storage';
+import { getItemFromStorage } from '~/utils/local-storage';
+import { useEnvContext } from '../EnvProvider/EnvProvider';
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -37,6 +38,7 @@ type Props = {
  */
 export const UserProvider = ({ children }: Props) => {
   const { dapp } = useWalletContext();
+  const { IS_WEB } = useEnvContext();
   // track whether we've loaded user on init, if we have his wallet data in local storage
   const isUserRestored = useRef<boolean>(false);
 
@@ -48,12 +50,12 @@ export const UserProvider = ({ children }: Props) => {
     DEFAULT_USER_TZKT_TOKENS
   );
 
-  // const hasUserInLocalStorage = useMemo(
-  //   () => getItemFromStorage('beacon:active-account') !== null,
-  //   []
-  // );
+  const hasUserInLocalStorage = useMemo(
+    () =>
+      IS_WEB ? getItemFromStorage('beacon:active-account') !== null : false,
+    [IS_WEB]
+  );
 
-  const hasUserInLocalStorage = false;
   const [isTzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(
     hasUserInLocalStorage && !isUserRestored.current
