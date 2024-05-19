@@ -30,15 +30,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
-          <AppProvider>
-            <WalletProvider>
-              <UserProvider>{children}</UserProvider>
-            </WalletProvider>
-          </AppProvider>
-        </ErrorBoundary>
-        <ScrollRestoration />
-        <Scripts />
+        <div id="root">
+          <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
+            <AppProvider>
+              <WalletProvider>
+                <UserProvider>{children}</UserProvider>
+              </WalletProvider>
+            </AppProvider>
+          </ErrorBoundary>
+          <ScrollRestoration />
+          <Scripts />
+        </div>
       </body>
     </html>
   );

@@ -22,6 +22,8 @@ export default function useTippy<T extends HTMLElement>(
   const targetRef = useRef<T>(null);
   const instanceRef = useRef<Instance<Props>>();
 
+  console.log(targetRef, 'targetRef');
+
   useEffect(() => {
     const _props = { theme: 'maven', ...props };
 

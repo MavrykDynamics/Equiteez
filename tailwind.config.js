@@ -1,5 +1,9 @@
 export default {
   content: ['./app/**/*.{js,jsx,ts,tsx}'],
+  options: {
+    whitelistPatterns: [/popper/, /tippy/],
+    whitelistPatternsChildren: [/popper/, /tippy/],
+  },
   separator: ':',
   theme: {
     extend: {
