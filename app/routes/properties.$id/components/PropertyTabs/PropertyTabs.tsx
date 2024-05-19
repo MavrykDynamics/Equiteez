@@ -3,6 +3,7 @@ import { TabType } from '~/atoms/Tab';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
 import { PropertyDetailsTab } from './ProperyDetailsTab';
 import { PropertyFinanceTab } from './PropertyFinance';
+import { PropertyBlockchainTab } from './PropertyBlockchainTab';
 
 export const PropertyTabs = () => {
   const [activetabId, setAvtiveTabId] = useState('propertyDetails');
@@ -31,11 +32,6 @@ export const PropertyTabs = () => {
       {
         id: 'offering',
         label: 'Offering',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'valuation',
-        label: 'Valuation',
         handleClick: handleTabClick,
       },
     ],
@@ -67,7 +63,6 @@ const PropertyTab: FC<PropertyTabProps> = ({ tabId }) => {
 const propertyTabsComponents = {
   propertyDetails: <PropertyDetailsTab />,
   financials: <PropertyFinanceTab />,
-  blockchain: null,
-  offering: null,
-  valuation: null,
+  blockchain: <PropertyBlockchainTab />,
+  offering: <PropertyBlockchainTab />,
 };
