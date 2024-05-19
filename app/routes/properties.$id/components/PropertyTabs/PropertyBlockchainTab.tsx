@@ -1,4 +1,5 @@
 // components
+import { HashChip } from '~/atoms/HashChip';
 import { Table } from '~/atoms/Table/Table';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
@@ -18,11 +19,15 @@ export const PropertyBlockchainTab = () => {
         </TableItem>
         <TableItem>
           <p>Asset Issuer</p>
-          <p>0xDcfE...6FcdAb</p>
+          <p>
+            <HashChip hash={'mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G'} />
+          </p>
         </TableItem>
         <TableItem>
           <p>Asset ID</p>
-          <p>0x2C0C...b0BC49</p>
+          <p>
+            <HashChip hash={'mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G'} />
+          </p>
         </TableItem>
       </Table>
     </div>
