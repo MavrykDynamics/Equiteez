@@ -23,7 +23,7 @@ export const PriceSection = () => {
           <p>Rental Yield</p>
           <p>8.88%</p>
         </div>
-        <div className="text-content text-buttons flex justify-between mb-4">
+        <div className="text-content text-buttons flex justify-between">
           <p>Rental Yield</p>
           <p>4.83%</p>
         </div>
@@ -40,7 +40,7 @@ const ProgresBar = () => {
   return (
     <div className="flex flex-col mb-6">
       <div className={clsx(styles.progressBar, styles.progressPercentage)} />
-      <div className="flex justify-between text-content text-body">
+      <div className="flex justify-between text-content text-body mt-1">
         <p>50</p>
         <p>150</p>
       </div>

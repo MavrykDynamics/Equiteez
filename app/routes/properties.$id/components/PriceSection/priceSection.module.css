@@ -1,6 +1,6 @@
 .progressBar {
   position: relative;
-  height: 8px;
+  height: 5px;
   border-radius: 8px;
 }
 
@@ -9,7 +9,7 @@
   position: absolute;
   inset: 0;
   border-radius: 8px;
-  @apply bg-green-main opacity-50;
+  @apply bg-divider opacity-50;
   z-index: 0;
 }
 
@@ -17,10 +17,10 @@
   content: '';
   position: absolute;
   border-radius: 8px;
-  /* TODO replacce with var passed from data */
+  /* TODO replace with var passed from data */
   width: 40%;
   height: 100%;
   inset: 0;
-  @apply bg-green-main;
+  @apply bg-green-main opacity-50;
   z-index: 1;
 }

@@ -7,7 +7,7 @@ import { TableDescription } from '~/atoms/Table/TableDescription';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 
-// Goodle maps
+// Google maps
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
 // Icons

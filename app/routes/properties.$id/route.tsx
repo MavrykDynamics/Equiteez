@@ -85,9 +85,9 @@ const HeadLineTabs: FC<{ issuance: string; houseType: string }> = ({
   houseType,
 }) => {
   return (
-    <section className="flex items-center gap-x-2 text-body-xs">
-      <div className="py-1 px-2 bg-green-opacity rounded">{issuance}</div>
+    <section className="flex items-center gap-x-2 text-body-xs font-medium">
       <div className="py-1 px-2 bg-yellow-opacity rounded">{houseType}</div>
+      <div className="py-1 px-2 bg-green-opacity rounded">{issuance}</div>
     </section>
   );
 };
@@ -95,11 +95,11 @@ const HeadLineTabs: FC<{ issuance: string; houseType: string }> = ({
 const Options: FC = () => {
   return (
     <section className="flex items-center gap-x-4 ml-auto">
-      <button className="text-content text-body flex items-center gap-x-1">
+      <button className="text-content text-body flex items-center gap-x-1 font-semibold">
         <LikeIcon />
         <p>Save</p>
       </button>
-      <button className="text-content text-body flex items-center gap-x-1">
+      <button className="text-content text-body flex items-center gap-x-1 font-semibold">
         <ShareIcon />
         <p>Share</p>
       </button>

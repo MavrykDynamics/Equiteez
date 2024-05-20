@@ -20,10 +20,12 @@ export const Footer = () => {
             cursus sed nunc eget dictum Sed ornare cursus sed nunc eget dictumd
             nunc eget dictum Sed ornare cursus sed nunc eget dictum{' '}
           </p>
-          <div className="flex items-center gap-x-5">
+          <div className="flex items-center gap-x-[21px]">
             {SOCIALS.map(({ Icon, id, url }) => (
               <Link key={id} to={url}>
-                <Icon />
+                <div className="w-9 h-9 flex justify-center items-center">
+                  <Icon />
+                </div>
               </Link>
             ))}
           </div>
