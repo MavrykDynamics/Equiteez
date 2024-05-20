@@ -16,7 +16,7 @@ export const HeadlineBlock = () => {
         </p>
       </div>
 
-      <Button>How Does Equiteez Work</Button>
+      <Button>How Equiteez Works</Button>
     </div>
   );
 };

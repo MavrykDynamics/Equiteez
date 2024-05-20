@@ -4,8 +4,8 @@ import { ConnectWallet } from './ConnectWallet';
 
 export const Header = () => {
   return (
-    <section className="flex justify-center border-b border-divider w-full">
-      <div className="px-11 flex items-center justify-between h-[60px] w-container">
+    <section className="flex justify-center border-b border-divider w-full bg-background">
+      <div className="px-11 flex items-center justify-between h-[60px] w-container bg-background">
         <Logo />
         <HeaderLinksBlock />
       </div>

@@ -5,6 +5,11 @@ export const homeFAQ = [
       'The revenue generated from Mavryk Domains is subject to a structured allocation, with 50% designated for burning to support the reduction of token supply, and the remaining 50% is directed into the Ecosystem Treasury. This allocation strategy is designed to ensure the sustainable growth and development of the Mavryk ecosystem',
   },
   {
+    title: 'What Are Real World Assets (RWAs)?',
+    description:
+      'The revenue generated from Mavryk Domains is subject to a structured allocation, with 50% designated for burning to support the reduction of token supply, and the remaining 50% is directed into the Ecosystem Treasury. This allocation strategy is designed to ensure the sustainable growth and development of the Mavryk ecosystem',
+  },
+  {
     title: 'How To Buy Equiteez Properties',
     description:
       "Future upgrades and maintenance of Mavryk Domains' smart contracts are overseen by the democratically elected seven-member Treasury Council. This body includes two community members, two validator operators, two internal ecosystem members, and one founding member. A minimum of four out of these seven members must approve any actions or changes to the smart contracts, including multisignature configuration.",

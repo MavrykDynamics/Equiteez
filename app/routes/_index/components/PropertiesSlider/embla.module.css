@@ -5,7 +5,7 @@
   --slide-size: 100%;
   --slide-spacing-sm: 1.6rem;
   --slide-size-sm: 50%;
-  --slide-spacing-lg: 2rem;
+  --slide-spacing-lg: 24px;
   --slide-size-lg: calc(100% / 3);
 }
 .embla__viewport {

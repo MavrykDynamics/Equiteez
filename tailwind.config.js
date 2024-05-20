@@ -85,6 +85,7 @@ export default {
         'content-secondary': '#354841',
         background: '#FFFFFF',
         'background-secondary': '#F4FBF8',
+        'background-tertiary': '#FAFFFD',
         divider: '#E6E8E7',
         tabs: '#CCF2E5',
         'active-tab': '#054731',

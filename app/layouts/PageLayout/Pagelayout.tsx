@@ -11,11 +11,11 @@ import { Footer } from './Footer';
 const PageLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
     <div className={clsx('min-h-screen')}>
-      <DocBg bgClassName={clsx('bg-background')} />
+      <DocBg bgClassName={clsx('bg-background-tertiary')} />
 
       <div className={clsx('relative')}>
         <Header />
-        <div className=" mx-auto max-w-[1440px]">{children}</div>
+        <div className="mx-auto max-w-[1440px]">{children}</div>
         <Footer />
       </div>
     </div>
