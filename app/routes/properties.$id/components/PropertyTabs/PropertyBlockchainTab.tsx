@@ -1,5 +1,5 @@
 // components
-import { HashChip } from '~/atoms/HashChip';
+import { HashChip } from '~/molecules/HashChip';
 import { Table } from '~/atoms/Table/Table';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';

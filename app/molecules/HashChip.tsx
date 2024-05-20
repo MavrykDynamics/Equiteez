@@ -1,10 +1,8 @@
 import { ComponentProps, FC, HTMLAttributes } from 'react';
 
 import classNames from 'clsx';
-
-import { CopyButtonProps, CopyButton } from './CopyButton';
-
-import { HashShortView } from './HashShortView';
+import { HashShortView } from '~/atoms/HashShortView';
+import { CopyButtonProps, CopyButton } from '~/atoms/CopyButton';
 
 type HashChipProps = HTMLAttributes<HTMLButtonElement> &
   ComponentProps<typeof HashShortView> &

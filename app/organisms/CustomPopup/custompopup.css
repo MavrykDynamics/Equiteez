@@ -1,0 +1,25 @@
+.slideFromBottom .ReactModal__Content {
+  transform: translateY(100%);
+  transition: transform 200ms ease-in-out;
+}
+
+.slideFromBottom .ReactModal__Overlay--after-open .ReactModal__Content {
+  transform: translateY(0);
+}
+
+.slideFromBottom .ReactModal__Overlay--before-close .ReactModal__Content {
+  transform: translateY(100%);
+}
+
+.slideFromBottom .ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
+}
+
+.slideFromBottom .ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.slideFromBottom .ReactModal__Overlay--before-close {
+  opacity: 0;
+}
