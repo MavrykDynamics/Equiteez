@@ -159,6 +159,8 @@ const PropertyDetailsMap = () => {
     setMap(null);
   }, []);
 
+  console.log('render --');
+
   return (
     <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8">
       <h3 className="text-content text-card-headline mb-6">Neighborhood</h3>

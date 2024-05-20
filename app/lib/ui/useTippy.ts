@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import tippy, { Props, Instance } from 'tippy.js';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 export type TippyInstance = Instance<Props>;
 
@@ -19,24 +20,25 @@ export const useTippyById = (parentId: string, props: UseTippyOptions) => {
 export default function useTippy<T extends HTMLElement>(
   props: UseTippyOptions
 ) {
+  const { IS_WEB } = useAppContext();
   const targetRef = useRef<T>(null);
   const instanceRef = useRef<Instance<Props>>();
 
-  console.log(targetRef, 'targetRef');
-
   useEffect(() => {
-    const _props = { theme: 'maven', ...props };
+    if (IS_WEB) {
+      const _props = { theme: 'maven', ...props };
 
-    if (instanceRef.current) {
-      instanceRef.current.setProps(_props);
-    } else if (targetRef.current) {
-      instanceRef.current = tippy(targetRef.current, _props);
+      if (instanceRef.current) {
+        instanceRef.current.setProps(_props);
+      } else if (targetRef.current) {
+        instanceRef.current = tippy(targetRef.current, _props);
+      }
     }
-  }, [props]);
+  }, [IS_WEB, props]);
 
   useEffect(
     () => () => {
-      if (instanceRef.current) {
+      if (instanceRef.current && IS_WEB) {
         instanceRef.current.destroy();
       }
     },

@@ -29,6 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
+
       <body>
         <div id="root">
           <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
