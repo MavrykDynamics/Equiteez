@@ -6,7 +6,7 @@ import styles from './priceSection.module.css';
 import clsx from 'clsx';
 import { Button } from '~/atoms/Button';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-import { useCallback, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 
 // TODO map dynamicdata from the future API
 export const PriceSection = () => {
@@ -45,9 +45,7 @@ export const PriceSection = () => {
       </Table>
 
       <PopupWithIcon isOpen={isOpen} onRequestClose={handleRequestClose}>
-        <div className="text-content text-card-headline p-4">
-          blah blah blah
-        </div>
+        <BuyPopupContent handleCancel={handleRequestClose} />
       </PopupWithIcon>
     </section>
   );
@@ -60,6 +58,74 @@ const ProgresBar = () => {
       <div className="flex justify-between text-content text-body mt-1">
         <p>50</p>
         <p>150</p>
+      </div>
+    </div>
+  );
+};
+
+type BuyPopupContentProps = {
+  handleCancel: () => void;
+};
+
+const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
+  return (
+    <div className="flex flex-col">
+      <h2 className="text-content text-card-headline">The Cove</h2>
+      <p className="text-body text-content">
+        7335 Wilburton Lane, Northport, AL 35473
+      </p>
+
+      <div className="mt-6 flex flex-col mb-4">
+        <div className="border border-divider rounded-lg px-4 py-3 flex justify-between mb-3">
+          <span className="text-body-xs text-content-secondary opacity-50">
+            Price
+          </span>
+          <span className="text-content text-body-xs opacity-50">
+            58.00 USDT
+          </span>
+        </div>
+        <div className="border border-divider rounded-lg px-4 py-3 flex justify-between">
+          <span className="text-body-xs text-content-secondary opacity-75">
+            Amount
+          </span>
+          <p className="text-content-secondary text-body-xs">
+            <span className="opacity-50">Minimum&nbsp;</span>
+            <span className="text-content">1 COVE</span>
+          </p>
+        </div>
+        <Divider className="my-4" />
+        <div className="border border-divider rounded-lg px-4 py-3 flex justify-between">
+          <span className="text-body-xs text-content-secondary">Total</span>
+          <p className="text-content-secondary text-body-xs">
+            <span className="opacity-75">0&nbsp;</span>
+            <span className="text-content">USDT</span>
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-y-1">
+        {/* TODO extract to separate component with the real api */}
+        <div className="text-caption-regular text-content-secondary flex items-center justify-between">
+          <span>USDT Balance</span>
+          <span>1,034.75 USDT</span>
+        </div>
+
+        <div className="text-caption-regular text-content-secondary flex items-center justify-between">
+          <span>Max Buy</span>
+          <span>17.84 COVE</span>
+        </div>
+
+        <div className="text-caption-regular text-content-secondary flex items-center justify-between">
+          <span>Est. Fee</span>
+          <span>-- COVE</span>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-x-4">
+        <Button variant="outline" onClick={handleCancel}>
+          Cancel
+        </Button>
+        <Button>Buy</Button>
       </div>
     </div>
   );
