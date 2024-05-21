@@ -3,8 +3,9 @@ import { FC } from 'react';
 
 type SpacerProps = {
   className?: string;
+  height?: number;
 };
 
-export const Spacer: FC<SpacerProps> = ({ className }) => {
-  return <div className={clsx('h-[100px] bg-transparent', className)} />;
+export const Spacer: FC<SpacerProps> = ({ height = 100, className }) => {
+  return <div className={clsx(`h-[${height}px] bg-transparent`, className)} />;
 };

@@ -4,6 +4,7 @@ import clsx from 'clsx';
 
 import ArrowDown from 'app/icons/arrow-down.svg?react';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
+import { isVisibleInViewport } from '~/utils/element-in-view';
 
 export type FaqType = {
   data: { title: string; description: string | JSX.Element }[];
@@ -42,6 +43,7 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
     );
 
     if (!element || !isScrollAllowed) return;
+    if (isVisibleInViewport(element, { heightDifference: 400 })) return;
 
     element.scrollIntoView({
       block: 'start',
