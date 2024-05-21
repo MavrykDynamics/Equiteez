@@ -77,6 +77,7 @@ export default {
       },
       colors: {
         white: '#FFFFFF',
+        black: '#000',
         'green-main': '#33CB98',
         'green-secondary': '#28AD80',
         'green-opacity': 'rgba(51, 203, 152, 0.25)',

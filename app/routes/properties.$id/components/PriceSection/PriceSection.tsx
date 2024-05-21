@@ -5,9 +5,20 @@ import { Table } from '~/atoms/Table/Table';
 import styles from './priceSection.module.css';
 import clsx from 'clsx';
 import { Button } from '~/atoms/Button';
+import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
+import { useCallback, useState } from 'react';
 
 // TODO map dynamicdata from the future API
 export const PriceSection = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleRequestClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleOpen = useCallback(() => {
+    setIsOpen(true);
+  }, []);
   return (
     <section className="slef-start">
       <Table>
@@ -30,8 +41,14 @@ export const PriceSection = () => {
         <Divider className="my-4" />
         <h4 className="text-content text-buttons mb-3">Tokens Available</h4>
         <ProgresBar />
-        <Button>Buy</Button>
+        <Button onClick={handleOpen}>Buy</Button>
       </Table>
+
+      <PopupWithIcon isOpen={isOpen} onRequestClose={handleRequestClose}>
+        <div className="text-content text-card-headline p-4">
+          blah blah blah
+        </div>
+      </PopupWithIcon>
     </section>
   );
 };
