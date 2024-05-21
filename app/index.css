@@ -1,4 +1,5 @@
 @import 'tippy.js/dist/tippy.css';
+@import 'tippy.js/animations/shift-away-subtle.css';
 
 /**
  * Poppins UI font
@@ -152,32 +153,35 @@
   white-space: pre-line;
 }
 
-.tippy-box[data-theme~='maven'] {
-  background-color: #373479;
-  color: #f4f4f4;
+.tippy-box[data-theme~='equiteez'] {
+  background-color: #28ad80;
   font-size: 12px;
+  font-weight: 400;
+  color: #fff;
 }
 
 /* Right placement tooltip arrow (arrow will be on left side of tooltip) */
-.tippy-box[data-theme~='maven'][data-placement^='right']
+.tippy-box[data-theme~='equiteez'][data-placement^='right']
   > .tippy-arrow::before {
-  border-right-color: #373479;
+  border-right-color: #28ad80;
 }
 
 /* Left placement tooltip arrow (arrow will be on right side of tooltip) */
-.tippy-box[data-theme~='maven'][data-placement^='left'] > .tippy-arrow::before {
-  border-left-color: #373479;
+.tippy-box[data-theme~='equiteez'][data-placement^='left']
+  > .tippy-arrow::before {
+  border-left-color: #28ad80;
 }
 
 /* Top placement tooltip arrow (arrow will be on bottom side of tooltip) */
-.tippy-box[data-theme~='maven'][data-placement^='top'] > .tippy-arrow::before {
-  border-top-color: #373479;
+.tippy-box[data-theme~='equiteez'][data-placement^='top']
+  > .tippy-arrow::before {
+  border-top-color: #28ad80;
 }
 
 /* Bottom placement tooltip arrow (arrow will be on top side of tooltip) */
-.tippy-box[data-theme~='maven'][data-placement^='bottom']
+.tippy-box[data-theme~='equiteez'][data-placement^='bottom']
   > .tippy-arrow::before {
-  border-bottom-color: #373479;
+  border-bottom-color: #28ad80;
 }
 
 /* Styles reset */
@@ -199,7 +203,7 @@ body {
 }
 
 ::selection {
-  background-color: #33cb98;
+  background-color: #194c98;
   color: #ffffff;
 }
 

@@ -26,7 +26,7 @@ export const PropertyBlockchainTab = () => {
         <TableItem>
           <p>Asset ID</p>
           <p>
-            <HashChip hash={'mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G'} />
+            <HashChip hash={'mv1DXbvsp4T7X6tQLHy3szGN7KJooy56fQ3H'} />
           </p>
         </TableItem>
       </Table>

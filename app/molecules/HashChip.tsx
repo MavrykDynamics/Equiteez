@@ -1,6 +1,6 @@
 import { ComponentProps, FC, HTMLAttributes } from 'react';
 
-import classNames from 'clsx';
+import clsx from 'clsx';
 import { HashShortView } from '~/atoms/HashShortView';
 import { CopyButtonProps, CopyButton } from '~/atoms/CopyButton';
 
@@ -18,12 +18,7 @@ export const HashChip: FC<HashChipProps> = ({
   type = 'button',
   ...rest
 }) => (
-  <CopyButton
-    text={hash}
-    type={type}
-    className={classNames(className)}
-    {...rest}
-  >
+  <CopyButton text={hash} type={type} className={clsx(className)} {...rest}>
     <HashShortView
       hash={hash}
       trimAfter={trimAfter}

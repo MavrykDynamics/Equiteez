@@ -9,7 +9,7 @@ export type UseTippyOptions = Partial<Props>;
 
 export const useTippyById = (parentId: string, props: UseTippyOptions) => {
   const onMouseEnter = useCallback(() => {
-    const _props = { theme: 'maven', ...props };
+    const _props = { theme: 'equiteez', ...props };
 
     tippy(parentId, _props);
   }, [parentId, props]);
@@ -26,7 +26,7 @@ export default function useTippy<T extends HTMLElement>(
 
   useEffect(() => {
     if (IS_WEB) {
-      const _props = { theme: 'maven', ...props };
+      const _props = { theme: 'equiteez', ...props };
 
       if (instanceRef.current) {
         instanceRef.current.setProps(_props);
@@ -38,11 +38,11 @@ export default function useTippy<T extends HTMLElement>(
 
   useEffect(
     () => () => {
-      if (instanceRef.current && IS_WEB) {
-        instanceRef.current.destroy();
+      if (instanceRef.current && !IS_WEB) {
+        instanceRef.current?.destroy();
       }
     },
-    []
+    [IS_WEB]
   );
 
   return targetRef;

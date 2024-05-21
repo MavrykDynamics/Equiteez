@@ -22,6 +22,7 @@ const HeaderLinksBlock = () => {
       <Link to="/" className="text-body-xs text-content">
         Marketplace
       </Link>
+
       <ConnectWallet />
     </header>
   );
