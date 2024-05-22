@@ -7,10 +7,17 @@ import clsx from 'clsx';
 import { Button } from '~/atoms/Button';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { FC, useCallback, useState } from 'react';
+import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
+import { useUserContext } from '~/providers/UserProvider/user.provider';
+
+// consts
+import { faucetContract } from 'app/consts/contracts';
 
 // TODO map dynamicdata from the future API
 export const PriceSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
+  const [buttonStatus, setButtonStatus] = useState('');
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -19,6 +26,60 @@ export const PriceSection = () => {
   const handleOpen = useCallback(() => {
     setIsOpen(true);
   }, []);
+
+  const { dapp } = useWalletContext();
+  
+  const handleBuy = async () => {
+
+    setIsBuying(true);
+
+    const tezos = dapp?.tezos()
+
+    // No Toolkit
+    if(!tezos){
+      setIsBuying(false);
+      return;
+    }
+
+    try {
+      
+      let batch = tezos.wallet.batch([]);
+
+      const faucet = await tezos.wallet.at(faucetContract);
+
+      const action = faucet.methodsObject['default']().toTransferParams();
+
+      batch = batch.withTransfer(action)
+
+      console.log("Batch")
+      console.log(batch)
+    
+      const batchOp = await batch.send();
+      
+      setButtonStatus("Confirming...");
+      
+      await batchOp.confirmation();
+      
+      setButtonStatus("Complete!");
+      setIsBuying(false);
+
+      setTimeout(() => {
+        setButtonStatus('');
+      }, 4000);
+    
+    } catch (e: any) {
+
+      console.log(e)
+
+      setButtonStatus(`Error: ${e.constructor.name}`);
+      setIsBuying(false);
+
+      setTimeout(() => {
+        setButtonStatus('');
+      }, 4000);
+    }
+  };
+
   return (
     <section className="slef-start">
       <Table>
@@ -45,7 +106,7 @@ export const PriceSection = () => {
       </Table>
 
       <PopupWithIcon isOpen={isOpen} onRequestClose={handleRequestClose}>
-        <BuyPopupContent handleCancel={handleRequestClose} />
+        <BuyPopupContent handleCancel={handleRequestClose} handleBuy={handleBuy} isBuying={isBuying} buttonStatus={buttonStatus} />
       </PopupWithIcon>
     </section>
   );
@@ -64,10 +125,13 @@ const ProgresBar = () => {
 };
 
 type BuyPopupContentProps = {
-  handleCancel: () => void;
+  handleCancel:  () => void;
+  handleBuy:     () => void;
+  isBuying:      boolean;
+  buttonStatus?: string;
 };
 
-const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
+const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel, handleBuy, isBuying, buttonStatus }) => {
   return (
     <div className="flex flex-col">
       <h2 className="text-content text-card-headline">The Cove</h2>
@@ -125,7 +189,7 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
         <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button>Buy</Button>
+        <Button onClick={handleBuy} disabled={isBuying || !!buttonStatus} isLoading={isBuying && !buttonStatus}>{ buttonStatus || 'Buy' }</Button>
       </div>
     </div>
   );

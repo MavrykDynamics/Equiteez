@@ -18,7 +18,7 @@ import {
   fetchTzktUserBalances,
   openTzktWebSocket,
 } from '../helpers/userBalances.helpers';
-import { dappClient } from '~/providers/WalletProvider/WalletCore';
+import { dappClient } from '~/providers/WalletProvider/WalletCore.client';
 
 /**
  * hook to handle CRUD with user (connect, changeWallet, signOut)
