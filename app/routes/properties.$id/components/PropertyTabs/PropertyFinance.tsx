@@ -4,7 +4,12 @@ import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 import { ColoredCard } from '~/atoms/ColoredCard';
 import { InfoTooltip } from '~/organisms/InfoTooltip';
-import { CustomExpander } from '~/organisms/CustomExpander/CustomExpander';
+import {
+  ClickableExpanderArea,
+  CustomExpander,
+  ExpanderBodyContent,
+  ExpanderFaceContent,
+} from '~/organisms/CustomExpander/CustomExpander';
 
 export const PropertyFinanceTab = () => {
   return (
@@ -19,22 +24,25 @@ export const PropertyFinanceTab = () => {
           <p>Gross Rent / Month</p>
           <p>$1,180.00</p>
         </TableItem>
-        <CustomExpander
-          expanderFaceContent={
+
+        <CustomExpander>
+          <ClickableExpanderArea>
             <TableItem>
-              <p>Monthly Costs</p>
+              <ExpanderFaceContent>Monthly Costs</ExpanderFaceContent>
               <p>-$446.00</p>
             </TableItem>
-          }
-        >
-          <TableItem>
-            <p>Net ReProperty Management (8.00%)</p>
-            <p>-$94.40</p>
-          </TableItem>
-          <TableItem>
-            <p>Equiteez Platform (2.00%)</p>
-            <p>-$23.60</p>
-          </TableItem>
+          </ClickableExpanderArea>
+
+          <ExpanderBodyContent>
+            <TableItem>
+              <p>Net ReProperty Management (8.00%)</p>
+              <p>-$94.40</p>
+            </TableItem>
+            <TableItem>
+              <p>Equiteez Platform (2.00%)</p>
+              <p>-$23.60</p>
+            </TableItem>
+          </ExpanderBodyContent>
         </CustomExpander>
 
         <TableItem customBorder="border-b border-active-tab">
