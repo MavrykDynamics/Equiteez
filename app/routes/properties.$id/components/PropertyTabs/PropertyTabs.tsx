@@ -1,36 +1,71 @@
 import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/atoms/Tab';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
-import { PropertyDetailsTab } from './ProperyDetailsTab';
 import { PropertyFinanceTab } from './PropertyFinance';
+import { PropertyDetailsTab } from './ProperyDetailsTab';
 import { PropertyBlockchainTab } from './PropertyBlockchainTab';
+import { MetaFunction } from '@remix-run/node';
+import {
+  PRIMARY_TABS,
+  PROPERTY_BLOCKCHAIN_TAB,
+  PROPERTY_DETAILS_TAB,
+  PROPERTY_FINANCIALS_TAB,
+  PROPERTY_OFFERING_TAB,
+} from '../../consts';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
-export const PropertyTabs = () => {
-  const [activetabId, setAvtiveTabId] = useState('propertyDetails');
+export const meta: MetaFunction = () => {
+  return [
+    { title: 'Property' },
+    { name: 'description', content: 'Property data' },
+  ];
+};
 
-  const handleTabClick = useCallback((id: string) => {
-    setAvtiveTabId(id);
-  }, []);
+type PropertyTabsProps = {
+  tabId?: string;
+};
+
+export default function PropertyTabs({ tabId }: PropertyTabsProps) {
+  const { IS_WEB } = useAppContext();
+
+  const [activetabId, setAvtiveTabId] = useState(
+    () => PRIMARY_TABS.find((tab) => tab === tabId) ?? PROPERTY_DETAILS_TAB
+  );
+
+  const handleTabClick = useCallback(
+    (id: string) => {
+      if (IS_WEB) {
+        const href = window.location.href.split('?');
+        href.pop();
+        const fileteredHref = href.join('/');
+
+        window.history.pushState({}, '', fileteredHref.concat(`?tabId=${id}`));
+      }
+
+      setAvtiveTabId(id);
+    },
+    [IS_WEB]
+  );
 
   const tabs: TabType[] = useMemo(
     () => [
       {
-        id: 'propertyDetails',
+        id: PROPERTY_DETAILS_TAB,
         label: 'Property Details',
         handleClick: handleTabClick,
       },
       {
-        id: 'financials',
+        id: PROPERTY_FINANCIALS_TAB,
         label: 'Financials',
         handleClick: handleTabClick,
       },
       {
-        id: 'blockchain',
+        id: PROPERTY_BLOCKCHAIN_TAB,
         label: 'Blockchain',
         handleClick: handleTabClick,
       },
       {
-        id: 'offering',
+        id: PROPERTY_OFFERING_TAB,
         label: 'Offering',
         handleClick: handleTabClick,
       },
@@ -46,7 +81,7 @@ export const PropertyTabs = () => {
       </div>
     </section>
   );
-};
+}
 
 type PropertytabKey = keyof typeof propertyTabsComponents;
 

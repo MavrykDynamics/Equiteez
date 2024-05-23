@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { FC, useCallback, useState } from 'react';
 import clsx from 'clsx';
 

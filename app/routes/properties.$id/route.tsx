@@ -1,5 +1,5 @@
-import type { MetaFunction } from '@remix-run/node';
-import { Navigate, Outlet, useMatches } from '@remix-run/react';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import { Navigate, useLoaderData } from '@remix-run/react';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 import LikeIcon from 'app/icons/like.svg?react';
 import ShareIcon from 'app/icons/share.svg?react';
@@ -22,7 +22,7 @@ import styles from './propertyId.module.css';
 // mocked faq data
 import { homeFAQ } from '../_index/index.const';
 import { PriceSection } from './components/PriceSection/PriceSection';
-import { PROPERTY_DETAILS_TAB } from '../properties.$id.$tabId/consts';
+import PropertyTabs from './components/PropertyTabs/PropertyTabs';
 
 export const meta: MetaFunction = () => {
   return [
@@ -31,15 +31,17 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export default function PropertyDetails() {
-  const { estate: estateData, id } = usePropertyById();
-  const matches = useMatches();
-  const isRawPage =
-    Object.keys(matches[matches.length - 1].params).length === 1;
+export const loader: LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  const id = url.searchParams.get('tabId');
+  return id;
+};
 
-  if (!estateData || !id) return <Navigate to={'/properties'} />;
-  if (isRawPage)
-    return <Navigate to={`/properties/${id}/${PROPERTY_DETAILS_TAB}`} />;
+export default function PropertyDetails() {
+  const { estate: estateData } = usePropertyById();
+  const tabId = useLoaderData<typeof loader>() as string | undefined;
+
+  if (!estateData) return <Navigate to={'/properties'} />;
 
   return (
     <PageLayout>
@@ -71,7 +73,7 @@ export default function PropertyDetails() {
         <div className="flex flex-col">
           <IconsBlock />
           <Divider className="my-6" />
-          <Outlet />
+          <PropertyTabs tabId={tabId} />
         </div>
         <PriceSection />
       </section>
