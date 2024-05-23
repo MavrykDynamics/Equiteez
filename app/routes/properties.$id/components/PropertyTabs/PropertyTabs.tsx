@@ -6,11 +6,14 @@ import { PropertyDetailsTab } from './ProperyDetailsTab';
 import { PropertyBlockchainTab } from './PropertyBlockchainTab';
 import { MetaFunction } from '@remix-run/node';
 import {
+  ALL_TABS,
   PRIMARY_TABS,
   PROPERTY_BLOCKCHAIN_TAB,
   PROPERTY_DETAILS_TAB,
   PROPERTY_FINANCIALS_TAB,
   PROPERTY_OFFERING_TAB,
+  PROPERTY_OTC_TAB,
+  PROPERTY_TRDADING_HISTORY_TAB,
 } from '../../consts';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
@@ -23,13 +26,20 @@ export const meta: MetaFunction = () => {
 
 type PropertyTabsProps = {
   tabId?: string;
+  isSecondaryEstate: boolean;
 };
 
-export default function PropertyTabs({ tabId }: PropertyTabsProps) {
+export default function PropertyTabs({
+  tabId,
+  isSecondaryEstate,
+}: PropertyTabsProps) {
   const { IS_WEB } = useAppContext();
 
   const [activetabId, setAvtiveTabId] = useState(
-    () => PRIMARY_TABS.find((tab) => tab === tabId) ?? PROPERTY_DETAILS_TAB
+    () =>
+      (isSecondaryEstate ? ALL_TABS : PRIMARY_TABS).find(
+        (tab) => tab === tabId
+      ) ?? PROPERTY_DETAILS_TAB
   );
 
   const handleTabClick = useCallback(
@@ -69,8 +79,22 @@ export default function PropertyTabs({ tabId }: PropertyTabsProps) {
         label: 'Offering',
         handleClick: handleTabClick,
       },
+      ...(isSecondaryEstate
+        ? [
+            {
+              id: PROPERTY_TRDADING_HISTORY_TAB,
+              label: 'Trading History',
+              handleClick: handleTabClick,
+            },
+            {
+              id: PROPERTY_OTC_TAB,
+              label: 'OTC',
+              handleClick: handleTabClick,
+            },
+          ]
+        : []),
     ],
-    [handleTabClick]
+    [handleTabClick, isSecondaryEstate]
   );
 
   return (
@@ -96,8 +120,10 @@ const PropertyTab: FC<PropertyTabProps> = ({ tabId }) => {
 };
 
 const propertyTabsComponents = {
-  propertyDetails: <PropertyDetailsTab />,
-  financials: <PropertyFinanceTab />,
-  blockchain: <PropertyBlockchainTab />,
-  offering: <PropertyBlockchainTab />,
+  [PROPERTY_DETAILS_TAB]: <PropertyDetailsTab />,
+  [PROPERTY_FINANCIALS_TAB]: <PropertyFinanceTab />,
+  [PROPERTY_BLOCKCHAIN_TAB]: <PropertyBlockchainTab />,
+  [PROPERTY_OFFERING_TAB]: <PropertyBlockchainTab />,
+  [PROPERTY_TRDADING_HISTORY_TAB]: <PropertyBlockchainTab />,
+  [PROPERTY_OTC_TAB]: <PropertyBlockchainTab />,
 };

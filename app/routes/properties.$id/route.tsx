@@ -7,7 +7,7 @@ import ShareIcon from 'app/icons/share.svg?react';
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 import { usePropertyById } from './hooks/use-property-by-id';
 import { LinkWithIcon } from '~/atoms/LinkWithIcon';
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { Gallery } from './components/Gallery/Gallery';
 
 import { IconsBlock } from './components/IconsBlock';
@@ -23,6 +23,7 @@ import styles from './propertyId.module.css';
 import { homeFAQ } from '../_index/index.const';
 import { PriceSection } from './components/PriceSection/PriceSection';
 import PropertyTabs from './components/PropertyTabs/PropertyTabs';
+import clsx from 'clsx';
 
 export const meta: MetaFunction = () => {
   return [
@@ -40,6 +41,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function PropertyDetails() {
   const { estate: estateData } = usePropertyById();
   const tabId = useLoaderData<typeof loader>() as string | undefined;
+
+  const isSecondaryEstate = useMemo(
+    () => estateData?.estateType === 'secondary',
+    [estateData?.estateType]
+  );
 
   if (!estateData) return <Navigate to={'/properties'} />;
 
@@ -61,7 +67,10 @@ export default function PropertyDetails() {
             {estateData.title}
           </h3>
 
-          <HeadLineTabs issuance="Primary Issuance" houseType="Single Family" />
+          <HeadLineTabs
+            isSecondaryEstate={isSecondaryEstate}
+            houseType="Single Family"
+          />
           <Options />
         </div>
         <p className="text-body text-content px-11">
@@ -73,9 +82,9 @@ export default function PropertyDetails() {
         <div className="flex flex-col">
           <IconsBlock />
           <Divider className="my-6" />
-          <PropertyTabs tabId={tabId} />
+          <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
-        <PriceSection />
+        <PriceSection isSecondaryEstate={isSecondaryEstate} />
       </section>
       <Spacer />
       <SimilarProperties />
@@ -87,14 +96,21 @@ export default function PropertyDetails() {
 }
 
 // components
-const HeadLineTabs: FC<{ issuance: string; houseType: string }> = ({
-  issuance,
+const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
+  isSecondaryEstate,
   houseType,
 }) => {
   return (
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
       <div className="py-1 px-2 bg-yellow-opacity rounded">{houseType}</div>
-      <div className="py-1 px-2 bg-green-opacity rounded">{issuance}</div>
+      <div
+        className={clsx(
+          'py-1 px-2 rounded',
+          isSecondaryEstate ? 'bg-blue-opacity' : 'bg-green-opacity'
+        )}
+      >
+        {isSecondaryEstate ? 'Secondary Market' : 'Primary Issuance'}
+      </div>
     </section>
   );
 };

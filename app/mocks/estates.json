@@ -9,6 +9,7 @@
       "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
     ],
     "title": "The Cove",
+    "estateType": "primary",
     "url": "/",
     "counter": { "beds": 1, "baths": 1 },
     "square": 704,
@@ -53,6 +54,7 @@
       "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
     ],
     "title": "The Cove 2",
+    "estateType": "secondary",
     "url": "/",
     "counter": { "beds": 1, "baths": 1 },
     "square": 704,
@@ -97,6 +99,7 @@
       "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
     ],
     "title": "The Cove 3",
+    "estateType": "primary",
     "url": "/",
     "counter": { "beds": 1, "baths": 1 },
     "square": 704,
@@ -141,6 +144,7 @@
       "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
     ],
     "title": "The Cove 4",
+    "estateType": "secondary",
     "url": "/",
     "counter": { "beds": 1, "baths": 1 },
     "square": 704,
