@@ -34,13 +34,29 @@ export const PropertyFinanceTab = () => {
           </ClickableExpanderArea>
 
           <ExpanderBodyContent>
-            <TableItem>
+            <TableItem textVariant="body-xs">
               <p>Net ReProperty Management (8.00%)</p>
               <p>-$94.40</p>
             </TableItem>
-            <TableItem>
+            <TableItem textVariant="body-xs">
               <p>Equiteez Platform (2.00%)</p>
               <p>-$23.60</p>
+            </TableItem>
+            <TableItem textVariant="body-xs">
+              <p>Maintenance Expenses</p>
+              <p>-$140.00</p>
+            </TableItem>
+            <TableItem textVariant="body-xs">
+              <p>Property Taxes</p>
+              <p>-$140.00</p>
+            </TableItem>
+            <TableItem textVariant="body-xs">
+              <p>Insurance</p>
+              <p>-$48.00</p>
+            </TableItem>
+            <TableItem textVariant="body-xs">
+              <p>Utilities</p>
+              <p>Tenant-paid</p>
             </TableItem>
           </ExpanderBodyContent>
         </CustomExpander>
@@ -53,10 +69,24 @@ export const PropertyFinanceTab = () => {
           <p>Net Rent / Year</p>
           <p>$8,808.00</p>
         </TableItem>
-        <TableItem textVariant="bold" customBorder="border-none">
-          <p>Total Investment</p>
-          <p>$84,900.00</p>
-        </TableItem>
+        <CustomExpander>
+          <ClickableExpanderArea>
+            <TableItem textVariant="bold" customBorder="border-none">
+              <ExpanderFaceContent>Total Investment</ExpanderFaceContent>
+              <p>$84,900.00</p>
+            </TableItem>
+          </ClickableExpanderArea>
+          <ExpanderBodyContent>
+            <TableItem textVariant="body-xs">
+              <p>Underlying Asset Price</p>
+              <p>$84,000.00</p>
+            </TableItem>
+            <TableItem textVariant="body-xs">
+              <p>Initial Maintenance Reserve</p>
+              <p>$900.00</p>
+            </TableItem>
+          </ExpanderBodyContent>
+        </CustomExpander>
         <TableItem textVariant="bold" isLast>
           <div className="flex items-center gap-x-1">
             Expected Income <InfoTooltip content={'Expected Income '} />

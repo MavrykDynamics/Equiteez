@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { FC } from 'react';
 
-type TextVariant = 'body' | 'bold';
+type TextVariant = 'body' | 'bold' | 'body-xs';
 
 type TableItemProps = {
   isLast?: boolean;
@@ -11,6 +11,7 @@ type TableItemProps = {
 
 const textVariants = {
   body: 'text-body',
+  'body-xs': 'text-body-xs',
   bold: 'text-buttons',
 };
 
