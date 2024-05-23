@@ -26,11 +26,11 @@ export const PropertyFinanceTab = () => {
           <p>Net Rent / Month</p>
           <p>$734.00</p>
         </TableItem>
-        <TableItem textVariant="bold">
+        <TableItem textVariant="bold" customBorder="border-none">
           <p>Net Rent / Year</p>
           <p>$8,808.00</p>
         </TableItem>
-        <TableItem textVariant="bold">
+        <TableItem textVariant="bold" customBorder="border-none">
           <p>Total Investment</p>
           <p>$84,900.00</p>
         </TableItem>
