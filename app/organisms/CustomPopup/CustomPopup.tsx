@@ -4,8 +4,16 @@ import Modal from 'react-modal';
 
 import clsx from 'clsx';
 
-import styles from './custompopup.module.css';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
+
+import './animations.css';
+
+const popupAnimation = {
+  left: 'slidePopupLeft',
+  right: 'slidePopupRight',
+  center: 'zoomPopup',
+};
+
 export type CustomPopupContentPositionType = 'left' | 'center' | 'right';
 
 export type CustomPopupProps = Modal.Props &
@@ -42,7 +50,7 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
         contentPosition === 'right' && 'flex items-stretch justify-end',
         overlayClassName
       )}
-      portalClassName={clsx(styles.slideFromBottom, portalClassName)}
+      portalClassName={clsx(portalClassName, popupAnimation[contentPosition])}
       preventScroll
       onAfterOpen={() => {
         document.body.classList.add('overscroll-y-none');
