@@ -113,7 +113,7 @@ export default {
         none: 'none',
         all: 'all',
         DEFAULT:
-          'background-color, border-color, color, fill, stroke, opacity, box-shadow, transform',
+          'background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, max-height',
         colors: 'background-color, border-color, color, fill, stroke',
         opacity: 'opacity',
         shadow: 'box-shadow',

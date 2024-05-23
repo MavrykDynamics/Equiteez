@@ -57,16 +57,16 @@ export const PropertyDetailsTab = () => {
           <p>Long-Term</p>
         </TableItem>
         <TableItem>
-          <p className="flex items-center gap-x-1">
+          <div className="flex items-center gap-x-1">
             Rented? <InfoTooltip content={'Rented'} />
-          </p>
+          </div>
           <p>Fully Rented</p>
         </TableItem>
         <TableItem>
-          <p className="flex items-center gap-x-1">
+          <div className="flex items-center gap-x-1">
             Rent Subsidy?
             <InfoTooltip content={'Rent Subsidy?'} />
-          </p>
+          </div>
           <p>No</p>
         </TableItem>
         <TableItem>

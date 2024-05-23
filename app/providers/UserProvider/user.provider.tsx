@@ -113,7 +113,7 @@ export const UserProvider = ({ children }: Props) => {
 
   // effect to perform restoring user from localStorage
   useEffect(() => {
-    if (canRestoreUser) connect();
+    // if (canRestoreUser) connect();
   }, [canRestoreUser, connect]);
 
   const providerValue = useMemo(() => {

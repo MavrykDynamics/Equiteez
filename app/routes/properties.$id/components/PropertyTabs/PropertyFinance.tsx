@@ -4,6 +4,7 @@ import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 import { ColoredCard } from '~/atoms/ColoredCard';
 import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { CustomExpander } from '~/organisms/CustomExpander/CustomExpander';
 
 export const PropertyFinanceTab = () => {
   return (
@@ -18,10 +19,24 @@ export const PropertyFinanceTab = () => {
           <p>Gross Rent / Month</p>
           <p>$1,180.00</p>
         </TableItem>
-        <TableItem>
-          <p>Monthly Costs</p>
-          <p>-$446.00</p>
-        </TableItem>
+        <CustomExpander
+          expanderFaceContent={
+            <TableItem>
+              <p>Monthly Costs</p>
+              <p>-$446.00</p>
+            </TableItem>
+          }
+        >
+          <TableItem>
+            <p>Net ReProperty Management (8.00%)</p>
+            <p>-$94.40</p>
+          </TableItem>
+          <TableItem>
+            <p>Equiteez Platform (2.00%)</p>
+            <p>-$23.60</p>
+          </TableItem>
+        </CustomExpander>
+
         <TableItem customBorder="border-b border-active-tab">
           <p>Net Rent / Month</p>
           <p>$734.00</p>
@@ -35,9 +50,9 @@ export const PropertyFinanceTab = () => {
           <p>$84,900.00</p>
         </TableItem>
         <TableItem textVariant="bold" isLast>
-          <p className="flex items-center gap-x-1">
+          <div className="flex items-center gap-x-1">
             Expected Income <InfoTooltip content={'Expected Income '} />
-          </p>
+          </div>
           <p>10.37%</p>
         </TableItem>
       </Table>
