@@ -1,7 +1,10 @@
-import { useCallback, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { Table } from '~/atoms/Table/Table';
+import { faucetContract } from '~/consts/contracts';
+import { useStatusFlag } from '~/hooks/use-status-flag';
+import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 
 export const SecondaryPriceBlock = () => {
@@ -56,11 +59,61 @@ export const SecondaryPriceBlock = () => {
   );
 };
 
-const BuyPopupContent = () => {
+const BuyPopupContent: FC = () => {
+  const { dapp } = useWalletContext();
+  const {
+    setPending,
+    setConfirming,
+    setSuccess,
+    setIdle,
+    setError,
+    isLoading,
+    status,
+  } = useStatusFlag();
+  const handleBuy = useCallback(async () => {
+    setPending();
+
+    const tezos = dapp?.tezos();
+
+    // No Toolkit
+    if (!tezos) {
+      setIdle();
+      return;
+    }
+
+    try {
+      let batch = tezos.wallet.batch([]);
+
+      const faucet = await tezos.wallet.at(faucetContract);
+
+      const action = faucet.methodsObject['default']().toTransferParams();
+
+      batch = batch.withTransfer(action);
+
+      console.log('Batch');
+      console.log(batch);
+
+      const batchOp = await batch.send();
+
+      setConfirming();
+
+      await batchOp.confirmation();
+
+      setSuccess();
+    } catch (e: unknown) {
+      console.log(e);
+      setError();
+    }
+  }, [dapp, setConfirming, setError, setIdle, setPending, setSuccess]);
+
   return (
     <div className="flex flex-col justify-between h-full">
       <div className="flex-1">Estate name</div>
-      <Button>Buy</Button>
+      <Button disabled={isLoading} onClick={handleBuy}>
+        {status === 'pending' && 'Pending...'}
+        {status === 'confirming' && 'Confirming...'}
+        {status === 'idle' && 'Buy'}
+      </Button>
     </div>
   );
 };
