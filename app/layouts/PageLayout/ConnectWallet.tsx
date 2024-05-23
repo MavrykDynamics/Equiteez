@@ -12,7 +12,9 @@ export const ConnectWallet = () => {
     </div>
   ) : (
     <Button variant="outline" size="outline" onClick={connect}>
-      Connect Wallet
+      <span className="text-body-xs leading-5 font-semibold">
+        Connect Wallet
+      </span>
     </Button>
   );
 };

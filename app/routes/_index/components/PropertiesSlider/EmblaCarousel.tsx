@@ -97,7 +97,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                         </p>
                       </div>
 
-                      <div className="flex flex-col items-start">
+                      <div className="flex flex-col items-end">
                         <h4 className="text-white text-slider-headline truncate max-w-[300px]">
                           {estate.details.APY}%
                         </h4>

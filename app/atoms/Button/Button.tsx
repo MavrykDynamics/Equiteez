@@ -23,7 +23,7 @@ const variants = {
   green: 'text-content bg-green-main hover:bg-green-secondary',
   white: 'text-content bg-background hover:bg-tabs',
   outline:
-    'text-contsnt bg-background border-2 border-green-main hover:bg-green-opacity',
+    'text-content bg-background border-2 border-green-main hover:bg-green-opacity',
 };
 
 export const Button: FC<ButtonProps> = ({
