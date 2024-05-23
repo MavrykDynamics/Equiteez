@@ -8,10 +8,17 @@ import DocBg from 'app/a11y/DocBg';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
-const PageLayout: FC<PropsWithChildren> = ({ children }) => {
+type PageLayoutProps = {
+  bg?: string;
+} & PropsWithChildren;
+
+const PageLayout: FC<PageLayoutProps> = ({
+  children,
+  bg = 'bg-background',
+}) => {
   return (
     <div className={clsx('min-h-screen')}>
-      <DocBg bgClassName={clsx('bg-background-tertiary')} />
+      <DocBg bgClassName={clsx(bg)} />
 
       <div className={clsx('relative')}>
         <Header />

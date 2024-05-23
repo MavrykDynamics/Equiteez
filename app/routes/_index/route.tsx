@@ -23,7 +23,7 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <PageLayout>
+    <PageLayout bg="bg-background-tertiary">
       <BannerSection />
       <Spacer />
       <FinanceSection />
