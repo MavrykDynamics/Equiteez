@@ -61,13 +61,13 @@ export const PropertyFinanceTab = () => {
           </ExpanderBodyContent>
         </CustomExpander>
 
-        <TableItem customBorder="border-b border-active-tab mt-2">
+        <TableItem customBorder="border-b border-active-tab">
           <p>Net Rent / Month</p>
           <p>$734.00</p>
         </TableItem>
         <TableItem
           textVariant="bold"
-          customBorder="border-none"
+          customBorder="border-none mt-2"
           customPadding={8}
         >
           <p>Net Rent / Year</p>
