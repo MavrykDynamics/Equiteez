@@ -112,7 +112,7 @@ const BuyPopupContent: FC = () => {
       <Button disabled={isLoading} onClick={handleBuy}>
         {status === 'pending' && 'Pending...'}
         {status === 'confirming' && 'Confirming...'}
-        {status === 'idle' && 'Buy'}
+        {status === 'idle' || (status === 'success' && 'Buy')}
       </Button>
     </div>
   );
