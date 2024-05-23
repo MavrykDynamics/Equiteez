@@ -64,7 +64,8 @@ export const PropertyDetailsTab = () => {
         </TableItem>
         <TableItem>
           <p className="flex items-center gap-x-1">
-            Rent Subsidy?? <InfoTooltip content={'Rent Subsidy??'} />
+            Rent Subsidy?
+            <InfoTooltip content={'Rent Subsidy?'} />
           </p>
           <p>No</p>
         </TableItem>
