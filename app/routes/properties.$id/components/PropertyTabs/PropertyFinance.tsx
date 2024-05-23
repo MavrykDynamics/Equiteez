@@ -3,6 +3,7 @@ import { Table } from '~/atoms/Table/Table';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 import { ColoredCard } from '~/atoms/ColoredCard';
+import { InfoTooltip } from '~/organisms/InfoTooltip';
 
 export const PropertyFinanceTab = () => {
   return (
@@ -34,7 +35,9 @@ export const PropertyFinanceTab = () => {
           <p>$84,900.00</p>
         </TableItem>
         <TableItem textVariant="bold" isLast>
-          <p>Expected Income</p>
+          <p className="flex items-center gap-x-1">
+            Expected Income <InfoTooltip content={'Expected Income '} />
+          </p>
           <p>10.37%</p>
         </TableItem>
       </Table>

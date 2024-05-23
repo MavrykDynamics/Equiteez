@@ -18,6 +18,7 @@ import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
 // styles
 import styles from './propertyTabs.module.css';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
+import { InfoTooltip } from '~/organisms/InfoTooltip';
 
 export const PropertyDetailsTab = () => {
   return (
@@ -56,11 +57,15 @@ export const PropertyDetailsTab = () => {
           <p>Long-Term</p>
         </TableItem>
         <TableItem>
-          <p>Rented?</p>
+          <p className="flex items-center gap-x-1">
+            Rented? <InfoTooltip content={'Rented'} />
+          </p>
           <p>Fully Rented</p>
         </TableItem>
         <TableItem>
-          <p>Rent Subsidy??</p>
+          <p className="flex items-center gap-x-1">
+            Rent Subsidy?? <InfoTooltip content={'Rent Subsidy??'} />
+          </p>
           <p>No</p>
         </TableItem>
         <TableItem>
