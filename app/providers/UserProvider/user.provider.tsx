@@ -25,6 +25,7 @@ import {
 import { useWalletContext } from '../WalletProvider/wallet.provider';
 import { getItemFromStorage } from '~/utils/local-storage';
 import { useAppContext } from '../AppProvider/AppProvider';
+import { isNullOrUndefined } from '~/utils/is-empty';
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -53,7 +54,9 @@ export const UserProvider = ({ children }: Props) => {
   const hasUserInLocalStorage = useMemo(
     () =>
       IS_WEB
-        ? getItemFromStorage<string>('beacon:active-account') !== null
+        ? !isNullOrUndefined(
+            getItemFromStorage<string>('beacon:active-account')
+          )
         : false,
     [IS_WEB]
   );
@@ -113,7 +116,7 @@ export const UserProvider = ({ children }: Props) => {
 
   // effect to perform restoring user from localStorage
   useEffect(() => {
-    // if (canRestoreUser) connect();
+    if (canRestoreUser) connect();
   }, [canRestoreUser, connect]);
 
   const providerValue = useMemo(() => {

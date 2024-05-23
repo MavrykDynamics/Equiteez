@@ -18,7 +18,8 @@ import {
   fetchTzktUserBalances,
   openTzktWebSocket,
 } from '../helpers/userBalances.helpers';
-import { dappClient } from '~/providers/WalletProvider/WalletCore';
+
+import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
 
 /**
  * hook to handle CRUD with user (connect, changeWallet, signOut)
@@ -85,7 +86,7 @@ export const useUserApi = ({
 
       if (isUsingLoader) setIsTzktBalancesLoading(false);
     },
-    []
+    [setIsTzktBalancesLoading, setUserCtxState, setUserTzktTokens]
   );
 
   /**
@@ -196,7 +197,7 @@ export const useUserApi = ({
       //   TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title']
       // );
     }
-  }, []);
+  }, [DAPP_INSTANCE, setTzktSocket, setUserCtxState, tzktSocket]);
 
   /**
    * change user's wallet for DAPP, load new data for him and reopen socket for him
@@ -240,9 +241,14 @@ export const useUserApi = ({
       // );
     }
   }, [
-    updateUserTzktTokenBalances,
-    loadInitialTzktTokensForNewlyConnectedUser,
+    DAPP_INSTANCE,
     userCtxState.userAddress,
+    setUserLoading,
+    setUserCtxState,
+    loadInitialTzktTokensForNewlyConnectedUser,
+    tzktSocket,
+    setTzktSocket,
+    updateUserTzktTokenBalances,
     handleDisconnect,
     handleOnReconnected,
   ]);
