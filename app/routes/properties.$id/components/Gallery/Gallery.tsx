@@ -32,9 +32,9 @@ const ShowAllPhotosBtn: FC = () => {
   return (
     <button
       className={clsx(
-        'bg-background text-content py-[10px] px-4',
+        'bg-background text-content text-body-xs py-[10px] px-4',
         'flex items-center gap-x-2',
-        'rounded-[5px]',
+        'rounded-[5px] font-semibold',
         'absolute right-[13px] bottom-[15px] z-10'
       )}
     >

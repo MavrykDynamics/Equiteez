@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { Button } from '~/atoms/Button';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { FC, useCallback, useState } from 'react';
+import { InfoTooltip } from '~/organisms/InfoTooltip';
 
 export const PrimaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,15 +28,33 @@ export const PrimaryPriceBlock = () => {
           <p>$45.00</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
-          <p>Projected Annual Return </p>
+          <div className="flex items-center gap-x-1">
+            Projected Annual Return
+            <InfoTooltip
+              content=" Projected Annual Return InfoTooltip"
+              className="w-6 h-6"
+            />
+          </div>
           <p>11.88%</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
-          <p>Rental Yield</p>
+          <div className="flex items-center gap-x-1">
+            Projected Rental Yield
+            <InfoTooltip
+              content=" Projected Rental Yield"
+              className="w-6 h-6"
+            />
+          </div>
           <p>8.88%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
-          <p>Rental Yield</p>
+          <div className="flex items-center gap-x-1">
+            Rental Yield
+            <InfoTooltip
+              content=" Projected Rental Yield"
+              className="w-6 h-6"
+            />
+          </div>
           <p>4.83%</p>
         </div>
         <Divider className="my-4" />

@@ -37,7 +37,7 @@ export const ThumbCard: FC<ThumbCardProps> = ({
             <p className="text-white text-body-xs">{address}</p>
           </div>
 
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-end">
             <h4 className="text-white text-slider-headline truncate max-w-[300px]">
               {APY}%
             </h4>

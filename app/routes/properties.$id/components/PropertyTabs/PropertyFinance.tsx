@@ -61,17 +61,25 @@ export const PropertyFinanceTab = () => {
           </ExpanderBodyContent>
         </CustomExpander>
 
-        <TableItem customBorder="border-b border-active-tab">
+        <TableItem customBorder="border-b border-active-tab mt-2">
           <p>Net Rent / Month</p>
           <p>$734.00</p>
         </TableItem>
-        <TableItem textVariant="bold" customBorder="border-none">
+        <TableItem
+          textVariant="bold"
+          customBorder="border-none"
+          customPadding={8}
+        >
           <p>Net Rent / Year</p>
           <p>$8,808.00</p>
         </TableItem>
         <CustomExpander>
           <ClickableExpanderArea>
-            <TableItem textVariant="bold" customBorder="border-none">
+            <TableItem
+              customPadding={8}
+              textVariant="bold"
+              customBorder="border-none"
+            >
               <ExpanderFaceContent>Total Investment</ExpanderFaceContent>
               <p>$84,900.00</p>
             </TableItem>
@@ -87,7 +95,7 @@ export const PropertyFinanceTab = () => {
             </TableItem>
           </ExpanderBodyContent>
         </CustomExpander>
-        <TableItem textVariant="bold" isLast>
+        <TableItem textVariant="bold" customPadding={8} isLast>
           <div className="flex items-center gap-x-1">
             Expected Income <InfoTooltip content={'Expected Income '} />
           </div>
