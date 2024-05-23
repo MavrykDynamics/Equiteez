@@ -1,8 +1,20 @@
+import { useCallback, useState } from 'react';
 import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { Table } from '~/atoms/Table/Table';
+import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 
 export const SecondaryPriceBlock = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleRequestClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleOpen = useCallback(() => {
+    setIsOpen(true);
+  }, []);
+
   return (
     <section className="self-start">
       <Table>
@@ -27,19 +39,28 @@ export const SecondaryPriceBlock = () => {
           <p>Total Liquidity</p>
           <p>$100,000.00</p>
         </div>
-        <Button>Buy</Button>
+        <Button onClick={handleOpen}>Buy</Button>
         <Button variant="outline" className="mt-3">
           Sell
         </Button>
       </Table>
 
-      {/* <PopupWithIcon
+      <PopupWithIcon
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
-        contentPosition={'center'}
+        contentPosition={'right'}
       >
-        <BuyPopupContent handleCancel={handleRequestClose} />
-      </PopupWithIcon> */}
+        <BuyPopupContent />
+      </PopupWithIcon>
     </section>
+  );
+};
+
+const BuyPopupContent = () => {
+  return (
+    <div className="flex flex-col justify-between h-full">
+      <div className="flex-1">Estate name</div>
+      <Button>Buy</Button>
+    </div>
   );
 };
