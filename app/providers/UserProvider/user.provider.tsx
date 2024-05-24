@@ -62,9 +62,7 @@ export const UserProvider = ({ children }: Props) => {
   );
 
   const [isTzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
-  const [isUserLoading, setUserLoading] = useState(
-    hasUserInLocalStorage && !isUserRestored.current
-  );
+  const [isUserLoading, setUserLoading] = useState(true);
 
   /**
    * we can start restoring user from localStorage if:
@@ -119,8 +117,17 @@ export const UserProvider = ({ children }: Props) => {
     if (canRestoreUser) connect();
   }, [canRestoreUser, connect]);
 
+  useEffect(() => {
+    if (canRestoreUser && userCtxState.userAddress) {
+      setUserLoading(false);
+    } else if (!hasUserInLocalStorage) {
+      setUserLoading(false);
+    }
+  }, [canRestoreUser, hasUserInLocalStorage, userCtxState.userAddress]);
+
   const providerValue = useMemo(() => {
-    const isLoading = isUserLoading || isTzktBalancesLoading;
+    const isLoading = isUserLoading;
+    // const isLoading = isUserLoading || isTzktBalancesLoading;
 
     /**
      * set isUserRestored to true, when:
@@ -152,7 +159,6 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [
     isUserLoading,
-    isTzktBalancesLoading,
     userCtxState,
     hasUserInLocalStorage,
     userTzktTokens.userAddress,
