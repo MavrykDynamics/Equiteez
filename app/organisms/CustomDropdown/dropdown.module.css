@@ -1,0 +1,10 @@
+.dropdownData {
+  position: absolute;
+  max-height: 0px;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.dropdownData.expanded {
+  max-height: 700px;
+}
