@@ -48,6 +48,17 @@ export function dappClient() {
     return loadWallet();
   }
 
+  async function isLoggedIn() {
+    try {
+      const wallet = getDAppClientWallet();
+      const pkh    = await wallet.getPKH();
+      console.log(pkh)
+      return !!pkh;
+    } catch (Error) {}
+    
+    return false;
+  }
+
   async function connectAccount() {
     try {
       const client = getDAppClient();
@@ -132,6 +143,7 @@ export function dappClient() {
   }
 
   return {
+    isLoggedIn,
     loadWallet,
     getDAppClient,
     connectAccount,

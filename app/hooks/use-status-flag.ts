@@ -35,7 +35,7 @@ export const useStatusFlag = () => {
   );
 
   const setIdle = useCallback(
-    () => handleStatusUpdate('success'),
+    () => handleStatusUpdate('idle'),
     [handleStatusUpdate]
   );
 

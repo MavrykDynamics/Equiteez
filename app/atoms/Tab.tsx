@@ -4,6 +4,7 @@ import { FC } from 'react';
 export type TabType = {
   id: string;
   label: string;
+  grow?: boolean;
   disabled?: boolean;
   handleClick: (id: string) => void;
 };
@@ -16,6 +17,7 @@ export const Tab: FC<TabProps> = ({
   active,
   disabled,
   label,
+  grow,
   id,
   handleClick,
 }) => {
@@ -28,6 +30,7 @@ export const Tab: FC<TabProps> = ({
         'px-4 py-3 text-content text-buttons cursor-pointer rounded-lg outline-none',
         'flex justify-center items-center min-w-[115px]',
         active ? 'bg-tabs' : 'bg-inactive-tab',
+        grow ? 'flex-grow' : '',
         disabled && 'opacity-50 pointer-events-none'
       )}
     >

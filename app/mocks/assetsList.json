@@ -1,0 +1,50 @@
+[
+    {
+        "name": "The Cove",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "Glenncrest",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "BeatBox",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "Vanzantrest",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "Wyndhurt",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "Northridge",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "Ross",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    },
+    {
+        "name": "Frances",
+        "price_usdt_1": "50.00",
+        "price_usdt_2": "50.00",
+        "change": "+5.05%"
+    }
+]

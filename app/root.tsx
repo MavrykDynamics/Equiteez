@@ -12,12 +12,14 @@ import ErrorBoundary from './templates/ErrorBoundary';
 
 // global styles
 import stylesheet from '~/index.css?url';
+import extendCSS from '~/extend.css?url';
 import { AppProvider } from './providers/AppProvider/AppProvider';
 import { WalletProvider } from './providers/WalletProvider/wallet.provider';
 import { UserProvider } from './providers/UserProvider/user.provider';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
+  { rel: 'stylesheet', href: extendCSS },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

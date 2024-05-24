@@ -19,7 +19,7 @@ const HeaderLinksBlock = () => {
       <Link to="/" className="text-body-xs text-content">
         New Listings
       </Link>
-      <Link to="/" className="text-body-xs text-content">
+      <Link to="/exchange" className="text-body-xs text-content">
         Marketplace
       </Link>
 
