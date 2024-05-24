@@ -20,6 +20,7 @@ import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
 import styles from './propertyTabs.module.css';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { CustomSuspense } from '~/templates/CustomSuspense';
 
 export const PropertyDetailsTab = () => {
   return (
@@ -183,22 +184,18 @@ const PropertyDetailsMap = () => {
             <DistanceBlock type="bicycle" />
           </div>
         </div>
-        <div>
-          {isLoaded && IS_WEB ? (
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={center}
-              zoom={10}
-              onLoad={onLoad}
-              onUnmount={onUnmount}
-            >
-              {/* Child components, such as markers, info windows, etc. */}
-              <></>
-            </GoogleMap>
-          ) : (
-            <>Loading map...</>
-          )}
-        </div>
+        <CustomSuspense loading={!isLoaded || !IS_WEB}>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={center}
+            zoom={10}
+            onLoad={onLoad}
+            onUnmount={onUnmount}
+          >
+            {/* Child components, such as markers, info windows, etc. */}
+            <></>
+          </GoogleMap>
+        </CustomSuspense>
       </div>
     </section>
   );
