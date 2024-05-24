@@ -42,6 +42,10 @@ export const CustomDropdown: FC<PropsWithChildren> = ({ children }) => {
     setOpened(!opened);
   }, [opened]);
 
+  const closeDropdown = useCallback(() => {
+    setOpened(false);
+  }, []);
+
   const memoizedExpanderValue = useMemo(
     () => ({
       toggleOpened,
@@ -52,7 +56,7 @@ export const CustomDropdown: FC<PropsWithChildren> = ({ children }) => {
     [toggleOpened, opened, faceContentDimensions]
   );
 
-  const ref = useOutsideClick(toggleOpened);
+  const ref = useOutsideClick(closeDropdown, !opened);
 
   return (
     <dropdownContext.Provider value={memoizedExpanderValue}>
@@ -122,11 +126,14 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
         position === 'center' && '-translate-x-1/2 left-1/2',
         position === 'right' && 'right-0',
         'transition duration-300 ease-in-out',
+
         styles.dropdownData,
-        opened && styles.expanded
+        opened && styles.opened
       )}
     >
-      {children}
+      <div className="border border-divider overflow-hidden rounded-xl bg-background">
+        {children}
+      </div>
     </div>
   );
 };

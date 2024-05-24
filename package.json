@@ -15,6 +15,9 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@dicebear/avatars": "^4.2.5",
+    "@dicebear/avatars-bottts-sprites": "^4.2.5",
+    "@dicebear/avatars-jdenticon-sprites": "^4.2.5",
     "@mavrykdynamics/beacon-dapp": "^4.2.2",
     "@mavrykdynamics/taquito": "^19.2.3",
     "@mavrykdynamics/taquito-beacon-wallet": "^19.2.3",

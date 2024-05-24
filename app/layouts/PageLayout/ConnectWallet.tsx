@@ -1,10 +1,12 @@
 import { Button } from '~/atoms/Button';
+import { HashShortView } from '~/atoms/HashShortView';
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
 } from '~/organisms/CustomDropdown/CustomDropdown';
+import { IdentIcon } from '~/organisms/IdenIcon';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 
 export const ConnectWallet = () => {
@@ -13,17 +15,22 @@ export const ConnectWallet = () => {
     <div className="flex items-center gap-x-2">
       <CustomDropdown>
         <ClickableDropdownArea>
-          <DropdownFaceContent>{userAddress}</DropdownFaceContent>
+          <DropdownFaceContent>
+            <div className="flex items-center">
+              <IdentIcon hash={userAddress} size={32} className="mr-2" />
+              <HashShortView hash={userAddress} />
+            </div>
+          </DropdownFaceContent>
         </ClickableDropdownArea>
         <DropdownBodyContent position="right" topMargin={6} customWidth={203}>
-          <Button variant="outline" size="outline" onClick={signOut}>
-            Disconnect wallet
-          </Button>
+          <button
+            className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
+            onClick={signOut}
+          >
+            Disconnect
+          </button>
         </DropdownBodyContent>
       </CustomDropdown>
-      <Button variant="outline" size="outline" onClick={signOut}>
-        Disconnect wallet
-      </Button>
     </div>
   ) : (
     <Button variant="outline" size="outline" onClick={connect}>

@@ -5,6 +5,6 @@
   z-index: 100;
 }
 
-.dropdownData.expanded {
+.dropdownData.opened {
   max-height: 700px;
 }
