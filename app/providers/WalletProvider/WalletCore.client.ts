@@ -51,11 +51,13 @@ export function dappClient() {
   async function isLoggedIn() {
     try {
       const wallet = getDAppClientWallet();
-      const pkh    = await wallet.getPKH();
-      console.log(pkh)
+      const pkh = await wallet.getPKH();
+      console.log(pkh);
       return !!pkh;
-    } catch (Error) {}
-    
+    } catch (e) {
+      throw new Error("Couldn't get wallet acco9unt pkh");
+    }
+
     return false;
   }
 
