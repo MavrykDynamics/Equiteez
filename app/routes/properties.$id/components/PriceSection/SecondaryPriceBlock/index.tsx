@@ -1,0 +1,1 @@
+export { SecondaryPriceBlock } from './SecondaryPriceBlock';

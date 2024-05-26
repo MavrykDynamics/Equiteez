@@ -1,11 +1,15 @@
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
+import { TabType } from '~/atoms/Tab';
 import { Table } from '~/atoms/Table/Table';
 import { faucetContract } from '~/consts/contracts';
 import { useStatusFlag } from '~/hooks/use-status-flag';
+import { TabSwitcher } from '~/organisms/TabSwitcher';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
+import { PriceBuyTab } from './PriceBuyTab';
+import { PriceOTCBuyTab } from './PriceOTCBuyTab';
 
 export const SecondaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,6 +74,7 @@ const BuyPopupContent: FC = () => {
     isLoading,
     status,
   } = useStatusFlag();
+
   const handleBuy = useCallback(async () => {
     setPending();
 
@@ -106,14 +111,60 @@ const BuyPopupContent: FC = () => {
     }
   }, [dapp, setConfirming, setError, setIdle, setPending, setSuccess]);
 
+  const [activetabId, setAvtiveTabId] = useState('buy');
+
+  const handleTabClick = useCallback((id: string) => {
+    setAvtiveTabId(id);
+  }, []);
+
+  const tabs: TabType[] = useMemo(
+    () => [
+      {
+        id: 'buy',
+        label: 'Buy',
+        handleClick: handleTabClick,
+      },
+      {
+        id: 'otcBuy',
+        label: 'OTC Buy',
+        handleClick: handleTabClick,
+      },
+    ],
+    [handleTabClick]
+  );
+
   return (
-    <div className="flex flex-col justify-between h-full">
-      <div className="flex-1">Estate name</div>
+    <div className="flex flex-col justify-between text-content h-full">
+      <div className="flex-1">
+        <h3 className="text-card-headline">The Nomad</h3>
+        <p className="text-body-xs mb-6">
+          15995 Glenncrest Lane Northwest, Harvest, AL 35749
+        </p>
+
+        <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+        <BuyTab tabId={activetabId} />
+      </div>
       <Button disabled={isLoading} onClick={handleBuy}>
         {status === 'pending' && 'Pending...'}
         {status === 'confirming' && 'Confirming...'}
-        {status === 'idle' || (status === 'success' && 'Buy')}
+        {(status === 'idle' || status === 'success') && 'Buy'}
       </Button>
     </div>
   );
+};
+
+type BuyTabKey = keyof typeof buyTabsComponents;
+
+type BuyTabProps = {
+  tabId: string;
+};
+
+const BuyTab: FC<BuyTabProps> = ({ tabId }) => {
+  const Component = buyTabsComponents[tabId as BuyTabKey];
+  return Component;
+};
+
+const buyTabsComponents = {
+  buy: <PriceBuyTab />,
+  otcBuy: <PriceOTCBuyTab />,
 };
