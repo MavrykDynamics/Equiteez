@@ -68,8 +68,12 @@ export const CustomDropdown: FC<PropsWithChildren> = ({ children }) => {
 };
 
 export const DropdownFaceContent: FC<
-  PropsWithChildren & { iconClassName?: string }
-> = ({ children, iconClassName = 'w-4 h-4 text-content stroke-current' }) => {
+  PropsWithChildren & { iconClassName?: string; className?: string }
+> = ({
+  children,
+  iconClassName = 'w-4 h-4 text-content stroke-current',
+  className,
+}) => {
   const { IS_WEB } = useAppContext();
   const { opened, setFaceContentDimensions } = useDropdownContext();
 
@@ -85,7 +89,11 @@ export const DropdownFaceContent: FC<
   }, [IS_WEB, setFaceContentDimensions]);
 
   return (
-    <div ref={ref} className="flex items-center gap-x-3" role="presentation">
+    <div
+      ref={ref}
+      className={clsx('flex items-center gap-x-3', className)}
+      role="presentation"
+    >
       {children}
       <ArrowDown
         className={clsx(

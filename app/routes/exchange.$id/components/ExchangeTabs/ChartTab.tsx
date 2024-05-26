@@ -1,65 +1,90 @@
-import { FC, useCallback, useEffect, useState } from 'react';
-import clsx from 'clsx';
+import { useEffect, useMemo } from 'react';
 import chart from '~/mocks/chart';
-import { ApexOptions } from 'apexcharts'
+import { ApexOptions } from 'apexcharts';
 import Expand from '~/icons/expand.svg?react';
 import Settings from '~/icons/star.svg?react';
 
+import { LoadableComponent } from '~/templates/CustomSuspense';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
+import { useClientLibData } from '~/hooks/use-client-lib';
+
+import OriginalApexCharts from 'react-apexcharts';
+
 export const ChartTab = () => {
-  
-  const [ChartModule, setClientComponent] = useState<any>(null);
+  const { IS_WEB } = useAppContext();
+  const {
+    clientModule: ChartModule,
+    loading,
+    setClientModule,
+    setClientModuleError,
+  } = useClientLibData<typeof OriginalApexCharts>();
 
-  // Only load charts on clinet side
   useEffect(() => {
-    import('react-apexcharts')
-      .then((module) => setClientComponent(() => module.default))
-      .catch((error) => {
-        console.error('Error loading component:', error);
-      });
-  }, []);
-
-  if (!ChartModule) {
-    return <div>Loading...</div>; // Render this on the server side
-  }
-
+    if (IS_WEB) {
+      import('react-apexcharts')
+        .then((module) => setClientModule(() => module.default))
+        .catch((error) => {
+          console.error('Error loading module:', error);
+          setClientModuleError(error);
+        });
+    }
+  }, [setClientModuleError, setClientModule, IS_WEB]);
   const mockChart = chart();
 
-  const opts : ApexOptions = {
-    chart: {
-      type: 'candlestick',
-      height: 400,
-      zoom: {
-        enabled: false,
+  const opts: ApexOptions = useMemo(
+    () => ({
+      chart: {
+        type: 'candlestick',
+        height: 400,
+        zoom: {
+          enabled: false,
+        },
+        toolbar: {
+          show: false,
+        },
       },
-      toolbar: {
-        show: false
-      }
-    },
-    title: {
-      align: 'left'
-    },
-    xaxis: {
-      type: 'datetime'
-    },
-    yaxis: {
-      tooltip: {
-        enabled: true
+      title: {
+        align: 'left',
       },
-      opposite: true,
-      labels: {
-        formatter: function(value) {
-          return value.toFixed(4);
-        }
-      }
-    }
-  };
+      xaxis: {
+        type: 'datetime',
+      },
+      yaxis: {
+        tooltip: {
+          enabled: true,
+        },
+        opposite: true,
+        labels: {
+          formatter: function (value) {
+            return value.toFixed(4);
+          },
+        },
+      },
+    }),
+    []
+  );
 
-  const state = {
-    series: [{
-      data: mockChart
-    }],
-    options: opts
-  };
+  const state = useMemo(
+    () => ({
+      series: [
+        {
+          data: mockChart,
+        },
+      ],
+      options: opts,
+    }),
+    [mockChart, opts]
+  );
+
+  const chartModuleProps = useMemo(
+    () => ({
+      options: state.options,
+      series: state.series,
+      type: 'candlestick',
+      height: 350,
+    }),
+    [state.options, state.series]
+  );
 
   return (
     <div>
@@ -79,7 +104,11 @@ export const ChartTab = () => {
         </div>
       </div>
       <div id="chart">
-        <ChartModule options={state.options} series={state.series} type="candlestick" height={350} />
+        <LoadableComponent
+          loading={loading}
+          Component={ChartModule}
+          componentProps={chartModuleProps}
+        />
       </div>
       <div id="html-dist"></div>
     </div>

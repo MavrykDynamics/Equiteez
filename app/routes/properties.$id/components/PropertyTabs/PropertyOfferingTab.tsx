@@ -14,9 +14,9 @@ import { InfoTooltip } from '~/organisms/InfoTooltip';
 export const PropertyOfferingTab = () => {
   return (
     <div>
-      <h3 className="mb-2">
+      <div className="mb-2">
         <TableHeader>Offering</TableHeader>
-      </h3>
+      </div>
       <Table>
         <TableItem>
           <p>Offering Date</p>
@@ -44,9 +44,9 @@ export const PropertyOfferingTab = () => {
         </TableItem>
       </Table>
       <div className="mb-11" />
-      <h3 className="mb-2">
+      <div className="mb-2">
         <TableHeader>Valuation</TableHeader>
-      </h3>
+      </div>
       <Table>
         <TableHeader>
           <div className="flex items-center justify-between">

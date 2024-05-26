@@ -17,6 +17,7 @@ import {
 } from '../../consts';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { PropertyOfferingTab } from './PropertyOfferingTab';
+import { PropertyTradingHistoryTab } from './PropertyTradingHistoryTab';
 
 export const meta: MetaFunction = () => {
   return [
@@ -125,6 +126,6 @@ const propertyTabsComponents = {
   [PROPERTY_FINANCIALS_TAB]: <PropertyFinanceTab />,
   [PROPERTY_BLOCKCHAIN_TAB]: <PropertyBlockchainTab />,
   [PROPERTY_OFFERING_TAB]: <PropertyOfferingTab />,
-  [PROPERTY_TRDADING_HISTORY_TAB]: <PropertyBlockchainTab />,
+  [PROPERTY_TRDADING_HISTORY_TAB]: <PropertyTradingHistoryTab />,
   [PROPERTY_OTC_TAB]: <PropertyBlockchainTab />,
 };
