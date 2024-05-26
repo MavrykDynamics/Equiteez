@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import React, { FC } from 'react';
 import LoadingSvg from 'app/icons/small-spinner.svg?react';
 
-type ButtonSize = 'small' | 'default' | 'large' | 'outline';
+type ButtonSize = 'small' | 'default' | 'large' | 'outline' | 'custom';
 type Variant = 'green' | 'white' | 'outline';
 
 type ButtonProps = {
@@ -17,6 +17,7 @@ const btnSizeClassNames = {
   default: 'px-6 py-3',
   large: 'p-x-8 py-4',
   outline: 'px-6 py-[10px]',
+  custom: '',
 };
 
 const variants = {
