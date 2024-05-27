@@ -216,3 +216,7 @@ h6,
 p {
   letter-spacing: normal;
 }
+
+.overflowYHidden {
+  overflow-y: hidden;
+}

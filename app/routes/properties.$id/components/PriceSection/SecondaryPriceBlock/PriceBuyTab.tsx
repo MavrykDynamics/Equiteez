@@ -45,12 +45,11 @@ export const PriceBuyTab = () => {
       </div>
 
       <InputNumber
-        handleValue={setPrice}
         label={'Total'}
         value={price && amount ? Number(price) + Number(amount) : 0}
         placeholder={'0'}
         valueText="USDT"
-        name={'price'}
+        name={'total'}
         className="text-body-xs"
         disabled
       />

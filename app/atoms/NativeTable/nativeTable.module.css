@@ -1,10 +1,7 @@
 .nativeTableHeader {
-  display: grid;
   grid-template-columns: repeat(4, var(--slot-width)) auto;
-  @apply pb-2;
 }
 
 .nativeTableRow {
-  display: grid;
   grid-template-columns: repeat(4, var(--col-width)) auto;
 }

@@ -10,7 +10,13 @@ type InputProps = {
   valueText?: string;
   min?: number;
   className?: string;
+  labelVariant?: 'default' | 'opacity';
   disabled?: boolean;
+};
+
+const labelVariants = {
+  opacity: 'text-content-secondary opacity-50',
+  default: 'text-content',
 };
 
 export const InputNumber: FC<InputProps> = ({
@@ -21,14 +27,18 @@ export const InputNumber: FC<InputProps> = ({
   valueText,
   placeholder,
   className,
+  labelVariant = 'default',
   min = 1,
   disabled = false,
 }) => {
   return (
     <div
-      className={clsx('w-full flex justify-between eq-input p-3', className)}
+      className={clsx(
+        'w-full flex justify-between eq-input py-3 px-4 text-body-xs',
+        className
+      )}
     >
-      <span className="text-content-secondary opacity-50">{label}</span>
+      <span className={clsx(labelVariants[labelVariant])}>{label}</span>
 
       <span className="flex gap-1 flex-1 text-right">
         <span className="w-full">

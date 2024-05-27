@@ -1,4 +1,4 @@
-import { CSSProperties, FC } from 'react';
+import { CSSProperties, FC, useMemo } from 'react';
 
 import styles from './nativeTable.module.css';
 import clsx from 'clsx';
@@ -10,16 +10,31 @@ export const NativeTable: FC<PropsWithChildren> = ({ children }) => {
 type NativeTableHeaderProps = {
   items: (string | React.ReactElement)[];
   slotWidth?: number;
+  customGrid?: string; //  Pick<CSSProperties, 'gridTemplateColumns'>;
 };
+
+('gridTemplateColumns: ');
 
 export const NativeTableHeader: FC<NativeTableHeaderProps> = ({
   items,
+  customGrid,
   slotWidth = 187,
 }) => {
+  const memoizedStyles: CSSProperties = useMemo(
+    () => ({
+      '--slot-width': `${slotWidth}px`,
+      ...(customGrid ? { gridTemplateColumns: customGrid } : {}),
+    }),
+    [slotWidth, customGrid]
+  );
+
   return (
     <div
-      style={{ '--slot-width': `${slotWidth}px` } as CSSProperties}
-      className={clsx('border-b border-divider', styles.nativeTableHeader)}
+      style={memoizedStyles}
+      className={clsx(
+        'border-b border-divider pb-2 grid',
+        !customGrid && styles.nativeTableHeader
+      )}
     >
       {items.map((item, idx) => (
         <span key={idx} className="text-content text-caption-regular pl-2">
@@ -32,17 +47,24 @@ export const NativeTableHeader: FC<NativeTableHeaderProps> = ({
 
 type NativeTableBodyProps = {
   colWidth?: number;
+  customGrid?: string; //  Pick<CSSProperties, 'gridTemplateColumns'>;
 } & PropsWithChildren;
 
 export const NativeTableRow: FC<NativeTableBodyProps> = ({
   colWidth = 187,
+  customGrid,
   children,
 }) => {
+  const memoizedStyles: CSSProperties = useMemo(
+    () => ({
+      '--col-width': `${colWidth}px`,
+      ...(customGrid ? { gridTemplateColumns: customGrid } : {}),
+    }),
+    [colWidth, customGrid]
+  );
+
   return (
-    <div
-      style={{ '--col-width': `${colWidth}px` } as CSSProperties}
-      className={clsx(styles.nativeTableRow)}
-    >
+    <div style={memoizedStyles} className={clsx('grid', styles.nativeTableRow)}>
       {children}
     </div>
   );
@@ -50,6 +72,8 @@ export const NativeTableRow: FC<NativeTableBodyProps> = ({
 
 export const NativeTableColumn: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <div className="py-3 text-content text-body-xs w-auto pl-2">{children}</div>
+    <div className="py-3 text-content text-body-xs w-auto pl-2 flex items-center">
+      {children}
+    </div>
   );
 };

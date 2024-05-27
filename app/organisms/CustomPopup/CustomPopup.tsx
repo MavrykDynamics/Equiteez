@@ -53,10 +53,10 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
       portalClassName={clsx(portalClassName, popupAnimation[contentPosition])}
       preventScroll
       onAfterOpen={() => {
-        document.body.classList.add('overscroll-y-none');
+        document.body.classList.add('overflowYHidden');
       }}
       onAfterClose={() => {
-        document.body.classList.remove('overscroll-y-none');
+        document.body.classList.remove('overflowYHidden');
       }}
     />
   );
