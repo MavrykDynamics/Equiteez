@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { FC, useState } from 'react';
 import { Divider } from '~/atoms/Divider';
 import { InputNumber } from '~/molecules/Input/Input';
 
-export const PriceBuyTab = () => {
+type PriceBuyTabProps = {
+  toggleMakeOfferScreen?: () => void;
+};
+
+export const PriceBuyTab: FC<PriceBuyTabProps> = () => {
   const [price, setPrice] = useState<string | number>('');
   const [amount, setAmount] = useState<string | number>('');
 
@@ -16,7 +20,6 @@ export const PriceBuyTab = () => {
           placeholder={'0.00'}
           valueText="USDT"
           name={'price'}
-          className="text-body-xs"
         />
         <InputNumber
           handleValue={setAmount}
@@ -25,7 +28,6 @@ export const PriceBuyTab = () => {
           placeholder={'Minimum 1'}
           valueText="NMD"
           name={'amount'}
-          className="text-body-xs"
         />
       </div>
       <Divider className="my-4" />
@@ -50,7 +52,6 @@ export const PriceBuyTab = () => {
         placeholder={'0'}
         valueText="USDT"
         name={'total'}
-        className="text-body-xs"
         disabled
       />
     </div>

@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react';
+import React, { FC, useCallback, useMemo, useState } from 'react';
 import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { TabType } from '~/atoms/Tab';
@@ -10,6 +10,7 @@ import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { PriceBuyTab } from './PriceBuyTab';
 import { PriceOTCBuyTab } from './PriceOTCBuyTab';
+import { MakeOfferScreen } from './MakeOfferScreen';
 
 export const SecondaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,6 +66,8 @@ export const SecondaryPriceBlock = () => {
 
 const BuyPopupContent: FC = () => {
   const { dapp } = useWalletContext();
+  const [isOfferScreen, setIsOfferScreen] = useState(false);
+
   const {
     setPending,
     setConfirming,
@@ -74,6 +77,10 @@ const BuyPopupContent: FC = () => {
     isLoading,
     status,
   } = useStatusFlag();
+
+  const toggleMakeOfferScreen = useCallback(() => {
+    setIsOfferScreen(!isOfferScreen);
+  }, [isOfferScreen]);
 
   const handleBuy = useCallback(async () => {
     setPending();
@@ -135,20 +142,29 @@ const BuyPopupContent: FC = () => {
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
-      <div className="flex-1">
-        <h3 className="text-card-headline">The Nomad</h3>
-        <p className="text-body-xs mb-6">
-          15995 Glenncrest Lane Northwest, Harvest, AL 35749
-        </p>
+      {isOfferScreen ? (
+        <MakeOfferScreen toggleMakeOfferScreen={toggleMakeOfferScreen} />
+      ) : (
+        <>
+          <div className="flex-1">
+            <h3 className="text-card-headline">The Nomad</h3>
+            <p className="text-body-xs mb-6">
+              15995 Glenncrest Lane Northwest, Harvest, AL 35749
+            </p>
 
-        <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-        <BuyTab tabId={activetabId} />
-      </div>
-      <Button disabled={isLoading} onClick={handleBuy}>
-        {status === 'pending' && 'Pending...'}
-        {status === 'confirming' && 'Confirming...'}
-        {(status === 'idle' || status === 'success') && 'Buy'}
-      </Button>
+            <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+            <BuyTab
+              tabId={activetabId}
+              toggleMakeOfferScreen={toggleMakeOfferScreen}
+            />
+          </div>
+          <Button disabled={isLoading} onClick={handleBuy}>
+            {status === 'pending' && 'Pending...'}
+            {status === 'confirming' && 'Confirming...'}
+            {(status === 'idle' || status === 'success') && 'Buy'}
+          </Button>
+        </>
+      )}
     </div>
   );
 };
@@ -157,11 +173,13 @@ type BuyTabKey = keyof typeof buyTabsComponents;
 
 type BuyTabProps = {
   tabId: string;
+  toggleMakeOfferScreen?: () => void;
 };
 
-const BuyTab: FC<BuyTabProps> = ({ tabId }) => {
+const BuyTab: FC<BuyTabProps> = ({ tabId, toggleMakeOfferScreen }) => {
   const Component = buyTabsComponents[tabId as BuyTabKey];
-  return Component;
+
+  return React.cloneElement(Component, { toggleMakeOfferScreen });
 };
 
 const buyTabsComponents = {

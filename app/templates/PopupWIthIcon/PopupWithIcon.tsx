@@ -35,12 +35,12 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
       <div
         className={clsx(
           'absolute left-0 top-8 px-8 w-full flex justify-end items-center',
-          'transition duration-300 ease-in-out z-10'
+          'transition duration-300 ease-in-out -z-[1]'
         )}
       >
         <button id="close-icon">
           <CloseIcon
-            className="w-6 h-6 cursor-pointer"
+            className="w-6 h-6 cursor-pointer  z-10"
             onClick={restProps.onRequestClose}
           />
         </button>

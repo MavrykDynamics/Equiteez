@@ -1,3 +1,4 @@
+import { FC } from 'react';
 import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { HashShortView } from '~/atoms/HashShortView';
@@ -50,13 +51,19 @@ const tableRowDataArr = [
   },
 ];
 
-export const PriceOTCBuyTab = () => {
+type PriceOTCBuyTabProps = {
+  toggleMakeOfferScreen?: () => void;
+};
+
+export const PriceOTCBuyTab: FC<PriceOTCBuyTabProps> = ({
+  toggleMakeOfferScreen,
+}) => {
   return (
     <div className="flex flex-col">
       <Divider className="my-4" />
       <div className="flex items-center justify-between mb-4">
         <p className="text-content text-body-xs">Lowest Price: 58.00 USDT</p>
-        <Button variant="outline">
+        <Button variant="outline" onClick={toggleMakeOfferScreen}>
           <span className="text-body-xs leading-5 font-semibold">
             Make an Offer
           </span>
