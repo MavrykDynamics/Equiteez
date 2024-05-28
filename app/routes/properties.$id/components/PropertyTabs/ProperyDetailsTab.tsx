@@ -9,7 +9,7 @@ import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 
 // Google maps
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
 
 // Icons
 import WalkIcon from 'app/assets/propertyId/icons/walk.svg?react';
@@ -141,8 +141,8 @@ const containerStyle = {
 };
 
 const center = {
-  lat: -3.745,
-  lng: -38.523,
+  lat: -3.7461855287654213,
+  lng: -38.52407865383317,
 };
 
 const PropertyDetailsMap = () => {
@@ -151,6 +151,8 @@ const PropertyDetailsMap = () => {
     id: 'google-map-script',
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
   });
+
+  const [isMarkerClicked, setIsMarkerClicked] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -166,6 +168,10 @@ const PropertyDetailsMap = () => {
   const onUnmount = useCallback(function callback() {
     setMap(null);
   }, []);
+
+  const toggleMarkerWindow = useCallback(() => {
+    setIsMarkerClicked(!isMarkerClicked);
+  }, [isMarkerClicked]);
 
   return (
     <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8">
@@ -193,7 +199,25 @@ const PropertyDetailsMap = () => {
             onUnmount={onUnmount}
           >
             {/* Child components, such as markers, info windows, etc. */}
-            <></>
+            <MarkerF
+              position={center}
+              title="The cove"
+              onClick={toggleMarkerWindow}
+              zIndex={-1}
+            >
+              {/* <>
+                {isMarkerClicked && (
+                  <InfoWindow
+                    position={center}
+                    onCloseClick={toggleMarkerWindow}
+                  >
+                    <div className="text-content text-body z-10">
+                      Real Estate name here
+                    </div>
+                  </InfoWindow>
+                )}
+              </> */}
+            </MarkerF>
           </GoogleMap>
         </CustomSuspense>
       </div>
