@@ -3,8 +3,13 @@ import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { TabType } from '~/atoms/Tab';
 import { Table } from '~/atoms/Table/Table';
-import { faucetContract } from '~/consts/contracts';
-import { useStatusFlag } from '~/hooks/use-status-flag';
+import { oceanContract } from '~/consts/contracts';
+import {
+  getStatusLabel,
+  STATUS_IDLE,
+  STATUS_PENDING,
+  useStatusFlag,
+} from '~/hooks/use-status-flag';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
@@ -12,8 +17,13 @@ import { PriceBuyTab } from './PriceBuyTab';
 import { PriceOTCBuyTab } from './PriceOTCBuyTab';
 import { MakeOfferScreen } from './MakeOfferScreen';
 
+// contract actions
+import { sell, buy } from '../actions/financial.actions';
+
 export const SecondaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { status, dispatch } = useStatusFlag();
+  const { dapp } = useWalletContext();
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -22,6 +32,24 @@ export const SecondaryPriceBlock = () => {
   const handleOpen = useCallback(() => {
     setIsOpen(true);
   }, []);
+
+  const handleSell = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await sell(tezos, oceanContract, dispatch);
+    } catch (e) {
+      // TODO handle Errors with context
+      console.log(e, 'Sell contact error');
+    }
+  }, [dapp, dispatch]);
 
   return (
     <section className="self-start">
@@ -48,8 +76,8 @@ export const SecondaryPriceBlock = () => {
           <p>$100,000.00</p>
         </div>
         <Button onClick={handleOpen}>Buy</Button>
-        <Button variant="outline" className="mt-3">
-          Sell
+        <Button variant="outline" className="mt-3" onClick={handleSell}>
+          {getStatusLabel(status, 'Sell')}
         </Button>
       </Table>
 
@@ -66,57 +94,29 @@ export const SecondaryPriceBlock = () => {
 
 const BuyPopupContent: FC = () => {
   const { dapp } = useWalletContext();
+  const { status, dispatch, isLoading } = useStatusFlag();
   const [isOfferScreen, setIsOfferScreen] = useState(false);
-
-  const {
-    setPending,
-    setConfirming,
-    setSuccess,
-    setIdle,
-    setError,
-    isLoading,
-    status,
-  } = useStatusFlag();
 
   const toggleMakeOfferScreen = useCallback(() => {
     setIsOfferScreen(!isOfferScreen);
   }, [isOfferScreen]);
 
   const handleBuy = useCallback(async () => {
-    setPending();
-
-    const tezos = dapp?.tezos();
-
-    // No Toolkit
-    if (!tezos) {
-      setIdle();
-      return;
-    }
-
     try {
-      let batch = tezos.wallet.batch([]);
+      dispatch(STATUS_PENDING);
 
-      const faucet = await tezos.wallet.at(faucetContract);
+      const tezos = dapp?.tezos();
 
-      const action = faucet.methodsObject['default']().toTransferParams();
-
-      batch = batch.withTransfer(action);
-
-      console.log('Batch');
-      console.log(batch);
-
-      const batchOp = await batch.send();
-
-      setConfirming();
-
-      await batchOp.confirmation();
-
-      setSuccess();
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await buy(tezos, oceanContract, dispatch);
     } catch (e: unknown) {
       console.log(e);
-      setError();
     }
-  }, [dapp, setConfirming, setError, setIdle, setPending, setSuccess]);
+  }, [dapp, dispatch]);
 
   const [activetabId, setAvtiveTabId] = useState('buy');
 
@@ -159,9 +159,7 @@ const BuyPopupContent: FC = () => {
             />
           </div>
           <Button disabled={isLoading} onClick={handleBuy}>
-            {status === 'pending' && 'Pending...'}
-            {status === 'confirming' && 'Confirming...'}
-            {(status === 'idle' || status === 'success') && 'Buy'}
+            {getStatusLabel(status, 'Buy')}
           </Button>
         </>
       )}

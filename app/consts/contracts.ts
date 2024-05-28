@@ -1,5 +1,7 @@
 export const faucetContract = 'KT1APnnufBaF825iAUM2ffm2XW2URdbMzBjQ';
-export const oceanContract = 'KT1UvftgkrTHYE1GAwgWGFNHedcrEBjt3yaQ';
-export const marsContract  = 'KT1GhPXz123FgfumeeY9cmky9hi5CA83DiWk';
+export const oceanContract = 'KT1X5zpiMohqBJuSHJ6xnsxYK9KwKYc42Fz5';
+export const marsContract = 'KT1LcD76H3fDbrqpzwbDxmn7Bak9cKe9AwWg';
 
-export const stablecoinContract = 'KT1EvXt4AR5EmjUjESh7qTBdyxB8aMytxPwX'
+export type MakketContractType = typeof oceanContract | typeof marsContract;
+
+export const stablecoinContract = 'KT1EvXt4AR5EmjUjESh7qTBdyxB8aMytxPwX';

@@ -1,24 +1,22 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import clsx from 'clsx';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { usePropertyById } from '../../hooks/use-property-by-id';
 
 import { TabType } from '~/atoms/Tab';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
 
 import { Divider } from '~/atoms/Divider';
-import { Table } from '~/atoms/Table/Table';
+import { oceanContract, stablecoinContract } from '~/consts/contracts';
 import {
-  faucetContract,
-  oceanContract,
-  marsContract,
-  stablecoinContract,
-} from '~/consts/contracts';
-import { useStatusFlag } from '~/hooks/use-status-flag';
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_ERROR,
+  STATUS_IDLE,
+  STATUS_PENDING,
+  STATUS_SUCCESS,
+  useStatusFlag,
+} from '~/hooks/use-status-flag';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-
-import Checkbox from '~/icons/checkbox.svg?react';
-import Info from '~/icons/info.svg?react';
 
 import mockprice from '~/mocks/price';
 import otc from '~/mocks/otc.json';
@@ -28,6 +26,7 @@ import DotFill from '~/icons/dot-fill.svg?react';
 import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
+import { sleep } from '~/utils/sleep';
 
 export const Buy = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -190,51 +189,32 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
   const { dapp } = useWalletContext();
 
-  // useEffect(() => {
-  //   const fetchLogin = async () => {
-  //     const userLogged = await dapp?.isLoggedIn();
-  //     console.log('userLogged');
-  //     console.log(userLogged);
-  //     setLoggedIn(userLogged || false);
-  //   };
-
-  //   fetchLogin();
-  // }, []); // Empty dependency array means this effect runs once when the component mounts
-
-  const {
-    setPending,
-    setConfirming,
-    setSuccess,
-    setIdle,
-    setError,
-    isLoading,
-    status,
-  } = useStatusFlag();
+  const { dispatch, isLoading, status } = useStatusFlag();
 
   const handleBuy = useCallback(async () => {
-    setPending();
+    dispatch(STATUS_PENDING);
 
     const tezos = dapp?.tezos();
 
     // No Toolkit
     if (!tezos) {
-      setIdle();
+      dispatch(STATUS_IDLE);
       return;
     }
 
     try {
       // let sender = 'mv1GgSwjAgERHmc1YQYPdd34qohywkqg1XS7';
-      let sender = await tezos.wallet.pkh();
+      const sender = await tezos.wallet.pkh();
       let batch = tezos.wallet.batch([]);
 
       const market = await tezos.wallet.at(oceanContract);
       const token = await tezos.wallet.at(stablecoinContract);
 
-      let orderType = 'BUY';
-      let rwaTokenAmount = 10 * 10 ** 3;
-      let pricePerRwaToken = 1000000; // $1
-      let currency = 'USDC';
-      let orderExpiry = null;
+      const orderType = 'BUY';
+      const rwaTokenAmount = 10 * 10 ** 3;
+      const pricePerRwaToken = 1000000; // $1
+      const currency = 'USDC';
+      const orderExpiry = null;
 
       const open_ops = token.methodsObject['update_operators']([
         {
@@ -276,22 +256,24 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
       const batchOp = await batch.send();
 
-      setConfirming();
+      dispatch(STATUS_CONFIRMING);
 
       await batchOp.confirmation();
 
-      setSuccess();
-      setTimeout(() => {
-        setIdle();
-      }, 3000); // reset status
+      dispatch(STATUS_SUCCESS);
+
+      // reset status
+      await sleep(3000);
+      dispatch(STATUS_IDLE);
     } catch (e: unknown) {
       console.log(e);
-      setError();
-      setTimeout(() => {
-        setIdle();
-      }, 3000); // reset status
+      dispatch(STATUS_ERROR);
+
+      // reset status
+      await sleep(3000);
+      dispatch(STATUS_IDLE);
     }
-  }, [dapp, setConfirming, setError, setIdle, setPending, setSuccess]);
+  }, [dapp, dispatch]);
 
   const [activetabId, setAvtiveTabId] = useState('market');
 
@@ -396,14 +378,10 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
               <div className="flex flex-col gap-4 mt-auto">
                 <Button
-                  disabled={!loggedIn || isLoading || status !== 'idle'}
+                  disabled={!loggedIn || isLoading || status !== STATUS_IDLE}
                   onClick={handleBuy}
                 >
-                  {status === 'pending' && 'Pending...'}
-                  {status === 'confirming' && 'Confirming...'}
-                  {status === 'error' && 'Error.'}
-                  {status === 'idle' && 'Buy'}
-                  {status === 'success' && 'Success!'}
+                  {getStatusLabel(status, 'Buy')}
                 </Button>
               </div>
             </>
@@ -521,14 +499,14 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
               <div className="flex flex-col gap-4 mt-auto">
                 <Button
-                  disabled={!loggedIn || isLoading || status !== 'idle'}
+                  disabled={!loggedIn || isLoading || status !== STATUS_IDLE}
                   onClick={handleBuy}
                 >
-                  {status === 'pending' && 'Pending...'}
-                  {status === 'confirming' && 'Confirming...'}
-                  {status === 'error' && 'Error.'}
-                  {status === 'idle' && 'Buy'}
-                  {status === 'success' && 'Success!'}
+                  {status === STATUS_PENDING && 'Pending...'}
+                  {status === STATUS_CONFIRMING && 'Confirming...'}
+                  {status === STATUS_ERROR && 'Error.'}
+                  {status === STATUS_IDLE && 'Buy'}
+                  {status === STATUS_SUCCESS && 'Success!'}
                 </Button>
               </div>
             </>

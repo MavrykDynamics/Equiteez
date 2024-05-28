@@ -8,6 +8,13 @@ import { Button } from '~/atoms/Button';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { FC, useCallback, useState } from 'react';
 import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
+import {
+  getStatusLabel,
+  STATUS_IDLE,
+  useStatusFlag,
+} from '~/hooks/use-status-flag';
+import { defaultContractAction } from './actions/financial.actions';
 
 export const PrimaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -91,6 +98,24 @@ type BuyPopupContentProps = {
 };
 
 const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
+  const { dapp } = useWalletContext();
+  const { status, dispatch, isLoading } = useStatusFlag();
+
+  const handleFakeBuy = useCallback(async () => {
+    try {
+      const tezos = dapp?.tezos();
+
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await defaultContractAction(tezos, dispatch);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [dapp, dispatch]);
+
   return (
     <div className="flex flex-col">
       <h2 className="text-content text-card-headline">The Cove</h2>
@@ -148,7 +173,9 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
         <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button>Buy</Button>
+        <Button disabled={isLoading} onClick={handleFakeBuy}>
+          {getStatusLabel(status, 'Buy')}
+        </Button>
       </div>
     </div>
   );

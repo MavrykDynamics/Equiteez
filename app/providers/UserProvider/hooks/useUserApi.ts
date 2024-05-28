@@ -150,7 +150,7 @@ export const useUserApi = ({
       const userAddress = await DAPP_INSTANCE?.connectAccount();
 
       if (userAddress) {
-        setUserLoading(true);
+        // setUserLoading(true);
         loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
 
         if (tzktSocket) {
@@ -171,7 +171,6 @@ export const useUserApi = ({
     }
   }, [
     DAPP_INSTANCE,
-    setUserLoading,
     loadInitialTzktTokensForNewlyConnectedUser,
     tzktSocket,
     updateUserTzktTokenBalances,

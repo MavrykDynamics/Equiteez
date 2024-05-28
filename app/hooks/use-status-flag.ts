@@ -1,51 +1,71 @@
-import { useCallback, useState } from 'react';
+import { useReducer } from 'react';
+
+export const STATUS_PENDING = 'STATUS_PENDING';
+export const STATUS_CONFIRMING = 'STATUS_CONFIRMING';
+export const STATUS_ERROR = 'STATUS_ERROR';
+export const STATUS_SUCCESS = 'STATUS_SUCCESS';
+export const STATUS_IDLE = 'STATUS_IDLE';
 
 export type StatusFlag =
-  | 'pending'
-  | 'confirming'
-  | 'error'
-  | 'success'
-  | 'idle';
+  | typeof STATUS_PENDING
+  | typeof STATUS_SUCCESS
+  | typeof STATUS_CONFIRMING
+  | typeof STATUS_IDLE
+  | typeof STATUS_ERROR;
 
-export const useStatusFlag = () => {
-  const [status, setStatus] = useState<StatusFlag>('idle');
+type ReducerStateType = {
+  status: StatusFlag;
+  isLoading: boolean;
+};
 
-  const handleStatusUpdate = useCallback((status: StatusFlag) => {
-    setStatus(status);
-  }, []);
+export type StatusDispatchType = React.Dispatch<StatusFlag>;
 
-  const setPending = useCallback(
-    () => handleStatusUpdate('pending'),
-    [handleStatusUpdate]
-  );
+function statusFlagsReducer(state: ReducerStateType, status: StatusFlag) {
+  switch (status) {
+    case STATUS_IDLE:
+    case STATUS_ERROR:
+    case STATUS_SUCCESS: {
+      return { ...state, status, isLoading: false };
+    }
+    case STATUS_CONFIRMING:
+    case STATUS_PENDING: {
+      return { ...state, status, isLoading: true };
+    }
+    default: {
+      throw new Error(`Unhandled action status: ${status}`);
+    }
+  }
+}
 
-  const setConfirming = useCallback(
-    () => handleStatusUpdate('confirming'),
-    [handleStatusUpdate]
-  );
-
-  const setError = useCallback(
-    () => handleStatusUpdate('error'),
-    [handleStatusUpdate]
-  );
-
-  const setSuccess = useCallback(
-    () => handleStatusUpdate('success'),
-    [handleStatusUpdate]
-  );
-
-  const setIdle = useCallback(
-    () => handleStatusUpdate('idle'),
-    [handleStatusUpdate]
-  );
+export const useStatusFlag = (initialStatus: StatusFlag = STATUS_IDLE) => {
+  const [state, dispatch] = useReducer(statusFlagsReducer, {
+    status: initialStatus,
+    isLoading: false,
+  });
 
   return {
-    setPending,
-    setConfirming,
-    setError,
-    setSuccess,
-    setIdle,
-    status,
-    isLoading: status === 'pending' || status === 'confirming',
+    dispatch,
+    status: state.status,
+    isLoading: state.isLoading,
   };
+};
+
+// utils
+
+export const getStatusLabel = (status: StatusFlag, defaultLabel: string) => {
+  switch (status) {
+    case STATUS_PENDING:
+      return 'Pending...';
+    case STATUS_CONFIRMING:
+      return 'Confirming...';
+    case STATUS_ERROR:
+      return 'Error.';
+    case STATUS_IDLE:
+      return defaultLabel;
+    case STATUS_SUCCESS:
+      return 'Success!';
+
+    default:
+      return defaultLabel;
+  }
 };
