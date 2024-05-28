@@ -12,6 +12,7 @@ import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import {
   getStatusLabel,
   STATUS_IDLE,
+  STATUS_PENDING,
   useStatusFlag,
 } from '~/hooks/use-status-flag';
 import { defaultContractAction } from './actions/financial.actions';
@@ -103,6 +104,7 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
 
   const handleFakeBuy = useCallback(async () => {
     try {
+      dispatch(STATUS_PENDING);
       const tezos = dapp?.tezos();
 
       if (!tezos) {

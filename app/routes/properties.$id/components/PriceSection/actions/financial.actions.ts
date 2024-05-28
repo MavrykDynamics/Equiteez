@@ -1,7 +1,7 @@
 import { TezosToolkit } from '@mavrykdynamics/taquito';
 import {
   faucetContract,
-  MakketContractType,
+  MarketContractType,
   stablecoinContract,
 } from '~/consts/contracts';
 
@@ -18,7 +18,7 @@ import { sleep } from '~/utils/sleep';
 
 export async function buy(
   tezos: TezosToolkit,
-  marketContractAddress: MakketContractType,
+  marketContractAddress: MarketContractType,
   dispatch: StatusDispatchType
 ) {
   try {
@@ -27,7 +27,7 @@ export async function buy(
     let batch = tezos.wallet.batch([]);
 
     const market = await tezos.wallet.at(marketContractAddress);
-    const token = await tezos.wallet.at(stablecoinContract);
+    const tokenContract = await tezos.wallet.at(stablecoinContract);
 
     const orderType = 'BUY';
     const rwaTokenAmount = RWAToken(10);
@@ -35,7 +35,7 @@ export async function buy(
     const currency = 'USDC';
     const orderExpiry = null;
 
-    const open_ops = token.methodsObject['update_operators']([
+    const open_ops = tokenContract.methodsObject['update_operators']([
       {
         add_operator: {
           owner: sender,
@@ -55,7 +55,7 @@ export async function buy(
       },
     ]).toTransferParams();
 
-    const close_ops = token.methodsObject['update_operators']([
+    const close_ops = tokenContract.methodsObject['update_operators']([
       {
         remove_operator: {
           owner: sender,
@@ -90,7 +90,7 @@ export async function buy(
 
 export async function sell(
   tezos: TezosToolkit,
-  marketContractAddress: MakketContractType,
+  marketContractAddress: MarketContractType,
   dispatch: StatusDispatchType
 ) {
   try {
