@@ -150,7 +150,7 @@ export const useUserApi = ({
       const userAddress = await DAPP_INSTANCE?.connectAccount();
 
       if (userAddress) {
-        // setUserLoading(true);
+        setUserLoading(true);
         loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
 
         if (tzktSocket) {
@@ -162,15 +162,19 @@ export const useUserApi = ({
             handleOnReconnected,
           });
         }
+        setUserLoading(false);
       } else {
+        setUserLoading(false);
         console.log('No account chosen');
       }
     } catch (e) {
+      setUserLoading(false);
       console.error(`Failed to connect wallet:`, e);
       // bug('Failed to connect wallet', TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title'])
     }
   }, [
     DAPP_INSTANCE,
+    setUserLoading,
     loadInitialTzktTokensForNewlyConnectedUser,
     tzktSocket,
     updateUserTzktTokenBalances,
@@ -232,7 +236,9 @@ export const useUserApi = ({
           handleOnReconnected,
         });
       }
+      setUserLoading(false);
     } catch (e) {
+      setUserLoading(false);
       console.error(`Failed to change wallet: `, e);
       // bug(
       //   'Failed to change wallet',

@@ -117,13 +117,13 @@ export const UserProvider = ({ children }: Props) => {
     if (canRestoreUser) connect();
   }, [canRestoreUser, connect]);
 
-  useEffect(() => {
-    if (canRestoreUser && userCtxState.userAddress) {
-      setUserLoading(false);
-    } else if (!hasUserInLocalStorage) {
-      setUserLoading(false);
-    }
-  }, [canRestoreUser, hasUserInLocalStorage, userCtxState.userAddress]);
+  // useEffect(() => {
+  //   if (canRestoreUser && userCtxState.userAddress) {
+  //     setUserLoading(false);
+  //   } else if (!hasUserInLocalStorage) {
+  //     setUserLoading(false);
+  //   }
+  // }, [canRestoreUser, hasUserInLocalStorage, userCtxState.userAddress]);
 
   const providerValue = useMemo(() => {
     const isLoading = isUserLoading;

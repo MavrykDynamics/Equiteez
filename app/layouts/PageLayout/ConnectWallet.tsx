@@ -11,7 +11,8 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 
 export const ConnectWallet = () => {
-  const { connect, userAddress, signOut, isLoading } = useUserContext();
+  const { connect, userAddress, signOut, isLoading, changeUser } =
+    useUserContext();
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
@@ -29,9 +30,15 @@ export const ConnectWallet = () => {
             </ClickableDropdownArea>
             <DropdownBodyContent
               position="right"
-              topMargin={6}
+              topMargin={16}
               customWidth={203}
             >
+              <button
+                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
+                onClick={changeUser}
+              >
+                Change account
+              </button>
               <button
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
                 onClick={signOut}
