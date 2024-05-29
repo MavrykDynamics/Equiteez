@@ -26,19 +26,17 @@ export async function buy(
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
-    const market = await tezos.wallet.at(marketContractAddress); // testing with KT1X5zpiMohqBJuSHJ6xnsxYK9KwKYc42Fz5
+    const market = await tezos.wallet.at(marketContractAddress);
 
-    const tokenContract = await tezos.wallet.at(stablecoinContract); // KT1R5GGJa5ehZyLFLS848EjS4D7mHoW28SkU
+    const tokenContract = await tezos.wallet.at(stablecoinContract);
 
     // for now default values, they will be taken from input or predefined values
     const orderType = 'BUY';
     const rwaTokenAmount = RWAToken(10);
     const pricePerRwaToken = 1000000; // $1
-    const currency = 'USDC';
+    const currency = 'USDT';
     const orderExpiry = null;
 
-    // update operators based on this example ->
-    // https://github.com/mavenfinance/rwa-marketplace/blob/6b7e38b15d27b5138ad3e38d4f8c3fa6a192b471/src/contracts/test/08_test_rwa_orderbook.spec.ts#L540C62-L540C67
     const open_ops = tokenContract.methodsObject['update_operators']([
       {
         add_operator: {
@@ -48,14 +46,8 @@ export async function buy(
         },
       },
       // to avoid undefined values
-    ]).toTransferParams({
-      fee: 0,
-      gasLimit: 0,
-      storageLimit: 0,
-      source: sender,
-    });
+    ]).toTransferParams({});
 
-    // calling buy from new market -> KT1X5zpiMohqBJuSHJ6xnsxYK9KwKYc42Fz5
     const buy_order = market.methodsObject['placeBuyOrder']([
       {
         orderType: orderType,
@@ -64,14 +56,8 @@ export async function buy(
         currency: currency,
         orderExpiry: orderExpiry,
       },
-    ]).toTransferParams({
-      fee: 0,
-      gasLimit: 0,
-      storageLimit: 0,
-      source: sender,
-    });
+    ]).toTransferParams({});
 
-    // update operators
     const close_ops = tokenContract.methodsObject['update_operators']([
       {
         remove_operator: {
@@ -80,12 +66,7 @@ export async function buy(
           token_id: 0,
         },
       },
-    ]).toTransferParams({
-      fee: 0,
-      gasLimit: 0,
-      storageLimit: 0,
-      source: sender,
-    });
+    ]).toTransferParams({});
 
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
@@ -124,9 +105,9 @@ export async function sell(
     const token = await tezos.wallet.at(stablecoinContract);
 
     const orderType = 'SELL';
-    const rwaTokenAmount = RWAToken(10);
+    const rwaTokenAmount = RWAToken(5);
     const pricePerRwaToken = 1000000; // $1
-    const currency = 'USDC';
+    const currency = 'USDT';
     const orderExpiry = null;
 
     const open_ops = token.methodsObject['update_operators']([

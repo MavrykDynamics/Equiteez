@@ -5,4 +5,4 @@ export const marsContract = 'KT1LcD76H3fDbrqpzwbDxmn7Bak9cKe9AwWg';
 export type MarketContractType = typeof oceanContract | typeof marsContract;
 
 // old coin contract -> KT1EvXt4AR5EmjUjESh7qTBdyxB8aMytxPwX
-export const stablecoinContract = 'KT1R5GGJa5ehZyLFLS848EjS4D7mHoW28SkU';
+export const stablecoinContract = 'KT1TiKjBnhTNtEqezJgC4rPQp6dLbMWpjqEo';
