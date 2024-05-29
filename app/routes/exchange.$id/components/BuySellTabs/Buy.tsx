@@ -5,17 +5,7 @@ import { TabType } from '~/atoms/Tab';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
 
 import { Divider } from '~/atoms/Divider';
-import { oceanContract, stablecoinContract } from '~/consts/contracts';
-import {
-  getStatusLabel,
-  STATUS_CONFIRMING,
-  STATUS_ERROR,
-  STATUS_IDLE,
-  STATUS_PENDING,
-  STATUS_SUCCESS,
-  useStatusFlag,
-} from '~/hooks/use-status-flag';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
+
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 
 import mockprice from '~/mocks/price';
@@ -25,8 +15,6 @@ import MenuMulti from './MenuMulti';
 import DotFill from '~/icons/dot-fill.svg?react';
 import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
-import { useUserContext } from '~/providers/UserProvider/user.provider';
-import { sleep } from '~/utils/sleep';
 
 export const Buy = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -157,7 +145,7 @@ type BuyDEXContentProps = {
 };
 
 const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
-  const estateData: any = usePropertyById();
+  const estateData = usePropertyById();
   const price = mockprice();
 
   const columnsOTC = [
@@ -184,96 +172,6 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
   // Optinally pass in an amount
   const [amount, setAmount] = useState<number | undefined>(initialAmount);
-  const { userAddress } = useUserContext();
-  const loggedIn = useMemo(() => userAddress !== null, [userAddress]);
-
-  const { dapp } = useWalletContext();
-
-  const { dispatch, isLoading, status } = useStatusFlag();
-
-  const handleBuy = useCallback(async () => {
-    dispatch(STATUS_PENDING);
-
-    const tezos = dapp?.tezos();
-
-    // No Toolkit
-    if (!tezos) {
-      dispatch(STATUS_IDLE);
-      return;
-    }
-
-    try {
-      // let sender = 'mv1GgSwjAgERHmc1YQYPdd34qohywkqg1XS7';
-      const sender = await tezos.wallet.pkh();
-      let batch = tezos.wallet.batch([]);
-
-      const market = await tezos.wallet.at(oceanContract);
-      const token = await tezos.wallet.at(stablecoinContract);
-
-      const orderType = 'BUY';
-      const rwaTokenAmount = 10 * 10 ** 3;
-      const pricePerRwaToken = 1000000; // $1
-      const currency = 'USDC';
-      const orderExpiry = null;
-
-      const open_ops = token.methodsObject['update_operators']([
-        {
-          add_operator: {
-            owner: sender,
-            operator: oceanContract,
-            token_id: 0,
-          },
-        },
-      ]).toTransferParams();
-
-      const buy_order = market.methodsObject['placeBuyOrder']([
-        {
-          orderType: orderType,
-          rwaTokenAmount: rwaTokenAmount,
-          pricePerRwaToken: pricePerRwaToken,
-          currency: currency,
-          orderExpiry: orderExpiry,
-        },
-      ]).toTransferParams();
-
-      const close_ops = token.methodsObject['update_operators']([
-        {
-          remove_operator: {
-            owner: sender,
-            operator: oceanContract,
-            token_id: 0,
-          },
-        },
-      ]).toTransferParams();
-
-      // note: when doing operations related to blockchain i use underscores and all lower case to disambiguate.
-      batch = batch.withTransfer(open_ops);
-      batch = batch.withTransfer(buy_order);
-      batch = batch.withTransfer(close_ops);
-
-      console.log('Batch');
-      console.log(batch);
-
-      const batchOp = await batch.send();
-
-      dispatch(STATUS_CONFIRMING);
-
-      await batchOp.confirmation();
-
-      dispatch(STATUS_SUCCESS);
-
-      // reset status
-      await sleep(3000);
-      dispatch(STATUS_IDLE);
-    } catch (e: unknown) {
-      console.log(e);
-      dispatch(STATUS_ERROR);
-
-      // reset status
-      await sleep(3000);
-      dispatch(STATUS_IDLE);
-    }
-  }, [dapp, dispatch]);
 
   const [activetabId, setAvtiveTabId] = useState('market');
 
@@ -301,8 +199,8 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
     <div className="flex flex-col justify-between h-full">
       <div className="flex flex-col flex-grow gap-6">
         <div className="flex flex-col">
-          <span className="text-card-headline">{estateData.title}</span>
-          <span className="">{estateData.details.fullAddress}</span>
+          <span className="text-card-headline">{estateData?.title}</span>
+          <span className="">{estateData?.details.fullAddress}</span>
         </div>
 
         <div className="flex flex-col flex-grow gap-4">
@@ -377,12 +275,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
               </div>
 
               <div className="flex flex-col gap-4 mt-auto">
-                <Button
-                  disabled={!loggedIn || isLoading || status !== STATUS_IDLE}
-                  onClick={handleBuy}
-                >
-                  {getStatusLabel(status, 'Buy')}
-                </Button>
+                <Button>Buy</Button>
               </div>
             </>
           ) : (
@@ -498,16 +391,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
               </div>
 
               <div className="flex flex-col gap-4 mt-auto">
-                <Button
-                  disabled={!loggedIn || isLoading || status !== STATUS_IDLE}
-                  onClick={handleBuy}
-                >
-                  {status === STATUS_PENDING && 'Pending...'}
-                  {status === STATUS_CONFIRMING && 'Confirming...'}
-                  {status === STATUS_ERROR && 'Error.'}
-                  {status === STATUS_IDLE && 'Buy'}
-                  {status === STATUS_SUCCESS && 'Success!'}
-                </Button>
+                <Button>Buy</Button>
               </div>
             </>
           )}

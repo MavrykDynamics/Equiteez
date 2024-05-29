@@ -18,7 +18,7 @@ import { PriceOTCBuyTab } from './PriceOTCBuyTab';
 import { MakeOfferScreen } from './MakeOfferScreen';
 
 // contract actions
-import { sell, buy } from '../actions/financial.actions';
+import { sell, buy, matchOrders } from '../actions/financial.actions';
 
 export const SecondaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -118,6 +118,23 @@ const BuyPopupContent: FC = () => {
     }
   }, [dapp, dispatch]);
 
+  const handleMatch = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await matchOrders(tezos, oceanContract, dispatch);
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [dapp, dispatch]);
+
   const [activetabId, setAvtiveTabId] = useState('buy');
 
   const handleTabClick = useCallback((id: string) => {
@@ -158,6 +175,9 @@ const BuyPopupContent: FC = () => {
               toggleMakeOfferScreen={toggleMakeOfferScreen}
             />
           </div>
+          <Button onClick={handleMatch}>
+            {getStatusLabel(status, 'Match orders')}
+          </Button>
           <Button disabled={isLoading} onClick={handleBuy}>
             {getStatusLabel(status, 'Buy')}
           </Button>
