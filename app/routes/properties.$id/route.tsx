@@ -55,7 +55,7 @@ export default function PropertyDetails() {
         <LinkWithIcon
           iconPosition="start"
           CustomIcon={ArrowLeftIcon}
-          to="/properties"
+          to="/"
           variant="content"
         >
           Back to Properties

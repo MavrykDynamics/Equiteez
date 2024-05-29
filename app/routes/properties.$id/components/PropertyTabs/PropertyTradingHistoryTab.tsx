@@ -18,6 +18,7 @@ import { useClientLibData } from '~/hooks/use-client-lib';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 import OriginalApexCharts from 'react-apexcharts';
+import clsx from 'clsx';
 
 export const PropertyTradingHistoryTab = () => {
   const mockChart = chart();
@@ -145,11 +146,17 @@ export const PropertyTradingHistoryTab = () => {
         </p>
       </div>
 
-      <LoadableComponent
-        loading={loading}
-        Component={ChartModule}
-        componentProps={chartModuleProps}
-      />
+      <div
+        className={clsx(
+          loading && 'flex items-center justify-center h-[565px]'
+        )}
+      >
+        <LoadableComponent
+          loading={loading}
+          Component={ChartModule}
+          componentProps={chartModuleProps}
+        />
+      </div>
     </Table>
   );
 };
