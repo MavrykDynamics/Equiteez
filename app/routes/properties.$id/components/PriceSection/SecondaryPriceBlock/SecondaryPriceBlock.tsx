@@ -95,6 +95,11 @@ export const SecondaryPriceBlock = () => {
 const BuyPopupContent: FC = () => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
+  const {
+    status: matchStatus,
+    dispatch: matchDispatch,
+    isLoading: matchIsLoading,
+  } = useStatusFlag();
   const [isOfferScreen, setIsOfferScreen] = useState(false);
 
   const toggleMakeOfferScreen = useCallback(() => {
@@ -120,20 +125,20 @@ const BuyPopupContent: FC = () => {
 
   const handleMatch = useCallback(async () => {
     try {
-      dispatch(STATUS_PENDING);
+      matchDispatch(STATUS_PENDING);
 
       const tezos = dapp?.tezos();
 
       // No Toolkit
       if (!tezos) {
-        dispatch(STATUS_IDLE);
+        matchDispatch(STATUS_IDLE);
         return;
       }
-      await matchOrders(tezos, oceanContract, dispatch);
+      await matchOrders(tezos, oceanContract, matchDispatch);
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [dapp, dispatch]);
+  }, [dapp, matchDispatch]);
 
   const [activetabId, setAvtiveTabId] = useState('buy');
 
@@ -175,8 +180,12 @@ const BuyPopupContent: FC = () => {
               toggleMakeOfferScreen={toggleMakeOfferScreen}
             />
           </div>
-          <Button onClick={handleMatch}>
-            {getStatusLabel(status, 'Match orders')}
+          <Button
+            onClick={handleMatch}
+            className="mb-4"
+            disabled={matchIsLoading}
+          >
+            {getStatusLabel(matchStatus, 'Match orders')}
           </Button>
           <Button disabled={isLoading} onClick={handleBuy}>
             {getStatusLabel(status, 'Buy')}

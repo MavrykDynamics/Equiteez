@@ -42,6 +42,9 @@ export async function matchOrders(
     const batchOp = await batch.send();
 
     await batchOp.confirmation();
+
+    await sleep(3000);
+    dispatch(STATUS_IDLE);
   } catch (e) {
     console.log(e);
     dispatch(STATUS_ERROR);
@@ -63,9 +66,8 @@ export async function buy(
 
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
-    // for now default values, they will be taken from input or predefined values
     const orderType = 'BUY';
-    const rwaTokenAmount = RWAToken(1);
+    const rwaTokenAmount = RWAToken(1); // 1000000 = 1 token
     const pricePerRwaToken = 2000000; // $2
     const currency = 'USDT';
     const orderExpiry = null;
@@ -101,13 +103,13 @@ export async function buy(
       },
     ]).toTransferParams();
 
-    const match_orders =
-      marketContract.methodsObject['matchOrders'](1).toTransferParams();
+    // const match_orders =
+    //   marketContract.methodsObject['matchOrders'](1).toTransferParams();
 
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
     batch = batch.withTransfer(close_ops);
-    batch = batch.withTransfer(match_orders);
+    // batch = batch.withTransfer(match_orders);
 
     const batchOp = await batch.send();
 
@@ -139,7 +141,7 @@ export async function sell(
     const rwaTokenContract = await tezos.wallet.at(OCEAN_TOKEN_ADDRESS);
 
     const orderType = 'SELL';
-    const rwaTokenAmount = RWAToken(1);
+    const rwaTokenAmount = RWAToken(1); // 1000000 = 1 token
     const pricePerRwaToken = 1000000; // $1
     const currency = 'USDT';
     const orderExpiry = null;
