@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { TabType } from '~/atoms/Tab';
@@ -18,38 +18,24 @@ import { PriceOTCBuyTab } from './PriceOTCBuyTab';
 import { MakeOfferScreen } from './MakeOfferScreen';
 
 // contract actions
-import { sell, buy } from '../actions/financial.actions';
+import { sell } from '../actions/financial.actions';
+import { InputNumber } from '~/molecules/Input/Input';
+
+type OrderType = 'buy' | 'sell' | '';
 
 export const SecondaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { status, dispatch } = useStatusFlag();
-  const { dapp } = useWalletContext();
+  const [orderType, setOrderType] = useState<OrderType>('');
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
+    setOrderType('');
   }, []);
 
-  const handleOpen = useCallback(() => {
+  const handleOpen = useCallback((orderType: OrderType) => {
+    setOrderType(orderType);
     setIsOpen(true);
   }, []);
-
-  const handleSell = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await sell(tezos, oceanContract, dispatch);
-    } catch (e) {
-      // TODO handle Errors with context
-      console.log(e, 'Sell contact error');
-    }
-  }, [dapp, dispatch]);
 
   return (
     <section className="self-start">
@@ -75,9 +61,13 @@ export const SecondaryPriceBlock = () => {
           <p>Total Liquidity</p>
           <p>$100,000.00</p>
         </div>
-        <Button onClick={handleOpen}>Buy</Button>
-        <Button variant="outline" className="mt-3" onClick={handleSell}>
-          {getStatusLabel(status, 'Sell')}
+        <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
+        <Button
+          variant="outline"
+          className="mt-3"
+          onClick={handleOpen.bind(null, 'sell')}
+        >
+          Sell
         </Button>
       </Table>
 
@@ -86,59 +76,19 @@ export const SecondaryPriceBlock = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        <BuyPopupContent />
+        {orderType === 'buy' && <BuyPopupContent />}
+        {orderType === 'sell' && <SellPopupContent />}
       </PopupWithIcon>
     </section>
   );
 };
 
 const BuyPopupContent: FC = () => {
-  const { dapp } = useWalletContext();
-  const { status, dispatch, isLoading } = useStatusFlag();
-  // const {
-  //   status: matchStatus,
-  //   dispatch: matchDispatch,
-  //   isLoading: matchIsLoading,
-  // } = useStatusFlag();
   const [isOfferScreen, setIsOfferScreen] = useState(false);
 
   const toggleMakeOfferScreen = useCallback(() => {
     setIsOfferScreen(!isOfferScreen);
   }, [isOfferScreen]);
-
-  const handleBuy = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await buy(tezos, oceanContract, dispatch);
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [dapp, dispatch]);
-
-  // const handleMatch = useCallback(async () => {
-  //   try {
-  //     matchDispatch(STATUS_PENDING);
-
-  //     const tezos = dapp?.tezos();
-
-  //     // No Toolkit
-  //     if (!tezos) {
-  //       matchDispatch(STATUS_IDLE);
-  //       return;
-  //     }
-  //     await matchOrders(tezos, oceanContract, matchDispatch);
-  //   } catch (e: unknown) {
-  //     console.log(e);
-  //   }
-  // }, [dapp, matchDispatch]);
 
   const [activetabId, setAvtiveTabId] = useState('buy');
 
@@ -168,48 +118,114 @@ const BuyPopupContent: FC = () => {
         <MakeOfferScreen toggleMakeOfferScreen={toggleMakeOfferScreen} />
       ) : (
         <>
-          <div className="flex-1">
-            <h3 className="text-card-headline">Ocean Front</h3>
-            <p className="text-body-xs mb-6">
-              335 Wilburton Lane, Northport, AL 35473
-            </p>
+          <div className="flex-1 flex flex-col">
+            <div>
+              <h3 className="text-card-headline">Ocean Front</h3>
+              <p className="text-body-xs mb-6">
+                335 Wilburton Lane, Northport, AL 35473
+              </p>
 
-            <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-            <BuyTab
-              tabId={activetabId}
-              toggleMakeOfferScreen={toggleMakeOfferScreen}
-            />
+              <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+            </div>
+
+            {activetabId === 'buy' && <PriceBuyTab />}
+            {activetabId === 'otcBuy' && (
+              <PriceOTCBuyTab toggleMakeOfferScreen={toggleMakeOfferScreen} />
+            )}
           </div>
-          {/* <Button
-            onClick={handleMatch}
-            className="mb-4"
-            disabled={matchIsLoading}
-          >
-            {getStatusLabel(matchStatus, 'Match orders')}
-          </Button> */}
-          <Button disabled={isLoading} onClick={handleBuy}>
-            {getStatusLabel(status, 'Buy')}
-          </Button>
         </>
       )}
     </div>
   );
 };
 
-type BuyTabKey = keyof typeof buyTabsComponents;
+// TODO move, this is done for demo purposes
+const SellPopupContent: FC = () => {
+  const { status, dispatch, isLoading } = useStatusFlag();
+  const { dapp } = useWalletContext();
 
-type BuyTabProps = {
-  tabId: string;
-  toggleMakeOfferScreen?: () => void;
-};
+  const [price, setPrice] = useState<number | string>('');
+  const [amount, setAmount] = useState<number | string>('');
 
-const BuyTab: FC<BuyTabProps> = ({ tabId, toggleMakeOfferScreen }) => {
-  const Component = buyTabsComponents[tabId as BuyTabKey];
+  const handleSell = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
 
-  return React.cloneElement(Component, { toggleMakeOfferScreen });
-};
+      const tezos = dapp?.tezos();
 
-const buyTabsComponents = {
-  buy: <PriceBuyTab />,
-  otcBuy: <PriceOTCBuyTab />,
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await sell({
+        tezos,
+        marketContractAddress: oceanContract,
+        dispatch,
+        tokensAmount: Number(amount),
+        pricePerToken: Number(price),
+      });
+    } catch (e) {
+      // TODO handle Errors with context
+      console.log(e, 'Sell contact error');
+    }
+  }, [amount, dapp, dispatch, price]);
+
+  return (
+    <div className="flex flex-col justify-between text-content h-full">
+      <div className="flex-1">
+        <h3 className="text-card-headline">Ocean Front</h3>
+        <p className="text-body-xs mb-6">
+          335 Wilburton Lane, Northport, AL 35473
+        </p>
+        <div className="mt-4">
+          <div className="flex flex-col gap-y-2">
+            <InputNumber
+              handleValue={setPrice}
+              label={'Price'}
+              value={price}
+              placeholder={'0.00'}
+              valueText="USDT"
+              name={'price'}
+            />
+            <InputNumber
+              handleValue={setAmount}
+              label={'Amount'}
+              value={amount}
+              placeholder={'Minimum 1'}
+              valueText="OCEAN"
+              name={'amount'}
+            />
+          </div>
+          <Divider className="my-4" />
+          <div className="mb-3">
+            <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
+              <p>Available Balance</p>
+              <p>1,034.75 USDT</p>
+            </div>
+            <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
+              <p>Max Sell</p>
+              <p>10.84 OCEAN</p>
+            </div>
+            <div className="flex justify-between text-secondary-content text-caption-regular">
+              <p>Est. Fee</p>
+              <p>-- OCEAN</p>
+            </div>
+          </div>
+
+          <InputNumber
+            label={'Total'}
+            value={price}
+            placeholder={'0'}
+            valueText="USDT"
+            name={'total'}
+            disabled
+          />
+        </div>
+      </div>
+      <Button disabled={isLoading} onClick={handleSell}>
+        {getStatusLabel(status, 'Sell')}
+      </Button>
+    </div>
+  );
 };

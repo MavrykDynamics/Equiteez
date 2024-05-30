@@ -12,7 +12,7 @@ import {
   STATUS_IDLE,
   STATUS_SUCCESS,
 } from '~/hooks/use-status-flag';
-import { RWAToken } from '~/utils/formaters';
+import { formatRWAPrice, RWAToken } from '~/utils/formaters';
 
 import { sleep } from '~/utils/sleep';
 
@@ -53,11 +53,21 @@ export async function matchOrders(
   }
 }
 
-export async function buy(
-  tezos: TezosToolkit,
-  marketContractAddress: MarketContractType,
-  dispatch: StatusDispatchType
-) {
+type BuySellParams = {
+  tezos: TezosToolkit;
+  marketContractAddress: MarketContractType;
+  dispatch: StatusDispatchType;
+  tokensAmount: number;
+  pricePerToken: number;
+};
+
+export async function buy({
+  tezos,
+  marketContractAddress,
+  dispatch,
+  tokensAmount,
+  pricePerToken,
+}: BuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -67,8 +77,8 @@ export async function buy(
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
     const orderType = 'BUY';
-    const rwaTokenAmount = RWAToken(1); // 1000000 = 1 token
-    const pricePerRwaToken = 990000; // $0.99$
+    const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
+    const pricePerRwaToken = formatRWAPrice(pricePerToken); // 990000,  $0.99$
     const currency = 'USDT';
     const orderExpiry = null;
 
@@ -127,11 +137,13 @@ export async function buy(
   }
 }
 
-export async function sell(
-  tezos: TezosToolkit,
-  marketContractAddress: MarketContractType,
-  dispatch: StatusDispatchType
-) {
+export async function sell({
+  tezos,
+  marketContractAddress,
+  dispatch,
+  tokensAmount,
+  pricePerToken,
+}: BuySellParams) {
   try {
     console.log('Sell action ...');
     const sender = await tezos.wallet.pkh();
@@ -141,8 +153,8 @@ export async function sell(
     const rwaTokenContract = await tezos.wallet.at(OCEAN_TOKEN_ADDRESS);
 
     const orderType = 'SELL';
-    const rwaTokenAmount = RWAToken(1); // 1000000 = 1 token
-    const pricePerRwaToken = 960000; // $0.96$
+    const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
+    const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
     const orderExpiry = null;
 
