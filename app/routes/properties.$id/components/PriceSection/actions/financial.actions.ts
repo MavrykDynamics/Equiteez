@@ -16,7 +16,7 @@ import { formatRWAPrice, RWAToken } from '~/utils/formaters';
 
 import { sleep } from '~/utils/sleep';
 
-const OCEAN_TOKEN_ADDRESS = 'KT1J9HnaBnjxgxDCaQcFMKnpQCzhiYaHyAFX';
+const OCEAN_TOKEN_ADDRESS = 'KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh';
 
 export async function matchOrders(
   tezos: TezosToolkit,
