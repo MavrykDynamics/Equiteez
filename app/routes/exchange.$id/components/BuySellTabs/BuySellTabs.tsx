@@ -2,7 +2,7 @@ import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/atoms/Tab';
 import { TabSwitcher } from '~/organisms/TabSwitcher';
 import { Buy } from './Buy';
-// import { Sell } from './Sell';
+import { Sell } from './Sell';
 
 export const BuySellTabs = () => {
   const [activetabId, setAvtiveTabId] = useState('buy');
@@ -51,5 +51,5 @@ const BuySellTab: FC<BuySellTabProps> = ({ tabId }) => {
 
 const BuySellTabsComponents = {
   buy: <Buy />,
-  sell: <Buy />,
+  sell: <Sell />,
 };

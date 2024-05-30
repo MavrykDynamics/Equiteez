@@ -1,5 +1,5 @@
-import type { MetaFunction } from '@remix-run/node';
-import { Navigate } from '@remix-run/react';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import { Link, Navigate, useLoaderData, useParams } from '@remix-run/react';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 import LikeIcon from 'app/icons/like.svg?react';
 import ShareIcon from 'app/icons/share.svg?react';
@@ -8,6 +8,8 @@ import Star from 'app/icons/star.svg?react';
 import Search from 'app/icons/search.svg?react';
 import ArrowDown from 'app/icons/arrow-down.svg?react';
 import ArrowUp from 'app/icons/arrow-up.svg?react';
+import { Menu, Transition } from '@headlessui/react'
+import { Fragment } from 'react'
 
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
@@ -18,6 +20,8 @@ import { FC } from 'react';
 import { Divider } from '~/atoms/Divider';
 import { Spacer } from '~/atoms/Spacer';
 import { FAQSection } from '~/templates/FAQSection';
+
+import estates from 'app/mocks/estates.json';
 
 // styles
 // import styles from './propertyId.module.css';
@@ -39,14 +43,13 @@ export const meta: MetaFunction = () => {
     { name: 'description', content: 'Exchange data' },
   ];
 };
-
 export default function ExchangeDetails() {
 
-  // Just set the dropdown based on id, if none then empty
+  const { id } = useParams();
 
-  const estateData: any = usePropertyById();
+  const estateData: any = estates.find((estate) => estate.id === id);
 
-  // if (!estateData) return <Navigate to={'/properties'} />;
+  if (!estateData) return <Navigate to={'/exchange'} />;
 
   const assetsColumns = [{
     label: 'Name',
@@ -71,15 +74,54 @@ export default function ExchangeDetails() {
           <div className="flex flex-grow gap-[86px]">
 
             {/* Market Searcher/Chooser */}
-            <div className="flex items-center">
-              <button className="w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl" type="button">
+            <div className="flex items-center relative">
+              {/* <button className="w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl" type="button">
 
                 <img src={estateData.imgSrc} alt={'icon'} className="size-12 rounded-full" />
 
                 <span className="flex items-center text-card-headline" role="none">The Cove/USDT</span>
 
                 <ChevronDown />
-              </button>
+              </button> */}
+
+              <Menu as="div" className="">
+                {({ open }) => (
+                  <>
+                    <div>
+                      <Menu.Button className={`w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl`}>
+
+                        <img src={estateData.imgSrc} alt={'icon'} className="size-12 rounded-full" />
+                        
+                        <span className="flex items-center text-card-headline" role="none">{estateData.title}/USDT</span>
+                        
+                        { open ? <ArrowUp /> : <ArrowDown />}
+                      </Menu.Button>
+                    </div>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items style={{top: 'calc(100% + 4px)'}} className="absolute right-0 z-50 origin-top-right w-full eq-dropdown-menu max-h-36 mt-0 overflow-y-auto">
+                        {
+                          estates.map(row => (
+                            <div key={row.title} className="">
+                              <Menu.Item>
+                                <Link to={`/exchange/${row.id}`} className="eq-dropdown-item gap-2.5">
+                                  <img src={row.imgSrc} alt={'icon'} className="size-8 rounded-full" /><span className="me-auto">{row.title}/USDT</span>
+                                </Link>
+                              </Menu.Item>
+                            </div>
+                          ))
+                        }
+                      </Menu.Items>
+                    </Transition>
+                  </>
+                )}
+              </Menu>
             </div>
 
             {/* Highlights */}
