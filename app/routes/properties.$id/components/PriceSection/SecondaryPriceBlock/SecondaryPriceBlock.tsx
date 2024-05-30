@@ -18,7 +18,7 @@ import { PriceOTCBuyTab } from './PriceOTCBuyTab';
 import { MakeOfferScreen } from './MakeOfferScreen';
 
 // contract actions
-import { sell, buy, matchOrders } from '../actions/financial.actions';
+import { sell, buy } from '../actions/financial.actions';
 
 export const SecondaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -95,11 +95,11 @@ export const SecondaryPriceBlock = () => {
 const BuyPopupContent: FC = () => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
-  const {
-    status: matchStatus,
-    dispatch: matchDispatch,
-    isLoading: matchIsLoading,
-  } = useStatusFlag();
+  // const {
+  //   status: matchStatus,
+  //   dispatch: matchDispatch,
+  //   isLoading: matchIsLoading,
+  // } = useStatusFlag();
   const [isOfferScreen, setIsOfferScreen] = useState(false);
 
   const toggleMakeOfferScreen = useCallback(() => {
@@ -123,22 +123,22 @@ const BuyPopupContent: FC = () => {
     }
   }, [dapp, dispatch]);
 
-  const handleMatch = useCallback(async () => {
-    try {
-      matchDispatch(STATUS_PENDING);
+  // const handleMatch = useCallback(async () => {
+  //   try {
+  //     matchDispatch(STATUS_PENDING);
 
-      const tezos = dapp?.tezos();
+  //     const tezos = dapp?.tezos();
 
-      // No Toolkit
-      if (!tezos) {
-        matchDispatch(STATUS_IDLE);
-        return;
-      }
-      await matchOrders(tezos, oceanContract, matchDispatch);
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [dapp, matchDispatch]);
+  //     // No Toolkit
+  //     if (!tezos) {
+  //       matchDispatch(STATUS_IDLE);
+  //       return;
+  //     }
+  //     await matchOrders(tezos, oceanContract, matchDispatch);
+  //   } catch (e: unknown) {
+  //     console.log(e);
+  //   }
+  // }, [dapp, matchDispatch]);
 
   const [activetabId, setAvtiveTabId] = useState('buy');
 
@@ -169,9 +169,9 @@ const BuyPopupContent: FC = () => {
       ) : (
         <>
           <div className="flex-1">
-            <h3 className="text-card-headline">The Nomad</h3>
+            <h3 className="text-card-headline">Ocean Front</h3>
             <p className="text-body-xs mb-6">
-              15995 Glenncrest Lane Northwest, Harvest, AL 35749
+              335 Wilburton Lane, Northport, AL 35473
             </p>
 
             <TabSwitcher tabs={tabs} activeTabId={activetabId} />
@@ -180,13 +180,13 @@ const BuyPopupContent: FC = () => {
               toggleMakeOfferScreen={toggleMakeOfferScreen}
             />
           </div>
-          <Button
+          {/* <Button
             onClick={handleMatch}
             className="mb-4"
             disabled={matchIsLoading}
           >
             {getStatusLabel(matchStatus, 'Match orders')}
-          </Button>
+          </Button> */}
           <Button disabled={isLoading} onClick={handleBuy}>
             {getStatusLabel(status, 'Buy')}
           </Button>

@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import styles from './faqSection.module.css';
 import clsx from 'clsx';
 
-import ArrowDown from 'app/icons/arrow-down.svg?react';
+import ArrowDown from 'app/icons/chevron-down.svg?react';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { isVisibleInViewport } from '~/utils/element-in-view';
 

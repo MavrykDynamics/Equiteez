@@ -26,7 +26,7 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = () => {
           label={'Amount'}
           value={amount}
           placeholder={'Minimum 1'}
-          valueText="NMD"
+          valueText="OCEAN"
           name={'amount'}
         />
       </div>
@@ -38,11 +38,11 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = () => {
         </div>
         <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
           <p>Max Buy</p>
-          <p>17.84 NMD</p>
+          <p>17.84 OCEAN</p>
         </div>
         <div className="flex justify-between text-secondary-content text-caption-regular">
           <p>Est. Fee</p>
-          <p>-- NMD</p>
+          <p>-- OCEAN</p>
         </div>
       </div>
 

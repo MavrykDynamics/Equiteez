@@ -68,7 +68,7 @@ export async function buy(
 
     const orderType = 'BUY';
     const rwaTokenAmount = RWAToken(1); // 1000000 = 1 token
-    const pricePerRwaToken = 2000000; // $2
+    const pricePerRwaToken = 990000; // $0.99$
     const currency = 'USDT';
     const orderExpiry = null;
 
@@ -103,13 +103,13 @@ export async function buy(
       },
     ]).toTransferParams();
 
-    // const match_orders =
-    //   marketContract.methodsObject['matchOrders'](1).toTransferParams();
+    const match_orders =
+      marketContract.methodsObject['matchOrders'](1).toTransferParams();
 
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
     batch = batch.withTransfer(close_ops);
-    // batch = batch.withTransfer(match_orders);
+    batch = batch.withTransfer(match_orders);
 
     const batchOp = await batch.send();
 
@@ -142,7 +142,7 @@ export async function sell(
 
     const orderType = 'SELL';
     const rwaTokenAmount = RWAToken(1); // 1000000 = 1 token
-    const pricePerRwaToken = 1000000; // $1
+    const pricePerRwaToken = 960000; // $0.96$
     const currency = 'USDT';
     const orderExpiry = null;
 

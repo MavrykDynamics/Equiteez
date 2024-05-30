@@ -25,4 +25,5 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
+  @apply bg-divider;
 }
