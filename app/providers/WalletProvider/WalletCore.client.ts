@@ -1,5 +1,9 @@
 import { BeaconWallet } from '@mavrykdynamics/taquito-beacon-wallet';
-import { NetworkType } from '@mavrykdynamics/beacon-dapp';
+import {
+  AccountInfo,
+  BeaconEvent,
+  NetworkType,
+} from '@mavrykdynamics/beacon-dapp';
 import { TezosToolkit } from '@mavrykdynamics/taquito';
 import type { BeaconWallet as BeaconWalletType } from '@mavrykdynamics/taquito-beacon-wallet';
 
@@ -48,78 +52,26 @@ export function dappClient() {
     return loadWallet();
   }
 
-  async function isLoggedIn() {
-    try {
-      const wallet = getDAppClientWallet();
-      const pkh = await wallet.getPKH();
-      console.log(pkh);
-      return !!pkh;
-    } catch (e) {
-      throw new Error("Couldn't get wallet acco9unt pkh");
-    }
-
-    return false;
+  function listenToActiveAccount(setAccount: (acc: AccountInfo) => void) {
+    const client = getDAppClient();
+    client.subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
+      // An active account has been set, update the dApp UI
+      console.log(`${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `, account);
+      setAccount(account);
+    });
   }
 
   async function connectAccount() {
     try {
       const client = getDAppClient();
-      const account = await client.getActiveAccount();
-
-      if (!account) {
-        await client.requestPermissions({
-          network: {
-            type: WALLET_NETWORK,
-            rpcUrl: getRpcNode(),
-          },
-        });
-        return (await client.getActiveAccount())?.address;
-      }
-
-      return account?.address;
+      await client.requestPermissions({
+        network: {
+          type: WALLET_NETWORK,
+          rpcUrl: getRpcNode(),
+        },
+      });
     } catch (error) {
-      console.log('connectAccount error:', error);
-      throw error;
-    }
-  }
-
-  async function swapAccount() {
-    try {
-      const client = getDAppClient();
-
-      const currentAccount = await client.getActiveAccount();
-      let newAccount;
-
-      // if user has connected wallet we can change it
-      if (currentAccount) {
-        try {
-          // Clear connected wallet
-          await client.clearActiveAccount();
-
-          // Call beakon popup to choose new wallet
-          await client.requestPermissions({
-            network: {
-              type: WALLET_NETWORK,
-              rpcUrl: getRpcNode(),
-            },
-          });
-
-          // Choosen wallet in popup
-          newAccount = await client.getActiveAccount();
-
-          // Update dapp instance wallet with newly selected one
-          await client.setActiveAccount(newAccount);
-        } catch (e) {
-          // If no wallet choosen set back prev selected wallet to dapp instance
-          await client.setActiveAccount(currentAccount);
-          console.log('choosing wallet error: ', e);
-        }
-      }
-
-      // Return new wallet address if it was selected or prev selected wallet address
-      return newAccount?.address ?? currentAccount?.address;
-    } catch (error) {
-      console.log('swapAccount error:', error);
+      console.log('request account error:', error);
       throw error;
     }
   }
@@ -145,11 +97,10 @@ export function dappClient() {
   }
 
   return {
-    isLoggedIn,
+    listenToActiveAccount,
     loadWallet,
     getDAppClient,
     connectAccount,
-    swapAccount,
     tezos,
     disconnectWallet,
   };

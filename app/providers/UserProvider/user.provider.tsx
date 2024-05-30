@@ -15,7 +15,10 @@ import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from './helpers/user.consts';
 import { useUserApi } from './hooks/useUserApi';
 
 // helpers
-import { openTzktWebSocket } from './helpers/userBalances.helpers';
+import {
+  attachTzktSocketsEventHandlers,
+  openTzktWebSocket,
+} from './helpers/userBalances.helpers';
 
 import {
   UserContext,
@@ -26,6 +29,8 @@ import { useWalletContext } from '../WalletProvider/wallet.provider';
 import { getItemFromStorage } from '~/utils/local-storage';
 import { useAppContext } from '../AppProvider/AppProvider';
 import { isNullOrUndefined } from '~/utils/is-empty';
+import { AccountInfo } from '@mavrykdynamics/beacon-dapp';
+import { sleep } from '~/utils/sleep';
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -45,6 +50,7 @@ export const UserProvider = ({ children }: Props) => {
 
   const tzktSocket = useRef<null | signalR.HubConnection>(null);
 
+  const [account, setAccount] = useState<AccountInfo | null>(null);
   const [userCtxState, setUserCtxState] =
     useState<UserContextStateType>(DEFAULT_USER);
   const [userTzktTokens, setUserTzktTokens] = useState<UserTzKtTokenBalances>(
@@ -101,7 +107,12 @@ export const UserProvider = ({ children }: Props) => {
     []
   );
 
-  const { changeUser, connect, signOut } = useUserApi({
+  const {
+    connect,
+    signOut,
+    loadInitialTzktTokensForNewlyConnectedUser,
+    updateUserTzktTokenBalances,
+  } = useUserApi({
     DAPP_INSTANCE: dapp,
     setUserLoading,
     setIsTzktBalancesLoading,
@@ -114,10 +125,83 @@ export const UserProvider = ({ children }: Props) => {
     userCtxState,
   });
 
-  // effect to perform restoring user from localStorage
+  /**
+   * handle tzkt socket close or reconnecting events
+   */
+  const handleDisconnect = useCallback((error?: Error) => {
+    if (error) {
+      console.error('tzkt socket disconnected: ', { error });
+      // bug(
+      //   'Connection to TZKT has been lost, try to reload page',
+      //   'TZKT connection'
+      // );
+    }
+  }, []);
+
+  /**
+   * handle tzkt socket reconnected event, need to update all tzkt tokens, cuz balances might have changed
+   */
+  const handleOnReconnected = useCallback(
+    async (userAddress: string) => {
+      console.log('Connection to TZKT has been resumed', 'TZKT connection');
+      await sleep(500);
+      // const loadingToasterId = loading(
+      //   'Updating balances of TZKT tokens...',
+      //   'TZKT connection'
+      // );
+      await loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
+      await sleep(500);
+      // hideToasterMessage(loadingToasterId);
+      console.log('TZKT tokens balances has been updated', 'TZKT connection');
+    },
+    [loadInitialTzktTokensForNewlyConnectedUser]
+  );
+
   useEffect(() => {
-    if (canRestoreUser) connect();
-  }, [canRestoreUser, connect]);
+    if (IS_WEB) {
+      dapp?.listenToActiveAccount(setAccount);
+    }
+  }, [IS_WEB, dapp]);
+
+  useEffect(() => {
+    if (IS_WEB && account) {
+      (async function () {
+        try {
+          setUserLoading(true);
+          const tzktSocket = getTzktSocket();
+
+          await loadInitialTzktTokensForNewlyConnectedUser({
+            userAddress: account.address,
+          });
+
+          if (tzktSocket) {
+            attachTzktSocketsEventHandlers({
+              userAddress: account.address,
+              handleTokens: updateUserTzktTokenBalances(account.address),
+              tzktSocket,
+              handleDisconnect,
+              handleOnReconnected,
+            });
+          } else {
+            console.log('No account chosen');
+          }
+        } catch (e) {
+          console.log(e);
+          setUserLoading(false);
+        }
+      })();
+    }
+  }, [
+    account,
+    IS_WEB,
+    loadInitialTzktTokensForNewlyConnectedUser,
+    updateUserTzktTokenBalances,
+    getTzktSocket,
+    handleDisconnect,
+    handleOnReconnected,
+  ]);
+
+  // effect to perform restoring user from localStorage
 
   useEffect(() => {
     // do it only on frontend side to avoid infinite loading spinner when trying to get user
@@ -158,7 +242,6 @@ export const UserProvider = ({ children }: Props) => {
       isLoading,
       connect,
       signOut,
-      changeUser,
     };
   }, [
     isUserLoading,
@@ -168,8 +251,9 @@ export const UserProvider = ({ children }: Props) => {
     userTzktTokens.tokens,
     connect,
     signOut,
-    changeUser,
   ]);
+
+  console.log('render ____________________');
 
   return (
     <userContext.Provider value={providerValue}>

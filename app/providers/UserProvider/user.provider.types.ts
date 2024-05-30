@@ -30,7 +30,6 @@ export type UserContext = UserContextStateType & {
   // actions
   connect: () => void;
   signOut: () => void;
-  changeUser: () => void;
 };
 
 export type UserContextStateType = {
