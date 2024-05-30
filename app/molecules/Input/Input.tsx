@@ -47,6 +47,7 @@ export const InputNumber: FC<InputProps> = ({
             type="number"
             min={min}
             value={value}
+            step={0.1}
             onChange={(e) => handleValue?.(Number(e.target.value))}
             placeholder={placeholder}
             disabled={disabled}
