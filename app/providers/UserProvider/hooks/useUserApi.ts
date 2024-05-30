@@ -151,7 +151,7 @@ export const useUserApi = ({
 
       if (userAddress) {
         setUserLoading(true);
-        loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
+        await loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
 
         if (tzktSocket) {
           attachTzktSocketsEventHandlers({
@@ -162,9 +162,7 @@ export const useUserApi = ({
             handleOnReconnected,
           });
         }
-        setUserLoading(false);
       } else {
-        setUserLoading(false);
         console.log('No account chosen');
       }
     } catch (e) {
@@ -236,7 +234,6 @@ export const useUserApi = ({
           handleOnReconnected,
         });
       }
-      setUserLoading(false);
     } catch (e) {
       setUserLoading(false);
       console.error(`Failed to change wallet: `, e);

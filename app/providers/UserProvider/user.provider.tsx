@@ -81,15 +81,17 @@ export const UserProvider = ({ children }: Props) => {
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
   useEffect(() => {
-    openTzktWebSocket()
-      .then((socket) => (tzktSocket.current = socket))
-      .catch((e) => console.error(e));
+    if (IS_WEB) {
+      openTzktWebSocket()
+        .then((socket) => (tzktSocket.current = socket))
+        .catch((e) => console.error(e));
+    }
 
     return () => {
       tzktSocket?.current?.stop();
       isUserRestored.current = false;
     };
-  }, []);
+  }, [IS_WEB]);
 
   // getter & setter for tzktSocket
   const getTzktSocket = useCallback(() => tzktSocket.current, []);
@@ -117,13 +119,14 @@ export const UserProvider = ({ children }: Props) => {
     if (canRestoreUser) connect();
   }, [canRestoreUser, connect]);
 
-  // useEffect(() => {
-  //   if (canRestoreUser && userCtxState.userAddress) {
-  //     setUserLoading(false);
-  //   } else if (!hasUserInLocalStorage) {
-  //     setUserLoading(false);
-  //   }
-  // }, [canRestoreUser, hasUserInLocalStorage, userCtxState.userAddress]);
+  useEffect(() => {
+    // do it only on frontend side to avoid infinite loading spinner when trying to get user
+    if (IS_WEB) {
+      if (userCtxState.userAddress || !canRestoreUser) {
+        setUserLoading(false);
+      }
+    }
+  }, [userCtxState.userAddress, IS_WEB, canRestoreUser]);
 
   const providerValue = useMemo(() => {
     const isLoading = isUserLoading;
