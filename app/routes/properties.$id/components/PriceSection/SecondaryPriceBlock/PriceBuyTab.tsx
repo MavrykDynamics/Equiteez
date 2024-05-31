@@ -63,7 +63,7 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
             label={'Amount'}
             value={amount}
             placeholder={'Minimum 1'}
-            valueText="OCEAN"
+            valueText={symbol}
             name={'amount'}
           />
         </div>
@@ -75,11 +75,11 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
           </div>
           <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
             <p>Max Buy</p>
-            <p>17.84 OCEAN</p>
+            <p>17.84 {symbol}</p>
           </div>
           <div className="flex justify-between text-secondary-content text-caption-regular">
             <p>Est. Fee</p>
-            <p>-- OCEAN</p>
+            <p>-- {symbol}</p>
           </div>
         </div>
 

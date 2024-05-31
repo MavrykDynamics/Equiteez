@@ -120,7 +120,7 @@ const BuyPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
         <>
           <div className="flex-1 flex flex-col">
             <div>
-              <h3 className="text-card-headline">Ocean Front</h3>
+              <h3 className="text-card-headline">{symbol} Front</h3>
               <p className="text-body-xs mb-6">
                 335 Wilburton Lane, Northport, AL 35473
               </p>
@@ -174,7 +174,7 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
   return (
     <div className="flex flex-col justify-between text-content h-full">
       <div className="flex-1">
-        <h3 className="text-card-headline">Ocean Front</h3>
+        <h3 className="text-card-headline">{symbol} Front</h3>
         <p className="text-body-xs mb-6">
           335 Wilburton Lane, Northport, AL 35473
         </p>
@@ -193,7 +193,7 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
               label={'Amount'}
               value={amount}
               placeholder={'Minimum 1'}
-              valueText="OCEAN"
+              valueText={symbol}
               name={'amount'}
             />
           </div>
@@ -205,11 +205,11 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
             </div>
             <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
               <p>Max Sell</p>
-              <p>10.84 OCEAN</p>
+              <p>10.84 {symbol}</p>
             </div>
             <div className="flex justify-between text-secondary-content text-caption-regular">
               <p>Est. Fee</p>
-              <p>-- OCEAN</p>
+              <p>-- {symbol}</p>
             </div>
           </div>
 
