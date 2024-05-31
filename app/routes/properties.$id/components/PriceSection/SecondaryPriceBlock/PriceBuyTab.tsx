@@ -10,9 +10,13 @@ import {
 import { InputNumber } from '~/molecules/Input/Input';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { buy } from '../actions/financial.actions';
-import { oceanContract } from '~/consts/contracts';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 
-export const PriceBuyTab: FC = () => {
+type PriceBuyTabProps = {
+  symbol: string;
+};
+
+export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
 
@@ -32,7 +36,7 @@ export const PriceBuyTab: FC = () => {
       }
       await buy({
         tezos,
-        marketContractAddress: oceanContract,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -40,7 +44,7 @@ export const PriceBuyTab: FC = () => {
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [amount, dapp, dispatch, price]);
+  }, [amount, dapp, dispatch, price, symbol]);
 
   return (
     <div className="flex flex-col flex-1">

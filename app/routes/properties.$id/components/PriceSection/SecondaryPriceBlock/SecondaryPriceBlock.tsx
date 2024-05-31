@@ -3,7 +3,7 @@ import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { TabType } from '~/atoms/Tab';
 import { Table } from '~/atoms/Table/Table';
-import { oceanContract } from '~/consts/contracts';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
   getStatusLabel,
   STATUS_IDLE,
@@ -23,7 +23,7 @@ import { InputNumber } from '~/molecules/Input/Input';
 
 type OrderType = 'buy' | 'sell' | '';
 
-export const SecondaryPriceBlock = () => {
+export const SecondaryPriceBlock: FC<{ symbol: string }> = ({ symbol }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>('');
 
@@ -76,14 +76,14 @@ export const SecondaryPriceBlock = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        {orderType === 'buy' && <BuyPopupContent />}
-        {orderType === 'sell' && <SellPopupContent />}
+        {orderType === 'buy' && <BuyPopupContent symbol={symbol} />}
+        {orderType === 'sell' && <SellPopupContent symbol={symbol} />}
       </PopupWithIcon>
     </section>
   );
 };
 
-const BuyPopupContent: FC = () => {
+const BuyPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
   const [isOfferScreen, setIsOfferScreen] = useState(false);
 
   const toggleMakeOfferScreen = useCallback(() => {
@@ -128,7 +128,7 @@ const BuyPopupContent: FC = () => {
               <TabSwitcher tabs={tabs} activeTabId={activetabId} />
             </div>
 
-            {activetabId === 'buy' && <PriceBuyTab />}
+            {activetabId === 'buy' && <PriceBuyTab symbol={symbol} />}
             {activetabId === 'otcBuy' && (
               <PriceOTCBuyTab toggleMakeOfferScreen={toggleMakeOfferScreen} />
             )}
@@ -140,7 +140,7 @@ const BuyPopupContent: FC = () => {
 };
 
 // TODO move, this is done for demo purposes
-const SellPopupContent: FC = () => {
+const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
   const { status, dispatch, isLoading } = useStatusFlag();
   const { dapp } = useWalletContext();
 
@@ -160,7 +160,7 @@ const SellPopupContent: FC = () => {
       }
       await sell({
         tezos,
-        marketContractAddress: oceanContract,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -169,7 +169,7 @@ const SellPopupContent: FC = () => {
       // TODO handle Errors with context
       console.log(e, 'Sell contact error');
     }
-  }, [amount, dapp, dispatch, price]);
+  }, [amount, dapp, dispatch, price, symbol]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">

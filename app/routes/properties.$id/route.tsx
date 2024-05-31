@@ -84,7 +84,10 @@ export default function PropertyDetails() {
           <Divider className="my-6" />
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
-        <PriceSection isSecondaryEstate={isSecondaryEstate} />
+        <PriceSection
+          isSecondaryEstate={isSecondaryEstate}
+          symbol={estateData.symbol}
+        />
       </section>
       <Spacer />
       <SimilarProperties />
