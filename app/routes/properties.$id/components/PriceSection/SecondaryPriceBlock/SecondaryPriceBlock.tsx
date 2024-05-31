@@ -49,7 +49,7 @@ export const SecondaryPriceBlock: FC<{ symbol: string }> = ({ symbol }) => {
           <p>8.88%</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
-          <p>Rental Yield</p>
+          <p>Projected Rental Yield</p>
           <p>8.88%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
