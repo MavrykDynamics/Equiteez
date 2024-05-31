@@ -18,4 +18,6 @@ export const pickTokenBasedOnMarket = {
 export const pickMarketBasedOnSymbol: Record<string, MarketContractType> = {
   OCEAN: oceanContract,
   MARS1: marsContract,
+  // to be safe and avoid error on demo for fake estate
+  COVE: oceanContract,
 };

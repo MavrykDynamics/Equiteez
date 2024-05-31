@@ -140,7 +140,7 @@ export default function ExchangeDetails() {
             <div className="flex justify-between items-center">
               <span className="min-w-[120px] flex flex-col">
                 <span className="text-body-xs">Asset Type</span>
-                <span className="text-card-headline">{estateData.symbol}</span>
+                <span className="text-card-headline">SFR</span>
               </span>
 
               <span className="min-w-[120px] flex flex-col">
