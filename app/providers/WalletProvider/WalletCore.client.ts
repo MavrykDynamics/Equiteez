@@ -56,8 +56,11 @@ export function dappClient() {
     const client = getDAppClient();
     client.subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
       // An active account has been set, update the dApp UI
-      console.log(`${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `, account);
-      setAccount(account);
+      console.log(
+        `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
+        account.address
+      );
+      setAccount(account ?? null);
     });
   }
 

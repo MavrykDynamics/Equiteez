@@ -10,9 +10,13 @@ import {
   UserTzktTokensBalancesType,
 } from '../user.provider.types';
 
-import { fetchTzktUserBalances } from '../helpers/userBalances.helpers';
+import {
+  fetchTzktUserBalances,
+  openTzktWebSocket,
+} from '../helpers/userBalances.helpers';
 
 import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
+import { sleep } from '~/utils/sleep';
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;
@@ -86,6 +90,7 @@ export const useUserApi = ({
    * update user's tzkt tokens in userProvider context
    */
   const updateUserTzktTokenBalances = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (userAddress: string) => (userTokens: UserTzktTokensBalancesType) => {
       // const normalizedTzktUserTokens = normalizeUserTzktTokensBalances({
       //   indexerData: userTokens,
@@ -103,12 +108,48 @@ export const useUserApi = ({
   );
 
   /**
+   * handle tzkt socket close or reconnecting events
+   */
+  const handleDisconnect = useCallback((error?: Error) => {
+    if (error) {
+      console.error('tzkt socket disconnected: ', { error });
+      // bug(
+      //   'Connection to TZKT has been lost, try to reload page',
+      //   'TZKT connection'
+      // );
+    }
+  }, []);
+
+  /**
+   * handle tzkt socket reconnected event, need to update all tzkt tokens, cuz balances might have changed
+   */
+  const handleOnReconnected = useCallback(
+    async (userAddress: string) => {
+      console.log('Connection to TZKT has been resumed', 'TZKT connection');
+      await sleep(500);
+      // const loadingToasterId = loading(
+      //   'Updating balances of TZKT tokens...',
+      //   'TZKT connection'
+      // );
+      await loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
+      await sleep(500);
+      // hideToasterMessage(loadingToasterId);
+      console.log('TZKT tokens balances has been updated', 'TZKT connection');
+    },
+    [loadInitialTzktTokensForNewlyConnectedUser]
+  );
+
+  /**
    * connect user's wallet to DAPP:
    * load tzkt balances and set user's address to ctx (inside loadInitialTzktTokensForNewlyConnectedUser) to make QueryWithRefetch work
    */
   const connect = useCallback(async () => {
     try {
       await DAPP_INSTANCE?.connectAccount();
+      // await tzktSocket?.stop();
+
+      // const newTzktSocket = await openTzktWebSocket();
+      // setTzktSocket(newTzktSocket);
     } catch (e) {
       setUserLoading(false);
       console.error(`Failed to connect wallet:`, e);
@@ -142,12 +183,16 @@ export const useUserApi = ({
       signOut,
       loadInitialTzktTokensForNewlyConnectedUser,
       updateUserTzktTokenBalances,
+      handleDisconnect,
+      handleOnReconnected,
     }),
     [
       connect,
       signOut,
       loadInitialTzktTokensForNewlyConnectedUser,
       updateUserTzktTokenBalances,
+      handleDisconnect,
+      handleOnReconnected,
     ]
   );
 

@@ -25,7 +25,6 @@ export type UserTzKtTokenBalances = {
 // Context types
 export type UserContext = UserContextStateType & {
   isLoading: boolean;
-  isUserRestored: boolean;
 
   // actions
   connect: () => void;

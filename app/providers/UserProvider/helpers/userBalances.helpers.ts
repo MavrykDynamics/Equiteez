@@ -99,7 +99,6 @@ export const openTzktWebSocket = async (): Promise<signalR.HubConnection> => {
     return tzktSocket;
   } catch (e) {
     throw new Error("Couldn't open tzkt socket connection");
-    console.error(e);
   }
 };
 
