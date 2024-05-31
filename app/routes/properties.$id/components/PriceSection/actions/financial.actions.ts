@@ -2,6 +2,7 @@ import { TezosToolkit } from '@mavrykdynamics/taquito';
 import {
   faucetContract,
   MarketContractType,
+  pickTokenBasedOnMarket,
   stablecoinContract,
 } from '~/consts/contracts';
 
@@ -16,7 +17,10 @@ import { formatRWAPrice, RWAToken } from '~/utils/formaters';
 
 import { sleep } from '~/utils/sleep';
 
-const OCEAN_TOKEN_ADDRESS = 'KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh';
+// TODO fetch from graphql
+// create context for tokens
+
+// TODO move actions to other place
 
 export async function matchOrders(
   tezos: TezosToolkit,
@@ -150,7 +154,9 @@ export async function sell({
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(marketContractAddress);
-    const rwaTokenContract = await tezos.wallet.at(OCEAN_TOKEN_ADDRESS);
+    const rwaTokenContract = await tezos.wallet.at(
+      pickTokenBasedOnMarket[marketContractAddress]
+    );
 
     const orderType = 'SELL';
     const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token

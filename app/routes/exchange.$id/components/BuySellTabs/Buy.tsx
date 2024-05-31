@@ -16,7 +16,7 @@ import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { useParams } from '@remix-run/react';
 import { buy } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
-import { oceanContract } from '~/consts/contracts';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
   useStatusFlag,
   STATUS_PENDING,
@@ -243,7 +243,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({
       }
       await buy({
         tezos,
-        marketContractAddress: oceanContract,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -251,7 +251,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [amount, dapp, dispatch, price]);
+  }, [amount, dapp, dispatch, price, symbol]);
 
   return (
     <div className="flex flex-col justify-between h-full">

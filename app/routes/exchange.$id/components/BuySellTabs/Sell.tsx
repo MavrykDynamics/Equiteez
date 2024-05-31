@@ -11,7 +11,7 @@ import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { useParams } from '@remix-run/react';
 import { sell } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
-import { oceanContract } from '~/consts/contracts';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
   useStatusFlag,
   STATUS_PENDING,
@@ -170,6 +170,7 @@ type SellDEXContentProps = {
 const SellDEXContent: FC<SellDEXContentProps> = ({
   initialAmount,
   initialPrice,
+  symbol,
 }) => {
   const { id } = useParams();
   const { estate } = usePropertyById(id);
@@ -193,7 +194,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({
       }
       await sell({
         tezos,
-        marketContractAddress: oceanContract,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -202,7 +203,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({
       // TODO handle Errors with context
       console.log(e, 'Sell contact error');
     }
-  }, [amount, dapp, dispatch, price]);
+  }, [amount, dapp, dispatch, price, symbol]);
 
   return (
     <div className="flex flex-col justify-between h-full">
@@ -242,7 +243,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({
                   placeholder="Minimum 1"
                   className="w-full bg-transparent focus:outline-none text-right"
                 ></input>
-                <span className="">CV</span>
+                <span className="">{symbol}</span>
               </span>
             </div>
           </div>
@@ -258,7 +259,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({
 
               <div className="flex justify-between w-full">
                 <span className="text-caption-regular">Max Buy</span>
-                <span className="text-caption-regular">8471.04 CV</span>
+                <span className="text-caption-regular">8471.04 {symbol}</span>
               </div>
 
               <div className="flex justify-between w-full">
