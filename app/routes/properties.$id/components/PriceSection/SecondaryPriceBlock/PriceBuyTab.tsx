@@ -53,7 +53,7 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
           <InputNumber
             handleValue={setPrice}
             label={'Price'}
-            value={price}
+            value={price || ''}
             placeholder={'0.00'}
             valueText="USDT"
             name={'price'}
@@ -61,7 +61,7 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
           <InputNumber
             handleValue={setAmount}
             label={'Amount'}
-            value={amount}
+            value={amount || ''}
             placeholder={'Minimum 1'}
             valueText={symbol}
             name={'amount'}
@@ -85,7 +85,9 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
 
         <InputNumber
           label={'Total'}
-          value={price && amount ? Number(price) * Number(amount) : 0}
+          value={
+            price && amount ? (Number(price) * Number(amount)).toFixed(2) : 0
+          }
           placeholder={'0'}
           valueText="USDT"
           name={'total'}
