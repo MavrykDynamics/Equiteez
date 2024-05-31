@@ -75,7 +75,8 @@ export default function ExchangeDetails() {
                 <ChevronDown />
               </button> */}
 
-              <Menu as="div" className="">
+              {/* TODO fix this menu layoutshit bug, as quick fix width is 300 */}
+              <Menu as="div" className="w-[300px]">
                 {({ open }) => (
                   <>
                     <div>
@@ -140,7 +141,7 @@ export default function ExchangeDetails() {
             <div className="flex justify-between items-center">
               <span className="min-w-[120px] flex flex-col">
                 <span className="text-body-xs">Asset Type</span>
-                <span className="text-card-headline">SFR</span>
+                <span className="text-card-headline">{estateData.symbol}</span>
               </span>
 
               <span className="min-w-[120px] flex flex-col">

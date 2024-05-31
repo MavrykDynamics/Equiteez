@@ -325,7 +325,9 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({
 
                   <div className="flex justify-between w-full">
                     <span className="text-caption-regular">Max Buy</span>
-                    <span className="text-caption-regular">8471.04 CV</span>
+                    <span className="text-caption-regular">
+                      8471.04 {symbol}
+                    </span>
                   </div>
 
                   <div className="flex justify-between w-full">
@@ -443,7 +445,9 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({
 
                   <div className="flex justify-between w-full">
                     <span className="text-caption-regular">Max Buy</span>
-                    <span className="text-caption-regular">8471.04 CV</span>
+                    <span className="text-caption-regular">
+                      8471.04 {symbol}
+                    </span>
                   </div>
 
                   <div className="flex justify-between w-full">

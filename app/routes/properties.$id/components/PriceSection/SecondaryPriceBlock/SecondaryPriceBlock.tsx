@@ -215,7 +215,7 @@ const SellPopupContent: FC = () => {
 
           <InputNumber
             label={'Total'}
-            value={price}
+            value={price && amount ? Number(price) * Number(amount) : 0}
             placeholder={'0'}
             valueText="USDT"
             name={'total'}
