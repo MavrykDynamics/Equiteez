@@ -1,25 +1,16 @@
-import type { LoaderFunction, MetaFunction } from '@remix-run/node';
-import { Link, Navigate, useLoaderData, useParams } from '@remix-run/react';
-import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
-import LikeIcon from 'app/icons/like.svg?react';
-import ShareIcon from 'app/icons/share.svg?react';
-import ChevronDown from 'app/icons/chevron-down.svg?react';
+import type { MetaFunction } from '@remix-run/node';
+import { Link, Navigate, useParams } from '@remix-run/react';
 import Star from 'app/icons/star.svg?react';
 import Search from 'app/icons/search.svg?react';
 import ArrowDown from 'app/icons/arrow-down.svg?react';
 import ArrowUp from 'app/icons/arrow-up.svg?react';
-import { Menu, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
-
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
-import { usePropertyById } from './hooks/use-property-by-id';
-import { LinkWithIcon } from '~/atoms/LinkWithIcon';
-import { FC } from 'react';
 
 import { Divider } from '~/atoms/Divider';
 import { Spacer } from '~/atoms/Spacer';
-import { FAQSection } from '~/templates/FAQSection';
 
 import estates from 'app/mocks/estates.json';
 
@@ -27,9 +18,8 @@ import estates from 'app/mocks/estates.json';
 // import styles from './propertyId.module.css';
 
 // mocked faq data
-import { homeFAQ } from '../_index/index.const';
-import { ExchangeTabs } from './components/ExchangeTabs/ExchangeTabs'; 
-import { OrderTabs } from './components/OrderTabs/OrderTabs'; 
+import { ExchangeTabs } from './components/ExchangeTabs/ExchangeTabs';
+import { OrderTabs } from './components/OrderTabs/OrderTabs';
 import { BuySellTabs } from './components/BuySellTabs/BuySellTabs';
 
 import { TabSmall } from './components/TabSmall/TabSmall';
@@ -44,23 +34,26 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
-
   const { id } = useParams();
 
-  const estateData: any = estates.find((estate) => estate.id === id);
+  const estateData = estates.find((estate) => estate.id === id);
 
   if (!estateData) return <Navigate to={'/exchange'} />;
 
-  const assetsColumns = [{
-    label: 'Name',
-    field: 'name'
-  },{
-    label: 'Price (USDT)',
-    field: 'price_usdt_1'
-  },{
-    label: 'Change',
-    field: 'change'
-  },]
+  const assetsColumns = [
+    {
+      label: 'Name',
+      field: 'name',
+    },
+    {
+      label: 'Price (USDT)',
+      field: 'price_usdt_1',
+    },
+    {
+      label: 'Change',
+      field: 'change',
+    },
+  ];
 
   return (
     <PageLayout>
@@ -69,10 +62,8 @@ export default function ExchangeDetails() {
           <Divider className="" />
         </div>
         <div className="flex w-full py-4 gap-[54px]">
-
           {/* Top Bar */}
           <div className="flex flex-grow gap-[86px]">
-
             {/* Market Searcher/Chooser */}
             <div className="flex items-center relative">
               {/* <button className="w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl" type="button">
@@ -88,13 +79,23 @@ export default function ExchangeDetails() {
                 {({ open }) => (
                   <>
                     <div>
-                      <Menu.Button className={`w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl`}>
+                      <Menu.Button
+                        className={`w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl`}
+                      >
+                        <img
+                          src={estateData.imgSrc}
+                          alt={'icon'}
+                          className="size-12 rounded-full"
+                        />
 
-                        <img src={estateData.imgSrc} alt={'icon'} className="size-12 rounded-full" />
-                        
-                        <span className="flex items-center text-card-headline" role="none">{estateData.title}/USDT</span>
-                        
-                        { open ? <ArrowUp /> : <ArrowDown />}
+                        <span
+                          className="flex items-center text-card-headline"
+                          role="none"
+                        >
+                          {estateData.title}/USDT
+                        </span>
+
+                        {open ? <ArrowUp /> : <ArrowDown />}
                       </Menu.Button>
                     </div>
                     <Transition
@@ -105,18 +106,29 @@ export default function ExchangeDetails() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items style={{top: 'calc(100% + 4px)'}} className="absolute right-0 z-50 origin-top-right w-full eq-dropdown-menu max-h-36 mt-0 overflow-y-auto">
-                        {
-                          estates.map(row => (
-                            <div key={row.title} className="">
-                              <Menu.Item>
-                                <Link to={`/exchange/${row.id}`} className="eq-dropdown-item gap-2.5">
-                                  <img src={row.imgSrc} alt={'icon'} className="size-8 rounded-full" /><span className="me-auto">{row.title}/USDT</span>
-                                </Link>
-                              </Menu.Item>
-                            </div>
-                          ))
-                        }
+                      <Menu.Items
+                        style={{ top: 'calc(100% + 4px)' }}
+                        className="absolute right-0 z-50 origin-top-right w-full eq-dropdown-menu max-h-36 mt-0 overflow-y-auto"
+                      >
+                        {estates.map((row) => (
+                          <div key={row.title} className="">
+                            <Menu.Item>
+                              <Link
+                                to={`/exchange/${row.id}`}
+                                className="eq-dropdown-item gap-2.5"
+                              >
+                                <img
+                                  src={row.imgSrc}
+                                  alt={'icon'}
+                                  className="size-8 rounded-full"
+                                />
+                                <span className="me-auto">
+                                  {row.title}/USDT
+                                </span>
+                              </Link>
+                            </Menu.Item>
+                          </div>
+                        ))}
                       </Menu.Items>
                     </Transition>
                   </>
@@ -126,61 +138,41 @@ export default function ExchangeDetails() {
 
             {/* Highlights */}
             <div className="flex justify-between items-center">
-
               <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">
-                  Asset Type
-                </span>
-                <span className="text-card-headline">
-                  SFR
-                </span>
+                <span className="text-body-xs">Asset Type</span>
+                <span className="text-card-headline">{estateData.symbol}</span>
               </span>
 
               <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">
-                  Price
-                </span>
-                <span className="text-card-headline">
-                  $8.00
-                </span>
+                <span className="text-body-xs">Price</span>
+                <span className="text-card-headline">$8.00</span>
               </span>
 
               <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">
-                  24h Change
-                </span>
-                <span className="text-card-headline">
-                  +5.04%
-                </span>
+                <span className="text-body-xs">24h Change</span>
+                <span className="text-card-headline">+5.04%</span>
               </span>
 
               <span className="min-w-[120px] flex flex-col">
                 <span className="text-body-xs flex items-center gap-1">
-                  <ArrowUp className="size-4" />24h High
+                  <ArrowUp className="size-4" />
+                  24h High
                 </span>
-                <span className="text-card-headline">
-                 $8.20
-                </span>
+                <span className="text-card-headline">$8.20</span>
               </span>
-              
+
               <span className="min-w-[120px] flex flex-col">
                 <span className="text-body-xs flex items-center gap-1">
-                  <ArrowDown className="size-4" />24h Low
+                  <ArrowDown className="size-4" />
+                  24h Low
                 </span>
-                <span className="text-card-headline">
-                  $7.89
-                </span>
+                <span className="text-card-headline">$7.89</span>
               </span>
 
               <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">
-                    Yield
-                </span>
-                <span className="text-card-headline">
-                    4.83%
-                </span>
+                <span className="text-body-xs">Yield</span>
+                <span className="text-card-headline">4.83%</span>
               </span>
-
             </div>
           </div>
 
@@ -190,18 +182,14 @@ export default function ExchangeDetails() {
               <p>View Asset</p>
             </button>
           </div>
-
         </div>
         <div className="flex flex-col">
           <Divider className="" />
         </div>
 
-
         <div className="flex w-full">
-
           {/* Asset Search */}
           <div className="flex flex-col w-80 py-6 pe-6">
-
             {/* Header */}
             <div className="flex justify-between">
               <span className="text-buttons">Assets</span>
@@ -212,28 +200,27 @@ export default function ExchangeDetails() {
 
             {/* Main*/}
             <div className="flex flex-col gap-4 pt-4">
-            
               {/* Search Box*/}
               <div className="w-full flex">
-
-                <span className={`w-full flex text-body-xs justify-start items-center px-4 py-3 gap-2 bg-inactive-tab rounded-lg`}>
-                  <Search/>
-                  <input 
-                    name="term" 
-                    type="text" 
-                    placeholder={`Search Assets`} 
-                    className="w-full bg-transparent focus:outline-none">
-                  </input>
+                <span
+                  className={`w-full flex text-body-xs justify-start items-center px-4 py-3 gap-2 bg-inactive-tab rounded-lg`}
+                >
+                  <Search />
+                  <input
+                    name="term"
+                    type="text"
+                    placeholder={`Search Assets`}
+                    className="w-full bg-transparent focus:outline-none"
+                  ></input>
                 </span>
-
               </div>
-              
+
               {/* Filters/Icons */}
               <div className="w-full flex justify-start gap-1">
-
-                <TabSmall><Star className="size-4" /></TabSmall>
+                <TabSmall>
+                  <Star className="size-4" />
+                </TabSmall>
                 <TabSmall>OTC</TabSmall>
-
               </div>
 
               {/* Results */}
@@ -247,9 +234,7 @@ export default function ExchangeDetails() {
                             <th
                               scope="col"
                               className="whitespace-nowrap p-2 text-left text-caption-regular min-w-7"
-                            >
-                              
-                            </th>
+                            ></th>
                             {assetsColumns.map((column) => (
                               <th
                                 key={column.label}
@@ -264,11 +249,11 @@ export default function ExchangeDetails() {
                         <tbody className="divide-y divide-transparent bg-white">
                           {assetsList.map((asset) => (
                             <tr key={asset.name} className="h-11">
-                              <td className="whitespace-nowrap p-2 pl-1 cursor-pointer"><Star /></td>
-
-                              <td className="eq-table-cell">
-                                {asset.name}
+                              <td className="whitespace-nowrap p-2 pl-1 cursor-pointer">
+                                <Star />
                               </td>
+
+                              <td className="eq-table-cell">{asset.name}</td>
 
                               <td className="eq-table-cell">
                                 {asset.price_usdt_1}
@@ -277,7 +262,6 @@ export default function ExchangeDetails() {
                               <td className="eq-table-cell text-success">
                                 {asset.change}
                               </td>
-                              
                             </tr>
                           ))}
                         </tbody>
@@ -286,12 +270,7 @@ export default function ExchangeDetails() {
                   </div>
                 </div>
               </div>
-              
-
             </div>
-
-
-
           </div>
 
           <div className={'h-100 w-[1px] bg-divider'} />
@@ -305,19 +284,17 @@ export default function ExchangeDetails() {
 
           {/* Actions */}
           <div className="flex flex-col w-80">
-
             {/* Buy/Sell Shares */}
             <div className="flex flex-col w-80 py-6 ps-6">
-              <BuySellTabs />
+              <BuySellTabs symbol={estateData.symbol} />
             </div>
             <Divider className="" />
 
-            {/* Order Book View */} 
+            {/* Order Book View */}
             <div className="flex flex-col w-80 py-6 ps-6">
               <OrderBookTabs />
             </div>
           </div>
-
         </div>
 
         <div className="flex flex-col">
@@ -328,39 +305,8 @@ export default function ExchangeDetails() {
         <div className="flex flex-col w-full py-6 pe-6">
           <OrderTabs />
         </div>
-
-
-
       </section>
       <Spacer className="h-[200px]" />
     </PageLayout>
   );
 }
-
-// components
-const HeadLineTabs: FC<{ issuance: string; houseType: string }> = ({
-  issuance,
-  houseType,
-}) => {
-  return (
-    <section className="flex items-center gap-x-2 text-body-xs">
-      <div className="py-1 px-2 bg-green-opacity rounded">{issuance}</div>
-      <div className="py-1 px-2 bg-yellow-opacity rounded">{houseType}</div>
-    </section>
-  );
-};
-
-const Options: FC = () => {
-  return (
-    <section className="flex items-center gap-x-4 ml-auto">
-      <button className="text-content text-body flex items-center gap-x-1">
-        <LikeIcon />
-        <p>Save</p>
-      </button>
-      <button className="text-content text-body flex items-center gap-x-1">
-        <ShareIcon />
-        <p>Share</p>
-      </button>
-    </section>
-  );
-};

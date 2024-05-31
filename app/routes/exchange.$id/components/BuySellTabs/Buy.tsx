@@ -8,7 +8,6 @@ import { Divider } from '~/atoms/Divider';
 
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 
-import mockprice from '~/mocks/price';
 import otc from '~/mocks/otc.json';
 import { Button } from '~/atoms/Button';
 import MenuMulti from './MenuMulti';
@@ -18,10 +17,19 @@ import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { useParams } from '@remix-run/react';
 import { buy } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
 import { oceanContract } from '~/consts/contracts';
-import { useStatusFlag, STATUS_PENDING, STATUS_IDLE, getStatusLabel } from '~/hooks/use-status-flag';
+import {
+  useStatusFlag,
+  STATUS_PENDING,
+  STATUS_IDLE,
+  getStatusLabel,
+} from '~/hooks/use-status-flag';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 
-export const Buy = () => {
+type BuyProps = {
+  symbol: string;
+};
+
+export const Buy: FC<BuyProps> = ({ symbol }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleRequestClose = useCallback(() => {
@@ -77,7 +85,7 @@ export const Buy = () => {
                   className="w-full bg-transparent focus:outline-none text-right"
                 ></input>
               </span>
-              <span className="">CV</span>
+              <span className="">{symbol}</span>
             </span>
           </div>
         </div>
@@ -113,7 +121,7 @@ export const Buy = () => {
 
           <span className="flex gap-1">
             <span className="">
-              {!!amount ? Number(price) * Number(amount) : ''}
+              {amount ? Number(price) * Number(amount) : ''}
             </span>
             <span className="">USDT</span>
           </span>
@@ -128,7 +136,7 @@ export const Buy = () => {
 
         <div className="flex justify-between w-full">
           <span className="text-caption-regular">Max Buy</span>
-          <span className="text-caption-regular">8471.04 CV</span>
+          <span className="text-caption-regular">8471.04 {symbol}</span>
         </div>
 
         <div className="flex justify-between w-full">
@@ -148,7 +156,11 @@ export const Buy = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        <BuyDEXContent initialAmount={Number(amount)} initialPrice={Number(price)} />
+        <BuyDEXContent
+          initialAmount={Number(amount)}
+          initialPrice={Number(price)}
+          symbol={symbol}
+        />
       </PopupWithIcon>
     </div>
   );
@@ -157,9 +169,14 @@ export const Buy = () => {
 type BuyDEXContentProps = {
   initialAmount?: number;
   initialPrice?: number;
+  symbol: string;
 };
 
-const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount, initialPrice }) => {
+const BuyDEXContent: FC<BuyDEXContentProps> = ({
+  initialAmount,
+  initialPrice,
+  symbol,
+}) => {
   const { id } = useParams();
   const { estate } = usePropertyById(id);
 
@@ -288,7 +305,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount, initialPrice }) 
                       placeholder="Minimum 1"
                       className="w-full bg-transparent focus:outline-none text-right"
                     ></input>
-                    <span className="">CV</span>
+                    <span>{symbol}</span>
                   </span>
                 </div>
               </div>
@@ -325,7 +342,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount, initialPrice }) 
 
                     <span className="flex gap-1">
                       <span className="">
-                        {!!amount ? Number(price) * Number(amount) : ''}
+                        {amount ? Number(price) * Number(amount) : ''}
                       </span>
                       <span className="">USDT</span>
                     </span>
@@ -442,9 +459,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount, initialPrice }) 
                     </span>
 
                     <span className="flex gap-1">
-                      <span className="">
-                        0
-                      </span>
+                      <span className="">0</span>
                       <span className="">USDT</span>
                     </span>
                   </div>

@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { usePropertyById } from '../../hooks/use-property-by-id';
 
 import { Divider } from '~/atoms/Divider';
@@ -12,10 +12,19 @@ import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { useParams } from '@remix-run/react';
 import { sell } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
 import { oceanContract } from '~/consts/contracts';
-import { useStatusFlag, STATUS_PENDING, STATUS_IDLE, getStatusLabel } from '~/hooks/use-status-flag';
+import {
+  useStatusFlag,
+  STATUS_PENDING,
+  STATUS_IDLE,
+  getStatusLabel,
+} from '~/hooks/use-status-flag';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 
-export const Sell = () => {
+type SellProps = {
+  symbol: string;
+};
+
+export const Sell: FC<SellProps> = ({ symbol }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleRequestClose = useCallback(() => {
@@ -71,7 +80,7 @@ export const Sell = () => {
                   className="w-full bg-transparent focus:outline-none text-right"
                 ></input>
               </span>
-              <span className="">CV</span>
+              <span className="">{symbol}</span>
             </span>
           </div>
         </div>
@@ -107,7 +116,7 @@ export const Sell = () => {
 
           <span className="flex gap-1">
             <span className="">
-              {!!amount ? Number(price) * Number(amount) : ''}
+              {amount ? Number(price) * Number(amount) : ''}
             </span>
             <span className="">USDT</span>
           </span>
@@ -122,7 +131,7 @@ export const Sell = () => {
 
         <div className="flex justify-between w-full">
           <span className="text-caption-regular">Max Buy</span>
-          <span className="text-caption-regular">8471.04 CV</span>
+          <span className="text-caption-regular">8471.04 {symbol}</span>
         </div>
 
         <div className="flex justify-between w-full">
@@ -142,7 +151,11 @@ export const Sell = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        <SellDEXContent initialAmount={Number(amount)} initialPrice={Number(price)} />
+        <SellDEXContent
+          initialAmount={Number(amount)}
+          initialPrice={Number(price)}
+          symbol={symbol}
+        />
       </PopupWithIcon>
     </div>
   );
@@ -151,9 +164,13 @@ export const Sell = () => {
 type SellDEXContentProps = {
   initialAmount?: number;
   initialPrice?: number;
+  symbol: string;
 };
 
-const SellDEXContent: FC<SellDEXContentProps> = ({ initialAmount, initialPrice }) => {
+const SellDEXContent: FC<SellDEXContentProps> = ({
+  initialAmount,
+  initialPrice,
+}) => {
   const { id } = useParams();
   const { estate } = usePropertyById(id);
 
@@ -198,9 +215,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({ initialAmount, initialPrice }
         <div className="flex flex-col flex-grow gap-4">
           <div className="flex flex-col gap-2">
             <div className={`w-full flex justify-start eq-input p-3`}>
-              <span className="text-content-secondary opacity-50">
-                Price
-              </span>
+              <span className="text-content-secondary opacity-50">Price</span>
               <span className="flex flex-grow gap-1">
                 <input
                   name="price"
@@ -216,9 +231,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({ initialAmount, initialPrice }
             </div>
 
             <div className={`w-full flex justify-start eq-input p-3`}>
-              <span className="text-content-secondary opacity-50">
-                Amount
-              </span>
+              <span className="text-content-secondary opacity-50">Amount</span>
               <span className="flex flex-grow gap-1">
                 <input
                   name="amount"
@@ -239,12 +252,8 @@ const SellDEXContent: FC<SellDEXContentProps> = ({ initialAmount, initialPrice }
           <div className="flex flex-col gap-3">
             <div className="flex flex-col w-full gap-1">
               <div className="flex justify-between w-full">
-                <span className="text-caption-regular">
-                  Available Balance
-                </span>
-                <span className="text-caption-regular">
-                  1,034.7588004 USDT
-                </span>
+                <span className="text-caption-regular">Available Balance</span>
+                <span className="text-caption-regular">1,034.7588004 USDT</span>
               </div>
 
               <div className="flex justify-between w-full">
@@ -260,13 +269,11 @@ const SellDEXContent: FC<SellDEXContentProps> = ({ initialAmount, initialPrice }
 
             <div className="flex">
               <div className={`w-full flex justify-between eq-input p-3`}>
-                <span className="text-content-secondary opacity-50">
-                  Total
-                </span>
+                <span className="text-content-secondary opacity-50">Total</span>
 
                 <span className="flex gap-1">
                   <span className="">
-                    {!!amount ? Number(price) * Number(amount) : ''}
+                    {amount ? Number(price) * Number(amount) : ''}
                   </span>
                   <span className="">USDT</span>
                 </span>
