@@ -131,6 +131,8 @@ export async function buy({
 
     await batchOp.confirmation();
 
+    dispatch(STATUS_SUCCESS);
+
     await sleep(3000);
     dispatch(STATUS_IDLE);
   } catch (e: unknown) {
@@ -206,6 +208,8 @@ export async function sell({
     dispatch(STATUS_CONFIRMING);
 
     await batchOp.confirmation();
+
+    dispatch(STATUS_SUCCESS);
 
     await sleep(3000);
     dispatch(STATUS_IDLE);
