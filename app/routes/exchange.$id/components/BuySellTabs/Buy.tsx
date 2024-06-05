@@ -8,15 +8,28 @@ import { Divider } from '~/atoms/Divider';
 
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 
-import mockprice from '~/mocks/price';
 import otc from '~/mocks/otc.json';
 import { Button } from '~/atoms/Button';
 import MenuMulti from './MenuMulti';
 import DotFill from '~/icons/dot-fill.svg?react';
 import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
+import { useParams } from '@remix-run/react';
+import { buy } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
+import {
+  useStatusFlag,
+  STATUS_PENDING,
+  STATUS_IDLE,
+  getStatusLabel,
+} from '~/hooks/use-status-flag';
+import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 
-export const Buy = () => {
+type BuyProps = {
+  symbol: string;
+};
+
+export const Buy: FC<BuyProps> = ({ symbol }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleRequestClose = useCallback(() => {
@@ -27,9 +40,8 @@ export const Buy = () => {
     setIsOpen(true);
   }, []);
 
-  const [amount, setAmount] = useState<number>();
-
-  const price = mockprice();
+  const [price, setPrice] = useState<number | string>(Number(''));
+  const [amount, setAmount] = useState<number | string>(Number(''));
 
   return (
     <div className="flex flex-col w-full gap-4">
@@ -43,7 +55,17 @@ export const Buy = () => {
             <span className="text-content-secondary opacity-50">Price</span>
 
             <span className="flex gap-1">
-              <span className="">{price}</span>
+              <span className="">
+                <input
+                  name="amount"
+                  type="number"
+                  min={1}
+                  value={price || ''}
+                  onChange={(e) => setPrice(Number(e.target.value))}
+                  placeholder="0.00"
+                  className="w-full bg-transparent focus:outline-none text-right"
+                ></input>
+              </span>
               <span className="">USDT</span>
             </span>
           </div>
@@ -63,7 +85,7 @@ export const Buy = () => {
                   className="w-full bg-transparent focus:outline-none text-right"
                 ></input>
               </span>
-              <span className="">CV</span>
+              <span className="">{symbol}</span>
             </span>
           </div>
         </div>
@@ -99,7 +121,7 @@ export const Buy = () => {
 
           <span className="flex gap-1">
             <span className="">
-              {amount && amount > 0 ? price * amount : ''}
+              {amount ? Number(price) * Number(amount) : ''}
             </span>
             <span className="">USDT</span>
           </span>
@@ -114,7 +136,7 @@ export const Buy = () => {
 
         <div className="flex justify-between w-full">
           <span className="text-caption-regular">Max Buy</span>
-          <span className="text-caption-regular">8471.04 CV</span>
+          <span className="text-caption-regular">8471.04 {symbol}</span>
         </div>
 
         <div className="flex justify-between w-full">
@@ -134,7 +156,11 @@ export const Buy = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        <BuyDEXContent initialAmount={amount} />
+        <BuyDEXContent
+          initialAmount={Number(amount)}
+          initialPrice={Number(price)}
+          symbol={symbol}
+        />
       </PopupWithIcon>
     </div>
   );
@@ -142,11 +168,17 @@ export const Buy = () => {
 
 type BuyDEXContentProps = {
   initialAmount?: number;
+  initialPrice?: number;
+  symbol: string;
 };
 
-const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
-  const estateData = usePropertyById();
-  const price = mockprice();
+const BuyDEXContent: FC<BuyDEXContentProps> = ({
+  initialAmount,
+  initialPrice,
+  symbol,
+}) => {
+  const { id } = useParams();
+  const { estate } = usePropertyById(id);
 
   const columnsOTC = [
     {
@@ -170,9 +202,6 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
     },
   ];
 
-  // Optinally pass in an amount
-  const [amount, setAmount] = useState<number | undefined>(initialAmount);
-
   const [activetabId, setAvtiveTabId] = useState('market');
 
   const handleTabClick = useCallback((id: string) => {
@@ -195,12 +224,41 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
     [handleTabClick]
   );
 
+  const { dapp } = useWalletContext();
+  const { status, dispatch, isLoading } = useStatusFlag();
+
+  const [price, setPrice] = useState<number | string>(Number(initialPrice));
+  const [amount, setAmount] = useState<number | string>(Number(initialAmount));
+
+  const handleBuy = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await buy({
+        tezos,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
+        dispatch,
+        tokensAmount: Number(amount),
+        pricePerToken: Number(price),
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, price, symbol]);
+
   return (
     <div className="flex flex-col justify-between h-full">
       <div className="flex flex-col flex-grow gap-6">
         <div className="flex flex-col">
-          <span className="text-card-headline">{estateData?.title}</span>
-          <span className="">{estateData?.details.fullAddress}</span>
+          <span className="text-card-headline">{estate?.title}</span>
+          <span className="">{estate?.details.fullAddress}</span>
         </div>
 
         <div className="flex flex-col flex-grow gap-4">
@@ -209,9 +267,27 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
           {activetabId == 'market' ? (
             <>
               <div className="flex flex-col gap-2">
-                <div className={`w-full flex justify-end`}>
+                {/* <div className={`w-full flex justify-end`}>
                   <span className="text-body-xs">
                     Market Price: {price} USDT
+                  </span>
+                </div> */}
+
+                <div className={`w-full flex justify-start eq-input p-3`}>
+                  <span className="text-content-secondary opacity-50">
+                    Price
+                  </span>
+                  <span className="flex flex-grow gap-1">
+                    <input
+                      name="price"
+                      type="number"
+                      min={0}
+                      value={price || ''}
+                      onChange={(e) => setPrice(Number(e.target.value))}
+                      placeholder="0.00"
+                      className="w-full bg-transparent focus:outline-none text-right"
+                    ></input>
+                    <span className="">USDT</span>
                   </span>
                 </div>
 
@@ -229,7 +305,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
                       placeholder="Minimum 1"
                       className="w-full bg-transparent focus:outline-none text-right"
                     ></input>
-                    <span className="">CV</span>
+                    <span>{symbol}</span>
                   </span>
                 </div>
               </div>
@@ -249,7 +325,9 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
                   <div className="flex justify-between w-full">
                     <span className="text-caption-regular">Max Buy</span>
-                    <span className="text-caption-regular">8471.04 CV</span>
+                    <span className="text-caption-regular">
+                      8471.04 {symbol}
+                    </span>
                   </div>
 
                   <div className="flex justify-between w-full">
@@ -266,7 +344,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
                     <span className="flex gap-1">
                       <span className="">
-                        {amount && amount > 0 ? price * amount : ''}
+                        {amount ? Number(price) * Number(amount) : ''}
                       </span>
                       <span className="">USDT</span>
                     </span>
@@ -275,7 +353,9 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
               </div>
 
               <div className="flex flex-col gap-4 mt-auto">
-                <Button>Buy</Button>
+                <Button disabled={isLoading} onClick={handleBuy}>
+                  {getStatusLabel(status, 'Buy')}
+                </Button>
               </div>
             </>
           ) : (
@@ -365,7 +445,9 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
 
                   <div className="flex justify-between w-full">
                     <span className="text-caption-regular">Max Buy</span>
-                    <span className="text-caption-regular">8471.04 CV</span>
+                    <span className="text-caption-regular">
+                      8471.04 {symbol}
+                    </span>
                   </div>
 
                   <div className="flex justify-between w-full">
@@ -381,9 +463,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
                     </span>
 
                     <span className="flex gap-1">
-                      <span className="">
-                        {amount && amount > 0 ? price * amount : ''}
-                      </span>
+                      <span className="">0</span>
                       <span className="">USDT</span>
                     </span>
                   </div>
@@ -391,7 +471,7 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({ initialAmount }) => {
               </div>
 
               <div className="flex flex-col gap-4 mt-auto">
-                <Button>Buy</Button>
+                <Button disabled={true}>Buy</Button>
               </div>
             </>
           )}

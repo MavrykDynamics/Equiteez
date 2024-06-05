@@ -10,9 +10,13 @@ import {
 import { InputNumber } from '~/molecules/Input/Input';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { buy } from '../actions/financial.actions';
-import { oceanContract } from '~/consts/contracts';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 
-export const PriceBuyTab: FC = () => {
+type PriceBuyTabProps = {
+  symbol: string;
+};
+
+export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
 
@@ -32,7 +36,7 @@ export const PriceBuyTab: FC = () => {
       }
       await buy({
         tezos,
-        marketContractAddress: oceanContract,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -40,7 +44,7 @@ export const PriceBuyTab: FC = () => {
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [amount, dapp, dispatch, price]);
+  }, [amount, dapp, dispatch, price, symbol]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -49,7 +53,7 @@ export const PriceBuyTab: FC = () => {
           <InputNumber
             handleValue={setPrice}
             label={'Price'}
-            value={price}
+            value={price || ''}
             placeholder={'0.00'}
             valueText="USDT"
             name={'price'}
@@ -57,9 +61,9 @@ export const PriceBuyTab: FC = () => {
           <InputNumber
             handleValue={setAmount}
             label={'Amount'}
-            value={amount}
+            value={amount || ''}
             placeholder={'Minimum 1'}
-            valueText="OCEAN"
+            valueText={symbol}
             name={'amount'}
           />
         </div>
@@ -71,17 +75,19 @@ export const PriceBuyTab: FC = () => {
           </div>
           <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
             <p>Max Buy</p>
-            <p>17.84 OCEAN</p>
+            <p>17.84 {symbol}</p>
           </div>
           <div className="flex justify-between text-secondary-content text-caption-regular">
             <p>Est. Fee</p>
-            <p>-- OCEAN</p>
+            <p>-- {symbol}</p>
           </div>
         </div>
 
         <InputNumber
           label={'Total'}
-          value={price}
+          value={
+            price && amount ? (Number(price) * Number(amount)).toFixed(2) : 0
+          }
           placeholder={'0'}
           valueText="USDT"
           name={'total'}

@@ -3,9 +3,13 @@ import { useMatches } from '@remix-run/react';
 import estates from 'app/mocks/estates.json';
 import { EstateType } from 'app/mocks/estates.type';
 
-export const usePropertyById = (): EstateType | null => {
-  const matches = useMatches();
-  const id = "1";
+export const usePropertyById = (id: any): {
+  estate: EstateType | null;
+  id: string | undefined;
+} => {
+  // const matches = useMatches();
 
-  return estates.find((estate) => estate.id === id) ?? null;
+  // const id = matches[0].params.id;
+
+  return { estate: estates.find((estate) => estate.id == id) ?? null, id };
 };

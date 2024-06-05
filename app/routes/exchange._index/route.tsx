@@ -16,7 +16,7 @@ export default function Exchange() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate(`/exchange/0`);
+    navigate(`/exchange/1`);
   }, [navigate]);
 
   return (<div>Loading...</div>)

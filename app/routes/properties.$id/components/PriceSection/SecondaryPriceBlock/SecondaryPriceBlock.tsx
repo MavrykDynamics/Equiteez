@@ -3,7 +3,7 @@ import { Button } from '~/atoms/Button';
 import { Divider } from '~/atoms/Divider';
 import { TabType } from '~/atoms/Tab';
 import { Table } from '~/atoms/Table/Table';
-import { oceanContract } from '~/consts/contracts';
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
   getStatusLabel,
   STATUS_IDLE,
@@ -23,7 +23,7 @@ import { InputNumber } from '~/molecules/Input/Input';
 
 type OrderType = 'buy' | 'sell' | '';
 
-export const SecondaryPriceBlock = () => {
+export const SecondaryPriceBlock: FC<{ symbol: string }> = ({ symbol }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>('');
 
@@ -46,10 +46,6 @@ export const SecondaryPriceBlock = () => {
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <p>Annual Return</p>
-          <p>8.88%</p>
-        </div>
-        <div className="text-content text-buttons flex justify-between mb-4">
-          <p>Rental Yield</p>
           <p>8.88%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
@@ -76,14 +72,14 @@ export const SecondaryPriceBlock = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        {orderType === 'buy' && <BuyPopupContent />}
-        {orderType === 'sell' && <SellPopupContent />}
+        {orderType === 'buy' && <BuyPopupContent symbol={symbol} />}
+        {orderType === 'sell' && <SellPopupContent symbol={symbol} />}
       </PopupWithIcon>
     </section>
   );
 };
 
-const BuyPopupContent: FC = () => {
+const BuyPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
   const [isOfferScreen, setIsOfferScreen] = useState(false);
 
   const toggleMakeOfferScreen = useCallback(() => {
@@ -120,7 +116,7 @@ const BuyPopupContent: FC = () => {
         <>
           <div className="flex-1 flex flex-col">
             <div>
-              <h3 className="text-card-headline">Ocean Front</h3>
+              <h3 className="text-card-headline">{symbol} Front</h3>
               <p className="text-body-xs mb-6">
                 335 Wilburton Lane, Northport, AL 35473
               </p>
@@ -128,7 +124,7 @@ const BuyPopupContent: FC = () => {
               <TabSwitcher tabs={tabs} activeTabId={activetabId} />
             </div>
 
-            {activetabId === 'buy' && <PriceBuyTab />}
+            {activetabId === 'buy' && <PriceBuyTab symbol={symbol} />}
             {activetabId === 'otcBuy' && (
               <PriceOTCBuyTab toggleMakeOfferScreen={toggleMakeOfferScreen} />
             )}
@@ -140,7 +136,7 @@ const BuyPopupContent: FC = () => {
 };
 
 // TODO move, this is done for demo purposes
-const SellPopupContent: FC = () => {
+const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
   const { status, dispatch, isLoading } = useStatusFlag();
   const { dapp } = useWalletContext();
 
@@ -160,7 +156,7 @@ const SellPopupContent: FC = () => {
       }
       await sell({
         tezos,
-        marketContractAddress: oceanContract,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -169,12 +165,12 @@ const SellPopupContent: FC = () => {
       // TODO handle Errors with context
       console.log(e, 'Sell contact error');
     }
-  }, [amount, dapp, dispatch, price]);
+  }, [amount, dapp, dispatch, price, symbol]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
       <div className="flex-1">
-        <h3 className="text-card-headline">Ocean Front</h3>
+        <h3 className="text-card-headline">{symbol} Front</h3>
         <p className="text-body-xs mb-6">
           335 Wilburton Lane, Northport, AL 35473
         </p>
@@ -183,7 +179,7 @@ const SellPopupContent: FC = () => {
             <InputNumber
               handleValue={setPrice}
               label={'Price'}
-              value={price}
+              value={price || ''}
               placeholder={'0.00'}
               valueText="USDT"
               name={'price'}
@@ -191,9 +187,9 @@ const SellPopupContent: FC = () => {
             <InputNumber
               handleValue={setAmount}
               label={'Amount'}
-              value={amount}
+              value={amount || ''}
               placeholder={'Minimum 1'}
-              valueText="OCEAN"
+              valueText={symbol}
               name={'amount'}
             />
           </div>
@@ -205,17 +201,19 @@ const SellPopupContent: FC = () => {
             </div>
             <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
               <p>Max Sell</p>
-              <p>10.84 OCEAN</p>
+              <p>10.84 {symbol}</p>
             </div>
             <div className="flex justify-between text-secondary-content text-caption-regular">
               <p>Est. Fee</p>
-              <p>-- OCEAN</p>
+              <p>-- {symbol}</p>
             </div>
           </div>
 
           <InputNumber
             label={'Total'}
-            value={price}
+            value={
+              price && amount ? (Number(price) * Number(amount)).toFixed(2) : 0
+            }
             placeholder={'0'}
             valueText="USDT"
             name={'total'}
