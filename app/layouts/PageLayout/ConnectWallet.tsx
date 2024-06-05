@@ -11,7 +11,8 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 
 export const ConnectWallet = () => {
-  const { connect, userAddress, signOut, isLoading } = useUserContext();
+  const { connect, userAddress, signOut, isLoading, changeUser } =
+    useUserContext();
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
@@ -34,7 +35,7 @@ export const ConnectWallet = () => {
             >
               <button
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
-                onClick={connect}
+                onClick={changeUser}
               >
                 Change account
               </button>

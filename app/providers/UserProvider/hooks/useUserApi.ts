@@ -11,6 +11,7 @@ import {
 } from '../user.provider.types';
 
 import {
+  attachTzktSocketsEventHandlers,
   fetchTzktUserBalances,
   openTzktWebSocket,
 } from '../helpers/userBalances.helpers';
@@ -146,16 +147,55 @@ export const useUserApi = ({
   const connect = useCallback(async () => {
     try {
       await DAPP_INSTANCE?.connectAccount();
-      // await tzktSocket?.stop();
-
-      // const newTzktSocket = await openTzktWebSocket();
-      // setTzktSocket(newTzktSocket);
     } catch (e) {
       setUserLoading(false);
       console.error(`Failed to connect wallet:`, e);
       // bug('Failed to connect wallet', TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title'])
     }
   }, [DAPP_INSTANCE, setUserLoading]);
+
+  const changeUser = useCallback(async () => {
+    try {
+      await DAPP_INSTANCE?.connectAccount();
+    } catch (e) {
+      console.error(`Failed to change wallet: `, e);
+    }
+  }, [DAPP_INSTANCE]);
+
+  const updateTzktConnection = useCallback(
+    async (newUserAddress: string) => {
+      if (tzktSocket !== null) {
+        await tzktSocket?.stop();
+
+        const newTzktSocket = await openTzktWebSocket();
+        setTzktSocket(newTzktSocket);
+      }
+
+      await loadInitialTzktTokensForNewlyConnectedUser({
+        userAddress: newUserAddress,
+        isUsingLoader: false,
+      });
+
+      if (tzktSocket) {
+        attachTzktSocketsEventHandlers({
+          userAddress: newUserAddress,
+          handleTokens: updateUserTzktTokenBalances(newUserAddress),
+          tzktSocket,
+          handleDisconnect,
+          handleOnReconnected,
+        });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      // DO NOT update deps with tzktSocket, cuz it will trigger tzkt connection errors
+      handleDisconnect,
+      handleOnReconnected,
+      loadInitialTzktTokensForNewlyConnectedUser,
+      setTzktSocket,
+      updateUserTzktTokenBalances,
+    ]
+  );
 
   /**
    * disconnect user's wallet to DAPP & set context to no user state
@@ -165,9 +205,6 @@ export const useUserApi = ({
       await DAPP_INSTANCE?.disconnectWallet();
 
       setUserCtxState(DEFAULT_USER);
-
-      await tzktSocket?.stop();
-      setTzktSocket(null);
     } catch (e) {
       console.error(`Failed to disconnect wallet: `, e);
       // bug(
@@ -175,25 +212,16 @@ export const useUserApi = ({
       //   TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title']
       // );
     }
-  }, [DAPP_INSTANCE, setTzktSocket, setUserCtxState, tzktSocket]);
+  }, [DAPP_INSTANCE, setUserCtxState]);
 
   const returnValue = useMemo(
     () => ({
       connect,
       signOut,
-      loadInitialTzktTokensForNewlyConnectedUser,
-      updateUserTzktTokenBalances,
-      handleDisconnect,
-      handleOnReconnected,
+      changeUser,
+      updateTzktConnection,
     }),
-    [
-      connect,
-      signOut,
-      loadInitialTzktTokensForNewlyConnectedUser,
-      updateUserTzktTokenBalances,
-      handleDisconnect,
-      handleOnReconnected,
-    ]
+    [connect, signOut, updateTzktConnection, changeUser]
   );
 
   return returnValue;

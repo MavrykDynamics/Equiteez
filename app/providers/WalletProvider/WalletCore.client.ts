@@ -60,6 +60,7 @@ export function dappClient() {
         `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
         account.address
       );
+
       setAccount(account ?? null);
     });
   }
