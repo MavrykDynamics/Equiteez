@@ -52,17 +52,22 @@ export function dappClient() {
     return loadWallet();
   }
 
-  function listenToActiveAccount(setAccount: (acc: AccountInfo) => void) {
+  async function listenToActiveAccount(setAccount: (acc: AccountInfo) => void) {
     const client = getDAppClient();
-    client.subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
-      // An active account has been set, update the dApp UI
-      console.log(
-        `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
-        account.address
-      );
 
-      setAccount(account ?? null);
-    });
+    client
+      .subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
+        // An active account has been set, update the dApp UI
+        console.log(
+          `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
+          account.address
+        );
+
+        setAccount(account ?? null);
+      })
+      .catch((err) => {
+        throw err;
+      });
   }
 
   async function connectAccount() {

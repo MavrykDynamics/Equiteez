@@ -98,29 +98,44 @@ export const UserProvider = ({ children }: Props) => {
   // Listening for active account changes with beacon
   useEffect(() => {
     if (IS_WEB) {
-      dapp?.listenToActiveAccount(setAccount);
+      (async function () {
+        try {
+          // if no account, event to listen for active acc is not triggered, so we manually set acc to null
+          const acc = await dapp?.getDAppClient().getActiveAccount();
+          if (!acc) setAccount(null);
+
+          dapp?.listenToActiveAccount(setAccount);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
     }
   }, [IS_WEB, dapp]);
+
+  console.log(account);
 
   // account is updated when we trigger wallet account connect | disconnect | change acc
   // whenever account is updated - we reconnect tzkt socket to have up-to-date data
   useEffect(() => {
-    if (IS_WEB && account) {
-      setUserLoading(false);
-      (async function () {
-        try {
-          await updateTzktConnection(account.address);
-        } catch (e) {
-          console.log(e);
-        }
-      })();
-    } else if (account === null) {
-      (async function () {
-        const tzktSocket = getTzktSocket();
-        await tzktSocket?.stop();
+    if (IS_WEB) {
+      if (account) {
+        setUserLoading(false);
+        (async function () {
+          try {
+            await updateTzktConnection(account.address);
+          } catch (e) {
+            console.log(e);
+          }
+        })();
+      } else if (account === null) {
+        (async function () {
+          setUserLoading(false);
+          const tzktSocket = getTzktSocket();
+          await tzktSocket?.stop();
 
-        setTzktSocket(null);
-      })();
+          setTzktSocket(null);
+        })();
+      }
     }
   }, [IS_WEB, account, getTzktSocket, setTzktSocket, updateTzktConnection]);
 
