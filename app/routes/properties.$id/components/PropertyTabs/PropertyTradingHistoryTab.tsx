@@ -10,7 +10,6 @@ import {
 import ExpandIcon from 'app/icons/expand.svg?react';
 import SettingsIcon from 'app/icons/settings.svg?react';
 import { useEffect, useMemo } from 'react';
-import chart from '~/mocks/chart';
 import { ApexOptions } from 'apexcharts';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
@@ -19,10 +18,14 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 import OriginalApexCharts from 'react-apexcharts';
 import clsx from 'clsx';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import { formatChartData } from '~/utils/chart';
 
 export const PropertyTradingHistoryTab = () => {
-  const mockChart = chart();
   const { IS_WEB } = useAppContext();
+  const { activeEstate } = useEstatesContext();
+
   const {
     clientModule: ChartModule,
     loading,
@@ -78,12 +81,16 @@ export const PropertyTradingHistoryTab = () => {
     () => ({
       series: [
         {
-          data: mockChart,
+          data: formatChartData(
+            // TODO change trading history
+            (activeEstate as SecondaryEstate)?.assetDetails
+              ?.tradingHistory[0] ?? []
+          ),
         },
       ],
       options: opts,
     }),
-    [mockChart]
+    [activeEstate, opts]
   );
 
   const chartModuleProps = useMemo(
