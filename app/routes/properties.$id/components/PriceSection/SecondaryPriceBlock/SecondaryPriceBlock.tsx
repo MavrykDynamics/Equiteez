@@ -56,12 +56,7 @@ export const SecondaryPriceBlock: FC = () => {
         </div>
         <div className="text-content text-buttons flex justify-between">
           <p>Rental Yield</p>
-          <p>
-            {estate.assetDetails.priceSecondary.annualReturn - 4 > 0
-              ? estate.assetDetails.priceSecondary.annualReturn - 4
-              : 3.55}
-            %
-          </p>
+          <p>{estate.assetDetails.priceSecondary.rentalYield}%</p>
         </div>
         <Divider className="my-4" />
         <div className="text-content text-buttons flex justify-between mb-6">

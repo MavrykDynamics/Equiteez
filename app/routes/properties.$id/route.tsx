@@ -23,8 +23,8 @@ import styles from './propertyId.module.css';
 import { homeFAQ } from '../_index/index.const';
 import { PriceSection } from './components/PriceSection/PriceSection';
 import PropertyTabs from './components/PropertyTabs/PropertyTabs';
-import clsx from 'clsx';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { EstateHeadlineTab } from '~/templates/EstateHeadlineTab';
 
 export const meta: MetaFunction = () => {
   return [
@@ -55,7 +55,7 @@ export default function PropertyDetails() {
         <LinkWithIcon
           iconPosition="start"
           CustomIcon={ArrowLeftIcon}
-          to="/"
+          to="/properties"
           variant="content"
         >
           Back to Properties
@@ -69,7 +69,7 @@ export default function PropertyDetails() {
 
           <HeadLineTabs
             isSecondaryEstate={isSecondaryEstate}
-            houseType="Single Family"
+            houseType={estateData.assetDetails.propertyDetails.propertyType}
           />
           <Options />
         </div>
@@ -105,15 +105,10 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
 }) => {
   return (
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
-      <div className="py-1 px-2 bg-yellow-opacity rounded">{houseType}</div>
-      <div
-        className={clsx(
-          'py-1 px-2 rounded',
-          isSecondaryEstate ? 'bg-blue-opacity' : 'bg-green-opacity'
-        )}
-      >
-        {isSecondaryEstate ? 'Secondary Market' : 'Primary Issuance'}
+      <div className="py-1 px-2 bg-yellow-opacity text-yellow-dark rounded font-medium">
+        {houseType}
       </div>
+      <EstateHeadlineTab isSecondaryEstate={isSecondaryEstate} />
     </section>
   );
 };

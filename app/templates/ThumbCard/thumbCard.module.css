@@ -27,3 +27,35 @@
   inset: 0;
   z-index: 1;
 }
+
+/* progress bar styles */
+.progressBar {
+  position: relative;
+  height: 5px;
+  border-radius: 8px;
+}
+
+.progressBar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  @apply bg-divider-secondary opacity-50;
+  z-index: 0;
+}
+
+.progressPercentage::after {
+  content: '';
+  position: absolute;
+  border-radius: 8px;
+  /* TODO replace with var passed from data */
+  width: var(--percentage);
+  height: 100%;
+  inset: 0;
+  z-index: 1;
+}
+
+.progressBarContainer {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+}

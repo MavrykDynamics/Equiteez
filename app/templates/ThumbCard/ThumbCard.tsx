@@ -1,7 +1,8 @@
-import { FC, useMemo } from 'react';
+import { CSSProperties, FC, useMemo } from 'react';
 
 import styles from './thumbCard.module.css';
 import clsx from 'clsx';
+import { EstateHeadlineTab } from '../EstateHeadlineTab';
 
 type ThumbCardProps = {
   imgSrc: string;
@@ -43,6 +44,87 @@ export const ThumbCard: FC<ThumbCardProps> = ({
             </h4>
             <p className="text-white text-body-xs">APY</p>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type ThumbCardSecondary = Omit<ThumbCardProps, 'address'> & {
+  description: string;
+  progressBarPercentage?: number;
+  isSecondaryMarket: boolean;
+  pricePerToken?: number;
+};
+
+export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
+  imgSrc,
+  title,
+  description,
+  isSecondaryMarket,
+  pricePerToken,
+  progressBarPercentage,
+  APY,
+  height = '264px',
+}) => {
+  const memoizedStyle = useMemo(() => ({ '--card-height': height }), [height]);
+
+  return (
+    <div
+      style={memoizedStyle as React.CSSProperties}
+      className={styles.thumbCardWrapper}
+    >
+      <img src={imgSrc} alt="house" className={styles.thumbCardImg} />
+      <div
+        className={clsx(
+          styles.thumbCardContent,
+          'flex flex-col justify-between p-4'
+        )}
+      >
+        <div className="flex items-center gap-x-2">
+          <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
+          <div className="text-body-xs text-content py-1 px-2 bg-background rounded font-medium">
+            {APY}% APY
+          </div>
+          {pricePerToken && (
+            <div className="text-body-xs text-content py-1 px-2 bg-background rounded font-medium">
+              {pricePerToken}$ / Token
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col items-start">
+          <h4 className="text-white text-slider-headline truncate max-w-[381px]">
+            {title}
+          </h4>
+          <p className="text-white text-body-xs leading-5">{description}</p>
+          {progressBarPercentage && (
+            <div
+              style={
+                {
+                  '--percentage': `${progressBarPercentage}%`,
+                } as CSSProperties
+              }
+              className={clsx(
+                styles.progressBarContainer,
+                'gap-x-2 w-full items-center'
+              )}
+            >
+              <div
+                className={clsx(
+                  styles.progressBar,
+                  styles.progressPercentage,
+                  progressBarPercentage === 100
+                    ? 'after:bg-green-main'
+                    : 'after:bg-background'
+                )}
+              />
+              <span className="text-background text-caption">
+                {progressBarPercentage === 100
+                  ? 'FUNDED'
+                  : `${progressBarPercentage}%`}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

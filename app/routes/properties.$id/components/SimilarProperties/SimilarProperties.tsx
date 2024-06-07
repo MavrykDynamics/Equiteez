@@ -32,7 +32,7 @@ export const SimilarProperties = () => {
             key={estate.token_address}
             imgSrc={estate.assetDetails.previewImage}
             address={estate.assetDetails.propertyDetails.fullAddress}
-            APY={7.5}
+            APY={estate.assetDetails.APY}
             title={estate.name}
           />
         ))}

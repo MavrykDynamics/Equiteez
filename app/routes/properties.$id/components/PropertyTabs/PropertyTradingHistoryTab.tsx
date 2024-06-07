@@ -83,8 +83,8 @@ export const PropertyTradingHistoryTab = () => {
         {
           data: formatChartData(
             // TODO change trading history
-            (activeEstate as SecondaryEstate)?.assetDetails
-              ?.tradingHistory[0] ?? []
+            (activeEstate as SecondaryEstate)?.assetDetails?.tradingHistory ??
+              []
           ),
         },
       ],
