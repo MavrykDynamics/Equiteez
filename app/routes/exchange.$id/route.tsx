@@ -206,7 +206,7 @@ export default function ExchangeDetails() {
                 <span
                   className={`w-full flex text-body-xs justify-start items-center px-4 py-3 gap-2 bg-inactive-tab rounded-lg`}
                 >
-                  <Search />
+                  <Search className="w-[14px] h-[14px] text-content stroke-current" />
                   <input
                     name="term"
                     type="text"

@@ -1,10 +1,11 @@
-<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Page-1">
-<g id="Artboard">
-<g id="search">
-<path id="Oval" d="M5.99959 10.9994C8.76079 10.9994 10.9992 8.76097 10.9992 5.99977C10.9992 3.23858 8.76079 1.00018 5.99959 1.00018C3.23839 1.00018 1 3.23858 1 5.99977C1 8.76097 3.23839 10.9994 5.99959 10.9994Z" stroke="#021A12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Shape" d="M13.0015 12.9993L9.53516 9.53296" stroke="#021A12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</g>
-</g>
-</g>
+<svg viewBox="0 0 14 14" fill="none"
+    xmlns="http://www.w3.org/2000/svg">
+    <g id="Page-1">
+        <g id="Artboard">
+            <g id="search">
+                <path id="Oval" d="M5.99959 10.9994C8.76079 10.9994 10.9992 8.76097 10.9992 5.99977C10.9992 3.23858 8.76079 1.00018 5.99959 1.00018C3.23839 1.00018 1 3.23858 1 5.99977C1 8.76097 3.23839 10.9994 5.99959 10.9994Z" stroke="#021A12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path id="Shape" d="M13.0015 12.9993L9.53516 9.53296" stroke="#021A12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+        </g>
+    </g>
 </svg>

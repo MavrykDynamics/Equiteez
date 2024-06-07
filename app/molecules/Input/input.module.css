@@ -1,0 +1,29 @@
+.errorCaprion {
+  position: absolute;
+  left: 0;
+  bottom: -18px;
+}
+
+input.textInput {
+  outline: 1px solid transparent;
+  border: none;
+  border-radius: 8px;
+}
+
+input.textInput:focus,
+input.textInput.focused {
+  outline: 1px solid #33cb98;
+}
+
+input.textInput.error {
+  outline: 1px solid #db1414;
+}
+
+input.textInput.disabled {
+  outline: 1px solid #e6e8e7;
+  background-color: #fff;
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+  @apply bg-gray-400;
+}

@@ -1,0 +1,16 @@
+.searchIcon {
+  position: absolute;
+  z-index: 1;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  @apply w-4 h-4 text-content stroke-current;
+}
+
+.closeIcon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 16px;
+}

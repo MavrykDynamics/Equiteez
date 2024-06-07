@@ -114,12 +114,13 @@ export default {
       },
       boxShadow: {
         card: '0.5px 0.5px 0px 0px rgba(0, 0, 0, 0.03), 1px 2px 15px 0px rgba(0, 0, 0, 0.05);',
+        'card-secondary': '1px 2px 8px 0px rgba(0, 0, 0, 0.10);',
       },
       transitionProperty: {
         none: 'none',
         all: 'all',
         DEFAULT:
-          'background-color, border-color, border, color, fill, stroke, opacity, box-shadow, transform, max-height',
+          'background-color, border-color, border, color, fill, stroke, opacity, box-shadow, transform, max-height, width',
         colors: 'background-color, border-color, color, fill, stroke',
         opacity: 'opacity',
         shadow: 'box-shadow',

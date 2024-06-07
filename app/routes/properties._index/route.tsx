@@ -1,5 +1,6 @@
 import type { MetaFunction } from '@remix-run/node';
 import { Link } from '@remix-run/react';
+import { Spacer } from '~/atoms/Spacer';
 import PageLayout from '~/layouts/PageLayout/Pagelayout';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import {
@@ -8,6 +9,7 @@ import {
   SecondaryEstate,
 } from '~/providers/EstatesProvider/estates.types';
 import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
+import { Filters } from './components/Filters';
 
 export const meta: MetaFunction = () => {
   return [
@@ -22,6 +24,8 @@ export default function Properties() {
   return (
     <PageLayout>
       <div className="px-11">
+        <Spacer height={32} />
+        <Filters />
         <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
           {estates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
@@ -59,6 +63,7 @@ export default function Properties() {
             );
           })}
         </div>
+        <Spacer height={188} />
       </div>
     </PageLayout>
   );
