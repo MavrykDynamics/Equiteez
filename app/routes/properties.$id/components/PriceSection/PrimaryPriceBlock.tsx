@@ -16,9 +16,13 @@ import {
   useStatusFlag,
 } from '~/hooks/use-status-flag';
 import { defaultContractAction } from './actions/financial.actions';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { Navigate } from '@remix-run/react';
+import { PrimaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 export const PrimaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { activeEstate } = useEstatesContext();
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -28,12 +32,15 @@ export const PrimaryPriceBlock = () => {
     setIsOpen(true);
   }, []);
 
+  if (!activeEstate) return <Navigate to={'/'} replace />;
+  const estate = activeEstate as PrimaryEstate;
+
   return (
     <section className="self-start">
       <Table>
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Starting Price</p>
-          <p>$45.00</p>
+          <p>${estate.assetDetails.pricePrimary.price}</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <div className="flex items-center gap-x-1">
@@ -43,7 +50,7 @@ export const PrimaryPriceBlock = () => {
               className="w-6 h-6"
             />
           </div>
-          <p>11.88%</p>
+          <p>{estate.assetDetails.pricePrimary.projectedAnnualReturn}%</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <div className="flex items-center gap-x-1">
@@ -53,7 +60,7 @@ export const PrimaryPriceBlock = () => {
               className="w-6 h-6"
             />
           </div>
-          <p>8.88%</p>
+          <p>{estate.assetDetails.pricePrimary.projectedRentalYield}%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
           <div className="flex items-center gap-x-1">
@@ -63,11 +70,13 @@ export const PrimaryPriceBlock = () => {
               className="w-6 h-6"
             />
           </div>
-          <p>4.83%</p>
+          <p>{estate.assetDetails.pricePrimary.rentalYield}%</p>
         </div>
         <Divider className="my-4" />
         <h4 className="text-content text-buttons mb-3">Tokens Available</h4>
-        <ProgresBar />
+        <ProgresBar
+          tokensCount={estate.assetDetails.pricePrimary.tokensAvailable}
+        />
         <Button onClick={handleOpen}>Buy</Button>
       </Table>
 
@@ -82,13 +91,13 @@ export const PrimaryPriceBlock = () => {
   );
 };
 
-const ProgresBar = () => {
+const ProgresBar: FC<{ tokensCount: number }> = ({ tokensCount }) => {
   return (
     <div className="flex flex-col mb-6">
       <div className={clsx(styles.progressBar, styles.progressPercentage)} />
       <div className="flex justify-between text-content text-body mt-1">
-        <p>50</p>
-        <p>150</p>
+        <p>{Math.floor(tokensCount / 10)}</p>
+        <p>{tokensCount}</p>
       </div>
     </div>
   );

@@ -3,33 +3,41 @@ import { HashChip } from '~/molecules/HashChip';
 import { Table } from '~/atoms/Table/Table';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { Navigate } from '@remix-run/react';
 
 export const PropertyBlockchainTab = () => {
+  const { activeEstate } = useEstatesContext();
+  if (!activeEstate) return <Navigate to="/" replace />;
+
+  const { blockchain } = activeEstate.assetDetails;
   return (
     <div>
-      <Table>
-        <TableHeader>Mavryk Blockchain</TableHeader>
-        <TableItem>
-          <p>Identifier</p>
-          <p>EQUITEEZ-COVE-7335-WILBURTON-LN-NORTHPORT-AL </p>
-        </TableItem>
-        <TableItem>
-          <p>Total Tokens</p>
-          <p>1,600</p>
-        </TableItem>
-        <TableItem>
-          <p>Asset Issuer</p>
-          <p>
-            <HashChip hash={'mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G'} />
-          </p>
-        </TableItem>
-        <TableItem isLast>
-          <p>Asset ID</p>
-          <p>
-            <HashChip hash={'mv1DXbvsp4T7X6tQLHy3szGN7KJooy56fQ3H'} />
-          </p>
-        </TableItem>
-      </Table>
+      {blockchain.map((chainData) => (
+        <Table key={chainData.assetId}>
+          <TableHeader>{chainData.name} Blockchain</TableHeader>
+          <TableItem>
+            <p>Identifier</p>
+            <p>{chainData.identifier}</p>
+          </TableItem>
+          <TableItem>
+            <p>Total Tokens</p>
+            <p>{chainData.totalTokens}</p>
+          </TableItem>
+          <TableItem>
+            <p>Asset Issuer</p>
+            <p>
+              <HashChip hash={chainData.assetIssuer} />
+            </p>
+          </TableItem>
+          <TableItem isLast>
+            <p>Asset ID</p>
+            <p>
+              <HashChip hash={chainData.assetId} />
+            </p>
+          </TableItem>
+        </Table>
+      ))}
     </div>
   );
 };

@@ -1,0 +1,281 @@
+[{
+    "token_address": "H05tGhp3yS5KmU9Rf29UvlJpSbByg64CIKWdUDQJlK",
+    "name": "Eplode",
+    "symbol": "AMER",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetDetails": {
+      "coordinates": {
+        "lat": -40.109921,
+        "lng": 162.84146
+      },
+      "type": "Secondary Market",
+      "assetImages": [
+        "https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+      ],
+      "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "basicInfo": {
+        "beds": 5,
+        "baths": 1,
+        "sqft": 482,
+        "buildDate": "2005-03-18T03:00:58-02:00"
+      },
+      "propertyDetails": {
+        "description": "Amet eiusmod adipisicing sunt ipsum mollit minim consectetur aliqua et incididunt elit mollit adipisicing. Adipisicing non aliquip non commodo veniam ex occaecat proident id veniam dolore est enim. Est non qui deserunt commodo occaecat voluptate do veniam adipisicing consequat tempor in exercitation. Fugiat ut dolor magna amet duis quis minim qui nisi ea nisi amet do magna. Proident commodo cupidatat adipisicing dolore dolor nisi excepteur mollit Lorem nostrud.\r\n",
+        "propertyType": "Condominium (Condo)",
+        "fullAddress": "261 Sullivan Street, Adamstown, Rhode Island",
+        "zipCode": 1,
+        "state": "West Virginia",
+        "country": "Oklahoma",
+        "rentalType": "Short-term Rental",
+        "rented": "Pre-Leased",
+        "rentSubsidy": "Yes",
+        "propertyManager": "Janette David",
+        "parking": "Multi-Story Parking Structures"
+      },
+      "buildingInfo": {
+        "stories": 35,
+        "lotSize": 2068,
+        "interiorSize": 565,
+        "buildingClass": "C",
+        "foundation": "Post and Beam",
+        "exteriorWalls": "Clapboard (Lap Siding)",
+        "roofType": "Clay and Concrete Tiles",
+        "heating": "Radiator Heating",
+        "cooling": "Smart Thermostats with Cooling Control",
+        "renovated": "Renovated in the Last 10 Years"
+      },
+      "neighborhood": {
+        "description": "Do ex proident proident sint ad incididunt est in id ipsum exercitation qui. Ut exercitation culpa anim adipisicing amet duis. Aute elit officia sunt commodo.\r\n",
+        "coordinates": {
+          "lat": -29.18221,
+          "lng": -38.296817
+        }
+      },
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 2238.25,
+          "grossRentMonthly": 134.13,
+          "monthlyCosts": {
+            "costs": 113.89,
+            "netReproperty": 124.69,
+            "platform": 38.97,
+            "expenses": 79.68,
+            "taxes": 378.97,
+            "insurance": 66.63,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 827.72,
+          "netRentYearly": 7434.27,
+          "totalInvestment": {
+            "total": 83780.28,
+            "underlyingAssetPrice": 70883.64,
+            "initialMaintenanceReserve": 911.63
+          },
+          "expectedIncome": 11.34
+        },
+        "expectedIncome": {
+          "income": 15.64,
+          "incomePerTokenYearly": 11.09,
+          "incomeStartDate": "1994-07-27T10:03:37-03:00",
+          "tokenPrice": 20.09,
+          "totalTokens": 389,
+          "description": "Aute in duis reprehenderit ullamco consectetur eiusmod id elit do cillum id excepteur laborum. Ipsum enim nisi eiusmod do dolore fugiat laborum. Voluptate anim non pariatur eu exercitation mollit consectetur amet eu veniam labore velit pariatur. Ullamco veniam aliqua aliqua nisi aute fugiat irure eu nulla. Deserunt ad cupidatat qui est dolor id amet.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Mavryk",
+          "identifier": "RIVER-COVE-LAKE-OAK",
+          "totalTokens": 1179,
+          "assetIssuer": "mv1UM7HjIO2hx2dM94tKe2qnFEbDzM4RSmXYdS3pgDMm",
+          "assetId": "mv1yHIVLXpMqSNW7amCCcCUeTzaugymqfJxReAAphF6b"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2009-11-29T12:06:06-02:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 51.52,
+        "maxInvestmentAmount": 64921.21,
+        "raisedAmount": 65190.03,
+        "offeringPercent": 47.97
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "1998-07-02T08:19:24-03:00",
+          "assetValuation": 82687.48,
+          "annualChange": 39.9,
+          "totalInvestment": 10812.9,
+          "capitalROI": 89.79,
+          "tokenPrice": 71.79,
+          "regDistributed": 3655.5325,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "1972-01-07T10:08:58-03:00",
+          "assetValuation": 74907.82,
+          "totalInvestment": 99019.7633,
+          "tokenPrice": 11.39,
+          "info": "?"
+        }
+      },
+      "priceSecondary": {
+        "price": 43.47,
+        "annualReturn": 76.53,
+        "totalLiquidity": 15.95
+      },
+      "tradingHistory": [
+        [
+          {
+            "x": "2000-08-14T22:00:00.000Z",
+            "y": [7331, 7732, 6569, 7634]
+          },
+          {
+            "x": "2000-09-12T22:00:00.000Z",
+            "y": [5946, 5958, 4943, 6164]
+          },
+          {
+            "x": "2001-07-02T22:00:00.000Z",
+            "y": [5391, 6227, 4161, 5346]
+          },
+          {
+            "x": "2002-04-24T22:00:00.000Z",
+            "y": [3390, 4292, 3143, 3918]
+          },
+          {
+            "x": "2002-08-18T22:00:00.000Z",
+            "y": [8340, 9061, 8226, 7669]
+          },
+          {
+            "x": "2003-01-04T22:00:00.000Z",
+            "y": [8565, 9328, 7520, 8681]
+          },
+          {
+            "x": "2003-12-25T22:00:00.000Z",
+            "y": [6227, 7399, 5506, 5526]
+          },
+          {
+            "x": "2004-12-18T22:00:00.000Z",
+            "y": [4084, 5259, 3343, 4154]
+          },
+          {
+            "x": "2005-11-11T22:00:00.000Z",
+            "y": [4633, 5770, 4037, 4061]
+          },
+          {
+            "x": "2006-09-14T22:00:00.000Z",
+            "y": [9121, 10498, 8107, 9519]
+          },
+          {
+            "x": "2007-03-13T22:00:00.000Z",
+            "y": [4958, 5825, 4908, 4838]
+          },
+          {
+            "x": "2007-09-10T22:00:00.000Z",
+            "y": [8449, 9942, 7335, 8934]
+          },
+          {
+            "x": "2007-10-12T22:00:00.000Z",
+            "y": [8983, 10407, 8739, 8459]
+          },
+          {
+            "x": "2008-06-10T22:00:00.000Z",
+            "y": [10107, 10258, 9398, 9987]
+          },
+          {
+            "x": "2008-12-19T22:00:00.000Z",
+            "y": [2991, 3577, 1786, 2762]
+          },
+          {
+            "x": "2009-06-04T22:00:00.000Z",
+            "y": [9897, 10193, 9219, 10345]
+          },
+          {
+            "x": "2009-11-21T22:00:00.000Z",
+            "y": [7159, 8014, 5783, 6565]
+          },
+          {
+            "x": "2010-10-07T22:00:00.000Z",
+            "y": [2592, 3321, 2260, 2857]
+          },
+          {
+            "x": "2010-11-29T22:00:00.000Z",
+            "y": [2285, 2910, 984, 2222]
+          },
+          {
+            "x": "2011-11-10T22:00:00.000Z",
+            "y": [8573, 9585, 8151, 8237]
+          }
+        ]
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 178.63,
+            "price": 277.72,
+            "totalValue": 2514.39
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 74.86,
+            "price": 341.3,
+            "totalValue": 45509.17
+          },
+          {
+            "seller": "Jane Smith",
+            "tokensForSale": 52.71,
+            "price": 320.95,
+            "totalValue": 1535.31
+          },
+          {
+            "seller": "Robert Taylor",
+            "tokensForSale": 205.63,
+            "price": 248.43,
+            "totalValue": 15761.47
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 250.18,
+            "price": 396.92,
+            "totalValue": 33433.67
+          }
+        ],
+        "selling": [
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 62.15,
+            "price": 208.91,
+            "totalValue": 15898.78
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 158.86,
+            "price": 367.2,
+            "totalValue": 34565.43
+          },
+          {
+            "seller": "Jane Cooper",
+            "tokensForSale": 329.8,
+            "price": 347.32,
+            "totalValue": 4363.25
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 128.3,
+            "price": 140.48,
+            "totalValue": 28263.37
+          },
+          {
+            "seller": "Emily Davis",
+            "tokensForSale": 237.08,
+            "price": 166.7,
+            "totalValue": 39982.65
+          }
+        ]
+      }
+    }
+  }]

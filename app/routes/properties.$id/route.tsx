@@ -5,9 +5,9 @@ import LikeIcon from 'app/icons/like.svg?react';
 import ShareIcon from 'app/icons/share.svg?react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
-import { usePropertyById } from './hooks/use-property-by-id';
+import { usePropertyByAddress } from './hooks/use-property-by-id';
 import { LinkWithIcon } from '~/atoms/LinkWithIcon';
-import { FC, useMemo } from 'react';
+import { FC } from 'react';
 import { Gallery } from './components/Gallery/Gallery';
 
 import { IconsBlock } from './components/IconsBlock';
@@ -24,6 +24,7 @@ import { homeFAQ } from '../_index/index.const';
 import { PriceSection } from './components/PriceSection/PriceSection';
 import PropertyTabs from './components/PropertyTabs/PropertyTabs';
 import clsx from 'clsx';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 export const meta: MetaFunction = () => {
   return [
@@ -39,13 +40,12 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function PropertyDetails() {
-  const { estate: estateData } = usePropertyById();
-  const tabId = useLoaderData<typeof loader>() as string | undefined;
+  // setting active estate in provider
+  const estateData = usePropertyByAddress();
+  const { isActiveEstateSecondaryMarket: isSecondaryEstate } =
+    useEstatesContext();
 
-  const isSecondaryEstate = useMemo(
-    () => estateData?.estateType === 'secondary',
-    [estateData?.estateType]
-  );
+  const tabId = useLoaderData<typeof loader>() as string | undefined;
 
   if (!estateData) return <Navigate to={'/properties'} />;
 
@@ -64,7 +64,7 @@ export default function PropertyDetails() {
       <div className="mb-6">
         <div className="flex items-center gap-x-3 px-11">
           <h3 className="text-content text-section-headline">
-            {estateData.title}
+            {estateData.name}
           </h3>
 
           <HeadLineTabs
@@ -74,20 +74,20 @@ export default function PropertyDetails() {
           <Options />
         </div>
         <p className="text-body text-content px-11">
-          {estateData.details.fullAddress}
+          {estateData.assetDetails.propertyDetails.fullAddress}
         </p>
       </div>
-      <Gallery mainImgsrc={estateData.imgSrc} thumbs={estateData.thumbs} />
+      <Gallery
+        mainImgsrc={estateData.assetDetails.previewImage}
+        thumbs={estateData.assetDetails.assetImages}
+      />
       <section className={styles.detailsSection}>
         <div className="flex flex-col">
           <IconsBlock />
           <Divider className="my-6" />
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
-        <PriceSection
-          isSecondaryEstate={isSecondaryEstate}
-          symbol={estateData.symbol}
-        />
+        <PriceSection isSecondaryEstate={isSecondaryEstate} />
       </section>
       <Spacer />
       <SimilarProperties />

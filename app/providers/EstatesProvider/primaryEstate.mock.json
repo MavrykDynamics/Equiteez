@@ -1,0 +1,133 @@
+[{
+    "token_address": "q4C6cdBE4OCBYx6a8xPMMFR1EkSl7EuOX4acc5eph3",
+    "name": "Zillacom",
+    "symbol": "VERM",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetDetails": {
+      "coordinates": {
+        "lat": -48.123258,
+        "lng": 20.244304
+      },
+      "type": "Primary Issuance",
+      "assetImages": [
+        "https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+      ],
+      "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "basicInfo": {
+        "beds": 3,
+        "baths": 2,
+        "sqft": 785,
+        "buildDate": "1996-05-25T06:35:51-03:00"
+      },
+      "propertyDetails": {
+        "description": "Proident ex anim proident officia. Commodo duis sit esse sunt velit mollit exercitation esse incididunt adipisicing in. Eu veniam amet minim veniam voluptate duis ut cillum. Cupidatat aute tempor aute ad irure. Est consectetur culpa mollit Lorem ad consequat magna tempor. Anim ea et deserunt commodo consectetur est laboris Lorem reprehenderit reprehenderit laboris consectetur voluptate consequat. Eu consequat sunt elit duis do cupidatat cupidatat ut ea laboris nulla ut.\r\n",
+        "propertyType": "Bungalow",
+        "fullAddress": "561 Willoughby Street, Seymour, Washington",
+        "zipCode": 1,
+        "state": "Maryland",
+        "country": "Connecticut",
+        "rentalType": "Month-to-Month Rental",
+        "rented": "Under Renovation",
+        "rentSubsidy": "Yes",
+        "propertyManager": "Leila Best",
+        "parking": "Commercial Parking"
+      },
+      "buildingInfo": {
+        "stories": 26,
+        "lotSize": 1530,
+        "interiorSize": 1486,
+        "buildingClass": "A",
+        "foundation": "Strip Footing",
+        "exteriorWalls": "Stucco",
+        "roofType": "Standing Seam Metal Roofs",
+        "heating": "Electric Radiant Heating",
+        "cooling": "Heat Pumps",
+        "renovated": "Historically Renovated"
+      },
+      "neighborhood": {
+        "description": "Nulla occaecat sint veniam minim Lorem. Deserunt proident do reprehenderit elit aute nisi exercitation anim et non nostrud nostrud duis. Ipsum id exercitation ut adipisicing qui aliqua. Anim consectetur magna do nostrud sunt dolor aliqua ex. Exercitation anim aute quis laboris ut dolore non dolore labore.\r\n",
+        "coordinates": {
+          "lat": -17.661449,
+          "lng": -152.461625
+        }
+      },
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 2497.81,
+          "grossRentMonthly": 174.19,
+          "monthlyCosts": {
+            "costs": 212.44,
+            "netReproperty": 117.74,
+            "platform": 66.74,
+            "expenses": 334.63,
+            "taxes": 118.9,
+            "insurance": 91.97,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 978.52,
+          "netRentYearly": 5294.36,
+          "totalInvestment": {
+            "total": 48190.49,
+            "underlyingAssetPrice": 55913.69,
+            "initialMaintenanceReserve": 3935.61
+          },
+          "expectedIncome": 43.84
+        },
+        "expectedIncome": {
+          "income": 15.39,
+          "incomePerTokenYearly": 12.87,
+          "incomeStartDate": "2024-06-03T03:08:55-03:00",
+          "tokenPrice": 56.42,
+          "totalTokens": 2264,
+          "description": "Incididunt mollit voluptate commodo eiusmod aliqua incididunt cillum velit mollit ullamco nisi est ipsum veniam. Ipsum enim ea sint do incididunt labore cillum consequat culpa. Occaecat ex quis aute deserunt consectetur elit officia non nulla voluptate nisi et aliqua labore. Quis deserunt sint elit quis mollit.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Mavryk",
+          "identifier": "AL-SUMMIT-RIVER-COVE",
+          "totalTokens": 2974,
+          "assetIssuer": "mv1wspjKZNoWM7DGt6cOLo90xQ5hV107kx0xteue0Egk",
+          "assetId": "mv1uyfGYizWmrtDoQsISWnbmZH5duH6Br4B486yc0CZC"
+        }
+      ],
+      "offering": {
+        "offeringDate": "1993-02-19T08:53:13-02:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 75.25,
+        "maxInvestmentAmount": 81114.49,
+        "raisedAmount": 63939.56,
+        "offeringPercent": 51.36
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2011-05-21T02:45:44-03:00",
+          "assetValuation": 61226.77,
+          "annualChange": 29.38,
+          "totalInvestment": 71583.15,
+          "capitalROI": 62.25,
+          "tokenPrice": 35.41,
+          "regDistributed": 6068.6704,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2005-05-12T09:15:45-03:00",
+          "assetValuation": 57679.12,
+          "totalInvestment": 90795.3939,
+          "tokenPrice": 34.72,
+          "info": "?"
+        }
+      },
+      "pricePrimary": {
+        "price": 37.3,
+        "projectedAnnualReturn": 98.35,
+        "projectedRentalYield": 21.82,
+        "rentalYield": 59.11,
+        "tokensAvailable": 45
+      }
+    }
+  }]

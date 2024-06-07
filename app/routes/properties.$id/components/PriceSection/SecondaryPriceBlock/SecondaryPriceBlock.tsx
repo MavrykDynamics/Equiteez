@@ -20,12 +20,16 @@ import { MakeOfferScreen } from './MakeOfferScreen';
 // contract actions
 import { sell } from '../actions/financial.actions';
 import { InputNumber } from '~/molecules/Input/Input';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import { Navigate } from '@remix-run/react';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 type OrderType = 'buy' | 'sell' | '';
 
-export const SecondaryPriceBlock: FC<{ symbol: string }> = ({ symbol }) => {
+export const SecondaryPriceBlock: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>('');
+  const { activeEstate } = useEstatesContext();
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -37,25 +41,33 @@ export const SecondaryPriceBlock: FC<{ symbol: string }> = ({ symbol }) => {
     setIsOpen(true);
   }, []);
 
+  if (!activeEstate) return <Navigate to={'/'} replace />;
+  const estate = activeEstate as SecondaryEstate;
+
   return (
     <section className="self-start">
       <Table>
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Current Price</p>
-          <p>$45.00</p>
+          <p>${estate.assetDetails.priceSecondary.price}</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <p>Annual Return</p>
-          <p>8.88%</p>
+          <p>{estate.assetDetails.priceSecondary.annualReturn}%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
           <p>Rental Yield</p>
-          <p>4.83%</p>
+          <p>
+            {estate.assetDetails.priceSecondary.annualReturn - 4 > 0
+              ? estate.assetDetails.priceSecondary.annualReturn - 4
+              : 3.55}
+            %
+          </p>
         </div>
         <Divider className="my-4" />
         <div className="text-content text-buttons flex justify-between mb-6">
           <p>Total Liquidity</p>
-          <p>$100,000.00</p>
+          <p>${estate.assetDetails.priceSecondary.totalLiquidity}</p>
         </div>
         <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
         <Button
@@ -72,14 +84,14 @@ export const SecondaryPriceBlock: FC<{ symbol: string }> = ({ symbol }) => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        {orderType === 'buy' && <BuyPopupContent symbol={symbol} />}
-        {orderType === 'sell' && <SellPopupContent symbol={symbol} />}
+        {orderType === 'buy' && <BuyPopupContent estate={estate} />}
+        {orderType === 'sell' && <SellPopupContent estate={estate} />}
       </PopupWithIcon>
     </section>
   );
 };
 
-const BuyPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
+const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [isOfferScreen, setIsOfferScreen] = useState(false);
 
   const toggleMakeOfferScreen = useCallback(() => {
@@ -116,17 +128,20 @@ const BuyPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
         <>
           <div className="flex-1 flex flex-col">
             <div>
-              <h3 className="text-card-headline">{symbol} Front</h3>
+              <h3 className="text-card-headline">{estate.name}</h3>
               <p className="text-body-xs mb-6">
-                335 Wilburton Lane, Northport, AL 35473
+                {estate.assetDetails.propertyDetails.fullAddress}
               </p>
 
               <TabSwitcher tabs={tabs} activeTabId={activetabId} />
             </div>
 
-            {activetabId === 'buy' && <PriceBuyTab symbol={symbol} />}
+            {activetabId === 'buy' && <PriceBuyTab symbol={estate.symbol} />}
             {activetabId === 'otcBuy' && (
-              <PriceOTCBuyTab toggleMakeOfferScreen={toggleMakeOfferScreen} />
+              <PriceOTCBuyTab
+                toggleMakeOfferScreen={toggleMakeOfferScreen}
+                estate={estate}
+              />
             )}
           </div>
         </>
@@ -136,7 +151,7 @@ const BuyPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
 };
 
 // TODO move, this is done for demo purposes
-const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
+const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { status, dispatch, isLoading } = useStatusFlag();
   const { dapp } = useWalletContext();
 
@@ -156,7 +171,7 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
       }
       await sell({
         tezos,
-        marketContractAddress: pickMarketBasedOnSymbol[symbol],
+        marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(price),
@@ -165,14 +180,14 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
       // TODO handle Errors with context
       console.log(e, 'Sell contact error');
     }
-  }, [amount, dapp, dispatch, price, symbol]);
+  }, [amount, dapp, dispatch, price, estate.symbol]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
       <div className="flex-1">
-        <h3 className="text-card-headline">{symbol} Front</h3>
+        <h3 className="text-card-headline">{estate.name}</h3>
         <p className="text-body-xs mb-6">
-          335 Wilburton Lane, Northport, AL 35473
+          {estate.assetDetails.propertyDetails.fullAddress}
         </p>
         <div className="mt-4">
           <div className="flex flex-col gap-y-2">
@@ -189,7 +204,7 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
               label={'Amount'}
               value={amount || ''}
               placeholder={'Minimum 1'}
-              valueText={symbol}
+              valueText={estate.symbol}
               name={'amount'}
             />
           </div>
@@ -201,11 +216,11 @@ const SellPopupContent: FC<{ symbol: string }> = ({ symbol }) => {
             </div>
             <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
               <p>Max Sell</p>
-              <p>10.84 {symbol}</p>
+              <p>10.84 {estate.symbol}</p>
             </div>
             <div className="flex justify-between text-secondary-content text-caption-regular">
               <p>Est. Fee</p>
-              <p>-- {symbol}</p>
+              <p>-- {estate.symbol}</p>
             </div>
           </div>
 

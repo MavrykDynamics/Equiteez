@@ -1,15 +1,19 @@
 import { useMatches } from '@remix-run/react';
 
-import estates from 'app/mocks/estates.json';
-import { EstateType } from 'app/mocks/estates.type';
+import { useEffect } from 'react';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
-export const usePropertyById = (): {
-  estate: EstateType | null;
-  id: string | undefined;
-} => {
+export const usePropertyByAddress = () => {
+  const { activeEstate, setActiveEstate } = useEstatesContext();
   const matches = useMatches();
 
   const id = matches[0].params.id;
 
-  return { estate: estates.find((estate) => estate.id === id) ?? null, id };
+  useEffect(() => {
+    if (id) {
+      setActiveEstate(id);
+    }
+  }, [id, setActiveEstate]);
+
+  return activeEstate;
 };

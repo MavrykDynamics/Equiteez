@@ -10,8 +10,20 @@ import ClockIcon from 'app/icons/clock.svg?react';
 
 // styles
 import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { Navigate } from '@remix-run/react';
+import { formatDate } from '~/utils/date';
 
 export const PropertyOfferingTab = () => {
+  const { activeEstate } = useEstatesContext();
+
+  if (!activeEstate) return <Navigate to="/" replace />;
+
+  const {
+    offering,
+    valuation: { priorValuation, initialValuation },
+  } = activeEstate.assetDetails;
+
   return (
     <div>
       <div className="mb-2">
@@ -20,27 +32,27 @@ export const PropertyOfferingTab = () => {
       <Table>
         <TableItem>
           <p>Offering Date</p>
-          <p>22 Sep 2022</p>
+          <p>{formatDate(offering.offeringDate)}</p>
         </TableItem>
         <TableItem>
           <p>Issuer</p>
-          <p>Equiteez</p>
+          <p>{offering.offeringIssuer}</p>
         </TableItem>
         <TableItem>
           <p>Min. Investment Amount</p>
-          <p>$53.06</p>
+          <p>${offering.minInvestmentAmount}</p>
         </TableItem>
         <TableItem>
           <p>Max. Investment Amount</p>
-          <p>$84,900.00</p>
+          <p>${offering.maxInvestmentAmount}</p>
         </TableItem>
         <TableItem>
           <p>Amount Raised</p>
-          <p>$84,900.00</p>
+          <p>${offering.raisedAmount}</p>
         </TableItem>
         <TableItem isLast>
           <p>Offering Percent (of Total Tokens)</p>
-          <p>100.00%</p>
+          <p>{offering.offeringPercent}%</p>
         </TableItem>
       </Table>
       <div className="mb-11" />
@@ -50,7 +62,7 @@ export const PropertyOfferingTab = () => {
       <Table>
         <TableHeader>
           <div className="flex items-center justify-between">
-            <p>22 Jan 2024</p>
+            <p>{formatDate(priorValuation.date)}</p>
 
             <p className="text-body text-secondary-content flex items-center">
               <ClockIcon className="w-6 h-6 stroke-1 stroke-current mr-1" />
@@ -60,44 +72,44 @@ export const PropertyOfferingTab = () => {
         </TableHeader>
         <TableItem>
           <p>Asset Valuation</p>
-          <p>$84,000.00</p>
+          <p>${priorValuation.assetValuation}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Annual Change <InfoTooltip content={'Annual Change'} />
           </div>
-          <p className="text-success">+17.65% </p>
+          <p className="text-success">+{priorValuation.annualChange}% </p>
         </TableItem>
         <TableItem>
           <p>Total Investment</p>
-          <p>$84,900.00</p>
+          <p>${priorValuation.totalInvestment}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Capital ROI <InfoTooltip content={'Capital ROI'} />
           </div>
-          <p className="text-success">+13.92%</p>
+          <p className="text-success">+{priorValuation.capitalROI}%</p>
         </TableItem>
         <TableItem>
           <p>Token Price</p>
-          <p>$53.07</p>
+          <p>${priorValuation.tokenPrice}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Reg Distributed <InfoTooltip content={'Capital ROI'} />
           </div>
-          <p className="text-success">$7,882.22</p>
+          <p className="text-success">${priorValuation.regDistributed}</p>
         </TableItem>
         <TableItem>
           <p>Additional Info</p>
-          <p>?</p>
+          <p>{priorValuation.info}</p>
         </TableItem>
       </Table>
       <div className="mb-8" />
       <Table>
         <TableHeader>
           <div className="flex items-center justify-between">
-            <p>22 Sep 2022</p>
+            <p>{formatDate(initialValuation.date)}</p>
 
             <p className="text-body text-secondary-content flex items-center">
               <ClockIcon className="w-6 h-6 stroke-1 stroke-current mr-1" />
@@ -107,19 +119,19 @@ export const PropertyOfferingTab = () => {
         </TableHeader>
         <TableItem>
           <p>Asset Valuation</p>
-          <p>$68,000.00</p>
+          <p>${initialValuation.assetValuation}</p>
         </TableItem>
         <TableItem>
           <p>Total Investment</p>
-          <p>$78,816.00</p>
+          <p>${initialValuation.totalInvestment}</p>
         </TableItem>
         <TableItem>
           <p>Token Price</p>
-          <p>$49.26</p>
+          <p>${initialValuation.tokenPrice}</p>
         </TableItem>
         <TableItem isLast>
           <p>Additional Info</p>
-          <p>?</p>
+          <p>{initialValuation.info}</p>
         </TableItem>
       </Table>
     </div>

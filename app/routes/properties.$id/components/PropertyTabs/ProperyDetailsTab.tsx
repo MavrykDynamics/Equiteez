@@ -21,34 +21,31 @@ import styles from './propertyTabs.module.css';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { InfoTooltip } from '~/organisms/InfoTooltip';
 import { CustomSuspense } from '~/templates/CustomSuspense';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { Navigate } from '@remix-run/react';
 
 export const PropertyDetailsTab = () => {
+  const { activeEstate } = useEstatesContext();
+
+  if (!activeEstate) return <Navigate to="/" replace />;
+  const { propertyDetails, buildingInfo } = activeEstate.assetDetails;
+
   return (
     <div>
       <Table>
         <TableHeader>About the Offering</TableHeader>
-        <TableDescription>
-          8646 Ford Ave is a charming single story home located in a
-          family-friendly neighborhood in Northport, Alabama. With four spacious
-          bedrooms and two bathrooms, there is plenty of space for comfortable
-          living. The home features an open concept design that seamlessly
-          integrates a breakfast area complete with bar sleek and modern kitchen
-          with granite countertops, kitchen island, pantry and sleek counters
-          with solid surface. Outside, residents can enjoy the community's
-          amenities, including a nearby park with playground, which makes it an
-          ideal place for family recreation.
-        </TableDescription>
+        <TableDescription>{propertyDetails.description}</TableDescription>
         <TableItem>
           <p>Property Type</p>
-          <p>Single Family</p>
+          <p>{propertyDetails.propertyType}</p>
         </TableItem>
         <TableItem>
           <p>Full Address</p>
-          <p>7335 Wilburton Lane, Northport, AL 35473</p>
+          <p>{propertyDetails.fullAddress}</p>
         </TableItem>
         <TableItem>
           <p>Country</p>
-          <p>USA</p>
+          <p>{propertyDetails.country}</p>
         </TableItem>
         <TableItem>
           <p>Neighborhood</p>
@@ -56,28 +53,28 @@ export const PropertyDetailsTab = () => {
         </TableItem>
         <TableItem>
           <p>Rental Type</p>
-          <p>Long-Term</p>
+          <p>{propertyDetails.rentalType}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Rented? <InfoTooltip content={'Rented'} />
           </div>
-          <p>Fully Rented</p>
+          <p>{propertyDetails.rented}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Rent Subsidy?
             <InfoTooltip content={'Rent Subsidy?'} />
           </div>
-          <p>No</p>
+          <p>{propertyDetails.rentSubsidy}</p>
         </TableItem>
         <TableItem>
           <p>Property Manager</p>
-          <p>Mutual Property Management LLC</p>
+          <p>{propertyDetails.propertyManager}</p>
         </TableItem>
         <TableItem isLast>
           <p>Parking</p>
-          <p>1 Detached Garage</p>
+          <p>{propertyDetails.parking}</p>
         </TableItem>
       </Table>
       <div className="mb-8" />
@@ -85,46 +82,46 @@ export const PropertyDetailsTab = () => {
         <TableHeader>Building Info</TableHeader>
         <TableItem>
           <p>Stories</p>
-          <p>2 stories</p>
+          <p>{buildingInfo.stories} stories</p>
         </TableItem>
         <TableItem>
           <p>Lot Size (sqft)</p>
-          <p>1,270 sqft </p>
+          <p>{buildingInfo.lotSize} sqft </p>
         </TableItem>
         <TableItem>
           <p>Interior Size (sqft)</p>
-          <p>704 sqft</p>
+          <p>{buildingInfo.interiorSize} sqft</p>
         </TableItem>
         <TableItem>
           <p>Building Class</p>
-          <p>C</p>
+          <p>{buildingInfo.buildingClass}</p>
         </TableItem>
         <TableItem>
           <p>Foundation</p>
-          <p>Masonry Block</p>
+          <p>{buildingInfo.foundation}</p>
         </TableItem>
         <TableItem>
           <p>Exterior Walls</p>
-          <p>Brick</p>
+          <p>{buildingInfo.exteriorWalls}</p>
         </TableItem>
         <TableItem>
           <p>Roof Type</p>
-          <p>Asphalt</p>
+          <p>{buildingInfo.roofType}</p>
         </TableItem>
         <TableItem>
           <p>Heating</p>
-          <p>Forced Air / Gas</p>
+          <p>{buildingInfo.heating}</p>
         </TableItem>
         <TableItem>
           <p>Cooling</p>
-          <p>None</p>
+          <p>{buildingInfo.cooling}</p>
         </TableItem>
         <TableItem isLast>
           <p>Renovated</p>
-          <p>Entirely Renovated</p>
+          <p>{buildingInfo.renovated}</p>
         </TableItem>
       </Table>
-      <PropertyDetailsMap />
+      <PropertyDetailsMap coordinates={activeEstate.assetDetails.coordinates} />
     </div>
   );
 };
@@ -140,12 +137,9 @@ const containerStyle = {
   height: '507px',
 };
 
-const center = {
-  lat: -3.7461855287654213,
-  lng: -38.52407865383317,
-};
-
-const PropertyDetailsMap = () => {
+const PropertyDetailsMap: FC<{ coordinates: { lat: number; lng: number } }> = ({
+  coordinates,
+}) => {
   const { IS_WEB } = useAppContext();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -157,13 +151,16 @@ const PropertyDetailsMap = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
-  const onLoad = useCallback(function callback(map: google.maps.Map) {
-    // This is just an example of getting and using the map instance!!! don't just blindly copy!
-    const bounds = new window.google.maps.LatLngBounds(center);
-    map.fitBounds(bounds);
+  const onLoad = useCallback(
+    function callback(map: google.maps.Map) {
+      // This is just an example of getting and using the map instance!!! don't just blindly copy!
+      const bounds = new window.google.maps.LatLngBounds(coordinates);
+      map.fitBounds(bounds);
 
-    setMap(map);
-  }, []);
+      setMap(map);
+    },
+    [coordinates]
+  );
 
   const onUnmount = useCallback(function callback() {
     setMap(null);
@@ -193,14 +190,14 @@ const PropertyDetailsMap = () => {
         <CustomSuspense loading={!isLoaded || !IS_WEB}>
           <GoogleMap
             mapContainerStyle={containerStyle}
-            center={center}
+            center={coordinates}
             zoom={10}
             onLoad={onLoad}
             onUnmount={onUnmount}
           >
             {/* Child components, such as markers, info windows, etc. */}
             <MarkerF
-              position={center}
+              position={coordinates}
               title="The cove"
               onClick={toggleMarkerWindow}
               zIndex={-1}

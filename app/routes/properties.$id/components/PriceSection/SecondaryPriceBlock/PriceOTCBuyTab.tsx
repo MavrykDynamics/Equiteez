@@ -9,6 +9,7 @@ import {
   NativeTableRow,
 } from '~/atoms/NativeTable/NativeTable';
 import { InputNumber } from '~/molecules/Input/Input';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 const tableTopbarItems = [
   'Seller',
@@ -18,45 +19,14 @@ const tableTopbarItems = [
   'Tokens to Buy',
 ];
 
-const tableRowDataArr = [
-  {
-    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
-    forSale: 450,
-    price: '$68.38',
-    total: '$30,771.9',
-  },
-  {
-    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
-    forSale: 68,
-    price: '$70.56',
-    total: '$4,798.08',
-  },
-  {
-    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
-    forSale: 133,
-    price: '$71.89',
-    total: '$9,562.43',
-  },
-  {
-    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
-    forSale: 11,
-    price: '$70.91',
-    total: '$780.02',
-  },
-  {
-    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
-    forSale: 264,
-    price: '$69.76',
-    total: '$18,407.66',
-  },
-];
-
 type PriceOTCBuyTabProps = {
   toggleMakeOfferScreen?: () => void;
+  estate: SecondaryEstate;
 };
 
 export const PriceOTCBuyTab: FC<PriceOTCBuyTabProps> = ({
   toggleMakeOfferScreen,
+  estate,
 }) => {
   return (
     <div className="flex flex-col flex-1">
@@ -76,28 +46,30 @@ export const PriceOTCBuyTab: FC<PriceOTCBuyTabProps> = ({
             customGrid={'156px repeat(3, 97px) 106px'}
           />
 
-          {tableRowDataArr.map(({ address, forSale, price, total }) => (
-            <NativeTableRow
-              key={price}
-              customGrid={'156px repeat(3, 97px) 106px'}
-            >
-              <NativeTableColumn>
-                <HashShortView hash={address} />
-              </NativeTableColumn>
-              <NativeTableColumn>{forSale}</NativeTableColumn>
-              <NativeTableColumn>{price}</NativeTableColumn>
-              <NativeTableColumn>{total}</NativeTableColumn>
-              <div className="pl-2 py-[6px]">
-                <div className="flex justify-center py-[6px] px-8 border border-divider rounded-md">
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    className="text-content text-body-xs w-full  focus:outline-none"
-                  />
+          {estate.assetDetails.otc.buying.map(
+            ({ seller, price, tokensForSale, totalValue }) => (
+              <NativeTableRow
+                key={price}
+                customGrid={'156px repeat(3, 97px) 106px'}
+              >
+                <NativeTableColumn>
+                  <HashShortView hash={seller} />
+                </NativeTableColumn>
+                <NativeTableColumn>{tokensForSale}</NativeTableColumn>
+                <NativeTableColumn>{price}</NativeTableColumn>
+                <NativeTableColumn>{totalValue}</NativeTableColumn>
+                <div className="pl-2 py-[6px]">
+                  <div className="flex justify-center py-[6px] px-8 border border-divider rounded-md">
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      className="text-content text-body-xs w-full  focus:outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
-            </NativeTableRow>
-          ))}
+              </NativeTableRow>
+            )
+          )}
         </NativeTable>
         <Divider className="my-4" />
         <div className="mb-3">
