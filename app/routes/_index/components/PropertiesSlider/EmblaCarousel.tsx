@@ -8,14 +8,17 @@ import {
 import useEmblaCarousel from 'embla-carousel-react';
 
 import styles from './embla.module.css';
-import { EstateType } from '~/mocks/estates.type';
 import clsx from 'clsx';
 import { LinkWithIcon } from '~/atoms/LinkWithIcon';
 import { Button } from '~/atoms/Button';
-import { useNavigate } from '@remix-run/react';
+import { Link, useNavigate } from '@remix-run/react';
+import {
+  PrimaryEstate,
+  SecondaryEstate,
+} from '~/providers/EstatesProvider/estates.types';
 
 type PropType = {
-  slides: EstateType[];
+  slides: (PrimaryEstate | SecondaryEstate)[];
   options?: EmblaOptionsType;
 };
 
@@ -53,14 +56,17 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             <div
               role="presentation"
               className={clsx(styles.embla__slide, 'cursor-pointer')}
-              key={estate.imgSrc}
+              key={estate.token_address}
               onClick={() =>
-                handleSlideClick(estate.id, idx === slides.length - 1)
+                handleSlideClick(
+                  estate.token_address,
+                  idx === slides.length - 1
+                )
               }
             >
               <div className={styles.embla__slide__number}>
                 <img
-                  src={estate.imgSrc}
+                  src={estate.assetDetails.previewImage}
                   alt="house"
                   className={styles.embla__slide__image}
                 />
@@ -77,7 +83,9 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                         Want to see more? <br />
                         Check out our marketplace
                       </h4>
-                      <Button variant="white">Explore</Button>
+                      <Link to="/properties">
+                        <Button variant="white">Explore</Button>
+                      </Link>
                     </div>
                   </div>
                 ) : (
@@ -90,16 +98,17 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     <div className="px-4 pb-4 flex gap-x-4 justify-between">
                       <div className="flex flex-col items-start">
                         <h4 className="text-white text-slider-headline truncate max-w-[300px]">
-                          {estate.title}
+                          {estate.name}
                         </h4>
                         <p className="text-white text-body-xs">
-                          {estate.details.fullAddress}
+                          {estate.assetDetails.propertyDetails.fullAddress}
                         </p>
                       </div>
 
                       <div className="flex flex-col items-end">
                         <h4 className="text-white text-slider-headline truncate max-w-[300px]">
-                          {estate.details.APY}%
+                          {/* {estate.assetDetails.APY}% */}
+                          4%
                         </h4>
                         <p className="text-white text-body-xs">APY</p>
                       </div>

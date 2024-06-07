@@ -1,5 +1,5 @@
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
-import { Navigate, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 import LikeIcon from 'app/icons/like.svg?react';
 import ShareIcon from 'app/icons/share.svg?react';
@@ -47,7 +47,7 @@ export default function PropertyDetails() {
 
   const tabId = useLoaderData<typeof loader>() as string | undefined;
 
-  if (!estateData) return <Navigate to={'/properties'} />;
+  if (!estateData) return <>Loading...</>;
 
   return (
     <PageLayout>

@@ -1,13 +1,11 @@
 import { EmblaOptionsType } from 'embla-carousel';
 import EmblaCarousel from './EmblaCarousel';
-
-import estates from 'app/mocks/estates.json';
-import { useState } from 'react';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 const OPTIONS: EmblaOptionsType = { align: 'start' };
 
 export const PropertiesSlider = () => {
-  const [estateSlidesData] = useState(() => estates);
+  const { estates } = useEstatesContext();
 
   return (
     <section className="px-11">
@@ -15,7 +13,7 @@ export const PropertiesSlider = () => {
         <h1 className="text-white text-hero max-w-[1017px] mb-4">
           Explore our diverse portfolio of exceptional properties
         </h1>
-        <EmblaCarousel slides={estateSlidesData} options={OPTIONS} />
+        <EmblaCarousel slides={estates.slice(0, 7)} options={OPTIONS} />
       </div>
     </section>
   );

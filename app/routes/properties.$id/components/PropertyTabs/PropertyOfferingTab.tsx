@@ -11,13 +11,12 @@ import ClockIcon from 'app/icons/clock.svg?react';
 // styles
 import { InfoTooltip } from '~/organisms/InfoTooltip';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { Navigate } from '@remix-run/react';
 import { formatDate } from '~/utils/date';
 
 export const PropertyOfferingTab = () => {
   const { activeEstate } = useEstatesContext();
 
-  if (!activeEstate) return <Navigate to="/" replace />;
+  if (!activeEstate) return <>Loading...</>;
 
   const {
     offering,
@@ -100,7 +99,7 @@ export const PropertyOfferingTab = () => {
           </div>
           <p className="text-success">${priorValuation.regDistributed}</p>
         </TableItem>
-        <TableItem>
+        <TableItem isLast>
           <p>Additional Info</p>
           <p>{priorValuation.info}</p>
         </TableItem>

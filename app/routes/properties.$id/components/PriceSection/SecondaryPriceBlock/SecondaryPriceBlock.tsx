@@ -21,7 +21,6 @@ import { MakeOfferScreen } from './MakeOfferScreen';
 import { sell } from '../actions/financial.actions';
 import { InputNumber } from '~/molecules/Input/Input';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { Navigate } from '@remix-run/react';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 type OrderType = 'buy' | 'sell' | '';
@@ -41,7 +40,7 @@ export const SecondaryPriceBlock: FC = () => {
     setIsOpen(true);
   }, []);
 
-  if (!activeEstate) return <Navigate to={'/'} replace />;
+  if (!activeEstate) return <>Loading...</>;
   const estate = activeEstate as SecondaryEstate;
 
   return (

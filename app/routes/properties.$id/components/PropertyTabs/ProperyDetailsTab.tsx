@@ -22,12 +22,11 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { InfoTooltip } from '~/organisms/InfoTooltip';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { Navigate } from '@remix-run/react';
 
 export const PropertyDetailsTab = () => {
   const { activeEstate } = useEstatesContext();
 
-  if (!activeEstate) return <Navigate to="/" replace />;
+  if (!activeEstate) return <>Loading...</>;
   const { propertyDetails, buildingInfo } = activeEstate.assetDetails;
 
   return (

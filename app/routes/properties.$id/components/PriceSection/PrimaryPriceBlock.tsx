@@ -17,7 +17,6 @@ import {
 } from '~/hooks/use-status-flag';
 import { defaultContractAction } from './actions/financial.actions';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { Navigate } from '@remix-run/react';
 import { PrimaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 export const PrimaryPriceBlock = () => {
@@ -32,7 +31,7 @@ export const PrimaryPriceBlock = () => {
     setIsOpen(true);
   }, []);
 
-  if (!activeEstate) return <Navigate to={'/'} replace />;
+  if (!activeEstate) return <>Loading...</>;
   const estate = activeEstate as PrimaryEstate;
 
   return (
@@ -85,7 +84,7 @@ export const PrimaryPriceBlock = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'center'}
       >
-        <BuyPopupContent handleCancel={handleRequestClose} />
+        <BuyPopupContent handleCancel={handleRequestClose} estate={estate} />
       </PopupWithIcon>
     </section>
   );
@@ -105,9 +104,13 @@ const ProgresBar: FC<{ tokensCount: number }> = ({ tokensCount }) => {
 
 type BuyPopupContentProps = {
   handleCancel: () => void;
+  estate: PrimaryEstate;
 };
 
-const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
+const BuyPopupContent: FC<BuyPopupContentProps> = ({
+  handleCancel,
+  estate,
+}) => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
 
@@ -129,9 +132,9 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({ handleCancel }) => {
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-content text-card-headline">The Cove</h2>
+      <h2 className="text-content text-card-headline">{estate.name}</h2>
       <p className="text-body text-content">
-        7335 Wilburton Lane, Northport, AL 35473
+        {estate.assetDetails.propertyDetails.fullAddress}
       </p>
 
       <div className="mt-6 flex flex-col mb-4">

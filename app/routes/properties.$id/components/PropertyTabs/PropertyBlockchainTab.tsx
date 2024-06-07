@@ -4,11 +4,10 @@ import { Table } from '~/atoms/Table/Table';
 import { TableHeader } from '~/atoms/Table/TableHeader';
 import { TableItem } from '~/atoms/Table/TableItem';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { Navigate } from '@remix-run/react';
 
 export const PropertyBlockchainTab = () => {
   const { activeEstate } = useEstatesContext();
-  if (!activeEstate) return <Navigate to="/" replace />;
+  if (!activeEstate) return <>Loading...</>;
 
   const { blockchain } = activeEstate.assetDetails;
   return (

@@ -1,4 +1,3 @@
-import { Navigate } from '@remix-run/react';
 import { Button } from '~/atoms/Button';
 import {
   NativeTable,
@@ -17,7 +16,7 @@ const headerItems = ['Seller', 'Tokens for Sale', 'Price', 'Total Value'];
 export const PropertyOTCTab = () => {
   const { activeEstate } = useEstatesContext();
 
-  if (!activeEstate) return <Navigate to="/" replace />;
+  if (!activeEstate) return <>Loading...</>;
   const { otc } = (activeEstate as SecondaryEstate).assetDetails;
   return (
     <section>

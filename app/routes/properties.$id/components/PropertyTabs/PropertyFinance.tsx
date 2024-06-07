@@ -11,13 +11,12 @@ import {
   ExpanderFaceContent,
 } from '~/organisms/CustomExpander/CustomExpander';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { Navigate } from '@remix-run/react';
 import { formatDate } from '~/utils/date';
 
 export const PropertyFinanceTab = () => {
   const { activeEstate } = useEstatesContext();
 
-  if (!activeEstate) return <Navigate to="/" replace />;
+  if (!activeEstate) return <>Loading...</>;
   const { propertyFinancials, expectedIncome } =
     activeEstate.assetDetails.financials;
 

@@ -19,20 +19,21 @@ export const estatesContext = createContext<EstatesContext>(undefined!);
 export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [estatesState, setEstatesState] = useState<
-    Pick<
-      EstatesContext,
-      | 'estates'
-      | 'isLoading'
-      | 'activeEstate'
-      | 'isActiveEstateLoading'
-      | 'isActiveEstateSecondaryMarket'
-    >
+    Pick<EstatesContext, 'estates' | 'isLoading'>
   >(() => ({
     estates: estatesMocked,
+    isLoading: false,
+  }));
+
+  const [activeEstateData, setActiveEstateData] = useState<
+    Pick<
+      EstatesContext,
+      'activeEstate' | 'isActiveEstateLoading' | 'isActiveEstateSecondaryMarket'
+    >
+  >(() => ({
     activeEstate: null,
     isActiveEstateLoading: true,
     isActiveEstateSecondaryMarket: false,
-    isLoading: false,
   }));
 
   // TODO fetch here with graphql when the real api
@@ -51,20 +52,25 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   const setActiveEstate = useCallback(
     (address: string) => {
       const estate = pickEstateByAddress(address);
-      setEstatesState({
-        ...estatesState,
+      setActiveEstateData({
         activeEstate: estate,
         isActiveEstateSecondaryMarket:
           estate?.assetDetails.type === 'Secondary Market',
         isActiveEstateLoading: false,
       });
     },
-    [estatesState, pickEstateByAddress]
+    [pickEstateByAddress]
   );
 
   const memoizedEstatesProviderValue: EstatesContext = useMemo(
-    () => ({ ...estatesState, pickEstateByAddress, setActiveEstate }),
-    [estatesState, pickEstateByAddress, setActiveEstate]
+    () => ({
+      ...estatesState,
+
+      ...activeEstateData,
+      pickEstateByAddress,
+      setActiveEstate,
+    }),
+    [estatesState, pickEstateByAddress, setActiveEstate, activeEstateData]
   );
 
   return (

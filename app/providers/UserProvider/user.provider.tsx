@@ -112,8 +112,6 @@ export const UserProvider = ({ children }: Props) => {
     }
   }, [IS_WEB, dapp]);
 
-  console.log(account);
-
   // account is updated when we trigger wallet account connect | disconnect | change acc
   // whenever account is updated - we reconnect tzkt socket to have up-to-date data
   useEffect(() => {
