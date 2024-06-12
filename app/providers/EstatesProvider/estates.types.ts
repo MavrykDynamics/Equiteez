@@ -4,17 +4,17 @@ import secondaryEstate from './secondaryEstate.mock.json';
 export type PrimaryEstate = (typeof primaryEstate)[0];
 export type SecondaryEstate = (typeof secondaryEstate)[0];
 
+export type EstateType = PrimaryEstate | SecondaryEstate;
+
 export const SECONDARY_MARKET = 'Secondary Market';
 export const PRIMARY_ISSUANCE = 'Primary Issuance';
 
 export type EstatesContext = {
-  estates: (PrimaryEstate | SecondaryEstate)[];
-  activeEstate: PrimaryEstate | SecondaryEstate | null;
+  estates: EstateType[];
+  activeEstate: EstateType | null;
   isActiveEstateSecondaryMarket: boolean;
   isLoading: boolean;
   isActiveEstateLoading: boolean;
-  pickEstateByAddress: (
-    address: string
-  ) => PrimaryEstate | SecondaryEstate | null;
+  pickEstateByAddress: (address: string) => EstateType | null;
   setActiveEstate: (address: string) => void;
 };

@@ -11,6 +11,55 @@ import styles from './filters.module.css';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { InputWithIcons } from '~/organisms/InputWithIcons/InputWithIcons';
+import { EstateType } from '~/providers/EstatesProvider/estates.types';
+
+// const filtersData = [
+//   {
+//     label: 'location',
+//     value: 'All Markets',
+//     filterFn: filterByMarketType,
+//     options: [
+//       {
+//         value: 'all',
+//         label: 'All Markets',
+//       },
+//       {
+//         value: 'Primary Issuance',
+//         label: 'Primary Issuance',
+//       },
+//       { value: 'Secondary Market', label: 'Secondary Market' },
+//     ],
+//   },
+//   {
+//     label: 'property type',
+//     value: 'All Properties',
+//     options: [
+//       {
+//         value: '0',
+//         label: 'All Markets',
+//       },
+//       {
+//         value: 'Primary Issuance',
+//         label: 'Primary Issuance',
+//       },
+//       { value: 'Secondary Market', label: 'Secondary Market' },
+//     ],
+//   },
+//   {
+//     label: 'projected rentail yield',
+//     value: '0%',
+//   },
+//   {
+//     label: 'projected annual return',
+//     value: '0%',
+//   },
+// ];
+
+function filterByMarketType(estates: EstateType[], type: string) {
+  return estates.filter((es) => es.assetDetails.type === type);
+}
+
+// ----------------------------------------------------------
 
 export const Filters = () => {
   const [opened, setOpened] = useState(false);
@@ -34,7 +83,7 @@ export const Filters = () => {
           <div className="flex flex-col gap-y-1 w-full">
             <CustomDropdown>
               <ClickableDropdownArea>
-                <p className="text-body-xs">Location</p>
+                <p className="text-body-xs capitalize">Location</p>
 
                 <DropdownFaceContent>
                   <div className="text-buttons w-full">All Markets</div>

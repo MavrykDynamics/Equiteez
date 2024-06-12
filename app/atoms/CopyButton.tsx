@@ -26,7 +26,7 @@ export const CopyButton: FC<CopyButtonProps> = ({
     () => ({
       trigger: 'mouseenter',
       hideOnClick: false,
-      content: copied ? 'copied!' : 'copy',
+      content: copied ? 'Copied!' : 'Copy',
       animation: 'shift-away-subtle',
       onHidden() {
         setCopied(false);

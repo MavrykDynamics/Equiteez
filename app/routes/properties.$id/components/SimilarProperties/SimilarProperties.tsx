@@ -1,3 +1,4 @@
+import { Link } from '@remix-run/react';
 import { useMemo } from 'react';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import {
@@ -28,13 +29,18 @@ export const SimilarProperties = () => {
       </h2>
       <div className="grid grid-cols-3 gap-x-3">
         {similarEstates.map((estate) => (
-          <ThumbCard
+          <Link
+            to={`/properties/${estate.token_address}`}
             key={estate.token_address}
-            imgSrc={estate.assetDetails.previewImage}
-            address={estate.assetDetails.propertyDetails.fullAddress}
-            APY={estate.assetDetails.APY}
-            title={estate.name}
-          />
+          >
+            <ThumbCard
+              key={estate.token_address}
+              imgSrc={estate.assetDetails.previewImage}
+              address={estate.assetDetails.propertyDetails.fullAddress}
+              APY={estate.assetDetails.APY}
+              title={estate.name}
+            />
+          </Link>
         ))}
       </div>
     </section>

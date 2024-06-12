@@ -30,7 +30,7 @@ export const Tab: FC<TabProps> = ({
         'px-4 py-3 text-content text-buttons cursor-pointer rounded-lg outline-none',
         'flex justify-center items-center min-w-[115px]',
         active ? 'bg-tabs' : 'bg-inactive-tab',
-        grow ? 'flex-grow' : '',
+        grow && 'flex-1',
         disabled && 'opacity-50 pointer-events-none'
       )}
     >

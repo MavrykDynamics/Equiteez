@@ -127,7 +127,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
                 {estate.assetDetails.propertyDetails.fullAddress}
               </p>
 
-              <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+              <TabSwitcher tabs={tabs} activeTabId={activetabId} grow />
             </div>
 
             {activetabId === 'buy' && <PriceBuyTab symbol={estate.symbol} />}

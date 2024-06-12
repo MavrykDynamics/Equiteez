@@ -136,7 +136,13 @@ export const PropertyFinanceTab = () => {
           <p>{expectedIncome.totalTokens}</p>
         </TableItem>
         <div className="mt-6">
-          <ColoredCard>{expectedIncome.description}</ColoredCard>
+          <ColoredCard>
+            All financial statements of property yield are best estimates based
+            on current conditions, and can change at any time. We are targeting
+            the above yield for investors; however, no assurance can be given
+            that you will obtain any return on investment, and there is a risk
+            that you can lose your entire investment.
+          </ColoredCard>
         </div>
       </Table>
     </div>
