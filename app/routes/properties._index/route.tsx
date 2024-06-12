@@ -10,6 +10,7 @@ import {
 } from '~/providers/EstatesProvider/estates.types';
 import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
 import { Filters } from './components/Filters';
+import { useState } from 'react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,14 +21,15 @@ export const meta: MetaFunction = () => {
 
 export default function Properties() {
   const { estates } = useEstatesContext();
+  const [filteredEstates, setFilteredEstates] = useState(() => estates);
 
   return (
     <PageLayout>
       <div className="px-11">
         <Spacer height={32} />
-        <Filters />
+        <Filters estates={estates} setEstates={setFilteredEstates} />
         <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
-          {estates.map((es) => {
+          {filteredEstates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
 
             const restProps = isSecondaryMarket
