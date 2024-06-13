@@ -117,11 +117,11 @@ const Options: FC = () => {
   return (
     <section className="flex items-center gap-x-4 ml-auto">
       <button className="text-content text-body flex items-center gap-x-1 font-semibold">
-        <LikeIcon />
+        <LikeIcon className="stroke-current" />
         <p>Save</p>
       </button>
       <button className="text-content text-body flex items-center gap-x-1 font-semibold">
-        <ShareIcon />
+        <ShareIcon className="stroke-current" />
         <p>Share</p>
       </button>
     </section>

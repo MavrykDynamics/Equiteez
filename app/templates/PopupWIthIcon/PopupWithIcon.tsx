@@ -40,7 +40,7 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
       >
         <button id="close-icon">
           <CloseIcon
-            className="w-6 h-6 cursor-pointer relative"
+            className="w-6 h-6 cursor-pointer relative text-content stroke-current"
             onClick={restProps.onRequestClose}
           />
         </button>

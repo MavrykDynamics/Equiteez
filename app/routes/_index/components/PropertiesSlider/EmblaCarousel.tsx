@@ -3,8 +3,7 @@ import { EmblaOptionsType } from 'embla-carousel';
 import {
   PrevButton,
   NextButton,
-  usePrevNextButtons,
-} from './EmblaCarouselArrowButtons';
+} from 'app/templates/EmblaCarouselArrowButtons';
 import useEmblaCarousel from 'embla-carousel-react';
 
 import styles from './embla.module.css';
@@ -16,6 +15,7 @@ import {
   PrimaryEstate,
   SecondaryEstate,
 } from '~/providers/EstatesProvider/estates.types';
+import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];

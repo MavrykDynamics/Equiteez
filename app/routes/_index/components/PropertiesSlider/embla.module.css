@@ -8,10 +8,12 @@
   --slide-spacing-lg: 24px;
   --slide-size-lg: calc(100% / 3);
 }
+
 .embla__viewport {
   overflow: hidden;
   border-radius: 16px;
 }
+
 .embla__container {
   backface-visibility: hidden;
   display: flex;
@@ -19,6 +21,7 @@
   margin-left: calc(var(--slide-spacing) * -1);
   border-radius: 16px;
 }
+
 @media (min-width: 750px) {
   .embla__container {
     margin-left: calc(var(--slide-spacing-sm) * -1);
