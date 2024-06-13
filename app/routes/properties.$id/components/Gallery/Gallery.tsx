@@ -4,13 +4,19 @@ import MenuGridIcon from 'app/icons/menu-grid.svg?react';
 
 import styles from './gallery.module.css';
 import clsx from 'clsx';
+import { Link } from '@remix-run/react';
 
 type GalleryProps = {
   mainImgsrc: string;
   thumbs: string[];
+  propertyId: string;
 };
 
-export const Gallery: FC<GalleryProps> = ({ mainImgsrc, thumbs }) => {
+export const Gallery: FC<GalleryProps> = ({
+  mainImgsrc,
+  thumbs,
+  propertyId,
+}) => {
   return (
     <section className="px-11 mb-16">
       <div className={styles.gallery}>
@@ -20,7 +26,9 @@ export const Gallery: FC<GalleryProps> = ({ mainImgsrc, thumbs }) => {
         {thumbs.map((thumb, idx) => (
           <div key={idx} className={styles.thumb}>
             <img src={thumb} alt="thumb" className="w-full h-full" />
-            {idx === thumbs.length - 1 && <ShowAllPhotosBtn />}
+            {idx === thumbs.length - 1 && (
+              <ShowAllPhotosBtn propertyId={propertyId} />
+            )}
           </div>
         ))}
       </div>
@@ -28,18 +36,20 @@ export const Gallery: FC<GalleryProps> = ({ mainImgsrc, thumbs }) => {
   );
 };
 
-const ShowAllPhotosBtn: FC = () => {
+const ShowAllPhotosBtn: FC<{ propertyId: string }> = ({ propertyId }) => {
   return (
-    <button
-      className={clsx(
-        'bg-background text-content text-body-xs py-[10px] px-4',
-        'flex items-center gap-x-2',
-        'rounded-[5px] font-semibold',
-        'absolute right-[13px] bottom-[15px] z-10'
-      )}
-    >
-      <MenuGridIcon />
-      Show all photos
-    </button>
+    <Link to={`/properties/${propertyId}/gallery`}>
+      <button
+        className={clsx(
+          'bg-background text-content text-body-xs py-[10px] px-4',
+          'flex items-center gap-x-2',
+          'rounded-[5px] font-semibold',
+          'absolute right-[13px] bottom-[15px] z-10'
+        )}
+      >
+        <MenuGridIcon />
+        Show all photos
+      </button>
+    </Link>
   );
 };

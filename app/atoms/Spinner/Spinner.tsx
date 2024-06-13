@@ -13,3 +13,11 @@ export const Spinner: FC<SpinnerProps> = ({ size = 24 }) => {
     />
   );
 };
+
+export const FullScreenSpinner = () => {
+  return (
+    <div className="w-full h-screen flex items-center justify-center">
+      <Spinner size={48} />
+    </div>
+  );
+};

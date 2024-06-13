@@ -25,6 +25,7 @@ import { PriceSection } from './components/PriceSection/PriceSection';
 import PropertyTabs from './components/PropertyTabs/PropertyTabs';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { EstateHeadlineTab } from '~/templates/EstateHeadlineTab';
+import { FullScreenSpinner } from '~/atoms/Spinner/Spinner';
 
 export const meta: MetaFunction = () => {
   return [
@@ -47,7 +48,7 @@ export default function PropertyDetails() {
 
   const tabId = useLoaderData<typeof loader>() as string | undefined;
 
-  if (!estateData) return <>Loading...</>;
+  if (!estateData) return <FullScreenSpinner />;
 
   return (
     <PageLayout>
@@ -80,6 +81,7 @@ export default function PropertyDetails() {
       <Gallery
         mainImgsrc={estateData.assetDetails.previewImage}
         thumbs={estateData.assetDetails.assetImages}
+        propertyId={estateData.token_address}
       />
       <section className={styles.detailsSection}>
         <div className="flex flex-col">

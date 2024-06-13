@@ -1,4 +1,6 @@
 import type { MetaFunction } from '@remix-run/node';
+import { FC, useCallback, useState } from 'react';
+import clsx from 'clsx';
 
 // icons
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
@@ -6,14 +8,19 @@ import LikeIcon from 'app/icons/like.svg?react';
 import ShareIcon from 'app/icons/share.svg?react';
 import CrossIcon from 'app/icons/cross.svg?react';
 
-import clsx from 'clsx';
-
+// styles
 import styles from './route.module.css';
+
+// components
 import CustomPopup from '~/organisms/CustomPopup/CustomPopup';
-import { FC, useCallback, useState } from 'react';
+import { NextButton, PrevButton } from '~/templates/EmblaCarouselArrowButtons';
+
+// hooks
 import useEmblaCarousel from 'embla-carousel-react';
 import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
-import { NextButton, PrevButton } from '~/templates/EmblaCarouselArrowButtons';
+import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
+import { Link } from '@remix-run/react';
+import { FullScreenSpinner } from '~/atoms/Spinner/Spinner';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'temp' }, { name: 'description', content: 'Temp route!' }];
@@ -106,6 +113,7 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose }) => {
 };
 
 export default function Index() {
+  const estateData = usePropertyByAddress('estateId');
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOpen = useCallback(() => {
@@ -116,20 +124,24 @@ export default function Index() {
     setIsOpen(false);
   }, []);
 
+  if (!estateData) return <FullScreenSpinner />;
+
   return (
     <section className={clsx('min-h-screen')}>
       <div className="mx-auto max-w-[1440px]">
         <header className="flex items-center justify-between px-11 pt-8">
-          <button>
-            <ArrowLeftIcon className="w-6 h-6 text-content stroke-current" />
-          </button>
+          <Link to={`/properties/${estateData.token_address}`}>
+            <button>
+              <ArrowLeftIcon className="w-6 h-6 text-content stroke-current" />
+            </button>
+          </Link>
           <section className="flex items-center gap-x-4 ml-auto">
             <button className="text-content text-body flex items-center gap-x-1 font-semibold">
-              <LikeIcon />
+              <LikeIcon className="stroke-current" />
               <p>Save</p>
             </button>
             <button className="text-content text-body flex items-center gap-x-1 font-semibold">
-              <ShareIcon />
+              <ShareIcon className="stroke-current" />
               <p>Share</p>
             </button>
           </section>
