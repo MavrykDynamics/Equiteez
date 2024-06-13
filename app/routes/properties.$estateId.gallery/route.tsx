@@ -1,5 +1,5 @@
 import type { MetaFunction } from '@remix-run/node';
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import clsx from 'clsx';
 
 // icons
@@ -26,23 +26,12 @@ export const meta: MetaFunction = () => {
   return [{ title: 'temp' }, { name: 'description', content: 'Temp route!' }];
 };
 
-const fakeImages = [
-  'https://images.pexels.com/photos/684812/pexels-photo-684812.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load',
-  'https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  'https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-];
-
 type GallerySliderProps = {
   handleClose: () => void;
+  images: string[];
 };
 
-const GallerySlider: FC<GallerySliderProps> = ({ handleClose }) => {
+const GallerySlider: FC<GallerySliderProps> = ({ handleClose, images }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start' });
 
   const {
@@ -62,7 +51,7 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose }) => {
         </button>
         <div className="flex items-center justify-center text-buttons flex-1">
           <span>{activeIndex}&nbsp;/&nbsp;</span>
-          <span>{fakeImages.length - 1}</span>
+          <span>{images.length - 1}</span>
         </div>
 
         <section className="flex items-center gap-x-4 ml-auto">
@@ -92,7 +81,7 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose }) => {
           <section className={styles.embla}>
             <div ref={emblaRef} className={styles.embla__viewport}>
               <div className={styles.embla__container}>
-                {fakeImages.map((img, idx) => (
+                {images.map((img, idx) => (
                   <div key={idx} className={styles.embla__slide}>
                     <img src={img} alt={'slider item'} />
                   </div>
@@ -124,6 +113,17 @@ export default function Index() {
     setIsOpen(false);
   }, []);
 
+  const images = useMemo(
+    () =>
+      estateData
+        ? [
+            estateData.assetDetails.previewImage,
+            ...estateData.assetDetails.assetImages,
+          ]
+        : [],
+    [estateData]
+  );
+
   if (!estateData) return <FullScreenSpinner />;
 
   return (
@@ -152,7 +152,7 @@ export default function Index() {
             className={clsx(styles.gallery, 'cursor-pointer')}
             onClick={handleOpen}
           >
-            {fakeImages.map((img, idx) => (
+            {images.map((img, idx) => (
               <div
                 key={idx}
                 className={clsx(
@@ -176,7 +176,7 @@ export default function Index() {
           'w-full h-full relative bg-black-secondary rounded-none px-11 py-8'
         )}
       >
-        <GallerySlider handleClose={handleClose} />
+        <GallerySlider handleClose={handleClose} images={images} />
       </CustomPopup>
     </section>
   );
