@@ -27,7 +27,7 @@ export default function Properties() {
     <PageLayout>
       <div className="px-11">
         <Spacer height={32} />
-        <Filters estates={estates} setEstates={setFilteredEstates} />
+        <Filters estates={filteredEstates} setEstates={setFilteredEstates} />
         <div className="mt-5 text-body text-content">
           {filteredEstates.length} items
         </div>
