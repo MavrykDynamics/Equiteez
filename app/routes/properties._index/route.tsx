@@ -35,14 +35,14 @@ export default function Properties() {
             const restProps = isSecondaryMarket
               ? {
                   pricePerToken: (es as SecondaryEstate).assetDetails
-                    .priceSecondary.price,
+                    .priceDetails.price,
                 }
               : {
                   // For the time being for fake data
                   progressBarPercentage: +(
-                    (((es as PrimaryEstate).assetDetails.pricePrimary
+                    (((es as PrimaryEstate).assetDetails.priceDetails
                       .tokensUsed || 1) /
-                      (es as PrimaryEstate).assetDetails.pricePrimary
+                      (es as PrimaryEstate).assetDetails.priceDetails
                         .tokensAvailable) *
                     100
                   ).toFixed(2),

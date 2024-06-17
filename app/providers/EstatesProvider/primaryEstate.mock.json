@@ -1,135 +1,137 @@
-[{
-  "token_address": "dXnzkuxuaEEX7oZ5AhEuISG1R3lStNTqbzKDs0VgXc",
-  "name": "Halap",
-  "symbol": "LOUI",
-  "decimals": 4,
-  "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
-  "assetDetails": {
-    "coordinates": {
-      "lat": -14.840383,
-      "lng": 59.23671
-    },
-    "APY": 2.58,
-    "type": "Primary Issuance",
-    "assetImages": [
-      "https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-    ],
-    "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    "basicInfo": {
-      "beds": 4,
-      "baths": 3,
-      "sqft": 390,
-      "buildDate": "1990-08-26T09:32:15-03:00"
-    },
-    "propertyDetails": {
-      "description": "Ea voluptate sunt Lorem ad labore incididunt ipsum mollit sit aliquip. Duis id Lorem ipsum incididunt mollit eiusmod excepteur dolor amet dolor. Et ipsum ad aute ad et commodo. Pariatur consequat consequat consectetur aliqua laboris labore tempor. Officia reprehenderit ea velit sit excepteur. Dolore commodo enim mollit anim dolore eu exercitation ea pariatur cillum.\r\n",
-      "propertyType": "Farmhouse",
-      "fullAddress": "412 Richmond Street, Cutter, Washington",
-      "zipCode": 1,
-      "state": "Hawaii",
-      "country": "New Mexico",
-      "rentalType": "Commercial Lease",
-      "rented": "Pre-Leased",
-      "rentSubsidy": "No",
-      "propertyManager": "Shawna Trujillo",
-      "parking": "On-Street Parking"
-    },
-    "buildingInfo": {
-      "stories": 23,
-      "lotSize": 2073,
-      "interiorSize": 1046,
-      "buildingClass": "C",
-      "foundation": "Post and Beam",
-      "exteriorWalls": "Log",
-      "roofType": "Synthetic (Composite) Shingles",
-      "heating": "Electric Radiant Heating",
-      "cooling": "Desiccant Cooling Systems",
-      "renovated": "Renovated in the Last 5 Years"
-    },
-    "neighborhood": {
-      "description": "Aute nostrud et veniam magna officia aliquip id amet excepteur laborum anim do cupidatat fugiat. Magna ea non deserunt mollit nostrud in ea ullamco laboris Lorem magna. Eu minim eiusmod minim enim est ut eiusmod proident pariatur. Proident duis cupidatat veniam eu anim labore pariatur mollit. In incididunt occaecat Lorem nulla fugiat consequat ipsum do tempor elit ex. Mollit magna excepteur aliquip duis cupidatat.\r\n",
+[
+  {
+    "token_address": "dXnzkuxuaEEX7oZ5AhEuISG1R3lStNTqbzKDs0VgXc",
+    "name": "Halap",
+    "symbol": "LOUI",
+    "decimals": 4,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetDetails": {
       "coordinates": {
-        "lat": -64.617221,
-        "lng": -29.871321
-      }
-    },
-    "financials": {
-      "propertyFinancials": {
-        "grossRentYearly": 3108,
-        "grossRentMonthly": 114,
-        "monthlyCosts": {
-          "costs": 202.7,
-          "netReproperty": 153.46,
-          "platform": 54.1,
-          "expenses": 166.52,
-          "taxes": 265.35,
-          "insurance": 81.72,
-          "utilities": "Tenant-paid"
-        },
-        "netRentMonthly": 906.99,
-        "netRentYearly": 9887.4,
-        "totalInvestment": {
-          "total": 80840.77,
-          "underlyingAssetPrice": 63125.38,
-          "initialMaintenanceReserve": 954.12
-        },
-        "expectedIncome": 39.57
+        "lat": -14.840383,
+        "lng": 59.23671
       },
-      "expectedIncome": {
-        "income": 46.58,
-        "incomePerTokenYearly": 19.08,
-        "incomeStartDate": "2012-02-07T12:35:43-02:00",
-        "tokenPrice": 58.36,
-        "totalTokens": 2865,
-        "description": "Magna aliquip sunt duis ut ipsum. Duis esse proident anim exercitation ut cupidatat duis esse. Ipsum ut cillum tempor deserunt non dolor aliquip occaecat. Voluptate Lorem et ea laborum duis ad. In ut eu laboris non incididunt cupidatat magna reprehenderit ea consequat irure magna mollit mollit. Cupidatat consequat veniam anim culpa laboris magna occaecat laborum excepteur dolor amet quis deserunt exercitation.\r\n"
-      }
-    },
-    "blockchain": [
-      {
-        "name": "Mavryk",
-        "identifier": "LAKE-MOUNTAIN-MAPLE-BROOK",
-        "totalTokens": 2127,
-        "assetIssuer": "mv1lLGmaP8ivpTyWsQejOSQ7FEsm9IhZJnqz1wW96pTR",
-        "assetId": "mv1pnQfYuDRNffJbfbvATPFycJmgI7Wvm64NfGDHWfib"
-      }
-    ],
-    "offering": {
-      "offeringDate": "1988-03-04T04:38:15-03:00",
-      "offeringIssuer": "Equiteez",
-      "minInvestmentAmount": 37.52,
-      "maxInvestmentAmount": 57690.22,
-      "raisedAmount": 68480.39,
-      "offeringPercent": 76
-    },
-    "valuation": {
-      "priorValuation": {
-        "date": "1986-01-19T11:17:15-03:00",
-        "assetValuation": 37458.42,
-        "annualChange": 16.66,
-        "totalInvestment": 57285.03,
-        "capitalROI": 11.93,
-        "tokenPrice": 5.42,
-        "regDistributed": 6495.3184,
-        "info": "?"
+      "APY": 2.58,
+      "type": "Primary Issuance",
+      "assetImages": [
+        "https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+      ],
+      "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "basicInfo": {
+        "beds": 4,
+        "baths": 3,
+        "sqft": 390,
+        "buildDate": "1990-08-26T09:32:15-03:00"
       },
-      "initialValuation": {
-        "date": "2000-01-22T04:20:52-02:00",
-        "assetValuation": 70302.49,
-        "totalInvestment": 55175.3576,
-        "tokenPrice": 97.82,
-        "info": "?"
+      "propertyDetails": {
+        "description": "Ea voluptate sunt Lorem ad labore incididunt ipsum mollit sit aliquip. Duis id Lorem ipsum incididunt mollit eiusmod excepteur dolor amet dolor. Et ipsum ad aute ad et commodo. Pariatur consequat consequat consectetur aliqua laboris labore tempor. Officia reprehenderit ea velit sit excepteur. Dolore commodo enim mollit anim dolore eu exercitation ea pariatur cillum.\r\n",
+        "propertyType": "Farmhouse",
+        "fullAddress": "412 Richmond Street, Cutter, Washington",
+        "zipCode": 1,
+        "state": "Hawaii",
+        "country": "New Mexico",
+        "rentalType": "Commercial Lease",
+        "rented": "Pre-Leased",
+        "rentSubsidy": "No",
+        "propertyManager": "Shawna Trujillo",
+        "parking": "On-Street Parking"
+      },
+      "buildingInfo": {
+        "stories": 23,
+        "lotSize": 2073,
+        "interiorSize": 1046,
+        "buildingClass": "C",
+        "foundation": "Post and Beam",
+        "exteriorWalls": "Log",
+        "roofType": "Synthetic (Composite) Shingles",
+        "heating": "Electric Radiant Heating",
+        "cooling": "Desiccant Cooling Systems",
+        "renovated": "Renovated in the Last 5 Years"
+      },
+      "neighborhood": {
+        "description": "Aute nostrud et veniam magna officia aliquip id amet excepteur laborum anim do cupidatat fugiat. Magna ea non deserunt mollit nostrud in ea ullamco laboris Lorem magna. Eu minim eiusmod minim enim est ut eiusmod proident pariatur. Proident duis cupidatat veniam eu anim labore pariatur mollit. In incididunt occaecat Lorem nulla fugiat consequat ipsum do tempor elit ex. Mollit magna excepteur aliquip duis cupidatat.\r\n",
+        "coordinates": {
+          "lat": -64.617221,
+          "lng": -29.871321
+        }
+      },
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 3108,
+          "grossRentMonthly": 114,
+          "monthlyCosts": {
+            "costs": 202.7,
+            "netReproperty": 153.46,
+            "platform": 54.1,
+            "expenses": 166.52,
+            "taxes": 265.35,
+            "insurance": 81.72,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 906.99,
+          "netRentYearly": 9887.4,
+          "totalInvestment": {
+            "total": 80840.77,
+            "underlyingAssetPrice": 63125.38,
+            "initialMaintenanceReserve": 954.12
+          },
+          "expectedIncome": 39.57
+        },
+        "expectedIncome": {
+          "income": 46.58,
+          "incomePerTokenYearly": 19.08,
+          "incomeStartDate": "2012-02-07T12:35:43-02:00",
+          "tokenPrice": 58.36,
+          "totalTokens": 2865,
+          "description": "Magna aliquip sunt duis ut ipsum. Duis esse proident anim exercitation ut cupidatat duis esse. Ipsum ut cillum tempor deserunt non dolor aliquip occaecat. Voluptate Lorem et ea laborum duis ad. In ut eu laboris non incididunt cupidatat magna reprehenderit ea consequat irure magna mollit mollit. Cupidatat consequat veniam anim culpa laboris magna occaecat laborum excepteur dolor amet quis deserunt exercitation.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Mavryk",
+          "identifier": "LAKE-MOUNTAIN-MAPLE-BROOK",
+          "totalTokens": 2127,
+          "assetIssuer": "mv1lLGmaP8ivpTyWsQejOSQ7FEsm9IhZJnqz1wW96pTR",
+          "assetId": "mv1pnQfYuDRNffJbfbvATPFycJmgI7Wvm64NfGDHWfib"
+        }
+      ],
+      "offering": {
+        "offeringDate": "1988-03-04T04:38:15-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 37.52,
+        "maxInvestmentAmount": 57690.22,
+        "raisedAmount": 68480.39,
+        "offeringPercent": 76
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "1986-01-19T11:17:15-03:00",
+          "assetValuation": 37458.42,
+          "annualChange": 16.66,
+          "totalInvestment": 57285.03,
+          "capitalROI": 11.93,
+          "tokenPrice": 5.42,
+          "regDistributed": 6495.3184,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2000-01-22T04:20:52-02:00",
+          "assetValuation": 70302.49,
+          "totalInvestment": 55175.3576,
+          "tokenPrice": 97.82,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 53.61,
+        "projectedAnnualReturn": 61.43,
+        "projectedRentalYield": 58.35,
+        "rentalYield": 7.78,
+        "tokensAvailable": 548,
+        "tokensUsed": 500
       }
-    },
-    "pricePrimary": {
-      "price": 53.61,
-      "projectedAnnualReturn": 61.43,
-      "projectedRentalYield": 58.35,
-      "rentalYield": 7.78,
-      "tokensAvailable": 548,
-      "tokensUsed": 500
     }
   }
-}]
+]

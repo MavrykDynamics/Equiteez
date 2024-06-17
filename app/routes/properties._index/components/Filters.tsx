@@ -14,7 +14,6 @@ import { InputWithIcons } from '~/lib/organisms/InputWithIcons/InputWithIcons';
 import {
   EstateType,
   SecondaryEstate,
-  PrimaryEstate,
 } from '~/providers/EstatesProvider/estates.types';
 
 import _ from 'lodash';
@@ -35,38 +34,17 @@ function filterByPropertyType(estates: EstateType[], type: string) {
 
 function filterByRentalYield(estates: EstateType[], value: string) {
   if (Number(value) === 0) return estates;
-  // TODO fix property differences, cuz they are specific for each market (primary | secondary)
-  // f.e. rentalYield || projectedRentalYield
   return estates.filter((es) => {
-    if ((es as PrimaryEstate).assetDetails.pricePrimary) {
-      return (
-        Number(
-          (es as PrimaryEstate).assetDetails.pricePrimary.projectedRentalYield
-        ) <= Number(value)
-      );
-    }
-
     return Number(
-      (es as SecondaryEstate).assetDetails.priceSecondary.rentalYield <=
-        Number(value)
+      es.assetDetails.priceDetails.projectedRentalYield <= Number(value)
     );
   });
 }
 function filterByAnnualReturn(estates: EstateType[], value: string) {
   if (Number(value) === 0) return estates;
-  // TODO fix property differences, cuz they are specific for each market (primary | secondary)
-  // f.e. rentalYield || projectedRentalYield
   return estates.filter((es) => {
-    if ((es as PrimaryEstate).assetDetails.pricePrimary) {
-      return (
-        Number(
-          (es as PrimaryEstate).assetDetails.pricePrimary.projectedAnnualReturn
-        ) <= Number(value)
-      );
-    }
-
     return Number(
-      (es as SecondaryEstate).assetDetails.priceSecondary.annualReturn <=
+      (es as SecondaryEstate).assetDetails.priceDetails.projectedAnnualReturn <=
         Number(value)
     );
   });

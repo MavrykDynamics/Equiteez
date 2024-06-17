@@ -48,20 +48,20 @@ export const SecondaryPriceBlock: FC = () => {
       <Table>
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Current Price</p>
-          <p>${estate.assetDetails.priceSecondary.price}</p>
+          <p>${estate.assetDetails.priceDetails.price}</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <p>Annual Return</p>
-          <p>{estate.assetDetails.priceSecondary.annualReturn}%</p>
+          <p>{estate.assetDetails.priceDetails.annualReturn}%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
           <p>Rental Yield</p>
-          <p>{estate.assetDetails.priceSecondary.rentalYield}%</p>
+          <p>{estate.assetDetails.priceDetails.rentalYield}%</p>
         </div>
         <Divider className="my-4" />
         <div className="text-content text-buttons flex justify-between mb-6">
           <p>Total Liquidity</p>
-          <p>${estate.assetDetails.priceSecondary.totalLiquidity}</p>
+          <p>${estate.assetDetails.priceDetails.totalLiquidity}</p>
         </div>
         <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
         <Button

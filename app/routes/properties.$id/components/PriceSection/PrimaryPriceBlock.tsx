@@ -39,7 +39,7 @@ export const PrimaryPriceBlock = () => {
       <Table>
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Starting Price</p>
-          <p>${estate.assetDetails.pricePrimary.price}</p>
+          <p>${estate.assetDetails.priceDetails.price}</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <div className="flex items-center gap-x-1">
@@ -49,7 +49,7 @@ export const PrimaryPriceBlock = () => {
               className="w-6 h-6"
             />
           </div>
-          <p>{estate.assetDetails.pricePrimary.projectedAnnualReturn}%</p>
+          <p>{estate.assetDetails.priceDetails.projectedAnnualReturn}%</p>
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <div className="flex items-center gap-x-1">
@@ -59,7 +59,7 @@ export const PrimaryPriceBlock = () => {
               className="w-6 h-6"
             />
           </div>
-          <p>{estate.assetDetails.pricePrimary.projectedRentalYield}%</p>
+          <p>{estate.assetDetails.priceDetails.projectedRentalYield}%</p>
         </div>
         <div className="text-content text-buttons flex justify-between">
           <div className="flex items-center gap-x-1">
@@ -69,12 +69,12 @@ export const PrimaryPriceBlock = () => {
               className="w-6 h-6"
             />
           </div>
-          <p>{estate.assetDetails.pricePrimary.rentalYield}%</p>
+          <p>{estate.assetDetails.priceDetails.rentalYield}%</p>
         </div>
         <Divider className="my-4" />
         <h4 className="text-content text-buttons mb-3">Tokens Available</h4>
         <ProgresBar
-          tokensCount={estate.assetDetails.pricePrimary.tokensAvailable}
+          tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
         />
         <Button onClick={handleOpen}>Buy</Button>
       </Table>

@@ -124,10 +124,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 74.09,
         "annualReturn": 4.03,
+        "projectedAnnualReturn": 4.03,
         "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
         "totalLiquidity": 40.03
       },
       "tradingHistory": [
@@ -405,10 +407,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 72.84,
         "annualReturn": 69.68,
+        "projectedAnnualReturn": 69.68,
         "rentalYield": 27.35,
+        "projectedRentalYield": 27.35,
         "totalLiquidity": 84.43
       },
       "tradingHistory": [
@@ -686,10 +690,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 24.8,
         "annualReturn": 8.27,
+        "projectedAnnualReturn": 8.27,
         "rentalYield": 27.31,
+        "projectedRentalYield": 27.31,
         "totalLiquidity": 289.2
       },
       "tradingHistory": [
@@ -967,10 +973,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 40.77,
         "annualReturn": 46.49,
+        "projectedAnnualReturn": 46.49,
         "rentalYield": 20.13,
+        "projectedRentalYield": 20.13,
         "totalLiquidity": 324.49
       },
       "tradingHistory": [
@@ -1248,10 +1256,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 34.27,
         "annualReturn": 49.73,
+        "projectedAnnualReturn": 49.73,
         "rentalYield": 33.21,
+        "projectedRentalYield": 33.21,
         "totalLiquidity": 12.79
       },
       "tradingHistory": [
@@ -1529,10 +1539,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 37.16,
         "annualReturn": 7.94,
+        "projectedAnnualReturn": 7.94,
         "rentalYield": 33.82,
+        "projectedRentalYield": 33.82,
         "totalLiquidity": 155.09
       },
       "tradingHistory": [
@@ -1810,10 +1822,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 74.05,
         "annualReturn": 4.41,
+        "projectedAnnualReturn": 4.41,
         "rentalYield": 39.42,
+        "projectedRentalYield": 39.42,
         "totalLiquidity": 272.45
       },
       "tradingHistory": [
@@ -2091,10 +2105,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 47.24,
         "annualReturn": 93.09,
+        "projectedAnnualReturn": 93.09,
         "rentalYield": 13.77,
+        "projectedRentalYield": 13.77,
         "totalLiquidity": 8.23
       },
       "tradingHistory": [
@@ -2372,10 +2388,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 52.56,
         "annualReturn": 29.55,
+        "projectedAnnualReturn": 29.55,
         "rentalYield": 17.42,
+        "projectedRentalYield": 17.42,
         "totalLiquidity": 86.53
       },
       "tradingHistory": [
@@ -2653,10 +2671,12 @@
           "info": "?"
         }
       },
-      "priceSecondary": {
+      "priceDetails": {
         "price": 59.34,
         "annualReturn": 25.28,
+        "projectedAnnualReturn": 25.28,
         "rentalYield": 35.51,
+        "projectedRentalYield": 35.51,
         "totalLiquidity": 331.93
       },
       "tradingHistory": [
@@ -2934,7 +2954,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 10.1,
         "projectedAnnualReturn": 99.45,
         "projectedRentalYield": 26.19,
@@ -3069,7 +3089,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 56.1,
         "projectedAnnualReturn": 53.26,
         "projectedRentalYield": 3.05,
@@ -3204,7 +3224,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 58.9,
         "projectedAnnualReturn": 87.15,
         "projectedRentalYield": 40.74,
@@ -3339,7 +3359,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 24.49,
         "projectedAnnualReturn": 47.22,
         "projectedRentalYield": 8.53,
@@ -3474,7 +3494,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 59.96,
         "projectedAnnualReturn": 6.99,
         "projectedRentalYield": 34.38,
@@ -3609,7 +3629,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 36.44,
         "projectedAnnualReturn": 68.88,
         "projectedRentalYield": 60.16,
@@ -3744,7 +3764,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 69.81,
         "projectedAnnualReturn": 72.45,
         "projectedRentalYield": 6.47,
@@ -3879,7 +3899,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 21.05,
         "projectedAnnualReturn": 41.27,
         "projectedRentalYield": 64.95,
@@ -4014,7 +4034,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 60.04,
         "projectedAnnualReturn": 59.14,
         "projectedRentalYield": 22.57,
@@ -4149,7 +4169,7 @@
           "info": "?"
         }
       },
-      "pricePrimary": {
+      "priceDetails": {
         "price": 53.61,
         "projectedAnnualReturn": 61.43,
         "projectedRentalYield": 58.35,

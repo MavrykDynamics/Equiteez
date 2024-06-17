@@ -1,381 +1,285 @@
-[{
-  "token_address": "iNQ30xTfixOpbLy6BiemuNRx2FjjrNtNJ5uelo03tA",
-  "name": "Everest",
-  "symbol": "OHIO",
-  "decimals": 6,
-  "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
-  "assetDetails": {
-    "coordinates": {
-      "lat": -53.747637,
-      "lng": 35.806237
-    },
-    "APY": 6.15,
-    "type": "Secondary Market",
-    "assetImages": [
-      "https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-    ],
-    "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    "basicInfo": {
-      "beds": 1,
-      "baths": 3,
-      "sqft": 313,
-      "buildDate": "1973-06-08T09:20:37-03:00"
-    },
-    "propertyDetails": {
-      "description": "Nostrud qui ut esse qui fugiat minim do eu quis. Dolor sit minim culpa fugiat ullamco tempor. Non sunt deserunt elit ex ad deserunt ut proident nisi occaecat anim eu id consequat.\r\n",
-      "propertyType": "Apartment",
-      "fullAddress": "264 Devoe Street, Bethany, Tennessee",
-      "zipCode": 1,
-      "state": "Wisconsin",
-      "country": "New Jersey",
-      "rentalType": "Commercial Lease",
-      "rented": "Partially Rented",
-      "rentSubsidy": "Yes",
-      "propertyManager": "Frieda Ellis",
-      "parking": "Commercial Parking"
-    },
-    "buildingInfo": {
-      "stories": 38,
-      "lotSize": 1443,
-      "interiorSize": 1443,
-      "buildingClass": "B",
-      "foundation": "Pad",
-      "exteriorWalls": "Composite Siding",
-      "roofType": "Clay and Concrete Tiles",
-      "heating": "Hydronic Baseboard Heaters",
-      "cooling": "Ductless Mini-Split Systems",
-      "renovated": "Budget Renovation"
-    },
-    "neighborhood": {
-      "description": "Cillum occaecat laboris deserunt culpa et ut Lorem adipisicing. Lorem irure commodo cillum ullamco veniam ad dolor id. Ullamco eu incididunt do anim. Reprehenderit qui minim fugiat amet fugiat Lorem culpa et consectetur nulla elit quis quis magna. Aute pariatur laboris cillum et tempor ex culpa cupidatat anim laborum labore voluptate. Incididunt esse enim officia consequat commodo duis. Officia aliquip quis dolore adipisicing consequat voluptate do consectetur qui culpa aute anim aliqua.\r\n",
+[
+  {
+    "token_address": "iNQ30xTfixOpbLy6BiemuNRx2FjjrNtNJ5uelo03tA",
+    "name": "Everest",
+    "symbol": "OHIO",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetDetails": {
       "coordinates": {
-        "lat": -71.759954,
-        "lng": 175.330033
-      }
-    },
-    "financials": {
-      "propertyFinancials": {
-        "grossRentYearly": 1218.31,
-        "grossRentMonthly": 195.05,
-        "monthlyCosts": {
-          "costs": 442.42,
-          "netReproperty": 48.62,
-          "platform": 15.67,
-          "expenses": 98,
-          "taxes": 128.61,
-          "insurance": 19.95,
-          "utilities": "Tenant-paid"
+        "lat": -53.747637,
+        "lng": 35.806237
+      },
+      "APY": 6.15,
+      "type": "Secondary Market",
+      "assetImages": [
+        "https://images.pexels.com/photos/19879682/pexels-photo-19879682/free-photo-of-palm-in-front-of-modern-house-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846387/pexels-photo-19846387/free-photo-of-bedroom-with-a-dividing-wall.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19846388/pexels-photo-19846388/free-photo-of-kitchen-with-white-cabinets-and-silver-appliances.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/19807271/pexels-photo-19807271/free-photo-of-contemporary-white-empty-kitchen-area-in-a-house.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+      ],
+      "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "basicInfo": {
+        "beds": 1,
+        "baths": 3,
+        "sqft": 313,
+        "buildDate": "1973-06-08T09:20:37-03:00"
+      },
+      "propertyDetails": {
+        "description": "Nostrud qui ut esse qui fugiat minim do eu quis. Dolor sit minim culpa fugiat ullamco tempor. Non sunt deserunt elit ex ad deserunt ut proident nisi occaecat anim eu id consequat.\r\n",
+        "propertyType": "Apartment",
+        "fullAddress": "264 Devoe Street, Bethany, Tennessee",
+        "zipCode": 1,
+        "state": "Wisconsin",
+        "country": "New Jersey",
+        "rentalType": "Commercial Lease",
+        "rented": "Partially Rented",
+        "rentSubsidy": "Yes",
+        "propertyManager": "Frieda Ellis",
+        "parking": "Commercial Parking"
+      },
+      "buildingInfo": {
+        "stories": 38,
+        "lotSize": 1443,
+        "interiorSize": 1443,
+        "buildingClass": "B",
+        "foundation": "Pad",
+        "exteriorWalls": "Composite Siding",
+        "roofType": "Clay and Concrete Tiles",
+        "heating": "Hydronic Baseboard Heaters",
+        "cooling": "Ductless Mini-Split Systems",
+        "renovated": "Budget Renovation"
+      },
+      "neighborhood": {
+        "description": "Cillum occaecat laboris deserunt culpa et ut Lorem adipisicing. Lorem irure commodo cillum ullamco veniam ad dolor id. Ullamco eu incididunt do anim. Reprehenderit qui minim fugiat amet fugiat Lorem culpa et consectetur nulla elit quis quis magna. Aute pariatur laboris cillum et tempor ex culpa cupidatat anim laborum labore voluptate. Incididunt esse enim officia consequat commodo duis. Officia aliquip quis dolore adipisicing consequat voluptate do consectetur qui culpa aute anim aliqua.\r\n",
+        "coordinates": {
+          "lat": -71.759954,
+          "lng": 175.330033
+        }
+      },
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
         },
-        "netRentMonthly": 766.81,
-        "netRentYearly": 6195.75,
-        "totalInvestment": {
-          "total": 98517.53,
-          "underlyingAssetPrice": 41528.33,
-          "initialMaintenanceReserve": 2582.01
-        },
-        "expectedIncome": 9.29
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
       },
-      "expectedIncome": {
-        "income": 44.83,
-        "incomePerTokenYearly": 22.98,
-        "incomeStartDate": "1991-03-24T08:50:10-03:00",
-        "tokenPrice": 69.91,
-        "totalTokens": 1018,
-        "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
-      }
-    },
-    "blockchain": [
-      {
-        "name": "Mavryk",
-        "identifier": "FOREST-LAKE-HILL-SUMMIT",
-        "totalTokens": 1817,
-        "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
-        "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
-      }
-    ],
-    "offering": {
-      "offeringDate": "2014-07-15T05:09:25-03:00",
-      "offeringIssuer": "Equiteez",
-      "minInvestmentAmount": 64.56,
-      "maxInvestmentAmount": 97346.11,
-      "raisedAmount": 93503.12,
-      "offeringPercent": 89.73
-    },
-    "valuation": {
-      "priorValuation": {
-        "date": "2003-11-14T02:38:38-02:00",
-        "assetValuation": 65257.99,
-        "annualChange": 4.98,
-        "totalInvestment": 20974.17,
-        "capitalROI": 44.39,
-        "tokenPrice": 56.79,
-        "regDistributed": 4453.8438,
-        "info": "?"
-      },
-      "initialValuation": {
-        "date": "2017-01-08T03:32:13-02:00",
-        "assetValuation": 6401.46,
-        "totalInvestment": 17366.1631,
-        "tokenPrice": 90.6,
-        "info": "?"
-      }
-    },
-    "priceSecondary": {
-      "price": 74.09,
-      "annualReturn": 4.03,
-      "rentalYield": 28.43,
-      "totalLiquidity": 40.03
-    },
-    "tradingHistory": [
-      {
-        "x": "2018-10-07T03:30:00.000Z",
-        "y": [
-          7301,
-          8231,
-          6359,
-          7902
-        ]
-      },
-      {
-        "x": "2018-10-08T03:30:00.000Z",
-        "y": [
-          2627,
-          2927,
-          1763,
-          2049
-        ]
-      },
-      {
-        "x": "2018-10-09T03:30:00.000Z",
-        "y": [
-          7165,
-          8259,
-          6587,
-          6678
-        ]
-      },
-      {
-        "x": "2018-10-10T03:30:00.000Z",
-        "y": [
-          1616,
-          1921,
-          1547,
-          1744
-        ]
-      },
-      {
-        "x": "2018-10-11T03:30:00.000Z",
-        "y": [
-          6455,
-          7845,
-          5804,
-          6120
-        ]
-      },
-      {
-        "x": "2018-10-12T03:30:00.000Z",
-        "y": [
-          9673,
-          10491,
-          8207,
-          9345
-        ]
-      },
-      {
-        "x": "2018-10-13T03:30:00.000Z",
-        "y": [
-          6227,
-          6717,
-          5953,
-          5747
-        ]
-      },
-      {
-        "x": "2018-10-14T03:30:00.000Z",
-        "y": [
-          6129,
-          7215,
-          5915,
-          6226
-        ]
-      },
-      {
-        "x": "2018-10-15T03:30:00.000Z",
-        "y": [
-          3831,
-          4619,
-          2844,
-          3407
-        ]
-      },
-      {
-        "x": "2018-10-16T03:30:00.000Z",
-        "y": [
-          9786,
-          10735,
-          9323,
-          9337
-        ]
-      },
-      {
-        "x": "2018-10-17T03:30:00.000Z",
-        "y": [
-          2140,
-          3014,
-          1231,
-          2870
-        ]
-      },
-      {
-        "x": "2018-10-18T03:30:00.000Z",
-        "y": [
-          5229,
-          5385,
-          4721,
-          5631
-        ]
-      },
-      {
-        "x": "2018-10-19T03:30:00.000Z",
-        "y": [
-          3310,
-          4630,
-          2661,
-          3030
-        ]
-      },
-      {
-        "x": "2018-10-20T03:30:00.000Z",
-        "y": [
-          3226,
-          4570,
-          1962,
-          3869
-        ]
-      },
-      {
-        "x": "2018-10-21T03:30:00.000Z",
-        "y": [
-          10088,
-          10405,
-          8966,
-          9964
-        ]
-      },
-      {
-        "x": "2018-10-22T03:30:00.000Z",
-        "y": [
-          6337,
-          7030,
-          5040,
-          7038
-        ]
-      },
-      {
-        "x": "2018-10-23T03:30:00.000Z",
-        "y": [
-          7123,
-          7834,
-          6853,
-          7455
-        ]
-      },
-      {
-        "x": "2018-10-24T03:30:00.000Z",
-        "y": [
-          2152,
-          3596,
-          1221,
-          2804
-        ]
-      },
-      {
-        "x": "2018-10-25T03:30:00.000Z",
-        "y": [
-          2284,
-          3459,
-          1705,
-          2920
-        ]
-      },
-      {
-        "x": "2018-10-26T03:30:00.000Z",
-        "y": [
-          8051,
-          9265,
-          7287,
-          8414
-        ]
-      }
-    ],
-    "otc": {
-      "buying": [
+      "blockchain": [
         {
-          "seller": "Linda Martinez",
-          "tokensForSale": 89.97,
-          "price": 328.63,
-          "totalValue": 19060.23
-        },
-        {
-          "seller": "Marvin McKinney",
-          "tokensForSale": 124.67,
-          "price": 306.22,
-          "totalValue": 22062.21
-        },
-        {
-          "seller": "Savannah Nguyen",
-          "tokensForSale": 288.41,
-          "price": 330.2,
-          "totalValue": 25499.78
-        },
-        {
-          "seller": "Cody Fisher",
-          "tokensForSale": 98.95,
-          "price": 305.89,
-          "totalValue": 19237.4
-        },
-        {
-          "seller": "John Doe",
-          "tokensForSale": 86.64,
-          "price": 197.93,
-          "totalValue": 11471.26
+          "name": "Mavryk",
+          "identifier": "FOREST-LAKE-HILL-SUMMIT",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
         }
       ],
-      "selling": [
-        {
-          "seller": "David Wilson",
-          "tokensForSale": 164.03,
-          "price": 242.67,
-          "totalValue": 33581.1
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
         },
-        {
-          "seller": "Alice Johnson",
-          "tokensForSale": 231.86,
-          "price": 326.6,
-          "totalValue": 37321.63
-        },
-        {
-          "seller": "James Anderson",
-          "tokensForSale": 196.05,
-          "price": 93.23,
-          "totalValue": 34120.11
-        },
-        {
-          "seller": "Michael Brown",
-          "tokensForSale": 214.76,
-          "price": 183.09,
-          "totalValue": 26055.46
-        },
-        {
-          "seller": "Savannah Nguyen",
-          "tokensForSale": 91.18,
-          "price": 252.33,
-          "totalValue": 24049.12
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
         }
-      ]
+      },
+      "priceDetails": {
+        "price": 74.09,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 4.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
     }
   }
-}]
+]
