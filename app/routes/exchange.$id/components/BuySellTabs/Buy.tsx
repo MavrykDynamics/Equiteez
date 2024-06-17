@@ -1,15 +1,15 @@
 import { FC, useCallback, useMemo, useState } from 'react';
 import { usePropertyById } from '../../hooks/use-property-by-id';
 
-import { TabType } from '~/atoms/Tab';
-import { TabSwitcher } from '~/organisms/TabSwitcher';
+import { TabType } from '~/lib/atoms/Tab';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 
-import { Divider } from '~/atoms/Divider';
+import { Divider } from '~/lib/atoms/Divider';
 
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 
 import otc from '~/mocks/otc.json';
-import { Button } from '~/atoms/Button';
+import { Button } from '~/lib/atoms/Button';
 import MenuMulti from './MenuMulti';
 import DotFill from '~/icons/dot-fill.svg?react';
 import DotEmpty from '~/icons/dot-empty.svg?react';

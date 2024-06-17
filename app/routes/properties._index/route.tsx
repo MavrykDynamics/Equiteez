@@ -1,6 +1,6 @@
 import type { MetaFunction } from '@remix-run/node';
 import { Link } from '@remix-run/react';
-import { Spacer } from '~/atoms/Spacer';
+import { Spacer } from '~/lib/atoms/Spacer';
 import PageLayout from '~/layouts/PageLayout/Pagelayout';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import {

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Tooltip, TooltipProps } from '~/molecules/Tooltip';
+import { Tooltip, TooltipProps } from '~/lib/molecules/Tooltip';
 import InfoIcon from 'app/icons/info.svg?react';
 
 type InfoTooltipProps = Pick<TooltipProps, 'content'> & {

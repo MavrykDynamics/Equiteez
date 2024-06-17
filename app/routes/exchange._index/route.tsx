@@ -1,7 +1,5 @@
 import type { MetaFunction } from '@remix-run/node';
-import PageLayout from '~/layouts/PageLayout/Pagelayout';
 import { useEffect } from 'react';
-import { Navigate } from '@remix-run/react';
 import { useNavigate } from 'react-router-dom';
 
 export const meta: MetaFunction = () => {
@@ -12,14 +10,13 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Exchange() {
-
   const navigate = useNavigate();
 
   useEffect(() => {
     navigate(`/exchange/1`);
   }, [navigate]);
 
-  return (<div>Loading...</div>)
+  return <div>Loading...</div>;
   // return (
   //   <Navigate to={'/exchange/0'} />
   // );

@@ -16,7 +16,7 @@ import {
 } from 'app/consts/rpcNodes';
 
 // utils
-import { getItemFromStorage } from 'app/utils/local-storage';
+import { getItemFromStorage } from '~/lib/utils/local-storage';
 
 // Need to use as cuz NetworkType is enum and ts don't understand that all types are correct
 const WALLET_NETWORK = 'atlasnet' as NetworkType;

@@ -12,7 +12,7 @@ import CrossIcon from 'app/icons/cross.svg?react';
 import styles from './route.module.css';
 
 // components
-import CustomPopup from '~/organisms/CustomPopup/CustomPopup';
+import CustomPopup from '~/lib/organisms/CustomPopup/CustomPopup';
 import { NextButton, PrevButton } from '~/templates/EmblaCarouselArrowButtons';
 
 // hooks
@@ -20,7 +20,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
 import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
 import { Link } from '@remix-run/react';
-import { FullScreenSpinner } from '~/atoms/Spinner/Spinner';
+import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'temp' }, { name: 'description', content: 'Temp route!' }];

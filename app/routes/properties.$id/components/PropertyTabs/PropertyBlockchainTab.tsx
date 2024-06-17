@@ -1,8 +1,8 @@
 // components
-import { HashChip } from '~/molecules/HashChip';
-import { Table } from '~/atoms/Table/Table';
-import { TableHeader } from '~/atoms/Table/TableHeader';
-import { TableItem } from '~/atoms/Table/TableItem';
+import { HashChip } from '~/lib/molecules/HashChip';
+import { Table } from '~/lib/atoms/Table/Table';
+import { TableHeader } from '~/lib/atoms/Table/TableHeader';
+import { TableItem } from '~/lib/atoms/Table/TableItem';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 export const PropertyBlockchainTab = () => {

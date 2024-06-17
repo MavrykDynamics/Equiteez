@@ -1,14 +1,14 @@
 import { FC } from 'react';
-import { Button } from '~/atoms/Button';
-import { Divider } from '~/atoms/Divider';
-import { HashShortView } from '~/atoms/HashShortView';
+import { Button } from '~/lib/atoms/Button';
+import { Divider } from '~/lib/atoms/Divider';
+import { HashShortView } from '~/lib/atoms/HashShortView';
 import {
   NativeTable,
   NativeTableColumn,
   NativeTableHeader,
   NativeTableRow,
-} from '~/atoms/NativeTable/NativeTable';
-import { InputNumber } from '~/molecules/Input/Input';
+} from '~/lib/atoms/NativeTable/NativeTable';
+import { InputNumber } from '~/lib/molecules/Input/Input';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 const tableTopbarItems = [

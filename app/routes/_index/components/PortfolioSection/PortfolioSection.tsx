@@ -2,7 +2,7 @@ import Card1Icon from 'app/assets/home/icons/house-check.svg?react';
 import Card2Icon from 'app/assets/home/icons/circle-rect.svg?react';
 import Card3Icon from 'app/assets/home/icons/circle-house.svg?react';
 import Card4Icon from 'app/assets/home/icons/send-triangle.svg?react';
-import { CardWithShadow } from '~/atoms/CardWithShadow';
+import { CardWithShadow } from '~/lib/atoms/CardWithShadow';
 import clsx from 'clsx';
 
 const CARDS = [

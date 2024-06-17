@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 import ArrowDown from 'app/icons/chevron-down.svg?react';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { isVisibleInViewport } from '~/utils/element-in-view';
+import { isVisibleInViewport } from '~/lib/utils/element-in-view';
 
 export type FaqType = {
   data: { title: string; description: string | JSX.Element }[];

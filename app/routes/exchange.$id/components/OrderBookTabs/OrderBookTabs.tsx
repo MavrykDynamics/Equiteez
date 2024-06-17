@@ -1,8 +1,7 @@
 import { FC, useCallback, useMemo, useState } from 'react';
-import { TabType } from '~/atoms/Tab';
-import { TabSwitcher } from '~/organisms/TabSwitcher';
+import { TabType } from '~/lib/atoms/Tab';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { OrderBook } from './OrderBook';
-import { Recents } from './Recents';
 
 export const OrderBookTabs = () => {
   const [activetabId, setAvtiveTabId] = useState('orderBook');

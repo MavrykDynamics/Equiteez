@@ -3,14 +3,14 @@ import {
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/organisms/CustomDropdown/CustomDropdown';
+} from '~/lib/organisms/CustomDropdown/CustomDropdown';
 
 import SearchIcon from 'app/icons/search.svg?react';
 
 import styles from './filters.module.css';
 import clsx from 'clsx';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { InputWithIcons } from '~/organisms/InputWithIcons/InputWithIcons';
+import { InputWithIcons } from '~/lib/organisms/InputWithIcons/InputWithIcons';
 import {
   EstateType,
   SecondaryEstate,

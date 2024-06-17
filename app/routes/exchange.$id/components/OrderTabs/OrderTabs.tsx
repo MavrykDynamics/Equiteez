@@ -1,6 +1,6 @@
 import { FC, useCallback, useMemo, useState } from 'react';
-import { TabType } from '~/atoms/Tab';
-import { TabSwitcher } from '~/organisms/TabSwitcher';
+import { TabType } from '~/lib/atoms/Tab';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { HistoryTab } from './HistoryTab';
 
 export const OrderTabs = () => {
@@ -38,9 +38,6 @@ export const OrderTabs = () => {
         <OrderTab tabId={activetabId} />
       </div>
     </section>
-
-
-
   );
 };
 
@@ -58,6 +55,6 @@ const OrderTab: FC<OrderTabProps> = ({ tabId }) => {
 
 const OrderTabsComponents = {
   openOrders: <HistoryTab />,
-  orderHistory:  <HistoryTab />,
-  transactions:  <HistoryTab />,
+  orderHistory: <HistoryTab />,
+  transactions: <HistoryTab />,
 };

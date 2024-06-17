@@ -1,8 +1,8 @@
 import { FC, useCallback, useMemo, useState } from 'react';
-import { Button } from '~/atoms/Button';
-import { Divider } from '~/atoms/Divider';
-import { TabType } from '~/atoms/Tab';
-import { Table } from '~/atoms/Table/Table';
+import { Button } from '~/lib/atoms/Button';
+import { Divider } from '~/lib/atoms/Divider';
+import { TabType } from '~/lib/atoms/Tab';
+import { Table } from '~/lib/atoms/Table/Table';
 import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
   getStatusLabel,
@@ -10,7 +10,7 @@ import {
   STATUS_PENDING,
   useStatusFlag,
 } from '~/hooks/use-status-flag';
-import { TabSwitcher } from '~/organisms/TabSwitcher';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { PriceBuyTab } from './PriceBuyTab';
@@ -19,7 +19,7 @@ import { MakeOfferScreen } from './MakeOfferScreen';
 
 // contract actions
 import { sell } from '../actions/financial.actions';
-import { InputNumber } from '~/molecules/Input/Input';
+import { InputNumber } from '~/lib/molecules/Input/Input';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 

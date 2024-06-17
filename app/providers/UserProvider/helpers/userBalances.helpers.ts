@@ -7,7 +7,7 @@ import {
 } from './../user.provider.types';
 
 // helpers
-import { api } from 'app/utils/api';
+import { api } from 'app/lib/utils/api';
 // import { ApiError, unknownToError } from 'errors/error';
 import {
   emptyUserTzktAccountSchema,

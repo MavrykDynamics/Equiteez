@@ -5,7 +5,7 @@ import { FC, memo, PropsWithChildren } from 'react';
 import CustomPopup, {
   CustomPopupContentPositionType,
   CustomPopupProps,
-} from '~/organisms/CustomPopup/CustomPopup';
+} from '~/lib/organisms/CustomPopup/CustomPopup';
 
 // icons
 import CloseIcon from 'app/icons/cross.svg?react';

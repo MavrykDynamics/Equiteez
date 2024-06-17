@@ -1,17 +1,17 @@
 // components
-import { Table } from '~/atoms/Table/Table';
-import { TableHeader } from '~/atoms/Table/TableHeader';
-import { TableItem } from '~/atoms/Table/TableItem';
-import { ColoredCard } from '~/atoms/ColoredCard';
-import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { Table } from '~/lib/atoms/Table/Table';
+import { TableHeader } from '~/lib/atoms/Table/TableHeader';
+import { TableItem } from '~/lib/atoms/Table/TableItem';
+import { ColoredCard } from '~/lib/atoms/ColoredCard';
+import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import {
   ClickableExpanderArea,
   CustomExpander,
   ExpanderBodyContent,
   ExpanderFaceContent,
-} from '~/organisms/CustomExpander/CustomExpander';
+} from '~/lib/organisms/CustomExpander/CustomExpander';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { formatDate } from '~/utils/date';
+import { formatDate } from '~/lib/utils/date';
 
 export const PropertyFinanceTab = () => {
   const { activeEstate } = useEstatesContext();

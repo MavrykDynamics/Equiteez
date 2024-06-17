@@ -1,4 +1,4 @@
-import { Button } from 'app/atoms/Button';
+import { Button } from '~/lib/atoms/Button';
 
 export const HeadlineBlock = () => {
   return (

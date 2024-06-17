@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FC, PropsWithChildren } from 'react';
-import { Spinner } from '~/atoms/Spinner';
+import { Spinner } from '~/lib/atoms/Spinner';
 
 export const CustomSuspense: FC<PropsWithChildren & { loading: boolean }> = ({
   children,

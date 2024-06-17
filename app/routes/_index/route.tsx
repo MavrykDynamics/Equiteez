@@ -4,7 +4,7 @@ import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 
 // components
 import { BannerSection } from './components/BannerSection/BannerSection';
-import { Spacer } from 'app/atoms/Spacer';
+import { Spacer } from '~/lib/atoms/Spacer';
 import { FinanceSection } from './components/FinanceSection/FinanceSection';
 import { PropertiesSlider } from './components/PropertiesSlider';
 import { PortfolioSection } from './components/PortfolioSection';

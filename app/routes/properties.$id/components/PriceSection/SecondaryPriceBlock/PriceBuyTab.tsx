@@ -1,13 +1,13 @@
 import { FC, useCallback, useState } from 'react';
-import { Button } from '~/atoms/Button';
-import { Divider } from '~/atoms/Divider';
+import { Button } from '~/lib/atoms/Button';
+import { Divider } from '~/lib/atoms/Divider';
 import {
   getStatusLabel,
   STATUS_IDLE,
   STATUS_PENDING,
   useStatusFlag,
 } from '~/hooks/use-status-flag';
-import { InputNumber } from '~/molecules/Input/Input';
+import { InputNumber } from '~/lib/molecules/Input/Input';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { buy } from '../actions/financial.actions';
 import { pickMarketBasedOnSymbol } from '~/consts/contracts';

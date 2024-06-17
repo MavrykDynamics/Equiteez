@@ -1,10 +1,10 @@
-import { Table } from '~/atoms/Table/Table';
+import { Table } from '~/lib/atoms/Table/Table';
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/organisms/CustomDropdown/CustomDropdown';
+} from '~/lib/organisms/CustomDropdown/CustomDropdown';
 
 // icons
 import ExpandIcon from 'app/icons/expand.svg?react';
@@ -20,7 +20,7 @@ import OriginalApexCharts from 'react-apexcharts';
 import clsx from 'clsx';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { formatChartData } from '~/utils/chart';
+import { formatChartData } from '~/lib/utils/chart';
 
 export const PropertyTradingHistoryTab = () => {
   const { IS_WEB } = useAppContext();

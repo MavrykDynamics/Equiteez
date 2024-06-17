@@ -1,10 +1,10 @@
 import { FC, useCallback, useState } from 'react';
 import { usePropertyById } from '../../hooks/use-property-by-id';
 
-import { Divider } from '~/atoms/Divider';
+import { Divider } from '~/lib/atoms/Divider';
 
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-import { Button } from '~/atoms/Button';
+import { Button } from '~/lib/atoms/Button';
 import MenuMulti from './MenuMulti';
 import DotFill from '~/icons/dot-fill.svg?react';
 import DotEmpty from '~/icons/dot-empty.svg?react';

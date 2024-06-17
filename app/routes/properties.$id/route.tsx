@@ -6,13 +6,13 @@ import ShareIcon from 'app/icons/share.svg?react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 import { usePropertyByAddress } from './hooks/use-property-by-id';
-import { LinkWithIcon } from '~/atoms/LinkWithIcon';
+import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 import { FC } from 'react';
 import { Gallery } from './components/Gallery/Gallery';
 
 import { IconsBlock } from './components/IconsBlock';
-import { Divider } from '~/atoms/Divider';
-import { Spacer } from '~/atoms/Spacer';
+import { Divider } from '~/lib/atoms/Divider';
+import { Spacer } from '~/lib/atoms/Spacer';
 import { SimilarProperties } from './components/SimilarProperties/SimilarProperties';
 import { FAQSection } from '~/templates/FAQSection';
 
@@ -25,7 +25,7 @@ import { PriceSection } from './components/PriceSection/PriceSection';
 import PropertyTabs from './components/PropertyTabs/PropertyTabs';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { EstateHeadlineTab } from '~/templates/EstateHeadlineTab';
-import { FullScreenSpinner } from '~/atoms/Spinner/Spinner';
+import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
 
 export const meta: MetaFunction = () => {
   return [

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { ListSnake } from 'app/organisms/ListSnake';
+import { ListSnake } from '~/lib/organisms/ListSnake';
 
 type TabsStepperProps = { tabId: string };
 

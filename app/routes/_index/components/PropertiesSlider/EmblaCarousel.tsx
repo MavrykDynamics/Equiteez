@@ -8,8 +8,8 @@ import useEmblaCarousel from 'embla-carousel-react';
 
 import styles from './embla.module.css';
 import clsx from 'clsx';
-import { LinkWithIcon } from '~/atoms/LinkWithIcon';
-import { Button } from '~/atoms/Button';
+import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
+import { Button } from '~/lib/atoms/Button';
 import { Link, useNavigate } from '@remix-run/react';
 import {
   PrimaryEstate,

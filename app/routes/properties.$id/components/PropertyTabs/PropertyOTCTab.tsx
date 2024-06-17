@@ -1,13 +1,13 @@
-import { Button } from '~/atoms/Button';
+import { Button } from '~/lib/atoms/Button';
 import {
   NativeTable,
   NativeTableRow,
   NativeTableColumn,
   NativeTableHeader,
-} from '~/atoms/NativeTable/NativeTable';
-import { Spacer } from '~/atoms/Spacer';
-import { Table } from '~/atoms/Table/Table';
-import { TableHeader } from '~/atoms/Table/TableHeader';
+} from '~/lib/atoms/NativeTable/NativeTable';
+import { Spacer } from '~/lib/atoms/Spacer';
+import { Table } from '~/lib/atoms/Table/Table';
+import { TableHeader } from '~/lib/atoms/Table/TableHeader';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 

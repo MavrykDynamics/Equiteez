@@ -1,23 +1,21 @@
-import { FC, useCallback, useState } from 'react';
-import clsx from 'clsx';
-
 import orderbook from '~/mocks/orderbook.json';
 import RedArrowDown from '~/icons/red-arrow-down.svg?react';
 
-
-
 export const OrderBook = () => {
-
-  const columns = [{
-    label: 'Price (USDT)',
-    field: 'price'
-  },{
-    label: 'Amount',
-    field: 'amount'
-  },{
-    label: 'Total',
-    field: 'total'
-  },]
+  const columns = [
+    {
+      label: 'Price (USDT)',
+      field: 'price',
+    },
+    {
+      label: 'Amount',
+      field: 'amount',
+    },
+    {
+      label: 'Total',
+      field: 'total',
+    },
+  ];
 
   const currentPrice = 51;
 
@@ -43,28 +41,32 @@ export const OrderBook = () => {
               <tbody className="divide-y divide-transparent bg-white">
                 {orderbook.map((order, index) => (
                   <tr key={`${order.price}${index}`}>
+                    {Number(order.price) == currentPrice ? (
+                      <td
+                        className={`whitespace-nowrap flex items-center text-buttons gap-1 p-2 text-error ${
+                          Number(order.price) > currentPrice
+                            ? 'text-success'
+                            : 'text-error'
+                        }`}
+                      >
+                        <span>{order.price}</span>
+                        <RedArrowDown />
+                      </td>
+                    ) : (
+                      <td
+                        className={`eq-table-cell ${
+                          Number(order.price) > currentPrice
+                            ? 'text-success'
+                            : 'text-error'
+                        }`}
+                      >
+                        {order.price}
+                      </td>
+                    )}
 
+                    <td className="eq-table-cell">{order.amount || ''}</td>
 
-                    {
-                      Number(order.price) == currentPrice ? 
-                        <td className={`whitespace-nowrap flex items-center text-buttons gap-1 p-2 text-error ${ Number(order.price) > currentPrice ? 'text-success' : 'text-error' }`}>
-                          <span>{order.price}</span>
-                          <RedArrowDown />
-                        </td>
-                      :
-                        <td className={`eq-table-cell ${ Number(order.price) > currentPrice ? 'text-success' : 'text-error' }`}>
-                          {order.price}
-                        </td>
-                    } 
-
-                    <td className="eq-table-cell">
-                      {order.amount || ''}
-                    </td>
-
-                    <td className="eq-table-cell">
-                      {order.total || ''}
-                    </td>
-                    
+                    <td className="eq-table-cell">{order.total || ''}</td>
                   </tr>
                 ))}
               </tbody>

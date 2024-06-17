@@ -1,12 +1,12 @@
-import { Button } from '~/atoms/Button';
-import { HashShortView } from '~/atoms/HashShortView';
+import { Button } from '~/lib/atoms/Button';
+import { HashShortView } from '~/lib/atoms/HashShortView';
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/organisms/CustomDropdown/CustomDropdown';
-import { IdentIcon } from '~/organisms/IdenIcon';
+} from '~/lib/organisms/CustomDropdown/CustomDropdown';
+import { IdentIcon } from '~/lib/organisms/IdenIcon';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 

@@ -17,7 +17,7 @@ import {
 } from '../helpers/userBalances.helpers';
 
 import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
-import { sleep } from '~/utils/sleep';
+import { sleep } from '~/lib/utils/sleep';
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;

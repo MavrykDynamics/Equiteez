@@ -13,9 +13,9 @@ import {
   STATUS_IDLE,
   STATUS_SUCCESS,
 } from '~/hooks/use-status-flag';
-import { formatRWAPrice, RWAToken } from '~/utils/formaters';
+import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
 
-import { sleep } from '~/utils/sleep';
+import { sleep } from '~/lib/utils/sleep';
 
 // TODO fetch from graphql
 // create context for tokens

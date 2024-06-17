@@ -5,8 +5,8 @@ import PlayIcon from 'app/icons/play-circle-rounded.svg?react';
 
 import BannerImageSrc from 'app/assets/home/banner-image.webp';
 import styles from './bannerSection.module.css';
-import { Button } from 'app/atoms/Button';
-import { LinkWithIcon } from 'app/atoms/LinkWithIcon';
+import { Button } from '~/lib/atoms/Button';
+import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 
 export const BannerSection = () => {
   return (

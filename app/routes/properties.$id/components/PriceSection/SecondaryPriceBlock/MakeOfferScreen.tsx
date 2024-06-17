@@ -1,8 +1,8 @@
-import { Button } from '~/atoms/Button';
+import { Button } from '~/lib/atoms/Button';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 import { FC, useState } from 'react';
-import { InputNumber } from '~/molecules/Input/Input';
-import { Divider } from '~/atoms/Divider';
+import { InputNumber } from '~/lib/molecules/Input/Input';
+import { Divider } from '~/lib/atoms/Divider';
 
 type MakeOfferScreenProps = {
   toggleMakeOfferScreen: () => void;

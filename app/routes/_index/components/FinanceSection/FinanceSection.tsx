@@ -4,8 +4,8 @@ import { useCallback, useMemo, useState } from 'react';
 import StatsImageSrc from 'app/assets/home/stats.webp';
 
 import styles from './financeSection.module.css';
-import type { TabType } from 'app/atoms/Tab';
-import { TabSwitcher } from 'app/organisms/TabSwitcher';
+import type { TabType } from '~/lib/atoms/Tab';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { TabsStepper } from './TabsStepper';
 import { HeadlineBlock } from './HeadlineBlock';
 

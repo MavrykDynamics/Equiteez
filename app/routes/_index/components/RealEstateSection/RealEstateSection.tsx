@@ -5,7 +5,7 @@ import estate2Src from 'app/assets/home/real-estate-2.webp';
 import estate3Src from 'app/assets/home/real-estate-3.webp';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
-import { LinkWithIcon } from '~/atoms/LinkWithIcon';
+import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 
 const ESTATES = [
   {

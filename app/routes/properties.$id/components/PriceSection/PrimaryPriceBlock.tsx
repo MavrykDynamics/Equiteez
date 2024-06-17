@@ -1,13 +1,13 @@
-import { Divider } from '~/atoms/Divider';
-import { Table } from '~/atoms/Table/Table';
+import { Divider } from '~/lib/atoms/Divider';
+import { Table } from '~/lib/atoms/Table/Table';
 
 // styles
 import styles from './priceSection.module.css';
 import clsx from 'clsx';
-import { Button } from '~/atoms/Button';
+import { Button } from '~/lib/atoms/Button';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { FC, useCallback, useState } from 'react';
-import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import {
   getStatusLabel,

@@ -1,17 +1,17 @@
 /* eslint-disable react/no-unescaped-entities */
 
 // components
-import { Table } from '~/atoms/Table/Table';
-import { TableHeader } from '~/atoms/Table/TableHeader';
-import { TableItem } from '~/atoms/Table/TableItem';
+import { Table } from '~/lib/atoms/Table/Table';
+import { TableHeader } from '~/lib/atoms/Table/TableHeader';
+import { TableItem } from '~/lib/atoms/Table/TableItem';
 
 // icons
 import ClockIcon from 'app/icons/clock.svg?react';
 
 // styles
-import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { formatDate } from '~/utils/date';
+import { formatDate } from '~/lib/utils/date';
 
 export const PropertyOfferingTab = () => {
   const { activeEstate } = useEstatesContext();

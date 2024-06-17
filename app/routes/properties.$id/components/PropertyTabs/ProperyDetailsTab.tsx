@@ -3,10 +3,10 @@ import { FC, useCallback, useState } from 'react';
 import clsx from 'clsx';
 
 // components
-import { Table } from '~/atoms/Table/Table';
-import { TableDescription } from '~/atoms/Table/TableDescription';
-import { TableHeader } from '~/atoms/Table/TableHeader';
-import { TableItem } from '~/atoms/Table/TableItem';
+import { Table } from '~/lib/atoms/Table/Table';
+import { TableDescription } from '~/lib/atoms/Table/TableDescription';
+import { TableHeader } from '~/lib/atoms/Table/TableHeader';
+import { TableItem } from '~/lib/atoms/Table/TableItem';
 
 // Google maps
 import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
@@ -19,7 +19,7 @@ import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
 // styles
 import styles from './propertyTabs.module.css';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { InfoTooltip } from '~/organisms/InfoTooltip';
+import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 

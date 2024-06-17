@@ -2,7 +2,7 @@
 import { PropsWithChildren, Component, ErrorInfo, memo } from 'react';
 
 import clsx from 'clsx';
-import { getOnlineStatus } from 'app/utils/get-online-status';
+import { getOnlineStatus } from '~/lib/utils/get-online-status';
 
 export class BoundaryError extends Error {
   constructor(

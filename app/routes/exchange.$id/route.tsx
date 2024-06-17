@@ -9,8 +9,8 @@ import { Fragment } from 'react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 
-import { Divider } from '~/atoms/Divider';
-import { Spacer } from '~/atoms/Spacer';
+import { Divider } from '~/lib/atoms/Divider';
+import { Spacer } from '~/lib/atoms/Spacer';
 
 import estates from 'app/mocks/estates.json';
 

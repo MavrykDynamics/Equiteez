@@ -5,7 +5,7 @@ import CrossIcon from 'app/icons/cross.svg?react';
 import styles from './inputWithIcons.module.css';
 import { FC } from 'react';
 
-import { InputText, InputTextProps } from '~/molecules/Input/Input';
+import { InputText, InputTextProps } from '~/lib/molecules/Input/Input';
 import clsx from 'clsx';
 import { useOutsideClick } from '~/hooks/use-click-outside';
 
