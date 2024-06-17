@@ -12,14 +12,16 @@ import { useOutsideClick } from '~/hooks/use-click-outside';
 type InputWithIconsProps = {
   showSearchIcon?: boolean;
   handleClose: () => void;
+  triggerOutSideClick?: boolean;
 } & InputTextProps;
 
 export const InputWithIcons: FC<InputWithIconsProps> = ({
   showSearchIcon,
   handleClose,
+  triggerOutSideClick = true,
   ...rest
 }) => {
-  const ref = useOutsideClick(handleClose, true);
+  const ref = useOutsideClick(handleClose, !triggerOutSideClick);
 
   return (
     <div ref={ref} className="relative">

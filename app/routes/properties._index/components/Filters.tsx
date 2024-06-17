@@ -288,6 +288,7 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
               value={estateName}
               focused
               onChange={onChange}
+              triggerOutSideClick={opened}
               showSearchIcon
             />
           </div>
