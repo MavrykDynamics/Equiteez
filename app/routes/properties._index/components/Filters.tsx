@@ -11,12 +11,10 @@ import styles from './filters.module.css';
 import clsx from 'clsx';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { InputWithIcons } from '~/lib/organisms/InputWithIcons/InputWithIcons';
-import {
-  EstateType,
-  SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
+import { EstateType } from '~/providers/EstatesProvider/estates.types';
 
 import _ from 'lodash';
+import { calculateDynamicRanges } from './utils';
 
 // filter functions -----------------------------------------
 
@@ -32,20 +30,22 @@ function filterByPropertyType(estates: EstateType[], type: string) {
   );
 }
 
-function filterByRentalYield(estates: EstateType[], value: string) {
+function filterByRentalYield(estates: EstateType[], value: [number, number]) {
   if (Number(value) === 0) return estates;
   return estates.filter((es) => {
-    return Number(
-      es.assetDetails.priceDetails.projectedRentalYield <= Number(value)
-    );
+    const { projectedRentalYield } = es.assetDetails.priceDetails;
+
+    return projectedRentalYield >= value[0] && projectedRentalYield <= value[1];
   });
 }
-function filterByAnnualReturn(estates: EstateType[], value: string) {
+
+function filterByAnnualReturn(estates: EstateType[], value: [number, number]) {
   if (Number(value) === 0) return estates;
   return estates.filter((es) => {
-    return Number(
-      (es as SecondaryEstate).assetDetails.priceDetails.projectedAnnualReturn <=
-        Number(value)
+    const { projectedAnnualReturn } = es.assetDetails.priceDetails;
+
+    return (
+      projectedAnnualReturn >= value[0] && projectedAnnualReturn <= value[1]
     );
   });
 }
@@ -95,6 +95,35 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
     };
   }, [handleDebouncedSearch]);
 
+  const { projectedRentalYieldArr, projectedAnnualReturnArr } = useMemo(
+    () =>
+      estates.reduce<{
+        projectedRentalYieldArr: number[];
+        projectedAnnualReturnArr: number[];
+      }>(
+        (acc, es) => {
+          const { projectedAnnualReturn, projectedRentalYield } =
+            es.assetDetails.priceDetails;
+
+          acc.projectedAnnualReturnArr.push(projectedAnnualReturn);
+
+          acc.projectedRentalYieldArr.push(projectedRentalYield);
+          return acc;
+        },
+        { projectedRentalYieldArr: [], projectedAnnualReturnArr: [] }
+      ),
+    [estates]
+  );
+
+  const projectedRentalYieldOptions = useMemo(
+    () => calculateDynamicRanges(projectedRentalYieldArr),
+    [projectedRentalYieldArr]
+  );
+  const projectedAnnualReturnOptions = useMemo(
+    () => calculateDynamicRanges(projectedAnnualReturnArr),
+    [projectedAnnualReturnArr]
+  );
+
   const filtersData = useMemo(
     () => [
       {
@@ -133,54 +162,36 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
       },
       {
         id: 2,
-        label: 'projected rentail yield',
+        label: 'projected rental yield',
         value: '0%',
         filterFn: filterByRentalYield,
-        options: [
-          {
-            value: '0',
-            label: '0%',
-          },
-          {
-            value: '25',
-            label: '25%',
-          },
-          {
-            value: '75',
-            label: '75%',
-          },
-          {
-            value: '100',
-            label: '100%',
-          },
-        ],
+        options: [{ value: [0, 100], label: '0% - 100%' }].concat(
+          Object.keys(projectedRentalYieldOptions).map((item) => ({
+            value: [
+              projectedRentalYieldOptions[item].min,
+              projectedRentalYieldOptions[item].max,
+            ],
+            label: item,
+          }))
+        ),
       },
       {
         id: 3,
         label: 'projected annual return',
         value: '0%',
         filterFn: filterByAnnualReturn,
-        options: [
-          {
-            value: '0',
-            label: '0%',
-          },
-          {
-            value: '25',
-            label: '25%',
-          },
-          {
-            value: '75',
-            label: '75%',
-          },
-          {
-            value: '100',
-            label: '100%',
-          },
-        ],
+        options: [{ value: [0, 100], label: '0% - 100%' }].concat(
+          Object.keys(projectedAnnualReturnOptions).map((item) => ({
+            value: [
+              projectedAnnualReturnOptions[item].min,
+              projectedAnnualReturnOptions[item].max,
+            ],
+            label: item,
+          }))
+        ),
       },
     ],
-    [estates]
+    [estates, projectedAnnualReturnOptions, projectedRentalYieldOptions]
   );
 
   const [activeLabels, setActiveLabels] = useState(() =>
@@ -226,6 +237,7 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
                       <button
                         key={option.label}
                         onClick={() => {
+                          // @ts-expect-error // value is dynamic and filter fns will handle it
                           setEstates(filter.filterFn(estates, option.value));
                           setActiveLabels({
                             ...activeLabels,
