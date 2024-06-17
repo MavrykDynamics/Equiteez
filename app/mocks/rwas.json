@@ -26,17 +26,17 @@
         "buildDate": "1973-06-08T09:20:37-03:00"
       },
       "propertyDetails": {
-        "description": "8646 Ford Ave is a charming single story home located in a family-friendly neighborhood in Northport, Alabama. With four spacious bedrooms and two bathrooms, there is plenty of space for comfortable living. The home features an open concept design that seamlessly integrates a breakfast area complete with bar sleek and modern kitchen with granite countertops, kitchen island, pantry and sleek counters with solid surface. Outside, residents can enjoy the community's amenities, including a nearby park with playground, which makes it an ideal place for family recreation.",
+        "description": "Welcome to your new oasis on the Red Planet! Hilton Mars 1 by Space X proudly presents an exquisite multi-story establishment designed for luxurious stays in the cosmos. Our exclusive property offers panoramic views of Mars' breathtaking landscapes and features state-of-the-art amenities for an unparalleled experience.",
         "propertyType": "Apartment",
-        "fullAddress": "1427 5th Ave, Seattle, WA 98101, USA",
+        "fullAddress": "Martian Lane 1",
         "zipCode": 1,
-        "state": "Wisconsin",
-        "country": "New Jersey",
+        "state": "New Mars",
+        "country": "Mars",
         "rentalType": "Commercial Lease",
         "rented": "Partially Rented",
         "rentSubsidy": "Yes",
-        "propertyManager": "Frieda Ellis",
-        "parking": "Commercial Parking"
+        "propertyManager": "Mars Prime Estates",
+        "parking": "Underground Parking"
       },
       "buildingInfo": {
         "stories": 38,
@@ -91,7 +91,7 @@
       "blockchain": [
         {
           "name": "Mavryk",
-          "identifier": "FOREST-LAKE-HILL-SUMMIT",
+          "identifier": "MARS-1-HOTEL-SPACE-X",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -125,7 +125,7 @@
         }
       },
       "priceDetails": {
-        "price": 74.09,
+        "price": 51.09,
         "annualReturn": 4.03,
         "projectedAnnualReturn": 4.03,
         "rentalYield": 28.43,

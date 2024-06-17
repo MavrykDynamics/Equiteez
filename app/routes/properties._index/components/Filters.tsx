@@ -57,16 +57,30 @@ function filterByAnnualReturn(estates: EstateType[], value: [number, number]) {
   });
 }
 
+function filterByName(estates: EstateType[], name: string) {
+  return estates.filter((es) =>
+    es.name.toLowerCase().includes(name.toLowerCase())
+  );
+}
+
 // ----------------------------------------------------------
 
 type FiltersProps = {
   estates: EstateType[];
+  originalEstates: EstateType[];
   setEstates: (estates: EstateType[]) => void;
 };
 
-export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
+export const Filters: FC<FiltersProps> = ({
+  originalEstates,
+  estates,
+  setEstates,
+}) => {
   const [opened, setOpened] = useState(false);
+  // to make interactive search when user types smth
   const [estateName, setEstateName] = useState('');
+  // using debounce set new name after 450 ms to filter estates data
+  const [estateNameForFilter, setEstateNameForFilter] = useState('');
 
   // no need for usecallback cuz root element is div
   const handleOpen = () => {
@@ -75,16 +89,9 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
     }
   };
 
-  const sendRequest = useCallback(
-    (name: string) => {
-      setEstates(
-        estates.filter((es) =>
-          es.name.toLowerCase().includes(name.toLowerCase())
-        )
-      );
-    },
-    [estates, setEstates]
-  );
+  const sendRequest = useCallback((name: string) => {
+    setEstateNameForFilter(name);
+  }, []);
 
   const handleClose = useCallback(() => {
     setOpened(false);
@@ -120,7 +127,7 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         },
         { projectedRentalYieldArr: [], projectedAnnualReturnArr: [] }
       ),
-    [estates]
+    [originalEstates]
   );
 
   const projectedRentalYieldOptions = useMemo(
@@ -138,7 +145,6 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         id: 0,
         label: 'location',
         value: 'All Markets',
-        filterFn: filterByMarketType,
         options: [
           {
             value: 'all',
@@ -155,7 +161,6 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         id: 1,
         label: 'property type',
         value: 'All Properties',
-        filterFn: filterByPropertyType,
         options: [
           {
             value: 'all',
@@ -172,7 +177,6 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         id: 2,
         label: 'projected rental yield',
         value: '0%',
-        filterFn: filterByRentalYield,
         options: [{ value: [0, 100], label: '0% - 100%' }].concat(
           Object.keys(projectedRentalYieldOptions).map((item) => ({
             value: [
@@ -187,7 +191,6 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         id: 3,
         label: 'projected annual return',
         value: '0%',
-        filterFn: filterByAnnualReturn,
         options: [{ value: [0, 100], label: '0% - 100%' }].concat(
           Object.keys(projectedAnnualReturnOptions).map((item) => ({
             value: [
@@ -199,7 +202,7 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         ),
       },
     ],
-    [estates, projectedAnnualReturnOptions, projectedRentalYieldOptions]
+    [originalEstates, projectedAnnualReturnOptions, projectedRentalYieldOptions]
   );
 
   const [activeLabels, setActiveLabels] = useState(() =>
@@ -211,6 +214,34 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
       {}
     )
   );
+
+  /**
+   * apply all filters
+   * effect behaves like filter watcher
+   */
+  useEffect(() => {
+    let filteredEstates = originalEstates;
+    filteredEstates = filterByMarketType(
+      filteredEstates,
+      activeLabels['0'].value as string
+    );
+    filteredEstates = filterByPropertyType(
+      filteredEstates,
+      activeLabels['1'].value as string
+    );
+    filteredEstates = filterByRentalYield(
+      filteredEstates,
+      activeLabels['2'].value as [number, number]
+    );
+    filteredEstates = filterByAnnualReturn(
+      filteredEstates,
+      activeLabels['3'].value as [number, number]
+    );
+
+    filteredEstates = filterByName(filteredEstates, estateNameForFilter);
+
+    setEstates(filteredEstates);
+  }, [activeLabels, estateNameForFilter, originalEstates, setEstates]);
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,8 +278,6 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
                       <button
                         key={option.label}
                         onClick={() => {
-                          // @ts-expect-error // value is dynamic and filter fns will handle it
-                          setEstates(filter.filterFn(estates, option.value));
                           setActiveLabels({
                             ...activeLabels,
                             [filter.id]: option,
