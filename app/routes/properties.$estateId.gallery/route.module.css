@@ -44,7 +44,7 @@
 }
 
 .embla__slide {
-  @apply bg-green-opacity;
+  @apply bg-black-secondary;
   max-height: 846px;
 
   display: flex;

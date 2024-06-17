@@ -1,6 +1,8 @@
 import { Link } from '@remix-run/react';
 import { Logo } from '../Logo';
 import { ConnectWallet } from './ConnectWallet';
+import { Button } from '~/lib/atoms/Button';
+import { getWalkScoreData } from '~/lib/api/walk-score';
 
 export const Header = () => {
   return (
@@ -14,6 +16,11 @@ export const Header = () => {
 };
 
 const HeaderLinksBlock = () => {
+  const handleClick = async () => {
+    const data = await getWalkScoreData();
+    console.log(data, 'data');
+  };
+
   return (
     <header className="flex gap-x-9 items-center h-full">
       <Link to="/" className="text-body-xs text-content">
@@ -25,6 +32,7 @@ const HeaderLinksBlock = () => {
       <Link to="/exchange" className="text-body-xs text-content">
         Exchange
       </Link>
+      <Button onClick={handleClick}>Test</Button>
 
       <ConnectWallet />
     </header>
