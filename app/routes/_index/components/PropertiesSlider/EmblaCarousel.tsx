@@ -42,7 +42,10 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
   return (
     <section className={styles.embla}>
       <div className={'w-full flex justify-between items-center mb-11'}>
-        <LinkWithIcon to={'/'} className="text-white hover:text-white">
+        <LinkWithIcon
+          to={'/properties'}
+          className="text-white hover:text-white"
+        >
           View All
         </LinkWithIcon>
         <div className="flex items-center gap-x-3">

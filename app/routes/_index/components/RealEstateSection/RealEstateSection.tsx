@@ -84,7 +84,7 @@ export const RealEstateSection = () => {
             <h1 className="text-hero text-white">{estate.title}</h1>
             <div className="w-full flex items-end justify-between">
               <p className="text-buttons text-white">{estate.author}</p>
-              <LinkWithIcon to={'/'}>View properties</LinkWithIcon>
+              <LinkWithIcon to={'/properties'}>View properties</LinkWithIcon>
             </div>
           </div>
         </div>

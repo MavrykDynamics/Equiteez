@@ -7,6 +7,7 @@ import BannerImageSrc from 'app/assets/home/banner-image.webp';
 import styles from './bannerSection.module.css';
 import { Button } from '~/lib/atoms/Button';
 import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
+import { Link } from '@remix-run/react';
 
 export const BannerSection = () => {
   return (
@@ -21,7 +22,9 @@ export const BannerSection = () => {
           worldwide.
         </p>
         <div className="flex items-center gap-x-6">
-          <Button>View Properties</Button>
+          <Link to="/properties">
+            <Button>View Properties</Button>
+          </Link>
           <LinkWithIcon
             to="/"
             CustomIcon={PlayIcon}
