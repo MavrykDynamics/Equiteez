@@ -23,7 +23,10 @@ import { Link } from '@remix-run/react';
 import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'temp' }, { name: 'description', content: 'Temp route!' }];
+  return [
+    { title: 'Gallery' },
+    { name: 'description', content: 'Estate gallery' },
+  ];
 };
 
 type GallerySliderProps = {
@@ -50,8 +53,8 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose, images }) => {
           <span className="text-buttons">Close</span>
         </button>
         <div className="flex items-center justify-center text-buttons flex-1">
-          <span>{activeIndex}&nbsp;/&nbsp;</span>
-          <span>{images.length - 1}</span>
+          <span>{activeIndex + 1}&nbsp;/&nbsp;</span>
+          <span>{images.length}</span>
         </div>
 
         <section className="flex items-center gap-x-4 ml-auto">
