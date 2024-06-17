@@ -159,7 +159,7 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
         options: [
           {
             value: 'all',
-            label: 'All Markets',
+            label: 'All Properties',
           },
           ...[
             ...new Set(
@@ -233,7 +233,9 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
             <div className="flex flex-col gap-y-1 w-full">
               <CustomDropdown>
                 <ClickableDropdownArea>
-                  <p className="text-body-xs capitalize">{filter.label}</p>
+                  <p className="text-caption-regular capitalize">
+                    {filter.label}
+                  </p>
 
                   <DropdownFaceContent>
                     <div className="text-buttons w-full">

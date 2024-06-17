@@ -28,6 +28,9 @@ export default function Properties() {
       <div className="px-11">
         <Spacer height={32} />
         <Filters estates={estates} setEstates={setFilteredEstates} />
+        <div className="mt-5 text-body text-content">
+          {filteredEstates.length} items
+        </div>
         <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
           {filteredEstates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
