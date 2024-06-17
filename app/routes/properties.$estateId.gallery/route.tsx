@@ -47,12 +47,17 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose, images }) => {
 
   return (
     <div className="h-full">
-      <header className="flex items-center text-background">
+      <header className="flex items-center text-background relative">
         <button className="flex items-center gap-x-1" onClick={handleClose}>
           <CrossIcon className="w-6 h-6 text-background stroke-current" />
           <span className="text-buttons">Close</span>
         </button>
-        <div className="flex items-center justify-center text-buttons flex-1">
+        <div
+          className={clsx(
+            'flex items-center justify-center text-buttons flex-1',
+            styles.counter
+          )}
+        >
           <span>{activeIndex + 1}&nbsp;/&nbsp;</span>
           <span>{images.length}</span>
         </div>
