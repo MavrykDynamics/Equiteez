@@ -29,6 +29,7 @@ export async function getWalkScoreData(
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Access-Control-Allow-Origin': 'https://walk-score.equiteez.pages.dev',
       },
     });
   } catch (e) {
