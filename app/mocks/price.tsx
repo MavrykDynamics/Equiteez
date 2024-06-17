@@ -1,3 +1,3 @@
-export default function price(){
-    return 68.34;
-} 
+export default function price() {
+  return 68.34;
+}

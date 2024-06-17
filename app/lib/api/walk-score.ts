@@ -1,38 +1,65 @@
-// https://api.walkscore.com/score?format=json&
-// address=1119%8th%20Avenue%20Seattle%20WA%2098101&lat=47.6085&
-// lon=-122.3295&transit=1&bike=1&wsapikey=05e2917bb5c652963987503d6d5a8eec
-
+/* eslint-disable no-useless-catch */
 import { api } from '../utils/api';
 
-export async function getWalkScoreData(
-  params = {
-    format: 'json',
-    address: '268 Lee St #38 Opelika, Alabama(AL)',
-    lat: '32.65023244148331',
-    lon: '-85.36937602493992',
-    transit: '1',
-    bike: '1',
-    wsapikey: '05e2917bb5c652963987503d6d5a8eec',
-  }
-) {
+const DEFAUL_WALK_PARAMS: Partial<WalkScoreParams> = {
+  format: 'json',
+  transit: '1',
+  bike: '1',
+};
+
+export type WalkScoreParams = {
+  lat: string;
+  lon: string;
+  address: string;
+  transit?: string; // 	Set transit=1 to request Transit Score (if available).
+  bike?: string; //	Set bike=1 to request Bike Score (if available).
+  format?: string; // 	Return results in XML or JSON (defaults to XML).
+};
+
+export async function getWalkScoreData(params: WalkScoreParams) {
   try {
-    const urlSearchParams = new URLSearchParams(params);
+    const urlSearchParams = new URLSearchParams({
+      ...DEFAUL_WALK_PARAMS,
+      ...params,
+    });
     const encodedString = urlSearchParams.toString();
 
-    return await api(`https://api.walkscore.com/score?${encodedString}`, {
-      method: 'GET',
-      body: null,
-      headers: {
-        accept: '*/*',
-        'cache-control': 'no-cache',
-        pragma: 'no-cache',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Access-Control-Allow-Origin': 'https://walk-score.equiteez.pages.dev',
-      },
-    });
+    const { data } = await api<WalkScoreRes>(
+      `https://walk-api-proxy.akilawallet.workers.dev/?${encodedString}`,
+      {
+        method: 'GET',
+      }
+    );
+
+    return data;
   } catch (e) {
-    console.log(e);
+    throw e;
   }
+}
+
+export interface WalkScoreRes {
+  status: number;
+  walkscore: number;
+  description: string;
+  updated: string;
+  logo_url: string;
+  more_info_icon: string;
+  more_info_link: string;
+  ws_link: string;
+  help_link: string;
+  snapped_lat: number;
+  snapped_lon: number;
+  transit: Transit;
+  bike: Bike;
+}
+
+export interface Transit {
+  score: number;
+  description: string;
+  summary: string;
+}
+
+export interface Bike {
+  score: number;
+  description: string;
 }

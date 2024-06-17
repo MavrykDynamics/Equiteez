@@ -7,8 +7,8 @@
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetDetails": {
       "coordinates": {
-        "lat": -53.747637,
-        "lng": 35.806237
+        "lat": 47.610516875601206,
+        "lng":-122.33565825768186
       },
       "APY": 6.15,
       "type": "Secondary Market",
@@ -28,7 +28,7 @@
       "propertyDetails": {
         "description": "8646 Ford Ave is a charming single story home located in a family-friendly neighborhood in Northport, Alabama. With four spacious bedrooms and two bathrooms, there is plenty of space for comfortable living. The home features an open concept design that seamlessly integrates a breakfast area complete with bar sleek and modern kitchen with granite countertops, kitchen island, pantry and sleek counters with solid surface. Outside, residents can enjoy the community's amenities, including a nearby park with playground, which makes it an ideal place for family recreation.",
         "propertyType": "Apartment",
-        "fullAddress": "264 Devoe Street, Bethany, Tennessee",
+        "fullAddress": "1427 5th Ave, Seattle, WA 98101, USA",
         "zipCode": 1,
         "state": "Wisconsin",
         "country": "New Jersey",
@@ -288,8 +288,8 @@
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetDetails": {
       "coordinates": {
-        "lat": 25.186102,
-        "lng": 61.109675
+        "lat": 47.61104766177927,
+        "lng": -122.34658990172603
       },
       "APY": 3.74,
       "type": "Secondary Market",
@@ -309,7 +309,7 @@
       "propertyDetails": {
         "description": "Sint pariatur excepteur in sunt. Ea veniam veniam ex et incididunt deserunt ullamco magna ea nulla. Aliquip reprehenderit enim irure irure fugiat. Nisi duis culpa voluptate cupidatat aute nisi adipisicing dolor velit ad. Velit incididunt dolor velit proident nulla.\r\n",
         "propertyType": "Condominium (Condo)",
-        "fullAddress": "891 Canal Avenue, Frizzleburg, South Carolina",
+        "fullAddress": "2100 Alaskan Wy, Seattle, WA 98121, United States",
         "zipCode": 1,
         "state": "New Hampshire",
         "country": "Nevada",

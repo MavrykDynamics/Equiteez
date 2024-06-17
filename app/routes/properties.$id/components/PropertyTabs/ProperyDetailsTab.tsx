@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 // components
@@ -22,6 +22,8 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { getWalkScoreData } from '~/lib/api/walk-score';
+import { Spinner } from '~/lib/atoms/Spinner';
 
 export const PropertyDetailsTab = () => {
   const { activeEstate } = useEstatesContext();
@@ -120,7 +122,10 @@ export const PropertyDetailsTab = () => {
           <p>{buildingInfo.renovated}</p>
         </TableItem>
       </Table>
-      <PropertyDetailsMap coordinates={activeEstate.assetDetails.coordinates} />
+      <PropertyDetailsMap
+        address={activeEstate.assetDetails.propertyDetails.fullAddress}
+        coordinates={activeEstate.assetDetails.coordinates}
+      />
     </div>
   );
 };
@@ -136,9 +141,17 @@ const containerStyle = {
   height: '507px',
 };
 
-const PropertyDetailsMap: FC<{ coordinates: { lat: number; lng: number } }> = ({
-  coordinates,
-}) => {
+type WalkScoreState = {
+  transit: number | '-';
+  bike: number | '-';
+  walk: number | '-';
+  isLoading: boolean;
+};
+
+const PropertyDetailsMap: FC<{
+  coordinates: { lat: number; lng: number };
+  address: string;
+}> = ({ coordinates, address }) => {
   const { IS_WEB } = useAppContext();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -149,6 +162,39 @@ const PropertyDetailsMap: FC<{ coordinates: { lat: number; lng: number } }> = ({
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [map, setMap] = useState<google.maps.Map | null>(null);
+
+  // scores data
+  const [scores, setScores] = useState<WalkScoreState>(() => ({
+    transit: '-',
+    walk: '-',
+    bike: '-',
+    isLoading: true,
+  }));
+
+  useEffect(() => {
+    if (IS_WEB) {
+      (async function () {
+        try {
+          const walkScoreData = await getWalkScoreData({
+            address,
+            lat: coordinates.lat.toString(),
+            lon: coordinates.lng.toString(),
+          });
+
+          setScores({
+            isLoading: false,
+            walk: walkScoreData.walkscore ?? '-',
+            bike: walkScoreData.bike?.score ?? '-',
+            transit: walkScoreData.transit?.score ?? '-',
+          });
+        } catch (e) {
+          setScores((prev) => ({ ...prev, isLoading: false }));
+          console.log(e);
+        }
+      })();
+    }
+  }, [IS_WEB, address, coordinates.lat, coordinates.lng]);
+
 
   const onLoad = useCallback(
     function callback(map: google.maps.Map) {
@@ -173,17 +219,25 @@ const PropertyDetailsMap: FC<{ coordinates: { lat: number; lng: number } }> = ({
     <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8">
       <h3 className="text-content text-card-headline mb-6">Neighborhood</h3>
       <div className="grid grid-cols-2 gap-x-6">
-        <div>
+        <div className="flex flex-col">
           <p className="text-body mb-8">
             Lorem ipsum dolor sit amet consectetur. Odio et consectetur vitae
             bibendum nec pellentesque eu tellus pellentesque. Pellentesque et
             sapien nibh faucibus ut leo sagittis egestas.
           </p>
 
-          <div className="flex flex-col gap-y-4">
-            <DistanceBlock type="walk" />
-            <DistanceBlock type="transport" />
-            <DistanceBlock type="bicycle" />
+          <div className="flex flex-col gap-y-4 flex-1">
+            {scores.isLoading ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <Spinner />
+              </div>
+            ) : (
+              <>
+                <DistanceBlock type="walk" score={scores.walk} />
+                <DistanceBlock type="transport" score={scores.transit} />
+                <DistanceBlock type="bicycle" score={scores.bike} />
+              </>
+            )}
           </div>
         </div>
         <CustomSuspense loading={!isLoaded || !IS_WEB}>
@@ -221,33 +275,33 @@ const PropertyDetailsMap: FC<{ coordinates: { lat: number; lng: number } }> = ({
   );
 };
 
+// Walk score UI data --------------------
+
 type DistanceBlockProps = {
   type: keyof typeof distanceData;
+  score: string | number;
 };
 
 const distanceData = {
   walk: {
-    distance: 44,
     Icon: WalkIcon,
     label: 'Walk',
     description: 'Most errands require a car.',
   },
   transport: {
-    distance: 52,
     Icon: TransportIcon,
     label: 'Transport',
     description: 'A few nearby public transportation options.',
   },
   bicycle: {
-    distance: 29,
     Icon: BicycleIcon,
     label: 'Bike',
     description: 'Minimal bike infrastructure',
   },
 };
 
-const DistanceBlock: FC<DistanceBlockProps> = ({ type }) => {
-  const { Icon, distance, label, description } = distanceData[type];
+const DistanceBlock: FC<DistanceBlockProps> = ({ type, score }) => {
+  const { Icon, label, description } = distanceData[type];
 
   return (
     <div className="flex items-center gap-x-4">
@@ -258,7 +312,7 @@ const DistanceBlock: FC<DistanceBlockProps> = ({ type }) => {
         )}
       >
         <Icon />
-        <p className={styles.mapBlockNumber}>{distance}</p>
+        <p className={styles.mapBlockNumber}>{score}</p>
       </div>
       <div className="flex flex-col gap-y-[2px] items-start">
         <p className="text-content text-buttons">{label}</p>
