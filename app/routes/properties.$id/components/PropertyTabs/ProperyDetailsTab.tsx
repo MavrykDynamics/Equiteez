@@ -195,7 +195,6 @@ const PropertyDetailsMap: FC<{
     }
   }, [IS_WEB, address, coordinates.lat, coordinates.lng]);
 
-
   const onLoad = useCallback(
     function callback(map: google.maps.Map) {
       // This is just an example of getting and using the map instance!!! don't just blindly copy!
@@ -254,20 +253,7 @@ const PropertyDetailsMap: FC<{
               title="The cove"
               onClick={toggleMarkerWindow}
               zIndex={-1}
-            >
-              {/* <>
-                {isMarkerClicked && (
-                  <InfoWindow
-                    position={center}
-                    onCloseClick={toggleMarkerWindow}
-                  >
-                    <div className="text-content text-body z-10">
-                      Real Estate name here
-                    </div>
-                  </InfoWindow>
-                )}
-              </> */}
-            </MarkerF>
+            ></MarkerF>
           </GoogleMap>
         </CustomSuspense>
       </div>
