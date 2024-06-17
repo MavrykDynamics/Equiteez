@@ -19,7 +19,7 @@ export const InputWithIcons: FC<InputWithIconsProps> = ({
   handleClose,
   ...rest
 }) => {
-  const ref = useOutsideClick(handleClose);
+  const ref = useOutsideClick(handleClose, true);
 
   return (
     <div ref={ref} className="relative">
