@@ -68,11 +68,6 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
   const [opened, setOpened] = useState(false);
   const [estateName, setEstateName] = useState('');
 
-  const handleClose = useCallback(() => {
-    setOpened(false);
-    setEstateName('');
-  }, []);
-
   // no need for usecallback cuz root element is div
   const handleOpen = () => {
     if (!opened) {
@@ -90,6 +85,12 @@ export const Filters: FC<FiltersProps> = ({ estates, setEstates }) => {
     },
     [estates, setEstates]
   );
+
+  const handleClose = useCallback(() => {
+    setOpened(false);
+    setEstateName('');
+    sendRequest('');
+  }, [sendRequest]);
 
   // debounced diltering when srching estate by name
   const handleDebouncedSearch = useMemo(() => {
