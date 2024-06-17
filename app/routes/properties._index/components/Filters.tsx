@@ -4,17 +4,24 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from '~/lib/organisms/CustomDropdown/CustomDropdown';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import clsx from 'clsx';
 
+// icons
 import SearchIcon from 'app/icons/search.svg?react';
 
-import styles from './filters.module.css';
-import clsx from 'clsx';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+// components
 import { InputWithIcons } from '~/lib/organisms/InputWithIcons/InputWithIcons';
+
+// types
 import { EstateType } from '~/providers/EstatesProvider/estates.types';
 
+// calc functions
 import _ from 'lodash';
 import { calculateDynamicRanges } from './utils';
+
+// styles
+import styles from './filters.module.css';
 
 // filter functions -----------------------------------------
 
