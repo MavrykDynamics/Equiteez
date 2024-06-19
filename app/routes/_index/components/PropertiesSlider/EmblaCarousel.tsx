@@ -62,7 +62,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
               key={estate.token_address}
               onClick={() =>
                 handleSlideClick(
-                  estate.token_address,
+                  estate.assetDetails.blockchain[0].identifier,
                   idx === slides.length - 1
                 )
               }

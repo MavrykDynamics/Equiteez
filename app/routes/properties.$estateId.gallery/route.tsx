@@ -138,7 +138,9 @@ export default function Index() {
     <section className={clsx('min-h-screen')}>
       <div className="mx-auto max-w-[1440px]">
         <header className="flex items-center justify-between px-11 pt-8">
-          <Link to={`/properties/${estateData.token_address}`}>
+          <Link
+            to={`/properties/${estateData.assetDetails.blockchain[0].identifier}`}
+          >
             <button>
               <ArrowLeftIcon className="w-6 h-6 text-content stroke-current" />
             </button>

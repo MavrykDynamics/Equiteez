@@ -43,16 +43,14 @@ export const ConnectWallet = () => {
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
                 onClick={signOut}
               >
-                Disconnect
+                Sign Out
               </button>
             </DropdownBodyContent>
           </CustomDropdown>
         </div>
       ) : (
         <Button variant="outline" size="outline" onClick={connect}>
-          <span className="text-body-xs leading-5 font-semibold">
-            Connect Wallet
-          </span>
+          <span className="text-body-xs leading-5 font-semibold">Sign In</span>
         </Button>
       )}
     </CustomSuspense>

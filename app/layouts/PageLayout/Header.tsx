@@ -14,12 +14,11 @@ export const Header = () => {
 };
 
 const HeaderLinksBlock = () => {
-
   return (
     <header className="flex gap-x-9 items-center h-full">
-      <Link to="/" className="text-body-xs text-content">
+      {/* <Link to="/" className="text-body-xs text-content">
         New Listings
-      </Link>
+      </Link> */}
       <Link to="/properties" className="text-body-xs text-content">
         Marketplace
       </Link>

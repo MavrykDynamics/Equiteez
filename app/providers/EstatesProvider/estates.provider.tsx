@@ -40,10 +40,12 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   // for now it's mocked in json
   // useQuery (....) -> setEstates
 
-  const pickEstateByAddress = useCallback(
+  const pickEstateByIdentifier = useCallback(
     (address: string): PrimaryEstate | SecondaryEstate | null => {
       return (
-        estatesState.estates.find((es) => es.token_address === address) ?? null
+        estatesState.estates.find(
+          (es) => es.assetDetails.blockchain[0].identifier === address
+        ) ?? null
       );
     },
     [estatesState.estates]
@@ -51,7 +53,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const setActiveEstate = useCallback(
     (address: string) => {
-      const estate = pickEstateByAddress(address);
+      const estate = pickEstateByIdentifier(address);
       setActiveEstateData({
         activeEstate: estate,
         isActiveEstateSecondaryMarket:
@@ -59,7 +61,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
         isActiveEstateLoading: false,
       });
     },
-    [pickEstateByAddress]
+    [pickEstateByIdentifier]
   );
 
   const memoizedEstatesProviderValue: EstatesContext = useMemo(
@@ -67,10 +69,10 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       ...estatesState,
 
       ...activeEstateData,
-      pickEstateByAddress,
+      pickEstateByIdentifier,
       setActiveEstate,
     }),
-    [estatesState, pickEstateByAddress, setActiveEstate, activeEstateData]
+    [estatesState, pickEstateByIdentifier, setActiveEstate, activeEstateData]
   );
 
   return (

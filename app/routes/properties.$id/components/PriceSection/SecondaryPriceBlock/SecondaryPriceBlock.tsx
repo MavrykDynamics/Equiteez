@@ -65,7 +65,7 @@ export const SecondaryPriceBlock: FC = () => {
         </div>
         <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
         <Button
-          variant="outline"
+          variant="red"
           className="mt-3"
           onClick={handleOpen.bind(null, 'sell')}
         >
@@ -230,7 +230,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           />
         </div>
       </div>
-      <Button disabled={isLoading} onClick={handleSell}>
+      <Button variant="red" disabled={isLoading} onClick={handleSell}>
         {getStatusLabel(status, 'Sell')}
       </Button>
     </div>

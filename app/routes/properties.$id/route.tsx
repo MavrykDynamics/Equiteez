@@ -81,7 +81,7 @@ export default function PropertyDetails() {
       <Gallery
         mainImgsrc={estateData.assetDetails.previewImage}
         thumbs={estateData.assetDetails.assetImages}
-        propertyId={estateData.token_address}
+        propertyId={estateData.assetDetails.blockchain[0].identifier}
       />
       <section className={styles.detailsSection}>
         <div className="flex flex-col">

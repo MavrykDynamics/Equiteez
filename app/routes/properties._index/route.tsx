@@ -57,7 +57,7 @@ export default function Properties() {
 
             return (
               <Link
-                to={`/properties/${es.token_address}`}
+                to={`/properties/${es.assetDetails.blockchain[0].identifier}`}
                 key={es.token_address}
               >
                 <ThumbCardSecondary
