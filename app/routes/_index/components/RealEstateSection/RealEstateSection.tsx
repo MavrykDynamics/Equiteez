@@ -5,6 +5,7 @@ import estate2Src from 'app/assets/home/real-estate-2.webp';
 import estate3Src from 'app/assets/home/real-estate-3.webp';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
+import { Container } from '~/lib/atoms/Container';
 import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 
 const ESTATES = [
@@ -64,31 +65,37 @@ export const RealEstateSection = () => {
   }, []);
 
   return (
-    <section className={clsx(styles.estateContainer)}>
-      {ESTATES.map((estate, idx) => (
-        <div
-          key={estate.id}
-          className={clsx(
-            idx !== activeSlideIndex && 'hidden',
-            'w-full h-full relative'
-          )}
-        >
-          <img src={estate.imgSrc} alt="real estate" className={styles.fade} />
+    <Container maxWidth={2304}>
+      <section className={clsx(styles.estateContainer)}>
+        {ESTATES.map((estate, idx) => (
           <div
+            key={estate.id}
             className={clsx(
-              styles.estateTextBlock,
-              styles.fade,
-              'flex flex-col items-start gap-y-6'
+              idx !== activeSlideIndex && 'hidden',
+              'w-full h-full relative'
             )}
           >
-            <h1 className="text-hero text-white">{estate.title}</h1>
-            <div className="w-full flex items-end justify-between">
-              <p className="text-buttons text-white">{estate.author}</p>
-              <LinkWithIcon to={'/properties'}>View properties</LinkWithIcon>
+            <img
+              src={estate.imgSrc}
+              alt="real estate"
+              className={styles.fade}
+            />
+            <div
+              className={clsx(
+                styles.estateTextBlock,
+                styles.fade,
+                'flex flex-col items-start gap-y-6'
+              )}
+            >
+              <h1 className="text-hero text-white">{estate.title}</h1>
+              <div className="w-full flex items-end justify-between">
+                <p className="text-buttons text-white">{estate.author}</p>
+                <LinkWithIcon to={'/properties'}>View properties</LinkWithIcon>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </section>
+        ))}
+      </section>
+    </Container>
   );
 };

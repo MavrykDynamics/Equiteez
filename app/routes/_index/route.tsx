@@ -13,6 +13,7 @@ import { IntegrationSection } from './components/IntegrationSection';
 import { FAQSection } from 'app/templates/FAQSection';
 
 import { homeFAQ } from './index.const';
+import { Container } from '~/lib/atoms/Container';
 
 export const meta: MetaFunction = () => {
   return [
@@ -23,21 +24,25 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <PageLayout bg="bg-background-tertiary">
-      <BannerSection />
-      <Spacer />
-      <FinanceSection />
-      <Spacer />
-      <PropertiesSlider />
-      <Spacer />
-      <PortfolioSection />
-      <Spacer />
+    <PageLayout bg="bg-background-tertiary" includeContainer={false}>
+      <Container>
+        <BannerSection />
+        <Spacer />
+        <FinanceSection />
+        <Spacer />
+        <PropertiesSlider />
+        <Spacer />
+        <PortfolioSection />
+        <Spacer />
+      </Container>
       <RealEstateSection />
-      <Spacer />
-      <IntegrationSection />
-      <Spacer />
-      <FAQSection data={homeFAQ} />
-      <Spacer className="h-[108px]" />
+      <Container>
+        <Spacer />
+        <IntegrationSection />
+        <Spacer />
+        <FAQSection data={homeFAQ} />
+        <Spacer className="h-[108px]" />
+      </Container>
     </PageLayout>
   );
 }
