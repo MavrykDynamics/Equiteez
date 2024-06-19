@@ -151,7 +151,6 @@ export async function sell({
   pricePerToken,
 }: BuySellParams) {
   try {
-    console.log('Sell action ...');
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 

@@ -15,6 +15,6 @@ export type EstatesContext = {
   isActiveEstateSecondaryMarket: boolean;
   isLoading: boolean;
   isActiveEstateLoading: boolean;
-  pickEstateByAddress: (address: string) => EstateType | null;
+  pickEstateByIdentifier: (address: string) => EstateType | null;
   setActiveEstate: (address: string) => void;
 };

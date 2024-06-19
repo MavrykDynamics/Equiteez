@@ -26,6 +26,7 @@
   padding-bottom: 44px;
 
   --slide-size: 100%;
+  --slide-spacing: 2px;
 }
 
 .embla__viewport {
@@ -40,6 +41,8 @@
   backface-visibility: hidden;
   display: flex;
 
+  margin-left: calc(var(--slide-spacing) * -1);
+
   touch-action: pan-y;
 }
 
@@ -53,6 +56,7 @@
 
   min-width: 0;
   flex: 0 0 var(--slide-size);
+  padding-left: var(--slide-spacing);
 }
 
 @media (max-height: 900px) {

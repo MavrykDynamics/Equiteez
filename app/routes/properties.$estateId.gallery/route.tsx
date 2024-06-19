@@ -1,5 +1,5 @@
 import type { MetaFunction } from '@remix-run/node';
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 
 // icons
@@ -32,9 +32,14 @@ export const meta: MetaFunction = () => {
 type GallerySliderProps = {
   handleClose: () => void;
   images: string[];
+  pickedImgIdx: number;
 };
 
-const GallerySlider: FC<GallerySliderProps> = ({ handleClose, images }) => {
+const GallerySlider: FC<GallerySliderProps> = ({
+  handleClose,
+  images,
+  pickedImgIdx,
+}) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start' });
 
   const {
@@ -44,6 +49,10 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose, images }) => {
     onNextButtonClick,
     activeIndex,
   } = usePrevNextButtons(emblaApi);
+
+  useEffect(() => {
+    emblaApi?.scrollTo(pickedImgIdx, true);
+  }, [pickedImgIdx, emblaApi]);
 
   return (
     <div className="h-full">
@@ -112,8 +121,10 @@ const GallerySlider: FC<GallerySliderProps> = ({ handleClose, images }) => {
 export default function Index() {
   const estateData = usePropertyByAddress('estateId');
   const [isOpen, setIsOpen] = useState(false);
+  const [pickedImgIdx, setPickedImgIdx] = useState(0);
 
-  const handleOpen = useCallback(() => {
+  const handleOpen = useCallback((idx: number) => {
+    setPickedImgIdx(idx);
     setIsOpen(true);
   }, []);
 
@@ -138,7 +149,9 @@ export default function Index() {
     <section className={clsx('min-h-screen')}>
       <div className="mx-auto max-w-[1440px]">
         <header className="flex items-center justify-between px-11 pt-8">
-          <Link to={`/properties/${estateData.token_address}`}>
+          <Link
+            to={`/properties/${estateData.assetDetails.blockchain[0].identifier}`}
+          >
             <button>
               <ArrowLeftIcon className="w-6 h-6 text-content stroke-current" />
             </button>
@@ -155,14 +168,12 @@ export default function Index() {
           </section>
         </header>
         <div className="max-w-[894px] mx-auto mt-16 mb-[120px]">
-          <div
-            role="presentation"
-            className={clsx(styles.gallery, 'cursor-pointer')}
-            onClick={handleOpen}
-          >
+          <div className={clsx(styles.gallery, 'cursor-pointer')}>
             {images.map((img, idx) => (
               <div
+                role="presentation"
                 key={idx}
+                onClick={() => handleOpen(idx)}
                 className={clsx(
                   styles.galleryItem,
                   'bg-green-opacity overflow-hidden'
@@ -184,7 +195,11 @@ export default function Index() {
           'w-full h-full relative bg-black-secondary rounded-none px-11 py-8'
         )}
       >
-        <GallerySlider handleClose={handleClose} images={images} />
+        <GallerySlider
+          handleClose={handleClose}
+          images={images}
+          pickedImgIdx={pickedImgIdx}
+        />
       </CustomPopup>
     </section>
   );

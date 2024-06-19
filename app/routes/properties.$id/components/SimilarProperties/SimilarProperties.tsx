@@ -30,7 +30,7 @@ export const SimilarProperties = () => {
       <div className="grid grid-cols-3 gap-x-3">
         {similarEstates.map((estate) => (
           <Link
-            to={`/properties/${estate.token_address}`}
+            to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
             key={estate.token_address}
           >
             <ThumbCard

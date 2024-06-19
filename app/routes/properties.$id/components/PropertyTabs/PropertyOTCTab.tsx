@@ -56,7 +56,7 @@ export const PropertyOTCTab = () => {
               <NativeTableColumn>{tokensForSale}</NativeTableColumn>
               <NativeTableColumn>{price}</NativeTableColumn>
               <NativeTableColumn>{totalValue}</NativeTableColumn>
-              <Button size="custom" className="self-center">
+              <Button size="custom" className="self-center" variant="red">
                 <span className="w-full text-center text-body-xs font-semibold leading-5 py-[6px] px-6">
                   Sell
                 </span>

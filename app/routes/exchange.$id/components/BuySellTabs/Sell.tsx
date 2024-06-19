@@ -141,7 +141,7 @@ export const Sell: FC<SellProps> = ({ symbol }) => {
       </div>
 
       <div className="flex w-full">
-        <Button className="w-full" onClick={handleOpen}>
+        <Button className="w-full" onClick={handleOpen} variant="red">
           Sell
         </Button>
       </div>
@@ -283,7 +283,7 @@ const SellDEXContent: FC<SellDEXContentProps> = ({
           </div>
 
           <div className="flex flex-col gap-4 mt-auto">
-            <Button disabled={isLoading} onClick={handleSell}>
+            <Button variant="red" disabled={isLoading} onClick={handleSell}>
               {getStatusLabel(status, 'Sell')}
             </Button>
           </div>

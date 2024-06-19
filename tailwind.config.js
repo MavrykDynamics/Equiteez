@@ -103,6 +103,7 @@ export default {
         links: '#194C98',
         error: '#DB1414',
         success: '#1E945C',
+        'red-main': '#ef4444',
       },
       spacing: {
         container: '1440px',
