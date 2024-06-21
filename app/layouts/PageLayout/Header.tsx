@@ -22,9 +22,9 @@ const HeaderLinksBlock = () => {
       <Link to="/properties" className="text-body-xs text-content">
         Marketplace
       </Link>
-      <Link to="/exchange" className="text-body-xs text-content">
+      {/* <Link to="/exchange" className="text-body-xs text-content">
         Exchange
-      </Link>
+      </Link> */}
 
       <ConnectWallet />
     </header>
