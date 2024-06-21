@@ -13,7 +13,8 @@ export default function Exchange() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate(`/exchange/1`);
+    // navigate(`/exchange/1`);
+    navigate('/properties');
   }, [navigate]);
 
   return <div>Loading...</div>;

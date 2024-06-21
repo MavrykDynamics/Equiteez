@@ -1,11 +1,11 @@
 import type { MetaFunction } from '@remix-run/node';
-import { Link, Navigate, useParams } from '@remix-run/react';
+import { Link, Navigate, useNavigate, useParams } from '@remix-run/react';
 import Star from 'app/icons/star.svg?react';
 import Search from 'app/icons/search.svg?react';
 import ArrowDown from 'app/icons/arrow-down.svg?react';
 import ArrowUp from 'app/icons/arrow-up.svg?react';
 import { Menu, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 
@@ -35,6 +35,13 @@ export const meta: MetaFunction = () => {
 };
 export default function ExchangeDetails() {
   const { id } = useParams();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // navigate(`/exchange/1`);
+    navigate('/properties');
+  }, [navigate]);
 
   const estateData = estates.find((estate) => estate.id === id);
 
