@@ -94,7 +94,11 @@ export const PriceBuyTab: FC<PriceBuyTabProps> = ({ symbol }) => {
           disabled
         />
       </div>
-      <Button disabled={isLoading} onClick={handleBuy}>
+      <Button
+        variant="green-secondary"
+        disabled={isLoading}
+        onClick={handleBuy}
+      >
         {getStatusLabel(status, 'Buy')}
       </Button>
     </div>

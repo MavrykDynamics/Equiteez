@@ -146,7 +146,11 @@ export const Buy: FC<BuyProps> = ({ symbol }) => {
       </div>
 
       <div className="flex w-full">
-        <Button className="w-full" onClick={handleOpen}>
+        <Button
+          className="w-full"
+          variant="green-secondary"
+          onClick={handleOpen}
+        >
           Buy
         </Button>
       </div>

@@ -187,7 +187,11 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({
         <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button disabled={isLoading} onClick={handleFakeBuy}>
+        <Button
+          disabled={isLoading}
+          variant="green-secondary"
+          onClick={handleFakeBuy}
+        >
           {getStatusLabel(status, 'Buy')}
         </Button>
       </div>

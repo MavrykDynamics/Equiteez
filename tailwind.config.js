@@ -81,6 +81,8 @@ export default {
         'black-secondary': '#010101',
         'green-main': '#33CB98',
         'green-secondary': '#28AD80',
+        'green-tertiary': '#0DB365',
+
         'green-dark': '#1A654C',
         'green-opacity': 'rgba(51, 203, 152, 0.25)',
         'yellow-opacity': '#FDF1CA',
@@ -103,7 +105,7 @@ export default {
         links: '#194C98',
         error: '#DB1414',
         success: '#1E945C',
-        'red-main': '#ef4444',
+        'red-main': '#E83736',
       },
       spacing: {
         container: '1440px',

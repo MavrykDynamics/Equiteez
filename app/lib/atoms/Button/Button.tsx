@@ -4,7 +4,7 @@ import React, { FC } from 'react';
 import LoadingSvg from 'app/icons/small-spinner.svg?react';
 
 type ButtonSize = 'small' | 'default' | 'large' | 'outline' | 'custom';
-type Variant = 'green' | 'white' | 'outline' | 'red';
+type Variant = 'green' | 'white' | 'outline' | 'red' | 'green-secondary';
 
 type ButtonProps = {
   size?: ButtonSize;
@@ -22,6 +22,7 @@ const btnSizeClassNames = {
 
 const variants = {
   green: 'text-content bg-green-main hover:bg-green-secondary',
+  'green-secondary': 'text-content bg-green-tertiary hover:bg-green-secondary',
   white: 'text-content bg-background hover:bg-tabs',
   outline:
     'text-content bg-background border-2 border-green-main hover:bg-green-opacity',
