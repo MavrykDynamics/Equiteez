@@ -12,6 +12,7 @@ import { Container } from '~/lib/atoms/Container';
 type PageLayoutProps = {
   bg?: string;
   includeContainer?: boolean;
+  includeFooter?: boolean;
 } & PropsWithChildren;
 
 /**
@@ -25,6 +26,7 @@ const PageLayout: FC<PageLayoutProps> = ({
   children,
   bg = 'bg-background',
   includeContainer = true,
+  includeFooter = true,
 }) => {
   return (
     <div className={clsx('min-h-screen')}>
@@ -33,7 +35,7 @@ const PageLayout: FC<PageLayoutProps> = ({
       <div className={clsx('relative')}>
         <Header />
         {includeContainer ? <Container>{children}</Container> : children}
-        <Footer />
+        {includeFooter && <Footer />}
       </div>
     </div>
   );

@@ -1,18 +1,13 @@
 import type { MetaFunction } from '@remix-run/node';
-import { Link, Navigate, useNavigate, useParams } from '@remix-run/react';
 import Star from 'app/icons/star.svg?react';
 import Search from 'app/icons/search.svg?react';
 import ArrowDown from 'app/icons/arrow-down.svg?react';
 import ArrowUp from 'app/icons/arrow-up.svg?react';
-import { Menu, Transition } from '@headlessui/react';
-import { Fragment, useEffect } from 'react';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 
 import { Divider } from '~/lib/atoms/Divider';
 import { Spacer } from '~/lib/atoms/Spacer';
-
-import estates from 'app/mocks/estates.json';
 
 // styles
 // import styles from './propertyId.module.css';
@@ -26,6 +21,16 @@ import { TabSmall } from './components/TabSmall/TabSmall';
 import { OrderBookTabs } from './components/OrderBookTabs/OrderBookTabs';
 
 import assetsList from '~/mocks/assetsList.json';
+import { Container } from '~/lib/atoms/Container';
+import {
+  ClickableDropdownArea,
+  CustomDropdown,
+  DropdownBodyContent,
+  DropdownFaceContent,
+} from '~/lib/organisms/CustomDropdown/CustomDropdown';
+import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
+import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 export const meta: MetaFunction = () => {
   return [
@@ -34,18 +39,10 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
-  const { id } = useParams();
+  const { estates } = useEstatesContext();
+  const estateData = usePropertyByAddress();
 
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // navigate(`/exchange/1`);
-    navigate('/properties');
-  }, [navigate]);
-
-  const estateData = estates.find((estate) => estate.id === id);
-
-  if (!estateData) return <Navigate to={'/exchange'} />;
+  if (!estateData) return <FullScreenSpinner />;
 
   const assetsColumns = [
     {
@@ -63,85 +60,30 @@ export default function ExchangeDetails() {
   ];
 
   return (
-    <PageLayout>
-      <section className="px-11">
-        <div className="flex flex-col mt-8">
-          <Divider className="" />
-        </div>
+    <PageLayout includeContainer={false} includeFooter={false}>
+      <Container className="px-6">
         <div className="flex w-full py-4 gap-[54px]">
           {/* Top Bar */}
           <div className="flex flex-grow gap-[86px]">
             {/* Market Searcher/Chooser */}
             <div className="flex items-center relative">
-              {/* <button className="w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl" type="button">
-
-                <img src={estateData.imgSrc} alt={'icon'} className="size-12 rounded-full" />
-
-                <span className="flex items-center text-card-headline" role="none">The Cove/USDT</span>
-
-                <ChevronDown />
-              </button> */}
-
-              {/* TODO fix this menu layoutshit bug, as quick fix width is 300 */}
-              <Menu as="div" className="w-[300px]">
-                {({ open }) => (
-                  <>
-                    <div>
-                      <Menu.Button
-                        className={`w-full flex py-2.5 px-4 justify-start items-center gap-2.5 bg-transparent border border-green-main rounded-2xl`}
+              <CustomDropdown>
+                <ClickableDropdownArea>
+                  <DropdownFaceContent>
+                    <div className="text-buttons w-full">{estateData.name}</div>
+                  </DropdownFaceContent>
+                  <DropdownBodyContent topMargin={36}>
+                    {estates.map((estate) => (
+                      <button
+                        key={estate.token_address}
+                        className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
                       >
-                        <img
-                          src={estateData.imgSrc}
-                          alt={'icon'}
-                          className="size-12 rounded-full"
-                        />
-
-                        <span
-                          className="flex items-center text-card-headline"
-                          role="none"
-                        >
-                          {estateData.title}/USDT
-                        </span>
-
-                        {open ? <ArrowUp /> : <ArrowDown />}
-                      </Menu.Button>
-                    </div>
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <Menu.Items
-                        style={{ top: 'calc(100% + 4px)' }}
-                        className="absolute right-0 z-50 origin-top-right w-full eq-dropdown-menu max-h-36 mt-0 overflow-y-auto"
-                      >
-                        {estates.map((row) => (
-                          <div key={row.title} className="">
-                            <Menu.Item>
-                              <Link
-                                to={`/exchange/${row.id}`}
-                                className="eq-dropdown-item gap-2.5"
-                              >
-                                <img
-                                  src={row.imgSrc}
-                                  alt={'icon'}
-                                  className="size-8 rounded-full"
-                                />
-                                <span className="me-auto">
-                                  {row.title}/USDT
-                                </span>
-                              </Link>
-                            </Menu.Item>
-                          </div>
-                        ))}
-                      </Menu.Items>
-                    </Transition>
-                  </>
-                )}
-              </Menu>
+                        {estate.name}
+                      </button>
+                    ))}
+                  </DropdownBodyContent>
+                </ClickableDropdownArea>
+              </CustomDropdown>
             </div>
 
             {/* Highlights */}
@@ -313,8 +255,8 @@ export default function ExchangeDetails() {
         <div className="flex flex-col w-full py-6 pe-6">
           <OrderTabs />
         </div>
-      </section>
-      <Spacer className="h-[200px]" />
+      </Container>
+      <Spacer height={18} />
     </PageLayout>
   );
 }
