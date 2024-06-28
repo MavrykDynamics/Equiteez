@@ -38,8 +38,6 @@ export const ImageStacked: FC<ImageStackedProps> = ({
   const { src, isLoading, isStackFailed, onSuccess, onFail } =
     useImagesStackLoading(sources);
 
-  console.log(isStackFailed, isLoading);
-
   const styleMemo: CSSProperties | undefined = useMemo(
     () =>
       isLoading

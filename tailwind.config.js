@@ -206,7 +206,7 @@ export default {
           'yellow-dark': '#654C1A',
           'blue-dark': '#1A4665',
           'blue-opacity': '#CCE0F2',
-          content: '#021A12',
+          content: baseColors['dark-green'][500],
           'content-secondary': '#354841',
           background: '#FFFFFF',
           'background-secondary': '#F4FBF8',

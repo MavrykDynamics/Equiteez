@@ -28,9 +28,11 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
+import { FullScreenSpinner, Spinner } from '~/lib/atoms/Spinner/Spinner';
 import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import clsx from 'clsx';
+import { ImageStacked } from '~/lib/molecules/ImageStacked';
 
 export const meta: MetaFunction = () => {
   return [
@@ -62,23 +64,51 @@ export default function ExchangeDetails() {
   return (
     <PageLayout includeContainer={false} includeFooter={false}>
       <Container className="px-6">
-        <div className="flex w-full py-4 gap-[54px]">
+        <div className="flex w-full py-3 gap-[54px]">
           {/* Top Bar */}
           <div className="flex flex-grow gap-[86px]">
             {/* Market Searcher/Chooser */}
             <div className="flex items-center relative">
               <CustomDropdown>
                 <ClickableDropdownArea>
-                  <DropdownFaceContent>
-                    <div className="text-buttons w-full">{estateData.name}</div>
+                  <DropdownFaceContent
+                    className={clsx(
+                      'text-caption text-content w-full border border-brand-green-100',
+                      'px-[10px] py-[9px]',
+                      'rounded-xl'
+                    )}
+                  >
+                    <div className="flex items-center gap-x-2">
+                      <ImageStacked
+                        sources={[estateData.assetDetails.previewImage]!}
+                        className="w-6 h-6 rounded-full"
+                        loader={
+                          <div className="flex items-center justify-center w-6 h-6">
+                            <Spinner size={12} />
+                          </div>
+                        }
+                      />
+                      <span>{estateData.name}</span>
+                    </div>
                   </DropdownFaceContent>
-                  <DropdownBodyContent topMargin={36}>
+                  <DropdownBodyContent topMargin={12} maxHeight={350}>
                     {estates.map((estate) => (
                       <button
                         key={estate.token_address}
                         className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
                       >
-                        {estate.name}
+                        <div className="flex items-center gap-x-2">
+                          <ImageStacked
+                            sources={[estate.assetDetails.previewImage]!}
+                            className="w-6 h-6 rounded-full"
+                            loader={
+                              <div className="flex items-center justify-center w-6 h-6">
+                                <Spinner size={12} />
+                              </div>
+                            }
+                          />
+                          <span>{estate.name}</span>
+                        </div>
                       </button>
                     ))}
                   </DropdownBodyContent>
