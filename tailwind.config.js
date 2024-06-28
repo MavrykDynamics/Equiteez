@@ -74,6 +74,14 @@ export default {
             fontWeight: '400',
           },
         ],
+
+        'caption-small': [
+          '0.625rem', // 10px / 400
+          {
+            lineHeight: '0.938rem',
+            fontWeight: '400',
+          },
+        ],
       },
       colors: (() => {
         const baseColors = {

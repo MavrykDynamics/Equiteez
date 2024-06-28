@@ -9,10 +9,6 @@ import PageLayout from 'app/layouts/PageLayout/Pagelayout';
 import { Divider } from '~/lib/atoms/Divider';
 import { Spacer } from '~/lib/atoms/Spacer';
 
-// styles
-// import styles from './propertyId.module.css';
-
-// mocked faq data
 import { ExchangeTabs } from './components/ExchangeTabs/ExchangeTabs';
 import { OrderTabs } from './components/OrderTabs/OrderTabs';
 import { BuySellTabs } from './components/BuySellTabs/BuySellTabs';
@@ -33,6 +29,11 @@ import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import clsx from 'clsx';
 import { ImageStacked } from '~/lib/molecules/ImageStacked';
+import { useCallback } from 'react';
+import { useNavigate } from '@remix-run/react';
+
+// icons
+import ArrowLinkIcon from 'app/icons/arrow-link.svg?react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -43,6 +44,14 @@ export const meta: MetaFunction = () => {
 export default function ExchangeDetails() {
   const { estates } = useEstatesContext();
   const estateData = usePropertyByAddress();
+  const navigate = useNavigate();
+
+  const handleDropdownClick = useCallback(
+    (estateId: string) => {
+      navigate(`/exchange/${estateId}`);
+    },
+    [navigate]
+  );
 
   if (!estateData) return <FullScreenSpinner />;
 
@@ -63,12 +72,12 @@ export default function ExchangeDetails() {
 
   return (
     <PageLayout includeContainer={false} includeFooter={false}>
-      <Container className="px-6">
-        <div className="flex w-full py-3 gap-[54px]">
+      <Container>
+        <div className="flex w-full py-3 px-6">
           {/* Top Bar */}
-          <div className="flex flex-grow gap-[86px]">
+          <div className="flex flex-grow justify-between">
             {/* Market Searcher/Chooser */}
-            <div className="flex items-center relative">
+            <div className="flex items-center relative gap-x-3">
               <CustomDropdown>
                 <ClickableDropdownArea>
                   <DropdownFaceContent
@@ -95,6 +104,11 @@ export default function ExchangeDetails() {
                     {estates.map((estate) => (
                       <button
                         key={estate.token_address}
+                        onClick={() =>
+                          handleDropdownClick(
+                            estate.assetDetails.blockchain[0].identifier
+                          )
+                        }
                         className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
                       >
                         <div className="flex items-center gap-x-2">
@@ -114,53 +128,64 @@ export default function ExchangeDetails() {
                   </DropdownBodyContent>
                 </ClickableDropdownArea>
               </CustomDropdown>
+
+              <button className="text-content">
+                <ArrowLinkIcon className="stroke-current w-6 h-6" />
+              </button>
             </div>
 
             {/* Highlights */}
-            <div className="flex justify-between items-center">
-              <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">Asset Type</span>
-                <span className="text-card-headline">{estateData.symbol}</span>
+            <div className="flex gap-x-11 items-center">
+              <span className="min-w-[84px] flex flex-col">
+                <span className="text-caption-small">Asset Type</span>
+                <span className="text-body-xs leading-5 font-semibold">
+                  {estateData.symbol}
+                </span>
               </span>
 
-              <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">Price</span>
-                <span className="text-card-headline">$8.00</span>
+              <span className="min-w-[84px] flex flex-col">
+                <span className="text-caption-small">Price</span>
+                <span className="text-body-xs leading-5 font-semibold">
+                  $8.00
+                </span>
               </span>
 
-              <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">24h Change</span>
-                <span className="text-card-headline">+5.04%</span>
+              <span className="min-w-[84px] flex flex-col">
+                <span className="text-caption-small">24h Change</span>
+                <span className="text-body-xs leading-5 font-semibold">
+                  +5.04%
+                </span>
               </span>
 
-              <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs flex items-center gap-1">
-                  <ArrowUp className="size-4" />
+              <span className="min-w-[84px] flex flex-col">
+                <span className="text-caption-small flex items-center gap-1">
+                  <ArrowUp className="size-3" />
                   24h High
                 </span>
-                <span className="text-card-headline">$8.20</span>
+                <span className="text-body-xs leading-5 font-semibold">
+                  $8.20
+                </span>
               </span>
 
-              <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs flex items-center gap-1">
-                  <ArrowDown className="size-4" />
+              <span className="min-w-[84px] flex flex-col">
+                <span className="text-caption-small flex items-center gap-1">
+                  <ArrowDown className="size-3" />
                   24h Low
                 </span>
-                <span className="text-card-headline">$7.89</span>
+                <span className="text-body-xs leading-5 font-semibold">
+                  $7.89
+                </span>
               </span>
 
-              <span className="min-w-[120px] flex flex-col">
-                <span className="text-body-xs">Yield</span>
-                <span className="text-card-headline">4.83%</span>
+              <span className="min-w-[84px] flex flex-col">
+                <span className="text-caption-small">Yield</span>
+                <span className="text-body-xs leading-5 font-semibold">
+                  4.83%
+                </span>
               </span>
             </div>
-          </div>
 
-          {/* Back to Asset */}
-          <div className="flex items-center">
-            <button className="text-green-main text-buttons flex items-center gap-x-1">
-              <p>View Asset</p>
-            </button>
+            <div className="w-[222px]"></div>
           </div>
         </div>
         <div className="flex flex-col">
@@ -169,7 +194,7 @@ export default function ExchangeDetails() {
 
         <div className="flex w-full">
           {/* Asset Search */}
-          <div className="flex flex-col w-80 py-6 pe-6">
+          <div className="flex flex-col w-[324px] p-6">
             {/* Header */}
             <div className="flex justify-between">
               <span className="text-buttons">Assets</span>
@@ -256,16 +281,16 @@ export default function ExchangeDetails() {
           <div className={'h-100 w-[1px] bg-divider'} />
 
           {/* Mid Panel */}
-          <div className="flex flex-grow p-6">
+          <div className="flex flex-grow p-4">
             <ExchangeTabs />
           </div>
 
           <div className={'h-100 w-[1px] bg-divider'} />
 
           {/* Actions */}
-          <div className="flex flex-col w-80">
+          <div className="flex flex-col w-[324px]">
             {/* Buy/Sell Shares */}
-            <div className="flex flex-col w-80 py-6 ps-6">
+            <div className="flex flex-col w-full p-6">
               <BuySellTabs symbol={estateData.symbol} />
             </div>
             <Divider className="" />
