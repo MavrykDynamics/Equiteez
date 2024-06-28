@@ -1,7 +1,7 @@
 import orders from '~/mocks/orders.json';
 
 import { Button } from '~/lib/atoms/Button';
-import MenuMulti from '../BuySellTabs/MenuMulti';
+// import MenuMulti from '../BuySellTabs/MenuMulti';
 import Calendar from '~/icons/calendar.svg?react';
 import Plus from '~/icons/plus.svg?react';
 
@@ -61,7 +61,7 @@ export const HistoryTab = () => {
     <div className="flex flex-col w-full gap-4">
       <div className="flex w-full gap-4 ">
         <div className="flex relative">
-          <MenuMulti choose="1D" items={['1D', '1W', '1M']}></MenuMulti>
+          {/* <MenuMulti choose="1D" items={['1D', '1W', '1M']}></MenuMulti> */}
         </div>
 
         <div className="flex gap-3">

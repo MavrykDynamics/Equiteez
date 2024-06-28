@@ -25,11 +25,12 @@ import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import clsx from 'clsx';
 import { ImageStacked } from '~/lib/molecules/ImageStacked';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from '@remix-run/react';
 
 // icons
 import ArrowLinkIcon from 'app/icons/arrow-link.svg?react';
+import { SECONDARY_MARKET } from '~/providers/EstatesProvider/estates.types';
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,8 +39,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
-  const { estates } = useEstatesContext();
+  const { estates: allEstates } = useEstatesContext();
   const estateData = usePropertyByAddress();
+  const estates = useMemo(
+    () => allEstates.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
+    [allEstates]
+  );
   const navigate = useNavigate();
 
   const handleDropdownClick = useCallback(
@@ -196,7 +201,6 @@ export default function ExchangeDetails() {
             <div className="flex flex-col w-full px-6 py-4">
               <BuySellTabs symbol={estateData.symbol} />
             </div>
-            <Divider />
           </div>
         </div>
 

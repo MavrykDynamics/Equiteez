@@ -6,14 +6,8 @@ import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 
 import { Divider } from '~/lib/atoms/Divider';
 
-import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-
 import otc from '~/mocks/otc.json';
 import { Button } from '~/lib/atoms/Button';
-import MenuMulti from './MenuMulti';
-import DotFill from '~/icons/dot-fill.svg?react';
-import DotEmpty from '~/icons/dot-empty.svg?react';
-import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { useParams } from '@remix-run/react';
 import { buy } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
 import { pickMarketBasedOnSymbol } from '~/consts/contracts';
@@ -25,158 +19,13 @@ import {
 } from '~/hooks/use-status-flag';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 
-type BuyProps = {
-  symbol: string;
-};
-
-export const Buy: FC<BuyProps> = ({ symbol }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleRequestClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const handleOpen = useCallback(() => {
-    setIsOpen(true);
-  }, []);
-
-  const [price, setPrice] = useState<number | string>(Number(''));
-  const [amount, setAmount] = useState<number | string>(Number(''));
-
-  return (
-    <div className="flex flex-col w-full gap-4">
-      <div className="flex flex-col w-full gap-6">
-        <div className="flex flex-col w-full gap-3">
-          <div className="w-full flex flex-col relative">
-            <MenuMulti choose="Market" items={['Market', 'Limit']}></MenuMulti>
-          </div>
-
-          <div className={`w-full flex justify-between eq-input p-3`}>
-            <span className="text-content-secondary opacity-50">Price</span>
-
-            <span className="flex gap-1">
-              <span className="">
-                <input
-                  name="amount"
-                  type="number"
-                  min={1}
-                  value={price || ''}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                  placeholder="0.00"
-                  className="w-full bg-transparent focus:outline-none text-right"
-                ></input>
-              </span>
-              <span className="">USDT</span>
-            </span>
-          </div>
-
-          <div className={`w-full flex justify-start eq-input p-3`}>
-            <span className="text-content-secondary opacity-50">Amount</span>
-
-            <span className="flex gap-1">
-              <span className="">
-                <input
-                  name="amount"
-                  type="number"
-                  min={1}
-                  value={amount || ''}
-                  onChange={(e) => setAmount(Number(e.target.value))}
-                  placeholder="Minimum 1"
-                  className="w-full bg-transparent focus:outline-none text-right"
-                ></input>
-              </span>
-              <span className="">{symbol}</span>
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-col w-full gap-1">
-          <div className="flex w-full h-2.5 relative">
-            <div className="absolute w-full h-full flex justify-between z-20">
-              <EQLogo className="size-2.5 cursor-grab" />
-              <DotEmpty className="size-2.5" />
-              <DotEmpty className="size-2.5" />
-              <DotEmpty className="size-2.5" />
-              <DotFill className="size-2.5" />
-            </div>
-
-            <div className="absolute w-full h-full flex items-center z-10">
-              <div className="w-full h-[1px] bg-divider"></div>
-            </div>
-          </div>
-
-          <div className="flex w-full justify-between">
-            <span className="eq-slider">0%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-            <span className="eq-slider">&nbsp;25%&nbsp;</span>
-            <span className="eq-slider">&nbsp;&nbsp;50%&nbsp;&nbsp;</span>
-            <span className="eq-slider">&nbsp;&nbsp;&nbsp;75%</span>
-            <span className="eq-slider">100%</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex w-full">
-        <div className={`w-full flex justify-between eq-input p-3`}>
-          <span className="text-content-secondary opacity-50">Total</span>
-
-          <span className="flex gap-1">
-            <span className="">
-              {amount ? Number(price) * Number(amount) : ''}
-            </span>
-            <span className="">USDT</span>
-          </span>
-        </div>
-      </div>
-
-      <div className="flex flex-col w-full gap-1">
-        <div className="flex justify-between w-full">
-          <span className="text-caption-regular">Avbl</span>
-          <span className="text-caption-regular">1,034.75 USDT</span>
-        </div>
-
-        <div className="flex justify-between w-full">
-          <span className="text-caption-regular">Max Buy</span>
-          <span className="text-caption-regular">8471.04 {symbol}</span>
-        </div>
-
-        <div className="flex justify-between w-full">
-          <span className="text-caption-regular">Est. Fee</span>
-          <span className="text-caption-regular">-- USDT</span>
-        </div>
-      </div>
-
-      <div className="flex w-full">
-        <Button
-          className="w-full"
-          variant="green-secondary"
-          onClick={handleOpen}
-        >
-          Buy
-        </Button>
-      </div>
-
-      <PopupWithIcon
-        isOpen={isOpen}
-        onRequestClose={handleRequestClose}
-        contentPosition={'right'}
-      >
-        <BuyDEXContent
-          initialAmount={Number(amount)}
-          initialPrice={Number(price)}
-          symbol={symbol}
-        />
-      </PopupWithIcon>
-    </div>
-  );
-};
-
 type BuyDEXContentProps = {
   initialAmount?: number;
   initialPrice?: number;
   symbol: string;
 };
 
-const BuyDEXContent: FC<BuyDEXContentProps> = ({
+export const BuyDEXContent: FC<BuyDEXContentProps> = ({
   initialAmount,
   initialPrice,
   symbol,
@@ -271,12 +120,6 @@ const BuyDEXContent: FC<BuyDEXContentProps> = ({
           {activetabId == 'market' ? (
             <>
               <div className="flex flex-col gap-2">
-                {/* <div className={`w-full flex justify-end`}>
-                  <span className="text-body-xs">
-                    Market Price: {price} USDT
-                  </span>
-                </div> */}
-
                 <div className={`w-full flex justify-start eq-input p-3`}>
                   <span className="text-content-secondary opacity-50">
                     Price
