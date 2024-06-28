@@ -28,7 +28,12 @@ export const OrderBookTabs = () => {
 
   return (
     <section className="flex flex-col w-full">
-      <TabSwitcher tabs={tabs} activeTabId={activetabId} grow={true} />
+      <TabSwitcher
+        variant="secondary"
+        tabs={tabs}
+        activeTabId={activetabId}
+        grow={true}
+      />
       <div className="mt-4">
         <OrderBookTab tabId={activetabId} />
       </div>

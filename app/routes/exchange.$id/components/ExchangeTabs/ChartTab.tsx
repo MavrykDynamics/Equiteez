@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import chart from '~/mocks/chart';
 import { ApexOptions } from 'apexcharts';
 import Expand from '~/icons/expand.svg?react';
-import Settings from '~/icons/star.svg?react';
+import Settings from '~/icons/settings.svg?react';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
@@ -81,21 +81,21 @@ export const ChartTab = () => {
       options: state.options,
       series: state.series,
       type: 'candlestick',
-      height: 350,
+      height: 516,
     }),
     [state.options, state.series]
   );
 
   return (
     <div>
-      <div className="w-full flex justify-between">
-        <div className="flex gap-4">
-          <span className="text-body">1H</span>
-          <span className="text-body text-green-main">1D</span>
-          <span className="text-body">1W</span>
-          <span className="text-body">1M</span>
-          <span className="text-body">1Y</span>
-          <span className="text-body">3Y</span>
+      <div className="w-full flex justify-between items-center">
+        <div className="flex gap-x-3 text-caption-regular">
+          <span>1H</span>
+          <span className=" text-green-main">1D</span>
+          <span>1W</span>
+          <span>1M</span>
+          <span>1Y</span>
+          <span>3Y</span>
         </div>
 
         <div className="flex gap-2">

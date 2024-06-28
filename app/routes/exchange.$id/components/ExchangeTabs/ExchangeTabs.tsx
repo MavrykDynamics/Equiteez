@@ -13,11 +13,6 @@ export const ExchangeTabs = () => {
   const tabs: TabType[] = useMemo(
     () => [
       {
-        id: 'assetDetails',
-        label: 'Asset Details',
-        handleClick: handleTabClick,
-      },
-      {
         id: 'chart',
         label: 'Chart',
         handleClick: handleTabClick,
@@ -32,14 +27,25 @@ export const ExchangeTabs = () => {
         label: 'OTC Offers',
         handleClick: handleTabClick,
       },
+      {
+        id: 'assetDetails',
+        label: 'Asset Details',
+        handleClick: handleTabClick,
+      },
     ],
     [handleTabClick]
   );
 
   return (
     <section className="flex flex-col w-full">
-      <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-      <div className="mt-6">
+      <div style={{ maxWidth: 'fit-content' }}>
+        <TabSwitcher
+          variant="secondary"
+          tabs={tabs}
+          activeTabId={activetabId}
+        />
+      </div>
+      <div className="mt-4">
         <ExchangeTab tabId={activetabId} />
       </div>
     </section>
