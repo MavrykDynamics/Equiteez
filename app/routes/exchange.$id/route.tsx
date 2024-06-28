@@ -82,6 +82,9 @@ export default function ExchangeDetails() {
                             <Spinner size={12} />
                           </div>
                         }
+                        fallback={
+                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200"></div>
+                        }
                       />
                       <span>{estateData.name}</span>
                     </div>
@@ -105,6 +108,9 @@ export default function ExchangeDetails() {
                               <div className="flex items-center justify-center w-6 h-6">
                                 <Spinner size={12} />
                               </div>
+                            }
+                            fallback={
+                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200"></div>
                             }
                           />
                           <span>{estate.name}</span>

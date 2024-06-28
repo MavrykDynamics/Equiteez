@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 
 import { useImagesStackLoading } from 'app/hooks/use-images-stack-loading';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 export interface ImageStackedProps
   extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -35,6 +36,7 @@ export const ImageStacked: FC<ImageStackedProps> = ({
   onStackFailed,
   ...imgProps
 }) => {
+  const { IS_WEB } = useAppContext();
   const { src, isLoading, isStackFailed, onSuccess, onFail } =
     useImagesStackLoading(sources);
 
@@ -71,8 +73,8 @@ export const ImageStacked: FC<ImageStackedProps> = ({
         {...imgProps}
         src={src}
         style={styleMemo}
-        onLoad={onLoadLocal}
-        onError={onFail}
+        onLoad={IS_WEB ? onLoadLocal : undefined}
+        onError={IS_WEB ? onFail : undefined}
       />
 
       {isLoading ? loader ?? null : null}

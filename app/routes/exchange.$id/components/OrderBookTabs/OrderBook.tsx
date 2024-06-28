@@ -42,7 +42,7 @@ export const OrderBook = () => {
                 <tr key={`${order.price}${index}`}>
                   {Number(order.price) == currentPrice ? (
                     <td
-                      className={`whitespace-nowrap flex items-center text-body-xs gap-1 p-2 text-error ${
+                      className={`whitespace-nowrap flex items-center text-body-xs gap-1 pr-2 py-1 text-error ${
                         Number(order.price) > currentPrice
                           ? 'text-success'
                           : 'text-error'
@@ -53,7 +53,7 @@ export const OrderBook = () => {
                     </td>
                   ) : (
                     <td
-                      className={`eq-table-cell text-caption-regular ${
+                      className={`eq-table-cell-small text-caption-regular ${
                         Number(order.price) > currentPrice
                           ? 'text-success'
                           : 'text-error'
@@ -63,9 +63,9 @@ export const OrderBook = () => {
                     </td>
                   )}
 
-                  <td className="eq-table-cell">{order.amount || ''}</td>
+                  <td className="eq-table-cell-small">{order.amount || ''}</td>
 
-                  <td className="eq-table-cell">{order.total || ''}</td>
+                  <td className="eq-table-cell-small">{order.total || ''}</td>
                 </tr>
               ))}
             </tbody>
