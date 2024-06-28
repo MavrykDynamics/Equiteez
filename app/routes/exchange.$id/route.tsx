@@ -205,11 +205,11 @@ export default function ExchangeDetails() {
         </div>
 
         <div className="flex flex-col">
-          <Divider className="" />
+          <Divider />
         </div>
 
         {/* Order/History/Transactions */}
-        <div className="flex flex-col w-full py-6 pe-6">
+        <div className="flex flex-col w-full p-6">
           <OrderTabs />
         </div>
       </Container>

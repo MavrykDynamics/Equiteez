@@ -38,7 +38,7 @@ export const ExchangeTabs = () => {
 
   return (
     <section className="flex flex-col w-full">
-      <div style={{ maxWidth: 'fit-content' }}>
+      <div className="max-w-fit">
         <TabSwitcher
           variant="secondary"
           tabs={tabs}

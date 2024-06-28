@@ -1,67 +1,57 @@
 [
-    {
-        "date": "8 May 2024, 13:44",
-        "pair": "COVE/USDT",
-        "type": "Limit Maker",
-        "side": "Sell",
-        "average": 1421,
-        "price": "$1,421",
-        "executed": 351.8,
-        "amount": 351.8,
-        "total": "3,096.3 USDT",
-        "trigger_conditions": "-",
-        "all": "Filled"
-    },
-    {
-        "date": "8 May 2024, 13:44",
-        "pair": "COVE/USDT",
-        "type": "Limit",
-        "side": "Sell",
-        "average": 1421,
-        "price": "$1,421",
-        "executed": 351.8,
-        "amount": 351.8,
-        "total": "3,096.3 USDT",
-        "trigger_conditions": "-",
-        "all": "Filled"
-    },
-    {
-        "date": "8 May 2024, 13:44",
-        "pair": "COVE/USDT",
-        "type": "Market",
-        "side": "Sell",
-        "average": 1421,
-        "price": "$1,421",
-        "executed": 351.8,
-        "amount": 351.8,
-        "total": "3,096.3 USDT",
-        "trigger_conditions": "-",
-        "all": "Filled"
-    },
-    {
-        "date": "8 May 2024, 13:44",
-        "pair": "COVE/USDT",
-        "type": "Limit",
-        "side": "Sell",
-        "average": 1421,
-        "price": "$1,421",
-        "executed": 351.8,
-        "amount": 351.8,
-        "total": "3,096.3 USDT",
-        "trigger_conditions": "-",
-        "all": "Cancelled"
-    },
-    {
-        "date": "8 May 2024, 13:44",
-        "pair": "COVE/USDT",
-        "type": "Market",
-        "side": "Sell",
-        "average": 1421,
-        "price": "$1,421",
-        "executed": 351.8,
-        "amount": 351.8,
-        "total": "3,096.3 USDT",
-        "trigger_conditions": "-",
-        "all": "Filled"
-    }
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "type": "Limit Maker",
+    "side": "Sell",
+    "price": "$1,421",
+    "amount": 351.8,
+    "total": "3,096.3 USDT",
+    "trigger_conditions": "-",
+    "filled": "Filled"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "type": "Limit",
+    "side": "Sell",
+    "price": "$1,421",
+    "amount": 351.8,
+    "total": "3,096.3 USDT",
+    "trigger_conditions": "-",
+    "filled": "Filled"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "type": "Market",
+    "side": "Sell",
+    "price": "$1,421",
+    "amount": 351.8,
+    "total": "3,096.3 USDT",
+    "trigger_conditions": "-",
+    "filled": "Filled"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "type": "Limit",
+    "side": "Buy",
+    "price": "$1,421",
+    "amount": 351.8,
+    "total": "3,096.3 USDT",
+    "trigger_conditions": "-",
+    "filled": "Cancelled"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "type": "Market",
+    "side": "Sell",
+    "price": "$1,421",
+    "amount": 351.8,
+    "total": "3,096.3 USDT",
+    "trigger_conditions": "-",
+    "filled": "Filled"
+  }
 ]

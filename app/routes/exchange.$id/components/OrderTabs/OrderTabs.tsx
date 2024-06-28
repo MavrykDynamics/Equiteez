@@ -32,8 +32,14 @@ export const OrderTabs = () => {
   );
 
   return (
-    <section className="flex flex-col w-full gap-8">
-      <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+    <section className="flex flex-col w-full gap-4">
+      <div className="max-w-fit">
+        <TabSwitcher
+          variant="secondary"
+          tabs={tabs}
+          activeTabId={activetabId}
+        />
+      </div>
       <div className="">
         <OrderTab tabId={activetabId} />
       </div>
