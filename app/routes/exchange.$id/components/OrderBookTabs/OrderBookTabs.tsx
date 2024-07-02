@@ -19,7 +19,7 @@ export const OrderBookTabs = () => {
       },
       {
         id: 'recents',
-        label: 'Recents',
+        label: 'Recent Trades',
         handleClick: handleTabClick,
       },
     ],

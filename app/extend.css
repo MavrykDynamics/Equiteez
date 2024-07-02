@@ -35,5 +35,5 @@ input[type='number'] {
 }
 
 .eq-table-cell-small {
-  @apply whitespace-nowrap pr-2 py-1 text-caption-regular;
+  @apply whitespace-nowrap py-1 text-caption-regular;
 }

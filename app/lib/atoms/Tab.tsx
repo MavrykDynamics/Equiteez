@@ -28,7 +28,7 @@ const variants = {
   },
   secondary: {
     className: clsx(
-      'px-4 py-3 text-content text-caption cursor-pointer rounded-lg outline-none',
+      'px-4 py-2 text-content text-caption cursor-pointer rounded-lg outline-none',
       'flex justify-center items-center min-w-[132px]'
     ),
     active: (active: boolean | undefined) =>

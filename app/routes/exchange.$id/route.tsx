@@ -68,7 +68,7 @@ export default function ExchangeDetails() {
                 <ClickableDropdownArea>
                   <DropdownFaceContent
                     className={clsx(
-                      'text-caption text-content w-full border border-brand-green-100',
+                      'text-body-xs leading-5 font-semibold text-content w-full border border-brand-green-100',
                       'px-[10px] py-[9px]',
                       'rounded-xl'
                     )}
@@ -86,7 +86,7 @@ export default function ExchangeDetails() {
                           <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200"></div>
                         }
                       />
-                      <span>{estateData.name}</span>
+                      <span>{estateData.name}/USDT</span>
                     </div>
                   </DropdownFaceContent>
                   <DropdownBodyContent topMargin={12} maxHeight={350}>

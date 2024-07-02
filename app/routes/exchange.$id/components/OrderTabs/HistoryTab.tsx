@@ -68,9 +68,15 @@ export const HistoryTab = () => {
                             : 'text-left pr-2'
                         )}
                       >
-                        <span className={clsx('flex items-center gap-1')}>
-                          {column.label}
-                        </span>
+                        {column.field === 'clear_all' ? (
+                          <button className="flex items-center gap-1">
+                            {column.label}
+                          </button>
+                        ) : (
+                          <span className={clsx('flex items-center gap-1')}>
+                            {column.label}
+                          </span>
+                        )}
                       </th>
                     ))}
                   </tr>

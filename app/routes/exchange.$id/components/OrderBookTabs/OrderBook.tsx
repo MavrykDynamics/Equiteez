@@ -1,5 +1,8 @@
 import orderbook from '~/mocks/orderbook.json';
 import RedArrowDown from '~/icons/red-arrow-down.svg?react';
+import clsx from 'clsx';
+
+import styles from './orderbook.module.css';
 
 export const OrderBook = () => {
   const columns = [
@@ -23,14 +26,22 @@ export const OrderBook = () => {
     <div className="flow-root">
       <div className="overflow-x-auto">
         <div className="inline-block min-w-full align-middle">
-          <table className="min-w-full divide-y divide-divider">
+          <table
+            className={clsx(
+              'min-w-full divide-y divide-divider',
+              styles.orderTable
+            )}
+          >
             <thead>
               <tr>
-                {columns.map((column) => (
+                {columns.map((column, idx) => (
                   <th
                     key={column.label}
                     scope="col"
-                    className="whitespace-nowrap p-2 text-left text-caption-regular"
+                    className={clsx(
+                      'whitespace-nowrap py-2 text-left text-caption-regular',
+                      idx === 0 ? 'text-left' : 'text-right'
+                    )}
                   >
                     {column.label}
                   </th>
@@ -63,9 +74,13 @@ export const OrderBook = () => {
                     </td>
                   )}
 
-                  <td className="eq-table-cell-small">{order.amount || ''}</td>
+                  <td className="eq-table-cell-small text-right">
+                    {order.amount || ''}
+                  </td>
 
-                  <td className="eq-table-cell-small">{order.total || ''}</td>
+                  <td className="eq-table-cell-small text-right">
+                    {order.total || ''}
+                  </td>
                 </tr>
               ))}
             </tbody>

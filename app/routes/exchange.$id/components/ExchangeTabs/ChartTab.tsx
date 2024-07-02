@@ -90,12 +90,14 @@ export const ChartTab = () => {
     <div>
       <div className="w-full flex justify-between items-center">
         <div className="flex gap-x-3 text-caption-regular">
-          <span>1H</span>
-          <span className=" text-green-main">1D</span>
-          <span>1W</span>
-          <span>1M</span>
-          <span>1Y</span>
-          <span>3Y</span>
+          <span className="min-w-[21px] flex justify-center">1H</span>
+          <span className=" text-green-main min-w-[21px] flex justify-center">
+            1D
+          </span>
+          <span className="min-w-[21px] flex justify-center">1W</span>
+          <span className="min-w-[21px] flex justify-center">1M</span>
+          <span className="min-w-[21px] flex justify-center">1Y</span>
+          <span className="min-w-[21px] flex justify-center">3Y</span>
         </div>
 
         <div className="flex gap-2">
