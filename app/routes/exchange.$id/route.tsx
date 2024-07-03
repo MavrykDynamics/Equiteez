@@ -14,23 +14,12 @@ import { BuySellTabs } from './components/BuySellTabs/BuySellTabs';
 import { OrderBookTabs } from './components/OrderBookTabs/OrderBookTabs';
 
 import { Container } from '~/lib/atoms/Container';
-import {
-  ClickableDropdownArea,
-  CustomDropdown,
-  DropdownBodyContent,
-  DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import { FullScreenSpinner, Spinner } from '~/lib/atoms/Spinner/Spinner';
+import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
 import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import clsx from 'clsx';
-import { ImageStacked } from '~/lib/molecules/ImageStacked';
-import { useCallback, useMemo } from 'react';
-import { useNavigate } from '@remix-run/react';
 
 // icons
 import ArrowLinkIcon from 'app/icons/arrow-link.svg?react';
-import { SECONDARY_MARKET } from '~/providers/EstatesProvider/estates.types';
+import { AssetDropdown } from './components/AssetDropdown';
 
 export const meta: MetaFunction = () => {
   return [
@@ -39,20 +28,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
-  const { estates: allEstates } = useEstatesContext();
   const estateData = usePropertyByAddress();
-  const estates = useMemo(
-    () => allEstates.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
-    [allEstates]
-  );
-  const navigate = useNavigate();
-
-  const handleDropdownClick = useCallback(
-    (estateId: string) => {
-      navigate(`/exchange/${estateId}`);
-    },
-    [navigate]
-  );
 
   if (!estateData) return <FullScreenSpinner />;
 
@@ -64,63 +40,7 @@ export default function ExchangeDetails() {
           <div className="flex flex-grow justify-between">
             {/* Market Searcher/Chooser */}
             <div className="flex items-center relative gap-x-3">
-              <CustomDropdown>
-                <ClickableDropdownArea>
-                  <DropdownFaceContent
-                    className={clsx(
-                      'text-body-xs leading-5 font-semibold text-content w-full border border-brand-green-100',
-                      'px-[10px] py-[9px]',
-                      'rounded-xl'
-                    )}
-                  >
-                    <div className="flex items-center gap-x-2">
-                      <ImageStacked
-                        sources={[estateData.assetDetails.previewImage]!}
-                        className="w-6 h-6 rounded-full"
-                        loader={
-                          <div className="flex items-center justify-center w-6 h-6">
-                            <Spinner size={12} />
-                          </div>
-                        }
-                        fallback={
-                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200"></div>
-                        }
-                      />
-                      <span>{estateData.name}/USDT</span>
-                    </div>
-                  </DropdownFaceContent>
-                  <DropdownBodyContent topMargin={12} maxHeight={350}>
-                    {estates.map((estate) => (
-                      <button
-                        key={estate.token_address}
-                        onClick={() =>
-                          handleDropdownClick(
-                            estate.assetDetails.blockchain[0].identifier
-                          )
-                        }
-                        className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
-                      >
-                        <div className="flex items-center gap-x-2">
-                          <ImageStacked
-                            sources={[estate.assetDetails.previewImage]!}
-                            className="w-6 h-6 rounded-full"
-                            loader={
-                              <div className="flex items-center justify-center w-6 h-6">
-                                <Spinner size={12} />
-                              </div>
-                            }
-                            fallback={
-                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200"></div>
-                            }
-                          />
-                          <span>{estate.name}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </DropdownBodyContent>
-                </ClickableDropdownArea>
-              </CustomDropdown>
-
+              <AssetDropdown estate={estateData} />
               <button className="text-content">
                 <ArrowLinkIcon className="stroke-current w-6 h-6" />
               </button>
