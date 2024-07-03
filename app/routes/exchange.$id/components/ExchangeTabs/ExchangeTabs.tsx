@@ -1,9 +1,14 @@
 import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+
+// Tab screens
 import { ChartTab } from './ChartTab';
 import { OTCTab } from './OTCTab';
 import { FinancialTab } from './FinancialTab';
+import { AssetDetailsTab } from './AssetDetailsTab';
+
+// Types
 import {
   EstateType,
   SecondaryEstate,
@@ -73,7 +78,7 @@ const ExchangeTab: FC<ExchangeTabProps> = ({ tabId, estate }) => {
 };
 
 const exchangeTabsComponents = {
-  assetDetails: ChartTab,
+  assetDetails: AssetDetailsTab,
   chart: ChartTab,
   financials: FinancialTab,
   otcOffers: OTCTab,
