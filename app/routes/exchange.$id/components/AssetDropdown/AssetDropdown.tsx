@@ -20,11 +20,30 @@ import {
 // icons
 import StarIcon from 'app/icons/star.svg?react';
 
-// filter fns
+// CONSTS
+const columns = ['', 'Name', 'Price USDT', 'Change'];
+const STARRED = 'starred';
 
+// styles
+import styles from './assetDropdown.module.css';
+import {
+  getItemFromStorage,
+  setItemInStorage,
+} from '~/lib/utils/local-storage';
+
+// filter fns
 function filterByName(estates: EstateType[], name: string) {
   return estates.filter((es) =>
     es.name.toLowerCase().includes(name.toLowerCase())
+  );
+}
+
+function filterByStarred(estates: EstateType[]) {
+  const starredEstates = getItemFromStorage<string[]>(STARRED);
+  if (!starredEstates) return estates;
+
+  return estates.filter((es) =>
+    starredEstates.includes(es.assetDetails.blockchain[0].identifier)
   );
 }
 
@@ -61,14 +80,18 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     3: false,
   });
 
-  const navigate = useNavigate();
-
-  const handleDropdownClick = useCallback(
-    (estateId: string) => {
-      navigate(`/exchange/${estateId}`);
-    },
-    [navigate]
+  const [starredIdentifiers, setStarredIdentifiers] = useState<string[]>(
+    () => getItemFromStorage(STARRED) || []
   );
+
+  //   const navigate = useNavigate();
+
+  //   const handleDropdownClick = useCallback(
+  //     (estateId: string) => {
+  //       navigate(`/exchange/${estateId}`);
+  //     },
+  //     [navigate]
+  //   );
 
   const sendRequest = useCallback((name: string) => {
     setEstateNameForFilter(name);
@@ -103,6 +126,27 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     }
   };
 
+  // handle starred estetas click
+  const handleStarClick = (identifier: string) => {
+    const starredEstates = getItemFromStorage<string[]>(STARRED);
+
+    if (!starredEstates) {
+      setItemInStorage(STARRED, [identifier]);
+      setStarredIdentifiers([identifier]);
+    } else {
+      const shouldRemoveStarredEstate = starredEstates.includes(identifier);
+      if (shouldRemoveStarredEstate) {
+        const updatedStarred = starredEstates.filter((id) => id !== identifier);
+        setItemInStorage(STARRED, updatedStarred);
+        setStarredIdentifiers(updatedStarred);
+      } else {
+        const updatedStarred = [...starredEstates, identifier];
+        setItemInStorage(STARRED, updatedStarred);
+        setStarredIdentifiers(updatedStarred);
+      }
+    }
+  };
+
   useEffect(() => {
     return () => {
       handleDebouncedSearch.cancel();
@@ -114,7 +158,9 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     () => ({
       0: {
         id: 0,
-        label: <StarIcon className="text-green-500 stroke-current w-4 h-4" />,
+        label: (
+          <StarIcon className="text-content stroke-current w-4 h-4 fill-none" />
+        ),
         value: 'starred',
       },
       1: {
@@ -140,9 +186,11 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
   useEffect(() => {
     let filteredEstates = estates;
 
+    if (activeFiltersIds[0]) filteredEstates = filterByStarred(filteredEstates);
+
     filteredEstates = filterByName(filteredEstates, estateNameForFilter);
     setFilteredEstates(filteredEstates);
-  }, [estateNameForFilter, estates]);
+  }, [activeFiltersIds, estateNameForFilter, estates]);
 
   return (
     <CustomDropdown>
@@ -173,7 +221,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
       </ClickableDropdownArea>
 
       <DropdownBodyContent topMargin={12} customWidth={420} customHeight={526}>
-        <div className="p-4">
+        <div className="p-4 h-full flex flex-col">
           <Search
             showSearchIcon={estateName.length > 0}
             handleClose={handleClose}
@@ -198,33 +246,66 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
               </button>
             ))}
           </div>
-          {filteredEstates.map((estate) => (
-            <button
-              key={estate.token_address}
-              onClick={() =>
-                handleDropdownClick(
-                  estate.assetDetails.blockchain[0].identifier
-                )
-              }
-              className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
+
+          <div className="flex-1 overflow-y-auto">
+            <table
+              className={clsx(
+                'min-w-full divide-y divide-divider',
+                styles.dropdowntable
+              )}
             >
-              <div className="flex items-center gap-x-2">
-                <ImageStacked
-                  sources={[estate.assetDetails.previewImage]!}
-                  className="w-6 h-6 rounded-full"
-                  loader={
-                    <div className="flex items-center justify-center w-6 h-6">
-                      <Spinner size={12} />
-                    </div>
-                  }
-                  fallback={
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200"></div>
-                  }
-                />
-                <span>{estate.name}</span>
-              </div>
-            </button>
-          ))}
+              <thead>
+                <tr>
+                  {columns.map((column) => (
+                    <th
+                      key={column}
+                      scope="col"
+                      className={clsx(
+                        'whitespace-nowrap py-2 text-left text-caption-regular',
+                        'text-left'
+                      )}
+                    >
+                      {column}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-transparent bg-white">
+                {filteredEstates.map((estate) => {
+                  const identifier =
+                    estate.assetDetails.blockchain[0].identifier;
+                  return (
+                    <tr key={estate.token_address} className="cursor-pointer">
+                      <td className="py-[18px] pr-3">
+                        <button onClick={() => handleStarClick(identifier)}>
+                          <StarIcon
+                            className={clsx(
+                              'w-4 h-4 ',
+                              starredIdentifiers.includes(identifier)
+                                ? 'fill-green-500 stroke-green-500'
+                                : 'fill-none stroke-current'
+                            )}
+                          />
+                        </button>
+                      </td>
+                      <td className={`eq-table-cell text-content`}>
+                        {estate.name}/USDT
+                      </td>
+
+                      <td className="eq-table-cell text-left text-content">
+                        {estate.assetDetails.priceDetails.price}
+                      </td>
+
+                      <td className="eq-table-cell text-left first text-green-500">
+                        +{estate.assetDetails.priceDetails.projectedRentalYield}
+                        %
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </DropdownBodyContent>
     </CustomDropdown>
