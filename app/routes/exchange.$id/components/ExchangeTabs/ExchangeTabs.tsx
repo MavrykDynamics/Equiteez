@@ -2,8 +2,10 @@ import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { ChartTab } from './ChartTab';
+import { FinancialTab } from './FinancialTab';
+import { EstateType } from '~/providers/EstatesProvider/estates.types';
 
-export const ExchangeTabs = () => {
+export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
   const [activetabId, setAvtiveTabId] = useState('chart');
 
   const handleTabClick = useCallback((id: string) => {
@@ -46,7 +48,7 @@ export const ExchangeTabs = () => {
         />
       </div>
       <div className="mt-4">
-        <ExchangeTab tabId={activetabId} />
+        <ExchangeTab tabId={activetabId} estate={estate} />
       </div>
     </section>
   );
@@ -56,17 +58,18 @@ type ExchangeTabKey = keyof typeof exchangeTabsComponents;
 
 type ExchangeTabProps = {
   tabId: string;
+  estate: EstateType;
 };
 
-const ExchangeTab: FC<ExchangeTabProps> = ({ tabId }) => {
+const ExchangeTab: FC<ExchangeTabProps> = ({ tabId, estate }) => {
   const Component = exchangeTabsComponents[tabId as ExchangeTabKey];
 
-  return Component;
+  return <Component estate={estate} />;
 };
 
 const exchangeTabsComponents = {
-  assetDetails: <ChartTab />,
-  chart: <ChartTab />,
-  financials: <ChartTab />,
-  otcOffers: <ChartTab />,
+  assetDetails: ChartTab,
+  chart: ChartTab,
+  financials: FinancialTab,
+  otcOffers: ChartTab,
 };

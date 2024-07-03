@@ -215,7 +215,7 @@ export default {
           'blue-dark': '#1A4665',
           'blue-opacity': '#CCE0F2',
           content: baseColors['dark-green'][500],
-          'content-secondary': '#354841',
+          'content-secondary': baseColors['dark-green'][300],
           background: '#FFFFFF',
           'background-secondary': '#F4FBF8',
           'background-tertiary': '#FAFFFD',

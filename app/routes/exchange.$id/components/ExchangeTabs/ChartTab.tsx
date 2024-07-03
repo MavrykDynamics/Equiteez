@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import chart from '~/mocks/chart';
 import { ApexOptions } from 'apexcharts';
 import Expand from '~/icons/expand.svg?react';
@@ -9,8 +9,9 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { useClientLibData } from '~/hooks/use-client-lib';
 
 import OriginalApexCharts from 'react-apexcharts';
+import { EstateType } from '~/providers/EstatesProvider/estates.types';
 
-export const ChartTab = () => {
+export const ChartTab: FC<{ estate: EstateType }> = () => {
   const { IS_WEB } = useAppContext();
   const {
     clientModule: ChartModule,
