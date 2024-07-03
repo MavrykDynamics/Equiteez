@@ -84,14 +84,14 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     () => getItemFromStorage(STARRED) || []
   );
 
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  //   const handleDropdownClick = useCallback(
-  //     (estateId: string) => {
-  //       navigate(`/exchange/${estateId}`);
-  //     },
-  //     [navigate]
-  //   );
+  const handleEstateClick = useCallback(
+    (estateId: string) => {
+      navigate(`/exchange/${estateId}`);
+    },
+    [navigate]
+  );
 
   const sendRequest = useCallback((name: string) => {
     setEstateNameForFilter(name);
@@ -288,15 +288,24 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                           />
                         </button>
                       </td>
-                      <td className={`eq-table-cell text-content`}>
+                      <td
+                        className={`eq-table-cell text-content`}
+                        onClick={() => handleEstateClick(identifier)}
+                      >
                         {estate.name}/USDT
                       </td>
 
-                      <td className="eq-table-cell text-left text-content">
+                      <td
+                        className="eq-table-cell text-left text-content"
+                        onClick={() => handleEstateClick(identifier)}
+                      >
                         {estate.assetDetails.priceDetails.price}
                       </td>
 
-                      <td className="eq-table-cell text-left first text-green-500">
+                      <td
+                        className="eq-table-cell text-left first text-green-500"
+                        onClick={() => handleEstateClick(identifier)}
+                      >
                         +{estate.assetDetails.priceDetails.projectedRentalYield}
                         %
                       </td>
