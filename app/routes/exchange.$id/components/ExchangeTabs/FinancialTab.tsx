@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { EstateType } from '~/providers/EstatesProvider/estates.types';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 // icons
 import ClockIcon from 'app/icons/clock.svg?react';
@@ -8,7 +8,7 @@ import { TableItemSmall } from '~/lib/atoms/Table/TableItem';
 import { formatDate } from '~/lib/utils/date';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 
-export const FinancialTab: FC<{ estate: EstateType }> = ({ estate }) => {
+export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const {
     valuation: { priorValuation, initialValuation },
   } = estate.assetDetails;

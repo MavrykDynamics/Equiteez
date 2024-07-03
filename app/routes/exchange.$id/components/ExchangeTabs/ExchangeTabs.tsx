@@ -2,8 +2,12 @@ import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { ChartTab } from './ChartTab';
+import { OTCTab } from './OTCTab';
 import { FinancialTab } from './FinancialTab';
-import { EstateType } from '~/providers/EstatesProvider/estates.types';
+import {
+  EstateType,
+  SecondaryEstate,
+} from '~/providers/EstatesProvider/estates.types';
 
 export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
   const [activetabId, setAvtiveTabId] = useState('chart');
@@ -64,12 +68,13 @@ type ExchangeTabProps = {
 const ExchangeTab: FC<ExchangeTabProps> = ({ tabId, estate }) => {
   const Component = exchangeTabsComponents[tabId as ExchangeTabKey];
 
-  return <Component estate={estate} />;
+  // TODO fix types for exchange page
+  return <Component estate={estate as SecondaryEstate} />;
 };
 
 const exchangeTabsComponents = {
   assetDetails: ChartTab,
   chart: ChartTab,
   financials: FinancialTab,
-  otcOffers: ChartTab,
+  otcOffers: OTCTab,
 };

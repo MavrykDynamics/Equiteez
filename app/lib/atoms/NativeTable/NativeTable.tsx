@@ -11,6 +11,7 @@ type NativeTableHeaderProps = {
   items: (string | React.ReactElement)[];
   slotWidth?: number;
   customGrid?: string; //  Pick<CSSProperties, 'gridTemplateColumns'>;
+  alternativeDesign?: boolean;
 };
 
 ('gridTemplateColumns: ');
@@ -18,6 +19,7 @@ type NativeTableHeaderProps = {
 export const NativeTableHeader: FC<NativeTableHeaderProps> = ({
   items,
   customGrid,
+  alternativeDesign,
   slotWidth = 187,
 }) => {
   const memoizedStyles: CSSProperties = useMemo(
@@ -32,12 +34,19 @@ export const NativeTableHeader: FC<NativeTableHeaderProps> = ({
     <div
       style={memoizedStyles}
       className={clsx(
-        'border-b border-divider pb-2 grid',
+        'border-b border-divider grid',
+        alternativeDesign ? 'pb-3' : 'pb-2',
         !customGrid && styles.nativeTableHeader
       )}
     >
       {items.map((item, idx) => (
-        <span key={idx} className="text-content text-caption-regular pl-2">
+        <span
+          key={idx}
+          className={clsx(
+            'text-content text-caption-regular',
+            alternativeDesign ? 'pr-2' : 'pl-2'
+          )}
+        >
           {item}
         </span>
       ))}
@@ -73,6 +82,14 @@ export const NativeTableRow: FC<NativeTableBodyProps> = ({
 export const NativeTableColumn: FC<PropsWithChildren> = ({ children }) => {
   return (
     <div className="py-3 text-content text-body-xs w-auto pl-2 flex items-center">
+      {children}
+    </div>
+  );
+};
+
+export const NativeTableColumnSmall: FC<PropsWithChildren> = ({ children }) => {
+  return (
+    <div className="py-3 text-content text-caption-regular w-auto pr-2 flex items-center">
       {children}
     </div>
   );

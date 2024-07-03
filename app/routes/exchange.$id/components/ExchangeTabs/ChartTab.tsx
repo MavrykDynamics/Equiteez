@@ -9,9 +9,9 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { useClientLibData } from '~/hooks/use-client-lib';
 
 import OriginalApexCharts from 'react-apexcharts';
-import { EstateType } from '~/providers/EstatesProvider/estates.types';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
-export const ChartTab: FC<{ estate: EstateType }> = () => {
+export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
   const { IS_WEB } = useAppContext();
   const {
     clientModule: ChartModule,
