@@ -17,6 +17,9 @@ import {
   SECONDARY_MARKET,
 } from '~/providers/EstatesProvider/estates.types';
 
+// icons
+import StarIcon from 'app/icons/star.svg?react';
+
 // filter fns
 
 function filterByName(estates: EstateType[], name: string) {
@@ -39,11 +42,24 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     [allEstates]
   );
 
-  // states
+  // states ----------------------------------------------------------
+  //estates to show after filters
+  const [filteredEstates, setFilteredEstates] = useState(() => estates);
+
   // to make interactive search when user types smth
   const [estateName, setEstateName] = useState('');
   // using debounce set new name after 450 ms to filter estates data
   const [estateNameForFilter, setEstateNameForFilter] = useState('');
+
+  // active filters
+  const [activeFiltersIds, setActiveFiltersIds] = useState<
+    Record<string, boolean>
+  >({
+    0: false,
+    1: false,
+    2: false,
+    3: false,
+  });
 
   const navigate = useNavigate();
 
@@ -71,15 +87,21 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-
       // state is updated on every value change, so input will work
       setEstateName(value);
-
       // call debounced request here
       handleDebouncedSearch(value);
     },
     [handleDebouncedSearch]
   );
+
+  const handleFilterClick = (id: string) => {
+    if (activeFiltersIds[id]) {
+      setActiveFiltersIds({ ...activeFiltersIds, [id]: false });
+    } else {
+      setActiveFiltersIds({ ...activeFiltersIds, [id]: true });
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -87,11 +109,39 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     };
   }, [handleDebouncedSearch]);
 
+  // filters ---------------
+  const filtersData = useMemo(
+    () => ({
+      0: {
+        id: 0,
+        label: <StarIcon className="text-green-500 stroke-current w-4 h-4" />,
+        value: 'starred',
+      },
+      1: {
+        id: 1,
+        label: 'Market',
+        value: 'market',
+      },
+      2: {
+        id: 2,
+        label: 'OTC',
+        value: 'otc',
+      },
+      3: {
+        id: 3,
+        label: 'Order Book',
+        value: 'order_book',
+      },
+    }),
+    []
+  );
+
+  // filter controler
   useEffect(() => {
     let filteredEstates = estates;
 
     filteredEstates = filterByName(filteredEstates, estateNameForFilter);
-    console.log(filteredEstates);
+    setFilteredEstates(filteredEstates);
   }, [estateNameForFilter, estates]);
 
   return (
@@ -122,7 +172,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
         </DropdownFaceContent>
       </ClickableDropdownArea>
 
-      <DropdownBodyContent topMargin={12} maxHeight={510} customWidth={420}>
+      <DropdownBodyContent topMargin={12} customWidth={420} customHeight={526}>
         <div className="p-4">
           <Search
             showSearchIcon={estateName.length > 0}
@@ -131,7 +181,24 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
             placeholder="Search..."
             onChange={onChange}
           />
-          {estates.map((estate) => (
+
+          <div className="my-4 flex items-center gap-x-1">
+            {Object.entries(filtersData).map(([id, filterVal]) => (
+              <button
+                key={id}
+                onClick={() => handleFilterClick(id)}
+                className={clsx(
+                  'py-2 px-3 bg-gray-100 text-content text-caption cursor-pointer outline-none',
+                  'transition ease-in-out duration-300',
+                  'flex items-center justify-center rounded-lg border',
+                  activeFiltersIds[id] ? 'border-content' : 'border-transparent'
+                )}
+              >
+                {filterVal.label}
+              </button>
+            ))}
+          </div>
+          {filteredEstates.map((estate) => (
             <button
               key={estate.token_address}
               onClick={() =>

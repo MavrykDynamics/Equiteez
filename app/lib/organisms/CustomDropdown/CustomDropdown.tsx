@@ -110,12 +110,14 @@ type DropdownBodyContentProps = {
   topMargin?: number;
   position?: 'left' | 'right' | 'center';
   customWidth?: number;
+  customHeight?: number;
   maxHeight?: number;
 } & PropsWithChildren;
 
 export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
   children,
   customWidth,
+  customHeight = 'auto',
   position = 'left',
   topMargin = 0,
   maxHeight = 700,
@@ -142,7 +144,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
       )}
     >
       <div
-        style={{ maxHeight }}
+        style={{ maxHeight, height: customHeight }}
         className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll"
       >
         {children}

@@ -1,5 +1,4 @@
 import { FC, useCallback, useMemo, useState } from 'react';
-import { usePropertyById } from '../../hooks/use-property-by-id';
 
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
@@ -8,7 +7,6 @@ import { Divider } from '~/lib/atoms/Divider';
 
 import otc from '~/mocks/otc.json';
 import { Button } from '~/lib/atoms/Button';
-import { useParams } from '@remix-run/react';
 import { buy } from '~/routes/properties.$id/components/PriceSection/actions/financial.actions';
 import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
@@ -18,6 +16,8 @@ import {
   getStatusLabel,
 } from '~/hooks/use-status-flag';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
+import { usePropertyByAddress } from '~/routes/properties.$id/hooks/use-property-by-id';
+import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
 
 type BuyDEXContentProps = {
   initialAmount?: number;
@@ -30,8 +30,7 @@ export const BuyDEXContent: FC<BuyDEXContentProps> = ({
   initialPrice,
   symbol,
 }) => {
-  const { id } = useParams();
-  const { estate } = usePropertyById(id);
+  const estate = usePropertyByAddress();
 
   const columnsOTC = [
     {
@@ -106,12 +105,16 @@ export const BuyDEXContent: FC<BuyDEXContentProps> = ({
     }
   }, [amount, dapp, dispatch, price, symbol]);
 
+  if (!estate) return <FullScreenSpinner />;
+
   return (
     <div className="flex flex-col justify-between h-full">
       <div className="flex flex-col flex-grow gap-6">
         <div className="flex flex-col">
-          <span className="text-card-headline">{estate?.title}</span>
-          <span className="">{estate?.details.fullAddress}</span>
+          <span className="text-card-headline">{estate?.name}</span>
+          <span className="">
+            {estate?.assetDetails.propertyDetails.fullAddress}
+          </span>
         </div>
 
         <div className="flex flex-col flex-grow gap-4">
