@@ -192,6 +192,8 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
     setFilteredEstates(filteredEstates);
   }, [activeFiltersIds, estateNameForFilter, estates]);
 
+  const hasNoresults = filteredEstates.length === 0;
+
   return (
     <CustomDropdown>
       <ClickableDropdownArea>
@@ -229,94 +231,124 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
             placeholder="Search..."
             onChange={onChange}
           />
-
-          <div className="my-4 flex items-center gap-x-1">
-            {Object.entries(filtersData).map(([id, filterVal]) => (
-              <button
-                key={id}
-                onClick={() => handleFilterClick(id)}
-                className={clsx(
-                  'py-2 px-3 bg-gray-100 text-content text-caption cursor-pointer outline-none',
-                  'transition ease-in-out duration-300',
-                  'flex items-center justify-center rounded-lg border',
-                  activeFiltersIds[id] ? 'border-content' : 'border-transparent'
-                )}
-              >
-                {filterVal.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <table
-              className={clsx(
-                'min-w-full divide-y divide-divider',
-                styles.dropdowntable
-              )}
-            >
-              <thead>
-                <tr>
-                  {columns.map((column) => (
-                    <th
-                      key={column}
-                      scope="col"
-                      className={clsx(
-                        'whitespace-nowrap py-2 text-left text-caption-regular',
-                        'text-left'
-                      )}
-                    >
-                      {column}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-transparent bg-white">
-                {filteredEstates.map((estate) => {
-                  const identifier =
-                    estate.assetDetails.blockchain[0].identifier;
-                  return (
-                    <tr key={estate.token_address} className="cursor-pointer">
-                      <td className="py-[18px] pr-3">
-                        <button onClick={() => handleStarClick(identifier)}>
-                          <StarIcon
-                            className={clsx(
-                              'w-4 h-4 ',
-                              starredIdentifiers.includes(identifier)
-                                ? 'fill-green-500 stroke-green-500'
-                                : 'fill-none stroke-current'
-                            )}
-                          />
-                        </button>
-                      </td>
-                      <td
-                        className={`eq-table-cell text-content`}
-                        onClick={() => handleEstateClick(identifier)}
-                      >
-                        {estate.name}/USDT
-                      </td>
-
-                      <td
-                        className="eq-table-cell text-left text-content"
-                        onClick={() => handleEstateClick(identifier)}
-                      >
-                        {estate.assetDetails.priceDetails.price}
-                      </td>
-
-                      <td
-                        className="eq-table-cell text-left first text-green-500"
-                        onClick={() => handleEstateClick(identifier)}
-                      >
-                        +{estate.assetDetails.priceDetails.projectedRentalYield}
-                        %
-                      </td>
+          {hasNoresults ? (
+            <NoResultsScreen word={estateName} />
+          ) : (
+            <>
+              {' '}
+              <div className="my-4 flex items-center gap-x-1">
+                {Object.entries(filtersData).map(([id, filterVal]) => (
+                  <button
+                    key={id}
+                    onClick={() => handleFilterClick(id)}
+                    className={clsx(
+                      'py-2 px-3 bg-gray-100 text-content text-caption cursor-pointer outline-none',
+                      'transition ease-in-out duration-300',
+                      'flex items-center justify-center rounded-lg border',
+                      activeFiltersIds[id]
+                        ? 'border-content'
+                        : 'border-transparent'
+                    )}
+                  >
+                    {filterVal.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <table
+                  className={clsx(
+                    'min-w-full divide-y divide-divider',
+                    styles.dropdowntable
+                  )}
+                >
+                  <thead>
+                    <tr>
+                      {columns.map((column) => (
+                        <th
+                          key={column}
+                          scope="col"
+                          className={clsx(
+                            'whitespace-nowrap py-2 text-left text-caption-regular',
+                            'text-left'
+                          )}
+                        >
+                          {column}
+                        </th>
+                      ))}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-transparent bg-white">
+                    {filteredEstates.map((estate) => {
+                      const identifier =
+                        estate.assetDetails.blockchain[0].identifier;
+                      return (
+                        <tr
+                          key={estate.token_address}
+                          className="cursor-pointer"
+                        >
+                          <td className="py-[18px] pr-3">
+                            <button onClick={() => handleStarClick(identifier)}>
+                              <StarIcon
+                                className={clsx(
+                                  'w-4 h-4 ',
+                                  starredIdentifiers.includes(identifier)
+                                    ? 'fill-green-500 stroke-green-500'
+                                    : 'fill-none stroke-current'
+                                )}
+                              />
+                            </button>
+                          </td>
+                          <td
+                            className={`eq-table-cell text-content`}
+                            onClick={() => handleEstateClick(identifier)}
+                          >
+                            {estate.name}/USDT
+                          </td>
+
+                          <td
+                            className="eq-table-cell text-left text-content"
+                            onClick={() => handleEstateClick(identifier)}
+                          >
+                            {estate.assetDetails.priceDetails.price}
+                          </td>
+
+                          <td
+                            className="eq-table-cell text-left first text-green-500"
+                            onClick={() => handleEstateClick(identifier)}
+                          >
+                            +
+                            {
+                              estate.assetDetails.priceDetails
+                                .projectedRentalYield
+                            }
+                            %
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       </DropdownBodyContent>
     </CustomDropdown>
+  );
+};
+
+const NoResultsScreen: FC<{ word: string }> = ({ word }) => {
+  return (
+    <section className="w-full h-full flex-1 flex items-center justify-center">
+      <div className="flex flex-col gap-y-2 items-center">
+        <p className="text-body-xs">
+          {word ? <>No results for ”{word}”</> : 'No Results'}
+        </p>
+        <p className="text-caption-regular max-w-[306px] text-center">
+          We couldn&apos;t find anything matching your search. Try again with a
+          different term.
+        </p>
+      </div>
+    </section>
   );
 };
