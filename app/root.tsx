@@ -13,6 +13,7 @@ import ErrorBoundary from './templates/ErrorBoundary';
 // global styles
 import stylesheet from '~/index.css?url';
 import extendCSS from '~/extend.css?url';
+import 'react-datepicker/dist/react-datepicker.css';
 
 // providers
 import { AppProvider } from './providers/AppProvider/AppProvider';

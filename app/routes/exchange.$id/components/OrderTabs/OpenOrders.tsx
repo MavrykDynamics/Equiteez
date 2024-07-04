@@ -4,7 +4,7 @@ import orders from '~/mocks/orders.json';
 // icons
 import TrashIcon from '~/icons/trash.svg?react';
 
-export const HistoryTab = () => {
+export const OpenOrders = () => {
   const columns = [
     {
       label: 'Date',
