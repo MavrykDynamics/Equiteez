@@ -1,0 +1,7 @@
+.orderTable {
+  border-collapse: collapse;
+}
+
+.orderTable colgroup col:first-child {
+  width: 26px; /* Set custom width for the first column */
+}

@@ -43,7 +43,7 @@ const variants = {
   outline:
     'text-content bg-background border-2 border-green-main hover:bg-green-opacity',
   red: 'text-content bg-red-main hover:bg-red-400',
-  dark: 'bg-dark-green-500 text-white',
+  dark: 'bg-black-secondary text-white',
   'dark-outline': 'border-2 border-dark-green-500 text-dark-green-500 py-[6px]',
 };
 

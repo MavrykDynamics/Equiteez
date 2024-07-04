@@ -1,12 +1,19 @@
 import clsx from 'clsx';
-import orders from '~/mocks/orders.json';
+import orders from '~/mocks/orderHistory.json';
 
 // icons
-import TrashIcon from '~/icons/trash.svg?react';
+import PlusIcon from 'app/icons/plus.svg?react';
+
 import { OrderFilters } from './components/OrderFilters';
+
+import styles from './orderTabs.module.css';
 
 export const OpenHistory = () => {
   const columns = [
+    {
+      label: '',
+      field: '+',
+    },
     {
       label: 'Date',
       field: 'date',
@@ -63,7 +70,10 @@ export const OpenHistory = () => {
         <div className="flow-root w-full">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="table-fixed w-full">
+              <table className={clsx('table-fixed w-full', styles.orderTable)}>
+                <colgroup>
+                  <col style={{ maxWidth: 26 }}></col>
+                </colgroup>
                 <thead>
                   <tr>
                     {columns.map((column) => (
@@ -72,9 +82,7 @@ export const OpenHistory = () => {
                         scope="col"
                         className={clsx(
                           'whitespace-nowrap  py-3 text-caption-regular',
-                          column.field === 'clear_all'
-                            ? 'flex justify-end font-semibold'
-                            : 'text-left pr-2'
+                          'text-left pr-2'
                         )}
                       >
                         {column.field === 'clear_all' ? (
@@ -93,6 +101,9 @@ export const OpenHistory = () => {
                 <tbody className="divide-y divide-transparent bg-white">
                   {orders.map((order, index) => (
                     <tr key={`${order.date}${index}`}>
+                      <td className="eq-table-cell">
+                        <PlusIcon className="w-4 h-4" />
+                      </td>
                       <td className="eq-table-cell">{order.date || ''}</td>
 
                       <td className="eq-table-cell">{order.pair || ''}</td>
@@ -107,11 +118,11 @@ export const OpenHistory = () => {
                         {order.side}
                       </td>
 
+                      <td className="eq-table-cell">{order.average || ''}</td>
                       <td className="eq-table-cell">{order.price || ''}</td>
+                      <td className="eq-table-cell">{order.executed || ''}</td>
 
                       <td className="eq-table-cell">{order.amount || ''}</td>
-
-                      <td className="eq-table-cell">{order.filled || ''}</td>
 
                       <td className="eq-table-cell">{order.total || ''}</td>
 
@@ -119,11 +130,7 @@ export const OpenHistory = () => {
                         {order.trigger_conditions || ''}
                       </td>
 
-                      <td className="eq-table-cell flex justify-end">
-                        <button>
-                          <TrashIcon className="w-4 h-4 stroke-current" />
-                        </button>
-                      </td>
+                      <td className="eq-table-cell">{order.status || ''}</td>
                     </tr>
                   ))}
                 </tbody>
