@@ -1,20 +1,13 @@
 import clsx from 'clsx';
-import orders from '~/mocks/orderHistory.json';
+import orders from '~/mocks/transactions.json';
 
 // icons
-import PlusIcon from 'app/icons/plus.svg?react';
 import ArrowDownIcon from 'app/icons/arrow-down.svg?react';
 
 import { OrderFilters } from './components/OrderFilters';
 
-import styles from './orderTabs.module.css';
-
-export const OpenHistory = () => {
+export const TransactionsTab = () => {
   const columns = [
-    {
-      label: '',
-      field: '+',
-    },
     {
       label: 'Date',
       field: 'date',
@@ -23,20 +16,13 @@ export const OpenHistory = () => {
       label: 'Pair',
       field: 'pair',
     },
-    {
-      label: 'Type',
-      field: 'type',
-      sortable: true,
-    },
+
     {
       label: 'Side',
       field: 'side',
       sortable: true,
     },
-    {
-      label: 'Average',
-      field: 'average',
-    },
+
     {
       label: 'Price',
       field: 'price',
@@ -46,21 +32,21 @@ export const OpenHistory = () => {
       field: 'executed',
     },
     {
-      label: 'Amount',
-      field: 'amount',
+      label: 'Fee',
+      field: 'fee',
     },
 
     {
+      label: 'Executed',
+      field: 'executed',
+    },
+    {
+      label: 'Role',
+      field: 'role',
+    },
+    {
       label: 'Total',
       field: 'total',
-    },
-    {
-      label: 'Trigger Conditions',
-      field: 'trigger_conditions',
-    },
-    {
-      label: 'Status',
-      field: 'status',
     },
   ];
 
@@ -73,15 +59,12 @@ export const OpenHistory = () => {
         <div className="flow-root w-full">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className={clsx('table-fixed w-full', styles.orderTable)}>
-                <colgroup>
-                  <col style={{ maxWidth: 26 }}></col>
-                </colgroup>
+              <table className={clsx('table-fixed w-full')}>
                 <thead>
                   <tr>
-                    {columns.map((column) => (
+                    {columns.map((column, idx) => (
                       <th
-                        key={column.label}
+                        key={column.label.concat(idx.toString())}
                         scope="col"
                         className={clsx(
                           'whitespace-nowrap  py-3 text-caption-regular',
@@ -100,20 +83,10 @@ export const OpenHistory = () => {
                 </thead>
                 <tbody className="divide-y divide-transparent bg-white">
                   {orders.map((order, index) => (
-                    <tr
-                      key={`${order.date}${index}`}
-                      className={clsx(
-                        order.status === 'Canceled' && 'opacity-50'
-                      )}
-                    >
-                      <td className="eq-table-cell">
-                        <PlusIcon className="w-4 h-4" />
-                      </td>
+                    <tr key={`${order.date}${index}`}>
                       <td className="eq-table-cell">{order.date || ''}</td>
 
                       <td className="eq-table-cell">{order.pair || ''}</td>
-
-                      <td className="eq-table-cell">{order.type || ''}</td>
 
                       <td
                         className={`eq-table-cell ${
@@ -123,19 +96,14 @@ export const OpenHistory = () => {
                         {order.side}
                       </td>
 
-                      <td className="eq-table-cell">{order.average || ''}</td>
                       <td className="eq-table-cell">{order.price || ''}</td>
                       <td className="eq-table-cell">{order.executed || ''}</td>
 
-                      <td className="eq-table-cell">{order.amount || ''}</td>
+                      <td className="eq-table-cell">{order.fee || ''}</td>
+                      <td className="eq-table-cell">{order.executed || ''}</td>
+                      <td className="eq-table-cell">{order.role || ''}</td>
 
                       <td className="eq-table-cell">{order.total || ''}</td>
-
-                      <td className="eq-table-cell">
-                        {order.trigger_conditions || ''}
-                      </td>
-
-                      <td className="eq-table-cell">{order.status || ''}</td>
                     </tr>
                   ))}
                 </tbody>

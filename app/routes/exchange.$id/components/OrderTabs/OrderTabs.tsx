@@ -1,8 +1,13 @@
 import { FC, useCallback, useMemo, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
+
+// components
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+
+// Tab screens
 import { OpenOrders } from './OpenOrders';
 import { OpenHistory } from './OpenHistory';
+import { TransactionsTab } from './TransactionsTab';
 
 export const OrderTabs = () => {
   const [activetabId, setAvtiveTabId] = useState('openOrders');
@@ -63,5 +68,5 @@ const OrderTab: FC<OrderTabProps> = ({ tabId }) => {
 const OrderTabsComponents = {
   openOrders: <OpenOrders />,
   orderHistory: <OpenHistory />,
-  transactions: <OpenOrders />,
+  transactions: <TransactionsTab />,
 };
