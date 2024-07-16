@@ -22,6 +22,7 @@ import { sell } from '../actions/financial.actions';
 import { InputNumber } from '~/lib/molecules/Input/Input';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 
 type OrderType = 'buy' | 'sell' | '';
 
@@ -61,16 +62,19 @@ export const SecondaryPriceBlock: FC = () => {
         <Divider className="my-4" />
         <div className="text-content text-buttons flex justify-between mb-6">
           <p>Total Liquidity</p>
-          <p>${estate.assetDetails.priceDetails.totalLiquidity}</p>
+          <p className="flex items-center gap-1">
+            ${estate.assetDetails.priceDetails.totalLiquidity}
+            <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
+          </p>
         </div>
-        <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
-        <Button
-          variant="red"
-          className="mt-3"
-          onClick={handleOpen.bind(null, 'sell')}
-        >
-          Sell
-        </Button>
+        <div className="grid gap-3 grid-cols-2 mt-3">
+          <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
+          <Button variant="red" onClick={handleOpen.bind(null, 'sell')}>
+            Sell
+          </Button>
+        </div>
+        <Divider className="my-3" />
+        <Button className="bg-blue-300 hover:bg-blue-200">OTC</Button>
       </Table>
 
       <PopupWithIcon
