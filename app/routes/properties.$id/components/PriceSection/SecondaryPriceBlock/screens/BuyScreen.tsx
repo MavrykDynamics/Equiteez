@@ -29,6 +29,7 @@ export const BuyScreen: FC<BuyScreenProps> = ({ symbol, toggleBuyScreen }) => {
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
+  const [amount, setAmount] = useState<string | number>('');
 
   const handleContinueClick = useCallback(() => {
     toggleBuyScreen('confirm');
@@ -56,9 +57,9 @@ export const BuyScreen: FC<BuyScreenProps> = ({ symbol, toggleBuyScreen }) => {
           />
 
           <InputNumber
-            // handleValue={setAmount}
+            handleValue={setAmount}
             label={'Amount'}
-            value={''}
+            value={amount || ''}
             placeholder={'Minimum 1'}
             valueText={symbol}
             name={'amount'}
@@ -103,7 +104,7 @@ export const BuyScreen: FC<BuyScreenProps> = ({ symbol, toggleBuyScreen }) => {
 
         <InputNumber
           label={<p className="font-semibold">Total</p>}
-          value={11}
+          value={amount}
           placeholder={'0'}
           valueText="USDT"
           name={'total'}
