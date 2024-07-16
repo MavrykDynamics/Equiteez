@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import ArrowDown from 'app/icons/arrow-down.svg?react';
+import ArrowDown from 'app/icons/chevron-down.svg?react';
 
 import styles from './customExpander.module.css';
 import clsx from 'clsx';

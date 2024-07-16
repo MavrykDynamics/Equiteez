@@ -5,4 +5,5 @@
 
 .expanderData.expanded {
   max-height: 500px;
+  overflow: visible;
 }

@@ -220,3 +220,24 @@ p {
 .overflowYHidden {
   overflow-y: hidden;
 }
+
+button {
+  outline: none;
+}
+
+button:focus {
+  outline: none;
+}
+
+input {
+  outline: none;
+}
+input:focus {
+  outline: none;
+}
+
+input:disabled {
+  background: transparent;
+  pointer-events: none;
+  cursor: none;
+}

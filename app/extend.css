@@ -20,13 +20,13 @@ input[type='number'] {
 }
 
 .eq-input {
-  @apply items-center bg-transparent border border-divider rounded-lg;
+  @apply items-center bg-transparent border border-gray-100 rounded-lg;
 }
 
 .eq-slider {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 15px;
+  line-height: normal;
   text-align: left;
 }
 

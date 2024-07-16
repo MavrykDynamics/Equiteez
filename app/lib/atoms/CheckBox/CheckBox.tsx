@@ -9,7 +9,7 @@ import React, {
 
 import clsx from 'clsx';
 
-import { ReactComponent as OkIcon } from 'app/icons/ok.svg';
+import OkIcon from 'app/icons/ok.svg?react';
 import {
   blurHandler,
   checkedHandler,

@@ -5,7 +5,7 @@ import styles from './input.module.css';
 
 type InputProps = {
   handleValue?: (v: number | string) => void;
-  label: string;
+  label?: string | JSX.Element;
   value: number | string;
   placeholder: string;
   name: string;
@@ -34,15 +34,25 @@ export const InputNumber: FC<InputProps> = ({
   disabled = false,
 }) => {
   return (
-    <div
-      className={clsx(
-        'w-full flex justify-between eq-input py-3 px-4 text-body-xs',
-        className
+    <div>
+      {label && (
+        <label
+          htmlFor={name}
+          className={clsx(labelVariants[labelVariant], 'text-body-xs')}
+        >
+          {label}
+        </label>
       )}
-    >
-      <span className={clsx(labelVariants[labelVariant])}>{label}</span>
 
-      <span className="flex gap-1 flex-1 text-right">
+      <div
+        className={clsx(
+          'w-full flex justify-between  py-3 px-4 text-body-xs gap-1 mt-2',
+          disabled
+            ? 'bg-gray-100 border-gray-300 text-dark-green-100 rounded-lg'
+            : 'eq-input',
+          className
+        )}
+      >
         <span className="w-full">
           <input
             name={name}
@@ -54,12 +64,12 @@ export const InputNumber: FC<InputProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             className={clsx(
-              'w-full bg-transparent focus:outline-none text-right'
+              'w-full bg-transparent focus:outline-none text-left'
             )}
           ></input>
         </span>
         {valueText && <span>{valueText}</span>}
-      </span>
+      </div>
     </div>
   );
 };
