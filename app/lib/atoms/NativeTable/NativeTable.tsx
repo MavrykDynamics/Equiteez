@@ -79,9 +79,16 @@ export const NativeTableRow: FC<NativeTableBodyProps> = ({
   );
 };
 
-export const NativeTableColumn: FC<PropsWithChildren> = ({ children }) => {
+export const NativeTableColumn: FC<
+  PropsWithChildren & { className?: string }
+> = ({ className, children }) => {
   return (
-    <div className="py-3 text-content text-body-xs w-auto pl-2 flex items-center">
+    <div
+      className={clsx(
+        className,
+        'py-3 text-content text-body-xs w-auto pr-2 flex items-center'
+      )}
+    >
       {children}
     </div>
   );

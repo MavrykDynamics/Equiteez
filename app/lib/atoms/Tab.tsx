@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { FC } from 'react';
 
-export type TabType = {
-  id: string;
+export type TabType<G = string> = {
+  id: G;
   label: string;
   grow?: boolean;
   disabled?: boolean;

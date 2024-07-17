@@ -157,8 +157,14 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
             electronic initials as my signiture, and hereby electronically sign
             the documents listed above.
           </p>
-          <Button type="submit" className="w-full">
-            Buy
+          <Button
+            type="submit"
+            variant={
+              actionLabels[actionType].toLowerCase() === 'buy' ? 'green' : 'red'
+            }
+            className="w-full"
+          >
+            {actionLabels[actionType]}
           </Button>
         </div>
       </form>

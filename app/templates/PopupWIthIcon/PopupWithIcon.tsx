@@ -52,5 +52,5 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
 
 // eslint-disable-next-line react/display-name
 const ChildComponent = memo(({ children }: PropsWithChildren) => {
-  return <div className="h-full">{children}</div>;
+  return <div className="h-full overflow-y-auto">{children}</div>;
 });

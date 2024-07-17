@@ -18,17 +18,18 @@ import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
+import { BuyScreenState, SellScreenState } from './consts';
 
 type BuySellScreenProps = {
   symbol: string;
   actionType: 'buy' | 'sell';
-  toggleBuyScreen: (id: string) => void;
+  toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   currency: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
   symbol,
-  toggleBuyScreen,
+  toggleScreen,
   actionType,
   currency,
 }) => {
@@ -39,8 +40,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const [amount, setAmount] = useState<string | number>('');
 
   const handleContinueClick = useCallback(() => {
-    toggleBuyScreen('confirm');
-  }, [toggleBuyScreen]);
+    toggleScreen('confirm');
+  }, [toggleScreen]);
 
   return (
     <div className="flex flex-col flex-1">

@@ -12,13 +12,11 @@ import {
   PROPERTY_DETAILS_TAB,
   PROPERTY_FINANCIALS_TAB,
   PROPERTY_OFFERING_TAB,
-  PROPERTY_OTC_TAB,
   PROPERTY_TRDADING_HISTORY_TAB,
 } from '../../consts';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { PropertyOfferingTab } from './PropertyOfferingTab';
 import { PropertyTradingHistoryTab } from './PropertyTradingHistoryTab';
-import { PropertyOTCTab } from './PropertyOTCTab';
 
 export const meta: MetaFunction = () => {
   return [
@@ -89,11 +87,6 @@ export default function PropertyTabs({
               label: 'Trading History',
               handleClick: handleTabClick,
             },
-            {
-              id: PROPERTY_OTC_TAB,
-              label: 'OTC',
-              handleClick: handleTabClick,
-            },
           ]
         : []),
     ],
@@ -128,5 +121,4 @@ const propertyTabsComponents = {
   [PROPERTY_BLOCKCHAIN_TAB]: <PropertyBlockchainTab />,
   [PROPERTY_OFFERING_TAB]: <PropertyOfferingTab />,
   [PROPERTY_TRDADING_HISTORY_TAB]: <PropertyTradingHistoryTab />,
-  [PROPERTY_OTC_TAB]: <PropertyOTCTab />,
 };

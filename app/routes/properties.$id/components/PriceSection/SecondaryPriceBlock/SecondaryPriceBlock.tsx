@@ -1,26 +1,54 @@
-import { FC, useCallback, useState } from 'react';
-import { Button } from '~/lib/atoms/Button';
-import { Divider } from '~/lib/atoms/Divider';
-import { Table } from '~/lib/atoms/Table/Table';
-import { pickMarketBasedOnSymbol } from '~/consts/contracts';
+import { FC, useCallback, useMemo, useState } from 'react';
+
+// hooks
 import {
   STATUS_IDLE,
   STATUS_PENDING,
   useStatusFlag,
 } from '~/hooks/use-status-flag';
+
+// providers
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
-import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
+import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+
+//screens
 import { BuySellScreen } from './screens/BuySellScreen';
-import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
+import { BuySellConfirmationScreen } from './screens/BuySellConfirmationScreen';
+import { OTCBuySellScreen } from './screens/OTCBuySellScreen';
+
+// components
+import { Button } from '~/lib/atoms/Button';
+import { Divider } from '~/lib/atoms/Divider';
+import { Table } from '~/lib/atoms/Table/Table';
+import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
+import { TabType } from '~/lib/atoms/Tab';
+import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 
 // contract actions
+import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import { buy, sell } from '../actions/financial.actions';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { BuySellConfirmationScreen } from './screens/BuySellConfirmationScreen';
 
-type OrderType = 'buy' | 'sell' | '';
+// icons
+import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
+
+//consts & types
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import {
+  BUY,
+  BuyScreenState,
+  CONFIRM,
+  OTC,
+  OTC_BUY,
+  OTC_SELL,
+  OTCScreenState,
+  OTCTabType,
+  SELL,
+  SellScreenState,
+} from './screens/consts';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+
+// types
+type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
 
 export const SecondaryPriceBlock: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,13 +92,18 @@ export const SecondaryPriceBlock: FC = () => {
           </div>
         </div>
         <div className="grid gap-3 grid-cols-2 mt-3">
-          <Button onClick={handleOpen.bind(null, 'buy')}>Buy</Button>
-          <Button variant="red" onClick={handleOpen.bind(null, 'sell')}>
+          <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
+          <Button variant="red" onClick={handleOpen.bind(null, SELL)}>
             Sell
           </Button>
         </div>
         <Divider className="my-3" />
-        <Button className="bg-blue-300 hover:bg-blue-200">OTC</Button>
+        <Button
+          className="bg-blue-300 hover:bg-blue-200"
+          onClick={handleOpen.bind(null, OTC)}
+        >
+          OTC
+        </Button>
       </Table>
 
       <PopupWithIcon
@@ -80,6 +113,7 @@ export const SecondaryPriceBlock: FC = () => {
       >
         {orderType === 'buy' && <BuyPopupContent estate={estate} />}
         {orderType === 'sell' && <SellPopupContent estate={estate} />}
+        {orderType === 'otc' && <OTCPopupContent estate={estate} />}
       </PopupWithIcon>
     </section>
   );
@@ -91,10 +125,10 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const amount = 10;
   const price = 45;
   const { dispatch } = useStatusFlag();
-  const [activetabId, setAvtiveTabId] = useState('buy');
+  const [activeScreenId, setActiveScreenId] = useState<BuyScreenState>(BUY);
 
-  const toggleBuyScreen = useCallback((id: string) => {
-    setAvtiveTabId(id);
+  const toggleBuyScreen = useCallback((id: BuyScreenState) => {
+    setActiveScreenId(id);
   }, []);
 
   const handleBuy = useCallback(async () => {
@@ -125,8 +159,8 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       <>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
-            {activetabId === 'confirm' && (
-              <button onClick={() => toggleBuyScreen('buy')}>
+            {activeScreenId === CONFIRM && (
+              <button onClick={() => toggleBuyScreen(BUY)}>
                 <ArrowLeftIcon className="size-6 mr-2" />
               </button>
             )}
@@ -134,20 +168,20 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           </div>
           <Divider className="my-4" />
 
-          {activetabId === 'buy' && (
+          {activeScreenId === BUY && (
             <BuySellScreen
               symbol={estate.symbol}
-              toggleBuyScreen={toggleBuyScreen}
-              actionType="buy"
+              toggleScreen={toggleBuyScreen}
+              actionType={BUY}
               currency="USDT"
             />
           )}
-          {activetabId === 'confirm' && (
+          {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
               tokenPrice={price}
               total={price * amount}
-              actionType="buy"
+              actionType={BUY}
               estFee={0.21}
               actionCb={handleBuy}
             />
@@ -158,12 +192,11 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   );
 };
 
-// TODO move, this is done for demo purposes
 const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
-  const [activetabId, setAvtiveTabId] = useState('sell');
+  const [activeScreenId, setActiveScreenid] = useState<SellScreenState>(SELL);
 
-  const toggleBuyScreen = useCallback((id: string) => {
-    setAvtiveTabId(id);
+  const toggleSellScreen = useCallback((id: SellScreenState) => {
+    setActiveScreenid(id);
   }, []);
 
   const { dispatch } = useStatusFlag();
@@ -202,8 +235,8 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       <>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
-            {activetabId === 'confirm' && (
-              <button onClick={() => toggleBuyScreen('buy')}>
+            {activeScreenId === CONFIRM && (
+              <button onClick={() => toggleSellScreen(SELL)}>
                 <ArrowLeftIcon className="size-6 mr-2" />
               </button>
             )}
@@ -211,22 +244,98 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           </div>
           <Divider className="my-4" />
 
-          {activetabId === 'sell' && (
+          {activeScreenId === SELL && (
             <BuySellScreen
               symbol={estate.symbol}
-              toggleBuyScreen={toggleBuyScreen}
-              actionType="sell"
+              toggleScreen={toggleSellScreen}
+              actionType={SELL}
               currency={estate.symbol}
             />
           )}
-          {activetabId === 'confirm' && (
+          {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
               tokenPrice={price}
               total={price * amount}
-              actionType="sell"
+              actionType={SELL}
               estFee={0.21}
               actionCb={handleSell}
+            />
+          )}
+        </div>
+      </>
+    </div>
+  );
+};
+
+const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
+  const [activeScreenId, setActiveScreenId] = useState<OTCScreenState>(OTC);
+  const [activeTabId, setActiveTabId] = useState<OTCTabType>(OTC_BUY);
+
+  const toggleBuyScreen = useCallback((id: OTCScreenState) => {
+    setActiveScreenId(id);
+  }, []);
+
+  const toggleTabScreen = useCallback((id: OTCTabType) => {
+    setActiveTabId(id);
+  }, []);
+
+  // TODO take from buysell screen
+  const amount = 10;
+  const price = 45;
+
+  const tabs: TabType<OTCTabType>[] = useMemo(
+    () => [
+      {
+        id: OTC_BUY,
+        label: 'OTC Buy',
+        handleClick: toggleTabScreen,
+      },
+      {
+        id: OTC_SELL,
+        label: 'OTC Sell',
+        handleClick: toggleTabScreen,
+      },
+    ],
+    [toggleTabScreen]
+  );
+  return (
+    <div className="flex flex-col justify-between text-content h-full">
+      <>
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center">
+            {activeScreenId === 'confirm' && (
+              <button onClick={() => toggleBuyScreen('otc')}>
+                <ArrowLeftIcon className="size-6 mr-2" />
+              </button>
+            )}
+            <h3 className="text-card-headline">{estate.name}</h3>
+          </div>
+          <Divider className="my-6" />
+
+          <TabSwitcher
+            variant="secondary"
+            tabs={tabs}
+            activeTabId={activeTabId}
+            grow={true}
+          />
+
+          {activeScreenId === 'otc' && (
+            <OTCBuySellScreen
+              symbol={estate.symbol}
+              estate={estate}
+              toggleScreen={toggleBuyScreen}
+              activeTabId={activeTabId}
+            />
+          )}
+          {activeScreenId === 'confirm' && (
+            <BuySellConfirmationScreen
+              symbol={estate.symbol}
+              tokenPrice={price}
+              total={price * amount}
+              actionType="otcBuy"
+              estFee={0.21}
+              actionCb={() => {}}
             />
           )}
         </div>
