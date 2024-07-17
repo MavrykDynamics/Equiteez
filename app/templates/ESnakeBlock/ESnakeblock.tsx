@@ -4,6 +4,9 @@ import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { FC } from 'react';
 
+import styles from './eSnakeBlock.module.css';
+import clsx from 'clsx';
+
 const options = [0, 25, 50, 75, 100];
 
 type ESnakeblockProps = {
@@ -22,13 +25,20 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
   return (
     <div className="flex flex-col w-full gap-1">
       <div className="flex w-full h-3.5 relative">
-        <div className="absolute w-full h-full flex justify-between z-20">
+        <div
+          className={clsx(
+            'absolute w-full h-full flex justify-between z-20',
+            'transition 0.3s linear'
+          )}
+        >
           {options.map((option, idx) => (
             <span key={option}>
               {option === selectedOption ? (
                 <EQLogo className="size-3.5" />
               ) : options.length - 1 === idx ? (
                 <DotFill className="size-3.5" />
+              ) : selectedOption > option ? (
+                <div className="size-3.5 bg-transparent"></div>
               ) : (
                 <DotEmpty className="size-3.5" />
               )}
@@ -36,8 +46,15 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           ))}
         </div>
 
-        <div className="absolute w-full h-full flex items-center z-10">
-          <div className="w-full h-[1px] bg-divider"></div>
+        <div
+          style={
+            { '--percentage': `${selectedOption}%` } as React.CSSProperties
+          }
+          className="absolute w-full h-full flex items-center z-10"
+        >
+          <div
+            className={clsx(styles.progressBar, styles.progressPercentage)}
+          />
         </div>
       </div>
 

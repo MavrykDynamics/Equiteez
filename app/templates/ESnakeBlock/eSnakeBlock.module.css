@@ -1,0 +1,28 @@
+.progressBar {
+  position: relative;
+  height: 2px;
+  border-radius: 8px;
+  width: 100%;
+  transform: translateX(2px);
+}
+
+.progressBar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  @apply bg-divider;
+  z-index: 0;
+}
+
+.progressPercentage::after {
+  content: '';
+  position: absolute;
+  border-radius: 8px;
+  /* TODO replace with var passed from data */
+  width: var(--percentage);
+  height: 100%;
+  inset: 0;
+  @apply bg-green-main;
+  z-index: 1;
+}
