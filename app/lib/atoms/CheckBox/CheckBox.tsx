@@ -103,7 +103,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               case localFocused:
                 return 'border-brand-green-400';
               case errored:
-                return 'border-primary-error';
+                return 'border-error';
               default:
                 return 'border-dark-gray-50';
             }

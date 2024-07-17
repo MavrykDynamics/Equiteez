@@ -137,7 +137,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <Button
         variant="dark"
         onClick={handleContinueClick}
-        disabled={hasTotalError}
+        disabled={hasTotalError || !amount}
       >
         Continue
       </Button>

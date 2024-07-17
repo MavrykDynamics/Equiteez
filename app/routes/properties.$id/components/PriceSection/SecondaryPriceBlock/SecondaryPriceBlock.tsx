@@ -192,7 +192,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
             <BuySellConfirmationScreen
               symbol={estate.symbol}
               tokenPrice={TOKEN_PRICE}
-              total={total}
+              total={Number(total)}
               actionType={BUY}
               estFee={0.21}
               actionCb={handleBuy}
@@ -278,7 +278,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
             <BuySellConfirmationScreen
               symbol={estate.symbol}
               tokenPrice={TOKEN_PRICE}
-              total={total}
+              total={Number(total)}
               actionType={SELL}
               estFee={0.21}
               actionCb={handleSell}

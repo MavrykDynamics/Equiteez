@@ -38,7 +38,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   symbol,
   currency = 'USDT',
 }) => {
-  const { control, handleSubmit } = useForm<FormData>({
+  const { control, handleSubmit, formState } = useForm<FormData>({
     mode: 'onSubmit',
     defaultValues: {
       initials: '',
@@ -60,6 +60,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 onChange={onChange} // send value to hook form
                 onBlur={onBlur} // notify when input is touched/blur
                 checked={value}
+                errorCaption={formState.errors.terms ? 'Required' : null}
                 label={
                   <p className="text-content text-body-xs">
                     I agree with the information laid out in the Subscription
@@ -69,6 +70,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 }
               />
             )}
+            rules={{ required: true }}
             name="terms"
             control={control}
           />
@@ -79,6 +81,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 onChange={onChange} // send value to hook form
                 onBlur={onBlur} // notify when input is touched/blur
                 checked={value}
+                errorCaption={formState.errors.investing ? 'Required' : null}
                 label={
                   <p className="text-content text-body-xs">
                     I understand investing with the intention of holdling my
@@ -91,6 +94,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
               />
             )}
             name="investing"
+            rules={{ required: true }}
             control={control}
           />
 

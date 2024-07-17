@@ -15,4 +15,4 @@ export type SellScreenState = typeof SELL | typeof CONFIRM;
 export const TOKEN_PRICE = 45;
 
 // TODO take values from user context and his wallet balance
-export const BALANCE_LIMIT = 300;
+export const BALANCE_LIMIT = 900;

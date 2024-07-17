@@ -15,7 +15,7 @@ type InputProps = {
   labelVariant?: 'default' | 'opacity';
   disabled?: boolean;
   errorCaption?: string;
-};
+} & React.HTMLAttributes<HTMLInputElement>;
 
 const labelVariants = {
   opacity: 'text-content-secondary opacity-50',
@@ -34,6 +34,7 @@ export const InputNumber: FC<InputProps> = ({
   labelVariant = 'default',
   min = 1,
   disabled = false,
+  ...rest
 }) => {
   return (
     <div>
@@ -68,6 +69,7 @@ export const InputNumber: FC<InputProps> = ({
             className={clsx(
               'w-full bg-transparent focus:outline-none text-left'
             )}
+            {...rest}
           ></input>
         </span>
         {valueText && <span>{valueText}</span>}
