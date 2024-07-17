@@ -10,7 +10,14 @@ import {
 import { InputNumber } from '~/lib/molecules/Input/Input';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { OTC_BUY, OTCScreenState, OTCTabType } from './consts';
+import {
+  BALANCE_LIMIT,
+  OTC_BUY,
+  OTCScreenState,
+  OTCTabType,
+  TOKEN_BALANCE_LIMIT,
+  TOKEN_PRICE,
+} from './consts';
 import { Divider } from '~/lib/atoms/Divider';
 
 // icons
@@ -133,6 +140,13 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
     [tableItems]
   );
 
+  const hadleMaxPress = () => {
+    const balance = isBuytab ? BALANCE_LIMIT : TOKEN_BALANCE_LIMIT;
+
+    const numberOfTokens = balance / parseFloat(TOKEN_PRICE);
+    setAmount(numberOfTokens);
+  };
+
   const handleContinueClick = useCallback(() => {
     toggleScreen('confirm');
   }, [toggleScreen]);
@@ -223,7 +237,18 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
             </p>
             <InputNumber
               handleValue={setAmount}
-              label={'Amount'}
+              label={
+                <div className="flex w-full justify-between">
+                  <span>Amount</span>
+                  <span
+                    role="presentation"
+                    className="underline cursor-pointer"
+                    onClick={hadleMaxPress}
+                  >
+                    {isBuytab ? 'Max Buy' : 'Max Sell'}
+                  </span>
+                </div>
+              }
               value={amount || ''}
               placeholder={'Minimum 1'}
               valueText={symbol}
