@@ -107,16 +107,18 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 formState: { errors },
               }) => {
                 return (
-                  <InputText
-                    ref={ref}
-                    errorCaption={
-                      errors.initials ? 'Enter your initials' : undefined
-                    }
-                    value={value.slice(0, 2).toUpperCase()}
-                    onChange={onChange} // send value to hook form
-                    onBlur={onBlur} // notify when input is touched/blur
-                    placeholder="JS"
-                  />
+                  <div className="pr-[1px]">
+                    <InputText
+                      ref={ref}
+                      errorCaption={
+                        errors.initials ? 'Enter your initials' : undefined
+                      }
+                      value={value.slice(0, 2).toUpperCase()}
+                      onChange={onChange} // send value to hook form
+                      onBlur={onBlur} // notify when input is touched/blur
+                      placeholder="JS"
+                    />
+                  </div>
                 );
               }}
               name="initials"

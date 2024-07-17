@@ -284,6 +284,7 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const amount = 10;
   const price = 45;
 
+  // @ts-expect-error // id is string, but types for ids, TODO update TabType with generics
   const tabs: TabType<OTCTabType>[] = useMemo(
     () => [
       {
@@ -313,14 +314,16 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           </div>
           <Divider className="my-6" />
 
-          <TabSwitcher
-            variant="secondary"
-            tabs={tabs}
-            activeTabId={activeTabId}
-            grow={true}
-          />
+          {activeScreenId !== CONFIRM && (
+            <TabSwitcher
+              variant="secondary"
+              tabs={tabs}
+              activeTabId={activeTabId}
+              grow={true}
+            />
+          )}
 
-          {activeScreenId === 'otc' && (
+          {activeScreenId === OTC && (
             <OTCBuySellScreen
               symbol={estate.symbol}
               estate={estate}
@@ -328,12 +331,12 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               activeTabId={activeTabId}
             />
           )}
-          {activeScreenId === 'confirm' && (
+          {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
               tokenPrice={price}
               total={price * amount}
-              actionType="otcBuy"
+              actionType={OTC_BUY}
               estFee={0.21}
               actionCb={() => {}}
             />

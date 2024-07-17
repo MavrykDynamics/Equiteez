@@ -39,12 +39,22 @@ const tableBuyItems = [
   },
   {
     id: 3,
-    content: 'For Sale',
+    content: (
+      <div className="flex items-center gap-1">
+        <span>For Sale</span>
+        <ArrowDownIcon className="size-4" />
+      </div>
+    ),
     sortable: true,
   },
   {
     id: 4,
-    content: 'Price',
+    content: (
+      <div className="flex items-center gap-1">
+        <span>Price</span>
+        <ArrowDownIcon className="size-4" />
+      </div>
+    ),
     sortable: true,
   },
   {
@@ -53,6 +63,7 @@ const tableBuyItems = [
     sortable: false,
   },
 ];
+
 const tableSellItems = [
   {
     id: 1,
@@ -66,12 +77,22 @@ const tableSellItems = [
   },
   {
     id: 3,
-    content: 'Amount',
+    content: (
+      <div className="flex items-center gap-1">
+        <span>Amount</span>
+        <ArrowDownIcon className="size-4" />
+      </div>
+    ),
     sortable: true,
   },
   {
     id: 4,
-    content: 'Price',
+    content: (
+      <div className="flex items-center gap-1">
+        <span>Price</span>
+        <ArrowDownIcon className="size-4" />
+      </div>
+    ),
     sortable: true,
   },
   {
