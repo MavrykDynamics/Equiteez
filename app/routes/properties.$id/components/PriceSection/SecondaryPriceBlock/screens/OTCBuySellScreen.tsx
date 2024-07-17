@@ -163,7 +163,7 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
                 customGrid={'24px 148px repeat(3, 124px)'}
               />
               <div className="max-h-[267px] overflow-y-scroll">
-                {estate.assetDetails.otc.buying.map(
+                {estate.assetDetails.otc[isBuytab ? 'buying' : 'selling'].map(
                   ({ seller, price, tokensForSale, totalValue }) => {
                     const disabled = selectedSeller
                       ? selectedSeller !== seller
@@ -216,7 +216,9 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
           <div className="flex flex-col gap-4">
             <h2 className="text-card-headline text-content">OTC Order</h2>
             <p className=" text-body-xs text-content flex justify-between">
-              <span>Available For Sale</span>
+              <span>
+                {isBuytab ? 'Available Balance' : 'Available For Sale'}
+              </span>
               <span>20.00 NMD</span>
             </p>
             <InputNumber

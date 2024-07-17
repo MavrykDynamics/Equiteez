@@ -305,7 +305,7 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       <>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
-            {activeScreenId === 'confirm' && (
+            {activeScreenId === CONFIRM && (
               <button onClick={() => toggleBuyScreen('otc')}>
                 <ArrowLeftIcon className="size-6 mr-2" />
               </button>
@@ -336,7 +336,7 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               symbol={estate.symbol}
               tokenPrice={price}
               total={price * amount}
-              actionType={OTC_BUY}
+              actionType={activeTabId}
               estFee={0.21}
               actionCb={() => {}}
             />
