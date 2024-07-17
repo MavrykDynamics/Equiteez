@@ -5,6 +5,7 @@ import { Button } from '~/lib/atoms/Button';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
+import { Link } from '@remix-run/react';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
@@ -63,9 +64,19 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 errorCaption={formState.errors.terms ? 'Required' : null}
                 label={
                   <p className="text-content text-body-xs">
-                    I agree with the information laid out in the Subscription
-                    Agreement, Offering Circular, Form W-9 and any supplements
-                    therein.
+                    I agree with the information laid out in the&nbsp;
+                    <Link to="/" className="text-blue-700">
+                      Subscription Agreement
+                    </Link>
+                    ,&nbsp;
+                    <Link to="/" className="text-blue-700">
+                      Offering Circular
+                    </Link>
+                    ,&nbsp;
+                    <Link to="/" className="text-blue-700">
+                      Form W-9
+                    </Link>
+                    &nbsp; and any supplements therein.
                   </p>
                 }
               />
@@ -86,9 +97,13 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                   <p className="text-content text-body-xs">
                     I understand investing with the intention of holdling my
                     securities for the target investment period, and that
-                    Equiteez will not offer refunds on my investment outside of
-                    the 24 hour cancellation window. To learn more about
-                    liquidity, check out the FAQ.
+                    Equiteez will{' '}
+                    <span className="font-semibold">not offer refunds</span> on
+                    my investment outside of the 24 hour cancellation window. To
+                    learn more about liquidity, check out the{' '}
+                    <Link to="/" className="text-blue-700">
+                      FAQ.
+                    </Link>
                   </p>
                 }
               />

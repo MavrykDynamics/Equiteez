@@ -99,10 +99,7 @@ export const SecondaryPriceBlock: FC = () => {
           </Button>
         </div>
         <Divider className="my-3" />
-        <Button
-          className="bg-blue-300 hover:bg-blue-200"
-          onClick={handleOpen.bind(null, OTC)}
-        >
+        <Button variant="blue" onClick={handleOpen.bind(null, OTC)}>
           OTC
         </Button>
       </Table>
@@ -131,7 +128,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
   useEffect(() => {
     if (typeof amount === 'number') {
-      setTotal(amount * TOKEN_PRICE);
+      setTotal(amount * parseFloat(TOKEN_PRICE));
     }
   }, [amount]);
 
@@ -191,7 +188,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
-              tokenPrice={TOKEN_PRICE}
+              tokenPrice={parseFloat(TOKEN_PRICE)}
               total={Number(total)}
               actionType={BUY}
               estFee={0.21}
@@ -213,7 +210,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
   useEffect(() => {
     if (typeof amount === 'number') {
-      setTotal(amount * TOKEN_PRICE);
+      setTotal(amount * parseFloat(TOKEN_PRICE));
     }
   }, [amount]);
 
@@ -240,7 +237,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
         dispatch,
         tokensAmount: Number(amount),
-        pricePerToken: Number(TOKEN_PRICE - 10),
+        pricePerToken: Number(parseFloat(TOKEN_PRICE) - 10),
       });
     } catch (e) {
       // TODO handle Errors with context
@@ -277,7 +274,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
-              tokenPrice={TOKEN_PRICE}
+              tokenPrice={parseFloat(TOKEN_PRICE)}
               total={Number(total)}
               actionType={SELL}
               estFee={0.21}

@@ -10,6 +10,7 @@ type ButtonSize =
   | 'outline'
   | 'custom'
   | 'small-plus';
+
 type Variant =
   | 'green'
   | 'white'
@@ -17,7 +18,9 @@ type Variant =
   | 'red'
   | 'green-secondary'
   | 'dark'
-  | 'dark-outline';
+  | 'dark-outline'
+  | 'blue';
+
 type TextVariant = 'buttons' | 'caption';
 
 type ButtonProps = {
@@ -45,6 +48,7 @@ const variants = {
   red: 'text-content bg-red-main hover:bg-red-400',
   dark: 'bg-black-secondary text-white hover:bg-gray-800',
   'dark-outline': 'border-2 border-dark-green-500 text-dark-green-500 py-[6px]',
+  blue: 'bg-blue-300 hover:bg-blue-200 text-content',
 };
 
 const textVariants = {
