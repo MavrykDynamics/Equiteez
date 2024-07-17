@@ -36,7 +36,7 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
       <div className={classNames('flex flex-col', containerClassName)}>
         <label
           className={clsx(
-            'flex items-center py-2',
+            'flex items-start py-2',
             'rounded overflow-hidden cursor-pointer bg-primary-bg',
             labelClassName
           )}

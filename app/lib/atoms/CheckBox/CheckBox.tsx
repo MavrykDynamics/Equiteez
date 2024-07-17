@@ -93,13 +93,13 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           (() => {
             switch (true) {
               case localChecked:
-                return 'border-accent-blue';
+                return 'border-brand-green-500';
               case localFocused:
-                return 'border-eccent-blue';
+                return 'border-brand-green-400';
               case errored:
                 return 'border-primary-error';
               default:
-                return 'border-divider';
+                return 'border-gray-100';
             }
           })(),
           overrideClassNames || 'h-6 w-6 rounded-md'
@@ -126,7 +126,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           className={clsx(
             iconClassName
               ? iconClassName
-              : 'h-4/6 w-4/6 stroke-2 stroke-accent-blue pointer-events-none',
+              : 'h-4/6 w-4/6 stroke-2 stroke-brand-green-500 pointer-events-none',
             localChecked ? 'block' : 'hidden'
           )}
         />

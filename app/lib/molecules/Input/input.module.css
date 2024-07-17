@@ -5,9 +5,9 @@
 }
 
 input.textInput {
-  outline: 1px solid transparent;
-  border: none;
+  outline: 1px solid;
   border-radius: 8px;
+  @apply outline-gray-100;
 }
 
 input.textInput:focus,

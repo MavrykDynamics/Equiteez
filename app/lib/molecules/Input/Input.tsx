@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { FC } from 'react';
+import { FC, forwardRef } from 'react';
 
 import styles from './input.module.css';
 
@@ -80,36 +80,37 @@ export type InputTextProps = {
   hasIcon?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
-export const InputText: FC<InputTextProps> = ({
-  errorCaption,
-  disabled,
-  focused,
-  hasIcon,
-  ...rest
-}) => {
-  return (
-    <div className="relative">
-      <input
-        {...rest}
-        type="text"
-        className={clsx(
-          styles.textInput,
-          'flex items-center',
-          'transition duration-300 ease-in-out',
-          'relative py-3  w-full',
-          hasIcon ? 'pl-10 pr-4' : 'px-4',
-          'text-body-xs text-content',
-          disabled && styles.disabled,
-          errorCaption && styles.error,
-          focused && styles.focused
-        )}
-      />
+export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
+  ({ errorCaption, disabled, focused, hasIcon, onChange, ...rest }) => {
+    return (
+      <div className="relative">
+        <input
+          {...rest}
+          onChange={onChange}
+          type="text"
+          className={clsx(
+            styles.textInput,
+            'flex items-center',
+            'transition duration-300 ease-in-out',
+            'relative py-3  w-full',
+            hasIcon ? 'pl-10 pr-4' : 'px-4',
+            'text-body-xs text-content',
+            disabled && styles.disabled,
+            errorCaption && styles.error,
+            focused && styles.focused
+          )}
+        />
 
-      {errorCaption && (
-        <span className={clsx('text-body-xs text-error', styles.errorCaprion)}>
-          {errorCaption}
-        </span>
-      )}
-    </div>
-  );
-};
+        {errorCaption && (
+          <span
+            className={clsx('text-body-xs text-error', styles.errorCaprion)}
+          >
+            {errorCaption}
+          </span>
+        )}
+      </div>
+    );
+  }
+);
+
+InputText.displayName = 'InputText';

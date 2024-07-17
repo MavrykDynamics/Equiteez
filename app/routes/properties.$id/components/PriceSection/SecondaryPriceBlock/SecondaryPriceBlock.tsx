@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { Button } from '~/lib/atoms/Button';
 import { Divider } from '~/lib/atoms/Divider';
 import { Table } from '~/lib/atoms/Table/Table';
@@ -12,7 +12,7 @@ import {
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { BuyScreen } from './screens/BuyScreen';
-import { MakeOfferScreen } from './MakeOfferScreen';
+import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 
 // contract actions
 import { sell } from '../actions/financial.actions';
@@ -88,54 +88,37 @@ export const SecondaryPriceBlock: FC = () => {
 };
 
 const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
-  const [isOfferScreen, setIsOfferScreen] = useState(false);
-
-  const toggleMakeOfferScreen = useCallback(() => {
-    setIsOfferScreen(!isOfferScreen);
-  }, [isOfferScreen]);
-
   const [activetabId, setAvtiveTabId] = useState('buy');
 
   const toggleBuyScreen = useCallback((id: string) => {
     setAvtiveTabId(id);
   }, []);
 
-  const screens = useMemo(
-    () => [
-      {
-        id: 'buy',
-        handleClick: toggleBuyScreen,
-      },
-      {
-        id: 'confirm',
-        handleClick: toggleBuyScreen,
-      },
-    ],
-    [toggleBuyScreen]
-  );
-
   return (
     <div className="flex flex-col justify-between text-content h-full">
-      {isOfferScreen ? (
-        <MakeOfferScreen toggleMakeOfferScreen={toggleMakeOfferScreen} />
-      ) : (
-        <>
-          <div className="flex-1 flex flex-col">
-            <div>
-              <h3 className="text-card-headline">{estate.name}</h3>
-            </div>
-            <Divider className="my-4" />
-
-            {activetabId === 'buy' && (
-              <BuyScreen
-                symbol={estate.symbol}
-                toggleBuyScreen={toggleBuyScreen}
-              />
+      <>
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center">
+            {activetabId === 'confirm' && (
+              <button onClick={() => toggleBuyScreen('buy')}>
+                <ArrowLeftIcon className="size-6 mr-2" />
+              </button>
             )}
-            {activetabId === 'confirm' && <ConfirmBuyScreen />}
+            <h3 className="text-card-headline">{estate.name}</h3>
           </div>
-        </>
-      )}
+          <Divider className="my-4" />
+
+          {activetabId === 'buy' && (
+            <BuyScreen
+              symbol={estate.symbol}
+              toggleBuyScreen={toggleBuyScreen}
+            />
+          )}
+          {activetabId === 'confirm' && (
+            <ConfirmBuyScreen symbol={estate.symbol} price={45} amount={1} />
+          )}
+        </div>
+      </>
     </div>
   );
 };
@@ -176,9 +159,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
     <div className="flex flex-col justify-between text-content h-full">
       <div className="flex-1">
         <h3 className="text-card-headline">{estate.name}</h3>
-        <p className="text-body-xs mb-6">
-          {estate.assetDetails.propertyDetails.fullAddress}
-        </p>
+
         <div className="mt-4">
           <div className="flex flex-col gap-y-2">
             <InputNumber
