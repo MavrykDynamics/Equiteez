@@ -19,12 +19,19 @@ import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
 
-type BuyScreenProps = {
+type BuySellScreenProps = {
   symbol: string;
+  actionType: 'buy' | 'sell';
   toggleBuyScreen: (id: string) => void;
+  currency: string;
 };
 
-export const BuyScreen: FC<BuyScreenProps> = ({ symbol, toggleBuyScreen }) => {
+export const BuySellScreen: FC<BuySellScreenProps> = ({
+  symbol,
+  toggleBuyScreen,
+  actionType,
+  currency,
+}) => {
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
@@ -39,11 +46,13 @@ export const BuyScreen: FC<BuyScreenProps> = ({ symbol, toggleBuyScreen }) => {
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
         <div className="flex flex-col gap-4">
-          <h3 className="text-content text-card-headline">Buy</h3>
+          <h3 className="text-content text-card-headline capitalize">
+            {actionType}
+          </h3>
           <p className="text-body-xs text-content flex items-center justify-between">
             <span>Available Balance</span>
             {/* TODO take value from wallet */}
-            <span>1,492.00 USDT</span>
+            <span>1,492.00 {currency}</span>
           </p>
 
           <InputNumber

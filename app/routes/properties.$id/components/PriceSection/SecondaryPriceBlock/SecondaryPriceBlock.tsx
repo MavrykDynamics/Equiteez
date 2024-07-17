@@ -4,19 +4,17 @@ import { Divider } from '~/lib/atoms/Divider';
 import { Table } from '~/lib/atoms/Table/Table';
 import { pickMarketBasedOnSymbol } from '~/consts/contracts';
 import {
-  getStatusLabel,
   STATUS_IDLE,
   STATUS_PENDING,
   useStatusFlag,
 } from '~/hooks/use-status-flag';
 import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-import { BuyScreen } from './screens/BuyScreen';
+import { BuySellScreen } from './screens/BuySellScreen';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 
 // contract actions
 import { buy, sell } from '../actions/financial.actions';
-import { InputNumber } from '~/lib/molecules/Input/Input';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
@@ -137,9 +135,11 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           <Divider className="my-4" />
 
           {activetabId === 'buy' && (
-            <BuyScreen
+            <BuySellScreen
               symbol={estate.symbol}
               toggleBuyScreen={toggleBuyScreen}
+              actionType="buy"
+              currency="USDT"
             />
           )}
           {activetabId === 'confirm' && (
@@ -160,11 +160,18 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
 // TODO move, this is done for demo purposes
 const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
-  const { status, dispatch, isLoading } = useStatusFlag();
+  const [activetabId, setAvtiveTabId] = useState('sell');
+
+  const toggleBuyScreen = useCallback((id: string) => {
+    setAvtiveTabId(id);
+  }, []);
+
+  const { dispatch } = useStatusFlag();
   const { dapp } = useWalletContext();
 
-  const [price, setPrice] = useState<number | string>('');
-  const [amount, setAmount] = useState<number | string>('');
+  // TODO take from buysell screen
+  const amount = 10;
+  const price = 45;
 
   const handleSell = useCallback(async () => {
     try {
@@ -192,59 +199,38 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
-      <div className="flex-1">
-        <h3 className="text-card-headline">{estate.name}</h3>
-
-        <div className="mt-4">
-          <div className="flex flex-col gap-y-2">
-            <InputNumber
-              handleValue={setPrice}
-              label={'Price'}
-              value={price || ''}
-              placeholder={'0.00'}
-              valueText="USDT"
-              name={'price'}
-            />
-            <InputNumber
-              handleValue={setAmount}
-              label={'Amount'}
-              value={amount || ''}
-              placeholder={'Minimum 1'}
-              valueText={estate.symbol}
-              name={'amount'}
-            />
+      <>
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center">
+            {activetabId === 'confirm' && (
+              <button onClick={() => toggleBuyScreen('buy')}>
+                <ArrowLeftIcon className="size-6 mr-2" />
+              </button>
+            )}
+            <h3 className="text-card-headline">{estate.name}</h3>
           </div>
           <Divider className="my-4" />
-          <div className="mb-3">
-            <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
-              <p>Available Balance</p>
-              <p>1,034.75 USDT</p>
-            </div>
-            <div className="flex justify-between text-secondary-content text-caption-regular mb-1">
-              <p>Max Sell</p>
-              <p>10.84 {estate.symbol}</p>
-            </div>
-            <div className="flex justify-between text-secondary-content text-caption-regular">
-              <p>Est. Fee</p>
-              <p>-- {estate.symbol}</p>
-            </div>
-          </div>
 
-          <InputNumber
-            label={'Total'}
-            value={
-              price && amount ? (Number(price) * Number(amount)).toFixed(2) : 0
-            }
-            placeholder={'0'}
-            valueText="USDT"
-            name={'total'}
-            disabled
-          />
+          {activetabId === 'sell' && (
+            <BuySellScreen
+              symbol={estate.symbol}
+              toggleBuyScreen={toggleBuyScreen}
+              actionType="sell"
+              currency={estate.symbol}
+            />
+          )}
+          {activetabId === 'confirm' && (
+            <BuySellConfirmationScreen
+              symbol={estate.symbol}
+              tokenPrice={price}
+              total={price * amount}
+              actionType="sell"
+              estFee={0.21}
+              actionCb={handleSell}
+            />
+          )}
         </div>
-      </div>
-      <Button variant="red" disabled={isLoading} onClick={handleSell}>
-        {getStatusLabel(status, 'Sell')}
-      </Button>
+      </>
     </div>
   );
 };
