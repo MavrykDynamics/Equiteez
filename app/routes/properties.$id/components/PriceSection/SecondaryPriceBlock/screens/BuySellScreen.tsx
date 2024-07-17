@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { Button } from '~/lib/atoms/Button';
 import { InputNumber } from '~/lib/molecules/Input/Input';
 import {
@@ -18,7 +18,13 @@ import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
-import { BALANCE_LIMIT, BuyScreenState, SellScreenState } from './consts';
+import {
+  BALANCE_LIMIT,
+  BuyScreenState,
+  SellScreenState,
+  TOKEN_BALANCE_LIMIT,
+  TOKEN_PRICE,
+} from './consts';
 
 type BuySellScreenProps = {
   symbol: string;
@@ -46,8 +52,17 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     spippageOptions[0]
   );
 
+  const isBuyAction = actionType === 'buy';
   const hasTotalError =
     typeof total === 'number' ? Number(total) > BALANCE_LIMIT : false;
+
+  useEffect(() => {
+    if (selectedPercentage) {
+      const amountToSpend = (selectedPercentage * BALANCE_LIMIT) / 100;
+      const numberOfTokens = amountToSpend / parseFloat(TOKEN_PRICE);
+      setAmount(numberOfTokens);
+    }
+  }, [selectedPercentage, setAmount]);
 
   const handleContinueClick = useCallback(() => {
     toggleScreen('confirm');
@@ -63,13 +78,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <p className="text-body-xs text-content flex items-center justify-between">
             <span>Available Balance</span>
             {/* TODO take value from wallet */}
-            <span>1,492.00 {currency}</span>
+            <span>
+              {isBuyAction ? BALANCE_LIMIT : TOKEN_BALANCE_LIMIT} {currency}
+            </span>
           </p>
 
           <InputNumber
             // handleValue={setPrice}
             label={'Price'}
-            value={'45.00'}
+            value={TOKEN_PRICE}
             placeholder={'0.00'}
             valueText="USDT"
             name={'price'}
