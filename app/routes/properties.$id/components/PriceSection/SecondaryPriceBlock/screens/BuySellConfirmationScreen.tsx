@@ -1,12 +1,4 @@
-import { FC, useCallback } from 'react';
-import { pickMarketBasedOnSymbol } from '~/consts/contracts';
-import {
-  STATUS_IDLE,
-  STATUS_PENDING,
-  useStatusFlag,
-} from '~/hooks/use-status-flag';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
-import { buy } from '../../actions/financial.actions';
+import { FC } from 'react';
 import { FormCheckbox } from '~/lib/molecules/FormCheckBox';
 import { useForm, Controller } from 'react-hook-form';
 import { Button } from '~/lib/atoms/Button';
@@ -14,54 +6,46 @@ import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
 
-type ConfirmBuyScreenProps = {
-  price: number;
-  amount: number;
+type BuySellConfirmationScreenProps = {
+  actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
+  actionCb: () => void;
+  tokenPrice: number;
+  estFee: number;
+  total: number;
   symbol: string;
+  currency?: 'USDT';
 };
 
-type FormData = {
+export type FormData = {
   terms: boolean;
   investing: boolean;
   initials: string;
 };
-export const ConfirmBuyScreen: FC<ConfirmBuyScreenProps> = ({
-  price,
-  amount,
+
+const actionLabels = {
+  buy: 'Buy',
+  sell: 'Sell',
+  otcBuy: 'Buy',
+  otcSell: 'Sell',
+};
+
+export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
+  actionType,
+  // actionCb,
+  tokenPrice,
+  estFee,
+  total,
   symbol,
+  currency = 'USDT',
 }) => {
   const { control, handleSubmit } = useForm<FormData>({
     mode: 'onSubmit',
     defaultValues: {
       initials: '',
+      terms: false,
+      investing: false,
     },
   });
-
-  const { dapp } = useWalletContext();
-  const { status, dispatch, isLoading } = useStatusFlag();
-
-  const handleBuy = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await buy({
-        tezos,
-        marketContractAddress: pickMarketBasedOnSymbol[symbol],
-        dispatch,
-        tokensAmount: Number(amount),
-        pricePerToken: Number(price),
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, price, symbol]);
 
   const onSubmit = (data: unknown) => console.log(data);
 
@@ -146,26 +130,32 @@ export const ConfirmBuyScreen: FC<ConfirmBuyScreenProps> = ({
           <div className="flex flex-col gap-2">
             <p className="flex justify-between text-body-xs text-content">
               <span>Token Price</span>
-              <span>45 USDT</span>
+              <span>
+                {tokenPrice} {currency}
+              </span>
             </p>
             <p className="flex justify-between text-body-xs text-content">
               <span>Amount</span>
-              <span>10.00 NMD</span>
+              <span>10.00 {symbol}</span>
             </p>
             <p className="flex justify-between text-body-xs text-content">
               <span>Est. Fee</span>
-              <span>0.21 NMD</span>
+              <span>
+                {estFee} {symbol}
+              </span>
             </p>
             <p className="flex justify-between text-body-xs text-content font-semibold">
               <span>Total Amount</span>
-              <span>450.9 USDT</span>
+              <span>
+                {total} {currency}
+              </span>
             </p>
           </div>
           <Divider className="my-4" />
           <p className="text-caption-regular text-content-secondary mb-6">
-            By clicking ”Buy”, I adopt the above electronic initials as my
-            signiture, and hereby electronically sign the documents listed
-            above.
+            By clicking ”{actionLabels[actionType]}”, I adopt the above
+            electronic initials as my signiture, and hereby electronically sign
+            the documents listed above.
           </p>
           <Button type="submit" className="w-full">
             Buy

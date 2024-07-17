@@ -15,12 +15,12 @@ import { BuyScreen } from './screens/BuyScreen';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 
 // contract actions
-import { sell } from '../actions/financial.actions';
+import { buy, sell } from '../actions/financial.actions';
 import { InputNumber } from '~/lib/molecules/Input/Input';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { ConfirmBuyScreen } from './screens/ConfirmBuyScreen';
+import { BuySellConfirmationScreen } from './screens/BuySellConfirmationScreen';
 
 type OrderType = 'buy' | 'sell' | '';
 
@@ -88,11 +88,39 @@ export const SecondaryPriceBlock: FC = () => {
 };
 
 const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
+  const { dapp } = useWalletContext();
+  // TODO take values from BuyScreen or move state here
+  const amount = 10;
+  const price = 45;
+  const { dispatch } = useStatusFlag();
   const [activetabId, setAvtiveTabId] = useState('buy');
 
   const toggleBuyScreen = useCallback((id: string) => {
     setAvtiveTabId(id);
   }, []);
+
+  const handleBuy = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await buy({
+        tezos,
+        marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
+        dispatch,
+        tokensAmount: Number(amount),
+        pricePerToken: Number(price),
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, price, estate.symbol]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -115,7 +143,14 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
             />
           )}
           {activetabId === 'confirm' && (
-            <ConfirmBuyScreen symbol={estate.symbol} price={45} amount={1} />
+            <BuySellConfirmationScreen
+              symbol={estate.symbol}
+              tokenPrice={price}
+              total={price * amount}
+              actionType="buy"
+              estFee={0.21}
+              actionCb={handleBuy}
+            />
           )}
         </div>
       </>
