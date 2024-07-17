@@ -18,13 +18,17 @@ import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
-import { BuyScreenState, SellScreenState } from './consts';
+import { BALANCE_LIMIT, BuyScreenState, SellScreenState } from './consts';
 
 type BuySellScreenProps = {
   symbol: string;
   actionType: 'buy' | 'sell';
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   currency: string;
+  amount: string | number;
+  total: string | number;
+  setAmount: (v: string | number) => void;
+  setTotal: (v: string | number) => void;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -32,12 +36,18 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   toggleScreen,
   actionType,
   currency,
+  amount,
+  total,
+  setAmount,
+  setTotal,
 }) => {
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
-  const [amount, setAmount] = useState<string | number>('');
+
+  const hasTotalError =
+    typeof total === 'number' ? Number(total) > BALANCE_LIMIT : false;
 
   const handleContinueClick = useCallback(() => {
     toggleScreen('confirm');
@@ -114,13 +124,21 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
         <InputNumber
           label={<p className="font-semibold">Total</p>}
-          value={amount}
+          value={total}
+          handleValue={setTotal}
           placeholder={'0'}
           valueText="USDT"
           name={'total'}
+          errorCaption={
+            hasTotalError ? 'Amount exceeds available balance' : undefined
+          }
         />
       </div>
-      <Button variant="dark" onClick={handleContinueClick}>
+      <Button
+        variant="dark"
+        onClick={handleContinueClick}
+        disabled={hasTotalError}
+      >
         Continue
       </Button>
     </div>
@@ -159,8 +177,8 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
     <CustomDropdown>
       <ClickableDropdownArea>
         <div className="px-2 py-1 border border-brand-green-100 rounded-lg">
-          <DropdownFaceContent>
-            <div>
+          <DropdownFaceContent gap={1}>
+            <div className="max-w-8 text-nowrap">
               <input
                 type="text"
                 value={isCustom ? slippagePercentage : selectedOption}

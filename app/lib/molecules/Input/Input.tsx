@@ -14,6 +14,7 @@ type InputProps = {
   className?: string;
   labelVariant?: 'default' | 'opacity';
   disabled?: boolean;
+  errorCaption?: string;
 };
 
 const labelVariants = {
@@ -29,6 +30,7 @@ export const InputNumber: FC<InputProps> = ({
   valueText,
   placeholder,
   className,
+  errorCaption,
   labelVariant = 'default',
   min = 1,
   disabled = false,
@@ -46,7 +48,7 @@ export const InputNumber: FC<InputProps> = ({
 
       <div
         className={clsx(
-          'w-full flex justify-between  py-3 px-4 text-body-xs gap-1 mt-2',
+          'w-full flex justify-between  py-3 px-4 text-body-xs gap-1 mt-2 relative',
           disabled
             ? 'bg-gray-100 border-gray-300 text-dark-green-100 rounded-lg'
             : 'eq-input',
@@ -69,6 +71,14 @@ export const InputNumber: FC<InputProps> = ({
           ></input>
         </span>
         {valueText && <span>{valueText}</span>}
+
+        {errorCaption && (
+          <span
+            className={clsx('text-body-xs text-error', styles.errorCaprion)}
+          >
+            {errorCaption}
+          </span>
+        )}
       </div>
     </div>
   );

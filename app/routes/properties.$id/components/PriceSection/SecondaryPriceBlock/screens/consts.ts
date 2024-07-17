@@ -10,3 +10,9 @@ export type BuyScreenState = typeof BUY | typeof CONFIRM;
 export type OTCScreenState = typeof OTC | typeof CONFIRM;
 export type OTCTabType = typeof OTC_BUY | typeof OTC_SELL;
 export type SellScreenState = typeof SELL | typeof CONFIRM;
+
+// TODO hardcoded price for now
+export const TOKEN_PRICE = 45;
+
+// TODO take values from user context and his wallet balance
+export const BALANCE_LIMIT = 300;

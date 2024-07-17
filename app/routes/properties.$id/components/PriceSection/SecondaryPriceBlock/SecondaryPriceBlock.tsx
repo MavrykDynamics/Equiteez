@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 
 // hooks
 import {
@@ -44,6 +44,7 @@ import {
   OTCTabType,
   SELL,
   SellScreenState,
+  TOKEN_PRICE,
 } from './screens/consts';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 
@@ -121,11 +122,18 @@ export const SecondaryPriceBlock: FC = () => {
 
 const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { dapp } = useWalletContext();
-  // TODO take values from BuyScreen or move state here
-  const amount = 10;
-  const price = 45;
   const { dispatch } = useStatusFlag();
   const [activeScreenId, setActiveScreenId] = useState<BuyScreenState>(BUY);
+
+  // amount & total
+  const [amount, setAmount] = useState<string | number>('');
+  const [total, setTotal] = useState<string | number>('');
+
+  useEffect(() => {
+    if (typeof amount === 'number') {
+      setTotal(amount * TOKEN_PRICE);
+    }
+  }, [amount]);
 
   const toggleBuyScreen = useCallback((id: BuyScreenState) => {
     setActiveScreenId(id);
@@ -147,12 +155,12 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
         dispatch,
         tokensAmount: Number(amount),
-        pricePerToken: Number(price),
+        pricePerToken: Number(TOKEN_PRICE),
       });
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [amount, dapp, dispatch, price, estate.symbol]);
+  }, [amount, dapp, dispatch, estate.symbol]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -174,13 +182,17 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               toggleScreen={toggleBuyScreen}
               actionType={BUY}
               currency="USDT"
+              amount={amount}
+              setAmount={setAmount}
+              total={total}
+              setTotal={setTotal}
             />
           )}
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
-              tokenPrice={price}
-              total={price * amount}
+              tokenPrice={TOKEN_PRICE}
+              total={total}
               actionType={BUY}
               estFee={0.21}
               actionCb={handleBuy}
@@ -195,16 +207,22 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [activeScreenId, setActiveScreenid] = useState<SellScreenState>(SELL);
 
+  // amount & total
+  const [amount, setAmount] = useState<string | number>('');
+  const [total, setTotal] = useState<string | number>('');
+
+  useEffect(() => {
+    if (typeof amount === 'number') {
+      setTotal(amount * TOKEN_PRICE);
+    }
+  }, [amount]);
+
   const toggleSellScreen = useCallback((id: SellScreenState) => {
     setActiveScreenid(id);
   }, []);
 
   const { dispatch } = useStatusFlag();
   const { dapp } = useWalletContext();
-
-  // TODO take from buysell screen
-  const amount = 10;
-  const price = 45;
 
   const handleSell = useCallback(async () => {
     try {
@@ -222,13 +240,13 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
         dispatch,
         tokensAmount: Number(amount),
-        pricePerToken: Number(price),
+        pricePerToken: Number(TOKEN_PRICE - 10),
       });
     } catch (e) {
       // TODO handle Errors with context
       console.log(e, 'Sell contact error');
     }
-  }, [amount, dapp, dispatch, price, estate.symbol]);
+  }, [amount, dapp, dispatch, estate.symbol]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -250,13 +268,17 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               toggleScreen={toggleSellScreen}
               actionType={SELL}
               currency={estate.symbol}
+              amount={amount}
+              setAmount={setAmount}
+              total={total}
+              setTotal={setTotal}
             />
           )}
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               symbol={estate.symbol}
-              tokenPrice={price}
-              total={price * amount}
+              tokenPrice={TOKEN_PRICE}
+              total={total}
               actionType={SELL}
               estFee={0.21}
               actionCb={handleSell}
