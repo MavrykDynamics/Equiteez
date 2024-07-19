@@ -20,6 +20,7 @@ import { AppProvider } from './providers/AppProvider/AppProvider';
 import { WalletProvider } from './providers/WalletProvider/wallet.provider';
 import { UserProvider } from './providers/UserProvider/user.provider';
 import { EstatesProvider } from './providers/EstatesProvider/estates.provider';
+import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
@@ -41,9 +42,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
             <AppProvider>
               <WalletProvider>
-                <UserProvider>
-                  <EstatesProvider>{children}</EstatesProvider>
-                </UserProvider>
+                <TokensProvider>
+                  <UserProvider>
+                    <EstatesProvider>{children}</EstatesProvider>
+                  </UserProvider>
+                </TokensProvider>
               </WalletProvider>
             </AppProvider>
           </ErrorBoundary>

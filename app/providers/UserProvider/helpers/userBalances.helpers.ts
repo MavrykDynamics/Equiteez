@@ -20,6 +20,14 @@ const REACT_APP_TZKT_API = process.env.REACT_APP_TZKT_API;
 const REACT_APP_ENV = process.env.REACT_APP_ENV;
 
 /**
+ * 
+ token normalizers
+ */
+/**
+ * nomalize user tokens fetched from tzkt, they have different structure from indexer ones
+ */
+
+/**
  * function to get token balance of the user
  */
 export const getUserTokenBalanceByAddress = ({
