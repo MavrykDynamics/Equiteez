@@ -22,5 +22,6 @@ export type TokenType = {
 export type TokensProviderCtx = {
   tokens: TokenType[];
   tokensMetadata: StringRecord<TokenMetadata>;
+  tokensPrices: StringRecord<number>;
   isLoading: boolean;
 };

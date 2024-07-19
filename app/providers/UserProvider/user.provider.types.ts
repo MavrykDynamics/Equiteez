@@ -8,6 +8,7 @@ import {
   userTzktTokenBalancesSchema,
   userTzktWSAccountSchema,
 } from './helpers/user.schemes';
+import BigNumber from 'bignumber.js';
 
 // User tokens types
 export type UserTzktTokensBalancesType = z.infer<
@@ -19,7 +20,7 @@ export type UserTzktWSAccountType = z.infer<typeof userTzktWSAccountSchema>;
 
 export type UserTzKtTokenBalances = {
   userAddress: string | null;
-  tokens: Record<TokenAddressType, number>;
+  tokens: Record<TokenAddressType, BigNumber>;
 };
 
 // Context types
@@ -35,5 +36,5 @@ export type UserContext = UserContextStateType & {
 export type UserContextStateType = {
   userAddress: string | null;
 
-  userTokensBalances: Record<TokenAddressType, number>;
+  userTokensBalances: Record<TokenAddressType, BigNumber>;
 };

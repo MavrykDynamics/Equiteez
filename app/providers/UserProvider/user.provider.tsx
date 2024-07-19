@@ -25,6 +25,7 @@ import {
 import { useWalletContext } from '../WalletProvider/wallet.provider';
 import { useAppContext } from '../AppProvider/AppProvider';
 import { AccountInfo } from '@mavrykdynamics/beacon-dapp';
+import { useTokensContext } from '../TokensProvider/tokens.provider';
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -39,6 +40,7 @@ type Props = {
 export const UserProvider = ({ children }: Props) => {
   const { dapp } = useWalletContext();
   const { IS_WEB } = useAppContext();
+  const { tokensMetadata } = useTokensContext();
 
   const tzktSocket = useRef<null | signalR.HubConnection>(null);
 
@@ -93,6 +95,7 @@ export const UserProvider = ({ children }: Props) => {
     setTzktSocket,
 
     userCtxState,
+    tokensMetadata,
   });
 
   // Listening for active account changes with beacon

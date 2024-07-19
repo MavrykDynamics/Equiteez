@@ -18,6 +18,7 @@ import {
 
 import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
 import { sleep } from '~/lib/utils/sleep';
+import { TokenMetadata } from '~/providers/TokensProvider/tokens.provider.types';
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;
@@ -36,6 +37,7 @@ type UseUserApiType = {
   setTzktSocket: (newTzktSocket: signalR.HubConnection | null) => void;
 
   userCtxState: UserContextStateType;
+  tokensMetadata: StringRecord<TokenMetadata>;
 };
 
 /**
@@ -52,6 +54,7 @@ export const useUserApi = ({
 
   getTzktSocket,
   setTzktSocket,
+  tokensMetadata,
 }: UseUserApiType) => {
   const tzktSocket = getTzktSocket();
 
@@ -61,9 +64,11 @@ export const useUserApi = ({
   const loadInitialTzktTokensForNewlyConnectedUser = useCallback(
     async ({
       userAddress,
+      tokensMetadata,
       isUsingLoader = true,
     }: {
       userAddress: string;
+      tokensMetadata: StringRecord<TokenMetadata>;
       isUsingLoader?: boolean;
     }) => {
       if (isUsingLoader) setIsTzktBalancesLoading(true);
@@ -75,6 +80,7 @@ export const useUserApi = ({
 
       const fetchedTokens = await fetchTzktUserBalances({
         userAddress,
+        tokensMetadata,
       });
 
       setUserTzktTokens({
@@ -132,12 +138,15 @@ export const useUserApi = ({
       //   'Updating balances of TZKT tokens...',
       //   'TZKT connection'
       // );
-      await loadInitialTzktTokensForNewlyConnectedUser({ userAddress });
+      await loadInitialTzktTokensForNewlyConnectedUser({
+        userAddress,
+        tokensMetadata,
+      });
       await sleep(500);
       // hideToasterMessage(loadingToasterId);
       console.log('TZKT tokens balances has been updated', 'TZKT connection');
     },
-    [loadInitialTzktTokensForNewlyConnectedUser]
+    [loadInitialTzktTokensForNewlyConnectedUser, tokensMetadata]
   );
 
   /**
@@ -173,6 +182,7 @@ export const useUserApi = ({
 
       await loadInitialTzktTokensForNewlyConnectedUser({
         userAddress: newUserAddress,
+        tokensMetadata,
         isUsingLoader: false,
       });
 

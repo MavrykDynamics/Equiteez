@@ -14,18 +14,49 @@ import {
   userTzktAccountSchema,
   userTzktTokenBalancesSchema,
 } from './user.schemes';
+import { TokenMetadata } from '~/providers/TokensProvider/tokens.provider.types';
+import { atomsToTokens } from '~/lib/utils/formaters';
+import { getTokenDataByAddress } from '~/providers/TokensProvider/utils/getTokenDataByAddress';
+import BigNumber from 'bignumber.js';
 
 // consts
 const REACT_APP_TZKT_API = process.env.REACT_APP_TZKT_API;
 const REACT_APP_ENV = process.env.REACT_APP_ENV;
 
 /**
- * 
- token normalizers
- */
-/**
  * nomalize user tokens fetched from tzkt, they have different structure from indexer ones
  */
+export const normalizeUserTzktTokensBalances = ({
+  userAddress,
+  indexerData,
+  tokensMetadata,
+}: {
+  indexerData: UserTzktTokensBalancesType;
+  tokensMetadata: StringRecord<TokenMetadata>;
+  userAddress: string | null;
+}) => {
+  return indexerData.reduce<NonNullable<UserContext['userTokensBalances']>>(
+    (
+      acc,
+      {
+        balance,
+        token: {
+          contract: { address: tokenAddress },
+        },
+        account: { address },
+      }
+    ) => {
+      const token = getTokenDataByAddress({ tokenAddress, tokensMetadata });
+
+      if (!token || userAddress !== address) return acc;
+      const { decimals } = token;
+
+      acc[tokenAddress] = atomsToTokens(balance, decimals);
+      return acc;
+    },
+    {}
+  );
+};
 
 /**
  * function to get token balance of the user
@@ -36,9 +67,9 @@ export const getUserTokenBalanceByAddress = ({
 }: {
   userTokensBalances: UserContext['userTokensBalances'];
   tokenAddress?: string | null;
-}): number => {
-  if (!userTokensBalances || !tokenAddress) return 0;
-  return userTokensBalances[tokenAddress] ?? 0;
+}): BigNumber => {
+  if (!userTokensBalances || !tokenAddress) return new BigNumber(0);
+  return userTokensBalances[tokenAddress] ?? new BigNumber(0);
 };
 
 /**
@@ -51,8 +82,10 @@ export const getUserTokenBalanceByAddress = ({
  */
 export const fetchTzktUserBalances = async ({
   userAddress,
+  tokensMetadata,
 }: {
   userAddress: string;
+  tokensMetadata: StringRecord<TokenMetadata>;
 }) => {
   try {
     const [{ data: tokensData }, { data: accountData }] = await Promise.all([
@@ -62,7 +95,8 @@ export const fetchTzktUserBalances = async ({
 
     const isUserEmptyOnTzkt = emptyUserTzktAccountSchema.safeParse(accountData);
 
-    if (isUserEmptyOnTzkt.success) return {};
+    if (isUserEmptyOnTzkt.success || Object.keys(tokensMetadata).length === 0)
+      return {};
 
     const parsedUserTzktTokensData =
       userTzktTokenBalancesSchema.safeParse(tokensData);
@@ -70,11 +104,11 @@ export const fetchTzktUserBalances = async ({
       userTzktAccountSchema.safeParse(accountData);
 
     if (parsedUserTzktTokensData.success && parsedUserXtzTokenBalance.success) {
-      // return normalizeUserTzktTokensBalances({
-      //   indexerData: parsedUserTzktTokensData.data,
-      //   userAddress,
-      //   tokensMetadata,
-      // });
+      return normalizeUserTzktTokensBalances({
+        indexerData: parsedUserTzktTokensData.data,
+        userAddress,
+        tokensMetadata,
+      });
       return {};
     }
 

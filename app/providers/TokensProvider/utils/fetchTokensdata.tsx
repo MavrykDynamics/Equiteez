@@ -16,6 +16,7 @@ export const fetchTokensData = async () => {
     const { data } = await api<RwaTokenType[]>(
       `${process.env.REACT_APP_TZKT_API}/v1/tokens`
     );
+
     const tokens: TokenType[] = data.map((t) => ({
       contract: t.contract.address,
       id: t.tokenId,

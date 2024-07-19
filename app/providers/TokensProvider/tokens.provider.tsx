@@ -35,8 +35,6 @@ export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   }, []);
 
-  console.log(tokensMetadata);
-
   /**Fetch tokens and tokens metadta on init */
   useEffect(() => {
     initializeTokensData();
@@ -47,6 +45,7 @@ export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
       tokens,
       tokensMetadata,
       isLoading,
+      tokensPrices: {},
     }),
     [isLoading, tokens, tokensMetadata]
   );
