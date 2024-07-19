@@ -6,6 +6,7 @@ import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
 import { Link } from '@remix-run/react';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
@@ -13,7 +14,7 @@ type BuySellConfirmationScreenProps = {
   tokenPrice: number;
   estFee: number;
   total: number;
-  symbol: string;
+  estate: SecondaryEstate;
   currency?: 'USDT';
 };
 
@@ -36,9 +37,10 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   tokenPrice,
   estFee,
   total,
-  symbol,
+  estate,
   currency = 'USDT',
 }) => {
+  const { symbol } = estate;
   const { control, handleSubmit, formState } = useForm<FormData>({
     mode: 'onSubmit',
     defaultValues: {

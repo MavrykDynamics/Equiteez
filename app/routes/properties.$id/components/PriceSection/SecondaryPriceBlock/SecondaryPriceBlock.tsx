@@ -175,7 +175,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
           {activeScreenId === BUY && (
             <BuySellScreen
-              symbol={estate.symbol}
+              estate={estate}
               toggleScreen={toggleBuyScreen}
               actionType={BUY}
               currency="USDT"
@@ -187,7 +187,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           )}
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
-              symbol={estate.symbol}
+              estate={estate}
               tokenPrice={parseFloat(TOKEN_PRICE)}
               total={Number(total)}
               actionType={BUY}
@@ -261,7 +261,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
           {activeScreenId === SELL && (
             <BuySellScreen
-              symbol={estate.symbol}
+              estate={estate}
               toggleScreen={toggleSellScreen}
               actionType={SELL}
               currency={estate.symbol}
@@ -273,7 +273,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           )}
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
-              symbol={estate.symbol}
+              estate={estate}
               tokenPrice={parseFloat(TOKEN_PRICE)}
               total={Number(total)}
               actionType={SELL}

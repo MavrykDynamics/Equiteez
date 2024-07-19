@@ -93,10 +93,11 @@ export type InputTextProps = {
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
-  ({ errorCaption, disabled, focused, hasIcon, onChange, ...rest }) => {
+  ({ errorCaption, disabled, focused, hasIcon, onChange, ...rest }, ref) => {
     return (
       <div className="relative">
         <input
+          ref={ref}
           {...rest}
           onChange={onChange}
           type="text"

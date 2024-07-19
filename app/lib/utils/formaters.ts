@@ -21,3 +21,7 @@ export function atomsToTokens(x: BigNumber.Value, decimals: number) {
 export function tokensToAtoms(x: BigNumber.Value, decimals: number) {
   return new BigNumber(x).times(10 ** decimals).integerValue();
 }
+
+export function calculateEstfee(x: BigNumber.Value) {
+  return new BigNumber(x || 0)?.times(0.001)?.toNumber();
+}

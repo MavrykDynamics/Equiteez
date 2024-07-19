@@ -13,6 +13,7 @@ import {
   TokenType,
 } from './tokens.provider.types';
 import { fetchTokensData, fetchTokensMetadata } from './utils/fetchTokensdata';
+import { MARS1_TOKEN_ADDRESS, OCEAN_TOKEN_ADDRESS } from '~/consts/contracts';
 
 const tokensContext = createContext<TokensProviderCtx>(undefined!);
 
@@ -45,7 +46,7 @@ export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
       tokens,
       tokensMetadata,
       isLoading,
-      tokensPrices: {},
+      tokensPrices: { [OCEAN_TOKEN_ADDRESS]: 50, [MARS1_TOKEN_ADDRESS]: 45 },
     }),
     [isLoading, tokens, tokensMetadata]
   );

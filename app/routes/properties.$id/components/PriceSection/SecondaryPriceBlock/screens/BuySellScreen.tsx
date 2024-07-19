@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '~/lib/atoms/Button';
 import { InputNumber } from '~/lib/molecules/Input/Input';
 import {
@@ -18,16 +18,16 @@ import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
-import {
-  BALANCE_LIMIT,
-  BuyScreenState,
-  SellScreenState,
-  TOKEN_BALANCE_LIMIT,
-  TOKEN_PRICE,
-} from './consts';
+import { BuyScreenState, SellScreenState } from './consts';
+import Money from '~/lib/atoms/Money';
+import { useUserContext } from '~/providers/UserProvider/user.provider';
+import { stablecoinContract } from '~/consts/contracts';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+import { calculateEstfee } from '~/lib/utils/formaters';
 
 type BuySellScreenProps = {
-  symbol: string;
+  estate: SecondaryEstate;
   actionType: 'buy' | 'sell';
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   currency: string;
@@ -38,7 +38,7 @@ type BuySellScreenProps = {
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
-  symbol,
+  estate,
   toggleScreen,
   actionType,
   currency,
@@ -47,22 +47,32 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   setAmount,
   setTotal,
 }) => {
+  const { symbol, token_address } = estate;
+
+  const { userTokensBalances } = useUserContext();
+  const { tokensPrices } = useTokensContext();
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
 
+  const buyBalance = useMemo(
+    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
+    [userTokensBalances]
+  );
+
   const isBuyAction = actionType === 'buy';
   const hasTotalError =
-    typeof total === 'number' ? Number(total) > BALANCE_LIMIT : false;
+    typeof total === 'number' ? Number(total) > buyBalance : false;
 
   useEffect(() => {
     if (selectedPercentage) {
-      const amountToSpend = (selectedPercentage * BALANCE_LIMIT) / 100;
-      const numberOfTokens = amountToSpend / parseFloat(TOKEN_PRICE);
+      const amountToSpend = (selectedPercentage * buyBalance) / 100;
+      const numberOfTokens = amountToSpend / tokensPrices[token_address];
+
       setAmount(numberOfTokens);
     }
-  }, [selectedPercentage, setAmount]);
+  }, [selectedPercentage, setAmount, buyBalance, tokensPrices, token_address]);
 
   const handleContinueClick = useCallback(() => {
     toggleScreen('confirm');
@@ -75,18 +85,22 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <h3 className="text-content text-card-headline capitalize">
             {actionType}
           </h3>
-          <p className="text-body-xs text-content flex items-center justify-between">
+          <div className="text-body-xs text-content flex items-center justify-between">
             <span>Available Balance</span>
-            {/* TODO take value from wallet */}
-            <span>
-              {isBuyAction ? BALANCE_LIMIT : TOKEN_BALANCE_LIMIT} {currency}
-            </span>
-          </p>
+            <div>
+              {isBuyAction ? (
+                <Money>{userTokensBalances[stablecoinContract]}</Money>
+              ) : (
+                <Money>{userTokensBalances[token_address] || '0'}</Money>
+              )}
+              &nbsp;{currency}
+            </div>
+          </div>
 
           <InputNumber
             // handleValue={setPrice}
             label={'Price'}
-            value={TOKEN_PRICE}
+            value={tokensPrices[token_address] || 0}
             placeholder={'0.00'}
             valueText="USDT"
             name={'price'}
@@ -136,7 +150,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             Est. Fee
             <InfoTooltip content="Est fee" />
           </div>
-          <p>0.71 {symbol}</p>
+          <p>
+            {calculateEstfee(total)} {symbol}
+          </p>
         </div>
 
         <InputNumber
