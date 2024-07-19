@@ -44,9 +44,9 @@ import {
   OTCTabType,
   SELL,
   SellScreenState,
-  TOKEN_PRICE,
 } from './screens/consts';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 
 // types
 type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
@@ -121,6 +121,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { dapp } = useWalletContext();
   const { dispatch } = useStatusFlag();
   const [activeScreenId, setActiveScreenId] = useState<BuyScreenState>(BUY);
+  const { tokensPrices } = useTokensContext();
 
   // amount & total
   const [amount, setAmount] = useState<string | number>('');
@@ -128,9 +129,9 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
   useEffect(() => {
     if (typeof amount === 'number') {
-      setTotal(amount * parseFloat(TOKEN_PRICE));
+      setTotal(amount * tokensPrices[estate.token_address]);
     }
-  }, [amount]);
+  }, [amount, estate.token_address, tokensPrices]);
 
   const toggleBuyScreen = useCallback((id: BuyScreenState) => {
     setActiveScreenId(id);
@@ -152,12 +153,19 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
         dispatch,
         tokensAmount: Number(amount),
-        pricePerToken: Number(TOKEN_PRICE),
+        pricePerToken: tokensPrices[estate.token_address],
       });
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [amount, dapp, dispatch, estate.symbol]);
+  }, [
+    amount,
+    dapp,
+    dispatch,
+    estate.symbol,
+    estate.token_address,
+    tokensPrices,
+  ]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -188,7 +196,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               estate={estate}
-              tokenPrice={parseFloat(TOKEN_PRICE)}
+              tokenPrice={tokensPrices[estate.token_address]}
               total={Number(total)}
               actionType={BUY}
               estFee={0.21}
@@ -352,7 +360,7 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           )}
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
-              symbol={estate.symbol}
+              estate={estate}
               tokenPrice={price}
               total={price * amount}
               actionType={activeTabId}
