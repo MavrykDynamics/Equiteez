@@ -116,7 +116,7 @@ export default function ExchangeDetails() {
           <div className={'h-100 w-[1px] bg-divider'} />
 
           {/* Mid Panel ---------------------------- */}
-          <div className="flex flex-grow p-4">
+          <div className="flex flex-grow">
             <ExchangeTabs estate={estateData} />
           </div>
 

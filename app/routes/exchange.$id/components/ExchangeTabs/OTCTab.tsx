@@ -16,7 +16,7 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
   return (
     <section>
-      <div className="mb-7 mt-4">
+      <div className="mb-7 -mt-2">
         <TableHeader mb={0}>
           <span className="text-body-xs leading-5 font-semibold">Buying</span>
         </TableHeader>

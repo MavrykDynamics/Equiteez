@@ -7,6 +7,7 @@ import { TableHeader } from '~/lib/atoms/Table/TableHeader';
 import { TableItemSmall } from '~/lib/atoms/Table/TableItem';
 import { formatDate } from '~/lib/utils/date';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
+import { CommaNumber } from '~/lib/atoms/CommaNumber';
 
 export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const {
@@ -30,7 +31,7 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
       <TableItemSmall>
         <p>Asset Valuation</p>
-        <p>${priorValuation.assetValuation}</p>
+        <CommaNumber beginningText="$" value={priorValuation.assetValuation} />
       </TableItemSmall>
       <TableItemSmall>
         <div className="flex items-center gap-x-1">
@@ -40,7 +41,7 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </TableItemSmall>
       <TableItemSmall>
         <p>Total Investment</p>
-        <p>${priorValuation.totalInvestment}</p>
+        <CommaNumber beginningText="$" value={priorValuation.totalInvestment} />
       </TableItemSmall>
       <TableItemSmall>
         <div className="flex items-center gap-x-1">
@@ -50,13 +51,18 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </TableItemSmall>
       <TableItemSmall>
         <p>Token Price</p>
-        <p>${priorValuation.tokenPrice}</p>
+        <CommaNumber beginningText="$" value={priorValuation.tokenPrice} />
       </TableItemSmall>
-      <TableItemSmall>
+      <TableItemSmall isLast>
         <div className="flex items-center gap-x-1">
           Reg Distributed <InfoTooltip content={'Capital ROI'} />
         </div>
-        <p className="text-success">${priorValuation.regDistributed}</p>
+        <div className="text-success">
+          <CommaNumber
+            beginningText="$"
+            value={priorValuation.regDistributed}
+          />
+        </div>
       </TableItemSmall>
       <div className="mb-6" />
       <TableHeader mb={1}>
@@ -73,15 +79,21 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </TableHeader>
       <TableItemSmall>
         <p>Asset Valuation</p>
-        <p>${initialValuation.assetValuation}</p>
+        <CommaNumber
+          beginningText="$"
+          value={initialValuation.assetValuation}
+        />
       </TableItemSmall>
       <TableItemSmall>
         <p>Total Investment</p>
-        <p>${initialValuation.totalInvestment}</p>
+        <CommaNumber
+          beginningText="$"
+          value={initialValuation.totalInvestment}
+        />
       </TableItemSmall>
       <TableItemSmall>
         <p>Token Price</p>
-        <p>${initialValuation.tokenPrice}</p>
+        <CommaNumber beginningText="$" value={initialValuation.tokenPrice} />
       </TableItemSmall>
       <TableItemSmall isLast>
         <p>Additional Info</p>

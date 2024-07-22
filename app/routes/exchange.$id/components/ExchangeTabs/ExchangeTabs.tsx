@@ -56,7 +56,7 @@ export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
           activeTabId={activetabId}
         />
       </div>
-      <div className="mt-4 flex-1 overflow-y-auto">
+      <div className="mt-6 flex-1 overflow-y-auto p-4">
         <ExchangeTab tabId={activetabId} estate={estate} />
       </div>
     </section>

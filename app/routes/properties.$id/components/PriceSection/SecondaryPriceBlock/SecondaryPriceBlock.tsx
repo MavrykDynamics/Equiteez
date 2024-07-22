@@ -211,6 +211,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
 const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [activeScreenId, setActiveScreenid] = useState<SellScreenState>(SELL);
+  const { tokensPrices } = useTokensContext();
 
   // amount & total
   const [amount, setAmount] = useState<string | number>('');
@@ -218,9 +219,9 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
   useEffect(() => {
     if (typeof amount === 'number') {
-      setTotal(amount * parseFloat(TOKEN_PRICE));
+      setTotal(amount * tokensPrices[estate.token_address]);
     }
-  }, [amount]);
+  }, [amount, estate.token_address, tokensPrices]);
 
   const toggleSellScreen = useCallback((id: SellScreenState) => {
     setActiveScreenid(id);
@@ -245,13 +246,20 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
         dispatch,
         tokensAmount: Number(amount),
-        pricePerToken: Number(parseFloat(TOKEN_PRICE) - 10),
+        pricePerToken: Number(tokensPrices[estate.token_address]),
       });
     } catch (e) {
       // TODO handle Errors with context
       console.log(e, 'Sell contact error');
     }
-  }, [amount, dapp, dispatch, estate.symbol]);
+  }, [
+    amount,
+    dapp,
+    dispatch,
+    estate.symbol,
+    estate.token_address,
+    tokensPrices,
+  ]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -282,7 +290,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               estate={estate}
-              tokenPrice={parseFloat(TOKEN_PRICE)}
+              tokenPrice={tokensPrices[estate.token_address]}
               total={Number(total)}
               actionType={SELL}
               estFee={0.21}

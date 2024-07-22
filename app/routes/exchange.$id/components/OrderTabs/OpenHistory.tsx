@@ -77,7 +77,7 @@ export const OpenHistory = () => {
                 <colgroup>
                   <col style={{ maxWidth: 26 }}></col>
                 </colgroup>
-                <thead>
+                <thead className="border-b border-divider">
                   <tr>
                     {columns.map((column) => (
                       <th

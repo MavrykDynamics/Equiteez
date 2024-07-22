@@ -82,15 +82,16 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
       options: state.options,
       series: state.series,
       type: 'candlestick',
-      height: 516,
+      height: 500,
+      width: '100%',
     }),
     [state.options, state.series]
   );
 
   return (
-    <div>
-      <div className="w-full flex justify-between items-center">
-        <div className="flex gap-x-3 text-caption-regular">
+    <div className="overflow-y-hidden">
+      <div className="w-full flex justify-between items-center overflow-x-hidden">
+        <div className="flex gap-x-3 text-caption-regular -mt-1">
           <span className="min-w-[21px] flex justify-center">1H</span>
           <span className=" text-green-main min-w-[21px] flex justify-center">
             1D
@@ -106,7 +107,7 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
           <Expand className="size-6" />
         </div>
       </div>
-      <div id="chart">
+      <div id="chart" className="overflow-x-hidden">
         <LoadableComponent
           loading={loading}
           Component={ChartModule}
