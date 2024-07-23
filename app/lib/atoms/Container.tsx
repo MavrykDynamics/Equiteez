@@ -12,10 +12,7 @@ export const Container: FC<ContainerProps> = ({
   className,
 }) => {
   return (
-    <div
-      style={{ maxWidth }}
-      className={clsx('mx-auto overflow-x-hidden', className)}
-    >
+    <div style={{ maxWidth }} className={clsx('mx-auto', className)}>
       {children}
     </div>
   );

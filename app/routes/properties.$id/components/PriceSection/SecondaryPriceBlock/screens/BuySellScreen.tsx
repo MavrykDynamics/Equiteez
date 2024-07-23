@@ -102,7 +102,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <InputNumber
             // handleValue={setPrice}
             label={'Market Price'}
-            value={tokensPrices[token_address].toString().concat('.00') || 0}
+            value={(tokensPrices[token_address] || 0).toFixed(2)}
             placeholder={'0.00'}
             valueText="USDT"
             name={'price'}
@@ -174,8 +174,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       </div>
       <Button
         variant="dark"
+        className="mt-6"
         onClick={handleContinueClick}
-        disabled={hasTotalError || !amount}
+        disabled={hasTotalError || !amount || slippagePercentage.length === 0}
       >
         Continue
       </Button>

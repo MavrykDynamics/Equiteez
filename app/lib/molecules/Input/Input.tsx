@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { FC, forwardRef } from 'react';
 
 import styles from './input.module.css';
+import { formatToNumber } from './utils';
 
 type InputProps = {
   handleValue?: (v: number | string) => void;
@@ -59,11 +60,9 @@ export const InputNumber: FC<InputProps> = ({
         <span className="w-full">
           <input
             name={name}
-            type="number"
             min={min}
-            value={value}
-            // step={0.1}
-            onChange={(e) => handleValue?.(Number(e.target.value))}
+            value={formatToNumber(value.toString())}
+            onChange={(e) => handleValue?.(formatToNumber(e.target.value))}
             placeholder={placeholder}
             disabled={disabled}
             className={clsx(

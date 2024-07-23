@@ -228,7 +228,7 @@ export default {
           'info-blue-bg': '#F0F6FF',
           'cards-stroke': '#E6E6E6',
           links: '#194C98',
-          error: '#DB1414',
+          error: baseColors.red[500],
           success: '#1E945C',
           'red-main': '#E83736',
         };

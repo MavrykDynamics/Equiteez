@@ -19,7 +19,8 @@ type Variant =
   | 'green-secondary'
   | 'dark'
   | 'dark-outline'
-  | 'blue';
+  | 'blue'
+  | 'custom';
 
 type TextVariant = 'buttons' | 'caption';
 
@@ -49,6 +50,7 @@ const variants = {
   dark: 'bg-black-secondary text-white hover:bg-gray-800',
   'dark-outline': 'border-2 border-dark-green-500 text-dark-green-500 py-[6px]',
   blue: 'bg-blue-300 hover:bg-blue-200 text-content',
+  custom: '',
 };
 
 const textVariants = {

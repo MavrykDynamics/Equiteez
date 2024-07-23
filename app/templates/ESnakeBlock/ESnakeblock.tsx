@@ -23,7 +23,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full gap-1">
+    <div className="flex flex-col w-full">
       <div className="flex w-full h-3.5 relative">
         <div
           className={clsx(
@@ -67,7 +67,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
         {options.map((option) => (
           <button
             key={option}
-            className="eq-slider outline-none focus:outline-none"
+            className="eq-slider outline-none focus:outline-none pt-1"
             onClick={() => handleOptionClick(option)}
           >
             {option}%

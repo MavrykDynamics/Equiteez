@@ -7,6 +7,7 @@ import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
 import { Link } from '@remix-run/react';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import clsx from 'clsx';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
@@ -65,7 +66,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 checked={value}
                 errorCaption={formState.errors.terms ? 'Required' : null}
                 label={
-                  <p className="text-content text-body-xs">
+                  <p className="text-content text-body-xs max-w-[521px]">
                     I agree with the information laid out in the&nbsp;
                     <Link to="/" className="text-blue-700">
                       Subscription Agreement
@@ -96,7 +97,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 checked={value}
                 errorCaption={formState.errors.investing ? 'Required' : null}
                 label={
-                  <p className="text-content text-body-xs">
+                  <p className="text-content text-body-xs max-w-[521px]">
                     I understand investing with the intention of holdling my
                     securities for the target investment period, and that
                     Equiteez will{' '}
@@ -183,9 +184,15 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
           <Button
             type="submit"
             variant={
-              actionLabels[actionType].toLowerCase() === 'buy' ? 'green' : 'red'
+              actionLabels[actionType].toLowerCase() === 'buy'
+                ? 'custom'
+                : 'red'
             }
-            className="w-full"
+            className={clsx(
+              'w-full',
+              actionLabels[actionType].toLowerCase() === 'buy' &&
+                'bg-green-500 text-content hover:bg-green-300'
+            )}
           >
             {actionLabels[actionType]}
           </Button>
