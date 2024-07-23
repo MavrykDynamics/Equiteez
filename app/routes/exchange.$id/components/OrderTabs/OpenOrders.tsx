@@ -52,8 +52,8 @@ export const OpenOrders = () => {
     <div className="flex flex-col w-full gap-4">
       <div className="flex w-full">
         <div className="flow-root w-full">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+          <div>
+            <div className="px-6">
               <table className="table-fixed w-full">
                 <thead>
                   <tr>

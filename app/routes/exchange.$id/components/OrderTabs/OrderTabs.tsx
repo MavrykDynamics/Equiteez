@@ -46,7 +46,7 @@ export const OrderTabs = () => {
           activeTabId={activetabId}
         />
       </div>
-      <div className="">
+      <div>
         <OrderTab tabId={activetabId} />
       </div>
     </section>
