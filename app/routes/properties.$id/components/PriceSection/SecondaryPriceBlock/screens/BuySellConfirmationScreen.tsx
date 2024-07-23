@@ -145,7 +145,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
               }}
               name="initials"
               control={control}
-              rules={{ required: true, maxLength: 2 }}
+              rules={{ required: true }}
             />
           </div>
         </div>

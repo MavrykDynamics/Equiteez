@@ -132,9 +132,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [total, setTotal] = useState<string | number>('');
 
   useEffect(() => {
-    if (typeof amount === 'number') {
-      setTotal(amount * tokensPrices[estate.token_address]);
-    }
+    setTotal(Number(amount) * tokensPrices[estate.token_address]);
   }, [amount, estate.token_address, tokensPrices]);
 
   const toggleBuyScreen = useCallback((id: BuyScreenState) => {
@@ -222,9 +220,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [total, setTotal] = useState<string | number>('');
 
   useEffect(() => {
-    if (typeof amount === 'number') {
-      setTotal(amount * tokensPrices[estate.token_address]);
-    }
+    setTotal(Number(amount) * tokensPrices[estate.token_address]);
   }, [amount, estate.token_address, tokensPrices]);
 
   const toggleSellScreen = useCallback((id: SellScreenState) => {

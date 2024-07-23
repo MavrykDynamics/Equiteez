@@ -24,7 +24,8 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { stablecoinContract } from '~/consts/contracts';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { calculateEstfee } from '~/lib/utils/formaters';
+import { calculateEstfee } from '~/lib/utils/calcFns';
+import BigNumber from 'bignumber.js';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -76,6 +77,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     }
   }, [selectedPercentage, setAmount, buyBalance, tokensPrices, token_address]);
 
+  const minReceived = useMemo(() => {
+    const slippageAdjustment =
+      Number(total) * (1 - Number(slippagePercentage || 0) / 100);
+    return new BigNumber(buyBalance)
+      .minus(new BigNumber(slippageAdjustment))
+      .div(tokensPrices[token_address])
+      .toNumber()
+      .toFixed(2);
+  }, [total, slippagePercentage, buyBalance, tokensPrices, token_address]);
+
   const handleContinueClick = useCallback(() => {
     toggleScreen('confirm');
   }, [toggleScreen]);
@@ -91,9 +102,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <span>Available Balance</span>
             <div>
               {isBuyAction ? (
-                <Money>{userTokensBalances[stablecoinContract] || 0}</Money>
+                <Money smallFractionFont={false}>
+                  {userTokensBalances[stablecoinContract] || 0}
+                </Money>
               ) : (
-                <Money>{userTokensBalances[token_address] || '0'}</Money>
+                <Money smallFractionFont={false}>
+                  {userTokensBalances[token_address] || '0'}
+                </Money>
               )}
               &nbsp;{currency}
             </div>
@@ -132,7 +147,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <ClickableExpanderArea>
             <div className="text-body-xs text-content flex justify-between">
               <ExpanderFaceContent>Min Received</ExpanderFaceContent>
-              <p>9.81 {symbol}</p>
+              <div>
+                <Money smallFractionFont={false}>{minReceived}</Money>
+                <span>&nbsp;{symbol}</span>
+              </div>
             </div>
           </ClickableExpanderArea>
 
@@ -258,3 +276,5 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
     </CustomDropdown>
   );
 };
+
+// utils
