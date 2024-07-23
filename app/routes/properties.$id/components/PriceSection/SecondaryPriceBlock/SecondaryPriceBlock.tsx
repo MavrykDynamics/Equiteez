@@ -47,6 +47,7 @@ import {
 } from './screens/consts';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+import { CommaNumber } from '~/lib/atoms/CommaNumber';
 
 // types
 type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
@@ -74,7 +75,10 @@ export const SecondaryPriceBlock: FC = () => {
       <Table>
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Current Price</p>
-          <p>${estate.assetDetails.priceDetails.price}</p>
+          <CommaNumber
+            value={estate.assetDetails.priceDetails.price}
+            beginningText="$"
+          />
         </div>
         <div className="text-content text-buttons flex justify-between mb-4">
           <p>Annual Return</p>

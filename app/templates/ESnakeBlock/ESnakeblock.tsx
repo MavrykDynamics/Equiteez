@@ -32,7 +32,12 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           )}
         >
           {options.map((option, idx) => (
-            <span key={option}>
+            <span
+              role="presentation"
+              key={option}
+              className="cursor-pointer"
+              onClick={() => handleOptionClick(option)}
+            >
               {option === selectedOption ? (
                 <EQLogo className="size-3.5" />
               ) : options.length - 1 === idx ? (

@@ -34,7 +34,7 @@ export const OrderBookTabs = () => {
         activeTabId={activetabId}
         grow={true}
       />
-      <div className="mt-4">
+      <div className="mt-2">
         <OrderBookTab tabId={activetabId} />
       </div>
     </section>

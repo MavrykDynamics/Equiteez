@@ -48,15 +48,15 @@ export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
   );
 
   return (
-    <section className="flex flex-col w-full max-h-[614px]">
-      <div className="max-w-fit">
+    <section className="flex flex-col w-full max-h-[646px]">
+      <div className="max-w-fit mt-4 pl-4">
         <TabSwitcher
           variant="secondary"
           tabs={tabs}
           activeTabId={activetabId}
         />
       </div>
-      <div className="mt-6 flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         <ExchangeTab tabId={activetabId} estate={estate} />
       </div>
     </section>

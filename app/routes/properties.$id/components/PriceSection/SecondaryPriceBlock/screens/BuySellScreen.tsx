@@ -91,7 +91,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <span>Available Balance</span>
             <div>
               {isBuyAction ? (
-                <Money>{userTokensBalances[stablecoinContract]}</Money>
+                <Money>{userTokensBalances[stablecoinContract] || 0}</Money>
               ) : (
                 <Money>{userTokensBalances[token_address] || '0'}</Money>
               )}
@@ -101,11 +101,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
           <InputNumber
             // handleValue={setPrice}
-            label={'Price'}
-            value={tokensPrices[token_address] || 0}
+            label={'Market Price'}
+            value={tokensPrices[token_address].toString().concat('.00') || 0}
             placeholder={'0.00'}
             valueText="USDT"
             name={'price'}
+            className="text-body"
             disabled
           />
 
@@ -116,6 +117,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             placeholder={'Minimum 1'}
             valueText={symbol}
             name={'amount'}
+            className="text-body"
           />
         </div>
 
@@ -161,9 +163,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           label={<p className="font-semibold">Total</p>}
           value={total}
           handleValue={setTotal}
-          placeholder={'0'}
+          placeholder={'0.00'}
           valueText="USDT"
           name={'total'}
+          className="text-body"
           errorCaption={
             hasTotalError ? 'Amount exceeds available balance' : undefined
           }
@@ -226,12 +229,15 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
             </div>
           </DropdownFaceContent>
         </div>
+        {slippagePercentage.length === 0 && (
+          <span className="text-error">Required</span>
+        )}
         <DropdownBodyContent customWidth={113} position="right" topMargin={12}>
           <div className="flex flex-col">
             {spippageOptions.map((option) => (
               <button
                 key={option}
-                className="py-3 px-4 bg-white flex items-center justify-between hover:bg-brand-green-100"
+                className="py-3 px-4 bg-white flex items-center justify-between hover:bg-brand-green-100 capitalize"
                 onClick={() => {
                   setSelectedOption(option);
                   if (option !== 'custom') {

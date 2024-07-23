@@ -29,7 +29,7 @@ export const InputNumber: FC<InputProps> = ({
   name,
   valueText,
   placeholder,
-  className,
+  className = 'text-body-xs',
   errorCaption,
   labelVariant = 'default',
   min = 1,
@@ -49,7 +49,7 @@ export const InputNumber: FC<InputProps> = ({
 
       <div
         className={clsx(
-          'w-full flex justify-between  py-3 px-4 text-body-xs gap-1 mt-2 relative',
+          'w-full flex justify-between  py-3 px-4 gap-1 mt-2 relative',
           disabled
             ? 'bg-gray-100 border-gray-300 text-dark-green-100 rounded-lg'
             : 'eq-input',
@@ -62,7 +62,7 @@ export const InputNumber: FC<InputProps> = ({
             type="number"
             min={min}
             value={value}
-            step={0.1}
+            // step={0.1}
             onChange={(e) => handleValue?.(Number(e.target.value))}
             placeholder={placeholder}
             disabled={disabled}
