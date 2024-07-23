@@ -39,6 +39,7 @@ export const OrderFilters = () => {
             onChange={(date) => setStartDate(date)}
             // @ts-expect-error // datePicker lib passes props
             customInput={<DatePickerInput />}
+            dateFormat={'dd/MM/YY'}
           />
           <div className="w-3 h-[1px] bg-content mx-3" />
           <DatePicker
@@ -46,6 +47,7 @@ export const OrderFilters = () => {
             onChange={(date) => setEndDate(date)}
             // @ts-expect-error // datePicker lib passes props
             customInput={<DatePickerInput />}
+            dateFormat={'dd/MM/YY'}
           />
         </div>
 
