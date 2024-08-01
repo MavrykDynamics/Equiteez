@@ -16,10 +16,7 @@ import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
 
-// TODO fetch from graphql
-// create context for tokens
-
-// TODO move actions to other place
+// Exchange buy sell as MARKET from dropdown
 
 export async function matchOrders(
   tezos: TezosToolkit,
@@ -64,7 +61,7 @@ type BuySellParams = {
   pricePerToken: number;
 };
 
-export async function buy({
+export async function placeBuyOrderAndSwap({
   tezos,
   marketContractAddress,
   dispatch,
@@ -142,7 +139,7 @@ export async function buy({
   }
 }
 
-export async function sell({
+export async function placeSellorder({
   tezos,
   marketContractAddress,
   dispatch,

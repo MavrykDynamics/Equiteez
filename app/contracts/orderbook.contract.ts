@@ -1,9 +1,5 @@
 import { TezosToolkit } from '@mavrykdynamics/taquito';
-import {
-  MarketContractType,
-  pickTokenBasedOnMarket,
-  stablecoinContract,
-} from '~/consts/contracts';
+import { NewMarketType, stablecoinContract } from '~/consts/contracts';
 
 import {
   StatusDispatchType,
@@ -16,61 +12,23 @@ import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
 
-// TODO fetch from graphql
-// create context for tokens
+// Orderbook buy & sell fir main market page ?
 
-// TODO move actions to other place
-
-export async function matchOrders(
-  tezos: TezosToolkit,
-  marketContractAddress: MarketContractType,
-  dispatch: StatusDispatchType
-) {
-  try {
-    let batch = tezos.wallet.batch([]);
-    const marketContract = await tezos.wallet.at(marketContractAddress);
-    // The BUY order price needs to be higher than the SELL order price. E.g.:
-    // Case 1) Buyer A wants to buy 1 token at $10, Seller B wants to sell 1 token at $5 -> there's a match,
-    // Seller B sells one token to Buyer A at $5
-    // Case 2) Buyer A wants to buy 1 token at $5, Seller B wants to sell 1 token at $10 -> there's no match and nothing changes
-    const match_orders =
-      marketContract.methodsObject['matchOrders'](1).toTransferParams();
-
-    // TODO  for prod / real data it can be a cronjob or automated call to the match order entrypoint every x seconds or minutes
-    // (or if a match is present, then call it etc)
-    // batch = batch.withTransfer(match_orders);
-    batch = batch.withTransfer(match_orders);
-
-    dispatch(STATUS_CONFIRMING);
-    const batchOp = await batch.send();
-
-    await batchOp.confirmation();
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
-  } catch (e) {
-    console.log(e);
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
-  }
-}
-
-type BuySellParams = {
+type OrderbookBuySellParams = {
   tezos: TezosToolkit;
-  marketContractAddress: MarketContractType;
+  marketContractAddress: NewMarketType;
   dispatch: StatusDispatchType;
   tokensAmount: number;
   pricePerToken: number;
 };
 
-export async function buy({
+export async function orderbookBuy({
   tezos,
   marketContractAddress,
   dispatch,
   tokensAmount,
   pricePerToken,
-}: BuySellParams) {
+}: OrderbookBuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -79,7 +37,6 @@ export async function buy({
 
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
-    const orderType = 'BUY';
     const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
     const pricePerRwaToken = formatRWAPrice(pricePerToken); // 990000,  $0.99$
     const currency = 'USDT';
@@ -98,7 +55,6 @@ export async function buy({
 
     const buy_order = marketContract.methodsObject['placeBuyOrder']([
       {
-        orderType: orderType,
         rwaTokenAmount: rwaTokenAmount,
         pricePerRwaToken: pricePerRwaToken,
         currency: currency,
@@ -142,23 +98,20 @@ export async function buy({
   }
 }
 
-export async function sell({
+export async function orderbookSell({
   tezos,
   marketContractAddress,
   dispatch,
   tokensAmount,
   pricePerToken,
-}: BuySellParams) {
+}: OrderbookBuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(marketContractAddress);
-    const rwaTokenContract = await tezos.wallet.at(
-      pickTokenBasedOnMarket[marketContractAddress]
-    );
+    const rwaTokenContract = await tezos.wallet.at(stablecoinContract);
 
-    const orderType = 'SELL';
     const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
     const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
@@ -176,7 +129,6 @@ export async function sell({
 
     const sell_order = marketContract.methodsObject['placeSellOrder']([
       {
-        orderType: orderType,
         rwaTokenAmount: rwaTokenAmount,
         pricePerRwaToken: pricePerRwaToken,
         currency: currency,

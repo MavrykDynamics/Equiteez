@@ -1,8 +1,36 @@
-export const faucetContract = 'KT1APnnufBaF825iAUM2ffm2XW2URdbMzBjQ';
+// contracts
+
+// for swapping tokens (old one)
 export const oceanContract = 'KT1K6XBMZDmYB5Ppdi73eSzU6oHVyPKsaAVN';
 export const marsContract = 'KT1K87qJznsozBywe4YYSBtaE2L7mj1kY6vU';
 
+// Mars1 ____________________________________________________________ (new)
+
+export const marsOrderbookContract = 'KT1EYj4pMLFaBXHzxLZKRLKd65ve3qgpz3Xf';
+export const marsDodoContract = 'KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg';
+
+export const mockQuoteLpTokenMars = 'KT1EXGW2D5L7ZQ4p4pmq4nrcP1fUufaMPP3d';
+export const mockBaseLpTokenMars = 'KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ';
+
+// Ocean ____________________________________________________________ (new)
+
+export const oceanOrderbookContract = 'KT19EujCoaquytpf7BeSVXEsfqtV2FZ1asP8';
+export const oceanDodoConract = 'KT1AzT6YZMzYyHwkumBZs4j76JnC5UnvzGsy';
+
+export const mockQuoteLpTokenOcean = 'KT1GE3Wt2tGjxJSmSUJwbkuXkochz8Q4aod7';
+export const mockBaseLpTokenOcean = 'KT1CZjexySiHyGnChmYAiNj3ftpFi5SLFWtf';
+
+//  helper consts ____________________________________________________________
 export type MarketContractType = typeof oceanContract | typeof marsContract;
+
+// TODO change naming
+export type NewMarketType =
+  | typeof marsOrderbookContract
+  | typeof marsDodoContract
+  | typeof oceanOrderbookContract
+  | typeof oceanDodoConract;
+
+// export type MarketContractType = typeof oceanContract | typeof marsContract;
 
 export const stablecoinContract = 'KT1StUZzJ34MhSNjkQMSyvZVrR9ppkHMFdFf';
 
