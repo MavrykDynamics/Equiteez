@@ -59,8 +59,8 @@ export async function buyBaseToken({
     ]).toTransferParams();
 
     const buy_order = marketContract.methodsObject['buyBaseToken']({
-      amount: BaseToken(tokensAmount),
-      minMaxQuote: BaseToken(minMaxQuote),
+      amount: RWAToken(tokensAmount),
+      minMaxQuote: RWAToken(minMaxQuote),
     }).toTransferParams();
 
     const close_ops = stableCoinInstance.methodsObject['update_operators']([
@@ -97,19 +97,19 @@ export async function buyBaseToken({
 
 export async function sellBaseToken({
   tezos,
-  dodoContractAddress, // only dodo
+  dodoContractAddress,
   dispatch,
-  mockQuoteLpToken, // mockQuoteLpTokenMars
+  mockQuoteLpToken,
   tokensAmount,
   minMaxQuote,
 }: BuySellBaseToken) {
   try {
     // MARS1 example
-    const sender = await tezos.wallet.pkh(); // mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w
+    const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
-    const marketContract = await tezos.wallet.at(dodoContractAddress); // KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg
-    const stableCoinInstance = await tezos.wallet.at(stablecoinContract); // KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ
+    const marketContract = await tezos.wallet.at(dodoContractAddress);
+    const stableCoinInstance = await tezos.wallet.at(stablecoinContract);
 
     const open_ops = stableCoinInstance.methodsObject['update_operators']([
       {
@@ -122,8 +122,8 @@ export async function sellBaseToken({
     ]).toTransferParams();
 
     const sell_order = marketContract.methodsObject['sellBaseToken']({
-      amount: BaseToken(tokensAmount), // 2 * 10 ** 6;
-      minMaxQuote: BaseToken(minMaxQuote), // 1000 * 10 ** 6;
+      amount: RWAToken(tokensAmount),
+      minMaxQuote: RWAToken(minMaxQuote),
     }).toTransferParams();
 
     const close_ops = stableCoinInstance.methodsObject['update_operators']([
@@ -425,3 +425,36 @@ export async function withdrawAllQuoteTokens({
     throw e;
   }
 }
+
+export const transferLPTokens = async ({
+  tezos,
+  address = 'KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ',
+}: Pick<DefaultContractProps, 'tezos'> & { address?: string }) => {
+  try {
+    const sender = await tezos.wallet.pkh();
+    let batch = tezos.wallet.batch([]);
+
+    const marketContract = await tezos.wallet.at(address); // MARS base token
+
+    const sell_order = marketContract.methodsObject['transfer']([
+      {
+        from_: sender,
+        txs: [
+          {
+            to_: 'mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w',
+            token_id: 0,
+            amount: RWAToken(3),
+          },
+        ],
+      },
+    ]).toTransferParams();
+
+    batch = batch.withTransfer(sell_order);
+
+    const batchOp = await batch.send();
+
+    await batchOp.confirmation();
+  } catch (e: unknown) {
+    console.log(e.message);
+  }
+};

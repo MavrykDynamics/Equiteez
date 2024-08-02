@@ -3,6 +3,7 @@ import { pickDodoContractBasedOnToken } from '~/consts/contracts';
 import {
   depositBaseToken,
   depositQuoteToken,
+  transferLPTokens,
   withdrawBaseToken,
   withdrawQuoteToken,
 } from '~/contracts/dodo.contract';
@@ -113,11 +114,29 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
     }
   }, [amount, dapp, dispatch, tokenAddress]);
 
+  const transfer = useCallback(async () => {
+    try {
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        return;
+      }
+
+      await transferLPTokens({
+        tezos,
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [dapp]);
+
   return {
     handleBaseTokenDeposit,
     handleQuoteTokenDeposit,
     handleBaseTokenWithdraw,
     handleQuoteTokenWithdraw,
+    transfer,
     status,
     isLoading,
   };
@@ -136,6 +155,7 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
     handleQuoteTokenDeposit,
     handleBaseTokenWithdraw,
     handleQuoteTokenWithdraw,
+    transfer,
     status,
   } = useAdminAction(Number(amount), tokenAddress);
 
@@ -188,6 +208,9 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
             </Button>
             <Button className="w-full" onClick={handleQuoteTokenWithdraw}>
               {getStatusLabel(status, 'Withdraw Quote')}
+            </Button>
+            <Button className="w-full" onClick={transfer}>
+              Transfer
             </Button>
           </div>
         </div>
