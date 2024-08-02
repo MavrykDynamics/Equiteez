@@ -100,11 +100,12 @@ export async function sellBaseToken({
   minMaxQuote,
 }: BuySellBaseToken) {
   try {
-    const sender = await tezos.wallet.pkh();
+    // MARS1 example
+    const sender = await tezos.wallet.pkh(); // mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w
     let batch = tezos.wallet.batch([]);
 
-    const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const mockQuoteLpTokenInstance = await tezos.wallet.at(mockQuoteLpToken);
+    const marketContract = await tezos.wallet.at(dodoContractAddress); // KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg
+    const mockQuoteLpTokenInstance = await tezos.wallet.at(mockQuoteLpToken); // KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ
 
     const open_ops = mockQuoteLpTokenInstance.methodsObject['update_operators'](
       [
@@ -119,9 +120,11 @@ export async function sellBaseToken({
     ).toTransferParams();
 
     const sell_order = marketContract.methodsObject['sellBaseToken']({
-      amount: BaseToken(tokensAmount),
-      minMaxQuote: BaseToken(minMaxQuote),
+      amount: BaseToken(tokensAmount), // 2 * 10 ** 6;
+      minMaxQuote: BaseToken(minMaxQuote), // 1000 * 10 ** 6;
     }).toTransferParams();
+
+    debugger;
 
     const close_ops = mockQuoteLpTokenInstance.methodsObject[
       'update_operators'

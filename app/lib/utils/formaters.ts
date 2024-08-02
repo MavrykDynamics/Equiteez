@@ -3,9 +3,6 @@ import BigNumber from 'bignumber.js';
 export const RWAToken = (value: number = 1) => {
   return value * 10 ** 3;
 };
-export const RWATokenDCM6 = (value: number = 1) => {
-  return value * 10 ** 6;
-};
 
 export const formatRWAPrice = (value: number) => {
   const conversionRate = 1000000;
@@ -19,7 +16,7 @@ export const QuoteToken = (value: number = 1) => {
 
 // BaseToken Formatter
 export const BaseToken = (value: number = 1) => {
-  return value * 10 ** 18;
+  return value * 10 ** 6;
 };
 
 // Stablecoin Formatter

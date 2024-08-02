@@ -9,8 +9,8 @@ export const marsContract = 'KT1K87qJznsozBywe4YYSBtaE2L7mj1kY6vU';
 export const marsOrderbookContract = 'KT1EYj4pMLFaBXHzxLZKRLKd65ve3qgpz3Xf';
 export const marsDodoContract = 'KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg';
 
-export const mockQuoteLpTokenMars = 'KT1EXGW2D5L7ZQ4p4pmq4nrcP1fUufaMPP3d';
-export const mockBaseLpTokenMars = 'KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ';
+export const mockQuoteLpTokenMars = 'KT1EXGW2D5L7ZQ4p4pmq4nrcP1fUufaMPP3d'; // received token
+export const mockBaseLpTokenMars = 'KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ'; // when withdraw
 
 // Ocean ____________________________________________________________ (new)
 
