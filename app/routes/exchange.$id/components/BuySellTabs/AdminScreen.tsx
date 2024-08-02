@@ -1,6 +1,11 @@
 import { FC, useCallback, useState } from 'react';
 import { pickDodoContractBasedOnToken } from '~/consts/contracts';
-import { depositBaseToken, depositQuoteToken } from '~/contracts/dodo.contract';
+import {
+  depositBaseToken,
+  depositQuoteToken,
+  withdrawBaseToken,
+  withdrawQuoteToken,
+} from '~/contracts/dodo.contract';
 import {
   getStatusLabel,
   STATUS_IDLE,
@@ -62,9 +67,57 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
     }
   }, [amount, dapp, dispatch, tokenAddress]);
 
+  const handleBaseTokenWithdraw = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await withdrawBaseToken({
+        tezos,
+        dispatch,
+        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+        tokensAmount: amount,
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, tokenAddress]);
+
+  const handleQuoteTokenWithdraw = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await withdrawQuoteToken({
+        tezos,
+        dispatch,
+        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+        tokensAmount: amount,
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, tokenAddress]);
+
   return {
     handleBaseTokenDeposit,
     handleQuoteTokenDeposit,
+    handleBaseTokenWithdraw,
+    handleQuoteTokenWithdraw,
     status,
     isLoading,
   };
@@ -78,8 +131,13 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
   const [isAdminActive, setIsAdminActive] = useState(false);
   const [amount, setAmount] = useState<number | string>(Number(''));
 
-  const { handleBaseTokenDeposit, handleQuoteTokenDeposit, status } =
-    useAdminAction(Number(amount), tokenAddress);
+  const {
+    handleBaseTokenDeposit,
+    handleQuoteTokenDeposit,
+    handleBaseTokenWithdraw,
+    handleQuoteTokenWithdraw,
+    status,
+  } = useAdminAction(Number(amount), tokenAddress);
 
   const handleAdminChange = useCallback(() => {
     setIsAdminActive(!isAdminActive);
@@ -124,6 +182,12 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
             </Button>
             <Button className="w-full" onClick={handleQuoteTokenDeposit}>
               {getStatusLabel(status, 'Deposit Quote')}
+            </Button>
+            <Button className="w-full" onClick={handleBaseTokenWithdraw}>
+              {getStatusLabel(status, 'Withdraw Base')}
+            </Button>
+            <Button className="w-full" onClick={handleQuoteTokenWithdraw}>
+              {getStatusLabel(status, 'Withdraw Quote')}
             </Button>
           </div>
         </div>

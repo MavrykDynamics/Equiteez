@@ -46,32 +46,28 @@ export async function buyBaseToken({
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const mockQuoteLpTokenInstance = await tezos.wallet.at(mockQuoteLpToken);
+    const stableCoinInstance = await tezos.wallet.at(stablecoinContract);
 
-    const open_ops = mockQuoteLpTokenInstance.methodsObject['update_operators'](
-      [
-        {
-          add_operator: {
-            owner: sender,
-            operator: dodoContractAddress,
-            token_id: 0,
-          },
+    const open_ops = stableCoinInstance.methodsObject['update_operators']([
+      {
+        add_operator: {
+          owner: sender,
+          operator: mockQuoteLpToken,
+          token_id: 0,
         },
-      ]
-    ).toTransferParams();
+      },
+    ]).toTransferParams();
 
     const buy_order = marketContract.methodsObject['buyBaseToken']({
       amount: BaseToken(tokensAmount),
       minMaxQuote: BaseToken(minMaxQuote),
     }).toTransferParams();
 
-    const close_ops = mockQuoteLpTokenInstance.methodsObject[
-      'update_operators'
-    ]([
+    const close_ops = stableCoinInstance.methodsObject['update_operators']([
       {
         remove_operator: {
           owner: sender,
-          operator: dodoContractAddress,
+          operator: mockQuoteLpToken,
           token_id: 0,
         },
       },
@@ -113,32 +109,28 @@ export async function sellBaseToken({
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress); // KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg
-    const mockQuoteLpTokenInstance = await tezos.wallet.at(mockQuoteLpToken); // KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ
+    const stableCoinInstance = await tezos.wallet.at(stablecoinContract); // KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ
 
-    const open_ops = mockQuoteLpTokenInstance.methodsObject['update_operators'](
-      [
-        {
-          add_operator: {
-            owner: sender,
-            operator: dodoContractAddress,
-            token_id: 0,
-          },
+    const open_ops = stableCoinInstance.methodsObject['update_operators']([
+      {
+        add_operator: {
+          owner: sender,
+          operator: mockQuoteLpToken,
+          token_id: 0,
         },
-      ]
-    ).toTransferParams();
+      },
+    ]).toTransferParams();
 
     const sell_order = marketContract.methodsObject['sellBaseToken']({
       amount: BaseToken(tokensAmount), // 2 * 10 ** 6;
       minMaxQuote: BaseToken(minMaxQuote), // 1000 * 10 ** 6;
     }).toTransferParams();
 
-    const close_ops = mockQuoteLpTokenInstance.methodsObject[
-      'update_operators'
-    ]([
+    const close_ops = stableCoinInstance.methodsObject['update_operators']([
       {
         remove_operator: {
           owner: sender,
-          operator: dodoContractAddress,
+          operator: mockQuoteLpToken,
           token_id: 0,
         },
       },
@@ -290,12 +282,16 @@ export async function depositQuoteToken({
   }
 }
 
+type WithdrawActionProps = {
+  tokensAmount: number;
+} & DefaultContractProps;
+
 export async function withdrawBaseToken({
   tezos,
   dodoContractAddress, // only dodo
   dispatch,
   tokensAmount,
-}: BuySellBaseToken) {
+}: WithdrawActionProps) {
   try {
     let batch = tezos.wallet.batch([]);
 
@@ -330,7 +326,7 @@ export async function withdrawQuoteToken({
   dodoContractAddress, // only dodo
   dispatch,
   tokensAmount,
-}: BuySellBaseToken) {
+}: WithdrawActionProps) {
   try {
     let batch = tezos.wallet.batch([]);
 
