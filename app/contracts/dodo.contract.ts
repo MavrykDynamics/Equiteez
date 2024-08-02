@@ -8,6 +8,7 @@ import {
   STATUS_IDLE,
   STATUS_SUCCESS,
 } from '~/hooks/use-status-flag';
+import { BaseToken } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
 
@@ -51,12 +52,10 @@ export async function buyBaseToken({
       ]
     ).toTransferParams();
 
-    const buy_order = marketContract.methodsObject['buyBaseToken']([
-      {
-        amount: tokensAmount,
-        minMaxQuote,
-      },
-    ]).toTransferParams();
+    const buy_order = marketContract.methodsObject['buyBaseToken']({
+      amount: BaseToken(tokensAmount),
+      minMaxQuote: BaseToken(minMaxQuote),
+    }).toTransferParams();
 
     const close_ops = mockQuoteLpTokenInstance.methodsObject[
       'update_operators'
@@ -119,12 +118,10 @@ export async function sellBaseToken({
       ]
     ).toTransferParams();
 
-    const sell_order = marketContract.methodsObject['sellBaseToken']([
-      {
-        amount: tokensAmount,
-        minMaxQuote,
-      },
-    ]).toTransferParams();
+    const sell_order = marketContract.methodsObject['sellBaseToken']({
+      amount: BaseToken(tokensAmount),
+      minMaxQuote: BaseToken(minMaxQuote),
+    }).toTransferParams();
 
     const close_ops = mockQuoteLpTokenInstance.methodsObject[
       'update_operators'

@@ -195,9 +195,6 @@ export async function placeSellOrder({
     batch = batch.withTransfer(sell_order);
     batch = batch.withTransfer(close_ops);
 
-    console.log('Batch');
-    console.log(batch);
-
     const batchOp = await batch.send();
 
     dispatch(STATUS_CONFIRMING);

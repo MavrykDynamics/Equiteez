@@ -12,7 +12,7 @@ import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
 
-// Orderbook buy & sell fir main market page ?
+// Orderbook buy & sell for secondary market page
 
 type OrderbookBuySellParams = {
   tezos: TezosToolkit;
@@ -37,8 +37,8 @@ export async function orderbookBuy({
 
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
-    const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
-    const pricePerRwaToken = formatRWAPrice(pricePerToken); // 990000,  $0.99$
+    const rwaTokenAmount = RWAToken(tokensAmount);
+    const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
     const orderExpiry = null;
 
@@ -55,8 +55,8 @@ export async function orderbookBuy({
 
     const buy_order = marketContract.methodsObject['placeBuyOrder']([
       {
-        rwaTokenAmount: rwaTokenAmount,
-        pricePerRwaToken: pricePerRwaToken,
+        rwaTokenAmount,
+        pricePerRwaToken,
         currency: currency,
         orderExpiry: orderExpiry,
       },
@@ -101,23 +101,24 @@ export async function orderbookBuy({
 export async function orderbookSell({
   tezos,
   marketContractAddress,
+  rwaTokenAddress,
   dispatch,
   tokensAmount,
   pricePerToken,
-}: OrderbookBuySellParams) {
+}: OrderbookBuySellParams & { rwaTokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(marketContractAddress);
-    const rwaTokenContract = await tezos.wallet.at(stablecoinContract);
+    const tokenContact = await tezos.wallet.at(rwaTokenAddress);
 
-    const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
+    const rwaTokenAmount = RWAToken(tokensAmount);
     const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
     const orderExpiry = null;
 
-    const open_ops = rwaTokenContract.methodsObject['update_operators']([
+    const open_ops = tokenContact.methodsObject['update_operators']([
       {
         add_operator: {
           owner: sender,
@@ -129,14 +130,14 @@ export async function orderbookSell({
 
     const sell_order = marketContract.methodsObject['placeSellOrder']([
       {
-        rwaTokenAmount: rwaTokenAmount,
-        pricePerRwaToken: pricePerRwaToken,
+        rwaTokenAmount,
+        pricePerRwaToken,
         currency: currency,
         orderExpiry: orderExpiry,
       },
     ]).toTransferParams();
 
-    const close_ops = rwaTokenContract.methodsObject['update_operators']([
+    const close_ops = tokenContact.methodsObject['update_operators']([
       {
         remove_operator: {
           owner: sender,
@@ -149,9 +150,6 @@ export async function orderbookSell({
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(sell_order);
     batch = batch.withTransfer(close_ops);
-
-    console.log('Batch');
-    console.log(batch);
 
     const batchOp = await batch.send();
 

@@ -237,6 +237,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       await orderbookSell({
         tezos,
         marketContractAddress: pickOrderbookContract[estate.token_address],
+        rwaTokenAddress: estate.token_address,
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(tokensPrices[estate.token_address]),

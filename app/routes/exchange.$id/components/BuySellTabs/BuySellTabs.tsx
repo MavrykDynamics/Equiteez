@@ -82,6 +82,7 @@ const useBuySellActions = (
         dispatch(STATUS_IDLE);
         return;
       }
+
       await placeBuyOrderAndMatch({
         tezos,
         marketContractAddress: pickMarketBasedOnSymbol[symbol],
@@ -105,14 +106,13 @@ const useBuySellActions = (
         dispatch(STATUS_IDLE);
         return;
       }
-
       await buyBaseToken({
         tezos,
         dispatch,
         dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
         mockQuoteLpToken: pickMockBaseToken[tokenAddress],
         tokensAmount: amount,
-        minMaxQuote: 100, // minMaxQuote
+        minMaxQuote: 1000, // minMaxQuote
       });
     } catch (e: unknown) {
       console.log(e);
@@ -137,7 +137,7 @@ const useBuySellActions = (
         dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
         mockQuoteLpToken: pickMockBaseToken[tokenAddress],
         tokensAmount: amount,
-        minMaxQuote: 100, // minMaxQuote
+        minMaxQuote: 1000, // minMaxQuote
       });
     } catch (e: unknown) {
       console.log(e);
