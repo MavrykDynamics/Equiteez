@@ -34,7 +34,7 @@ const actionLabels = {
 
 export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   actionType,
-  // actionCb,
+  actionCb,
   tokenPrice,
   estFee,
   total,
@@ -51,7 +51,12 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
     },
   });
 
-  const onSubmit = (data: unknown) => console.log(data);
+  // call contract action // try catch are handled within that action
+  const onSubmit = async ({ initials, investing, terms }: FormData) => {
+    if (terms && initials && investing) {
+      actionCb();
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1">

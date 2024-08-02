@@ -37,6 +37,12 @@ export const stablecoinContract = 'KT1StUZzJ34MhSNjkQMSyvZVrR9ppkHMFdFf';
 export const OCEAN_TOKEN_ADDRESS = 'KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh';
 export const MARS1_TOKEN_ADDRESS = 'KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9';
 
+// orderbook (secondary market)
+export const pickOrderbookContract: StringRecord<OrderbookMarketType> = {
+  [MARS1_TOKEN_ADDRESS]: marsOrderbookContract,
+  [OCEAN_TOKEN_ADDRESS]: oceanOrderbookContract,
+};
+
 // exchange limit
 export const pickTokenBasedOnMarket = {
   [oceanContract]: OCEAN_TOKEN_ADDRESS,

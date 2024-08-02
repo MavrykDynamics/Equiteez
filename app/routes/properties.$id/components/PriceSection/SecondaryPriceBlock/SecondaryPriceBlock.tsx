@@ -25,8 +25,7 @@ import { TabType } from '~/lib/atoms/Tab';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 
 // contract actions
-import { pickMarketBasedOnSymbol } from '~/consts/contracts';
-import { buy, sell } from '../actions/financial.actions';
+import { pickOrderbookContract } from '~/consts/contracts';
 
 // icons
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
@@ -48,6 +47,7 @@ import {
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CommaNumber } from '~/lib/atoms/CommaNumber';
+import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 
 // types
 type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
@@ -139,7 +139,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
     setActiveScreenId(id);
   }, []);
 
-  const handleBuy = useCallback(async () => {
+  const handleOrderbookBuy = useCallback(async () => {
     try {
       dispatch(STATUS_PENDING);
 
@@ -150,24 +150,17 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         dispatch(STATUS_IDLE);
         return;
       }
-      await buy({
+      await orderbookBuy({
         tezos,
-        marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
+        marketContractAddress: pickOrderbookContract[estate.token_address],
         dispatch,
         tokensAmount: Number(amount),
-        pricePerToken: tokensPrices[estate.token_address],
+        pricePerToken: Number(tokensPrices[estate.token_address]),
       });
     } catch (e: unknown) {
       console.log(e);
     }
-  }, [
-    amount,
-    dapp,
-    dispatch,
-    estate.symbol,
-    estate.token_address,
-    tokensPrices,
-  ]);
+  }, [amount, dapp, dispatch, estate.token_address, tokensPrices]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -202,7 +195,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               total={Number(total)}
               actionType={BUY}
               estFee={0.21}
-              actionCb={handleBuy}
+              actionCb={handleOrderbookBuy}
             />
           )}
         </div>
@@ -230,7 +223,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { dispatch } = useStatusFlag();
   const { dapp } = useWalletContext();
 
-  const handleSell = useCallback(async () => {
+  const handleOrderbookSell = useCallback(async () => {
     try {
       dispatch(STATUS_PENDING);
 
@@ -241,25 +234,18 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
         dispatch(STATUS_IDLE);
         return;
       }
-      await sell({
+      await orderbookSell({
         tezos,
-        marketContractAddress: pickMarketBasedOnSymbol[estate.symbol],
+        marketContractAddress: pickOrderbookContract[estate.token_address],
         dispatch,
         tokensAmount: Number(amount),
         pricePerToken: Number(tokensPrices[estate.token_address]),
       });
     } catch (e) {
       // TODO handle Errors with context
-      console.log(e, 'Sell contact error');
+      console.log(e, 'Sell contract error');
     }
-  }, [
-    amount,
-    dapp,
-    dispatch,
-    estate.symbol,
-    estate.token_address,
-    tokensPrices,
-  ]);
+  }, [amount, dapp, dispatch, estate.token_address, tokensPrices]);
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -294,7 +280,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               total={Number(total)}
               actionType={SELL}
               estFee={0.21}
-              actionCb={handleSell}
+              actionCb={handleOrderbookSell}
             />
           )}
         </div>

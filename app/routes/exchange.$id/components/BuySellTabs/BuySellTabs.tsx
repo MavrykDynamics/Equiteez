@@ -193,13 +193,24 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     setAvtiveTabId(id);
   }, []);
 
-  const pickBuySellAction = () => {
-    if (isLimitType) {
-      return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
-    }
+  const pickBuySellAction = useMemo(
+    () =>
+      (() => {
+        if (isLimitType) {
+          return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
+        }
 
-    return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
-  };
+        return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
+      })(),
+    [
+      activetabId,
+      handleLimitBuy,
+      handleLimitSell,
+      handleMarketBuy,
+      handleMarketSell,
+      isLimitType,
+    ]
+  );
 
   // set fixed price for the market type
   useEffect(() => {
