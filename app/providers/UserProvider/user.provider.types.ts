@@ -35,6 +35,7 @@ export type UserContext = UserContextStateType & {
 
 export type UserContextStateType = {
   userAddress: string | null;
+  isAdmin: boolean;
 
   userTokensBalances: Record<TokenAddressType, BigNumber>;
 };

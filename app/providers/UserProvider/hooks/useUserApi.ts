@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 // consts
-import { DEFAULT_USER } from '../helpers/user.consts';
+import { ADMIN_ADDRESSES, DEFAULT_USER } from '../helpers/user.consts';
 
 // types
 import {
@@ -76,6 +76,7 @@ export const useUserApi = ({
       setUserCtxState((prev) => ({
         ...prev,
         userAddress,
+        isAdmin: ADMIN_ADDRESSES[userAddress],
       }));
 
       const fetchedTokens = await fetchTzktUserBalances({
