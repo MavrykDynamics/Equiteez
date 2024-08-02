@@ -70,7 +70,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     if (selectedPercentage) {
       const amountToSpend = (selectedPercentage * buyBalance) / 100;
       const numberOfTokens = amountToSpend / tokensPrices[token_address];
-
       setAmount(numberOfTokens);
     } else {
       setAmount(0);

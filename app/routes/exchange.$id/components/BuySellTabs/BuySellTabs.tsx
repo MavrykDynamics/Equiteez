@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import {
@@ -14,59 +14,161 @@ import DotFill from '~/icons/dot-fill.svg?react';
 import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { Button } from '~/lib/atoms/Button';
-import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-import { BuyDEXContent } from './Buy';
-import { SellDEXContent } from './Sell';
+import {
+  STATUS_IDLE,
+  STATUS_PENDING,
+  useStatusFlag,
+} from '~/hooks/use-status-flag';
+import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
+import {
+  pickDodoContractBasedOnToken,
+  pickMarketBasedOnSymbol,
+  pickMockBaseToken,
+} from '~/consts/contracts';
+import {
+  placeBuyOrderAndMatch,
+  placeSellOrder,
+} from '~/contracts/buySellLimit.contract';
+import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
+import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, SELL_TAB } from './consts';
 
 type BuySellTabsProps = {
   symbol: string;
+  tokenAddress: string;
 };
 
-export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol }) => {
-  const [activetabId, setAvtiveTabId] = useState('buy');
+const useBuySellActions = (
+  price: number,
+  amount: number,
+  tokenAddress: string,
+  symbol: string
+) => {
+  const { dapp } = useWalletContext();
+  const { status, dispatch, isLoading } = useStatusFlag();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const handleLimitSell = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
 
-  const handleRequestClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+      const tezos = dapp?.tezos();
 
-  const handleOpen = useCallback(() => {
-    setIsOpen(true);
-  }, []);
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await placeSellOrder({
+        tezos,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
+        dispatch,
+        tokensAmount: Number(amount),
+        pricePerToken: Number(price),
+      });
+    } catch (e) {
+      // TODO handle Errors with context
+      console.log(e, 'Sell contract error');
+    }
+  }, [amount, dapp, dispatch, price, symbol]);
 
-  const [price, setPrice] = useState<number | string>(Number(''));
-  const [amount, setAmount] = useState<number | string>(Number(''));
+  const handleLimitBuy = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
 
-  const handleTabClick = useCallback((id: string) => {
-    setAvtiveTabId(id);
-  }, []);
+      const tezos = dapp?.tezos();
 
-  const tabs: TabType[] = useMemo(
-    () => [
-      {
-        id: 'buy',
-        label: 'Buy',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'sell',
-        label: 'Sell',
-        handleClick: handleTabClick,
-      },
-    ],
-    [handleTabClick]
-  );
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+      await placeBuyOrderAndMatch({
+        tezos,
+        marketContractAddress: pickMarketBasedOnSymbol[symbol],
+        dispatch,
+        tokensAmount: Number(amount),
+        pricePerToken: Number(price),
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, price, symbol]);
 
+  const handleMarketBuy = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await buyBaseToken({
+        tezos,
+        dispatch,
+        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+        mockQuoteLpToken: pickMockBaseToken[tokenAddress],
+        tokensAmount: amount,
+        minMaxQuote: 100, // minMaxQuote
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, tokenAddress]);
+
+  const handleMarketSell = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await sellBaseToken({
+        tezos,
+        dispatch,
+        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+        mockQuoteLpToken: pickMockBaseToken[tokenAddress],
+        tokensAmount: amount,
+        minMaxQuote: 100, // minMaxQuote
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, tokenAddress]);
+
+  return {
+    handleLimitSell,
+    handleLimitBuy,
+    status,
+    isLoading,
+    handleMarketBuy,
+    handleMarketSell,
+  };
+};
+
+export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
+  const { tokensPrices } = useTokensContext();
+  // tabs state
+  const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
+
+  // dropdown state
   const items = useMemo(
     () => [
       {
-        id: '1',
+        id: MARKET_TYPE,
         label: 'Market',
         value: 'market',
       },
       {
-        id: '2',
+        id: LIMIT_TYPE,
         label: 'Limit',
         value: 'limit',
       },
@@ -75,6 +177,53 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol }) => {
   );
 
   const [activeItem, setActiveItem] = useState(() => items[0]);
+
+  // inputs state
+  const [price, setPrice] = useState<number | string>(Number(''));
+  const [amount, setAmount] = useState<number | string>(Number(''));
+
+  // contract calls based on markt or limit
+  const { handleLimitSell, handleLimitBuy, handleMarketBuy, handleMarketSell } =
+    useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
+
+  // derived state (it's boolean value, so no need to memoize it)
+  const isLimitType = activeItem.id === LIMIT_TYPE;
+
+  const handleTabClick = useCallback((id: string) => {
+    setAvtiveTabId(id);
+  }, []);
+
+  const pickBuySellAction = () => {
+    if (isLimitType) {
+      return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
+    }
+
+    return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
+  };
+
+  // set fixed price for the market type
+  useEffect(() => {
+    if (!isLimitType) {
+      setPrice(tokensPrices[tokenAddress]);
+    }
+  }, [isLimitType, tokenAddress, tokensPrices]);
+
+  // swaitch screens based on active tab
+  const tabs: TabType[] = useMemo(
+    () => [
+      {
+        id: BUY_TAB,
+        label: 'Buy',
+        handleClick: handleTabClick,
+      },
+      {
+        id: SELL_TAB,
+        label: 'Sell',
+        handleClick: handleTabClick,
+      },
+    ],
+    [handleTabClick]
+  );
 
   return (
     <section className="flex flex-col w-full">
@@ -113,7 +262,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol }) => {
         <div className="flex flex-col w-full gap-3 text-caption-regular">
           <div className="flex flex-col w-full gap-3">
             <div className="flex flex-col w-full gap-3">
-              <div className={`w-full flex justify-between eq-input py-3 px-4`}>
+              <div
+                className={`w-full flex justify-between eq-input py-3 px-[14px]`}
+              >
                 <span className="text-content-secondary opacity-50">Price</span>
 
                 <span className="flex gap-1">
@@ -126,6 +277,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol }) => {
                       onChange={(e) => setPrice(Number(e.target.value))}
                       placeholder="0.00"
                       className="w-full bg-transparent focus:outline-none text-right"
+                      disabled={!isLimitType}
                     ></input>
                   </span>
                   <span className="">USDT</span>
@@ -217,33 +369,13 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol }) => {
 
           <div className="flex w-full">
             <Button
+              onClick={pickBuySellAction}
               className="w-full mt-1"
               variant={activetabId === 'buy' ? 'green-secondary' : 'red'}
-              onClick={handleOpen}
             >
               {activetabId === 'buy' ? 'Buy' : 'Sell'}
             </Button>
           </div>
-
-          <PopupWithIcon
-            isOpen={isOpen}
-            onRequestClose={handleRequestClose}
-            contentPosition={'right'}
-          >
-            {activetabId == 'buy' ? (
-              <BuyDEXContent
-                initialAmount={Number(amount)}
-                initialPrice={Number(price)}
-                symbol={symbol}
-              />
-            ) : (
-              <SellDEXContent
-                initialAmount={Number(amount)}
-                initialPrice={Number(price)}
-                symbol={symbol}
-              />
-            )}
-          </PopupWithIcon>
         </div>
       </div>
     </section>

@@ -1,7 +1,5 @@
 import { TezosToolkit } from '@mavrykdynamics/taquito';
-
-// TODO check all actions after contract deployment
-// for now all of them are a mocked versions and they don't work with contract
+import { DodoContractType } from '~/consts/contracts';
 
 import {
   StatusDispatchType,
@@ -15,9 +13,11 @@ import { sleep } from '~/lib/utils/sleep';
 
 // TODO extract similar logic in one function after logic revision
 
-type BuyBaseToken = {
+// Exchange market & secondary market pages
+
+type BuySellBaseToken = {
   tezos: TezosToolkit;
-  dodoContractAddress: string;
+  dodoContractAddress: DodoContractType;
   mockQuoteLpToken: string;
   dispatch: StatusDispatchType;
   tokensAmount: number;
@@ -31,7 +31,7 @@ export async function buyBaseToken({
   mockQuoteLpToken, // mockQuoteLpTokenMars
   tokensAmount,
   minMaxQuote,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -99,7 +99,7 @@ export async function sellBaseToken({
   mockQuoteLpToken, // mockQuoteLpTokenMars
   tokensAmount,
   minMaxQuote,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -166,7 +166,7 @@ export async function depositBaseToken({
   dispatch,
   mockQuoteLpToken,
   tokensAmount,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -232,7 +232,7 @@ export async function depositQuoteToken({
   dispatch,
   mockQuoteLpToken,
   tokensAmount,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -297,7 +297,7 @@ export async function withdrawBaseToken({
   dodoContractAddress, // only dodo
   dispatch,
   tokensAmount,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     let batch = tezos.wallet.batch([]);
 
@@ -333,7 +333,7 @@ export async function withdrawQuoteToken({
   dodoContractAddress, // only dodo
   dispatch,
   tokensAmount,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     let batch = tezos.wallet.batch([]);
 
@@ -368,7 +368,7 @@ export async function withdrawAllBaseTokens({
   tezos,
   dodoContractAddress, // only dodo
   dispatch,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     let batch = tezos.wallet.batch([]);
 
@@ -403,7 +403,7 @@ export async function withdrawAllQuoteTokens({
   tezos,
   dodoContractAddress, // only dodo
   dispatch,
-}: BuyBaseToken) {
+}: BuySellBaseToken) {
   try {
     let batch = tezos.wallet.batch([]);
 

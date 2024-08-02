@@ -23,14 +23,13 @@ export const mockBaseLpTokenOcean = 'KT1CZjexySiHyGnChmYAiNj3ftpFi5SLFWtf';
 //  helper consts ____________________________________________________________
 export type MarketContractType = typeof oceanContract | typeof marsContract;
 
-// TODO change naming
-export type NewMarketType =
+export type OrderbookMarketType =
   | typeof marsOrderbookContract
-  | typeof marsDodoContract
-  | typeof oceanOrderbookContract
-  | typeof oceanDodoConract;
+  | typeof oceanOrderbookContract;
 
-// export type MarketContractType = typeof oceanContract | typeof marsContract;
+export type DodoContractType =
+  | typeof marsDodoContract
+  | typeof oceanDodoConract;
 
 export const stablecoinContract = 'KT1StUZzJ34MhSNjkQMSyvZVrR9ppkHMFdFf';
 
@@ -38,11 +37,24 @@ export const stablecoinContract = 'KT1StUZzJ34MhSNjkQMSyvZVrR9ppkHMFdFf';
 export const OCEAN_TOKEN_ADDRESS = 'KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh';
 export const MARS1_TOKEN_ADDRESS = 'KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9';
 
+// exchange limit
 export const pickTokenBasedOnMarket = {
   [oceanContract]: OCEAN_TOKEN_ADDRESS,
   [marsContract]: MARS1_TOKEN_ADDRESS,
 };
 
+// exchange market
+export const pickDodoContractBasedOnToken: Record<string, DodoContractType> = {
+  [MARS1_TOKEN_ADDRESS]: marsDodoContract,
+  [OCEAN_TOKEN_ADDRESS]: oceanDodoConract,
+};
+
+export const pickMockBaseToken: Record<string, string> = {
+  [MARS1_TOKEN_ADDRESS]: mockBaseLpTokenMars,
+  [OCEAN_TOKEN_ADDRESS]: mockBaseLpTokenOcean,
+};
+
+// default
 export const pickMarketBasedOnSymbol: Record<string, MarketContractType> = {
   OCEAN: oceanContract,
   MARS1: marsContract,

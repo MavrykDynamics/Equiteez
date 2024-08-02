@@ -125,7 +125,10 @@ export default function ExchangeDetails() {
           {/* Right Panel ---------------------------- */}
           <div className="flex flex-col w-[324px]">
             <div className="flex flex-col w-full px-6 py-4">
-              <BuySellTabs symbol={estateData.symbol} />
+              <BuySellTabs
+                symbol={estateData.symbol}
+                tokenAddress={estateData.token_address}
+              />
             </div>
           </div>
         </div>

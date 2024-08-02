@@ -8,14 +8,7 @@ import { Button } from '~/lib/atoms/Button';
 import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { FC, useCallback, useState } from 'react';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
-import {
-  getStatusLabel,
-  STATUS_IDLE,
-  STATUS_PENDING,
-  useStatusFlag,
-} from '~/hooks/use-status-flag';
-import { defaultContractAction } from './actions/financial.actions';
+import { getStatusLabel, STATUS_IDLE } from '~/hooks/use-status-flag';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { PrimaryEstate } from '~/providers/EstatesProvider/estates.types';
 
@@ -111,25 +104,6 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({
   handleCancel,
   estate,
 }) => {
-  const { dapp } = useWalletContext();
-  const { status, dispatch, isLoading } = useStatusFlag();
-
-  const handleFakeBuy = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-      const tezos = dapp?.tezos();
-
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-
-      await defaultContractAction(tezos, dispatch);
-    } catch (e) {
-      console.log(e);
-    }
-  }, [dapp, dispatch]);
-
   return (
     <div className="flex flex-col">
       <h2 className="text-content text-card-headline">{estate.name}</h2>
@@ -188,11 +162,11 @@ const BuyPopupContent: FC<BuyPopupContentProps> = ({
           Cancel
         </Button>
         <Button
-          disabled={isLoading}
+          // disabled={isLoading}
           variant="green-secondary"
-          onClick={handleFakeBuy}
+          // onClick={handleFakeBuy}
         >
-          {getStatusLabel(status, 'Buy')}
+          {getStatusLabel(STATUS_IDLE, 'Buy')}
         </Button>
       </div>
     </div>

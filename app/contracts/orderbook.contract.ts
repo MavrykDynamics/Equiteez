@@ -1,5 +1,5 @@
 import { TezosToolkit } from '@mavrykdynamics/taquito';
-import { NewMarketType, stablecoinContract } from '~/consts/contracts';
+import { OrderbookMarketType, stablecoinContract } from '~/consts/contracts';
 
 import {
   StatusDispatchType,
@@ -16,7 +16,7 @@ import { sleep } from '~/lib/utils/sleep';
 
 type OrderbookBuySellParams = {
   tezos: TezosToolkit;
-  marketContractAddress: NewMarketType;
+  marketContractAddress: OrderbookMarketType;
   dispatch: StatusDispatchType;
   tokensAmount: number;
   pricePerToken: number;

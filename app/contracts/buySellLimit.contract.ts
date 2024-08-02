@@ -16,7 +16,7 @@ import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
 
-// Exchange buy sell as MARKET from dropdown
+// Exchange limit
 
 export async function matchOrders(
   tezos: TezosToolkit,
@@ -61,7 +61,7 @@ type BuySellParams = {
   pricePerToken: number;
 };
 
-export async function placeBuyOrderAndSwap({
+export async function placeBuyOrderAndMatch({
   tezos,
   marketContractAddress,
   dispatch,
@@ -139,7 +139,7 @@ export async function placeBuyOrderAndSwap({
   }
 }
 
-export async function placeSellorder({
+export async function placeSellOrder({
   tezos,
   marketContractAddress,
   dispatch,
