@@ -30,8 +30,14 @@ import {
   placeSellOrder,
 } from '~/contracts/buySellLimit.contract';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
+import {
+  buyBaseToken,
+  depositBaseToken,
+  depositQuoteToken,
+  sellBaseToken,
+} from '~/contracts/dodo.contract';
 import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, SELL_TAB } from './consts';
+import { AdminScreen } from './AdminScreen';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -144,9 +150,59 @@ const useBuySellActions = (
     }
   }, [amount, dapp, dispatch, tokenAddress]);
 
+  const handleBaseTokenDeposit = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await depositBaseToken({
+        tezos,
+        dispatch,
+        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+        rwaTokenAddress: tokenAddress,
+        tokensAmount: amount,
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, tokenAddress]);
+
+  const handleQuoteTokenDeposit = useCallback(async () => {
+    try {
+      dispatch(STATUS_PENDING);
+
+      const tezos = dapp?.tezos();
+
+      // No Toolkit
+      if (!tezos) {
+        dispatch(STATUS_IDLE);
+        return;
+      }
+
+      await depositQuoteToken({
+        tezos,
+        dispatch,
+        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+        rwaTokenAddress: tokenAddress,
+        tokensAmount: amount,
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }, [amount, dapp, dispatch, tokenAddress]);
+
   return {
     handleLimitSell,
     handleLimitBuy,
+    handleBaseTokenDeposit,
+    handleQuoteTokenDeposit,
     status,
     isLoading,
     handleMarketBuy,
@@ -154,6 +210,7 @@ const useBuySellActions = (
   };
 };
 
+const isAdmin = true;
 export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const { tokensPrices } = useTokensContext();
   // tabs state
@@ -183,8 +240,14 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const [amount, setAmount] = useState<number | string>(Number(''));
 
   // contract calls based on markt or limit
-  const { handleLimitSell, handleLimitBuy, handleMarketBuy, handleMarketSell } =
-    useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
+  const {
+    handleLimitSell,
+    handleLimitBuy,
+    handleMarketBuy,
+    handleMarketSell,
+    handleBaseTokenDeposit,
+    handleQuoteTokenDeposit,
+  } = useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
 
   // derived state (it's boolean value, so no need to memoize it)
   const isLimitType = activeItem.id === LIMIT_TYPE;
@@ -244,6 +307,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
         activeTabId={activetabId}
         grow={true}
       />
+      {isAdmin && <AdminScreen symbol={symbol} tokenAddress={tokenAddress} />}
       <div className="mt-4">
         <CustomDropdown>
           <ClickableDropdownArea>
@@ -386,6 +450,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
             >
               {activetabId === 'buy' ? 'Buy' : 'Sell'}
             </Button>
+            <Button onClick={handleBaseTokenDeposit}>Deposit Base</Button>
+            <Button onClick={handleQuoteTokenDeposit}>Deposit Quote</Button>
           </div>
         </div>
       </div>

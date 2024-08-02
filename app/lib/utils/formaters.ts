@@ -11,7 +11,7 @@ export const formatRWAPrice = (value: number) => {
 
 // QuoteToken Formatter
 export const QuoteToken = (value: number = 1) => {
-  return value * 10 ** 18;
+  return value * 10 ** 6;
 };
 
 // BaseToken Formatter
