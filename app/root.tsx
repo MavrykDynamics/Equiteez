@@ -21,6 +21,7 @@ import { WalletProvider } from './providers/WalletProvider/wallet.provider';
 import { UserProvider } from './providers/UserProvider/user.provider';
 import { EstatesProvider } from './providers/EstatesProvider/estates.provider';
 import { TokensProvider } from './providers/TokensProvider/tokens.provider';
+import { PopupProvider } from './providers/PopupProvider/popup.provider';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
@@ -44,7 +45,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <WalletProvider>
                 <TokensProvider>
                   <UserProvider>
-                    <EstatesProvider>{children}</EstatesProvider>
+                    <EstatesProvider>
+                      <PopupProvider>{children}</PopupProvider>
+                    </EstatesProvider>
                   </UserProvider>
                 </TokensProvider>
               </WalletProvider>
