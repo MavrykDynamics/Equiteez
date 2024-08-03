@@ -15,12 +15,6 @@ import DotEmpty from '~/icons/dot-empty.svg?react';
 import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { Button } from '~/lib/atoms/Button';
 import {
-  STATUS_IDLE,
-  STATUS_PENDING,
-  useStatusFlag,
-} from '~/hooks/use-status-flag';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
-import {
   pickDodoContractBasedOnToken,
   pickMarketBasedOnSymbol,
   pickMockBaseToken,
@@ -34,6 +28,7 @@ import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
 import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, SELL_TAB } from './consts';
 import { AdminScreen } from './AdminScreen';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
+import { useContractAction } from '~/contracts/hooks/useContractAction';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -46,105 +41,44 @@ const useBuySellActions = (
   tokenAddress: string,
   symbol: string
 ) => {
-  const { dapp } = useWalletContext();
-  const { status, dispatch, isLoading } = useStatusFlag();
+  const buySellProps = useMemo(
+    () => ({
+      marketContractAddress: pickMarketBasedOnSymbol[symbol],
+      tokensAmount: Number(amount),
+      pricePerToken: Number(price),
+    }),
+    [amount, price, symbol]
+  );
 
-  const handleLimitSell = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
+  const { invokeAction: handleLimitBuy } = useContractAction(
+    placeBuyOrderAndMatch,
+    buySellProps
+  );
 
-      const tezos = dapp?.tezos();
+  const { invokeAction: handleLimitSell } = useContractAction(
+    placeSellOrder,
+    buySellProps
+  );
 
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await placeSellOrder({
-        tezos,
-        marketContractAddress: pickMarketBasedOnSymbol[symbol],
-        dispatch,
-        tokensAmount: Number(amount),
-        pricePerToken: Number(price),
-      });
-    } catch (e) {
-      // TODO handle Errors with context
-      console.log(e, 'Sell contract error');
-    }
-  }, [amount, dapp, dispatch, price, symbol]);
+  const marketBuySellProps = useMemo(
+    () => ({
+      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+      mockQuoteLpToken: pickMockBaseToken[tokenAddress],
+      tokensAmount: amount,
+      minMaxQuote: 1000, // minMaxQuote
+    }),
+    [amount, tokenAddress]
+  );
 
-  const handleLimitBuy = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-
-      await placeBuyOrderAndMatch({
-        tezos,
-        marketContractAddress: pickMarketBasedOnSymbol[symbol],
-        dispatch,
-        tokensAmount: Number(amount),
-        pricePerToken: Number(price),
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, price, symbol]);
-
-  const handleMarketBuy = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await buyBaseToken({
-        tezos,
-        dispatch,
-        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-        mockQuoteLpToken: pickMockBaseToken[tokenAddress],
-        tokensAmount: amount,
-        minMaxQuote: 1000, // minMaxQuote
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, tokenAddress]);
-
-  const handleMarketSell = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-
-      await sellBaseToken({
-        tezos,
-        dispatch,
-        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-        mockQuoteLpToken: pickMockBaseToken[tokenAddress],
-        tokensAmount: amount,
-        minMaxQuote: 1000, // minMaxQuote
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, tokenAddress]);
+  const { invokeAction: handleMarketBuy } = useContractAction(
+    buyBaseToken,
+    marketBuySellProps
+  );
+  const {
+    invokeAction: handleMarketSell,
+    status,
+    isLoading,
+  } = useContractAction(sellBaseToken, marketBuySellProps);
 
   return {
     handleLimitSell,
@@ -186,7 +120,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const [amount, setAmount] = useState<number | string>(Number(''));
 
   // contract calls based on markt or limit
-  const { handleLimitSell, handleLimitBuy, handleMarketBuy, handleMarketSell } =
+  const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
     useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
 
   // derived state (it's boolean value, so no need to memoize it)

@@ -29,11 +29,6 @@ export const meta: MetaFunction = () => {
 };
 export default function ExchangeDetails() {
   const estateData = usePropertyByAddress();
-  // const { showPopup, hidePopup, popupKeys } = usePopupContext();
-
-  // const show = () => {
-  //   showPopup(popupKeys.txOperation, );
-  // };
 
   if (!estateData) return <FullScreenSpinner />;
 

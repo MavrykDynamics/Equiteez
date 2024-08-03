@@ -54,7 +54,6 @@ export const fetchTokensMetadata = async (
 
     return parsedData;
   } catch (e) {
-    console.log(e);
     throw new Error('Error while fetching tokens metadata');
   }
 };
