@@ -7,6 +7,10 @@ export const POPUP_KEYS = {
 export const DEFAULT_POPUPS_STATE: PopupState = {
   txOperation: {
     show: false,
-    props: null,
+    props: {
+      Icon: null,
+      title: null,
+      body: null,
+    },
   },
 };

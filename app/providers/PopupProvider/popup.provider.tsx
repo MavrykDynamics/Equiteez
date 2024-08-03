@@ -12,6 +12,8 @@ import {
   TransactionOperationPopupProps,
 } from './popups/TransactionOperationPopup/TransactionOperationPopup';
 import { PopupProviderContext, PopupState } from './popup.provider.types';
+import { sleep } from '~/lib/utils/sleep';
+import { DEFAULT_POPUP_ANIMATION_DELAY } from '~/lib/organisms/CustomPopup/CustomPopup';
 
 const popupContext = createContext<PopupProviderContext>(undefined!);
 
@@ -27,8 +29,24 @@ export const PopupProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const hidePopup = useCallback(
-    (key: string) => {
-      setPopupsState({ ...popupsState, [key]: { show: false, props: null } });
+    async (key: string) => {
+      setPopupsState({
+        ...popupsState,
+        [key]: {
+          show: false,
+          // TODO adjust types
+          props: popupsState[key as keyof typeof POPUP_KEYS].props,
+        },
+      });
+
+      await sleep(DEFAULT_POPUP_ANIMATION_DELAY);
+      setPopupsState({
+        ...popupsState,
+        [key]: {
+          show: false,
+          props: DEFAULT_POPUPS_STATE[key as keyof typeof POPUP_KEYS].props,
+        },
+      });
     },
     [popupsState]
   );
@@ -45,15 +63,14 @@ export const PopupProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <popupContext.Provider value={memoizedPopupVal}>
       {children}
-      {popupsState.txOperation.props && (
-        <TransactionOperationPopup
-          isOpen={popupsState.txOperation.show}
-          {...(popupsState.txOperation.props as Omit<
-            TransactionOperationPopupProps,
-            'isOpen'
-          >)}
-        />
-      )}
+      <TransactionOperationPopup
+        isOpen={popupsState.txOperation.show}
+        onRequestClose={() => hidePopup(POPUP_KEYS.txOperation)}
+        {...(popupsState.txOperation.props as Omit<
+          TransactionOperationPopupProps,
+          'isOpen'
+        >)}
+      />
     </popupContext.Provider>
   );
 };

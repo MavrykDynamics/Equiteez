@@ -14,6 +14,8 @@ const popupAnimation = {
   center: 'zoomPopup',
 };
 
+export const DEFAULT_POPUP_ANIMATION_DELAY = 200;
+
 export type CustomPopupContentPositionType = 'left' | 'center' | 'right';
 
 export type CustomPopupProps = Modal.Props &
@@ -41,7 +43,7 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
         className
       )}
       appElement={IS_WEB ? document.getElementById('root')! : undefined}
-      closeTimeoutMS={200}
+      closeTimeoutMS={DEFAULT_POPUP_ANIMATION_DELAY}
       overlayClassName={clsx(
         'fixed inset-0 z-30',
         'bg-black bg-opacity-60',
