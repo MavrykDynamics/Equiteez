@@ -1,14 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 
-// hooks
-import {
-  STATUS_IDLE,
-  STATUS_PENDING,
-  useStatusFlag,
-} from '~/hooks/use-status-flag';
-
 // providers
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 
 //screens
@@ -48,6 +40,7 @@ import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CommaNumber } from '~/lib/atoms/CommaNumber';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
+import { useContractAction } from '~/contracts/hooks/useContractAction';
 
 // types
 type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
@@ -122,8 +115,6 @@ export const SecondaryPriceBlock: FC = () => {
 };
 
 const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
-  const { dapp } = useWalletContext();
-  const { dispatch } = useStatusFlag();
   const [activeScreenId, setActiveScreenId] = useState<BuyScreenState>(BUY);
   const { tokensPrices } = useTokensContext();
 
@@ -139,28 +130,19 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
     setActiveScreenId(id);
   }, []);
 
-  const handleOrderbookBuy = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
+  const buyProps = useMemo(
+    () => ({
+      marketContractAddress: pickOrderbookContract[estate.token_address],
+      tokensAmount: Number(amount),
+      pricePerToken: Number(tokensPrices[estate.token_address]),
+    }),
+    [amount, estate.token_address, tokensPrices]
+  );
 
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await orderbookBuy({
-        tezos,
-        marketContractAddress: pickOrderbookContract[estate.token_address],
-        dispatch,
-        tokensAmount: Number(amount),
-        pricePerToken: Number(tokensPrices[estate.token_address]),
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, estate.token_address, tokensPrices]);
+  const { invokeAction: handleOrderbookBuy } = useContractAction(
+    orderbookBuy,
+    buyProps
+  );
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
@@ -220,33 +202,20 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
     setActiveScreenid(id);
   }, []);
 
-  const { dispatch } = useStatusFlag();
-  const { dapp } = useWalletContext();
+  const sellProps = useMemo(
+    () => ({
+      marketContractAddress: pickOrderbookContract[estate.token_address],
+      rwaTokenAddress: estate.token_address,
+      tokensAmount: Number(amount),
+      pricePerToken: Number(tokensPrices[estate.token_address]),
+    }),
+    [amount, estate.token_address, tokensPrices]
+  );
 
-  const handleOrderbookSell = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-      await orderbookSell({
-        tezos,
-        marketContractAddress: pickOrderbookContract[estate.token_address],
-        rwaTokenAddress: estate.token_address,
-        dispatch,
-        tokensAmount: Number(amount),
-        pricePerToken: Number(tokensPrices[estate.token_address]),
-      });
-    } catch (e) {
-      // TODO handle Errors with context
-      console.log(e, 'Sell contract error');
-    }
-  }, [amount, dapp, dispatch, estate.token_address, tokensPrices]);
+  const { invokeAction: handleOrderbookSell } = useContractAction(
+    orderbookSell,
+    sellProps
+  );
 
   return (
     <div className="flex flex-col justify-between text-content h-full">
