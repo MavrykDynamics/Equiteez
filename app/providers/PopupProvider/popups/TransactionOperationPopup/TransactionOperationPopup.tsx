@@ -3,13 +3,13 @@ import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { DefaultPopupProps } from '../../popup.provider.types';
 
 export type TransactionOperationPopupProps = {
-  Icon: React.FunctionComponent<React.SVGProps<SVGSVGElement>> | null;
+  icon: React.ReactNode | null;
   title: string | React.ReactNode | null;
   body: string | React.ReactNode | null;
 } & DefaultPopupProps;
 
 export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
-  Icon,
+  icon,
   title,
   body,
   isOpen,
@@ -20,11 +20,15 @@ export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       contentPosition={'center'}
+      className={'w-[617px] h-[320px] px-11 py-16'}
     >
       <div className="flex flex-col">
-        <div>{Icon && <Icon />}</div>
-        <h4>{title}</h4>
-        <p>{body}</p>
+        <div className="mx-auto inline-block">{icon}</div>
+
+        <div className="inline-block mx-auto mt-6 mb-3 text-content text-section-headline">
+          {title}
+        </div>
+        <p className="text-body text-content text-center">{body}</p>
       </div>
     </PopupWithIcon>
   );

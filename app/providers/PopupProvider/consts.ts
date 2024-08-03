@@ -8,7 +8,7 @@ export const DEFAULT_POPUPS_STATE: PopupState = {
   txOperation: {
     show: false,
     props: {
-      Icon: null,
+      icon: null,
       title: null,
       body: null,
     },

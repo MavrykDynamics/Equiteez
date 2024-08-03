@@ -20,7 +20,6 @@ import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id
 // icons
 import ArrowLinkIcon from 'app/icons/arrow-link.svg?react';
 import { AssetDropdown } from './components/AssetDropdown';
-import { usePopupContext } from '~/providers/PopupProvider/popup.provider';
 
 export const meta: MetaFunction = () => {
   return [
@@ -30,15 +29,11 @@ export const meta: MetaFunction = () => {
 };
 export default function ExchangeDetails() {
   const estateData = usePropertyByAddress();
-  const { showPopup, hidePopup, popupKeys } = usePopupContext();
+  // const { showPopup, hidePopup, popupKeys } = usePopupContext();
 
-  const show = () => {
-    showPopup(popupKeys.txOperation, {
-      Icon: ArrowLinkIcon,
-      title: <div>Hello world</div>,
-      body: <div>AHHAHHAHAHAH</div>,
-    });
-  };
+  // const show = () => {
+  //   showPopup(popupKeys.txOperation, );
+  // };
 
   if (!estateData) return <FullScreenSpinner />;
 
@@ -52,10 +47,7 @@ export default function ExchangeDetails() {
             <div className="flex items-center relative gap-x-3">
               <AssetDropdown estate={estateData} />
               <button className="text-content">
-                <ArrowLinkIcon
-                  onClick={show}
-                  className="stroke-current w-6 h-6"
-                />
+                <ArrowLinkIcon className="stroke-current w-6 h-6" />
               </button>
             </div>
 
