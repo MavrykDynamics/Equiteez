@@ -68,26 +68,26 @@ export async function buyBaseToken({
   }
 }
 
+// MARS1 example
 export async function sellBaseToken({
   tezos,
-  dodoContractAddress,
-  mockBaseLpToken, // update operators for the Base Tokens and not the Quote tokens
+  dodoContractAddress, // KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg
+  mockBaseLpToken, // KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ
   tokensAmount,
   minMaxQuote,
 }: Omit<BuySellBaseToken, 'mockQuoteLpToken'> & { mockBaseLpToken: string }) {
   try {
-    // MARS1 example
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const stableCoinInstance = await tezos.wallet.at(stablecoinContract);
+    const quoteLpInstance = await tezos.wallet.at(mockBaseLpToken);
 
-    const open_ops = stableCoinInstance.methodsObject['update_operators']([
+    const open_ops = quoteLpInstance.methodsObject['update_operators']([
       {
         add_operator: {
           owner: sender,
-          operator: mockBaseLpToken,
+          operator: dodoContractAddress,
           token_id: 0,
         },
       },
@@ -98,11 +98,11 @@ export async function sellBaseToken({
       minMaxQuote: RWAToken(minMaxQuote),
     }).toTransferParams();
 
-    const close_ops = stableCoinInstance.methodsObject['update_operators']([
+    const close_ops = quoteLpInstance.methodsObject['update_operators']([
       {
         remove_operator: {
           owner: sender,
-          operator: mockBaseLpToken,
+          operator: dodoContractAddress,
           token_id: 0,
         },
       },
