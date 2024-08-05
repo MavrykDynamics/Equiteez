@@ -17,10 +17,15 @@ type BuySellBaseToken = {
   minMaxQuote: number;
 } & DefaultContractProps;
 
+/**
+ *
+ *  For buying base tokens, you need to update operators for the Quote Tokens and not the Base tokens,
+ *  since the Quote Tokens are being moved (or sold) by the buyer in exchange for the Base Tokens
+ */
 export async function buyBaseToken({
   tezos,
   dodoContractAddress, // only dodo
-  mockQuoteLpToken, // for buying base tokens, you need to update operators for the Quote Tokens
+  mockQuoteLpToken, // LP quote token address
   tokensAmount,
   minMaxQuote,
 }: BuySellBaseToken) {
@@ -68,11 +73,15 @@ export async function buyBaseToken({
   }
 }
 
-// MARS1 example
+/**
+ *
+ * if you are selling the base tokens, you need to update operators for the Base Tokens and not the Quote tokens,
+ * since the Base Tokens are being moved (or sold) by the seller in exchange for the Quote Tokens (usdt)
+ */
 export async function sellBaseToken({
   tezos,
-  dodoContractAddress,
-  tokenAddress,
+  dodoContractAddress, // only dodo
+  tokenAddress, // just original token address
   tokensAmount,
   minMaxQuote,
 }: Omit<BuySellBaseToken, 'mockQuoteLpToken'> & { tokenAddress: string }) {
