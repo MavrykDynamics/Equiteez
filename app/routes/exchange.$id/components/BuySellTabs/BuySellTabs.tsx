@@ -18,6 +18,7 @@ import {
   pickDodoContractBasedOnToken,
   pickMarketBasedOnSymbol,
   pickMockBaseToken,
+  pickMockQuoteToken,
 } from '~/consts/contracts';
 import {
   placeBuyOrderAndMatch,
@@ -60,10 +61,21 @@ const useBuySellActions = (
     buySellProps
   );
 
-  const marketBuySellProps = useMemo(
+  const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      mockQuoteLpToken: pickMockBaseToken[tokenAddress],
+      mockQuoteLpToken: pickMockQuoteToken[tokenAddress],
+      tokensAmount: amount,
+      minMaxQuote: 1000,
+    }),
+    [amount, tokenAddress]
+  );
+
+  const marketSellProps = useMemo(
+    () => ({
+      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+
+      mockBaseLpToken: pickMockBaseToken[tokenAddress],
       tokensAmount: amount,
       minMaxQuote: 1000, // minMaxQuote
     }),
@@ -72,13 +84,13 @@ const useBuySellActions = (
 
   const { invokeAction: handleMarketBuy } = useContractAction(
     buyBaseToken,
-    marketBuySellProps
+    marketBuyProps
   );
   const {
     invokeAction: handleMarketSell,
     status,
     isLoading,
-  } = useContractAction(sellBaseToken, marketBuySellProps);
+  } = useContractAction(sellBaseToken, marketSellProps);
 
   return {
     handleLimitSell,

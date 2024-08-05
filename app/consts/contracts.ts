@@ -60,6 +60,11 @@ export const pickMockBaseToken: Record<string, string> = {
   [OCEAN_TOKEN_ADDRESS]: mockBaseLpTokenOcean,
 };
 
+export const pickMockQuoteToken: Record<string, string> = {
+  [MARS1_TOKEN_ADDRESS]: mockQuoteLpTokenMars,
+  [OCEAN_TOKEN_ADDRESS]: mockQuoteLpTokenOcean,
+};
+
 // default
 export const pickMarketBasedOnSymbol: Record<string, MarketContractType> = {
   OCEAN: oceanContract,
