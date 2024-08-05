@@ -1,144 +1,56 @@
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { pickDodoContractBasedOnToken } from '~/consts/contracts';
 import {
   depositBaseToken,
   depositQuoteToken,
-  transferLPTokens,
   withdrawBaseToken,
   withdrawQuoteToken,
 } from '~/contracts/dodo.contract';
-import {
-  getStatusLabel,
-  STATUS_IDLE,
-  STATUS_PENDING,
-  useStatusFlag,
-} from '~/hooks/use-status-flag';
+import { useContractAction } from '~/contracts/hooks/useContractAction';
+import { getStatusLabel } from '~/hooks/use-status-flag';
 import { Button } from '~/lib/atoms/Button';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
 
 const useAdminAction = (amount: number, tokenAddress: string) => {
-  const { dapp } = useWalletContext();
-  const { status, dispatch, isLoading } = useStatusFlag();
+  const depositProps = useMemo(
+    () => ({
+      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+      rwaTokenAddress: tokenAddress,
+      tokensAmount: amount,
+    }),
+    [amount, tokenAddress]
+  );
 
-  const handleBaseTokenDeposit = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
+  const { invokeAction: handleBaseTokenDeposit, status: depositBaseStatus } =
+    useContractAction(depositBaseToken, depositProps);
 
-      const tezos = dapp?.tezos();
+  const { invokeAction: handleQuoteTokenDeposit, status: depositQuoteStatus } =
+    useContractAction(depositQuoteToken, depositProps);
 
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
+  const withdrawProps = useMemo(
+    () => ({
+      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+      tokensAmount: amount,
+    }),
+    [amount, tokenAddress]
+  );
 
-      await depositBaseToken({
-        tezos,
-        dispatch,
-        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-        rwaTokenAddress: tokenAddress,
-        tokensAmount: amount,
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, tokenAddress]);
+  const { invokeAction: handleBaseTokenWithdraw, status: withdrawBaseStatus } =
+    useContractAction(withdrawBaseToken, withdrawProps);
 
-  const handleQuoteTokenDeposit = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-
-      await depositQuoteToken({
-        tezos,
-        dispatch,
-        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-        rwaTokenAddress: tokenAddress,
-        tokensAmount: amount,
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, tokenAddress]);
-
-  const handleBaseTokenWithdraw = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-
-      await withdrawBaseToken({
-        tezos,
-        dispatch,
-        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-        tokensAmount: amount,
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, tokenAddress]);
-
-  const handleQuoteTokenWithdraw = useCallback(async () => {
-    try {
-      dispatch(STATUS_PENDING);
-
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        dispatch(STATUS_IDLE);
-        return;
-      }
-
-      await withdrawQuoteToken({
-        tezos,
-        dispatch,
-        dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-        tokensAmount: amount,
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [amount, dapp, dispatch, tokenAddress]);
-
-  const transfer = useCallback(async () => {
-    try {
-      const tezos = dapp?.tezos();
-
-      // No Toolkit
-      if (!tezos) {
-        return;
-      }
-
-      await transferLPTokens({
-        tezos,
-      });
-    } catch (e: unknown) {
-      console.log(e);
-    }
-  }, [dapp]);
+  const {
+    invokeAction: handleQuoteTokenWithdraw,
+    status: withdrawQuoteStatus,
+  } = useContractAction(withdrawQuoteToken, withdrawProps);
 
   return {
     handleBaseTokenDeposit,
     handleQuoteTokenDeposit,
     handleBaseTokenWithdraw,
     handleQuoteTokenWithdraw,
-    transfer,
-    status,
-    isLoading,
+    depositBaseStatus,
+    depositQuoteStatus,
+    withdrawBaseStatus,
+    withdrawQuoteStatus,
   };
 };
 
@@ -155,8 +67,10 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
     handleQuoteTokenDeposit,
     handleBaseTokenWithdraw,
     handleQuoteTokenWithdraw,
-    transfer,
-    status,
+    depositBaseStatus,
+    depositQuoteStatus,
+    withdrawBaseStatus,
+    withdrawQuoteStatus,
   } = useAdminAction(Number(amount), tokenAddress);
 
   const handleAdminChange = useCallback(() => {
@@ -174,7 +88,7 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
             <span className="uppercase font-semibold text-black">
               NOTE:&nbsp;
             </span>
-            The entered amount will work with both actions
+            The entered amount will work for all actions!
           </div>
           <div
             className={`w-full flex justify-between eq-input py-3 px-[14px]`}
@@ -198,19 +112,16 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
           </div>
           <div className="flex flex-col gap-4 mt-4">
             <Button className="w-full" onClick={handleBaseTokenDeposit}>
-              {getStatusLabel(status, 'Deposit Base')}
+              {getStatusLabel(depositBaseStatus, 'Deposit Base')}
             </Button>
             <Button className="w-full" onClick={handleQuoteTokenDeposit}>
-              {getStatusLabel(status, 'Deposit Quote')}
+              {getStatusLabel(depositQuoteStatus, 'Deposit Quote')}
             </Button>
             <Button className="w-full" onClick={handleBaseTokenWithdraw}>
-              {getStatusLabel(status, 'Withdraw Base')}
+              {getStatusLabel(withdrawBaseStatus, 'Withdraw Base')}
             </Button>
             <Button className="w-full" onClick={handleQuoteTokenWithdraw}>
-              {getStatusLabel(status, 'Withdraw Quote')}
-            </Button>
-            <Button className="w-full" onClick={transfer}>
-              Transfer
+              {getStatusLabel(withdrawQuoteStatus, 'Withdraw Quote')}
             </Button>
           </div>
         </div>

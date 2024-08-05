@@ -1,30 +1,14 @@
+/* eslint-disable no-useless-catch */
 import { TezosToolkit } from '@mavrykdynamics/taquito';
 import { DodoContractType, stablecoinContract } from '~/consts/contracts';
 
-import {
-  StatusDispatchType,
-  STATUS_CONFIRMING,
-  STATUS_ERROR,
-  STATUS_IDLE,
-  STATUS_SUCCESS,
-} from '~/hooks/use-status-flag';
-import {
-  BaseToken,
-  QuoteToken,
-  RWAToken,
-  Stablecoin,
-} from '~/lib/utils/formaters';
+import { RWAToken, Stablecoin } from '~/lib/utils/formaters';
 
-import { sleep } from '~/lib/utils/sleep';
-
-// TODO extract similar logic in one function after logic revision
-
-// Exchange market (market from dropdown)
+// Exchange market (market from dropdown & admin actions - [deposit, withdraw, transfer])
 
 type DefaultContractProps = {
   tezos: TezosToolkit;
   dodoContractAddress: DodoContractType;
-  dispatch: StatusDispatchType;
 };
 
 type BuySellBaseToken = {
@@ -36,7 +20,6 @@ type BuySellBaseToken = {
 export async function buyBaseToken({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
   mockQuoteLpToken, // mockQuoteLpTokenMars
   tokensAmount,
   minMaxQuote,
@@ -79,18 +62,8 @@ export async function buyBaseToken({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -98,7 +71,6 @@ export async function buyBaseToken({
 export async function sellBaseToken({
   tezos,
   dodoContractAddress,
-  dispatch,
   mockQuoteLpToken,
   tokensAmount,
   minMaxQuote,
@@ -142,18 +114,8 @@ export async function sellBaseToken({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -166,7 +128,6 @@ type DepositActionProps = {
 export async function depositBaseToken({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
   rwaTokenAddress,
   tokensAmount,
 }: DepositActionProps) {
@@ -207,18 +168,8 @@ export async function depositBaseToken({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -226,7 +177,6 @@ export async function depositBaseToken({
 export async function depositQuoteToken({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
   tokensAmount,
 }: DepositActionProps) {
   try {
@@ -266,18 +216,8 @@ export async function depositQuoteToken({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -289,7 +229,6 @@ type WithdrawActionProps = {
 export async function withdrawBaseToken({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
   tokensAmount,
 }: WithdrawActionProps) {
   try {
@@ -298,25 +237,15 @@ export async function withdrawBaseToken({
     const marketContract = await tezos.wallet.at(dodoContractAddress);
 
     const sell_order = marketContract.methodsObject['withdrawBaseToken'](
-      BaseToken(tokensAmount)
+      RWAToken(tokensAmount)
     ).toTransferParams();
 
     batch = batch.withTransfer(sell_order);
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -324,7 +253,6 @@ export async function withdrawBaseToken({
 export async function withdrawQuoteToken({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
   tokensAmount,
 }: WithdrawActionProps) {
   try {
@@ -333,25 +261,15 @@ export async function withdrawQuoteToken({
     const marketContract = await tezos.wallet.at(dodoContractAddress);
 
     const sell_order = marketContract.methodsObject['withdrawQuoteToken'](
-      QuoteToken(tokensAmount)
+      RWAToken(tokensAmount)
     ).toTransferParams();
 
     batch = batch.withTransfer(sell_order);
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -359,7 +277,6 @@ export async function withdrawQuoteToken({
 export async function withdrawAllBaseTokens({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
 }: BuySellBaseToken) {
   try {
     let batch = tezos.wallet.batch([]);
@@ -375,18 +292,8 @@ export async function withdrawAllBaseTokens({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
@@ -394,7 +301,6 @@ export async function withdrawAllBaseTokens({
 export async function withdrawAllQuoteTokens({
   tezos,
   dodoContractAddress, // only dodo
-  dispatch,
 }: BuySellBaseToken) {
   try {
     let batch = tezos.wallet.batch([]);
@@ -410,22 +316,13 @@ export async function withdrawAllQuoteTokens({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
 
+// NOTE DO NOT USE THIS ACTION IN CODE ! ONLY FOR TESTS
 export const transferLPTokens = async ({
   tezos,
   address = 'KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ',
@@ -455,6 +352,6 @@ export const transferLPTokens = async ({
 
     await batchOp.confirmation();
   } catch (e: unknown) {
-    console.log(e.message);
+    console.log(e);
   }
 };
