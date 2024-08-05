@@ -71,17 +71,17 @@ export async function buyBaseToken({
 // MARS1 example
 export async function sellBaseToken({
   tezos,
-  dodoContractAddress, // KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg
-  mockBaseLpToken, // KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ
+  dodoContractAddress,
+  tokenAddress,
   tokensAmount,
   minMaxQuote,
-}: Omit<BuySellBaseToken, 'mockQuoteLpToken'> & { mockBaseLpToken: string }) {
+}: Omit<BuySellBaseToken, 'mockQuoteLpToken'> & { tokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const quoteLpInstance = await tezos.wallet.at(mockBaseLpToken);
+    const quoteLpInstance = await tezos.wallet.at(tokenAddress);
 
     const open_ops = quoteLpInstance.methodsObject['update_operators']([
       {
