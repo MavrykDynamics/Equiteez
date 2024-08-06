@@ -25,12 +25,12 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       <NativeTable>
         <NativeTableHeader
           items={headerItems}
-          slotWidth={189}
+          slotWidth={182}
           alternativeDesign
         />
 
         {otc.buying.map(({ seller, tokensForSale, price, totalValue }) => (
-          <NativeTableRow key={seller} colWidth={189}>
+          <NativeTableRow key={seller} colWidth={182}>
             <NativeTableColumnSmall>{seller}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{tokensForSale}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{price}</NativeTableColumnSmall>
@@ -51,12 +51,12 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       <NativeTable>
         <NativeTableHeader
           items={headerItems}
-          slotWidth={189}
+          slotWidth={182}
           alternativeDesign
         />
 
         {otc.selling.map(({ seller, tokensForSale, price, totalValue }) => (
-          <NativeTableRow key={seller} colWidth={189}>
+          <NativeTableRow key={seller} colWidth={182}>
             <NativeTableColumnSmall>{seller}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{tokensForSale}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{price}</NativeTableColumnSmall>

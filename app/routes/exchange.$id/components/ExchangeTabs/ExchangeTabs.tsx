@@ -48,7 +48,7 @@ export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
   );
 
   return (
-    <section className="flex flex-col w-full max-h-[648px] min-h-[648px]">
+    <section className="flex flex-col max-h-[648px] min-h-[648px] w-[760px]">
       <div className="max-w-fit mt-4 pl-4">
         <TabSwitcher
           variant="secondary"
