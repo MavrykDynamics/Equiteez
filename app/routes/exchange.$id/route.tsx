@@ -113,14 +113,14 @@ export default function ExchangeDetails() {
             </div>
           </div>
 
-          <div className={'h-100 w-[1px] bg-divider'} />
+          <div className={'h-100 w-[1px] min-w-[1px] bg-divider'} />
 
           {/* Mid Panel ---------------------------- */}
           <div className="flex flex-grow">
             <ExchangeTabs estate={estateData} />
           </div>
 
-          <div className={'h-100 w-[1px] bg-divider'} />
+          <div className={'h-100 w-[1px] min-w-[1px] bg-divider'} />
 
           {/* Right Panel ---------------------------- */}
           <div className="flex flex-col w-[324px]">

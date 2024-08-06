@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import Money from '~/lib/atoms/Money';
 import {
   NativeTable,
   NativeTableColumnSmall,
@@ -33,7 +34,11 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
             <NativeTableColumnSmall>{seller}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{tokensForSale}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{price}</NativeTableColumnSmall>
-            <NativeTableColumnSmall>{totalValue}</NativeTableColumnSmall>
+            <NativeTableColumnSmall>
+              <div>
+                $<Money smallFractionFont={false}>{totalValue}</Money>
+              </div>
+            </NativeTableColumnSmall>
           </NativeTableRow>
         ))}
       </NativeTable>
@@ -55,7 +60,11 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
             <NativeTableColumnSmall>{seller}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{tokensForSale}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{price}</NativeTableColumnSmall>
-            <NativeTableColumnSmall>{totalValue}</NativeTableColumnSmall>
+            <NativeTableColumnSmall>
+              <div>
+                $<Money smallFractionFont={false}>{totalValue}</Money>
+              </div>
+            </NativeTableColumnSmall>
           </NativeTableRow>
         ))}
       </NativeTable>

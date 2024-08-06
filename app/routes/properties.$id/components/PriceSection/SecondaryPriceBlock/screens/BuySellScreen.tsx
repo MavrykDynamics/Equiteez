@@ -101,11 +101,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <span>Available Balance</span>
             <div>
               {isBuyAction ? (
-                <Money smallFractionFont={false}>
+                <Money smallFractionFont={false} shortened>
                   {userTokensBalances[stablecoinContract] || 0}
                 </Money>
               ) : (
-                <Money smallFractionFont={false}>
+                <Money smallFractionFont={false} shortened>
                   {userTokensBalances[token_address] || '0'}
                 </Money>
               )}

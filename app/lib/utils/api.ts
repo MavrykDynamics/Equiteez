@@ -31,7 +31,6 @@ export const api = async <T>(
       data: parsedData,
     };
   } catch (e) {
-    console.log(e);
     throw e;
   }
 };

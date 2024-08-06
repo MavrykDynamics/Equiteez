@@ -67,7 +67,10 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
         {options.map((option) => (
           <button
             key={option}
-            className="eq-slider outline-none focus:outline-none pt-1"
+            className={clsx(
+              'eq-slider outline-none focus:outline-none pt-1',
+              option !== 0 && option !== 100 && 'pl-[15px]'
+            )}
             onClick={() => handleOptionClick(option)}
           >
             {option}%
