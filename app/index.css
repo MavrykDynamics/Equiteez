@@ -208,6 +208,13 @@
   background-color: #bbbbbb; /* A slightly darker shade */
 }
 
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cccccc none;
+  }
+}
+
 *,
 *::after,
 *::before {
