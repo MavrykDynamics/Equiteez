@@ -270,7 +270,7 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
         <InputNumber
           label={'Total'}
           value={amount}
-          placeholder={'0'}
+          placeholder={'0.00'}
           valueText="USDT"
           name={'total'}
         />

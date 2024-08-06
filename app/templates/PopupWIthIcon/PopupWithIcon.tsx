@@ -34,7 +34,7 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
     >
       <div
         className={clsx(
-          'absolute right-0 top-8 px-8 w-full flex justify-end items-center max-w-16',
+          'absolute z-10 right-0 top-8 px-8 w-full flex justify-end items-center max-w-16',
           'transition duration-300 ease-in-out'
         )}
       >

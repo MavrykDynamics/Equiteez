@@ -71,12 +71,13 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 checked={value}
                 errorCaption={formState.errors.terms ? 'Required' : null}
                 label={
-                  <p className="text-content text-body-xs max-w-[521px]">
+                  <p className="text-content text-body-xs max-w-[521px] ">
                     I agree with the information laid out in the&nbsp;
-                    <Link to="/" className="text-blue-700">
+                    <Link to="/" className="text-blue-700 text-nowrap">
                       Subscription Agreement
                     </Link>
                     ,&nbsp;
+                    <br />
                     <Link to="/" className="text-blue-700">
                       Offering Circular
                     </Link>
