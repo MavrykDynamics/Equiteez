@@ -254,40 +254,43 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   </button>
                 ))}
               </div>
-              <div className="flex-1 overflow-y-auto">
-                <table
-                  className={clsx(
-                    'min-w-full r relative',
-                    styles.dropdowntable
-                  )}
-                >
-                  <thead className={clsx(styles.header, 'bg-white relative')}>
-                    <tr>
-                      {columns.map((column) => (
-                        <th
-                          key={column}
-                          scope="col"
-                          className={clsx(
-                            'whitespace-nowrap py-2 text-left text-caption-regular relative',
-                            'text-left'
-                          )}
-                        >
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                    <div className={styles.divider} />
-                  </thead>
-                  <tbody className="divide-y divide-transparent bg-white">
+              <div className="flex flex-col flex-1 overflow-hidden">
+                {/* Table Header ------ */}
+                <div className={clsx(styles.dropdowntable)}>
+                  <div
+                    className={clsx(
+                      styles.tableHeader,
+                      styles.grid,
+                      'bg-white'
+                    )}
+                  >
+                    {columns.map((column) => (
+                      <div
+                        key={column}
+                        className={clsx(
+                          'whitespace-nowrap py-2 text-left text-caption-regular relative inline-block',
+                          'text-left'
+                        )}
+                      >
+                        {column}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Table body ------ */}
+                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px]">
                     {filteredEstates.map((estate) => {
                       const identifier =
                         estate.assetDetails.blockchain[0].identifier;
                       return (
-                        <tr
+                        <div
                           key={estate.token_address}
-                          className="cursor-pointer"
+                          className={clsx(
+                            'cursor-pointer flex items-center',
+                            styles.grid
+                          )}
                         >
-                          <td className={clsx('py-[18px] pr-3', styles.star)}>
+                          <div className={clsx('py-[18px] pr-3', styles.star)}>
                             <button onClick={() => handleStarClick(identifier)}>
                               <StarIcon
                                 className={clsx(
@@ -298,22 +301,25 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                                 )}
                               />
                             </button>
-                          </td>
-                          <td
+                          </div>
+                          <div
+                            role="presentation"
                             className={`eq-table-cell text-content`}
                             onClick={() => handleEstateClick(identifier)}
                           >
                             {estate.name}/USDT
-                          </td>
+                          </div>
 
-                          <td
+                          <div
+                            role="presentation"
                             className="eq-table-cell text-left text-content"
                             onClick={() => handleEstateClick(identifier)}
                           >
                             {estate.assetDetails.priceDetails.price}
-                          </td>
+                          </div>
 
-                          <td
+                          <div
+                            role="presentation"
                             className="eq-table-cell text-left first text-green-500"
                             onClick={() => handleEstateClick(identifier)}
                           >
@@ -323,12 +329,12 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                                 .projectedRentalYield
                             }
                             %
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
             </>
           )}
