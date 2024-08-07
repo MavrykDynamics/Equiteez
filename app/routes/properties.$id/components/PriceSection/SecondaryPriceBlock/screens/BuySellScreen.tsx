@@ -78,6 +78,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
+
     const slippageAdjustment =
       Number(total) * (1 - Number(slippagePercentage || 0) / 100);
     return new BigNumber(buyBalance)
@@ -173,7 +174,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <InfoTooltip content="Est fee" />
           </div>
           <p>
-            {calculateEstfee(total)} {symbol}
+            <Money smallFractionFont={false} shortened>
+              {calculateEstfee(total)}
+            </Money>
+            &nbsp;{symbol}
           </p>
         </div>
 

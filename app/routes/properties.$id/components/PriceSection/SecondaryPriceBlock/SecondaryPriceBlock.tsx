@@ -201,6 +201,8 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   useEffect(() => {
     if (amount && tokensPrices[estate.token_address]) {
       setTotal(Number(amount) * tokensPrices[estate.token_address]);
+    } else if (!amount) {
+      setTotal('');
     }
   }, [amount, estate.token_address, tokensPrices]);
 

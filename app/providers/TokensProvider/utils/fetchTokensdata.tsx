@@ -36,7 +36,6 @@ export const fetchTokensMetadata = async (
   tokens: TokenType[]
 ): Promise<StringRecord<TokenMetadata>> => {
   try {
-    console.log(tokens, 'tokens');
     const promises = tokens.map((t) =>
       api<TokenMetadata>(
         `${process.env.TOKENS_METADATA_API}/metadata/${t.contract}/${t.id}`,
