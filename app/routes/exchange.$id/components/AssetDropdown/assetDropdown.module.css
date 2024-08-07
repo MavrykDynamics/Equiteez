@@ -20,6 +20,10 @@
   width: auto;
 }
 
+.dropdowntable td.star:first-child {
+  width: 28px;
+}
+
 .dropdowntable th:not(:first-child),
 .dropdowntable td:not(:first-child) {
   width: 119px;

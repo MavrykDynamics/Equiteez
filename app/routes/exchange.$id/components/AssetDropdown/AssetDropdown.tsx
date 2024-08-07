@@ -287,7 +287,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                           key={estate.token_address}
                           className="cursor-pointer"
                         >
-                          <td className="py-[18px] pr-3 min-w-[28px]">
+                          <td className={clsx('py-[18px] pr-3', styles.star)}>
                             <button onClick={() => handleStarClick(identifier)}>
                               <StarIcon
                                 className={clsx(
