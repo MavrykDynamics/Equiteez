@@ -1,7 +1,7 @@
 import { api } from '~/lib/utils/api';
 import {
   TokenMetadata,
-  tokenMetadataSchema,
+  // tokenMetadataSchema,
   TokenType,
 } from '../tokens.provider.types';
 import { TOKENS_SCAM_RECORD } from './consts';
@@ -40,8 +40,7 @@ export const fetchTokensMetadata = async (
     const promises = tokens.map((t) =>
       api<TokenMetadata>(
         `${process.env.TOKENS_METADATA_API}/metadata/${t.contract}/${t.id}`,
-        { method: 'GET' },
-        tokenMetadataSchema
+        { method: 'GET' }
       )
     );
 

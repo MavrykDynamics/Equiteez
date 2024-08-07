@@ -30,7 +30,6 @@ import {
   getItemFromStorage,
   setItemInStorage,
 } from '~/lib/utils/local-storage';
-import { Divider } from '~/lib/atoms/Divider';
 
 // filter fns
 function filterByName(estates: EstateType[], name: string) {

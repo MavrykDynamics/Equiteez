@@ -77,6 +77,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [selectedPercentage, setAmount, buyBalance, tokensPrices, token_address]);
 
   const minReceived = useMemo(() => {
+    if (!total) return 0;
     const slippageAdjustment =
       Number(total) * (1 - Number(slippagePercentage || 0) / 100);
     return new BigNumber(buyBalance)
