@@ -40,7 +40,7 @@ function filterByName(estates: EstateType[], name: string) {
 
 function filterByStarred(estates: EstateType[]) {
   const starredEstates = getItemFromStorage<string[]>(STARRED);
-  if (!starredEstates) return estates;
+  if (!starredEstates || starredEstates.length === 0) return estates;
 
   return estates.filter((es) =>
     starredEstates.includes(es.assetDetails.blockchain[0].identifier)
