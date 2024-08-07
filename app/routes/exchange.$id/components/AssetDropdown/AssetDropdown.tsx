@@ -30,6 +30,7 @@ import {
   getItemFromStorage,
   setItemInStorage,
 } from '~/lib/utils/local-storage';
+import { Divider } from '~/lib/atoms/Divider';
 
 // filter fns
 function filterByName(estates: EstateType[], name: string) {
@@ -257,18 +258,18 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
               <div className="flex-1 overflow-y-auto">
                 <table
                   className={clsx(
-                    'min-w-full divide-y divide-divider',
+                    'min-w-full r relative',
                     styles.dropdowntable
                   )}
                 >
-                  <thead>
+                  <thead className={clsx(styles.header, 'bg-white relative')}>
                     <tr>
                       {columns.map((column) => (
                         <th
                           key={column}
                           scope="col"
                           className={clsx(
-                            'whitespace-nowrap py-2 text-left text-caption-regular',
+                            'whitespace-nowrap py-2 text-left text-caption-regular relative',
                             'text-left'
                           )}
                         >
@@ -276,6 +277,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                         </th>
                       ))}
                     </tr>
+                    <div className={styles.divider} />
                   </thead>
                   <tbody className="divide-y divide-transparent bg-white">
                     {filteredEstates.map((estate) => {
@@ -286,7 +288,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                           key={estate.token_address}
                           className="cursor-pointer"
                         >
-                          <td className="py-[18px] pr-3">
+                          <td className="py-[18px] pr-3 min-w-[28px]">
                             <button onClick={() => handleStarClick(identifier)}>
                               <StarIcon
                                 className={clsx(

@@ -2,8 +2,17 @@
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  overflow-y: auto;
   flex: 1;
+}
+
+.dropdowntable thead .divider {
+  position: absolute;
+  content: '';
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background-color: #e6e8e7;
 }
 
 .dropdowntable th:first-child,
@@ -14,4 +23,11 @@
 .dropdowntable th:not(:first-child),
 .dropdowntable td:not(:first-child) {
   width: 119px;
+}
+
+.dropdowntable .header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  width: 100%;
 }

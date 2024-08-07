@@ -91,7 +91,7 @@ export const DropdownFaceContent: FC<
         height: ref.current.clientHeight,
       });
     }
-  }, [IS_WEB, setFaceContentDimensions]);
+  }, [IS_WEB, setFaceContentDimensions, ref.current]);
 
   return (
     <div

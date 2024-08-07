@@ -11,160 +11,24 @@
         {
           "kind": "temporary",
           "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
-          "location": 622,
-          "with": { "int": "173" }
+          "location": 1157,
+          "with": { "int": "175" }
         }
       ],
       "errorDetails": "Error occurred during estimation",
       "operationsWithResults": [
         {
           "kind": "transaction",
-          "source": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
+          "source": "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
           "fee": "0",
-          "counter": "347",
-          "gas_limit": "650000",
-          "storage_limit": "60000",
-          "amount": "0",
-          "destination": "KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ",
-          "parameters": {
-            "entrypoint": "update_operators",
-            "value": [
-              {
-                "prim": "Left",
-                "args": [
-                  {
-                    "prim": "Pair",
-                    "args": [
-                      { "string": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV" },
-                      {
-                        "prim": "Pair",
-                        "args": [
-                          { "string": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg" },
-                          { "int": "0" }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "metadata": {
-            "operation_result": {
-              "status": "backtracked",
-              "storage": [
-                { "bytes": "0110ffa7db8fe7936d286e3514b2801cbfc128375a00" },
-                { "prim": "None" },
-                { "bytes": "01bee797747c8d51995d2ad555b99b57afc001ca9f00" },
-                { "prim": "False" },
-                { "int": "2589" },
-                { "int": "2590" },
-                { "int": "2591" },
-                { "int": "2592" },
-                { "int": "2593" },
-                { "int": "2594" },
-                { "int": "2595" }
-              ],
-              "balance_updates": [
-                {
-                  "kind": "contract",
-                  "contract": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
-                  "change": "-16750",
-                  "origin": "block"
-                },
-                {
-                  "kind": "burned",
-                  "category": "storage fees",
-                  "change": "16750",
-                  "origin": "block"
-                }
-              ],
-              "consumed_milligas": "5134614",
-              "storage_size": "9463",
-              "paid_storage_size_diff": "67",
-              "lazy_storage_diff": [
-                {
-                  "kind": "big_map",
-                  "id": "2595",
-                  "diff": {
-                    "action": "update",
-                    "updates": [
-                      {
-                        "key_hash": "expru5hGob3ebE6tvajZnYoYWkd2VMg6DKS7zazGEFeFho34nZJ88x",
-                        "key": {
-                          "prim": "Pair",
-                          "args": [
-                            {
-                              "prim": "Pair",
-                              "args": [
-                                {
-                                  "bytes": "0000afd577b6410cec0f79993dfb68c5b89515ed6768"
-                                },
-                                {
-                                  "bytes": "0160a61ba4425a6426755236f6aa837a7019427ce400"
-                                }
-                              ]
-                            },
-                            { "int": "0" }
-                          ]
-                        },
-                        "value": { "prim": "Unit" }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2594",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2593",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2592",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2591",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2590",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2589",
-                  "diff": { "action": "update", "updates": [] }
-                }
-              ]
-            }
-          }
-        },
-        {
-          "kind": "transaction",
-          "source": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
-          "fee": "0",
-          "counter": "348",
-          "gas_limit": "650000",
+          "counter": "7038",
+          "gas_limit": "1040000",
           "storage_limit": "60000",
           "amount": "0",
           "destination": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
           "parameters": {
-            "entrypoint": "buyBaseToken",
-            "value": {
-              "prim": "Pair",
-              "args": [
-                { "int": "1000000000000000000" },
-                { "int": "100000000000000000000" }
-              ]
-            }
+            "entrypoint": "withdrawBaseToken",
+            "value": { "int": "2000" }
           },
           "metadata": {
             "operation_result": {
@@ -179,56 +43,22 @@
                 {
                   "kind": "temporary",
                   "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
-                  "location": 622,
-                  "with": { "int": "173" }
+                  "location": 1157,
+                  "with": { "int": "175" }
                 }
               ]
             }
           }
-        },
-        {
-          "kind": "transaction",
-          "source": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
-          "fee": "0",
-          "counter": "349",
-          "gas_limit": "650000",
-          "storage_limit": "60000",
-          "amount": "0",
-          "destination": "KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ",
-          "parameters": {
-            "entrypoint": "update_operators",
-            "value": [
-              {
-                "prim": "Right",
-                "args": [
-                  {
-                    "prim": "Pair",
-                    "args": [
-                      { "string": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV" },
-                      {
-                        "prim": "Pair",
-                        "args": [
-                          { "string": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg" },
-                          { "int": "0" }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "metadata": { "operation_result": { "status": "skipped" } }
         }
       ],
       "name": "TezosOperationError",
       "lastError": {
         "kind": "temporary",
         "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
-        "location": 622,
-        "with": { "int": "173" }
+        "location": 1157,
+        "with": { "int": "175" }
       },
-      "message": "173",
+      "message": "175",
       "isError": true
     },
     {
@@ -242,160 +72,24 @@
         {
           "kind": "temporary",
           "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
-          "location": 622,
-          "with": { "int": "173" }
+          "location": 1157,
+          "with": { "int": "175" }
         }
       ],
       "errorDetails": "Error occurred during estimation",
       "operationsWithResults": [
         {
           "kind": "transaction",
-          "source": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
+          "source": "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
           "fee": "0",
-          "counter": "347",
-          "gas_limit": "650000",
-          "storage_limit": "60000",
-          "amount": "0",
-          "destination": "KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ",
-          "parameters": {
-            "entrypoint": "update_operators",
-            "value": [
-              {
-                "prim": "Left",
-                "args": [
-                  {
-                    "prim": "Pair",
-                    "args": [
-                      { "string": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV" },
-                      {
-                        "prim": "Pair",
-                        "args": [
-                          { "string": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg" },
-                          { "int": "0" }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "metadata": {
-            "operation_result": {
-              "status": "backtracked",
-              "storage": [
-                { "bytes": "0110ffa7db8fe7936d286e3514b2801cbfc128375a00" },
-                { "prim": "None" },
-                { "bytes": "01bee797747c8d51995d2ad555b99b57afc001ca9f00" },
-                { "prim": "False" },
-                { "int": "2589" },
-                { "int": "2590" },
-                { "int": "2591" },
-                { "int": "2592" },
-                { "int": "2593" },
-                { "int": "2594" },
-                { "int": "2595" }
-              ],
-              "balance_updates": [
-                {
-                  "kind": "contract",
-                  "contract": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
-                  "change": "-16750",
-                  "origin": "block"
-                },
-                {
-                  "kind": "burned",
-                  "category": "storage fees",
-                  "change": "16750",
-                  "origin": "block"
-                }
-              ],
-              "consumed_milligas": "5134614",
-              "storage_size": "9463",
-              "paid_storage_size_diff": "67",
-              "lazy_storage_diff": [
-                {
-                  "kind": "big_map",
-                  "id": "2595",
-                  "diff": {
-                    "action": "update",
-                    "updates": [
-                      {
-                        "key_hash": "expru5hGob3ebE6tvajZnYoYWkd2VMg6DKS7zazGEFeFho34nZJ88x",
-                        "key": {
-                          "prim": "Pair",
-                          "args": [
-                            {
-                              "prim": "Pair",
-                              "args": [
-                                {
-                                  "bytes": "0000afd577b6410cec0f79993dfb68c5b89515ed6768"
-                                },
-                                {
-                                  "bytes": "0160a61ba4425a6426755236f6aa837a7019427ce400"
-                                }
-                              ]
-                            },
-                            { "int": "0" }
-                          ]
-                        },
-                        "value": { "prim": "Unit" }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2594",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2593",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2592",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2591",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2590",
-                  "diff": { "action": "update", "updates": [] }
-                },
-                {
-                  "kind": "big_map",
-                  "id": "2589",
-                  "diff": { "action": "update", "updates": [] }
-                }
-              ]
-            }
-          }
-        },
-        {
-          "kind": "transaction",
-          "source": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
-          "fee": "0",
-          "counter": "348",
-          "gas_limit": "650000",
+          "counter": "7038",
+          "gas_limit": "1040000",
           "storage_limit": "60000",
           "amount": "0",
           "destination": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
           "parameters": {
-            "entrypoint": "buyBaseToken",
-            "value": {
-              "prim": "Pair",
-              "args": [
-                { "int": "1000000000000000000" },
-                { "int": "100000000000000000000" }
-              ]
-            }
+            "entrypoint": "withdrawBaseToken",
+            "value": { "int": "2000" }
           },
           "metadata": {
             "operation_result": {
@@ -410,56 +104,22 @@
                 {
                   "kind": "temporary",
                   "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
-                  "location": 622,
-                  "with": { "int": "173" }
+                  "location": 1157,
+                  "with": { "int": "175" }
                 }
               ]
             }
           }
-        },
-        {
-          "kind": "transaction",
-          "source": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
-          "fee": "0",
-          "counter": "349",
-          "gas_limit": "650000",
-          "storage_limit": "60000",
-          "amount": "0",
-          "destination": "KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ",
-          "parameters": {
-            "entrypoint": "update_operators",
-            "value": [
-              {
-                "prim": "Right",
-                "args": [
-                  {
-                    "prim": "Pair",
-                    "args": [
-                      { "string": "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV" },
-                      {
-                        "prim": "Pair",
-                        "args": [
-                          { "string": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg" },
-                          { "int": "0" }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "metadata": { "operation_result": { "status": "skipped" } }
         }
       ],
       "name": "TezosOperationError",
       "lastError": {
         "kind": "temporary",
         "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
-        "location": 622,
-        "with": { "int": "173" }
+        "location": 1157,
+        "with": { "int": "175" }
       },
-      "message": "173",
+      "message": "175",
       "isError": true
     }
   ]
