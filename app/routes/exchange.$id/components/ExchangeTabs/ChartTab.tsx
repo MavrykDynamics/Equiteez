@@ -89,7 +89,7 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
   );
 
   return (
-    <div className="overflow-y-hidden flex flex-col">
+    <div className="overflow-hidden flex flex-col">
       <div className="w-full flex justify-between items-center overflow-x-hidden">
         <div className="flex gap-x-3 text-caption-regular -mt-1">
           <span className="min-w-[21px] flex justify-center">1H</span>

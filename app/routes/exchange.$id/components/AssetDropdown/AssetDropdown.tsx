@@ -223,7 +223,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
       </ClickableDropdownArea>
 
       <DropdownBodyContent topMargin={12} customWidth={420} customHeight={526}>
-        <div className="p-4 h-full flex flex-col">
+        <div className="p-4 h-full flex flex-col overflow-x-hidden">
           <Search
             showSearchIcon={estateName.length > 0}
             handleClose={handleClose}
@@ -278,7 +278,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   </div>
 
                   {/* Table body ------ */}
-                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px]">
+                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px] overflow-x-hidden">
                     {filteredEstates.map((estate) => {
                       const identifier =
                         estate.assetDetails.blockchain[0].identifier;
