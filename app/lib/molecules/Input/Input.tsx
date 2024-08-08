@@ -16,6 +16,7 @@ type InputProps = {
   labelVariant?: 'default' | 'opacity';
   disabled?: boolean;
   errorCaption?: string;
+  errorCaptionCalassname?: string;
 } & React.HTMLAttributes<HTMLInputElement>;
 
 const labelVariants = {
@@ -35,6 +36,7 @@ export const InputNumber: FC<InputProps> = ({
   labelVariant = 'default',
   min = 1,
   disabled = false,
+  errorCaptionCalassname,
   ...rest
 }) => {
   return (
@@ -75,7 +77,11 @@ export const InputNumber: FC<InputProps> = ({
 
         {errorCaption && (
           <span
-            className={clsx('text-body-xs text-error', styles.errorCaprion)}
+            className={clsx(
+              'text-body-xs text-error',
+              styles.errorCaprion,
+              errorCaptionCalassname
+            )}
           >
             {errorCaption}
           </span>

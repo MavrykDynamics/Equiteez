@@ -40,7 +40,7 @@ function filterByName(estates: EstateType[], name: string) {
 
 function filterByStarred(estates: EstateType[]) {
   const starredEstates = getItemFromStorage<string[]>(STARRED);
-  if (!starredEstates || starredEstates.length === 0) return estates;
+  if (!starredEstates) return [];
 
   return estates.filter((es) =>
     starredEstates.includes(es.assetDetails.blockchain[0].identifier)
@@ -231,29 +231,27 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
             placeholder="Search..."
             onChange={onChange}
           />
+          <div className="my-4 flex items-center gap-x-1">
+            {Object.entries(filtersData).map(([id, filterVal]) => (
+              <button
+                key={id}
+                onClick={() => handleFilterClick(id)}
+                className={clsx(
+                  'py-2 px-3 bg-gray-100 text-content text-caption cursor-pointer outline-none',
+                  'transition ease-in-out duration-300',
+                  'flex items-center justify-center rounded-lg border',
+                  activeFiltersIds[id] ? 'border-content' : 'border-transparent'
+                )}
+              >
+                {filterVal.label}
+              </button>
+            ))}
+          </div>
           {hasNoresults ? (
             <NoResultsScreen word={estateName} />
           ) : (
             <>
               {' '}
-              <div className="my-4 flex items-center gap-x-1">
-                {Object.entries(filtersData).map(([id, filterVal]) => (
-                  <button
-                    key={id}
-                    onClick={() => handleFilterClick(id)}
-                    className={clsx(
-                      'py-2 px-3 bg-gray-100 text-content text-caption cursor-pointer outline-none',
-                      'transition ease-in-out duration-300',
-                      'flex items-center justify-center rounded-lg border',
-                      activeFiltersIds[id]
-                        ? 'border-content'
-                        : 'border-transparent'
-                    )}
-                  >
-                    {filterVal.label}
-                  </button>
-                ))}
-              </div>
               <div className="flex flex-col flex-1 overflow-hidden">
                 {/* Table Header ------ */}
                 <div className={clsx(styles.dropdowntable)}>

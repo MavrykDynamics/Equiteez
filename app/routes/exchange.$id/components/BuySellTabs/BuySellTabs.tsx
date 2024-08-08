@@ -10,13 +10,11 @@ import {
 import clsx from 'clsx';
 
 // icons
-import DotFill from '~/icons/dot-fill.svg?react';
-import DotEmpty from '~/icons/dot-empty.svg?react';
-import EQLogo from '~/icons/eq-small-logo.svg?react';
 import { Button } from '~/lib/atoms/Button';
 import {
   pickDodoContractBasedOnToken,
   pickMarketBasedOnSymbol,
+  stablecoinContract,
 } from '~/consts/contracts';
 import {
   placeBuyOrderAndMatch,
@@ -28,6 +26,8 @@ import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, SELL_TAB } from './consts';
 import { AdminScreen } from './AdminScreen';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
+import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
+import { InputNumber } from '~/lib/molecules/Input/Input';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -101,7 +101,7 @@ const useBuySellActions = (
 
 export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const { tokensPrices } = useTokensContext();
-  const { isAdmin } = useUserContext();
+  const { isAdmin, userTokensBalances } = useUserContext();
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
 
@@ -127,6 +127,35 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   // inputs state
   const [price, setPrice] = useState<number | string>(Number(''));
   const [amount, setAmount] = useState<number | string>(Number(''));
+  const [total, setTotal] = useState<string | number>('');
+  const [selectedPercentage, setSelectedPercentage] = useState(0);
+
+  const buyBalance = useMemo(
+    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
+    [userTokensBalances]
+  );
+
+  const hasTotalError =
+    typeof total === 'number' ? Number(total) > buyBalance : false;
+
+  useEffect(() => {
+    if (selectedPercentage) {
+      const amountToSpend = (selectedPercentage * buyBalance) / 100;
+      const numberOfTokens = amountToSpend / tokensPrices[tokenAddress];
+      setAmount(numberOfTokens);
+    } else {
+      setAmount(0);
+    }
+  }, [selectedPercentage, setAmount, buyBalance, tokensPrices, tokenAddress]);
+
+  // update total
+  useEffect(() => {
+    if (amount && tokensPrices[tokenAddress]) {
+      setTotal(Number(amount) * tokensPrices[tokenAddress]);
+    } else if (!amount) {
+      setTotal('');
+    }
+  }, [amount, tokenAddress, tokensPrices]);
 
   // contract calls based on markt or limit
   const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
@@ -267,45 +296,27 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
             </div>
 
             <div className="flex flex-col w-full gap-1">
-              <div className="flex w-full h-2.5 relative">
-                <div className="absolute w-full h-full flex justify-between z-20">
-                  <EQLogo className="size-2.5 cursor-grab" />
-                  <DotEmpty className="size-2.5" />
-                  <DotEmpty className="size-2.5" />
-                  <DotEmpty className="size-2.5" />
-                  <DotFill className="size-2.5" />
-                </div>
-
-                <div className="absolute w-full h-full flex items-center z-10">
-                  <div className="w-full h-[1px] bg-divider"></div>
-                </div>
-              </div>
-
-              <div className="flex w-full justify-between">
-                <span className="eq-slider">
-                  0%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </span>
-                <span className="eq-slider">&nbsp;25%&nbsp;</span>
-                <span className="eq-slider">&nbsp;&nbsp;50%&nbsp;&nbsp;</span>
-                <span className="eq-slider">&nbsp;&nbsp;&nbsp;75%</span>
-                <span className="eq-slider">100%</span>
-              </div>
+              <ESnakeblock
+                selectedOption={selectedPercentage}
+                setSelectedOption={setSelectedPercentage}
+              />
             </div>
           </div>
 
-          <div className="flex w-full">
-            <div
-              className={`w-full flex justify-between eq-input py-3 px-[14px]`}
-            >
-              <span className="text-content-secondary opacity-50">Total</span>
-
-              <span className="flex gap-1">
-                <span className="">
-                  {amount ? Number(price) * Number(amount) : ''}
-                </span>
-                <span className="">USDT</span>
-              </span>
-            </div>
+          <div className="w-full mb-3">
+            <InputNumber
+              label={<p>Total</p>}
+              value={total}
+              handleValue={setTotal}
+              placeholder={'0.00'}
+              valueText="USDT"
+              name={'total'}
+              className="text-caption-regular px-[14px]"
+              errorCaptionCalassname="text-caption-regular"
+              errorCaption={
+                hasTotalError ? 'Amount exceeds available balance' : undefined
+              }
+            />
           </div>
 
           <div className="flex flex-col w-full gap-1">
