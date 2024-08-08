@@ -91,7 +91,7 @@ export const DropdownFaceContent: FC<
         height: ref.current.clientHeight,
       });
     }
-  }, [IS_WEB, setFaceContentDimensions]);
+  }, [IS_WEB, setFaceContentDimensions, ref.current]);
 
   return (
     <div
@@ -150,7 +150,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
     >
       <div
         style={{ maxHeight, height: customHeight }}
-        className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll"
+        className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll min-w-full"
       >
         {children}
       </div>
