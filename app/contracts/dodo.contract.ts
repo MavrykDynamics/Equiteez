@@ -25,10 +25,9 @@ type BuySellBaseToken = {
 export async function buyBaseToken({
   tezos,
   dodoContractAddress, // only dodo
-  mockQuoteLpToken, // LP quote token address
   tokensAmount,
   minMaxQuote,
-}: BuySellBaseToken) {
+}: Omit<BuySellBaseToken, 'mockQuoteLpToken'>) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -40,7 +39,7 @@ export async function buyBaseToken({
       {
         add_operator: {
           owner: sender,
-          operator: mockQuoteLpToken,
+          operator: dodoContractAddress,
           token_id: 0,
         },
       },
@@ -55,7 +54,7 @@ export async function buyBaseToken({
       {
         remove_operator: {
           owner: sender,
-          operator: mockQuoteLpToken,
+          operator: dodoContractAddress,
           token_id: 0,
         },
       },

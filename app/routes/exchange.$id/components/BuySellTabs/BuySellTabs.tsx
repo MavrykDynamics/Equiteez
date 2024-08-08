@@ -17,7 +17,6 @@ import { Button } from '~/lib/atoms/Button';
 import {
   pickDodoContractBasedOnToken,
   pickMarketBasedOnSymbol,
-  pickMockQuoteToken,
 } from '~/consts/contracts';
 import {
   placeBuyOrderAndMatch,
@@ -63,7 +62,6 @@ const useBuySellActions = (
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      mockQuoteLpToken: pickMockQuoteToken[tokenAddress],
       tokensAmount: amount,
       minMaxQuote: 1000,
     }),
