@@ -28,6 +28,8 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 import { InputNumber } from '~/lib/molecules/Input/Input';
+import { numberToFixed, rwaToFixed } from '~/lib/utils/formaters';
+import { formatToNumber } from '~/lib/molecules/Input/utils';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -141,7 +143,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   useEffect(() => {
     if (selectedPercentage) {
       const amountToSpend = (selectedPercentage * buyBalance) / 100;
-      const numberOfTokens = amountToSpend / tokensPrices[tokenAddress];
+      const numberOfTokens = rwaToFixed(
+        amountToSpend / tokensPrices[tokenAddress]
+      );
       setAmount(numberOfTokens);
     } else {
       setAmount(0);
@@ -151,7 +155,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   // update total
   useEffect(() => {
     if (amount && tokensPrices[tokenAddress]) {
-      setTotal(Number(amount) * tokensPrices[tokenAddress]);
+      setTotal(numberToFixed(Number(amount) * tokensPrices[tokenAddress]));
     } else if (!amount) {
       setTotal('');
     }
@@ -261,7 +265,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       type="number"
                       min={1}
                       value={price || ''}
-                      onChange={(e) => setPrice(Number(e.target.value))}
+                      onChange={(e) =>
+                        setPrice(Number(formatToNumber(e.target.value)))
+                      }
                       placeholder="0.00"
                       className="w-full bg-transparent focus:outline-none text-right"
                       disabled={!isLimitType}
@@ -285,7 +291,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       type="number"
                       min={1}
                       value={amount || ''}
-                      onChange={(e) => setAmount(Number(e.target.value))}
+                      onChange={(e) =>
+                        setAmount(
+                          rwaToFixed(Number(formatToNumber(e.target.value)))
+                        )
+                      }
                       placeholder="Minimum 1"
                       className="w-full bg-transparent focus:outline-none text-right"
                     ></input>

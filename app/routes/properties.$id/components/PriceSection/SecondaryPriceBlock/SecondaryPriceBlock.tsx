@@ -180,6 +180,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               tokenPrice={tokensPrices[estate.token_address]}
               total={Number(total)}
               actionType={BUY}
+              amount={amount}
               estFee={0.21}
               actionCb={handleOrderbookBuy}
             />
@@ -258,6 +259,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               total={Number(total)}
               actionType={SELL}
               estFee={0.21}
+              amount={amount}
               actionCb={handleOrderbookSell}
             />
           )}
@@ -335,6 +337,7 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               estate={estate}
               tokenPrice={price}
               total={price * amount}
+              amount={amount}
               actionType={activeTabId}
               estFee={0.21}
               actionCb={() => {}}

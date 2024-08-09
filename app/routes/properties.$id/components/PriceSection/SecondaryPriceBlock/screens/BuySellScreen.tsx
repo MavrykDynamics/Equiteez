@@ -26,6 +26,7 @@ import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { calculateEstfee } from '~/lib/utils/calcFns';
 import BigNumber from 'bignumber.js';
+import { rwaToFixed } from '~/lib/utils/formaters';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -69,7 +70,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   useEffect(() => {
     if (selectedPercentage) {
       const amountToSpend = (selectedPercentage * buyBalance) / 100;
-      const numberOfTokens = amountToSpend / tokensPrices[token_address];
+      const numberOfTokens = rwaToFixed(
+        amountToSpend / tokensPrices[token_address]
+      );
       setAmount(numberOfTokens);
     } else {
       setAmount(0);

@@ -8,6 +8,7 @@ import { Divider } from '~/lib/atoms/Divider';
 import { Link } from '@remix-run/react';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import clsx from 'clsx';
+import Money from '~/lib/atoms/Money';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
@@ -15,6 +16,7 @@ type BuySellConfirmationScreenProps = {
   tokenPrice: number;
   estFee: number;
   total: number;
+  amount: number | string;
   estate: SecondaryEstate;
   currency?: 'USDT';
 };
@@ -38,6 +40,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   tokenPrice,
   estFee,
   total,
+  amount,
   estate,
   currency = 'USDT',
 }) => {
@@ -166,7 +169,13 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
             </p>
             <p className="flex justify-between text-body-xs text-content">
               <span>Amount</span>
-              <span>10.00 {symbol}</span>
+              <div>
+                <Money shortened smallFractionFont={false}>
+                  {amount}
+                </Money>
+                &nbsp;
+                {symbol}
+              </div>
             </p>
             <p className="flex justify-between text-body-xs text-content">
               <span>Est. Fee</span>
@@ -174,12 +183,16 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 {estFee} {symbol}
               </span>
             </p>
-            <p className="flex justify-between text-body-xs text-content font-semibold">
+            <div className="flex justify-between text-body-xs text-content font-semibold">
               <span>Total Amount</span>
-              <span>
-                {total} {currency}
-              </span>
-            </p>
+              <div>
+                <Money shortened smallFractionFont={false}>
+                  {total}
+                </Money>
+                &nbsp;
+                {currency}
+              </div>
+            </div>
           </div>
           <Divider className="my-4" />
           <p className="text-caption-regular text-content-secondary mb-6">
