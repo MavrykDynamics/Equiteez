@@ -8,7 +8,7 @@ import {
   STATUS_IDLE,
   STATUS_SUCCESS,
 } from '~/hooks/use-status-flag';
-import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
+import { formatRWAPrice, tokensToAtoms } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
 
@@ -20,6 +20,7 @@ type OrderbookBuySellParams = {
   dispatch: StatusDispatchType;
   tokensAmount: number;
   pricePerToken: number;
+  decimals: number;
 };
 
 export async function orderbookBuy({
@@ -28,6 +29,7 @@ export async function orderbookBuy({
   dispatch,
   tokensAmount,
   pricePerToken,
+  decimals,
 }: OrderbookBuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -37,7 +39,7 @@ export async function orderbookBuy({
 
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
-    const rwaTokenAmount = RWAToken(tokensAmount);
+    const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
     const orderExpiry = null;
@@ -105,6 +107,7 @@ export async function orderbookSell({
   dispatch,
   tokensAmount,
   pricePerToken,
+  decimals,
 }: OrderbookBuySellParams & { rwaTokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -113,7 +116,7 @@ export async function orderbookSell({
     const marketContract = await tezos.wallet.at(marketContractAddress);
     const tokenContact = await tezos.wallet.at(rwaTokenAddress);
 
-    const rwaTokenAmount = RWAToken(tokensAmount);
+    const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
     const orderExpiry = null;

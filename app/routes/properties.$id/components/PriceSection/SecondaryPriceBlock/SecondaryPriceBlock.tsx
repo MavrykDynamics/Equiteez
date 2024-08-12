@@ -116,7 +116,7 @@ export const SecondaryPriceBlock: FC = () => {
 
 const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [activeScreenId, setActiveScreenId] = useState<BuyScreenState>(BUY);
-  const { tokensPrices } = useTokensContext();
+  const { tokensPrices, tokensMetadata } = useTokensContext();
 
   // amount & total
   const [amount, setAmount] = useState<string | number>('');
@@ -139,8 +139,9 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       marketContractAddress: pickOrderbookContract[estate.token_address],
       tokensAmount: Number(amount),
       pricePerToken: Number(tokensPrices[estate.token_address]),
+      decimals: tokensMetadata[estate.token_address]?.decimals,
     }),
-    [amount, estate.token_address, tokensPrices]
+    [amount, estate.token_address, tokensMetadata, tokensPrices]
   );
 
   const { invokeAction: handleOrderbookBuy } = useContractAction(
@@ -193,7 +194,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
 const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [activeScreenId, setActiveScreenid] = useState<SellScreenState>(SELL);
-  const { tokensPrices } = useTokensContext();
+  const { tokensPrices, tokensMetadata } = useTokensContext();
 
   // amount & total
   const [amount, setAmount] = useState<string | number>('');
@@ -217,8 +218,9 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       rwaTokenAddress: estate.token_address,
       tokensAmount: Number(amount),
       pricePerToken: Number(tokensPrices[estate.token_address]),
+      decimals: tokensMetadata[estate.token_address]?.decimals,
     }),
-    [amount, estate.token_address, tokensPrices]
+    [amount, estate.token_address, tokensMetadata, tokensPrices]
   );
 
   const { invokeAction: handleOrderbookSell } = useContractAction(

@@ -6,7 +6,7 @@ import {
   stablecoinContract,
 } from '~/consts/contracts';
 
-import { formatRWAPrice, RWAToken } from '~/lib/utils/formaters';
+import { formatRWAPrice, tokensToAtoms } from '~/lib/utils/formaters';
 
 // Exchange limit
 
@@ -15,6 +15,7 @@ type BuySellParams = {
   marketContractAddress: MarketContractType;
   tokensAmount: number;
   pricePerToken: number;
+  decimals: number;
 };
 
 export async function placeBuyOrderAndMatch({
@@ -22,6 +23,7 @@ export async function placeBuyOrderAndMatch({
   marketContractAddress,
   tokensAmount,
   pricePerToken,
+  decimals,
 }: BuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -32,7 +34,7 @@ export async function placeBuyOrderAndMatch({
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
     const orderType = 'BUY';
-    const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
+    const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken); // 990000,  $0.99$
     const currency = 'USDT';
     const orderExpiry = null;
@@ -89,6 +91,7 @@ export async function placeSellOrder({
   marketContractAddress,
   tokensAmount,
   pricePerToken,
+  decimals,
 }: BuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -100,7 +103,7 @@ export async function placeSellOrder({
     );
 
     const orderType = 'SELL';
-    const rwaTokenAmount = RWAToken(tokensAmount); // 1000000 = 1 token
+    const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber(); // 1000000 = 1 token
     const pricePerRwaToken = formatRWAPrice(pricePerToken);
     const currency = 'USDT';
     const orderExpiry = null;

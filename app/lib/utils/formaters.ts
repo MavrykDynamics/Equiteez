@@ -8,8 +8,7 @@ export const rwaToFixed = (value: number = 1) => {
   return parseFloat(value.toFixed(2).toString());
 };
 
-export const formatRWAPrice = (value: number) => {
-  const conversionRate = 1000000;
+export const formatRWAPrice = (value: number, conversionRate = 1000000) => {
   return value * conversionRate;
 };
 

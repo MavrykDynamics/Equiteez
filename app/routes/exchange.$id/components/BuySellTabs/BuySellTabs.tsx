@@ -42,13 +42,16 @@ const useBuySellActions = (
   tokenAddress: string,
   symbol: string
 ) => {
+  const { tokensMetadata } = useTokensContext();
+
   const buySellProps = useMemo(
     () => ({
       marketContractAddress: pickMarketBasedOnSymbol[symbol],
       tokensAmount: Number(amount),
       pricePerToken: Number(price),
+      decimals: tokensMetadata[tokenAddress]?.decimals,
     }),
-    [amount, price, symbol]
+    [amount, price, symbol, tokenAddress, tokensMetadata]
   );
 
   const { invokeAction: handleLimitBuy } = useContractAction(
@@ -66,8 +69,9 @@ const useBuySellActions = (
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       tokensAmount: amount,
       minMaxQuote: 1000,
+      decimals: tokensMetadata[tokenAddress]?.decimals,
     }),
-    [amount, tokenAddress]
+    [amount, tokenAddress, tokensMetadata]
   );
 
   const marketSellProps = useMemo(
@@ -77,8 +81,9 @@ const useBuySellActions = (
       tokenAddress: tokenAddress,
       tokensAmount: amount,
       minMaxQuote: 1000, // minMaxQuote
+      decimals: tokensMetadata[tokenAddress]?.decimals,
     }),
-    [amount, tokenAddress]
+    [amount, tokenAddress, tokensMetadata]
   );
 
   const { invokeAction: handleMarketBuy } = useContractAction(
