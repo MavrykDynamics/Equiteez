@@ -28,8 +28,10 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 import { InputNumber } from '~/lib/molecules/Input/Input';
-import { numberToFixed, rwaToFixed } from '~/lib/utils/formaters';
+import { rwaToFixed } from '~/lib/utils/formaters';
 import { formatToNumber } from '~/lib/molecules/Input/utils';
+import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
+import Money from '~/lib/atoms/Money';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -111,6 +113,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const { isAdmin, userTokensBalances } = useUserContext();
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
+  const isBuyAction = activetabId === BUY_TAB;
 
   // dropdown state
   const items = useMemo(
@@ -133,7 +136,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   // inputs state
   const [price, setPrice] = useState<number | string>(Number(''));
-  const [amount, setAmount] = useState<number | string>(Number(''));
+  // const [amount, setAmount] = useState<number | string>(Number(''));
+  const { amount, previewAmount, handleAmountChange } =
+    useTokensAmount(tokenAddress);
   const [total, setTotal] = useState<string | number>('');
   const [selectedPercentage, setSelectedPercentage] = useState(0);
 
@@ -141,6 +146,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
   );
+
+  const maxBuy = useMemo(() => {
+    const amountToSpend = (100 * buyBalance) / 100;
+    return rwaToFixed(amountToSpend / tokensPrices[tokenAddress]);
+  }, [buyBalance, tokenAddress, tokensPrices]);
 
   const hasTotalError =
     typeof total === 'number' ? Number(total) > buyBalance : false;
@@ -151,20 +161,26 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
       const numberOfTokens = rwaToFixed(
         amountToSpend / tokensPrices[tokenAddress]
       );
-      setAmount(numberOfTokens);
+      handleAmountChange(numberOfTokens);
     } else {
-      setAmount(0);
+      handleAmountChange(0);
     }
-  }, [selectedPercentage, setAmount, buyBalance, tokensPrices, tokenAddress]);
+  }, [
+    selectedPercentage,
+    handleAmountChange,
+    buyBalance,
+    tokensPrices,
+    tokenAddress,
+  ]);
 
   // update total
   useEffect(() => {
-    if (amount && tokensPrices[tokenAddress]) {
-      setTotal(numberToFixed(Number(amount) * tokensPrices[tokenAddress]));
-    } else if (!amount) {
+    if (previewAmount && tokensPrices[tokenAddress]) {
+      setTotal(rwaToFixed(Number(previewAmount) * tokensPrices[tokenAddress]));
+    } else if (!previewAmount) {
       setTotal('');
     }
-  }, [amount, tokenAddress, tokensPrices]);
+  }, [previewAmount, tokenAddress, tokensPrices]);
 
   // contract calls based on markt or limit
   const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
@@ -296,11 +312,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       type="number"
                       min={1}
                       value={amount || ''}
-                      onChange={(e) =>
-                        setAmount(
-                          rwaToFixed(Number(formatToNumber(e.target.value)))
-                        )
-                      }
+                      onChange={(e) => handleAmountChange(e.target.value)}
                       placeholder="Minimum 1"
                       className="w-full bg-transparent focus:outline-none text-right"
                     ></input>
@@ -337,12 +349,25 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
           <div className="flex flex-col w-full gap-1">
             <div className="flex justify-between w-full">
               <span className="text-caption-regular">Avbl</span>
-              <span className="text-caption-regular">1,034.75 USDT</span>
+              <div className="text-caption-regular">
+                {isBuyAction ? (
+                  <Money smallFractionFont={false} shortened>
+                    {userTokensBalances[stablecoinContract] || 0}
+                  </Money>
+                ) : (
+                  <Money smallFractionFont={false} shortened>
+                    {userTokensBalances[tokenAddress] || '0'}
+                  </Money>
+                )}
+                &nbsp;{'USDT'}
+              </div>
             </div>
 
             <div className="flex justify-between w-full">
               <span className="text-caption-regular">Max Buy</span>
-              <span className="text-caption-regular">8471.04 {symbol}</span>
+              <span className="text-caption-regular">
+                {maxBuy} {symbol}
+              </span>
             </div>
 
             <div className="flex justify-between w-full">

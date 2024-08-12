@@ -41,6 +41,8 @@ import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CommaNumber } from '~/lib/atoms/CommaNumber';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
+import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
+import { rwaToFixed } from '~/lib/utils/formaters';
 
 // types
 type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
@@ -119,16 +121,20 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { tokensPrices, tokensMetadata } = useTokensContext();
 
   // amount & total
-  const [amount, setAmount] = useState<string | number>('');
+  const { amount, previewAmount, handleAmountChange } = useTokensAmount(
+    estate.token_address
+  );
   const [total, setTotal] = useState<string | number>('');
 
   useEffect(() => {
-    if (amount && tokensPrices[estate.token_address]) {
-      setTotal(Number(amount) * tokensPrices[estate.token_address]);
-    } else if (!amount) {
+    if (previewAmount && tokensPrices[estate.token_address]) {
+      setTotal(
+        rwaToFixed(Number(previewAmount) * tokensPrices[estate.token_address])
+      );
+    } else if (!previewAmount) {
       setTotal('');
     }
-  }, [amount, estate.token_address, tokensPrices]);
+  }, [previewAmount, estate.token_address, tokensPrices]);
 
   const toggleBuyScreen = useCallback((id: BuyScreenState) => {
     setActiveScreenId(id);
@@ -170,7 +176,7 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               actionType={BUY}
               currency="USDT"
               amount={amount}
-              setAmount={setAmount}
+              setAmount={handleAmountChange}
               total={total}
               setTotal={setTotal}
             />
@@ -197,16 +203,21 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { tokensPrices, tokensMetadata } = useTokensContext();
 
   // amount & total
-  const [amount, setAmount] = useState<string | number>('');
   const [total, setTotal] = useState<string | number>('');
 
+  const { amount, previewAmount, handleAmountChange } = useTokensAmount(
+    estate.token_address
+  );
+
   useEffect(() => {
-    if (amount && tokensPrices[estate.token_address]) {
-      setTotal(Number(amount) * tokensPrices[estate.token_address]);
-    } else if (!amount) {
+    if (previewAmount && tokensPrices[estate.token_address]) {
+      setTotal(
+        rwaToFixed(Number(previewAmount) * tokensPrices[estate.token_address])
+      );
+    } else if (!previewAmount) {
       setTotal('');
     }
-  }, [amount, estate.token_address, tokensPrices]);
+  }, [previewAmount, estate.token_address, tokensPrices]);
 
   const toggleSellScreen = useCallback((id: SellScreenState) => {
     setActiveScreenid(id);
@@ -249,7 +260,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
               actionType={SELL}
               currency={estate.symbol}
               amount={amount}
-              setAmount={setAmount}
+              setAmount={handleAmountChange}
               total={total}
               setTotal={setTotal}
             />
