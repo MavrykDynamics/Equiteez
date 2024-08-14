@@ -34,7 +34,7 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
     >
       <div
         className={clsx(
-          'absolute right-0 top-8 px-8 w-full flex justify-end items-center max-w-16',
+          'absolute z-10 right-0 top-8 px-8 w-full flex justify-end items-center max-w-16',
           'transition duration-300 ease-in-out'
         )}
       >
@@ -52,5 +52,5 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
 
 // eslint-disable-next-line react/display-name
 const ChildComponent = memo(({ children }: PropsWithChildren) => {
-  return <div className="h-full">{children}</div>;
+  return <div className="h-full overflow-y-auto">{children}</div>;
 });

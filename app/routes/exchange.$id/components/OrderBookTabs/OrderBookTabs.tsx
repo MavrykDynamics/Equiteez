@@ -19,7 +19,7 @@ export const OrderBookTabs = () => {
       },
       {
         id: 'recents',
-        label: 'Recents',
+        label: 'Recent Trades',
         handleClick: handleTabClick,
       },
     ],
@@ -28,8 +28,13 @@ export const OrderBookTabs = () => {
 
   return (
     <section className="flex flex-col w-full">
-      <TabSwitcher tabs={tabs} activeTabId={activetabId} grow={true} />
-      <div className="mt-4">
+      <TabSwitcher
+        variant="secondary"
+        tabs={tabs}
+        activeTabId={activetabId}
+        grow={true}
+      />
+      <div className="mt-2">
         <OrderBookTab tabId={activetabId} />
       </div>
     </section>

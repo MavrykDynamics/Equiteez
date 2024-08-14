@@ -5,11 +5,15 @@ import { lorelei } from '@dicebear/collection';
 import { clsx } from 'clsx';
 
 type IdenticonProps = HTMLAttributes<HTMLDivElement> & {
-  hash: string;
   size?: number;
+  src?: string;
 };
 
-export const IdentIcon: FC<IdenticonProps> = ({ size = 100, className }) => {
+export const IdentIcon: FC<IdenticonProps> = ({
+  size = 100,
+  className,
+  src,
+}) => {
   const avatar = useMemo(() => {
     return createAvatar(lorelei, {
       size,
@@ -23,7 +27,7 @@ export const IdentIcon: FC<IdenticonProps> = ({ size = 100, className }) => {
     >
       <img
         className={clsx('bg-no-repeat bg-center w-full h-full')}
-        src={avatar}
+        src={src || avatar}
         alt="test"
       />
     </div>

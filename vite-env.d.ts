@@ -15,6 +15,7 @@ declare namespace NodeJS {
     readonly GOOGLE_MAPS_API_KEY: string;
     readonly REACT_APP_TZKT_API: string;
     readonly REACT_APP_ENV: 'dev' | 'prod' | 'test';
+    readonly TOKENS_METADATA_API: string;
   }
 }
 

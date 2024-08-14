@@ -10,7 +10,10 @@ export const useImagesStackLoading = (sources: string[]) => {
   const { IS_WEB } = useAppContext();
   const emptyStack = sources.length < 1;
 
-  const [isLoading, setIsLoading] = useState(!IS_WEB || emptyStack === false);
+  const [isLoading, setIsLoading] = useState<boolean>(
+    emptyStack === false || !IS_WEB
+  );
+
   const [isStackFailed, setIsStackFailed] = useState(emptyStack);
 
   useDidUpdate(() => {
@@ -19,7 +22,9 @@ export const useImagesStackLoading = (sources: string[]) => {
     setIndex(emptyStack ? -1 : 0);
     setIsLoading(emptyStack === false);
     setIsStackFailed(emptyStack);
-  }, [sources]);
+
+    // array of strings to avoid infinite loading, cuz it's reference type
+  }, [...sources]);
 
   const [index, setIndex] = useState(emptyStack ? -1 : 0);
 

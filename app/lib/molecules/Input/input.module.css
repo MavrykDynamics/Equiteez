@@ -1,13 +1,13 @@
 .errorCaprion {
   position: absolute;
   left: 0;
-  bottom: -18px;
+  bottom: -22px;
 }
 
 input.textInput {
-  outline: 1px solid transparent;
-  border: none;
+  outline: 1px solid;
   border-radius: 8px;
+  @apply outline-gray-100;
 }
 
 input.textInput:focus,

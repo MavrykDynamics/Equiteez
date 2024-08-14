@@ -1,0 +1,126 @@
+{
+  "error": [
+    {
+      "errors": [
+        {
+          "kind": "temporary",
+          "id": "proto.001-PtAtLas.michelson_v1.runtime_error",
+          "contract_handle": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
+          "contract_code": "Deprecated"
+        },
+        {
+          "kind": "temporary",
+          "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
+          "location": 1157,
+          "with": { "int": "175" }
+        }
+      ],
+      "errorDetails": "Error occurred during estimation",
+      "operationsWithResults": [
+        {
+          "kind": "transaction",
+          "source": "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
+          "fee": "0",
+          "counter": "7038",
+          "gas_limit": "1040000",
+          "storage_limit": "60000",
+          "amount": "0",
+          "destination": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
+          "parameters": {
+            "entrypoint": "withdrawBaseToken",
+            "value": { "int": "2000" }
+          },
+          "metadata": {
+            "operation_result": {
+              "status": "failed",
+              "errors": [
+                {
+                  "kind": "temporary",
+                  "id": "proto.001-PtAtLas.michelson_v1.runtime_error",
+                  "contract_handle": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
+                  "contract_code": "Deprecated"
+                },
+                {
+                  "kind": "temporary",
+                  "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
+                  "location": 1157,
+                  "with": { "int": "175" }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "name": "TezosOperationError",
+      "lastError": {
+        "kind": "temporary",
+        "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
+        "location": 1157,
+        "with": { "int": "175" }
+      },
+      "message": "175",
+      "isError": true
+    },
+    {
+      "errors": [
+        {
+          "kind": "temporary",
+          "id": "proto.001-PtAtLas.michelson_v1.runtime_error",
+          "contract_handle": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
+          "contract_code": "Deprecated"
+        },
+        {
+          "kind": "temporary",
+          "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
+          "location": 1157,
+          "with": { "int": "175" }
+        }
+      ],
+      "errorDetails": "Error occurred during estimation",
+      "operationsWithResults": [
+        {
+          "kind": "transaction",
+          "source": "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
+          "fee": "0",
+          "counter": "7038",
+          "gas_limit": "1040000",
+          "storage_limit": "60000",
+          "amount": "0",
+          "destination": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
+          "parameters": {
+            "entrypoint": "withdrawBaseToken",
+            "value": { "int": "2000" }
+          },
+          "metadata": {
+            "operation_result": {
+              "status": "failed",
+              "errors": [
+                {
+                  "kind": "temporary",
+                  "id": "proto.001-PtAtLas.michelson_v1.runtime_error",
+                  "contract_handle": "KT1HPoRZkqnboMVyEyiNVk1M7W6dMUS4rANg",
+                  "contract_code": "Deprecated"
+                },
+                {
+                  "kind": "temporary",
+                  "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
+                  "location": 1157,
+                  "with": { "int": "175" }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "name": "TezosOperationError",
+      "lastError": {
+        "kind": "temporary",
+        "id": "proto.001-PtAtLas.michelson_v1.script_rejected",
+        "location": 1157,
+        "with": { "int": "175" }
+      },
+      "message": "175",
+      "isError": true
+    }
+  ]
+}

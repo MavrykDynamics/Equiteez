@@ -68,10 +68,15 @@ export const CustomDropdown: FC<PropsWithChildren> = ({ children }) => {
 };
 
 export const DropdownFaceContent: FC<
-  PropsWithChildren & { iconClassName?: string; className?: string }
+  PropsWithChildren & {
+    iconClassName?: string;
+    className?: string;
+    gap?: number;
+  }
 > = ({
   children,
   iconClassName = 'w-4 h-4 text-content stroke-current',
+  gap = 3,
   className,
 }) => {
   const { IS_WEB } = useAppContext();
@@ -86,12 +91,12 @@ export const DropdownFaceContent: FC<
         height: ref.current.clientHeight,
       });
     }
-  }, [IS_WEB, setFaceContentDimensions]);
+  }, [IS_WEB, setFaceContentDimensions, ref.current]);
 
   return (
     <div
       ref={ref}
-      className={clsx('flex items-center gap-x-3', className)}
+      className={clsx(className, `flex items-center gap-x-${gap}`)}
       role="presentation"
     >
       {children}
@@ -110,13 +115,17 @@ type DropdownBodyContentProps = {
   topMargin?: number;
   position?: 'left' | 'right' | 'center';
   customWidth?: number;
+  customHeight?: number;
+  maxHeight?: number;
 } & PropsWithChildren;
 
 export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
   children,
   customWidth,
+  customHeight = 'auto',
   position = 'left',
   topMargin = 0,
+  maxHeight = 700,
 }) => {
   const {
     opened,
@@ -139,7 +148,10 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
         opened && styles.opened
       )}
     >
-      <div className="border border-divider overflow-hidden rounded-xl bg-background">
+      <div
+        style={{ maxHeight, height: customHeight }}
+        className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll min-w-full"
+      >
         {children}
       </div>
     </div>

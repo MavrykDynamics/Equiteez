@@ -26,7 +26,7 @@ const ESTATES = [
     imgSrc: estate2Src,
     title: (
       <>
-        “(2)Buying real estate has made me rich… <br />
+        “Buying real estate has made me rich… <br />
         the most important decision I ever made <br />
         because it got me in the game.”
       </>
@@ -38,7 +38,7 @@ const ESTATES = [
     imgSrc: estate3Src,
     title: (
       <>
-        “(3)Buying real estate has made me rich… <br />
+        “Buying real estate has made me rich… <br />
         the most important decision I ever made <br />
         because it got me in the game.”
       </>

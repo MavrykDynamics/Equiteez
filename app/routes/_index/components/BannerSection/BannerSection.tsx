@@ -3,7 +3,7 @@ import clsx from 'clsx';
 // icons
 import PlayIcon from 'app/icons/play-circle-rounded.svg?react';
 
-import BannerImageSrc from 'app/assets/home/banner-image.webp';
+import BannerImageSrc from 'app/assets/home/banner-image.png';
 import styles from './bannerSection.module.css';
 import { Button } from '~/lib/atoms/Button';
 import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';

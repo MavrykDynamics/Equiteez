@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { FC } from 'react';
 
-type TextVariant = 'body' | 'bold' | 'body-xs';
+type TextVariant = 'body' | 'bold' | 'body-xs' | 'caption-regular';
 
 type TableItemProps = {
   isLast?: boolean;
@@ -14,6 +14,7 @@ const textVariants = {
   body: 'text-body',
   'body-xs': 'text-body-xs',
   bold: 'text-buttons',
+  'caption-regular': 'text-caption-regular',
 };
 
 export const TableItem: FC<TableItemProps> = ({
@@ -39,3 +40,11 @@ export const TableItem: FC<TableItemProps> = ({
     </div>
   );
 };
+
+export const TableItemSmall: FC<
+  Omit<TableItemProps, 'customPadding' & 'textVariant'>
+> = ({ children, ...rest }) => (
+  <TableItem {...rest} customPadding={12} textVariant="caption-regular">
+    {children}
+  </TableItem>
+);

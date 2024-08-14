@@ -5,18 +5,18 @@ type TabsStepperProps = { tabId: string };
 
 const financeStepperContent: StringRecord<string[]> = {
   buying: [
-    'Buy EQ tokens',
+    'Buy RWA shares',
     'Add to Personal Vault',
     'Borrow Instantly',
-    'Buy More EQ Tokens',
+    'Buy More RWA shares',
     'Multiply Your Dividends',
   ],
-  selling: ['Sell EQ tokens', 'Sell Instantly', 'Sell More EQ Tokens'],
+  selling: ['Sell RWA shares', 'Sell Instantly', 'Sell More RWA shares'],
   borrowing: [
-    'Borrow EQ tokens',
+    'Borrow RWA shares',
     'Borrow to Personal Vault',
     'Borrow Instantly',
-    'Borrow More EQ Tokens',
+    'Borrow More RWA shares',
     'Multiply Your Borrowings',
   ],
 };

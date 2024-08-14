@@ -1,0 +1,55 @@
+[
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "side": "Sell",
+    "price": "$1,421",
+    "executed": "351,8",
+    "fee": "0.00938271 COVE",
+    "role": "Maker",
+    "total": "3,096.3 USDT"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "side": "Sell",
+    "price": "$1,421",
+    "executed": "351,8",
+    "fee": "0.00938271 COVE",
+    "role": "Maker",
+    "total": "3,096.3 USDT"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "side": "Sell",
+    "price": "$1,421",
+    "executed": "351,8",
+    "fee": "0.00938271 COVE",
+    "role": "Taker",
+    "total": "3,096.3 USDT"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "side": "Buy",
+    "average": "1,417",
+    "price": "$1,421",
+    "fee": "0.00938271 COVE",
+    "executed": "351,8",
+    "role": "Taker",
+    "amount": 351.8,
+    "status": "Canceled",
+    "total": "3,096.3 USDT"
+  },
+  {
+    "date": "8 May 2024, 13:44",
+    "pair": "COVE/USDT",
+    "side": "Sell",
+    "price": "$1,421",
+    "executed": "351,8",
+    "fee": "0.00938271 COVE",
+    "role": "Maker",
+    "total": "3,096.3 USDT"
+  }
+]

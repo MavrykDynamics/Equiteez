@@ -10,7 +10,7 @@ import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 import { FC } from 'react';
 import { Gallery } from './components/Gallery/Gallery';
 
-import { IconsBlock } from './components/IconsBlock';
+import { IconsBlock } from '~/templates/IconsBlock';
 import { Divider } from '~/lib/atoms/Divider';
 import { Spacer } from '~/lib/atoms/Spacer';
 import { SimilarProperties } from './components/SimilarProperties/SimilarProperties';

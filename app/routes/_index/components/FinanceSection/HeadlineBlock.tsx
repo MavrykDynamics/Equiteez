@@ -10,9 +10,9 @@ export const HeadlineBlock = () => {
         </h1>
 
         <p className="text-content-secondary text-body max-w-[736px]">
-          Discover new opportunities powered by decentralized finance. The
-          Mavryk Finance lending platform allows you to supercharge your
-          earnings by leveraging your tokenized portfolio.{' '}
+          Discover new opportunities powered by decentralized finance. The Maven
+          Finance lending platform allows you to supercharge your earnings by
+          leveraging your tokenized portfolio.{' '}
         </p>
       </div>
 

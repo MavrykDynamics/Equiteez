@@ -6,30 +6,34 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 
-.eq-dropdown-menu{
-  box-shadow: -1px 6px 6.7px 3px #00000040; 
-  @apply z-30 mt-2 px-0 py-2 divide-y divide-divider rounded-lg bg-white shadow-lg border border-white/15 text-sm
+.eq-dropdown-menu {
+  box-shadow: -1px 6px 6.7px 3px #00000040;
+  @apply z-30 mt-2 px-0 py-2 divide-y divide-divider rounded-lg bg-white shadow-lg border border-white/15 text-sm;
 }
 
-.eq-dropdown-item{
-  @apply flex px-3 py-4 items-center hover:bg-gray-100
+.eq-dropdown-item {
+  @apply flex px-3 py-4 items-center hover:bg-gray-100;
 }
 
-.eq-input{
-  @apply items-center bg-transparent border border-divider rounded-lg
+.eq-input {
+  @apply items-center bg-transparent border border-gray-100 rounded-lg;
 }
 
-.eq-slider{
-  font-size: 10px;
+.eq-slider {
+  font-size: 14px;
   font-weight: 400;
-  line-height: 15px;
+  line-height: normal;
   text-align: left;
 }
 
-.eq-table-cell{
-  @apply  whitespace-nowrap px-2 py-1 text-body-xs
+.eq-table-cell {
+  @apply whitespace-nowrap pr-2 py-3 text-caption-regular;
+}
+
+.eq-table-cell-small {
+  @apply whitespace-nowrap py-1 text-caption-regular;
 }

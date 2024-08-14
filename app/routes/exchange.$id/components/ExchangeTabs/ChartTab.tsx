@@ -1,16 +1,17 @@
-import { useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import chart from '~/mocks/chart';
 import { ApexOptions } from 'apexcharts';
 import Expand from '~/icons/expand.svg?react';
-import Settings from '~/icons/star.svg?react';
+import Settings from '~/icons/settings.svg?react';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { useClientLibData } from '~/hooks/use-client-lib';
 
 import OriginalApexCharts from 'react-apexcharts';
+import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
-export const ChartTab = () => {
+export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
   const { IS_WEB } = useAppContext();
   const {
     clientModule: ChartModule,
@@ -81,21 +82,24 @@ export const ChartTab = () => {
       options: state.options,
       series: state.series,
       type: 'candlestick',
-      height: 350,
+      height: 500,
+      width: 746,
     }),
     [state.options, state.series]
   );
 
   return (
-    <div>
-      <div className="w-full flex justify-between">
-        <div className="flex gap-4">
-          <span className="text-body">1H</span>
-          <span className="text-body text-green-main">1D</span>
-          <span className="text-body">1W</span>
-          <span className="text-body">1M</span>
-          <span className="text-body">1Y</span>
-          <span className="text-body">3Y</span>
+    <div className="overflow-hidden flex flex-col">
+      <div className="w-full flex justify-between items-center overflow-x-hidden">
+        <div className="flex gap-x-3 text-caption-regular -mt-1">
+          <span className="min-w-[21px] flex justify-center">1H</span>
+          <span className=" text-green-main min-w-[21px] flex justify-center">
+            1D
+          </span>
+          <span className="min-w-[21px] flex justify-center">1W</span>
+          <span className="min-w-[21px] flex justify-center">1M</span>
+          <span className="min-w-[21px] flex justify-center">1Y</span>
+          <span className="min-w-[21px] flex justify-center">3Y</span>
         </div>
 
         <div className="flex gap-2">

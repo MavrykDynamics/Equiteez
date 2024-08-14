@@ -9,7 +9,7 @@ import React, {
 
 import clsx from 'clsx';
 
-import { ReactComponent as OkIcon } from 'app/icons/ok.svg';
+import OkIcon from 'app/icons/ok.svg?react';
 import {
   blurHandler,
   checkedHandler,
@@ -19,7 +19,13 @@ import {
 export interface CheckboxProps
   extends Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'name' | 'checked' | 'className' | 'onFocus' | 'onBlur' | 'onClick'
+    | 'name'
+    | 'checked'
+    | 'className'
+    | 'onFocus'
+    | 'onBlur'
+    | 'onClick'
+    | 'disabled'
   > {
   overrideClassNames?: string;
   errored?: boolean;
@@ -86,23 +92,23 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const classNameMemo = useMemo(
       () =>
         clsx(
-          'flex justify-center items-center flex-shrink-0',
-          'text-white border overflow-hidden',
+          'flex justify-center items-center flex-shrink-0 cursor-pointer',
+          'text-white border-2 overflow-hidden',
           'transition ease-in-out duration-200 disable-outline-for-click',
           localFocused && shouldFocus && 'shadow-outline',
           (() => {
             switch (true) {
               case localChecked:
-                return 'border-accent-blue';
+                return 'border-brand-green-500';
               case localFocused:
-                return 'border-eccent-blue';
+                return 'border-brand-green-400';
               case errored:
-                return 'border-primary-error';
+                return 'border-error';
               default:
-                return 'border-divider';
+                return 'border-dark-gray-50';
             }
           })(),
-          overrideClassNames || 'h-6 w-6 rounded-md'
+          overrideClassNames || 'h-4 w-4 rounded'
         ),
       [localChecked, localFocused, errored, overrideClassNames]
     );
@@ -114,7 +120,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         <input
           ref={ref}
           type="checkbox"
-          className={clsx('sr-only', className)}
+          className={clsx('sr-only rounded', className)}
           checked={localChecked}
           onChange={handleChange}
           onFocus={handleFocus}
@@ -126,7 +132,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           className={clsx(
             iconClassName
               ? iconClassName
-              : 'h-4/6 w-4/6 stroke-2 stroke-accent-blue pointer-events-none',
+              : 'size-4 stroke-[3px] stroke-brand-green-500 pointer-events-none',
             localChecked ? 'block' : 'hidden'
           )}
         />
