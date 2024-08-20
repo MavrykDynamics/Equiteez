@@ -160,9 +160,10 @@ export async function depositBaseToken({
       },
     ]).toTransferParams();
 
-    const sell_order = marketContract.methodsObject['depositBaseToken'](
-      tokensToAtoms(tokensAmount, decimals).toNumber()
-    ).toTransferParams();
+    const num = tokensToAtoms(tokensAmount, decimals).toNumber();
+
+    const sell_order =
+      marketContract.methodsObject['depositBaseToken'](num).toTransferParams();
 
     const close_ops = rwaTokenInstance.methodsObject['update_operators']([
       {

@@ -9,15 +9,18 @@ import {
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { getStatusLabel } from '~/hooks/use-status-flag';
 import { Button } from '~/lib/atoms/Button';
+import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 
 const useAdminAction = (amount: number, tokenAddress: string) => {
+  const { tokensMetadata } = useTokensContext();
   const depositProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       rwaTokenAddress: tokenAddress,
       tokensAmount: amount,
+      decimals: tokensMetadata[tokenAddress]?.decimals,
     }),
-    [amount, tokenAddress]
+    [amount, tokenAddress, tokensMetadata]
   );
 
   const { invokeAction: handleBaseTokenDeposit, status: depositBaseStatus } =
@@ -30,8 +33,9 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       tokensAmount: amount,
+      decimals: tokensMetadata[tokenAddress]?.decimals,
     }),
-    [amount, tokenAddress]
+    [amount, tokenAddress, tokensMetadata]
   );
 
   const { invokeAction: handleBaseTokenWithdraw, status: withdrawBaseStatus } =
