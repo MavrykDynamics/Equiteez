@@ -199,7 +199,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
       <ClickableDropdownArea>
         <DropdownFaceContent
           className={clsx(
-            'text-body-xs leading-5 font-semibold text-content w-full border border-brand-green-100',
+            'text-body-xs leading-5 font-semibold text-content w-full border border-dark-green-100',
             'px-[10px] py-[9px]',
             'rounded-xl'
           )}

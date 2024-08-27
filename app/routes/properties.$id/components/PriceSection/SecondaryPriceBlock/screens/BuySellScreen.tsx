@@ -240,7 +240,7 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
   return (
     <CustomDropdown>
       <ClickableDropdownArea>
-        <div className="px-2 py-1 border border-brand-green-100 rounded-lg">
+        <div className="px-2 py-1 border border-dark-green-100 rounded-lg">
           <DropdownFaceContent gap={1}>
             <div className="max-w-8 text-nowrap">
               <input
@@ -263,7 +263,7 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
             {spippageOptions.map((option) => (
               <button
                 key={option}
-                className="py-3 px-4 bg-white flex items-center justify-between hover:bg-brand-green-100 capitalize"
+                className="py-3 px-4 bg-white flex items-center justify-between hover:bg-dark-green-100 capitalize"
                 onClick={() => {
                   setSelectedOption(option);
                   if (option !== 'custom') {
@@ -273,7 +273,7 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
               >
                 {option.concat(option !== 'custom' ? '%' : '')}
                 {option === selectedOption && (
-                  <CheckIcon className="size-4 stroke-brand-green-500" />
+                  <CheckIcon className="size-4 stroke-dark-green-500" />
                 )}
               </button>
             ))}
