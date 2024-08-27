@@ -262,6 +262,7 @@ button:focus {
 
 input {
   outline: none;
+  background-color: transparent;
 }
 input:focus {
   outline: none;
