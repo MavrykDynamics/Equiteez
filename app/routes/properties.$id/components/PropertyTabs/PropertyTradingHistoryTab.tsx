@@ -104,7 +104,7 @@ export const PropertyTradingHistoryTab = () => {
   );
 
   return (
-    <Table>
+    <Table className="bg-white">
       <div className="flex items-center justify-between">
         <CustomDropdown>
           <ClickableDropdownArea>

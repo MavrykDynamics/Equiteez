@@ -13,7 +13,7 @@ export const PropertyBlockchainTab = () => {
   return (
     <div>
       {blockchain.map((chainData) => (
-        <Table key={chainData.assetId}>
+        <Table key={chainData.assetId} className="bg-white">
           <TableHeader>{chainData.name} Blockchain</TableHeader>
           <TableItem>
             <p>Identifier</p>

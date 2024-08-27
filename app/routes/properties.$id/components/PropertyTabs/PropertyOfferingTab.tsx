@@ -28,7 +28,7 @@ export const PropertyOfferingTab = () => {
       <div className="mb-2">
         <TableHeader>Offering</TableHeader>
       </div>
-      <Table>
+      <Table className="bg-white">
         <TableItem>
           <p>Offering Date</p>
           <p>{formatDate(offering.offeringDate)}</p>
@@ -58,7 +58,7 @@ export const PropertyOfferingTab = () => {
       <div className="mb-2">
         <TableHeader>Valuation</TableHeader>
       </div>
-      <Table>
+      <Table className="bg-white">
         <TableHeader>
           <div className="flex items-center justify-between">
             <p>{formatDate(priorValuation.date)}</p>
@@ -105,7 +105,7 @@ export const PropertyOfferingTab = () => {
         </TableItem>
       </Table>
       <div className="mb-8" />
-      <Table>
+      <Table className="bg-white">
         <TableHeader>
           <div className="flex items-center justify-between">
             <p>{formatDate(initialValuation.date)}</p>

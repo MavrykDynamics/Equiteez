@@ -67,7 +67,7 @@ export const SecondaryPriceBlock: FC = () => {
 
   return (
     <section className="self-start">
-      <Table>
+      <Table className="bg-white">
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Current Price</p>
           <CommaNumber

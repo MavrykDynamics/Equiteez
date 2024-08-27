@@ -22,7 +22,7 @@ export const PropertyFinanceTab = () => {
 
   return (
     <div>
-      <Table>
+      <Table className="bg-white">
         <TableHeader>Property Financials</TableHeader>
         <TableItem>
           <p>Gross Rent / Year</p>
@@ -113,7 +113,7 @@ export const PropertyFinanceTab = () => {
         </TableItem>
       </Table>
       <div className="mb-8" />
-      <Table>
+      <Table className="bg-white">
         <TableHeader>Expected Income</TableHeader>
         <TableItem>
           <p>Expected Income</p>
