@@ -19,11 +19,11 @@ type TabProps = {
 const variants = {
   primary: {
     className: clsx(
-      'px-4 py-3 text-content text-buttons cursor-pointer rounded-lg outline-none',
+      'px-4 py-[10px]  text-buttons cursor-pointer rounded-lg outline-none',
       'flex justify-center items-center min-w-[115px]'
     ),
     active: (active: boolean | undefined) =>
-      active ? 'bg-tabs' : 'bg-inactive-tab',
+      active ? 'bg-tabs text-white' : 'bg-inactive-tab text-sand-700',
     disabled: 'opacity-50 pointer-events-none',
   },
   secondary: {

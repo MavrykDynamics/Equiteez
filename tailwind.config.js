@@ -223,9 +223,9 @@ export default {
           divider: '#E6E8E7',
           'divider-secondary': '#969696',
 
-          tabs: '#CCF2E5',
+          tabs: baseColors.sand[700],
           'active-tab': '#054731',
-          'inactive-tab': '#F1F1F1',
+          'inactive-tab': baseColors.sand[200],
           'info-blue-bg': '#F0F6FF',
           'cards-stroke': '#E6E6E6',
           links: '#194C98',

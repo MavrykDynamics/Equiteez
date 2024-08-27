@@ -1,6 +1,6 @@
 .bannerContainer {
   display: grid;
-  grid-template-columns: 549px 1fr;
+  grid-template-columns: 539px 1fr;
   column-gap: 140px;
 }
 

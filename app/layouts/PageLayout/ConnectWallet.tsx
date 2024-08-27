@@ -21,7 +21,7 @@ export const ConnectWallet = () => {
             <ClickableDropdownArea>
               <DropdownFaceContent>
                 <div className="flex items-center">
-                  <IdentIcon hash={userAddress} size={32} className="mr-2" />
+                  <IdentIcon size={32} className="mr-2" />
                   <div className="text-caption-regular text-content">
                     <HashShortView hash={userAddress} />
                   </div>
