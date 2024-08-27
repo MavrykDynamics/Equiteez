@@ -6,9 +6,11 @@ import {
 } from 'app/templates/EmblaCarouselArrowButtons';
 import useEmblaCarousel from 'embla-carousel-react';
 
+// icons
+import ArrowRight from 'app/icons/arrow-right.svg?react';
+
 import styles from './embla.module.css';
 import clsx from 'clsx';
-import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 import { Button } from '~/lib/atoms/Button';
 import { Link, useNavigate } from '@remix-run/react';
 import {
@@ -42,12 +44,17 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
   return (
     <section className={styles.embla}>
       <div className={'w-full flex justify-between items-center mb-11'}>
-        <LinkWithIcon
-          to={'/properties'}
-          className="text-white hover:text-white"
-        >
-          View All
-        </LinkWithIcon>
+        <Link to={'/properties'}>
+          <Button
+            variant="custom"
+            className="text-white bg-transparent border-2 border-white py-[8px]"
+          >
+            <div className="flex items-center gap-2">
+              View All
+              <ArrowRight className="w-6 h-6 stroke-current" />
+            </div>
+          </Button>
+        </Link>
         <div className="flex items-center gap-x-3">
           <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
           <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />

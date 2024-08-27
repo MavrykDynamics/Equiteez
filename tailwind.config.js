@@ -217,7 +217,7 @@ export default {
           'blue-opacity': '#CCE0F2',
           content: baseColors['sand'][900],
           'content-secondary': baseColors['sand'][700],
-          background: '#FFFFFF',
+          background: baseColors.sand[50],
           'background-secondary': '#F4FBF8',
           'background-tertiary': '#FAFFFD',
           divider: '#E6E8E7',

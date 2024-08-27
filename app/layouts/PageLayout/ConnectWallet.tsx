@@ -49,9 +49,14 @@ export const ConnectWallet = () => {
           </CustomDropdown>
         </div>
       ) : (
-        <Button variant="outline" size="outline" onClick={connect}>
-          <span className="text-body-xs leading-5 font-semibold">Sign In</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="small-plus" disabled>
+            <span className="text-body-xs leading-5">Sign up</span>
+          </Button>
+          <Button variant="outline" size="outline" onClick={connect}>
+            <span className="text-body-xs leading-5 font-semibold">Login</span>
+          </Button>
+        </div>
       )}
     </CustomSuspense>
   );

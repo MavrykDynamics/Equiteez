@@ -24,7 +24,7 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <PageLayout bg="bg-background-tertiary" includeContainer={false}>
+    <PageLayout bg="bg-background" includeContainer={false}>
       <Container>
         <BannerSection />
         <Spacer />
