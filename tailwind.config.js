@@ -232,6 +232,7 @@ export default {
           error: baseColors.red[500],
           success: '#1E945C',
           'red-main': '#E83736',
+          progress: '#50B2FA',
         };
 
         return {

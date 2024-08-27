@@ -1,0 +1,37 @@
+.progressBar {
+  position: relative;
+  height: 5px;
+  border-radius: 8px;
+}
+
+.progressBar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  @apply bg-yellow-500 opacity-50;
+  z-index: 0;
+}
+
+.progressPercentage::after {
+  content: '';
+  position: absolute;
+  border-radius: 8px;
+  width: var(--progress-value);
+  height: 100%;
+  inset: 0;
+  @apply bg-progress;
+  z-index: 1;
+}
+
+.dot {
+  position: absolute;
+  left: calc(var(--progress-value) - 2px);
+  top: 50%;
+  border-radius: 8px;
+  width: 4px;
+  height: 200%;
+  background-color: #165f95;
+  transform: translateY(-50%);
+  z-index: 2;
+}

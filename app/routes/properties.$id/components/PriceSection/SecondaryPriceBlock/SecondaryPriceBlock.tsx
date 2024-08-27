@@ -43,6 +43,7 @@ import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
 import { rwaToFixed } from '~/lib/utils/formaters';
+import { ProgresBar } from './components/ProgressBar/ProgressBar';
 
 // types
 type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
@@ -75,13 +76,32 @@ export const SecondaryPriceBlock: FC = () => {
             beginningText="$"
           />
         </div>
-        <div className="text-content text-buttons flex justify-between mb-4">
-          <p>Annual Return</p>
-          <p>{estate.assetDetails.priceDetails.annualReturn}%</p>
+        <div className="text-content body flex justify-between mb-4">
+          <p className="flex items-center gap-1">
+            Total Return
+            <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
+          </p>
+          <p className="text-buttons">
+            {estate.assetDetails.priceDetails.annualReturn}%
+          </p>
         </div>
-        <div className="text-content text-buttons flex justify-between">
-          <p>Rental Yield</p>
-          <p>{estate.assetDetails.priceDetails.rentalYield}%</p>
+        <div className="text-content body flex justify-between mb-4">
+          <p className="flex items-center gap-1">
+            Expected Income
+            <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
+          </p>
+          <p className="text-buttons">
+            {estate.assetDetails.financials.expectedIncome.income}%
+          </p>
+        </div>
+        <div className="text-content body flex justify-between">
+          <p className="flex items-center gap-1">
+            Investors
+            <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
+          </p>
+          <p className="text-buttons">
+            {estate.assetDetails.offering.minInvestmentAmount}
+          </p>
         </div>
         <Divider className="my-4" />
         <div className="text-content text-buttons flex justify-between mb-6">
@@ -91,16 +111,18 @@ export const SecondaryPriceBlock: FC = () => {
             <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
           </div>
         </div>
-        <div className="grid gap-3 grid-cols-2 mt-3">
+
+        <ProgresBar />
+        <div className="grid gap-3 grid-cols-2 mt-4">
           <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
-          <Button variant="red" onClick={handleOpen.bind(null, SELL)}>
+          <Button variant="outline" onClick={handleOpen.bind(null, SELL)}>
             Sell
           </Button>
         </div>
-        <Divider className="my-3" />
-        <Button variant="blue" onClick={handleOpen.bind(null, OTC)}>
+        {/* <Divider className="my-3" /> */}
+        {/* <Button variant="blue" onClick={handleOpen.bind(null, OTC)}>
           OTC
-        </Button>
+        </Button> */}
       </Table>
 
       <PopupWithIcon
