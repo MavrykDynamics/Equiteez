@@ -6,7 +6,6 @@ import PlayIcon from 'app/icons/play-circle-rounded.svg?react';
 import BannerImageSrc from 'app/assets/home/banner-image.png';
 import styles from './bannerSection.module.css';
 import { Button } from '~/lib/atoms/Button';
-import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
 import { Link } from '@remix-run/react';
 
 export const BannerSection = () => {
@@ -25,14 +24,12 @@ export const BannerSection = () => {
           <Link to="/properties">
             <Button>View Properties</Button>
           </Link>
-          <LinkWithIcon
-            to="/"
-            CustomIcon={PlayIcon}
-            iconPosition="start"
-            iconClassName="w-[30px] h-[30px] stroke-none fill-current"
-          >
-            How it works
-          </LinkWithIcon>
+          <Button variant="outline">
+            <div className="flex items-center gap-2">
+              <PlayIcon className="w-[30px] h-[30px] stroke-none fill-current" />
+              How it works
+            </div>
+          </Button>
         </div>
       </div>
       <div className={styles.bannerImageWrapper}>

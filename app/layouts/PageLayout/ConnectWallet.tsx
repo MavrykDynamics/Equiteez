@@ -34,13 +34,13 @@ export const ConnectWallet = () => {
               customWidth={203}
             >
               <button
-                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
+                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                 onClick={changeUser}
               >
                 Change account
               </button>
               <button
-                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
+                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                 onClick={signOut}
               >
                 Sign Out

@@ -204,18 +204,19 @@ export default {
 
         // aliases
         const brandColors = {
-          'green-main': baseColors['green'][500],
+          'green-main': baseColors['dark-green'][500],
           'green-secondary': '#28AD80',
           'green-tertiary': baseColors.green[500],
 
           'green-dark': '#1A654C',
-          'green-opacity': 'rgba(51, 203, 152, 0.25)',
+          'dark-green-opacity': '#1C625226',
+          'dark-green-focus': '#1C625240',
           'yellow-opacity': '#FDF1CA',
           'yellow-dark': '#654C1A',
           'blue-dark': '#1A4665',
           'blue-opacity': '#CCE0F2',
-          content: baseColors['dark-green'][500],
-          'content-secondary': baseColors['dark-green'][300],
+          content: baseColors['sand'][900],
+          'content-secondary': baseColors['sand'][700],
           background: '#FFFFFF',
           'background-secondary': '#F4FBF8',
           'background-tertiary': '#FAFFFD',

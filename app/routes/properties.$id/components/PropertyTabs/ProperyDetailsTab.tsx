@@ -293,7 +293,7 @@ const DistanceBlock: FC<DistanceBlockProps> = ({ type, score }) => {
     <div className="flex items-center gap-x-4">
       <div
         className={clsx(
-          'w-[52px] h-[52px] rounded-full overflow-hidden bg-green-opacity',
+          'w-[52px] h-[52px] rounded-full overflow-hidden bg-dark-green-opacity',
           'flex items-center justify-center relative'
         )}
       >

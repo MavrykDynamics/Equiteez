@@ -176,7 +176,7 @@ export default function Index() {
                 onClick={() => handleOpen(idx)}
                 className={clsx(
                   styles.galleryItem,
-                  'bg-green-opacity overflow-hidden'
+                  'bg-dark-green-opacity overflow-hidden'
                 )}
               >
                 <img src={img} alt="gallery item" />
