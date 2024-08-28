@@ -56,8 +56,6 @@ export interface FormFieldProps
    */
   revealRef?: unknown;
   cleanable?: boolean;
-  extraInner?: ReactNode;
-  extraInnerWrapper?: 'default' | 'none' | 'unset';
   onClean?: EmptyFn;
   onReveal?: EmptyFn;
   onBlur?: React.FocusEventHandler;
@@ -90,8 +88,6 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
       revealForbidden = false,
       revealRef,
       cleanable,
-      extraInner = null,
-      extraInnerWrapper = 'default',
       id,
       type,
       value,
@@ -181,8 +177,6 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
           />
         )}
 
-        {extraSection}
-
         <div
           className={classNames(
             'relative flex items-stretch',
@@ -196,7 +190,6 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
               smallPaddings ? 'py-2 pl-2' : 'py-3 pl-4',
               buildPaddingRightClassName(
                 isPasswordInput,
-                extraInnerWrapper === 'unset' ? false : Boolean(extraInner),
                 smallPaddings,
                 showIcon
               ),
@@ -214,17 +207,10 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
             onBlur={handleBlur}
             {...rest}
           />
-
+          {extraSection}
           {showIcon && RevealPasswordIcon}
-
-          <ExtraInner
-            innerComponent={extraInner}
-            useDefaultWrapper={extraInnerWrapper === 'default'}
-          />
           {childForInputWrapper}
-
           {secretCovered && <SecretCover onClick={handleSecretBannerClick} />}
-
           <Cleanable
             cleanable={cleanable}
             handleCleanClick={handleCleanClick}
@@ -248,31 +234,6 @@ export const FORM_FIELD_CLASS_NAME = classNames(
   'transition ease-in-out duration-200',
   'text-sand-600 text-base-plus'
 );
-
-interface ExtraInnerProps {
-  innerComponent: React.ReactNode;
-  useDefaultWrapper: boolean;
-}
-
-const ExtraInner: React.FC<ExtraInnerProps> = ({
-  useDefaultWrapper,
-  innerComponent,
-}) => {
-  if (useDefaultWrapper)
-    return (
-      <div
-        className={classNames(
-          'absolute flex items-center justify-end inset-y-0 right-0 w-32',
-          'pointer-events-none overflow-hidden'
-        )}
-      >
-        <span className="mx-4 text-base-plus text-secondary-white">
-          {innerComponent}
-        </span>
-      </div>
-    );
-  return <>{innerComponent}</>;
-};
 
 interface CleanableProps {
   handleCleanClick: () => void;

@@ -23,6 +23,7 @@ type FaceContentDimensions = {
 type DropdownContextType = {
   opened: boolean;
   toggleOpened: () => void;
+  disabled: boolean;
   setFaceContentDimensions: React.Dispatch<
     React.SetStateAction<FaceContentDimensions>
   >;
@@ -31,7 +32,10 @@ type DropdownContextType = {
 
 const dropdownContext = createContext<DropdownContextType>(undefined!);
 
-export const CustomDropdown: FC<PropsWithChildren> = ({ children }) => {
+export const CustomDropdown: FC<PropsWithChildren & { disabled?: boolean }> = ({
+  children,
+  disabled = false,
+}) => {
   const [opened, setOpened] = useState(false);
   const [faceContentDimensions, setFaceContentDimensions] = useState({
     width: 0,
@@ -50,10 +54,11 @@ export const CustomDropdown: FC<PropsWithChildren> = ({ children }) => {
     () => ({
       toggleOpened,
       opened,
+      disabled,
       setFaceContentDimensions,
       faceContentDimensions,
     }),
-    [toggleOpened, opened, faceContentDimensions]
+    [toggleOpened, opened, faceContentDimensions, disabled]
   );
 
   const ref = useOutsideClick(closeDropdown, !opened);
@@ -80,7 +85,7 @@ export const DropdownFaceContent: FC<
   className,
 }) => {
   const { IS_WEB } = useAppContext();
-  const { opened, setFaceContentDimensions } = useDropdownContext();
+  const { opened, setFaceContentDimensions, disabled } = useDropdownContext();
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -103,8 +108,9 @@ export const DropdownFaceContent: FC<
       <ArrowDown
         className={clsx(
           iconClassName,
+          disabled && 'pointer-events-none opacity-50',
           'transition duration-300',
-          opened && 'rotate-180'
+          opened && !disabled && 'rotate-180'
         )}
       />
     </div>
@@ -129,10 +135,11 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
 }) => {
   const {
     opened,
+    disabled,
     faceContentDimensions: { width, height },
   } = useDropdownContext();
 
-  return (
+  return disabled ? null : (
     <div
       style={{
         top: height + topMargin,

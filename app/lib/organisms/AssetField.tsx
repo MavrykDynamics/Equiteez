@@ -28,7 +28,6 @@ export const AssetField = forwardRef<HTMLInputElement, AssetFieldProps>(
       value,
       min = 0,
       max = Number.MAX_SAFE_INTEGER,
-      assetSymbol,
       assetDecimals = 6,
       onChange,
       onFocus,
@@ -118,7 +117,6 @@ export const AssetField = forwardRef<HTMLInputElement, AssetFieldProps>(
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        extraInner={assetSymbol}
         {...rest}
       />
     );

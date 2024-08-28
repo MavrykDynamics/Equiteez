@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { Button } from '~/lib/atoms/Button';
 import {
   ClickableDropdownArea,
@@ -26,7 +26,6 @@ import { calculateEstfee } from '~/lib/utils/calcFns';
 import BigNumber from 'bignumber.js';
 import { BalanceInput } from '~/templates/BalanceInput';
 import { OrderType } from '../SecondaryPriceBlock';
-import { AssetDropdown } from '~/templates/AssetDropdown';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -81,6 +80,24 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     toggleScreen('confirm');
   }, [toggleScreen]);
 
+  const input1Props = isBuyAction
+    ? {
+        amount,
+        selectedAssetSlug: stablecoinContract,
+        label: 'You Pay',
+      }
+    : { amount, selectedAssetSlug: token_address, label: 'You Sell' };
+
+  const input2Props = isBuyAction
+    ? {
+        amount: amount?.div(tokensPrices[token_address]) ?? new BigNumber(0),
+        selectedAssetSlug: token_address,
+      }
+    : {
+        amount: amount?.times(tokensPrices[token_address]) ?? new BigNumber(0),
+        selectedAssetSlug: stablecoinContract,
+      };
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -88,36 +105,21 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <div className="flex flex-col gap-3">
             <BalanceInput
               onChange={(data) => setAmount(data)}
-              amount={amount}
               amountInputDisabled={false}
-              selectedAssetSlug={token_address}
-              label={isBuyAction ? 'You Pay' : 'You Sell'}
+              {...input1Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
                 <span>{total?.toNumber() ?? 0}</span>
                 <div>
-                  {isBuyAction ? (
-                    <Money smallFractionFont={false} shortened>
-                      {userTokensBalances[stablecoinContract] || 0}
-                    </Money>
-                  ) : (
-                    <Money smallFractionFont={false} shortened>
-                      {userTokensBalances[token_address] || '0'}
-                    </Money>
-                  )}
+                  <Money smallFractionFont={false} shortened>
+                    {userTokensBalances[stablecoinContract] || 0}
+                  </Money>
                   &nbsp;{currency}
                 </div>
               </div>
             </BalanceInput>
 
-            <AssetDropdown selectedAssetSlug={token_address} />
-
-            <BalanceInput
-              selectedAssetSlug={token_address}
-              amount={total}
-              amountInputDisabled={false}
-              label="You Receive"
-            >
+            <BalanceInput amountInputDisabled={false} {...input2Props}>
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
                 <span>$100</span>
                 <span>Balance: 1,200.0</span>
