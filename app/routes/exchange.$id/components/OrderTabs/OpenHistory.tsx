@@ -98,7 +98,7 @@ export const OpenHistory = () => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-transparent bg-white">
+                <tbody className="divide-y divide-transparent">
                   {orders.map((order, index) => (
                     <tr
                       key={`${order.date}${index}`}

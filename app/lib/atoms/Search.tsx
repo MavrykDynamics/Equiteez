@@ -22,7 +22,7 @@ export const Search: FC<SearchProps> = ({
         'flex items-center gap-x-2'
       )}
     >
-      <SearchIcon className="w-4 h-4 text-dark-green-500 stroke current" />
+      <SearchIcon className="w-4 h-4 text-sand-900 stroke-current" />
       <input
         className={clsx(
           'w-full outline-none focus:outline-none text-caption-regular'

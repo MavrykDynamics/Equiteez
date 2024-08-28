@@ -13,7 +13,7 @@ type TabSwitcherProps = {
 
 const variants = {
   primary: 'gap-x-3',
-  secondary: 'gap-x-1 bg-gray-100 rounded-lg overflow-hidden p-1',
+  secondary: 'gap-x-2',
 };
 
 export const TabSwitcher: FC<TabSwitcherProps> = ({

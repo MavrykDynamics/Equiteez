@@ -50,7 +50,8 @@ const variants = {
     'text-dark-green-500 bg-transparent border-2 border-green-main hover:bg-dark-green-opacity focus:bg-dark-green-focus py-[8px]',
   red: 'text-content bg-red-main hover:bg-red-400',
   dark: 'bg-black-secondary text-white hover:bg-gray-800',
-  'dark-outline': 'border-2 border-dark-green-500 text-dark-green-500 py-[6px]',
+  'dark-outline':
+    'border-2 border-black-secondary text-black-secondary py-[8px]',
   blue: 'bg-blue-300 hover:bg-blue-200 text-content',
   custom: '',
 };

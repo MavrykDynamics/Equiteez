@@ -81,7 +81,7 @@ export const TransactionsTab = () => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-transparent bg-white">
+                <tbody className="divide-y divide-transparent">
                   {orders.map((order, index) => (
                     <tr key={`${order.date}${index}`}>
                       <td className="eq-table-cell">{order.date || ''}</td>
