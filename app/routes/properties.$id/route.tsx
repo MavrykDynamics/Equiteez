@@ -107,9 +107,10 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
 }) => {
   return (
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
-      <div className="py-1 px-2 bg-yellow-opacity text-yellow-dark rounded font-medium">
+      <div className="py-1 px-2 bg-[#F6AFAFBF] text-red-950 rounded font-medium">
         {houseType}
       </div>
+
       <EstateHeadlineTab isSecondaryEstate={isSecondaryEstate} />
     </section>
   );

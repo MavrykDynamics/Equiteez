@@ -218,7 +218,7 @@ const PopupContent: FC<{ estate: SecondaryEstate; orderType: OrderType }> = ({
       </div>
       <div className="flex flex-col gap-1 items-start">
         <h3 className="text-card-headline text-sand-900">{estate.name}</h3>
-        <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-red-50 text-center">
+        <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
           {estate.assetDetails.propertyDetails.propertyType}
         </span>
       </div>
@@ -251,6 +251,7 @@ const PopupContent: FC<{ estate: SecondaryEstate; orderType: OrderType }> = ({
             </div>
           )}
 
+          {/* TODO exctract as helper component */}
           {activetabId === CONFIRM && (
             <div className="bg-gray-50 rounded-2xl p-4 mb-8">
               <div className="flex items-center gap-3 font-medium">
@@ -269,7 +270,7 @@ const PopupContent: FC<{ estate: SecondaryEstate; orderType: OrderType }> = ({
                     </h3>
                   </div>
                   <div className="flex justify-between w-full">
-                    <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-red-50 text-center">
+                    <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
                       {estate.assetDetails.propertyDetails.propertyType}
                     </span>
                     <span className="text-body text-sand-900">

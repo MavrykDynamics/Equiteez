@@ -1,7 +1,7 @@
 .bannerContainer {
   display: grid;
-  grid-template-columns: 520px 1fr;
-  column-gap: 50px;
+  grid-template-columns: 528px 1fr;
+  column-gap: 40px;
 }
 
 .bannerImageWrapper {

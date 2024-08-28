@@ -25,7 +25,7 @@ export const BannerSection = () => {
           Build your portfolio with every asset on the block
         </h1>
         <p className="text-content-secondary text-body mb-8">
-          The future of real estate ownership is digital. Start with just $50 to
+          The future of asset ownership is digital. Start with just $50 to
           invest in fractionalized, fully compliant, income producing assets
           worldwide.
         </p>

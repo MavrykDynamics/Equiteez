@@ -8,7 +8,7 @@ export const IntegrationSection = () => {
         <p className="text-body text-content-secondary max-w-[738px]">
           Discover new opportunities powered by decentralized finance. The Maven
           Finance lending platform allows you to supercharge your earnings by
-          leveraging your tokenized portfolio.{' '}
+          leveraging your tokenized portfolio.
         </p>
       </div>
       <ProgressBlocks />

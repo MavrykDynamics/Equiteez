@@ -31,7 +31,7 @@ ol.stepper li {
   align-items: center;
   position: relative;
   column-gap: 14px;
-  background-color: #fff;
+  @apply bg-background;
   z-index: 1;
 }
 
