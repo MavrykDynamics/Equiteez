@@ -16,7 +16,10 @@ import { pickOrderbookContract } from '~/consts/contracts';
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 
 //consts & types
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import {
+  SECONDARY_MARKET,
+  SecondaryEstate,
+} from '~/providers/EstatesProvider/estates.types';
 import {
   BUY,
   CONFIRM,
@@ -35,11 +38,14 @@ import { useContractAction } from '~/contracts/hooks/useContractAction';
 import usePrevious from '~/hooks/use-previous';
 import BigNumber from 'bignumber.js';
 import { isDefined } from '~/lib/utils';
+import { ProgresBar } from '../PrimaryPriceBlock';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
   orderType: OrderType;
 }> = ({ estate, orderType }) => {
+  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+
   const { tokensPrices, tokensMetadata } = useTokensContext();
   const [activetabId, setAvtiveTabId] = useState(orderType);
   const prevTabId = usePrevious(activetabId) as OrderType;
@@ -145,12 +151,26 @@ export const PopupContent: FC<{
                 </span>
               </div>
             ) : (
-              <HeadlinePreviewSection />
+              <div className="flex flex-col w-full">
+                <HeadlinePreviewSection />
+                {!isSecondaryEstate && (
+                  <div className="mt-4 w-full">
+                    <h4 className="text-content text-body mb-3 font-semibold">
+                      Shares
+                    </h4>
+                    <ProgresBar
+                      tokensCount={
+                        estate.assetDetails.priceDetails.tokensAvailable
+                      }
+                    />
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <Divider className="my-6" />
 
-          {activetabId !== CONFIRM && (
+          {activetabId !== CONFIRM && isSecondaryEstate && (
             <div className="mb-8">
               <TabSwitcher tabs={tabs} activeTabId={activetabId} />
             </div>

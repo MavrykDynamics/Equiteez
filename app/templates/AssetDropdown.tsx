@@ -1,5 +1,4 @@
 import { FC } from 'react';
-import { AssetImage } from '~/lib/organisms/AssetImage';
 import {
   ClickableDropdownArea,
   CustomDropdown,
@@ -42,7 +41,9 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   </span>
                 </div>
               ) : (
-                <div className="text-body text-sand-500">Select type</div>
+                <span className="text-body text-sand-500 text-nowrap">
+                  Select type
+                </span>
               )}
             </div>
           </DropdownFaceContent>

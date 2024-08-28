@@ -60,7 +60,9 @@ export const PrimaryPriceBlock = () => {
         <ProgresBar
           tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
         />
-        <Button onClick={handleOpen}>Buy</Button>
+        <Button className="mt-6" onClick={handleOpen}>
+          Buy
+        </Button>
       </Table>
 
       <PopupWithIcon
@@ -74,9 +76,9 @@ export const PrimaryPriceBlock = () => {
   );
 };
 
-const ProgresBar: FC<{ tokensCount: number }> = ({ tokensCount }) => {
+export const ProgresBar: FC<{ tokensCount: number }> = ({ tokensCount }) => {
   return (
-    <div className="flex flex-col mb-6">
+    <div className="flex flex-col">
       <div className={clsx(styles.progressBar, styles.progressPercentage)} />
       <div className="flex justify-between text-content text-body mt-1">
         <p>{Math.floor(tokensCount / 10)}</p>
