@@ -370,11 +370,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
           </div>
 
           <div className="flex w-full">
-            <Button
-              onClick={pickBuySellAction}
-              className="w-full mt-1"
-              variant={activetabId === 'buy' ? 'green-secondary' : 'red'}
-            >
+            <Button onClick={pickBuySellAction} className="w-full mt-1">
               {activetabId === 'buy' ? 'Buy' : 'Sell'}
             </Button>
           </div>
