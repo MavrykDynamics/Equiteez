@@ -55,26 +55,31 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     spippageOptions[0]
   );
 
-  const buyBalance = useMemo(
+  const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
   );
 
+  const tokenBalance = useMemo(
+    () => userTokensBalances[token_address]?.toNumber() || 0,
+    [userTokensBalances, token_address]
+  );
+
   const isBuyAction = actionType === BUY;
   const hasTotalError =
-    typeof total === 'number' ? Number(total) > buyBalance : false;
+    typeof total === 'number' ? Number(total) > usdBalance : false;
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
 
     const slippageAdjustment =
       Number(total) * (1 - Number(slippagePercentage || 0) / 100);
-    return new BigNumber(buyBalance)
+    return new BigNumber(usdBalance)
       .minus(new BigNumber(slippageAdjustment))
       .div(tokensPrices[token_address])
       .toNumber()
       .toFixed(2);
-  }, [total, slippagePercentage, buyBalance, tokensPrices, token_address]);
+  }, [total, slippagePercentage, usdBalance, tokensPrices, token_address]);
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
@@ -122,7 +127,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 <span>{total?.toNumber() ?? 0}</span>
                 <div>
                   <Money smallFractionFont={false} shortened>
-                    {userTokensBalances[stablecoinContract] || 0}
+                    {isBuyAction ? usdBalance : tokenBalance}
                   </Money>
                   &nbsp;{currency}
                 </div>
@@ -132,7 +137,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <BalanceInput amountInputDisabled={false} {...input2Props}>
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
                 <span>$100</span>
-                <span>Balance: 1,200.0</span>
+                <div>
+                  <Money smallFractionFont={false} shortened>
+                    {isBuyAction ? usdBalance : tokenBalance}
+                  </Money>
+                  &nbsp;{currency}
+                </div>
               </div>
             </BalanceInput>
 
