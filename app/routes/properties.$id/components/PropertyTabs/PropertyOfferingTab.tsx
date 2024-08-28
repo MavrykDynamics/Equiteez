@@ -25,10 +25,10 @@ export const PropertyOfferingTab = () => {
 
   return (
     <div>
-      <div className="mb-2">
-        <TableHeader>Offering</TableHeader>
-      </div>
       <Table className="bg-white">
+        <div className="mb-2">
+          <TableHeader>Offering</TableHeader>
+        </div>
         <TableItem>
           <p>Offering Date</p>
           <p>{formatDate(offering.offeringDate)}</p>
@@ -55,10 +55,11 @@ export const PropertyOfferingTab = () => {
         </TableItem>
       </Table>
       <div className="mb-11" />
-      <div className="mb-2">
-        <TableHeader>Valuation</TableHeader>
-      </div>
+
       <Table className="bg-white">
+        <div className="mb-2">
+          <TableHeader>Valuation</TableHeader>
+        </div>
         <TableHeader>
           <div className="flex items-center justify-between">
             <p>{formatDate(priorValuation.date)}</p>
