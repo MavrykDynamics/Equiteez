@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -14,6 +15,7 @@ import styles from './dropdown.module.css';
 import clsx from 'clsx';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { useOutsideClick } from '~/hooks/use-click-outside';
+import { onAfterClose, onAfterOpen } from '../CustomPopup/utils';
 
 type FaceContentDimensions = {
   width: number;
@@ -22,6 +24,7 @@ type FaceContentDimensions = {
 
 type DropdownContextType = {
   opened: boolean;
+  withOverlay: boolean;
   toggleOpened: () => void;
   disabled: boolean;
   setFaceContentDimensions: React.Dispatch<
@@ -32,9 +35,15 @@ type DropdownContextType = {
 
 const dropdownContext = createContext<DropdownContextType>(undefined!);
 
-export const CustomDropdown: FC<PropsWithChildren & { disabled?: boolean }> = ({
+type CustomDropdownProps = {
+  disabled?: boolean;
+  withOverlay?: boolean;
+} & PropsWithChildren;
+
+export const CustomDropdown: FC<CustomDropdownProps> = ({
   children,
   disabled = false,
+  withOverlay = false,
 }) => {
   const [opened, setOpened] = useState(false);
   const [faceContentDimensions, setFaceContentDimensions] = useState({
@@ -50,15 +59,26 @@ export const CustomDropdown: FC<PropsWithChildren & { disabled?: boolean }> = ({
     setOpened(false);
   }, []);
 
+  useLayoutEffect(() => {
+    if (withOverlay && opened) {
+      onAfterOpen();
+    }
+
+    return () => {
+      onAfterClose();
+    };
+  }, [opened, withOverlay]);
+
   const memoizedExpanderValue = useMemo(
     () => ({
       toggleOpened,
       opened,
       disabled,
+      withOverlay,
       setFaceContentDimensions,
       faceContentDimensions,
     }),
-    [toggleOpened, opened, faceContentDimensions, disabled]
+    [toggleOpened, opened, disabled, withOverlay, faceContentDimensions]
   );
 
   const ref = useOutsideClick(closeDropdown, !opened);
@@ -66,6 +86,13 @@ export const CustomDropdown: FC<PropsWithChildren & { disabled?: boolean }> = ({
   return (
     <dropdownContext.Provider value={memoizedExpanderValue}>
       <div ref={ref} className="relative">
+        {opened && withOverlay && (
+          <div
+            role="presentation"
+            className="fixed inset-0 bg-[#00000099] z-10"
+            onClick={toggleOpened}
+          />
+        )}
         {children}
       </div>
     </dropdownContext.Provider>
@@ -85,7 +112,8 @@ export const DropdownFaceContent: FC<
   className,
 }) => {
   const { IS_WEB } = useAppContext();
-  const { opened, setFaceContentDimensions, disabled } = useDropdownContext();
+  const { opened, setFaceContentDimensions, disabled, withOverlay } =
+    useDropdownContext();
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -101,7 +129,12 @@ export const DropdownFaceContent: FC<
   return (
     <div
       ref={ref}
-      className={clsx(className, `flex items-center gap-x-${gap}`)}
+      className={clsx(
+        className,
+
+        `flex items-center gap-x-${gap}`,
+        withOverlay && opened && 'bg-white relative z-10'
+      )}
       role="presentation"
     >
       {children}
@@ -157,7 +190,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
     >
       <div
         style={{ maxHeight, height: customHeight }}
-        className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll min-w-full"
+        className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll min-w-full relative z-10"
       >
         {children}
       </div>

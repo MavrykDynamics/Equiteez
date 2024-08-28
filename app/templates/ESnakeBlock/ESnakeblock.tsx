@@ -27,7 +27,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
       <div className="flex w-full h-3.5 relative">
         <div
           className={clsx(
-            'absolute w-full h-full flex justify-between z-20',
+            'absolute w-full h-full flex justify-between z-2',
             'transition 0.3s linear'
           )}
         >
@@ -55,7 +55,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           style={
             { '--percentage': `${selectedOption}%` } as React.CSSProperties
           }
-          className="absolute w-full h-full flex items-center z-10"
+          className="absolute w-full h-full flex items-center z-1"
         >
           <div
             className={clsx(styles.progressBar, styles.progressPercentage)}

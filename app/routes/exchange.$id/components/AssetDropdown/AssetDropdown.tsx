@@ -195,13 +195,14 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
   const hasNoresults = filteredEstates.length === 0;
 
   return (
-    <CustomDropdown>
+    <CustomDropdown withOverlay>
       <ClickableDropdownArea>
         <DropdownFaceContent
+          gap={2}
           className={clsx(
             'text-body-xs leading-5 font-semibold text-content w-full border border-dark-green-50',
-            'px-[10px] py-[9px]',
-            'rounded-xl'
+            'px-[14px] py-[9px]',
+            'rounded-4xl'
           )}
         >
           <div className="flex items-center gap-x-2">
