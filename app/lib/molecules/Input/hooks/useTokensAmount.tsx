@@ -9,7 +9,7 @@ export const useTokensAmount = (tokenAddress: string) => {
     [tokenAddress, tokensMetadata]
   );
 
-  const [tokensState, setTokensState] = useState<StringRecord<number | string>>(
+  const [tokensState, setTokensState] = useState<StringRecord<string | number>>(
     {
       amount: '',
       previewAmount: '',

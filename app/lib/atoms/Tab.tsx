@@ -9,7 +9,7 @@ export type TabType<G = string> = {
   handleClick: (id: G) => void;
 };
 
-export type TabVariant = 'primary' | 'secondary';
+export type TabVariant = 'primary' | 'secondary' | 'tertiary';
 
 type TabProps = {
   active?: boolean;
@@ -34,6 +34,12 @@ const variants = {
     active: (active: boolean | undefined) =>
       active ? 'bg-sand-800 text-white' : 'bg-inactive-tab text-sand-700',
     disabled: 'opacity-50 pointer-events-none bg-gray-50',
+  },
+  tertiary: {
+    className: clsx('text-caption cursor-pointer'),
+    active: (active: boolean | undefined) =>
+      active ? 'text-dark-green-500 underline' : 'text-sand-300',
+    disabled: 'opacity-50 pointer-events-none',
   },
 };
 
