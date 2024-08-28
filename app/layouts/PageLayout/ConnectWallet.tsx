@@ -6,7 +6,7 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import { IdentIcon } from '~/lib/organisms/IdenIcon';
+import IdentIcon from '~/lib/organisms/IdenIcon';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 
@@ -21,7 +21,12 @@ export const ConnectWallet = () => {
             <ClickableDropdownArea>
               <DropdownFaceContent>
                 <div className="flex items-center">
-                  <IdentIcon size={32} className="mr-2" />
+                  <IdentIcon
+                    type="bottts"
+                    size={32}
+                    className="mr-2"
+                    hash={userAddress}
+                  />
                   <div className="text-caption-regular text-content">
                     <HashShortView hash={userAddress} />
                   </div>
