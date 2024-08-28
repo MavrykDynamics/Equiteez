@@ -26,6 +26,7 @@ import { calculateEstfee } from '~/lib/utils/calcFns';
 import BigNumber from 'bignumber.js';
 import { BalanceInput } from '~/templates/BalanceInput';
 import { OrderType } from '../SecondaryPriceBlock';
+import { AssetDropdown } from '~/templates/AssetDropdown';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -89,6 +90,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               onChange={(data) => setAmount(data)}
               amount={amount}
               amountInputDisabled={false}
+              selectedAssetSlug={token_address}
               label={isBuyAction ? 'You Pay' : 'You Sell'}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
@@ -108,7 +110,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               </div>
             </BalanceInput>
 
+            <AssetDropdown selectedAssetSlug={token_address} />
+
             <BalanceInput
+              selectedAssetSlug={token_address}
               amount={total}
               amountInputDisabled={false}
               label="You Receive"

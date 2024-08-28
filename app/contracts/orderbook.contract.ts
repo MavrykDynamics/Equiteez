@@ -33,7 +33,6 @@ export async function orderbookBuy({
 }: OrderbookBuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
-    debugger;
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(marketContractAddress);

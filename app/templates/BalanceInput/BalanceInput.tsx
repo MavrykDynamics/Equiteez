@@ -12,7 +12,7 @@ type BalanceInputProps = {
   onChange?: (value?: BigNumber) => void;
   amount: BigNumber | undefined;
   amountInputDisabled: boolean;
-  selectedAssetSlug?: string;
+  selectedAssetSlug: string;
   children?: React.ReactNode;
   // selectedAssetMetadata: AssetMetadataBase;
 };
@@ -23,8 +23,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
   amount,
   amountInputDisabled,
   children,
-  // selectedAssetSlug,
-  // selectedAssetMetadata,
+  selectedAssetSlug,
 }) => {
   const handleAmountChange = (newAmount?: string) =>
     onChange?.(
@@ -51,7 +50,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
           assetDecimals={6}
           // assetDecimals={selectedAssetMetadata.decimals}
           fieldWrapperBottomMargin={false}
-          extraInner={<AssetDropdown />}
+          extraInner={<AssetDropdown selectedAssetSlug={selectedAssetSlug} />}
           onChange={handleAmountChange}
         />
       </div>
