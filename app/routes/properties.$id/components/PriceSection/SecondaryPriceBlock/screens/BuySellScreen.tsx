@@ -16,7 +16,7 @@ import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
-import { BuyScreenState, SellScreenState } from './consts';
+import { BUY, BuyScreenState, CONFIRM, SellScreenState } from './consts';
 import Money from '~/lib/atoms/Money';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { stablecoinContract } from '~/consts/contracts';
@@ -60,7 +60,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [userTokensBalances]
   );
 
-  const isBuyAction = actionType === 'buy';
+  const isBuyAction = actionType === BUY;
   const hasTotalError =
     typeof total === 'number' ? Number(total) > buyBalance : false;
 
@@ -77,26 +77,36 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [total, slippagePercentage, buyBalance, tokensPrices, token_address]);
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen('confirm');
+    toggleScreen(CONFIRM);
   }, [toggleScreen]);
 
-  const input1Props = isBuyAction
-    ? {
-        amount,
-        selectedAssetSlug: stablecoinContract,
-        label: 'You Pay',
-      }
-    : { amount, selectedAssetSlug: token_address, label: 'You Sell' };
+  const input1Props = useMemo(
+    () =>
+      isBuyAction
+        ? {
+            amount,
+            selectedAssetSlug: stablecoinContract,
+            label: 'You Pay',
+          }
+        : { amount, selectedAssetSlug: token_address, label: 'You Sell' },
+    [amount, isBuyAction, token_address]
+  );
 
-  const input2Props = isBuyAction
-    ? {
-        amount: amount?.div(tokensPrices[token_address]) ?? new BigNumber(0),
-        selectedAssetSlug: token_address,
-      }
-    : {
-        amount: amount?.times(tokensPrices[token_address]) ?? new BigNumber(0),
-        selectedAssetSlug: stablecoinContract,
-      };
+  const input2Props = useMemo(
+    () =>
+      isBuyAction
+        ? {
+            amount:
+              amount?.div(tokensPrices[token_address]) ?? new BigNumber(0),
+            selectedAssetSlug: token_address,
+          }
+        : {
+            amount:
+              amount?.times(tokensPrices[token_address]) ?? new BigNumber(0),
+            selectedAssetSlug: stablecoinContract,
+          },
+    [amount, isBuyAction, token_address, tokensPrices]
+  );
 
   return (
     <div className="flex flex-col flex-1">
