@@ -25,6 +25,13 @@ export default {
             fontWeight: '700',
           },
         ],
+        'asset-input': [
+          '2rem', // 32px
+          {
+            lineHeight: '2.25rem',
+            fontWeight: '600',
+          },
+        ],
         'slider-headline': [
           '1.5rem',
           {

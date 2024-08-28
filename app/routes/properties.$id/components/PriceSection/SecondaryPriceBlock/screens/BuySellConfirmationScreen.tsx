@@ -160,7 +160,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
         </div>
 
         <div>
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <p className="flex justify-between text-body-xs text-content">
               <span>Token Price</span>
               <span>
@@ -193,7 +193,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 {currency}
               </div>
             </div>
-          </div>
+          </div> */}
           <Divider className="my-4" />
           <p className="text-caption-regular text-content-secondary mb-6">
             By clicking ”{actionLabels[actionType]}”, I adopt the above
@@ -202,11 +202,6 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
           </p>
           <Button
             type="submit"
-            variant={
-              actionLabels[actionType].toLowerCase() === 'buy'
-                ? 'custom'
-                : 'red'
-            }
             className={clsx(
               'w-full',
               actionLabels[actionType].toLowerCase() === 'buy' &&

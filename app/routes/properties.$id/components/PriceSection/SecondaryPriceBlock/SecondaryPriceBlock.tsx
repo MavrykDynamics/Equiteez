@@ -177,19 +177,69 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
     buyProps
   );
 
+  const HeadlinePreviewSection = () => (
+    <div className="flex items-center gap-3 font-medium">
+      <div className="w-[76px] h-[57px] rounded-lg overflow-hidden">
+        <img
+          src={estate.assetDetails.previewImage}
+          alt={estate.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="flex flex-col gap-1 items-start">
+        <h3 className="text-card-headline text-sand-900">{estate.name}</h3>
+        <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-red-50 text-center">
+          {estate.assetDetails.propertyDetails.propertyType}
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col justify-between text-content h-full">
       <>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
-            {activeScreenId === CONFIRM && (
-              <button onClick={() => toggleBuyScreen(BUY)}>
-                <ArrowLeftIcon className="size-6 mr-2" />
-              </button>
+            {activeScreenId === CONFIRM ? (
+              <div className="flex items-center">
+                <button onClick={() => toggleBuyScreen(BUY)}>
+                  <ArrowLeftIcon className="size-6 mr-2" />
+                </button>
+                <span className="text-card-headline text-sand-900">
+                  Checkout
+                </span>
+              </div>
+            ) : (
+              <HeadlinePreviewSection />
             )}
-            <h3 className="text-card-headline">{estate.name}</h3>
           </div>
-          <Divider className="my-4" />
+          <Divider className="my-6" />
+
+          {activeScreenId === CONFIRM && (
+            <div className="bg-gray-50 rounded-2xl p-4 mb-8">
+              <div className="flex items-center gap-3 font-medium">
+                <div className="w-[124px] h-[93px] rounded-lg overflow-hidden">
+                  <img
+                    src={estate.assetDetails.previewImage}
+                    alt={estate.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-col gap-1 items-start flex-1">
+                  <div className="flex justify-between text-card-headline text-sand-900 w-full">
+                    <h3>{estate.name}</h3>
+                    <h3>{amount} NMD</h3>
+                  </div>
+                  <div className="flex justify-between w-full">
+                    <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-red-50 text-center">
+                      {estate.assetDetails.propertyDetails.propertyType}
+                    </span>
+                    <span className="text-body text-sand-900">${total}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {activeScreenId === BUY && (
             <BuySellScreen
@@ -273,7 +323,7 @@ const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
             )}
             <h3 className="text-card-headline">{estate.name}</h3>
           </div>
-          <Divider className="my-4" />
+          <Divider className="my-6" />
 
           {activeScreenId === SELL && (
             <BuySellScreen

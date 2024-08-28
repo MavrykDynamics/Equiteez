@@ -27,6 +27,9 @@ import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { calculateEstfee } from '~/lib/utils/calcFns';
 import BigNumber from 'bignumber.js';
 import { rwaToFixed } from '~/lib/utils/formaters';
+import { BalanceInput } from '~/templates/BalanceInput';
+import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+import { TabType } from '~/lib/atoms/Tab';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -57,6 +60,40 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
+
+  // ----- NEW
+  const [amountB, setAmountB] = useState<BigNumber | undefined>(
+    new BigNumber(0)
+  );
+
+  const [activetabId, setAvtiveTabId] = useState('buying');
+
+  const handleTabClick = useCallback((id: string) => {
+    setAvtiveTabId(id);
+  }, []);
+
+  const tabs: TabType[] = useMemo(
+    () => [
+      {
+        id: 'buy',
+        label: 'Buy',
+        handleClick: handleTabClick,
+      },
+      {
+        id: 'sell',
+        label: 'Sell',
+        handleClick: handleTabClick,
+      },
+      {
+        id: 'otc',
+        label: 'OTC',
+        handleClick: handleTabClick,
+      },
+    ],
+    [handleTabClick]
+  );
+
+  // -------- END OF NEW
 
   const buyBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -102,6 +139,87 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <h3 className="text-content text-card-headline capitalize">
             {actionType}
           </h3>
+
+          <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+
+          <div className="flex flex-col gap-3">
+            <BalanceInput
+              onChange={(data) => setAmountB(data)}
+              amount={amountB}
+              amountInputDisabled={false}
+              label="You Pay"
+            >
+              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
+                <span>$100</span>
+                <span>Balance: 1,200.0</span>
+              </div>
+            </BalanceInput>
+
+            <BalanceInput
+              amount={amountB}
+              amountInputDisabled={false}
+              label="You Receive"
+            >
+              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
+                <span>$100</span>
+                <span>Balance: 1,200.0</span>
+              </div>
+            </BalanceInput>
+
+            <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
+              <CustomExpander>
+                <ClickableExpanderArea>
+                  <ExpanderFaceContent>
+                    <div className="text-body-xs font-semibold text-content flex items-center w-full">
+                      1 NMD ={' '}
+                      <div>
+                        <span>&nbsp;{symbol}</span>
+                        <Money smallFractionFont={false}>{minReceived}</Money>
+                      </div>
+                    </div>
+                  </ExpanderFaceContent>
+                </ClickableExpanderArea>
+                <ExpanderBodyContent>
+                  <div className="mt-4 flex flex-col">
+                    <div className="mt-2 text-body-xs flex justify-between">
+                      <div className="flex items-center gap-2">
+                        Min Received
+                        <InfoTooltip content="Min Received" />
+                      </div>
+                      <p>
+                        <Money smallFractionFont={false} shortened>
+                          {calculateEstfee(total)}
+                        </Money>
+                        &nbsp;{symbol}
+                      </p>
+                    </div>
+                    <div className="mt-2 text-body-xs flex justify-between">
+                      <div className="flex items-center gap-2">
+                        Slippage
+                        <InfoTooltip content="Slippage" />
+                      </div>
+                      <SlippageDropdown
+                        slippagePercentage={slippagePercentage}
+                        setSlippagePercentage={setSlippagePercentage}
+                      />
+                    </div>
+                    <div className="mt-[10px] text-body-xs flex justify-between">
+                      <div className="flex items-center gap-2">
+                        Est. Fee
+                        <InfoTooltip content="Est fee" />
+                      </div>
+                      <p>
+                        <Money smallFractionFont={false} shortened>
+                          {calculateEstfee(total)}
+                        </Money>
+                        &nbsp;{symbol}
+                      </p>
+                    </div>
+                  </div>
+                </ExpanderBodyContent>
+              </CustomExpander>
+            </div>
+          </div>
           <div className="text-body-xs text-content flex items-center justify-between">
             <span>Available Balance</span>
             <div>
@@ -198,7 +316,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         />
       </div>
       <Button
-        variant="dark"
         className="mt-6"
         onClick={handleContinueClick}
         disabled={hasTotalError || !amount || slippagePercentage.length === 0}
