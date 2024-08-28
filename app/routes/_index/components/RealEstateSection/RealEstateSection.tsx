@@ -1,3 +1,4 @@
+import { Link } from '@remix-run/react';
 import styles from './realEstate.module.css';
 
 import estate1Src from 'app/assets/home/real-estate-1.webp';
@@ -6,7 +7,8 @@ import estate3Src from 'app/assets/home/real-estate-3.webp';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Container } from '~/lib/atoms/Container';
-import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
+import ArrowRight from 'app/icons/arrow-right.svg?react';
+import { Button } from '~/lib/atoms/Button';
 
 const ESTATES = [
   {
@@ -90,7 +92,15 @@ export const RealEstateSection = () => {
               <h1 className="text-hero text-white">{estate.title}</h1>
               <div className="w-full flex items-end justify-between">
                 <p className="text-buttons text-white">{estate.author}</p>
-                <LinkWithIcon to={'/properties'}>View properties</LinkWithIcon>
+                <Link to={'/properties'}>
+                  <Button
+                    className="text-white bg-transparent border-2 border-white py-[8px]"
+                    variant="outline"
+                  >
+                    View properties
+                    <ArrowRight className="w-6 h-6 stroke-current ml-1" />
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
