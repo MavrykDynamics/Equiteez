@@ -221,7 +221,7 @@ export default {
           'yellow-opacity': '#FDF1CA',
           'yellow-dark': '#654C1A',
           'blue-dark': '#1A4665',
-          'blue-opacity': '#CCE0F2',
+          'blue-opacity': '#BDBFDF',
           content: baseColors['sand'][900],
           'content-secondary': baseColors['sand'][700],
           background: baseColors.sand[50],

@@ -15,9 +15,11 @@ import { Button } from '~/lib/atoms/Button';
 import { Link, useNavigate } from '@remix-run/react';
 import {
   PrimaryEstate,
+  SECONDARY_MARKET,
   SecondaryEstate,
 } from '~/providers/EstatesProvider/estates.types';
 import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
+import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
@@ -62,19 +64,76 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
       </div>
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
-          {slides.map((estate, idx) => (
-            <div
-              role="presentation"
-              className={clsx(styles.embla__slide, 'cursor-pointer')}
-              key={estate.token_address}
-              onClick={() =>
-                handleSlideClick(
-                  estate.assetDetails.blockchain[0].identifier,
-                  idx === slides.length - 1
-                )
-              }
-            >
-              <div className={styles.embla__slide__number}>
+          {slides.map((estate, idx) => {
+            const isSecondaryMarket =
+              estate.assetDetails.type === SECONDARY_MARKET;
+
+            const restProps = isSecondaryMarket
+              ? {
+                  pricePerToken: (estate as SecondaryEstate).assetDetails
+                    .priceDetails.price,
+                }
+              : {
+                  // For the time being for fake data
+                  progressBarPercentage: +(
+                    (((estate as PrimaryEstate).assetDetails.priceDetails
+                      .tokensUsed || 1) /
+                      (estate as PrimaryEstate).assetDetails.priceDetails
+                        .tokensAvailable) *
+                    100
+                  ).toFixed(2),
+                };
+            return (
+              <div
+                role="presentation"
+                className={clsx(styles.embla__slide, 'cursor-pointer')}
+                key={estate.token_address}
+                onClick={() =>
+                  handleSlideClick(
+                    estate.assetDetails.blockchain[0].identifier,
+                    idx === slides.length - 1
+                  )
+                }
+              >
+                {nextBtnDisabled && idx === slides.length - 1 ? (
+                  <div className={styles.embla__slide__number}>
+                    <img
+                      src={estate.assetDetails.previewImage}
+                      alt="house"
+                      className={styles.embla__slide__image}
+                    />
+                    <div
+                      className={clsx(
+                        styles.lastSlide,
+                        'flex items-center justify-center'
+                      )}
+                    >
+                      <div className="flex flex-col items-center gap-y-6">
+                        <h4 className="text-white text-card-headline text-center">
+                          Want to see more? <br />
+                          Check out our marketplace
+                        </h4>
+                        <Link to="/properties">
+                          <Button variant="white">Explore</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <ThumbCardSecondary
+                    height={'281px'}
+                    imgSrc={estate.assetDetails.previewImage}
+                    title={estate.name}
+                    description={
+                      estate.assetDetails.propertyDetails.propertyType
+                    }
+                    isSecondaryMarket={isSecondaryMarket}
+                    APY={estate.assetDetails.APY}
+                    {...restProps}
+                  />
+                )}
+
+                {/* <div className={styles.embla__slide__number}>
                 <img
                   src={estate.assetDetails.previewImage}
                   alt="house"
@@ -124,9 +183,10 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     </div>
                   </div>
                 )}
+              </div> */}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

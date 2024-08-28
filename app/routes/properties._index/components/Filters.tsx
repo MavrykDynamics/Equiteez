@@ -308,9 +308,11 @@ export const Filters: FC<FiltersProps> = ({
           onClick={handleOpen}
         >
           {!opened && (
-            <SearchIcon className="w-[18px] h[18px] text-content stroke-current" />
+            <SearchIcon className="w-[18px] h[18px] text-white stroke-current" />
           )}
-          <div className={clsx(!opened ? 'w-[0px] overflow-hidden' : 'w-full')}>
+          <div
+            className={clsx(!opened ? 'w-[0px] overflow-hidden ' : 'w-full ')}
+          >
             <InputWithIcons
               placeholder="Search..."
               handleClose={handleClose}
