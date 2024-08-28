@@ -18,14 +18,14 @@ export const Search: FC<SearchProps> = ({
   return (
     <div
       className={clsx(
-        'py-3 px-[14px] rounded-lg overflow-hidden border border-gray-100',
+        'py-3 px-[14px] rounded-lg overflow-hidden border border-gray-100 ',
         'flex items-center gap-x-2'
       )}
     >
       <SearchIcon className="w-4 h-4 text-sand-900 stroke-current" />
       <input
         className={clsx(
-          'w-full outline-none focus:outline-none text-caption-regular'
+          'w-full outline-none focus:outline-none text-caption-regular focus:border-red-100'
         )}
         {...rest}
         type="text"

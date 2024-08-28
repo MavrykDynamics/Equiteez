@@ -20,7 +20,7 @@ input[type='number'] {
 }
 
 .eq-input {
-  @apply items-center bg-transparent border border-gray-100 rounded-lg;
+  @apply items-center border border-gray-100 rounded-lg;
 }
 
 .eq-slider {

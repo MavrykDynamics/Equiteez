@@ -292,7 +292,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                         <div
                           key={estate.token_address}
                           className={clsx(
-                            'cursor-pointer flex items-center',
+                            'cursor-pointer flex items-center hover:bg-sand-50',
                             styles.grid
                           )}
                         >

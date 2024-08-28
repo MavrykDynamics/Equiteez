@@ -24,10 +24,11 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex w-full h-3.5 relative">
+      <div className="flex w-full h-4 relative">
         <div
+          style={{ zIndex: 5 }}
           className={clsx(
-            'absolute w-full h-full flex justify-between z-2',
+            'absolute w-full h-full flex justify-between',
             'transition 0.3s linear'
           )}
         >
@@ -39,13 +40,13 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
               onClick={() => handleOptionClick(option)}
             >
               {option === selectedOption ? (
-                <EQLogo className="size-3.5" />
+                <EQLogo className="size-4" />
               ) : options.length - 1 === idx ? (
-                <DotFill className="size-3.5" />
+                <DotFill className="size-4" />
               ) : selectedOption > option ? (
-                <div className="size-3.5 bg-transparent"></div>
+                <div className="size-4 bg-transparent"></div>
               ) : (
-                <DotEmpty className="size-3.5" />
+                <DotEmpty className="size-4" />
               )}
             </span>
           ))}

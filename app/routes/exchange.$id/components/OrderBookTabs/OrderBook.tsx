@@ -48,7 +48,7 @@ export const OrderBook = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-transparent bg-white">
+            <tbody className="divide-y divide-transparent">
               {orderbook.map((order, index) => (
                 <tr key={`${order.price}${index}`}>
                   {Number(order.price) == currentPrice ? (

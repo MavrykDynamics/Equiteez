@@ -258,11 +258,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 {activeItem.label}
               </div>
             </DropdownFaceContent>
-            <DropdownBodyContent topMargin={24} maxHeight={350}>
+            <DropdownBodyContent topMargin={12} maxHeight={350}>
               {items.map((item) => (
                 <button
                   onClick={() => setActiveItem(item)}
-                  className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-green-opacity"
+                  className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                   key={item.id}
                 >
                   <div> {item.label}</div>
@@ -275,7 +275,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
           <div className="flex flex-col w-full gap-3">
             <div className="flex flex-col w-full gap-3">
               <div
-                className={`w-full flex justify-between eq-input py-3 px-[14px]`}
+                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
               >
                 <span className="text-content-secondary opacity-50">Price</span>
 
@@ -290,16 +290,16 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                         setPrice(Number(formatToNumber(e.target.value)))
                       }
                       placeholder="0.00"
-                      className="w-full bg-transparent focus:outline-none text-right"
+                      className="w-full bg-transparent focus:outline-none text-right font-semibold"
                       disabled={!isLimitType}
                     ></input>
                   </span>
-                  <span className="">USDT</span>
+                  <span className="font-semibold">USDT</span>
                 </span>
               </div>
 
               <div
-                className={`w-full flex justify-between eq-input py-3 px-[14px]`}
+                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
               >
                 <span className="text-content-secondary opacity-50">
                   Amount
@@ -338,7 +338,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               placeholder={'0.00'}
               valueText="USDT"
               name={'total'}
-              className="text-caption-regular px-[14px]"
+              className="text-caption-regular px-[14px] bg-white"
               errorCaptionCalassname="text-caption-regular"
               errorCaption={
                 hasTotalError ? 'Amount exceeds available balance' : undefined
