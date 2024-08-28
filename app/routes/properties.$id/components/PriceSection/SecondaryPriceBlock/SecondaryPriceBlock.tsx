@@ -26,7 +26,6 @@ import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import {
   BUY,
-  BuyScreenState,
   CONFIRM,
   OTC,
   OTC_BUY,
@@ -34,28 +33,28 @@ import {
   OTCScreenState,
   OTCTabType,
   SELL,
-  SellScreenState,
 } from './screens/consts';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CommaNumber } from '~/lib/atoms/CommaNumber';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
-import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
-import { rwaToFixed } from '~/lib/utils/formaters';
 import { ProgresBar } from './components/ProgressBar/ProgressBar';
+import usePrevious from '~/hooks/use-previous';
+import BigNumber from 'bignumber.js';
+import { isDefined } from '~/lib/utils';
 
 // types
-type OrderType = typeof BUY | typeof SELL | typeof OTC | '';
+export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
 
 export const SecondaryPriceBlock: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [orderType, setOrderType] = useState<OrderType>('');
+  const [orderType, setOrderType] = useState<OrderType>(BUY);
   const { activeEstate } = useEstatesContext();
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
-    setOrderType('');
+    setOrderType(BUY);
   }, []);
 
   const handleOpen = useCallback((orderType: OrderType) => {
@@ -119,10 +118,6 @@ export const SecondaryPriceBlock: FC = () => {
             Sell
           </Button>
         </div>
-        {/* <Divider className="my-3" /> */}
-        {/* <Button variant="blue" onClick={handleOpen.bind(null, OTC)}>
-          OTC
-        </Button> */}
       </Table>
 
       <PopupWithIcon
@@ -130,46 +125,81 @@ export const SecondaryPriceBlock: FC = () => {
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
       >
-        {orderType === 'buy' && <BuyPopupContent estate={estate} />}
-        {orderType === 'sell' && <SellPopupContent estate={estate} />}
-        {orderType === 'otc' && <OTCPopupContent estate={estate} />}
+        <PopupContent estate={estate} orderType={orderType} />
       </PopupWithIcon>
     </section>
   );
 };
 
-const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
-  const [activeScreenId, setActiveScreenId] = useState<BuyScreenState>(BUY);
+const PopupContent: FC<{ estate: SecondaryEstate; orderType: OrderType }> = ({
+  estate,
+  orderType,
+}) => {
   const { tokensPrices, tokensMetadata } = useTokensContext();
+  const [activetabId, setAvtiveTabId] = useState(orderType);
+  const prevTabId = usePrevious(activetabId) as OrderType;
 
-  // amount & total
-  const { amount, previewAmount, handleAmountChange } = useTokensAmount(
-    estate.token_address
+  const handleTabClick = useCallback((id: OrderType) => {
+    setAvtiveTabId(id);
+  }, []);
+
+  const tabs: TabType[] = useMemo(
+    () => [
+      {
+        id: BUY,
+        label: 'Buy',
+        handleClick: handleTabClick,
+      },
+      {
+        id: SELL,
+        label: 'Sell',
+        handleClick: handleTabClick,
+      },
+      {
+        id: OTC,
+        label: 'OTC',
+        handleClick: handleTabClick,
+      },
+    ],
+    [handleTabClick]
   );
-  const [total, setTotal] = useState<string | number>('');
+
+  // --- NEW
+  const [amountB, setAmountB] = useState<BigNumber | undefined>();
+  const [total, setTotal] = useState<BigNumber | undefined>();
 
   useEffect(() => {
-    if (previewAmount && tokensPrices[estate.token_address]) {
-      setTotal(
-        rwaToFixed(Number(previewAmount) * tokensPrices[estate.token_address])
-      );
-    } else if (!previewAmount) {
-      setTotal('');
+    if (isDefined(amountB) && tokensPrices[estate.token_address]) {
+      setTotal(amountB.times(tokensPrices[estate.token_address]));
+    } else if (!isDefined(amountB)) {
+      setTotal(undefined);
     }
-  }, [previewAmount, estate.token_address, tokensPrices]);
-
-  const toggleBuyScreen = useCallback((id: BuyScreenState) => {
-    setActiveScreenId(id);
-  }, []);
+  }, [amountB, estate.token_address, tokensPrices]);
 
   const buyProps = useMemo(
     () => ({
       marketContractAddress: pickOrderbookContract[estate.token_address],
-      tokensAmount: Number(amount),
+      tokensAmount: amountB?.toNumber(),
       pricePerToken: Number(tokensPrices[estate.token_address]),
       decimals: tokensMetadata[estate.token_address]?.decimals,
     }),
-    [amount, estate.token_address, tokensMetadata, tokensPrices]
+    [amountB, estate.token_address, tokensMetadata, tokensPrices]
+  );
+
+  const sellProps = useMemo(
+    () => ({
+      marketContractAddress: pickOrderbookContract[estate.token_address],
+      rwaTokenAddress: estate.token_address,
+      tokensAmount: amountB?.toNumber(),
+      pricePerToken: Number(tokensPrices[estate.token_address]),
+      decimals: tokensMetadata[estate.token_address]?.decimals,
+    }),
+    [amountB, estate.token_address, tokensMetadata, tokensPrices]
+  );
+
+  const { invokeAction: handleOrderbookSell } = useContractAction(
+    orderbookSell,
+    sellProps
   );
 
   const { invokeAction: handleOrderbookBuy } = useContractAction(
@@ -200,9 +230,9 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       <>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
-            {activeScreenId === CONFIRM ? (
+            {activetabId === CONFIRM ? (
               <div className="flex items-center">
-                <button onClick={() => toggleBuyScreen(BUY)}>
+                <button onClick={() => setAvtiveTabId(prevTabId)}>
                   <ArrowLeftIcon className="size-6 mr-2" />
                 </button>
                 <span className="text-card-headline text-sand-900">
@@ -215,7 +245,13 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
           </div>
           <Divider className="my-6" />
 
-          {activeScreenId === CONFIRM && (
+          {activetabId !== CONFIRM && (
+            <div className="mb-8">
+              <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+            </div>
+          )}
+
+          {activetabId === CONFIRM && (
             <div className="bg-gray-50 rounded-2xl p-4 mb-8">
               <div className="flex items-center gap-3 font-medium">
                 <div className="w-[124px] h-[93px] rounded-lg overflow-hidden">
@@ -228,40 +264,47 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
                 <div className="flex flex-col gap-1 items-start flex-1">
                   <div className="flex justify-between text-card-headline text-sand-900 w-full">
                     <h3>{estate.name}</h3>
-                    <h3>{amount} NMD</h3>
+                    <h3>
+                      {amountB?.toNumber() ?? 0} {estate.symbol}
+                    </h3>
                   </div>
                   <div className="flex justify-between w-full">
                     <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-red-50 text-center">
                       {estate.assetDetails.propertyDetails.propertyType}
                     </span>
-                    <span className="text-body text-sand-900">${total}</span>
+                    <span className="text-body text-sand-900">
+                      ${total?.toNumber() ?? 0}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {activeScreenId === BUY && (
+          {(activetabId === BUY || activetabId === SELL) && (
             <BuySellScreen
               estate={estate}
-              toggleScreen={toggleBuyScreen}
-              actionType={BUY}
-              currency="USDT"
-              amount={amount}
-              setAmount={handleAmountChange}
+              toggleScreen={() => setAvtiveTabId(CONFIRM)}
+              actionType={activetabId}
+              currency={activetabId === BUY ? 'USDT' : estate.symbol}
+              amount={amountB}
+              setAmount={setAmountB}
               total={total}
-              setTotal={setTotal}
             />
           )}
-          {activeScreenId === CONFIRM && (
+
+          {activetabId === OTC && <OTCPopupContent estate={estate} />}
+          {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
               estate={estate}
               tokenPrice={tokensPrices[estate.token_address]}
               total={Number(total)}
-              actionType={BUY}
-              amount={amount}
+              actionType={prevTabId === BUY ? BUY : SELL}
+              amount={0}
               estFee={0.21}
-              actionCb={handleOrderbookBuy}
+              actionCb={
+                prevTabId === BUY ? handleOrderbookBuy : handleOrderbookSell
+              }
             />
           )}
         </div>
@@ -270,89 +313,89 @@ const BuyPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   );
 };
 
-const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
-  const [activeScreenId, setActiveScreenid] = useState<SellScreenState>(SELL);
-  const { tokensPrices, tokensMetadata } = useTokensContext();
+// const SellPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
+//   const [activeScreenId, setActiveScreenid] = useState<SellScreenState>(SELL);
+//   const { tokensPrices, tokensMetadata } = useTokensContext();
 
-  // amount & total
-  const [total, setTotal] = useState<string | number>('');
+//   // amount & total
+//   const [total, setTotal] = useState<string | number>('');
 
-  const { amount, previewAmount, handleAmountChange } = useTokensAmount(
-    estate.token_address
-  );
+//   const { amount, previewAmount, handleAmountChange } = useTokensAmount(
+//     estate.token_address
+//   );
 
-  useEffect(() => {
-    if (previewAmount && tokensPrices[estate.token_address]) {
-      setTotal(
-        rwaToFixed(Number(previewAmount) * tokensPrices[estate.token_address])
-      );
-    } else if (!previewAmount) {
-      setTotal('');
-    }
-  }, [previewAmount, estate.token_address, tokensPrices]);
+//   useEffect(() => {
+//     if (previewAmount && tokensPrices[estate.token_address]) {
+//       setTotal(
+//         rwaToFixed(Number(previewAmount) * tokensPrices[estate.token_address])
+//       );
+//     } else if (!previewAmount) {
+//       setTotal('');
+//     }
+//   }, [previewAmount, estate.token_address, tokensPrices]);
 
-  const toggleSellScreen = useCallback((id: SellScreenState) => {
-    setActiveScreenid(id);
-  }, []);
+//   const toggleSellScreen = useCallback((id: SellScreenState) => {
+//     setActiveScreenid(id);
+//   }, []);
 
-  const sellProps = useMemo(
-    () => ({
-      marketContractAddress: pickOrderbookContract[estate.token_address],
-      rwaTokenAddress: estate.token_address,
-      tokensAmount: Number(amount),
-      pricePerToken: Number(tokensPrices[estate.token_address]),
-      decimals: tokensMetadata[estate.token_address]?.decimals,
-    }),
-    [amount, estate.token_address, tokensMetadata, tokensPrices]
-  );
+//   const sellProps = useMemo(
+//     () => ({
+//       marketContractAddress: pickOrderbookContract[estate.token_address],
+//       rwaTokenAddress: estate.token_address,
+//       tokensAmount: Number(amount),
+//       pricePerToken: Number(tokensPrices[estate.token_address]),
+//       decimals: tokensMetadata[estate.token_address]?.decimals,
+//     }),
+//     [amount, estate.token_address, tokensMetadata, tokensPrices]
+//   );
 
-  const { invokeAction: handleOrderbookSell } = useContractAction(
-    orderbookSell,
-    sellProps
-  );
+//   const { invokeAction: handleOrderbookSell } = useContractAction(
+//     orderbookSell,
+//     sellProps
+//   );
 
-  return (
-    <div className="flex flex-col justify-between text-content h-full">
-      <>
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center">
-            {activeScreenId === CONFIRM && (
-              <button onClick={() => toggleSellScreen(SELL)}>
-                <ArrowLeftIcon className="size-6 mr-2" />
-              </button>
-            )}
-            <h3 className="text-card-headline">{estate.name}</h3>
-          </div>
-          <Divider className="my-6" />
+//   return (
+//     <div className="flex flex-col justify-between text-content h-full">
+//       <>
+//         <div className="flex-1 flex flex-col">
+//           <div className="flex items-center">
+//             {activeScreenId === CONFIRM && (
+//               <button onClick={() => toggleSellScreen(SELL)}>
+//                 <ArrowLeftIcon className="size-6 mr-2" />
+//               </button>
+//             )}
+//             <h3 className="text-card-headline">{estate.name}</h3>
+//           </div>
+//           <Divider className="my-6" />
 
-          {activeScreenId === SELL && (
-            <BuySellScreen
-              estate={estate}
-              toggleScreen={toggleSellScreen}
-              actionType={SELL}
-              currency={estate.symbol}
-              amount={amount}
-              setAmount={handleAmountChange}
-              total={total}
-              setTotal={setTotal}
-            />
-          )}
-          {activeScreenId === CONFIRM && (
-            <BuySellConfirmationScreen
-              estate={estate}
-              tokenPrice={tokensPrices[estate.token_address]}
-              total={Number(total)}
-              actionType={SELL}
-              estFee={0.21}
-              amount={amount}
-              actionCb={handleOrderbookSell}
-            />
-          )}
-        </div>
-      </>
-    </div>
-  );
-};
+//           {activeScreenId === SELL && (
+//             <BuySellScreen
+//               estate={estate}
+//               toggleScreen={toggleSellScreen}
+//               actionType={SELL}
+//               currency={estate.symbol}
+//               amount={amount}
+//               setAmount={handleAmountChange}
+//               total={total}
+//               setTotal={setTotal}
+//             />
+//           )}
+//           {activeScreenId === CONFIRM && (
+//             <BuySellConfirmationScreen
+//               estate={estate}
+//               tokenPrice={tokensPrices[estate.token_address]}
+//               total={Number(total)}
+//               actionType={SELL}
+//               estFee={0.21}
+//               amount={amount}
+//               actionCb={handleOrderbookSell}
+//             />
+//           )}
+//         </div>
+//       </>
+//     </div>
+//   );
+// };
 
 const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const [activeScreenId, setActiveScreenId] = useState<OTCScreenState>(OTC);
@@ -396,9 +439,7 @@ const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
                 <ArrowLeftIcon className="size-6 mr-2" />
               </button>
             )}
-            <h3 className="text-card-headline">{estate.name}</h3>
           </div>
-          <Divider className="my-6" />
 
           {activeScreenId !== CONFIRM && (
             <TabSwitcher

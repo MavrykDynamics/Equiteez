@@ -27,7 +27,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
   // selectedAssetMetadata,
 }) => {
   const handleAmountChange = (newAmount?: string) =>
-    onChange(
+    onChange?.(
       Boolean(newAmount) && isDefined(newAmount)
         ? new BigNumber(newAmount)
         : undefined

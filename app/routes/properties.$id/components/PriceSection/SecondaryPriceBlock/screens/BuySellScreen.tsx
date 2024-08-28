@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '~/lib/atoms/Button';
-import { InputNumber } from '~/lib/molecules/Input/Input';
 import {
   ClickableDropdownArea,
   CustomDropdown,
@@ -14,7 +13,6 @@ import {
   ExpanderFaceContent,
 } from '~/lib/organisms/CustomExpander/CustomExpander';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
@@ -26,20 +24,18 @@ import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { calculateEstfee } from '~/lib/utils/calcFns';
 import BigNumber from 'bignumber.js';
-import { rwaToFixed } from '~/lib/utils/formaters';
 import { BalanceInput } from '~/templates/BalanceInput';
-import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
-import { TabType } from '~/lib/atoms/Tab';
+import { OrderType } from '../SecondaryPriceBlock';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
-  actionType: 'buy' | 'sell';
+  actionType: OrderType; // buy | sell
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   currency: string;
-  amount: string | number;
-  total: string | number;
-  setAmount: (v: string | number) => void;
-  setTotal: (v: string | number) => void;
+  amount: BigNumber | undefined;
+  total: BigNumber | undefined;
+  setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -50,50 +46,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   amount,
   total,
   setAmount,
-  setTotal,
 }) => {
   const { symbol, token_address } = estate;
 
   const { userTokensBalances } = useUserContext();
   const { tokensPrices } = useTokensContext();
-  const [selectedPercentage, setSelectedPercentage] = useState(0);
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
-
-  // ----- NEW
-  const [amountB, setAmountB] = useState<BigNumber | undefined>(
-    new BigNumber(0)
-  );
-
-  const [activetabId, setAvtiveTabId] = useState('buying');
-
-  const handleTabClick = useCallback((id: string) => {
-    setAvtiveTabId(id);
-  }, []);
-
-  const tabs: TabType[] = useMemo(
-    () => [
-      {
-        id: 'buy',
-        label: 'Buy',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'sell',
-        label: 'Sell',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'otc',
-        label: 'OTC',
-        handleClick: handleTabClick,
-      },
-    ],
-    [handleTabClick]
-  );
-
-  // -------- END OF NEW
 
   const buyBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -103,18 +63,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const isBuyAction = actionType === 'buy';
   const hasTotalError =
     typeof total === 'number' ? Number(total) > buyBalance : false;
-
-  useEffect(() => {
-    if (selectedPercentage) {
-      const amountToSpend = (selectedPercentage * buyBalance) / 100;
-      const numberOfTokens = rwaToFixed(
-        amountToSpend / tokensPrices[token_address]
-      );
-      setAmount(numberOfTokens);
-    } else {
-      setAmount(0);
-    }
-  }, [selectedPercentage, setAmount, buyBalance, tokensPrices, token_address]);
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
@@ -136,27 +84,32 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
         <div className="flex flex-col gap-4">
-          <h3 className="text-content text-card-headline capitalize">
-            {actionType}
-          </h3>
-
-          <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-
           <div className="flex flex-col gap-3">
             <BalanceInput
-              onChange={(data) => setAmountB(data)}
-              amount={amountB}
+              onChange={(data) => setAmount(data)}
+              amount={amount}
               amountInputDisabled={false}
-              label="You Pay"
+              label={isBuyAction ? 'You Pay' : 'You Sell'}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>$100</span>
-                <span>Balance: 1,200.0</span>
+                <span>{total?.toNumber() ?? 0}</span>
+                <div>
+                  {isBuyAction ? (
+                    <Money smallFractionFont={false} shortened>
+                      {userTokensBalances[stablecoinContract] || 0}
+                    </Money>
+                  ) : (
+                    <Money smallFractionFont={false} shortened>
+                      {userTokensBalances[token_address] || '0'}
+                    </Money>
+                  )}
+                  &nbsp;{currency}
+                </div>
               </div>
             </BalanceInput>
 
             <BalanceInput
-              amount={amountB}
+              amount={total}
               amountInputDisabled={false}
               label="You Receive"
             >
@@ -171,10 +124,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 <ClickableExpanderArea>
                   <ExpanderFaceContent>
                     <div className="text-body-xs font-semibold text-content flex items-center w-full">
-                      1 NMD ={' '}
+                      1 {symbol} =&nbsp;
                       <div>
-                        <span>&nbsp;{symbol}</span>
-                        <Money smallFractionFont={false}>{minReceived}</Money>
+                        <span className="-mr-[1px]">$</span>
+                        <Money smallFractionFont={false} cryptoDecimals={2}>
+                          {tokensPrices[token_address] || '0'}
+                        </Money>
                       </div>
                     </div>
                   </ExpanderFaceContent>
@@ -188,7 +143,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                       </div>
                       <p>
                         <Money smallFractionFont={false} shortened>
-                          {calculateEstfee(total)}
+                          {minReceived}
                         </Money>
                         &nbsp;{symbol}
                       </p>
@@ -210,7 +165,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                       </div>
                       <p>
                         <Money smallFractionFont={false} shortened>
-                          {calculateEstfee(total)}
+                          {calculateEstfee(total?.toNumber() ?? 0)}
                         </Money>
                         &nbsp;{symbol}
                       </p>
@@ -220,100 +175,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               </CustomExpander>
             </div>
           </div>
-          <div className="text-body-xs text-content flex items-center justify-between">
-            <span>Available Balance</span>
-            <div>
-              {isBuyAction ? (
-                <Money smallFractionFont={false} shortened>
-                  {userTokensBalances[stablecoinContract] || 0}
-                </Money>
-              ) : (
-                <Money smallFractionFont={false} shortened>
-                  {userTokensBalances[token_address] || '0'}
-                </Money>
-              )}
-              &nbsp;{currency}
-            </div>
-          </div>
-
-          <InputNumber
-            // handleValue={setPrice}
-            label={'Market Price'}
-            value={(tokensPrices[token_address] || 0).toFixed(2)}
-            placeholder={'0.00'}
-            valueText="USDT"
-            name={'price'}
-            className="text-body"
-            disabled
-          />
-
-          <InputNumber
-            handleValue={setAmount}
-            label={'Amount'}
-            value={amount || ''}
-            placeholder={'Minimum 1'}
-            valueText={symbol}
-            name={'amount'}
-            className="text-body"
-          />
         </div>
-
-        <div className="my-6">
-          <ESnakeblock
-            selectedOption={selectedPercentage}
-            setSelectedOption={setSelectedPercentage}
-          />
-        </div>
-
-        <CustomExpander>
-          <ClickableExpanderArea>
-            <div className="text-body-xs text-content flex justify-between">
-              <ExpanderFaceContent>Min Received</ExpanderFaceContent>
-              <div>
-                <Money smallFractionFont={false}>{minReceived}</Money>
-                <span>&nbsp;{symbol}</span>
-              </div>
-            </div>
-          </ClickableExpanderArea>
-
-          <ExpanderBodyContent>
-            <div className="mt-2 flex flex-col pl-3">
-              <div className="flex items-center justify-between text-body-xs text-content">
-                <p>Slippage</p>
-                <SlippageDropdown
-                  slippagePercentage={slippagePercentage}
-                  setSlippagePercentage={setSlippagePercentage}
-                />
-              </div>
-            </div>
-          </ExpanderBodyContent>
-        </CustomExpander>
-
-        <div className="mt-3 text-body-xs flex justify-between mb-6">
-          <div className="flex items-center gap-2">
-            Est. Fee
-            <InfoTooltip content="Est fee" />
-          </div>
-          <p>
-            <Money smallFractionFont={false} shortened>
-              {calculateEstfee(total)}
-            </Money>
-            &nbsp;{symbol}
-          </p>
-        </div>
-
-        <InputNumber
-          label={<p className="font-semibold">Total</p>}
-          value={total}
-          handleValue={setTotal}
-          placeholder={'0.00'}
-          valueText="USDT"
-          name={'total'}
-          className="text-body"
-          errorCaption={
-            hasTotalError ? 'Amount exceeds available balance' : undefined
-          }
-        />
       </div>
       <Button
         className="mt-6"
@@ -400,5 +262,3 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
     </CustomDropdown>
   );
 };
-
-// utils
