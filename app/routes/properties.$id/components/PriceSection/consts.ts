@@ -11,6 +11,8 @@ export type OTCScreenState = typeof OTC | typeof CONFIRM;
 export type OTCTabType = typeof OTC_BUY | typeof OTC_SELL;
 export type SellScreenState = typeof SELL | typeof CONFIRM;
 
+export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
+
 // TODO hardcoded price for now
 export const TOKEN_PRICE = '45.00';
 

@@ -16,7 +16,13 @@ import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 
 // icons
 import CheckIcon from 'app/icons/ok.svg?react';
-import { BUY, BuyScreenState, CONFIRM, SellScreenState } from './consts';
+import {
+  BUY,
+  BuyScreenState,
+  CONFIRM,
+  SellScreenState,
+  OrderType,
+} from '../consts';
 import Money from '~/lib/atoms/Money';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { stablecoinContract } from '~/consts/contracts';
@@ -25,7 +31,6 @@ import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { calculateEstfee } from '~/lib/utils/calcFns';
 import BigNumber from 'bignumber.js';
 import { BalanceInput } from '~/templates/BalanceInput';
-import { OrderType } from '../SecondaryPriceBlock';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;

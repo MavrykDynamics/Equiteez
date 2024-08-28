@@ -6,7 +6,7 @@ export type TabType<G = string> = {
   label: string;
   grow?: boolean;
   disabled?: boolean;
-  handleClick: (id: string) => void;
+  handleClick: (id: G) => void;
 };
 
 export type TabVariant = 'primary' | 'secondary';

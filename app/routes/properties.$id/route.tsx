@@ -26,6 +26,7 @@ import PropertyTabs from './components/PropertyTabs/PropertyTabs';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { EstateHeadlineTab } from '~/templates/EstateHeadlineTab';
 import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
+import clsx from 'clsx';
 
 export const meta: MetaFunction = () => {
   return [
@@ -107,7 +108,14 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
 }) => {
   return (
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
-      <div className="py-1 px-2 bg-[#F6AFAFBF] text-red-950 rounded font-medium">
+      <div
+        className={clsx(
+          'py-1 px-2 rounded font-medium',
+          isSecondaryEstate
+            ? 'bg-[#F6AFAFBF] text-red-950'
+            : 'text-yellow-950 bg-[#FFD38FBF]'
+        )}
+      >
         {houseType}
       </div>
 

@@ -17,7 +17,7 @@ import {
   OTCTabType,
   TOKEN_BALANCE_LIMIT,
   TOKEN_PRICE,
-} from './consts';
+} from '../consts';
 import { Divider } from '~/lib/atoms/Divider';
 
 // icons

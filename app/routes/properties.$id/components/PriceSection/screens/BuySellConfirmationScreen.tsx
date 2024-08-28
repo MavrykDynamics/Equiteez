@@ -6,19 +6,11 @@ import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
 import { Link } from '@remix-run/react';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import clsx from 'clsx';
-import Money from '~/lib/atoms/Money';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
   actionCb: () => void;
-  tokenPrice: number;
-  estFee: number;
-  total: number;
-  amount: number | string;
-  estate: SecondaryEstate;
-  currency?: 'USDT';
 };
 
 export type FormData = {
@@ -37,14 +29,7 @@ const actionLabels = {
 export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   actionType,
   actionCb,
-  tokenPrice,
-  estFee,
-  total,
-  amount,
-  estate,
-  currency = 'USDT',
 }) => {
-  const { symbol } = estate;
   const { control, handleSubmit, formState } = useForm<FormData>({
     mode: 'onSubmit',
     defaultValues: {
