@@ -76,7 +76,7 @@ export const SecondaryPriceBlock: FC = () => {
           </p>
         </div>
         <Divider className="my-4" />
-        <div className="text-content text-buttons flex justify-between mb-6">
+        <div className="text-content text-buttons flex justify-between mb-3">
           <p>Total Liquidity</p>
           <div className="flex items-center gap-1">
             ${estate.assetDetails.priceDetails.totalLiquidity}
