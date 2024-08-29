@@ -1,58 +1,45 @@
-/* HTML: <div class="loader"></div> */
 .loader {
   width: var(--loader-size);
-  aspect-ratio: 1;
-  display: flex;
-  animation: l10-0 2s infinite steps(1);
+  height: var(--loader-size);
+  border: 3px dotted #1c6252;
+  border-style: solid solid dotted dotted;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 2s linear infinite;
 }
-
-.loader::before,
 .loader::after {
   content: '';
-  flex: 1;
-  animation: l10-1 1s infinite linear alternate,
-    l10-2 2s infinite steps(1) -0.5s;
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: 3px dotted #a22726;
+  border-style: solid solid dotted;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  animation: rotationBack 1s linear infinite;
+  transform-origin: center center;
 }
 
-.loader::after {
-  --s: -1, -1;
-}
-
-@keyframes l10-0 {
+@keyframes rotation {
   0% {
-    transform: scaleX(1) rotate(0deg);
+    transform: rotate(0deg);
   }
-  50% {
-    transform: scaleX(-1) rotate(-90deg);
-  }
-}
-@keyframes l10-1 {
-  0%,
-  5% {
-    transform: scale(var(--s, 1)) translate(0px) perspective(150px)
-      rotateY(0deg);
-  }
-  33% {
-    transform: scale(var(--s, 1)) translate(-10px) perspective(150px)
-      rotateX(0deg);
-  }
-  66% {
-    transform: scale(var(--s, 1)) translate(-10px) perspective(150px)
-      rotateX(-180deg);
-  }
-  95%,
   100% {
-    transform: scale(var(--s, 1)) translate(0px) perspective(150px)
-      rotateX(-180deg);
+    transform: rotate(360deg);
   }
 }
-@keyframes l10-2 {
+@keyframes rotationBack {
   0% {
-    @apply bg-divider;
-    border-radius: 0;
+    transform: rotate(0deg);
   }
-  50% {
-    @apply bg-green-main;
-    border-radius: 100px 0 0 100px;
+  100% {
+    transform: rotate(-360deg);
   }
 }

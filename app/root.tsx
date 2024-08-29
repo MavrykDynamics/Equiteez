@@ -24,8 +24,8 @@ import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
 
 export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: stylesheet },
   { rel: 'stylesheet', href: extendCSS },
+  { rel: 'stylesheet', href: stylesheet },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

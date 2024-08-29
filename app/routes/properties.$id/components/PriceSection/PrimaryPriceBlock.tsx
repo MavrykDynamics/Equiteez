@@ -28,7 +28,7 @@ export const PrimaryPriceBlock = () => {
   const estate = activeEstate as PrimaryEstate;
 
   return (
-    <section className="self-start">
+    <section className="self-start bg-white">
       <Table>
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Starting Price</p>
@@ -53,7 +53,7 @@ export const PrimaryPriceBlock = () => {
             Investors
             <InfoTooltip content="Investors" className="w-6 h-6" />
           </div>
-          <p>{estate.assetDetails.offering.minInvestmentAmount}</p>
+          <p>{estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}</p>
         </div>
         <Divider className="my-4" />
         <h4 className="text-content text-body mb-3 font-semibold">Shares</h4>

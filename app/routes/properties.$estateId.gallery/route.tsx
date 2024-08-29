@@ -21,6 +21,7 @@ import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
 import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
 import { Link } from '@remix-run/react';
 import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
+import DocBg from '~/a11y/DocBg';
 
 export const meta: MetaFunction = () => {
   return [
@@ -147,6 +148,7 @@ export default function Index() {
 
   return (
     <section className={clsx('min-h-screen')}>
+      <DocBg bgClassName={'bg-background'} />
       <div className="mx-auto max-w-[1440px]">
         <header className="flex items-center justify-between px-11 pt-8">
           <Link

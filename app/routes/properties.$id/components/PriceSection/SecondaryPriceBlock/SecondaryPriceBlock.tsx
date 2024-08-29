@@ -72,7 +72,7 @@ export const SecondaryPriceBlock: FC = () => {
             <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
           </p>
           <p className="text-buttons">
-            {estate.assetDetails.offering.minInvestmentAmount}
+            {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
           </p>
         </div>
         <Divider className="my-4" />
