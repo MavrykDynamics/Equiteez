@@ -39,7 +39,7 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
     <Modal
       {...restProps}
       className={clsx(
-        'bg-background z-30 shadow-2xl p-8',
+        'bg-white z-30 shadow-2xl p-8',
         contentPosition === 'center' && 'rounded-3xl',
         className
       )}
