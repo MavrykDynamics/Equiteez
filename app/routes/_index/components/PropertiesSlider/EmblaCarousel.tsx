@@ -132,58 +132,6 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     {...restProps}
                   />
                 )}
-
-                {/* <div className={styles.embla__slide__number}>
-                <img
-                  src={estate.assetDetails.previewImage}
-                  alt="house"
-                  className={styles.embla__slide__image}
-                />
-
-                {nextBtnDisabled && idx === slides.length - 1 ? (
-                  <div
-                    className={clsx(
-                      styles.lastSlide,
-                      'flex items-center justify-center'
-                    )}
-                  >
-                    <div className="flex flex-col items-center gap-y-6">
-                      <h4 className="text-white text-card-headline text-center">
-                        Want to see more? <br />
-                        Check out our marketplace
-                      </h4>
-                      <Link to="/properties">
-                        <Button variant="white">Explore</Button>
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className={clsx(
-                      styles.embla__slide__content,
-                      'flex flex-col justify-end'
-                    )}
-                  >
-                    <div className="px-4 pb-4 flex gap-x-4 justify-between">
-                      <div className="flex flex-col items-start">
-                        <h4 className="text-white text-slider-headline truncate max-w-[300px]">
-                          {estate.name}
-                        </h4>
-                        <p className="text-white text-body-xs">
-                          {estate.assetDetails.propertyDetails.fullAddress}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-end">
-                        <h4 className="text-white text-slider-headline truncate max-w-[300px]">
-                          {estate.assetDetails.APY}%
-                        </h4>
-                        <p className="text-white text-body-xs">APY</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div> */}
               </div>
             );
           })}
