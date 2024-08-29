@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import clsx from 'clsx';
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import LoadingSvg from 'app/icons/small-spinner.svg?react';
 
 type ButtonSize =
@@ -34,9 +34,9 @@ type ButtonProps = {
 const btnSizeClassNames = {
   small: 'px-3 py-2',
   'small-plus': 'px-6 py-[10px]',
-  default: 'px-6 py-3',
-  large: 'p-x-8 py-4',
-  outline: 'px-6 py-[10px]',
+  default: 'px-8 py-3',
+  large: 'px-8 py-4',
+  outline: 'px-8 py-[10px]',
   custom: '',
 };
 
@@ -47,7 +47,7 @@ const variants = {
   white: 'text-content bg-background hover:bg-tabs',
   outline:
     // Added py-8px to avoid border extra height
-    'text-dark-green-500 bg-transparent border-2 border-green-main hover:bg-dark-green-opacity focus:bg-dark-green-focus py-[8px]',
+    'text-dark-green-500 bg-transparent border-2 border-green-main hover:bg-dark-green-opacity focus:bg-dark-green-focus',
   red: 'text-content bg-red-main hover:bg-red-400',
   dark: 'bg-black-secondary text-white hover:bg-gray-800',
   'dark-outline':
@@ -57,7 +57,7 @@ const variants = {
 };
 
 const textVariants = {
-  buttons: 'text-buttons',
+  buttons: 'text-buttons font-bold',
   caption: 'text-caption',
 };
 
@@ -109,5 +109,34 @@ export const Button: FC<ButtonProps> = ({
         children
       )}
     </button>
+  );
+};
+
+type ButtonWithIconProps = {
+  icon: JSX.Element;
+  position: 'left' | 'right';
+} & ButtonProps;
+
+export const ButtonWithIcon: FC<ButtonWithIconProps> = ({
+  icon,
+  position,
+  children,
+  className,
+  ...rest
+}) => {
+  const memoizedClassName = useMemo(
+    () => (position === 'left' ? 'pl-6' : 'pr-6'),
+    [position]
+  );
+
+  return (
+    <Button
+      className={clsx('flex items-center gap-2', memoizedClassName, className)}
+      {...rest}
+    >
+      {position === 'left' && icon}
+      {children}
+      {position === 'right' && icon}
+    </Button>
   );
 };

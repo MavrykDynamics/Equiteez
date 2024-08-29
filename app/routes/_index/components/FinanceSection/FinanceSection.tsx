@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 // assets
-import StatsImageSrc from 'app/assets/home/stats-2.svg';
+import StatsImageSrc from 'app/assets/home/stats.webp';
 
 import styles from './financeSection.module.css';
 import type { TabType } from '~/lib/atoms/Tab';
