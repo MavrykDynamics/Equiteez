@@ -30,7 +30,7 @@ export const BannerSection = () => {
           invest in fractionalized, fully compliant, income producing assets
           worldwide.
         </p>
-        <div className="flex items-center gap-x-6">
+        <div className="flex items-center gap-4">
           <Link to="/properties">
             <Button>View Properties</Button>
           </Link>

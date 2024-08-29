@@ -4,7 +4,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -59,7 +58,7 @@ export const CustomDropdown: FC<CustomDropdownProps> = ({
     setOpened(false);
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (withOverlay && opened) {
       onAfterOpen();
     }
