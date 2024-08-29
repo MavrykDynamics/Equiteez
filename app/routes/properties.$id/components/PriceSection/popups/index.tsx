@@ -39,6 +39,7 @@ import usePrevious from '~/hooks/use-previous';
 import BigNumber from 'bignumber.js';
 import { isDefined } from '~/lib/utils';
 import { ProgresBar } from '../PrimaryPriceBlock';
+import clsx from 'clsx';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -129,7 +130,15 @@ export const PopupContent: FC<{
       </div>
       <div className="flex flex-col gap-1 items-start">
         <h3 className="text-card-headline text-sand-900">{estate.name}</h3>
-        <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
+
+        <span
+          className={clsx(
+            'px-2 py-[2px] rounded-[4px] text-body-xs  text-center',
+            isSecondaryEstate
+              ? 'text-sand-800 bg-[#F6AFAFBF]'
+              : 'text-yellow-950 bg-[#FFD38FBF]'
+          )}
+        >
           {estate.assetDetails.propertyDetails.propertyType}
         </span>
       </div>

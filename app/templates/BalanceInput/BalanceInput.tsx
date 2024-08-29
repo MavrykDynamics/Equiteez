@@ -14,6 +14,7 @@ type BalanceInputProps = {
   amountInputDisabled: boolean;
   selectedAssetSlug: string;
   children?: React.ReactNode;
+  errorCaption?: string;
   // selectedAssetMetadata: AssetMetadataBase;
 };
 
@@ -24,6 +25,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
   amountInputDisabled,
   children,
   selectedAssetSlug,
+  errorCaption,
 }) => {
   const handleAmountChange = (newAmount?: string) =>
     onChange?.(
@@ -32,31 +34,41 @@ export const BalanceInput: FC<BalanceInputProps> = ({
         : undefined
     );
   return (
-    <section className="p-4 bg-gray-50 flex flex-col gap-2 rounded-2xl">
-      {label && (
-        <div className="text-left text-body-xs text-sand-600">{label}</div>
+    <div className="flex flex-col gap-2">
+      <section
+        className={clsx(
+          'p-4 bg-gray-50 flex flex-col gap-2 rounded-2xl border',
+          errorCaption ? 'border-red-500' : 'border-transparent'
+        )}
+      >
+        {label && (
+          <div className="text-left text-body-xs text-sand-600">{label}</div>
+        )}
+        <div>
+          <AssetField
+            value={amount?.toFixed(8).toString()}
+            className={clsx(
+              'text-asset-input text-left text-sand-600 border-none bg-opacity-0 pl-0 focus:shadow-none'
+            )}
+            style={{ padding: 0, borderRadius: 0 }}
+            placeholder={toLocalFormat(0, { decimalPlaces: 2 })}
+            min={0}
+            max={9999999999999}
+            disabled={amountInputDisabled}
+            assetDecimals={6}
+            // assetDecimals={selectedAssetMetadata.decimals}
+            extraSection={
+              <AssetDropdown selectedAssetSlug={selectedAssetSlug} disabled />
+            }
+            fieldWrapperBottomMargin={false}
+            onChange={handleAmountChange}
+          />
+        </div>
+        {children && <div>{children}</div>}
+      </section>
+      {errorCaption && (
+        <div className="text-red-500 text-body-xs">{errorCaption}</div>
       )}
-      <div>
-        <AssetField
-          value={amount?.toFixed(8).toString()}
-          className={clsx(
-            'text-asset-input text-left text-sand-600 border-none bg-opacity-0 pl-0 focus:shadow-none'
-          )}
-          style={{ padding: 0, borderRadius: 0 }}
-          placeholder={toLocalFormat(0, { decimalPlaces: 2 })}
-          min={0}
-          max={9999999999999}
-          disabled={amountInputDisabled}
-          assetDecimals={6}
-          // assetDecimals={selectedAssetMetadata.decimals}
-          extraSection={
-            <AssetDropdown selectedAssetSlug={selectedAssetSlug} disabled />
-          }
-          fieldWrapperBottomMargin={false}
-          onChange={handleAmountChange}
-        />
-      </div>
-      {children && <div>{children}</div>}
-    </section>
+    </div>
   );
 };

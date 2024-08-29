@@ -71,8 +71,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
-  const hasTotalError =
-    typeof total === 'number' ? Number(total) > usdBalance : false;
+  const hasTotalError = isBuyAction
+    ? total
+      ? total.toNumber() > usdBalance
+      : false
+    : amount
+    ? amount?.toNumber() > tokenBalance
+    : false;
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
@@ -126,10 +131,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <BalanceInput
               onChange={(data) => setAmount(data)}
               amountInputDisabled={false}
+              errorCaption={
+                hasTotalError
+                  ? 'The amount entered exceeds your available balance.'
+                  : undefined
+              }
               {...input1Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>{total?.toNumber() ?? 0}</span>
+                <span>${total?.toNumber() ?? 0}</span>
                 <div>
                   <Money smallFractionFont={false} shortened>
                     {isBuyAction ? usdBalance : tokenBalance}
@@ -141,10 +151,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
             <BalanceInput amountInputDisabled={false} {...input2Props}>
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>$100</span>
+                <span>${total?.toNumber() ?? 0}</span>
                 <div>
                   <Money smallFractionFont={false} shortened>
-                    {isBuyAction ? usdBalance : tokenBalance}
+                    {isBuyAction ? tokenBalance : usdBalance}
                   </Money>
                   &nbsp;{currency}
                 </div>
