@@ -34,7 +34,7 @@ export const PropertyDetailsTab = () => {
   return (
     <div>
       <Table className="bg-white">
-        <TableHeader>About the Offering</TableHeader>
+        <TableHeader>About</TableHeader>
         <TableDescription>{propertyDetails.description}</TableDescription>
         <TableItem>
           <p>Property Type</p>

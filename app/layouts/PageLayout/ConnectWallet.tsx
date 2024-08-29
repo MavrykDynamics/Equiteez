@@ -19,7 +19,7 @@ export const ConnectWallet = () => {
         <div className="flex items-center gap-x-2">
           <CustomDropdown>
             <ClickableDropdownArea>
-              <DropdownFaceContent>
+              <DropdownFaceContent className="py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl">
                 <div className="flex items-center">
                   <IdentIcon
                     type="bottts"

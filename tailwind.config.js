@@ -233,7 +233,7 @@ export default {
           tabs: baseColors.sand[700],
           'active-tab': '#054731',
           'inactive-tab': baseColors.sand[200],
-          'info-blue-bg': '#F0F6FF',
+          'info-blue-bg': '#A8ABD840',
           'cards-stroke': '#E6E6E6',
           links: '#194C98',
           error: baseColors.red[500],
