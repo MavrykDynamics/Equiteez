@@ -24,8 +24,10 @@ import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
 
 export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: extendCSS },
+  { rel: 'preload', as: 'style', href: stylesheet },
   { rel: 'stylesheet', href: stylesheet },
+  { rel: 'preload', as: 'style', href: extendCSS },
+  { rel: 'stylesheet', href: extendCSS },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

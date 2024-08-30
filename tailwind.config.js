@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ['Poppins', 'sans-serif', 'system-ui'],
+        poppins: ['Poppins', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         hero: [
