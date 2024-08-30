@@ -1,7 +1,7 @@
 .loader {
   width: var(--loader-size);
   height: var(--loader-size);
-  border: 3px dotted #1c6252;
+  border: 3px dotted #77a197;
   border-style: solid solid dotted dotted;
   border-radius: 50%;
   display: inline-block;
@@ -18,7 +18,7 @@
   top: 0;
   bottom: 0;
   margin: auto;
-  border: 3px dotted #a22726;
+  border: 3px dotted #1c6252;
   border-style: solid solid dotted;
   width: 24px;
   height: 24px;
