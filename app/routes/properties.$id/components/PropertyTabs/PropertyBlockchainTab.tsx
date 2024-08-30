@@ -4,6 +4,23 @@ import { Table } from '~/lib/atoms/Table/Table';
 import { TableHeader } from '~/lib/atoms/Table/TableHeader';
 import { TableItem } from '~/lib/atoms/Table/TableItem';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import {
+  ClickableExpanderArea,
+  CustomExpander,
+  ExpanderBodyContent,
+  ExpanderFaceContent,
+} from '~/lib/organisms/CustomExpander/CustomExpander';
+
+const mockedAdminPkhs = [
+  {
+    name: 'Account 1',
+    address: 'mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w',
+  },
+  {
+    name: 'Account 1',
+    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
+  },
+];
 
 export const PropertyBlockchainTab = () => {
   const { activeEstate } = useEstatesContext();
@@ -25,14 +42,46 @@ export const PropertyBlockchainTab = () => {
           </TableItem>
           <TableItem>
             <p>Asset Issuer</p>
+            <p>Equiteez LTD</p>
+          </TableItem>
+          <TableItem>
+            <p>Issuer Address</p>
             <p>
-              <HashChip hash={chainData.assetIssuer} />
+              <HashChip
+                hash={chainData.assetIssuer}
+                className="underline font-semibold"
+              />
             </p>
           </TableItem>
+
+          <CustomExpander>
+            <ClickableExpanderArea>
+              <TableItem>
+                <ExpanderFaceContent>Admin Addresses</ExpanderFaceContent>
+              </TableItem>
+            </ClickableExpanderArea>
+
+            <ExpanderBodyContent>
+              {mockedAdminPkhs.map((item) => (
+                <TableItem key={item.address}>
+                  <p>{item.name}</p>
+                  <p>
+                    <HashChip
+                      hash={item.address}
+                      className="underline font-semibold"
+                    />
+                  </p>
+                </TableItem>
+              ))}
+            </ExpanderBodyContent>
+          </CustomExpander>
           <TableItem isLast>
             <p>Asset ID</p>
             <p>
-              <HashChip hash={chainData.assetId} />
+              <HashChip
+                hash={chainData.assetId}
+                className="underline font-semibold"
+              />
             </p>
           </TableItem>
         </Table>
