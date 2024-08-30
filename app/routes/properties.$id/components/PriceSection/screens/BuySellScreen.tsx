@@ -120,13 +120,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount:
-              amount?.div(tokensPrices[token_address]) ?? new BigNumber(0),
+            amount: amount?.div(tokensPrices[token_address]) || undefined,
             selectedAssetSlug: token_address,
           }
         : {
-            amount:
-              amount?.times(tokensPrices[token_address]) ?? new BigNumber(0),
+            amount: amount?.times(tokensPrices[token_address]) || undefined,
             selectedAssetSlug: stablecoinContract,
           },
     [amount, isBuyAction, token_address, tokensPrices]
@@ -139,7 +137,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           ? `$${input1Props.amount?.toNumber()}`
           : '--'
         : amount
-        ? `$${input2Props.amount.toNumber()}`
+        ? `$${input2Props.amount?.toNumber()}`
         : '--',
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
