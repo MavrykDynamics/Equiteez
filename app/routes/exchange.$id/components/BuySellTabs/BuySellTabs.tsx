@@ -155,21 +155,21 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     prevSelectedPercentage,
   ]);
 
+  // derived state (it's boolean value, so no need to memoize it)
+  const isLimitType = activeItem === LIMIT_TYPE;
+
   // update total
   useEffect(() => {
     if (previewAmount && tokensPrices[tokenAddress]) {
-      setTotal(rwaToFixed(Number(previewAmount) * tokensPrices[tokenAddress]));
+      setTotal(rwaToFixed(Number(previewAmount) * Number(price)));
     } else if (!previewAmount) {
       setTotal('');
     }
-  }, [previewAmount, tokenAddress, tokensPrices]);
+  }, [isLimitType, previewAmount, price, tokenAddress, tokensPrices]);
 
   // contract calls based on markt or limit
   const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
     useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
-
-  // derived state (it's boolean value, so no need to memoize it)
-  const isLimitType = activeItem === LIMIT_TYPE;
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -353,6 +353,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                     value={total}
                     placeholder="0.00"
                     className="w-full bg-transparent focus:outline-none text-right font-semibold"
+                    disabled
                   ></input>
                 </span>
                 <span className="font-semibold">USDT</span>
