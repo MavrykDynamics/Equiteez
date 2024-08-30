@@ -284,7 +284,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   </div>
 
                   {/* Table body ------ */}
-                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px] overflow-x-hidden">
+                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px] overflow-x-hidden pb-4">
                     {filteredEstates.map((estate) => {
                       const identifier =
                         estate.assetDetails.blockchain[0].identifier;
@@ -292,7 +292,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                         <div
                           key={estate.token_address}
                           className={clsx(
-                            'cursor-pointer flex items-center hover:bg-sand-50',
+                            'cursor-pointer flex items-center hover:bg-gray-50',
                             styles.grid
                           )}
                         >
