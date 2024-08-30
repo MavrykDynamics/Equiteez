@@ -130,7 +130,9 @@
         "projectedAnnualReturn": 4.03,
         "rentalYield": 28.43,
         "projectedRentalYield": 28.43,
-        "totalLiquidity": 40.03
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 500
       },
       "tradingHistory": [
         {

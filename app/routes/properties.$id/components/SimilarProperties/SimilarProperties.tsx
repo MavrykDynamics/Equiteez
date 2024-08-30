@@ -3,7 +3,9 @@ import { useMemo } from 'react';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import {
   EstateType,
+  PrimaryEstate,
   SECONDARY_MARKET,
+  SecondaryEstate,
 } from '~/providers/EstatesProvider/estates.types';
 import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
 
@@ -26,23 +28,38 @@ export const SimilarProperties = () => {
         Similar OTC Properties on Equiteez
       </h2>
       <div className="grid grid-cols-3 gap-x-3">
-        {similarEstates.map((estate) => (
-          <Link
-            to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
-            key={estate.token_address}
-          >
-            <ThumbCardSecondary
+        {similarEstates.map((estate) => {
+          const restProps = {
+            pricePerToken: (estate as SecondaryEstate).assetDetails.priceDetails
+              .price,
+            progressBarPercentage: +(
+              (((estate as PrimaryEstate).assetDetails.priceDetails
+                .tokensUsed || 1) /
+                (estate as PrimaryEstate).assetDetails.priceDetails
+                  .tokensAvailable) *
+              100
+            ).toFixed(2),
+          };
+          return (
+            <Link
+              to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
               key={estate.token_address}
-              imgSrc={estate.assetDetails.previewImage}
-              APY={estate.assetDetails.APY}
-              title={estate.name}
-              description={estate.assetDetails.propertyDetails.propertyType}
-              isSecondaryMarket={estate.assetDetails.type === SECONDARY_MARKET}
-              height={'302px'}
-              progressBarPercentage={60}
-            />
-          </Link>
-        ))}
+            >
+              <ThumbCardSecondary
+                key={estate.token_address}
+                imgSrc={estate.assetDetails.previewImage}
+                APY={estate.assetDetails.APY}
+                title={estate.name}
+                description={estate.assetDetails.propertyDetails.propertyType}
+                isSecondaryMarket={
+                  estate.assetDetails.type === SECONDARY_MARKET
+                }
+                height={'302px'}
+                {...restProps}
+              />
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
