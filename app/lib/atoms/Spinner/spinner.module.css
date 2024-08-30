@@ -18,10 +18,10 @@
   top: 0;
   bottom: 0;
   margin: auto;
-  border: 3px dotted #1c6252;
+  border: var(--border-width) dotted #1c6252;
   border-style: solid solid dotted;
-  width: 24px;
-  height: 24px;
+  width: calc(var(--loader-size) / 2);
+  height: calc(var(--loader-size) / 2);
   border-radius: 50%;
   animation: rotationBack 1s linear infinite;
   transform-origin: center center;
