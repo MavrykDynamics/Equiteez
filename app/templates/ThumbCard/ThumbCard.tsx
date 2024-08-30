@@ -123,6 +123,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
             >
               <div
                 className={clsx(
+                  'overflow-hidden',
                   styles.progressBar,
                   styles.progressPercentage,
                   progressBarPercentage === 100
