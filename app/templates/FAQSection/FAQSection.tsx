@@ -71,7 +71,7 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
               data-active-article={`faq-${idx + 1}`}
             >
               <button
-                className="flex items-center justify-between w-full"
+                className="flex items-center justify-between w-full capitalize"
                 onClick={() => handleHeaderClick(idx + 1)}
               >
                 <div className={styles.faqSubHeader}>{item.title}</div>

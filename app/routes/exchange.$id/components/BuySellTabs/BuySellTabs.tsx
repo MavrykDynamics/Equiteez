@@ -20,12 +20,12 @@ import { AdminScreen } from './AdminScreen';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
-import { InputNumber } from '~/lib/molecules/Input/Input';
 import { rwaToFixed } from '~/lib/utils/formaters';
 import { formatToNumber } from '~/lib/molecules/Input/utils';
 import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
 import Money from '~/lib/atoms/Money';
 import usePrevious from '~/hooks/use-previous';
+import clsx from 'clsx';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -109,10 +109,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
 
-  const [activeItem, setActiveItem] = useState(MARKET_TYPE);
+  const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
 
   // inputs state
-  const [price, setPrice] = useState<number | string>(Number(''));
+  const [price, setPrice] = useState<number | string>('');
   const { amount, previewAmount, handleAmountChange } =
     useTokensAmount(tokenAddress);
   const [total, setTotal] = useState<string | number>('');
@@ -226,15 +226,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const items: TabType[] = useMemo(
     () => [
       {
-        id: MARKET_TYPE,
-        label: 'Market',
-        value: 'market',
-        handleClick: handleItemlick,
-      },
-      {
         id: LIMIT_TYPE,
         label: 'Limit',
         value: 'limit',
+        handleClick: handleItemlick,
+      },
+      {
+        id: MARKET_TYPE,
+        label: 'Market',
+        value: 'market',
         handleClick: handleItemlick,
       },
       {
@@ -291,7 +291,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <span className="flex gap-1">
                   <span className="">
                     <input
-                      name="amount"
+                      name="price"
                       type="number"
                       min={1}
                       value={price}
@@ -340,19 +340,30 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
           </div>
 
           <div className="w-full mb-3">
-            <InputNumber
-              label={<p>Total</p>}
-              value={total}
-              handleValue={setTotal}
-              placeholder={'0.00'}
-              valueText="USDT"
-              name={'total'}
-              className="text-caption-regular px-[14px] bg-white font-semibold"
-              errorCaptionCalassname="text-caption-regular"
-              errorCaption={
-                hasTotalError ? 'Amount exceeds available balance' : undefined
-              }
-            />
+            <div
+              className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
+            >
+              <span className="text-content-secondary opacity-50">Total</span>
+
+              <span className="flex gap-1">
+                <span className="">
+                  <input
+                    name="total"
+                    type="number"
+                    value={total}
+                    placeholder="0.00"
+                    className="w-full bg-transparent focus:outline-none text-right font-semibold"
+                  ></input>
+                </span>
+                <span className="font-semibold">USDT</span>
+              </span>
+            </div>
+
+            {hasTotalError && (
+              <span className={clsx('text-body-xs text-error mt-2')}>
+                {'Amount exceeds available balance'}
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col w-full gap-1">
@@ -370,8 +381,13 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
           </div>
 
           <div className="flex w-full">
-            <Button onClick={pickBuySellAction} className="w-full mt-1">
-              {activetabId === 'buy' ? 'Buy' : 'Sell'}
+            <Button
+              onClick={pickBuySellAction}
+              className="w-full mt-1 py-[10px]"
+            >
+              <span className="text-body-xs font-bold">
+                {activetabId === 'buy' ? 'Buy' : 'Sell'}
+              </span>
             </Button>
           </div>
         </div>

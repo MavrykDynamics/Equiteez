@@ -11,6 +11,7 @@ import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 
 // Consts
 const headerItems = ['Seller', 'Tokens for Sale', 'Price', 'Total Value'];
+const headerItems2 = ['Buyer', ...headerItems.slice(1)];
 
 export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { otc } = estate.assetDetails;
@@ -31,7 +32,9 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
 
         {otc.buying.map(({ seller, tokensForSale, price, totalValue }) => (
           <NativeTableRow key={seller} colWidth={182}>
-            <NativeTableColumnSmall>{seller}</NativeTableColumnSmall>
+            <NativeTableColumnSmall className="font-semibold">
+              {seller}
+            </NativeTableColumnSmall>
             <NativeTableColumnSmall>{tokensForSale}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{price}</NativeTableColumnSmall>
             <NativeTableColumnSmall>
@@ -50,14 +53,16 @@ export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </div>
       <NativeTable>
         <NativeTableHeader
-          items={headerItems}
+          items={headerItems2}
           slotWidth={182}
           alternativeDesign
         />
 
         {otc.selling.map(({ seller, tokensForSale, price, totalValue }) => (
           <NativeTableRow key={seller} colWidth={182}>
-            <NativeTableColumnSmall>{seller}</NativeTableColumnSmall>
+            <NativeTableColumnSmall className="font-semibold">
+              {seller}
+            </NativeTableColumnSmall>
             <NativeTableColumnSmall>{tokensForSale}</NativeTableColumnSmall>
             <NativeTableColumnSmall>{price}</NativeTableColumnSmall>
             <NativeTableColumnSmall>

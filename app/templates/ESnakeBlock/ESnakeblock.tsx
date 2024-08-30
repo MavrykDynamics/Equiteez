@@ -40,13 +40,13 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
               onClick={() => handleOptionClick(option)}
             >
               {option === selectedOption ? (
-                <EQLogo className="size-4" />
+                <EQLogo className="size-4 text-dark-green-500 stroke-current" />
               ) : options.length - 1 === idx ? (
-                <DotFill className="size-4" />
+                <DotFill className="size-4 fill-dark-green-200" />
               ) : selectedOption > option ? (
                 <div className="size-4 bg-transparent"></div>
               ) : (
-                <DotEmpty className="size-4" />
+                <DotEmpty className="size-4 text-dark-green-200 stroke-current" />
               )}
             </span>
           ))}

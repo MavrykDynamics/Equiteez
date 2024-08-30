@@ -202,7 +202,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
           className={clsx(
             'text-body-xs leading-5 font-semibold text-content w-full border border-dark-green-50',
             'px-[14px] py-[9px]',
-            'rounded-4xl'
+            'rounded-4xl bg-white'
           )}
         >
           <div className="flex items-center gap-x-2">
