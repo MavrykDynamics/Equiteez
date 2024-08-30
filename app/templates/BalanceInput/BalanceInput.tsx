@@ -48,7 +48,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
           <AssetField
             value={amount?.toFixed(8).toString()}
             className={clsx(
-              'text-asset-input text-left text-sand-600 border-none bg-opacity-0 pl-0 focus:shadow-none'
+              'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none'
             )}
             style={{ padding: 0, borderRadius: 0 }}
             placeholder={toLocalFormat(0, { decimalPlaces: 2 })}

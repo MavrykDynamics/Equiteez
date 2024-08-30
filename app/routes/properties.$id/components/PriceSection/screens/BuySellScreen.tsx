@@ -132,6 +132,18 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, isBuyAction, token_address, tokensPrices]
   );
 
+  const balanceTotal = useMemo(
+    () =>
+      isBuyAction
+        ? amount
+          ? `$${input1Props.amount?.toNumber()}`
+          : '--'
+        : amount
+        ? `$${input2Props.amount.toNumber()}`
+        : '--',
+    [amount, input1Props.amount, input2Props.amount, isBuyAction]
+  );
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -148,7 +160,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input1Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>${amount?.toNumber() ?? 0}</span>
+                <span>{balanceTotal}</span>
                 <div>
                   <Money smallFractionFont={false} shortened>
                     {isBuyAction ? usdBalance : tokenBalance}
@@ -165,7 +177,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input2Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>${total?.toNumber() ?? 0}</span>
+                <span>{balanceTotal}</span>
                 <div>
                   <Money smallFractionFont={false} shortened>
                     {isBuyAction ? tokenBalance : usdBalance}
