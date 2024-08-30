@@ -41,30 +41,35 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
       contentPosition={contentPosition}
       shouldCloseOnEsc
       className={clsx(
-        'w-full relative  bg-background h-full overflow-y-auto',
+        'w-full relative  bg-background h-full p-0',
         contentPosition === 'center' && 'max-w-[664px]',
         contentPosition !== 'center' && 'max-w-[617px]',
         className
       )}
     >
       <div
-        className={clsx(
-          animateCloseIcon
-            ? 'sticky -top-8 h-14 right-0 w-full flex justify-end -mb-6'
-            : 'absolute right-[24px] top-6',
-          ' z-10',
-          'transition duration-300 ease-in-out',
-          animateCloseIcon && 'bg-white'
-        )}
+        onScroll={scrollEvent}
+        className="w-full h-full overflow-y-auto p-8 transition duration-300 ease-in-out"
       >
-        <button id="close-icon" className={clsx(animateCloseIcon && 'mt-6')}>
-          <CloseIcon
-            className="w-6 h-6 cursor-pointer relative text-content stroke-current"
-            onClick={restProps.onRequestClose}
-          />
-        </button>
+        <div
+          className={clsx(
+            'transition duration-300 ease-in-out',
+            animateCloseIcon
+              ? 'sticky -top-8 h-14 right-0 w-full flex justify-end -mb-6'
+              : 'absolute right-[32px] top-8',
+            ' z-10',
+            animateCloseIcon && 'bg-white'
+          )}
+        >
+          <button id="close-icon" className={clsx(animateCloseIcon && 'mt-6')}>
+            <CloseIcon
+              className="w-6 h-6 cursor-pointer relative text-content stroke-current"
+              onClick={restProps.onRequestClose}
+            />
+          </button>
+        </div>
+        {children}
       </div>
-      <div onScroll={scrollEvent}>{children}</div>
     </CustomPopup>
   );
 };
