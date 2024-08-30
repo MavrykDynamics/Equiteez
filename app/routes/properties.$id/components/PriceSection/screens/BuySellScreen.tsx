@@ -159,11 +159,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
                 <span>{balanceTotal}</span>
-                <div>
+                <div className="text-body-xs font-semibold">
+                  Balance:&nbsp;
                   <Money smallFractionFont={false} shortened>
                     {isBuyAction ? usdBalance : tokenBalance}
                   </Money>
-                  &nbsp;{currency}
                 </div>
               </div>
             </BalanceInput>
@@ -176,11 +176,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
                 <span>{balanceTotal}</span>
-                <div>
+                <div className='className="text-body-xs font-semibold"'>
+                  Balance:&nbsp;
                   <Money smallFractionFont={false} shortened>
                     {isBuyAction ? tokenBalance : usdBalance}
                   </Money>
-                  &nbsp;{currency}
                 </div>
               </div>
             </BalanceInput>

@@ -14,7 +14,6 @@ import styles from './dropdown.module.css';
 import clsx from 'clsx';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { useOutsideClick } from '~/hooks/use-click-outside';
-import { onAfterClose, onAfterOpen } from '../CustomPopup/utils';
 
 type FaceContentDimensions = {
   width: number;
@@ -58,15 +57,15 @@ export const CustomDropdown: FC<CustomDropdownProps> = ({
     setOpened(false);
   }, []);
 
-  useEffect(() => {
-    if (withOverlay && opened) {
-      onAfterOpen();
-    }
+  // useEffect(() => {
+  //   if (withOverlay && opened) {
+  //     onAfterOpen();
+  //   }
 
-    return () => {
-      onAfterClose();
-    };
-  }, [opened, withOverlay]);
+  //   return () => {
+  //     onAfterClose();
+  //   };
+  // }, [opened, withOverlay]);
 
   const memoizedExpanderValue = useMemo(
     () => ({
