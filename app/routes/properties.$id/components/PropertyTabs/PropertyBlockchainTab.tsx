@@ -62,17 +62,19 @@ export const PropertyBlockchainTab = () => {
             </ClickableExpanderArea>
 
             <ExpanderBodyContent>
-              {mockedAdminPkhs.map((item) => (
-                <TableItem key={item.address}>
-                  <p>{item.name}</p>
-                  <p>
-                    <HashChip
-                      hash={item.address}
-                      className="underline font-semibold"
-                    />
-                  </p>
-                </TableItem>
-              ))}
+              <div className="px-4 bg-[#E3E1DD40]">
+                {mockedAdminPkhs.map((item) => (
+                  <TableItem key={item.address}>
+                    <p>{item.name}</p>
+                    <p>
+                      <HashChip
+                        hash={item.address}
+                        className="underline font-semibold"
+                      />
+                    </p>
+                  </TableItem>
+                ))}
+              </div>
             </ExpanderBodyContent>
           </CustomExpander>
           <TableItem isLast>

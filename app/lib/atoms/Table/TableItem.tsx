@@ -9,6 +9,7 @@ type TableItemProps = {
   customBorder?: string;
   customPadding?: number;
   lastSemiBold?: boolean;
+  className?: string;
 } & PropsWithChildren;
 
 const textVariants = {
@@ -22,6 +23,7 @@ export const TableItem: FC<TableItemProps> = ({
   children,
   isLast,
   customBorder,
+  className,
   customPadding = 16,
   textVariant = 'body',
   lastSemiBold = true,
@@ -36,7 +38,9 @@ export const TableItem: FC<TableItemProps> = ({
         'flex items-center justify-between w-full text-content',
         lastSemiBold && '[&>*:nth-child(2)]:font-semibold',
         textVariants[textVariant],
-        !isLast && clsx(customBorder ? customBorder : 'border-b border-divider')
+        !isLast &&
+          clsx(customBorder ? customBorder : 'border-b border-divider'),
+        className
       )}
     >
       {children}

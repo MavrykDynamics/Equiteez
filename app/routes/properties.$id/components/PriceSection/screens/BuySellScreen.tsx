@@ -71,13 +71,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
-  const hasTotalError = isBuyAction
-    ? total
-      ? total.toNumber() > usdBalance
-      : false
-    : amount
-    ? amount?.toNumber() > tokenBalance
-    : false;
+  // const hasTotalError = isBuyAction
+  //   ? total
+  //     ? total.toNumber() > usdBalance
+  //     : false
+  //   : amount
+  //   ? amount?.toNumber() > tokenBalance
+  //   : false;
+
+  const hasTotalError = false;
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
@@ -149,7 +151,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               </div>
             </BalanceInput>
 
-            <BalanceInput amountInputDisabled={false} {...input2Props}>
+            <BalanceInput
+              amountInputDisabled={false}
+              label="You Receive"
+              {...input2Props}
+            >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
                 <span>${total?.toNumber() ?? 0}</span>
                 <div>
