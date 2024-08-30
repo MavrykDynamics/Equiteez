@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { FC, memo, PropsWithChildren } from 'react';
+import { FC, memo, PropsWithChildren, SyntheticEvent, useState } from 'react';
 
 // organisms
 import CustomPopup, {
@@ -14,19 +14,34 @@ type PopupWithIconProps = {
   contentPosition?: CustomPopupContentPositionType;
 } & CustomPopupProps;
 
+const SCROLL_INDEX_POS = 24;
+
 export const PopupWithIcon: FC<PopupWithIconProps> = ({
   children,
   className,
   contentPosition = 'center',
   ...restProps
 }) => {
+  const [animateCloseIcon, setAnimateCloseIcon] = useState(false);
+
+  const scrollEvent = (e: SyntheticEvent) => {
+    const target = e.target as HTMLTextAreaElement;
+
+    if (target.scrollTop > SCROLL_INDEX_POS && !animateCloseIcon) {
+      setAnimateCloseIcon(true);
+    }
+
+    if (target.scrollTop < SCROLL_INDEX_POS && animateCloseIcon) {
+      setAnimateCloseIcon(false);
+    }
+  };
   return (
     <CustomPopup
       {...restProps}
       contentPosition={contentPosition}
       shouldCloseOnEsc
       className={clsx(
-        'w-full relative  bg-background',
+        'w-full relative  bg-background h-full overflow-y-auto',
         contentPosition === 'center' && 'max-w-[664px]',
         contentPosition !== 'center' && 'max-w-[617px]',
         className
@@ -34,23 +49,22 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
     >
       <div
         className={clsx(
-          'absolute z-10 right-0 top-8 px-8 w-full flex justify-end items-center max-w-16',
-          'transition duration-300 ease-in-out'
+          animateCloseIcon
+            ? 'sticky -top-8 h-14 right-0 w-full flex justify-end -mb-6'
+            : 'absolute right-[24px] top-6',
+          ' z-10',
+          'transition duration-300 ease-in-out',
+          animateCloseIcon && 'bg-white'
         )}
       >
-        <button id="close-icon">
+        <button id="close-icon" className={clsx(animateCloseIcon && 'mt-6')}>
           <CloseIcon
             className="w-6 h-6 cursor-pointer relative text-content stroke-current"
             onClick={restProps.onRequestClose}
           />
         </button>
       </div>
-      <ChildComponent>{children}</ChildComponent>
+      <div onScroll={scrollEvent}>{children}</div>
     </CustomPopup>
   );
 };
-
-// eslint-disable-next-line react/display-name
-const ChildComponent = memo(({ children }: PropsWithChildren) => {
-  return <div className="h-full overflow-y-auto">{children}</div>;
-});
