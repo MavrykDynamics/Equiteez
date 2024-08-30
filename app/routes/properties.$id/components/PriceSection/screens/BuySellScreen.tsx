@@ -71,15 +71,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
-  // const hasTotalError = isBuyAction
-  //   ? total
-  //     ? total.toNumber() > usdBalance
-  //     : false
-  //   : amount
-  //   ? amount?.toNumber() > tokenBalance
-  //   : false;
-
-  const hasTotalError = false;
+  const hasTotalError = isBuyAction
+    ? amount
+      ? amount.toNumber() > usdBalance
+      : false
+    : amount
+    ? amount?.toNumber() > tokenBalance
+    : false;
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
@@ -96,6 +94,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
   }, [toggleScreen]);
+
+  const handleOutputChange = useCallback(
+    (val: BigNumber | undefined) => {
+      if (isBuyAction)
+        setAmount(val?.times(tokensPrices[token_address]) ?? new BigNumber(0));
+      else setAmount(val?.div(tokensPrices[token_address]) ?? new BigNumber(0));
+    },
+    [isBuyAction, setAmount, token_address, tokensPrices]
+  );
 
   const input1Props = useMemo(
     () =>
@@ -141,7 +148,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input1Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>${total?.toNumber() ?? 0}</span>
+                <span>${amount?.toNumber() ?? 0}</span>
                 <div>
                   <Money smallFractionFont={false} shortened>
                     {isBuyAction ? usdBalance : tokenBalance}
@@ -152,6 +159,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             </BalanceInput>
 
             <BalanceInput
+              onChange={handleOutputChange}
               amountInputDisabled={false}
               label="You Receive"
               {...input2Props}
