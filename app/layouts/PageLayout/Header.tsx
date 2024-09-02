@@ -30,14 +30,14 @@ const HeaderLinksBlock = () => {
       </Link>
       <Link
         to="#"
-        className="text-body-xs text-content font-semibold"
+        className="text-body-xs text-content font-semibold opacity-50"
         aria-disabled
       >
         Dashboard
       </Link>
       <Link
         to="#"
-        className="text-body-xs text-content font-semibold"
+        className="text-body-xs text-content font-semibold opacity-50"
         aria-disabled
       >
         Staking
