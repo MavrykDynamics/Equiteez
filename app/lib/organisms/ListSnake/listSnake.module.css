@@ -18,7 +18,7 @@ ol.stepper::before {
   position: absolute;
   height: calc(100% - (var(--circle) * 2));
   width: 0px;
-  border-right: 2px dashed rgba(51, 203, 152, 0.5);
+  @apply border-r-2 border-dashed border-opacity-50 border-dark-green-500;
 
   left: 22px;
   top: 50%;
@@ -31,7 +31,7 @@ ol.stepper li {
   align-items: center;
   position: relative;
   column-gap: 14px;
-  background-color: #fff;
+  @apply bg-background;
   z-index: 1;
 }
 
@@ -42,7 +42,7 @@ ol.stepper li::before {
   place-content: center;
   aspect-ratio: 1;
   height: var(--circle);
-  border: 2px solid #33cb98;
+  @apply border-2 border-dark-green-500;
   border-radius: 50%;
   z-index: 1;
 

@@ -18,25 +18,24 @@ export const Search: FC<SearchProps> = ({
   return (
     <div
       className={clsx(
-        'py-3 px-[14px] rounded-lg overflow-hidden border border-gray-100',
-        'flex items-center gap-x-2'
+        'py-3 px-[14px] rounded-lg overflow-hidden border border-gray-100 w-full',
+        'flex items-center gap-2'
       )}
     >
-      <SearchIcon className="w-4 h-4 text-green-500 stroke current" />
+      <SearchIcon className="size-4 text-sand-900 stroke-current" />
       <input
         className={clsx(
-          'w-full outline-none focus:outline-none text-caption-regular'
+          'flex-1 flex-grow outline-none focus:outline-none text-caption-regular focus:border-red-100'
         )}
         {...rest}
         type="text"
       />
       {showSearchIcon && (
-        <button
-          className="w-4 h-4 rounded-full overflow-hidden flex items-center justify-center bg-gray-100"
-          onClick={handleClose}
-        >
-          <CrossIcon className="w-[10px] h-[10px] text-content stroke-current" />
-        </button>
+        <div className="size-4 rounded-full overflow-hidden flex items-center justify-center bg-gray-100">
+          <button onClick={handleClose}>
+            <CrossIcon className="w-[10px] h-[10px] text-content stroke-current" />
+          </button>
+        </div>
       )}
     </div>
   );

@@ -24,7 +24,7 @@ export const OrderFilters = () => {
             key={period}
             onClick={() => setSelectedPeriod(period)}
             className={clsx(
-              selectedPeriod === period ? 'text-green-500' : 'text-content'
+              selectedPeriod === period ? 'text-dark-green-500' : 'text-content'
             )}
           >
             {period}

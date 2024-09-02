@@ -83,20 +83,32 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
       >
         <div className="flex items-center gap-x-2">
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
-          <div className="text-body-xs text-content py-1 px-2 bg-background rounded font-medium">
-            {APY}% APY
-          </div>
-          {pricePerToken && (
-            <div className="text-body-xs text-content py-1 px-2 bg-background rounded font-medium">
-              {pricePerToken}$ / Token
-            </div>
-          )}
         </div>
         <div className="flex flex-col items-start">
-          <h4 className="text-white text-slider-headline truncate max-w-[381px]">
-            {title}
-          </h4>
-          <p className="text-white text-body-xs leading-5">{description}</p>
+          <div className="flex-1 w-full flex justify-between">
+            <div className="flex flex-col">
+              <h4 className="text-white text-slider-headline truncate max-w-[381px]">
+                {title}
+              </h4>
+              <p className="text-white text-body-xs leading-5">{description}</p>
+            </div>
+            <div className="flex">
+              {pricePerToken && (
+                <div className="flex flex-col items-center pr-3 border-r border-sand-50 mr-3">
+                  <span className="text-card-headline text-sand-50">
+                    ${pricePerToken}
+                  </span>
+                  <span className="text-sand-50 text-body-xs leading-5">
+                    Price
+                  </span>
+                </div>
+              )}
+              <div className="flex flex-col items-center">
+                <span className="text-card-headline text-sand-50">{APY}%</span>
+                <span className="text-sand-50 text-body-xs leading-5">APY</span>
+              </div>
+            </div>
+          </div>
           {progressBarPercentage && (
             <div
               style={
@@ -111,10 +123,11 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
             >
               <div
                 className={clsx(
+                  'overflow-hidden',
                   styles.progressBar,
                   styles.progressPercentage,
                   progressBarPercentage === 100
-                    ? 'after:bg-green-main'
+                    ? 'after:bg-[#0DB365]'
                     : 'after:bg-background'
                 )}
               />

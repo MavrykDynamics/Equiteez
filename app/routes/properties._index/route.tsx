@@ -39,21 +39,17 @@ export default function Properties() {
           {filteredEstates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
 
-            const restProps = isSecondaryMarket
-              ? {
-                  pricePerToken: (es as SecondaryEstate).assetDetails
-                    .priceDetails.price,
-                }
-              : {
-                  // For the time being for fake data
-                  progressBarPercentage: +(
-                    (((es as PrimaryEstate).assetDetails.priceDetails
-                      .tokensUsed || 1) /
-                      (es as PrimaryEstate).assetDetails.priceDetails
-                        .tokensAvailable) *
-                    100
-                  ).toFixed(2),
-                };
+            const restProps = {
+              pricePerToken: (es as SecondaryEstate).assetDetails.priceDetails
+                .price,
+              progressBarPercentage: +(
+                (((es as PrimaryEstate).assetDetails.priceDetails.tokensUsed ||
+                  1) /
+                  (es as PrimaryEstate).assetDetails.priceDetails
+                    .tokensAvailable) *
+                100
+              ).toFixed(2),
+            };
 
             return (
               <Link

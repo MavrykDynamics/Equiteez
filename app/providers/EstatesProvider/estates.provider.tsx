@@ -11,6 +11,7 @@ import estatesMocked from 'app/mocks/rwas.json';
 import {
   EstatesContext,
   PrimaryEstate,
+  SECONDARY_MARKET,
   SecondaryEstate,
 } from './estates.types';
 
@@ -57,7 +58,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       setActiveEstateData({
         activeEstate: estate,
         isActiveEstateSecondaryMarket:
-          estate?.assetDetails.type === 'Secondary Market',
+          estate?.assetDetails.type === SECONDARY_MARKET,
         isActiveEstateLoading: false,
       });
     },

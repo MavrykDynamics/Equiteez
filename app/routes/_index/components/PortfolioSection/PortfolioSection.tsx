@@ -11,7 +11,7 @@ const CARDS = [
     Icon: Card1Icon,
     title: 'No downpayment required',
     description:
-      'Buy shares of rental properties starting at ust $50. Each token represents fractional ownership of the property. The more you own, the more you earn.',
+      'Buy fractional shares of yield bearing investments starting at just $50. Each token represents fractional ownership of the asset. The more you own, the more you earn.',
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const CARDS = [
       </>
     ),
     description:
-      'Get weekly rent payouts! Collect property appreciation when you cash out as the properties grow in value over time. ',
+      'Get monthly dividends paid directly to your account! Watch your assets grow in value over time, and sell to collect on the principle appreciation whenever you think best.',
   },
   {
     id: 3,
@@ -31,11 +31,11 @@ const CARDS = [
     title: (
       <>
         Own multiple properties <br />
-        without managment worries
+        without managment issues
       </>
     ),
     description:
-      'Diversify your portfolio without expanding your workload. Vote on key decisions, and let the professional property managers handle the rest.',
+      'Diversify your investments without expanding your workload. Just build your own portfolio, and let the professional managers handle the rest.',
   },
   {
     id: 4,
@@ -47,7 +47,7 @@ const CARDS = [
       </>
     ),
     description:
-      'Zero lock-in periods and full transparency reports. Reinvest your rental income, sell whenever you like, or get a loan in minutes to leverage your portfolio.',
+      'Zero lock-in periods and full transparency reports. Reinvest your dividend income, sell whenever you like, or get a loan in minutes to leverage your portfolio.',
   },
 ];
 

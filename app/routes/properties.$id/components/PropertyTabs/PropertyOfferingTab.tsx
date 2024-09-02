@@ -25,10 +25,10 @@ export const PropertyOfferingTab = () => {
 
   return (
     <div>
-      <div className="mb-2">
-        <TableHeader>Offering</TableHeader>
-      </div>
-      <Table>
+      <Table className="bg-white">
+        <div className="mb-2">
+          <TableHeader>Offering</TableHeader>
+        </div>
         <TableItem>
           <p>Offering Date</p>
           <p>{formatDate(offering.offeringDate)}</p>
@@ -55,13 +55,16 @@ export const PropertyOfferingTab = () => {
         </TableItem>
       </Table>
       <div className="mb-11" />
-      <div className="mb-2">
-        <TableHeader>Valuation</TableHeader>
-      </div>
-      <Table>
+
+      <Table className="bg-white">
+        <div className="mb-2">
+          <TableHeader>Valuation</TableHeader>
+        </div>
         <TableHeader>
           <div className="flex items-center justify-between">
-            <p>{formatDate(priorValuation.date)}</p>
+            <p className="text-body font-semibold">
+              {formatDate(priorValuation.date)}
+            </p>
 
             <p className="text-body text-secondary-content flex items-center">
               <ClockIcon className="w-6 h-6 stroke-1 stroke-current mr-1" />
@@ -105,10 +108,12 @@ export const PropertyOfferingTab = () => {
         </TableItem>
       </Table>
       <div className="mb-8" />
-      <Table>
+      <Table className="bg-white">
         <TableHeader>
           <div className="flex items-center justify-between">
-            <p>{formatDate(initialValuation.date)}</p>
+            <p className="text-body font-semibold">
+              {formatDate(initialValuation.date)}
+            </p>
 
             <p className="text-body text-secondary-content flex items-center">
               <ClockIcon className="w-6 h-6 stroke-1 stroke-current mr-1" />

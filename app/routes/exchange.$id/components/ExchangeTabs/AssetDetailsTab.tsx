@@ -58,7 +58,7 @@ export const AssetDetailsTab: FC<{ estate: SecondaryEstate }> = ({
           </div>
           <Link
             to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
-            className="text-body-xs leading-5 font-semibold text-content"
+            className="text-body-xs leading-5 font-semibold text-dark-green-500 underline"
           >
             View Property
           </Link>

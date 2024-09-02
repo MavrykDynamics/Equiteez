@@ -8,7 +8,12 @@ type SpinnerProps = {
 export const Spinner: FC<SpinnerProps> = ({ size = 24 }) => {
   return (
     <div
-      style={{ '--loader-size': `${size}px` } as CSSProperties}
+      style={
+        {
+          '--loader-size': `${size}px`,
+          '--border-width': size < 48 ? '2px' : '3px',
+        } as CSSProperties
+      }
       className={styles.loader}
     />
   );

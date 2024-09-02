@@ -5,21 +5,21 @@ import clsx from 'clsx';
 const ITEMS = [
   {
     id: 1,
-    title: 'Full control of their investments',
+    title: 'Secondary Market Trading',
     description:
-      'Buy shares of rental properties starting at ust $50. Each token represents fractional ownership of the property. The more you own, the more you earn.',
+      "Buy, sell, or trade your assets on Equiteez's secondary markets 24/7, giving you the flexibility to manage your investments anytime, day or night.",
   },
   {
     id: 2,
-    title: 'Buy & Sell',
+    title: 'Borrow Against Your Portfolio, Instantly',
     description:
-      'Buy shares of rental properties starting at ust $50. Each token represents fractional ownership of the property. The more you own, the more you earn.',
+      'Lock your assets in a secure vault with Maven Finance and borrow against your portfolio instantly, accessing quick loans without selling your investments.',
   },
   {
     id: 3,
-    title: 'Stake for additional yield',
+    title: 'Stake For Compounded Earnings',
     description:
-      'Buy shares of rental properties starting at ust $50. Each token represents fractional ownership of the property. The more you own, the more you earn.',
+      "Stake your assets in Equiteez's Automated Market Maker exchange and earn compounded returns through trading fees, maximizing your earnings effortlessly over time.",
   },
 ];
 

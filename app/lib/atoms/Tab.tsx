@@ -6,10 +6,10 @@ export type TabType<G = string> = {
   label: string;
   grow?: boolean;
   disabled?: boolean;
-  handleClick: (id: string) => void;
+  handleClick: (id: G) => void;
 };
 
-export type TabVariant = 'primary' | 'secondary';
+export type TabVariant = 'primary' | 'secondary' | 'tertiary';
 
 type TabProps = {
   active?: boolean;
@@ -19,21 +19,27 @@ type TabProps = {
 const variants = {
   primary: {
     className: clsx(
-      'px-4 py-3 text-content text-buttons cursor-pointer rounded-lg outline-none',
+      'px-4 py-[10px]  text-buttons cursor-pointer rounded-lg outline-none',
       'flex justify-center items-center min-w-[115px]'
     ),
     active: (active: boolean | undefined) =>
-      active ? 'bg-tabs' : 'bg-inactive-tab',
+      active ? 'bg-sand-800 text-white' : 'bg-inactive-tab text-sand-700',
     disabled: 'opacity-50 pointer-events-none',
   },
   secondary: {
     className: clsx(
-      'px-4 py-2 text-content text-caption cursor-pointer rounded-lg outline-none',
-      'flex justify-center items-center min-w-[132px]'
+      'px-4 py-2  text-caption cursor-pointer rounded-lg outline-none',
+      'flex justify-center items-center min-w-[115px]'
     ),
     active: (active: boolean | undefined) =>
-      active ? 'bg-white' : 'bg-transparent',
+      active ? 'bg-sand-800 text-white' : 'bg-inactive-tab text-sand-700',
     disabled: 'opacity-50 pointer-events-none bg-gray-50',
+  },
+  tertiary: {
+    className: clsx('text-caption cursor-pointer'),
+    active: (active: boolean | undefined) =>
+      active ? 'text-dark-green-500 underline' : 'text-sand-300',
+    disabled: 'opacity-50 pointer-events-none',
   },
 };
 

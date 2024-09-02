@@ -1,7 +1,5 @@
-<svg width="51" height="55" viewBox="0 0 51 55" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group 7312">
-<circle id="Ellipse 171" cx="21.5" cy="33" r="21.5" fill="#33CB98" fill-opacity="0.4"/>
-<path id="Ellipse 173" d="M51 29.5C51 13.4837 38.0163 0.5 22 0.5V29.5H51Z" fill="#33CB98" fill-opacity="0.3"/>
-<path id="Vector 52" d="M14 31.6111V40.5H27V31.6111L20.7241 24.5L14 31.6111Z" stroke="#021A12" stroke-width="3"/>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="51" height="55" viewBox="0 0 51 55" fill="none">
+    <circle cx="21.5" cy="32.7852" r="21.5" fill="#1C6252"/>
+    <path d="M51 29.2852C51 13.2689 38.0163 0.285156 22 0.285156V29.2852H51Z" fill="#24816C" fill-opacity="0.5"/>
+    <path d="M14 31.3963V40.2852H27V31.3963L20.7241 24.2852L14 31.3963Z" stroke="white" stroke-width="3"/>
 </svg>

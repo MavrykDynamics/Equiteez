@@ -195,13 +195,14 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
   const hasNoresults = filteredEstates.length === 0;
 
   return (
-    <CustomDropdown>
+    <CustomDropdown withOverlay>
       <ClickableDropdownArea>
         <DropdownFaceContent
+          gap={2}
           className={clsx(
-            'text-body-xs leading-5 font-semibold text-content w-full border border-brand-green-100',
-            'px-[10px] py-[9px]',
-            'rounded-xl'
+            'text-body-xs leading-5 font-semibold text-content w-full border border-dark-green-50',
+            'px-[14px] py-[9px]',
+            'rounded-4xl bg-white'
           )}
         >
           <div className="flex items-center gap-x-2">
@@ -223,7 +224,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
       </ClickableDropdownArea>
 
       <DropdownBodyContent topMargin={12} customWidth={420} customHeight={526}>
-        <div className="p-4 h-full flex flex-col overflow-x-hidden">
+        <div className="p-4 h-full flex flex-col overflow-x-hidden bg-white">
           <Search
             showSearchIcon={estateName.length > 0}
             handleClose={handleClose}
@@ -231,22 +232,29 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
             placeholder="Search..."
             onChange={onChange}
           />
-          <div className="my-4 flex items-center gap-x-1">
-            {Object.entries(filtersData).map(([id, filterVal]) => (
-              <button
-                key={id}
-                onClick={() => handleFilterClick(id)}
-                className={clsx(
-                  'py-2 px-3 bg-gray-100 text-content text-caption cursor-pointer outline-none',
-                  'transition ease-in-out duration-300',
-                  'flex items-center justify-center rounded-lg border',
-                  activeFiltersIds[id] ? 'border-content' : 'border-transparent'
-                )}
-              >
-                {filterVal.label}
-              </button>
-            ))}
+
+          <div className="my-4 flex flex-col">
+            <div className="text-content text-caption mb-2">Filter By</div>
+            <div className="flex items-center gap-x-1">
+              {Object.entries(filtersData).map(([id, filterVal]) => (
+                <button
+                  key={id}
+                  onClick={() => handleFilterClick(id)}
+                  className={clsx(
+                    'py-2 px-3 text-content text-caption cursor-pointer outline-none',
+                    'transition ease-in-out duration-300',
+                    'flex items-center justify-center rounded-4xl border',
+                    activeFiltersIds[id]
+                      ? 'border-dark-green-500 bg-[#A4C0BA59]'
+                      : 'border-sand-200'
+                  )}
+                >
+                  {filterVal.label}
+                </button>
+              ))}
+            </div>
           </div>
+
           {hasNoresults ? (
             <NoResultsScreen word={estateName} />
           ) : (
@@ -276,7 +284,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   </div>
 
                   {/* Table body ------ */}
-                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px] overflow-x-hidden">
+                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px] overflow-x-hidden pb-4">
                     {filteredEstates.map((estate) => {
                       const identifier =
                         estate.assetDetails.blockchain[0].identifier;
@@ -284,7 +292,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                         <div
                           key={estate.token_address}
                           className={clsx(
-                            'cursor-pointer flex items-center',
+                            'cursor-pointer flex items-center hover:bg-gray-50',
                             styles.grid
                           )}
                         >

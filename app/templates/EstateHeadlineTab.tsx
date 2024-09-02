@@ -13,8 +13,8 @@ export const EstateHeadlineTab: FC<EstateHeadlineTabProps> = ({
       className={clsx(
         'py-1 px-2 rounded text-body-xs font-medium',
         isSecondaryEstate
-          ? 'bg-blue-opacity text-blue-dark'
-          : 'bg-tabs text-green-dark'
+          ? 'bg-blue-opacity text-blue-950'
+          : 'bg-[#AACFB5] text-green-950'
       )}
     >
       {isSecondaryEstate ? 'Secondary Market' : 'Primary Issuance'}

@@ -8,7 +8,7 @@
     "assetDetails": {
       "coordinates": {
         "lat": 47.610516875601206,
-        "lng":-122.33565825768186
+        "lng": -122.33565825768186
       },
       "APY": 6.15,
       "type": "Secondary Market",
@@ -130,7 +130,9 @@
         "projectedAnnualReturn": 4.03,
         "rentalYield": 28.43,
         "projectedRentalYield": 28.43,
-        "totalLiquidity": 40.03
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
       },
       "tradingHistory": [
         {
@@ -413,7 +415,9 @@
         "projectedAnnualReturn": 69.68,
         "rentalYield": 27.35,
         "projectedRentalYield": 27.35,
-        "totalLiquidity": 84.43
+        "totalLiquidity": 84.43,
+        "tokensAvailable": 700,
+        "tokensUsed": 201
       },
       "tradingHistory": [
         {
@@ -696,7 +700,9 @@
         "projectedAnnualReturn": 8.27,
         "rentalYield": 27.31,
         "projectedRentalYield": 27.31,
-        "totalLiquidity": 289.2
+        "totalLiquidity": 289.2,
+        "tokensAvailable": 17,
+        "tokensUsed": 987
       },
       "tradingHistory": [
         {
@@ -979,7 +985,9 @@
         "projectedAnnualReturn": 46.49,
         "rentalYield": 20.13,
         "projectedRentalYield": 20.13,
-        "totalLiquidity": 324.49
+        "totalLiquidity": 324.49,
+        "tokensAvailable": 548,
+        "tokensUsed": 548
       },
       "tradingHistory": [
         {
@@ -1262,7 +1270,9 @@
         "projectedAnnualReturn": 49.73,
         "rentalYield": 33.21,
         "projectedRentalYield": 33.21,
-        "totalLiquidity": 12.79
+        "totalLiquidity": 12.79,
+        "tokensAvailable": 100,
+        "tokensUsed": 1000
       },
       "tradingHistory": [
         {
@@ -1545,7 +1555,9 @@
         "projectedAnnualReturn": 7.94,
         "rentalYield": 33.82,
         "projectedRentalYield": 33.82,
-        "totalLiquidity": 155.09
+        "totalLiquidity": 155.09,
+        "tokensAvailable": 111,
+        "tokensUsed": 222
       },
       "tradingHistory": [
         {
@@ -1828,7 +1840,9 @@
         "projectedAnnualReturn": 4.41,
         "rentalYield": 39.42,
         "projectedRentalYield": 39.42,
-        "totalLiquidity": 272.45
+        "totalLiquidity": 272.45,
+        "tokensAvailable": 377,
+        "tokensUsed": 98
       },
       "tradingHistory": [
         {
@@ -2111,7 +2125,9 @@
         "projectedAnnualReturn": 93.09,
         "rentalYield": 13.77,
         "projectedRentalYield": 13.77,
-        "totalLiquidity": 8.23
+        "totalLiquidity": 8.23,
+        "tokensAvailable": 548,
+        "tokensUsed": 500
       },
       "tradingHistory": [
         {
@@ -2394,7 +2410,9 @@
         "projectedAnnualReturn": 29.55,
         "rentalYield": 17.42,
         "projectedRentalYield": 17.42,
-        "totalLiquidity": 86.53
+        "totalLiquidity": 86.53,
+        "tokensAvailable": 888,
+        "tokensUsed": 449
       },
       "tradingHistory": [
         {
@@ -2677,7 +2695,9 @@
         "projectedAnnualReturn": 25.28,
         "rentalYield": 35.51,
         "projectedRentalYield": 35.51,
-        "totalLiquidity": 331.93
+        "totalLiquidity": 331.93,
+        "tokensAvailable": 666,
+        "tokensUsed": 200
       },
       "tradingHistory": [
         {

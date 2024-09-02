@@ -22,6 +22,7 @@ export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
   const [tokensMetadata, setTokensMetadata] = useState<
     StringRecord<TokenMetadata>
   >({});
+
   const [isLoading, setIsLoading] = useState(true);
 
   const initializeTokensData = useCallback(async () => {

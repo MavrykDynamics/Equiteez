@@ -1,5 +1,6 @@
-<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Frame 116047213">
-<circle id="Ellipse 14926" cx="5" cy="5" r="4" fill="#CCF2E5"/>
-</g>
+<svg width="10" height="10" viewBox="0 0 10 10"
+    xmlns="http://www.w3.org/2000/svg">
+    <g id="Frame 116047213">
+        <circle id="Ellipse 14926" cx="5" cy="5" r="4" />
+    </g>
 </svg>

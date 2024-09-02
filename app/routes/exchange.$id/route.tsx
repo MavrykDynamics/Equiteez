@@ -106,7 +106,7 @@ export default function ExchangeDetails() {
 
         <div className="flex w-full">
           {/* Left Panel ---------------------------- */}
-          <div className="flex flex-col w-[324px] px-6 py-4">
+          <div className="flex flex-col w-[324px] p-4">
             {/* Order Book View */}
             <div className="flex flex-col w-full">
               <OrderBookTabs />
@@ -124,7 +124,7 @@ export default function ExchangeDetails() {
 
           {/* Right Panel ---------------------------- */}
           <div className="flex flex-col w-[324px]">
-            <div className="flex flex-col w-full px-6 py-4">
+            <div className="flex flex-col w-full p-4">
               <BuySellTabs
                 symbol={estateData.symbol}
                 tokenAddress={estateData.token_address}

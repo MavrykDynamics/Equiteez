@@ -62,7 +62,7 @@ export default function PropertyTabs({
     () => [
       {
         id: PROPERTY_DETAILS_TAB,
-        label: 'Property Details',
+        label: 'Details',
         handleClick: handleTabClick,
       },
       {

@@ -94,9 +94,16 @@ export const NativeTableColumn: FC<
   );
 };
 
-export const NativeTableColumnSmall: FC<PropsWithChildren> = ({ children }) => {
+export const NativeTableColumnSmall: FC<
+  PropsWithChildren & { className?: string }
+> = ({ children, className }) => {
   return (
-    <div className="py-3 text-content text-caption-regular w-auto pr-2 flex items-center">
+    <div
+      className={clsx(
+        'py-3 text-content text-caption-regular w-auto pr-2 flex items-center',
+        className
+      )}
+    >
       {children}
     </div>
   );

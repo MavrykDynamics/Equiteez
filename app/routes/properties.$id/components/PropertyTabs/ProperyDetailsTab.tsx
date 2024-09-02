@@ -33,8 +33,8 @@ export const PropertyDetailsTab = () => {
 
   return (
     <div>
-      <Table>
-        <TableHeader>About the Offering</TableHeader>
+      <Table className="bg-white">
+        <TableHeader>About</TableHeader>
         <TableDescription>{propertyDetails.description}</TableDescription>
         <TableItem>
           <p>Property Type</p>
@@ -79,7 +79,7 @@ export const PropertyDetailsTab = () => {
         </TableItem>
       </Table>
       <div className="mb-8" />
-      <Table>
+      <Table className="bg-white">
         <TableHeader>Building Info</TableHeader>
         <TableItem>
           <p>Stories</p>
@@ -215,7 +215,7 @@ const PropertyDetailsMap: FC<{
   }, [isMarkerClicked]);
 
   return (
-    <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8">
+    <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8 bg-white border border-gray-100">
       <h3 className="text-content text-card-headline mb-6">Neighborhood</h3>
       <div className="grid grid-cols-2 gap-x-6">
         <div className="flex flex-col">
@@ -293,7 +293,7 @@ const DistanceBlock: FC<DistanceBlockProps> = ({ type, score }) => {
     <div className="flex items-center gap-x-4">
       <div
         className={clsx(
-          'w-[52px] h-[52px] rounded-full overflow-hidden bg-green-opacity',
+          'w-[52px] h-[52px] rounded-full overflow-hidden bg-dark-green-opacity',
           'flex items-center justify-center relative'
         )}
       >

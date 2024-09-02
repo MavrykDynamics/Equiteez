@@ -99,9 +99,9 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           (() => {
             switch (true) {
               case localChecked:
-                return 'border-brand-green-500';
+                return 'border-dark-green-500';
               case localFocused:
-                return 'border-brand-green-400';
+                return 'border-dark-green-400';
               case errored:
                 return 'border-error';
               default:
@@ -132,7 +132,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           className={clsx(
             iconClassName
               ? iconClassName
-              : 'size-4 stroke-[3px] stroke-brand-green-500 pointer-events-none',
+              : 'size-4 stroke-[3px] stroke-dark-green-500 pointer-events-none',
             localChecked ? 'block' : 'hidden'
           )}
         />

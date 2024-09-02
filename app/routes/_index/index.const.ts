@@ -1,23 +1,28 @@
 export const homeFAQ = [
   {
-    title: 'How Equiteez Works',
+    title: 'What is Equiteez?',
+    description:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+  },
+  {
+    title: 'How does Equiteez work?',
     description:
       'The revenue generated from Mavryk Domains is subject to a structured allocation, with 50% designated for burning to support the reduction of token supply, and the remaining 50% is directed into the Ecosystem Treasury. This allocation strategy is designed to ensure the sustainable growth and development of the Mavryk ecosystem',
   },
   {
-    title: 'What Are Real World Assets (RWAs)?',
-    description:
-      'The revenue generated from Mavryk Domains is subject to a structured allocation, with 50% designated for burning to support the reduction of token supply, and the remaining 50% is directed into the Ecosystem Treasury. This allocation strategy is designed to ensure the sustainable growth and development of the Mavryk ecosystem',
-  },
-  {
-    title: 'How Do I Buy RWAs On Equiteez?',
+    title: 'How can I buy RWA assets on Equiteez?',
     description:
       "Future upgrades and maintenance of Mavryk Domains' smart contracts are overseen by the democratically elected seven-member Treasury Council. This body includes two community members, two validator operators, two internal ecosystem members, and one founding member. A minimum of four out of these seven members must approve any actions or changes to the smart contracts, including multisignature configuration.",
   },
   {
-    title: 'What Are The Benefits Of Tokenization?',
+    title: 'Can I sell my assets that I bought?',
     description:
-      'Mavryk Domains must be at least three characters in length and can consist of Latin characters, numbers, and hyphens. These domains can be utilized for hosting IPFS-based websites, accessible via a format like https://myname.mav.page/.',
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+  },
+  {
+    title: 'Can I borrow against my assets?',
+    description:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
   },
   {
     title: 'How Do I Receive RWA Dividends?',
