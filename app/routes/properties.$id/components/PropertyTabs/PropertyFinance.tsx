@@ -42,30 +42,32 @@ export const PropertyFinanceTab = () => {
           </ClickableExpanderArea>
 
           <ExpanderBodyContent>
-            <TableItem textVariant="body-xs">
-              <p>Net ReProperty Management (8.00%)</p>
-              <p>-${propertyFinancials.monthlyCosts.netReproperty}</p>
-            </TableItem>
-            <TableItem textVariant="body-xs">
-              <p>Equiteez Platform (2.00%)</p>
-              <p>-${propertyFinancials.monthlyCosts.platform}</p>
-            </TableItem>
-            <TableItem textVariant="body-xs">
-              <p>Maintenance Expenses</p>
-              <p>-${propertyFinancials.monthlyCosts.expenses}</p>
-            </TableItem>
-            <TableItem textVariant="body-xs">
-              <p>Property Taxes</p>
-              <p>-${propertyFinancials.monthlyCosts.taxes}</p>
-            </TableItem>
-            <TableItem textVariant="body-xs">
-              <p>Insurance</p>
-              <p>-${propertyFinancials.monthlyCosts.insurance}</p>
-            </TableItem>
-            <TableItem textVariant="body-xs">
-              <p>Utilities</p>
-              <p>{propertyFinancials.monthlyCosts.utilities}</p>
-            </TableItem>
+            <div className="flex flex-col px-4 bg-[#E3E1DD40]">
+              <TableItem textVariant="body-xs">
+                <p>Net ReProperty Management (8.00%)</p>
+                <p>-${propertyFinancials.monthlyCosts.netReproperty}</p>
+              </TableItem>
+              <TableItem textVariant="body-xs">
+                <p>Equiteez Platform (2.00%)</p>
+                <p>-${propertyFinancials.monthlyCosts.platform}</p>
+              </TableItem>
+              <TableItem textVariant="body-xs">
+                <p>Maintenance Expenses</p>
+                <p>-${propertyFinancials.monthlyCosts.expenses}</p>
+              </TableItem>
+              <TableItem textVariant="body-xs">
+                <p>Property Taxes</p>
+                <p>-${propertyFinancials.monthlyCosts.taxes}</p>
+              </TableItem>
+              <TableItem textVariant="body-xs">
+                <p>Insurance</p>
+                <p>-${propertyFinancials.monthlyCosts.insurance}</p>
+              </TableItem>
+              <TableItem textVariant="body-xs">
+                <p>Utilities</p>
+                <p>{propertyFinancials.monthlyCosts.utilities}</p>
+              </TableItem>
+            </div>
           </ExpanderBodyContent>
         </CustomExpander>
 
@@ -93,16 +95,21 @@ export const PropertyFinanceTab = () => {
             </TableItem>
           </ClickableExpanderArea>
           <ExpanderBodyContent>
-            <TableItem textVariant="body-xs">
-              <p>Underlying Asset Price</p>
-              <p>${propertyFinancials.totalInvestment.underlyingAssetPrice}</p>
-            </TableItem>
-            <TableItem textVariant="body-xs">
-              <p>Initial Maintenance Reserve</p>
-              <p>
-                ${propertyFinancials.totalInvestment.initialMaintenanceReserve}
-              </p>
-            </TableItem>
+            <div className="flex flex-col px-4 bg-[#E3E1DD40]">
+              <TableItem textVariant="body-xs">
+                <p>Underlying Asset Price</p>
+                <p>
+                  ${propertyFinancials.totalInvestment.underlyingAssetPrice}
+                </p>
+              </TableItem>
+              <TableItem textVariant="body-xs">
+                <p>Initial Maintenance Reserve</p>
+                <p>
+                  $
+                  {propertyFinancials.totalInvestment.initialMaintenanceReserve}
+                </p>
+              </TableItem>
+            </div>
           </ExpanderBodyContent>
         </CustomExpander>
         <TableItem textVariant="bold" customPadding={8} isLast>
