@@ -42,13 +42,15 @@ export default function Properties() {
             const restProps = {
               pricePerToken: (es as SecondaryEstate).assetDetails.priceDetails
                 .price,
-              progressBarPercentage: +(
-                (((es as PrimaryEstate).assetDetails.priceDetails.tokensUsed ||
-                  1) /
-                  (es as PrimaryEstate).assetDetails.priceDetails
-                    .tokensAvailable) *
-                100
-              ).toFixed(2),
+              progressBarPercentage: isSecondaryMarket
+                ? undefined
+                : +(
+                    (((es as PrimaryEstate).assetDetails.priceDetails
+                      .tokensUsed || 1) /
+                      (es as PrimaryEstate).assetDetails.priceDetails
+                        .tokensAvailable) *
+                    100
+                  ).toFixed(2),
             };
 
             return (

@@ -29,16 +29,20 @@ export const SimilarProperties = () => {
       </h2>
       <div className="grid grid-cols-3 gap-x-3">
         {similarEstates.map((estate) => {
+          const isSecondaryMarket =
+            estate.assetDetails.type === SECONDARY_MARKET;
           const restProps = {
             pricePerToken: (estate as SecondaryEstate).assetDetails.priceDetails
               .price,
-            progressBarPercentage: +(
-              (((estate as PrimaryEstate).assetDetails.priceDetails
-                .tokensUsed || 1) /
-                (estate as PrimaryEstate).assetDetails.priceDetails
-                  .tokensAvailable) *
-              100
-            ).toFixed(2),
+            progressBarPercentage: isSecondaryMarket
+              ? undefined
+              : +(
+                  (((estate as PrimaryEstate).assetDetails.priceDetails
+                    .tokensUsed || 1) /
+                    (estate as PrimaryEstate).assetDetails.priceDetails
+                      .tokensAvailable) *
+                  100
+                ).toFixed(2),
           };
           return (
             <Link

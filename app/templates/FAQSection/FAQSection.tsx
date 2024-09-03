@@ -62,18 +62,17 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
       <div className="flex flex-col flex-1">
         {data.map((item, idx) => (
           <div
+            role="presentation"
             key={item.title}
-            className="text-content text-card-headline py-8 border-b border-divider flex-1"
+            className="text-content text-card-headline py-8 border-b border-divider flex-1 cursor-pointer"
             id={`faq-${idx + 1}`}
+            onClick={() => handleHeaderClick(idx + 1)}
           >
             <div
               className={styles.mobileArticle}
               data-active-article={`faq-${idx + 1}`}
             >
-              <button
-                className="flex items-center justify-between w-full capitalize"
-                onClick={() => handleHeaderClick(idx + 1)}
-              >
+              <button className="flex items-center justify-between w-full capitalize">
                 <div className={styles.faqSubHeader}>{item.title}</div>
                 <ArrowDown
                   className={clsx(
