@@ -8,6 +8,7 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 import './animations.css';
 import { onAfterClose, onAfterOpen } from './utils';
+import { twMerge } from '~/lib/utils/tw-merge';
 
 const popupAnimation = {
   left: 'slidePopupLeft',
@@ -38,10 +39,10 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
   return (
     <Modal
       {...restProps}
-      className={clsx(
+      className={twMerge(
+        className,
         'bg-white z-30 shadow-2xl p-8',
-        contentPosition === 'center' && 'rounded-3xl',
-        className
+        contentPosition === 'center' && 'rounded-3xl'
       )}
       appElement={IS_WEB ? document.getElementById('root')! : undefined}
       closeTimeoutMS={DEFAULT_POPUP_ANIMATION_DELAY}
