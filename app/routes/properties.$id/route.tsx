@@ -90,7 +90,9 @@ export default function PropertyDetails() {
           <Divider className="my-6" />
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
-        <PriceSection isSecondaryEstate={isSecondaryEstate} />
+        <div className="sticky top-10 h-fit">
+          <PriceSection isSecondaryEstate={isSecondaryEstate} />
+        </div>
       </section>
       <Spacer />
       <SimilarProperties />
