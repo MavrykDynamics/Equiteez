@@ -113,7 +113,7 @@ export const DropdownFaceContent: FC<
   const { opened, setFaceContentDimensions, disabled, withOverlay } =
     useDropdownContext();
 
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (IS_WEB && ref.current) {
@@ -125,12 +125,12 @@ export const DropdownFaceContent: FC<
   }, [IS_WEB, setFaceContentDimensions, ref.current]);
 
   return (
-    <div
-      role="presentation"
+    <button
+      // role="presentation"
       ref={ref}
       className={clsx(
         className,
-        `w-full  outline-none flex items-center gap-x-${gap}`,
+        `w-full text-left  outline-none flex items-center gap-x-${gap}`,
         withOverlay && opened && 'bg-white relative z-10'
       )}
     >
@@ -143,7 +143,7 @@ export const DropdownFaceContent: FC<
           opened && !disabled && 'rotate-180'
         )}
       />
-    </div>
+    </button>
   );
 };
 
