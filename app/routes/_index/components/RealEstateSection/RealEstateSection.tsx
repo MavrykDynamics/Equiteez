@@ -1,14 +1,15 @@
-import { Link } from '@remix-run/react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { SwitchTransition, CSSTransition } from 'react-transition-group';
 import styles from './realEstate.module.css';
+import { Button } from '~/lib/atoms/Button';
 
+// assets
 import estate1Src from 'app/assets/home/real-estate-1.webp';
 import estate2Src from 'app/assets/home/real-estate-2.webp';
 import estate3Src from 'app/assets/home/real-estate-3.webp';
-import clsx from 'clsx';
-import { useEffect, useState } from 'react';
-import { Container } from '~/lib/atoms/Container';
 import ArrowRight from 'app/icons/arrow-right.svg?react';
-import { Button } from '~/lib/atoms/Button';
+import clsx from 'clsx';
+import { Link } from '@remix-run/react';
 
 const ESTATES = [
   {
@@ -49,9 +50,11 @@ const ESTATES = [
   },
 ];
 
-const ESTATES_INTERVAL = 10000;
+const ESTATES_INTERVAL = 4000;
 
 export const RealEstateSection = () => {
+  const nodeRef = React.useRef(null);
+
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -66,46 +69,51 @@ export const RealEstateSection = () => {
     };
   }, []);
 
+  const estate = useMemo(() => ESTATES[activeSlideIndex], [activeSlideIndex]);
+
   return (
-    <Container maxWidth={2304}>
-      <section className={clsx(styles.estateContainer)}>
-        {ESTATES.map((estate, idx) => (
-          <div
-            key={estate.id}
-            className={clsx(
-              idx !== activeSlideIndex && 'hidden',
-              'w-full h-full relative'
-            )}
-          >
-            <img
-              src={estate.imgSrc}
-              alt="real estate"
-              className={styles.fade}
-            />
-            <div
-              className={clsx(
-                styles.estateTextBlock,
-                styles.fade,
-                'flex flex-col items-start gap-y-6'
-              )}
-            >
-              <h1 className="text-hero text-white">{estate.title}</h1>
-              <div className="w-full flex items-end justify-between">
-                <p className="text-buttons text-white">{estate.author}</p>
-                <Link to={'/properties'}>
-                  <Button
-                    className="text-white bg-transparent border-2 border-white py-[8px]"
-                    variant="outline"
-                  >
-                    View properties
-                    <ArrowRight className="w-6 h-6 stroke-current ml-1" />
-                  </Button>
-                </Link>
+    <section className={clsx(styles.estateContainer)}>
+      <SwitchTransition mode="out-in">
+        <CSSTransition
+          key={estate.id}
+          nodeRef={nodeRef}
+          addEndListener={(done: () => void) => {
+            nodeRef?.current.addEventListener('transitionend', done, false);
+          }}
+          classNames={{
+            enter: styles['fade-enter'],
+            enterActive: styles['fade-enter-active'],
+            exit: styles['fade-exit'],
+            exitActive: styles['fade-exit-active'],
+          }}
+        >
+          <div ref={nodeRef}>
+            <div className={clsx('w-full h-full relative', styles.estate)}>
+              <img src={estate.imgSrc} alt="real estate" />
+              <div
+                className={clsx(
+                  styles.estateTextBlock,
+                  'flex flex-col items-start gap-y-6'
+                )}
+              >
+                <h1 className={clsx('text-hero text-white')}>{estate.title}</h1>
+                <div className="w-full flex items-end justify-between">
+                  <p className="text-buttons text-white">{estate.author}</p>
+                  <Link to={'/properties'}>
+                    <Button
+                      className="text-white bg-transparent border-2 border-white py-[8px]"
+                      variant="outline"
+                    >
+                      View properties
+                      <ArrowRight className="w-6 h-6 stroke-current ml-1" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        ))}
-      </section>
-    </Container>
+        </CSSTransition>
+      </SwitchTransition>
+    </section>
   );
 };
