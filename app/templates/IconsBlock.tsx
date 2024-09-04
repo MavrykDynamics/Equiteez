@@ -32,7 +32,7 @@ const SingleIconBlock: FC<SingleIconBlockProps> = ({ Icon, label, small }) => {
       )}
     >
       <Icon className={clsx(small ? 'w-7 h-7' : 'w-8 h-8')} />
-      <p className="text-content text-caption px-6">{label}</p>
+      <p className="text-dark-green-500 text-caption px-6">{label}</p>
     </div>
   );
 };
