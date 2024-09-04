@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo } from 'react';
-import chart from '~/mocks/chart';
+import { CHART_MOCK_SERIES } from '~/mocks/chart';
 import { ApexOptions } from 'apexcharts';
 import Expand from '~/icons/expand.svg?react';
 import Settings from '~/icons/settings.svg?react';
@@ -30,7 +30,6 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
         });
     }
   }, [setClientModuleError, setClientModule, IS_WEB]);
-  const mockChart = chart();
 
   const opts: ApexOptions = useMemo(
     () => ({
@@ -67,14 +66,11 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
 
   const state = useMemo(
     () => ({
-      series: [
-        {
-          data: mockChart,
-        },
-      ],
+      series: CHART_MOCK_SERIES,
+
       options: opts,
     }),
-    [mockChart, opts]
+    [opts]
   );
 
   const chartModuleProps = useMemo(
