@@ -3,11 +3,6 @@
   height: 937px;
   position: relative;
 }
-
-.estateContainer > div {
-  height: 100%;
-}
-
 .estateContainer::before {
   content: '';
   inset: 0;
@@ -37,28 +32,17 @@
   z-index: 2;
 }
 
-.estate {
-  /* transition: all 250ms ease-in-out; */
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 2.5s;
 }
 
-/* Fading animation */
-.fade-enter .estate {
-  opacity: 0;
-  /* transform: translateX(-100%); */
-}
-.fade-enter-active .estate {
-  opacity: 1;
-  /* transform: translateX(0%); */
-}
-.fade-exit .estate {
-  opacity: 1;
-  /* transform: translateX(0%); */
-}
-.fade-exit-active .estate {
-  opacity: 0;
-  /* transform: translateX(100%); */
-}
-.fade-enter-active .estate,
-.fade-exit-active .estate {
-  transition: opacity 250ms;
+@keyframes fade {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
 }
