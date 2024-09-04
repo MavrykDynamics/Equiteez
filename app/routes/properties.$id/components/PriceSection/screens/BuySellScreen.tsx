@@ -285,7 +285,7 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
   return (
     <CustomDropdown>
       <ClickableDropdownArea>
-        <div className="px-2 py-1 border border-dark-green-100 rounded-lg">
+        <div className="px-2 py-1 border border-dark-green-100 rounded-lg bg-white">
           <DropdownFaceContent gap={1}>
             <div className="max-w-8 text-nowrap">
               <input

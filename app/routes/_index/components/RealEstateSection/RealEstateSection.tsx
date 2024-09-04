@@ -21,7 +21,7 @@ const ESTATES = [
         because it got me in the game.”
       </>
     ),
-    author: '- Barbera Corcoran, Shark Tank Investor',
+    author: '- Lana Rose, Real Estate Investor',
   },
   {
     id: 2,
@@ -33,7 +33,7 @@ const ESTATES = [
         because it got me in the game.”
       </>
     ),
-    author: '- Barbera Corcoran, Shark Tank Investor 2',
+    author: '- Lana Rose, Real Estate Investor',
   },
   {
     id: 3,
@@ -45,7 +45,7 @@ const ESTATES = [
         because it got me in the game.”
       </>
     ),
-    author: '- Barbera Corcoran, Shark Tank Investor 3',
+    author: '- Lana Rose, Real Estate Investor',
   },
 ];
 

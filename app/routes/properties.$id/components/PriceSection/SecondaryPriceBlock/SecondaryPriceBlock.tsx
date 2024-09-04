@@ -93,6 +93,7 @@ export const SecondaryPriceBlock: FC = () => {
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
+        className={'bg-white'}
       >
         <PopupContent estate={estate} orderType={orderType} />
       </PopupWithIcon>
