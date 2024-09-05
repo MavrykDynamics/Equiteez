@@ -73,7 +73,7 @@ export const RealEstateSection = () => {
   const estate = useMemo(() => ESTATES[activeSlideIndex], [activeSlideIndex]);
 
   return (
-    <Container maxWidth={2304} className="temp">
+    <Container maxWidth={2304}>
       {IS_WEB ? (
         <ReactCSSTransitionReplace
           transitionName={'cross-fade'}

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 import ArrowDown from 'app/icons/chevron-down.svg?react';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { isVisibleInViewport } from '~/lib/utils/element-in-view';
+// import { isVisibleInViewport } from '~/lib/utils/element-in-view';
 
 export type FaqType = {
   data: { title: string; description: string | JSX.Element }[];
@@ -36,21 +36,23 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
     };
   }, []);
 
-  // scroll to chosen article
+  // scroll to chosen article in init
   useEffect(() => {
-    const element = document.querySelector(
-      `[data-active-article="faq-${activeArticleIdx}"]`
-    );
+    const hash = window.location.hash;
 
-    if (!element || !isScrollAllowed) return;
-    if (isVisibleInViewport(element, { heightDifference: 400 })) return;
+    if (!hash) return;
+
+    const n = hash.split('#faq-').pop();
+
+    const element = document.querySelector(`[data-active-article="faq-${n}"]`);
+
+    if (!element) return;
 
     element.scrollIntoView({
       block: 'start',
-      inline: 'nearest',
-      behavior: 'smooth',
+      behavior: 'instant',
     });
-  }, [activeArticleIdx, isScrollAllowed]);
+  }, []);
 
   return (
     <section className="px-11 flex gap-x-[90px]">
