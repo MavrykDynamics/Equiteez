@@ -5,10 +5,13 @@ import estate1Src from 'app/assets/home/real-estate-1.webp';
 import estate2Src from 'app/assets/home/real-estate-2.webp';
 import estate3Src from 'app/assets/home/real-estate-3.webp';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Container } from '~/lib/atoms/Container';
 import ArrowRight from 'app/icons/arrow-right.svg?react';
 import { Button } from '~/lib/atoms/Button';
+
+import ReactCSSTransitionReplace from 'react-css-transition-replace';
+import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 const ESTATES = [
   {
@@ -52,6 +55,7 @@ const ESTATES = [
 const ESTATES_INTERVAL = 10000;
 
 export const RealEstateSection = () => {
+  const { IS_WEB } = useAppContext();
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -66,46 +70,55 @@ export const RealEstateSection = () => {
     };
   }, []);
 
+  const estate = useMemo(() => ESTATES[activeSlideIndex], [activeSlideIndex]);
+
   return (
-    <Container maxWidth={2304}>
-      <section className={clsx(styles.estateContainer)}>
-        {ESTATES.map((estate, idx) => (
-          <div
-            key={estate.id}
-            className={clsx(
-              idx !== activeSlideIndex && 'hidden',
-              'w-full h-full relative'
-            )}
-          >
-            <img
-              src={estate.imgSrc}
-              alt="real estate"
-              className={styles.fade}
-            />
-            <div
-              className={clsx(
-                styles.estateTextBlock,
-                styles.fade,
-                'flex flex-col items-start gap-y-6'
-              )}
-            >
-              <h1 className="text-hero text-white">{estate.title}</h1>
-              <div className="w-full flex items-end justify-between">
-                <p className="text-buttons text-white">{estate.author}</p>
-                <Link to={'/properties'}>
-                  <Button
-                    className="text-white bg-transparent border-2 border-white py-[8px]"
-                    variant="outline"
-                  >
-                    View properties
-                    <ArrowRight className="w-6 h-6 stroke-current ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </section>
+    <Container maxWidth={2304} className="temp">
+      {IS_WEB ? (
+        <ReactCSSTransitionReplace
+          transitionName={'cross-fade'}
+          transitionEnterTimeout={1000}
+          transitionLeaveTimeout={1000}
+        >
+          <CurrentEstate estate={estate} key={estate.id} />
+        </ReactCSSTransitionReplace>
+      ) : null}
     </Container>
   );
 };
+
+const CurrentEstate = forwardRef<
+  HTMLDivElement,
+  { estate: (typeof ESTATES)[0] }
+>(({ estate }, ref) => {
+  return (
+    <section ref={ref} className={clsx(styles.estateContainer)}>
+      <div key={estate.id} className={clsx('w-full h-full relative')}>
+        <img src={estate.imgSrc} alt="real estate" className={styles.fade} />
+        <div
+          className={clsx(
+            styles.estateTextBlock,
+            styles.fade,
+            'flex flex-col items-start gap-y-6'
+          )}
+        >
+          <h1 className="text-hero text-white">{estate.title}</h1>
+          <div className="w-full flex items-end justify-between">
+            <p className="text-buttons text-white">{estate.author}</p>
+            <Link to={'/properties'}>
+              <Button
+                className="text-white bg-transparent border-2 border-white py-[8px]"
+                variant="outline"
+              >
+                View properties
+                <ArrowRight className="w-6 h-6 stroke-current ml-1" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+});
+
+CurrentEstate.displayName = 'CurrentEstate';

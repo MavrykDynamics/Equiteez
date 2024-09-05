@@ -1,6 +1,8 @@
-import type { MetaFunction } from '@remix-run/node';
+import type { LinksFunction, MetaFunction } from '@remix-run/node';
 
 import PageLayout from 'app/layouts/PageLayout/Pagelayout';
+
+import styles from './components/RealEstateSection/index.css?url';
 
 // components
 import { BannerSection } from './components/BannerSection/BannerSection';
@@ -21,6 +23,8 @@ export const meta: MetaFunction = () => {
     { name: 'description', content: 'Equiteez Home' },
   ];
 };
+
+export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }];
 
 export default function Index() {
   return (
