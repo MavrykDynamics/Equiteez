@@ -40,14 +40,22 @@ import BigNumber from 'bignumber.js';
 import { isDefined } from '~/lib/utils';
 import { ProgresBar } from '../PrimaryPriceBlock';
 import clsx from 'clsx';
+import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
+import { rateToNumber } from '~/lib/utils/numbers';
+import { toTokenSlug } from '~/lib/assets';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
   orderType: OrderType;
 }> = ({ estate, orderType }) => {
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+  const slug = useMemo(
+    () => toTokenSlug(estate.token_address),
+    [estate.token_address]
+  );
 
-  const { tokensPrices, tokensMetadata } = useTokensContext();
+  const { tokensMetadata } = useTokensContext();
+  const { usdToTokenRates } = useCurrencyContext();
   const [activetabId, setAvtiveTabId] = useState(orderType);
   const prevTabId = usePrevious(activetabId) as OrderType;
 
@@ -81,21 +89,21 @@ export const PopupContent: FC<{
   const [total, setTotal] = useState<BigNumber | undefined>();
 
   useEffect(() => {
-    if (isDefined(amountB) && tokensPrices[estate.token_address]) {
-      setTotal(amountB.times(tokensPrices[estate.token_address]));
+    if (isDefined(amountB) && rateToNumber(usdToTokenRates[slug])) {
+      setTotal(amountB.times(rateToNumber(usdToTokenRates[slug])));
     } else if (!isDefined(amountB)) {
       setTotal(undefined);
     }
-  }, [amountB, estate.token_address, tokensPrices]);
+  }, [amountB, estate.token_address, slug, usdToTokenRates]);
 
   const buyProps = useMemo(
     () => ({
       marketContractAddress: pickOrderbookContract[estate.token_address],
       tokensAmount: amountB?.toNumber(),
-      pricePerToken: Number(tokensPrices[estate.token_address]),
+      pricePerToken: rateToNumber(usdToTokenRates[slug]),
       decimals: tokensMetadata[estate.token_address]?.decimals,
     }),
-    [amountB, estate.token_address, tokensMetadata, tokensPrices]
+    [amountB, estate.token_address, slug, tokensMetadata, usdToTokenRates]
   );
 
   const sellProps = useMemo(
@@ -103,10 +111,10 @@ export const PopupContent: FC<{
       marketContractAddress: pickOrderbookContract[estate.token_address],
       rwaTokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
-      pricePerToken: Number(tokensPrices[estate.token_address]),
+      pricePerToken: rateToNumber(usdToTokenRates[slug]),
       decimals: tokensMetadata[estate.token_address]?.decimals,
     }),
-    [amountB, estate.token_address, tokensMetadata, tokensPrices]
+    [amountB, estate.token_address, slug, tokensMetadata, usdToTokenRates]
   );
 
   const { invokeAction: handleOrderbookSell } = useContractAction(
@@ -221,7 +229,6 @@ export const PopupContent: FC<{
               estate={estate}
               toggleScreen={() => setAvtiveTabId(CONFIRM)}
               actionType={activetabId}
-              currency={activetabId === BUY ? 'USDT' : estate.symbol}
               amount={amountB}
               setAmount={setAmountB}
               total={total}

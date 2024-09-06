@@ -1,4 +1,4 @@
-import { TokenMetadata } from '../tokens.provider.types';
+import { TokenMetadata } from '~/lib/metadata';
 
 export const getTokenDataByAddress = ({
   tokenAddress,

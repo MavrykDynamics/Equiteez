@@ -22,10 +22,12 @@ import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 import { rwaToFixed } from '~/lib/utils/formaters';
 import { formatToNumber } from '~/lib/molecules/Input/utils';
-import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
 import Money from '~/lib/atoms/Money';
 import usePrevious from '~/hooks/use-previous';
 import clsx from 'clsx';
+import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
+import { toTokenSlug } from '~/lib/assets';
+import BigNumber from 'bignumber.js';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -103,8 +105,9 @@ const useBuySellActions = (
 };
 
 export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
-  const { tokensPrices } = useTokensContext();
+  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { isAdmin, userTokensBalances } = useUserContext();
+  const { usdToTokenRates } = useCurrencyContext();
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
@@ -113,8 +116,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   // inputs state
   const [price, setPrice] = useState<number | string>('');
-  const { amount, previewAmount, handleAmountChange } =
-    useTokensAmount(tokenAddress);
+
+  // TODO fix amount logic
+  const [amount, setAmount] = useState<number | string | undefined>();
   const [total, setTotal] = useState<string | number>('');
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const prevSelectedPercentage = usePrevious(selectedPercentage);
@@ -126,8 +130,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   const maxBuy = useMemo(() => {
     const amountToSpend = (100 * buyBalance) / 100;
-    return rwaToFixed(amountToSpend / tokensPrices[tokenAddress]);
-  }, [buyBalance, tokenAddress, tokensPrices]);
+    return rwaToFixed(
+      amountToSpend / new BigNumber(usdToTokenRates[slug] ?? 1).toNumber()
+    );
+  }, [buyBalance, slug, usdToTokenRates]);
 
   const hasTotalError =
     typeof total === 'number' ? Number(total) > buyBalance : false;
@@ -136,23 +142,23 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     if (selectedPercentage) {
       const amountToSpend = (selectedPercentage * buyBalance) / 100;
       const numberOfTokens = rwaToFixed(
-        amountToSpend / tokensPrices[tokenAddress]
+        amountToSpend / new BigNumber(usdToTokenRates[slug] ?? 1).toNumber()
       );
-      handleAmountChange(numberOfTokens);
+      setAmount(numberOfTokens);
     } else if (
       selectedPercentage === 0 &&
       prevSelectedPercentage &&
       prevSelectedPercentage !== 0
     ) {
-      handleAmountChange(0);
+      setAmount(0);
     }
   }, [
     selectedPercentage,
-    handleAmountChange,
     buyBalance,
-    tokensPrices,
     tokenAddress,
     prevSelectedPercentage,
+    usdToTokenRates,
+    slug,
   ]);
 
   // derived state (it's boolean value, so no need to memoize it)
@@ -160,12 +166,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   // update total
   useEffect(() => {
-    if (previewAmount && tokensPrices[tokenAddress]) {
-      setTotal(rwaToFixed(Number(previewAmount) * Number(price)));
-    } else if (!previewAmount) {
+    if (amount && usdToTokenRates[slug]) {
+      setTotal(rwaToFixed(Number(amount) * Number(price)));
+    } else if (!amount) {
       setTotal('');
     }
-  }, [isLimitType, previewAmount, price, tokenAddress, tokensPrices]);
+  }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
 
   // contract calls based on markt or limit
   const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
@@ -201,9 +207,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   // set fixed price for the market type
   useEffect(() => {
     if (!isLimitType) {
-      setPrice(tokensPrices[tokenAddress]);
+      setPrice(new BigNumber(usdToTokenRates[slug] ?? 0).toNumber());
     }
-  }, [isLimitType, tokenAddress, tokensPrices]);
+  }, [isLimitType, slug, tokenAddress, usdToTokenRates]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(
@@ -321,7 +327,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       type="number"
                       min={1}
                       value={amount}
-                      onChange={(e) => handleAmountChange(e.target.value)}
+                      onChange={(e) => setAmount(e.target.value)}
                       placeholder="Minimum 1"
                       className="w-full bg-transparent focus:outline-none text-right font-semibold"
                     ></input>

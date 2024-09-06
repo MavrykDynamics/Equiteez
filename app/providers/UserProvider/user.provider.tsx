@@ -104,8 +104,8 @@ export const UserProvider = ({ children }: Props) => {
       (async function () {
         try {
           // if no account, event to listen for active acc is not triggered, so we manually set acc to null
-          // const acc = await dapp?.getDAppClient().getActiveAccount();
-          // if (!acc) setAccount(null);
+          const acc = await dapp?.getDAppClient().getActiveAccount();
+          if (!acc) setAccount(null);
 
           dapp?.listenToActiveAccount(setAccount);
         } catch (err) {

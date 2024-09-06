@@ -54,10 +54,6 @@ export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
       tokens,
       tokensMetadata,
       isLoading,
-      tokensPrices: {
-        // [OCEAN_TOKEN_ADDRESS]: 54,
-        // [MARS1_TOKEN_ADDRESS]: 45,
-      },
     }),
     [isLoading, tokens, tokensMetadata]
   );

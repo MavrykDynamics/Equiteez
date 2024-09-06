@@ -17,6 +17,7 @@ import { TokenMetadata } from '~/lib/metadata';
 import { getTokenDataByAddress } from '~/providers/TokensProvider/utils/getTokenDataByAddress';
 import BigNumber from 'bignumber.js';
 import { atomsToTokens } from '~/lib/utils/formaters';
+import { toTokenSlug } from '~/lib/assets';
 
 // consts
 const REACT_APP_TZKT_API = process.env.API_URL;
@@ -34,7 +35,9 @@ export const normalizeUserTzktTokensBalances = ({
   tokensMetadata: StringRecord<TokenMetadata>;
   userAddress: string | null;
 }) => {
-  return indexerData.reduce<NonNullable<UserContext['userTokensBalances']>>(
+  const result = indexerData.reduce<
+    NonNullable<UserContext['userTokensBalances']>
+  >(
     (
       acc,
       {
@@ -45,7 +48,10 @@ export const normalizeUserTzktTokensBalances = ({
         account: { address },
       }
     ) => {
-      const token = getTokenDataByAddress({ tokenAddress, tokensMetadata });
+      const token = getTokenDataByAddress({
+        tokenAddress: toTokenSlug(tokenAddress),
+        tokensMetadata,
+      });
 
       if (!token || userAddress !== address) return acc;
       const { decimals } = token;
@@ -55,6 +61,8 @@ export const normalizeUserTzktTokensBalances = ({
     },
     {}
   );
+
+  return result;
 };
 
 /**
