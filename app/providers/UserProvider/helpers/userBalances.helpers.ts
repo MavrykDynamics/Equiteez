@@ -108,7 +108,6 @@ export const fetchTzktUserBalances = async ({
         userAddress,
         tokensMetadata,
       });
-      return {};
     }
 
     throw new Error(
