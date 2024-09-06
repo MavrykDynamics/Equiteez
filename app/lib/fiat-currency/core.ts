@@ -7,7 +7,7 @@ import { FIAT_CURRENCIES } from './consts';
 import type { FiatCurrencyOption, CoingeckoFiatInterface } from './types';
 import { isDefined, isTruthy } from '../utils';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
-import { useStorage } from '~/util/local-storage';
+import { useStorage } from '../utils/local-storage';
 
 const FIAT_CURRENCY_STORAGE_KEY = 'fiat_currency';
 

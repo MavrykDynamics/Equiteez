@@ -13,7 +13,12 @@ declare namespace NodeJS {
     readonly NODE_ENV: 'development' | 'production' | 'test';
     readonly PUBLIC_URL: string;
     readonly GOOGLE_MAPS_API_KEY: string;
-    readonly REACT_APP_TZKT_API: string;
+    readonly API_URL: string;
+    readonly RPC_NODE_URL: string;
+    readonly BCD_API: string;
+    readonly BCD_NETWORK_TYPE: 'sandboxnet' | 'mainnet';
+    readonly MAVRYK_WALLET_API_URL: string;
+
     readonly REACT_APP_ENV: 'dev' | 'prod' | 'test';
     readonly TOKENS_METADATA_API: string;
   }

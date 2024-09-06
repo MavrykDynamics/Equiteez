@@ -9,6 +9,7 @@ import { LinksFunction } from '@remix-run/node';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // global styles
 import stylesheet from '~/index.css?url';
@@ -32,6 +33,14 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: extendCSS },
 ];
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+    },
+  },
+});
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -45,21 +54,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <div id="root">
           <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
-            <AppProvider>
-              <WalletProvider>
-                <CurrencyProvider>
-                  <TokensProvider>
-                    <UserProvider>
-                      <EstatesProvider>
-                        <AppGlobalLoader>
-                          <PopupProvider>{children}</PopupProvider>
-                        </AppGlobalLoader>
-                      </EstatesProvider>
-                    </UserProvider>
-                  </TokensProvider>
-                </CurrencyProvider>
-              </WalletProvider>
-            </AppProvider>
+            <QueryClientProvider client={queryClient}>
+              <AppProvider>
+                <WalletProvider>
+                  <CurrencyProvider>
+                    <TokensProvider>
+                      <UserProvider>
+                        <EstatesProvider>
+                          <AppGlobalLoader>
+                            <PopupProvider>{children}</PopupProvider>
+                          </AppGlobalLoader>
+                        </EstatesProvider>
+                      </UserProvider>
+                    </TokensProvider>
+                  </CurrencyProvider>
+                </WalletProvider>
+              </AppProvider>
+            </QueryClientProvider>
           </ErrorBoundary>
           <ScrollRestoration />
           <Scripts />

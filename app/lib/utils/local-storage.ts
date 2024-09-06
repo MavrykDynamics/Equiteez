@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
+import { useState } from 'react';
 import { ZodType, z } from 'zod';
-
-// check if fetched item from local storage is simple string
-function isSimpleString(item: string) {
-  // eslint-disable-next-line no-useless-escape
-  const simpleStringPattern = /^[^{\[\]{}]*$/;
-  return simpleStringPattern.test(item);
-}
 
 /**
  *
@@ -23,19 +17,18 @@ export const getItemFromStorage = <T extends unknown>(
     const itemFromStorage = localStorage.getItem(item);
 
     /**
-     * if item is string representing null OR undefined OR just null -> return null
+     * if item is string representing null OR undefined -> return null
      */
     if (
-      (typeof itemFromStorage === 'string' &&
-        (itemFromStorage === 'undefined' || itemFromStorage === 'null')) ||
-      itemFromStorage === null
+      typeof itemFromStorage === 'string' &&
+      (itemFromStorage === 'undefined' || itemFromStorage === 'null')
     )
       return null;
 
     /**
      * if item is simple string -> return the value as it is
      */
-    if (isSimpleString(itemFromStorage)) return itemFromStorage as T;
+    if (typeof itemFromStorage === 'string') return itemFromStorage as T;
 
     return itemFromStorage ? schema.parse(JSON.parse(itemFromStorage)) : null;
   } catch (e) {
@@ -56,4 +49,34 @@ export const setItemInStorage = (item: string, value: unknown): boolean => {
 
 export const removeItemFromStorage = (item: string) => {
   localStorage.removeItem(item);
+};
+
+export const useStorage = <T>(
+  key: string,
+  initialValue: T
+): [T, (value: T | ((val: T) => T)) => void] => {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = localStorage.getItem(key);
+
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+
+      return initialValue;
+    }
+  });
+
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue];
 };

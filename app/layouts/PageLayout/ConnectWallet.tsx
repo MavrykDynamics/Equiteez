@@ -14,6 +14,7 @@ import { CustomSuspense } from '~/templates/CustomSuspense';
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
     useUserContext();
+
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (

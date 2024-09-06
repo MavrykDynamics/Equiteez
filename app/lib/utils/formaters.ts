@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { RWA_TOKEN_DECIMALS } from '~/consts/tokens';
+import { TokenMetadata } from '../metadata';
 
 export const RWAToken = (value: number = 1) => {
   return value * 10 ** 3;
@@ -41,3 +42,13 @@ export function bnToFixed(x: BigNumber, decimals = RWA_TOKEN_DECIMALS) {
 export function numberToFixed(x: number, decimals = RWA_TOKEN_DECIMALS) {
   return x.toFixed(decimals);
 }
+
+export const convertRawValueToSelectedCurrency = (
+  rawValue: string,
+  metadata: TokenMetadata,
+  price: string
+) => {
+  return new BigNumber(rawValue)
+    .div(new BigNumber(10).pow(metadata.decimals))
+    .times(Number(price));
+};
