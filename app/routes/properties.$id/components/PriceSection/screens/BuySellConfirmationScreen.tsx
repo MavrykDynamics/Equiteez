@@ -145,40 +145,6 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
         </div>
 
         <div>
-          {/* <div className="flex flex-col gap-2">
-            <p className="flex justify-between text-body-xs text-content">
-              <span>Token Price</span>
-              <span>
-                {tokenPrice} {currency}
-              </span>
-            </p>
-            <p className="flex justify-between text-body-xs text-content">
-              <span>Amount</span>
-              <div>
-                <Money shortened smallFractionFont={false}>
-                  {amount}
-                </Money>
-                &nbsp;
-                {symbol}
-              </div>
-            </p>
-            <p className="flex justify-between text-body-xs text-content">
-              <span>Est. Fee</span>
-              <span>
-                {estFee} {symbol}
-              </span>
-            </p>
-            <div className="flex justify-between text-body-xs text-content font-semibold">
-              <span>Total Amount</span>
-              <div>
-                <Money shortened smallFractionFont={false}>
-                  {total}
-                </Money>
-                &nbsp;
-                {currency}
-              </div>
-            </div>
-          </div> */}
           <Divider className="my-4" />
           <p className="text-caption-regular text-content-secondary mb-6">
             By clicking ”{actionLabels[actionType]}”, I adopt the above

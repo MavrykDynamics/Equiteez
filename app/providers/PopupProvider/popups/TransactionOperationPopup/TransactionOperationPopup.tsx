@@ -20,7 +20,7 @@ export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       contentPosition={'center'}
-      className={'w-[617px] h-[320px] px-11 py-16'}
+      className={'w-[617px] h-[320px] px-11 py-16 z-100 relative'}
     >
       <div className="flex flex-col">
         <div className="mx-auto inline-block">{icon}</div>

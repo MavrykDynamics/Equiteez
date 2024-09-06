@@ -101,7 +101,7 @@ export const PopupContent: FC<{
       marketContractAddress: pickOrderbookContract[estate.token_address],
       tokensAmount: amountB?.toNumber(),
       pricePerToken: rateToNumber(usdToTokenRates[slug]),
-      decimals: tokensMetadata[estate.token_address]?.decimals,
+      decimals: tokensMetadata[slug]?.decimals,
     }),
     [amountB, estate.token_address, slug, tokensMetadata, usdToTokenRates]
   );
@@ -112,7 +112,7 @@ export const PopupContent: FC<{
       rwaTokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
       pricePerToken: rateToNumber(usdToTokenRates[slug]),
-      decimals: tokensMetadata[estate.token_address]?.decimals,
+      decimals: tokensMetadata[slug]?.decimals,
     }),
     [amountB, estate.token_address, slug, tokensMetadata, usdToTokenRates]
   );
