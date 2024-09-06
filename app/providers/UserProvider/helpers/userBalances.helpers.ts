@@ -4,23 +4,22 @@ import * as signalR from '@microsoft/signalr';
 import {
   UserContext,
   UserTzktTokensBalancesType,
-} from './../user.provider.types';
+} from '../user.provider.types';
 
 // helpers
 import { api } from 'app/lib/utils/api';
-// import { ApiError, unknownToError } from 'errors/error';
 import {
   emptyUserTzktAccountSchema,
   userTzktAccountSchema,
   userTzktTokenBalancesSchema,
 } from './user.schemes';
-import { TokenMetadata } from '~/providers/TokensProvider/tokens.provider.types';
-import { atomsToTokens } from '~/lib/utils/formaters';
+import { TokenMetadata } from '~/lib/metadata';
 import { getTokenDataByAddress } from '~/providers/TokensProvider/utils/getTokenDataByAddress';
 import BigNumber from 'bignumber.js';
+import { atomsToTokens } from '~/lib/utils/formaters';
 
 // consts
-const REACT_APP_TZKT_API = process.env.REACT_APP_TZKT_API;
+const REACT_APP_TZKT_API = process.env.API_URL;
 const REACT_APP_ENV = process.env.REACT_APP_ENV;
 
 /**
@@ -89,8 +88,8 @@ export const fetchTzktUserBalances = async ({
 }) => {
   try {
     const [{ data: tokensData }, { data: accountData }] = await Promise.all([
-      api(`${REACT_APP_TZKT_API}/v1/tokens/balances?account.eq=${userAddress}`),
-      api(`${REACT_APP_TZKT_API}/v1/accounts/${userAddress}`),
+      api(`${REACT_APP_TZKT_API}/tokens/balances?account.eq=${userAddress}`),
+      api(`${REACT_APP_TZKT_API}/accounts/${userAddress}`),
     ]);
 
     const isUserEmptyOnTzkt = emptyUserTzktAccountSchema.safeParse(accountData);
@@ -109,6 +108,7 @@ export const fetchTzktUserBalances = async ({
         userAddress,
         tokensMetadata,
       });
+      return {};
     }
 
     throw new Error(
@@ -129,7 +129,7 @@ export const fetchTzktUserBalances = async ({
 export const openTzktWebSocket = async (): Promise<signalR.HubConnection> => {
   try {
     const tzktSocket = new signalR.HubConnectionBuilder()
-      .withUrl(`${REACT_APP_TZKT_API}/v1/ws`, {
+      .withUrl(`${REACT_APP_TZKT_API}/ws`, {
         transport: signalR.HttpTransportType.WebSockets,
       })
       .build();

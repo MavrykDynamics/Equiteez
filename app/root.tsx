@@ -22,6 +22,8 @@ import { UserProvider } from './providers/UserProvider/user.provider';
 import { EstatesProvider } from './providers/EstatesProvider/estates.provider';
 import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
+import { AppGlobalLoader } from './providers/AppGlobalLoader';
+import { CurrencyProvider } from './providers/CurrencyProvider/currency.provider';
 
 export const links: LinksFunction = () => [
   { rel: 'preload', as: 'style', href: stylesheet },
@@ -45,13 +47,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
             <AppProvider>
               <WalletProvider>
-                <TokensProvider>
-                  <UserProvider>
-                    <EstatesProvider>
-                      <PopupProvider>{children}</PopupProvider>
-                    </EstatesProvider>
-                  </UserProvider>
-                </TokensProvider>
+                <CurrencyProvider>
+                  <TokensProvider>
+                    <UserProvider>
+                      <EstatesProvider>
+                        <AppGlobalLoader>
+                          <PopupProvider>{children}</PopupProvider>
+                        </AppGlobalLoader>
+                      </EstatesProvider>
+                    </UserProvider>
+                  </TokensProvider>
+                </CurrencyProvider>
               </WalletProvider>
             </AppProvider>
           </ErrorBoundary>

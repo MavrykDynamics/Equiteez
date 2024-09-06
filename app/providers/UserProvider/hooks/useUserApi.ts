@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 // consts
-import { ADMIN_ADDRESSES, DEFAULT_USER } from '../helpers/user.consts';
+import { DEFAULT_USER } from '../helpers/user.consts';
 
 // types
 import {
@@ -17,8 +17,8 @@ import {
 } from '../helpers/userBalances.helpers';
 
 import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
+import { TokenMetadata } from '~/lib/metadata';
 import { sleep } from '~/lib/utils/sleep';
-import { TokenMetadata } from '~/providers/TokensProvider/tokens.provider.types';
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;
@@ -76,7 +76,6 @@ export const useUserApi = ({
       setUserCtxState((prev) => ({
         ...prev,
         userAddress,
-        isAdmin: ADMIN_ADDRESSES[userAddress],
       }));
 
       const fetchedTokens = await fetchTzktUserBalances({

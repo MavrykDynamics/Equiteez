@@ -1,10 +1,7 @@
-import { api } from '~/lib/utils/api';
-import {
-  TokenMetadata,
-  // tokenMetadataSchema,
-  TokenType,
-} from '../tokens.provider.types';
+import { api } from 'app/lib/utils/api';
+import { TokenType } from '../tokens.provider.types';
 import { TOKENS_SCAM_RECORD } from './consts';
+import { TokenMetadata } from '~/lib/metadata';
 
 type RwaTokenType = {
   contract: { address: string };
@@ -13,18 +10,12 @@ type RwaTokenType = {
 
 export const fetchTokensData = async () => {
   try {
-    const { data } = await api<RwaTokenType[]>(
-      `${process.env.REACT_APP_TZKT_API}/v1/tokens`
-    );
+    const { data } = await api<RwaTokenType[]>(`${process.env.API_URL}/tokens`);
 
-    const tokens = data.reduce<TokenType[]>((acc, t) => {
-      acc.push({
-        contract: t.contract.address,
-        id: t.tokenId,
-      });
-
-      return acc;
-    }, []);
+    const tokens: TokenType[] = data.map((t) => ({
+      contract: t.contract.address,
+      id: t.tokenId,
+    }));
 
     return tokens.filter((t) => !TOKENS_SCAM_RECORD[t.contract]);
   } catch (e) {
@@ -40,6 +31,7 @@ export const fetchTokensMetadata = async (
       api<TokenMetadata>(
         `${process.env.TOKENS_METADATA_API}/metadata/${t.contract}/${t.id}`,
         { method: 'GET' }
+        // tokenMetadataSchema
       )
     );
 
@@ -49,7 +41,7 @@ export const fetchTokensMetadata = async (
 
     const parsedData = data.reduce<StringRecord<TokenMetadata>>(
       (acc, meta, idx) => {
-        acc[tokens[idx].contract] = meta;
+        acc[tokens[idx].contract.concat(`_${tokens[idx].id}`)] = meta;
         return acc;
       },
       {}
@@ -57,6 +49,7 @@ export const fetchTokensMetadata = async (
 
     return parsedData;
   } catch (e) {
+    console.log(e);
     throw new Error('Error while fetching tokens metadata');
   }
 };
