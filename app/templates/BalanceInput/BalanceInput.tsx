@@ -44,13 +44,14 @@ export const BalanceInput: FC<BalanceInputProps> = ({
         {label && (
           <div className="text-left text-body-xs text-sand-600">{label}</div>
         )}
-        <div>
+        <div className="overflow-y-hidden">
           <AssetField
             value={amount?.toFixed(8).toString()}
             className={clsx(
-              'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none'
+              'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden'
             )}
-            style={{ padding: 0, borderRadius: 0 }}
+            containerClassName="overflow-y-hidden"
+            style={{ padding: 0, borderRadius: 0, height: 42 }}
             placeholder={toLocalFormat(0, { decimalPlaces: 2 })}
             min={0}
             max={9999999999999}

@@ -179,7 +179,7 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
 
         <div
           className={classNames(
-            'relative flex items-stretch',
+            'relative flex items-stretch overflow-hidden',
             fieldWrapperBottomMargin && 'mb-2'
           )}
         >
