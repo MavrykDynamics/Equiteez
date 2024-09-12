@@ -56,6 +56,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { symbol, token_address } = estate;
   const slug = useMemo(() => toTokenSlug(token_address), [token_address]);
   const { usdToTokenRates } = useCurrencyContext();
+  const { tokensMetadata } = useTokensContext();
 
   const { userTokensBalances } = useUserContext();
 
@@ -153,6 +154,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
+  const symbolToShow = isBuyAction
+    ? symbol
+    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -222,7 +227,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         <Money smallFractionFont={false} shortened>
                           {minReceived}
                         </Money>
-                        &nbsp;{symbol}
+                        &nbsp;{symbolToShow}
                       </p>
                     </div>
                     <div className="mt-2 text-body-xs flex justify-between">
@@ -242,9 +247,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                       </div>
                       <p>
                         <Money smallFractionFont={false} shortened>
-                          {calculateEstfee(total?.toNumber() ?? 0)}
+                          {isBuyAction
+                            ? calculateEstfee(total?.toNumber() ?? 0)
+                            : input2Props.amount?.toNumber() ?? 0}
                         </Money>
-                        &nbsp;{symbol}
+                        &nbsp;{symbolToShow}
                       </p>
                     </div>
                   </div>
