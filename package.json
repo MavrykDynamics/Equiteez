@@ -35,7 +35,6 @@
     "@types/react-css-transition-replace": "^2.1.7",
     "@types/react-modal": "^3.16.3",
     "@types/react-transition-group": "^4.4.11",
-    "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "apexcharts": "^3.49.1",
     "autoprefixer": "^10.4.19",
     "axios": "^1.7.7",

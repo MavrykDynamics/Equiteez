@@ -62,16 +62,14 @@ export const UserProvider = ({ children }: Props) => {
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
   useEffect(() => {
-    if (IS_WEB) {
-      openTzktWebSocket()
-        .then((socket) => (tzktSocket.current = socket))
-        .catch((e) => console.error(e));
-    }
+    openTzktWebSocket()
+      .then((socket) => (tzktSocket.current = socket))
+      .catch((e) => console.error(e));
 
     return () => {
       tzktSocket?.current?.stop();
     };
-  }, [IS_WEB]);
+  }, []);
 
   // getter & setter for tzktSocket
   const getTzktSocket = useCallback(() => tzktSocket.current, []);
