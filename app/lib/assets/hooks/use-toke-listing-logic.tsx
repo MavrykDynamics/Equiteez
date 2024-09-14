@@ -10,9 +10,9 @@ import { useGetTokenOrGasMetadata } from 'app/lib/metadata';
 import { useMemoWithCompare } from 'app/lib/ui/hooks';
 import { isSearchStringApplicable } from 'app/lib/utils/search-items';
 import { isDefined } from '~/lib/utils';
-import { convertRawValueToSelectedCurrency } from '~/util/formaters';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { useUsdToTokenRates } from '~/lib/fiat-currency';
+import { convertRawValueToSelectedCurrency } from '~/lib/utils/formaters';
 
 export const useTokensListingLogic = (
   assetsSlugs: string[],

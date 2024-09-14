@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import * as signalR from '@microsoft/signalr';
+import type { HubConnection } from '@microsoft/signalr';
 
 // consts
 import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from './helpers/user.consts';
@@ -42,7 +42,7 @@ export const UserProvider = ({ children }: Props) => {
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
 
-  const tzktSocket = useRef<null | signalR.HubConnection>(null);
+  const tzktSocket = useRef<null | HubConnection>(null);
 
   /**
    * when undefined -> isLoading is true
