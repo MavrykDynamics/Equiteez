@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 
@@ -28,6 +28,7 @@ import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { toTokenSlug } from '~/lib/assets';
 import BigNumber from 'bignumber.js';
+import { calculateEstfee } from '~/lib/utils/calcFns';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -104,10 +105,13 @@ const useBuySellActions = (
   };
 };
 
+// TODO refector this component to use logic line on secondary markey BUY | SELL
+// extract reusable components
 export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { isAdmin, userTokensBalances } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
+  const { tokensMetadata } = useTokensContext();
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
@@ -123,24 +127,47 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const prevSelectedPercentage = usePrevious(selectedPercentage);
 
-  const buyBalance = useMemo(
+  //
+  const inputAmountRef = useRef<HTMLInputElement>(null);
+  const inputPriceRef = useRef<HTMLInputElement>(null);
+
+  const handleAmountFocus = () => {
+    inputAmountRef.current?.focus();
+  };
+  const handlePriceFocus = () => {
+    inputPriceRef.current?.focus();
+  };
+
+  const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
   );
 
+  const tokenBalance = useMemo(
+    () => userTokensBalances[tokenAddress]?.toNumber() || 0,
+    [userTokensBalances, tokenAddress]
+  );
+
   const maxBuy = useMemo(() => {
-    const amountToSpend = (100 * buyBalance) / 100;
+    const amountToSpend = (100 * usdBalance) / 100;
     return rwaToFixed(
       amountToSpend / new BigNumber(usdToTokenRates[slug] ?? 1).toNumber()
     );
-  }, [buyBalance, slug, usdToTokenRates]);
+  }, [usdBalance, slug, usdToTokenRates]);
 
-  const hasTotalError =
-    typeof total === 'number' ? Number(total) > buyBalance : false;
+  // TODO switch to bignumber js
+  // extract logic into separate hook
+  const hasTotalError = isBuyAction
+    ? Number(amount)
+      ? Number(amount) > usdBalance
+      : false
+    : Number(amount)
+    ? Number(amount) > tokenBalance
+    : false;
 
   useEffect(() => {
     if (selectedPercentage) {
-      const amountToSpend = (selectedPercentage * buyBalance) / 100;
+      const amountToSpend = (selectedPercentage * usdBalance) / 100;
       const numberOfTokens = rwaToFixed(
         amountToSpend / new BigNumber(usdToTokenRates[slug] ?? 1).toNumber()
       );
@@ -154,7 +181,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     }
   }, [
     selectedPercentage,
-    buyBalance,
+    usdBalance,
     tokenAddress,
     prevSelectedPercentage,
     usdToTokenRates,
@@ -254,6 +281,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     [handleItemlick]
   );
 
+  const symbolToShow = !isBuyAction
+    ? symbol
+    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
+
   return (
     <section className="flex flex-col w-full">
       <TabSwitcher
@@ -284,12 +315,14 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                   {userTokensBalances[tokenAddress] || '0'}
                 </Money>
               )}
-              &nbsp;{'USDT'}
+              &nbsp;{symbolToShow}
             </div>
           </div>
           <div className="flex flex-col w-full gap-3">
             <div className="flex flex-col w-full gap-3">
               <div
+                role="presentation"
+                onClick={handlePriceFocus}
                 className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
               >
                 <span className="text-content-secondary opacity-50">Price</span>
@@ -297,6 +330,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <span className="flex gap-1">
                   <span className="">
                     <input
+                      ref={inputPriceRef}
                       name="price"
                       type="number"
                       min={1}
@@ -314,6 +348,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               </div>
 
               <div
+                role="presentation"
+                onClick={handleAmountFocus}
                 className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
               >
                 <span className="text-content-secondary opacity-50">
@@ -323,6 +359,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <span className="flex gap-1">
                   <span className="">
                     <input
+                      ref={inputAmountRef}
                       name="amount"
                       type="number"
                       min={1}
@@ -383,7 +420,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
             <div className="flex justify-between w-full">
               <span className="text-caption-regular">Est. Fee</span>
-              <span className="text-caption-regular">-- USDT</span>
+              <span className="text-caption-regular">
+                <Money smallFractionFont={false} shortened>
+                  {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
+                </Money>
+                {symbolToShow}
+              </span>
             </div>
           </div>
 

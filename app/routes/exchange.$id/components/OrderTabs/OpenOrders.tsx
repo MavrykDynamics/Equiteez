@@ -55,7 +55,7 @@ export const OpenOrders = () => {
           <div>
             <div className="px-6">
               <table className="table-fixed w-full">
-                <thead>
+                <thead className="border-b border-divider">
                   <tr>
                     {columns.map((column) => (
                       <th

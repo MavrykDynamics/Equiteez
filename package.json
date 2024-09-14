@@ -46,7 +46,6 @@
     "isbot": "^4.1.0",
     "jdenticon": "^3.3.0",
     "lodash": "^4.17.21",
-    "miniflare": "^3.20240404.0",
     "patch-package": "^8.0.0",
     "postcss": "^8.4.38",
     "react": "^18.2.0",
