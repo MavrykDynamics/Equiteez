@@ -10,7 +10,7 @@ import { Container } from '~/lib/atoms/Container';
 import ArrowRight from 'app/icons/arrow-right.svg?react';
 import { Button } from '~/lib/atoms/Button';
 
-import ReactCSSTransitionReplace from 'react-css-transition-replace';
+// import ReactCSSTransitionReplace from 'react-css-transition-replace';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 const ESTATES = [
@@ -75,14 +75,14 @@ export const RealEstateSection = () => {
   return (
     <Container maxWidth={2304}>
       {IS_WEB ? (
-        <ReactCSSTransitionReplace
-          transitionName={'cross-fade'}
-          transitionEnterTimeout={1000}
-          transitionLeaveTimeout={1000}
-        >
-          <CurrentEstate estate={estate} key={estate.id} />
-        </ReactCSSTransitionReplace>
-      ) : null}
+        // <ReactCSSTransitionReplace
+        //   transitionName={'cross-fade'}
+        //   transitionEnterTimeout={1000}
+        //   transitionLeaveTimeout={1000}
+        // >
+        <CurrentEstate estate={estate} key={estate.id} />
+      ) : // </ReactCSSTransitionReplace>
+      null}
     </Container>
   );
 };
