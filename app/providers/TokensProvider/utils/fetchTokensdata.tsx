@@ -19,6 +19,7 @@ export const fetchTokensData = async () => {
 
     return tokens.filter((t) => !TOKENS_SCAM_RECORD[t.contract]);
   } catch (e) {
+    console.log(e);
     throw new Error('Error while fetching tokens');
   }
 };
