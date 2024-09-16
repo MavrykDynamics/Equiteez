@@ -3,6 +3,7 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "mian": "build/server/index.js",
   "scripts": {
     "build": "remix vite:build",
     "deploy": "npm run build && wrangler pages deploy",
@@ -12,7 +13,8 @@
     "typecheck": "tsc",
     "typegen": "wrangler types",
     "preview": "npm run build && wrangler pages dev",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@dicebear/avatars": "^4.2.5",

@@ -16,9 +16,13 @@ export default defineConfig({
     remix({ ssr: true }),
     tsconfigPaths(),
     svgr(),
-    nodePolyfills({ exclude: ['fs', 'util'] }),
+    nodePolyfills({ exclude: ['fs', 'util', 'crypto', 'stream'] }),
   ],
   define: {
     'process.env': process.env,
+  },
+  build: {
+    minify: true,
+    ssr: true,
   },
 });

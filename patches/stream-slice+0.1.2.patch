@@ -1,0 +1,12 @@
+diff --git a/node_modules/stream-slice/index.js b/node_modules/stream-slice/index.js
+index 44c4ae0..2179e2b 100644
+--- a/node_modules/stream-slice/index.js
++++ b/node_modules/stream-slice/index.js
+@@ -1,6 +1,6 @@
+ 
+ var util = require('util');
+-var Transform = require('stream').Transform;
++var Transform = require('node:stream').Transform;
+ 
+ util.inherits(SliceStream, Transform);
+ function SliceStream(start, end) {
