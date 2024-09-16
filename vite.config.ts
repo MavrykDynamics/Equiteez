@@ -23,6 +23,8 @@ export default defineConfig({
   },
   build: {
     minify: true,
+    cssCodeSplit: true,
+    cssMinify: true,
     ssr: true,
   },
 });
