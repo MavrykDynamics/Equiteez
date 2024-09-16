@@ -6,7 +6,7 @@ import Settings from '~/icons/settings.svg?react';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { useClientLibData } from '~/hooks/use-client-lib';
+import { useClientLibData } from '~/lib/ui/use-client-lib';
 
 import OriginalApexCharts from 'react-apexcharts';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';

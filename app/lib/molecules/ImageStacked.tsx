@@ -8,8 +8,8 @@ import React, {
   CSSProperties,
 } from 'react';
 
-import { useImagesStackLoading } from 'app/hooks/use-images-stack-loading';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
+import { useImagesStackLoading } from '../ui/use-images-stack-loading';
 
 export interface ImageStackedProps
   extends React.ImgHTMLAttributes<HTMLImageElement> {

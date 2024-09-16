@@ -13,7 +13,7 @@ import ArrowDown from 'app/icons/chevron-down.svg?react';
 import styles from './dropdown.module.css';
 import clsx from 'clsx';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { useOutsideClick } from '~/hooks/use-click-outside';
+import { useOutsideClick } from '~/lib/ui/use-click-outside';
 
 type FaceContentDimensions = {
   width: number;

@@ -6,7 +6,7 @@ import {
   STATUS_PENDING,
   STATUS_SUCCESS,
   useStatusFlag,
-} from '~/hooks/use-status-flag';
+} from '~/lib/ui/use-status-flag';
 import { sleep } from '~/lib/utils/sleep';
 import { usePopupContext } from '~/providers/PopupProvider/popup.provider';
 

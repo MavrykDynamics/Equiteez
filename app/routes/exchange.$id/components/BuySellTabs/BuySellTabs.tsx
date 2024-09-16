@@ -23,12 +23,12 @@ import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 import { rwaToFixed } from '~/lib/utils/formaters';
 import { formatToNumber } from '~/lib/molecules/Input/utils';
 import Money from '~/lib/atoms/Money';
-import usePrevious from '~/hooks/use-previous';
 import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { toTokenSlug } from '~/lib/assets';
 import BigNumber from 'bignumber.js';
 import { calculateEstfee } from '~/lib/utils/calcFns';
+import usePrevious from '~/lib/ui/hooks/usePrevious';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -420,12 +420,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
             <div className="flex justify-between w-full">
               <span className="text-caption-regular">Est. Fee</span>
-              <span className="text-caption-regular">
+              <div className="text-caption-regular">
                 <Money smallFractionFont={false} shortened>
                   {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
                 </Money>
                 {symbolToShow}
-              </span>
+              </div>
             </div>
           </div>
 

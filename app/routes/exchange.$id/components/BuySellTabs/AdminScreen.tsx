@@ -7,7 +7,7 @@ import {
   withdrawQuoteToken,
 } from '~/contracts/dodo.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
-import { getStatusLabel } from '~/hooks/use-status-flag';
+import { getStatusLabel } from '~/lib/ui/use-status-flag';
 import { Button } from '~/lib/atoms/Button';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 

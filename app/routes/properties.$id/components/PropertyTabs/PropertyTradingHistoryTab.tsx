@@ -13,7 +13,7 @@ import { useEffect, useMemo } from 'react';
 import { ApexOptions } from 'apexcharts';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
-import { useClientLibData } from '~/hooks/use-client-lib';
+import { useClientLibData } from '~/lib/ui/use-client-lib';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 import OriginalApexCharts from 'react-apexcharts';

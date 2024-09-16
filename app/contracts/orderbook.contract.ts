@@ -7,7 +7,7 @@ import {
   STATUS_ERROR,
   STATUS_IDLE,
   STATUS_SUCCESS,
-} from '~/hooks/use-status-flag';
+} from '~/lib/ui/use-status-flag';
 import { formatRWAPrice, tokensToAtoms } from '~/lib/utils/formaters';
 
 import { sleep } from '~/lib/utils/sleep';
