@@ -5,14 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
-    "deploy": "npm run build && wrangler pages deploy",
     "dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "wrangler pages dev ./build/client",
+    "start": "remix:vite dev ./build/client",
     "typecheck": "tsc",
-    "typegen": "wrangler types",
-    "preview": "npm run build && wrangler pages dev",
-    "cf-typegen": "wrangler types"
+    "preview": "npm run build && remix:vite dev"
   },
   "dependencies": {
     "@dicebear/avatars": "^4.2.5",
@@ -83,8 +80,7 @@
     "typescript": "^5.1.6",
     "vite": "^5.1.0",
     "vite-plugin-node-polyfills": "^0.21.0",
-    "vite-tsconfig-paths": "^4.2.1",
-    "wrangler": "^3.48.0"
+    "vite-tsconfig-paths": "^4.2.1"
   },
   "engines": {
     "node": ">=18.0.0"
