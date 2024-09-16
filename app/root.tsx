@@ -4,7 +4,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from '@remix-run/react';
 import { json, LinksFunction } from '@remix-run/node';
 
@@ -14,7 +13,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // global styles
 import stylesheet from '~/index.css?url';
-import extendCSS from '~/extend.css?url';
 import 'react-datepicker/dist/react-datepicker.css';
 
 // providers
@@ -32,12 +30,11 @@ import {
 } from './providers/TokensProvider/utils/fetchTokensdata';
 import { fetchFiatToTezosRates } from './lib/fiat-currency';
 import { fetchUsdToTokenRates } from './lib/mavryk/endpoints/get-exchange-rates';
+import { useDataFromLoader } from './hooks/useDataFromLoader';
 
 export const links: LinksFunction = () => [
   { rel: 'preload', as: 'style', href: stylesheet },
   { rel: 'stylesheet', href: stylesheet },
-  { rel: 'preload', as: 'style', href: extendCSS },
-  { rel: 'stylesheet', href: extendCSS },
 ];
 
 const queryClient = new QueryClient({
@@ -52,10 +49,9 @@ export const loader = async () => {
   const tokens = await fetchTokensData();
 
   const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
-    fetchTokensData(),
     fetchTokensMetadata(tokens),
     fetchFiatToTezosRates(),
-    fetchUsdToTokenRates,
+    fetchUsdToTokenRates(),
   ]);
 
   return json({ tokens, tokensMetadata, fiatToTezos, usdToToken });
@@ -63,7 +59,7 @@ export const loader = async () => {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
-    useLoaderData<typeof loader>();
+    useDataFromLoader<typeof loader>();
 
   return (
     <html lang="en">
