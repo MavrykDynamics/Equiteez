@@ -238,9 +238,9 @@ export const PopupContent: FC<{
           {activetabId === OTC && <OTCPopupContent estate={estate} />}
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
-              actionType={prevTabId === BUY ? BUY : SELL}
+              actionType={orderType === BUY ? BUY : SELL}
               actionCb={
-                prevTabId === BUY ? handleOrderbookBuy : handleOrderbookSell
+                orderType === BUY ? handleOrderbookBuy : handleOrderbookSell
               }
             />
           )}
