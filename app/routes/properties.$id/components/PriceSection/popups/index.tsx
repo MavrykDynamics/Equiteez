@@ -10,7 +10,7 @@ import { Divider } from '~/lib/atoms/Divider';
 import { TabType } from '~/lib/atoms/Tab';
 
 // contract actions
-import { pickOrderbookContract } from '~/consts/contracts';
+import { pickDodoContractBasedOnToken } from '~/consts/contracts';
 
 // icons
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
@@ -33,7 +33,6 @@ import {
 } from '../consts';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from 'bignumber.js';
@@ -45,22 +44,29 @@ import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
 import Money from '~/lib/atoms/Money';
+import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
   orderType: OrderType;
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
+  const { tokensMetadata } = useTokensContext();
+  const { usdToTokenRates } = useCurrencyContext();
+
+  const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
+  const prevTabId = usePrevious(activetabId) as OrderType;
+
+  // derived
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
   const slug = useMemo(
     () => toTokenSlug(estate.token_address),
     [estate.token_address]
   );
-
-  const { tokensMetadata } = useTokensContext();
-  const { usdToTokenRates } = useCurrencyContext();
-  const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
-  const prevTabId = usePrevious(activetabId) as OrderType;
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -103,37 +109,45 @@ export const PopupContent: FC<{
     }
   }, [amountB, estate.token_address, slug, usdToTokenRates]);
 
-  const buyProps = useMemo(
+  const marketBuyProps = useMemo(
     () => ({
-      marketContractAddress: pickOrderbookContract[estate.token_address],
+      dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
       tokensAmount: amountB
         ?.div(rateToNumber(usdToTokenRates[slug]))
         .toNumber(),
-      pricePerToken: rateToNumber(usdToTokenRates[slug]),
-      decimals: tokensMetadata[slug]?.decimals,
+      minMaxQuote: 1000,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [estate.token_address, amountB, usdToTokenRates, slug, tokensMetadata]
+    [
+      amountB,
+      estate.token_address,
+      selectedAssetMetadata?.decimals,
+      slug,
+      usdToTokenRates,
+    ]
   );
 
-  const sellProps = useMemo(
+  const marketSellProps = useMemo(
     () => ({
-      marketContractAddress: pickOrderbookContract[estate.token_address],
-      rwaTokenAddress: estate.token_address,
+      dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
+
+      tokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
-      pricePerToken: rateToNumber(usdToTokenRates[slug]),
-      decimals: tokensMetadata[slug]?.decimals,
+      minMaxQuote: 1000, // minMaxQuote
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amountB, estate.token_address, slug, tokensMetadata, usdToTokenRates]
+    [amountB, estate.token_address, selectedAssetMetadata]
   );
 
-  const { invokeAction: handleOrderbookSell } = useContractAction(
-    orderbookSell,
-    sellProps
+  // Market buy | sell
+  const { invokeAction: handleMarketBuy } = useContractAction(
+    buyBaseToken,
+    marketBuyProps
   );
 
-  const { invokeAction: handleOrderbookBuy } = useContractAction(
-    orderbookBuy,
-    buyProps
+  const { invokeAction: handleMarketSell } = useContractAction(
+    sellBaseToken,
+    marketSellProps
   );
 
   const HeadlinePreviewSection = () => (
@@ -263,9 +277,7 @@ export const PopupContent: FC<{
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
               actionType={orderType === BUY ? BUY : SELL}
-              actionCb={
-                orderType === BUY ? handleOrderbookBuy : handleOrderbookSell
-              }
+              actionCb={orderType === BUY ? handleMarketBuy : handleMarketSell}
             />
           )}
         </div>

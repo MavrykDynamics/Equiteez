@@ -37,6 +37,11 @@ export async function buyBaseToken({
     const marketContract = await tezos.wallet.at(dodoContractAddress);
     const stableCoinInstance = await tezos.wallet.at(stablecoinContract);
 
+    const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
+    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
+
+    debugger;
+
     const open_ops = stableCoinInstance.methodsObject['update_operators']([
       {
         add_operator: {
@@ -48,8 +53,8 @@ export async function buyBaseToken({
     ]).toTransferParams();
 
     const buy_order = marketContract.methodsObject['buyBaseToken']({
-      amount: tokensToAtoms(tokensAmount, decimals).toNumber(),
-      minMaxQuote: tokensToAtoms(minMaxQuote, decimals).toNumber(),
+      amount,
+      minMaxQuote: parsedMinMaxQuote,
     }).toTransferParams();
 
     const close_ops = stableCoinInstance.methodsObject['update_operators']([
@@ -93,6 +98,11 @@ export async function sellBaseToken({
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
     const quoteLpInstance = await tezos.wallet.at(tokenAddress);
+    const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
+
+    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
+
+    debugger;
 
     const open_ops = quoteLpInstance.methodsObject['update_operators']([
       {
@@ -105,8 +115,8 @@ export async function sellBaseToken({
     ]).toTransferParams();
 
     const sell_order = marketContract.methodsObject['sellBaseToken']({
-      amount: tokensToAtoms(tokensAmount, decimals).toNumber(),
-      minMaxQuote: tokensToAtoms(minMaxQuote, decimals).toNumber(),
+      amount,
+      minMaxQuote: parsedMinMaxQuote,
     }).toTransferParams();
 
     const close_ops = quoteLpInstance.methodsObject['update_operators']([

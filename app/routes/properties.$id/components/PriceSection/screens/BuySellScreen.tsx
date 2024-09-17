@@ -120,10 +120,17 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         ? {
             amount,
             selectedAssetSlug: toTokenSlug(stablecoinContract),
+            selectedAssetMetadata:
+              tokensMetadata[toTokenSlug(stablecoinContract)],
             label: 'You Pay',
           }
-        : { amount, selectedAssetSlug: slug, label: 'You Sell' },
-    [amount, isBuyAction, slug]
+        : {
+            amount,
+            selectedAssetSlug: slug,
+            selectedAssetMetadata: tokensMetadata[slug],
+            label: 'You Sell',
+          },
+    [amount, isBuyAction, slug, tokensMetadata]
   );
 
   const input2Props = useMemo(
@@ -133,13 +140,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             amount:
               amount?.div(rateToNumber(usdToTokenRates[slug])) || undefined,
             selectedAssetSlug: slug,
+            selectedAssetMetadata: tokensMetadata[slug],
           }
         : {
             amount:
               amount?.times(rateToNumber(usdToTokenRates[slug])) || undefined,
             selectedAssetSlug: toTokenSlug(stablecoinContract),
+            selectedAssetMetadata:
+              tokensMetadata[toTokenSlug(stablecoinContract)],
           },
-    [amount, isBuyAction, slug, usdToTokenRates]
+    [amount, isBuyAction, slug, tokensMetadata, usdToTokenRates]
   );
 
   const balanceTotal = useMemo(

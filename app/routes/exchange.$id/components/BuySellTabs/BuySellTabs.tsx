@@ -6,13 +6,9 @@ import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { Button } from '~/lib/atoms/Button';
 import {
   pickDodoContractBasedOnToken,
-  pickMarketBasedOnSymbol,
+  pickOrderbookContract,
   stablecoinContract,
 } from '~/consts/contracts';
-import {
-  placeBuyOrderAndMatch,
-  placeSellOrder,
-} from '~/contracts/buySellLimit.contract';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
 import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, OTC_TYPE, SELL_TAB } from './consts';
@@ -21,7 +17,6 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 import { rwaToFixed } from '~/lib/utils/formaters';
-import { formatToNumber } from '~/lib/molecules/Input/utils';
 import Money from '~/lib/atoms/Money';
 import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
@@ -29,6 +24,10 @@ import { toTokenSlug } from '~/lib/assets';
 import BigNumber from 'bignumber.js';
 import { calculateEstfee } from '~/lib/utils/calcFns';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
+import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
+import { rateToNumber } from '~/lib/utils/numbers';
+import { isDefined } from '~/lib/utils';
+import { AssetField } from '~/lib/organisms/AssetField';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -36,41 +35,57 @@ type BuySellTabsProps = {
 };
 
 const useBuySellActions = (
-  price: number,
-  amount: number,
-  tokenAddress: string,
-  symbol: string
+  price: BigNumber | undefined,
+  amount: BigNumber | undefined,
+  tokenAddress: string
 ) => {
+  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { tokensMetadata } = useTokensContext();
+  const { usdToTokenRates } = useCurrencyContext();
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
 
-  const buySellProps = useMemo(
+  const buyProps = useMemo(
     () => ({
-      marketContractAddress: pickMarketBasedOnSymbol[symbol],
-      tokensAmount: Number(amount),
-      pricePerToken: Number(price),
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      marketContractAddress: pickOrderbookContract[tokenAddress],
+      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+      pricePerToken: price?.toNumber(),
+      decimals: tokensMetadata[slug]?.decimals,
     }),
-    [amount, price, symbol, tokenAddress, tokensMetadata]
+    [tokenAddress, amount, usdToTokenRates, slug, price, tokensMetadata]
+  );
+
+  const sellProps = useMemo(
+    () => ({
+      marketContractAddress: pickOrderbookContract[tokenAddress],
+      rwaTokenAddress: tokenAddress,
+      tokensAmount: amount?.toNumber(),
+      pricePerToken: price?.toNumber(),
+      decimals: tokensMetadata[slug]?.decimals,
+    }),
+    [amount, price, slug, tokenAddress, tokensMetadata]
   );
 
   const { invokeAction: handleLimitBuy } = useContractAction(
-    placeBuyOrderAndMatch,
-    buySellProps
+    orderbookBuy,
+    buyProps
   );
 
   const { invokeAction: handleLimitSell } = useContractAction(
-    placeSellOrder,
-    buySellProps
+    orderbookSell,
+    sellProps
   );
 
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      tokensAmount: amount,
+      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
       minMaxQuote: 1000,
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, tokensMetadata]
+    [amount, slug, tokenAddress, selectedAssetMetadata, usdToTokenRates]
   );
 
   const marketSellProps = useMemo(
@@ -78,17 +93,19 @@ const useBuySellActions = (
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
 
       tokenAddress: tokenAddress,
-      tokensAmount: amount,
+      tokensAmount: amount?.toNumber(),
       minMaxQuote: 1000, // minMaxQuote
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, tokensMetadata]
+    [amount, tokenAddress, selectedAssetMetadata]
   );
 
+  // MArket buy | sell
   const { invokeAction: handleMarketBuy } = useContractAction(
     buyBaseToken,
     marketBuyProps
   );
+
   const {
     invokeAction: handleMarketSell,
     status,
@@ -119,17 +136,37 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
 
   // inputs state
-  const [price, setPrice] = useState<number | string>('');
+  const [price, setPrice] = useState<BigNumber | undefined>();
+  const [amount, setAmount] = useState<BigNumber | undefined>();
+  const [total, setTotal] = useState<BigNumber | undefined>();
 
-  // TODO fix amount logic
-  const [amount, setAmount] = useState<number | string | undefined>();
-  const [total, setTotal] = useState<string | number>('');
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const prevSelectedPercentage = usePrevious(selectedPercentage);
 
-  //
+  // refs
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
+
+  // derived
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
+
+  // Handle input values for price and amount
+  const handleAmountChange = (newAmount?: string) =>
+    setAmount(
+      Boolean(newAmount) && isDefined(newAmount)
+        ? new BigNumber(newAmount)
+        : undefined
+    );
+
+  const handlePriceChange = (newAmount?: string) =>
+    setPrice(
+      Boolean(newAmount) && isDefined(newAmount)
+        ? new BigNumber(newAmount)
+        : undefined
+    );
 
   const handleAmountFocus = () => {
     inputAmountRef.current?.focus();
@@ -151,33 +188,40 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const maxBuy = useMemo(() => {
     const amountToSpend = (100 * usdBalance) / 100;
     return rwaToFixed(
-      amountToSpend / new BigNumber(usdToTokenRates[slug] ?? 1).toNumber()
+      new BigNumber(amountToSpend)
+        .div(new BigNumber(usdToTokenRates[slug] ?? 1))
+        .toNumber()
     );
   }, [usdBalance, slug, usdToTokenRates]);
 
-  // TODO switch to bignumber js
   // extract logic into separate hook
   const hasTotalError = isBuyAction
-    ? Number(amount)
-      ? Number(amount) > usdBalance
+    ? amount
+      ? amount.gt(new BigNumber(usdBalance))
       : false
-    : Number(amount)
-    ? Number(amount) > tokenBalance
+    : amount
+    ? amount.gt(new BigNumber(tokenBalance))
     : false;
+
+  const isBtnDisabled = useMemo(
+    () => amount?.lte(0) || price?.lte(0) || hasTotalError || !amount || !price,
+    [amount, hasTotalError, price]
+  );
 
   useEffect(() => {
     if (selectedPercentage) {
       const amountToSpend = (selectedPercentage * usdBalance) / 100;
-      const numberOfTokens = rwaToFixed(
-        amountToSpend / new BigNumber(usdToTokenRates[slug] ?? 1).toNumber()
+      const numberOfTokens = new BigNumber(amountToSpend).div(
+        new BigNumber(usdToTokenRates[slug] ?? 1)
       );
+
       setAmount(numberOfTokens);
     } else if (
       selectedPercentage === 0 &&
       prevSelectedPercentage &&
       prevSelectedPercentage !== 0
     ) {
-      setAmount(0);
+      setAmount(undefined);
     }
   }, [
     selectedPercentage,
@@ -193,16 +237,16 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   // update total
   useEffect(() => {
-    if (amount && usdToTokenRates[slug]) {
-      setTotal(rwaToFixed(Number(amount) * Number(price)));
+    if (amount && usdToTokenRates[slug] && price) {
+      setTotal(amount.multipliedBy(price));
     } else if (!amount) {
-      setTotal('');
+      setTotal(undefined);
     }
   }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
 
   // contract calls based on markt or limit
   const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
-    useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
+    useBuySellActions(price, amount, tokenAddress);
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -234,7 +278,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   // set fixed price for the market type
   useEffect(() => {
     if (!isLimitType) {
-      setPrice(new BigNumber(usdToTokenRates[slug] ?? 0).toNumber());
+      setPrice(new BigNumber(usdToTokenRates[slug] ?? 0));
     }
   }, [isLimitType, slug, tokenAddress, usdToTokenRates]);
 
@@ -329,19 +373,20 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
                 <span className="flex gap-1">
                   <span className="">
-                    <input
+                    <AssetField
                       ref={inputPriceRef}
                       name="price"
                       type="number"
-                      min={1}
-                      value={price}
-                      onChange={(e) =>
-                        setPrice(Number(formatToNumber(e.target.value)))
-                      }
+                      min={0}
+                      max={9999999999999}
+                      value={price
+                        ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                        .toString()}
+                      onChange={handlePriceChange}
                       placeholder="0.00"
                       className="w-full bg-transparent focus:outline-none text-right font-semibold"
                       disabled={!isLimitType}
-                    ></input>
+                    ></AssetField>
                   </span>
                   <span className="font-semibold">USDT</span>
                 </span>
@@ -358,16 +403,20 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
                 <span className="flex gap-1">
                   <span className="">
-                    <input
+                    <AssetField
                       ref={inputAmountRef}
                       name="amount"
-                      type="number"
-                      min={1}
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      type="text"
+                      min={0}
+                      max={9999999999999}
+                      assetDecimals={selectedAssetMetadata.decimals ?? 6}
+                      value={amount
+                        ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                        .toString()}
+                      onChange={handleAmountChange}
                       placeholder="Minimum 1"
                       className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                    ></input>
+                    ></AssetField>
                   </span>
                   <span className="font-semibold">{symbol}</span>
                 </span>
@@ -392,8 +441,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <span className="">
                   <input
                     name="total"
-                    type="number"
-                    value={total}
+                    type="text"
+                    value={total?.toNumber()}
                     placeholder="0.00"
                     className="w-full bg-transparent focus:outline-none text-right font-semibold"
                     disabled
@@ -431,6 +480,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
           <div className="flex w-full">
             <Button
+              disabled={isBtnDisabled}
               onClick={pickBuySellAction}
               className="w-full mt-1 py-[10px]"
             >
