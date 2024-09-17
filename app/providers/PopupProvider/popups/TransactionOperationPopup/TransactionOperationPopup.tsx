@@ -1,6 +1,7 @@
 import { FC } from 'react';
-import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
 import { DefaultPopupProps } from '../../popup.provider.types';
+import CustomPopup from '~/lib/organisms/CustomPopup/CustomPopup';
+import CloseIcon from 'app/icons/cross.svg?react';
 
 export type TransactionOperationPopupProps = {
   icon: React.ReactNode | null;
@@ -16,12 +17,19 @@ export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
   onRequestClose,
 }) => {
   return (
-    <PopupWithIcon
+    <CustomPopup
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       contentPosition={'center'}
-      className={'w-[617px] h-[320px] px-11 py-16 z-100 relative'}
+      overlayClassName="z-[9999]"
+      className={'w-[617px]  h-[292px] max-h-screen px-11 py-16 z-100 relative'}
     >
+      <button className="absolute top-8 right-8 z-10">
+        <CloseIcon
+          className="w-6 h-6 cursor-pointer relative text-content stroke-current"
+          onClick={onRequestClose}
+        />
+      </button>
       <div className="flex flex-col">
         <div className="mx-auto inline-block">{icon}</div>
 
@@ -30,6 +38,6 @@ export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
         </div>
         <p className="text-body text-content text-center">{body}</p>
       </div>
-    </PopupWithIcon>
+    </CustomPopup>
   );
 };

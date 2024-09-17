@@ -28,6 +28,7 @@ import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { stablecoinContract } from '~/consts/contracts';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { calculateEstfee } from '~/lib/utils/calcFns';
+// eslint-disable-next-line import/no-named-as-default
 import BigNumber from 'bignumber.js';
 import { BalanceInput } from '~/templates/BalanceInput';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
