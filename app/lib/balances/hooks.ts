@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { useAssetMetadata } from '../metadata';
-import { atomsToTokens } from '~/util/formaters';
 import BigNumber from 'bignumber.js';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+import { atomsToTokens } from '../utils/formaters';
 
 export function useBalance(rawValue: string, assetSlug: string) {
   const assetMetadata = useAssetMetadata(assetSlug);
