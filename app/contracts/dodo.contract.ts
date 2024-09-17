@@ -102,8 +102,6 @@ export async function sellBaseToken({
 
     const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
 
-    debugger;
-
     const open_ops = quoteLpInstance.methodsObject['update_operators']([
       {
         add_operator: {

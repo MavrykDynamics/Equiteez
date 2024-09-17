@@ -22,7 +22,7 @@ import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { toTokenSlug } from '~/lib/assets';
 import BigNumber from 'bignumber.js';
-import { calculateEstfee } from '~/lib/utils/calcFns';
+import { calculateEstfee, pseudoOperationFee } from '~/lib/utils/calcFns';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { rateToNumber } from '~/lib/utils/numbers';
@@ -196,8 +196,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   // extract logic into separate hook
   const hasTotalError = isBuyAction
-    ? amount
-      ? amount.gt(new BigNumber(usdBalance))
+    ? total
+      ? total.gt(new BigNumber(usdBalance))
       : false
     : amount
     ? amount.gt(new BigNumber(tokenBalance))
@@ -208,14 +208,20 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     [amount, hasTotalError, price]
   );
 
+  // derived state (it's boolean value, so no need to memoize it)
+  const isLimitType = activeItem === LIMIT_TYPE;
+
   useEffect(() => {
     if (selectedPercentage) {
-      const amountToSpend = (selectedPercentage * usdBalance) / 100;
-      const numberOfTokens = new BigNumber(amountToSpend).div(
-        new BigNumber(usdToTokenRates[slug] ?? 1)
+      const amountToSpend = new BigNumber(
+        (selectedPercentage * (isBuyAction ? usdBalance : tokenBalance)) / 100
       );
 
-      setAmount(numberOfTokens);
+      const numberOfTokens = amountToSpend.div(
+        isLimitType ? price ?? 1 : new BigNumber(usdToTokenRates[slug] ?? 1)
+      );
+
+      setAmount(isBuyAction ? numberOfTokens : amountToSpend);
     } else if (
       selectedPercentage === 0 &&
       prevSelectedPercentage &&
@@ -230,10 +236,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     prevSelectedPercentage,
     usdToTokenRates,
     slug,
+    isBuyAction,
+    tokenBalance,
+    isLimitType,
+    price,
   ]);
-
-  // derived state (it's boolean value, so no need to memoize it)
-  const isLimitType = activeItem === LIMIT_TYPE;
 
   // update total
   useEffect(() => {
@@ -367,59 +374,53 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               <div
                 role="presentation"
                 onClick={handlePriceFocus}
-                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
+                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
               >
-                <span className="text-content-secondary opacity-50">Price</span>
+                <div className="text-content-secondary opacity-50">Price</div>
 
-                <span className="flex gap-1">
-                  <span className="">
-                    <AssetField
-                      ref={inputPriceRef}
-                      name="price"
-                      type="number"
-                      min={0}
-                      max={9999999999999}
-                      value={price
-                        ?.toFixed(selectedAssetMetadata.decimals ?? 6)
-                        .toString()}
-                      onChange={handlePriceChange}
-                      placeholder="0.00"
-                      className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                      disabled={!isLimitType}
-                    ></AssetField>
-                  </span>
+                <div className="flex gap-1 flex-1 items-center">
+                  <AssetField
+                    ref={inputPriceRef}
+                    name="price"
+                    type="number"
+                    min={0}
+                    max={9999999999999}
+                    value={price
+                      ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                      .toString()}
+                    onChange={handlePriceChange}
+                    placeholder="0.00"
+                    className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                    disabled={!isLimitType}
+                  ></AssetField>
                   <span className="font-semibold">USDT</span>
-                </span>
+                </div>
               </div>
 
               <div
                 role="presentation"
                 onClick={handleAmountFocus}
-                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
+                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
               >
-                <span className="text-content-secondary opacity-50">
-                  Amount
-                </span>
+                <div className="text-content-secondary opacity-50">Amount</div>
 
-                <span className="flex gap-1">
-                  <span className="">
-                    <AssetField
-                      ref={inputAmountRef}
-                      name="amount"
-                      type="text"
-                      min={0}
-                      max={9999999999999}
-                      assetDecimals={selectedAssetMetadata.decimals ?? 6}
-                      value={amount
-                        ?.toFixed(selectedAssetMetadata.decimals ?? 6)
-                        .toString()}
-                      onChange={handleAmountChange}
-                      placeholder="Minimum 1"
-                      className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                    ></AssetField>
-                  </span>
+                <div className="flex gap-1 flex-1 items-center">
+                  <AssetField
+                    ref={inputAmountRef}
+                    name="amount"
+                    type="text"
+                    min={0}
+                    max={9999999999999}
+                    assetDecimals={selectedAssetMetadata.decimals ?? 6}
+                    value={amount
+                      ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                      .toString()}
+                    onChange={handleAmountChange}
+                    placeholder="Minimum 1"
+                    className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                  ></AssetField>
                   <span className="font-semibold">{symbol}</span>
-                </span>
+                </div>
               </div>
             </div>
 
@@ -433,23 +434,24 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
           <div className="w-full mb-3">
             <div
-              className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
+              className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
             >
-              <span className="text-content-secondary opacity-50">Total</span>
+              <div className="text-content-secondary opacity-50">Total</div>
 
-              <span className="flex gap-1">
-                <span className="">
-                  <input
-                    name="total"
-                    type="text"
-                    value={total?.toNumber()}
-                    placeholder="0.00"
-                    className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                    disabled
-                  ></input>
-                </span>
+              <div className="flex gap-1 flex-1 items-center">
+                <AssetField
+                  type="text"
+                  name="total"
+                  min={0}
+                  max={9999999999999}
+                  value={total?.toNumber()}
+                  placeholder="0.00"
+                  assetDecimals={6}
+                  className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                  disabled
+                ></AssetField>
                 <span className="font-semibold">USDT</span>
-              </span>
+              </div>
             </div>
 
             {hasTotalError && (
