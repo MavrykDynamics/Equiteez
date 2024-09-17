@@ -95,7 +95,11 @@ export const SecondaryPriceBlock: FC = () => {
         contentPosition={'right'}
         className={'bg-white'}
       >
-        <PopupContent estate={estate} orderType={orderType} />
+        <PopupContent
+          estate={estate}
+          orderType={orderType}
+          setOrderType={setOrderType}
+        />
       </PopupWithIcon>
     </section>
   );

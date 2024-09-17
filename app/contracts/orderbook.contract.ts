@@ -41,7 +41,6 @@ export async function orderbookBuy({
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
-    debugger;
     const currency = 'USDT';
     const orderExpiry = null;
 
@@ -121,7 +120,6 @@ export async function orderbookSell({
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
     const currency = 'USDT';
     const orderExpiry = null;
-    debugger;
 
     const open_ops = tokenContact.methodsObject['update_operators']([
       {

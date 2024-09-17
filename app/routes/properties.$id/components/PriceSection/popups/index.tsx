@@ -35,6 +35,7 @@ import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
+// eslint-disable-next-line import/no-named-as-default
 import BigNumber from 'bignumber.js';
 import { isDefined } from '~/lib/utils';
 import { ProgresBar } from '../PrimaryPriceBlock';
@@ -43,13 +44,13 @@ import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provid
 import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
-import { atomsToTokens } from '~/lib/utils/formaters';
 import Money from '~/lib/atoms/Money';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
   orderType: OrderType;
-}> = ({ estate, orderType }) => {
+  setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
+}> = ({ estate, orderType, setOrderType }) => {
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
   const slug = useMemo(
     () => toTokenSlug(estate.token_address),
@@ -58,12 +59,16 @@ export const PopupContent: FC<{
 
   const { tokensMetadata } = useTokensContext();
   const { usdToTokenRates } = useCurrencyContext();
-  const [activetabId, setAvtiveTabId] = useState(orderType);
+  const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
   const prevTabId = usePrevious(activetabId) as OrderType;
 
-  const handleTabClick = useCallback((id: OrderType) => {
-    setAvtiveTabId(id);
-  }, []);
+  const handleTabClick = useCallback(
+    (id: OrderType) => {
+      setAvtiveTabId(id);
+      if (id !== CONFIRM) setOrderType(id);
+    },
+    [setOrderType]
+  );
 
   const tabs: TabType<OrderType>[] = useMemo(
     () => [
