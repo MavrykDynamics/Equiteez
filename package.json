@@ -19,7 +19,6 @@
   "dependencies": {
     "@dicebear/avatars": "^4.2.5",
     "@dicebear/avatars-bottts-sprites": "^4.2.5",
-    "@dicebear/collection": "^8.0.1",
     "@headlessui/react": "1.7.19",
     "@mavrykdynamics/beacon-dapp": "^4.2.2",
     "@mavrykdynamics/taquito": "^19.2.3",
@@ -43,7 +42,6 @@
     "embla-carousel-react": "^8.0.2",
     "fuse.js": "^7.0.0",
     "isbot": "^4.1.0",
-    "jdenticon": "^3.3.0",
     "lodash": "^4.17.21",
     "patch-package": "^8.0.0",
     "postcss": "^8.4.38",
