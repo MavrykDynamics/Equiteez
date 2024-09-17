@@ -25,7 +25,11 @@ const HeaderLinksBlock = () => {
       >
         Marketplace
       </Link>
-      <Link to="/exchange" className="text-body-xs text-content font-semibold">
+      <Link
+        to="#"
+        aria-disabled
+        className="text-body-xs text-content font-semibold opacity-50"
+      >
         Exchange
       </Link>
       <Link
