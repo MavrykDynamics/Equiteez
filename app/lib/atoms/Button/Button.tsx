@@ -73,6 +73,8 @@ export const Button: FC<ButtonProps> = ({
   className,
   disabled,
   isLoading,
+  onClick,
+  onSubmit,
   ...rest
 }) => {
   return (
@@ -86,12 +88,15 @@ export const Button: FC<ButtonProps> = ({
         disabled && 'opacity-50 pointer-events-none',
         isLoading &&
           clsx(
+            'cursor-not-allowed',
             size === 'small' || size === 'small-plus'
               ? 'min-w-[129px]'
               : 'min-w-[144px]'
           ),
         className
       )}
+      onClick={isLoading ? undefined : onClick}
+      onSubmit={isLoading ? undefined : onSubmit}
       {...rest}
     >
       {isLoading ? (

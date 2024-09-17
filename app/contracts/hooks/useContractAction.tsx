@@ -47,7 +47,7 @@ export const useContractAction = <G,>(
     } catch (e) {
       dispatch(STATUS_ERROR);
       showPopup(popupKeys.txOperation, popupOperationError);
-      await sleep(3000);
+      await sleep(2000);
 
       dispatch(STATUS_IDLE);
     }

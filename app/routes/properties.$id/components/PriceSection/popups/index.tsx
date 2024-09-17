@@ -45,6 +45,7 @@ import { toTokenSlug } from '~/lib/assets';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
 import Money from '~/lib/atoms/Money';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
+import { pickStatusFromMultiple } from '~/lib/ui/use-status-flag';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -140,14 +141,16 @@ export const PopupContent: FC<{
   );
 
   // Market buy | sell
-  const { invokeAction: handleMarketBuy } = useContractAction(
-    buyBaseToken,
-    marketBuyProps
-  );
+  const { invokeAction: handleMarketBuy, status: buyStatus } =
+    useContractAction(buyBaseToken, marketBuyProps);
 
-  const { invokeAction: handleMarketSell } = useContractAction(
-    sellBaseToken,
-    marketSellProps
+  const { invokeAction: handleMarketSell, status: sellStatus } =
+    useContractAction(sellBaseToken, marketSellProps);
+
+  // status of the operation
+  const status = useMemo(
+    () => pickStatusFromMultiple(buyStatus, sellStatus),
+    [buyStatus, sellStatus]
   );
 
   const HeadlinePreviewSection = () => (
@@ -278,6 +281,7 @@ export const PopupContent: FC<{
             <BuySellConfirmationScreen
               actionType={orderType === BUY ? BUY : SELL}
               actionCb={orderType === BUY ? handleMarketBuy : handleMarketSell}
+              status={status}
             />
           )}
         </div>

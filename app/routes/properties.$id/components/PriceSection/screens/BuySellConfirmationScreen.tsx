@@ -7,10 +7,17 @@ import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
 import { Link } from '@remix-run/react';
 import clsx from 'clsx';
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  StatusFlag,
+} from '~/lib/ui/use-status-flag';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
   actionCb: () => void;
+  status: StatusFlag;
 };
 
 export type FormData = {
@@ -29,7 +36,9 @@ const actionLabels = {
 export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   actionType,
   actionCb,
+  status,
 }) => {
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const { control, handleSubmit, formState } = useForm<FormData>({
     mode: 'onSubmit',
     defaultValues: {
@@ -41,7 +50,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
 
   // call contract action // try catch are handled within that action
   const onSubmit = async ({ initials, investing, terms }: FormData) => {
-    if (terms && initials && investing) {
+    if (terms && initials && investing && !isLoading) {
       actionCb();
     }
   };
@@ -153,13 +162,14 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
           </p>
           <Button
             type="submit"
+            isLoading={isLoading}
             className={clsx(
               'w-full',
               actionLabels[actionType].toLowerCase() === 'buy' &&
                 'bg-green-500 text-content hover:bg-green-300'
             )}
           >
-            {actionLabels[actionType]}
+            {getStatusLabel(status, actionLabels[actionType])}
           </Button>
         </div>
       </form>

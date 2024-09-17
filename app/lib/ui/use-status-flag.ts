@@ -51,7 +51,6 @@ export const useStatusFlag = (initialStatus: StatusFlag = STATUS_IDLE) => {
 };
 
 // utils
-
 export const getStatusLabel = (status: StatusFlag, defaultLabel: string) => {
   switch (status) {
     case STATUS_PENDING:
@@ -68,4 +67,20 @@ export const getStatusLabel = (status: StatusFlag, defaultLabel: string) => {
     default:
       return defaultLabel;
   }
+};
+
+/**
+ * is used to show status on button
+ that button works with multiple actions related to statuses passed from params
+ * @param rest StatuusFlag[]
+ * @returns StatusFlag
+ */
+export const pickStatusFromMultiple = (...rest: StatusFlag[]) => {
+  if (rest.find((status) => status === STATUS_PENDING)) return STATUS_PENDING;
+  if (rest.find((status) => status === STATUS_CONFIRMING))
+    return STATUS_CONFIRMING;
+  if (rest.find((status) => status === STATUS_ERROR)) return STATUS_ERROR;
+  if (rest.find((status) => status === STATUS_SUCCESS)) return STATUS_SUCCESS;
+
+  return STATUS_IDLE;
 };
