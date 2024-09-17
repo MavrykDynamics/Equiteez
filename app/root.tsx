@@ -9,7 +9,6 @@ import { json, LinksFunction } from '@remix-run/node';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // global styles
 import stylesheet from '~/index.css?url';
@@ -36,14 +35,6 @@ export const links: LinksFunction = () => [
   { rel: 'preload', as: 'style', href: stylesheet },
   { rel: 'stylesheet', href: stylesheet },
 ];
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false, // default: true
-    },
-  },
-});
 
 export const loader = async () => {
   const tokens = await fetchTokensData();
@@ -73,29 +64,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <div id="root">
           <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
-            <QueryClientProvider client={queryClient}>
-              <AppProvider>
-                <WalletProvider>
-                  <CurrencyProvider
-                    fiatToTezos={fiatToTezos}
-                    usdToToken={usdToToken}
+            <AppProvider>
+              <WalletProvider>
+                <CurrencyProvider
+                  fiatToTezos={fiatToTezos}
+                  usdToToken={usdToToken}
+                >
+                  <TokensProvider
+                    initialTokens={tokens}
+                    initialTokensMetadata={tokensMetadata}
                   >
-                    <TokensProvider
-                      initialTokens={tokens}
-                      initialTokensMetadata={tokensMetadata}
-                    >
-                      <UserProvider>
-                        <EstatesProvider>
-                          <AppGlobalLoader>
-                            <PopupProvider>{children}</PopupProvider>
-                          </AppGlobalLoader>
-                        </EstatesProvider>
-                      </UserProvider>
-                    </TokensProvider>
-                  </CurrencyProvider>
-                </WalletProvider>
-              </AppProvider>
-            </QueryClientProvider>
+                    <UserProvider>
+                      <EstatesProvider>
+                        <AppGlobalLoader>
+                          <PopupProvider>{children}</PopupProvider>
+                        </AppGlobalLoader>
+                      </EstatesProvider>
+                    </UserProvider>
+                  </TokensProvider>
+                </CurrencyProvider>
+              </WalletProvider>
+            </AppProvider>
           </ErrorBoundary>
           <ScrollRestoration />
           <Scripts />
