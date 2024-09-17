@@ -6,7 +6,7 @@ import { installGlobals } from '@remix-run/node';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import svgr from 'vite-plugin-svgr';
-// import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 installGlobals();
 
@@ -16,6 +16,7 @@ export default defineConfig({
     remix({ ssr: true }),
     tsconfigPaths(),
     svgr(),
+    nodePolyfills({ exclude: ['fs', 'util'] }),
   ],
   define: {
     'process.env': process.env,
