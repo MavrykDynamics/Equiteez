@@ -2,7 +2,7 @@
 name = "equiteez"
 pages_build_output_dir = "build/client"
 compatibility_date = "2024-04-23"
-compatibility_flags = [ "nodejs_compat_v2" ]
+compatibility_flags = [ "nodejs_compat" ]
 
 
 
