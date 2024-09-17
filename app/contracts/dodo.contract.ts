@@ -40,8 +40,6 @@ export async function buyBaseToken({
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
 
-    debugger;
-
     const open_ops = stableCoinInstance.methodsObject['update_operators']([
       {
         add_operator: {

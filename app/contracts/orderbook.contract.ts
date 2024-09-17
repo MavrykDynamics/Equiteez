@@ -1,23 +1,14 @@
+/* eslint-disable no-useless-catch */
 import { TezosToolkit } from '@mavrykdynamics/taquito';
 import { OrderbookMarketType, stablecoinContract } from '~/consts/contracts';
 
-import {
-  StatusDispatchType,
-  STATUS_CONFIRMING,
-  STATUS_ERROR,
-  STATUS_IDLE,
-  STATUS_SUCCESS,
-} from '~/lib/ui/use-status-flag';
 import { formatRWAPrice, tokensToAtoms } from '~/lib/utils/formaters';
-
-import { sleep } from '~/lib/utils/sleep';
 
 // Orderbook buy & sell for secondary market page
 
 type OrderbookBuySellParams = {
   tezos: TezosToolkit;
   marketContractAddress: OrderbookMarketType;
-  dispatch: StatusDispatchType;
   tokensAmount: number;
   pricePerToken: number;
   decimals: number;
@@ -26,7 +17,6 @@ type OrderbookBuySellParams = {
 export async function orderbookBuy({
   tezos,
   marketContractAddress,
-  dispatch,
   tokensAmount,
   pricePerToken,
   decimals,
@@ -84,19 +74,9 @@ export async function orderbookBuy({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    console.log(e);
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
+    throw e;
   }
 }
 
@@ -104,7 +84,6 @@ export async function orderbookSell({
   tezos,
   marketContractAddress,
   rwaTokenAddress,
-  dispatch,
   tokensAmount,
   pricePerToken,
   decimals,
@@ -156,18 +135,8 @@ export async function orderbookSell({
 
     const batchOp = await batch.send();
 
-    dispatch(STATUS_CONFIRMING);
-
     await batchOp.confirmation();
-
-    dispatch(STATUS_SUCCESS);
-
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
   } catch (e: unknown) {
-    dispatch(STATUS_ERROR);
-    await sleep(3000);
-    dispatch(STATUS_IDLE);
     throw e;
   }
 }
