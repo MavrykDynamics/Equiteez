@@ -60,7 +60,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const { userTokensBalances } = useUserContext();
 
-  console.log(userTokensBalances, 'userTokensBalances');
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
@@ -223,12 +222,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         Min Received
                         <InfoTooltip content="Min Received" />
                       </div>
-                      <p>
+                      <div>
                         <Money smallFractionFont={false} shortened>
                           {minReceived}
                         </Money>
                         &nbsp;{symbolToShow}
-                      </p>
+                      </div>
                     </div>
                     <div className="mt-2 text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
@@ -245,14 +244,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         Est. Fee
                         <InfoTooltip content="Est fee" />
                       </div>
-                      <p>
+                      <div>
                         <Money smallFractionFont={false} shortened>
                           {isBuyAction
                             ? calculateEstfee(total?.toNumber() ?? 0)
                             : input2Props.amount?.toNumber() ?? 0}
                         </Money>
                         &nbsp;{symbolToShow}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </ExpanderBodyContent>

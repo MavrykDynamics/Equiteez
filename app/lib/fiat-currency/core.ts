@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 
-import axios from 'axios';
 import { BigNumber } from 'bignumber.js';
 
 import { FIAT_CURRENCIES } from './consts';
@@ -8,6 +7,7 @@ import type { FiatCurrencyOption, CoingeckoFiatInterface } from './types';
 import { isDefined, isTruthy } from '../utils';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { useStorage } from '../utils/local-storage';
+import { api } from '../utils/api';
 
 const FIAT_CURRENCY_STORAGE_KEY = 'fiat_currency';
 
@@ -75,24 +75,27 @@ export const useFiatCurrency = () => {
   };
 };
 
-const coingeckoApi = axios.create({
-  baseURL: 'https://api.coingecko.com/api/v3/',
-});
+const coingeckoApi = 'https://api.coingecko.com/api/v3';
 
-export const fetchFiatToTezosRates = () =>
-  coingeckoApi
-    .get<CoingeckoFiatInterface>(
-      `/simple/price?ids=tezos&vs_currencies=${FIAT_CURRENCIES.map(
-        ({ apiLabel }) => apiLabel
-      ).join(',')}`
-    )
-    .then(({ data }) => {
-      const mappedRates: Record<string, number> = {};
-      const tezosData = Object.keys(data.tezos);
+export const fetchFiatToTezosRates = async () => {
+  try {
+    const currencies = FIAT_CURRENCIES.map(({ apiLabel }) => apiLabel).join(
+      ','
+    );
 
-      for (const quote of tezosData) {
-        mappedRates[quote] = data.tezos[quote];
-      }
+    const { data } = await api<CoingeckoFiatInterface>(
+      coingeckoApi.concat(`/simple/price?ids=tezos&vs_currencies=${currencies}`)
+    );
 
-      return mappedRates;
-    });
+    const mappedRates: Record<string, number> = {};
+    const tezosData = Object.keys(data.tezos);
+
+    for (const quote of tezosData) {
+      mappedRates[quote] = data.tezos[quote];
+    }
+
+    return mappedRates;
+  } catch (e) {
+    throw new Error('Error while fetching tezos rates');
+  }
+};

@@ -35,7 +35,6 @@ import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
-import usePrevious from '~/hooks/use-previous';
 import BigNumber from 'bignumber.js';
 import { isDefined } from '~/lib/utils';
 import { ProgresBar } from '../PrimaryPriceBlock';
@@ -43,6 +42,7 @@ import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
+import usePrevious from '~/lib/ui/hooks/usePrevious';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;

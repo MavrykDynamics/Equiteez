@@ -6,19 +6,23 @@ import { installGlobals } from '@remix-run/node';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import svgr from 'vite-plugin-svgr';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
+// import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 installGlobals();
 
 export default defineConfig({
   plugins: [
     remixCloudflareDevProxy(),
-    remix(),
+    remix({ ssr: true }),
     tsconfigPaths(),
     svgr(),
-    nodePolyfills({ exclude: ['fs', 'util'] }),
   ],
   define: {
     'process.env': process.env,
+  },
+  build: {
+    minify: true,
+    cssMinify: true,
+    ssr: true,
   },
 });

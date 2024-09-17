@@ -273,3 +273,35 @@ input:disabled {
   pointer-events: none;
   cursor: none;
 }
+
+/* EXTEND  */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.eq-input {
+  @apply items-center border border-gray-100 rounded-lg;
+}
+
+.eq-slider {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: normal;
+  text-align: left;
+}
+
+.eq-table-cell {
+  @apply whitespace-nowrap pr-2 py-3 text-caption-regular;
+}
+
+.eq-table-cell-small {
+  @apply whitespace-nowrap py-1 text-caption-regular;
+}

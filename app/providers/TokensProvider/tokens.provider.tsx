@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 import { TokensProviderCtx, TokenType } from './tokens.provider.types';
-import { fetchTokensData, fetchTokensMetadata } from './utils/fetchTokensdata';
 import {
   MVRK_ASSET_SLUG,
   MVRK_CONTRACT_ADDRESS,
@@ -19,7 +18,16 @@ import {
 
 const tokensContext = createContext<TokensProviderCtx>(undefined!);
 
-export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
+type TokensProviderProps = {
+  initialTokens: TokenType[];
+  initialTokensMetadata: StringRecord<TokenMetadata>;
+} & PropsWithChildren;
+
+export const TokensProvider: FC<TokensProviderProps> = ({
+  initialTokens,
+  initialTokensMetadata,
+  children,
+}) => {
   const [tokens, setTokens] = useState<TokenType[]>([]);
   const [tokensMetadata, setTokensMetadata] = useState<
     StringRecord<TokenMetadata>
@@ -28,26 +36,27 @@ export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const initializeTokensData = useCallback(async () => {
     try {
-      const tokens = await fetchTokensData();
-      const tokensMetadata = await fetchTokensMetadata(tokens);
       setTokens(
-        tokens.concat({ contract: MVRK_CONTRACT_ADDRESS, id: MVRK_METADATA.id })
+        initialTokens.concat({
+          contract: MVRK_CONTRACT_ADDRESS,
+          id: MVRK_METADATA.id,
+        })
       );
 
       setTokensMetadata({
-        ...tokensMetadata,
+        ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
       });
       setIsLoading(false);
     } catch (e) {
       setIsLoading(false);
     }
-  }, []);
+  }, [initialTokens, initialTokensMetadata]);
 
   /**Fetch tokens and tokens metadta on init */
   useEffect(() => {
     initializeTokensData();
-  }, []);
+  }, [initializeTokensData]);
 
   const memoizedTokensCtx: TokensProviderCtx = useMemo(
     () => ({

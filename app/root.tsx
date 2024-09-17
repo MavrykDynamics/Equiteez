@@ -5,7 +5,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react';
-import { LinksFunction } from '@remix-run/node';
+import { json, LinksFunction } from '@remix-run/node';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
@@ -13,7 +13,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // global styles
 import stylesheet from '~/index.css?url';
-import extendCSS from '~/extend.css?url';
 import 'react-datepicker/dist/react-datepicker.css';
 
 // providers
@@ -25,12 +24,17 @@ import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
 import { AppGlobalLoader } from './providers/AppGlobalLoader';
 import { CurrencyProvider } from './providers/CurrencyProvider/currency.provider';
+import {
+  fetchTokensData,
+  fetchTokensMetadata,
+} from './providers/TokensProvider/utils/fetchTokensdata';
+import { fetchFiatToTezosRates } from './lib/fiat-currency';
+import { fetchUsdToTokenRates } from './lib/mavryk/endpoints/get-exchange-rates';
+import { useDataFromLoader } from './hooks/useDataFromLoader';
 
 export const links: LinksFunction = () => [
   { rel: 'preload', as: 'style', href: stylesheet },
   { rel: 'stylesheet', href: stylesheet },
-  { rel: 'preload', as: 'style', href: extendCSS },
-  { rel: 'stylesheet', href: extendCSS },
 ];
 
 const queryClient = new QueryClient({
@@ -41,7 +45,22 @@ const queryClient = new QueryClient({
   },
 });
 
+export const loader = async () => {
+  const tokens = await fetchTokensData();
+
+  const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
+    fetchTokensMetadata(tokens),
+    fetchFiatToTezosRates(),
+    fetchUsdToTokenRates(),
+  ]);
+
+  return json({ tokens, tokensMetadata, fiatToTezos, usdToToken });
+};
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
+    useDataFromLoader<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -57,8 +76,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <QueryClientProvider client={queryClient}>
               <AppProvider>
                 <WalletProvider>
-                  <CurrencyProvider>
-                    <TokensProvider>
+                  <CurrencyProvider
+                    fiatToTezos={fiatToTezos}
+                    usdToToken={usdToToken}
+                  >
+                    <TokensProvider
+                      initialTokens={tokens}
+                      initialTokensMetadata={tokensMetadata}
+                    >
                       <UserProvider>
                         <EstatesProvider>
                           <AppGlobalLoader>

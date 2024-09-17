@@ -49,19 +49,19 @@ export const SecondaryPriceBlock: FC = () => {
           />
         </div>
         <div className="text-content body flex justify-between mb-4">
-          <p className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
             Total Return
             <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
-          </p>
+          </div>
           <p className="text-buttons">
             {estate.assetDetails.priceDetails.annualReturn}%
           </p>
         </div>
         <div className="text-content body flex justify-between mb-4">
-          <p className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
             Expected Income
             <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
-          </p>
+          </div>
           <p className="text-buttons">
             {estate.assetDetails.financials.expectedIncome.income}%
           </p>

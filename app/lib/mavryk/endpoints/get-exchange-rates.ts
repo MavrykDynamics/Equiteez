@@ -1,5 +1,7 @@
 import { toTokenSlug } from '~/lib/assets';
-import { mavrykApi } from './mavryk.api';
+import { api } from '~/lib/utils/api';
+
+const mavrykApi = new URL('/api', process.env.MAVRYK_WALLET_API_URL).href;
 
 interface GetExchangeRatesResponseItem {
   tokenAddress?: string;
@@ -7,19 +9,24 @@ interface GetExchangeRatesResponseItem {
   exchangeRate: string;
 }
 
-export const fetchUsdToTokenRates = () =>
-  mavrykApi
-    .get<GetExchangeRatesResponseItem[]>('/exchange-rates')
-    .then(({ data }) => {
-      const prices: StringRecord = {};
+export const fetchUsdToTokenRates = async () => {
+  try {
+    const { data } = await api<GetExchangeRatesResponseItem[]>(
+      mavrykApi.concat('/exchange-rates')
+    );
 
-      for (const { tokenAddress, tokenId, exchangeRate } of data) {
-        if (tokenAddress) {
-          prices[toTokenSlug(tokenAddress, tokenId)] = exchangeRate;
-        } else {
-          prices.mav = exchangeRate;
-        }
+    const prices: StringRecord = {};
+
+    for (const { tokenAddress, tokenId, exchangeRate } of data) {
+      if (tokenAddress) {
+        prices[toTokenSlug(tokenAddress, tokenId)] = exchangeRate;
+      } else {
+        prices.mav = exchangeRate;
       }
+    }
 
-      return prices;
-    });
+    return prices;
+  } catch (e) {
+    throw new Error('Error while fetching usd to token rates');
+  }
+};

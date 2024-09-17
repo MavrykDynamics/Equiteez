@@ -62,14 +62,16 @@ export const UserProvider = ({ children }: Props) => {
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
   useEffect(() => {
-    openTzktWebSocket()
-      .then((socket) => (tzktSocket.current = socket))
-      .catch((e) => console.error(e));
+    if (IS_WEB && dapp) {
+      openTzktWebSocket()
+        .then((socket) => (tzktSocket.current = socket))
+        .catch((e) => console.error(e));
+    }
 
     return () => {
       tzktSocket?.current?.stop();
     };
-  }, []);
+  }, [IS_WEB, dapp]);
 
   // getter & setter for tzktSocket
   const getTzktSocket = useCallback(() => tzktSocket.current, []);
@@ -116,7 +118,7 @@ export const UserProvider = ({ children }: Props) => {
   // account is updated when we trigger wallet account connect | disconnect | change acc
   // whenever account is updated - we reconnect tzkt socket to have up-to-date data
   useEffect(() => {
-    if (IS_WEB) {
+    if (IS_WEB && dapp) {
       if (account) {
         setUserLoading(false);
         (async function () {
@@ -136,7 +138,14 @@ export const UserProvider = ({ children }: Props) => {
         })();
       }
     }
-  }, [IS_WEB, account, getTzktSocket, setTzktSocket, updateTzktConnection]);
+  }, [
+    IS_WEB,
+    dapp,
+    account,
+    getTzktSocket,
+    setTzktSocket,
+    updateTzktConnection,
+  ]);
 
   const providerValue = useMemo(() => {
     const isLoading = isUserLoading;
