@@ -43,6 +43,8 @@ import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provid
 import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
+import { atomsToTokens } from '~/lib/utils/formaters';
+import Money from '~/lib/atoms/Money';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -99,11 +101,13 @@ export const PopupContent: FC<{
   const buyProps = useMemo(
     () => ({
       marketContractAddress: pickOrderbookContract[estate.token_address],
-      tokensAmount: amountB?.toNumber(),
+      tokensAmount: amountB
+        ?.div(rateToNumber(usdToTokenRates[slug]))
+        .toNumber(),
       pricePerToken: rateToNumber(usdToTokenRates[slug]),
       decimals: tokensMetadata[slug]?.decimals,
     }),
-    [amountB, estate.token_address, slug, tokensMetadata, usdToTokenRates]
+    [estate.token_address, amountB, usdToTokenRates, slug, tokensMetadata]
   );
 
   const sellProps = useMemo(
@@ -208,7 +212,19 @@ export const PopupContent: FC<{
                   <div className="flex justify-between text-card-headline text-sand-900 w-full">
                     <h3>{estate.name}</h3>
                     <h3>
-                      {amountB?.toNumber() ?? 0} {estate.symbol}
+                      {orderType === BUY ? (
+                        <Money
+                          smallFractionFont={false}
+                          cryptoDecimals={tokensMetadata[slug]?.decimals}
+                        >
+                          {amountB
+                            ?.div(rateToNumber(usdToTokenRates[slug]))
+                            .toNumber() ?? 0}
+                        </Money>
+                      ) : (
+                        amountB?.toNumber()
+                      )}{' '}
+                      {estate.symbol}
                     </h3>
                   </div>
                   <div className="flex justify-between w-full">
@@ -216,7 +232,10 @@ export const PopupContent: FC<{
                       {estate.assetDetails.propertyDetails.propertyType}
                     </span>
                     <span className="text-body text-sand-900">
-                      ${total?.toNumber() ?? 0}
+                      $
+                      {orderType === BUY
+                        ? amountB?.toNumber() ?? 0
+                        : total?.toNumber() ?? 0}
                     </span>
                   </div>
                 </div>

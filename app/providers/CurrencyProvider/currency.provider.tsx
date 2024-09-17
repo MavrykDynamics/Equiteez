@@ -25,8 +25,9 @@ export const CurrencyProvider: FC<CurrencyProviderProps> = ({
       usdToTokenRates: {
         ...usdToToken,
         // TODO take rates for rwa tokens, remove later
-        [MARS_TOKEN_SLUG]: '51.094475357904031783253356',
-        [OCEAN_TOKEN_SLUG]: '72.844475357904031783253356',
+        // the contract takes 3 decimals
+        [MARS_TOKEN_SLUG]: '51.094',
+        [OCEAN_TOKEN_SLUG]: '72.844',
       },
       fiatToTezosRates: fiatToTezos,
     }),

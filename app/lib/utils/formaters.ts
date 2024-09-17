@@ -9,9 +9,13 @@ export const rwaToFixed = (value: number = 1) => {
   return parseFloat(value.toFixed(2).toString());
 };
 
-export const formatRWAPrice = (value: number, conversionRate = 1000000) => {
-  return value * conversionRate;
-};
+export function formatRWAPrice(price: number, exponent = 1000000) {
+  const bigPrice = new BigNumber(price);
+  const bigExponent = new BigNumber(exponent);
+  const powerOfTen = new BigNumber(10).pow(bigExponent);
+  const formattedPrice = bigPrice.multipliedBy(powerOfTen);
+  return formattedPrice.toNumber();
+}
 
 // QuoteToken Formatter
 export const QuoteToken = (value: number = 1) => {

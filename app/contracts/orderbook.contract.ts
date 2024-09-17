@@ -40,7 +40,8 @@ export async function orderbookBuy({
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
-    const pricePerRwaToken = formatRWAPrice(pricePerToken);
+    const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
+    debugger;
     const currency = 'USDT';
     const orderExpiry = null;
 
@@ -117,9 +118,10 @@ export async function orderbookSell({
     const tokenContact = await tezos.wallet.at(rwaTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
-    const pricePerRwaToken = formatRWAPrice(pricePerToken);
+    const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
     const currency = 'USDT';
     const orderExpiry = null;
+    debugger;
 
     const open_ops = tokenContact.methodsObject['update_operators']([
       {
