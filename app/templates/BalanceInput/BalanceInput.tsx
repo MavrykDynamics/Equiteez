@@ -64,7 +64,6 @@ export const BalanceInput: FC<BalanceInputProps> = ({
             extraSection={
               <AssetDropdown selectedAssetSlug={selectedAssetSlug} disabled />
             }
-            fieldWrapperBottomMargin={false}
             onChange={handleAmountChange}
           />
         </div>

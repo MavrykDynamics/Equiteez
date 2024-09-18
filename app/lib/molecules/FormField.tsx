@@ -61,7 +61,6 @@ export interface FormFieldProps
   onReveal?: EmptyFn;
   onBlur?: React.FocusEventHandler;
   smallPaddings?: boolean;
-  fieldWrapperBottomMargin?: boolean;
   labelClassname?: string;
   copyable?: boolean;
   testIDs?: {
