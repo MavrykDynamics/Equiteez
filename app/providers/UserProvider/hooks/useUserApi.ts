@@ -13,6 +13,7 @@ import {
 import {
   attachTzktSocketsEventHandlers,
   fetchTzktUserBalances,
+  normalizeUserTzktTokensBalances,
   openTzktWebSocket,
 } from '../helpers/userBalances.helpers';
 
@@ -101,19 +102,20 @@ export const useUserApi = ({
   const updateUserTzktTokenBalances = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (userAddress: string) => (userTokens: UserTzktTokensBalancesType) => {
-      // const normalizedTzktUserTokens = normalizeUserTzktTokensBalances({
-      //   indexerData: userTokens,
-      //   userAddress,
-      // });
+      const normalizedTzktUserTokens = normalizeUserTzktTokensBalances({
+        indexerData: userTokens,
+        userAddress,
+        tokensMetadata,
+      });
       setUserTzktTokens((prev) => ({
         ...prev,
         tokens: {
           ...prev.tokens,
-          // ...normalizedTzktUserTokens,
+          ...normalizedTzktUserTokens,
         },
       }));
     },
-    []
+    [tokensMetadata]
   );
 
   /**
