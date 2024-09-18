@@ -1,14 +1,16 @@
 import {
+  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteError,
 } from '@remix-run/react';
 import { json, LinksFunction } from '@remix-run/node';
 
 // providers
-import ErrorBoundary from './templates/ErrorBoundary';
+import CustomErrorBoundary from './templates/ErrorBoundary';
 
 // global styles
 import stylesheet from '~/index.css?url';
@@ -63,7 +65,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <body>
         <div id="root">
-          <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
+          <CustomErrorBoundary
+            whileMessage="booting an app"
+            className="min-h-screen"
+          >
             <AppProvider>
               <WalletProvider>
                 <CurrencyProvider
@@ -85,7 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </CurrencyProvider>
               </WalletProvider>
             </AppProvider>
-          </ErrorBoundary>
+          </CustomErrorBoundary>
           <ScrollRestoration />
           <Scripts />
         </div>
@@ -96,4 +101,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return <Outlet />;
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>
+          {error.status} {error.statusText}
+        </h1>
+        <p>{error.data}</p>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>The stack trace is:</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  } else {
+    return <h1>Unknown Error</h1>;
+  }
 }

@@ -1,158 +1,31 @@
 import { useCallback, useMemo } from 'react';
 
 // consts
-import { DEFAULT_USER, ADMIN_ADDRESSES } from '../helpers/user.consts';
+import { DEFAULT_USER } from '../helpers/user.consts';
 
 // types
-import {
-  UserContextStateType,
-  UserTzKtTokenBalances,
-  UserTzktTokensBalancesType,
-} from '../user.provider.types';
-
-import {
-  attachTzktSocketsEventHandlers,
-  fetchTzktUserBalances,
-  normalizeUserTzktTokensBalances,
-  openTzktWebSocket,
-} from '../helpers/userBalances.helpers';
+import { UserContextStateType } from '../user.provider.types';
 
 import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
-import { TokenMetadata } from '~/lib/metadata';
-import { sleep } from '~/lib/utils/sleep';
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;
   // setters for loadings in user provider
   setUserLoading: (newLoading: boolean) => void;
-  setIsTzktBalancesLoading: (newLoading: boolean) => void;
 
   // setters for user data in user provider
   setUserCtxState: React.Dispatch<React.SetStateAction<UserContextStateType>>;
-  setUserTzktTokens: React.Dispatch<
-    React.SetStateAction<UserTzKtTokenBalances>
-  >;
-
-  // getter & setter for tzkt socket
-  getTzktSocket: () => signalR.HubConnection | null;
-  setTzktSocket: (newTzktSocket: signalR.HubConnection | null) => void;
-
-  userCtxState: UserContextStateType;
-  tokensMetadata: StringRecord<TokenMetadata>;
 };
 
 /**
  * hook to handle CRUD with user (connect, changeWallet, signOut)
- *
  * SHOULD BE USED ONLY IN UserProvider
  */
 export const useUserApi = ({
   DAPP_INSTANCE,
   setUserLoading,
-  setIsTzktBalancesLoading,
   setUserCtxState,
-  setUserTzktTokens,
-
-  getTzktSocket,
-  setTzktSocket,
-  tokensMetadata,
 }: UseUserApiType) => {
-  const tzktSocket = getTzktSocket();
-
-  /**
-   * when user connects wallet or changing wallet we need to load all his tokens from tzkt, cuz ws does not return full tokens, only updated
-   */
-  const loadInitialTzktTokensForNewlyConnectedUser = useCallback(
-    async ({
-      userAddress,
-      tokensMetadata,
-      isUsingLoader = true,
-    }: {
-      userAddress: string;
-      tokensMetadata: StringRecord<TokenMetadata>;
-      isUsingLoader?: boolean;
-    }) => {
-      if (isUsingLoader) setIsTzktBalancesLoading(true);
-
-      setUserCtxState((prev) => ({
-        ...prev,
-        userAddress,
-        isAdmin: ADMIN_ADDRESSES[userAddress],
-      }));
-
-      const fetchedTokens = await fetchTzktUserBalances({
-        userAddress,
-        tokensMetadata,
-      });
-
-      setUserTzktTokens({
-        userAddress,
-
-        tokens: fetchedTokens ?? {},
-      });
-
-      if (isUsingLoader) setIsTzktBalancesLoading(false);
-    },
-    [setIsTzktBalancesLoading, setUserCtxState, setUserTzktTokens]
-  );
-
-  /**
-   * update user's tzkt tokens in userProvider context
-   */
-  const updateUserTzktTokenBalances = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (userAddress: string) => (userTokens: UserTzktTokensBalancesType) => {
-      const normalizedTzktUserTokens = normalizeUserTzktTokensBalances({
-        indexerData: userTokens,
-        userAddress,
-        tokensMetadata,
-      });
-      setUserTzktTokens((prev) => ({
-        ...prev,
-        tokens: {
-          ...prev.tokens,
-          ...normalizedTzktUserTokens,
-        },
-      }));
-    },
-    [tokensMetadata]
-  );
-
-  /**
-   * handle tzkt socket close or reconnecting events
-   */
-  const handleDisconnect = useCallback((error?: Error) => {
-    if (error) {
-      console.error('tzkt socket disconnected: ', { error });
-      // bug(
-      //   'Connection to TZKT has been lost, try to reload page',
-      //   'TZKT connection'
-      // );
-    }
-  }, []);
-
-  /**
-   * handle tzkt socket reconnected event, need to update all tzkt tokens, cuz balances might have changed
-   */
-  const handleOnReconnected = useCallback(
-    async (userAddress: string) => {
-      console.log('Connection to TZKT has been resumed', 'TZKT connection');
-      await sleep(500);
-      // const loadingToasterId = loading(
-      //   'Updating balances of TZKT tokens...',
-      //   'TZKT connection'
-      // );
-      await loadInitialTzktTokensForNewlyConnectedUser({
-        userAddress,
-        tokensMetadata,
-      });
-      await sleep(500);
-      // hideToasterMessage(loadingToasterId);
-      console.log('TZKT tokens balances has been updated', 'TZKT connection');
-    },
-    [loadInitialTzktTokensForNewlyConnectedUser, tokensMetadata]
-  );
-
   /**
    * connect user's wallet to DAPP:
    * load tzkt balances and set user's address to ctx (inside loadInitialTzktTokensForNewlyConnectedUser) to make QueryWithRefetch work
@@ -174,42 +47,6 @@ export const useUserApi = ({
       console.error(`Failed to change wallet: `, e);
     }
   }, [DAPP_INSTANCE]);
-
-  const updateTzktConnection = useCallback(
-    async (newUserAddress: string) => {
-      if (tzktSocket !== null) {
-        await tzktSocket?.stop();
-
-        const newTzktSocket = await openTzktWebSocket();
-        setTzktSocket(newTzktSocket);
-      }
-
-      await loadInitialTzktTokensForNewlyConnectedUser({
-        userAddress: newUserAddress,
-        tokensMetadata,
-        isUsingLoader: false,
-      });
-
-      if (tzktSocket) {
-        attachTzktSocketsEventHandlers({
-          userAddress: newUserAddress,
-          handleTokens: updateUserTzktTokenBalances(newUserAddress),
-          tzktSocket,
-          handleDisconnect,
-          handleOnReconnected,
-        });
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      // DO NOT update deps with tzktSocket, cuz it will trigger tzkt connection errors
-      handleDisconnect,
-      handleOnReconnected,
-      loadInitialTzktTokensForNewlyConnectedUser,
-      setTzktSocket,
-      updateUserTzktTokenBalances,
-    ]
-  );
 
   /**
    * disconnect user's wallet to DAPP & set context to no user state
@@ -233,9 +70,8 @@ export const useUserApi = ({
       connect,
       signOut,
       changeUser,
-      updateTzktConnection,
     }),
-    [connect, signOut, updateTzktConnection, changeUser]
+    [connect, signOut, changeUser]
   );
 
   return returnValue;
