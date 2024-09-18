@@ -8,7 +8,7 @@ export const AppGlobalLoader: FC<PropsWithChildren> = ({ children }) => {
   if (isLoading)
     return (
       <div className="h-screen w-full flex items-center justify-center bg-mvrk-dark">
-        <Spinner size={56} />;
+        <Spinner size={56} />
       </div>
     );
 

@@ -11,7 +11,14 @@ import {
 } from '~/consts/contracts';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
-import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, OTC_TYPE, SELL_TAB } from './consts';
+import {
+  ADMIN,
+  BUY_TAB,
+  LIMIT_TYPE,
+  MARKET_TYPE,
+  OTC_TYPE,
+  SELL_TAB,
+} from './consts';
 import { AdminScreen } from './AdminScreen';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
@@ -302,8 +309,18 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
         label: 'Sell',
         handleClick: handleTabClick,
       },
+
+      ...(isAdmin
+        ? [
+            {
+              id: ADMIN,
+              label: 'Admin',
+              handleClick: handleTabClick,
+            },
+          ]
+        : []),
     ],
-    [handleTabClick]
+    [handleTabClick, isAdmin]
   );
 
   // dropdown state
@@ -342,156 +359,166 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
         variant="secondary"
         tabs={tabs}
         activeTabId={activetabId}
+        className="flex-wrap gap-y-2"
         grow={true}
       />
-      {isAdmin && <AdminScreen symbol={symbol} tokenAddress={tokenAddress} />}
       <div className="mt-4">
-        <div className="mb-4">
-          <TabSwitcher
-            variant="tertiary"
-            activeTabId={activeItem}
-            tabs={items}
-          />
-        </div>
-        <div className="flex flex-col w-full gap-3 text-caption-regular">
-          <div className="flex justify-between w-full">
-            <span className="text-caption-regular">Avbl</span>
-            <div className="text-caption-regular">
-              {isBuyAction ? (
-                <Money smallFractionFont={false} shortened>
-                  {userTokensBalances[stablecoinContract] || 0}
-                </Money>
-              ) : (
-                <Money smallFractionFont={false} shortened>
-                  {userTokensBalances[tokenAddress] || '0'}
-                </Money>
-              )}
-              &nbsp;{symbolToShow}
-            </div>
-          </div>
-          <div className="flex flex-col w-full gap-3">
-            <div className="flex flex-col w-full gap-3">
-              <div
-                role="presentation"
-                onClick={handlePriceFocus}
-                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
-              >
-                <div className="text-content-secondary opacity-50">Price</div>
-
-                <div className="flex gap-1 flex-1 items-center">
-                  <AssetField
-                    ref={inputPriceRef}
-                    name="price"
-                    type="number"
-                    min={0}
-                    max={9999999999999}
-                    value={price
-                      ?.toFixed(selectedAssetMetadata.decimals ?? 6)
-                      .toString()}
-                    onChange={handlePriceChange}
-                    placeholder="0.00"
-                    className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
-                    disabled={!isLimitType}
-                  ></AssetField>
-                  <span className="font-semibold">USDT</span>
-                </div>
-              </div>
-
-              <div
-                role="presentation"
-                onClick={handleAmountFocus}
-                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
-              >
-                <div className="text-content-secondary opacity-50">Amount</div>
-
-                <div className="flex gap-1 flex-1 items-center">
-                  <AssetField
-                    ref={inputAmountRef}
-                    name="amount"
-                    type="text"
-                    min={0}
-                    max={9999999999999}
-                    assetDecimals={selectedAssetMetadata.decimals ?? 6}
-                    value={amount
-                      ?.toFixed(selectedAssetMetadata.decimals ?? 6)
-                      .toString()}
-                    onChange={handleAmountChange}
-                    placeholder="Minimum 1"
-                    className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
-                  ></AssetField>
-                  <span className="font-semibold">{symbol}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col w-full gap-1">
-              <ESnakeblock
-                selectedOption={selectedPercentage}
-                setSelectedOption={setSelectedPercentage}
+        {isAdmin && activetabId === ADMIN ? (
+          <AdminScreen symbol={symbol} tokenAddress={tokenAddress} />
+        ) : (
+          <>
+            <div className="mb-4">
+              <TabSwitcher
+                variant="tertiary"
+                activeTabId={activeItem}
+                tabs={items}
               />
             </div>
-          </div>
+            <div className="flex flex-col w-full gap-3 text-caption-regular">
+              <div className="flex justify-between w-full">
+                <span className="text-caption-regular">Avbl</span>
+                <div className="text-caption-regular">
+                  {isBuyAction ? (
+                    <Money smallFractionFont={false} shortened>
+                      {userTokensBalances[stablecoinContract] || 0}
+                    </Money>
+                  ) : (
+                    <Money smallFractionFont={false} shortened>
+                      {userTokensBalances[tokenAddress] || '0'}
+                    </Money>
+                  )}
+                  &nbsp;{symbolToShow}
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-3">
+                <div className="flex flex-col w-full gap-3">
+                  <div
+                    role="presentation"
+                    onClick={handlePriceFocus}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                  >
+                    <div className="text-content-secondary opacity-50">
+                      Price
+                    </div>
 
-          <div className="w-full mb-3">
-            <div
-              className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
-            >
-              <div className="text-content-secondary opacity-50">Total</div>
+                    <div className="flex gap-1 flex-1 items-center">
+                      <AssetField
+                        ref={inputPriceRef}
+                        name="price"
+                        type="number"
+                        min={0}
+                        max={9999999999999}
+                        value={price
+                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          .toString()}
+                        onChange={handlePriceChange}
+                        placeholder="0.00"
+                        className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                        disabled={!isLimitType}
+                      ></AssetField>
+                      <span className="font-semibold">USDT</span>
+                    </div>
+                  </div>
 
-              <div className="flex gap-1 flex-1 items-center">
-                <AssetField
-                  type="text"
-                  name="total"
-                  min={0}
-                  max={9999999999999}
-                  value={total?.toNumber()}
-                  placeholder="0.00"
-                  assetDecimals={6}
-                  className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
-                  disabled
-                ></AssetField>
-                <span className="font-semibold">USDT</span>
+                  <div
+                    role="presentation"
+                    onClick={handleAmountFocus}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                  >
+                    <div className="text-content-secondary opacity-50">
+                      Amount
+                    </div>
+
+                    <div className="flex gap-1 flex-1 items-center">
+                      <AssetField
+                        ref={inputAmountRef}
+                        name="amount"
+                        type="text"
+                        min={0}
+                        max={9999999999999}
+                        assetDecimals={selectedAssetMetadata.decimals ?? 6}
+                        value={amount
+                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          .toString()}
+                        onChange={handleAmountChange}
+                        placeholder="Minimum 1"
+                        className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                      ></AssetField>
+                      <span className="font-semibold">{symbol}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col w-full gap-1">
+                  <ESnakeblock
+                    selectedOption={selectedPercentage}
+                    setSelectedOption={setSelectedPercentage}
+                  />
+                </div>
+              </div>
+
+              <div className="w-full mb-3">
+                <div
+                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                >
+                  <div className="text-content-secondary opacity-50">Total</div>
+
+                  <div className="flex gap-1 flex-1 items-center">
+                    <AssetField
+                      type="text"
+                      name="total"
+                      min={0}
+                      max={9999999999999}
+                      value={total?.toNumber()}
+                      placeholder="0.00"
+                      assetDecimals={6}
+                      className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                      disabled
+                    ></AssetField>
+                    <span className="font-semibold">USDT</span>
+                  </div>
+                </div>
+
+                {hasTotalError && (
+                  <span className={clsx('text-body-xs text-error mt-2')}>
+                    {'Amount exceeds available balance'}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col w-full gap-1">
+                <div className="flex justify-between w-full">
+                  <span className="text-caption-regular">Max Buy</span>
+                  <span className="text-caption-regular">
+                    {maxBuy} {symbol}
+                  </span>
+                </div>
+
+                <div className="flex justify-between w-full">
+                  <span className="text-caption-regular">Est. Fee</span>
+                  <div className="text-caption-regular">
+                    <Money smallFractionFont={false} shortened>
+                      {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
+                    </Money>
+                    {symbolToShow}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex w-full">
+                <Button
+                  disabled={isBtnDisabled}
+                  onClick={pickBuySellAction}
+                  className="w-full mt-1 py-[10px]"
+                >
+                  <span className="text-body-xs font-bold">
+                    {activetabId === 'buy' ? 'Buy' : 'Sell'}
+                  </span>
+                </Button>
               </div>
             </div>
-
-            {hasTotalError && (
-              <span className={clsx('text-body-xs text-error mt-2')}>
-                {'Amount exceeds available balance'}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col w-full gap-1">
-            <div className="flex justify-between w-full">
-              <span className="text-caption-regular">Max Buy</span>
-              <span className="text-caption-regular">
-                {maxBuy} {symbol}
-              </span>
-            </div>
-
-            <div className="flex justify-between w-full">
-              <span className="text-caption-regular">Est. Fee</span>
-              <div className="text-caption-regular">
-                <Money smallFractionFont={false} shortened>
-                  {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
-                </Money>
-                {symbolToShow}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex w-full">
-            <Button
-              disabled={isBtnDisabled}
-              onClick={pickBuySellAction}
-              className="w-full mt-1 py-[10px]"
-            >
-              <span className="text-body-xs font-bold">
-                {activetabId === 'buy' ? 'Buy' : 'Sell'}
-              </span>
-            </Button>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </section>
   );
