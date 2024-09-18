@@ -10,17 +10,24 @@ import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { getStatusLabel } from '~/lib/ui/use-status-flag';
 import { Button } from '~/lib/atoms/Button';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+import { toTokenSlug } from '~/lib/assets';
 
 const useAdminAction = (amount: number, tokenAddress: string) => {
   const { tokensMetadata } = useTokensContext();
+  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
+
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
   const depositProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       rwaTokenAddress: tokenAddress,
       tokensAmount: amount,
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, tokensMetadata]
+    [tokenAddress, amount, selectedAssetMetadata]
   );
 
   const { invokeAction: handleBaseTokenDeposit, status: depositBaseStatus } =
@@ -33,9 +40,9 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       tokensAmount: amount,
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, tokensMetadata]
+    [amount, tokenAddress, selectedAssetMetadata]
   );
 
   const { invokeAction: handleBaseTokenWithdraw, status: withdrawBaseStatus } =
