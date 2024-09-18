@@ -29,12 +29,13 @@ import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { toTokenSlug } from '~/lib/assets';
 import BigNumber from 'bignumber.js';
-import { calculateEstfee, pseudoOperationFee } from '~/lib/utils/calcFns';
+import { calculateEstfee } from '~/lib/utils/calcFns';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { rateToNumber } from '~/lib/utils/numbers';
 import { isDefined } from '~/lib/utils';
 import { AssetField } from '~/lib/organisms/AssetField';
+import { CryptoBalance } from '~/templates/Balance';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -294,6 +295,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     if (!isLimitType) {
       setPrice(new BigNumber(usdToTokenRates[slug] ?? 0));
     }
+
+    if (isLimitType) {
+      setPrice(undefined);
+    }
   }, [isLimitType, slug, tokenAddress, usdToTokenRates]);
 
   // swaitch screens based on active tab
@@ -379,13 +384,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <span className="text-caption-regular">Avbl</span>
                 <div className="text-caption-regular">
                   {isBuyAction ? (
-                    <Money smallFractionFont={false} shortened>
-                      {userTokensBalances[stablecoinContract] || 0}
-                    </Money>
+                    <CryptoBalance
+                      value={userTokensBalances[stablecoinContract] || 0}
+                      cryptoDecimals={6}
+                    />
                   ) : (
-                    <Money smallFractionFont={false} shortened>
-                      {userTokensBalances[tokenAddress] || '0'}
-                    </Money>
+                    <CryptoBalance
+                      value={userTokensBalances[tokenAddress] || '0'}
+                      cryptoDecimals={selectedAssetMetadata.decimals ?? 6}
+                    />
                   )}
                   &nbsp;{symbolToShow}
                 </div>
@@ -413,7 +420,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                           .toString()}
                         onChange={handlePriceChange}
                         placeholder="0.00"
-                        className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                        style={{ padding: 0 }}
+                        className="w-full bg-transparent focus:outline-none text-right font-semibold border-none"
                         disabled={!isLimitType}
                       ></AssetField>
                       <span className="font-semibold">USDT</span>
@@ -442,6 +450,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                           .toString()}
                         onChange={handleAmountChange}
                         placeholder="Minimum 1"
+                        style={{ padding: 0 }}
                         className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
                       ></AssetField>
                       <span className="font-semibold">{symbol}</span>
@@ -472,6 +481,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       value={total?.toNumber()}
                       placeholder="0.00"
                       assetDecimals={6}
+                      style={{ padding: 0 }}
                       className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
                       disabled
                     ></AssetField>
@@ -490,7 +500,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <div className="flex justify-between w-full">
                   <span className="text-caption-regular">Max Buy</span>
                   <span className="text-caption-regular">
-                    {maxBuy} {symbol}
+                    <CryptoBalance
+                      value={new BigNumber(maxBuy ?? 0)}
+                      cryptoDecimals={selectedAssetMetadata.decimals}
+                    />{' '}
+                    {symbol}
                   </span>
                 </div>
 

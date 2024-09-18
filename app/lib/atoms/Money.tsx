@@ -67,7 +67,7 @@ const Money = memo(
     const tippyClassName = classNames(
       'px-px -mr-px rounded truncate',
       tooltip &&
-        'cursor-pointer hover:bg-black hover:bg-opacity-5 transition ease-in-out duration-200'
+        'cursor-pointer  hover:bg-opacity-5 transition ease-in-out duration-200'
     );
 
     if (indexOfDecimal === -1) {

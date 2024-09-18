@@ -27,7 +27,6 @@ import { FieldLabel } from 'app/lib/atoms/FieldLabel';
 import { SecretCover } from 'app/lib/atoms/SecretCover';
 import { CopyButton } from '../atoms/CopyButton';
 import usePasswordToggle from '../ui/hooks/usePasswordToggle';
-import { twMerge } from '../utils/tw-merge';
 
 export const PASSWORD_ERROR_CAPTION = 'PASSWORD_ERROR_CAPTION';
 
@@ -181,7 +180,8 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
         >
           <Field
             ref={combineRefs(ref, spareRef)}
-            className={twMerge(
+            className={clsx(
+              className,
               FORM_FIELD_CLASS_NAME,
               smallPaddings ? 'py-2 pl-2' : 'py-3 pl-4',
               buildPaddingRightClassName(
@@ -189,8 +189,7 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
                 smallPaddings,
                 showIcon
               ),
-              errorCaption ? 'border-error' : 'border-gray-100',
-              className
+              errorCaption ? 'border-error' : 'border-gray-100'
             )}
             id={id}
             type={inputType}

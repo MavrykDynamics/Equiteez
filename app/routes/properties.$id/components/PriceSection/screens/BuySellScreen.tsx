@@ -35,6 +35,7 @@ import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provid
 import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+import { CryptoBalance } from '~/templates/Balance';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -63,6 +64,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
+  );
+
+  const stableCoinMetadata = useMemo(
+    () => tokensMetadata[toTokenSlug(stablecoinContract)],
+    [tokensMetadata]
+  );
+
+  const selecteedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
   );
 
   const usdBalance = useMemo(
@@ -187,9 +198,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 <span>{balanceTotal}</span>
                 <div className="text-body-xs font-semibold">
                   Balance:&nbsp;
-                  <Money smallFractionFont={false} shortened>
-                    {isBuyAction ? usdBalance : tokenBalance}
-                  </Money>
+                  <CryptoBalance
+                    value={
+                      new BigNumber(isBuyAction ? usdBalance : tokenBalance)
+                    }
+                    cryptoDecimals={
+                      isBuyAction
+                        ? stableCoinMetadata.decimals
+                        : selecteedAssetMetadata.decimals
+                    }
+                  />
                 </div>
               </div>
             </BalanceInput>
@@ -204,9 +222,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 <span>{balanceTotal}</span>
                 <div className='className="text-body-xs font-semibold"'>
                   Balance:&nbsp;
-                  <Money smallFractionFont={false} shortened>
-                    {isBuyAction ? tokenBalance : usdBalance}
-                  </Money>
+                  <CryptoBalance
+                    value={
+                      new BigNumber(isBuyAction ? tokenBalance : usdBalance)
+                    }
+                    cryptoDecimals={
+                      !isBuyAction
+                        ? stableCoinMetadata.decimals
+                        : selecteedAssetMetadata.decimals
+                    }
+                  />
                 </div>
               </div>
             </BalanceInput>
