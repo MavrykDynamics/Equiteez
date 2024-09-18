@@ -73,6 +73,7 @@ export function dappClient() {
   async function connectAccount() {
     try {
       const client = getDAppClient();
+
       await client.requestPermissions({
         network: {
           type: WALLET_NETWORK,
@@ -97,7 +98,7 @@ export function dappClient() {
   async function disconnectWallet() {
     try {
       const wallet = getDAppClientWallet();
-      await wallet.disconnect();
+      // await wallet.disconnect();
       await wallet.clearActiveAccount();
     } catch (error) {
       console.log('disconnectWallet error:', error);

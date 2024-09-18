@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ADMIN_ADDRESSES } from './user.consts';
 import {
   attachTzktSocketsEventHandlers,
@@ -41,6 +41,12 @@ export const useUserSockets = ({
   const { IS_WEB } = useAppContext();
 
   const tzktSocketRef = useRef<null | HubConnection>(null);
+  const tzktSocket = useMemo(() => tzktSocketRef.current, []);
+  const setTzktSocket = useCallback(
+    (newTzktSocket: signalR.HubConnection | null) =>
+      (tzktSocketRef.current = newTzktSocket),
+    []
+  );
 
   /**
    * update user's tzkt tokens in userProvider context
@@ -176,5 +182,7 @@ export const useUserSockets = ({
   return {
     loadInitialTzktTokensForNewlyConnectedUser,
     attachSocketListeners,
+    tzktSocket,
+    setTzktSocket,
   };
 };

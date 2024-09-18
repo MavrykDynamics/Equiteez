@@ -51,7 +51,11 @@ export const UserProvider = ({ children }: Props) => {
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
 
   // handle user sockets connection | updates | disconnect
-  const { loadInitialTzktTokensForNewlyConnectedUser } = useUserSockets({
+  const {
+    loadInitialTzktTokensForNewlyConnectedUser,
+    tzktSocket,
+    setTzktSocket,
+  } = useUserSockets({
     setIsTzktBalancesLoading,
     setUserCtxState,
     setUserTzktTokens,
@@ -65,6 +69,8 @@ export const UserProvider = ({ children }: Props) => {
     DAPP_INSTANCE: dapp,
     setUserLoading,
     setUserCtxState,
+    tzktSocket,
+    setTzktSocket,
   });
 
   // Listening for active account changes with beacon
@@ -91,7 +97,13 @@ export const UserProvider = ({ children }: Props) => {
         });
       })();
     }
-  }, [account, loadInitialTzktTokensForNewlyConnectedUser, tokensMetadata]);
+  }, [
+    account,
+    loadInitialTzktTokensForNewlyConnectedUser,
+    setTzktSocket,
+    tokensMetadata,
+    tzktSocket,
+  ]);
 
   const providerValue = useMemo(() => {
     const isLoading = isUserLoading || tzktBalancesLoading;

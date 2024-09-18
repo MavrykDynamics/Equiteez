@@ -7,6 +7,7 @@ import { DEFAULT_USER } from '../helpers/user.consts';
 import { UserContextStateType } from '../user.provider.types';
 
 import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
+import { HubConnection } from '@microsoft/signalr';
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;
@@ -15,6 +16,8 @@ type UseUserApiType = {
 
   // setters for user data in user provider
   setUserCtxState: React.Dispatch<React.SetStateAction<UserContextStateType>>;
+  tzktSocket: HubConnection | null;
+  setTzktSocket: (socket: HubConnection | null) => void;
 };
 
 /**
@@ -25,6 +28,8 @@ export const useUserApi = ({
   DAPP_INSTANCE,
   setUserLoading,
   setUserCtxState,
+  tzktSocket,
+  setTzktSocket,
 }: UseUserApiType) => {
   /**
    * connect user's wallet to DAPP:
@@ -37,7 +42,7 @@ export const useUserApi = ({
       console.error(`Failed to connect wallet:`, e);
       // bug('Failed to connect wallet', TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title'])
     }
-  }, [DAPP_INSTANCE, setUserLoading]);
+  }, [DAPP_INSTANCE]);
 
   const changeUser = useCallback(async () => {
     try {
@@ -52,6 +57,9 @@ export const useUserApi = ({
    */
   const signOut = useCallback(async () => {
     try {
+      await tzktSocket?.stop();
+      setTzktSocket(null);
+
       await DAPP_INSTANCE?.disconnectWallet();
 
       setUserCtxState(DEFAULT_USER);
@@ -63,7 +71,13 @@ export const useUserApi = ({
       //   TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title']
       // );
     }
-  }, [DAPP_INSTANCE, setUserCtxState, setUserLoading]);
+  }, [
+    DAPP_INSTANCE,
+    setTzktSocket,
+    setUserCtxState,
+    setUserLoading,
+    tzktSocket,
+  ]);
 
   const returnValue = useMemo(
     () => ({
