@@ -24,7 +24,7 @@ export default defineConfig({
     'process.env': process.env,
   },
   build: {
-    minify: true,
+    minify: 'esbuild',
     cssMinify: true,
     ssr: true,
     rollupOptions: {
