@@ -27,16 +27,19 @@ import Money from '~/lib/atoms/Money';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { stablecoinContract } from '~/consts/contracts';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { calculateEstfee } from '~/lib/utils/calcFns';
+// eslint-disable-next-line import/no-named-as-default
 import BigNumber from 'bignumber.js';
 import { BalanceInput } from '~/templates/BalanceInput';
+import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
+import { rateToNumber } from '~/lib/utils/numbers';
+import { toTokenSlug } from '~/lib/assets';
+import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
-  currency: string;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
@@ -47,15 +50,17 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   estate,
   toggleScreen,
   actionType,
-  currency,
   amount,
   total,
   setAmount,
 }) => {
   const { symbol, token_address } = estate;
+  const slug = useMemo(() => toTokenSlug(token_address), [token_address]);
+  const { usdToTokenRates } = useCurrencyContext();
+  const { tokensMetadata } = useTokensContext();
 
   const { userTokensBalances } = useUserContext();
-  const { tokensPrices } = useTokensContext();
+
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
@@ -86,10 +91,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       Number(total) * (1 - Number(slippagePercentage || 0) / 100);
     return new BigNumber(usdBalance)
       .minus(new BigNumber(slippageAdjustment))
-      .div(tokensPrices[token_address])
+      .div(rateToNumber(usdToTokenRates[slug]))
       .toNumber()
       .toFixed(2);
-  }, [total, slippagePercentage, usdBalance, tokensPrices, token_address]);
+  }, [total, slippagePercentage, usdBalance, usdToTokenRates, slug]);
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
@@ -98,10 +103,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
       if (isBuyAction)
-        setAmount(val?.times(tokensPrices[token_address]) ?? new BigNumber(0));
-      else setAmount(val?.div(tokensPrices[token_address]) ?? new BigNumber(0));
+        setAmount(
+          val?.times(rateToNumber(usdToTokenRates[slug])) ?? new BigNumber(0)
+        );
+      else
+        setAmount(
+          val?.div(rateToNumber(usdToTokenRates[slug])) ?? new BigNumber(0)
+        );
     },
-    [isBuyAction, setAmount, token_address, tokensPrices]
+    [isBuyAction, setAmount, slug, usdToTokenRates]
   );
 
   const input1Props = useMemo(
@@ -109,25 +119,37 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       isBuyAction
         ? {
             amount,
-            selectedAssetSlug: stablecoinContract,
+            selectedAssetSlug: toTokenSlug(stablecoinContract),
+            selectedAssetMetadata:
+              tokensMetadata[toTokenSlug(stablecoinContract)],
             label: 'You Pay',
           }
-        : { amount, selectedAssetSlug: token_address, label: 'You Sell' },
-    [amount, isBuyAction, token_address]
+        : {
+            amount,
+            selectedAssetSlug: slug,
+            selectedAssetMetadata: tokensMetadata[slug],
+            label: 'You Sell',
+          },
+    [amount, isBuyAction, slug, tokensMetadata]
   );
 
   const input2Props = useMemo(
     () =>
       isBuyAction
         ? {
-            amount: amount?.div(tokensPrices[token_address]) || undefined,
-            selectedAssetSlug: token_address,
+            amount:
+              amount?.div(rateToNumber(usdToTokenRates[slug])) || undefined,
+            selectedAssetSlug: slug,
+            selectedAssetMetadata: tokensMetadata[slug],
           }
         : {
-            amount: amount?.times(tokensPrices[token_address]) || undefined,
-            selectedAssetSlug: stablecoinContract,
+            amount:
+              amount?.times(rateToNumber(usdToTokenRates[slug])) || undefined,
+            selectedAssetSlug: toTokenSlug(stablecoinContract),
+            selectedAssetMetadata:
+              tokensMetadata[toTokenSlug(stablecoinContract)],
           },
-    [amount, isBuyAction, token_address, tokensPrices]
+    [amount, isBuyAction, slug, tokensMetadata, usdToTokenRates]
   );
 
   const balanceTotal = useMemo(
@@ -141,6 +163,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         : '--',
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
+
+  const symbolToShow = isBuyAction
+    ? symbol
+    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   return (
     <div className="flex flex-col flex-1">
@@ -194,7 +220,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                       <div>
                         <span className="-mr-[1px]">$</span>
                         <Money smallFractionFont={false} cryptoDecimals={2}>
-                          {tokensPrices[token_address] || '0'}
+                          {rateToNumber(usdToTokenRates[slug]) || '0'}
                         </Money>
                       </div>
                     </div>
@@ -207,12 +233,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         Min Received
                         <InfoTooltip content="Min Received" />
                       </div>
-                      <p>
+                      <div>
                         <Money smallFractionFont={false} shortened>
                           {minReceived}
                         </Money>
-                        &nbsp;{symbol}
-                      </p>
+                        &nbsp;{symbolToShow}
+                      </div>
                     </div>
                     <div className="mt-2 text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
@@ -229,12 +255,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         Est. Fee
                         <InfoTooltip content="Est fee" />
                       </div>
-                      <p>
+                      <div>
                         <Money smallFractionFont={false} shortened>
-                          {calculateEstfee(total?.toNumber() ?? 0)}
+                          {isBuyAction
+                            ? calculateEstfee(total?.toNumber() ?? 0)
+                            : input2Props.amount?.toNumber() ?? 0}
                         </Money>
-                        &nbsp;{symbol}
-                      </p>
+                        &nbsp;{symbolToShow}
+                      </div>
                     </div>
                   </div>
                 </ExpanderBodyContent>
@@ -285,7 +313,7 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
   return (
     <CustomDropdown>
       <ClickableDropdownArea>
-        <div className="px-2 py-1 border border-dark-green-100 rounded-lg">
+        <div className="px-2 py-1 border border-dark-green-100 rounded-lg bg-white">
           <DropdownFaceContent gap={1}>
             <div className="max-w-8 text-nowrap">
               <input

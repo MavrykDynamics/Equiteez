@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { FC, memo, PropsWithChildren, SyntheticEvent, useState } from 'react';
+import { FC, SyntheticEvent, useState } from 'react';
 
 // organisms
 import CustomPopup, {

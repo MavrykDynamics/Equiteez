@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { Button } from '~/lib/atoms/Button';
 import { HashShortView } from '~/lib/atoms/HashShortView';
 import {
@@ -13,13 +14,21 @@ import { CustomSuspense } from '~/templates/CustomSuspense';
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
     useUserContext();
+
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
         <div className="flex items-center gap-x-2">
           <CustomDropdown>
             <ClickableDropdownArea>
-              <DropdownFaceContent className="py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl">
+              <DropdownFaceContent
+                className={clsx(
+                  'py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ',
+                  'hover:bg-dark-green-opacity hover:border-dark-green-500',
+                  'focus:border-dark-green-500 focus:bg-transparent',
+                  'transition duration-250 ease-in-out'
+                )}
+              >
                 <div className="flex items-center">
                   <IdentIcon
                     type="bottts"

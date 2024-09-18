@@ -3,6 +3,7 @@ import { dappClient } from './WalletCore.client';
 
 type WalletContext = {
   dapp: ReturnType<typeof dappClient> | null;
+  isLoading: boolean;
 };
 
 export const walletContext = createContext<WalletContext>(undefined!);
@@ -10,11 +11,13 @@ export const walletContext = createContext<WalletContext>(undefined!);
 export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   const [walletState, setWalletState] = useState<WalletContext>({
     dapp: null,
+    isLoading: true,
   });
 
   useEffect(() => {
     const dapp = dappClient();
-    setWalletState({ dapp });
+    // const tezos = dapp.tezos();
+    setWalletState({ dapp, isLoading: false });
   }, []);
 
   return (

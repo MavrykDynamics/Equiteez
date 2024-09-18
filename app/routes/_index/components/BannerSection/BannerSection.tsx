@@ -39,6 +39,7 @@ export const BannerSection = () => {
             variant="outline"
             position="left"
             size="outline"
+            disabled
             icon={<PlayIcon className="w-6 h-6 stroke-none fill-current" />}
           >
             How it works

@@ -13,7 +13,7 @@ import { useEffect, useMemo } from 'react';
 import { ApexOptions } from 'apexcharts';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
-import { useClientLibData } from '~/hooks/use-client-lib';
+import { useClientLibData } from '~/lib/ui/use-client-lib';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
 import OriginalApexCharts from 'react-apexcharts';
@@ -21,6 +21,7 @@ import clsx from 'clsx';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
 import { formatChartData } from '~/lib/utils/chart';
+import { CHART_MOCK_SERIES } from '~/mocks/chart';
 
 export const PropertyTradingHistoryTab = () => {
   const { IS_WEB } = useAppContext();
@@ -96,11 +97,11 @@ export const PropertyTradingHistoryTab = () => {
   const chartModuleProps = useMemo(
     () => ({
       options: state.options,
-      series: state.series,
+      series: CHART_MOCK_SERIES,
       type: 'candlestick',
       height: 565,
     }),
-    [state.options, state.series]
+    [state.options]
   );
 
   return (

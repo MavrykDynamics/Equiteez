@@ -7,7 +7,7 @@ import { FC } from 'react';
 
 import { InputText, InputTextProps } from '~/lib/molecules/Input/Input';
 import clsx from 'clsx';
-import { useOutsideClick } from '~/hooks/use-click-outside';
+import { useOutsideClick } from '~/lib/ui/use-click-outside';
 
 type InputWithIconsProps = {
   showSearchIcon?: boolean;

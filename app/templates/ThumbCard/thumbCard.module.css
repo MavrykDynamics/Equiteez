@@ -7,6 +7,10 @@
   overflow: hidden;
 }
 
+.thumbCardWrapper:hover img {
+  scale: 1.1;
+}
+
 .thumbCardContent {
   border-radius: 16px;
   background: linear-gradient(
@@ -26,6 +30,8 @@
   object-fit: cover;
   inset: 0;
   z-index: 1;
+
+  transition: all 500ms ease-in-out;
 }
 
 /* progress bar styles */

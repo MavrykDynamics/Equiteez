@@ -49,10 +49,7 @@ export const PrimaryPriceBlock = () => {
           <p>{estate.assetDetails.priceDetails.projectedRentalYield}%</p>
         </div>
         <div className="text-content text-body flex justify-between">
-          <div className="flex items-center gap-x-1">
-            Investors
-            <InfoTooltip content="Investors" className="w-6 h-6" />
-          </div>
+          <div className="flex items-center gap-x-1">Investors</div>
           <p>{estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}</p>
         </div>
         <Divider className="my-4" />

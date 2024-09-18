@@ -9,18 +9,30 @@ import {
 } from '~/providers/EstatesProvider/estates.types';
 import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
 
-function getThreeElements(items: EstateType[]) {
-  const item1 = items[Math.floor(Math.random() * items.length)];
-  const item2 = items[Math.floor(Math.random() * items.length)];
-  const item3 = items[Math.floor(Math.random() * items.length)];
+function getThreeUniqueElements(items: EstateType[]) {
+  if (items.length < 3) {
+    throw new Error('There are not enough items to select 3 unique elements.');
+  }
 
-  return [item1, item2, item3];
+  const selectedItems: EstateType[] = [];
+  while (selectedItems.length < 3) {
+    const randomIndex = Math.floor(Math.random() * items.length);
+    const item = items[randomIndex];
+    if (!selectedItems.includes(item)) {
+      selectedItems.push(item);
+    }
+  }
+
+  return selectedItems;
 }
 
 export const SimilarProperties = () => {
   const { estates } = useEstatesContext();
 
-  const similarEstates = useMemo(() => getThreeElements(estates), [estates]);
+  const similarEstates = useMemo(
+    () => getThreeUniqueElements(estates),
+    [estates]
+  );
 
   return (
     <section className="px-11 flex flex-col">
@@ -29,16 +41,20 @@ export const SimilarProperties = () => {
       </h2>
       <div className="grid grid-cols-3 gap-x-3">
         {similarEstates.map((estate) => {
+          const isSecondaryMarket =
+            estate.assetDetails.type === SECONDARY_MARKET;
           const restProps = {
             pricePerToken: (estate as SecondaryEstate).assetDetails.priceDetails
               .price,
-            progressBarPercentage: +(
-              (((estate as PrimaryEstate).assetDetails.priceDetails
-                .tokensUsed || 1) /
-                (estate as PrimaryEstate).assetDetails.priceDetails
-                  .tokensAvailable) *
-              100
-            ).toFixed(2),
+            progressBarPercentage: isSecondaryMarket
+              ? undefined
+              : +(
+                  (((estate as PrimaryEstate).assetDetails.priceDetails
+                    .tokensUsed || 1) /
+                    (estate as PrimaryEstate).assetDetails.priceDetails
+                      .tokensAvailable) *
+                  100
+                ).toFixed(2),
           };
           return (
             <Link

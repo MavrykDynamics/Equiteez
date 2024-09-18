@@ -90,7 +90,9 @@ export default function PropertyDetails() {
           <Divider className="my-6" />
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
-        <PriceSection isSecondaryEstate={isSecondaryEstate} />
+        <div className="sticky top-10 h-fit">
+          <PriceSection isSecondaryEstate={isSecondaryEstate} />
+        </div>
       </section>
       <Spacer />
       <SimilarProperties />
@@ -127,11 +129,11 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
 const Options: FC = () => {
   return (
     <section className="flex items-center gap-x-4 ml-auto">
-      <button className="text-content text-body flex items-center gap-x-1 font-semibold">
+      <button className="text-content text-body flex items-center gap-x-1 font-semibold hover:text-sand-700">
         <LikeIcon className="stroke-current" />
         <p>Save</p>
       </button>
-      <button className="text-content text-body flex items-center gap-x-1 font-semibold">
+      <button className="text-content text-body flex items-center gap-x-1 font-semibold  hover:text-sand-700">
         <ShareIcon className="stroke-current" />
         <p>Share</p>
       </button>

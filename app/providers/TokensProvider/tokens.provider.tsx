@@ -7,50 +7,62 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { TokensProviderCtx, TokenType } from './tokens.provider.types';
 import {
+  MVRK_ASSET_SLUG,
+  MVRK_CONTRACT_ADDRESS,
+  MVRK_METADATA,
   TokenMetadata,
-  TokensProviderCtx,
-  TokenType,
-} from './tokens.provider.types';
-import { fetchTokensData, fetchTokensMetadata } from './utils/fetchTokensdata';
-import { MARS1_TOKEN_ADDRESS, OCEAN_TOKEN_ADDRESS } from '~/consts/contracts';
+} from '~/lib/metadata';
+// import { MARS1_TOKEN_ADDRESS, OCEAN_TOKEN_ADDRESS } from '~/consts/contracts';
 
 const tokensContext = createContext<TokensProviderCtx>(undefined!);
 
-export const TokensProvider: FC<PropsWithChildren> = ({ children }) => {
+type TokensProviderProps = {
+  initialTokens: TokenType[];
+  initialTokensMetadata: StringRecord<TokenMetadata>;
+} & PropsWithChildren;
+
+export const TokensProvider: FC<TokensProviderProps> = ({
+  initialTokens,
+  initialTokensMetadata,
+  children,
+}) => {
   const [tokens, setTokens] = useState<TokenType[]>([]);
   const [tokensMetadata, setTokensMetadata] = useState<
     StringRecord<TokenMetadata>
   >({});
-
   const [isLoading, setIsLoading] = useState(true);
 
   const initializeTokensData = useCallback(async () => {
     try {
-      const tokens = await fetchTokensData();
-      const tokensMetadata = await fetchTokensMetadata(tokens);
-      setTokens(tokens);
-      setTokensMetadata(tokensMetadata);
+      setTokens(
+        initialTokens.concat({
+          contract: MVRK_CONTRACT_ADDRESS,
+          id: MVRK_METADATA.id,
+        })
+      );
+
+      setTokensMetadata({
+        ...initialTokensMetadata,
+        [MVRK_ASSET_SLUG]: MVRK_METADATA,
+      });
       setIsLoading(false);
     } catch (e) {
       setIsLoading(false);
     }
-  }, []);
+  }, [initialTokens, initialTokensMetadata]);
 
   /**Fetch tokens and tokens metadta on init */
   useEffect(() => {
     initializeTokensData();
-  }, []);
+  }, [initializeTokensData]);
 
   const memoizedTokensCtx: TokensProviderCtx = useMemo(
     () => ({
       tokens,
       tokensMetadata,
       isLoading,
-      tokensPrices: {
-        [OCEAN_TOKEN_ADDRESS]: 54,
-        [MARS1_TOKEN_ADDRESS]: 45,
-      },
     }),
     [isLoading, tokens, tokensMetadata]
   );

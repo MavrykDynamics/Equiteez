@@ -1,10 +1,10 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './faqSection.module.css';
 import clsx from 'clsx';
 
 import ArrowDown from 'app/icons/chevron-down.svg?react';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { isVisibleInViewport } from '~/lib/utils/element-in-view';
+// import { isVisibleInViewport } from '~/lib/utils/element-in-view';
 
 export type FaqType = {
   data: { title: string; description: string | JSX.Element }[];
@@ -36,21 +36,23 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
     };
   }, []);
 
-  // scroll to chosen article
+  // scroll to chosen article in init
   useEffect(() => {
-    const element = document.querySelector(
-      `[data-active-article="faq-${activeArticleIdx}"]`
-    );
+    const hash = window.location.hash;
 
-    if (!element || !isScrollAllowed) return;
-    if (isVisibleInViewport(element, { heightDifference: 400 })) return;
+    if (!hash) return;
+
+    const n = hash.split('#faq-').pop();
+
+    const element = document.querySelector(`[data-active-article="faq-${n}"]`);
+
+    if (!element) return;
 
     element.scrollIntoView({
       block: 'start',
-      inline: 'nearest',
-      behavior: 'smooth',
+      behavior: 'instant',
     });
-  }, [activeArticleIdx, isScrollAllowed]);
+  }, []);
 
   return (
     <section className="px-11 flex gap-x-[90px]">
@@ -61,42 +63,70 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
       </div>
       <div className="flex flex-col flex-1">
         {data.map((item, idx) => (
-          <div
+          <Question
             key={item.title}
-            className="text-content text-card-headline py-8 border-b border-divider flex-1"
-            id={`faq-${idx + 1}`}
-          >
-            <div
-              className={styles.mobileArticle}
-              data-active-article={`faq-${idx + 1}`}
-            >
-              <button
-                className="flex items-center justify-between w-full capitalize"
-                onClick={() => handleHeaderClick(idx + 1)}
-              >
-                <div className={styles.faqSubHeader}>{item.title}</div>
-                <ArrowDown
-                  className={clsx(
-                    'w-6 h-6 text-content stroke-current',
-                    activeArticleIdx === idx + 1 &&
-                      'transition duration-500 rotate-180'
-                  )}
-                />
-              </button>
-
-              <div
-                className={clsx(
-                  'text-content text-body',
-                  styles.description,
-                  activeArticleIdx === idx + 1 && styles.active
-                )}
-              >
-                {item.description}
-              </div>
-            </div>
-          </div>
+            idx={idx}
+            activeArticleIdx={activeArticleIdx}
+            item={item}
+            handleClick={handleHeaderClick}
+          />
         ))}
       </div>
     </section>
+  );
+};
+
+type QuestionType = {
+  handleClick: (idx: number) => void;
+  activeArticleIdx: number;
+  idx: number;
+  item: FaqType['data'][0];
+};
+
+const Question: FC<QuestionType> = ({
+  idx,
+  activeArticleIdx,
+  item,
+  handleClick,
+}) => {
+  const answerRef = useRef<HTMLDivElement | null>(null);
+
+  return (
+    <div
+      role="presentation"
+      className="text-content text-card-headline py-8 border-b border-divider flex-1 cursor-pointer"
+      id={`faq-${idx + 1}`}
+      onClick={() => handleClick(idx + 1)}
+    >
+      <div
+        className={clsx(
+          styles.question,
+          activeArticleIdx === idx && styles.active
+        )}
+        data-active-article={`faq-${idx + 1}`}
+      >
+        <button className="flex items-center justify-between w-full capitalize">
+          <div className={styles.faqSubHeader}>{item.title}</div>
+          <ArrowDown
+            className={clsx(
+              'w-6 h-6 text-content stroke-current',
+              activeArticleIdx === idx + 1 && 'rotate-180'
+            )}
+          />
+        </button>
+      </div>
+      <div
+        ref={answerRef}
+        style={{
+          maxHeight:
+            activeArticleIdx === idx + 1
+              ? `${answerRef.current?.scrollHeight}px`
+              : '0',
+        }}
+        className={clsx('text-content text-body', styles.answercont)}
+      >
+        {item.description}
+      </div>
+    </div>
   );
 };

@@ -49,28 +49,25 @@ export const SecondaryPriceBlock: FC = () => {
           />
         </div>
         <div className="text-content body flex justify-between mb-4">
-          <p className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
             Total Return
             <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
-          </p>
+          </div>
           <p className="text-buttons">
             {estate.assetDetails.priceDetails.annualReturn}%
           </p>
         </div>
         <div className="text-content body flex justify-between mb-4">
-          <p className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
             Expected Income
             <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
-          </p>
+          </div>
           <p className="text-buttons">
             {estate.assetDetails.financials.expectedIncome.income}%
           </p>
         </div>
         <div className="text-content body flex justify-between">
-          <p className="flex items-center gap-1">
-            Investors
-            <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
-          </p>
+          <p className="flex items-center gap-1">Investors</p>
           <p className="text-buttons">
             {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
           </p>
@@ -80,7 +77,6 @@ export const SecondaryPriceBlock: FC = () => {
           <p>Total Liquidity</p>
           <div className="flex items-center gap-1">
             ${estate.assetDetails.priceDetails.totalLiquidity}
-            <InfoTooltip className="w-6 h-6" content={'Total Liquidity'} />
           </div>
         </div>
 
@@ -97,8 +93,13 @@ export const SecondaryPriceBlock: FC = () => {
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
         contentPosition={'right'}
+        className={'bg-white'}
       >
-        <PopupContent estate={estate} orderType={orderType} />
+        <PopupContent
+          estate={estate}
+          orderType={orderType}
+          setOrderType={setOrderType}
+        />
       </PopupWithIcon>
     </section>
   );

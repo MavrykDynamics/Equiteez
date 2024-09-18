@@ -6,6 +6,7 @@ import clsx from 'clsx';
 // import { AssetMetadataBase } from '~/lib/types/metadata';
 import { toLocalFormat } from '~/lib/formaters/formaters';
 import { AssetDropdown } from '../AssetDropdown';
+import { AssetMetadataBase } from '~/lib/metadata';
 
 type BalanceInputProps = {
   label?: string;
@@ -15,7 +16,7 @@ type BalanceInputProps = {
   selectedAssetSlug: string;
   children?: React.ReactNode;
   errorCaption?: string;
-  // selectedAssetMetadata: AssetMetadataBase;
+  selectedAssetMetadata: AssetMetadataBase;
 };
 
 export const BalanceInput: FC<BalanceInputProps> = ({
@@ -26,6 +27,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
   children,
   selectedAssetSlug,
   errorCaption,
+  selectedAssetMetadata,
 }) => {
   const handleAmountChange = (newAmount?: string) =>
     onChange?.(
@@ -44,23 +46,24 @@ export const BalanceInput: FC<BalanceInputProps> = ({
         {label && (
           <div className="text-left text-body-xs text-sand-600">{label}</div>
         )}
-        <div>
+        <div className="overflow-y-hidden">
           <AssetField
-            value={amount?.toFixed(8).toString()}
+            value={amount
+              ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+              .toString()}
             className={clsx(
-              'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none'
+              'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden'
             )}
-            style={{ padding: 0, borderRadius: 0 }}
+            containerClassName="overflow-y-hidden"
+            style={{ padding: 0, borderRadius: 0, height: 42 }}
             placeholder={toLocalFormat(0, { decimalPlaces: 2 })}
             min={0}
             max={9999999999999}
             disabled={amountInputDisabled}
-            assetDecimals={6}
-            // assetDecimals={selectedAssetMetadata.decimals}
+            assetDecimals={selectedAssetMetadata.decimals ?? 6}
             extraSection={
               <AssetDropdown selectedAssetSlug={selectedAssetSlug} disabled />
             }
-            fieldWrapperBottomMargin={false}
             onChange={handleAmountChange}
           />
         </div>

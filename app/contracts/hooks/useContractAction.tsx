@@ -6,7 +6,7 @@ import {
   STATUS_PENDING,
   STATUS_SUCCESS,
   useStatusFlag,
-} from '~/hooks/use-status-flag';
+} from '~/lib/ui/use-status-flag';
 import { sleep } from '~/lib/utils/sleep';
 import { usePopupContext } from '~/providers/PopupProvider/popup.provider';
 
@@ -47,7 +47,7 @@ export const useContractAction = <G,>(
     } catch (e) {
       dispatch(STATUS_ERROR);
       showPopup(popupKeys.txOperation, popupOperationError);
-      await sleep(3000);
+      await sleep(2000);
 
       dispatch(STATUS_IDLE);
     }

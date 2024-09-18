@@ -5,14 +5,13 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react';
-import { LinksFunction } from '@remix-run/node';
+import { json, LinksFunction } from '@remix-run/node';
 
 // providers
 import ErrorBoundary from './templates/ErrorBoundary';
 
 // global styles
 import stylesheet from '~/index.css?url';
-import extendCSS from '~/extend.css?url';
 import 'react-datepicker/dist/react-datepicker.css';
 
 // providers
@@ -22,15 +21,37 @@ import { UserProvider } from './providers/UserProvider/user.provider';
 import { EstatesProvider } from './providers/EstatesProvider/estates.provider';
 import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
+import { AppGlobalLoader } from './providers/AppGlobalLoader';
+import { CurrencyProvider } from './providers/CurrencyProvider/currency.provider';
+import {
+  fetchTokensData,
+  fetchTokensMetadata,
+} from './providers/TokensProvider/utils/fetchTokensdata';
+import { fetchFiatToTezosRates } from './lib/fiat-currency';
+import { fetchUsdToTokenRates } from './lib/mavryk/endpoints/get-exchange-rates';
+import { useDataFromLoader } from './hooks/useDataFromLoader';
 
 export const links: LinksFunction = () => [
   { rel: 'preload', as: 'style', href: stylesheet },
   { rel: 'stylesheet', href: stylesheet },
-  { rel: 'preload', as: 'style', href: extendCSS },
-  { rel: 'stylesheet', href: extendCSS },
 ];
 
+export const loader = async () => {
+  const tokens = await fetchTokensData();
+
+  const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
+    fetchTokensMetadata(tokens),
+    fetchFiatToTezosRates(),
+    fetchUsdToTokenRates(),
+  ]);
+
+  return json({ tokens, tokensMetadata, fiatToTezos, usdToToken });
+};
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
+    useDataFromLoader<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -45,13 +66,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
             <AppProvider>
               <WalletProvider>
-                <TokensProvider>
-                  <UserProvider>
-                    <EstatesProvider>
-                      <PopupProvider>{children}</PopupProvider>
-                    </EstatesProvider>
-                  </UserProvider>
-                </TokensProvider>
+                <CurrencyProvider
+                  fiatToTezos={fiatToTezos}
+                  usdToToken={usdToToken}
+                >
+                  <TokensProvider
+                    initialTokens={tokens}
+                    initialTokensMetadata={tokensMetadata}
+                  >
+                    <UserProvider>
+                      <EstatesProvider>
+                        <AppGlobalLoader>
+                          <PopupProvider>{children}</PopupProvider>
+                        </AppGlobalLoader>
+                      </EstatesProvider>
+                    </UserProvider>
+                  </TokensProvider>
+                </CurrencyProvider>
               </WalletProvider>
             </AppProvider>
           </ErrorBoundary>

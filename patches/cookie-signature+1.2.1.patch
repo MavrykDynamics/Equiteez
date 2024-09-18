@@ -1,0 +1,14 @@
+diff --git a/node_modules/cookie-signature/index.js b/node_modules/cookie-signature/index.js
+index 3fbbddb..fab90ee 100644
+--- a/node_modules/cookie-signature/index.js
++++ b/node_modules/cookie-signature/index.js
+@@ -2,7 +2,8 @@
+  * Module dependencies.
+  */
+ 
+-var crypto = require('crypto');
++// NOTE crypto package is taken by default from cloudflare API
++// see https://developers.cloudflare.com/workers/runtime-apis/nodejs/crypto/
+ 
+ /**
+  * Sign the given `val` with `secret`.

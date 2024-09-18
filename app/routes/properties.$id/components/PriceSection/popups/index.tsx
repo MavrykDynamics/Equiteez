@@ -10,7 +10,7 @@ import { Divider } from '~/lib/atoms/Divider';
 import { TabType } from '~/lib/atoms/Tab';
 
 // contract actions
-import { pickOrderbookContract } from '~/consts/contracts';
+import { pickDodoContractBasedOnToken } from '~/consts/contracts';
 
 // icons
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
@@ -33,27 +33,52 @@ import {
 } from '../consts';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
-import usePrevious from '~/hooks/use-previous';
+// eslint-disable-next-line import/no-named-as-default
 import BigNumber from 'bignumber.js';
 import { isDefined } from '~/lib/utils';
 import { ProgresBar } from '../PrimaryPriceBlock';
 import clsx from 'clsx';
+import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
+import { rateToNumber } from '~/lib/utils/numbers';
+import { toTokenSlug } from '~/lib/assets';
+import usePrevious from '~/lib/ui/hooks/usePrevious';
+import Money from '~/lib/atoms/Money';
+import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
+import { pickStatusFromMultiple } from '~/lib/ui/use-status-flag';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
   orderType: OrderType;
-}> = ({ estate, orderType }) => {
+  setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
+}> = ({ estate, orderType, setOrderType }) => {
+  const { tokensMetadata } = useTokensContext();
+  const { usdToTokenRates } = useCurrencyContext();
+
+  const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
+  const prevTabId = usePrevious(
+    activetabId,
+    activetabId !== CONFIRM
+  ) as OrderType;
+
+  // derived
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+  const slug = useMemo(
+    () => toTokenSlug(estate.token_address),
+    [estate.token_address]
+  );
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
 
-  const { tokensPrices, tokensMetadata } = useTokensContext();
-  const [activetabId, setAvtiveTabId] = useState(orderType);
-  const prevTabId = usePrevious(activetabId) as OrderType;
-
-  const handleTabClick = useCallback((id: OrderType) => {
-    setAvtiveTabId(id);
-  }, []);
+  const handleTabClick = useCallback(
+    (id: OrderType) => {
+      setAvtiveTabId(id);
+      if (id !== CONFIRM) setOrderType(id);
+    },
+    [setOrderType]
+  );
 
   const tabs: TabType<OrderType>[] = useMemo(
     () => [
@@ -81,42 +106,54 @@ export const PopupContent: FC<{
   const [total, setTotal] = useState<BigNumber | undefined>();
 
   useEffect(() => {
-    if (isDefined(amountB) && tokensPrices[estate.token_address]) {
-      setTotal(amountB.times(tokensPrices[estate.token_address]));
+    if (isDefined(amountB) && rateToNumber(usdToTokenRates[slug])) {
+      setTotal(amountB.times(rateToNumber(usdToTokenRates[slug])));
     } else if (!isDefined(amountB)) {
       setTotal(undefined);
     }
-  }, [amountB, estate.token_address, tokensPrices]);
+  }, [amountB, estate.token_address, slug, usdToTokenRates]);
 
-  const buyProps = useMemo(
+  const marketBuyProps = useMemo(
     () => ({
-      marketContractAddress: pickOrderbookContract[estate.token_address],
-      tokensAmount: amountB?.toNumber(),
-      pricePerToken: Number(tokensPrices[estate.token_address]),
-      decimals: tokensMetadata[estate.token_address]?.decimals,
+      dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
+      tokensAmount: amountB
+        ?.div(rateToNumber(usdToTokenRates[slug]))
+        .toNumber(),
+      minMaxQuote: 1000,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amountB, estate.token_address, tokensMetadata, tokensPrices]
+    [
+      amountB,
+      estate.token_address,
+      selectedAssetMetadata?.decimals,
+      slug,
+      usdToTokenRates,
+    ]
   );
 
-  const sellProps = useMemo(
+  const marketSellProps = useMemo(
     () => ({
-      marketContractAddress: pickOrderbookContract[estate.token_address],
-      rwaTokenAddress: estate.token_address,
+      dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
+
+      tokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
-      pricePerToken: Number(tokensPrices[estate.token_address]),
-      decimals: tokensMetadata[estate.token_address]?.decimals,
+      minMaxQuote: 1000, // minMaxQuote
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amountB, estate.token_address, tokensMetadata, tokensPrices]
+    [amountB, estate.token_address, selectedAssetMetadata]
   );
 
-  const { invokeAction: handleOrderbookSell } = useContractAction(
-    orderbookSell,
-    sellProps
-  );
+  // Market buy | sell
+  const { invokeAction: handleMarketBuy, status: buyStatus } =
+    useContractAction(buyBaseToken, marketBuyProps);
 
-  const { invokeAction: handleOrderbookBuy } = useContractAction(
-    orderbookBuy,
-    buyProps
+  const { invokeAction: handleMarketSell, status: sellStatus } =
+    useContractAction(sellBaseToken, marketSellProps);
+
+  // status of the operation
+  const status = useMemo(
+    () => pickStatusFromMultiple(buyStatus, sellStatus),
+    [buyStatus, sellStatus]
   );
 
   const HeadlinePreviewSection = () => (
@@ -151,8 +188,12 @@ export const PopupContent: FC<{
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
             {activetabId === CONFIRM ? (
-              <div className="flex items-center">
-                <button onClick={() => setAvtiveTabId(prevTabId)}>
+              <div
+                role="presentation"
+                onClick={() => setAvtiveTabId(prevTabId)}
+                className="flex items-center cursor-pointer"
+              >
+                <button>
                   <ArrowLeftIcon className="size-6 mr-2" />
                 </button>
                 <span className="text-card-headline text-sand-900">
@@ -200,7 +241,19 @@ export const PopupContent: FC<{
                   <div className="flex justify-between text-card-headline text-sand-900 w-full">
                     <h3>{estate.name}</h3>
                     <h3>
-                      {amountB?.toNumber() ?? 0} {estate.symbol}
+                      {orderType === BUY ? (
+                        <Money
+                          smallFractionFont={false}
+                          cryptoDecimals={tokensMetadata[slug]?.decimals}
+                        >
+                          {amountB
+                            ?.div(rateToNumber(usdToTokenRates[slug]))
+                            .toNumber() ?? 0}
+                        </Money>
+                      ) : (
+                        amountB?.toNumber()
+                      )}{' '}
+                      {estate.symbol}
                     </h3>
                   </div>
                   <div className="flex justify-between w-full">
@@ -208,7 +261,10 @@ export const PopupContent: FC<{
                       {estate.assetDetails.propertyDetails.propertyType}
                     </span>
                     <span className="text-body text-sand-900">
-                      ${total?.toNumber() ?? 0}
+                      $
+                      {orderType === BUY
+                        ? amountB?.toNumber() ?? 0
+                        : total?.toNumber() ?? 0}
                     </span>
                   </div>
                 </div>
@@ -221,7 +277,6 @@ export const PopupContent: FC<{
               estate={estate}
               toggleScreen={() => setAvtiveTabId(CONFIRM)}
               actionType={activetabId}
-              currency={activetabId === BUY ? 'USDT' : estate.symbol}
               amount={amountB}
               setAmount={setAmountB}
               total={total}
@@ -231,10 +286,9 @@ export const PopupContent: FC<{
           {activetabId === OTC && <OTCPopupContent estate={estate} />}
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
-              actionType={prevTabId === BUY ? BUY : SELL}
-              actionCb={
-                prevTabId === BUY ? handleOrderbookBuy : handleOrderbookSell
-              }
+              actionType={orderType === BUY ? BUY : SELL}
+              actionCb={orderType === BUY ? handleMarketBuy : handleMarketSell}
+              status={status}
             />
           )}
         </div>

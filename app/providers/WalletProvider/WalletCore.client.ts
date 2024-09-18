@@ -9,14 +9,14 @@ import type { BeaconWallet as BeaconWalletType } from '@mavrykdynamics/taquito-b
 
 // consts
 import {
-  RPCNodeType,
   atlasNetRpcnode,
-  rpcNodeSchema,
   RPC_NODE,
+  rpcNodeSchema,
+  RPCNodeType,
 } from 'app/consts/rpcNodes';
+import { getItemFromStorage } from '~/lib/utils/local-storage';
 
 // utils
-import { getItemFromStorage } from '~/lib/utils/local-storage';
 
 // Need to use as cuz NetworkType is enum and ts don't understand that all types are correct
 const WALLET_NETWORK = 'atlasnet' as NetworkType;
@@ -58,7 +58,10 @@ export function dappClient() {
     client
       .subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
         // An active account has been set, update the dApp UI
-        console.log(`${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `, account);
+        console.log(
+          `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
+          account.address
+        );
 
         setAccount(account ?? null);
       })

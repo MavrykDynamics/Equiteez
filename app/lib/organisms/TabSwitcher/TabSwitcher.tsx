@@ -9,6 +9,7 @@ type TabSwitcherProps = {
   activeTabId?: string;
   grow?: boolean;
   variant?: TabVariant;
+  className?: string;
 };
 
 const variants = {
@@ -21,10 +22,11 @@ export const TabSwitcher: FC<TabSwitcherProps> = ({
   tabs,
   activeTabId,
   grow,
+  className,
   variant = 'primary',
 }) => {
   return (
-    <div className={clsx('flex items-center', variants[variant])}>
+    <div className={clsx('flex items-center', variants[variant], className)}>
       {tabs.map((tab) => (
         <Tab
           key={tab.id}

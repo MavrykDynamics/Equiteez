@@ -138,7 +138,7 @@ export default function ExchangeDetails() {
         </div>
 
         {/* Order/History/Transactions */}
-        <div className="flex flex-col w-full p-6">
+        <div className="flex flex-col w-full py-6 px-4">
           <OrderTabs />
         </div>
       </Container>

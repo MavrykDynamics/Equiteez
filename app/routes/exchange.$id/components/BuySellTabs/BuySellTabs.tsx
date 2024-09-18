@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TabType } from '~/lib/atoms/Tab';
 import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 
@@ -6,26 +6,35 @@ import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
 import { Button } from '~/lib/atoms/Button';
 import {
   pickDodoContractBasedOnToken,
-  pickMarketBasedOnSymbol,
+  pickOrderbookContract,
   stablecoinContract,
 } from '~/consts/contracts';
-import {
-  placeBuyOrderAndMatch,
-  placeSellOrder,
-} from '~/contracts/buySellLimit.contract';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
-import { BUY_TAB, LIMIT_TYPE, MARKET_TYPE, OTC_TYPE, SELL_TAB } from './consts';
+import {
+  ADMIN,
+  BUY_TAB,
+  LIMIT_TYPE,
+  MARKET_TYPE,
+  OTC_TYPE,
+  SELL_TAB,
+} from './consts';
 import { AdminScreen } from './AdminScreen';
 import { useUserContext } from '~/providers/UserProvider/user.provider';
 import { useContractAction } from '~/contracts/hooks/useContractAction';
 import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
 import { rwaToFixed } from '~/lib/utils/formaters';
-import { formatToNumber } from '~/lib/molecules/Input/utils';
-import { useTokensAmount } from '~/lib/molecules/Input/hooks/useTokensAmount';
 import Money from '~/lib/atoms/Money';
-import usePrevious from '~/hooks/use-previous';
 import clsx from 'clsx';
+import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
+import { toTokenSlug } from '~/lib/assets';
+import BigNumber from 'bignumber.js';
+import { calculateEstfee, pseudoOperationFee } from '~/lib/utils/calcFns';
+import usePrevious from '~/lib/ui/hooks/usePrevious';
+import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
+import { rateToNumber } from '~/lib/utils/numbers';
+import { isDefined } from '~/lib/utils';
+import { AssetField } from '~/lib/organisms/AssetField';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -33,41 +42,57 @@ type BuySellTabsProps = {
 };
 
 const useBuySellActions = (
-  price: number,
-  amount: number,
-  tokenAddress: string,
-  symbol: string
+  price: BigNumber | undefined,
+  amount: BigNumber | undefined,
+  tokenAddress: string
 ) => {
+  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { tokensMetadata } = useTokensContext();
+  const { usdToTokenRates } = useCurrencyContext();
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
 
-  const buySellProps = useMemo(
+  const buyProps = useMemo(
     () => ({
-      marketContractAddress: pickMarketBasedOnSymbol[symbol],
-      tokensAmount: Number(amount),
-      pricePerToken: Number(price),
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      marketContractAddress: pickOrderbookContract[tokenAddress],
+      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+      pricePerToken: price?.toNumber(),
+      decimals: tokensMetadata[slug]?.decimals,
     }),
-    [amount, price, symbol, tokenAddress, tokensMetadata]
+    [tokenAddress, amount, usdToTokenRates, slug, price, tokensMetadata]
+  );
+
+  const sellProps = useMemo(
+    () => ({
+      marketContractAddress: pickOrderbookContract[tokenAddress],
+      rwaTokenAddress: tokenAddress,
+      tokensAmount: amount?.toNumber(),
+      pricePerToken: price?.toNumber(),
+      decimals: tokensMetadata[slug]?.decimals,
+    }),
+    [amount, price, slug, tokenAddress, tokensMetadata]
   );
 
   const { invokeAction: handleLimitBuy } = useContractAction(
-    placeBuyOrderAndMatch,
-    buySellProps
+    orderbookBuy,
+    buyProps
   );
 
   const { invokeAction: handleLimitSell } = useContractAction(
-    placeSellOrder,
-    buySellProps
+    orderbookSell,
+    sellProps
   );
 
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      tokensAmount: amount,
+      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
       minMaxQuote: 1000,
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, tokensMetadata]
+    [amount, slug, tokenAddress, selectedAssetMetadata, usdToTokenRates]
   );
 
   const marketSellProps = useMemo(
@@ -75,17 +100,19 @@ const useBuySellActions = (
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
 
       tokenAddress: tokenAddress,
-      tokensAmount: amount,
+      tokensAmount: amount?.toNumber(),
       minMaxQuote: 1000, // minMaxQuote
-      decimals: tokensMetadata[tokenAddress]?.decimals,
+      decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, tokensMetadata]
+    [amount, tokenAddress, selectedAssetMetadata]
   );
 
+  // MArket buy | sell
   const { invokeAction: handleMarketBuy } = useContractAction(
     buyBaseToken,
     marketBuyProps
   );
+
   const {
     invokeAction: handleMarketSell,
     status,
@@ -102,9 +129,13 @@ const useBuySellActions = (
   };
 };
 
+// TODO refector this component to use logic line on secondary markey BUY | SELL
+// extract reusable components
 export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
-  const { tokensPrices } = useTokensContext();
+  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { isAdmin, userTokensBalances } = useUserContext();
+  const { usdToTokenRates } = useCurrencyContext();
+  const { tokensMetadata } = useTokensContext();
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
@@ -112,64 +143,124 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
 
   // inputs state
-  const [price, setPrice] = useState<number | string>('');
-  const { amount, previewAmount, handleAmountChange } =
-    useTokensAmount(tokenAddress);
-  const [total, setTotal] = useState<string | number>('');
+  const [price, setPrice] = useState<BigNumber | undefined>();
+  const [amount, setAmount] = useState<BigNumber | undefined>();
+  const [total, setTotal] = useState<BigNumber | undefined>();
+
   const [selectedPercentage, setSelectedPercentage] = useState(0);
   const prevSelectedPercentage = usePrevious(selectedPercentage);
 
-  const buyBalance = useMemo(
+  // refs
+  const inputAmountRef = useRef<HTMLInputElement>(null);
+  const inputPriceRef = useRef<HTMLInputElement>(null);
+
+  // derived
+  const selectedAssetMetadata = useMemo(
+    () => tokensMetadata[slug],
+    [slug, tokensMetadata]
+  );
+
+  // Handle input values for price and amount
+  const handleAmountChange = (newAmount?: string) =>
+    setAmount(
+      Boolean(newAmount) && isDefined(newAmount)
+        ? new BigNumber(newAmount)
+        : undefined
+    );
+
+  const handlePriceChange = (newAmount?: string) =>
+    setPrice(
+      Boolean(newAmount) && isDefined(newAmount)
+        ? new BigNumber(newAmount)
+        : undefined
+    );
+
+  const handleAmountFocus = () => {
+    inputAmountRef.current?.focus();
+  };
+  const handlePriceFocus = () => {
+    inputPriceRef.current?.focus();
+  };
+
+  const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
   );
 
-  const maxBuy = useMemo(() => {
-    const amountToSpend = (100 * buyBalance) / 100;
-    return rwaToFixed(amountToSpend / tokensPrices[tokenAddress]);
-  }, [buyBalance, tokenAddress, tokensPrices]);
+  const tokenBalance = useMemo(
+    () => userTokensBalances[tokenAddress]?.toNumber() || 0,
+    [userTokensBalances, tokenAddress]
+  );
 
-  const hasTotalError =
-    typeof total === 'number' ? Number(total) > buyBalance : false;
+  const maxBuy = useMemo(() => {
+    const amountToSpend = (100 * usdBalance) / 100;
+    return rwaToFixed(
+      new BigNumber(amountToSpend)
+        .div(new BigNumber(usdToTokenRates[slug] ?? 1))
+        .toNumber()
+    );
+  }, [usdBalance, slug, usdToTokenRates]);
+
+  // extract logic into separate hook
+  const hasTotalError = isBuyAction
+    ? total
+      ? total.gt(new BigNumber(usdBalance))
+      : false
+    : amount
+    ? amount.gt(new BigNumber(tokenBalance))
+    : false;
+
+  const isBtnDisabled = useMemo(
+    () => amount?.lte(0) || price?.lte(0) || hasTotalError || !amount || !price,
+    [amount, hasTotalError, price]
+  );
+
+  // derived state (it's boolean value, so no need to memoize it)
+  const isLimitType = activeItem === LIMIT_TYPE;
 
   useEffect(() => {
     if (selectedPercentage) {
-      const amountToSpend = (selectedPercentage * buyBalance) / 100;
-      const numberOfTokens = rwaToFixed(
-        amountToSpend / tokensPrices[tokenAddress]
+      const amountToSpend = new BigNumber(
+        (selectedPercentage * (isBuyAction ? usdBalance : tokenBalance)) / 100
       );
-      handleAmountChange(numberOfTokens);
+
+      const numberOfTokens = amountToSpend.div(
+        isLimitType ? price ?? 1 : new BigNumber(usdToTokenRates[slug] ?? 1)
+      );
+
+      setAmount(isBuyAction ? numberOfTokens : amountToSpend);
     } else if (
       selectedPercentage === 0 &&
       prevSelectedPercentage &&
       prevSelectedPercentage !== 0
     ) {
-      handleAmountChange(0);
+      setAmount(undefined);
     }
   }, [
     selectedPercentage,
-    handleAmountChange,
-    buyBalance,
-    tokensPrices,
+    usdBalance,
     tokenAddress,
     prevSelectedPercentage,
+    usdToTokenRates,
+    slug,
+    isBuyAction,
+    tokenBalance,
+    isLimitType,
+    price,
   ]);
-
-  // derived state (it's boolean value, so no need to memoize it)
-  const isLimitType = activeItem === LIMIT_TYPE;
 
   // update total
   useEffect(() => {
-    if (previewAmount && tokensPrices[tokenAddress]) {
-      setTotal(rwaToFixed(Number(previewAmount) * Number(price)));
-    } else if (!previewAmount) {
-      setTotal('');
+    if (amount && usdToTokenRates[slug] && price) {
+      setTotal(amount.multipliedBy(price));
+    } else if (!amount) {
+      setTotal(undefined);
     }
-  }, [isLimitType, previewAmount, price, tokenAddress, tokensPrices]);
+  }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
 
   // contract calls based on markt or limit
   const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
-    useBuySellActions(Number(price), Number(amount), tokenAddress, symbol);
+    useBuySellActions(price, amount, tokenAddress);
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -201,9 +292,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   // set fixed price for the market type
   useEffect(() => {
     if (!isLimitType) {
-      setPrice(tokensPrices[tokenAddress]);
+      setPrice(new BigNumber(usdToTokenRates[slug] ?? 0));
     }
-  }, [isLimitType, tokenAddress, tokensPrices]);
+  }, [isLimitType, slug, tokenAddress, usdToTokenRates]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(
@@ -218,8 +309,18 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
         label: 'Sell',
         handleClick: handleTabClick,
       },
+
+      ...(isAdmin
+        ? [
+            {
+              id: ADMIN,
+              label: 'Admin',
+              handleClick: handleTabClick,
+            },
+          ]
+        : []),
     ],
-    [handleTabClick]
+    [handleTabClick, isAdmin]
   );
 
   // dropdown state
@@ -248,150 +349,176 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     [handleItemlick]
   );
 
+  const symbolToShow = !isBuyAction
+    ? symbol
+    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
+
   return (
     <section className="flex flex-col w-full">
       <TabSwitcher
         variant="secondary"
         tabs={tabs}
         activeTabId={activetabId}
+        className="flex-wrap gap-y-2"
         grow={true}
       />
-      {isAdmin && <AdminScreen symbol={symbol} tokenAddress={tokenAddress} />}
       <div className="mt-4">
-        <div className="mb-4">
-          <TabSwitcher
-            variant="tertiary"
-            activeTabId={activeItem}
-            tabs={items}
-          />
-        </div>
-        <div className="flex flex-col w-full gap-3 text-caption-regular">
-          <div className="flex justify-between w-full">
-            <span className="text-caption-regular">Avbl</span>
-            <div className="text-caption-regular">
-              {isBuyAction ? (
-                <Money smallFractionFont={false} shortened>
-                  {userTokensBalances[stablecoinContract] || 0}
-                </Money>
-              ) : (
-                <Money smallFractionFont={false} shortened>
-                  {userTokensBalances[tokenAddress] || '0'}
-                </Money>
-              )}
-              &nbsp;{'USDT'}
-            </div>
-          </div>
-          <div className="flex flex-col w-full gap-3">
-            <div className="flex flex-col w-full gap-3">
-              <div
-                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
-              >
-                <span className="text-content-secondary opacity-50">Price</span>
-
-                <span className="flex gap-1">
-                  <span className="">
-                    <input
-                      name="price"
-                      type="number"
-                      min={1}
-                      value={price}
-                      onChange={(e) =>
-                        setPrice(Number(formatToNumber(e.target.value)))
-                      }
-                      placeholder="0.00"
-                      className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                      disabled={!isLimitType}
-                    ></input>
-                  </span>
-                  <span className="font-semibold">USDT</span>
-                </span>
-              </div>
-
-              <div
-                className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
-              >
-                <span className="text-content-secondary opacity-50">
-                  Amount
-                </span>
-
-                <span className="flex gap-1">
-                  <span className="">
-                    <input
-                      name="amount"
-                      type="number"
-                      min={1}
-                      value={amount}
-                      onChange={(e) => handleAmountChange(e.target.value)}
-                      placeholder="Minimum 1"
-                      className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                    ></input>
-                  </span>
-                  <span className="font-semibold">{symbol}</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col w-full gap-1">
-              <ESnakeblock
-                selectedOption={selectedPercentage}
-                setSelectedOption={setSelectedPercentage}
+        {isAdmin && activetabId === ADMIN ? (
+          <AdminScreen symbol={symbol} tokenAddress={tokenAddress} />
+        ) : (
+          <>
+            <div className="mb-4">
+              <TabSwitcher
+                variant="tertiary"
+                activeTabId={activeItem}
+                tabs={items}
               />
             </div>
-          </div>
+            <div className="flex flex-col w-full gap-3 text-caption-regular">
+              <div className="flex justify-between w-full">
+                <span className="text-caption-regular">Avbl</span>
+                <div className="text-caption-regular">
+                  {isBuyAction ? (
+                    <Money smallFractionFont={false} shortened>
+                      {userTokensBalances[stablecoinContract] || 0}
+                    </Money>
+                  ) : (
+                    <Money smallFractionFont={false} shortened>
+                      {userTokensBalances[tokenAddress] || '0'}
+                    </Money>
+                  )}
+                  &nbsp;{symbolToShow}
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-3">
+                <div className="flex flex-col w-full gap-3">
+                  <div
+                    role="presentation"
+                    onClick={handlePriceFocus}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                  >
+                    <div className="text-content-secondary opacity-50">
+                      Price
+                    </div>
 
-          <div className="w-full mb-3">
-            <div
-              className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white`}
-            >
-              <span className="text-content-secondary opacity-50">Total</span>
+                    <div className="flex gap-1 flex-1 items-center">
+                      <AssetField
+                        ref={inputPriceRef}
+                        name="price"
+                        type="number"
+                        min={0}
+                        max={9999999999999}
+                        value={price
+                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          .toString()}
+                        onChange={handlePriceChange}
+                        placeholder="0.00"
+                        className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                        disabled={!isLimitType}
+                      ></AssetField>
+                      <span className="font-semibold">USDT</span>
+                    </div>
+                  </div>
 
-              <span className="flex gap-1">
-                <span className="">
-                  <input
-                    name="total"
-                    type="number"
-                    value={total}
-                    placeholder="0.00"
-                    className="w-full bg-transparent focus:outline-none text-right font-semibold"
-                    disabled
-                  ></input>
-                </span>
-                <span className="font-semibold">USDT</span>
-              </span>
+                  <div
+                    role="presentation"
+                    onClick={handleAmountFocus}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                  >
+                    <div className="text-content-secondary opacity-50">
+                      Amount
+                    </div>
+
+                    <div className="flex gap-1 flex-1 items-center">
+                      <AssetField
+                        ref={inputAmountRef}
+                        name="amount"
+                        type="text"
+                        min={0}
+                        max={9999999999999}
+                        assetDecimals={selectedAssetMetadata.decimals ?? 6}
+                        value={amount
+                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          .toString()}
+                        onChange={handleAmountChange}
+                        placeholder="Minimum 1"
+                        className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                      ></AssetField>
+                      <span className="font-semibold">{symbol}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col w-full gap-1">
+                  <ESnakeblock
+                    selectedOption={selectedPercentage}
+                    setSelectedOption={setSelectedPercentage}
+                  />
+                </div>
+              </div>
+
+              <div className="w-full mb-3">
+                <div
+                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                >
+                  <div className="text-content-secondary opacity-50">Total</div>
+
+                  <div className="flex gap-1 flex-1 items-center">
+                    <AssetField
+                      type="text"
+                      name="total"
+                      min={0}
+                      max={9999999999999}
+                      value={total?.toNumber()}
+                      placeholder="0.00"
+                      assetDecimals={6}
+                      className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                      disabled
+                    ></AssetField>
+                    <span className="font-semibold">USDT</span>
+                  </div>
+                </div>
+
+                {hasTotalError && (
+                  <span className={clsx('text-body-xs text-error mt-2')}>
+                    {'Amount exceeds available balance'}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col w-full gap-1">
+                <div className="flex justify-between w-full">
+                  <span className="text-caption-regular">Max Buy</span>
+                  <span className="text-caption-regular">
+                    {maxBuy} {symbol}
+                  </span>
+                </div>
+
+                <div className="flex justify-between w-full">
+                  <span className="text-caption-regular">Est. Fee</span>
+                  <div className="text-caption-regular">
+                    <Money smallFractionFont={false} shortened>
+                      {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
+                    </Money>
+                    {symbolToShow}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex w-full">
+                <Button
+                  disabled={isBtnDisabled}
+                  onClick={pickBuySellAction}
+                  className="w-full mt-1 py-[10px]"
+                >
+                  <span className="text-body-xs font-bold">
+                    {activetabId === 'buy' ? 'Buy' : 'Sell'}
+                  </span>
+                </Button>
+              </div>
             </div>
-
-            {hasTotalError && (
-              <span className={clsx('text-body-xs text-error mt-2')}>
-                {'Amount exceeds available balance'}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col w-full gap-1">
-            <div className="flex justify-between w-full">
-              <span className="text-caption-regular">Max Buy</span>
-              <span className="text-caption-regular">
-                {maxBuy} {symbol}
-              </span>
-            </div>
-
-            <div className="flex justify-between w-full">
-              <span className="text-caption-regular">Est. Fee</span>
-              <span className="text-caption-regular">-- USDT</span>
-            </div>
-          </div>
-
-          <div className="flex w-full">
-            <Button
-              onClick={pickBuySellAction}
-              className="w-full mt-1 py-[10px]"
-            >
-              <span className="text-body-xs font-bold">
-                {activetabId === 'buy' ? 'Buy' : 'Sell'}
-              </span>
-            </Button>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </section>
   );

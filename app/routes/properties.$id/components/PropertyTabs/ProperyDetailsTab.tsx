@@ -22,7 +22,7 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
 import { CustomSuspense } from '~/templates/CustomSuspense';
 import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { getWalkScoreData } from '~/lib/api/walk-score';
+import { getWalkScoreData } from '~/lib/apis/walk-score';
 import { Spinner } from '~/lib/atoms/Spinner';
 
 export const PropertyDetailsTab = () => {

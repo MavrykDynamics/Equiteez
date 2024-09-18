@@ -7,10 +7,17 @@ import { InputText } from '~/lib/molecules/Input/Input';
 import { Divider } from '~/lib/atoms/Divider';
 import { Link } from '@remix-run/react';
 import clsx from 'clsx';
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  StatusFlag,
+} from '~/lib/ui/use-status-flag';
 
 type BuySellConfirmationScreenProps = {
   actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
   actionCb: () => void;
+  status: StatusFlag;
 };
 
 export type FormData = {
@@ -29,7 +36,9 @@ const actionLabels = {
 export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
   actionType,
   actionCb,
+  status,
 }) => {
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const { control, handleSubmit, formState } = useForm<FormData>({
     mode: 'onSubmit',
     defaultValues: {
@@ -41,7 +50,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
 
   // call contract action // try catch are handled within that action
   const onSubmit = async ({ initials, investing, terms }: FormData) => {
-    if (terms && initials && investing) {
+    if (terms && initials && investing && !isLoading) {
       actionCb();
     }
   };
@@ -145,40 +154,6 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
         </div>
 
         <div>
-          {/* <div className="flex flex-col gap-2">
-            <p className="flex justify-between text-body-xs text-content">
-              <span>Token Price</span>
-              <span>
-                {tokenPrice} {currency}
-              </span>
-            </p>
-            <p className="flex justify-between text-body-xs text-content">
-              <span>Amount</span>
-              <div>
-                <Money shortened smallFractionFont={false}>
-                  {amount}
-                </Money>
-                &nbsp;
-                {symbol}
-              </div>
-            </p>
-            <p className="flex justify-between text-body-xs text-content">
-              <span>Est. Fee</span>
-              <span>
-                {estFee} {symbol}
-              </span>
-            </p>
-            <div className="flex justify-between text-body-xs text-content font-semibold">
-              <span>Total Amount</span>
-              <div>
-                <Money shortened smallFractionFont={false}>
-                  {total}
-                </Money>
-                &nbsp;
-                {currency}
-              </div>
-            </div>
-          </div> */}
           <Divider className="my-4" />
           <p className="text-caption-regular text-content-secondary mb-6">
             By clicking ”{actionLabels[actionType]}”, I adopt the above
@@ -187,13 +162,14 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
           </p>
           <Button
             type="submit"
+            isLoading={isLoading}
             className={clsx(
               'w-full',
               actionLabels[actionType].toLowerCase() === 'buy' &&
                 'bg-green-500 text-content hover:bg-green-300'
             )}
           >
-            {actionLabels[actionType]}
+            {getStatusLabel(status, actionLabels[actionType])}
           </Button>
         </div>
       </form>

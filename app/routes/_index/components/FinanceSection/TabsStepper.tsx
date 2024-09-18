@@ -13,11 +13,11 @@ const financeStepperContent: StringRecord<string[]> = {
   ],
   selling: ['Sell RWA shares', 'Sell Instantly', 'Sell More RWA shares'],
   borrowing: [
-    'Borrow RWA shares',
-    'Borrow to Personal Vault',
+    'Buy RWA Shares',
+    'Add to Personal Vault',
     'Borrow Instantly',
-    'Borrow More RWA shares',
-    'Multiply Your Borrowings',
+    'Buy More RWA Shares',
+    'Multiply Your Dividends',
   ],
 };
 

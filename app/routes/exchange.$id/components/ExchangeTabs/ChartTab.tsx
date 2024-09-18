@@ -1,12 +1,12 @@
 import { FC, useEffect, useMemo } from 'react';
-import chart from '~/mocks/chart';
+import { CHART_MOCK_SERIES } from '~/mocks/chart';
 import { ApexOptions } from 'apexcharts';
 import Expand from '~/icons/expand.svg?react';
 import Settings from '~/icons/settings.svg?react';
 
 import { LoadableComponent } from '~/templates/CustomSuspense';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { useClientLibData } from '~/hooks/use-client-lib';
+import { useClientLibData } from '~/lib/ui/use-client-lib';
 
 import OriginalApexCharts from 'react-apexcharts';
 import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
@@ -30,7 +30,6 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
         });
     }
   }, [setClientModuleError, setClientModule, IS_WEB]);
-  const mockChart = chart();
 
   const opts: ApexOptions = useMemo(
     () => ({
@@ -67,14 +66,11 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
 
   const state = useMemo(
     () => ({
-      series: [
-        {
-          data: mockChart,
-        },
-      ],
+      series: CHART_MOCK_SERIES,
+
       options: opts,
     }),
-    [mockChart, opts]
+    [opts]
   );
 
   const chartModuleProps = useMemo(
@@ -91,9 +87,9 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
   return (
     <div className="overflow-hidden flex flex-col">
       <div className="w-full flex justify-between items-center overflow-x-hidden">
-        <div className="flex gap-x-3 text-caption-regular -mt-1">
+        <div className="flex gap-x-3 text-caption text-sand-300 -mt-1">
           <span className="min-w-[21px] flex justify-center">1H</span>
-          <span className=" text-green-main min-w-[21px] flex justify-center">
+          <span className=" text-green-main min-w-[21px] flex justify-center underline">
             1D
           </span>
           <span className="min-w-[21px] flex justify-center">1W</span>

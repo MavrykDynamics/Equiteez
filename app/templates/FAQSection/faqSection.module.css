@@ -1,20 +1,9 @@
-.description {
-  max-height: 0px;
+.question svg {
+  transition: 0.5s;
+}
+
+.answercont {
+  max-height: 0;
   overflow: hidden;
-}
-
-.active {
-  max-height: 500px;
-  margin-top: 20px;
-
-  animation: revealData 500ms ease-in-out;
-}
-
-@keyframes revealData {
-  from {
-    max-height: 0px;
-  }
-  to {
-    max-height: 500px;
-  }
+  transition: 0.5s;
 }
