@@ -34,7 +34,6 @@ export const useUserApi = ({
     try {
       await DAPP_INSTANCE?.connectAccount();
     } catch (e) {
-      setUserLoading(false);
       console.error(`Failed to connect wallet:`, e);
       // bug('Failed to connect wallet', TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title'])
     }
@@ -56,6 +55,7 @@ export const useUserApi = ({
       await DAPP_INSTANCE?.disconnectWallet();
 
       setUserCtxState(DEFAULT_USER);
+      setUserLoading(false);
     } catch (e) {
       console.error(`Failed to disconnect wallet: `, e);
       // bug(
@@ -63,7 +63,7 @@ export const useUserApi = ({
       //   TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title']
       // );
     }
-  }, [DAPP_INSTANCE, setUserCtxState]);
+  }, [DAPP_INSTANCE, setUserCtxState, setUserLoading]);
 
   const returnValue = useMemo(
     () => ({

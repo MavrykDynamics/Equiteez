@@ -45,18 +45,18 @@ export const UserProvider = ({ children }: Props) => {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setIsTzktBalancesLoading] = useState(false);
+  const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(true);
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
 
   // handle user sockets connection | updates | disconnect
-  const { updateTzktConnection, loadInitialTzktTokensForNewlyConnectedUser } =
-    useUserSockets({
-      setIsTzktBalancesLoading,
-      setUserCtxState,
-      setUserTzktTokens,
-    });
+  const { loadInitialTzktTokensForNewlyConnectedUser } = useUserSockets({
+    setIsTzktBalancesLoading,
+    setUserCtxState,
+    setUserTzktTokens,
+    account,
+  });
 
   // user hook used ONLY inside user provider
   // returns methods to communicate with wallet and get data about account
@@ -73,6 +73,7 @@ export const UserProvider = ({ children }: Props) => {
       (async function () {
         try {
           dapp.listenToActiveAccount(setAccount);
+          setUserLoading(false);
         } catch (err) {
           console.log(err);
         }
@@ -92,35 +93,8 @@ export const UserProvider = ({ children }: Props) => {
     }
   }, [account, loadInitialTzktTokensForNewlyConnectedUser, tokensMetadata]);
 
-  // account is updated when we trigger wallet account connect | disconnect | change acc
-  // whenever account is updated - we reconnect tzkt socket to have up-to-date data
-  // useEffect(() => {
-  //   if (IS_WEB && dapp) {
-  //     if (account) {
-  //       setUserLoading(false);
-  //       console.log(account, getTzktSocket());
-  //       updateTzktConnection(account.address);
-  //     } else if (account === null) {
-  //       (async function () {
-  //         setUserLoading(false);
-  //         const tzktSocket = getTzktSocket();
-  //         await tzktSocket?.stop();
-
-  //         setTzktSocket(null);
-  //       })();
-  //     }
-  //   }
-  // }, [
-  //   IS_WEB,
-  //   dapp,
-  //   account,
-  //   getTzktSocket,
-  //   setTzktSocket,
-  //   updateTzktConnection,
-  // ]);
-
   const providerValue = useMemo(() => {
-    const isLoading = isUserLoading;
+    const isLoading = isUserLoading || tzktBalancesLoading;
 
     return {
       ...userCtxState,
@@ -137,6 +111,7 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [
     isUserLoading,
+    tzktBalancesLoading,
     userCtxState,
     userTzktTokens.userAddress,
     userTzktTokens.tokens,

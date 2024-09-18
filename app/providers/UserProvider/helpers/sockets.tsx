@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { ADMIN_ADDRESSES } from './user.consts';
 import {
   attachTzktSocketsEventHandlers,
@@ -18,6 +18,7 @@ import { useAppContext } from '~/providers/AppProvider/AppProvider';
 // types
 import type { HubConnection } from '@microsoft/signalr';
 import { TokenMetadata } from '~/lib/metadata';
+import { AccountInfo } from '@mavrykdynamics/beacon-dapp';
 
 type UseUserSocketsType = {
   setIsTzktBalancesLoading: (newLoading: boolean) => void;
@@ -27,39 +28,19 @@ type UseUserSocketsType = {
   setUserTzktTokens: React.Dispatch<
     React.SetStateAction<UserTzKtTokenBalances>
   >;
+  account: AccountInfo | null | undefined;
 };
 
 export const useUserSockets = ({
   setIsTzktBalancesLoading,
   setUserCtxState,
   setUserTzktTokens,
+  account,
 }: UseUserSocketsType) => {
   const { tokensMetadata } = useTokensContext();
   const { IS_WEB } = useAppContext();
 
   const tzktSocketRef = useRef<null | HubConnection>(null);
-
-  // getter & setter for tzktSocket
-  const getTzktSocket = useCallback(() => tzktSocketRef.current, []);
-  const setTzktSocket = useCallback(
-    (newTzktSocket: signalR.HubConnection | null) =>
-      (tzktSocketRef.current = newTzktSocket),
-    []
-  );
-
-  const tzktSocket = useMemo(() => getTzktSocket(), [getTzktSocket]);
-
-  useEffect(() => {
-    if (IS_WEB) {
-      openTzktWebSocket()
-        .then((socket) => (tzktSocketRef.current = socket))
-        .catch((e) => console.error(e));
-    }
-
-    return () => {
-      tzktSocketRef?.current?.stop();
-    };
-  }, [IS_WEB]);
 
   /**
    * update user's tzkt tokens in userProvider context
@@ -148,6 +129,7 @@ export const useUserSockets = ({
         userAddress,
         tokensMetadata,
       });
+
       await sleep(500);
       // hideToasterMessage(loadingToasterId);
       console.log('TZKT tokens balances has been updated', 'TZKT connection');
@@ -155,41 +137,44 @@ export const useUserSockets = ({
     [loadInitialTzktTokensForNewlyConnectedUser, tokensMetadata]
   );
 
-  const updateTzktConnection = useCallback(
-    async (newUserAddress: string) => {
-      if (tzktSocket !== null) {
-        await tzktSocket?.stop();
-
-        const newTzktSocket = await openTzktWebSocket();
-        setTzktSocket(newTzktSocket);
-      }
-
-      // await loadInitialTzktTokensForNewlyConnectedUser({
-      //   userAddress: newUserAddress,
-      //   tokensMetadata,
-      //   isUsingLoader: false,
-      // });
-
-      if (tzktSocket) {
+  const attachSocketListeners = useCallback(
+    async (tzktSocket: HubConnection) => {
+      if (account?.address) {
         attachTzktSocketsEventHandlers({
-          userAddress: newUserAddress,
-          handleTokens: updateUserTzktTokenBalances(newUserAddress),
+          userAddress: account.address,
+          handleTokens: updateUserTzktTokenBalances(account.address),
           tzktSocket,
           handleDisconnect,
           handleOnReconnected,
         });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      // DO NOT update deps with tzktSocket, cuz it will trigger tzkt connection errors
+      account,
       handleDisconnect,
       handleOnReconnected,
-      loadInitialTzktTokensForNewlyConnectedUser,
-      setTzktSocket,
       updateUserTzktTokenBalances,
     ]
   );
 
-  return { updateTzktConnection, loadInitialTzktTokensForNewlyConnectedUser };
+  // set socket
+  useEffect(() => {
+    if (IS_WEB) {
+      openTzktWebSocket()
+        .then((socket) => {
+          tzktSocketRef.current = socket;
+          attachSocketListeners(socket);
+        })
+        .catch((e) => console.error(e));
+    }
+
+    return () => {
+      tzktSocketRef?.current?.stop();
+    };
+  }, [IS_WEB, attachSocketListeners]);
+
+  return {
+    loadInitialTzktTokensForNewlyConnectedUser,
+    attachSocketListeners,
+  };
 };
