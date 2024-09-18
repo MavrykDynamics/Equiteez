@@ -56,7 +56,10 @@ export const PopupContent: FC<{
   const { usdToTokenRates } = useCurrencyContext();
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
-  const prevTabId = usePrevious(activetabId) as OrderType;
+  const prevTabId = usePrevious(
+    activetabId,
+    activetabId !== CONFIRM
+  ) as OrderType;
 
   // derived
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
@@ -185,8 +188,12 @@ export const PopupContent: FC<{
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
             {activetabId === CONFIRM ? (
-              <div className="flex items-center">
-                <button onClick={() => setAvtiveTabId(prevTabId)}>
+              <div
+                role="presentation"
+                onClick={() => setAvtiveTabId(prevTabId)}
+                className="flex items-center cursor-pointer"
+              >
+                <button>
                   <ArrowLeftIcon className="size-6 mr-2" />
                 </button>
                 <span className="text-card-headline text-sand-900">
