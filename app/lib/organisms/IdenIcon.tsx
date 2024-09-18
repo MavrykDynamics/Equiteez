@@ -2,15 +2,13 @@ import { CSSProperties, FC, HTMLAttributes, useMemo } from 'react';
 
 import Avatars from '@dicebear/avatars';
 import botttsSprites from '@dicebear/avatars-bottts-sprites';
-// import jdenticonSpirtes from '@dicebear/avatars-jdenticon-sprites';
-import * as jdenticonSpirtes from 'jdenticon';
 import classNames from 'clsx';
 
 import NoTokenIcon from 'app/misc/no-image-token.png';
 import initialsSprites from 'app/lib/avatars-initials-sprites';
 import { useAppContext } from '~/providers/AppProvider/AppProvider';
 
-export type IdeniconType = 'jdenticon' | 'bottts' | 'initials';
+export type IdeniconType = 'bottts' | 'initials';
 
 type IdenticonProps = HTMLAttributes<HTMLDivElement> & {
   type?: IdeniconType;
@@ -25,7 +23,7 @@ const DEFAULT_FONT_SIZE = 50;
 const cache = new Map<string, string>();
 
 const Identicon: FC<IdenticonProps> = ({
-  type = 'jdenticon',
+  type = 'bottts',
   hash,
   size = 100,
   className,
@@ -42,7 +40,6 @@ const Identicon: FC<IdenticonProps> = ({
     () =>
       IS_WEB
         ? {
-            jdenticon: jdenticonSpirtes,
             bottts: new Avatars(botttsSprites),
             initials: new Avatars(initialsSprites),
           }

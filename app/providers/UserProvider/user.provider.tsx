@@ -24,7 +24,7 @@ import {
 } from './user.provider.types';
 import { useWalletContext } from '../WalletProvider/wallet.provider';
 import { useAppContext } from '../AppProvider/AppProvider';
-import { AccountInfo } from '@mavrykdynamics/beacon-dapp';
+import type { AccountInfo } from '@mavrykdynamics/beacon-dapp';
 import { useTokensContext } from '../TokensProvider/tokens.provider';
 
 export const userContext = React.createContext<UserContext>(undefined!);
