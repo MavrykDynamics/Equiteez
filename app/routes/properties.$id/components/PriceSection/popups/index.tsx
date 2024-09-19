@@ -46,6 +46,12 @@ import usePrevious from '~/lib/ui/hooks/usePrevious';
 import Money from '~/lib/atoms/Money';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
 import { pickStatusFromMultiple } from '~/lib/ui/use-status-flag';
+import {
+  calcNegativeSlippage,
+  calcPositiveSlippage,
+} from '~/lib/utils/calcFns';
+
+export const spippageOptions = ['0.3', '0.5', '1', 'custom'];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -105,6 +111,11 @@ export const PopupContent: FC<{
   const [amountB, setAmountB] = useState<BigNumber | undefined>();
   const [total, setTotal] = useState<BigNumber | undefined>();
 
+  // Slippage
+  const [slippagePercentage, setSlippagePercentage] = useState<string>(
+    spippageOptions[0]
+  );
+
   useEffect(() => {
     if (isDefined(amountB) && rateToNumber(usdToTokenRates[slug])) {
       setTotal(amountB.times(rateToNumber(usdToTokenRates[slug])));
@@ -119,13 +130,17 @@ export const PopupContent: FC<{
       tokensAmount: amountB
         ?.div(rateToNumber(usdToTokenRates[slug]))
         .toNumber(),
-      minMaxQuote: 1000,
+      minMaxQuote: calcPositiveSlippage(
+        usdToTokenRates[slug],
+        slippagePercentage
+      ),
       decimals: selectedAssetMetadata?.decimals,
     }),
     [
       amountB,
       estate.token_address,
       selectedAssetMetadata?.decimals,
+      slippagePercentage,
       slug,
       usdToTokenRates,
     ]
@@ -137,10 +152,20 @@ export const PopupContent: FC<{
 
       tokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
-      minMaxQuote: 1000, // minMaxQuote
+      minMaxQuote: calcNegativeSlippage(
+        usdToTokenRates[slug],
+        slippagePercentage
+      ),
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [amountB, estate.token_address, selectedAssetMetadata]
+    [
+      amountB,
+      estate.token_address,
+      selectedAssetMetadata?.decimals,
+      slippagePercentage,
+      slug,
+      usdToTokenRates,
+    ]
   );
 
   // Market buy | sell
@@ -280,6 +305,8 @@ export const PopupContent: FC<{
               amount={amountB}
               setAmount={setAmountB}
               total={total}
+              slippagePercentage={slippagePercentage}
+              setSlippagePercentage={setSlippagePercentage}
             />
           )}
 

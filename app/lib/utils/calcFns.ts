@@ -14,3 +14,19 @@ export function pseudoOperationFee(
   const fee = total.minus(amount.multipliedBy(price));
   return fee.isNegative() ? new BigNumber(0) : fee.div(amount);
 }
+
+// used for buy orders
+export function calcPositiveSlippage(
+  price: string | number,
+  slippage: number | string
+) {
+  return new BigNumber(price).multipliedBy(1 + Number(slippage)).toNumber();
+}
+
+// used for sell orders
+export function calcNegativeSlippage(
+  price: string | number,
+  slippage: number | string
+) {
+  return new BigNumber(price).multipliedBy(1 - Number(slippage)).toNumber();
+}

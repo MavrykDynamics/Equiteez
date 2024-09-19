@@ -42,7 +42,6 @@ import {
   pickStatusFromMultiple,
   STATUS_PENDING,
 } from '~/lib/ui/use-status-flag';
-import { ComingSoonFiber } from '~/templates/ComingSoon';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -368,7 +367,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
 
   return (
     <section className="flex flex-col w-full relative">
-      {!VALID_TOKENS[tokenAddress] && <ComingSoonFiber />}
       <TabSwitcher
         variant="secondary"
         tabs={tabs}
@@ -529,19 +527,40 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               </div>
 
               <div className="flex w-full">
-                <Button
-                  disabled={isBtnDisabled}
-                  isLoading={status === STATUS_PENDING}
-                  onClick={pickBuySellAction}
-                  className="w-full mt-1 py-[10px]"
-                >
-                  <span className="text-body-xs font-bold">
-                    {getStatusLabel(
-                      status,
-                      activetabId === 'buy' ? 'Buy' : 'Sell'
-                    )}
-                  </span>
-                </Button>
+                {!VALID_TOKENS[tokenAddress] ? (
+                  <Button className="w-full" disabled>
+                    Coming Soon
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      disabled={isBtnDisabled}
+                      isLoading={status === STATUS_PENDING}
+                      onClick={pickBuySellAction}
+                      className="w-full mt-1 py-[10px]"
+                    >
+                      <span className="text-body-xs font-bold">
+                        {getStatusLabel(
+                          status,
+                          activetabId === 'buy' ? 'Buy' : 'Sell'
+                        )}
+                      </span>
+                    </Button>
+                    <Button
+                      disabled={isBtnDisabled}
+                      isLoading={status === STATUS_PENDING}
+                      onClick={pickBuySellAction}
+                      className="w-full mt-1 py-[10px]"
+                    >
+                      <span className="text-body-xs font-bold">
+                        {getStatusLabel(
+                          status,
+                          activetabId === 'buy' ? 'Buy' : 'Sell'
+                        )}
+                      </span>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </>

@@ -36,6 +36,7 @@ import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CryptoBalance } from '~/templates/Balance';
+import { spippageOptions } from '../popups';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -45,6 +46,8 @@ type BuySellScreenProps = {
   total: BigNumber | undefined;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  slippagePercentage: string;
+  setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -54,6 +57,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   amount,
   total,
   setAmount,
+  slippagePercentage,
+  setSlippagePercentage,
 }) => {
   const { symbol, token_address } = estate;
   const slug = useMemo(() => toTokenSlug(token_address), [token_address]);
@@ -62,16 +67,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const { userTokensBalances } = useUserContext();
 
-  const [slippagePercentage, setSlippagePercentage] = useState<string>(
-    spippageOptions[0]
-  );
-
   const stableCoinMetadata = useMemo(
     () => tokensMetadata[toTokenSlug(stablecoinContract)],
     [tokensMetadata]
   );
 
-  const selecteedAssetMetadata = useMemo(
+  const selectedAssetMetadata = useMemo(
     () => tokensMetadata[slug] ?? {},
     [slug, tokensMetadata]
   );
@@ -205,7 +206,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     cryptoDecimals={
                       isBuyAction
                         ? stableCoinMetadata?.decimals
-                        : selecteedAssetMetadata?.decimals
+                        : selectedAssetMetadata?.decimals
                     }
                   />
                 </div>
@@ -229,7 +230,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     cryptoDecimals={
                       !isBuyAction
                         ? stableCoinMetadata?.decimals
-                        : selecteedAssetMetadata?.decimals
+                        : selectedAssetMetadata?.decimals
                     }
                   />
                 </div>
@@ -299,15 +300,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <Button
         className="mt-6"
         onClick={handleContinueClick}
-        disabled={hasTotalError || !amount || slippagePercentage.length === 0}
+        disabled={hasTotalError || !amount || slippagePercentage.length <= 0}
       >
         Continue
       </Button>
     </div>
   );
 };
-
-const spippageOptions = ['0.3', '0.5', '1', 'custom'];
 
 type SlippageDropdownProps = {
   slippagePercentage: string;
