@@ -194,6 +194,11 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
 
   const hasNoresults = filteredEstates.length === 0;
 
+  const sources = useMemo(
+    () => [estateData.assetDetails.previewImage],
+    [estateData.assetDetails.previewImage]
+  );
+
   return (
     <CustomDropdown withOverlay>
       <ClickableDropdownArea>
@@ -207,7 +212,8 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
         >
           <div className="flex items-center gap-x-2">
             <ImageStacked
-              sources={[estateData.assetDetails.previewImage]!}
+              key={sources[0]}
+              sources={sources}
               className="w-6 h-6 rounded-full"
               loader={
                 <div className="flex items-center justify-center w-6 h-6">
