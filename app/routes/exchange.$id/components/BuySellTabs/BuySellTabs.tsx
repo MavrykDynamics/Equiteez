@@ -50,8 +50,9 @@ const useBuySellActions = (
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { tokensMetadata } = useTokensContext();
   const { usdToTokenRates } = useCurrencyContext();
+
   const selectedAssetMetadata = useMemo(
-    () => tokensMetadata[slug],
+    () => tokensMetadata[slug] ?? {},
     [slug, tokensMetadata]
   );
 
@@ -391,7 +392,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                   ) : (
                     <CryptoBalance
                       value={userTokensBalances[tokenAddress] || '0'}
-                      cryptoDecimals={selectedAssetMetadata.decimals ?? 6}
+                      cryptoDecimals={selectedAssetMetadata?.decimals ?? 6}
                     />
                   )}
                   &nbsp;{symbolToShow}
@@ -416,7 +417,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                         min={0}
                         max={9999999999999}
                         value={price
-                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                           .toString()}
                         onChange={handlePriceChange}
                         placeholder="0.00"
@@ -444,9 +445,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                         type="text"
                         min={0}
                         max={9999999999999}
-                        assetDecimals={selectedAssetMetadata.decimals ?? 6}
+                        assetDecimals={selectedAssetMetadata?.decimals ?? 6}
                         value={amount
-                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                           .toString()}
                         onChange={handleAmountChange}
                         placeholder="Minimum 1"
@@ -502,7 +503,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                   <span className="text-caption-regular">
                     <CryptoBalance
                       value={new BigNumber(maxBuy ?? 0)}
-                      cryptoDecimals={selectedAssetMetadata.decimals}
+                      cryptoDecimals={selectedAssetMetadata?.decimals}
                     />{' '}
                     {symbol}
                   </span>
