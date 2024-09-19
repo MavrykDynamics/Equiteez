@@ -36,6 +36,11 @@ import { rateToNumber } from '~/lib/utils/numbers';
 import { isDefined } from '~/lib/utils';
 import { AssetField } from '~/lib/organisms/AssetField';
 import { CryptoBalance } from '~/templates/Balance';
+import {
+  getStatusLabel,
+  pickStatusFromMultiple,
+  STATUS_PENDING,
+} from '~/lib/ui/use-status-flag';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -77,15 +82,11 @@ const useBuySellActions = (
     [amount, price, slug, tokenAddress, tokensMetadata]
   );
 
-  const { invokeAction: handleLimitBuy } = useContractAction(
-    orderbookBuy,
-    buyProps
-  );
+  const { invokeAction: handleLimitBuy, status: limitStatus1 } =
+    useContractAction(orderbookBuy, buyProps);
 
-  const { invokeAction: handleLimitSell } = useContractAction(
-    orderbookSell,
-    sellProps
-  );
+  const { invokeAction: handleLimitSell, status: limitStatus2 } =
+    useContractAction(orderbookSell, sellProps);
 
   const marketBuyProps = useMemo(
     () => ({
@@ -110,22 +111,21 @@ const useBuySellActions = (
   );
 
   // MArket buy | sell
-  const { invokeAction: handleMarketBuy } = useContractAction(
-    buyBaseToken,
-    marketBuyProps
-  );
+  const { invokeAction: handleMarketBuy, status: marketStatus1 } =
+    useContractAction(buyBaseToken, marketBuyProps);
 
-  const {
-    invokeAction: handleMarketSell,
-    status,
-    isLoading,
-  } = useContractAction(sellBaseToken, marketSellProps);
+  const { invokeAction: handleMarketSell, status: marketStatus2 } =
+    useContractAction(sellBaseToken, marketSellProps);
 
   return {
     handleLimitSell,
     handleLimitBuy,
-    status,
-    isLoading,
+    status: pickStatusFromMultiple(
+      limitStatus1,
+      limitStatus2,
+      marketStatus1,
+      marketStatus2
+    ),
     handleMarketBuy,
     handleMarketSell,
   };
@@ -261,8 +261,13 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
 
   // contract calls based on markt or limit
-  const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
-    useBuySellActions(price, amount, tokenAddress);
+  const {
+    handleLimitSell,
+    handleMarketBuy,
+    handleMarketSell,
+    handleLimitBuy,
+    status,
+  } = useBuySellActions(price, amount, tokenAddress);
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -523,11 +528,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               <div className="flex w-full">
                 <Button
                   disabled={isBtnDisabled}
+                  isLoading={status === STATUS_PENDING}
                   onClick={pickBuySellAction}
                   className="w-full mt-1 py-[10px]"
                 >
                   <span className="text-body-xs font-bold">
-                    {activetabId === 'buy' ? 'Buy' : 'Sell'}
+                    {getStatusLabel(
+                      status,
+                      activetabId === 'buy' ? 'Buy' : 'Sell'
+                    )}
                   </span>
                 </Button>
               </div>
