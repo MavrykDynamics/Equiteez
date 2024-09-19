@@ -8,6 +8,7 @@ import {
   pickDodoContractBasedOnToken,
   pickOrderbookContract,
   stablecoinContract,
+  VALID_TOKENS,
 } from '~/consts/contracts';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
@@ -41,6 +42,7 @@ import {
   pickStatusFromMultiple,
   STATUS_PENDING,
 } from '~/lib/ui/use-status-flag';
+import { ComingSoonFiber } from '~/templates/ComingSoon';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -365,7 +367,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   return (
-    <section className="flex flex-col w-full">
+    <section className="flex flex-col w-full relative">
+      {!VALID_TOKENS[tokenAddress] && <ComingSoonFiber />}
       <TabSwitcher
         variant="secondary"
         tabs={tabs}
