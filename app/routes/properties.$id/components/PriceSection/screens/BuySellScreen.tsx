@@ -37,6 +37,7 @@ import { toTokenSlug } from '~/lib/assets';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CryptoBalance } from '~/templates/Balance';
 import { spippageOptions } from '../popups';
+import { WarningBlock } from '~/lib/molecules/WarningBlock';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -236,6 +237,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 </div>
               </div>
             </BalanceInput>
+
+            {Number(slippagePercentage) <= 0 && (
+              <WarningBlock>
+                Slippage is {slippagePercentage || '0'}%
+              </WarningBlock>
+            )}
 
             <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
               <CustomExpander>
