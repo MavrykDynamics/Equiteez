@@ -49,7 +49,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
         <div className="overflow-y-hidden">
           <AssetField
             value={amount
-              ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+              ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
               .toString()}
             className={clsx(
               'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden'
@@ -60,7 +60,7 @@ export const BalanceInput: FC<BalanceInputProps> = ({
             min={0}
             max={9999999999999}
             disabled={amountInputDisabled}
-            assetDecimals={selectedAssetMetadata.decimals ?? 6}
+            assetDecimals={selectedAssetMetadata?.decimals ?? 6}
             extraSection={
               <AssetDropdown selectedAssetSlug={selectedAssetSlug} disabled />
             }

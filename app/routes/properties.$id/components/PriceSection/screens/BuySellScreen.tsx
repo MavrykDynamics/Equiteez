@@ -72,7 +72,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const selecteedAssetMetadata = useMemo(
-    () => tokensMetadata[slug],
+    () => tokensMetadata[slug] ?? {},
     [slug, tokensMetadata]
   );
 
@@ -205,7 +205,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     cryptoDecimals={
                       isBuyAction
                         ? stableCoinMetadata.decimals
-                        : selecteedAssetMetadata.decimals
+                        : selecteedAssetMetadata?.decimals
                     }
                   />
                 </div>
@@ -229,7 +229,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     cryptoDecimals={
                       !isBuyAction
                         ? stableCoinMetadata.decimals
-                        : selecteedAssetMetadata.decimals
+                        : selecteedAssetMetadata?.decimals
                     }
                   />
                 </div>
