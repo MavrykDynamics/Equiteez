@@ -20,7 +20,9 @@ export function calcPositiveSlippage(
   price: string | number,
   slippage: number | string
 ) {
-  return new BigNumber(price).multipliedBy(1 + Number(slippage)).toNumber();
+  return new BigNumber(price)
+    .multipliedBy(1 + Number(slippage) / 100)
+    .toNumber();
 }
 
 // used for sell orders
@@ -28,5 +30,7 @@ export function calcNegativeSlippage(
   price: string | number,
   slippage: number | string
 ) {
-  return new BigNumber(price).multipliedBy(1 - Number(slippage)).toNumber();
+  return new BigNumber(price)
+    .multipliedBy(1 - Number(slippage) / 100)
+    .toNumber();
 }
