@@ -42,7 +42,6 @@ import {
   pickStatusFromMultiple,
   STATUS_PENDING,
 } from '~/lib/ui/use-status-flag';
-import { ComingSoonFiber } from '~/templates/ComingSoon';
 
 type BuySellTabsProps = {
   symbol: string;
