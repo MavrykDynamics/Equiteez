@@ -323,11 +323,13 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-      .replace(/[^0-9.]/g, '')
-      .replace(/(\..*?)\..*/g, '$1')
-      .replace(/(\d+\.\d?).*/g, '$1');
+      .replace(/[^0-9.-]/g, '') // Allow digits, dot, and minus sign
+      .replace(/(-?\..*?)\..*/g, '$1') // Ensure only one decimal point
+      .replace(/(-?\d+\.\d?).*/g, '$1'); // Match negative and positive numbers with one decimal point
 
-    if (value && parseFloat(value) > 100) {
+    // min max +- 100
+    const parsedValue = parseFloat(value);
+    if ((parsedValue && parsedValue > 100) || parsedValue < -100) {
       return;
     }
 
@@ -339,13 +341,13 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
       <ClickableDropdownArea>
         <div className="px-2 py-1 border border-dark-green-100 rounded-lg bg-white">
           <DropdownFaceContent gap={1}>
-            <div className="max-w-8 text-nowrap">
+            <div className="max-w-10 text-nowrap w-fit">
               <input
                 type="text"
                 value={isCustom ? slippagePercentage : selectedOption}
                 onChange={handleInputChange}
                 name={'slippage'}
-                className="w-6 text-right"
+                className="w-8 text-right"
                 disabled={!isCustom}
               />
               %
