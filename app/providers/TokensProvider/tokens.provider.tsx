@@ -14,17 +14,17 @@ import {
   MVRK_METADATA,
   TokenMetadata,
 } from '~/lib/metadata';
-import { fetchTokensMetadata } from './utils/fetchTokensdata';
-// import { MARS1_TOKEN_ADDRESS, OCEAN_TOKEN_ADDRESS } from '~/consts/contracts';
 
 const tokensContext = createContext<TokensProviderCtx>(undefined!);
 
 type TokensProviderProps = {
   initialTokens: TokenType[];
+  initialTokensMetadata: StringRecord<TokenMetadata>;
 } & PropsWithChildren;
 
 export const TokensProvider: FC<TokensProviderProps> = ({
   initialTokens,
+  initialTokensMetadata,
   children,
 }) => {
   const [tokens, setTokens] = useState<TokenType[]>([]);
@@ -42,8 +42,6 @@ export const TokensProvider: FC<TokensProviderProps> = ({
         })
       );
 
-      const initialTokensMetadata = await fetchTokensMetadata(initialTokens);
-
       setTokensMetadata({
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
@@ -54,7 +52,7 @@ export const TokensProvider: FC<TokensProviderProps> = ({
       console.log(e);
       setIsLoading(false);
     }
-  }, [initialTokens]);
+  }, [initialTokens, initialTokensMetadata]);
 
   /**Fetch tokens and tokens metadta on init */
   useEffect(() => {

@@ -25,7 +25,10 @@ import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
 import { AppGlobalLoader } from './providers/AppGlobalLoader';
 import { CurrencyProvider } from './providers/CurrencyProvider/currency.provider';
-import { fetchTokensData } from './providers/TokensProvider/utils/fetchTokensdata';
+import {
+  fetchTokensData,
+  fetchTokensMetadata,
+} from './providers/TokensProvider/utils/fetchTokensdata';
 import { fetchFiatToTezosRates } from './lib/fiat-currency';
 import { fetchUsdToTokenRates } from './lib/mavryk/endpoints/get-exchange-rates';
 import { useDataFromLoader } from './hooks/useDataFromLoader';
@@ -38,16 +41,17 @@ export const links: LinksFunction = () => [
 export const loader = async () => {
   const tokens = await fetchTokensData();
 
-  const [fiatToTezos, usdToToken] = await Promise.all([
+  const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
+    fetchTokensMetadata(tokens),
     fetchFiatToTezosRates(),
     fetchUsdToTokenRates(),
   ]);
 
-  return json({ tokens, fiatToTezos, usdToToken });
+  return json({ tokens, tokensMetadata, fiatToTezos, usdToToken });
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { tokens, fiatToTezos, usdToToken } =
+  const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
     useDataFromLoader<typeof loader>();
 
   return (
@@ -71,7 +75,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   fiatToTezos={fiatToTezos}
                   usdToToken={usdToToken}
                 >
-                  <TokensProvider initialTokens={tokens}>
+                  <TokensProvider
+                    initialTokens={tokens}
+                    initialTokensMetadata={tokensMetadata}
+                  >
                     <UserProvider>
                       <EstatesProvider>
                         <AppGlobalLoader>
