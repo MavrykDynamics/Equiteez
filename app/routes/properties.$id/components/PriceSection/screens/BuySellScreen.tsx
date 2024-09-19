@@ -204,7 +204,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     }
                     cryptoDecimals={
                       isBuyAction
-                        ? stableCoinMetadata.decimals
+                        ? stableCoinMetadata?.decimals
                         : selecteedAssetMetadata?.decimals
                     }
                   />
@@ -228,7 +228,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     }
                     cryptoDecimals={
                       !isBuyAction
-                        ? stableCoinMetadata.decimals
+                        ? stableCoinMetadata?.decimals
                         : selecteedAssetMetadata?.decimals
                     }
                   />

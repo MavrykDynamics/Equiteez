@@ -28,21 +28,37 @@ export const fetchTokensMetadata = async (
   tokens: TokenType[]
 ): Promise<StringRecord<TokenMetadata>> => {
   try {
-    const promises = tokens.map((t) =>
-      api<TokenMetadata>(
-        `${process.env.TOKENS_METADATA_API}/metadata/${t.contract}/${t.id}`,
-        { method: 'GET' }
-        // tokenMetadataSchema
-      )
-    );
+    const tokenContractsArr = tokens.map((t) => t.contract);
+    const queryBody = {
+      query: `query TokensMetadataQuery {
+        token_metadata(where: {contract: {_in: ${JSON.stringify(
+          tokenContractsArr
+        )}}}) {
+          contract
+          metadata
+        }
+      }`,
+      variables: null,
+      operationName: 'TokensMetadataQuery',
+    };
 
-    const data = (await Promise.all(promises)).map(
-      (zodResponse) => zodResponse.data
-    );
+    const { data: apiData } = await api<{
+      data: { token_metadata: { contract: string; metadata: TokenMetadata }[] };
+    }>(process.env.TOKENS_METADATA_API, {
+      body: JSON.stringify(queryBody),
+      method: 'POST',
+    });
 
-    const parsedData = data.reduce<StringRecord<TokenMetadata>>(
+    const {
+      data: { token_metadata },
+    } = apiData;
+
+    const parsedData = token_metadata.reduce<StringRecord<TokenMetadata>>(
       (acc, meta, idx) => {
-        acc[tokens[idx].contract.concat(`_${tokens[idx].id}`)] = meta;
+        acc[tokens[idx].contract.concat(`_${tokens[idx].id}`)] = {
+          ...meta.metadata,
+          decimals: Number(meta.metadata?.decimals) ?? undefined,
+        };
         return acc;
       },
       {}
