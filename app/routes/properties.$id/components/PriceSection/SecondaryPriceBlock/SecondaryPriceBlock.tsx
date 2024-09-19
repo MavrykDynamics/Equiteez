@@ -16,6 +16,7 @@ import { BUY, CONFIRM, OTC, SELL } from '../consts';
 import { CommaNumber } from '~/lib/atoms/CommaNumber';
 import { ProgresBar } from '../components/ProgressBar/ProgressBar';
 import { PopupContent } from '../popups';
+import { VALID_TOKENS } from '~/consts/contracts';
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -81,11 +82,19 @@ export const SecondaryPriceBlock: FC = () => {
         </div>
 
         <ProgresBar />
-        <div className="grid gap-3 grid-cols-2 mt-4">
-          <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
-          <Button variant="outline" onClick={handleOpen.bind(null, SELL)}>
-            Sell
-          </Button>
+        <div className="mt-4">
+          {!VALID_TOKENS[estate.token_address] ? (
+            <Button className="w-full" disabled>
+              Coming Soon
+            </Button>
+          ) : (
+            <div className="grid gap-3 grid-cols-2 ">
+              <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
+              <Button variant="outline" onClick={handleOpen.bind(null, SELL)}>
+                Sell
+              </Button>
+            </div>
+          )}
         </div>
       </Table>
 

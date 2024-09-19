@@ -10,7 +10,7 @@ import { Divider } from '~/lib/atoms/Divider';
 import { TabType } from '~/lib/atoms/Tab';
 
 // contract actions
-import { pickDodoContractBasedOnToken, VALID_TOKENS } from '~/consts/contracts';
+import { pickDodoContractBasedOnToken } from '~/consts/contracts';
 
 // icons
 import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
@@ -46,7 +46,6 @@ import usePrevious from '~/lib/ui/hooks/usePrevious';
 import Money from '~/lib/atoms/Money';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
 import { pickStatusFromMultiple } from '~/lib/ui/use-status-flag';
-import { ComingSoonFiber } from '~/templates/ComingSoon';
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -186,7 +185,6 @@ export const PopupContent: FC<{
   return (
     <div className="flex flex-col justify-between text-content h-full relative">
       <>
-        {!VALID_TOKENS[estate.token_address] && <ComingSoonFiber />}
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
             {activetabId === CONFIRM ? (
