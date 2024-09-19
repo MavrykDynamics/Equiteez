@@ -53,9 +53,18 @@ export const fetchTokensMetadata = async (
       data: { token_metadata },
     } = apiData;
 
+    const tokensRecord = tokens.reduce<StringRecord<TokenType>>(
+      (acc, token) => {
+        acc[token.contract] = token;
+
+        return acc;
+      },
+      {}
+    );
+
     const parsedData = token_metadata.reduce<StringRecord<TokenMetadata>>(
-      (acc, meta, idx) => {
-        acc[tokens[idx].contract.concat(`_${tokens[idx].id}`)] = {
+      (acc, meta) => {
+        acc[meta.contract.concat(`_${tokensRecord[meta.contract].id}`)] = {
           ...meta.metadata,
           decimals: Number(meta.metadata?.decimals) ?? undefined,
         };
