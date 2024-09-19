@@ -68,7 +68,7 @@ export const PopupContent: FC<{
     [estate.token_address]
   );
   const selectedAssetMetadata = useMemo(
-    () => tokensMetadata[slug],
+    () => tokensMetadata[slug] ?? {},
     [slug, tokensMetadata]
   );
 

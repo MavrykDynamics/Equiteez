@@ -72,10 +72,10 @@ export const getStatusLabel = (status: StatusFlag, defaultLabel: string) => {
 /**
  * is used to show status on button
  that button works with multiple actions related to statuses passed from params
- * @param rest StatuusFlag[]
+ * @param rest StatusFlag[]
  * @returns StatusFlag
  */
-export const pickStatusFromMultiple = (...rest: StatusFlag[]) => {
+export const pickStatusFromMultiple = (...rest: StatusFlag[]): StatusFlag => {
   if (rest.find((status) => status === STATUS_PENDING)) return STATUS_PENDING;
   if (rest.find((status) => status === STATUS_CONFIRMING))
     return STATUS_CONFIRMING;

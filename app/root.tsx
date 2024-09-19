@@ -1,14 +1,16 @@
 import {
+  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteError,
 } from '@remix-run/react';
 import { json, LinksFunction } from '@remix-run/node';
 
 // providers
-import ErrorBoundary from './templates/ErrorBoundary';
+import CustomErrorBoundary from './templates/ErrorBoundary';
 
 // global styles
 import stylesheet from '~/index.css?url';
@@ -23,10 +25,7 @@ import { TokensProvider } from './providers/TokensProvider/tokens.provider';
 import { PopupProvider } from './providers/PopupProvider/popup.provider';
 import { AppGlobalLoader } from './providers/AppGlobalLoader';
 import { CurrencyProvider } from './providers/CurrencyProvider/currency.provider';
-import {
-  fetchTokensData,
-  fetchTokensMetadata,
-} from './providers/TokensProvider/utils/fetchTokensdata';
+import { fetchTokensData } from './providers/TokensProvider/utils/fetchTokensdata';
 import { fetchFiatToTezosRates } from './lib/fiat-currency';
 import { fetchUsdToTokenRates } from './lib/mavryk/endpoints/get-exchange-rates';
 import { useDataFromLoader } from './hooks/useDataFromLoader';
@@ -39,17 +38,16 @@ export const links: LinksFunction = () => [
 export const loader = async () => {
   const tokens = await fetchTokensData();
 
-  const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
-    fetchTokensMetadata(tokens),
+  const [fiatToTezos, usdToToken] = await Promise.all([
     fetchFiatToTezosRates(),
     fetchUsdToTokenRates(),
   ]);
 
-  return json({ tokens, tokensMetadata, fiatToTezos, usdToToken });
+  return json({ tokens, fiatToTezos, usdToToken });
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
+  const { tokens, fiatToTezos, usdToToken } =
     useDataFromLoader<typeof loader>();
 
   return (
@@ -63,17 +61,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <body>
         <div id="root">
-          <ErrorBoundary whileMessage="booting an app" className="min-h-screen">
+          <CustomErrorBoundary
+            whileMessage="booting an app"
+            className="min-h-screen"
+          >
             <AppProvider>
               <WalletProvider>
                 <CurrencyProvider
                   fiatToTezos={fiatToTezos}
                   usdToToken={usdToToken}
                 >
-                  <TokensProvider
-                    initialTokens={tokens}
-                    initialTokensMetadata={tokensMetadata}
-                  >
+                  <TokensProvider initialTokens={tokens}>
                     <UserProvider>
                       <EstatesProvider>
                         <AppGlobalLoader>
@@ -85,7 +83,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </CurrencyProvider>
               </WalletProvider>
             </AppProvider>
-          </ErrorBoundary>
+          </CustomErrorBoundary>
           <ScrollRestoration />
           <Scripts />
         </div>
@@ -96,4 +94,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return <Outlet />;
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>
+          {error.status} {error.statusText}
+        </h1>
+        <p>{error.data}</p>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>The stack trace is:</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  } else {
+    return <h1>Unknown Error</h1>;
+  }
 }

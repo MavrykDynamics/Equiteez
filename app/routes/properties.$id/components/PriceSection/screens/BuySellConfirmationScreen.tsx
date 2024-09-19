@@ -78,11 +78,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                     <Link to="/" className="text-blue-700">
                       Offering Circular
                     </Link>
-                    ,&nbsp;
-                    <Link to="/" className="text-blue-700">
-                      Form W-9
-                    </Link>
-                    &nbsp; and any supplements therein.
+                    &nbsp;and any supplements therein.
                   </p>
                 }
               />

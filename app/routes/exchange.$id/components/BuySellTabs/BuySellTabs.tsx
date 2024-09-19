@@ -29,12 +29,18 @@ import clsx from 'clsx';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { toTokenSlug } from '~/lib/assets';
 import BigNumber from 'bignumber.js';
-import { calculateEstfee, pseudoOperationFee } from '~/lib/utils/calcFns';
+import { calculateEstfee } from '~/lib/utils/calcFns';
 import usePrevious from '~/lib/ui/hooks/usePrevious';
 import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
 import { rateToNumber } from '~/lib/utils/numbers';
 import { isDefined } from '~/lib/utils';
 import { AssetField } from '~/lib/organisms/AssetField';
+import { CryptoBalance } from '~/templates/Balance';
+import {
+  getStatusLabel,
+  pickStatusFromMultiple,
+  STATUS_PENDING,
+} from '~/lib/ui/use-status-flag';
 
 type BuySellTabsProps = {
   symbol: string;
@@ -49,8 +55,9 @@ const useBuySellActions = (
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { tokensMetadata } = useTokensContext();
   const { usdToTokenRates } = useCurrencyContext();
+
   const selectedAssetMetadata = useMemo(
-    () => tokensMetadata[slug],
+    () => tokensMetadata[slug] ?? {},
     [slug, tokensMetadata]
   );
 
@@ -75,15 +82,11 @@ const useBuySellActions = (
     [amount, price, slug, tokenAddress, tokensMetadata]
   );
 
-  const { invokeAction: handleLimitBuy } = useContractAction(
-    orderbookBuy,
-    buyProps
-  );
+  const { invokeAction: handleLimitBuy, status: limitStatus1 } =
+    useContractAction(orderbookBuy, buyProps);
 
-  const { invokeAction: handleLimitSell } = useContractAction(
-    orderbookSell,
-    sellProps
-  );
+  const { invokeAction: handleLimitSell, status: limitStatus2 } =
+    useContractAction(orderbookSell, sellProps);
 
   const marketBuyProps = useMemo(
     () => ({
@@ -108,22 +111,21 @@ const useBuySellActions = (
   );
 
   // MArket buy | sell
-  const { invokeAction: handleMarketBuy } = useContractAction(
-    buyBaseToken,
-    marketBuyProps
-  );
+  const { invokeAction: handleMarketBuy, status: marketStatus1 } =
+    useContractAction(buyBaseToken, marketBuyProps);
 
-  const {
-    invokeAction: handleMarketSell,
-    status,
-    isLoading,
-  } = useContractAction(sellBaseToken, marketSellProps);
+  const { invokeAction: handleMarketSell, status: marketStatus2 } =
+    useContractAction(sellBaseToken, marketSellProps);
 
   return {
     handleLimitSell,
     handleLimitBuy,
-    status,
-    isLoading,
+    status: pickStatusFromMultiple(
+      limitStatus1,
+      limitStatus2,
+      marketStatus1,
+      marketStatus2
+    ),
     handleMarketBuy,
     handleMarketSell,
   };
@@ -259,8 +261,13 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
 
   // contract calls based on markt or limit
-  const { handleLimitSell, handleMarketBuy, handleMarketSell, handleLimitBuy } =
-    useBuySellActions(price, amount, tokenAddress);
+  const {
+    handleLimitSell,
+    handleMarketBuy,
+    handleMarketSell,
+    handleLimitBuy,
+    status,
+  } = useBuySellActions(price, amount, tokenAddress);
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -293,6 +300,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
   useEffect(() => {
     if (!isLimitType) {
       setPrice(new BigNumber(usdToTokenRates[slug] ?? 0));
+    }
+
+    if (isLimitType) {
+      setPrice(undefined);
     }
   }, [isLimitType, slug, tokenAddress, usdToTokenRates]);
 
@@ -379,13 +390,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <span className="text-caption-regular">Avbl</span>
                 <div className="text-caption-regular">
                   {isBuyAction ? (
-                    <Money smallFractionFont={false} shortened>
-                      {userTokensBalances[stablecoinContract] || 0}
-                    </Money>
+                    <CryptoBalance
+                      value={userTokensBalances[stablecoinContract] || 0}
+                      cryptoDecimals={6}
+                    />
                   ) : (
-                    <Money smallFractionFont={false} shortened>
-                      {userTokensBalances[tokenAddress] || '0'}
-                    </Money>
+                    <CryptoBalance
+                      value={userTokensBalances[tokenAddress] || '0'}
+                      cryptoDecimals={selectedAssetMetadata?.decimals ?? 6}
+                    />
                   )}
                   &nbsp;{symbolToShow}
                 </div>
@@ -409,11 +422,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                         min={0}
                         max={9999999999999}
                         value={price
-                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                           .toString()}
                         onChange={handlePriceChange}
                         placeholder="0.00"
-                        className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
+                        style={{ padding: 0 }}
+                        className="w-full bg-transparent focus:outline-none text-right font-semibold border-none"
                         disabled={!isLimitType}
                       ></AssetField>
                       <span className="font-semibold">USDT</span>
@@ -436,12 +450,13 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                         type="text"
                         min={0}
                         max={9999999999999}
-                        assetDecimals={selectedAssetMetadata.decimals ?? 6}
+                        assetDecimals={selectedAssetMetadata?.decimals ?? 6}
                         value={amount
-                          ?.toFixed(selectedAssetMetadata.decimals ?? 6)
+                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                           .toString()}
                         onChange={handleAmountChange}
                         placeholder="Minimum 1"
+                        style={{ padding: 0 }}
                         className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
                       ></AssetField>
                       <span className="font-semibold">{symbol}</span>
@@ -472,6 +487,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       value={total?.toNumber()}
                       placeholder="0.00"
                       assetDecimals={6}
+                      style={{ padding: 0 }}
                       className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
                       disabled
                     ></AssetField>
@@ -490,7 +506,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 <div className="flex justify-between w-full">
                   <span className="text-caption-regular">Max Buy</span>
                   <span className="text-caption-regular">
-                    {maxBuy} {symbol}
+                    <CryptoBalance
+                      value={new BigNumber(maxBuy ?? 0)}
+                      cryptoDecimals={selectedAssetMetadata?.decimals}
+                    />{' '}
+                    {symbol}
                   </span>
                 </div>
 
@@ -508,11 +528,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               <div className="flex w-full">
                 <Button
                   disabled={isBtnDisabled}
+                  isLoading={status === STATUS_PENDING}
                   onClick={pickBuySellAction}
                   className="w-full mt-1 py-[10px]"
                 >
                   <span className="text-body-xs font-bold">
-                    {activetabId === 'buy' ? 'Buy' : 'Sell'}
+                    {getStatusLabel(
+                      status,
+                      activetabId === 'buy' ? 'Buy' : 'Sell'
+                    )}
                   </span>
                 </Button>
               </div>

@@ -1,21 +1,10 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import type { HubConnection } from '@microsoft/signalr';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 
 // consts
 import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from './helpers/user.consts';
 
 // hooks
 import { useUserApi } from './hooks/useUserApi';
-
-// helpers
-import { openTzktWebSocket } from './helpers/userBalances.helpers';
 
 import {
   UserContext,
@@ -25,6 +14,7 @@ import {
 import { useWalletContext } from '../WalletProvider/wallet.provider';
 import { useAppContext } from '../AppProvider/AppProvider';
 import type { AccountInfo } from '@mavrykdynamics/beacon-dapp';
+import { useUserSockets } from './helpers/sockets';
 import { useTokensContext } from '../TokensProvider/tokens.provider';
 
 export const userContext = React.createContext<UserContext>(undefined!);
@@ -42,8 +32,6 @@ export const UserProvider = ({ children }: Props) => {
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
 
-  const tzktSocket = useRef<null | HubConnection>(null);
-
   /**
    * when undefined -> isLoading is true
    * when null, there isn't active account -> isLoading false
@@ -57,45 +45,32 @@ export const UserProvider = ({ children }: Props) => {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setIsTzktBalancesLoading] = useState(false);
+  const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(true);
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
-  useEffect(() => {
-    if (IS_WEB && dapp) {
-      openTzktWebSocket()
-        .then((socket) => (tzktSocket.current = socket))
-        .catch((e) => console.error(e));
-    }
 
-    return () => {
-      tzktSocket?.current?.stop();
-    };
-  }, [IS_WEB, dapp]);
-
-  // getter & setter for tzktSocket
-  const getTzktSocket = useCallback(() => tzktSocket.current, []);
-  const setTzktSocket = useCallback(
-    (newTzktSocket: signalR.HubConnection | null) =>
-      (tzktSocket.current = newTzktSocket),
-    []
-  );
-
-  // user hook used ONLY inside user provider
-  // returns methids to communicated with wallet and get data about account
-  // as well as tzkt sockets communication
-  const { connect, signOut, updateTzktConnection, changeUser } = useUserApi({
-    DAPP_INSTANCE: dapp,
-    setUserLoading,
+  // handle user sockets connection | updates | disconnect
+  const {
+    loadInitialTzktTokensForNewlyConnectedUser,
+    tzktSocket,
+    setTzktSocket,
+  } = useUserSockets({
     setIsTzktBalancesLoading,
     setUserCtxState,
     setUserTzktTokens,
+    account,
+  });
 
-    getTzktSocket,
+  // user hook used ONLY inside user provider
+  // returns methods to communicate with wallet and get data about account
+  // as well as tzkt sockets
+  const { connect, signOut, changeUser } = useUserApi({
+    DAPP_INSTANCE: dapp,
+    setUserLoading,
+    setUserCtxState,
+    tzktSocket,
     setTzktSocket,
-
-    userCtxState,
-    tokensMetadata,
   });
 
   // Listening for active account changes with beacon
@@ -103,11 +78,8 @@ export const UserProvider = ({ children }: Props) => {
     if (IS_WEB && dapp) {
       (async function () {
         try {
-          // if no account, event to listen for active acc is not triggered, so we manually set acc to null
-          const acc = await dapp?.getDAppClient().getActiveAccount();
-          if (!acc) setAccount(null);
-
-          dapp?.listenToActiveAccount(setAccount);
+          dapp.listenToActiveAccount(setAccount);
+          setUserLoading(false);
         } catch (err) {
           console.log(err);
         }
@@ -115,40 +87,26 @@ export const UserProvider = ({ children }: Props) => {
     }
   }, [IS_WEB, dapp]);
 
-  // account is updated when we trigger wallet account connect | disconnect | change acc
-  // whenever account is updated - we reconnect tzkt socket to have up-to-date data
   useEffect(() => {
-    if (IS_WEB && dapp) {
-      if (account) {
-        setUserLoading(false);
-        (async function () {
-          try {
-            await updateTzktConnection(account.address);
-          } catch (e) {
-            console.log(e);
-          }
-        })();
-      } else if (account === null) {
-        (async function () {
-          setUserLoading(false);
-          const tzktSocket = getTzktSocket();
-          await tzktSocket?.stop();
-
-          setTzktSocket(null);
-        })();
-      }
+    if (account?.address) {
+      (async function () {
+        await loadInitialTzktTokensForNewlyConnectedUser({
+          userAddress: account.address,
+          tokensMetadata,
+          isUsingLoader: false,
+        });
+      })();
     }
   }, [
-    IS_WEB,
-    dapp,
     account,
-    getTzktSocket,
+    loadInitialTzktTokensForNewlyConnectedUser,
     setTzktSocket,
-    updateTzktConnection,
+    tokensMetadata,
+    tzktSocket,
   ]);
 
   const providerValue = useMemo(() => {
-    const isLoading = isUserLoading;
+    const isLoading = isUserLoading || tzktBalancesLoading;
 
     return {
       ...userCtxState,
@@ -165,6 +123,7 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [
     isUserLoading,
+    tzktBalancesLoading,
     userCtxState,
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
