@@ -546,19 +546,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                         )}
                       </span>
                     </Button>
-                    <Button
-                      disabled={isBtnDisabled}
-                      isLoading={status === STATUS_PENDING}
-                      onClick={pickBuySellAction}
-                      className="w-full mt-1 py-[10px]"
-                    >
-                      <span className="text-body-xs font-bold">
-                        {getStatusLabel(
-                          status,
-                          activetabId === 'buy' ? 'Buy' : 'Sell'
-                        )}
-                      </span>
-                    </Button>
                   </>
                 )}
               </div>
