@@ -1,4 +1,11 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  FC,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 //screens
 import { BuySellScreen } from '../screens/BuySellScreen';
@@ -123,6 +130,13 @@ export const PopupContent: FC<{
       setTotal(undefined);
     }
   }, [amountB, estate.token_address, slug, usdToTokenRates]);
+
+  // reset values when switching tabs
+  useLayoutEffect(() => {
+    if (prevTabId !== activetabId) {
+      setAmountB(undefined);
+    }
+  }, [activetabId, prevTabId]);
 
   const marketBuyProps = useMemo(
     () => ({
