@@ -36,6 +36,8 @@ import { rateToNumber } from '~/lib/utils/numbers';
 import { toTokenSlug } from '~/lib/assets';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { CryptoBalance } from '~/templates/Balance';
+import { spippageOptions } from '../popups';
+import { WarningBlock } from '~/lib/molecules/WarningBlock';
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -45,6 +47,8 @@ type BuySellScreenProps = {
   total: BigNumber | undefined;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  slippagePercentage: string;
+  setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -54,6 +58,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   amount,
   total,
   setAmount,
+  slippagePercentage,
+  setSlippagePercentage,
 }) => {
   const { symbol, token_address } = estate;
   const slug = useMemo(() => toTokenSlug(token_address), [token_address]);
@@ -62,16 +68,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const { userTokensBalances } = useUserContext();
 
-  const [slippagePercentage, setSlippagePercentage] = useState<string>(
-    spippageOptions[0]
-  );
-
   const stableCoinMetadata = useMemo(
     () => tokensMetadata[toTokenSlug(stablecoinContract)],
     [tokensMetadata]
   );
 
-  const selecteedAssetMetadata = useMemo(
+  const selectedAssetMetadata = useMemo(
     () => tokensMetadata[slug] ?? {},
     [slug, tokensMetadata]
   );
@@ -204,8 +206,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     }
                     cryptoDecimals={
                       isBuyAction
-                        ? stableCoinMetadata.decimals
-                        : selecteedAssetMetadata?.decimals
+                        ? stableCoinMetadata?.decimals
+                        : selectedAssetMetadata?.decimals
                     }
                   />
                 </div>
@@ -228,13 +230,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     }
                     cryptoDecimals={
                       !isBuyAction
-                        ? stableCoinMetadata.decimals
-                        : selecteedAssetMetadata?.decimals
+                        ? stableCoinMetadata?.decimals
+                        : selectedAssetMetadata?.decimals
                     }
                   />
                 </div>
               </div>
             </BalanceInput>
+
+            {Number(slippagePercentage) <= 0 && (
+              <WarningBlock>
+                Slippage is {slippagePercentage || '0'}%
+              </WarningBlock>
+            )}
 
             <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
               <CustomExpander>
@@ -299,15 +307,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <Button
         className="mt-6"
         onClick={handleContinueClick}
-        disabled={hasTotalError || !amount || slippagePercentage.length === 0}
+        disabled={hasTotalError || !amount || slippagePercentage.length <= 0}
       >
         Continue
       </Button>
     </div>
   );
 };
-
-const spippageOptions = ['0.3', '0.5', '1', 'custom'];
 
 type SlippageDropdownProps = {
   slippagePercentage: string;
@@ -328,7 +334,9 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
       .replace(/(\..*?)\..*/g, '$1')
       .replace(/(\d+\.\d?).*/g, '$1');
 
-    if (value && parseFloat(value) > 100) {
+    // min max +- 100
+    const parsedValue = parseFloat(value);
+    if (parsedValue && parsedValue > 100) {
       return;
     }
 
@@ -340,13 +348,13 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
       <ClickableDropdownArea>
         <div className="px-2 py-1 border border-dark-green-100 rounded-lg bg-white">
           <DropdownFaceContent gap={1}>
-            <div className="max-w-8 text-nowrap">
+            <div className="max-w-10 text-nowrap w-fit">
               <input
                 type="text"
                 value={isCustom ? slippagePercentage : selectedOption}
                 onChange={handleInputChange}
                 name={'slippage'}
-                className="w-6 text-right"
+                className="w-8 text-right"
                 disabled={!isCustom}
               />
               %

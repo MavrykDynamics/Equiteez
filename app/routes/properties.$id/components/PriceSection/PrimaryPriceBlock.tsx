@@ -57,8 +57,8 @@ export const PrimaryPriceBlock = () => {
         <ProgresBar
           tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
         />
-        <Button className="mt-6" onClick={handleOpen}>
-          Buy
+        <Button disabled className="mt-6" onClick={handleOpen}>
+          Coming Soon
         </Button>
       </Table>
 

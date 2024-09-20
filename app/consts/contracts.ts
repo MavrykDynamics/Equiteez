@@ -37,6 +37,20 @@ export const stablecoinContract = 'KT1StUZzJ34MhSNjkQMSyvZVrR9ppkHMFdFf';
 export const OCEAN_TOKEN_ADDRESS = 'KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh';
 export const MARS1_TOKEN_ADDRESS = 'KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9';
 
+export const VALID_TOKENS_OBJ: StringRecord<boolean> = {
+  [OCEAN_TOKEN_ADDRESS]: true,
+  [MARS1_TOKEN_ADDRESS]: true,
+};
+
+export const VALID_TOKENS = new Proxy(VALID_TOKENS_OBJ, {
+  get(target, prop: string) {
+    // Return false if the property does not exist on the target object
+    return prop in target
+      ? target[prop as keyof typeof VALID_TOKENS_OBJ]
+      : false;
+  },
+});
+
 // orderbook (secondary market)
 export const pickOrderbookContract: StringRecord<OrderbookMarketType> = {
   [MARS1_TOKEN_ADDRESS]: marsOrderbookContract,

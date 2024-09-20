@@ -8,6 +8,7 @@ import {
   pickDodoContractBasedOnToken,
   pickOrderbookContract,
   stablecoinContract,
+  VALID_TOKENS,
 } from '~/consts/contracts';
 import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
 import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
@@ -365,7 +366,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   return (
-    <section className="flex flex-col w-full">
+    <section className="flex flex-col w-full relative">
       <TabSwitcher
         variant="secondary"
         tabs={tabs}
@@ -526,19 +527,27 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
               </div>
 
               <div className="flex w-full">
-                <Button
-                  disabled={isBtnDisabled}
-                  isLoading={status === STATUS_PENDING}
-                  onClick={pickBuySellAction}
-                  className="w-full mt-1 py-[10px]"
-                >
-                  <span className="text-body-xs font-bold">
-                    {getStatusLabel(
-                      status,
-                      activetabId === 'buy' ? 'Buy' : 'Sell'
-                    )}
-                  </span>
-                </Button>
+                {!VALID_TOKENS[tokenAddress] ? (
+                  <Button className="w-full" disabled>
+                    Coming Soon
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      disabled={isBtnDisabled}
+                      isLoading={status === STATUS_PENDING}
+                      onClick={pickBuySellAction}
+                      className="w-full mt-1 py-[10px]"
+                    >
+                      <span className="text-body-xs font-bold">
+                        {getStatusLabel(
+                          status,
+                          activetabId === 'buy' ? 'Buy' : 'Sell'
+                        )}
+                      </span>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </>
