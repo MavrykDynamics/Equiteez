@@ -15,3 +15,13 @@ TOKENS_METADATA_API="https://metadata-api-atlasnet-prod.mavryk.network"
 BCD_NETWORK_TYPE="sandboxnet"
 REACT_APP_ENV="dev"
 MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
+
+[env.production.vars]
+GOOGLE_MAPS_API_KEY="AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
+RPC_NODE_URL="https://atlasnet.rpc.mavryk.network"
+API_URL="https://atlasnet.api.mavryk.network/v1"
+BCD_API="https://better-call-api.mavryk.io/v1"
+TOKENS_METADATA_API="https://metadata-api-atlasnet-prod.mavryk.network"
+BCD_NETWORK_TYPE="sandboxnet"
+REACT_APP_ENV="prod"
+MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
