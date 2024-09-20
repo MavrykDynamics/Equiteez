@@ -133,7 +133,7 @@ export const PopupContent: FC<{
 
   // reset values when switching tabs
   useLayoutEffect(() => {
-    if (prevTabId !== activetabId) {
+    if (prevTabId !== activetabId && activetabId !== CONFIRM) {
       setAmountB(undefined);
     }
   }, [activetabId, prevTabId]);
