@@ -330,13 +330,13 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-      .replace(/[^0-9.-]/g, '') // Allow digits, dot, and minus sign
-      .replace(/(-?\..*?)\..*/g, '$1') // Ensure only one decimal point
-      .replace(/(-?\d+\.\d?).*/g, '$1'); // Match negative and positive numbers with one decimal point
+      .replace(/[^0-9.]/g, '')
+      .replace(/(\..*?)\..*/g, '$1')
+      .replace(/(\d+\.\d?).*/g, '$1');
 
     // min max +- 100
     const parsedValue = parseFloat(value);
-    if ((parsedValue && parsedValue > 100) || parsedValue < -100) {
+    if (parsedValue && parsedValue > 100) {
       return;
     }
 
