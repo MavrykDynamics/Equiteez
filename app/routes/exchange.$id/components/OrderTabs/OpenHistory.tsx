@@ -72,7 +72,7 @@ export const OpenHistory = () => {
       <div className="flex w-full">
         <div className="flow-root w-full">
           <div>
-            <div className="px-6">
+            <div>
               <table className={clsx('table-fixed w-full', styles.orderTable)}>
                 <colgroup>
                   <col style={{ maxWidth: 26 }}></col>

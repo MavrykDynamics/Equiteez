@@ -520,7 +520,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                   <div className="text-caption-regular">
                     <Money smallFractionFont={false} shortened>
                       {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
-                    </Money>
+                    </Money>{' '}
                     {symbolToShow}
                   </div>
                 </div>
