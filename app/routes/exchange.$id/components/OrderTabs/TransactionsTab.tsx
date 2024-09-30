@@ -58,7 +58,7 @@ export const TransactionsTab = () => {
       <div className="flex w-full">
         <div className="flow-root w-full">
           <div>
-            <div className="px-6">
+            <div>
               <table className={clsx('table-fixed w-full')}>
                 <thead className="border-b border-divider">
                   <tr>

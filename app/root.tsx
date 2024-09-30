@@ -54,6 +54,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
     useDataFromLoader<typeof loader>();
 
+  console.log(process.env.BASE_URL, 'env');
+
   return (
     <html lang="en">
       <head>
