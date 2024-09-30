@@ -92,3 +92,8 @@ export const useEstatesContext = () => {
 
   return context;
 };
+
+// for the sitemap
+export const estateSlugs = estatesMocked.map(
+  (estate) => estate.assetDetails.blockchain[0].identifier
+);
