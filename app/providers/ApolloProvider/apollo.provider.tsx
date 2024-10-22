@@ -18,13 +18,13 @@ import { onError } from '@apollo/client/link/error';
 import { ApolloContext } from './apollo.provider.types';
 
 // consts
-import { TOASTER_SUBSCRIPTION_ERROR } from 'providers/ToasterProvider/toaster.provider.const';
-import { TOASTER_TEXTS } from 'providers/ToasterProvider/helpers/texts/toaster.texts';
 import { httpLink, retryLink, splitLink, wsLink } from './apollo.config';
-import { FatalError, isAbortError } from 'errors/error';
+import { FatalError, isAbortError } from '~/errors/error';
 
 // hooks
-import { useToasterContext } from 'providers/ToasterProvider/toaster.provider';
+import { TOASTER_TEXTS } from '../ToasterProvider/helpers/texts/toaster.texts';
+import { TOASTER_SUBSCRIPTION_ERROR } from '../ToasterProvider/toaster.provider.const';
+import { useToasterContext } from '../ToasterProvider/toaster.provider';
 
 // context
 const apolloContext = createContext<ApolloContext>(undefined!);
