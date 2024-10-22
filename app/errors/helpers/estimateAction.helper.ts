@@ -6,15 +6,13 @@ import {
   TransferParams,
   Wallet,
 } from '@mavrykdynamics/taquito';
+
+import { getContractErrorMessage } from './walletError.helper';
+import { checkWhetherWalletAbortError, WalletOperationError } from '../error';
 import {
   ActionErrorReturnType,
   ActionSuccessReturnType,
-} from 'providers/DappConfigProvider/dappConfig.provider.types';
-import {
-  WalletOperationError,
-  checkWhetherWalletAbortError,
-} from 'errors/error';
-import { getContractErrorMessage } from './walletError.helper';
+} from '~/contracts/actions.type';
 
 type EstimationResultParams = {
   callback?: () => void;

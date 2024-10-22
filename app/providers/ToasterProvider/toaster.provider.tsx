@@ -1,9 +1,9 @@
-import React, { useContext } from 'react'
-import { ErrorPage } from 'pages/Error/ErrorPage'
+import React, { useContext } from 'react';
+import { ErrorPageTemp } from '~/templates/ErrorPageTemp';
 
 // types
-import type { ToasterContextType, ToasterTypes } from './toaster.provider.type'
-import { FatalError, CustomErrors } from '../../errors/error'
+import type { ToasterContextType, ToasterTypes } from './toaster.provider.type';
+import { FatalError, CustomErrors } from '../../errors/error';
 
 // consts
 import {
@@ -12,34 +12,40 @@ import {
   TOASTER_LOADING,
   TOASTER_SUCCESS,
   TOASTER_WARNING,
-} from './toaster.provider.const'
-import { generateUniqueId } from 'utils/calcFunctions'
-import { InternalErrorType, SharedErrorFileds, SharedErrors } from 'errors/error.type'
-import { WalletActionType } from 'types/actions.type'
-import { getErrorPageData } from './helpers/getErrorPageData'
-import { ERROR_TYPE_FATAL, ERROR_TYPE_ROUTER } from 'errors/error.const'
-import { MaintancePage } from 'pages/Error/MaintancePage'
+} from './toaster.provider.const';
+import { v4 as uuid } from 'uuid';
+import {
+  InternalErrorType,
+  SharedErrorFileds,
+  SharedErrors,
+} from '~/errors/error.type';
+import { WalletActionType } from '~/contracts/actions.type';
+import { getErrorPageData } from './helpers/getErrorPageData';
+import { ERROR_TYPE_FATAL, ERROR_TYPE_ROUTER } from '~/errors/error.const';
+import { MaintancePageTemp } from '~/templates/MaintancePageTemp';
 
-export const toasterContext = React.createContext<ToasterContextType>(undefined!)
+export const toasterContext = React.createContext<ToasterContextType>(
+  undefined!
+);
 
 // TODO add 404 page for critical errors
 type Props = {
-  children: React.ReactNode
-  error?: CustomErrors
-  pageNotFound?: JSX.Element
-  maintance?: boolean
-}
+  children: React.ReactNode;
+  error?: CustomErrors;
+  pageNotFound?: JSX.Element;
+  maintance?: boolean;
+};
 
 type State = {
-  context: ToasterContextType
-}
+  context: ToasterContextType;
+};
 
 /**
  *
  */
 export default class ToasterProvider extends React.Component<Props, State> {
   constructor(props: Props) {
-    super(props)
+    super(props);
     this.state = {
       context: {
         bug: this.bug,
@@ -61,7 +67,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
         setSharedError: this.setSharedError,
         maintance: props.maintance ?? false,
       },
-    }
+    };
   }
 
   /**
@@ -75,12 +81,16 @@ export default class ToasterProvider extends React.Component<Props, State> {
    * Errors thrown in the error boundary itself (rather than its children)
    */
   componentDidCatch(error: Error): void {
-    this.addToasterMessage('', error.message, TOASTER_ERROR)
-    this.fatal(new FatalError(error))
+    this.addToasterMessage('', error.message, TOASTER_ERROR);
+    this.fatal(new FatalError(error));
   }
 
-  addToasterMessage = (title: string, message: string, type: ToasterTypes): string => {
-    const unique = generateUniqueId()
+  addToasterMessage = (
+    title: string,
+    message: string,
+    type: ToasterTypes
+  ): string => {
+    const unique = uuid();
     this.setState((prevState) => ({
       context: {
         ...prevState.context,
@@ -94,42 +104,42 @@ export default class ToasterProvider extends React.Component<Props, State> {
           },
         ]),
       },
-    }))
+    }));
 
-    return unique
-  }
+    return unique;
+  };
 
   bug = (rawError: Error | string, title = ''): string => {
     if (rawError instanceof Error) {
-      console.warn(rawError.message)
-      return this.addToasterMessage(title, rawError.message, TOASTER_ERROR)
+      console.warn(rawError.message);
+      return this.addToasterMessage(title, rawError.message, TOASTER_ERROR);
     } else {
-      console.warn(rawError)
-      return this.addToasterMessage(title, rawError, TOASTER_ERROR)
+      console.warn(rawError);
+      return this.addToasterMessage(title, rawError, TOASTER_ERROR);
     }
-  }
+  };
 
   fatal = (error: CustomErrors): void => {
-    this.setError(error)
-    console.error(error)
-  }
+    this.setError(error);
+    console.error(error);
+  };
 
   success = (title: string, message: string): string => {
-    return this.addToasterMessage(title, message, TOASTER_SUCCESS)
-  }
+    return this.addToasterMessage(title, message, TOASTER_SUCCESS);
+  };
 
   info = (title: string, message: string): string => {
-    return this.addToasterMessage(title, message, TOASTER_INFO)
-  }
+    return this.addToasterMessage(title, message, TOASTER_INFO);
+  };
 
   warning = (title: string, message: string): string => {
-    console.warn(message)
-    return this.addToasterMessage(title, message, TOASTER_WARNING)
-  }
+    console.warn(message);
+    return this.addToasterMessage(title, message, TOASTER_WARNING);
+  };
 
   loading = (title: string, message: string): string => {
-    return this.addToasterMessage(title, message, TOASTER_LOADING)
-  }
+    return this.addToasterMessage(title, message, TOASTER_LOADING);
+  };
 
   setError = (error: CustomErrors): void => {
     this.setState((prevState) => ({
@@ -137,10 +147,13 @@ export default class ToasterProvider extends React.Component<Props, State> {
         ...prevState.context,
         error,
       },
-    }))
-  }
+    }));
+  };
 
-  setSharedError = (fieldName: SharedErrorFileds, error: (SharedErrors & { actionId: WalletActionType }) | null) => {
+  setSharedError = (
+    fieldName: SharedErrorFileds,
+    error: (SharedErrors & { actionId: WalletActionType }) | null
+  ) => {
     this.setState({
       context: {
         ...this.state.context,
@@ -149,35 +162,35 @@ export default class ToasterProvider extends React.Component<Props, State> {
           [fieldName]: error,
         },
       },
-    })
-  }
+    });
+  };
 
   /**
    * sets hide property for toast to 'true' to play hide animation
    * @param unique toaster id
    */
   hideToasterMessage = (unique: string): void => {
-    const { messages } = this.state.context
-    const message = messages.find((m) => m.unique === unique)
+    const { messages } = this.state.context;
+    const message = messages.find((m) => m.unique === unique);
 
-    if (!message) return
+    if (!message) return;
 
-    const hidedMessage = { ...message, hide: true }
+    const hidedMessage = { ...message, hide: true };
 
     const _messages = messages.map((m) => {
       if (m.unique === unique) {
-        return hidedMessage
+        return hidedMessage;
       }
-      return m
-    })
+      return m;
+    });
 
     this.setState((prevState) => ({
       context: {
         ...prevState.context,
         messages: _messages,
       },
-    }))
-  }
+    }));
+  };
 
   /**
    * completely deletes toast from messages
@@ -185,41 +198,45 @@ export default class ToasterProvider extends React.Component<Props, State> {
    * @param unique toast id
    */
   deleteToasterFromArray = (unique: string): void => {
-    const { messages } = this.state.context
+    const { messages } = this.state.context;
 
     this.setState((prevState) => ({
       context: {
         ...prevState.context,
         messages: messages.filter((m) => m.unique !== unique),
       },
-    }))
-  }
+    }));
+  };
 
   /**
    *
    */
   render(): JSX.Element {
-    const { error } = this.state.context
-    let errorPageContent = null
-    let type: InternalErrorType = ERROR_TYPE_ROUTER
+    const { error } = this.state.context;
+    let errorPageContent = null;
+    let type: InternalErrorType = ERROR_TYPE_ROUTER;
 
     if (error instanceof FatalError) {
-      type = error?.type ?? ERROR_TYPE_FATAL
-      errorPageContent = getErrorPageData(type)
+      type = error?.type ?? ERROR_TYPE_FATAL;
+      errorPageContent = getErrorPageData(type);
     }
 
     return (
       <toasterContext.Provider value={this.state.context}>
         {this.state.context.maintance ? (
-          <MaintancePage />
+          <MaintancePageTemp />
         ) : errorPageContent ? (
-          <ErrorPage headerText={errorPageContent.header} descText={errorPageContent.desc} type={type} />
+          <ErrorPageTemp
+            headerText={errorPageContent.header}
+            descText={errorPageContent.desc}
+            type={type}
+          />
         ) : (
           this.props.children
         )}
       </toasterContext.Provider>
-    )
+    );
   }
 }
 
-export const useToasterContext = () => useContext(toasterContext)
+export const useToasterContext = () => useContext(toasterContext);

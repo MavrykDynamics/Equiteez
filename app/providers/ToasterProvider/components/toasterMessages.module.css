@@ -1,0 +1,133 @@
+.toasterContainer {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  z-index: 200; /* to show toasts on the front side when modal is opened*/
+  width: 400px;
+  background: transparent;
+}
+
+@keyframes revealFromRight {
+  0% {
+    transform: translateX(400px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes hideToRight {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(400px);
+  }
+}
+
+.toaster {
+  width: 100%;
+  position: relative;
+  padding: 0 10px;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  column-gap: 15px;
+  min-height: 70px;
+
+  background-color: rgb(24 23 43 / var(--tw-bg-opacity));
+  border: 1px solid transparent;
+  transition: transform 1s ease-in-out;
+  overflow: hidden;
+}
+.warning.toaster {
+  border-color: #ffb545;
+}
+.error.toaster {
+  border-color: #e83736;
+}
+.success.toaster {
+  border-color: #1e945c;
+}
+.info.toaster {
+  border-color: #3b42a8;
+}
+
+.loading.toaster {
+  border-color: #50b2fa;
+}
+
+.hide {
+  animation-name: hideToRight;
+  animation-duration: 450ms;
+  animation-timing-function: ease-in-out;
+}
+.reveal {
+  animation-name: revealFromRight;
+  animation-duration: 450ms;
+  animation-timing-function: ease-in-out;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 16px;
+  max-width: 390px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message {
+  font-weight: 500;
+  max-width: 390px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.iconWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.warning .iconWrapper {
+  background: #e68226;
+}
+.error .iconWrapper {
+  background: #db0505;
+}
+.success .iconWrapper {
+  background: #00b71d;
+}
+.info .iconWrapper {
+  background: #5f58ff;
+}
+
+.closeIcon,
+.icon {
+  color: white;
+}
+
+.closeIconWrapper {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

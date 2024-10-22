@@ -3,17 +3,21 @@ import {
   OpKind,
   SendParams,
   TezosOperationError,
+  TezosToolkit,
   TransferParams,
   Wallet,
-} from '@mavrykdynamics/taquito'
-import { DAPP_INSTANCE } from 'providers/UserProvider/user.provider'
-import { SPECIFIC_CONTRACT_ERROR_CODES } from 'errors/consts/customWalletErrorCodes'
-import { DEFAULT_WALLET_ERROR } from 'errors/consts/error.const'
-import { CONTRACT_ERROR_CODES } from 'errors/consts/walletErrorCodes'
-import { isWalletOperationError } from 'errors/error'
-import { EstimatedBatchCall, EstimatedOperation, WalletErrorPayload } from 'errors/error.type'
-import { toSentenceCase } from 'utils/toSentenceCase'
-import { walletErrorPayload } from 'errors/error.schema'
+} from '@mavrykdynamics/taquito';
+import {
+  EstimatedBatchCall,
+  EstimatedOperation,
+  WalletErrorPayload,
+} from '../error.type';
+import { isWalletOperationError } from '../error';
+import { DEFAULT_WALLET_ERROR } from '../consts/error.const';
+import { CONTRACT_ERROR_CODES } from '../consts/walletErrorCodes';
+import { SPECIFIC_CONTRACT_ERROR_CODES } from '../consts/customWalletErrorCodes';
+import { walletErrorPayload } from '../error.schema';
+import { toSentenceCase } from '~/lib/utils/toSentenceCase';
 
 /**
  * checks is it's wallet error and is yes - gets the error info by that specific code
@@ -21,30 +25,37 @@ import { walletErrorPayload } from 'errors/error.schema'
  * @param skipValidation temporary solution to show error message by code when estimation operation is off
  * @returns {Message, description} object which contains info from error code
  */
-export const getContractErrorMessage = (e: unknown, skipValidation = false): WalletErrorPayload => {
-  const isTezosError = skipValidation ? true : isWalletOperationError(e)
+export const getContractErrorMessage = (
+  e: unknown,
+  skipValidation = false
+): WalletErrorPayload => {
+  const isTezosError = skipValidation ? true : isWalletOperationError(e);
   if (isTezosError) {
-    const error = e as TezosOperationError
-    const errorCode = Number(error.message) ? Number(error.message) : error.message ? error.message : null
+    const error = e as TezosOperationError;
+    const errorCode = Number(error.message)
+      ? Number(error.message)
+      : error.message
+      ? error.message
+      : null;
 
-    const isNumberKey = typeof errorCode === 'number'
-    let _error: WalletErrorPayload = DEFAULT_WALLET_ERROR
+    const isNumberKey = typeof errorCode === 'number';
+    let _error: WalletErrorPayload = DEFAULT_WALLET_ERROR;
 
     if (errorCode !== null) {
       if (isNumberKey) {
-        _error = { ..._error, ...CONTRACT_ERROR_CODES.get(errorCode) }
+        _error = { ..._error, ...CONTRACT_ERROR_CODES.get(errorCode) };
       } else {
-        _error = { ..._error, ...SPECIFIC_CONTRACT_ERROR_CODES.get(errorCode) }
+        _error = { ..._error, ...SPECIFIC_CONTRACT_ERROR_CODES.get(errorCode) };
       }
     }
 
-    _error = { ..._error, description: toSentenceCase(_error.description) }
+    _error = { ..._error, description: toSentenceCase(_error.description) };
 
-    return _error
+    return _error;
   }
 
-  return DEFAULT_WALLET_ERROR
-}
+  return DEFAULT_WALLET_ERROR;
+};
 
 /**
  * estimates the operation before the actual contract call
@@ -53,8 +64,9 @@ export const getContractErrorMessage = (e: unknown, skipValidation = false): Wal
  * @returns estimation info with OR without error
  */
 export const estimateExecution = async (
+  tezos: TezosToolkit | null,
   tezosOperation: ContractMethod<Wallet>,
-  args: Partial<SendParams> | undefined,
+  args: Partial<SendParams> | undefined
 ): Promise<EstimatedOperation> => {
   const defaultEstimatedOperation: EstimatedOperation = {
     gasLimit: 0,
@@ -63,18 +75,21 @@ export const estimateExecution = async (
     suggestedFeeMumav: 0,
     totalCost: 0,
     usingBaseFeeMumav: 0,
-  }
+  };
+
   try {
-    const tezos = await DAPP_INSTANCE.tezos()
-    const estimatedOperation = await tezos?.estimate.transfer(tezosOperation.toTransferParams(args))
-    return { ...defaultEstimatedOperation, ...estimatedOperation }
+    if (!tezos) throw new Error('Tezos toolkit is null');
+    const estimatedOperation = await tezos?.estimate.transfer(
+      tezosOperation.toTransferParams(args)
+    );
+    return { ...defaultEstimatedOperation, ...estimatedOperation };
   } catch (e) {
     return {
       ...defaultEstimatedOperation,
       error: getContractErrorMessage(e),
-    }
+    };
   }
-}
+};
 
 /**
  * estimates the operations before the actual contract calls
@@ -83,42 +98,45 @@ export const estimateExecution = async (
  * @returns estimation info with OR without error
  */
 export const estimateBatchOperation = async (
-  tezosBatchOperation: (TransferParams & { kind: OpKind.TRANSACTION })[],
+  tezos: TezosToolkit | null,
+  tezosBatchOperation: (TransferParams & { kind: OpKind.TRANSACTION })[]
 ): Promise<EstimatedBatchCall> => {
   const defaultEstimatedBatchCalls: EstimatedBatchCall = {
     totalGasLimit: 0,
     totalCost: 0,
     totalMinimalFeeMutez: 0,
     totalSuggestedFeeMutez: 0,
-  }
+  };
   try {
-    const tezos = await DAPP_INSTANCE.tezos()
-    const batchOpEstimate = await tezos?.estimate.batch(tezosBatchOperation)
+    if (!tezos) throw new Error('Tezos toolkit is null');
+    const batchOpEstimate = await tezos?.estimate.batch(tezosBatchOperation);
     //We want to keep these data points for the future. We will need
     // them for some of the estimate ops we are doing
 
     const estimatedBatchCalls = batchOpEstimate.reduce(
       (acc: EstimatedBatchCall, estimateData) => {
-        acc.batchOperations?.push(estimateData)
-        acc.totalGasLimit += estimateData.gasLimit
-        acc.totalCost += estimateData.totalCost
-        acc.totalMinimalFeeMutez += estimateData.minimalFeeMumav
-        acc.totalSuggestedFeeMutez += estimateData.suggestedFeeMumav
-        return acc
+        acc.batchOperations?.push(estimateData);
+        acc.totalGasLimit += estimateData.gasLimit;
+        acc.totalCost += estimateData.totalCost;
+        acc.totalMinimalFeeMutez += estimateData.minimalFeeMumav;
+        acc.totalSuggestedFeeMutez += estimateData.suggestedFeeMumav;
+        return acc;
       },
-      { ...defaultEstimatedBatchCalls },
-    )
+      { ...defaultEstimatedBatchCalls }
+    );
 
-    return estimatedBatchCalls
+    return estimatedBatchCalls;
   } catch (e) {
-    return { ...defaultEstimatedBatchCalls, error: getContractErrorMessage(e) }
+    return { ...defaultEstimatedBatchCalls, error: getContractErrorMessage(e) };
   }
-}
+};
 /**
  *
  * @param error in most cases it would be object to check data returned by "getContractErrorMessage"
  * @returns boolean
  */
-export const isContractErrorPayload = (error: unknown): error is WalletErrorPayload => {
-  return walletErrorPayload.safeParse(error).success
-}
+export const isContractErrorPayload = (
+  error: unknown
+): error is WalletErrorPayload => {
+  return walletErrorPayload.safeParse(error).success;
+};
