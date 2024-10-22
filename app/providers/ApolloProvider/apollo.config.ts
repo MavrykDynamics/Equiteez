@@ -1,8 +1,8 @@
-import { split } from '@apollo/client';
+import { split } from '@apollo/client/index';
 import { HttpLink } from '@apollo/client/link/http';
 import { RetryLink } from '@apollo/client/link/retry';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient } from 'graphql-ws';
+// import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { isAbortError } from '~/errors/error';
 
@@ -10,12 +10,6 @@ import { isAbortError } from '~/errors/error';
 export const httpLink = new HttpLink({
   uri: process.env.GRAPHQL_API ?? '',
 });
-
-export const wsLink = new GraphQLWsLink(
-  createClient({
-    url: process.env.GRAPHQL_WSS_API ?? '',
-  })
-);
 
 export const splitLink = (wsLink: GraphQLWsLink, httpLink: HttpLink) =>
   split(

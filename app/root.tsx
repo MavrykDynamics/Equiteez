@@ -6,38 +6,38 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteError,
-} from '@remix-run/react';
-import { json, LinksFunction } from '@remix-run/node';
+} from "@remix-run/react";
+import { json, LinksFunction } from "@remix-run/node";
 
 // providers
-import CustomErrorBoundary from './templates/ErrorBoundary';
+import CustomErrorBoundary from "./templates/ErrorBoundary";
 
 // global styles
-import stylesheet from '~/index.css?url';
-import 'react-datepicker/dist/react-datepicker.css';
+import stylesheet from "~/index.css?url";
+import "react-datepicker/dist/react-datepicker.css";
 
 // providers
-import { AppProvider } from './providers/AppProvider/AppProvider';
-import { WalletProvider } from './providers/WalletProvider/wallet.provider';
-import { UserProvider } from './providers/UserProvider/user.provider';
-import { EstatesProvider } from './providers/EstatesProvider/estates.provider';
-import { TokensProvider } from './providers/TokensProvider/tokens.provider';
-import { PopupProvider } from './providers/PopupProvider/popup.provider';
-import { AppGlobalLoader } from './providers/AppGlobalLoader';
-import { CurrencyProvider } from './providers/CurrencyProvider/currency.provider';
+import { AppProvider } from "./providers/AppProvider/AppProvider";
+import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
+import { UserProvider } from "./providers/UserProvider/user.provider";
+import { EstatesProvider } from "./providers/EstatesProvider/estates.provider";
+import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
+import { PopupProvider } from "./providers/PopupProvider/popup.provider";
+import { AppGlobalLoader } from "./providers/AppGlobalLoader";
+import { CurrencyProvider } from "./providers/CurrencyProvider/currency.provider";
 import {
   fetchTokensData,
   fetchTokensMetadata,
-} from './providers/TokensProvider/utils/fetchTokensdata';
-import { fetchFiatToTezosRates } from './lib/fiat-currency';
-import { fetchUsdToTokenRates } from './lib/mavryk/endpoints/get-exchange-rates';
-import { useDataFromLoader } from './hooks/useDataFromLoader';
-import ToasterProvider from './providers/ToasterProvider/toaster.provider';
-import { ApolloProvider } from './providers/ApolloProvider/apollo.provider';
+} from "./providers/TokensProvider/utils/fetchTokensdata";
+import { fetchFiatToTezosRates } from "./lib/fiat-currency";
+import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
+import { useDataFromLoader } from "./hooks/useDataFromLoader";
+import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
+import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
 
 export const links: LinksFunction = () => [
-  { rel: 'preload', as: 'style', href: stylesheet },
-  { rel: 'stylesheet', href: stylesheet },
+  { rel: "preload", as: "style", href: stylesheet },
+  { rel: "stylesheet", href: stylesheet },
 ];
 
 export const loader = async () => {
@@ -72,7 +72,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="min-h-screen"
           >
             <ToasterProvider
-              maintance={process.env.REACT_APP_MAINTANCE_MODE === 'on'}
+              maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
             >
               <ApolloProvider>
                 <AppProvider>

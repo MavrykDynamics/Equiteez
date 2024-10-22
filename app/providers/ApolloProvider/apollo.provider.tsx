@@ -11,20 +11,24 @@ import {
   from,
   ApolloProvider as OriginalApolloProvider,
   ApolloError,
-} from '@apollo/client';
+} from '@apollo/client/index';
+
 import { onError } from '@apollo/client/link/error';
 
 // types
 import { ApolloContext } from './apollo.provider.types';
 
 // consts
-import { httpLink, retryLink, splitLink, wsLink } from './apollo.config';
+import { httpLink, retryLink, splitLink } from './apollo.config';
 import { FatalError, isAbortError } from '~/errors/error';
 
 // hooks
 import { TOASTER_TEXTS } from '../ToasterProvider/helpers/texts/toaster.texts';
 import { TOASTER_SUBSCRIPTION_ERROR } from '../ToasterProvider/toaster.provider.const';
 import { useToasterContext } from '../ToasterProvider/toaster.provider';
+import { useAppContext } from '../AppProvider/AppProvider';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
 
 // context
 const apolloContext = createContext<ApolloContext>(undefined!);
@@ -34,6 +38,7 @@ type Props = {
 };
 
 export const ApolloProvider = ({ children }: Props) => {
+  const { IS_WEB } = useAppContext();
   const { bug, fatal } = useToasterContext();
   const [hasNetworkError, setHasNetworkError] = useState(false);
 
@@ -68,10 +73,23 @@ export const ApolloProvider = ({ children }: Props) => {
   const apolloClient = useMemo(
     () =>
       new ApolloClient({
-        link: from([errorLink, retryLink, splitLink(wsLink, httpLink)]),
+        link: IS_WEB
+          ? from([
+              errorLink,
+              retryLink,
+              splitLink(
+                new GraphQLWsLink(
+                  createClient({
+                    url: process.env.GRAPHQL_WSS_API ?? '',
+                  })
+                ),
+                httpLink
+              ),
+            ])
+          : undefined,
         cache: new InMemoryCache(),
       }),
-    [errorLink]
+    [errorLink, IS_WEB]
   );
 
   const handleApolloError = useCallback(
