@@ -50,7 +50,12 @@ export const loader = async () => {
     fetchUsdToTokenRates(),
   ]);
 
-  return json({ tokens, tokensMetadata, fiatToTezos, usdToToken });
+  return json({
+    tokens,
+    tokensMetadata,
+    fiatToTezos,
+    usdToToken,
+  });
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -75,29 +80,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterProvider
               maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
             >
-              {/* <ApolloProvider> */}
               <AppProvider>
-                <WalletProvider>
-                  <CurrencyProvider
-                    fiatToTezos={fiatToTezos}
-                    usdToToken={usdToToken}
-                  >
-                    <TokensProvider
-                      initialTokens={tokens}
-                      initialTokensMetadata={tokensMetadata}
+                <ApolloProvider>
+                  <WalletProvider>
+                    <CurrencyProvider
+                      fiatToTezos={fiatToTezos}
+                      usdToToken={usdToToken}
                     >
-                      <UserProvider>
-                        <EstatesProvider>
-                          <AppGlobalLoader>
-                            <PopupProvider>{children}</PopupProvider>
-                          </AppGlobalLoader>
-                        </EstatesProvider>
-                      </UserProvider>
-                    </TokensProvider>
-                  </CurrencyProvider>
-                </WalletProvider>
+                      <TokensProvider
+                        initialTokens={tokens}
+                        initialTokensMetadata={tokensMetadata}
+                      >
+                        <UserProvider>
+                          <EstatesProvider>
+                            <AppGlobalLoader>
+                              <PopupProvider>{children}</PopupProvider>
+                            </AppGlobalLoader>
+                          </EstatesProvider>
+                        </UserProvider>
+                      </TokensProvider>
+                    </CurrencyProvider>
+                  </WalletProvider>
+                </ApolloProvider>
               </AppProvider>
-              {/* </ApolloProvider> */}
               <ToasterMessages />
             </ToasterProvider>
           </CustomErrorBoundary>

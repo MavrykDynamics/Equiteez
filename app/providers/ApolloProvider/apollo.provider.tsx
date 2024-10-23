@@ -4,31 +4,31 @@ import React, {
   useContext,
   useMemo,
   useState,
-} from 'react';
+} from "react";
 import {
   ApolloClient,
   InMemoryCache,
   from,
   ApolloProvider as OriginalApolloProvider,
   ApolloError,
-} from '@apollo/client/index';
+} from "@apollo/client/index";
 
-import { onError } from '@apollo/client/link/error';
+import { onError } from "@apollo/client/link/error";
 
 // types
-import { ApolloContext } from './apollo.provider.types';
+import { ApolloContext } from "./apollo.provider.types";
 
 // consts
-import { httpLink, retryLink, splitLink } from './apollo.config';
-import { FatalError, isAbortError } from '~/errors/error';
+import { httpLink, retryLink, splitLink } from "./apollo.config";
+import { FatalError, isAbortError } from "~/errors/error";
 
 // hooks
-import { TOASTER_TEXTS } from '../ToasterProvider/helpers/texts/toaster.texts';
-import { TOASTER_SUBSCRIPTION_ERROR } from '../ToasterProvider/toaster.provider.const';
-import { useToasterContext } from '../ToasterProvider/toaster.provider';
-import { useAppContext } from '../AppProvider/AppProvider';
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient } from 'graphql-ws';
+import { TOASTER_TEXTS } from "../ToasterProvider/helpers/texts/toaster.texts";
+import { TOASTER_SUBSCRIPTION_ERROR } from "../ToasterProvider/toaster.provider.const";
+import { useToasterContext } from "../ToasterProvider/toaster.provider";
+import { useAppContext } from "../AppProvider/AppProvider";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from "graphql-ws";
 
 // context
 const apolloContext = createContext<ApolloContext>(undefined!);
@@ -58,10 +58,10 @@ export const ApolloProvider = ({ children }: Props) => {
         if (networkError) {
           console.log(`[Network error]: ${networkError}`);
 
-          if (typeof window !== 'undefined' && !window.navigator.onLine) {
-            bug('Sorry, your browser is offline.');
+          if (typeof window !== "undefined" && !window.navigator.onLine) {
+            bug("Sorry, your browser is offline.");
           } else {
-            if (hasNetworkError) fatal(new FatalError('Server is disabled.'));
+            if (hasNetworkError) fatal(new FatalError("Server is disabled."));
 
             setHasNetworkError(true);
           }
@@ -80,7 +80,7 @@ export const ApolloProvider = ({ children }: Props) => {
               splitLink(
                 new GraphQLWsLink(
                   createClient({
-                    url: process.env.GRAPHQL_WSS_API ?? '',
+                    url: process.env.GRAPHQL_WSS_API ?? "",
                   })
                 ),
                 httpLink
@@ -98,8 +98,8 @@ export const ApolloProvider = ({ children }: Props) => {
 
       console.error(`${subName} query error: `, error);
       bug(
-        TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['message'],
-        bugMessage ?? TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]['title']
+        TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]["message"],
+        bugMessage ?? TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]["title"]
       );
     },
     []
@@ -110,7 +110,7 @@ export const ApolloProvider = ({ children }: Props) => {
       apolloClient,
       handleApolloError,
     }),
-    [apolloClient]
+    [apolloClient, handleApolloError]
   );
 
   return (
@@ -125,7 +125,7 @@ export const ApolloProvider = ({ children }: Props) => {
 export const useApolloContext = () => {
   const context = useContext(apolloContext);
   if (!context) {
-    throw new Error('useApolloContext should be used within ApolloProvider');
+    throw new Error("useApolloContext should be used within ApolloProvider");
   }
 
   return context;
