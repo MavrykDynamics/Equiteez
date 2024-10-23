@@ -16,6 +16,7 @@ import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
 import { Container } from "~/lib/atoms/Container";
+import { gql, useQuery } from "@apollo/client/index";
 // import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 
 export const meta: MetaFunction = () => {
@@ -25,10 +26,26 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+const testQuery = gql(`query TokenQuery {
+  token {
+    address
+  }
+}`);
+
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export default function Index() {
   // const { info, bug, loading, success, warning } = useToasterContext();
+  const { loading: initialConfigLoading } = useQuery(testQuery, {
+    onCompleted: (data) => {
+      try {
+        console.log(data);
+      } catch (e) {
+        console.log(e, "TEST_QUIERY_ERROR from catch");
+      }
+    },
+    onError: (error) => console.log(error, "TEST_QUIERY_ERROR"),
+  });
 
   return (
     <PageLayout includeContainer={false}>
