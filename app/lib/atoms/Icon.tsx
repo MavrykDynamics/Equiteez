@@ -1,19 +1,19 @@
 // app/components/Icon.tsx
-import React, { FC, SVGProps, useLayoutEffect, useState } from 'react';
+import React, { FC, SVGProps, useLayoutEffect, useState } from "react";
 
 type IconProps = {
   icon: string;
   className?: string;
 };
 
-export const Icon: React.FC<IconProps> = ({ icon, className = '' }) => {
+export const Icon: React.FC<IconProps> = ({ icon, className = "" }) => {
   const [SvgIcon, setSvgIcon] = useState<FC<SVGProps<SVGSVGElement>> | null>(
     null
   );
 
   useLayoutEffect(() => {
     // Dynamically import the icon using the svgName prop
-    import(`app/icons/${icon}.svg?react`)
+    import(`../../icons/${icon}.svg?react`)
       .then((mod) => setSvgIcon(() => mod.default))
       .catch((err) => {
         console.error(`Failed to load icon "${icon}":`, err);

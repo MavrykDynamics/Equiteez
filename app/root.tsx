@@ -34,6 +34,7 @@ import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates"
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
+import { ToasterMessages } from "./providers/ToasterProvider/components/ToasterMessages";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -74,29 +75,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterProvider
               maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
             >
-              <ApolloProvider>
-                <AppProvider>
-                  <WalletProvider>
-                    <CurrencyProvider
-                      fiatToTezos={fiatToTezos}
-                      usdToToken={usdToToken}
+              {/* <ApolloProvider> */}
+              <AppProvider>
+                <WalletProvider>
+                  <CurrencyProvider
+                    fiatToTezos={fiatToTezos}
+                    usdToToken={usdToToken}
+                  >
+                    <TokensProvider
+                      initialTokens={tokens}
+                      initialTokensMetadata={tokensMetadata}
                     >
-                      <TokensProvider
-                        initialTokens={tokens}
-                        initialTokensMetadata={tokensMetadata}
-                      >
-                        <UserProvider>
-                          <EstatesProvider>
-                            <AppGlobalLoader>
-                              <PopupProvider>{children}</PopupProvider>
-                            </AppGlobalLoader>
-                          </EstatesProvider>
-                        </UserProvider>
-                      </TokensProvider>
-                    </CurrencyProvider>
-                  </WalletProvider>
-                </AppProvider>
-              </ApolloProvider>
+                      <UserProvider>
+                        <EstatesProvider>
+                          <AppGlobalLoader>
+                            <PopupProvider>{children}</PopupProvider>
+                          </AppGlobalLoader>
+                        </EstatesProvider>
+                      </UserProvider>
+                    </TokensProvider>
+                  </CurrencyProvider>
+                </WalletProvider>
+              </AppProvider>
+              {/* </ApolloProvider> */}
+              <ToasterMessages />
             </ToasterProvider>
           </CustomErrorBoundary>
           <ScrollRestoration />

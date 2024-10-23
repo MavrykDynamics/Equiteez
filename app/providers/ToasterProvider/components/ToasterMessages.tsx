@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { useToasterContext } from '../toaster.provider';
-import { ToasterAnimationType, ToasterMessage } from '../toaster.provider.type';
-import styles from './toasterMessages.module.css';
+import { useToasterContext } from "../toaster.provider";
+import { ToasterAnimationType, ToasterMessage } from "../toaster.provider.type";
+import styles from "./toasterMessages.module.css";
+
 import {
   ANIMATION_DURATION,
   TOASTER_HIDE,
@@ -10,10 +11,10 @@ import {
   TOASTS_LIMIT,
   TOAST_ICON_MAPPER,
   TOAST_TIME_TO_LIVE,
-} from '../toaster.provider.const';
-import classNames from 'clsx';
-import { sleep } from '~/lib/utils/sleep';
-import { Icon } from '~/lib/atoms/Icon';
+} from "../toaster.provider.const";
+import classNames from "clsx";
+import { sleep } from "~/lib/utils/sleep";
+import { Icon } from "~/lib/atoms/Icon";
 
 const Toast = ({ toast }: { toast: ToasterMessage }) => {
   const [toastAnimation, setToastAnimation] =
