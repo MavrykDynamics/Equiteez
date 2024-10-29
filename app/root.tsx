@@ -35,6 +35,7 @@ import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
 import { ToasterMessages } from "./providers/ToasterProvider/components/ToasterMessages";
+import { MarketProvider } from "./providers/MarketProvider/market.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -91,13 +92,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         initialTokens={tokens}
                         initialTokensMetadata={tokensMetadata}
                       >
-                        <UserProvider>
-                          <EstatesProvider>
-                            <AppGlobalLoader>
-                              <PopupProvider>{children}</PopupProvider>
-                            </AppGlobalLoader>
-                          </EstatesProvider>
-                        </UserProvider>
+                        <MarketProvider>
+                          <UserProvider>
+                            <EstatesProvider>
+                              <AppGlobalLoader>
+                                <PopupProvider>{children}</PopupProvider>
+                              </AppGlobalLoader>
+                            </EstatesProvider>
+                          </UserProvider>
+                        </MarketProvider>
                       </TokensProvider>
                     </CurrencyProvider>
                   </WalletProvider>

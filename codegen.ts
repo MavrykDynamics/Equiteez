@@ -10,7 +10,7 @@ const INDEXER_TABLES = {
 };
 
 const config: CodegenConfig = {
-  schema: process.env.REACT_APP_GRAPHQL_API,
+  schema: process.env.GRAPHQL_API,
   documents: ["app/**/*.{ts,tsx}"],
   generates: {
     "app/utils/__generated__/": {
