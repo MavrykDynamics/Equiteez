@@ -1,5 +1,7 @@
 import { createContext, FC, useContext, useMemo } from "react";
 import { MarketProviderCtxType } from "./market.provider.types";
+import { MARKET_TOKENS_QUERY } from "./queries/marketTokens.query";
+import { useQuery } from "@apollo/client";
 
 const marketProvider = createContext<MarketProviderCtxType>(undefined!);
 
@@ -18,9 +20,16 @@ export const MarketProvider: FC<MarketProps> = ({ children }) => {
 export const useMarketProvider = () => {
   const context = useContext(marketProvider);
 
-  // useQuery or fetch from server marketsData
-  // initialixe it
-  // loading indicator
+  const { loading: initialConfigLoading } = useQuery(MARKET_TOKENS_QUERY, {
+    onCompleted: (data) => {
+      try {
+        console.log(data);
+      } catch (e) {
+        console.log(e, "TEST_QUIERY_ERROR from catch");
+      }
+    },
+    onError: (error) => console.log(error, "TEST_QUIERY_ERROR"),
+  });
 
   if (!context) {
     throw new Error(

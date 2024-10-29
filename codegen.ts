@@ -1,5 +1,5 @@
-import { CodegenConfig } from '@graphql-codegen/cli';
-import { visit } from 'graphql';
+import { CodegenConfig } from "@graphql-codegen/cli";
+import { visit } from "graphql";
 
 // mapper of top level tables
 const INDEXER_TABLES = {
@@ -11,12 +11,12 @@ const INDEXER_TABLES = {
 
 const config: CodegenConfig = {
   schema: process.env.REACT_APP_GRAPHQL_API,
-  documents: ['src/**/*.{ts,tsx}'],
+  documents: ["app/**/*.{ts,tsx}"],
   generates: {
-    'src/utils/__generated__/': {
-      preset: 'client',
+    "app/utils/__generated__/": {
+      preset: "client",
       presetConfig: {
-        gqlTagName: 'gql',
+        gqlTagName: "gql",
       },
       documentTransforms: [
         {
