@@ -1,5 +1,7 @@
 import { createContext, FC, useContext, useMemo } from "react";
 import { DexProviderCtxType } from "./dex.provider.types";
+import { useQuery } from "@apollo/client/index";
+import { DEXES_QUERY } from "./queries/dexes.query";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
@@ -7,6 +9,20 @@ type MarketProps = PropsWithChildren;
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const memoizedDexCtx: DexProviderCtxType = useMemo(() => ({}), []);
+
+  const { loading: initialConfigLoading } = useQuery(DEXES_QUERY, {
+    onCompleted: (data) => {
+      try {
+        console.log(data), "---------__----------";
+
+        // TODO add normlizer
+        // normalize data and store in this context
+      } catch (e) {
+        console.log(e, "DEXES_ERROR from catch");
+      }
+    },
+    onError: (error) => console.log(error, "TEST_QUIERY_ERROR"),
+  });
 
   // initialixe dexs based on markets from props inside market ctx
   // loading indicator

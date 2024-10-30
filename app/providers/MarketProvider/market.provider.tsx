@@ -13,12 +13,14 @@ export const MarketProvider: FC<MarketProps> = ({ children }) => {
   const { loading: initialConfigLoading } = useQuery(MARKET_TOKENS_QUERY, {
     onCompleted: (data) => {
       try {
+        // TODO add normlizer
+        // normalize data and store in this context
         console.log(data), "---------__----------";
       } catch (e) {
-        console.log(e, "TEST_QUIERY_ERROR from catch");
+        console.log(e, "MARKET_TOKENS_QUERY_ERROR from catch");
       }
     },
-    onError: (error) => console.log(error, "TEST_QUIERY_ERROR"),
+    onError: (error) => console.log(error, "MARKET_TOKENS_QUERY"),
   });
 
   return (

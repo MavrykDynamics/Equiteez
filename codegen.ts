@@ -6,7 +6,11 @@ const INDEXER_TABLES = {
   // TOKENS
   token: true,
 
-  // add other tables
+  // Dexes
+  orderbook: true,
+  dodo_mav: true,
+  marketplace: true
+
 };
 
 const config: CodegenConfig = {
