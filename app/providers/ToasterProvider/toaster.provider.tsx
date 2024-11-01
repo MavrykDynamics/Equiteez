@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
-import { ErrorPageTemp } from '~/templates/ErrorPageTemp';
+import React, { useContext } from "react";
+import { ErrorPageTemp } from "~/templates/ErrorPageTemp";
 
 // types
-import type { ToasterContextType, ToasterTypes } from './toaster.provider.type';
-import { FatalError, CustomErrors } from '../../errors/error';
+import type { ToasterContextType, ToasterTypes } from "./toaster.provider.type";
+import { FatalError, CustomErrors } from "../../errors/error";
 
 // consts
 import {
@@ -12,17 +12,17 @@ import {
   TOASTER_LOADING,
   TOASTER_SUCCESS,
   TOASTER_WARNING,
-} from './toaster.provider.const';
-import { v4 as uuid } from 'uuid';
+} from "./toaster.provider.const";
+import { v4 as uuid } from "uuid";
 import {
   InternalErrorType,
   SharedErrorFileds,
   SharedErrors,
-} from '~/errors/error.type';
-import { WalletActionType } from '~/contracts/actions.type';
-import { getErrorPageData } from './helpers/getErrorPageData';
-import { ERROR_TYPE_FATAL, ERROR_TYPE_ROUTER } from '~/errors/error.const';
-import { MaintancePageTemp } from '~/templates/MaintancePageTemp';
+} from "~/errors/error.type";
+import { WalletActionType } from "~/contracts/actions.type";
+import { getErrorPageData } from "./helpers/getErrorPageData";
+import { ERROR_TYPE_FATAL, ERROR_TYPE_ROUTER } from "~/errors/error.const";
+import { MaintancePageTemp } from "~/templates/MaintancePageTemp";
 
 export const toasterContext = React.createContext<ToasterContextType>(
   undefined!
@@ -81,7 +81,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
    * Errors thrown in the error boundary itself (rather than its children)
    */
   componentDidCatch(error: Error): void {
-    this.addToasterMessage('', error.message, TOASTER_ERROR);
+    this.addToasterMessage("", error.message, TOASTER_ERROR);
     this.fatal(new FatalError(error));
   }
 
@@ -109,7 +109,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
     return unique;
   };
 
-  bug = (rawError: Error | string, title = ''): string => {
+  bug = (rawError: Error | string, title = ""): string => {
     if (rawError instanceof Error) {
       console.warn(rawError.message);
       return this.addToasterMessage(title, rawError.message, TOASTER_ERROR);

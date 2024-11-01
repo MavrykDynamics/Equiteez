@@ -50,9 +50,7 @@ const Toast = ({ toast }: { toast: ToasterMessage }) => {
         styles[type]
       )}
     >
-      <div className={styles.iconWrapper}>
-        <Icon className={styles.icon} icon={TOAST_ICON_MAPPER[type]} />
-      </div>
+      <Icon className={"size-6"} icon={TOAST_ICON_MAPPER[type]} />
       <div className={styles.content}>
         {title && <div className={styles.title}>{title}</div>}
         <div className={styles.message}>{message}</div>
@@ -62,7 +60,7 @@ const Toast = ({ toast }: { toast: ToasterMessage }) => {
         onClick={() => hideToasterMessage(unique)}
         className={styles.closeIconWrapper}
       >
-        <Icon className={styles.closeIcon} icon="cross" />
+        <Icon className={"size-6 stroke-sand-900"} icon="cross" />
       </div>
     </div>
   );
