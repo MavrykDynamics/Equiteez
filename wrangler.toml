@@ -15,7 +15,7 @@ TOKENS_METADATA_API="https://dipdup-metadata-api.mavryk.network/v1/graphql"
 BCD_NETWORK_TYPE="sandboxnet"
 REACT_APP_ENV="dev"
 MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
-BASE_URL="https://dev.equiteez.pages.dev"
+BASE_URL="https://stage.equiteez.pages.dev"
 
 [env.production.vars]
 GOOGLE_MAPS_API_KEY="AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
