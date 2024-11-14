@@ -16,6 +16,7 @@ BCD_NETWORK_TYPE="sandboxnet"
 REACT_APP_ENV="dev"
 MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
 BASE_URL="https://stage.equiteez.pages.dev"
+NODE_VERSION="22.11.0"
 
 [env.production.vars]
 GOOGLE_MAPS_API_KEY="AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
@@ -27,3 +28,4 @@ BCD_NETWORK_TYPE="sandboxnet"
 REACT_APP_ENV="prod"
 MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
 BASE_URL="https://equiteez.com"
+NODE_VERSION="22.11.0"
