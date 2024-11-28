@@ -35,6 +35,13 @@ import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
 import { ToasterMessages } from "./providers/ToasterProvider/components/ToasterMessages";
+import { ErrorPageTemp } from "./templates/ErrorPageTemp/ErrorPageTemp";
+import {
+  errorDescDefaultText,
+  errorDescDefaultTextWhenError,
+  errorHeaderDefaultText,
+  errorHeaderDefaultTextWhenError,
+} from "./providers/ToasterProvider/toaster.provider.const";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -123,23 +130,19 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error)) {
     return (
-      <div>
-        <h1>
-          {error.status} {error.statusText}
-        </h1>
-        <p>{error.data}</p>
-      </div>
+      <ErrorPageTemp
+        headerText={errorHeaderDefaultText}
+        descText={errorDescDefaultText}
+        type="router"
+      />
     );
-  } else if (error instanceof Error) {
-    return (
-      <div>
-        <h1>Error</h1>
-        <p>{error.message}</p>
-        <p>The stack trace is:</p>
-        <pre>{error.stack}</pre>
-      </div>
-    );
-  } else {
-    return <h1>Unknown Error</h1>;
   }
+
+  return (
+    <ErrorPageTemp
+      headerText={errorHeaderDefaultTextWhenError}
+      descText={errorDescDefaultTextWhenError}
+      type="fatal"
+    />
+  );
 }
