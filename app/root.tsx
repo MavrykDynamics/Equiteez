@@ -8,9 +8,7 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { json, LinksFunction } from "@remix-run/node";
-
 // providers
-import CustomErrorBoundary from "./templates/ErrorBoundary";
 
 // global styles
 import stylesheet from "~/index.css?url";
@@ -42,6 +40,7 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
+import { FC } from "react";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -65,10 +64,40 @@ export const loader = async () => {
   });
 };
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  const { tokens, tokensMetadata, fiatToTezos, usdToToken } =
-    useDataFromLoader<typeof loader>();
+const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
+  // TODO handle laoder data elsewhere
+  const {
+    tokens = [],
+    tokensMetadata = {},
+    fiatToTezos = {},
+    usdToToken = {},
+  } = useDataFromLoader<typeof loader>() ?? {};
 
+  return (
+    <AppProvider>
+      <ApolloProvider>
+        <WalletProvider>
+          <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
+            <TokensProvider
+              initialTokens={tokens}
+              initialTokensMetadata={tokensMetadata}
+            >
+              <UserProvider>
+                <EstatesProvider>
+                  <AppGlobalLoader>
+                    <PopupProvider>{children}</PopupProvider>
+                  </AppGlobalLoader>
+                </EstatesProvider>
+              </UserProvider>
+            </TokensProvider>
+          </CurrencyProvider>
+        </WalletProvider>
+      </ApolloProvider>
+    </AppProvider>
+  );
+};
+
+export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -80,39 +109,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <body>
         <div id="root">
-          <CustomErrorBoundary
-            whileMessage="booting an app"
-            className="min-h-screen"
+          <ToasterProvider
+            maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <ToasterProvider
-              maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
-            >
-              <AppProvider>
-                <ApolloProvider>
-                  <WalletProvider>
-                    <CurrencyProvider
-                      fiatToTezos={fiatToTezos}
-                      usdToToken={usdToToken}
-                    >
-                      <TokensProvider
-                        initialTokens={tokens}
-                        initialTokensMetadata={tokensMetadata}
-                      >
-                        <UserProvider>
-                          <EstatesProvider>
-                            <AppGlobalLoader>
-                              <PopupProvider>{children}</PopupProvider>
-                            </AppGlobalLoader>
-                          </EstatesProvider>
-                        </UserProvider>
-                      </TokensProvider>
-                    </CurrencyProvider>
-                  </WalletProvider>
-                </ApolloProvider>
-              </AppProvider>
-              <ToasterMessages />
-            </ToasterProvider>
-          </CustomErrorBoundary>
+            <AppWrapper>{children}</AppWrapper>
+            <ToasterMessages />
+          </ToasterProvider>
           <ScrollRestoration />
           <Scripts />
         </div>
@@ -122,7 +124,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }
 
 export function ErrorBoundary() {
