@@ -1,13 +1,13 @@
-import { FC } from 'react';
+import { FC } from "react";
 
-import clsx from 'clsx';
+import clsx from "clsx";
 
-import DocBg from 'app/a11y/DocBg';
+import DocBg from "app/a11y/DocBg";
 
 // layout components
-import { Header } from './Header';
-import { Footer } from './Footer';
-import { Container } from '~/lib/atoms/Container';
+import { Header } from "./Header";
+import { Footer } from "./Footer/Footer";
+import { Container } from "~/lib/atoms/Container";
 
 type PageLayoutProps = {
   bg?: string;
@@ -24,15 +24,15 @@ type PageLayoutProps = {
  */
 const PageLayout: FC<PageLayoutProps> = ({
   children,
-  bg = 'bg-background',
+  bg = "bg-background",
   includeContainer = true,
   includeFooter = true,
 }) => {
   return (
-    <div className={clsx('min-h-screen')}>
+    <div className={clsx("min-h-screen")}>
       <DocBg bgClassName={clsx(bg)} />
 
-      <div className={clsx('relative')}>
+      <div className={clsx("relative")}>
         <Header />
         {includeContainer ? <Container>{children}</Container> : children}
         {includeFooter && <Footer />}

@@ -1,13 +1,13 @@
-import clsx from 'clsx';
-import { FOOTER_LINKS } from './pagelayout.consts';
-import { Link } from '@remix-run/react';
-import { SOCIALS } from '~/consts/icons';
+import clsx from "clsx";
+// import { FOOTER_LINKS } from './pagelayout.consts';
+import { Link } from "@remix-run/react";
+// import { SOCIALS } from '~/consts/icons';
 
-import LogoIcon from 'app/icons/logo.svg?react';
+import LogoIcon from "app/icons/logo.svg?react";
 
 export const Footer = () => {
   return (
-    <footer className={clsx('bg-sand-900 flex flex-col items-center')}>
+    <footer className={clsx("bg-sand-900 flex flex-col items-center")}>
       <div className="flex justify-between px-[100px] pt-[54px] pb-[122px] w-container">
         <div className="max-w-[420px] flex flex-col items-start">
           <Link to="/" className="flex items-center gap-x-[10px] w-auto">
