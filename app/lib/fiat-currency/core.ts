@@ -3,11 +3,10 @@ import { useMemo } from 'react';
 import { BigNumber } from 'bignumber.js';
 
 import { FIAT_CURRENCIES } from './consts';
-import type { FiatCurrencyOption, CoingeckoFiatInterface } from './types';
+import type { FiatCurrencyOption } from './types';
 import { isDefined, isTruthy } from '../utils';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { useStorage } from '../utils/local-storage';
-import { api } from '../utils/api';
 
 const FIAT_CURRENCY_STORAGE_KEY = 'fiat_currency';
 
@@ -75,27 +74,49 @@ export const useFiatCurrency = () => {
   };
 };
 
-const coingeckoApi = 'https://api.coingecko.com/api/v3';
+// TODO there was tezos: {usd: 1.6} from coincheck api
+// const feedsQuery = `
+//     query dataFeedsPrices {
+//       aggregator: aggregator(where: { admin: { _neq: "" } }, order_by: { creation_timestamp: desc }) {
+//         address
+//         name
+//         decimals
+//         last_completed_data
+//         last_completed_data_pct_oracle_resp
+//         last_completed_data_last_updated_at
+//         last_completed_data_epoch
+//       }
+//     }
+//   `;
 
-export const fetchFiatToTezosRates = async () => {
-  try {
-    const currencies = FIAT_CURRENCIES.map(({ apiLabel }) => apiLabel).join(
-      ','
-    );
+// export const fetchFiatToTezosRates = async () => {
+//   try {
+//     const { data } = await api<{ data: { aggregator: TokenPricesFeedsType } }>(
+//       'https://api.mavenfinance.io/v1/graphql',
+//       {
+//         method: 'POST',
+//         body: JSON.stringify({ query: feedsQuery }),
+//       }
+//     );
 
-    const { data } = await api<CoingeckoFiatInterface>(
-      coingeckoApi.concat(`/simple/price?ids=tezos&vs_currencies=${currencies}`)
-    );
+//     const mappedRates = normalizeTokenPrices(data.data.aggregator);
 
-    const mappedRates: Record<string, number> = {};
-    const tezosData = Object.keys(data.tezos);
+//     return { mappedRates, usd: 1.6 };
+//   } catch (e) {
+//     throw new Error('Error while fetching tezos rates');
+//   }
+// };
 
-    for (const quote of tezosData) {
-      mappedRates[quote] = data.tezos[quote];
-    }
+// export const normalizeTokenPrices = (feedsLedger: TokenPricesFeedsType) => {
+//   return feedsLedger.reduce<Record<string, number>>((acc, feedGql) => {
+//     const { symbol } = getTokenSymbolAndName(feedGql.name) ?? {};
 
-    return mappedRates;
-  } catch (e) {
-    throw new Error('Error while fetching tezos rates');
-  }
-};
+//     if (symbol) {
+//       acc[symbol] = atomsToTokens(
+//         feedGql.last_completed_data,
+//         feedGql.decimals
+//       ).toNumber();
+//     }
+//     return acc;
+//   }, {});
+// };
