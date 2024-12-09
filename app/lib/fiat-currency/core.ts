@@ -3,11 +3,10 @@ import { useMemo } from 'react';
 import { BigNumber } from 'bignumber.js';
 
 import { FIAT_CURRENCIES } from './consts';
-import type { FiatCurrencyOption, CoingeckoFiatInterface } from './types';
+import type { FiatCurrencyOption } from './types';
 import { isDefined, isTruthy } from '../utils';
 import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
 import { useStorage } from '../utils/local-storage';
-import { api } from '../utils/api';
 
 const FIAT_CURRENCY_STORAGE_KEY = 'fiat_currency';
 
@@ -32,6 +31,8 @@ function useAssetUSDPrice(slug: string) {
   }, [slug, usdToTokenRates]);
 }
 
+// by defualt 1 dollar equals 1 dollar
+// TODO take dollar rate from api
 export const useFiatToUsdRate = () => {
   const { fiatRates, selectedFiatCurrency } = useFiatCurrency();
 
@@ -75,27 +76,4 @@ export const useFiatCurrency = () => {
   };
 };
 
-const coingeckoApi = 'https://api.coingecko.com/api/v3';
-
-export const fetchFiatToTezosRates = async () => {
-  try {
-    const currencies = FIAT_CURRENCIES.map(({ apiLabel }) => apiLabel).join(
-      ','
-    );
-
-    const { data } = await api<CoingeckoFiatInterface>(
-      coingeckoApi.concat(`/simple/price?ids=tezos&vs_currencies=${currencies}`)
-    );
-
-    const mappedRates: Record<string, number> = {};
-    const tezosData = Object.keys(data.tezos);
-
-    for (const quote of tezosData) {
-      mappedRates[quote] = data.tezos[quote];
-    }
-
-    return mappedRates;
-  } catch (e) {
-    throw new Error('Error while fetching tezos rates');
-  }
-};
+// TODO there was tezos: {usd: 1.6} from coincheck api

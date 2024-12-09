@@ -92,11 +92,11 @@ const useBuySellActions = (
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+      tokensAmount: amount?.toNumber(),
       minMaxQuote: 1000,
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, slug, tokenAddress, selectedAssetMetadata, usdToTokenRates]
+    [amount, tokenAddress, selectedAssetMetadata]
   );
 
   const marketSellProps = useMemo(
@@ -210,8 +210,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
       ? total.gt(new BigNumber(usdBalance))
       : false
     : amount
-    ? amount.gt(new BigNumber(tokenBalance))
-    : false;
+      ? amount.gt(new BigNumber(tokenBalance))
+      : false;
 
   const isBtnDisabled = useMemo(
     () => amount?.lte(0) || price?.lte(0) || hasTotalError || !amount || !price,
@@ -228,7 +228,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
       );
 
       const numberOfTokens = amountToSpend.div(
-        isLimitType ? price ?? 1 : new BigNumber(usdToTokenRates[slug] ?? 1)
+        isLimitType ? (price ?? 1) : new BigNumber(usdToTokenRates[slug] ?? 1)
       );
 
       setAmount(isBuyAction ? numberOfTokens : amountToSpend);
@@ -519,7 +519,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                   <span className="text-caption-regular">Est. Fee</span>
                   <div className="text-caption-regular">
                     <Money smallFractionFont={false} shortened>
-                      {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
+                      {!isBuyAction
+                        ? calculateEstfee(total ?? 0)
+                        : (amount ?? 0)}
                     </Money>{' '}
                     {symbolToShow}
                   </div>

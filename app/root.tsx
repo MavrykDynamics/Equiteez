@@ -27,7 +27,6 @@ import {
   fetchTokensData,
   fetchTokensMetadata,
 } from "./providers/TokensProvider/utils/fetchTokensdata";
-import { fetchFiatToTezosRates } from "./lib/fiat-currency";
 import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
@@ -51,16 +50,15 @@ export const links: LinksFunction = () => [
 export const loader = async () => {
   const tokens = await fetchTokensData();
 
-  const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
+  const [tokensMetadata, usdToToken] = await Promise.all([
     fetchTokensMetadata(tokens),
-    fetchFiatToTezosRates(),
     fetchUsdToTokenRates(),
   ]);
 
   return json({
     tokens,
     tokensMetadata,
-    fiatToTezos,
+    fiatToTezos: {},
     usdToToken,
   });
 };

@@ -5,28 +5,28 @@ import {
   useLayoutEffect,
   useMemo,
   useState,
-} from 'react';
+} from "react";
 
 //screens
-import { BuySellScreen } from '../screens/BuySellScreen';
-import { BuySellConfirmationScreen } from '../screens/BuySellConfirmationScreen';
-import { OTCBuySellScreen } from '../screens/OTCBuySellScreen';
+import { BuySellScreen } from "../screens/BuySellScreen";
+import { BuySellConfirmationScreen } from "../screens/BuySellConfirmationScreen";
+import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 
 // components
-import { Divider } from '~/lib/atoms/Divider';
-import { TabType } from '~/lib/atoms/Tab';
+import { Divider } from "~/lib/atoms/Divider";
+import { TabType } from "~/lib/atoms/Tab";
 
 // contract actions
-import { pickDodoContractBasedOnToken } from '~/consts/contracts';
+import { pickDodoContractBasedOnToken } from "~/consts/contracts";
 
 // icons
-import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
+import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
 import {
   SECONDARY_MARKET,
   SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
+} from "~/providers/EstatesProvider/estates.types";
 import {
   BUY,
   CONFIRM,
@@ -37,28 +37,28 @@ import {
   OTCScreenState,
   OTCTabType,
   SELL,
-} from '../consts';
-import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { useContractAction } from '~/contracts/hooks/useContractAction';
+} from "../consts";
+import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { useContractAction } from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
-import BigNumber from 'bignumber.js';
-import { isDefined } from '~/lib/utils';
-import { ProgresBar } from '../PrimaryPriceBlock';
-import clsx from 'clsx';
-import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
-import { rateToNumber } from '~/lib/utils/numbers';
-import { toTokenSlug } from '~/lib/assets';
-import usePrevious from '~/lib/ui/hooks/usePrevious';
-import Money from '~/lib/atoms/Money';
-import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
-import { pickStatusFromMultiple } from '~/lib/ui/use-status-flag';
+import BigNumber from "bignumber.js";
+import { isDefined } from "~/lib/utils";
+import { ProgresBar } from "../PrimaryPriceBlock";
+import clsx from "clsx";
+import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
+import { rateToNumber } from "~/lib/utils/numbers";
+import { toTokenSlug } from "~/lib/assets";
+import usePrevious from "~/lib/ui/hooks/usePrevious";
+import Money from "~/lib/atoms/Money";
+import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
+import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 import {
   calcNegativeSlippage,
   calcPositiveSlippage,
-} from '~/lib/utils/calcFns';
+} from "~/lib/utils/calcFns";
 
-export const spippageOptions = ['0.3', '0.5', '1', 'custom'];
+export const spippageOptions = ["0.3", "0.5", "1", "custom"];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -97,17 +97,17 @@ export const PopupContent: FC<{
     () => [
       {
         id: BUY,
-        label: 'Buy',
+        label: "Buy",
         handleClick: handleTabClick,
       },
       {
         id: SELL,
-        label: 'Sell',
+        label: "Sell",
         handleClick: handleTabClick,
       },
       {
         id: OTC,
-        label: 'OTC',
+        label: "OTC",
         handleClick: handleTabClick,
       },
     ],
@@ -209,10 +209,10 @@ export const PopupContent: FC<{
 
         <span
           className={clsx(
-            'px-2 py-[2px] rounded-[4px] text-body-xs  text-center',
+            "px-2 py-[2px] rounded-[4px] text-body-xs  text-center",
             isSecondaryEstate
-              ? 'text-sand-800 bg-[#F6AFAFBF]'
-              : 'text-yellow-950 bg-[#FFD38FBF]'
+              ? "text-sand-800 bg-[#F6AFAFBF]"
+              : "text-yellow-950 bg-[#FFD38FBF]"
           )}
         >
           {estate.assetDetails.propertyDetails.propertyType}
@@ -291,7 +291,7 @@ export const PopupContent: FC<{
                         </Money>
                       ) : (
                         amountB?.toNumber()
-                      )}{' '}
+                      )}{" "}
                       {estate.symbol}
                     </h3>
                   </div>
@@ -302,8 +302,8 @@ export const PopupContent: FC<{
                     <span className="text-body text-sand-900">
                       $
                       {orderType === BUY
-                        ? amountB?.toNumber() ?? 0
-                        : total?.toNumber() ?? 0}
+                        ? (amountB?.toNumber() ?? 0)
+                        : (total?.toNumber() ?? 0)}
                     </span>
                   </div>
                 </div>
@@ -360,12 +360,12 @@ export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
     () => [
       {
         id: OTC_BUY,
-        label: 'OTC Buy',
+        label: "OTC Buy",
         handleClick: toggleTabScreen,
       },
       {
         id: OTC_SELL,
-        label: 'OTC Sell',
+        label: "OTC Sell",
         handleClick: toggleTabScreen,
       },
     ],
@@ -377,7 +377,7 @@ export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
             {activeScreenId === CONFIRM && (
-              <button onClick={() => toggleBuyScreen('otc')}>
+              <button onClick={() => toggleBuyScreen("otc")}>
                 <ArrowLeftIcon className="size-6 mr-2" />
               </button>
             )}

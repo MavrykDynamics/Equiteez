@@ -1,5 +1,4 @@
 import { createContext, FC, useContext, useMemo } from 'react';
-import { MARS_TOKEN_SLUG, OCEAN_TOKEN_SLUG } from '~/lib/assets';
 
 type CurrencyContext = {
   usdToTokenRates: {
@@ -24,10 +23,6 @@ export const CurrencyProvider: FC<CurrencyProviderProps> = ({
     () => ({
       usdToTokenRates: {
         ...usdToToken,
-        // TODO take rates for rwa tokens, remove later
-        // the contract takes 3 decimals
-        [MARS_TOKEN_SLUG]: '51.094',
-        [OCEAN_TOKEN_SLUG]: '72.844',
       },
       fiatToTezosRates: fiatToTezos,
     }),
