@@ -19,7 +19,6 @@ BASE_URL="https://stage.equiteez.pages.dev"
 NODE_VERSION="22.11.0"
 GRAPHQL_API="https://api.mavenfinance.io/v1/graphql"
 GRAPHQL_WSS_API="wss://api.mavenfinance.io/v1/graphql"
-NODE_VERSION="22.11.0"
 
 [env.production.vars]
 GOOGLE_MAPS_API_KEY="AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
