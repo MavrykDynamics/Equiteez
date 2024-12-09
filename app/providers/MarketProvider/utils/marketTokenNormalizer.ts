@@ -11,8 +11,6 @@ export const marketTokenNormalizer = (
     const parsedTokenDetails = JSON.parse(token.token_metadata.assetDetails);
     const { propertyDetails, financials } = parsedTokenDetails;
 
-    debugger;
-
     // token metadata
     const {
       metadata: {
