@@ -16,7 +16,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 const documents = {
     "\n  query DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n": types.DipDupHeadLvlDocument,
     "\n  query Dexes {\n    orderbook {\n      address\n      metadata\n    }\n    dodo_mav {\n      address\n      metadata\n    }\n    marketplace {\n      address\n      metadata\n    }\n  }\n": types.DexesDocument,
-    "query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\", \"KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  ": types.MarketTokensDocument,
+    "query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  ": types.MarketTokensDocument,
 };
 
 /**
@@ -44,7 +44,7 @@ export function gql(source: "\n  query Dexes {\n    orderbook {\n      address\n
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\", \"KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "): (typeof documents)["query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\", \"KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "];
+export function gql(source: "query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "): (typeof documents)["query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

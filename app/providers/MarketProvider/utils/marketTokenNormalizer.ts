@@ -1,9 +1,17 @@
+import { EstateType } from "~/providers/EstatesProvider/estates.types";
 import { MarketTokensQuery } from "~/utils/__generated__/graphql";
 
-export const marketTokenNormalizer = (data: MarketTokensQuery["token"]) => {
+export const marketTokenNormalizer = (
+  data: MarketTokensQuery["token"],
+  estates: EstateType[]
+) => {
   const normalizedTokens = data.map((token) => {
+    const mockedPart = estates.find((es) => es.token_address === token.address);
+
     const parsedTokenDetails = JSON.parse(token.token_metadata.assetDetails);
     const { propertyDetails, financials } = parsedTokenDetails;
+
+    debugger;
 
     // token metadata
     const {
@@ -42,8 +50,10 @@ export const marketTokenNormalizer = (data: MarketTokensQuery["token"]) => {
         },
         APY: 6.15, // TODO
         type: "Secondary Market",
-        assetImages: parsedTokenDetails.assetImages, // TODO empty array
-        previewImage: parsedTokenDetails.assetImages[0],
+        // assetImages: parsedTokenDetails.assetImages,
+        // previewImage: parsedTokenDetails.assetImages[0],
+        assetImages: mockedPart?.assetDetails.assetImages,
+        previewImage: mockedPart?.assetDetails.assetImages[0],
         basicInfo: {
           // empty
           // TODO
@@ -90,6 +100,8 @@ export const marketTokenNormalizer = (data: MarketTokensQuery["token"]) => {
             grossRentYearly: propertyFinancials.grossRentYearly,
             grossRentMonthly: propertyFinancials.grossRentMonthly,
             monthlyCosts: {
+              ...mockedPart?.assetDetails.financials.propertyFinancials
+                .monthlyCosts,
               costs: propertyFinancials.monthlyCosts,
               netReproperty: 48.62, // TODO no rest data
               platform: 15.67,

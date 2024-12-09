@@ -3,20 +3,23 @@ import { MarketProviderCtxType } from "./market.provider.types";
 import { MARKET_TOKENS_QUERY } from "./queries/marketTokens.query";
 import { useQuery } from "@apollo/client/index";
 import { marketTokenNormalizer } from "./utils/marketTokenNormalizer";
+import { useEstatesContext } from "../EstatesProvider/estates.provider";
 
 const marketProvider = createContext<MarketProviderCtxType>(undefined!);
 
 type MarketProps = PropsWithChildren;
 
 export const MarketProvider: FC<MarketProps> = ({ children }) => {
+  // TODO remove later when api will return all data
+  const { estates } = useEstatesContext();
+
   const memoizedMarketCtx: MarketProviderCtxType = useMemo(() => ({}), []);
 
   const { loading: initialConfigLoading } = useQuery(MARKET_TOKENS_QUERY, {
     onCompleted: (data) => {
       try {
-        // TODO add normlizer
-        // normalize data and store in this context
-        // console.log(marketTokenNormalizer(data.token)), "---------__----------";
+        console.log(marketTokenNormalizer(data.token, estates)),
+          "---------__----------";
       } catch (e) {
         console.log(e, "MARKET_TOKENS_QUERY_ERROR from catch");
       }

@@ -83,15 +83,15 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
               initialTokens={tokens}
               initialTokensMetadata={tokensMetadata}
             >
-              <MarketProvider>
-                <UserProvider>
-                  <EstatesProvider>
+              <EstatesProvider>
+                <MarketProvider>
+                  <UserProvider>
                     <AppGlobalLoader>
                       <PopupProvider>{children}</PopupProvider>
                     </AppGlobalLoader>
-                  </EstatesProvider>
-                </UserProvider>
-              </MarketProvider>
+                  </UserProvider>
+                </MarketProvider>
+              </EstatesProvider>
             </TokensProvider>
           </CurrencyProvider>
         </WalletProvider>
