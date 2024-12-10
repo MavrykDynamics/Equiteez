@@ -14,7 +14,7 @@ export function calculateDynamicRanges(arr: number[]) {
   for (let i = 0; i < 4; i++) {
     const start = min + i * step;
     const end = i === 3 ? max : start + step;
-    ranges[`${start.toFixed(2)}% - ${end.toFixed(2)}%`] = {
+    ranges[`${start?.toFixed(2)}% - ${end?.toFixed(2)}%`] = {
       min: start,
       max: end,
     };
