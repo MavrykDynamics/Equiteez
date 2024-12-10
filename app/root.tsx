@@ -40,7 +40,6 @@ import {
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { FC } from "react";
-import { MarketProvider } from "./providers/MarketProvider/market.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -82,13 +81,11 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
               initialTokensMetadata={tokensMetadata}
             >
               <EstatesProvider>
-                <MarketProvider>
-                  <UserProvider>
-                    <AppGlobalLoader>
-                      <PopupProvider>{children}</PopupProvider>
-                    </AppGlobalLoader>
-                  </UserProvider>
-                </MarketProvider>
+                <UserProvider>
+                  <AppGlobalLoader>
+                    <PopupProvider>{children}</PopupProvider>
+                  </AppGlobalLoader>
+                </UserProvider>
               </EstatesProvider>
             </TokensProvider>
           </CurrencyProvider>

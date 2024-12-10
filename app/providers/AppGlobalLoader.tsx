@@ -2,11 +2,11 @@ import { FC } from "react";
 import { useWalletContext } from "./WalletProvider/wallet.provider";
 import { Spinner } from "~/lib/atoms/Spinner/Spinner";
 import { useTokensContext } from "./TokensProvider/tokens.provider";
-import { useMarketProvider } from "./MarketProvider/market.provider";
+import { useEstatesContext } from "./EstatesProvider/estates.provider";
 
 export const AppGlobalLoader: FC<PropsWithChildren> = ({ children }) => {
   const { isLoading } = useWalletContext();
-  const { isLoading: isMarketLoading } = useMarketProvider();
+  const { isLoading: isMarketLoading } = useEstatesContext();
   const { isLoading: isTokensMetaLoading } = useTokensContext();
 
   if (isLoading || isTokensMetaLoading || isMarketLoading)

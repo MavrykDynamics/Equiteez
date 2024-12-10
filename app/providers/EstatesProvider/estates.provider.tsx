@@ -5,31 +5,34 @@ import {
   useContext,
   useCallback,
   useMemo,
-} from 'react';
+} from "react";
 
-import estatesMocked from 'app/mocks/rwas.json';
+import { useQuery } from "@apollo/client/index";
+
+import estatesMocked from "app/mocks/rwas.json";
 import {
   EstatesContext,
   PrimaryEstate,
   SECONDARY_MARKET,
   SecondaryEstate,
-} from './estates.types';
+} from "./estates.types";
+import { MARKET_TOKENS_QUERY } from "./queries/marketTokens.query";
+import { marketTokenNormalizer } from "./utils/marketTokenNormalizer";
 
 export const estatesContext = createContext<EstatesContext>(undefined!);
 
 export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [estatesState, setEstatesState] = useState<
-    Pick<EstatesContext, 'estates' | 'isLoading'>
+    Pick<EstatesContext, "estates">
   >(() => ({
-    estates: estatesMocked,
-    isLoading: false,
+    estates: [],
   }));
 
   const [activeEstateData, setActiveEstateData] = useState<
     Pick<
       EstatesContext,
-      'activeEstate' | 'isActiveEstateLoading' | 'isActiveEstateSecondaryMarket'
+      "activeEstate" | "isActiveEstateLoading" | "isActiveEstateSecondaryMarket"
     >
   >(() => ({
     activeEstate: null,
@@ -37,9 +40,17 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
     isActiveEstateSecondaryMarket: false,
   }));
 
-  // TODO fetch here with graphql when the real api
-  // for now it's mocked in json
-  // useQuery (....) -> setEstates
+  const { loading } = useQuery(MARKET_TOKENS_QUERY, {
+    onCompleted: (data) => {
+      try {
+        const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
+        setEstatesState({ estates: parsedMarkets });
+      } catch (e) {
+        console.log(e, "MARKET_TOKENS_QUERY_ERROR from catch");
+      }
+    },
+    onError: (error) => console.log(error, "MARKET_TOKENS_QUERY"),
+  });
 
   const pickEstateByIdentifier = useCallback(
     (address: string): PrimaryEstate | SecondaryEstate | null => {
@@ -72,8 +83,15 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       ...activeEstateData,
       pickEstateByIdentifier,
       setActiveEstate,
+      isLoading: loading,
     }),
-    [estatesState, pickEstateByIdentifier, setActiveEstate, activeEstateData]
+    [
+      estatesState,
+      activeEstateData,
+      pickEstateByIdentifier,
+      setActiveEstate,
+      loading,
+    ]
   );
 
   return (
@@ -87,7 +105,7 @@ export const useEstatesContext = () => {
   const context = useContext(estatesContext);
 
   if (!context) {
-    throw new Error('estatesContext should be used within EstatesProvider');
+    throw new Error("estatesContext should be used within EstatesProvider");
   }
 
   return context;
