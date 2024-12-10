@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
-import { useState } from 'react';
-import { ZodType, z } from 'zod';
+import { useState } from "react";
+import { ZodType, z } from "zod";
 
 /**
  *
@@ -20,15 +20,15 @@ export const getItemFromStorage = <T extends unknown>(
      * if item is string representing null OR undefined -> return null
      */
     if (
-      typeof itemFromStorage === 'string' &&
-      (itemFromStorage === 'undefined' || itemFromStorage === 'null')
+      typeof itemFromStorage === "string" &&
+      (itemFromStorage === "undefined" || itemFromStorage === "null")
     )
       return null;
 
     /**
      * if item is simple string -> return the value as it is
      */
-    if (typeof itemFromStorage === 'string') return itemFromStorage as T;
+    // if (typeof itemFromStorage === "string") return itemFromStorage as T;
 
     return itemFromStorage ? schema.parse(JSON.parse(itemFromStorage)) : null;
   } catch (e) {

@@ -1,30 +1,30 @@
-import type { MetaFunction } from '@remix-run/node';
-import ArrowDown from 'app/icons/arrow-down.svg?react';
-import ArrowUp from 'app/icons/arrow-up.svg?react';
+import type { MetaFunction } from "@remix-run/node";
+import ArrowDown from "app/icons/arrow-down.svg?react";
+import ArrowUp from "app/icons/arrow-up.svg?react";
 
-import PageLayout from 'app/layouts/PageLayout/Pagelayout';
+import PageLayout from "app/layouts/PageLayout/Pagelayout";
 
-import { Divider } from '~/lib/atoms/Divider';
-import { Spacer } from '~/lib/atoms/Spacer';
+import { Divider } from "~/lib/atoms/Divider";
+import { Spacer } from "~/lib/atoms/Spacer";
 
-import { ExchangeTabs } from './components/ExchangeTabs/ExchangeTabs';
-import { OrderTabs } from './components/OrderTabs/OrderTabs';
-import { BuySellTabs } from './components/BuySellTabs/BuySellTabs';
+import { ExchangeTabs } from "./components/ExchangeTabs/ExchangeTabs";
+import { OrderTabs } from "./components/OrderTabs/OrderTabs";
+import { BuySellTabs } from "./components/BuySellTabs/BuySellTabs";
 
-import { OrderBookTabs } from './components/OrderBookTabs/OrderBookTabs';
+import { OrderBookTabs } from "./components/OrderBookTabs/OrderBookTabs";
 
-import { Container } from '~/lib/atoms/Container';
-import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
-import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
+import { Container } from "~/lib/atoms/Container";
+import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
+import { usePropertyByAddress } from "../properties.$id/hooks/use-property-by-id";
 
 // icons
-import ArrowLinkIcon from 'app/icons/arrow-link.svg?react';
-import { AssetDropdown } from './components/AssetDropdown';
+import ArrowLinkIcon from "app/icons/arrow-link.svg?react";
+import { AssetDropdown } from "./components/AssetDropdown";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Exchange' },
-    { name: 'description', content: 'Exchange data' },
+    { title: "Exchange" },
+    { name: "description", content: "Exchange data" },
   ];
 };
 export default function ExchangeDetails() {
@@ -113,14 +113,14 @@ export default function ExchangeDetails() {
             </div>
           </div>
 
-          <div className={'h-100 w-[1px] min-w-[1px] bg-divider'} />
+          <div className={"h-100 w-[1px] min-w-[1px] bg-divider"} />
 
           {/* Mid Panel ---------------------------- */}
           <div className="flex flex-grow">
             <ExchangeTabs estate={estateData} />
           </div>
 
-          <div className={'h-100 w-[1px] min-w-[1px] bg-divider'} />
+          <div className={"h-100 w-[1px] min-w-[1px] bg-divider"} />
 
           {/* Right Panel ---------------------------- */}
           <div className="flex flex-col w-[324px]">
