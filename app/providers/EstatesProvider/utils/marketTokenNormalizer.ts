@@ -153,15 +153,7 @@ export const marketTokenNormalizer = (
               "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n",
           },
         },
-        blockchain: [
-          {
-            name: "Mavryk",
-            identifier: "FOREST-LAKE-HILL-SUMMIT",
-            totalTokens: 1817,
-            assetIssuer: "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
-            assetId: "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG",
-          },
-        ],
+        blockchain: mockedPart?.assetDetails?.blockchain ?? [],
         offering: {
           // TODO no data
           offeringDate: "2014-07-15T05:09:25-03:00",
