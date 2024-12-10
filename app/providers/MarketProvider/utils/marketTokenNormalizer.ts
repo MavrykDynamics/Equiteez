@@ -4,8 +4,8 @@ import { MarketTokensQuery } from "~/utils/__generated__/graphql";
 export const marketTokenNormalizer = (
   data: MarketTokensQuery["token"],
   estates: EstateType[]
-) => {
-  const normalizedTokens = data.map((token) => {
+): EstateType[] => {
+  const normalizedTokens: EstateType[] = data.map((token) => {
     const mockedPart = estates.find((es) => es.token_address === token.address);
 
     const parsedTokenDetails = JSON.parse(token.token_metadata.assetDetails);
@@ -50,8 +50,8 @@ export const marketTokenNormalizer = (
         type: "Secondary Market",
         // assetImages: parsedTokenDetails.assetImages,
         // previewImage: parsedTokenDetails.assetImages[0],
-        assetImages: mockedPart?.assetDetails.assetImages,
-        previewImage: mockedPart?.assetDetails.assetImages[0],
+        assetImages: mockedPart?.assetDetails.assetImages ?? [],
+        previewImage: mockedPart?.assetDetails.assetImages[0] ?? "",
         basicInfo: {
           // empty
           // TODO

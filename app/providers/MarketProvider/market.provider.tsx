@@ -15,12 +15,7 @@ export const MarketProvider: FC<MarketProps> = ({ children }) => {
   // TODO remove later when api will return all data
   const { estates } = useEstatesContext();
 
-  const memoizedMarketCtx: MarketProviderCtxType = useMemo(
-    () => ({ markets: markets }),
-    [markets]
-  );
-
-  const { loading: initialConfigLoading } = useQuery(MARKET_TOKENS_QUERY, {
+  const { loading } = useQuery(MARKET_TOKENS_QUERY, {
     onCompleted: (data) => {
       try {
         const parsedMarkets = marketTokenNormalizer(data.token, estates);
@@ -31,6 +26,11 @@ export const MarketProvider: FC<MarketProps> = ({ children }) => {
     },
     onError: (error) => console.log(error, "MARKET_TOKENS_QUERY"),
   });
+
+  const memoizedMarketCtx: MarketProviderCtxType = useMemo(
+    () => ({ markets, isLoading: loading }),
+    [markets, loading]
+  );
 
   return (
     <marketProvider.Provider value={memoizedMarketCtx}>
