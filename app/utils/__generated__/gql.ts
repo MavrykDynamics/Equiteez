@@ -16,7 +16,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 const documents = {
     "\n  query DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n": types.DipDupHeadLvlDocument,
     "\n  query Dexes {\n    orderbook {\n      address\n      metadata\n    }\n    dodo_mav {\n      address\n      metadata\n    }\n    marketplace {\n      address\n      metadata\n    }\n  }\n": types.DexesDocument,
-    "query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  ": types.MarketTokensDocument,
+    "query MarketTokenAddresses {\n  dodo_mav {\n    base_token {\n      address\n    }\n  }\n  orderbook {\n    rwa_token {\n      address\n    }\n  }\n}\n\n  ": types.MarketTokenAddressesDocument,
+    "query MarketTokens($addresses: [String!]) {\n    token(where: {address: {_in: $addresses}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  ": types.MarketTokensDocument,
 };
 
 /**
@@ -44,7 +45,11 @@ export function gql(source: "\n  query Dexes {\n    orderbook {\n      address\n
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "): (typeof documents)["query MarketTokens {\n    token(where: {address: {_in: [\"KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh\"]}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "];
+export function gql(source: "query MarketTokenAddresses {\n  dodo_mav {\n    base_token {\n      address\n    }\n  }\n  orderbook {\n    rwa_token {\n      address\n    }\n  }\n}\n\n  "): (typeof documents)["query MarketTokenAddresses {\n  dodo_mav {\n    base_token {\n      address\n    }\n  }\n  orderbook {\n    rwa_token {\n      address\n    }\n  }\n}\n\n  "];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "query MarketTokens($addresses: [String!]) {\n    token(where: {address: {_in: $addresses}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "): (typeof documents)["query MarketTokens($addresses: [String!]) {\n    token(where: {address: {_in: $addresses}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  "];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

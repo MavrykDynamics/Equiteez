@@ -1,7 +1,23 @@
 import { gql } from "~/utils/__generated__";
 
-export const MARKET_TOKENS_QUERY = gql(`query MarketTokens {
-    token(where: {address: {_in: ["KT1J1p1f1owAEjJigKGXhwzu3tVCvRPVgGCh"]}}) {
+export const MARKET_TOKENS_QUERY = gql(`query MarketTokenAddresses {
+  dodo_mav {
+    base_token {
+      address
+    }
+  }
+  orderbook {
+    rwa_token {
+      address
+    }
+  }
+}
+
+  `);
+
+export const MARKET_TOKENS__DATA_QUERY =
+  gql(`query MarketTokens($addresses: [String!]) {
+    token(where: {address: {_in: $addresses}}) {
       address
       token_id
       token_standard

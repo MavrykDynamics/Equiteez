@@ -16,16 +16,23 @@ import {
   SECONDARY_MARKET,
   SecondaryEstate,
 } from "./estates.types";
-import { MARKET_TOKENS_QUERY } from "./queries/marketTokens.query";
-import { marketTokenNormalizer } from "./utils/marketTokenNormalizer";
+import {
+  MARKET_TOKENS__DATA_QUERY,
+  MARKET_TOKENS_QUERY,
+} from "./queries/marketTokens.query";
+import {
+  getMarketAddresses,
+  marketTokenNormalizer,
+} from "./utils/marketTokenNormalizer";
 
 export const estatesContext = createContext<EstatesContext>(undefined!);
 
 export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [estatesState, setEstatesState] = useState<
-    Pick<EstatesContext, "estates">
+    Pick<EstatesContext, "estates" | "estateAddresses">
   >(() => ({
+    estateAddresses: [],
     estates: [],
   }));
 
@@ -40,16 +47,33 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
     isActiveEstateSecondaryMarket: false,
   }));
 
-  const { loading } = useQuery(MARKET_TOKENS_QUERY, {
+  const { loading: isMarketsAddressesLoading } = useQuery(MARKET_TOKENS_QUERY, {
     onCompleted: (data) => {
       try {
-        const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
-        setEstatesState({ estates: parsedMarkets });
+        const parsedAddresses = getMarketAddresses(data);
+        setEstatesState((prev) => ({
+          ...prev,
+          estateAddresses: parsedAddresses,
+        }));
       } catch (e) {
         console.log(e, "MARKET_TOKENS_QUERY_ERROR from catch");
       }
     },
     onError: (error) => console.log(error, "MARKET_TOKENS_QUERY"),
+  });
+
+  const { loading } = useQuery(MARKET_TOKENS__DATA_QUERY, {
+    variables: { addresses: estatesState.estateAddresses },
+    skip: estatesState.estateAddresses.length === 0,
+    onCompleted: (data) => {
+      try {
+        const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
+        setEstatesState((prev) => ({ ...prev, estates: parsedMarkets }));
+      } catch (e) {
+        console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
+      }
+    },
+    onError: (error) => console.log(error, "MARKET_TOKENS__DATA_QUERY"),
   });
 
   const pickEstateByIdentifier = useCallback(
@@ -83,7 +107,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       ...activeEstateData,
       pickEstateByIdentifier,
       setActiveEstate,
-      isLoading: loading,
+      isLoading: loading || isMarketsAddressesLoading,
     }),
     [
       estatesState,
@@ -91,6 +115,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       pickEstateByIdentifier,
       setActiveEstate,
       loading,
+      isMarketsAddressesLoading,
     ]
   );
 

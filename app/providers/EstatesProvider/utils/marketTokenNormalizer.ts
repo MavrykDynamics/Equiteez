@@ -1,6 +1,28 @@
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
-import { MarketTokensQuery } from "~/utils/__generated__/graphql";
+import {
+  MarketTokenAddressesQuery,
+  MarketTokensQuery,
+} from "~/utils/__generated__/graphql";
 
+export const getMarketAddresses = (
+  data: MarketTokenAddressesQuery
+): string[] => {
+  const { orderbook, dodo_mav } = data;
+
+  const dodoMavAddresses = dodo_mav.map((item) => item.base_token.address);
+
+  const orderbookddresses = orderbook
+    .map((item) => item.rwa_token?.address)
+    .filter((item) => item !== undefined);
+
+  return [...new Set([...orderbookddresses, ...dodoMavAddresses])];
+};
+
+/**
+ * @param data gql data res
+ * @param estates mockjed estates, cuz api doesnt include all necessary info
+ * @returns  estateType array with info about each market
+ */
 export const marketTokenNormalizer = (
   data: MarketTokensQuery["token"],
   estates: EstateType[]
@@ -9,7 +31,11 @@ export const marketTokenNormalizer = (
     const mockedPart = estates.find((es) => es.token_address === token.address);
 
     const parsedTokenDetails = JSON.parse(token.token_metadata.assetDetails);
-    const { propertyDetails, financials } = parsedTokenDetails;
+    const { propertyDetails } = parsedTokenDetails;
+
+    let financials = parsedTokenDetails.financials;
+    // TODO remove this condition, cuz there is a type in api data
+    if (!financials) financials = parsedTokenDetails.fiancials;
 
     // token metadata
     const {
