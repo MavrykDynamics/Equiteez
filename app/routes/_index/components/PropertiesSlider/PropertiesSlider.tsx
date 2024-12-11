@@ -1,11 +1,11 @@
-import { EmblaOptionsType } from 'embla-carousel';
-import EmblaCarousel from './EmblaCarousel';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { EmblaOptionsType } from "embla-carousel";
+import EmblaCarousel from "./EmblaCarousel";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 
-const OPTIONS: EmblaOptionsType = { align: 'start' };
+const OPTIONS: EmblaOptionsType = { align: "start" };
 
 export const PropertiesSlider = () => {
-  const { estates } = useEstatesContext();
+  const { estatesArr } = useEstatesContext();
 
   return (
     <section className="px-11">
@@ -13,7 +13,7 @@ export const PropertiesSlider = () => {
         <h1 className="text-white text-hero max-w-[1017px] mb-6">
           Explore our diverse portfolio of exceptional properties
         </h1>
-        <EmblaCarousel slides={estates.slice(0, 7)} options={OPTIONS} />
+        <EmblaCarousel slides={estatesArr.slice(0, 7)} options={OPTIONS} />
       </div>
     </section>
   );

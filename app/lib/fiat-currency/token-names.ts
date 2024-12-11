@@ -2,7 +2,7 @@ import {
   MARS1_TOKEN_ADDRESS,
   OCEAN_TOKEN_ADDRESS,
   stablecoinContract,
-} from '~/consts/contracts';
+} from "~/consts/contracts";
 
 /**
  *
@@ -15,21 +15,21 @@ import {
 // TODO use tokens data instead of hardcoded values
 export const getTokenSlugByFeed = (tokenGqlSymbol: string) => {
   switch (tokenGqlSymbol.toLowerCase()) {
-    case 'usdt/usd':
-    case 'usdt':
-      return stablecoinContract.concat('_0');
+    case "usdt/usd":
+    case "usdt":
+      return stablecoinContract.concat("_0");
 
-    case 'mvrk/usd':
-    case 'mvrk':
-      return 'mav';
+    case "mvrk/usd":
+    case "mvrk":
+      return "mav";
 
-    case 'ocean/usd':
-    case 'ocean':
-      return OCEAN_TOKEN_ADDRESS.concat('_0');
+    case "ocean/usd":
+    case "ocean":
+      return OCEAN_TOKEN_ADDRESS.concat("_0");
 
-    case 'mars1/usd':
-    case 'mars1':
-      return MARS1_TOKEN_ADDRESS.concat('_0');
+    case "mars1/usd":
+    case "mars1":
+      return MARS1_TOKEN_ADDRESS.concat("_0");
 
     default:
       return null;

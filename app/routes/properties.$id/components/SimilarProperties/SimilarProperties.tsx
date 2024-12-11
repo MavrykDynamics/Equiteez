@@ -27,11 +27,11 @@ function getThreeUniqueElements(items: EstateType[]) {
 }
 
 export const SimilarProperties = () => {
-  const { estates } = useEstatesContext();
+  const { estatesArr } = useEstatesContext();
 
   const similarEstates = useMemo(
-    () => getThreeUniqueElements(estates),
-    [estates]
+    () => getThreeUniqueElements(estatesArr),
+    [estatesArr]
   );
 
   return (

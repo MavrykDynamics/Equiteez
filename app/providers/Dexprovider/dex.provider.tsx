@@ -1,31 +1,60 @@
-import { createContext, FC, useContext, useMemo } from "react";
+import {
+  createContext,
+  FC,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { DexProviderCtxType } from "./dex.provider.types";
-import { useQuery } from "@apollo/client/index";
-import { DEXES_QUERY } from "./queries/dexes.query";
+import { useEstatesContext } from "../EstatesProvider/estates.provider";
+import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
+import { useToasterContext } from "../ToasterProvider/toaster.provider";
+import { getDodoMavTokenPrices } from "./utils/storage";
+import { unknownToError } from "~/errors/error";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
 type MarketProps = PropsWithChildren;
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
-  const memoizedDexCtx: DexProviderCtxType = useMemo(() => ({}), []);
+  const { warning } = useToasterContext();
+  const { estates, estateAddresses } = useEstatesContext();
+  const { usdToTokenRates } = useCurrencyContext();
+  const [dodoMavPrices, setDodomavPrices] = useState<StringRecord<string>>({});
 
-  const { loading: initialConfigLoading } = useQuery(DEXES_QUERY, {
-    onCompleted: (data) => {
+  // TODO switch to gql query
+  useEffect(() => {
+    (async function () {
       try {
-        console.log(data), "---------__----------";
+        const dodoPrices = await getDodoMavTokenPrices(estateAddresses);
+        setDodomavPrices(dodoPrices);
 
-        // TODO add normlizer
-        // normalize data and store in this context
+        // setDodomavPrices
       } catch (e) {
-        console.log(e, "DEXES_ERROR from catch");
+        const err = unknownToError(e);
+        warning("Prices", err.message);
       }
-    },
-    onError: (error) => console.log(error, "TEST_QUIERY_ERROR"),
-  });
+    })();
+  }, [warning, estateAddresses]);
 
-  // initialixe dexs based on markets from props inside market ctx
-  // loading indicator
+  const orderBookPrices = useMemo(
+    () =>
+      Object.keys(estates).reduce<StringRecord<string>>((acc, esKey) => {
+        acc[esKey] = usdToTokenRates[esKey] ?? "0";
+
+        return acc;
+      }, {}),
+    [estates, usdToTokenRates]
+  );
+
+  const memoizedDexCtx: DexProviderCtxType = useMemo(
+    () => ({
+      orderbook: orderBookPrices,
+      dodoMav: dodoMavPrices,
+    }),
+    [orderBookPrices, dodoMavPrices]
+  );
 
   return (
     <dexContext.Provider value={memoizedDexCtx}>{children}</dexContext.Provider>

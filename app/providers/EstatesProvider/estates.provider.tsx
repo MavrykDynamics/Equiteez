@@ -33,7 +33,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
     Pick<EstatesContext, "estates" | "estateAddresses">
   >(() => ({
     estateAddresses: [],
-    estates: [],
+    estates: {},
   }));
 
   const [activeEstateData, setActiveEstateData] = useState<
@@ -79,7 +79,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   const pickEstateByIdentifier = useCallback(
     (address: string): PrimaryEstate | SecondaryEstate | null => {
       return (
-        estatesState.estates.find(
+        Object.values(estatesState.estates).find(
           (es) => es.assetDetails.blockchain[0].identifier === address
         ) ?? null
       );
@@ -103,8 +103,8 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   const memoizedEstatesProviderValue: EstatesContext = useMemo(
     () => ({
       ...estatesState,
-
       ...activeEstateData,
+      estatesArr: Object.values(estatesState.estates),
       pickEstateByIdentifier,
       setActiveEstate,
       isLoading: loading || isMarketsAddressesLoading,

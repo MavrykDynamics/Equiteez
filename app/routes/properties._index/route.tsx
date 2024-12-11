@@ -20,7 +20,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Properties() {
-  const { estates } = useEstatesContext();
+  const { estatesArr: estates } = useEstatesContext();
   const [filteredEstates, setFilteredEstates] = useState(() => estates);
 
   return (

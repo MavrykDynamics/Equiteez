@@ -10,7 +10,8 @@ export const SECONDARY_MARKET = "Secondary Market";
 export const PRIMARY_ISSUANCE = "Primary Issuance";
 
 export type EstatesContext = {
-  estates: EstateType[];
+  estates: StringRecord<EstateType>;
+  estatesArr: EstateType[];
   estateAddresses: string[];
   activeEstate: EstateType | null;
   isActiveEstateSecondaryMarket: boolean;

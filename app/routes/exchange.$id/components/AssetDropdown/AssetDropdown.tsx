@@ -55,7 +55,7 @@ type AssetDropdownProps = {
 export const AssetDropdown: FC<AssetDropdownProps> = ({
   estate: estateData,
 }) => {
-  const { estates: allEstates } = useEstatesContext();
+  const { estatesArr: allEstates } = useEstatesContext();
 
   const estates = useMemo(
     () => allEstates.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
