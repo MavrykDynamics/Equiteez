@@ -17,7 +17,6 @@ import { CommaNumber } from "~/lib/atoms/CommaNumber";
 import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";
 import { VALID_TOKENS } from "~/consts/contracts";
-import { getPMMTokenPrice } from "~/lib/utils/dodoMav/price";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -39,7 +38,6 @@ export const SecondaryPriceBlock: FC = () => {
 
   if (!activeEstate) return <>Loading...</>;
   const estate = activeEstate as SecondaryEstate;
-  console.log(getPMMTokenPrice(), "HERE W GO AGAIN");
 
   return (
     <section className="self-start">
