@@ -65,17 +65,25 @@ export const calculateEstFee = (
   if (!tokensAmount) return "0";
   const feeRate = lpFee;
 
+  console.log({
+    tokensAmount,
+    tokenPriceInUSDT,
+    lpFee,
+    decimals,
+    isBuying,
+  });
+
   if (isBuying) {
     // Fee in token X
     const estFee = tokensAmount.times(feeRate);
-    return estFee.times(new BigNumber(10).pow(decimals)).toFixed(0); // Return in raw storage units
+    return estFee.toFixed(decimals);
   } else {
     // Fee in USDT
     const tokenValueInUSDT = new BigNumber(tokensAmount).times(
       tokenPriceInUSDT
     );
     const estFee = tokenValueInUSDT.times(feeRate);
-    return estFee.times(new BigNumber(10).pow(decimals)).toFixed(0); // USDT has 6 decimals
+    return estFee.toFixed(decimals);
   }
 };
 
