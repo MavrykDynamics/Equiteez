@@ -13,7 +13,6 @@ import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 //consts & types
 import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
-import { CommaNumber } from "~/lib/atoms/CommaNumber";
 import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";
 import { VALID_TOKENS } from "~/consts/contracts";
