@@ -17,6 +17,7 @@ import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";
 import { VALID_TOKENS } from "~/consts/contracts";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import Money from "~/lib/atoms/Money";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -50,8 +51,7 @@ export const SecondaryPriceBlock: FC = () => {
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Current Price</p>
           <div>
-            $
-            {/* <Money cryptoDecimals={activeEstate.decimals}>{currentPrice}</Money> */}
+            $<Money fiat>{currentPrice}</Money>
           </div>
         </div>
         <div className="text-content body flex justify-between mb-4">

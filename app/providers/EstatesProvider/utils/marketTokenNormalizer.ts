@@ -1,3 +1,4 @@
+import { extractNumber } from "~/lib/utils/numbers";
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
 import {
   MarketTokenAddressesQuery,
@@ -128,12 +129,16 @@ export const marketTokenNormalizer = (
           },
           financials: {
             propertyFinancials: {
-              grossRentYearly: propertyFinancials.grossRentYearly,
-              grossRentMonthly: propertyFinancials.grossRentMonthly,
+              grossRentYearly: extractNumber(
+                propertyFinancials.grossRentYearly
+              ),
+              grossRentMonthly: extractNumber(
+                propertyFinancials.grossRentMonthly
+              ),
               monthlyCosts: {
                 ...mockedPart?.assetDetails.financials.propertyFinancials
                   .monthlyCosts,
-                costs: propertyFinancials.monthlyCosts,
+                costs: extractNumber(propertyFinancials.monthlyCosts),
                 netReproperty: 48.62, // TODO no rest data
                 platform: 15.67,
                 expenses: 98,
@@ -141,18 +146,20 @@ export const marketTokenNormalizer = (
                 insurance: 19.95,
                 utilities: "Tenant-paid",
               },
-              netRentMonthly: propertyFinancials.netRentMonthly,
-              netRentYearly: propertyFinancials.netRentYearly,
+              netRentMonthly: extractNumber(propertyFinancials.netRentMonthly),
+              netRentYearly: extractNumber(propertyFinancials.netRentYearly),
               totalInvestment: {
-                total: propertyFinancials.totalInvestment,
+                total: extractNumber(propertyFinancials.totalInvestment),
                 underlyingAssetPrice: 41528.33,
                 initialMaintenanceReserve: 2582.01,
               },
               expectedIncome: propertyFinancials.expectedIncome,
             },
             expectedIncome: {
-              income: expectedIncome.expectedIncome,
-              incomePerTokenYearly: expectedIncome.incomePerTokenYearly,
+              income: extractNumber(expectedIncome.expectedIncome),
+              incomePerTokenYearly: extractNumber(
+                expectedIncome.incomePerTokenYearly
+              ),
               incomeStartDate: "1991-03-24T08:50:10-03:00", // TODO other format -> incomeStartDate
               tokenPrice: 69.91,
               totalTokens: 1018,
@@ -173,24 +180,24 @@ export const marketTokenNormalizer = (
           valuation: {
             priorValuation: {
               date: "2003-11-14T02:38:38-02:00", // vaulationDate bad format
-              assetValuation: latestValuation.assetValuation,
-              annualChange: latestValuation.annualChange,
-              totalInvestment: latestValuation.totalInvestment,
-              capitalROI: latestValuation.capitalROI,
-              tokenPrice: latestValuation.tokenPrice,
-              regDistributed: latestValuation.regDistributed,
+              assetValuation: extractNumber(latestValuation.assetValuation),
+              annualChange: extractNumber(latestValuation.annualChange),
+              totalInvestment: extractNumber(latestValuation.totalInvestment),
+              capitalROI: extractNumber(latestValuation.capitalROI),
+              tokenPrice: extractNumber(latestValuation.tokenPrice),
+              regDistributed: extractNumber(latestValuation.regDistributed),
               info: latestValuation.additionInfo,
             },
             initialValuation: {
               date: "2017-01-08T03:32:13-02:00", // TODO bad format
-              assetValuation: initialValuation.assetValuation,
-              totalInvestment: initialValuation.totalInvestment,
-              tokenPrice: initialValuation.tokenPrice,
+              assetValuation: extractNumber(initialValuation.assetValuation),
+              totalInvestment: extractNumber(initialValuation.totalInvestment),
+              tokenPrice: extractNumber(initialValuation.tokenPrice),
               info: initialValuation.additionInfo,
             },
           },
           priceDetails: {
-            price: latestValuation.tokenPrice,
+            price: extractNumber(latestValuation.tokenPrice),
             annualReturn: 4.03,
             projectedAnnualReturn: 4.03,
             rentalYield: 28.43,
