@@ -1,8 +1,8 @@
 /* eslint-disable no-useless-catch */
-import { TezosToolkit } from '@mavrykdynamics/taquito';
-import { DodoContractType, stablecoinContract } from '~/consts/contracts';
+import { TezosToolkit } from "@mavrykdynamics/taquito";
+import { DodoContractType, stablecoinContract } from "~/consts/contracts";
 
-import { RWAToken, tokensToAtoms } from '~/lib/utils/formaters';
+import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
 // Exchange market (market from dropdown & admin actions - [deposit, withdraw, transfer])
 
@@ -29,7 +29,7 @@ export async function buyBaseToken({
   tokensAmount,
   minMaxQuote,
   decimals,
-}: Omit<BuySellBaseToken, 'mockQuoteLpToken'>) {
+}: Omit<BuySellBaseToken, "mockQuoteLpToken">) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -40,7 +40,7 @@ export async function buyBaseToken({
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
 
-    const open_ops = stableCoinInstance.methodsObject['update_operators']([
+    const open_ops = stableCoinInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -50,12 +50,12 @@ export async function buyBaseToken({
       },
     ]).toTransferParams();
 
-    const buy_order = marketContract.methodsObject['buyBaseToken']({
+    const buy_order = marketContract.methodsObject["buyBaseToken"]({
       amount,
       minMaxQuote: parsedMinMaxQuote,
     }).toTransferParams();
 
-    const close_ops = stableCoinInstance.methodsObject['update_operators']([
+    const close_ops = stableCoinInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -89,7 +89,11 @@ export async function sellBaseToken({
   tokensAmount,
   minMaxQuote,
   decimals,
-}: Omit<BuySellBaseToken, 'mockQuoteLpToken'> & { tokenAddress: string }) {
+  quoteDecimals,
+}: Omit<BuySellBaseToken, "mockQuoteLpToken"> & {
+  tokenAddress: string;
+  quoteDecimals: number;
+}) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -98,9 +102,12 @@ export async function sellBaseToken({
     const quoteLpInstance = await tezos.wallet.at(tokenAddress);
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
 
-    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
+    const parsedMinMaxQuote = tokensToAtoms(
+      minMaxQuote,
+      quoteDecimals
+    ).toNumber();
 
-    const open_ops = quoteLpInstance.methodsObject['update_operators']([
+    const open_ops = quoteLpInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -110,12 +117,12 @@ export async function sellBaseToken({
       },
     ]).toTransferParams();
 
-    const sell_order = marketContract.methodsObject['sellBaseToken']({
+    const sell_order = marketContract.methodsObject["sellBaseToken"]({
       amount,
       minMaxQuote: parsedMinMaxQuote,
     }).toTransferParams();
 
-    const close_ops = quoteLpInstance.methodsObject['update_operators']([
+    const close_ops = quoteLpInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -156,7 +163,7 @@ export async function depositBaseToken({
     const marketContract = await tezos.wallet.at(dodoContractAddress);
     const rwaTokenInstance = await tezos.wallet.at(rwaTokenAddress);
 
-    const open_ops = rwaTokenInstance.methodsObject['update_operators']([
+    const open_ops = rwaTokenInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -169,9 +176,9 @@ export async function depositBaseToken({
     const num = tokensToAtoms(tokensAmount, decimals).toNumber();
 
     const sell_order =
-      marketContract.methodsObject['depositBaseToken'](num).toTransferParams();
+      marketContract.methodsObject["depositBaseToken"](num).toTransferParams();
 
-    const close_ops = rwaTokenInstance.methodsObject['update_operators']([
+    const close_ops = rwaTokenInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -206,7 +213,7 @@ export async function depositQuoteToken({
     const marketContract = await tezos.wallet.at(dodoContractAddress);
     const rwaTokenInstance = await tezos.wallet.at(stablecoinContract);
 
-    const open_ops = rwaTokenInstance.methodsObject['update_operators']([
+    const open_ops = rwaTokenInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -216,11 +223,11 @@ export async function depositQuoteToken({
       },
     ]).toTransferParams();
 
-    const sell_order = marketContract.methodsObject['depositQuoteToken'](
+    const sell_order = marketContract.methodsObject["depositQuoteToken"](
       tokensToAtoms(tokensAmount, decimals).toNumber() // stable coin
     ).toTransferParams();
 
-    const close_ops = rwaTokenInstance.methodsObject['update_operators']([
+    const close_ops = rwaTokenInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -257,7 +264,7 @@ export async function withdrawBaseToken({
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
 
-    const sell_order = marketContract.methodsObject['withdrawBaseToken'](
+    const sell_order = marketContract.methodsObject["withdrawBaseToken"](
       tokensToAtoms(tokensAmount, decimals).toNumber()
     ).toTransferParams();
 
@@ -282,7 +289,7 @@ export async function withdrawQuoteToken({
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
 
-    const sell_order = marketContract.methodsObject['withdrawQuoteToken'](
+    const sell_order = marketContract.methodsObject["withdrawQuoteToken"](
       tokensToAtoms(tokensAmount, decimals).toNumber()
     ).toTransferParams();
 
@@ -307,7 +314,7 @@ export async function withdrawAllBaseTokens({
 
     const sell_order =
       marketContract.methodsObject[
-        'withdrawAllBaseTokens'
+        "withdrawAllBaseTokens"
       ]().toTransferParams();
 
     batch = batch.withTransfer(sell_order);
@@ -331,7 +338,7 @@ export async function withdrawAllQuoteTokens({
 
     const sell_order =
       marketContract.methodsObject[
-        'withdrawAllQuoteTokens'
+        "withdrawAllQuoteTokens"
       ]().toTransferParams();
 
     batch = batch.withTransfer(sell_order);
@@ -347,20 +354,20 @@ export async function withdrawAllQuoteTokens({
 // NOTE DO NOT USE THIS ACTION IN CODE ! ONLY FOR TESTS
 export const transferLPTokens = async ({
   tezos,
-  address = 'KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ',
-}: Pick<DefaultContractProps, 'tezos'> & { address?: string }) => {
+  address = "KT1PF3ZRoxz8aYcrUccLi7txzG1YoKwK91jZ",
+}: Pick<DefaultContractProps, "tezos"> & { address?: string }) => {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(address); // MARS base token
 
-    const sell_order = marketContract.methodsObject['transfer']([
+    const sell_order = marketContract.methodsObject["transfer"]([
       {
         from_: sender,
         txs: [
           {
-            to_: 'mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w',
+            to_: "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
             token_id: 0,
             amount: RWAToken(3),
           },

@@ -91,6 +91,9 @@ export const calculateMinReceived = (
     new BigNumber(slippagePercentage).dividedBy(100)
   );
 
+  // const minMaxQuote = new BigNumber(tokensAmount).times(slippageFactor);
+  // console.log(tokensToAtoms(minMaxQuote, 3).toNumber(), "------");
+
   // For buying, calculate how much you receive in tokens
   const totalValueInUSDT = new BigNumber(tokensAmount).times(tokenPriceInUSDT);
   if (isBuying) {
@@ -103,37 +106,4 @@ export const calculateMinReceived = (
   const minReceivedInUSDT = totalValueInUSDT.times(slippageFactor);
 
   return minReceivedInUSDT.toFixed(decimals); // USDT has 6 decimals
-};
-
-export const calculateMinMaxQuote = (storage: DodoStorageType) => {
-  const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-
-  // Guide price (already scaled with feeDecimals)
-  const guidePrice = new BigNumber(storage.guidePrice).div(feeDecimals);
-
-  // Slippage factor
-  const slippageFactor = new BigNumber(storage.slippageFactor).div(feeDecimals);
-
-  // Fixed price and orderbook price percentages
-  const fixedPricePercent = new BigNumber(storage.config.fixedPricePercent).div(
-    feeDecimals
-  );
-  const orderbookPricePercent = new BigNumber(
-    storage.config.orderbookPricePercent
-  ).div(feeDecimals);
-
-  // Min quote = GuidePrice × (1 - slippageFactor - fixedPricePercent)
-  const minQuote = guidePrice.times(
-    new BigNumber(1).minus(slippageFactor).minus(fixedPricePercent)
-  );
-
-  // Max quote = GuidePrice × (1 + slippageFactor + orderbookPricePercent)
-  const maxQuote = guidePrice.times(
-    new BigNumber(1).plus(slippageFactor).plus(orderbookPricePercent)
-  );
-
-  return {
-    minQuote: minQuote.toFixed(6), // Keep 6 decimals for readability
-    maxQuote: maxQuote.toFixed(6), // Keep 6 decimals for readability
-  };
 };
