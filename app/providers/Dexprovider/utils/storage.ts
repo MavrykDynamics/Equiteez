@@ -3,6 +3,7 @@ import { DodoStorageType, dodoStorageTypeSchema } from "../dex.provider.types";
 import { pickDodoContractBasedOnToken } from "~/consts/contracts";
 import { toTokenSlug } from "~/lib/assets";
 import { getPMMTokenPrice } from "./price";
+import BigNumber from "bignumber.js";
 
 export const getContractStorageInfo = async (address: string) => {
   try {
@@ -40,13 +41,15 @@ export const getDodoMavTokenStorages = async (addresses: string[]) => {
 };
 
 export const getDodoMavTokenPrices = (storages: DodoStorageType[]) => {
-  return storages.reduce<StringRecord<string>>((acc, storage) => {
-    const slug = storage?.baseToken?.tokenContractAddress?.concat(
-      `_${storage?.baseToken?.tokenId}`
+  return storages.reduce<StringRecord<BigNumber>>((acc, storage) => {
+    const slug = toTokenSlug(
+      storage?.baseToken?.tokenContractAddress,
+      storage?.baseToken?.tokenId
     );
+
     if (slug && storage) {
       const price = getPMMTokenPrice(storage);
-      acc[slug] = price.toString();
+      acc[slug] = price;
     }
     return acc;
   }, {});

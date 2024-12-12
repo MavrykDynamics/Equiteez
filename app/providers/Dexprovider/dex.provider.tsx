@@ -15,6 +15,7 @@ import {
   getDodoMavTokenStorages,
 } from "./utils/storage";
 import { unknownToError } from "~/errors/error";
+import BigNumber from "bignumber.js";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
@@ -27,7 +28,9 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
   >({});
-  const [dodoMavPrices, setDodomavPrices] = useState<StringRecord<string>>({});
+  const [dodoMavPrices, setDodomavPrices] = useState<StringRecord<BigNumber>>(
+    {}
+  );
 
   // TODO switch to gql query
   useEffect(() => {
@@ -37,8 +40,6 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
         const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
         setDodoStorages(storages);
         setDodomavPrices(dodoPrices);
-
-        // setDodomavPrices
       } catch (e) {
         const err = unknownToError(e);
         warning("Prices", err.message);

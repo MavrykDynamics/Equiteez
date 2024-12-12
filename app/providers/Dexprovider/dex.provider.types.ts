@@ -1,10 +1,11 @@
+import BigNumber from "bignumber.js";
+import { z } from "zod";
+
 export type DexProviderCtxType = {
   orderbook: StringRecord<string>;
-  dodoMav: StringRecord<string>;
+  dodoMav: StringRecord<BigNumber>;
   dodoStorages: StringRecord<DodoStorageType>;
 };
-
-import { z } from "zod";
 
 export const dodoTokenSchema = z.object({
   tokenId: z.string(),
