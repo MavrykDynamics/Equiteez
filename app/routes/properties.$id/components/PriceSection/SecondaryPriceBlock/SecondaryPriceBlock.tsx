@@ -18,7 +18,7 @@ import Money from "~/lib/atoms/Money";
 import {
   calculateLiquidityPercentages,
   calculateTotalLiquidityInUSD,
-} from "~/providers/Dexprovider/utils/price";
+} from "~/providers/Dexprovider/utils";
 import { useAssetMetadata } from "~/lib/metadata";
 
 // types
