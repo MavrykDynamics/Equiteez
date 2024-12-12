@@ -1,8 +1,8 @@
 import primaryEstate from "./primaryEstate.mock.json";
 import secondaryEstate from "./secondaryEstate.mock.json";
 
-export type PrimaryEstate = (typeof primaryEstate)[0];
-export type SecondaryEstate = (typeof secondaryEstate)[0];
+export type PrimaryEstate = (typeof primaryEstate)[0] & { slug: string };
+export type SecondaryEstate = (typeof secondaryEstate)[0] & { slug: string };
 
 export type EstateType = PrimaryEstate | SecondaryEstate;
 

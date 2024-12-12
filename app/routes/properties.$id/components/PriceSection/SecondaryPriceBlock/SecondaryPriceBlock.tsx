@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 
 // providers
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
@@ -17,6 +17,8 @@ import { CommaNumber } from "~/lib/atoms/CommaNumber";
 import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";
 import { VALID_TOKENS } from "~/consts/contracts";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import Money from "~/lib/atoms/Money";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -25,6 +27,12 @@ export const SecondaryPriceBlock: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
   const { activeEstate } = useEstatesContext();
+  const { dodoMav } = useDexContext();
+
+  const estate = activeEstate as SecondaryEstate;
+  const { slug } = estate;
+
+  const currentPrice = useMemo(() => dodoMav[slug] ?? "0", [dodoMav, slug]);
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -37,17 +45,16 @@ export const SecondaryPriceBlock: FC = () => {
   }, []);
 
   if (!activeEstate) return <>Loading...</>;
-  const estate = activeEstate as SecondaryEstate;
 
   return (
     <section className="self-start">
       <Table className="bg-white">
         <div className="text-content text-card-headline flex justify-between mb-6">
           <p>Current Price</p>
-          <CommaNumber
-            value={estate.assetDetails.priceDetails.price}
-            beginningText="$"
-          />
+          <div>
+            $
+            <Money cryptoDecimals={activeEstate.decimals}>{currentPrice}</Money>
+          </div>
         </div>
         <div className="text-content body flex justify-between mb-4">
           <div className="flex items-center gap-1">

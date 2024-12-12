@@ -25,8 +25,8 @@ export const getDodoMavTokenPrices = async (addresses: string[]) => {
   const storages = await Promise.all(promises);
 
   return storages.reduce<StringRecord<string>>((acc, storage) => {
-    const slug = storage?.baseToken.tokenContractAddress.concat(
-      storage.baseToken.tokenId
+    const slug = storage?.baseToken?.tokenContractAddress?.concat(
+      `_${storage?.baseToken?.tokenId}`
     );
     if (slug && storage) {
       const price = getPMMTokenPrice(storage);
