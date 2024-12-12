@@ -18,6 +18,8 @@ export const getPMMTokenPrice = (storage: DodoStorageType) => {
   console.log(R.toNumber(), "R");
   console.log(i.toNumber(), "i");
 
+  console.log(i.times(R), "i.times(R)");
+
   return i.times(R);
 };
 

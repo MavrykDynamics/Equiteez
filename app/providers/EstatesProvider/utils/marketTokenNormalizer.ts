@@ -63,7 +63,7 @@ export const marketTokenNormalizer = (
         valuations: { latest: latestValuation, initial: initialValuation },
       } = assetData.assetDetails;
 
-      acc[token.address.concat(token.token_id)] = {
+      acc[token.address.concat(`_${token.token_id}`)] = {
         token_address: token.address,
         name: token.token_metadata.name,
         symbol: token.token_metadata.symbol,

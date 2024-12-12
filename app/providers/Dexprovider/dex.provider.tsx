@@ -56,6 +56,8 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
     [orderBookPrices, dodoMavPrices]
   );
 
+  console.log(memoizedDexCtx, "memoizedDexCtx");
+
   return (
     <dexContext.Provider value={memoizedDexCtx}>{children}</dexContext.Provider>
   );

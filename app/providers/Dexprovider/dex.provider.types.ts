@@ -34,7 +34,7 @@ export const dodoStorageTypeSchema = z.object({
   lambdaLedger: z.number(),
   quoteBalance: z.string(),
   quoteLpToken: dodoTokenSchema,
-  newSuperAdmin: z.null(),
+  newSuperAdmin: z.string().nullable(),
   slippageFactor: z.string(),
   baseBalanceLimit: z.string(),
   quoteBalanceLimit: z.string(),
