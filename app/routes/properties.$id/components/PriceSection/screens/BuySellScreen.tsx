@@ -27,12 +27,9 @@ import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { stablecoinContract } from "~/consts/contracts";
 import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
-import { calculateEstfee } from "~/lib/utils/calcFns";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInput } from "~/templates/BalanceInput";
-import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
-import { rateToNumber } from "~/lib/utils/numbers";
 import { toTokenSlug } from "~/lib/assets";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { CryptoBalance } from "~/templates/Balance";
@@ -40,6 +37,10 @@ import { spippageOptions } from "../popups";
 import { WarningBlock } from "~/lib/molecules/WarningBlock";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
+import {
+  calculateEstFee,
+  getDodoMavLpFee,
+} from "~/providers/Dexprovider/utils";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -64,8 +65,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   setSlippagePercentage,
 }) => {
   const { symbol, token_address, slug } = estate;
-  const { dodoTokenPair, dodoMav } = useDexContext();
-  const { usdToTokenRates } = useCurrencyContext();
+  const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
   const { userTokensBalances } = useUserContext();
@@ -101,10 +101,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       Number(total) * (1 - Number(slippagePercentage || 0) / 100);
     return new BigNumber(usdBalance)
       .minus(new BigNumber(slippageAdjustment))
-      .div(rateToNumber(usdToTokenRates[slug]))
+      .div(tokenPrice)
       .toNumber()
       .toFixed(2);
-  }, [total, slippagePercentage, usdBalance, usdToTokenRates, slug]);
+  }, [total, slippagePercentage, usdBalance, tokenPrice]);
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
@@ -112,16 +112,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
-      if (isBuyAction)
-        setAmount(
-          val?.times(rateToNumber(usdToTokenRates[slug])) ?? new BigNumber(0)
-        );
-      else
-        setAmount(
-          val?.div(rateToNumber(usdToTokenRates[slug])) ?? new BigNumber(0)
-        );
+      if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
+      else setAmount(val?.div(tokenPrice) ?? new BigNumber(0));
     },
-    [isBuyAction, setAmount, slug, usdToTokenRates]
+    [isBuyAction, setAmount, tokenPrice]
   );
 
   const input1Props = useMemo(
@@ -155,7 +149,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         ? {
             amount: amount?.div(tokenPrice) || undefined,
             selectedAssetSlug: slug,
-            selectedAssetMetadata: tokensMetadata[slug],
+            selectedAssetMetadata: selectedAssetMetadata,
           }
         : {
             amount: amount?.times(tokenPrice) || undefined,
@@ -166,10 +160,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       amount,
       dodoTokenPair,
       isBuyAction,
+      selectedAssetMetadata,
       slug,
       stableCoinMetadata,
       tokenPrice,
-      tokensMetadata,
     ]
   );
 
@@ -184,6 +178,32 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           : "--",
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
+
+  const estFee = useMemo(() => {
+    const lpFee = getDodoMavLpFee(dodoStorages[slug]);
+
+    const tokensAmount = isBuyAction ? input1Props.amount : input2Props.amount;
+    const decimals = isBuyAction
+      ? selectedAssetMetadata.decimals
+      : stableCoinMetadata.decimals;
+
+    return calculateEstFee(
+      tokensAmount,
+      tokenPrice,
+      lpFee,
+      decimals,
+      isBuyAction
+    );
+  }, [
+    dodoStorages,
+    input1Props.amount,
+    input2Props.amount,
+    isBuyAction,
+    selectedAssetMetadata.decimals,
+    slug,
+    stableCoinMetadata.decimals,
+    tokenPrice,
+  ]);
 
   const symbolToShow = isBuyAction
     ? symbol
@@ -295,11 +315,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         <InfoTooltip content="Est fee" />
                       </div>
                       <div>
-                        <Money smallFractionFont={false} shortened>
+                        {/* <Money smallFractionFont={false} shortened>
                           {isBuyAction
                             ? calculateEstfee(total?.toNumber() ?? 0)
                             : (input2Props.amount?.toNumber() ?? 0)}
-                        </Money>
+                        </Money> */}
+                        {estFee}
                         &nbsp;{symbolToShow}
                       </div>
                     </div>
