@@ -65,14 +65,6 @@ export const calculateEstFee = (
   if (!tokensAmount) return "0";
   const feeRate = lpFee;
 
-  console.log({
-    tokensAmount,
-    tokenPriceInUSDT,
-    lpFee,
-    decimals,
-    isBuying,
-  });
-
   if (isBuying) {
     // Fee in token X
     const estFee = tokensAmount.times(feeRate);
@@ -85,6 +77,32 @@ export const calculateEstFee = (
     const estFee = tokenValueInUSDT.times(feeRate);
     return estFee.toFixed(decimals);
   }
+};
+
+export const calculateMinReceived = (
+  tokensAmount: BigNumber.Value,
+  tokenPriceInUSDT: BigNumber.Value,
+  slippagePercentage: string,
+  decimals: number,
+  isBuying: boolean
+) => {
+  // Parse slippage percentage and convert to factor (e.g., 1% slippage -> 0.99)
+  const slippageFactor = new BigNumber(1).minus(
+    new BigNumber(slippagePercentage).dividedBy(100)
+  );
+
+  // For buying, calculate how much you receive in tokens
+  const totalValueInUSDT = new BigNumber(tokensAmount).times(tokenPriceInUSDT);
+  if (isBuying) {
+    const minReceivedInTokens = totalValueInUSDT.div(tokenPriceInUSDT); // Tokens you receive for your USDT
+
+    return minReceivedInTokens.times(slippageFactor).toFixed(decimals); // Apply slippage and return
+  }
+
+  // Apply slippage on the value in USDT
+  const minReceivedInUSDT = totalValueInUSDT.times(slippageFactor);
+
+  return minReceivedInUSDT.toFixed(decimals); // USDT has 6 decimals
 };
 
 export const calculateMinMaxQuote = (storage: DodoStorageType) => {

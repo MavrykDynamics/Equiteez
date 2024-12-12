@@ -39,6 +39,7 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import {
   calculateEstFee,
+  calculateMinReceived,
   getDodoMavLpFee,
 } from "~/providers/Dexprovider/utils";
 
@@ -93,18 +94,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     : amount
       ? amount?.toNumber() > tokenBalance
       : false;
-
-  const minReceived = useMemo(() => {
-    if (!total) return 0;
-
-    const slippageAdjustment =
-      Number(total) * (1 - Number(slippagePercentage || 0) / 100);
-    return new BigNumber(usdBalance)
-      .minus(new BigNumber(slippageAdjustment))
-      .div(tokenPrice)
-      .toNumber()
-      .toFixed(2);
-  }, [total, slippagePercentage, usdBalance, tokenPrice]);
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
@@ -178,6 +167,33 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           : "--",
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
+
+  const minReceived = useMemo(() => {
+    if (!total) return 0;
+    const tokensAmount = !isBuyAction ? input1Props.amount : input2Props.amount;
+
+    if (!tokensAmount) return "0";
+
+    const decimals = isBuyAction
+      ? selectedAssetMetadata.decimals
+      : stableCoinMetadata.decimals;
+    return calculateMinReceived(
+      tokensAmount,
+      tokenPrice,
+      slippagePercentage,
+      decimals,
+      isBuyAction
+    );
+  }, [
+    total,
+    isBuyAction,
+    input1Props.amount,
+    input2Props.amount,
+    selectedAssetMetadata.decimals,
+    stableCoinMetadata.decimals,
+    tokenPrice,
+    slippagePercentage,
+  ]);
 
   const estFee = useMemo(() => {
     const lpFee = getDodoMavLpFee(dodoStorages[slug]);
