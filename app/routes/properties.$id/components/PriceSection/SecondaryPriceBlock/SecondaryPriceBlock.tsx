@@ -1,8 +1,5 @@
 import { FC, useCallback, useMemo, useState } from "react";
 
-// providers
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-
 // components
 import { Button } from "~/lib/atoms/Button";
 import { Divider } from "~/lib/atoms/Divider";
@@ -18,20 +15,44 @@ import { PopupContent } from "../popups";
 import { VALID_TOKENS } from "~/consts/contracts";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import Money from "~/lib/atoms/Money";
+import {
+  calculateLiquidityPercentages,
+  calculateTotalLiquidityInUSD,
+} from "~/providers/Dexprovider/utils/price";
+import { useAssetMetadata } from "~/lib/metadata";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
 
-export const SecondaryPriceBlock: FC = () => {
+type SecondaryPriceBlockProps = {
+  activeEstate: SecondaryEstate;
+};
+
+export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
+  activeEstate: estate,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
-  const { activeEstate } = useEstatesContext();
-  const { dodoMav } = useDexContext();
+  const { dodoMav, dodoStorages, dodoTokenPair } = useDexContext();
 
-  const estate = activeEstate as SecondaryEstate;
   const { slug } = estate;
+  const baseTokenMetadata = useAssetMetadata(slug);
+  const quoteTokenMetadata = useAssetMetadata(dodoTokenPair[slug]);
 
   const currentPrice = useMemo(() => dodoMav[slug] ?? "0", [dodoMav, slug]);
+
+  const totalLiquidityInfo = useMemo(() => {
+    const { totalLiquidityInUSD } = calculateTotalLiquidityInUSD(
+      dodoStorages[slug],
+      dodoMav[slug]
+    );
+
+    const { basePercentage, quotePercentage } = calculateLiquidityPercentages(
+      dodoStorages[slug]
+    );
+
+    return { totalLiquidityInUSD, basePercentage, quotePercentage };
+  }, [dodoMav, dodoStorages, slug]);
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -42,8 +63,6 @@ export const SecondaryPriceBlock: FC = () => {
     setOrderType(orderType);
     setIsOpen(true);
   }, []);
-
-  if (!activeEstate) return <>Loading...</>;
 
   return (
     <section className="self-start">
@@ -82,11 +101,16 @@ export const SecondaryPriceBlock: FC = () => {
         <div className="text-content text-buttons flex justify-between mb-3">
           <p>Total Liquidity</p>
           <div className="flex items-center gap-1">
-            ${estate.assetDetails.priceDetails.totalLiquidity}
+            ${totalLiquidityInfo.totalLiquidityInUSD}
           </div>
         </div>
 
-        <ProgresBar />
+        <ProgresBar
+          baseTokenPercentage={totalLiquidityInfo.basePercentage}
+          quoteTokenPercentage={totalLiquidityInfo.quotePercentage}
+          baseTokenSymbol={baseTokenMetadata.symbol}
+          quoteTokenSymbol={quoteTokenMetadata.symbol}
+        />
         <div className="mt-4">
           {!VALID_TOKENS[estate.token_address] ? (
             <Button className="w-full" disabled>

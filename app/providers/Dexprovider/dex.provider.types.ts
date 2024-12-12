@@ -5,6 +5,7 @@ export type DexProviderCtxType = {
   orderbook: StringRecord<string>;
   dodoMav: StringRecord<BigNumber>;
   dodoStorages: StringRecord<DodoStorageType>;
+  dodoTokenPair: StringRecord<string>;
 };
 
 export const dodoTokenSchema = z.object({

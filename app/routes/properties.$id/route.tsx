@@ -91,7 +91,10 @@ export default function PropertyDetails() {
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
         <div className="sticky top-10 h-fit">
-          <PriceSection isSecondaryEstate={isSecondaryEstate} />
+          <PriceSection
+            isSecondaryEstate={isSecondaryEstate}
+            activeEstate={estateData}
+          />
         </div>
       </section>
       <Spacer />

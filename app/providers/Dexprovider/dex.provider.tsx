@@ -11,6 +11,7 @@ import { useEstatesContext } from "../EstatesProvider/estates.provider";
 import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import {
+  getDodoMavTokenPairs,
   getDodoMavTokenPrices,
   getDodoMavTokenStorages,
 } from "./utils/storage";
@@ -31,6 +32,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const [dodoMavPrices, setDodomavPrices] = useState<StringRecord<BigNumber>>(
     {}
   );
+  const [dodoTokenPair, setDodoTokenPair] = useState({});
 
   // TODO switch to gql query
   useEffect(() => {
@@ -38,8 +40,11 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       try {
         const storages = await getDodoMavTokenStorages(estateAddresses);
         const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
+        const tokenPairs = getDodoMavTokenPairs(storages);
+
         setDodoStorages(storages);
         setDodomavPrices(dodoPrices);
+        setDodoTokenPair(tokenPairs);
       } catch (e) {
         const err = unknownToError(e);
         warning("Prices", err.message);
@@ -62,8 +67,9 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       orderbook: orderBookPrices,
       dodoMav: dodoMavPrices,
       dodoStorages,
+      dodoTokenPair,
     }),
-    [orderBookPrices, dodoMavPrices, dodoStorages]
+    [orderBookPrices, dodoMavPrices, dodoStorages, dodoTokenPair]
   );
 
   console.log(memoizedDexCtx, "memoizedDexCtx");

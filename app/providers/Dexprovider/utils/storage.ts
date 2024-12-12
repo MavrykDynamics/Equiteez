@@ -54,3 +54,19 @@ export const getDodoMavTokenPrices = (storages: DodoStorageType[]) => {
     return acc;
   }, {});
 };
+
+export const getDodoMavTokenPairs = (
+  storagesRecord: StringRecord<DodoStorageType>
+) => {
+  return Object.entries(storagesRecord).reduce<StringRecord<string>>(
+    (acc, [key, storage]) => {
+      acc[key] = toTokenSlug(
+        storage.quoteToken.tokenContractAddress,
+        storage.quoteToken.tokenId
+      );
+
+      return acc;
+    },
+    {}
+  );
+};
