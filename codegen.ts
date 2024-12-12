@@ -1,22 +1,26 @@
-import { CodegenConfig } from '@graphql-codegen/cli';
-import { visit } from 'graphql';
+import { CodegenConfig } from "@graphql-codegen/cli";
+import { visit } from "graphql";
 
 // mapper of top level tables
 const INDEXER_TABLES = {
   // TOKENS
   token: true,
 
-  // add other tables
+  // Dexes
+  orderbook: true,
+  dodo_mav: true,
+  marketplace: true
+
 };
 
 const config: CodegenConfig = {
-  schema: process.env.REACT_APP_GRAPHQL_API,
-  documents: ['src/**/*.{ts,tsx}'],
+  schema: process.env.GRAPHQL_API,
+  documents: ["app/**/*.{ts,tsx}"],
   generates: {
-    'src/utils/__generated__/': {
-      preset: 'client',
+    "app/utils/__generated__/": {
+      preset: "client",
       presetConfig: {
-        gqlTagName: 'gql',
+        gqlTagName: "gql",
       },
       documentTransforms: [
         {

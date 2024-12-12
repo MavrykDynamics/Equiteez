@@ -1,17 +1,17 @@
-import { Link } from '@remix-run/react';
-import { useMemo } from 'react';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { Link } from "@remix-run/react";
+import { useMemo } from "react";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import {
   EstateType,
   PrimaryEstate,
   SECONDARY_MARKET,
   SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
-import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
+} from "~/providers/EstatesProvider/estates.types";
+import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 
 function getThreeUniqueElements(items: EstateType[]) {
   if (items.length < 3) {
-    throw new Error('There are not enough items to select 3 unique elements.');
+    return items;
   }
 
   const selectedItems: EstateType[] = [];
@@ -27,11 +27,11 @@ function getThreeUniqueElements(items: EstateType[]) {
 }
 
 export const SimilarProperties = () => {
-  const { estates } = useEstatesContext();
+  const { estatesArr } = useEstatesContext();
 
   const similarEstates = useMemo(
-    () => getThreeUniqueElements(estates),
-    [estates]
+    () => getThreeUniqueElements(estatesArr),
+    [estatesArr]
   );
 
   return (
@@ -40,42 +40,46 @@ export const SimilarProperties = () => {
         Similar OTC Properties on Equiteez
       </h2>
       <div className="grid grid-cols-3 gap-x-3">
-        {similarEstates.map((estate) => {
-          const isSecondaryMarket =
-            estate.assetDetails.type === SECONDARY_MARKET;
-          const restProps = {
-            pricePerToken: (estate as SecondaryEstate).assetDetails.priceDetails
-              .price,
-            progressBarPercentage: isSecondaryMarket
-              ? undefined
-              : +(
-                  (((estate as PrimaryEstate).assetDetails.priceDetails
-                    .tokensUsed || 1) /
-                    (estate as PrimaryEstate).assetDetails.priceDetails
-                      .tokensAvailable) *
-                  100
-                ).toFixed(2),
-          };
-          return (
-            <Link
-              to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
-              key={estate.token_address}
-            >
-              <ThumbCardSecondary
+        {!similarEstates.length ? (
+          <h4>There aren&apos;t no similar markets.</h4>
+        ) : (
+          similarEstates.map((estate) => {
+            const isSecondaryMarket =
+              estate.assetDetails.type === SECONDARY_MARKET;
+            const restProps = {
+              pricePerToken: (estate as SecondaryEstate).assetDetails
+                .priceDetails.price,
+              progressBarPercentage: isSecondaryMarket
+                ? undefined
+                : +(
+                    (((estate as PrimaryEstate).assetDetails.priceDetails
+                      .tokensUsed || 1) /
+                      (estate as PrimaryEstate).assetDetails.priceDetails
+                        .tokensAvailable) *
+                    100
+                  ).toFixed(2),
+            };
+            return (
+              <Link
+                to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
                 key={estate.token_address}
-                imgSrc={estate.assetDetails.previewImage}
-                APY={estate.assetDetails.APY}
-                title={estate.name}
-                description={estate.assetDetails.propertyDetails.propertyType}
-                isSecondaryMarket={
-                  estate.assetDetails.type === SECONDARY_MARKET
-                }
-                height={'302px'}
-                {...restProps}
-              />
-            </Link>
-          );
-        })}
+              >
+                <ThumbCardSecondary
+                  key={estate.token_address}
+                  imgSrc={estate.assetDetails.previewImage}
+                  APY={estate.assetDetails.APY}
+                  title={estate.name}
+                  description={estate.assetDetails.propertyDetails.propertyType}
+                  isSecondaryMarket={
+                    estate.assetDetails.type === SECONDARY_MARKET
+                  }
+                  height={"302px"}
+                  {...restProps}
+                />
+              </Link>
+            );
+          })
+        )}
       </div>
     </section>
   );

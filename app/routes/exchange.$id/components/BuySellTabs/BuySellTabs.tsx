@@ -1,17 +1,17 @@
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TabType } from '~/lib/atoms/Tab';
-import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TabType } from "~/lib/atoms/Tab";
+import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 
 // icons
-import { Button } from '~/lib/atoms/Button';
+import { Button } from "~/lib/atoms/Button";
 import {
   pickDodoContractBasedOnToken,
   pickOrderbookContract,
   stablecoinContract,
   VALID_TOKENS,
-} from '~/consts/contracts';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { buyBaseToken, sellBaseToken } from '~/contracts/dodo.contract';
+} from "~/consts/contracts";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import {
   ADMIN,
   BUY_TAB,
@@ -19,29 +19,29 @@ import {
   MARKET_TYPE,
   OTC_TYPE,
   SELL_TAB,
-} from './consts';
-import { AdminScreen } from './AdminScreen';
-import { useUserContext } from '~/providers/UserProvider/user.provider';
-import { useContractAction } from '~/contracts/hooks/useContractAction';
-import { ESnakeblock } from '~/templates/ESnakeBlock/ESnakeblock';
-import { rwaToFixed } from '~/lib/utils/formaters';
-import Money from '~/lib/atoms/Money';
-import clsx from 'clsx';
-import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
-import { toTokenSlug } from '~/lib/assets';
-import BigNumber from 'bignumber.js';
-import { calculateEstfee } from '~/lib/utils/calcFns';
-import usePrevious from '~/lib/ui/hooks/usePrevious';
-import { orderbookBuy, orderbookSell } from '~/contracts/orderbook.contract';
-import { rateToNumber } from '~/lib/utils/numbers';
-import { isDefined } from '~/lib/utils';
-import { AssetField } from '~/lib/organisms/AssetField';
-import { CryptoBalance } from '~/templates/Balance';
+} from "./consts";
+import { AdminScreen } from "./AdminScreen";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useContractAction } from "~/contracts/hooks/useContractAction";
+import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import { rwaToFixed } from "~/lib/utils/formaters";
+import Money from "~/lib/atoms/Money";
+import clsx from "clsx";
+import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
+import { toTokenSlug } from "~/lib/assets";
+import BigNumber from "bignumber.js";
+import { calculateEstfee } from "~/lib/utils/calcFns";
+import usePrevious from "~/lib/ui/hooks/usePrevious";
+import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+import { rateToNumber } from "~/lib/utils/numbers";
+import { isDefined } from "~/lib/utils";
+import { AssetField } from "~/lib/organisms/AssetField";
+import { CryptoBalance } from "~/templates/Balance";
 import {
   getStatusLabel,
   pickStatusFromMultiple,
   STATUS_PENDING,
-} from '~/lib/ui/use-status-flag';
+} from "~/lib/ui/use-status-flag";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -92,11 +92,11 @@ const useBuySellActions = (
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+      tokensAmount: amount?.toNumber(),
       minMaxQuote: 1000,
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, slug, tokenAddress, selectedAssetMetadata, usdToTokenRates]
+    [amount, tokenAddress, selectedAssetMetadata]
   );
 
   const marketSellProps = useMemo(
@@ -210,8 +210,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
       ? total.gt(new BigNumber(usdBalance))
       : false
     : amount
-    ? amount.gt(new BigNumber(tokenBalance))
-    : false;
+      ? amount.gt(new BigNumber(tokenBalance))
+      : false;
 
   const isBtnDisabled = useMemo(
     () => amount?.lte(0) || price?.lte(0) || hasTotalError || !amount || !price,
@@ -228,7 +228,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
       );
 
       const numberOfTokens = amountToSpend.div(
-        isLimitType ? price ?? 1 : new BigNumber(usdToTokenRates[slug] ?? 1)
+        isLimitType ? (price ?? 1) : new BigNumber(usdToTokenRates[slug] ?? 1)
       );
 
       setAmount(isBuyAction ? numberOfTokens : amountToSpend);
@@ -313,12 +313,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     () => [
       {
         id: BUY_TAB,
-        label: 'Buy',
+        label: "Buy",
         handleClick: handleTabClick,
       },
       {
         id: SELL_TAB,
-        label: 'Sell',
+        label: "Sell",
         handleClick: handleTabClick,
       },
 
@@ -326,7 +326,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
         ? [
             {
               id: ADMIN,
-              label: 'Admin',
+              label: "Admin",
               handleClick: handleTabClick,
             },
           ]
@@ -340,20 +340,20 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
     () => [
       {
         id: LIMIT_TYPE,
-        label: 'Limit',
-        value: 'limit',
+        label: "Limit",
+        value: "limit",
         handleClick: handleItemlick,
       },
       {
         id: MARKET_TYPE,
-        label: 'Market',
-        value: 'market',
+        label: "Market",
+        value: "market",
         handleClick: handleItemlick,
       },
       {
         id: OTC_TYPE,
-        label: 'OTC',
-        value: 'otc',
+        label: "OTC",
+        value: "otc",
         handleClick: handleItemlick,
         disabled: true,
       },
@@ -397,7 +397,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                     />
                   ) : (
                     <CryptoBalance
-                      value={userTokensBalances[tokenAddress] || '0'}
+                      value={userTokensBalances[tokenAddress] || "0"}
                       cryptoDecimals={selectedAssetMetadata?.decimals ?? 6}
                     />
                   )}
@@ -497,8 +497,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                 </div>
 
                 {hasTotalError && (
-                  <span className={clsx('text-body-xs text-error mt-2')}>
-                    {'Amount exceeds available balance'}
+                  <span className={clsx("text-body-xs text-error mt-2")}>
+                    {"Amount exceeds available balance"}
                   </span>
                 )}
               </div>
@@ -510,7 +510,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                     <CryptoBalance
                       value={new BigNumber(maxBuy ?? 0)}
                       cryptoDecimals={selectedAssetMetadata?.decimals}
-                    />{' '}
+                    />{" "}
                     {symbol}
                   </span>
                 </div>
@@ -519,8 +519,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                   <span className="text-caption-regular">Est. Fee</span>
                   <div className="text-caption-regular">
                     <Money smallFractionFont={false} shortened>
-                      {!isBuyAction ? calculateEstfee(total ?? 0) : amount ?? 0}
-                    </Money>{' '}
+                      {!isBuyAction
+                        ? calculateEstfee(total ?? 0)
+                        : (amount ?? 0)}
+                    </Money>{" "}
                     {symbolToShow}
                   </div>
                 </div>
@@ -542,7 +544,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({ symbol, tokenAddress }) => {
                       <span className="text-body-xs font-bold">
                         {getStatusLabel(
                           status,
-                          activetabId === 'buy' ? 'Buy' : 'Sell'
+                          activetabId === "buy" ? "Buy" : "Sell"
                         )}
                       </span>
                     </Button>

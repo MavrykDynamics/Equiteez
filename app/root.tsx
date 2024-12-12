@@ -27,7 +27,6 @@ import {
   fetchTokensData,
   fetchTokensMetadata,
 } from "./providers/TokensProvider/utils/fetchTokensdata";
-import { fetchFiatToTezosRates } from "./lib/fiat-currency";
 import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
@@ -41,6 +40,7 @@ import {
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { FC } from "react";
+import { DexProvider } from "./providers/Dexprovider/dex.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -50,16 +50,15 @@ export const links: LinksFunction = () => [
 export const loader = async () => {
   const tokens = await fetchTokensData();
 
-  const [tokensMetadata, fiatToTezos, usdToToken] = await Promise.all([
+  const [tokensMetadata, usdToToken] = await Promise.all([
     fetchTokensMetadata(tokens),
-    fetchFiatToTezosRates(),
     fetchUsdToTokenRates(),
   ]);
 
   return json({
     tokens,
     tokensMetadata,
-    fiatToTezos,
+    fiatToTezos: {},
     usdToToken,
   });
 };
@@ -82,13 +81,15 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
               initialTokens={tokens}
               initialTokensMetadata={tokensMetadata}
             >
-              <UserProvider>
-                <EstatesProvider>
-                  <AppGlobalLoader>
-                    <PopupProvider>{children}</PopupProvider>
-                  </AppGlobalLoader>
-                </EstatesProvider>
-              </UserProvider>
+              <EstatesProvider>
+                <DexProvider>
+                  <UserProvider>
+                    <AppGlobalLoader>
+                      <PopupProvider>{children}</PopupProvider>
+                    </AppGlobalLoader>
+                  </UserProvider>
+                </DexProvider>
+              </EstatesProvider>
             </TokensProvider>
           </CurrencyProvider>
         </WalletProvider>

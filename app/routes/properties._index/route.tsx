@@ -1,26 +1,26 @@
-import type { MetaFunction } from '@remix-run/node';
-import { Link } from '@remix-run/react';
-import { Spacer } from '~/lib/atoms/Spacer';
-import PageLayout from '~/layouts/PageLayout/Pagelayout';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import type { MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react";
+import { Spacer } from "~/lib/atoms/Spacer";
+import PageLayout from "~/layouts/PageLayout/Pagelayout";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import {
   PrimaryEstate,
   SECONDARY_MARKET,
   SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
-import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
-import { Filters } from './components/Filters';
-import { useState } from 'react';
+} from "~/providers/EstatesProvider/estates.types";
+import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
+import { Filters } from "./components/Filters";
+import { useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Properties' },
-    { name: 'description', content: 'Properties route!' },
+    { title: "Properties" },
+    { name: "description", content: "Properties route!" },
   ];
 };
 
 export default function Properties() {
-  const { estates } = useEstatesContext();
+  const { estatesArr: estates } = useEstatesContext();
   const [filteredEstates, setFilteredEstates] = useState(() => estates);
 
   return (

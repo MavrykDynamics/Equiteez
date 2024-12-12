@@ -1,43 +1,43 @@
-import type { LoaderFunction, MetaFunction } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import ArrowLeftIcon from 'app/icons/arrow-left.svg?react';
-import LikeIcon from 'app/icons/like.svg?react';
-import ShareIcon from 'app/icons/share.svg?react';
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
+import LikeIcon from "app/icons/like.svg?react";
+import ShareIcon from "app/icons/share.svg?react";
 
-import PageLayout from 'app/layouts/PageLayout/Pagelayout';
-import { usePropertyByAddress } from './hooks/use-property-by-id';
-import { LinkWithIcon } from '~/lib/atoms/LinkWithIcon';
-import { FC } from 'react';
-import { Gallery } from './components/Gallery/Gallery';
+import PageLayout from "app/layouts/PageLayout/Pagelayout";
+import { usePropertyByAddress } from "./hooks/use-property-by-id";
+import { LinkWithIcon } from "~/lib/atoms/LinkWithIcon";
+import { FC } from "react";
+import { Gallery } from "./components/Gallery/Gallery";
 
-import { IconsBlock } from '~/templates/IconsBlock';
-import { Divider } from '~/lib/atoms/Divider';
-import { Spacer } from '~/lib/atoms/Spacer';
-import { SimilarProperties } from './components/SimilarProperties/SimilarProperties';
-import { FAQSection } from '~/templates/FAQSection';
+import { IconsBlock } from "~/templates/IconsBlock";
+import { Divider } from "~/lib/atoms/Divider";
+import { Spacer } from "~/lib/atoms/Spacer";
+import { SimilarProperties } from "./components/SimilarProperties/SimilarProperties";
+import { FAQSection } from "~/templates/FAQSection";
 
 // styles
-import styles from './propertyId.module.css';
+import styles from "./propertyId.module.css";
 
 // mocked faq data
-import { homeFAQ } from '../_index/index.const';
-import { PriceSection } from './components/PriceSection/PriceSection';
-import PropertyTabs from './components/PropertyTabs/PropertyTabs';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { EstateHeadlineTab } from '~/templates/EstateHeadlineTab';
-import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
-import clsx from 'clsx';
+import { homeFAQ } from "../_index/index.const";
+import { PriceSection } from "./components/PriceSection/PriceSection";
+import PropertyTabs from "./components/PropertyTabs/PropertyTabs";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
+import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
+import clsx from "clsx";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Property' },
-    { name: 'description', content: 'Property data' },
+    { title: "Property" },
+    { name: "description", content: "Property data" },
   ];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const id = url.searchParams.get('tabId');
+  const id = url.searchParams.get("tabId");
   return id;
 };
 
@@ -91,7 +91,10 @@ export default function PropertyDetails() {
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>
         <div className="sticky top-10 h-fit">
-          <PriceSection isSecondaryEstate={isSecondaryEstate} />
+          <PriceSection
+            isSecondaryEstate={isSecondaryEstate}
+            activeEstate={estateData}
+          />
         </div>
       </section>
       <Spacer />
@@ -112,10 +115,10 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
       <div
         className={clsx(
-          'py-1 px-2 rounded font-medium',
+          "py-1 px-2 rounded font-medium",
           isSecondaryEstate
-            ? 'bg-[#F6AFAFBF] text-red-950'
-            : 'text-yellow-950 bg-[#FFD38FBF]'
+            ? "bg-[#F6AFAFBF] text-red-950"
+            : "text-yellow-950 bg-[#FFD38FBF]"
         )}
       >
         {houseType}

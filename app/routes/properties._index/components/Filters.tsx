@@ -3,35 +3,35 @@ import {
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import clsx from 'clsx';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import clsx from "clsx";
 
 // icons
-import SearchIcon from 'app/icons/search.svg?react';
+import SearchIcon from "app/icons/search.svg?react";
 
 // components
-import { InputWithIcons } from '~/lib/organisms/InputWithIcons/InputWithIcons';
+import { InputWithIcons } from "~/lib/organisms/InputWithIcons/InputWithIcons";
 
 // types
-import { EstateType } from '~/providers/EstatesProvider/estates.types';
+import { EstateType } from "~/providers/EstatesProvider/estates.types";
 
 // calc functions
-import _ from 'lodash';
-import { calculateDynamicRanges } from './utils';
+import _ from "lodash";
+import { calculateDynamicRanges } from "./utils";
 
 // styles
-import styles from './filters.module.css';
+import styles from "./filters.module.css";
 
 // filter functions -----------------------------------------
 
 function filterByMarketType(estates: EstateType[], type: string) {
-  if (type === 'all') return estates;
+  if (type === "all") return estates;
   return estates.filter((es) => es.assetDetails.type === type);
 }
 
 function filterByPropertyType(estates: EstateType[], type: string) {
-  if (type === 'all') return estates;
+  if (type === "all") return estates;
   return estates.filter(
     (es) => es.assetDetails.propertyDetails.propertyType === type
   );
@@ -78,9 +78,9 @@ export const Filters: FC<FiltersProps> = ({
 }) => {
   const [opened, setOpened] = useState(false);
   // to make interactive search when user types smth
-  const [estateName, setEstateName] = useState('');
+  const [estateName, setEstateName] = useState("");
   // using debounce set new name after 450 ms to filter estates data
-  const [estateNameForFilter, setEstateNameForFilter] = useState('');
+  const [estateNameForFilter, setEstateNameForFilter] = useState("");
 
   // no need for usecallback cuz root element is div
   const handleOpen = () => {
@@ -95,8 +95,8 @@ export const Filters: FC<FiltersProps> = ({
 
   const handleClose = useCallback(() => {
     setOpened(false);
-    setEstateName('');
-    sendRequest('');
+    setEstateName("");
+    sendRequest("");
   }, [sendRequest]);
 
   // debounced diltering when srching estate by name
@@ -127,7 +127,7 @@ export const Filters: FC<FiltersProps> = ({
         },
         { projectedRentalYieldArr: [], projectedAnnualReturnArr: [] }
       ),
-    [originalEstates]
+    [estates]
   );
 
   const projectedRentalYieldOptions = useMemo(
@@ -143,28 +143,28 @@ export const Filters: FC<FiltersProps> = ({
     () => [
       {
         id: 0,
-        label: 'location',
-        value: 'All Markets',
+        label: "location",
+        value: "All Markets",
         options: [
           {
-            value: 'all',
-            label: 'All Markets',
+            value: "all",
+            label: "All Markets",
           },
           {
-            value: 'Primary Issuance',
-            label: 'Primary Issuance',
+            value: "Primary Issuance",
+            label: "Primary Issuance",
           },
-          { value: 'Secondary Market', label: 'Secondary Market' },
+          { value: "Secondary Market", label: "Secondary Market" },
         ],
       },
       {
         id: 1,
-        label: 'property type',
-        value: 'All Properties',
+        label: "property type",
+        value: "All Properties",
         options: [
           {
-            value: 'all',
-            label: 'All Properties',
+            value: "all",
+            label: "All Properties",
           },
           ...[
             ...new Set(
@@ -175,9 +175,9 @@ export const Filters: FC<FiltersProps> = ({
       },
       {
         id: 2,
-        label: 'projected rental yield',
-        value: '0%',
-        options: [{ value: [0, 100], label: '0% - 100%' }].concat(
+        label: "projected rental yield",
+        value: "0%",
+        options: [{ value: [0, 100], label: "0% - 100%" }].concat(
           Object.keys(projectedRentalYieldOptions).map((item) => ({
             value: [
               projectedRentalYieldOptions[item].min,
@@ -189,9 +189,9 @@ export const Filters: FC<FiltersProps> = ({
       },
       {
         id: 3,
-        label: 'projected annual return',
-        value: '0%',
-        options: [{ value: [0, 100], label: '0% - 100%' }].concat(
+        label: "projected annual return",
+        value: "0%",
+        options: [{ value: [0, 100], label: "0% - 100%" }].concat(
           Object.keys(projectedAnnualReturnOptions).map((item) => ({
             value: [
               projectedAnnualReturnOptions[item].min,
@@ -206,7 +206,7 @@ export const Filters: FC<FiltersProps> = ({
   );
 
   const [activeLabels, setActiveLabels] = useState(() =>
-    filtersData.reduce<Record<string, (typeof filtersData)[0]['options'][0]>>(
+    filtersData.reduce<Record<string, (typeof filtersData)[0]["options"][0]>>(
       (acc, filter) => {
         acc[filter.id] = filter.options[0];
         return acc;
@@ -223,19 +223,19 @@ export const Filters: FC<FiltersProps> = ({
     let filteredEstates = originalEstates;
     filteredEstates = filterByMarketType(
       filteredEstates,
-      activeLabels['0'].value as string
+      activeLabels["0"].value as string
     );
     filteredEstates = filterByPropertyType(
       filteredEstates,
-      activeLabels['1'].value as string
+      activeLabels["1"].value as string
     );
     filteredEstates = filterByRentalYield(
       filteredEstates,
-      activeLabels['2'].value as [number, number]
+      activeLabels["2"].value as [number, number]
     );
     filteredEstates = filterByAnnualReturn(
       filteredEstates,
-      activeLabels['3'].value as [number, number]
+      activeLabels["3"].value as [number, number]
     );
 
     filteredEstates = filterByName(filteredEstates, estateNameForFilter);
@@ -258,7 +258,7 @@ export const Filters: FC<FiltersProps> = ({
 
   return (
     <section className="py-[10px] px-5 bg-background shadow-card-secondary rounded-[5px]">
-      <div className={clsx('text-content relative', styles.filtersGrid)}>
+      <div className={clsx("text-content relative", styles.filtersGrid)}>
         {filtersData.map((filter) => (
           <div key={filter.label} className="flex items-center justify-between">
             <div className="flex flex-col gap-y-1 w-full">
@@ -299,11 +299,11 @@ export const Filters: FC<FiltersProps> = ({
         <div
           role="presentation"
           className={clsx(
-            'h-11 rounded-lg',
-            'transition duration-300 ease-in-out',
+            "h-11 rounded-lg",
+            "transition duration-300 ease-in-out",
             !opened
-              ? 'w-11 bg-green-main flex items-center justify-center cursor-pointer'
-              : 'w-full absolute right-0 bg-background grid grid-cols-1 items-center'
+              ? "w-11 bg-green-main flex items-center justify-center cursor-pointer"
+              : "w-full absolute right-0 bg-background grid grid-cols-1 items-center"
           )}
           onClick={handleOpen}
         >
@@ -311,7 +311,7 @@ export const Filters: FC<FiltersProps> = ({
             <SearchIcon className="w-[18px] h[18px] text-white stroke-current" />
           )}
           <div
-            className={clsx(!opened ? 'w-[0px] overflow-hidden ' : 'w-full ')}
+            className={clsx(!opened ? "w-[0px] overflow-hidden " : "w-full ")}
           >
             <InputWithIcons
               placeholder="Search..."

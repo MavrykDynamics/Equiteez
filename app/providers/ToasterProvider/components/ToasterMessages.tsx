@@ -50,7 +50,7 @@ const Toast = ({ toast }: { toast: ToasterMessage }) => {
         styles[type]
       )}
     >
-      <Icon className={"size-6"} icon={TOAST_ICON_MAPPER[type]} />
+      <Icon className={"size-6 min-w-6"} icon={TOAST_ICON_MAPPER[type]} />
       <div className={styles.content}>
         {title && <div className={styles.title}>{title}</div>}
         <div className={styles.message}>{message}</div>

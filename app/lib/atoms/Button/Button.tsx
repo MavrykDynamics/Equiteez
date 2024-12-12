@@ -46,7 +46,7 @@ const variants = {
   'green-secondary': 'text-content bg-green-tertiary hover:bg-green-secondary',
   white: 'text-content bg-background hover:bg-tabs',
   outline:
-    // Added py-8px to avoid border extra height
+    // Added py-8px to avoid border extra height !
     'text-dark-green-500 bg-transparent border-2 border-green-main hover:bg-dark-green-opacity focus:bg-dark-green-focus',
   red: 'text-content bg-red-main hover:bg-red-400',
   dark: 'bg-black-secondary text-white hover:bg-gray-800',

@@ -1,35 +1,35 @@
-import { useNavigate } from '@remix-run/react';
-import clsx from 'clsx';
-import _ from 'lodash';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { Search } from '~/lib/atoms/Search';
-import { Spinner } from '~/lib/atoms/Spinner';
-import { ImageStacked } from '~/lib/molecules/ImageStacked';
+import { useNavigate } from "@remix-run/react";
+import clsx from "clsx";
+import _ from "lodash";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { Search } from "~/lib/atoms/Search";
+import { Spinner } from "~/lib/atoms/Spinner";
+import { ImageStacked } from "~/lib/molecules/ImageStacked";
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import {
   EstateType,
   SECONDARY_MARKET,
-} from '~/providers/EstatesProvider/estates.types';
+} from "~/providers/EstatesProvider/estates.types";
 
 // icons
-import StarIcon from 'app/icons/star.svg?react';
+import StarIcon from "app/icons/star.svg?react";
 
 // CONSTS
-const columns = ['', 'Name', 'Price USDT', 'Change'];
-const STARRED = 'starred';
+const columns = ["", "Name", "Price USDT", "Change"];
+const STARRED = "starred";
 
 // styles
-import styles from './assetDropdown.module.css';
+import styles from "./assetDropdown.module.css";
 import {
   getItemFromStorage,
   setItemInStorage,
-} from '~/lib/utils/local-storage';
+} from "~/lib/utils/local-storage";
 
 // filter fns
 function filterByName(estates: EstateType[], name: string) {
@@ -40,6 +40,7 @@ function filterByName(estates: EstateType[], name: string) {
 
 function filterByStarred(estates: EstateType[]) {
   const starredEstates = getItemFromStorage<string[]>(STARRED);
+
   if (!starredEstates) return [];
 
   return estates.filter((es) =>
@@ -54,7 +55,7 @@ type AssetDropdownProps = {
 export const AssetDropdown: FC<AssetDropdownProps> = ({
   estate: estateData,
 }) => {
-  const { estates: allEstates } = useEstatesContext();
+  const { estatesArr: allEstates } = useEstatesContext();
 
   const estates = useMemo(
     () => allEstates.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
@@ -66,9 +67,9 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
   const [filteredEstates, setFilteredEstates] = useState(() => estates);
 
   // to make interactive search when user types smth
-  const [estateName, setEstateName] = useState('');
+  const [estateName, setEstateName] = useState("");
   // using debounce set new name after 450 ms to filter estates data
-  const [estateNameForFilter, setEstateNameForFilter] = useState('');
+  const [estateNameForFilter, setEstateNameForFilter] = useState("");
 
   // active filters
   const [activeFiltersIds, setActiveFiltersIds] = useState<
@@ -103,8 +104,8 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
   }, [sendRequest]);
 
   const handleClose = useCallback(() => {
-    setEstateName('');
-    sendRequest('');
+    setEstateName("");
+    sendRequest("");
   }, [sendRequest]);
 
   const onChange = useCallback(
@@ -161,22 +162,22 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
         label: (
           <StarIcon className="text-content stroke-current w-4 h-4 fill-none" />
         ),
-        value: 'starred',
+        value: "starred",
       },
       1: {
         id: 1,
-        label: 'Market',
-        value: 'market',
+        label: "Market",
+        value: "market",
       },
       2: {
         id: 2,
-        label: 'OTC',
-        value: 'otc',
+        label: "OTC",
+        value: "otc",
       },
       3: {
         id: 3,
-        label: 'Order Book',
-        value: 'order_book',
+        label: "Order Book",
+        value: "order_book",
       },
     }),
     []
@@ -205,9 +206,9 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
         <DropdownFaceContent
           gap={2}
           className={clsx(
-            'text-body-xs leading-5 font-semibold text-content w-full border border-dark-green-50',
-            'px-[14px] py-[9px]',
-            'rounded-4xl bg-white'
+            "text-body-xs leading-5 font-semibold text-content w-full border border-dark-green-50",
+            "px-[14px] py-[9px]",
+            "rounded-4xl bg-white"
           )}
         >
           <div className="flex items-center gap-x-2">
@@ -247,12 +248,12 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   key={id}
                   onClick={() => handleFilterClick(id)}
                   className={clsx(
-                    'py-2 px-3 text-content text-caption cursor-pointer outline-none',
-                    'transition ease-in-out duration-300',
-                    'flex items-center justify-center rounded-4xl border',
+                    "py-2 px-3 text-content text-caption cursor-pointer outline-none",
+                    "transition ease-in-out duration-300",
+                    "flex items-center justify-center rounded-4xl border",
                     activeFiltersIds[id]
-                      ? 'border-dark-green-500 bg-[#A4C0BA59]'
-                      : 'border-sand-200'
+                      ? "border-dark-green-500 bg-[#A4C0BA59]"
+                      : "border-sand-200"
                   )}
                 >
                   {filterVal.label}
@@ -265,7 +266,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
             <NoResultsScreen word={estateName} />
           ) : (
             <>
-              {' '}
+              {" "}
               <div className="flex flex-col flex-1 overflow-hidden">
                 {/* Table Header ------ */}
                 <div className={clsx(styles.dropdowntable)}>
@@ -273,15 +274,15 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                     className={clsx(
                       styles.tableHeader,
                       styles.grid,
-                      'bg-white'
+                      "bg-white"
                     )}
                   >
                     {columns.map((column) => (
                       <div
                         key={column}
                         className={clsx(
-                          'whitespace-nowrap py-2 text-left text-caption-regular relative inline-block',
-                          'text-left'
+                          "whitespace-nowrap py-2 text-left text-caption-regular relative inline-block",
+                          "text-left"
                         )}
                       >
                         {column}
@@ -298,18 +299,18 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                         <div
                           key={estate.token_address}
                           className={clsx(
-                            'cursor-pointer flex items-center hover:bg-gray-50',
+                            "cursor-pointer flex items-center hover:bg-gray-50",
                             styles.grid
                           )}
                         >
-                          <div className={clsx('py-[18px] pr-3', styles.star)}>
+                          <div className={clsx("py-[18px] pr-3", styles.star)}>
                             <button onClick={() => handleStarClick(identifier)}>
                               <StarIcon
                                 className={clsx(
-                                  'w-4 h-4 ',
+                                  "w-4 h-4 ",
                                   starredIdentifiers.includes(identifier)
-                                    ? 'fill-green-500 stroke-green-500'
-                                    : 'fill-none stroke-current'
+                                    ? "fill-green-500 stroke-green-500"
+                                    : "fill-none stroke-current"
                                 )}
                               />
                             </button>
@@ -361,7 +362,7 @@ const NoResultsScreen: FC<{ word: string }> = ({ word }) => {
     <section className="w-full h-full flex-1 flex items-center justify-center">
       <div className="flex flex-col gap-y-2 items-center">
         <p className="text-body-xs">
-          {word ? <>No results for ”{word}”</> : 'No Results'}
+          {word ? <>No results for ”{word}”</> : "No Results"}
         </p>
         <p className="text-caption-regular max-w-[306px] text-center">
           We couldn&apos;t find anything matching your search. Try again with a

@@ -1,43 +1,47 @@
-import { FC, useCallback, useMemo, useState } from 'react';
-import { Button } from '~/lib/atoms/Button';
+import { FC, useCallback, useMemo, useState } from "react";
+import { Button } from "~/lib/atoms/Button";
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import {
   ClickableExpanderArea,
   CustomExpander,
   ExpanderBodyContent,
   ExpanderFaceContent,
-} from '~/lib/organisms/CustomExpander/CustomExpander';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
+} from "~/lib/organisms/CustomExpander/CustomExpander";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
 // icons
-import CheckIcon from 'app/icons/ok.svg?react';
+import CheckIcon from "app/icons/ok.svg?react";
 import {
   BUY,
   BuyScreenState,
   CONFIRM,
   SellScreenState,
   OrderType,
-} from '../consts';
-import Money from '~/lib/atoms/Money';
-import { useUserContext } from '~/providers/UserProvider/user.provider';
-import { stablecoinContract } from '~/consts/contracts';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { calculateEstfee } from '~/lib/utils/calcFns';
+} from "../consts";
+import Money from "~/lib/atoms/Money";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { stablecoinContract } from "~/consts/contracts";
+import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
 // eslint-disable-next-line import/no-named-as-default
-import BigNumber from 'bignumber.js';
-import { BalanceInput } from '~/templates/BalanceInput';
-import { useCurrencyContext } from '~/providers/CurrencyProvider/currency.provider';
-import { rateToNumber } from '~/lib/utils/numbers';
-import { toTokenSlug } from '~/lib/assets';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { CryptoBalance } from '~/templates/Balance';
-import { spippageOptions } from '../popups';
-import { WarningBlock } from '~/lib/molecules/WarningBlock';
+import BigNumber from "bignumber.js";
+import { BalanceInput } from "~/templates/BalanceInput";
+import { toTokenSlug } from "~/lib/assets";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { CryptoBalance } from "~/templates/Balance";
+import { spippageOptions } from "../popups";
+import { WarningBlock } from "~/lib/molecules/WarningBlock";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { useAssetMetadata } from "~/lib/metadata";
+import {
+  calculateEstFee,
+  calculateMinReceived,
+  getDodoMavLpFee,
+} from "~/providers/Dexprovider/utils";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -61,22 +65,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   slippagePercentage,
   setSlippagePercentage,
 }) => {
-  const { symbol, token_address } = estate;
-  const slug = useMemo(() => toTokenSlug(token_address), [token_address]);
-  const { usdToTokenRates } = useCurrencyContext();
+  const { symbol, token_address, slug } = estate;
+  const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
   const { userTokensBalances } = useUserContext();
 
-  const stableCoinMetadata = useMemo(
-    () => tokensMetadata[toTokenSlug(stablecoinContract)],
-    [tokensMetadata]
-  );
+  const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
+  const selectedAssetMetadata = useAssetMetadata(slug);
 
-  const selectedAssetMetadata = useMemo(
-    () => tokensMetadata[slug] ?? {},
-    [slug, tokensMetadata]
-  );
+  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -94,20 +92,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       ? amount.toNumber() > usdBalance
       : false
     : amount
-    ? amount?.toNumber() > tokenBalance
-    : false;
-
-  const minReceived = useMemo(() => {
-    if (!total) return 0;
-
-    const slippageAdjustment =
-      Number(total) * (1 - Number(slippagePercentage || 0) / 100);
-    return new BigNumber(usdBalance)
-      .minus(new BigNumber(slippageAdjustment))
-      .div(rateToNumber(usdToTokenRates[slug]))
-      .toNumber()
-      .toFixed(2);
-  }, [total, slippagePercentage, usdBalance, usdToTokenRates, slug]);
+      ? amount?.toNumber() > tokenBalance
+      : false;
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
@@ -115,16 +101,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
-      if (isBuyAction)
-        setAmount(
-          val?.times(rateToNumber(usdToTokenRates[slug])) ?? new BigNumber(0)
-        );
-      else
-        setAmount(
-          val?.div(rateToNumber(usdToTokenRates[slug])) ?? new BigNumber(0)
-        );
+      if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
+      else setAmount(val?.div(tokenPrice) ?? new BigNumber(0));
     },
-    [isBuyAction, setAmount, slug, usdToTokenRates]
+    [isBuyAction, setAmount, tokenPrice]
   );
 
   const input1Props = useMemo(
@@ -132,37 +112,48 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       isBuyAction
         ? {
             amount,
-            selectedAssetSlug: toTokenSlug(stablecoinContract),
-            selectedAssetMetadata:
-              tokensMetadata[toTokenSlug(stablecoinContract)],
-            label: 'You Pay',
+            selectedAssetSlug: dodoTokenPair[slug],
+            selectedAssetMetadata: stableCoinMetadata,
+            label: "You Pay",
           }
         : {
             amount,
             selectedAssetSlug: slug,
-            selectedAssetMetadata: tokensMetadata[slug],
-            label: 'You Sell',
+            selectedAssetMetadata: selectedAssetMetadata,
+            label: "You Sell",
           },
-    [amount, isBuyAction, slug, tokensMetadata]
+    [
+      amount,
+      dodoTokenPair,
+      isBuyAction,
+      selectedAssetMetadata,
+      slug,
+      stableCoinMetadata,
+    ]
   );
 
   const input2Props = useMemo(
     () =>
       isBuyAction
         ? {
-            amount:
-              amount?.div(rateToNumber(usdToTokenRates[slug])) || undefined,
+            amount: amount?.div(tokenPrice) || undefined,
             selectedAssetSlug: slug,
-            selectedAssetMetadata: tokensMetadata[slug],
+            selectedAssetMetadata: selectedAssetMetadata,
           }
         : {
-            amount:
-              amount?.times(rateToNumber(usdToTokenRates[slug])) || undefined,
-            selectedAssetSlug: toTokenSlug(stablecoinContract),
-            selectedAssetMetadata:
-              tokensMetadata[toTokenSlug(stablecoinContract)],
+            amount: amount?.times(tokenPrice) || undefined,
+            selectedAssetSlug: dodoTokenPair[slug],
+            selectedAssetMetadata: stableCoinMetadata,
           },
-    [amount, isBuyAction, slug, tokensMetadata, usdToTokenRates]
+    [
+      amount,
+      dodoTokenPair,
+      isBuyAction,
+      selectedAssetMetadata,
+      slug,
+      stableCoinMetadata,
+      tokenPrice,
+    ]
   );
 
   const balanceTotal = useMemo(
@@ -170,12 +161,65 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       isBuyAction
         ? amount
           ? `$${input1Props.amount?.toNumber()}`
-          : '--'
+          : "--"
         : amount
-        ? `$${input2Props.amount?.toNumber()}`
-        : '--',
+          ? `$${input2Props.amount?.toNumber()}`
+          : "--",
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
+
+  const minReceived = useMemo(() => {
+    if (!total) return 0;
+    const tokensAmount = !isBuyAction ? input1Props.amount : input2Props.amount;
+
+    if (!tokensAmount) return "0";
+
+    const decimals = isBuyAction
+      ? selectedAssetMetadata.decimals
+      : stableCoinMetadata.decimals;
+    return calculateMinReceived(
+      tokensAmount,
+      tokenPrice,
+      slippagePercentage,
+      decimals,
+      isBuyAction
+    );
+  }, [
+    total,
+    isBuyAction,
+    input1Props.amount,
+    input2Props.amount,
+    selectedAssetMetadata.decimals,
+    stableCoinMetadata.decimals,
+    tokenPrice,
+    slippagePercentage,
+  ]);
+
+  const estFee = useMemo(() => {
+    const lpFee = getDodoMavLpFee(dodoStorages[slug]);
+
+    const tokensAmount = isBuyAction ? input1Props.amount : input2Props.amount;
+    const decimals = isBuyAction
+      ? selectedAssetMetadata.decimals
+      : stableCoinMetadata.decimals;
+
+    return calculateEstFee(
+      tokensAmount,
+      tokenPrice,
+      lpFee,
+      decimals,
+      isBuyAction
+    );
+  }, [
+    dodoStorages,
+    input1Props.amount,
+    input2Props.amount,
+    isBuyAction,
+    selectedAssetMetadata.decimals,
+    slug,
+    stableCoinMetadata.decimals,
+    tokenPrice,
+  ]);
 
   const symbolToShow = isBuyAction
     ? symbol
@@ -191,7 +235,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               amountInputDisabled={false}
               errorCaption={
                 hasTotalError
-                  ? 'The amount entered exceeds your available balance.'
+                  ? "The amount entered exceeds your available balance."
                   : undefined
               }
               {...input1Props}
@@ -240,7 +284,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
             {Number(slippagePercentage) <= 0 && (
               <WarningBlock>
-                Slippage is {slippagePercentage || '0'}%
+                Slippage is {slippagePercentage || "0"}%
               </WarningBlock>
             )}
 
@@ -252,9 +296,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                       1 {symbol} =&nbsp;
                       <div>
                         <span className="-mr-[1px]">$</span>
-                        <Money smallFractionFont={false} cryptoDecimals={2}>
-                          {rateToNumber(usdToTokenRates[slug]) || '0'}
-                        </Money>
+                        <Money fiat>{tokenPrice || "0"}</Money>
                       </div>
                     </div>
                   </ExpanderFaceContent>
@@ -289,11 +331,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         <InfoTooltip content="Est fee" />
                       </div>
                       <div>
-                        <Money smallFractionFont={false} shortened>
+                        {/* <Money smallFractionFont={false} shortened>
                           {isBuyAction
                             ? calculateEstfee(total?.toNumber() ?? 0)
-                            : input2Props.amount?.toNumber() ?? 0}
-                        </Money>
+                            : (input2Props.amount?.toNumber() ?? 0)}
+                        </Money> */}
+                        {estFee}
                         &nbsp;{symbolToShow}
                       </div>
                     </div>
@@ -326,13 +369,13 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState(spippageOptions[0]);
 
-  const isCustom = selectedOption === 'custom';
+  const isCustom = selectedOption === "custom";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-      .replace(/[^0-9.]/g, '')
-      .replace(/(\..*?)\..*/g, '$1')
-      .replace(/(\d+\.\d?).*/g, '$1');
+      .replace(/[^0-9.]/g, "")
+      .replace(/(\..*?)\..*/g, "$1")
+      .replace(/(\d+\.\d?).*/g, "$1");
 
     // min max +- 100
     const parsedValue = parseFloat(value);
@@ -353,7 +396,7 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
                 type="text"
                 value={isCustom ? slippagePercentage : selectedOption}
                 onChange={handleInputChange}
-                name={'slippage'}
+                name={"slippage"}
                 className="w-8 text-right"
                 disabled={!isCustom}
               />
@@ -372,12 +415,12 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
                 className="py-3 px-4 bg-white flex items-center justify-between hover:bg-dark-green-100 capitalize"
                 onClick={() => {
                   setSelectedOption(option);
-                  if (option !== 'custom') {
+                  if (option !== "custom") {
                     setSlippagePercentage(option);
                   }
                 }}
               >
-                {option.concat(option !== 'custom' ? '%' : '')}
+                {option.concat(option !== "custom" ? "%" : "")}
                 {option === selectedOption && (
                   <CheckIcon className="size-4 stroke-dark-green-500" />
                 )}
