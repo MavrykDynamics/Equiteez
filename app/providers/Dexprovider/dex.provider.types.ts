@@ -1,6 +1,7 @@
 export type DexProviderCtxType = {
   orderbook: StringRecord<string>;
   dodoMav: StringRecord<string>;
+  dodoStorages: StringRecord<DodoStorageType>;
 };
 
 import { z } from "zod";

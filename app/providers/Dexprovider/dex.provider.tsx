@@ -6,11 +6,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DexProviderCtxType } from "./dex.provider.types";
+import { DexProviderCtxType, DodoStorageType } from "./dex.provider.types";
 import { useEstatesContext } from "../EstatesProvider/estates.provider";
 import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
-import { getDodoMavTokenPrices } from "./utils/storage";
+import {
+  getDodoMavTokenPrices,
+  getDodoMavTokenStorages,
+} from "./utils/storage";
 import { unknownToError } from "~/errors/error";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
@@ -21,13 +24,18 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
   const { estates, estateAddresses } = useEstatesContext();
   const { usdToTokenRates } = useCurrencyContext();
+  const [dodoStorages, setDodoStorages] = useState<
+    StringRecord<DodoStorageType>
+  >({});
   const [dodoMavPrices, setDodomavPrices] = useState<StringRecord<string>>({});
 
   // TODO switch to gql query
   useEffect(() => {
     (async function () {
       try {
-        const dodoPrices = await getDodoMavTokenPrices(estateAddresses);
+        const storages = await getDodoMavTokenStorages(estateAddresses);
+        const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
+        setDodoStorages(storages);
         setDodomavPrices(dodoPrices);
 
         // setDodomavPrices
@@ -52,8 +60,9 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
     () => ({
       orderbook: orderBookPrices,
       dodoMav: dodoMavPrices,
+      dodoStorages,
     }),
-    [orderBookPrices, dodoMavPrices]
+    [orderBookPrices, dodoMavPrices, dodoStorages]
   );
 
   console.log(memoizedDexCtx, "memoizedDexCtx");

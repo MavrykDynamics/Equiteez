@@ -1,7 +1,8 @@
 import { api } from "~/lib/utils/api";
 import { DodoStorageType, dodoStorageTypeSchema } from "../dex.provider.types";
-import { getPMMTokenPrice } from "~/lib/utils/dodoMav/price";
 import { pickDodoContractBasedOnToken } from "~/consts/contracts";
+import { toTokenSlug } from "~/lib/assets";
+import { getPMMTokenPrice } from "./price";
 
 export const getContractStorageInfo = async (address: string) => {
   try {
@@ -17,13 +18,28 @@ export const getContractStorageInfo = async (address: string) => {
   }
 };
 
-export const getDodoMavTokenPrices = async (addresses: string[]) => {
+export const getDodoMavTokenStorages = async (addresses: string[]) => {
   const promises = addresses.map((address) =>
     getContractStorageInfo(pickDodoContractBasedOnToken[address])
   );
 
   const storages = await Promise.all(promises);
 
+  return storages.reduce<StringRecord<DodoStorageType>>((acc, storage) => {
+    const slug = toTokenSlug(
+      storage?.baseToken?.tokenContractAddress,
+      storage?.baseToken?.tokenId
+    );
+
+    if (slug) {
+      acc[slug] = storage;
+    }
+
+    return acc;
+  }, {});
+};
+
+export const getDodoMavTokenPrices = (storages: DodoStorageType[]) => {
   return storages.reduce<StringRecord<string>>((acc, storage) => {
     const slug = storage?.baseToken?.tokenContractAddress?.concat(
       `_${storage?.baseToken?.tokenId}`
