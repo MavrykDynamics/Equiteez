@@ -23,7 +23,7 @@ export default function Exchange() {
   );
 
   useEffect(() => {
-    if (!id) navigate("/");
+    if (id === null) return navigate("/");
     navigate(`/exchange/${id}`);
   }, [navigate, id]);
 
