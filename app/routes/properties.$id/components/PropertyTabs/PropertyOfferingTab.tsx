@@ -1,17 +1,18 @@
 /* eslint-disable react/no-unescaped-entities */
 
 // components
-import { Table } from '~/lib/atoms/Table/Table';
-import { TableHeader } from '~/lib/atoms/Table/TableHeader';
-import { TableItem } from '~/lib/atoms/Table/TableItem';
+import { Table } from "~/lib/atoms/Table/Table";
+import { TableHeader } from "~/lib/atoms/Table/TableHeader";
+import { TableItem } from "~/lib/atoms/Table/TableItem";
 
 // icons
-import ClockIcon from 'app/icons/clock.svg?react';
+import ClockIcon from "app/icons/clock.svg?react";
 
 // styles
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { formatDate } from '~/lib/utils/date';
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { formatDate } from "~/lib/utils/date";
+import Money from "~/lib/atoms/Money";
 
 export const PropertyOfferingTab = () => {
   const { activeEstate } = useEstatesContext();
@@ -39,15 +40,24 @@ export const PropertyOfferingTab = () => {
         </TableItem>
         <TableItem>
           <p>Min. Investment Amount</p>
-          <p>${offering.minInvestmentAmount}</p>
+
+          <p className="flex">
+            $<Money>{offering.minInvestmentAmount}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <p>Max. Investment Amount</p>
-          <p>${offering.maxInvestmentAmount}</p>
+
+          <p className="flex">
+            $<Money>{offering.maxInvestmentAmount}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <p>Amount Raised</p>
-          <p>${offering.raisedAmount}</p>
+
+          <p className="flex">
+            $<Money>{offering.raisedAmount}</Money>
+          </p>
         </TableItem>
         <TableItem isLast>
           <p>Offering Percent (of Total Tokens)</p>
@@ -74,31 +84,38 @@ export const PropertyOfferingTab = () => {
         </TableHeader>
         <TableItem>
           <p>Asset Valuation</p>
-          <p>${priorValuation.assetValuation}</p>
+          <p className="flex">
+            $<Money>{priorValuation.assetValuation}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Annual Change <InfoTooltip content={'Annual Change'} />
+            Annual Change <InfoTooltip content={"Annual Change"} />
           </div>
           <p className="text-success">+{priorValuation.annualChange}% </p>
         </TableItem>
         <TableItem>
           <p>Total Investment</p>
-          <p>${priorValuation.totalInvestment}</p>
+
+          <p className="flex">
+            $<Money>{priorValuation.totalInvestment}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Capital ROI <InfoTooltip content={'Capital ROI'} />
+            Capital ROI <InfoTooltip content={"Capital ROI"} />
           </div>
           <p className="text-success">+{priorValuation.capitalROI}%</p>
         </TableItem>
         <TableItem>
           <p>Token Price</p>
-          <p>${priorValuation.tokenPrice}</p>
+          <p className="flex">
+            $<Money>{priorValuation.tokenPrice}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Reg Distributed <InfoTooltip content={'Capital ROI'} />
+            Reg Distributed <InfoTooltip content={"Capital ROI"} />
           </div>
           <p className="text-success">${priorValuation.regDistributed}</p>
         </TableItem>
@@ -123,15 +140,24 @@ export const PropertyOfferingTab = () => {
         </TableHeader>
         <TableItem>
           <p>Asset Valuation</p>
-          <p>${initialValuation.assetValuation}</p>
+
+          <p className="flex">
+            $<Money>{initialValuation.assetValuation}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <p>Total Investment</p>
-          <p>${initialValuation.totalInvestment}</p>
+
+          <p className="flex">
+            $<Money>{initialValuation.totalInvestment}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <p>Token Price</p>
-          <p>${initialValuation.tokenPrice}</p>
+
+          <p className="flex">
+            $<Money>{initialValuation.tokenPrice}</Money>
+          </p>
         </TableItem>
         <TableItem isLast>
           <p>Additional Info</p>

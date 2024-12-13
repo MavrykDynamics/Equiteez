@@ -1,11 +1,10 @@
 import { Link } from "@remix-run/react";
 import { useMemo } from "react";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import {
   EstateType,
-  PrimaryEstate,
   SECONDARY_MARKET,
-  SecondaryEstate,
 } from "~/providers/EstatesProvider/estates.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 
@@ -28,6 +27,7 @@ function getThreeUniqueElements(items: EstateType[]) {
 
 export const SimilarProperties = () => {
   const { estatesArr } = useEstatesContext();
+  const { dodoMav } = useDexContext();
 
   const similarEstates = useMemo(
     () => getThreeUniqueElements(estatesArr),
@@ -44,21 +44,7 @@ export const SimilarProperties = () => {
           <h4>There aren&apos;t no similar markets.</h4>
         ) : (
           similarEstates.map((estate) => {
-            const isSecondaryMarket =
-              estate.assetDetails.type === SECONDARY_MARKET;
-            const restProps = {
-              pricePerToken: (estate as SecondaryEstate).assetDetails
-                .priceDetails.price,
-              progressBarPercentage: isSecondaryMarket
-                ? undefined
-                : +(
-                    (((estate as PrimaryEstate).assetDetails.priceDetails
-                      .tokensUsed || 1) /
-                      (estate as PrimaryEstate).assetDetails.priceDetails
-                        .tokensAvailable) *
-                    100
-                  ).toFixed(2),
-            };
+            const pricePerToken = dodoMav[estate.slug];
             return (
               <Link
                 to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
@@ -67,6 +53,7 @@ export const SimilarProperties = () => {
                 <ThumbCardSecondary
                   key={estate.token_address}
                   imgSrc={estate.assetDetails.previewImage}
+                  pricePerToken={pricePerToken}
                   APY={estate.assetDetails.APY}
                   title={estate.name}
                   description={estate.assetDetails.propertyDetails.propertyType}
@@ -74,7 +61,6 @@ export const SimilarProperties = () => {
                     estate.assetDetails.type === SECONDARY_MARKET
                   }
                   height={"302px"}
-                  {...restProps}
                 />
               </Link>
             );

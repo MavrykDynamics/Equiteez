@@ -1,24 +1,25 @@
 // components
-import { HashChip } from '~/lib/molecules/HashChip';
-import { Table } from '~/lib/atoms/Table/Table';
-import { TableHeader } from '~/lib/atoms/Table/TableHeader';
-import { TableItem } from '~/lib/atoms/Table/TableItem';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { HashChip } from "~/lib/molecules/HashChip";
+import { Table } from "~/lib/atoms/Table/Table";
+import { TableHeader } from "~/lib/atoms/Table/TableHeader";
+import { TableItem } from "~/lib/atoms/Table/TableItem";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import {
   ClickableExpanderArea,
   CustomExpander,
   ExpanderBodyContent,
   ExpanderFaceContent,
-} from '~/lib/organisms/CustomExpander/CustomExpander';
+} from "~/lib/organisms/CustomExpander/CustomExpander";
+import Money from "~/lib/atoms/Money";
 
 const mockedAdminPkhs = [
   {
-    name: 'Account 1',
-    address: 'mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w',
+    name: "Account 1",
+    address: "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
   },
   {
-    name: 'Account 1',
-    address: 'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
+    name: "Account 1",
+    address: "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
   },
 ];
 
@@ -38,7 +39,9 @@ export const PropertyBlockchainTab = () => {
           </TableItem>
           <TableItem>
             <p>Total Tokens</p>
-            <p>{chainData.totalTokens}</p>
+            <p>
+              <Money>{chainData.totalTokens}</Money>
+            </p>
           </TableItem>
           <TableItem>
             <p>Asset Issuer</p>

@@ -75,17 +75,13 @@ export const marketTokenNormalizer = (
         decimals: token.token_metadata.decimals,
         icon: token.token_metadata.icon,
         assetDetails: {
-          coordinates: {
-            // TODO
-            lat: -53.747637,
-            lng: 35.806237,
-          },
+          coordinates: mockedPart?.assetDetails?.coordinates,
           APY: 6.15, // TODO
           type: "Secondary Market",
           // assetImages: parsedTokenDetails.assetImages,
           // previewImage: parsedTokenDetails.assetImages[0],
           assetImages: mockedPart?.assetDetails.assetImages ?? [],
-          previewImage: mockedPart?.assetDetails.assetImages[0] ?? "",
+          previewImage: mockedPart?.assetDetails.previewImage ?? "",
           basicInfo: {
             // empty
             // TODO
@@ -95,7 +91,9 @@ export const marketTokenNormalizer = (
             buildDate: "1973-06-08T09:20:37-03:00",
           },
           propertyDetails: {
-            description: details.description,
+            description:
+              details.description ??
+              (mockedPart?.assetDetails.propertyDetails.description || ""),
             propertyType: details.propertyType,
             fullAddress: details.fullAddress,
             zipCode: details.zipcode,

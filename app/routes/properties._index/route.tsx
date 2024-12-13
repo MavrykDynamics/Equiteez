@@ -3,14 +3,11 @@ import { Link } from "@remix-run/react";
 import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import {
-  PrimaryEstate,
-  SECONDARY_MARKET,
-  SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+import { SECONDARY_MARKET } from "~/providers/EstatesProvider/estates.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters";
 import { useState } from "react";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,6 +18,7 @@ export const meta: MetaFunction = () => {
 
 export default function Properties() {
   const { estatesArr: estates } = useEstatesContext();
+  const { dodoMav } = useDexContext();
   const [filteredEstates, setFilteredEstates] = useState(() => estates);
 
   return (
@@ -39,19 +37,7 @@ export default function Properties() {
           {filteredEstates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
 
-            const restProps = {
-              pricePerToken: (es as SecondaryEstate).assetDetails.priceDetails
-                .price,
-              progressBarPercentage: isSecondaryMarket
-                ? undefined
-                : +(
-                    (((es as PrimaryEstate).assetDetails.priceDetails
-                      .tokensUsed || 1) /
-                      (es as PrimaryEstate).assetDetails.priceDetails
-                        .tokensAvailable) *
-                    100
-                  ).toFixed(2),
-            };
+            const pricePerToken = dodoMav[es.slug];
 
             return (
               <Link
@@ -64,7 +50,7 @@ export default function Properties() {
                   description={es.assetDetails.propertyDetails.propertyType}
                   isSecondaryMarket={isSecondaryMarket}
                   APY={es.assetDetails.APY}
-                  {...restProps}
+                  pricePerToken={pricePerToken}
                 />
               </Link>
             );

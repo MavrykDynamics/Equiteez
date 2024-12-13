@@ -1,17 +1,18 @@
 // components
-import { Table } from '~/lib/atoms/Table/Table';
-import { TableHeader } from '~/lib/atoms/Table/TableHeader';
-import { TableItem } from '~/lib/atoms/Table/TableItem';
-import { ColoredCard } from '~/lib/atoms/ColoredCard';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
+import { Table } from "~/lib/atoms/Table/Table";
+import { TableHeader } from "~/lib/atoms/Table/TableHeader";
+import { TableItem } from "~/lib/atoms/Table/TableItem";
+import { ColoredCard } from "~/lib/atoms/ColoredCard";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import {
   ClickableExpanderArea,
   CustomExpander,
   ExpanderBodyContent,
   ExpanderFaceContent,
-} from '~/lib/organisms/CustomExpander/CustomExpander';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { formatDate } from '~/lib/utils/date';
+} from "~/lib/organisms/CustomExpander/CustomExpander";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { formatDate } from "~/lib/utils/date";
+import Money from "~/lib/atoms/Money";
 
 export const PropertyFinanceTab = () => {
   const { activeEstate } = useEstatesContext();
@@ -26,18 +27,30 @@ export const PropertyFinanceTab = () => {
         <TableHeader>Property Financials</TableHeader>
         <TableItem>
           <p>Gross Rent / Year</p>
-          <p>${propertyFinancials.grossRentYearly}</p>
+
+          <p className="flex">
+            $<Money>{propertyFinancials.grossRentYearly.toString()}</Money>
+          </p>
         </TableItem>
         <TableItem>
           <p>Gross Rent / Month</p>
-          <p>${propertyFinancials.grossRentMonthly}</p>
+
+          <p className="flex">
+            $<Money>{propertyFinancials.grossRentMonthly.toString()}</Money>
+          </p>
         </TableItem>
 
         <CustomExpander>
           <ClickableExpanderArea>
             <TableItem>
               <ExpanderFaceContent>Monthly Costs</ExpanderFaceContent>
-              <p>-${propertyFinancials.monthlyCosts.costs}</p>
+
+              <p className="flex">
+                -$
+                <Money>
+                  {propertyFinancials.monthlyCosts.costs.toString()}
+                </Money>
+              </p>
             </TableItem>
           </ClickableExpanderArea>
 
@@ -45,23 +58,48 @@ export const PropertyFinanceTab = () => {
             <div className="flex flex-col px-4 bg-[#E3E1DD40]">
               <TableItem textVariant="body-xs">
                 <p>Net ReProperty Management (8.00%)</p>
-                <p>-${propertyFinancials.monthlyCosts.netReproperty}</p>
+                <p className="flex">
+                  -$
+                  <Money>
+                    {propertyFinancials.monthlyCosts.netReproperty.toString()}
+                  </Money>
+                </p>
               </TableItem>
               <TableItem textVariant="body-xs">
                 <p>Equiteez Platform (2.00%)</p>
-                <p>-${propertyFinancials.monthlyCosts.platform}</p>
+                <p className="flex">
+                  -$
+                  <Money>
+                    {propertyFinancials.monthlyCosts.platform.toString()}
+                  </Money>
+                </p>
               </TableItem>
               <TableItem textVariant="body-xs">
                 <p>Maintenance Expenses</p>
-                <p>-${propertyFinancials.monthlyCosts.expenses}</p>
+                <p className="flex">
+                  -$
+                  <Money>
+                    {propertyFinancials.monthlyCosts.expenses.toString()}
+                  </Money>
+                </p>
               </TableItem>
               <TableItem textVariant="body-xs">
                 <p>Property Taxes</p>
-                <p>-${propertyFinancials.monthlyCosts.taxes}</p>
+                <p className="flex">
+                  -$
+                  <Money>
+                    {propertyFinancials.monthlyCosts.taxes.toString()}
+                  </Money>
+                </p>
               </TableItem>
               <TableItem textVariant="body-xs">
                 <p>Insurance</p>
-                <p>-${propertyFinancials.monthlyCosts.insurance}</p>
+                <p className="flex">
+                  -$
+                  <Money>
+                    {propertyFinancials.monthlyCosts.insurance.toString()}
+                  </Money>
+                </p>
               </TableItem>
               <TableItem textVariant="body-xs">
                 <p>Utilities</p>
@@ -73,7 +111,10 @@ export const PropertyFinanceTab = () => {
 
         <TableItem customBorder="border-b border-active-tab">
           <p>Net Rent / Month</p>
-          <p>${propertyFinancials.netRentMonthly}</p>
+
+          <p className="flex">
+            $<Money>{propertyFinancials.netRentMonthly}</Money>
+          </p>
         </TableItem>
         <TableItem
           textVariant="bold"
@@ -81,7 +122,9 @@ export const PropertyFinanceTab = () => {
           customPadding={8}
         >
           <p>Net Rent / Year</p>
-          <p>${propertyFinancials.netRentYearly}</p>
+          <p className="flex">
+            $<Money>{propertyFinancials.netRentYearly}</Money>
+          </p>
         </TableItem>
         <CustomExpander>
           <ClickableExpanderArea>
@@ -91,22 +134,32 @@ export const PropertyFinanceTab = () => {
               customBorder="border-none"
             >
               <ExpanderFaceContent>Total Investment</ExpanderFaceContent>
-              <p>${propertyFinancials.totalInvestment.total}</p>
+
+              <p className="flex">
+                $<Money>{propertyFinancials.totalInvestment.total}</Money>
+              </p>
             </TableItem>
           </ClickableExpanderArea>
           <ExpanderBodyContent>
             <div className="flex flex-col px-4 bg-[#E3E1DD40]">
               <TableItem textVariant="body-xs">
                 <p>Underlying Asset Price</p>
-                <p>
-                  ${propertyFinancials.totalInvestment.underlyingAssetPrice}
+
+                <p className="flex">
+                  $
+                  <Money>
+                    {propertyFinancials.totalInvestment.underlyingAssetPrice}
+                  </Money>
                 </p>
               </TableItem>
               <TableItem textVariant="body-xs">
                 <p>Initial Maintenance Reserve</p>
-                <p>
+
+                <p className="flex">
                   $
-                  {propertyFinancials.totalInvestment.initialMaintenanceReserve}
+                  <Money>
+                    {propertyFinancials.totalInvestment.initialMaintenanceReserve.toString()}
+                  </Money>
                 </p>
               </TableItem>
             </div>
@@ -114,9 +167,9 @@ export const PropertyFinanceTab = () => {
         </CustomExpander>
         <TableItem textVariant="bold" customPadding={8} isLast>
           <div className="flex items-center gap-x-1">
-            Expected Income <InfoTooltip content={'Expected Income '} />
+            Expected Income <InfoTooltip content={"Expected Income "} />
           </div>
-          <p>{propertyFinancials.expectedIncome}%</p>
+          <p>{expectedIncome.income}%</p>
         </TableItem>
       </Table>
       <div className="mb-8" />

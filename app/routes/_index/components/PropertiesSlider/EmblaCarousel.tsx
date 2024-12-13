@@ -1,25 +1,28 @@
-import React from 'react';
-import { EmblaOptionsType } from 'embla-carousel';
+import React from "react";
+import { EmblaOptionsType } from "embla-carousel";
 import {
   PrevButton,
   NextButton,
-} from 'app/templates/EmblaCarouselArrowButtons';
-import useEmblaCarousel from 'embla-carousel-react';
+} from "app/templates/EmblaCarouselArrowButtons";
+import useEmblaCarousel from "embla-carousel-react";
 
 // icons
-import ArrowRight from 'app/icons/arrow-right.svg?react';
+import ArrowRight from "app/icons/arrow-right.svg?react";
 
-import styles from './embla.module.css';
-import clsx from 'clsx';
-import { Button } from '~/lib/atoms/Button';
-import { Link, useNavigate } from '@remix-run/react';
+import styles from "./embla.module.css";
+import clsx from "clsx";
+import { Button } from "~/lib/atoms/Button";
+import { Link, useNavigate } from "@remix-run/react";
 import {
   PrimaryEstate,
   SECONDARY_MARKET,
   SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
-import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
-import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
+} from "~/providers/EstatesProvider/estates.types";
+import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
+import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+
+const SLIDER_VIEW_LIMIT = 3;
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
@@ -30,6 +33,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
   const { slides, options } = props;
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
   const navigate = useNavigate();
+  const { dodoMav } = useDexContext();
 
   const {
     prevBtnDisabled,
@@ -45,8 +49,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
 
   return (
     <section className={styles.embla}>
-      <div className={'w-full flex justify-between items-center mb-11'}>
-        <Link to={'/properties'}>
+      <div className={"w-full flex justify-between items-center mb-11"}>
+        <Link to={"/properties"}>
           <Button
             variant="custom"
             className="text-white bg-transparent border-2 border-white py-[8px]"
@@ -57,10 +61,18 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             </div>
           </Button>
         </Link>
-        <div className="flex items-center gap-x-3">
-          <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-          <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
-        </div>
+        {slides.length > SLIDER_VIEW_LIMIT && (
+          <div className="flex items-center gap-x-3">
+            <PrevButton
+              onClick={onPrevButtonClick}
+              disabled={prevBtnDisabled}
+            />
+            <NextButton
+              onClick={onNextButtonClick}
+              disabled={nextBtnDisabled}
+            />
+          </div>
+        )}
       </div>
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
@@ -68,25 +80,11 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             const isSecondaryMarket =
               estate.assetDetails.type === SECONDARY_MARKET;
 
-            const restProps = isSecondaryMarket
-              ? {
-                  pricePerToken: (estate as SecondaryEstate).assetDetails
-                    .priceDetails.price,
-                }
-              : {
-                  // For the time being for fake data
-                  progressBarPercentage: +(
-                    (((estate as PrimaryEstate).assetDetails.priceDetails
-                      .tokensUsed || 1) /
-                      (estate as PrimaryEstate).assetDetails.priceDetails
-                        .tokensAvailable) *
-                    100
-                  ).toFixed(2),
-                };
+            const pricePerToken = dodoMav[estate.slug];
             return (
               <div
                 role="presentation"
-                className={clsx(styles.embla__slide, 'cursor-pointer')}
+                className={clsx(styles.embla__slide, "cursor-pointer")}
                 key={estate.token_address}
                 onClick={() =>
                   handleSlideClick(
@@ -95,7 +93,9 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                   )
                 }
               >
-                {nextBtnDisabled && idx === slides.length - 1 ? (
+                {nextBtnDisabled &&
+                idx === slides.length - 1 &&
+                slides.length > SLIDER_VIEW_LIMIT ? (
                   <div className={styles.embla__slide__number}>
                     <img
                       src={estate.assetDetails.previewImage}
@@ -105,7 +105,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     <div
                       className={clsx(
                         styles.lastSlide,
-                        'flex items-center justify-center'
+                        "flex items-center justify-center"
                       )}
                     >
                       <div className="flex flex-col items-center gap-y-6">
@@ -121,7 +121,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                   </div>
                 ) : (
                   <ThumbCardSecondary
-                    height={'281px'}
+                    height={"281px"}
                     imgSrc={estate.assetDetails.previewImage}
                     title={estate.name}
                     description={
@@ -129,7 +129,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     }
                     isSecondaryMarket={isSecondaryMarket}
                     APY={estate.assetDetails.APY}
-                    {...restProps}
+                    pricePerToken={pricePerToken}
                   />
                 )}
               </div>
