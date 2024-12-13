@@ -117,7 +117,10 @@ export const PropertyOfferingTab = () => {
           <div className="flex items-center gap-x-1">
             Reg Distributed <InfoTooltip content={"Capital ROI"} />
           </div>
-          <p className="text-success">${priorValuation.regDistributed}</p>
+
+          <p className="flex text-success">
+            $<Money>{priorValuation.regDistributed}</Money>
+          </p>
         </TableItem>
         <TableItem isLast>
           <p>Additional Info</p>

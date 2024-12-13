@@ -320,7 +320,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                             className={`eq-table-cell text-content`}
                             onClick={() => handleEstateClick(identifier)}
                           >
-                            {estate.name}/USDT
+                            {estate.symbol}/USDT
                           </div>
 
                           <div
