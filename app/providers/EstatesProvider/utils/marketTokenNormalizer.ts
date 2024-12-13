@@ -75,11 +75,7 @@ export const marketTokenNormalizer = (
         decimals: token.token_metadata.decimals,
         icon: token.token_metadata.icon,
         assetDetails: {
-          coordinates: {
-            // TODO
-            lat: -53.747637,
-            lng: 35.806237,
-          },
+          coordinates: mockedPart?.assetDetails?.coordinates,
           APY: 6.15, // TODO
           type: "Secondary Market",
           // assetImages: parsedTokenDetails.assetImages,

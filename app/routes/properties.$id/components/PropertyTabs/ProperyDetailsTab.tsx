@@ -1,29 +1,29 @@
 /* eslint-disable react/no-unescaped-entities */
-import { FC, useCallback, useEffect, useState } from 'react';
-import clsx from 'clsx';
+import { FC, useCallback, useEffect, useState } from "react";
+import clsx from "clsx";
 
 // components
-import { Table } from '~/lib/atoms/Table/Table';
-import { TableDescription } from '~/lib/atoms/Table/TableDescription';
-import { TableHeader } from '~/lib/atoms/Table/TableHeader';
-import { TableItem } from '~/lib/atoms/Table/TableItem';
+import { Table } from "~/lib/atoms/Table/Table";
+import { TableDescription } from "~/lib/atoms/Table/TableDescription";
+import { TableHeader } from "~/lib/atoms/Table/TableHeader";
+import { TableItem } from "~/lib/atoms/Table/TableItem";
 
 // Google maps
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
 
 // Icons
-import WalkIcon from 'app/assets/propertyId/icons/walk.svg?react';
-import TransportIcon from 'app/assets/propertyId/icons/transport.svg?react';
-import BicycleIcon from 'app/assets/propertyId/icons/bicycle.svg?react';
+import WalkIcon from "app/assets/propertyId/icons/walk.svg?react";
+import TransportIcon from "app/assets/propertyId/icons/transport.svg?react";
+import BicycleIcon from "app/assets/propertyId/icons/bicycle.svg?react";
 
 // styles
-import styles from './propertyTabs.module.css';
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { CustomSuspense } from '~/templates/CustomSuspense';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { getWalkScoreData } from '~/lib/apis/walk-score';
-import { Spinner } from '~/lib/atoms/Spinner';
+import styles from "./propertyTabs.module.css";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
+import { CustomSuspense } from "~/templates/CustomSuspense";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { getWalkScoreData } from "~/lib/apis/walk-score";
+import { Spinner } from "~/lib/atoms/Spinner";
 
 export const PropertyDetailsTab = () => {
   const { activeEstate } = useEstatesContext();
@@ -58,14 +58,14 @@ export const PropertyDetailsTab = () => {
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Rented? <InfoTooltip content={'Rented'} />
+            Rented? <InfoTooltip content={"Rented"} />
           </div>
           <p>{propertyDetails.rented}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Rent Subsidy?
-            <InfoTooltip content={'Rent Subsidy?'} />
+            <InfoTooltip content={"Rent Subsidy?"} />
           </div>
           <p>{propertyDetails.rentSubsidy}</p>
         </TableItem>
@@ -137,14 +137,14 @@ export const PropertyDetailsTab = () => {
 
 // fake map data
 const containerStyle = {
-  width: '406px',
-  height: '507px',
+  width: "406px",
+  height: "507px",
 };
 
 type WalkScoreState = {
-  transit: number | '-';
-  bike: number | '-';
-  walk: number | '-';
+  transit: number | "-";
+  bike: number | "-";
+  walk: number | "-";
   isLoading: boolean;
 };
 
@@ -154,7 +154,7 @@ const PropertyDetailsMap: FC<{
 }> = ({ coordinates, address }) => {
   const { IS_WEB } = useAppContext();
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
+    id: "google-map-script",
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
   });
 
@@ -165,9 +165,9 @@ const PropertyDetailsMap: FC<{
 
   // scores data
   const [scores, setScores] = useState<WalkScoreState>(() => ({
-    transit: '-',
-    walk: '-',
-    bike: '-',
+    transit: "-",
+    walk: "-",
+    bike: "-",
     isLoading: true,
   }));
 
@@ -183,9 +183,9 @@ const PropertyDetailsMap: FC<{
 
           setScores({
             isLoading: false,
-            walk: walkScoreData.walkscore ?? '-',
-            bike: walkScoreData.bike?.score ?? '-',
-            transit: walkScoreData.transit?.score ?? '-',
+            walk: walkScoreData.walkscore ?? "-",
+            bike: walkScoreData.bike?.score ?? "-",
+            transit: walkScoreData.transit?.score ?? "-",
           });
         } catch (e) {
           setScores((prev) => ({ ...prev, isLoading: false }));
@@ -271,18 +271,18 @@ type DistanceBlockProps = {
 const distanceData = {
   walk: {
     Icon: WalkIcon,
-    label: 'Walk',
-    description: 'Most errands require a car.',
+    label: "Walk",
+    description: "Most errands require a car.",
   },
   transport: {
     Icon: TransportIcon,
-    label: 'Transport',
-    description: 'A few nearby public transportation options.',
+    label: "Transport",
+    description: "A few nearby public transportation options.",
   },
   bicycle: {
     Icon: BicycleIcon,
-    label: 'Bike',
-    description: 'Minimal bike infrastructure',
+    label: "Bike",
+    description: "Minimal bike infrastructure",
   },
 };
 
@@ -293,8 +293,8 @@ const DistanceBlock: FC<DistanceBlockProps> = ({ type, score }) => {
     <div className="flex items-center gap-x-4">
       <div
         className={clsx(
-          'w-[52px] h-[52px] rounded-full overflow-hidden bg-dark-green-opacity',
-          'flex items-center justify-center relative'
+          "w-[52px] h-[52px] rounded-full overflow-hidden bg-dark-green-opacity",
+          "flex items-center justify-center relative"
         )}
       >
         <Icon />
