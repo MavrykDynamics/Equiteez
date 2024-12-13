@@ -22,6 +22,8 @@ import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
+const SLIDER_VIEW_LIMIT = 3;
+
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
   options?: EmblaOptionsType;
@@ -59,10 +61,18 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             </div>
           </Button>
         </Link>
-        <div className="flex items-center gap-x-3">
-          <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-          <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
-        </div>
+        {slides.length > SLIDER_VIEW_LIMIT && (
+          <div className="flex items-center gap-x-3">
+            <PrevButton
+              onClick={onPrevButtonClick}
+              disabled={prevBtnDisabled}
+            />
+            <NextButton
+              onClick={onNextButtonClick}
+              disabled={nextBtnDisabled}
+            />
+          </div>
+        )}
       </div>
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
@@ -83,7 +93,9 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                   )
                 }
               >
-                {nextBtnDisabled && idx === slides.length - 1 ? (
+                {nextBtnDisabled &&
+                idx === slides.length - 1 &&
+                slides.length > SLIDER_VIEW_LIMIT ? (
                   <div className={styles.embla__slide__number}>
                     <img
                       src={estate.assetDetails.previewImage}
