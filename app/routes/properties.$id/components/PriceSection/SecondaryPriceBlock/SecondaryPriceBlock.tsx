@@ -100,8 +100,8 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <Divider className="my-4" />
         <div className="text-content text-buttons flex justify-between mb-3">
           <p>Total Liquidity</p>
-          <div className="flex items-center gap-1">
-            ${totalLiquidityInfo.totalLiquidityInUSD}
+          <div className="flex items-center">
+            $<Money fiat>{totalLiquidityInfo.totalLiquidityInUSD}</Money>
           </div>
         </div>
 

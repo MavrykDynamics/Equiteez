@@ -24,6 +24,7 @@ import { CustomSuspense } from "~/templates/CustomSuspense";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { getWalkScoreData } from "~/lib/apis/walk-score";
 import { Spinner } from "~/lib/atoms/Spinner";
+import Money from "~/lib/atoms/Money";
 
 export const PropertyDetailsTab = () => {
   const { activeEstate } = useEstatesContext();
@@ -86,12 +87,23 @@ export const PropertyDetailsTab = () => {
           <p>{buildingInfo.stories} stories</p>
         </TableItem>
         <TableItem>
-          <p>Lot Size (sqft)</p>
-          <p>{buildingInfo.lotSize} sqft </p>
+          <p>
+            Lot Size (<span className="normal-case">sqft</span>)
+          </p>
+
+          <div className="flex gap-1">
+            <Money>{buildingInfo.lotSize}</Money>{" "}
+            <span className="normal-case">sqft</span>
+          </div>
         </TableItem>
         <TableItem>
-          <p>Interior Size (sqft)</p>
-          <p>{buildingInfo.interiorSize} sqft</p>
+          <p>
+            Interior Size (<span className="normal-case">sqft</span>)
+          </p>
+          <div className="flex gap-1">
+            <Money>{buildingInfo.interiorSize}</Money>{" "}
+            <span className="normal-case">sqft</span>
+          </div>
         </TableItem>
         <TableItem>
           <p>Building Class</p>

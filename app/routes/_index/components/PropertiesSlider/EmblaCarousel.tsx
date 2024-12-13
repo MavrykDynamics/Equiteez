@@ -89,7 +89,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                 onClick={() =>
                   handleSlideClick(
                     estate.assetDetails.blockchain[0].identifier,
-                    idx === slides.length - 1
+                    idx === slides.length - 1 &&
+                      slides.length > SLIDER_VIEW_LIMIT
                   )
                 }
               >

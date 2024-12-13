@@ -56,7 +56,9 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
               >
                 {title}
               </h4>
-              <p className="text-white text-body-xs leading-5">{description}</p>
+              <p className="text-white text-body-xs leading-5 capitalize">
+                {description}
+              </p>
             </div>
             <div className="flex self-end">
               {pricePerToken && (
