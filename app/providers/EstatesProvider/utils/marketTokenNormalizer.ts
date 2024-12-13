@@ -91,7 +91,9 @@ export const marketTokenNormalizer = (
             buildDate: "1973-06-08T09:20:37-03:00",
           },
           propertyDetails: {
-            description: details.description,
+            description:
+              details.description ??
+              (mockedPart?.assetDetails.propertyDetails.description || ""),
             propertyType: details.propertyType,
             fullAddress: details.fullAddress,
             zipCode: details.zipcode,
