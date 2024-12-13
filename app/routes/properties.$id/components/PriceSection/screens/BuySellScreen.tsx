@@ -331,11 +331,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                         <InfoTooltip content="Est fee" />
                       </div>
                       <div>
-                        {/* <Money smallFractionFont={false} shortened>
-                          {isBuyAction
-                            ? calculateEstfee(total?.toNumber() ?? 0)
-                            : (input2Props.amount?.toNumber() ?? 0)}
-                        </Money> */}
                         {estFee}
                         &nbsp;{symbolToShow}
                       </div>

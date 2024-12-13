@@ -128,6 +128,7 @@ export default function ExchangeDetails() {
               <BuySellTabs
                 symbol={estateData.symbol}
                 tokenAddress={estateData.token_address}
+                slug={estateData.slug}
               />
             </div>
           </div>
