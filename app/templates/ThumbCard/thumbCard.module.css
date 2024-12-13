@@ -1,4 +1,7 @@
 .thumbCardWrapper {
+  container-type: inline-size;
+  container-name: cardWrapper;
+
   position: relative;
   height: var(--card-height);
 
@@ -23,6 +26,25 @@
   z-index: 2;
 }
 
+@container cardWrapper (max-width: 406px) {
+  .title {
+    max-width: 200px;
+  }
+}
+
+@container cardWrapper (min-width: 407px) {
+  .title {
+    max-width: 250px;
+  }
+}
+
+.title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .thumbCardImg {
   position: absolute;
   width: 100%;
@@ -42,7 +64,7 @@
 }
 
 .progressBar::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
@@ -51,7 +73,7 @@
 }
 
 .progressPercentage::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 8px;
   /* TODO replace with var passed from data */
