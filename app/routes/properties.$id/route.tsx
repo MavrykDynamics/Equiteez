@@ -115,7 +115,7 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
       <div
         className={clsx(
-          "py-1 px-2 rounded font-medium",
+          "py-1 px-2 rounded font-medium capitalize",
           isSecondaryEstate
             ? "bg-[#F6AFAFBF] text-red-950"
             : "text-yellow-950 bg-[#FFD38FBF]"

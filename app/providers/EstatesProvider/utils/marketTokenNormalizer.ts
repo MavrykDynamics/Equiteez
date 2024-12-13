@@ -85,7 +85,7 @@ export const marketTokenNormalizer = (
           // assetImages: parsedTokenDetails.assetImages,
           // previewImage: parsedTokenDetails.assetImages[0],
           assetImages: mockedPart?.assetDetails.assetImages ?? [],
-          previewImage: mockedPart?.assetDetails.assetImages[0] ?? "",
+          previewImage: mockedPart?.assetDetails.previewImage ?? "",
           basicInfo: {
             // empty
             // TODO
