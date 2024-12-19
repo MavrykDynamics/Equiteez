@@ -193,7 +193,7 @@ export const PropertyFinanceTab = () => {
         </TableItem>
         <TableItem isLast>
           <p>Total Tokens</p>
-          <p>{expectedIncome.totalTokens}</p>
+          <Money>{expectedIncome.totalTokens}</Money>
         </TableItem>
         <div className="mt-6">
           <ColoredCard>

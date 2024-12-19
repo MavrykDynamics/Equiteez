@@ -113,8 +113,8 @@ export const marketTokenNormalizer = (
             foundation: buildingInfo.foundation,
             exteriorWalls: buildingInfo.exteriorWalls,
             roofType: buildingInfo.roofType,
-            heating: buildingInfo.heating,
-            cooling: buildingInfo.cooling,
+            heating: buildingInfo.heating ?? "-",
+            cooling: buildingInfo.cooling ?? "-",
             renovated: buildingInfo.renovated,
           },
           neighborhood: {

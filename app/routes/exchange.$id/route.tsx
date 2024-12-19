@@ -20,6 +20,9 @@ import { usePropertyByAddress } from "../properties.$id/hooks/use-property-by-id
 // icons
 import ArrowLinkIcon from "app/icons/arrow-link.svg?react";
 import { AssetDropdown } from "./components/AssetDropdown";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { useMemo } from "react";
+import Money from "~/lib/atoms/Money";
 
 export const meta: MetaFunction = () => {
   return [
@@ -28,7 +31,13 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
+  const { dodoMav } = useDexContext();
   const estateData = usePropertyByAddress();
+
+  const tokenPrice = useMemo(
+    () => (estateData?.slug ? dodoMav[estateData.slug] : "0"),
+    [estateData?.slug, dodoMav]
+  );
 
   if (!estateData) return <FullScreenSpinner />;
 
@@ -57,9 +66,9 @@ export default function ExchangeDetails() {
 
               <span className="min-w-[84px] flex flex-col">
                 <span className="text-caption-small">Price</span>
-                <span className="text-body-xs leading-5 font-semibold">
-                  $8.00
-                </span>
+                <div className="text-body-xs leading-5 font-semibold flex items-center">
+                  $<Money fiat>{tokenPrice}</Money>
+                </div>
               </span>
 
               <span className="min-w-[84px] flex flex-col">
