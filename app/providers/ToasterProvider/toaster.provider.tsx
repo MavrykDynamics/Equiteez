@@ -70,6 +70,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
         setError: this.setError,
         setSharedError: this.setSharedError,
         maintance: props.maintance ?? false,
+        toggleMaintance: this.toggleMaintance,
       },
     };
   }
@@ -111,6 +112,15 @@ export default class ToasterProvider extends React.Component<Props, State> {
     }));
 
     return unique;
+  };
+
+  toggleMaintance = (): void => {
+    this.setState((prevState) => ({
+      context: {
+        ...prevState.context,
+        maintance: true,
+      },
+    }));
   };
 
   bug = (rawError: Error | string, title = ""): string => {

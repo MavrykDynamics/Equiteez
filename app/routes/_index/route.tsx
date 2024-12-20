@@ -16,6 +16,7 @@ import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
 import { Container } from "~/lib/atoms/Container";
+import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 // import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 
 export const meta: MetaFunction = () => {
@@ -28,12 +29,13 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export default function Index() {
-  // const { info, bug, loading, success, warning } = useToasterContext();
+  const { info, bug, loading, success, warning, toggleMaintance } =
+    useToasterContext();
 
   return (
     <PageLayout includeContainer={false}>
       <Container>
-        {/* <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <button
             onClick={() => info("info", "message")}
             className="bg-green-500 text-white p-2"
@@ -70,7 +72,13 @@ export default function Index() {
           >
             fatal
           </button>
-        </div> */}
+          <button
+            onClick={() => toggleMaintance()}
+            className="bg-green-500 text-white p-2"
+          >
+            Maintance Page
+          </button>
+        </div>
         <BannerSection />
         <Spacer />
         <FinanceSection />
