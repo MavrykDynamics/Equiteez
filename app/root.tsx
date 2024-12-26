@@ -110,7 +110,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <body>
         <div id="root">
-          <ToasterProvider maintance={true}>
+          <ToasterProvider
+            maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
+          >
             <AppWrapper>{children}</AppWrapper>
             <ToasterMessages />
           </ToasterProvider>
