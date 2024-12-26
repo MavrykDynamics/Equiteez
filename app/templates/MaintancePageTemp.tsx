@@ -1,6 +1,6 @@
 import { FooterSecondary } from "~/layouts/PageLayout/Footer/FooterSecondary";
 import { Header } from "~/layouts/PageLayout/Header";
-import MaintanceImg from "app/assets/error/maintance.png";
+import MaintanceImg from "app/assets/error/maintance-bg.webp";
 
 export const MaintancePageTemp = () => {
   return (

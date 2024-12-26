@@ -18,7 +18,7 @@ export const FooterSecondary: FC<FooterSecondaryProps> = ({
 
   return (
     <section className="w-full bg-transparent py-4 px-11 flex items-center justify-between">
-      <div className={`text-${color} text-sm`}>
+      <div className={`text-${color} text-sm font-semibold`}>
         © {year} Mavryk Dynamics. All Rights Reserved
       </div>
 
