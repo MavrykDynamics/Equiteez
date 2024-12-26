@@ -29,12 +29,18 @@ const PageLayout: FC<PageLayoutProps> = ({
   includeFooter = true,
 }) => {
   return (
-    <div className={clsx("min-h-screen")}>
+    <div className={clsx("min-h-screen flex flex-col")}>
       <DocBg bgClassName={clsx(bg)} />
 
-      <div className={clsx("relative")}>
+      <div className={clsx("relative flex flex-col flex-1")}>
         <Header />
-        {includeContainer ? <Container>{children}</Container> : children}
+        {includeContainer ? (
+          <div className="flex-1">
+            <Container>{children}</Container>
+          </div>
+        ) : (
+          children
+        )}
         {includeFooter && <Footer />}
       </div>
     </div>
