@@ -5,9 +5,9 @@ import MaintanceImg from "app/assets/error/maintance.png";
 export const MaintancePageTemp = () => {
   return (
     <>
-      <div className="h-screen overflow-hidden  bg-mvrk font-aeonik text-mvrk-main gap-3 flex items-center flex-col w-screen bg-sand-50">
+      <div className="h-screen overflow-hidden  bg-mvrk font-aeonik text-mvrk-main gap-3 flex justify-between flex-col w-screen bg-sand-50">
         <Header />
-        <div className="flex flex-col items-center text-center z-10 justify-self-start transform mt-[100px]">
+        <div className="flex flex-col items-center text-center z-10 justify-self-start transform">
           <div className="flex flex-col gap-5 items-center text-sand-900">
             <h3 className="text-section-headline font-semibold">
               The site is currently down <br />
@@ -20,7 +20,7 @@ export const MaintancePageTemp = () => {
           </div>
         </div>
 
-        <div className="z-10 w-full">
+        <div className="relative z-20 w-full">
           <FooterSecondary theme="light" />
         </div>
         <img
