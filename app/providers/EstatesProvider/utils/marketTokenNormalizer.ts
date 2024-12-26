@@ -195,14 +195,15 @@ export const marketTokenNormalizer = (
             },
           },
           priceDetails: {
+            ...mockedPart?.assetDetails?.priceDetails,
             price: extractNumber(latestValuation.tokenPrice),
-            annualReturn: 4.03,
-            projectedAnnualReturn: 4.03,
-            rentalYield: 28.43,
-            projectedRentalYield: 28.43,
-            totalLiquidity: 40.03,
-            tokensAvailable: 548,
-            tokensUsed: 500,
+            // annualReturn: 4.03,
+            // projectedAnnualReturn: 4.03,
+            // rentalYield: 28.43,
+            // projectedRentalYield: 28.43,
+            // totalLiquidity: 40.03,
+            // tokensAvailable: 548,
+            // tokensUsed: 500,
           },
           tradingHistory: [
             {

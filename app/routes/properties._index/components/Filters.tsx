@@ -283,7 +283,7 @@ export const Filters: FC<FiltersProps> = ({
                             [filter.id]: option,
                           });
                         }}
-                        className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
+                        className="bg-background text-content text-body-xs py-3 px-4 text-left capitalize w-full hover:bg-dark-green-opacity"
                       >
                         {option.label}
                       </button>
