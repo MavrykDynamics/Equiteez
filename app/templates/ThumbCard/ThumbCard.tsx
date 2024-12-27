@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { EstateHeadlineTab } from "../EstateHeadlineTab";
 import BigNumber from "bignumber.js";
 import Money from "~/lib/atoms/Money";
+import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 
 type ThumbCardProps = {
   imgSrc: string;
@@ -106,6 +107,41 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
               </span>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type PrimaryThumbCardProps = {
+  imgSrc: string;
+  title: string;
+  price: number;
+  annual: number;
+  tokensAvailable: number;
+};
+
+export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
+  imgSrc,
+  title,
+  price,
+  annual,
+  tokensAvailable,
+}) => {
+  return (
+    <div
+      className={clsx("p-6 flex flex-col gap-4 bg-white", styles.cardPrimary)}
+    >
+      <img src={imgSrc} alt={title} />
+
+      <div className="flex flex-col">
+        <h4 className="text-card-headline text-content mb-1">{title}</h4>
+        <PriceDetailsLabel price={price} percentage={annual} />
+        <div className="flex items-center justify-between text-content">
+          <p className="text-sm">Tokens Available</p>
+          <div className="font-semibold">
+            <Money>{tokensAvailable}</Money>
+          </div>
         </div>
       </div>
     </div>

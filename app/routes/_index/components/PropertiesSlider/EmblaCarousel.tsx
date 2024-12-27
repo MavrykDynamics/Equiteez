@@ -15,14 +15,12 @@ import { Button } from "~/lib/atoms/Button";
 import { Link, useNavigate } from "@remix-run/react";
 import {
   PrimaryEstate,
-  SECONDARY_MARKET,
   SecondaryEstate,
 } from "~/providers/EstatesProvider/estates.types";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
-import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
 
-const SLIDER_VIEW_LIMIT = 3;
+const SLIDER_VIEW_LIMIT = 4;
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
@@ -33,7 +31,6 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
   const { slides, options } = props;
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
   const navigate = useNavigate();
-  const { dodoMav } = useDexContext();
 
   const {
     prevBtnDisabled,
@@ -62,7 +59,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
           </Button>
         </Link>
         {slides.length > SLIDER_VIEW_LIMIT && (
-          <div className="flex items-center gap-x-3">
+          <div className="flex items-center gap-x-3 self-stretch">
             <PrevButton
               onClick={onPrevButtonClick}
               disabled={prevBtnDisabled}
@@ -77,10 +74,6 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
           {slides.map((estate, idx) => {
-            const isSecondaryMarket =
-              estate.assetDetails.type === SECONDARY_MARKET;
-
-            const pricePerToken = dodoMav[estate.slug];
             return (
               <div
                 role="presentation"
@@ -121,16 +114,14 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     </div>
                   </div>
                 ) : (
-                  <ThumbCardSecondary
-                    height={"281px"}
+                  <ThumbCardPrimary
                     imgSrc={estate.assetDetails.previewImage}
                     title={estate.name}
-                    description={
-                      estate.assetDetails.propertyDetails.propertyType
+                    price={estate.assetDetails.priceDetails.price}
+                    annual={
+                      estate.assetDetails.priceDetails.projectedAnnualReturn
                     }
-                    isSecondaryMarket={isSecondaryMarket}
-                    APY={estate.assetDetails.APY}
-                    pricePerToken={pricePerToken}
+                    tokensAvailable={100000000}
                   />
                 )}
               </div>

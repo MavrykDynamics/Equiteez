@@ -51,10 +51,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.cardAnnualLabel {
-  border-radius: 4px;
-  background: rgba(181, 213, 192, 0.5);
-  padding: 2px 4px;
-  margin-left: 4px;
-}

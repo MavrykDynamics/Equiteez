@@ -43,6 +43,8 @@ export default function Index() {
         <Spacer />
         <PortfolioSection />
         <Spacer />
+        <PropertiesSlider />
+        <Spacer />
         <FAQSection data={homeFAQ} />
         <Spacer height={200} />
       </Container>

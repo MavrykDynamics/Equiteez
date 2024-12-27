@@ -5,9 +5,9 @@ import { getRestMockedEstates } from "~/providers/EstatesProvider/utils/estatesM
 import ChartIcon from "app/icons/chart-mock.svg?react";
 
 import styles from "./marketRowBottom.module.css";
-import Money from "~/lib/atoms/Money";
 import clsx from "clsx";
 import { Container } from "~/lib/atoms/Container";
+import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 
 // fake data
 const fakeCardsRecord = getRestMockedEstates();
@@ -64,16 +64,7 @@ const MarketRowBottomCard: FC<{
           <h4 className={clsx("text-slider-headline font-bold", styles.header)}>
             {name}
           </h4>
-          <div className="flex items-center text-caption text-[#37794e]">
-            <div className="text-black-secondary">
-              $<Money fiat>{price}</Money>
-            </div>
-            <div className={styles.cardAnnualLabel}>
-              <span>+</span>
-              {percentage}
-              <span>%</span>
-            </div>
-          </div>
+          <PriceDetailsLabel price={price} percentage={percentage} />
         </div>
 
         <ChartIcon />
