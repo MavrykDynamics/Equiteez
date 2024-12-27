@@ -31,7 +31,7 @@ export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 export default function Index() {
   return (
     <PageLayout includeContainer={false}>
-      <Container>
+      <Container px={44}>
         <BannerSection />
         <Spacer height={124} />
         <MarketRowTop />

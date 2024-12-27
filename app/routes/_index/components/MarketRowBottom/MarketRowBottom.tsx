@@ -7,6 +7,7 @@ import ChartIcon from "app/icons/chart-mock.svg?react";
 import styles from "./marketRowBottom.module.css";
 import Money from "~/lib/atoms/Money";
 import clsx from "clsx";
+import { Container } from "~/lib/atoms/Container";
 
 // fake data
 const fakeCardsRecord = getRestMockedEstates();
@@ -16,34 +17,36 @@ export const MarketRowBottom = () => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div
-      className={styles.slider}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <MarqueeCarousel
-        autoFill
-        play={!isHovered}
-        pauseOnHover
-        direction="left"
-        speed={45}
+    <Container maxWidth={1560}>
+      <div
+        className={styles.slider}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {fakeAddresses.map((slug) => {
-          const market = fakeCardsRecord[slug];
-          return (
-            <MarketRowBottomCard
-              key={slug}
-              name={market.name}
-              imgSrc={market.assetDetails.previewImage}
-              price={market.assetDetails.priceDetails.price}
-              percentage={
-                market.assetDetails.priceDetails.projectedAnnualReturn
-              }
-            />
-          );
-        })}
-      </MarqueeCarousel>
-    </div>
+        <MarqueeCarousel
+          autoFill
+          play={!isHovered}
+          pauseOnHover
+          direction="left"
+          speed={45}
+        >
+          {fakeAddresses.map((slug) => {
+            const market = fakeCardsRecord[slug];
+            return (
+              <MarketRowBottomCard
+                key={slug}
+                name={market.name}
+                imgSrc={market.assetDetails.previewImage}
+                price={market.assetDetails.priceDetails.price}
+                percentage={
+                  market.assetDetails.priceDetails.projectedAnnualReturn
+                }
+              />
+            );
+          })}
+        </MarqueeCarousel>
+      </div>
+    </Container>
   );
 };
 

@@ -5,7 +5,7 @@ import styles from "./bannerSection.module.css";
 
 export const BannerSection = () => {
   return (
-    <section className={clsx("pt-[116px] px-11")}>
+    <section className={clsx("pt-[116px]")}>
       <div className="w-full flex  justify-center">
         <h1 className="text-hero text-black relative">
           Welcome to the future of ownership
