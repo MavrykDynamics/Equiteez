@@ -16,7 +16,6 @@ import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
 import { Container } from "~/lib/atoms/Container";
-// import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -28,51 +27,11 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export default function Index() {
-  // const { info, bug, loading, success, warning } = useToasterContext();
-
   return (
     <PageLayout includeContainer={false}>
       <Container>
-        {/* <div className="flex flex-col gap-3">
-          <button
-            onClick={() => info("info", "message")}
-            className="bg-green-500 text-white p-2"
-          >
-            info
-          </button>
-          <button
-            onClick={() => warning("warning", "message")}
-            className="bg-green-500 text-white p-2"
-          >
-            warning
-          </button>
-          <button
-            onClick={() => loading("loading", "message")}
-            className="bg-green-500 text-white p-2"
-          >
-            loading
-          </button>
-          <button
-            onClick={() => success("success", "message")}
-            className="bg-green-500 text-white p-2"
-          >
-            success
-          </button>
-          <button
-            onClick={() => bug("bug", "message")}
-            className="bg-green-500 text-white p-2"
-          >
-            bug
-          </button>
-          <button
-            onClick={() => bug("fatal", "message")}
-            className="bg-green-500 text-white p-2"
-          >
-            fatal
-          </button>
-        </div> */}
         <BannerSection />
-        <Spacer />
+        <Spacer height={124} />
         <FinanceSection />
         <Spacer />
         <PropertiesSlider />
