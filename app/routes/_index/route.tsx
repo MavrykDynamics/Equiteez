@@ -35,11 +35,9 @@ export default function Index() {
         <BannerSection />
         <Spacer height={124} />
         <MarketRowTop />
-        {/* <PropertiesSlider />
-        <Spacer />
-        <PortfolioSection />
-        <Spacer /> */}
+        <Spacer height={64} />
       </Container>
+
       <MarketRowBottom />
       {/* <RealEstateSection /> */}
       <Container>

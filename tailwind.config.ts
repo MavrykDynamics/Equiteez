@@ -30,7 +30,7 @@ export default {
         "asset-input": [
           "2rem", // 32px
           {
-            lineHeight: "2.25rem",
+            lineHeight: "2.25rem", // 36px
             fontWeight: "600",
           },
         ],

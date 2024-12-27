@@ -1,0 +1,13 @@
+.bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  filter: brightness(0.6);
+
+  transition: transform 250ms ease-in-out;
+}
+
+.rowTopWrapper:hover .bg {
+  transform: scale(1.2);
+}
