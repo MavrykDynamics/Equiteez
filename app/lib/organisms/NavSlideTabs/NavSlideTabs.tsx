@@ -1,7 +1,7 @@
-import { FC, useRef, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
-import React from "react";
+import { Link } from "@remix-run/react";
 
 type Position = {
   left: number;
@@ -17,7 +17,7 @@ export type SlideNavTab = {
 
 type SlideTabsProps = {
   tabs: SlideNavTab[];
-  activeTabId: number;
+  activeTabId: number | null;
   fixedWidth?: number;
 };
 
@@ -48,6 +48,7 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
             setPosition={setPosition}
             fixedWidth={fixedWidth}
             isActive={tab.id === activeTabId}
+            to={tab.to}
           >
             {tab.text}
           </Tab>
@@ -67,33 +68,37 @@ const Tab: FC<
     setPosition: React.Dispatch<React.SetStateAction<Position>>;
     fixedWidth?: number;
     isActive: boolean;
+    to: string;
   }
-> = ({ children, setPosition, fixedWidth, isActive }) => {
+> = ({ children, setPosition, fixedWidth, isActive, to }) => {
   const ref = useRef<HTMLLIElement | null>(null);
 
   return (
-    <li
-      ref={ref}
-      style={{ minWidth: fixedWidth ? fixedWidth : "unset" }}
-      onMouseEnter={() => {
-        if (!ref?.current) return;
+    <Link to={to}>
+      <li
+        ref={ref}
+        style={{ minWidth: fixedWidth ? fixedWidth : "unset" }}
+        onMouseEnter={() => {
+          if (!ref?.current) return;
 
-        const { width } = ref.current.getBoundingClientRect();
+          const { width } = ref.current.getBoundingClientRect();
 
-        setPosition({
-          left: ref.current.offsetLeft,
-          width,
-          opacity: 1,
-        });
-      }}
-      className={clsx(
-        "relative z-10 block cursor-pointer p-2 rounded-full",
-        "text-center text-caption text-black-secondary capitalize",
-        isActive && "bg-black-secondary  text-white"
-      )}
-    >
-      {children}
-    </li>
+          setPosition({
+            left: ref.current.offsetLeft,
+            width,
+            opacity: 1,
+          });
+        }}
+        className={clsx(
+          "transition-all duration-200 ease-in-out",
+          "relative z-10 block cursor-pointer p-2 rounded-full",
+          "text-center text-caption text-black-secondary capitalize",
+          isActive && "bg-black-secondary  text-white"
+        )}
+      >
+        {children}
+      </li>
+    </Link>
   );
 };
 
