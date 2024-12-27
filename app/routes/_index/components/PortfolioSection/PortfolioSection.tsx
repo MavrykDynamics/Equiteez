@@ -1,80 +1,76 @@
-import Card1Icon from 'app/assets/home/icons/house-check.svg?react';
-import Card2Icon from 'app/assets/home/icons/circle-rect.svg?react';
-import Card3Icon from 'app/assets/home/icons/circle-house.svg?react';
-import Card4Icon from 'app/assets/home/icons/send-triangle.svg?react';
-import { CardWithShadow } from '~/lib/atoms/CardWithShadow';
-import clsx from 'clsx';
+import MarketPlaceIcon from "app/assets/home/icons/marketplace.svg?react";
+import StakeIcon from "app/assets/home/icons/stake.svg?react";
+import BorrowIcon from "app/assets/home/icons/borrow.svg?react";
+import { CardWithShadow } from "~/lib/atoms/CardWithShadow";
+import clsx from "clsx";
+import { Button } from "~/lib/atoms/Button";
+
+import styles from "./portfolioSection.module.css";
 
 const CARDS = [
   {
     id: 1,
-    Icon: Card1Icon,
-    title: 'No downpayment required',
+    Icon: MarketPlaceIcon,
+    title: "Marketplace",
+    btnText: "Start Investing",
+    disabled: false,
     description:
-      'Buy fractional shares of yield bearing investments starting at just $50. Each token represents fractional ownership of the asset. The more you own, the more you earn.',
+      "Discover a diverse range of opportunities and grow your portfolio with ease. Invest fractionally in RWAs, making high-value investments accessible to everyone.",
   },
   {
     id: 2,
-    Icon: Card2Icon,
-    title: (
-      <>
-        Earn rent today, <br />
-        appreciation tomorow
-      </>
-    ),
+    Icon: StakeIcon,
+    title: "Stake",
+    btnText: "Start Staking",
+    disabled: true,
     description:
-      'Get monthly dividends paid directly to your account! Watch your assets grow in value over time, and sell to collect on the principle appreciation whenever you think best.',
+      "Staking offers a flexible way to earn both rental income and staking rewards without long-term commitments. By providing liquidity to the Pro-Active Market Maker DEX, you help facilitate trading while earning returns on your investment.",
   },
   {
     id: 3,
-    Icon: Card3Icon,
-    title: (
-      <>
-        Own multiple properties <br />
-        without managment issues
-      </>
-    ),
+    Icon: BorrowIcon,
+    title: "Borrow",
+    btnText: "Start Borrowing",
+    disabled: true,
     description:
-      'Diversify your investments without expanding your workload. Just build your own portfolio, and let the professional managers handle the rest.',
-  },
-  {
-    id: 4,
-    Icon: Card4Icon,
-    title: (
-      <>
-        Have full control of <br />
-        your investments
-      </>
-    ),
-    description:
-      'Zero lock-in periods and full transparency reports. Reinvest your dividend income, sell whenever you like, or get a loan in minutes to leverage your portfolio.',
+      "Unlock capital by leveraging your tokenized assets as collateral. Borrow against a single asset or a basket of assets, securing them in your own personal vault. Your assets remain under your control, with only the vault being secured.",
   },
 ];
 
 export const PortfolioSection = () => {
   return (
-    <section className="px-11 flex justify-between items-center gap-x-[116px]">
-      <div className="min-w-[488px] max-w-[488px] flex flex-col items-start gap-y-3">
-        <h2 className="text-content text-section-headline">
-          Jumpstart your portfolio. Invest like the pros
-        </h2>
-        <p className="text-content-secondary text-body">
-          Get instant access to amazing income producing deals and join a
-          community of wealth builders from around the world.
-        </p>
-      </div>
+    <section className="flex flex-col justify-between items-center">
+      <h2 className="text-content text-section-headline mb-11">
+        Ownership, Reimagined
+      </h2>
 
-      <div className="grid grid-cols-2 gap-x-6">
-        {CARDS.map(({ Icon, id, title, description }, idx) => (
-          <div key={id} className={clsx((idx + 1) % 2 === 0 && 'pt-6')}>
-            <CardWithShadow className="h-[339px]">
+      <div
+        className={clsx("grid grid-cols-3 gap-6", styles["cards-container"])}
+      >
+        {CARDS.map(({ Icon, id, title, description, btnText, disabled }) => (
+          <div key={id}>
+            <CardWithShadow
+              className={clsx(
+                "h-[447px] flex flex-col justify-between",
+                styles.card,
+                disabled && styles.disabled
+              )}
+            >
               <div className="flex flex-col items-start">
-                <Icon className="mb-6" />
-                <h3 className="text-card-headline text-content mb-3">
+                <Icon className="mb-4" />
+                <h3 className="text-section-headline text-content mb-4">
                   {title}
                 </h3>
                 <p className="text-content text-body">{description}</p>
               </div>
+              <Button
+                className={clsx(
+                  "self-start",
+                  disabled && "pointer-events-none cursor-not-allowed"
+                )}
+              >
+                {disabled ? "Coming Soon" : btnText}
+              </Button>
             </CardWithShadow>
           </div>
         ))}

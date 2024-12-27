@@ -39,13 +39,12 @@ export default function Index() {
       </Container>
 
       <MarketRowBottom />
-      {/* <RealEstateSection /> */}
-      <Container>
+      <Container px={44}>
         <Spacer />
-        <IntegrationSection />
+        <PortfolioSection />
         <Spacer />
         <FAQSection data={homeFAQ} />
-        <Spacer className="h-[108px]" />
+        <Spacer height={200} />
       </Container>
     </PageLayout>
   );

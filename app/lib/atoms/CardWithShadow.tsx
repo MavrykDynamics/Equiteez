@@ -1,14 +1,12 @@
-import clsx from 'clsx';
-import { FC } from 'react';
+import clsx from "clsx";
+import { FC } from "react";
 
 export const CardWithShadow: FC<PropsWithChildren & { className?: string }> = ({
   children,
   className,
 }) => {
   return (
-    <div
-      className={clsx('bg-background rounded-2xl shadow-card p-8', className)}
-    >
+    <div className={clsx("rounded-3xl shadow-card p-9", className)}>
       {children}
     </div>
   );

@@ -1,0 +1,11 @@
+.cards-container > div:nth-child(odd) .card {
+  @apply bg-dark-green-50;
+}
+
+.cards-container .card {
+  @apply bg-sand-100;
+}
+
+.card.disabled *:not(button) {
+  opacity: 0.75;
+}
