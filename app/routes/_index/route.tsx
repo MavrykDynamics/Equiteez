@@ -16,6 +16,8 @@ import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
 import { Container } from "~/lib/atoms/Container";
+import { MarketRowTop } from "./components/MarketRowTop/MarketRowTop";
+import { MarketRowBottom } from "./components/MarketRowBottom/MarketRowBottom";
 
 export const meta: MetaFunction = () => {
   return [
@@ -32,14 +34,14 @@ export default function Index() {
       <Container>
         <BannerSection />
         <Spacer height={124} />
-        <FinanceSection />
-        <Spacer />
-        <PropertiesSlider />
+        <MarketRowTop />
+        {/* <PropertiesSlider />
         <Spacer />
         <PortfolioSection />
-        <Spacer />
+        <Spacer /> */}
       </Container>
-      <RealEstateSection />
+      <MarketRowBottom />
+      {/* <RealEstateSection /> */}
       <Container>
         <Spacer />
         <IntegrationSection />

@@ -51,6 +51,9 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
     onCompleted: (data) => {
       try {
         const parsedAddresses = getMarketAddresses(data);
+
+        // TODO delete fake data fter api fixes
+
         setEstatesState((prev) => ({
           ...prev,
           estateAddresses: parsedAddresses,
@@ -68,7 +71,11 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
     onCompleted: (data) => {
       try {
         const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
-        setEstatesState((prev) => ({ ...prev, estates: parsedMarkets }));
+
+        setEstatesState((prev) => ({
+          ...prev,
+          estates: parsedMarkets,
+        }));
       } catch (e) {
         console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
       }
