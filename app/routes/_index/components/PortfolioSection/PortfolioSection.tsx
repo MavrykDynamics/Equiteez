@@ -1,6 +1,10 @@
 import MarketPlaceIcon from "app/assets/home/icons/marketplace.svg?react";
 import StakeIcon from "app/assets/home/icons/stake.svg?react";
 import BorrowIcon from "app/assets/home/icons/borrow.svg?react";
+
+import AdvancedTradeIcon from "app/assets/home/icons/advanced-trade.svg?react";
+import AccountIcon from "app/assets/home/icons/account.svg?react";
+import LearnIcon from "app/assets/home/icons/learn.svg?react";
 import { CardWithShadow } from "~/lib/atoms/CardWithShadow";
 import clsx from "clsx";
 import { Button } from "~/lib/atoms/Button";
@@ -37,6 +41,20 @@ const CARDS = [
   },
 ];
 
+const CARDS_BOTTOM_ROW = [
+  {
+    Icon: AdvancedTradeIcon,
+    title: "Advanced Trade",
+  },
+  {
+    Icon: AccountIcon,
+    title: "Account",
+  },
+  {
+    Icon: LearnIcon,
+    title: "Learn",
+  },
+];
 export const PortfolioSection = () => {
   return (
     <section className="flex flex-col justify-between items-center">
@@ -72,6 +90,18 @@ export const PortfolioSection = () => {
                 {disabled ? "Coming Soon" : btnText}
               </Button>
             </CardWithShadow>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.bottomCardsGrid}>
+        {CARDS_BOTTOM_ROW.map(({ Icon, title }) => (
+          <div
+            key={title}
+            className={clsx(" flex items-center p-9 gap-4", styles.bottomCard)}
+          >
+            <Icon />
+            <h3 className="text-section-headline text-content">{title}</h3>
           </div>
         ))}
       </div>

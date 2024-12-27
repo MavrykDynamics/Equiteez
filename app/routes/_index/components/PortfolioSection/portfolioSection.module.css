@@ -9,3 +9,19 @@
 .card.disabled *:not(button) {
   opacity: 0.75;
 }
+
+.bottomCardsGrid {
+  margin-top: 24px;
+  display: grid;
+  width: 100%;
+  gap: 24px;
+  grid-template-columns: repeat(2, 511px) 1fr;
+}
+
+.bottomCard {
+  border-radius: 24px;
+  background: #fff;
+  box-shadow:
+    0.5px 0.5px 0px 0px rgba(0, 0, 0, 0.07),
+    1px 2px 15px 0px rgba(0, 0, 0, 0.05);
+}
