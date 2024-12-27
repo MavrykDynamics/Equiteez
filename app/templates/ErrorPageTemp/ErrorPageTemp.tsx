@@ -1,7 +1,7 @@
 import { ERROR_TYPE_FATAL, ERROR_TYPE_ROUTER } from "~/errors/error.const";
 import { InternalErrorType } from "~/errors/error.type";
 import { FooterSecondary } from "~/layouts/PageLayout/Footer/FooterSecondary";
-import { Header } from "~/layouts/PageLayout/Header";
+import { Header } from "~/layouts/PageLayout/Header/Header";
 import { Button } from "~/lib/atoms/Button";
 import {
   errorDescDefaultText,

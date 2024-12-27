@@ -26,6 +26,7 @@ const gliderDistances = {
   primary: (idx: number) => `${getGliderDistance(idx, 12)}`,
   secondary: (idx: number) => `${getGliderDistance(idx, 8)}`,
   tertiary: (idx: number) => `${getGliderDistance(idx, 16)}`,
+  hoverable: (idx: number) => `${getGliderDistance(idx, 3)}`,
 };
 
 export const TabSwitcher: FC<TabSwitcherProps> = ({
