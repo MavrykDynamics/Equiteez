@@ -1,4 +1,5 @@
 .embla {
+  width: 100%;
   margin: auto;
   --slide-spacing: 24px;
   --slide-size: 100%;

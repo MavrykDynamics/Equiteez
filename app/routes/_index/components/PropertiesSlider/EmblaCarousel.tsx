@@ -1,13 +1,4 @@
 import React from "react";
-import { EmblaOptionsType } from "embla-carousel";
-import {
-  PrevButton,
-  NextButton,
-} from "app/templates/EmblaCarouselArrowButtons";
-import useEmblaCarousel from "embla-carousel-react";
-
-// icons
-import ArrowRight from "app/icons/arrow-right.svg?react";
 
 import styles from "./embla.module.css";
 import clsx from "clsx";
@@ -17,27 +8,27 @@ import {
   PrimaryEstate,
   SecondaryEstate,
 } from "~/providers/EstatesProvider/estates.types";
-import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
+import { EmblaViewportRefType } from "embla-carousel-react";
 
-const SLIDER_VIEW_LIMIT = 4;
+export const SLIDER_VIEW_LIMIT = 4;
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
-  options?: EmblaOptionsType;
-};
+  childPosition: "before" | "after";
+  nextBtnDisabled: boolean;
+  emblaRef: EmblaViewportRefType;
+} & PropsWithChildren;
 
 const EmblaCarousel: React.FC<PropType> = (props) => {
-  const { slides, options } = props;
-  const [emblaRef, emblaApi] = useEmblaCarousel(options);
-  const navigate = useNavigate();
-
   const {
-    prevBtnDisabled,
+    emblaRef,
     nextBtnDisabled,
-    onPrevButtonClick,
-    onNextButtonClick,
-  } = usePrevNextButtons(emblaApi);
+    slides,
+    childPosition = "before",
+    children,
+  } = props;
+  const navigate = useNavigate();
 
   const handleSlideClick = (id: string, isLastSlide: boolean) => {
     if (isLastSlide) return;
@@ -46,31 +37,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
 
   return (
     <section className={styles.embla}>
-      <div className={"w-full flex justify-between items-center mb-11"}>
-        <Link to={"/properties"}>
-          <Button
-            variant="custom"
-            className="text-white bg-transparent border-2 border-white py-[8px]"
-          >
-            <div className="flex items-center gap-2">
-              View All
-              <ArrowRight className="w-6 h-6 stroke-current" />
-            </div>
-          </Button>
-        </Link>
-        {slides.length > SLIDER_VIEW_LIMIT && (
-          <div className="flex items-center gap-x-3 self-stretch">
-            <PrevButton
-              onClick={onPrevButtonClick}
-              disabled={prevBtnDisabled}
-            />
-            <NextButton
-              onClick={onNextButtonClick}
-              disabled={nextBtnDisabled}
-            />
-          </div>
-        )}
-      </div>
+      {childPosition === "before" && children}
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
           {slides.map((estate, idx) => {
@@ -129,6 +96,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
           })}
         </div>
       </div>
+
+      {childPosition === "after" && children}
     </section>
   );
 };

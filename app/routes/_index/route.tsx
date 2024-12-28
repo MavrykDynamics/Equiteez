@@ -18,6 +18,7 @@ import { homeFAQ } from "./index.const";
 import { Container } from "~/lib/atoms/Container";
 import { MarketRowTop } from "./components/MarketRowTop/MarketRowTop";
 import { MarketRowBottom } from "./components/MarketRowBottom/MarketRowBottom";
+import { PropertiesSliderSecondary } from "./components/PropertiesSlider/PropertiesSlider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -45,8 +46,10 @@ export default function Index() {
         <Spacer />
         <PropertiesSlider />
         <Spacer />
-        <FAQSection data={homeFAQ} />
+        <PropertiesSliderSecondary />
         <Spacer height={200} />
+        <FAQSection data={homeFAQ} />
+        <Spacer height={220} />
       </Container>
     </PageLayout>
   );
