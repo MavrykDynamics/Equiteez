@@ -64,7 +64,7 @@ export const PropertiesSliderSecondary = () => {
   return (
     <div className="flex flex-col gap-8 max-w-full">
       <h1 className="text-content text-section-headline font-bold w-full">
-        Newly Listed
+        Trending Assets
       </h1>
       <EmblaCarousel
         emblaRef={emblaRef}
