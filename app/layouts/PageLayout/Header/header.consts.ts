@@ -11,7 +11,7 @@ export const links = [
   },
   {
     id: 2,
-    to: "/advanced-trading",
+    to: "/",
     text: "advanced trade",
   },
   {

@@ -3,10 +3,13 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import { Link } from "@remix-run/react";
 
+import styles from "./navSlideTabs.module.css";
+
 type Position = {
   left: number;
   width: number;
   opacity: number;
+  scale: number;
 };
 
 export type SlideNavTab = {
@@ -30,6 +33,7 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
     left: 0,
     width: 0,
     opacity: 0,
+    scale: 0,
   });
 
   return (
@@ -38,6 +42,7 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
         setPosition((pv) => ({
           ...pv,
           opacity: 0,
+          scale: 0,
         }));
       }}
       className="relative mx-auto flex w-fit items-center gap-[1px] rounded-xl bg-gray-100 px-2 py-1"
@@ -52,6 +57,8 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
           >
             {tab.text}
           </Tab>
+
+          {/* grid divider */}
           {idx !== arr.length - 1 && (
             <div className="w-[1px] h-5 bg-gray-200" />
           )}
@@ -87,12 +94,13 @@ const Tab: FC<
             left: ref.current.offsetLeft,
             width,
             opacity: 1,
+            scale: 1,
           });
         }}
         className={clsx(
-          "transition-all duration-200 ease-in-out",
           "relative z-10 block cursor-pointer p-2 rounded-full",
           "text-center text-caption text-black-secondary capitalize",
+          isActive && styles.active,
           isActive && "bg-black-secondary  text-white"
         )}
       >
@@ -107,6 +115,9 @@ const Cursor: FC<{ position: Position }> = ({ position }) => {
     <motion.li
       animate={{
         ...position,
+      }}
+      transition={{
+        scale: { ease: "linear" },
       }}
       className="absolute z-0 h-[34px] rounded-full bg-sand-300"
     />
