@@ -6,7 +6,7 @@ export const links = [
   },
   {
     id: 1,
-    to: "/staking",
+    to: "#",
     text: "stake",
   },
   {
@@ -16,7 +16,7 @@ export const links = [
   },
   {
     id: 3,
-    to: "/borrowing",
+    to: "#",
     text: "borrow",
   },
 ];

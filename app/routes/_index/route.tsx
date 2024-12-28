@@ -1,17 +1,12 @@
-import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 
 import PageLayout from "app/layouts/PageLayout/Pagelayout";
-
-import styles from "./components/RealEstateSection/index.css?url";
 
 // components
 import { BannerSection } from "./components/BannerSection/BannerSection";
 import { Spacer } from "~/lib/atoms/Spacer";
-import { FinanceSection } from "./components/FinanceSection/FinanceSection";
 import { PropertiesSlider } from "./components/PropertiesSlider";
 import { PortfolioSection } from "./components/PortfolioSection";
-import { RealEstateSection } from "./components/RealEstateSection";
-import { IntegrationSection } from "./components/IntegrationSection";
 import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
@@ -26,8 +21,6 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Equiteez Home" },
   ];
 };
-
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export default function Index() {
   return (

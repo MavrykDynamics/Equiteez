@@ -27,7 +27,7 @@ const HeaderLinksBlock = () => {
   }, [pathname]);
 
   return (
-    <header className="flex gap-x-9 items-center h-full justify-between w-full">
+    <header className="flex items-center h-full justify-between w-full">
       <NavSlideTabs tabs={links} fixedWidth={124} activeTabId={activeTabId} />
 
       <ConnectWallet />

@@ -8,7 +8,7 @@ import LogoIcon from "app/icons/logo.svg?react";
 export const Footer = () => {
   return (
     <footer className={clsx("bg-sand-900 flex flex-col items-center")}>
-      <div className="flex justify-between px-[100px] pt-[54px] pb-[122px] w-container">
+      <div className="flex justify-between px-[100px] pt-[54px] pb-[122px] w-full max-w-container">
         <div className="max-w-[420px] flex flex-col items-start">
           <Link to="/" className="flex items-center gap-x-[10px] w-auto">
             <LogoIcon className="text-white stroke-current" />

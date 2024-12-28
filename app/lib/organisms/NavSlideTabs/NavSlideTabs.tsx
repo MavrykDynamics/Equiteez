@@ -118,7 +118,14 @@ const Cursor: FC<{ position: Position }> = ({ position }) => {
       }}
       transition={{
         scale: { ease: "linear" },
+        left: { duration: 0 },
+        width: { duration: 0 },
       }}
+      // whileHover={{
+      //   transition: {
+      //     left: { duration: 0.3 },
+      //   },
+      // }}
       className="absolute z-0 h-[34px] rounded-full bg-sand-300"
     />
   );

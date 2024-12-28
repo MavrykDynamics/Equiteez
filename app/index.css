@@ -1,132 +1,132 @@
-@import 'tippy.js/dist/tippy.css';
-@import 'tippy.js/animations/shift-away-subtle.css';
+@import "tippy.js/dist/tippy.css";
+@import "tippy.js/animations/shift-away-subtle.css";
 
 /**
  * Poppins UI font
  */
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Thin.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Thin.woff2") format("woff2");
   font-weight: 100;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-ExtraLight.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-ExtraLight.woff2") format("woff2");
   font-weight: 200;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Light.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Regular.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Medium.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-SemiBold.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-SemiBold.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Bold.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-ExtraBold.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-ExtraBold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Black.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Black.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-ThinItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-ThinItalic.woff2") format("woff2");
   font-weight: 100;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-ExtraLightItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-ExtraLightItalic.woff2") format("woff2");
   font-weight: 200;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-LightItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-LightItalic.woff2") format("woff2");
   font-weight: 300;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-Italic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-Italic.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-MediumItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-MediumItalic.woff2") format("woff2");
   font-weight: 500;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-SemiBoldItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-SemiBoldItalic.woff2") format("woff2");
   font-weight: 600;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-BoldItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-BoldItalic.woff2") format("woff2");
   font-weight: 700;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-ExtraBoldItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-ExtraBoldItalic.woff2") format("woff2");
   font-weight: 800;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins/Poppins-BlackItalic.woff2') format('woff2');
+  font-family: "Poppins";
+  src: url("/fonts/Poppins/Poppins-BlackItalic.woff2") format("woff2");
   font-weight: 900;
   font-style: italic;
 }
@@ -153,7 +153,7 @@
   white-space: pre-line;
 }
 
-.tippy-box[data-theme~='equiteez'] {
+.tippy-box[data-theme~="equiteez"] {
   background-color: #28ad80;
   font-size: 12px;
   font-weight: 400;
@@ -161,25 +161,25 @@
 }
 
 /* Right placement tooltip arrow (arrow will be on left side of tooltip) */
-.tippy-box[data-theme~='equiteez'][data-placement^='right']
+.tippy-box[data-theme~="equiteez"][data-placement^="right"]
   > .tippy-arrow::before {
   border-right-color: #28ad80;
 }
 
 /* Left placement tooltip arrow (arrow will be on right side of tooltip) */
-.tippy-box[data-theme~='equiteez'][data-placement^='left']
+.tippy-box[data-theme~="equiteez"][data-placement^="left"]
   > .tippy-arrow::before {
   border-left-color: #28ad80;
 }
 
 /* Top placement tooltip arrow (arrow will be on bottom side of tooltip) */
-.tippy-box[data-theme~='equiteez'][data-placement^='top']
+.tippy-box[data-theme~="equiteez"][data-placement^="top"]
   > .tippy-arrow::before {
   border-top-color: #28ad80;
 }
 
 /* Bottom placement tooltip arrow (arrow will be on top side of tooltip) */
-.tippy-box[data-theme~='equiteez'][data-placement^='bottom']
+.tippy-box[data-theme~="equiteez"][data-placement^="bottom"]
   > .tippy-arrow::before {
   border-bottom-color: #28ad80;
 }
@@ -231,6 +231,7 @@ html {
 
 body {
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -283,7 +284,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type='number'] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
