@@ -137,9 +137,9 @@ export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
       <div className="flex flex-col">
         <h4 className="text-card-headline text-content mb-1">{title}</h4>
         <PriceDetailsLabel price={price} percentage={annual} />
-        <div className="flex items-center justify-between text-content">
+        <div className="flex items-center justify-between text-content mt-3">
           <p className="text-sm">Tokens Available</p>
-          <div className="font-semibold">
+          <div className="font-semibold text-sm">
             <Money>{tokensAvailable}</Money>
           </div>
         </div>

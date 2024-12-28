@@ -99,9 +99,9 @@ const Tab: FC<
         }}
         className={clsx(
           "relative z-10 block cursor-pointer p-2 rounded-full",
-          "text-center text-caption text-black-secondary capitalize",
+          "text-center text-body-xs font-semibold text-black-secondary capitalize",
           isActive && styles.active,
-          isActive && "bg-black-secondary  text-white"
+          isActive && "bg-sand-800  text-white"
         )}
       >
         {children}

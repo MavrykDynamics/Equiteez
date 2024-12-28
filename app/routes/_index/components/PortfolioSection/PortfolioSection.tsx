@@ -45,14 +45,17 @@ const CARDS_BOTTOM_ROW = [
   {
     Icon: AdvancedTradeIcon,
     title: "Advanced Trade",
+    disabled: false,
   },
   {
     Icon: AccountIcon,
     title: "Account",
+    disabled: true,
   },
   {
     Icon: LearnIcon,
     title: "Learn",
+    disabled: true,
   },
 ];
 export const PortfolioSection = () => {
@@ -95,10 +98,14 @@ export const PortfolioSection = () => {
       </div>
 
       <div className={styles.bottomCardsGrid}>
-        {CARDS_BOTTOM_ROW.map(({ Icon, title }) => (
+        {CARDS_BOTTOM_ROW.map(({ Icon, title, disabled }) => (
           <div
             key={title}
-            className={clsx(" flex items-center p-9 gap-4", styles.bottomCard)}
+            className={clsx(
+              " flex items-center p-9 gap-4",
+              styles.bottomCard,
+              disabled && "opacity-50"
+            )}
           >
             <Icon />
             <h3 className="text-section-headline text-content">{title}</h3>
