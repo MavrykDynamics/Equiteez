@@ -16,6 +16,7 @@ export type SlideNavTab = {
   id: number;
   to: string;
   text: string;
+  disabled: boolean;
 };
 
 type SlideTabsProps = {
@@ -54,6 +55,7 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
             fixedWidth={fixedWidth}
             isActive={tab.id === activeTabId}
             to={tab.to}
+            disabled={tab.disabled}
           >
             {tab.text}
           </Tab>
@@ -76,8 +78,9 @@ const Tab: FC<
     fixedWidth?: number;
     isActive: boolean;
     to: string;
+    disabled: boolean;
   }
-> = ({ children, setPosition, fixedWidth, isActive, to }) => {
+> = ({ children, setPosition, fixedWidth, isActive, to, disabled }) => {
   const ref = useRef<HTMLLIElement | null>(null);
 
   return (
@@ -98,8 +101,9 @@ const Tab: FC<
           });
         }}
         className={clsx(
-          "relative z-10 block cursor-pointer p-2 rounded-full",
+          "relative z-10 block cursor-pointer p-2 rounded-xl",
           "text-center text-body-xs font-semibold text-black-secondary capitalize",
+          disabled && "opacity-50 pointer-events-none",
           isActive && styles.active,
           isActive && "bg-sand-800  text-white"
         )}
@@ -126,7 +130,7 @@ const Cursor: FC<{ position: Position }> = ({ position }) => {
       //     left: { duration: 0.3 },
       //   },
       // }}
-      className="absolute z-0 h-[34px] rounded-full bg-sand-300"
+      className="absolute z-0 h-[34px] rounded-xl bg-sand-300"
     />
   );
 };

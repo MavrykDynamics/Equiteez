@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import BannerMask from "app/assets/home/banner/banner-mask.webp";
+import BannerMask from "app/assets/home/mask.svg";
 
 import styles from "./bannerSection.module.css";
 
