@@ -118,7 +118,7 @@ const Cursor: FC<{ position: Position }> = ({ position }) => {
       }}
       transition={{
         scale: { ease: "linear" },
-        left: { duration: 0 },
+        // left: { duration: 0 },
         width: { duration: 0 },
       }}
       // whileHover={{
