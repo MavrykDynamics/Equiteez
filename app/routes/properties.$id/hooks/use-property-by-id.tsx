@@ -1,11 +1,13 @@
-import { useMatches } from '@remix-run/react';
+import { useMatches, useNavigate } from "@remix-run/react";
 
-import { useEffect } from 'react';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { useEffect } from "react";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 
-export const usePropertyByAddress = (paramId = 'id') => {
-  const { activeEstate, setActiveEstate } = useEstatesContext();
+export const usePropertyByAddress = (paramId = "id") => {
+  const { activeEstate, setActiveEstate, isActiveEstateLoading } =
+    useEstatesContext();
   const matches = useMatches();
+  const navigate = useNavigate();
 
   const id = matches[0].params[paramId];
 
@@ -15,5 +17,7 @@ export const usePropertyByAddress = (paramId = 'id') => {
     }
   }, [id, setActiveEstate]);
 
-  return activeEstate;
+  if (!isActiveEstateLoading && activeEstate === null) navigate("/properties");
+
+  return activeEstate ?? null;
 };
