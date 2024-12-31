@@ -3,10 +3,12 @@ import { getRestMockedEstates } from "~/providers/EstatesProvider/utils/estatesM
 
 import styles from "./marketRowTop.module.css";
 import clsx from "clsx";
+import useEmblaCarousel from "embla-carousel-react";
+import { EmblaOptionsType } from "node_modules/embla-carousel/esm/components/Options";
 
 // fake data
 const fakeCardsRecord = getRestMockedEstates();
-const fakeAddresses = Object.keys(fakeCardsRecord).slice(0, 4);
+const fakeAddresses = Object.keys(fakeCardsRecord).slice(0, 8);
 
 const textData = [
   {
@@ -27,19 +29,34 @@ const textData = [
   },
 ];
 
+const labelsArr = textData.concat(textData);
+
+const OPTIONS: EmblaOptionsType = { align: "start" };
+
 export const MarketRowTop = () => {
+  const [emblaRef] = useEmblaCarousel(OPTIONS);
+
   return (
-    <div className="grid grid-cols-4 gap-6">
-      {fakeAddresses.map((slug, idx) => (
-        <MarketTopRowCard
-          key={slug}
-          imgSrc={fakeCardsRecord[slug].assetDetails.previewImage}
-          header={textData[idx].header}
-          description={textData[idx].description}
-          height={180}
-        />
-      ))}
-    </div>
+    <section className={styles.embla}>
+      <div className={styles.embla__viewport} ref={emblaRef}>
+        <div className={styles.embla__container}>
+          {/* TODO extract embla to templates folder */}
+          {fakeAddresses.map((slug, idx) => (
+            <div
+              key={slug}
+              className={clsx(styles.embla__slide, "cursor-pointer")}
+            >
+              <MarketTopRowCard
+                imgSrc={fakeCardsRecord[slug].assetDetails.previewImage}
+                header={labelsArr[idx].header}
+                description={labelsArr[idx].description}
+                height={180}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
 

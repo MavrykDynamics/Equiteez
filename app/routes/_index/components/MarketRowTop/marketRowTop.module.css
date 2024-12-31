@@ -11,3 +11,30 @@
 .rowTopWrapper:hover .bg {
   transform: scale(1.2);
 }
+
+.embla {
+  width: 100%;
+  margin: auto;
+  --slide-spacing: 24px;
+  --slide-size: calc(100% / 4);
+}
+
+.embla__viewport {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.embla__container {
+  backface-visibility: hidden;
+  display: flex;
+  touch-action: pan-y;
+  margin-left: calc(var(--slide-spacing) * -1);
+  border-radius: 16px;
+}
+
+.embla__slide {
+  min-width: 0;
+  flex: 0 0 var(--slide-size);
+  padding-left: var(--slide-spacing);
+  border-radius: 16px;
+}
