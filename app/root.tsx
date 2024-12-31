@@ -11,7 +11,8 @@ import { json, LinksFunction } from "@remix-run/node";
 // providers
 
 // global styles
-import stylesheet from "~/index.css?url";
+import stylesheet from "~/styles/index.css?url";
+import marqueeStylesheet from "~/styles/marquee.css?url";
 import "react-datepicker/dist/react-datepicker.css";
 
 // providers
@@ -45,6 +46,8 @@ import { DexProvider } from "./providers/Dexprovider/dex.provider";
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
   { rel: "stylesheet", href: stylesheet },
+  { rel: "preload", as: "style", href: marqueeStylesheet },
+  { rel: "stylesheet", href: marqueeStylesheet },
 ];
 
 export const loader = async () => {
