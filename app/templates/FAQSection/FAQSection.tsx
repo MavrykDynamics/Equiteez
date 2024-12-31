@@ -105,7 +105,7 @@ const Question: FC<QuestionType> = ({
         )}
         data-active-article={`faq-${idx + 1}`}
       >
-        <button className="flex items-center justify-between w-full capitalize">
+        <button className="flex items-center justify-between w-full capitalize text-left">
           <div className={styles.faqSubHeader}>{item.title}</div>
           <ArrowDown
             className={clsx(
