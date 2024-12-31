@@ -34,6 +34,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   >(() => ({
     estateAddresses: [],
     estates: {},
+    areLoading: true,
   }));
 
   const [activeEstateData, setActiveEstateData] = useState<
@@ -75,6 +76,7 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
         setEstatesState((prev) => ({
           ...prev,
           estates: parsedMarkets,
+          areLoading: false,
         }));
       } catch (e) {
         console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
@@ -108,13 +110,15 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const memoizedEstatesProviderValue: EstatesContext = useMemo(
+    // TODO update "areloading" logic for markets
     () => ({
       ...estatesState,
       ...activeEstateData,
       estatesArr: Object.values(estatesState.estates),
       pickEstateByIdentifier,
       setActiveEstate,
-      isLoading: loading || isMarketsAddressesLoading,
+      isLoading:
+        loading || isMarketsAddressesLoading || estatesState.areLoading,
     }),
     [
       estatesState,

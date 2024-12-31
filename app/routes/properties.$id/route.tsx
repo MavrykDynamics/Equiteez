@@ -1,5 +1,5 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Navigate, useLoaderData } from "@remix-run/react";
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 import LikeIcon from "app/icons/like.svg?react";
 import ShareIcon from "app/icons/share.svg?react";
@@ -44,12 +44,15 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function PropertyDetails() {
   // setting active estate in provider
   const estateData = usePropertyByAddress();
-  const { isActiveEstateSecondaryMarket: isSecondaryEstate } =
+
+  const { isActiveEstateSecondaryMarket: isSecondaryEstate, isLoading } =
     useEstatesContext();
 
   const tabId = useLoaderData<typeof loader>() as string | undefined;
 
-  if (!estateData) return <FullScreenSpinner />;
+  if (isLoading) return <FullScreenSpinner />;
+
+  if (estateData === null) return <Navigate to={"/properties"} />;
 
   return (
     <PageLayout>

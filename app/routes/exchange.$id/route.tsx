@@ -23,6 +23,8 @@ import { AssetDropdown } from "./components/AssetDropdown";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useMemo } from "react";
 import Money from "~/lib/atoms/Money";
+import { Navigate } from "@remix-run/react";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -31,6 +33,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
+  const { isLoading } = useEstatesContext();
   const { dodoMav } = useDexContext();
   const estateData = usePropertyByAddress();
 
@@ -39,7 +42,9 @@ export default function ExchangeDetails() {
     [estateData?.slug, dodoMav]
   );
 
-  if (!estateData) return <FullScreenSpinner />;
+  if (isLoading) return <FullScreenSpinner />;
+
+  if (estateData === null) return <Navigate to={"/properties"} />;
 
   return (
     <PageLayout includeContainer={false} includeFooter={false}>
