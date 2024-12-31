@@ -22,7 +22,11 @@ export const HotelDetailsTab = () => {
     <div>
       <Table className="bg-white">
         <TableHeader>About</TableHeader>
-        <TableDescription>{propertyDetails.description}</TableDescription>
+        <TableDescription>
+          <div style={{ whiteSpace: "pre-wrap" }}>
+            {propertyDetails.description}
+          </div>
+        </TableDescription>
         <TableItem>
           <p>Name</p>
           <p>{activeEstate.name}</p>

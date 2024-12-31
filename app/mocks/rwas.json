@@ -10,11 +10,11 @@
       "roomsNumberTemp": "103 rooms, including Standard, Superior, and Suites",
       "roomSizesTemp": "Standard rooms (15-22 m²), Superior rooms (24-28 m²), Suites (34-42 m²)",
       "capacityTemp": "Seats 250 people",
-      "conferenceFacilitiesTemp" : "Accommodates 80 people, equipped with stage and essential devices",
+      "conferenceFacilitiesTemp": "Accommodates 80 people, equipped with stage and essential devices",
       "amenitiesTemp": "Hot tub, sauna, dressing rooms with showers",
       "additionalFacilitiesTemp": "Own laundry, storage, heating utility (well)",
       "landSizeTemp": "4,700 hectares",
-      "naturalTemp":"Geothermal heat, hot water availability, gravel mine, hunting and fishing rights",
+      "naturalTemp": "Geothermal heat, hot water availability, gravel mine, hunting and fishing rights",
       "coordinates": {
         "lat": 47.610516875601206,
         "lng": -122.33565825768186
@@ -35,7 +35,7 @@
         "buildDate": "1973-06-08T09:20:37-03:00"
       },
       "propertyDetails": {
-        "description": "Nestled in the picturesque countryside just outside the town of Vík, Hotel Katla is a 103-room country hotel situated 5 km east of Vík, on the south coast. A family-run gem on Iceland’s stunning south coast,  it boasts of majestic glaciers serving as a breathtaking backdrop. Since its inception in 1988 as a farmhouse accommodation, the hotel has evolved to cater primarily to group travel, with about 65% of its guests arriving through domestic and international travel agencies.   The area's natural beauty has attracted various advertising and film projects, further enhancing its appeal. The hotel benefits from its own geothermal heating utility and storage tank, ensuring a sustainable and efficient energy supply.  Guests can enjoy all-day dining in a large dining hall that comfortably seats up to 250 people. For business and events, the hotel features a well-equipped conference room with a stage, accommodating up to 80 attendees. The central reception area includes a bar offering a variety of drinks and retail items. For relaxation, the outdoor area boasts a hot tub and sauna, perfect for unwinding amidst the natural beauty.    Hotel Katla is not just a place to stay; it's a destination where guests can immerse themselves in Iceland’s natural wonders while enjoying modern comforts and amenities.",
+        "description": "Nestled in the picturesque countryside just outside the town of Vík, Hotel Katla is a 103-room country hotel situated 5 km east of Vík, on the south coast. A family-run gem on Iceland’s stunning south coast,  it boasts of majestic glaciers serving as a breathtaking backdrop. Since its inception in 1988 as a farmhouse accommodation, the hotel has evolved to cater primarily to group travel, with about 65% of its guests arriving through domestic and international travel agencies. \n\nThe area's natural beauty has attracted various advertising and film projects, further enhancing its appeal. The hotel benefits from its own geothermal heating utility and storage tank, ensuring a sustainable and efficient energy supply.\n\nGuests can enjoy all-day dining in a large dining hall that comfortably seats up to 250 people. For business and events, the hotel features a well-equipped conference room with a stage, accommodating up to 80 attendees. The central reception area includes a bar offering a variety of drinks and retail items. For relaxation, the outdoor area boasts a hot tub and sauna, perfect for unwinding amidst the natural beauty. \n\nHotel Katla is not just a place to stay; it's a destination where guests can immerse themselves in Iceland’s natural wonders while enjoying modern comforts and amenities.",
         "propertyType": "Hotel",
         "fullAddress": "Höfðabrekka, 871 Vík, Iceland Star Rating: Three-star hotel",
         "zipCode": 1,
