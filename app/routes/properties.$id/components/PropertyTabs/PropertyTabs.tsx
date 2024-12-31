@@ -1,10 +1,10 @@
-import { FC, useCallback, useMemo, useState } from 'react';
-import { TabType } from '~/lib/atoms/Tab';
-import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
-import { PropertyFinanceTab } from './PropertyFinance';
-import { PropertyDetailsTab } from './ProperyDetailsTab';
-import { PropertyBlockchainTab } from './PropertyBlockchainTab';
-import { MetaFunction } from '@remix-run/node';
+import { useCallback, useMemo, useState } from "react";
+import { TabType } from "~/lib/atoms/Tab";
+import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
+import { PropertyFinanceTab } from "./PropertyFinance";
+import { PropertyDetailsTab } from "./ProperyDetailsTab";
+import { PropertyBlockchainTab } from "./PropertyBlockchainTab";
+import { MetaFunction } from "@remix-run/node";
 import {
   ALL_TABS,
   PRIMARY_TABS,
@@ -13,26 +13,29 @@ import {
   PROPERTY_FINANCIALS_TAB,
   PROPERTY_OFFERING_TAB,
   PROPERTY_TRDADING_HISTORY_TAB,
-} from '../../consts';
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { PropertyOfferingTab } from './PropertyOfferingTab';
-import { PropertyTradingHistoryTab } from './PropertyTradingHistoryTab';
+} from "../../consts";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { PropertyOfferingTab } from "./PropertyOfferingTab";
+import { PropertyTradingHistoryTab } from "./PropertyTradingHistoryTab";
+import { HotelDetailsTab } from "./templates/HotelDetailsTab";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Property' },
-    { name: 'description', content: 'Property data' },
+    { title: "Property" },
+    { name: "description", content: "Property data" },
   ];
 };
 
 type PropertyTabsProps = {
   tabId?: string;
   isSecondaryEstate: boolean;
+  isHotel?: boolean;
 };
 
 export default function PropertyTabs({
   tabId,
   isSecondaryEstate,
+  isHotel = false,
 }: PropertyTabsProps) {
   const { IS_WEB } = useAppContext();
 
@@ -46,11 +49,11 @@ export default function PropertyTabs({
   const handleTabClick = useCallback(
     (id: string) => {
       if (IS_WEB) {
-        const href = window.location.href.split('?');
+        const href = window.location.href.split("?");
         href.pop();
-        const fileteredHref = href.join('/');
+        const fileteredHref = href.join("/");
 
-        window.history.pushState({}, '', fileteredHref.concat(`?tabId=${id}`));
+        window.history.pushState({}, "", fileteredHref.concat(`?tabId=${id}`));
       }
 
       setAvtiveTabId(id);
@@ -62,29 +65,29 @@ export default function PropertyTabs({
     () => [
       {
         id: PROPERTY_DETAILS_TAB,
-        label: 'Details',
+        label: "Details",
         handleClick: handleTabClick,
       },
       {
         id: PROPERTY_FINANCIALS_TAB,
-        label: 'Financials',
+        label: "Financials",
         handleClick: handleTabClick,
       },
       {
         id: PROPERTY_BLOCKCHAIN_TAB,
-        label: 'Blockchain',
+        label: "Blockchain",
         handleClick: handleTabClick,
       },
       {
         id: PROPERTY_OFFERING_TAB,
-        label: 'Offering',
+        label: "Offering",
         handleClick: handleTabClick,
       },
       ...(isSecondaryEstate
         ? [
             {
               id: PROPERTY_TRDADING_HISTORY_TAB,
-              label: 'Trading History',
+              label: "Trading History",
               handleClick: handleTabClick,
             },
           ]
@@ -97,28 +100,15 @@ export default function PropertyTabs({
     <section className="flex flex-col">
       <TabSwitcher tabs={tabs} activeTabId={activetabId} />
       <div className="mt-11">
-        <PropertyTab tabId={activetabId} />
+        {activetabId === PROPERTY_DETAILS_TAB &&
+          (isHotel ? <HotelDetailsTab /> : <PropertyDetailsTab />)}
+        {activetabId === PROPERTY_FINANCIALS_TAB && <PropertyFinanceTab />}
+        {activetabId === PROPERTY_BLOCKCHAIN_TAB && <PropertyBlockchainTab />}
+        {activetabId === PROPERTY_OFFERING_TAB && <PropertyOfferingTab />}
+        {activetabId === PROPERTY_TRDADING_HISTORY_TAB && (
+          <PropertyTradingHistoryTab />
+        )}
       </div>
     </section>
   );
 }
-
-type PropertytabKey = keyof typeof propertyTabsComponents;
-
-type PropertyTabProps = {
-  tabId: string;
-};
-
-const PropertyTab: FC<PropertyTabProps> = ({ tabId }) => {
-  const Component = propertyTabsComponents[tabId as PropertytabKey];
-
-  return Component;
-};
-
-const propertyTabsComponents = {
-  [PROPERTY_DETAILS_TAB]: <PropertyDetailsTab />,
-  [PROPERTY_FINANCIALS_TAB]: <PropertyFinanceTab />,
-  [PROPERTY_BLOCKCHAIN_TAB]: <PropertyBlockchainTab />,
-  [PROPERTY_OFFERING_TAB]: <PropertyOfferingTab />,
-  [PROPERTY_TRDADING_HISTORY_TAB]: <PropertyTradingHistoryTab />,
-};

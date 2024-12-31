@@ -1,3 +1,4 @@
+import { MARS1_TOKEN_ADDRESS } from "~/consts/contracts";
 import { extractNumber } from "~/lib/utils/numbers";
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
 import {
@@ -34,6 +35,18 @@ export const marketTokenNormalizer = (
         (es) => es.token_address === token.address
       );
 
+      // Asset slug used accross entire app to get specific data
+      const slug = token.address.concat(`_${token.token_id}`);
+
+      if (token.address === MARS1_TOKEN_ADDRESS) {
+        acc[slug] = {
+          slug,
+          ...mockedPart,
+        };
+
+        return acc;
+      }
+
       const parsedTokenDetails = JSON.parse(token.token_metadata.assetDetails);
       const { propertyDetails } = parsedTokenDetails;
 
@@ -63,9 +76,6 @@ export const marketTokenNormalizer = (
         // offering,
         valuations: { latest: latestValuation, initial: initialValuation },
       } = assetData.assetDetails;
-
-      // Asset slug used accross entire app to get specific data
-      const slug = token.address.concat(`_${token.token_id}`);
 
       acc[slug] = {
         slug,

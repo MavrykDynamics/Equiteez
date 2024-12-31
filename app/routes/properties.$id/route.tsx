@@ -27,6 +27,7 @@ import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider"
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import clsx from "clsx";
+import { MARS1_TOKEN_ADDRESS } from "~/consts/contracts";
 
 export const meta: MetaFunction = () => {
   return [
@@ -91,7 +92,11 @@ export default function PropertyDetails() {
         <div className="flex flex-col">
           <IconsBlock />
           <Divider className="my-6" />
-          <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
+          <PropertyTabs
+            tabId={tabId}
+            isSecondaryEstate={isSecondaryEstate}
+            isHotel={estateData.token_address === MARS1_TOKEN_ADDRESS}
+          />
         </div>
         <div className="sticky top-10 h-fit">
           <PriceSection

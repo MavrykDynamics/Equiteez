@@ -1,11 +1,20 @@
 [
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ9",
-    "name": "Hilton Mars 1",
+    "name": "Katla Icelandic Hotel",
     "symbol": "MARS1",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetDetails": {
+      "locationTemp": "5 km east of Vík, South Coast, Iceland",
+      "roomsNumberTemp": "103 rooms, including Standard, Superior, and Suites",
+      "roomSizesTemp": "Standard rooms (15-22 m²), Superior rooms (24-28 m²), Suites (34-42 m²)",
+      "capacityTemp": "Seats 250 people",
+      "conferenceFacilitiesTemp" : "Accommodates 80 people, equipped with stage and essential devices",
+      "amenitiesTemp": "Hot tub, sauna, dressing rooms with showers",
+      "additionalFacilitiesTemp": "Own laundry, storage, heating utility (well)",
+      "landSizeTemp": "4,700 hectares",
+      "naturalTemp":"Geothermal heat, hot water availability, gravel mine, hunting and fishing rights",
       "coordinates": {
         "lat": 47.610516875601206,
         "lng": -122.33565825768186
@@ -13,12 +22,12 @@
       "APY": 6.15,
       "type": "Secondary Market",
       "assetImages": [
-        "https://images.pexels.com/photos/1001470/pexels-photo-1001470.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-        "https://images.pexels.com/photos/2983674/pexels-photo-2983674.jpeg?auto=compress&cs=tinysrgb&w=800",
-        "https://images.pexels.com/photos/12754804/pexels-photo-12754804.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-        "https://images.pexels.com/photos/10622716/pexels-photo-10622716.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/294671437.jpg?k=4f3c51422080f1abbbf4c3e655fc90bc9c0a02c25055bc3a22a954b84b89e175&o=&hp=1",
+        "https://cf.bstatic.com/xdata/images/hotel/max1280x900/53299562.jpg?k=a46ec27d7bef38e0573fa02638a026dcfd185729f64ed7154bac836ddbb1ac0c&o=&hp=1",
+        "https://cf.bstatic.com/xdata/images/hotel/max1280x900/560603778.jpg?k=6edb695046ed5b0d1fe16ba8f1786edbe15da603aedaa7b836ae6eefe102e0ba&o=&hp=1",
+        "https://cf.bstatic.com/xdata/images/hotel/max1280x900/272390849.jpg?k=0a664492e0c1462479fdf87c2a79883b6f63cdc25b4776ed9c05f4b817efe2d3&o=&hp=1"
       ],
-      "previewImage": "https://images.pexels.com/photos/8474984/pexels-photo-8474984.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "previewImage": "https://cf.bstatic.com/xdata/images/hotel/max1280x900/21926394.jpg?k=cd70b731d978d3898a4779a965f35359256446d578c0e50d097acf2c2b58da02&o=&hp=1",
       "basicInfo": {
         "beds": 1,
         "baths": 3,
@@ -26,12 +35,12 @@
         "buildDate": "1973-06-08T09:20:37-03:00"
       },
       "propertyDetails": {
-        "description": "Welcome to your new oasis on the Red Planet! Hilton Mars 1 by Space X proudly presents an exquisite multi-story establishment designed for luxurious stays in the cosmos. Our exclusive property offers panoramic views of Mars' breathtaking landscapes and features state-of-the-art amenities for an unparalleled experience.",
-        "propertyType": "Apartment",
-        "fullAddress": "Martian Lane 1",
+        "description": "Nestled in the picturesque countryside just outside the town of Vík, Hotel Katla is a 103-room country hotel situated 5 km east of Vík, on the south coast. A family-run gem on Iceland’s stunning south coast,  it boasts of majestic glaciers serving as a breathtaking backdrop. Since its inception in 1988 as a farmhouse accommodation, the hotel has evolved to cater primarily to group travel, with about 65% of its guests arriving through domestic and international travel agencies.   The area's natural beauty has attracted various advertising and film projects, further enhancing its appeal. The hotel benefits from its own geothermal heating utility and storage tank, ensuring a sustainable and efficient energy supply.  Guests can enjoy all-day dining in a large dining hall that comfortably seats up to 250 people. For business and events, the hotel features a well-equipped conference room with a stage, accommodating up to 80 attendees. The central reception area includes a bar offering a variety of drinks and retail items. For relaxation, the outdoor area boasts a hot tub and sauna, perfect for unwinding amidst the natural beauty.    Hotel Katla is not just a place to stay; it's a destination where guests can immerse themselves in Iceland’s natural wonders while enjoying modern comforts and amenities.",
+        "propertyType": "Hotel",
+        "fullAddress": "Höfðabrekka, 871 Vík, Iceland Star Rating: Three-star hotel",
         "zipCode": 1,
-        "state": "New Mars",
-        "country": "Mars",
+        "state": "New Iceland",
+        "country": "Iceland",
         "rentalType": "Commercial Lease",
         "rented": "Partially Rented",
         "rentSubsidy": "Yes",

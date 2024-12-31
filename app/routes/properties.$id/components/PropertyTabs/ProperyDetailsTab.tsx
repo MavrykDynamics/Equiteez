@@ -148,19 +148,19 @@ export const PropertyDetailsTab = () => {
  */
 
 // fake map data
-const containerStyle = {
+export const containerStyle = {
   width: "406px",
   height: "507px",
 };
 
-type WalkScoreState = {
+export type WalkScoreState = {
   transit: number | "-";
   bike: number | "-";
   walk: number | "-";
   isLoading: boolean;
 };
 
-const PropertyDetailsMap: FC<{
+export const PropertyDetailsMap: FC<{
   coordinates: { lat: number; lng: number };
   address: string;
 }> = ({ coordinates, address }) => {
@@ -298,7 +298,7 @@ const distanceData = {
   },
 };
 
-const DistanceBlock: FC<DistanceBlockProps> = ({ type, score }) => {
+export const DistanceBlock: FC<DistanceBlockProps> = ({ type, score }) => {
   const { Icon, label, description } = distanceData[type];
 
   return (
