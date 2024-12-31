@@ -30,7 +30,9 @@ const HeaderLinksBlock = () => {
     <header className="flex items-center h-full justify-between w-full">
       <NavSlideTabs tabs={links} fixedWidth={124} activeTabId={activeTabId} />
 
-      <ConnectWallet />
+      <div className="w-[234px]">
+        <ConnectWallet />
+      </div>
     </header>
   );
 };

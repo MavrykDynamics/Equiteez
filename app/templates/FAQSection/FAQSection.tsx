@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import styles from "./faqSection.module.css";
 import clsx from "clsx";
 
