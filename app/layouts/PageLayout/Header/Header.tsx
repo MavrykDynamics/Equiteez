@@ -21,8 +21,11 @@ Header.displayName = "Header";
 const HeaderLinksBlock = () => {
   const { pathname } = useLocation();
 
+  console.log(pathname, "pathname");
+
   const activeTabId = useMemo(() => {
-    const { id = null } = links.find((link) => link.to === pathname) ?? {};
+    const { id = null } =
+      links.find((link) => pathname.includes(link.to)) ?? {};
     return id;
   }, [pathname]);
 
@@ -30,7 +33,7 @@ const HeaderLinksBlock = () => {
     <header className="flex items-center h-full justify-between w-full">
       <NavSlideTabs tabs={links} fixedWidth={124} activeTabId={activeTabId} />
 
-      <div className="w-[234px]">
+      <div className="w-[234px] flex justify-end">
         <ConnectWallet />
       </div>
     </header>

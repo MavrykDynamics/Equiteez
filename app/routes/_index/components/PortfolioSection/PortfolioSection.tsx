@@ -10,7 +10,6 @@ import clsx from "clsx";
 import { Button } from "~/lib/atoms/Button";
 
 import styles from "./portfolioSection.module.css";
-import { Link } from "@remix-run/react";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 const CARDS = [
@@ -93,7 +92,7 @@ export const PortfolioSection = () => {
                   </h3>
                   <p className="text-content text-body">{description}</p>
                 </div>
-                <Link to={to}>
+                <CustomLink to={to} disabled={disabled}>
                   <Button
                     className={clsx(
                       "self-start",
@@ -102,7 +101,7 @@ export const PortfolioSection = () => {
                   >
                     {disabled ? "Coming Soon" : btnText}
                   </Button>
-                </Link>
+                </CustomLink>
               </CardWithShadow>
             </div>
           )
