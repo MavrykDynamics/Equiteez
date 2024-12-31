@@ -11,6 +11,7 @@ import { Button } from "~/lib/atoms/Button";
 
 import styles from "./portfolioSection.module.css";
 import { Link } from "@remix-run/react";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 const CARDS = [
   {
@@ -55,13 +56,13 @@ const CARDS_BOTTOM_ROW = [
   {
     Icon: AccountIcon,
     title: "Account",
-    link: "#",
+    link: "",
     disabled: true,
   },
   {
     Icon: LearnIcon,
     title: "Learn",
-    link: "#",
+    link: "",
     disabled: true,
   },
 ];
@@ -110,7 +111,7 @@ export const PortfolioSection = () => {
 
       <div className={styles.bottomCardsGrid}>
         {CARDS_BOTTOM_ROW.map(({ Icon, title, disabled, link }) => (
-          <Link key={title} to={link}>
+          <CustomLink key={title} to={link} disabled={disabled}>
             <div
               className={clsx(
                 " flex items-center p-9 gap-4",
@@ -121,7 +122,7 @@ export const PortfolioSection = () => {
               <Icon />
               <h3 className="text-section-headline text-content">{title}</h3>
             </div>
-          </Link>
+          </CustomLink>
         ))}
       </div>
     </section>

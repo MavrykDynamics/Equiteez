@@ -1,9 +1,9 @@
 import React, { FC, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
-import { Link } from "@remix-run/react";
 
 import styles from "./navSlideTabs.module.css";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 type Position = {
   left: number;
@@ -84,7 +84,7 @@ const Tab: FC<
   const ref = useRef<HTMLLIElement | null>(null);
 
   return (
-    <Link to={to}>
+    <CustomLink to={to} disabled={disabled}>
       <li
         ref={ref}
         style={{ minWidth: fixedWidth ? fixedWidth : "unset" }}
@@ -110,7 +110,7 @@ const Tab: FC<
       >
         {children}
       </li>
-    </Link>
+    </CustomLink>
   );
 };
 

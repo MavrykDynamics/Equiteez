@@ -7,19 +7,19 @@ export const links = [
   },
   {
     id: 1,
-    to: "#",
+    to: "",
     text: "stake",
     disabled: true,
   },
   {
     id: 2,
-    to: "#",
+    to: "",
     text: "advanced trade",
     disabled: true,
   },
   {
     id: 3,
-    to: "#",
+    to: "",
     text: "borrow",
     disabled: true,
   },
