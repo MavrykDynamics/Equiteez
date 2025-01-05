@@ -14,6 +14,8 @@ import { Container } from "~/lib/atoms/Container";
 import { MarketRowTop } from "./components/MarketRowTop/MarketRowTop";
 import { MarketRowBottom } from "./components/MarketRowBottom/MarketRowBottom";
 import { PropertiesSliderSecondary } from "./components/PropertiesSlider/PropertiesSlider";
+import { useRef } from "react";
+import { useScroll, useTransform } from "framer-motion";
 
 export const meta: MetaFunction = () => {
   return [
@@ -23,13 +25,23 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start center", "end center"],
+  });
+  // used for banner section opacity transition
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
+
   return (
     <PageLayout includeContainer={false}>
       <Container px={44}>
-        <BannerSection />
-        <Spacer height={124} />
-        <MarketRowTop />
-        <Spacer height={64} />
+        <div ref={ref}>
+          <BannerSection opacity={opacity} />
+          <Spacer height={124} />
+          <MarketRowTop />
+          <Spacer height={64} />
+        </div>
       </Container>
 
       <MarketRowBottom />
