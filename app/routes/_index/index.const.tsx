@@ -21,7 +21,7 @@ export const homeFAQ = [
         <div>
           Buying RWA (Real World Asset) shares on Equiteez is a simple process:
         </div>
-        <ol className="list-disc space-y-4 pl-6 my-6 sm:pl-4 sm:my-4 sm:space-y-2">
+        <ol className="list-disc space-y-4 pl-6 my-6">
           <li>Visit the Equiteez marketplace to explore available assets.</li>
           <li>
             Select the asset or property you're interested in. Remember, you can
@@ -59,7 +59,7 @@ export const homeFAQ = [
           Yes, you have multiple options for selling your assets across three
           different decentralized exchanges:
         </div>
-        <ol className="list-disc space-y-4 pl-6 my-6 sm:pl-4 sm:my-4 sm:space-y-2">
+        <ol className="list-disc space-y-4 pl-6 my-6">
           <li>
             Over The Counter (OTC): Post a bulletin to sell your RWA directly
             through peer-to-peer (P2P) transactions.
