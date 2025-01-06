@@ -1,18 +1,18 @@
-import { FC, useEffect } from 'react';
-import { NextButton, PrevButton } from '~/templates/EmblaCarouselArrowButtons';
+import { FC, useEffect } from "react";
+import { NextButton, PrevButton } from "~/templates/EmblaCarouselArrowButtons";
 
 // hooks
-import useEmblaCarousel from 'embla-carousel-react';
-import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
+import useEmblaCarousel from "embla-carousel-react";
+import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 
 // icons
-import LikeIcon from 'app/icons/like.svg?react';
-import ShareIcon from 'app/icons/share.svg?react';
-import CrossIcon from 'app/icons/cross.svg?react';
+import LikeIcon from "app/icons/like.svg?react";
+import ShareIcon from "app/icons/share.svg?react";
+import CrossIcon from "app/icons/cross.svg?react";
 
 // styles
-import styles from '../route.module.css';
-import clsx from 'clsx';
+import styles from "../route.module.css";
+import clsx from "clsx";
 
 type GallerySliderProps = {
   handleClose: () => void;
@@ -25,7 +25,7 @@ const GallerySlider: FC<GallerySliderProps> = ({
   images,
   pickedImgIdx,
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start' });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start" });
 
   const {
     prevBtnDisabled,
@@ -48,7 +48,7 @@ const GallerySlider: FC<GallerySliderProps> = ({
         </button>
         <div
           className={clsx(
-            'flex items-center justify-center text-buttons flex-1',
+            "flex items-center justify-center text-buttons flex-1",
             styles.counter
           )}
         >
@@ -69,12 +69,12 @@ const GallerySlider: FC<GallerySliderProps> = ({
       </header>
       <div
         className={clsx(
-          'flex flex-col justify-center h-full mt-11',
-          styles['no-select']
+          "flex flex-col justify-center h-full mt-11",
+          styles["no-select"]
         )}
       >
         <div className="flex items-center justify-center">
-          <div className="mr-[70px]">
+          <div className="mr-[70px] text-white">
             <PrevButton
               onClick={onPrevButtonClick}
               disabled={prevBtnDisabled}
@@ -85,13 +85,13 @@ const GallerySlider: FC<GallerySliderProps> = ({
               <div className={styles.embla__container}>
                 {images.map((img, idx) => (
                   <div key={idx} className={styles.embla__slide}>
-                    <img src={img} alt={'slider item'} />
+                    <img src={img} alt={"slider item"} />
                   </div>
                 ))}
               </div>
             </div>
           </section>
-          <div className="ml-[70px]">
+          <div className="ml-[70px] text-white">
             <NextButton
               onClick={onNextButtonClick}
               disabled={nextBtnDisabled}
