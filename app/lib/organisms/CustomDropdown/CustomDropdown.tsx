@@ -7,13 +7,13 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import ArrowDown from 'app/icons/chevron-down.svg?react';
+} from "react";
+import ArrowDown from "app/icons/chevron-down.svg?react";
 
-import styles from './dropdown.module.css';
-import clsx from 'clsx';
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { useOutsideClick } from '~/lib/ui/use-click-outside';
+import styles from "./dropdown.module.css";
+import clsx from "clsx";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { useOutsideClick } from "~/lib/ui/use-click-outside";
 
 type FaceContentDimensions = {
   width: number;
@@ -106,7 +106,7 @@ export const DropdownFaceContent: FC<
   }
 > = ({
   children,
-  iconClassName = 'w-4 h-4 text-content stroke-current',
+  iconClassName = "w-4 h-4 text-content stroke-current",
   gap = 3,
   className,
 }) => {
@@ -132,16 +132,16 @@ export const DropdownFaceContent: FC<
       className={clsx(
         className,
         `w-full text-left  outline-none flex items-center gap-x-${gap}`,
-        withOverlay && opened && 'bg-white relative z-10'
+        withOverlay && opened && "bg-white relative z-10"
       )}
     >
       {children}
       <ArrowDown
         className={clsx(
           iconClassName,
-          disabled && 'pointer-events-none opacity-50',
-          'transition duration-300',
-          opened && !disabled && 'rotate-180'
+          disabled && "pointer-events-none opacity-50",
+          "transition duration-300",
+          opened && !disabled && "rotate-180"
         )}
       />
     </button>
@@ -150,7 +150,7 @@ export const DropdownFaceContent: FC<
 
 type DropdownBodyContentProps = {
   topMargin?: number;
-  position?: 'left' | 'right' | 'center';
+  position?: "left" | "right" | "center";
   customWidth?: number;
   customHeight?: number;
   maxHeight?: number;
@@ -159,8 +159,8 @@ type DropdownBodyContentProps = {
 export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
   children,
   customWidth,
-  customHeight = 'auto',
-  position = 'left',
+  customHeight = "auto",
+  position = "left",
   topMargin = 0,
   maxHeight = 700,
 }) => {
@@ -177,10 +177,10 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
         width: customWidth ? customWidth : width,
       }}
       className={clsx(
-        position === 'left' && 'left-0',
-        position === 'center' && '-translate-x-1/2 left-1/2',
-        position === 'right' && 'right-0',
-        'transition duration-300 ease-in-out',
+        position === "left" && "left-0",
+        position === "center" && "-translate-x-1/2 left-1/2",
+        position === "right" && "right-0",
+        "transition duration-300 ease-in-out",
 
         styles.dropdownData,
         opened && styles.opened
@@ -211,7 +211,7 @@ const useDropdownContext = () => {
 
   if (!context) {
     throw new Error(
-      'useDropdownContext must be used within Customdropdown provider!'
+      "useDropdownContext must be used within Customdropdown provider!"
     );
   }
 
