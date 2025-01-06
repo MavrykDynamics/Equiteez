@@ -74,7 +74,7 @@ const GallerySlider: FC<GallerySliderProps> = ({
         )}
       >
         <div className="flex items-center justify-center">
-          <div className="mr-[70px]">
+          <div className="mr-[70px] text-white">
             <PrevButton
               onClick={onPrevButtonClick}
               disabled={prevBtnDisabled}
@@ -91,7 +91,7 @@ const GallerySlider: FC<GallerySliderProps> = ({
               </div>
             </div>
           </section>
-          <div className="ml-[70px]">
+          <div className="ml-[70px] text-white">
             <NextButton
               onClick={onNextButtonClick}
               disabled={nextBtnDisabled}
