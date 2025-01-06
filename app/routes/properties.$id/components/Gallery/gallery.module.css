@@ -1,17 +1,47 @@
 .gallery {
   display: grid;
-
-  grid-template-rows: repeat(2, 245px);
-  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  grid-template-rows: repeat(2, 245px);
+}
+
+.gallery,
+.galleryOnly4,
+.galleryGTE5 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.galleryZeroImages {
+  grid-template-columns: 1fr;
+}
+
+.galleryOnly1 {
+  grid-template-columns: 1fr;
+}
+
+.galleryOnly2,
+.galleryOnly3 {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .bannerImg {
   grid-row: 1 / -1;
-  grid-column: 1 / 3;
 
   border-radius: 16px;
   overflow: hidden;
+}
+
+.galleryGTE5 .bannerImg,
+.galleryOnly4 .bannerImg {
+  grid-column: 1 / 3;
+}
+
+.galleryOnly2 .thumb {
+  grid-row: 1 / -1;
+}
+
+.galleryOnly4 .thumb:last-of-type {
+  grid-column: 4 / 5;
+  grid-row: 1 / -1;
 }
 
 .bannerImg img,
