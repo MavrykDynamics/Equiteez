@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
-import { useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { Navigate } from "react-router-dom";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 
@@ -12,8 +12,8 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Exchange() {
-  const { estatesArr } = useEstatesContext();
-  const navigate = useNavigate();
+  const { estatesArr, isLoading } = useEstatesContext();
+
   const id = useMemo(
     () =>
       estatesArr.length > 0
@@ -21,11 +21,11 @@ export default function Exchange() {
         : null,
     [estatesArr]
   );
+  if (isLoading) {
+    return <FullScreenSpinner />;
+  }
 
-  useEffect(() => {
-    if (id === null) return navigate("/");
-    navigate(`/exchange/${id}`);
-  }, [navigate, id]);
-
-  return <FullScreenSpinner />;
+  return (
+    <Navigate to={`/exchange/${id}`} state={{ fromExchange: true }} replace />
+  );
 }

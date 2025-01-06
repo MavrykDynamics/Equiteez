@@ -21,8 +21,6 @@ Header.displayName = "Header";
 const HeaderLinksBlock = () => {
   const { pathname } = useLocation();
 
-  console.log(pathname, "pathname");
-
   const activeTabId = useMemo(() => {
     const { id = null } =
       links.find((link) => pathname.includes(link.to)) ?? {};
