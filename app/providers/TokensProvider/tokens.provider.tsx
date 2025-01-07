@@ -6,14 +6,18 @@ import {
   useEffect,
   useMemo,
   useState,
-} from 'react';
-import { TokensProviderCtx, TokenType } from './tokens.provider.types';
+} from "react";
+import { TokensProviderCtx, TokenType } from "./tokens.provider.types";
 import {
+  getMockedMetadata,
+  MOCKED_ASSET_ADDRESSES,
+  MOCKED_ASSET_SYMBOLS,
   MVRK_ASSET_SLUG,
   MVRK_CONTRACT_ADDRESS,
   MVRK_METADATA,
   TokenMetadata,
-} from '~/lib/metadata';
+} from "~/lib/metadata";
+import { toTokenSlug } from "~/lib/assets";
 
 const tokensContext = createContext<TokensProviderCtx>(undefined!);
 
@@ -36,15 +40,33 @@ export const TokensProvider: FC<TokensProviderProps> = ({
   const initializeTokensData = useCallback(async () => {
     try {
       setTokens(
-        initialTokens.concat({
-          contract: MVRK_CONTRACT_ADDRESS,
-          id: MVRK_METADATA.id,
-        })
+        initialTokens
+          .concat({
+            contract: MVRK_CONTRACT_ADDRESS,
+            id: MVRK_METADATA.id,
+          })
+          .concat(
+            MOCKED_ASSET_ADDRESSES.map((address) => ({
+              contract: address,
+              id: "0",
+            }))
+          )
       );
 
       setTokensMetadata({
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
+        ...MOCKED_ASSET_ADDRESSES.reduce<StringRecord<TokenMetadata>>(
+          (acc, address) => {
+            const slug = toTokenSlug(address);
+            acc[slug] = getMockedMetadata(
+              address,
+              MOCKED_ASSET_SYMBOLS[address] ?? "NMDT"
+            );
+            return acc;
+          },
+          {}
+        ),
       });
 
       setIsLoading(false);

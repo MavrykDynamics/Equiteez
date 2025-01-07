@@ -62,7 +62,7 @@ const AssetDetailsTemplate: FC<{ activeEstate: EstateType }> = ({
   const Template = useMemo(
     () =>
       (Boolean(activeEstate.assetType)
-        ? pickTemplateBasedOnAssetType[activeEstate.assetType]
+        ? pickTemplateBasedOnAssetType[activeEstate.assetType.toLowerCase()]
         : DefaultAssetTemplate) ?? DefaultAssetTemplate,
     [activeEstate.assetType]
   );
@@ -77,17 +77,17 @@ const AssetDetailsTemplate: FC<{ activeEstate: EstateType }> = ({
 
 const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
   if (!activeEstate.assetType) return { activeEstate };
-  switch (activeEstate.assetType) {
-    case [BitcoinMiners]:
-    case [Resort]:
-    case [Debt]:
-    case [Treasuries]:
-    case [InsuranceContract]:
+  switch (activeEstate.assetType.toLowerCase()) {
+    case BitcoinMiners:
+    case Resort:
+    case Debt:
+    case Treasuries:
+    case InsuranceContract:
       return {
         data: activeEstate.assetDetails.propertyDetails,
       };
 
-    case [Hotel]:
+    case Hotel:
       return {
         data: {
           ...activeEstate.assetDetails.propertyDetails,
@@ -95,8 +95,8 @@ const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
         },
       };
 
-    case [Commodities]:
-    case [MixedUseRealEstate]:
+    case Commodities:
+    case MixedUseRealEstate:
       return {
         detailsData: activeEstate.assetDetails.propertyDetails,
         buildingData: activeEstate.assetDetails.buildingInfo,

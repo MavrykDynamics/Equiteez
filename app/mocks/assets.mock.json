@@ -2,7 +2,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ1",
     "name": "North Texas Bitcoin Miners LTD",
-    "symbol": "NTBM",
+    "symbol": "BTM",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Bitcoin Miners",
@@ -79,8 +79,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "North Texas Bitcoin Miners LTD",
+          "identifier": "NORTH-TEXAS-BTC",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -276,7 +276,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ2",
     "name": "The Sapphire",
-    "symbol": "NTBM",
+    "symbol": "SPH",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Resort",
@@ -349,8 +349,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Sapphire",
+          "identifier": "Sapphire-1-X",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -619,8 +619,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Deposit Loans",
+          "identifier": "LOAN-1-DEPOSIT",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -816,7 +816,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ4",
     "name": "U.S. Treasury Bonds",
-    "symbol": "NTBM",
+    "symbol": "UTB",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Treasuries",
@@ -894,8 +894,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Treasury Bonds",
+          "identifier": "TREASURY-BOUNDS-LTC",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -1091,7 +1091,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ5",
     "name": "Car Insurance Bonds",
-    "symbol": "NTBM",
+    "symbol": "LMB",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Insurance Contract",
@@ -1162,8 +1162,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Car Insurance Bonds",
+          "identifier": "LAMBINI-BONDS_-INC",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -1359,7 +1359,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ6",
     "name": "Gold",
-    "symbol": "NTBM",
+    "symbol": "GLD",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Commodities",
@@ -1442,8 +1442,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Gold Corporation",
+          "identifier": "GOLD-MILLION-2",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -1639,7 +1639,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ7",
     "name": "Queen Tower",
-    "symbol": "NTBM",
+    "symbol": "QTM",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Mixed-Use Real Estate",
@@ -1722,8 +1722,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Queen Tower",
+          "identifier": "QUEEN-GAMBIT",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
@@ -1919,7 +1919,7 @@
   {
     "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ8",
     "name": "Katla Icelandic Hotel",
-    "symbol": "NTBM",
+    "symbol": "KTL",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
     "assetType": "Hotel",
@@ -1991,8 +1991,8 @@
       },
       "blockchain": [
         {
-          "name": "Mavryk",
-          "identifier": "MARS-1-HOTEL-SPACE-X",
+          "name": "Katla Hotel",
+          "identifier": "KATLA-HOTEL-SYSTEM",
           "totalTokens": 1817,
           "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
           "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"

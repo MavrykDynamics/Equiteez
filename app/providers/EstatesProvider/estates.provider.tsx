@@ -9,9 +9,13 @@ import {
 
 import { useQuery } from "@apollo/client/index";
 
+// mocked assets
+import mockedAssets from "app/mocks/assets.mock.json";
 import estatesMocked from "app/mocks/rwas.json";
+
 import {
   EstatesContext,
+  EstateType,
   PrimaryEstate,
   SECONDARY_MARKET,
   SecondaryEstate,
@@ -24,6 +28,7 @@ import {
   getMarketAddresses,
   marketTokenNormalizer,
 } from "./utils/marketTokenNormalizer";
+import { toTokenSlug } from "~/lib/assets";
 
 export const estatesContext = createContext<EstatesContext>(undefined!);
 
@@ -53,8 +58,6 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       try {
         const parsedAddresses = getMarketAddresses(data);
 
-        // TODO delete fake data fter api fixes
-
         setEstatesState((prev) => ({
           ...prev,
           estateAddresses: parsedAddresses,
@@ -73,9 +76,19 @@ export const EstatesProvider: FC<PropsWithChildren> = ({ children }) => {
       try {
         const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
 
+        // TODO delete fake data fter api fixes
+        const fakeAssets = mockedAssets.reduce<StringRecord<EstateType>>(
+          (acc, asset) => {
+            const slug = toTokenSlug(asset.token_address);
+            acc[slug] = { ...asset, slug };
+            return acc;
+          },
+          {}
+        );
+
         setEstatesState((prev) => ({
           ...prev,
-          estates: parsedMarkets,
+          estates: { ...parsedMarkets, ...fakeAssets },
           areLoading: false,
         }));
       } catch (e) {
