@@ -5,6 +5,7 @@
     "symbol": "OHIO",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Bitcoin Miners",
     "assetDetails": {
       "coordinates": {
         "lat": -53.747637,
