@@ -517,7 +517,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   </div>
                 </div>
 
-                <div className="flex flex-col w-full gap-1">
+                <div
+                  className={clsx(
+                    "flex flex-col w-full gap-1",
+                    !VALID_TOKENS[tokenAddress] && "pointer-events-none"
+                  )}
+                >
                   <ESnakeblock
                     selectedOption={selectedPercentage}
                     setSelectedOption={setSelectedPercentage}
