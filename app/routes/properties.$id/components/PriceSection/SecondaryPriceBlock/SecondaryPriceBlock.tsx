@@ -37,7 +37,8 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
   const { slug } = estate;
   const baseTokenMetadata = useAssetMetadata(slug);
-  const quoteTokenMetadata = useAssetMetadata(dodoTokenPair[slug]);
+  // TODO remove ?? slug after API assets
+  const quoteTokenMetadata = useAssetMetadata(dodoTokenPair[slug] ?? slug);
 
   const currentPrice = useMemo(() => dodoMav[slug] ?? "0", [dodoMav, slug]);
 

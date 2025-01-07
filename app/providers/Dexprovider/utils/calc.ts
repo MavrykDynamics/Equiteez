@@ -1,7 +1,12 @@
 import BigNumber from "bignumber.js";
 import { DodoStorageType } from "../dex.provider.types";
+import { ZERO } from "~/lib/utils/numbers";
 
-export const calculateTotalLiquidity = (storage: DodoStorageType) => {
+export const calculateTotalLiquidity = (
+  storage: DodoStorageType | undefined
+) => {
+  if (!storage)
+    return { totalLiquidity: ZERO, baseBalance: ZERO, quoteBalance: ZERO };
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
 
   const baseBalance = new BigNumber(storage.baseBalance).div(feeDecimals);
@@ -14,9 +19,16 @@ export const calculateTotalLiquidity = (storage: DodoStorageType) => {
 };
 
 export const calculateTotalLiquidityInUSD = (
-  storage: DodoStorageType,
+  storage: DodoStorageType | undefined,
   baseTokenPriceInUSDT: BigNumber
 ) => {
+  if (!storage)
+    return {
+      totalLiquidityInUSD: ZERO,
+      baseBalanceInUSD: ZERO,
+      quoteBalanceInUSD: ZERO,
+    };
+
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
   const baseBalanceInUSD = new BigNumber(storage.baseBalance).times(
     baseTokenPriceInUSDT.div(feeDecimals)
@@ -50,7 +62,8 @@ export const calculateLiquidityPercentages = (storage: DodoStorageType) => {
   };
 };
 
-export const getDodoMavLpFee = (storage: DodoStorageType) => {
+export const getDodoMavLpFee = (storage: DodoStorageType | undefined) => {
+  if (!storage) return ZERO;
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
   return new BigNumber(storage.config.lpFee).div(feeDecimals);
 };

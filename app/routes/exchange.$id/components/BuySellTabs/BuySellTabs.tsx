@@ -180,7 +180,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
   // metadata
   const selectedAssetMetadata = useAssetMetadata(slug);
-  const quoteAssetmetadata = useAssetMetadata(dodoTokenPair[slug]);
+  // TODO remove ?? slug after API assets
+  const quoteAssetmetadata = useAssetMetadata(dodoTokenPair[slug] ?? slug);
 
   // derived
 
