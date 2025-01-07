@@ -34,7 +34,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
-  // TODO switch to gql query
+  // TODO switch to gql query when API is ready
   useEffect(() => {
     (async function () {
       try {

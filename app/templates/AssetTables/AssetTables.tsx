@@ -6,7 +6,6 @@ import { LocationMap } from "../LocationMap/LocationMap";
 import { Spacer } from "~/lib/atoms/Spacer";
 import { FC } from "react";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
-import Money from "~/lib/atoms/Money";
 
 // TODO update templates based on API data (no API data at the moment)
 
@@ -17,8 +16,8 @@ export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
       <TableHeader>About</TableHeader>
       <TableDescription>{data.description}</TableDescription>
       <TableItem>
-        <p>Property Type</p>
-        <p>{data.propertyType}</p>
+        <p>Asset Type</p>
+        <p>{data.assetType}</p>
       </TableItem>
       <TableItem>
         <p>Full Address</p>
@@ -30,7 +29,7 @@ export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
       </TableItem>
       <TableItem>
         <p>Neighborhood</p>
-        <p>Hubbell - Lyndon</p>
+        <p>{data.neighborhood}</p>
       </TableItem>
       <TableItem>
         <p>Rental Type</p>
@@ -51,7 +50,7 @@ export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
       </TableItem>
       <TableItem>
         <p>Asset Manager</p>
-        <p>{data.propertyManager}</p>
+        <p>{data.assetManager}</p>
       </TableItem>
       <TableItem isLast>
         <p>Parking</p>
@@ -70,26 +69,20 @@ export const SharedAssetBuildingInfoTemplate: FC<{ data: any }> = ({
       <TableHeader>Building Info</TableHeader>
       <TableItem>
         <p>Stories</p>
-        <p>{data.stories} stories</p>
+        <p>{data.stories}</p>
       </TableItem>
       <TableItem>
         <p>
           Lot Size (<span className="normal-case">sqft</span>)
         </p>
 
-        <div className="flex gap-1">
-          <Money>{data.lotSize}</Money>{" "}
-          <span className="normal-case">sqft</span>
-        </div>
+        <div className="flex gap-1">{data.lotSize}</div>
       </TableItem>
       <TableItem>
         <p>
           Interior Size (<span className="normal-case">sqft</span>)
         </p>
-        <div className="flex gap-1">
-          <Money>{data.interiorSize}</Money>{" "}
-          <span className="normal-case">sqft</span>
-        </div>
+        <p>{data.interiorSize}</p>
       </TableItem>
       <TableItem>
         <p>Building Class</p>
@@ -134,7 +127,7 @@ export const BitCoinMinersTemplate: FC<{ data: any }> = ({ data }) => {
         <TableDescription>{data.description}</TableDescription>
         <TableItem>
           <p>Location</p>
-          <p>{data.propertyType}</p>
+          <p>{data.location}</p>
         </TableItem>
         <TableItem>
           <p>Full Address</p>
@@ -142,63 +135,63 @@ export const BitCoinMinersTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Capacity</p>
-          <p>{data.country}</p>
+          <p>{data.capacity}</p>
         </TableItem>
         <TableItem>
           <p>Mining Hardware</p>
-          <p>Hubbell - Lyndon</p>
+          <p>{data.miningHardware}</p>
         </TableItem>
         <TableItem>
           <p>Model</p>
-          <p>{data.rentalType}</p>
+          <p>{data.model}</p>
         </TableItem>
         <TableItem>
           <p>Hashrate</p>
-          <p>{data.rented}</p>
+          <p>{data.hashRate}</p>
         </TableItem>
         <TableItem>
           <p>Power Consumption</p>
-          <p>{data.rentSubsidy}</p>
+          <p>{data.powerConsumption}</p>
         </TableItem>
         <TableItem>
           <p>Efficiency</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.efficiency}</p>
         </TableItem>
         <TableItem>
           <p>Energy Source</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.energySource}</p>
         </TableItem>
         <TableItem>
           <p>Energy Cost</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.energyCost}</p>
         </TableItem>
         <TableItem>
           <p>Cost Of Electricity</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.electricityCost}</p>
         </TableItem>
         <TableItem>
           <p>Daily Production</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.dailyProduction}</p>
         </TableItem>
         <TableItem>
           <p>Redundancy</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.redundancy}</p>
         </TableItem>
         <TableItem>
           <p>Connectivity</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.connectivity}</p>
         </TableItem>
         <TableItem>
           <p>Power Source</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.powerSource}</p>
         </TableItem>
         <TableItem>
           <p>Cooling</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.cooling}</p>
         </TableItem>
         <TableItem isLast>
           <p>Security</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.security}</p>
         </TableItem>
       </Table>
       <Spacer height={32} />
@@ -218,7 +211,7 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
         <TableDescription>{data.description}</TableDescription>
         <TableItem>
           <p>Location</p>
-          <p>{data.propertyType}</p>
+          <p>{data.location}</p>
         </TableItem>
         <TableItem>
           <p>Full Address</p>
@@ -230,39 +223,39 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Dining</p>
-          <p>Hubbell - Lyndon</p>
+          <p>{data.dining}</p>
         </TableItem>
         <TableItem>
           <p>Spa</p>
-          <p>{data.rentalType}</p>
+          <p>{data.spa}</p>
         </TableItem>
         <TableItem>
           <p>Wellness Activities</p>
-          <p>{data.rented}</p>
+          <p>{data.activities}</p>
         </TableItem>
         <TableItem>
           <p>Exclusive Beach Access</p>
-          <p>{data.rentSubsidy}</p>
+          <p>{data.beachAccsess}</p>
         </TableItem>
         <TableItem>
           <p>Views</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.views}</p>
         </TableItem>
         <TableItem>
           <p>Recreation</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.recreation}</p>
         </TableItem>
         <TableItem>
           <p>Watersports</p>
-          <p>{data.propertyManager}</p>
+          <p className="whitespace-pre-wrap max-w-[50%]">{data.watersports}</p>
         </TableItem>
         <TableItem>
           <p>Atmosphere</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.atmosphere}</p>
         </TableItem>
         <TableItem isLast>
           <p>Adventure</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.adventure}</p>
         </TableItem>
       </Table>
       <Spacer height={32} />
@@ -275,6 +268,7 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
+  // pass name
   return (
     <div>
       <Table className="bg-white">
@@ -282,47 +276,47 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
         <TableDescription>{data.description}</TableDescription>
         <TableItem>
           <p>Name</p>
-          <p>{data.propertyType}</p>
+          <p>{data.name}</p>
         </TableItem>
         <TableItem>
           <p>Location</p>
-          <p>{data.fullAddress}</p>
+          <p>{data.location}</p>
         </TableItem>
         <TableItem>
           <p>Address</p>
-          <p>{data.roomDesign}</p>
+          <p>{data.fullAddress}</p>
         </TableItem>
         <TableItem>
           <p>Number of Rooms</p>
-          <p>Hubbell - Lyndon</p>
+          <p>{data.rooms}</p>
         </TableItem>
         <TableItem>
           <p>Room Sizes</p>
-          <p>{data.rentalType}</p>
+          <p>{data.roomSizes}</p>
         </TableItem>
         <TableItem>
           <p>Restauarant Capacity</p>
-          <p>{data.rented}</p>
+          <p>{data.capacity}</p>
         </TableItem>
         <TableItem>
           <p>Conference Facilities</p>
-          <p>{data.rentSubsidy}</p>
+          <p>{data.conferenceFacilities}</p>
         </TableItem>
         <TableItem>
           <p>Amenities</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.amenities}</p>
         </TableItem>
         <TableItem>
           <p>Additional Facilities</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.additionalFacilities}</p>
         </TableItem>
         <TableItem>
           <p>Land Size</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.landSize}</p>
         </TableItem>
         <TableItem isLast>
           <p>Natural Features</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.natural}</p>
         </TableItem>
       </Table>
       <Spacer height={32} />
@@ -342,43 +336,43 @@ export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
         <TableDescription>{data.description}</TableDescription>
         <TableItem>
           <p>Total Value</p>
-          <p>{data.propertyType}</p>
+          <p>{data.totalValue}</p>
         </TableItem>
         <TableItem>
           <p>Properties</p>
-          <p>{data.fullAddress}</p>
+          <p>{data.fullpropertiesAddress}</p>
         </TableItem>
         <TableItem>
           <p>LTV Ratio</p>
-          <p>{data.roomDesign}</p>
+          <p>{data.ltvRatio}</p>
         </TableItem>
         <TableItem>
           <p>Yield</p>
-          <p>Hubbell - Lyndon</p>
+          <p>{data.yield}</p>
         </TableItem>
         <TableItem>
           <p>Borrowed Profile</p>
-          <p>{data.rentalType}</p>
+          <p>{data.borrowedProfile}</p>
         </TableItem>
         <TableItem>
           <p>Underwriting</p>
-          <p>{data.rented}</p>
+          <p>{data.underwriting}</p>
         </TableItem>
         <TableItem>
           <p>Regions Covered</p>
-          <p>{data.rentSubsidy}</p>
+          <p>{data.regions}</p>
         </TableItem>
         <TableItem>
           <p>Loan Types</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.loanTypes}</p>
         </TableItem>
         <TableItem>
           <p>Investment Risk</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.investmentRisk}</p>
         </TableItem>
         <TableItem isLast>
           <p>Liquidity</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.liquidity}</p>
         </TableItem>
       </Table>
       <Spacer height={32} />
@@ -402,59 +396,59 @@ export const TreasuriesTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Maturity</p>
-          <p>{data.fullAddress}</p>
+          <p>{data.maturity}</p>
         </TableItem>
         <TableItem>
           <p>Issuer</p>
-          <p>{data.roomDesign}</p>
+          <p>{data.issuer}</p>
         </TableItem>
         <TableItem>
           <p>Yield</p>
-          <p>Hubbell - Lyndon</p>
+          <p>{data.yield}</p>
         </TableItem>
         <TableItem>
           <p>Payment Frequency</p>
-          <p>{data.rentalType}</p>
+          <p>{data.paymentFrequency}</p>
         </TableItem>
         <TableItem>
           <p>Bond Type</p>
-          <p>{data.rented}</p>
+          <p>{data.bondType}</p>
         </TableItem>
         <TableItem>
           <p>Security</p>
-          <p>{data.rentSubsidy}</p>
+          <p>{data.security}</p>
         </TableItem>
         <TableItem>
           <p>Market Price</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.marketPrice}</p>
         </TableItem>
         <TableItem>
           <p>Risk Level</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.riskLevel}</p>
         </TableItem>
         <TableItem>
           <p>Investor Suitability</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.investorSuitability}</p>
         </TableItem>
         <TableItem>
           <p>Capital Preservation</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.capitalPreservation}</p>
         </TableItem>
         <TableItem>
           <p>Interest Rate</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.interestRate}</p>
         </TableItem>
         <TableItem>
           <p>Liquidity</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.liquidity}</p>
         </TableItem>
         <TableItem>
           <p>Tax Treatment</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.taxTreatment}</p>
         </TableItem>
         <TableItem isLast>
           <p>Current Demand</p>
-          <p>{data.propertyManager}</p>
+          <p>{data.currentDemand}</p>
         </TableItem>
       </Table>
     </div>
