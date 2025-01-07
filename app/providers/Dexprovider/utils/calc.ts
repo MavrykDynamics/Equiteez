@@ -24,9 +24,9 @@ export const calculateTotalLiquidityInUSD = (
 ) => {
   if (!storage)
     return {
-      totalLiquidityInUSD: ZERO,
-      baseBalanceInUSD: ZERO,
-      quoteBalanceInUSD: ZERO,
+      totalLiquidityInUSD: ZERO.toString(),
+      baseBalanceInUSD: ZERO.toString(),
+      quoteBalanceInUSD: ZERO.toString(),
     };
 
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
@@ -48,7 +48,14 @@ export const calculateTotalLiquidityInUSD = (
   };
 };
 
-export const calculateLiquidityPercentages = (storage: DodoStorageType) => {
+export const calculateLiquidityPercentages = (
+  storage: DodoStorageType | undefined
+) => {
+  if (!storage)
+    return {
+      basePercentage: "0",
+      quotePercentage: "0",
+    };
   const { baseBalance, quoteBalance, totalLiquidity } =
     calculateTotalLiquidity(storage);
 

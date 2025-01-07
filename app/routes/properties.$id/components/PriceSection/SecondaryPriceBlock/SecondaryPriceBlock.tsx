@@ -12,7 +12,7 @@ import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";
-import { VALID_TOKENS } from "~/consts/contracts";
+import { stablecoinContract, VALID_TOKENS } from "~/consts/contracts";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import Money from "~/lib/atoms/Money";
 import {
@@ -20,6 +20,7 @@ import {
   calculateTotalLiquidityInUSD,
 } from "~/providers/Dexprovider/utils";
 import { useAssetMetadata } from "~/lib/metadata";
+import { toTokenSlug } from "~/lib/assets";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -38,7 +39,9 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const { slug } = estate;
   const baseTokenMetadata = useAssetMetadata(slug);
   // TODO remove ?? slug after API assets
-  const quoteTokenMetadata = useAssetMetadata(dodoTokenPair[slug] ?? slug);
+  const quoteTokenMetadata = useAssetMetadata(
+    dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
+  );
 
   const currentPrice = useMemo(() => dodoMav[slug] ?? "0", [dodoMav, slug]);
 

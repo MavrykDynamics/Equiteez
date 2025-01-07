@@ -35,7 +35,7 @@ import {
 } from "~/lib/utils/calcFns";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
-import { rateToNumber } from "~/lib/utils/numbers";
+import { rateToNumber, ZERO } from "~/lib/utils/numbers";
 import { isDefined } from "~/lib/utils";
 import { AssetField } from "~/lib/organisms/AssetField";
 import { CryptoBalance } from "~/templates/Balance";
@@ -180,8 +180,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
   // metadata
   const selectedAssetMetadata = useAssetMetadata(slug);
-  // TODO remove ?? slug after API assets
-  const quoteAssetmetadata = useAssetMetadata(dodoTokenPair[slug] ?? slug);
+  // TODO remove "?? toTokenSlug(stablecoinContract)" after API assets
+  const quoteAssetmetadata = useAssetMetadata(
+    dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
+  );
 
   // derived
 
@@ -478,7 +480,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         placeholder="0.00"
                         style={{ padding: 0 }}
                         className="w-full bg-transparent focus:outline-none text-right font-semibold border-none"
-                        disabled={!isLimitType}
+                        disabled={!isLimitType || !VALID_TOKENS[tokenAddress]}
                       ></AssetField>
                       <span className="font-semibold">USDT</span>
                     </div>
@@ -498,6 +500,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         ref={inputAmountRef}
                         name="amount"
                         type="text"
+                        disabled={!VALID_TOKENS[tokenAddress]}
                         min={0}
                         max={9999999999999}
                         assetDecimals={selectedAssetMetadata?.decimals ?? 6}
@@ -552,25 +555,27 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                 )}
               </div>
 
-              <div className="flex flex-col w-full gap-1">
-                <div className="flex justify-between w-full">
-                  <span className="text-caption-regular">Max Buy</span>
-                  <span className="text-caption-regular">
-                    <CryptoBalance
-                      value={new BigNumber(maxBuy ?? 0)}
-                      cryptoDecimals={selectedAssetMetadata?.decimals}
-                    />{" "}
-                    {symbol}
-                  </span>
-                </div>
+              {VALID_TOKENS[tokenAddress] && (
+                <div className="flex flex-col w-full gap-1">
+                  <div className="flex justify-between w-full">
+                    <span className="text-caption-regular">Max Buy</span>
+                    <span className="text-caption-regular">
+                      <CryptoBalance
+                        value={new BigNumber(maxBuy ?? 0)}
+                        cryptoDecimals={selectedAssetMetadata?.decimals}
+                      />{" "}
+                      {symbol}
+                    </span>
+                  </div>
 
-                <div className="flex justify-between w-full">
-                  <span className="text-caption-regular">Est. Fee</span>
-                  <div className="text-caption-regula">
-                    {estFee} {symbolToShow}
+                  <div className="flex justify-between w-full">
+                    <span className="text-caption-regular">Est. Fee</span>
+                    <div className="text-caption-regula">
+                      {estFee} {symbolToShow}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex w-full">
                 {!VALID_TOKENS[tokenAddress] ? (
