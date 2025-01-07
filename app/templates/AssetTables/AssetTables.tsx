@@ -13,6 +13,7 @@ import Money from "~/lib/atoms/Money";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
+  console.log(data);
   return (
     <Table className="bg-white">
       <TableHeader>About</TableHeader>
@@ -35,7 +36,7 @@ export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
       </TableItem>
       <TableItem>
         <p>Rental Type</p>
-        <p>{data.rentalType}</p>
+        <p>{data.rentaltype}</p>
       </TableItem>
       <TableItem>
         <div className="flex items-center gap-x-1">
