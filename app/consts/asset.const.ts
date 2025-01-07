@@ -1,5 +1,6 @@
 const BitcoinMiners = "bitcoin miners";
 const Hotel = "hotel";
+const Resort = "resort";
 const Debt = "debt";
 const Treasuries = "treasuries";
 const InsuranceContract = "insurance contract";
@@ -10,6 +11,7 @@ const SingleFamilyHousing = "Single Family Housing";
 export const AssetTypeRecord = {
   BitcoinMiners,
   Hotel,
+  Resort,
   Debt,
   Treasuries,
   InsuranceContract,

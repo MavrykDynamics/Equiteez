@@ -210,7 +210,7 @@ export const BitCoinMinersTemplate: FC<{ data: any }> = ({ data }) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
+export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
   return (
     <div>
       <Table className="bg-white">
@@ -262,6 +262,66 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem isLast>
           <p>Adventure</p>
+          <p>{data.propertyManager}</p>
+        </TableItem>
+      </Table>
+      <Spacer height={32} />
+      <Table className="bg-white">
+        <LocationMap />
+      </Table>
+    </div>
+  );
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
+  return (
+    <div>
+      <Table className="bg-white">
+        <TableHeader>About</TableHeader>
+        <TableDescription>{data.description}</TableDescription>
+        <TableItem>
+          <p>Name</p>
+          <p>{data.propertyType}</p>
+        </TableItem>
+        <TableItem>
+          <p>Location</p>
+          <p>{data.fullAddress}</p>
+        </TableItem>
+        <TableItem>
+          <p>Address</p>
+          <p>{data.roomDesign}</p>
+        </TableItem>
+        <TableItem>
+          <p>Number of Rooms</p>
+          <p>Hubbell - Lyndon</p>
+        </TableItem>
+        <TableItem>
+          <p>Room Sizes</p>
+          <p>{data.rentalType}</p>
+        </TableItem>
+        <TableItem>
+          <p>Restauarant Capacity</p>
+          <p>{data.rented}</p>
+        </TableItem>
+        <TableItem>
+          <p>Conference Facilities</p>
+          <p>{data.rentSubsidy}</p>
+        </TableItem>
+        <TableItem>
+          <p>Amenities</p>
+          <p>{data.propertyManager}</p>
+        </TableItem>
+        <TableItem>
+          <p>Additional Facilities</p>
+          <p>{data.propertyManager}</p>
+        </TableItem>
+        <TableItem>
+          <p>Land Size</p>
+          <p>{data.propertyManager}</p>
+        </TableItem>
+        <TableItem isLast>
+          <p>Natural Features</p>
           <p>{data.propertyManager}</p>
         </TableItem>
       </Table>
