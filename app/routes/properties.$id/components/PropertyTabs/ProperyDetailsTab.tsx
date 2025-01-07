@@ -1,21 +1,35 @@
 /* eslint-disable react/no-unescaped-entities */
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { AssetDetailsMapBlock } from "./components/AssetDetailsMapBlock";
 import { DefaultAssetDetailsTemplate } from "~/templates/AssetTables/AssetTables";
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import { Navigate } from "@remix-run/react";
+import { pickTemplateBasedOnAssetType } from "~/templates/AssetTables";
+import {
+  BitcoinMiners,
+  Commodities,
+  Debt,
+  Hotel,
+  InsuranceContract,
+  MixedUseRealEstate,
+  Resort,
+  Treasuries,
+} from "~/consts/asset.const";
 
 export const PropertyDetailsTab = () => {
   const { activeEstate } = useEstatesContext();
 
+  if (!activeEstate) return <Navigate to="/properties" />;
   return (
     <div>
-      <DefaultAssetTemplate activeEstate={activeEstate} />
+      <AssetDetailsTemplate activeEstate={activeEstate} />
     </div>
   );
 };
 
+// Default view fore real assets from API (MARS & OCEAN at the moment)
 const DefaultAssetTemplate: FC<{ activeEstate: EstateType }> = ({
   activeEstate,
 }) => {
@@ -35,4 +49,59 @@ const DefaultAssetTemplate: FC<{ activeEstate: EstateType }> = ({
       />
     </div>
   );
+};
+
+/**
+ *
+ * Generic Template screen based on asset type
+ * no types for now, cuz there isn't any API for asset types
+ */
+const AssetDetailsTemplate: FC<{ activeEstate: EstateType }> = ({
+  activeEstate,
+}) => {
+  const Template = useMemo(
+    () =>
+      (Boolean(activeEstate.assetType)
+        ? pickTemplateBasedOnAssetType[activeEstate.assetType]
+        : DefaultAssetTemplate) ?? DefaultAssetTemplate,
+    [activeEstate.assetType]
+  );
+
+  const tempProps = useMemo(
+    () => getTemplatePropsBasedOnAssetType(activeEstate),
+    [activeEstate]
+  );
+
+  return <Template {...tempProps} />;
+};
+
+const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
+  if (!activeEstate.assetType) return { activeEstate };
+  switch (activeEstate.assetType) {
+    case [BitcoinMiners]:
+    case [Resort]:
+    case [Debt]:
+    case [Treasuries]:
+    case [InsuranceContract]:
+      return {
+        data: activeEstate.assetDetails.propertyDetails,
+      };
+
+    case [Hotel]:
+      return {
+        data: {
+          ...activeEstate.assetDetails.propertyDetails,
+          name: activeEstate.name,
+        },
+      };
+
+    case [Commodities]:
+    case [MixedUseRealEstate]:
+      return {
+        detailsData: activeEstate.assetDetails.propertyDetails,
+        buildingData: activeEstate.assetDetails.buildingInfo,
+      };
+    default:
+      return { activeEstate };
+  }
 };

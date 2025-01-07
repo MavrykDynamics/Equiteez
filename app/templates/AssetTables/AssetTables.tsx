@@ -270,7 +270,6 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
-  // pass name
   return (
     <div>
       <Table className="bg-white">
@@ -467,23 +466,29 @@ export const InsuranceContractTemplate: FC<{ data: any }> = ({ data }) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const CommoditiesTemplate: FC<{ data: any }> = ({ data }) => {
+export const CommoditiesTemplate: FC<{
+  detailsData: any;
+  buildingData: any;
+}> = ({ detailsData, buildingData }) => {
   return (
     <div>
-      <SharedAssetDetailsTemplate data={data} />
+      <SharedAssetDetailsTemplate data={detailsData} />
       <Spacer height={32} />
-      <SharedAssetBuildingInfoTemplate data={data} />
+      <SharedAssetBuildingInfoTemplate data={buildingData} />
     </div>
   );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const MixedUseRealEstateTemplate: FC<{ data: any }> = ({ data }) => {
+export const MixedUseRealEstateTemplate: FC<{
+  detailsData: any;
+  buildingData: any;
+}> = ({ detailsData, buildingData }) => {
   return (
     <div>
-      <SharedAssetDetailsTemplate data={data} />
+      <SharedAssetDetailsTemplate data={detailsData} />
       <Spacer height={32} />
-      <SharedAssetBuildingInfoTemplate data={data} />
+      <SharedAssetBuildingInfoTemplate data={buildingData} />
       <Spacer height={32} />
       <LocationMap />
     </div>

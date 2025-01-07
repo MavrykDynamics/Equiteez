@@ -1,12 +1,12 @@
-const BitcoinMiners = "bitcoin miners";
-const Hotel = "hotel";
-const Resort = "resort";
-const Debt = "debt";
-const Treasuries = "treasuries";
-const InsuranceContract = "insurance contract";
-const Commodities = "commodities";
-const MixedUseRealEstate = "mixed-use real estate";
-const SingleFamilyHousing = "Single Family Housing";
+export const BitcoinMiners = "bitcoin miners";
+export const Hotel = "hotel";
+export const Resort = "resort";
+export const Debt = "debt";
+export const Treasuries = "treasuries";
+export const InsuranceContract = "insurance contract";
+export const Commodities = "commodities";
+export const MixedUseRealEstate = "mixed-use real estate";
+export const SingleFamilyHousing = "Single Family Housing";
 
 export const AssetTypeRecord = {
   BitcoinMiners,
