@@ -45,12 +45,15 @@ export default function PropertyDetails() {
   // setting active estate in provider
   const estateData = usePropertyByAddress();
 
-  const { isActiveEstateSecondaryMarket: isSecondaryEstate, isLoading } =
-    useEstatesContext();
+  const {
+    isActiveEstateSecondaryMarket: isSecondaryEstate,
+    isLoading,
+    isActiveEstateLoading,
+  } = useEstatesContext();
 
   const tabId = useLoaderData<typeof loader>() as string | undefined;
 
-  if (isLoading) return <FullScreenSpinner />;
+  if (isLoading || isActiveEstateLoading) return <FullScreenSpinner />;
 
   if (estateData === null) return <Navigate to={"/properties"} />;
 

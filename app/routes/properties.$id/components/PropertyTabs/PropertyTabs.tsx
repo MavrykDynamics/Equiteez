@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { TabType } from "~/lib/atoms/Tab";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 import { PropertyFinanceTab } from "./PropertyFinance";
@@ -97,28 +97,14 @@ export default function PropertyTabs({
     <section className="flex flex-col">
       <TabSwitcher tabs={tabs} activeTabId={activetabId} />
       <div className="mt-11">
-        <PropertyTab tabId={activetabId} />
+        {activetabId === PROPERTY_DETAILS_TAB && <PropertyDetailsTab />}
+        {activetabId === PROPERTY_FINANCIALS_TAB && <PropertyFinanceTab />}
+        {activetabId === PROPERTY_BLOCKCHAIN_TAB && <PropertyBlockchainTab />}
+        {activetabId === PROPERTY_OFFERING_TAB && <PropertyOfferingTab />}
+        {activetabId === PROPERTY_TRDADING_HISTORY_TAB && (
+          <PropertyTradingHistoryTab />
+        )}
       </div>
     </section>
   );
 }
-
-type PropertytabKey = keyof typeof propertyTabsComponents;
-
-type PropertyTabProps = {
-  tabId: string;
-};
-
-const PropertyTab: FC<PropertyTabProps> = ({ tabId }) => {
-  const Component = propertyTabsComponents[tabId as PropertytabKey];
-
-  return Component;
-};
-
-const propertyTabsComponents = {
-  [PROPERTY_DETAILS_TAB]: <PropertyDetailsTab />,
-  [PROPERTY_FINANCIALS_TAB]: <PropertyFinanceTab />,
-  [PROPERTY_BLOCKCHAIN_TAB]: <PropertyBlockchainTab />,
-  [PROPERTY_OFFERING_TAB]: <PropertyOfferingTab />,
-  [PROPERTY_TRDADING_HISTORY_TAB]: <PropertyTradingHistoryTab />,
-};

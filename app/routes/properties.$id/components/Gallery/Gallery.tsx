@@ -35,8 +35,6 @@ export const Gallery: FC<GalleryProps> = ({
     [thumbs, hasMainImage]
   );
 
-  console.log(imagesCount);
-
   return (
     <section className="px-11 mb-16">
       <div

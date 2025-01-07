@@ -6,6 +6,8 @@ import { LocationMap } from "../LocationMap/LocationMap";
 import { Spacer } from "~/lib/atoms/Spacer";
 import { FC } from "react";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
+import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import Money from "~/lib/atoms/Money";
 
 // TODO update templates based on API data (no API data at the moment)
 
@@ -485,5 +487,117 @@ export const MixedUseRealEstateTemplate: FC<{ data: any }> = ({ data }) => {
       <Spacer height={32} />
       <LocationMap />
     </div>
+  );
+};
+
+// DEFAULT secondary market TEMPLATE
+
+export const DefaultAssetDetailsTemplate: FC<{
+  propertyDetails: EstateType["assetDetails"]["propertyDetails"];
+  buildingInfo: EstateType["assetDetails"]["buildingInfo"];
+}> = ({ propertyDetails, buildingInfo }) => {
+  return (
+    <>
+      <Table className="bg-white">
+        <TableHeader>About</TableHeader>
+        <TableDescription>{propertyDetails.description}</TableDescription>
+        <TableItem>
+          <p>Property Type</p>
+          <p>{propertyDetails.propertyType}</p>
+        </TableItem>
+        <TableItem>
+          <p>Full Address</p>
+          <p>{propertyDetails.fullAddress}</p>
+        </TableItem>
+        <TableItem>
+          <p>Country</p>
+          <p>{propertyDetails.country}</p>
+        </TableItem>
+        <TableItem>
+          <p>Neighborhood</p>
+          <p>Hubbell - Lyndon</p>
+        </TableItem>
+        <TableItem>
+          <p>Rental Type</p>
+          <p>{propertyDetails.rentalType}</p>
+        </TableItem>
+        <TableItem>
+          <div className="flex items-center gap-x-1">
+            Rented? <InfoTooltip content={"Rented"} />
+          </div>
+          <p>{propertyDetails.rented}</p>
+        </TableItem>
+        <TableItem>
+          <div className="flex items-center gap-x-1">
+            Rent Subsidy?
+            <InfoTooltip content={"Rent Subsidy?"} />
+          </div>
+          <p>{propertyDetails.rentSubsidy}</p>
+        </TableItem>
+        <TableItem>
+          <p>Property Manager</p>
+          <p>{propertyDetails.propertyManager}</p>
+        </TableItem>
+        <TableItem isLast>
+          <p>Parking</p>
+          <p>{propertyDetails.parking}</p>
+        </TableItem>
+      </Table>
+      <div className="mb-8" />
+      <Table className="bg-white">
+        <TableHeader>Building Info</TableHeader>
+        <TableItem>
+          <p>Stories</p>
+          <p>{buildingInfo.stories} stories</p>
+        </TableItem>
+        <TableItem>
+          <p>
+            Lot Size (<span className="normal-case">sqft</span>)
+          </p>
+
+          <div className="flex gap-1">
+            <Money>{buildingInfo.lotSize}</Money>{" "}
+            <span className="normal-case">sqft</span>
+          </div>
+        </TableItem>
+        <TableItem>
+          <p>
+            Interior Size (<span className="normal-case">sqft</span>)
+          </p>
+          <div className="flex gap-1">
+            <Money>{buildingInfo.interiorSize}</Money>{" "}
+            <span className="normal-case">sqft</span>
+          </div>
+        </TableItem>
+        <TableItem>
+          <p>Building Class</p>
+          <p>{buildingInfo.buildingClass}</p>
+        </TableItem>
+        <TableItem>
+          <p>Foundation</p>
+          <p>{buildingInfo.foundation}</p>
+        </TableItem>
+        <TableItem>
+          <p>Exterior Walls</p>
+          <p>{buildingInfo.exteriorWalls}</p>
+        </TableItem>
+        <TableItem>
+          <p>Roof Type</p>
+          <p>{buildingInfo.roofType}</p>
+        </TableItem>
+        <TableItem>
+          <p>Heating</p>
+          <p>{buildingInfo.heating}</p>
+        </TableItem>
+        <TableItem>
+          <p>Cooling</p>
+          <p>{buildingInfo.cooling}</p>
+        </TableItem>
+        <TableItem isLast>
+          <p>Renovated</p>
+          <p>{buildingInfo.renovated}</p>
+        </TableItem>
+      </Table>
+    </>
   );
 };
