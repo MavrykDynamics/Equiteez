@@ -17,9 +17,9 @@ import {
   MixedUseRealEstateTemplate,
   ResortTemplate,
   TreasuriesTemplate,
-} from "./AssetTables";
+} from "./AssetTemplates";
 
-export * from "./AssetTables";
+export * from "./AssetTemplates";
 
 export const pickTemplateBasedOnAssetType = {
   [BitcoinMiners]: BitCoinMinersTemplate,

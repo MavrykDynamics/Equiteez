@@ -92,7 +92,10 @@ export default function PropertyDetails() {
       />
       <section className={styles.detailsSection}>
         <div className="flex flex-col">
-          <IconsBlock />
+          {estateData.assetDetails.basicInfo && (
+            <IconsBlock basicInfo={estateData.assetDetails.basicInfo} />
+          )}
+
           <Divider className="my-6" />
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
         </div>

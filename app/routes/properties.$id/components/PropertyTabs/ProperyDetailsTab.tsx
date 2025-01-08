@@ -3,10 +3,10 @@ import { FC, useMemo } from "react";
 
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { AssetDetailsMapBlock } from "./components/AssetDetailsMapBlock";
-import { DefaultAssetDetailsTemplate } from "~/templates/AssetTables/AssetTables";
+import { DefaultAssetDetailsTemplate } from "~/templates/AssetTemplates/AssetTemplates";
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
 import { Navigate } from "@remix-run/react";
-import { pickTemplateBasedOnAssetType } from "~/templates/AssetTables";
+import { pickTemplateBasedOnAssetType } from "~/templates/AssetTemplates";
 import {
   BitcoinMiners,
   Commodities,

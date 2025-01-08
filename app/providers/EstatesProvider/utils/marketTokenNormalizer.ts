@@ -85,10 +85,9 @@ export const marketTokenNormalizer = (
           basicInfo: {
             // empty
             // TODO
-            beds: 1,
-            baths: 3,
-            sqft: 313,
-            buildDate: "1973-06-08T09:20:37-03:00",
+            beds: "1 bed",
+            baths: "3 bath",
+            sqft: "313 sqft",
           },
           propertyDetails: {
             description:
