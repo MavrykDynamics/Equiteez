@@ -1,6 +1,5 @@
 import { FC, useState } from "react";
 import { MarqueeCarousel } from "~/lib/organisms/MarqueeCarousel/MarqueeCarousel";
-import { getRestMockedEstates } from "~/providers/EstatesProvider/utils/estatesMocked";
 
 import ChartIcon from "app/icons/chart-mock.svg?react";
 
@@ -8,12 +7,10 @@ import styles from "./marketRowBottom.module.css";
 import clsx from "clsx";
 import { Container } from "~/lib/atoms/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
-
-// fake data
-const fakeCardsRecord = getRestMockedEstates();
-const fakeAddresses = Object.keys(fakeCardsRecord).slice(0, 10);
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 
 export const MarketRowBottom = () => {
+  const { estatesArr } = useEstatesContext();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -30,16 +27,15 @@ export const MarketRowBottom = () => {
           direction="left"
           speed={45}
         >
-          {fakeAddresses.map((slug) => {
-            const market = fakeCardsRecord[slug];
+          {estatesArr.map((estate) => {
             return (
               <MarketRowBottomCard
-                key={slug}
-                name={market.name}
-                imgSrc={market.assetDetails.previewImage}
-                price={market.assetDetails.priceDetails.price}
+                key={estate.slug}
+                name={estate.name}
+                imgSrc={estate.assetDetails.previewImage}
+                price={estate.assetDetails.priceDetails.price}
                 percentage={
-                  market.assetDetails.priceDetails.projectedAnnualReturn
+                  estate.assetDetails.priceDetails.projectedAnnualReturn
                 }
               />
             );

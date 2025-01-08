@@ -1,19 +1,25 @@
 import { EmblaOptionsType } from "embla-carousel";
 import EmblaCarousel from "./EmblaCarousel";
-import { getRestMockedEstates } from "~/providers/EstatesProvider/utils/estatesMocked";
 import { ViewAll } from "./components/ViewAll";
 import { SlidesNavigation } from "./components/SlidesNavigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
-
-// fake data
-const fakeCardsRecord = getRestMockedEstates();
-const fakeEstates = Object.values(fakeCardsRecord).slice(0, 10);
-const fakeEstatesSecondary = Object.values(fakeCardsRecord).slice(10, 20);
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMemo } from "react";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
 export const PropertiesSlider = () => {
+  const { estatesArr } = useEstatesContext();
+  const idxToSlice = useMemo(
+    () => Math.ceil(estatesArr.length / 2),
+    [estatesArr.length]
+  );
+
+  const slides = useMemo(
+    () => estatesArr.slice(idxToSlice),
+    [estatesArr, idxToSlice]
+  );
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
   const {
@@ -30,7 +36,7 @@ export const PropertiesSlider = () => {
       </h1>
       <EmblaCarousel
         emblaRef={emblaRef}
-        slides={fakeEstates}
+        slides={slides}
         nextBtnDisabled={nextBtnDisabled}
         childPosition="before"
       >
@@ -41,7 +47,7 @@ export const PropertiesSlider = () => {
         >
           <ViewAll />
           <SlidesNavigation
-            length={fakeEstates.length}
+            length={slides.length}
             onPrevButtonClick={onPrevButtonClick}
             onNextButtonClick={onNextButtonClick}
             prevBtnDisabled={prevBtnDisabled}
@@ -54,6 +60,17 @@ export const PropertiesSlider = () => {
 };
 
 export const PropertiesSliderSecondary = () => {
+  const { estatesArr } = useEstatesContext();
+
+  const idxToSlice = useMemo(
+    () => Math.ceil(estatesArr.length / 2),
+    [estatesArr.length]
+  );
+
+  const slides = useMemo(
+    () => estatesArr.slice(0, idxToSlice),
+    [estatesArr, idxToSlice]
+  );
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
   const {
@@ -70,13 +87,13 @@ export const PropertiesSliderSecondary = () => {
       </h1>
       <EmblaCarousel
         emblaRef={emblaRef}
-        slides={fakeEstatesSecondary}
+        slides={slides}
         nextBtnDisabled={nextBtnDisabled}
         childPosition="after"
       >
         <div className="w-full flex justify-end mt-8 text-content">
           <SlidesNavigation
-            length={fakeEstatesSecondary.length}
+            length={slides.length}
             onPrevButtonClick={onPrevButtonClick}
             onNextButtonClick={onNextButtonClick}
             prevBtnDisabled={prevBtnDisabled}

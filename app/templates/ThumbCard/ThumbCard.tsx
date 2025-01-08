@@ -135,7 +135,14 @@ export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
       <img src={imgSrc} alt={title} />
 
       <div className="flex flex-col">
-        <h4 className="text-card-headline text-content mb-1">{title}</h4>
+        <h4
+          className={clsx(
+            "text-card-headline text-content mb-1",
+            styles.primaryHeader
+          )}
+        >
+          {title}
+        </h4>
         <PriceDetailsLabel price={price} percentage={annual} />
         <div className="flex items-center justify-between text-content mt-3">
           <p className="text-sm">Tokens Available</p>
