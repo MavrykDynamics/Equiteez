@@ -1,14 +1,11 @@
 import { FC } from "react";
-import { getRestMockedEstates } from "~/providers/EstatesProvider/utils/estatesMocked";
 
 import styles from "./marketRowTop.module.css";
 import clsx from "clsx";
 import useEmblaCarousel from "embla-carousel-react";
 import { EmblaOptionsType } from "node_modules/embla-carousel/esm/components/Options";
-
-// fake data
-const fakeCardsRecord = getRestMockedEstates();
-const fakeAddresses = Object.keys(fakeCardsRecord).slice(0, 8);
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 const textData = [
   {
@@ -35,25 +32,30 @@ const OPTIONS: EmblaOptionsType = { align: "start" };
 
 export const MarketRowTop = () => {
   const [emblaRef] = useEmblaCarousel(OPTIONS);
+  const { estatesArr } = useEstatesContext();
 
   return (
     <section className={styles.embla}>
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
           {/* TODO extract embla to templates folder */}
-          {fakeAddresses.map((slug, idx) => (
-            <div
-              key={slug}
-              className={clsx(styles.embla__slide, "cursor-pointer")}
-            >
-              <MarketTopRowCard
-                imgSrc={fakeCardsRecord[slug].assetDetails.previewImage}
-                header={labelsArr[idx].header}
-                description={labelsArr[idx].description}
-                height={180}
-              />
-            </div>
-          ))}
+          {estatesArr.map((estate, idx) => {
+            const currentIndex = idx % labelsArr.length;
+            return (
+              <div
+                key={estate.slug}
+                className={clsx(styles.embla__slide, "cursor-pointer")}
+              >
+                <MarketTopRowCard
+                  imgSrc={estate.assetDetails.previewImage}
+                  header={labelsArr[currentIndex].header}
+                  description={labelsArr[currentIndex].description}
+                  to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
+                  height={180}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -65,16 +67,19 @@ type MarketTopRowCardProps = {
   header: string;
   description: string;
   height: number;
+  to: string;
 };
 
 const MarketTopRowCard: FC<MarketTopRowCardProps> = ({
   imgSrc,
   header,
   description,
+  to,
   height = 180,
 }) => {
   return (
-    <div
+    <CustomLink
+      to={to}
       style={{ height }}
       className={clsx(
         "relative flex flex-col justify-end rounded-3xl overflow-hidden",
@@ -88,6 +93,6 @@ const MarketTopRowCard: FC<MarketTopRowCardProps> = ({
         <p className="text-body">{description}</p>
       </div>
       <img src={imgSrc} alt="top row card" className={styles.bg} />
-    </div>
+    </CustomLink>
   );
 };
