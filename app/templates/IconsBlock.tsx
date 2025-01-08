@@ -62,7 +62,7 @@ const SingleIconBlock: FC<SingleIconBlockProps> = ({ Icon, label, small }) => {
       className={clsx(
         "shadow-card rounded-xl flex flex-col items-center justify-center gap-y-[2px]  overflow-hidden text-nowrap bg-white",
         "border border-gray-100",
-        small ? "w-[64px] h-[64px]" : "w-[82px] h-[82px]"
+        small ? "w-[72px] h-[72px]" : "w-[82px] h-[82px]"
       )}
     >
       {Boolean(Icon) && (

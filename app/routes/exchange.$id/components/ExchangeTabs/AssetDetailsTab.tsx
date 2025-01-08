@@ -36,12 +36,14 @@ export const AssetDetailsTab: FC<{ estate: SecondaryEstate }> = ({
     [isOpen, propertyDetails.description]
   );
 
+  const previewImg = useMemo(() => [previewImage], [previewImage]);
+
   return (
     <section>
       <div className={clsx("mb-6", styles.assetDetailsGrid)}>
         <div className="h-[226px] rounded-xl overflow-hidden bg-gray-100">
           <ImageStacked
-            sources={[previewImage]}
+            sources={previewImg}
             className="w-full h-full object-cover"
           />
         </div>
