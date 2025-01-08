@@ -65,6 +65,7 @@ export default function PropertyDetails() {
           CustomIcon={ArrowLeftIcon}
           to="/properties"
           variant="content"
+          className="underline"
         >
           Back to Properties
         </LinkWithIcon>
@@ -143,11 +144,11 @@ const Options: FC = () => {
     <section className="flex items-center gap-x-4 ml-auto">
       <button className="text-content text-body flex items-center gap-x-1 font-semibold hover:text-sand-700">
         <LikeIcon className="stroke-current" />
-        <p>Save</p>
+        <p className="underline">Save</p>
       </button>
       <button className="text-content text-body flex items-center gap-x-1 font-semibold  hover:text-sand-700">
         <ShareIcon className="stroke-current" />
-        <p>Share</p>
+        <p className="underline">Share</p>
       </button>
     </section>
   );
