@@ -61,7 +61,12 @@ const MarketRowBottomCard: FC<{
       <img src={imgSrc} alt="card" className={styles.cardImg} />
       <div className="flex items-center gap-2">
         <div className="flex flex-col items-start max-w-[163px] self-stretch justify-between">
-          <h4 className={clsx("text-slider-headline font-bold", styles.header)}>
+          <h4
+            className={clsx(
+              "text-card-headline font-bold leading-7",
+              styles.header
+            )}
+          >
             {name}
           </h4>
           <PriceDetailsLabel price={price} percentage={percentage} />

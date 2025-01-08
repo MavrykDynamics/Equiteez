@@ -9,9 +9,9 @@ type BannerSectionProps = { opacity: MotionValue<number> };
 export const BannerSection: FC<BannerSectionProps> = ({ opacity }) => {
   return (
     <motion.div whileInView={{ opacity: 1 }} style={{ opacity }}>
-      <section className={clsx("pt-[116px]")}>
+      <section className={clsx("pt-[142px]")}>
         <div className="w-full flex  justify-center">
-          <h1 className="text-hero text-black relative">
+          <h1 className="text-hero-medium text-black relative">
             Welcome to the future of ownership
             <img
               src={BannerMask}

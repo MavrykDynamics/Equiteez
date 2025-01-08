@@ -1,5 +1,18 @@
 import { Link, LinkProps } from "@remix-run/react";
-import { FC } from "react";
+import { FC, useMemo } from "react";
+
+export const isExternalURL = (url: string) => {
+  if (!url) return false;
+
+  try {
+    // Use window.location.origin as the base
+    const fullURL = new URL(url, window.location.origin);
+    return fullURL.origin !== window.location.origin;
+  } catch (e) {
+    console.error("Invalid URL:", e);
+    return false;
+  }
+};
 
 export const CustomLink: FC<LinkProps & { disabled?: boolean }> = ({
   children,
@@ -7,10 +20,24 @@ export const CustomLink: FC<LinkProps & { disabled?: boolean }> = ({
   disabled = false,
   ...props
 }) => {
+  const linkProps: Omit<LinkProps, "to"> = useMemo(
+    () => ({
+      ...props,
+      ...(isExternalURL(to)
+        ? {
+            target: "_blank",
+            referrerPolicy: "no-referrer",
+            rel: "no-refferer",
+          }
+        : {}),
+    }),
+    [props, to]
+  );
+
   if (!to || disabled) return <div {...props}>{children}</div>;
 
   return (
-    <Link to={to} {...props}>
+    <Link to={to} {...linkProps}>
       {children}
     </Link>
   );

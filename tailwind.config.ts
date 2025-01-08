@@ -20,6 +20,13 @@ export default {
             fontWeight: "700",
           },
         ],
+        "hero-medium": [
+          "2.75rem", // 44px
+          {
+            lineHeight: "4.125rem",
+            fontWeight: "700",
+          },
+        ],
         "section-headline": [
           "2.25rem", // 36px
           {
@@ -34,8 +41,9 @@ export default {
             fontWeight: "600",
           },
         ],
+
         "slider-headline": [
-          "1.5rem",
+          "1.5rem", // 24px
           {
             fontWeight: 600,
             lineHeight: "2rem",

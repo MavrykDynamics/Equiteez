@@ -6,7 +6,7 @@ export const CardWithShadow: FC<PropsWithChildren & { className?: string }> = ({
   className,
 }) => {
   return (
-    <div className={clsx("rounded-3xl shadow-card p-9", className)}>
+    <div className={clsx("rounded-3xl shadow-card p-8", className)}>
       {children}
     </div>
   );

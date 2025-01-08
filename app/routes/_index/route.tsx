@@ -40,13 +40,13 @@ export default function Index() {
           <BannerSection opacity={opacity} />
           <Spacer height={124} />
           <MarketRowTop />
-          <Spacer height={64} />
+          <Spacer height={44} />
         </div>
       </Container>
 
       <MarketRowBottom />
       <Container px={44}>
-        <Spacer />
+        <Spacer height={120} />
         <PortfolioSection />
         <Spacer />
         <PropertiesSlider />

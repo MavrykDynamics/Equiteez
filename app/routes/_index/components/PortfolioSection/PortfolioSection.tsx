@@ -61,8 +61,8 @@ const CARDS_BOTTOM_ROW = [
   {
     Icon: LearnIcon,
     title: "Learn",
-    link: "",
-    disabled: true,
+    link: "https://docs.equiteez.com/",
+    disabled: false,
   },
 ];
 export const PortfolioSection = () => {
@@ -73,24 +73,29 @@ export const PortfolioSection = () => {
       </h2>
 
       <div
-        className={clsx("grid grid-cols-3 gap-6", styles["cards-container"])}
+        className={clsx(
+          "grid grid-cols-3 gap-6 items-stretch",
+          styles["cards-container"]
+        )}
       >
         {CARDS.map(
           ({ Icon, id, title, description, btnText, disabled, to }) => (
-            <div key={id}>
+            <div key={id} className="h-full">
               <CardWithShadow
                 className={clsx(
-                  "h-[447px] flex flex-col justify-between",
+                  "flex flex-col justify-between gap-6 h-full",
                   styles.card,
                   disabled && styles.disabled
                 )}
               >
                 <div className="flex flex-col items-start">
-                  <Icon className="mb-4" />
-                  <h3 className="text-section-headline text-content mb-4">
+                  <Icon className="mb-4 max-w-11" />
+                  <h3 className="text-slider-headline leading-9 text-content mb-3">
                     {title}
                   </h3>
-                  <p className="text-content text-body">{description}</p>
+                  <p className="text-content text-sm leading-5">
+                    {description}
+                  </p>
                 </div>
                 <CustomLink to={to} disabled={disabled}>
                   <Button
@@ -110,16 +115,23 @@ export const PortfolioSection = () => {
 
       <div className={styles.bottomCardsGrid}>
         {CARDS_BOTTOM_ROW.map(({ Icon, title, disabled, link }) => (
-          <CustomLink key={title} to={link} disabled={disabled}>
+          <CustomLink
+            key={title}
+            to={link}
+            disabled={disabled}
+            className="h-full"
+          >
             <div
               className={clsx(
-                " flex items-center p-9 gap-4",
+                "h-full flex items-center px-8 py-6 gap-4",
                 styles.bottomCard,
                 disabled && "opacity-50"
               )}
             >
-              <Icon />
-              <h3 className="text-section-headline text-content">{title}</h3>
+              <Icon className="max-w-11" />
+              <h3 className="text-slider-headline leading-9 font-bold text-content">
+                {title}
+              </h3>
             </div>
           </CustomLink>
         ))}

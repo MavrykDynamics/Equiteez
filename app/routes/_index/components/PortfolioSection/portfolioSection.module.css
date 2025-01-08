@@ -15,6 +15,7 @@
   display: grid;
   width: 100%;
   gap: 24px;
+  align-items: stretch;
   grid-template-columns: repeat(2, minmax(0, 511px)) 1fr;
 }
 

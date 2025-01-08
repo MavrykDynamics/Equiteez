@@ -82,7 +82,7 @@ const MarketTopRowCard: FC<MarketTopRowCardProps> = ({
       )}
     >
       <div className="relative text-white p-6 text-start z-[1]">
-        <h3 className="text-asset-input font-bold capitalize leading-[46px]">
+        <h3 className="text-card-headline font-bold capitalize leading-7">
           {header}
         </h3>
         <p className="text-body">{description}</p>
