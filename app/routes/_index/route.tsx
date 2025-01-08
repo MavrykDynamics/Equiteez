@@ -50,7 +50,7 @@ export default function Index() {
         <PortfolioSection />
         <Spacer />
         <PropertiesSlider />
-        <Spacer />
+        <Spacer height={116} />
         <PropertiesSliderSecondary />
         <Spacer height={200} />
         <FAQSection data={homeFAQ} />
