@@ -33,7 +33,9 @@ function filterByMarketType(estates: EstateType[], type: string) {
 function filterByPropertyType(estates: EstateType[], type: string) {
   if (type === "all") return estates;
   return estates.filter(
-    (es) => es.assetDetails.propertyDetails.propertyType === type
+    (es) =>
+      es.assetDetails.propertyDetails.propertyType.toLowerCase() ===
+      type.toLowerCase()
   );
 }
 
@@ -168,8 +170,8 @@ export const Filters: FC<FiltersProps> = ({
           },
           ...[
             ...new Set(
-              originalEstates.map(
-                (es) => es.assetDetails.propertyDetails.propertyType
+              originalEstates.map((es) =>
+                es.assetDetails.propertyDetails.propertyType.toLowerCase()
               )
             ),
           ].map((item) => ({ label: item, value: item })),
@@ -271,7 +273,7 @@ export const Filters: FC<FiltersProps> = ({
                   </p>
 
                   <DropdownFaceContent>
-                    <div className="text-buttons w-full">
+                    <div className="text-buttons w-full capitalize">
                       {activeLabels[filter.id].label}
                     </div>
                   </DropdownFaceContent>
