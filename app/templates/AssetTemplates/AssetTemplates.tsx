@@ -8,6 +8,7 @@ import { FC } from "react";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
 import Money from "~/lib/atoms/Money";
+import { HashChip } from "~/lib/molecules/HashChip";
 
 // TODO update templates based on API data (no API data at the moment)
 
@@ -53,7 +54,14 @@ export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
       </TableItem>
       <TableItem>
         <p>Asset Manager</p>
-        <p>{data.assetManager}</p>
+
+        <p>
+          <HashChip
+            hash={data.assetManager}
+            className="underline font-semibold"
+            trim={false}
+          />
+        </p>
       </TableItem>
       <TableItem isLast>
         <p>Parking</p>
@@ -250,7 +258,9 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Watersports</p>
-          <p className="whitespace-pre-wrap max-w-[50%]">{data.watersports}</p>
+          <p className="whitespace-pre-wrap max-w-[50%] text-right">
+            {data.watersports}
+          </p>
         </TableItem>
         <TableItem>
           <p>Atmosphere</p>
@@ -342,7 +352,7 @@ export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Properties</p>
-          <p>{data.fullpropertiesAddress}</p>
+          <p>{data.properties}</p>
         </TableItem>
         <TableItem>
           <p>LTV Ratio</p>
@@ -542,6 +552,7 @@ export const DefaultAssetDetailsTemplate: FC<{
         </TableItem>
         <TableItem>
           <p>Property Manager</p>
+
           <p>{propertyDetails.propertyManager}</p>
         </TableItem>
         <TableItem isLast>
