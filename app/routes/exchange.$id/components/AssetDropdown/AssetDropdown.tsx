@@ -230,7 +230,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
         </DropdownFaceContent>
       </ClickableDropdownArea>
 
-      <DropdownBodyContent topMargin={12} customWidth={420} customHeight={526}>
+      <DropdownBodyContent topMargin={12} customWidth={420} customHeight={566}>
         <div className="p-4 h-full flex flex-col overflow-x-hidden bg-white">
           <Search
             showSearchIcon={estateName.length > 0}
@@ -266,8 +266,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
             <NoResultsScreen word={estateName} />
           ) : (
             <>
-              {" "}
-              <div className="flex flex-col flex-1 overflow-hidden">
+              <div className="flex flex-col flex-1">
                 {/* Table Header ------ */}
                 <div className={clsx(styles.dropdowntable)}>
                   <div
@@ -291,7 +290,7 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                   </div>
 
                   {/* Table body ------ */}
-                  <div className="bg-white flex-1 flex flex-col overflow-y-auto max-h-[346px] overflow-x-hidden pb-4">
+                  <div className="bg-white flex-1 flex flex-col overflow-y-scroll max-h-[346px] overflow-x-hidden pb-4">
                     {filteredEstates.map((estate) => {
                       const identifier =
                         estate.assetDetails.blockchain[0].identifier;

@@ -1,12 +1,12 @@
-import { FC } from 'react';
+import { FC } from "react";
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { AssetIcon } from './AssetIcon';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { AssetIcon } from "./AssetIcon";
 
 const items = [1, 2, 3, 4];
 
