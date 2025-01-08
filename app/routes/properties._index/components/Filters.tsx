@@ -112,7 +112,7 @@ export const Filters: FC<FiltersProps> = ({
 
   const { projectedRentalYieldArr, projectedAnnualReturnArr } = useMemo(
     () =>
-      estates.reduce<{
+      originalEstates.reduce<{
         projectedRentalYieldArr: number[];
         projectedAnnualReturnArr: number[];
       }>(
@@ -127,7 +127,7 @@ export const Filters: FC<FiltersProps> = ({
         },
         { projectedRentalYieldArr: [], projectedAnnualReturnArr: [] }
       ),
-    [estates]
+    [originalEstates]
   );
 
   const projectedRentalYieldOptions = useMemo(
@@ -168,7 +168,9 @@ export const Filters: FC<FiltersProps> = ({
           },
           ...[
             ...new Set(
-              estates.map((es) => es.assetDetails.propertyDetails.propertyType)
+              originalEstates.map(
+                (es) => es.assetDetails.propertyDetails.propertyType
+              )
             ),
           ].map((item) => ({ label: item, value: item })),
         ],
