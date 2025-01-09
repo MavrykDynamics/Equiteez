@@ -50,7 +50,7 @@ export const MarketRowTop = () => {
                   imgSrc={estate.assetDetails.previewImage}
                   header={labelsArr[currentIndex].header}
                   description={labelsArr[currentIndex].description}
-                  to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
+                  to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
                   height={180}
                 />
               </div>

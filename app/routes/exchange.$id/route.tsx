@@ -15,7 +15,7 @@ import { OrderBookTabs } from "./components/OrderBookTabs/OrderBookTabs";
 
 import { Container } from "~/lib/atoms/Container";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
-import { usePropertyByAddress } from "../properties.$id/hooks/use-property-by-id";
+import { usePropertyByAddress } from "../marketplace.$id/hooks/use-property-by-id";
 
 // icons
 import ArrowLinkIcon from "app/icons/arrow-link.svg?react";
@@ -44,7 +44,7 @@ export default function ExchangeDetails() {
 
   if (isLoading) return <FullScreenSpinner />;
 
-  if (estateData === null) return <Navigate to={"/properties"} />;
+  if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
     <PageLayout includeContainer={false} includeFooter={false}>

@@ -1,7 +1,7 @@
 export const links = [
   {
     id: 0,
-    to: "/properties",
+    to: "/marketplace",
     text: "marketplace",
     disabled: false,
   },

@@ -55,7 +55,7 @@ export default function PropertyDetails() {
 
   if (isLoading || isActiveEstateLoading) return <FullScreenSpinner />;
 
-  if (estateData === null) return <Navigate to={"/properties"} />;
+  if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
     <PageLayout>
@@ -63,7 +63,7 @@ export default function PropertyDetails() {
         <LinkWithIcon
           iconPosition="start"
           CustomIcon={ArrowLeftIcon}
-          to="/properties"
+          to="/marketplace"
           variant="content"
           className="underline"
         >

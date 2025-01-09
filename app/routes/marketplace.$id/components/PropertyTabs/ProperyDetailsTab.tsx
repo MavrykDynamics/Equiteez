@@ -21,7 +21,7 @@ import {
 export const PropertyDetailsTab = () => {
   const { activeEstate } = useEstatesContext();
 
-  if (!activeEstate) return <Navigate to="/properties" />;
+  if (!activeEstate) return <Navigate to="/marketplace" />;
   return (
     <div>
       <AssetDetailsTemplate activeEstate={activeEstate} />

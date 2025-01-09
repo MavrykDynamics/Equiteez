@@ -18,7 +18,7 @@ const CARDS = [
     Icon: MarketPlaceIcon,
     title: "Marketplace",
     btnText: "Start Investing",
-    to: "/properties",
+    to: "/marketplace",
     disabled: false,
     description:
       "Discover a diverse range of opportunities and grow your portfolio with ease. Invest fractionally in RWAs, making high-value investments accessible to everyone.",

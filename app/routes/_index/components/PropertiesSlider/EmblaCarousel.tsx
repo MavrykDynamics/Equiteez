@@ -32,7 +32,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
 
   const handleSlideClick = (id: string, isLastSlide: boolean) => {
     if (isLastSlide) return;
-    navigate(`/properties/${id}`);
+    navigate(`/marketplace/${id}`);
   };
 
   return (
@@ -74,7 +74,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                           Want to see more? <br />
                           Check out our marketplace
                         </h4>
-                        <Link to="/properties">
+                        <Link to="/marketplace">
                           <Button variant="white">Explore</Button>
                         </Link>
                       </div>

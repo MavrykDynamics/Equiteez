@@ -47,7 +47,7 @@ export const SimilarProperties = () => {
             const pricePerToken = dodoMav[estate.slug];
             return (
               <Link
-                to={`/properties/${estate.assetDetails.blockchain[0].identifier}`}
+                to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
                 key={estate.token_address}
               >
                 <ThumbCardSecondary

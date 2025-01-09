@@ -73,7 +73,7 @@ export const Gallery: FC<GalleryProps> = ({
 
 const ShowAllPhotosBtn: FC<{ propertyId: string }> = ({ propertyId }) => {
   return (
-    <Link to={`/properties/${propertyId}/gallery`}>
+    <Link to={`/marketplace/${propertyId}/gallery`}>
       <button
         className={clsx(
           "bg-background text-content text-body-xs py-[10px] px-4",

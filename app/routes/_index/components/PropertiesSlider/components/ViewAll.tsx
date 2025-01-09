@@ -6,7 +6,7 @@ import ArrowRight from "app/icons/arrow-right.svg?react";
 
 export const ViewAll = () => {
   return (
-    <Link to={"/properties"}>
+    <Link to={"/marketplace"}>
       <Button
         variant="custom"
         className="text-white bg-transparent border-2 border-white py-[8px]"
