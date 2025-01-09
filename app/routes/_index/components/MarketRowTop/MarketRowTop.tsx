@@ -2,45 +2,51 @@ import { FC } from "react";
 
 import styles from "./marketRowTop.module.css";
 import clsx from "clsx";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
-const textData = [
+import card1Img from "app/assets/home/topCards/integration.webp";
+import card2Img from "app/assets/home/topCards/testnet.webp";
+import card3Img from "app/assets/home/topCards/assets.webp";
+import card4Img from "app/assets/home/topCards/demo.webp";
+
+const cards = [
   {
-    header: "WOW!",
-    description: "New Asset is Live",
+    header: "DeFi Intergration",
+    description: "Loans on Maven Coming Soon",
+    link: "https://mavenfinance.io/",
+    imgSrc: card1Img,
   },
   {
-    header: "Price Is Up",
-    description: "It's time to invest",
+    header: "Testnet",
+    description: "Explore RWA tokenization",
+    link: "https://mavryk.org/testnet",
+    imgSrc: card2Img,
   },
   {
-    header: "Presale",
-    description: "Buy COVE token first",
+    header: "All Assets",
+    description: "Time to Invest",
+    link: "/marketplace",
+    imgSrc: card3Img,
   },
   {
-    header: "WOW!",
-    description: "New Asset is Live",
+    header: "Demo",
+    description: "How to Use Equiteez",
+    link: "https://www.youtube.com/watch?v=ZgxRdHMxFA8",
+    imgSrc: card4Img,
   },
 ];
 
-const CARDS_PREVIW = 4;
-
-const labelsArr = textData.concat(textData);
-
 export const MarketRowTop = () => {
-  const { estatesArr } = useEstatesContext();
-
   return (
     <section className={styles.topRowGrid}>
-      {estatesArr.slice(0, CARDS_PREVIW).map((estate, idx) => {
+      {cards.map(({ header, description, link, imgSrc }) => {
         return (
-          <div key={estate.slug} className={clsx("cursor-pointer")}>
+          <div key={link} className={clsx("cursor-pointer")}>
             <MarketTopRowCard
-              imgSrc={estate.assetDetails.previewImage}
-              header={labelsArr[idx].header}
-              description={labelsArr[idx].description}
-              to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
+              imgSrc={imgSrc}
+              header={header}
+              description={description}
+              to={link}
               height={180}
             />
           </div>
