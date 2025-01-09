@@ -95,6 +95,7 @@ export const marketTokenNormalizer = (
               (mockedPart?.assetDetails.propertyDetails.description || ""),
             propertyType: details.propertyType,
             fullAddress: details.fullAddress,
+            shortAddress: details.fullAddress,
             zipCode: details.zipcode,
             state: details.state,
             country: details.country,

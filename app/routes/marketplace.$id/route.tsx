@@ -83,7 +83,8 @@ export default function PropertyDetails() {
           <Options />
         </div>
         <p className="text-body text-content px-11">
-          {estateData.assetDetails.propertyDetails.fullAddress}
+          {estateData.assetDetails.propertyDetails.shortAddress ??
+            estateData.assetDetails.propertyDetails.fullAddress}
         </p>
       </div>
       <Gallery
