@@ -3,7 +3,7 @@ import { Navigate } from "@remix-run/react";
 export const meta: MetaFunction = () => {
   return [
     { title: "MarketPlace" },
-    { name: "description", content: "Assets Marketplace" },
+    { name: "description", content: "Assets Marketplace Redirect" },
   ];
 };
 

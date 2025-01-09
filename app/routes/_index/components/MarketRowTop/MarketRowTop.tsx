@@ -2,8 +2,6 @@ import { FC } from "react";
 
 import styles from "./marketRowTop.module.css";
 import clsx from "clsx";
-import useEmblaCarousel from "embla-carousel-react";
-import { EmblaOptionsType } from "node_modules/embla-carousel/esm/components/Options";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
@@ -26,38 +24,28 @@ const textData = [
   },
 ];
 
+const CARDS_PREVIW = 4;
+
 const labelsArr = textData.concat(textData);
 
-const OPTIONS: EmblaOptionsType = { align: "start" };
-
 export const MarketRowTop = () => {
-  const [emblaRef] = useEmblaCarousel(OPTIONS);
   const { estatesArr } = useEstatesContext();
 
   return (
-    <section className={styles.embla}>
-      <div className={styles.embla__viewport} ref={emblaRef}>
-        <div className={styles.embla__container}>
-          {/* TODO extract embla to templates folder */}
-          {estatesArr.map((estate, idx) => {
-            const currentIndex = idx % labelsArr.length;
-            return (
-              <div
-                key={estate.slug}
-                className={clsx(styles.embla__slide, "cursor-pointer")}
-              >
-                <MarketTopRowCard
-                  imgSrc={estate.assetDetails.previewImage}
-                  header={labelsArr[currentIndex].header}
-                  description={labelsArr[currentIndex].description}
-                  to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
-                  height={180}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <section className={styles.topRowGrid}>
+      {estatesArr.slice(0, CARDS_PREVIW).map((estate, idx) => {
+        return (
+          <div key={estate.slug} className={clsx("cursor-pointer")}>
+            <MarketTopRowCard
+              imgSrc={estate.assetDetails.previewImage}
+              header={labelsArr[idx].header}
+              description={labelsArr[idx].description}
+              to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
+              height={180}
+            />
+          </div>
+        );
+      })}
     </section>
   );
 };
@@ -92,7 +80,12 @@ const MarketTopRowCard: FC<MarketTopRowCardProps> = ({
         </h3>
         <p className="text-body">{description}</p>
       </div>
-      <img src={imgSrc} alt="top row card" className={styles.bg} />
+      <img
+        src={imgSrc}
+        alt="top row card"
+        draggable={false}
+        className={styles.bg}
+      />
     </CustomLink>
   );
 };
