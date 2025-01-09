@@ -36,8 +36,8 @@
 }
 
 .cardImg {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   border-radius: 16px;
   overflow: hidden;
   object-fit: cover;
@@ -45,7 +45,7 @@
 
 .header {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   max-width: 163px;
   overflow: hidden;
