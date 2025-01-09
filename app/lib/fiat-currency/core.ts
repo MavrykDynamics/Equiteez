@@ -31,6 +31,8 @@ function useAssetUSDPrice(slug: string) {
   }, [slug, usdToTokenRates]);
 }
 
+// by defualt 1 dollar equals 1 dollar
+// TODO take dollar rate from api
 export const useFiatToUsdRate = () => {
   const { fiatRates, selectedFiatCurrency } = useFiatCurrency();
 
@@ -75,48 +77,3 @@ export const useFiatCurrency = () => {
 };
 
 // TODO there was tezos: {usd: 1.6} from coincheck api
-// const feedsQuery = `
-//     query dataFeedsPrices {
-//       aggregator: aggregator(where: { admin: { _neq: "" } }, order_by: { creation_timestamp: desc }) {
-//         address
-//         name
-//         decimals
-//         last_completed_data
-//         last_completed_data_pct_oracle_resp
-//         last_completed_data_last_updated_at
-//         last_completed_data_epoch
-//       }
-//     }
-//   `;
-
-// export const fetchFiatToTezosRates = async () => {
-//   try {
-//     const { data } = await api<{ data: { aggregator: TokenPricesFeedsType } }>(
-//       'https://api.mavenfinance.io/v1/graphql',
-//       {
-//         method: 'POST',
-//         body: JSON.stringify({ query: feedsQuery }),
-//       }
-//     );
-
-//     const mappedRates = normalizeTokenPrices(data.data.aggregator);
-
-//     return { mappedRates, usd: 1.6 };
-//   } catch (e) {
-//     throw new Error('Error while fetching tezos rates');
-//   }
-// };
-
-// export const normalizeTokenPrices = (feedsLedger: TokenPricesFeedsType) => {
-//   return feedsLedger.reduce<Record<string, number>>((acc, feedGql) => {
-//     const { symbol } = getTokenSymbolAndName(feedGql.name) ?? {};
-
-//     if (symbol) {
-//       acc[symbol] = atomsToTokens(
-//         feedGql.last_completed_data,
-//         feedGql.decimals
-//       ).toNumber();
-//     }
-//     return acc;
-//   }, {});
-// };

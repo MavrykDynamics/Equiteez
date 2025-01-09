@@ -1,8 +1,11 @@
-import { CSSProperties, FC, useMemo } from 'react';
+import { CSSProperties, FC, useMemo } from "react";
 
-import styles from './thumbCard.module.css';
-import clsx from 'clsx';
-import { EstateHeadlineTab } from '../EstateHeadlineTab';
+import styles from "./thumbCard.module.css";
+import clsx from "clsx";
+import { EstateHeadlineTab } from "../EstateHeadlineTab";
+import BigNumber from "bignumber.js";
+import Money from "~/lib/atoms/Money";
+import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 
 type ThumbCardProps = {
   imgSrc: string;
@@ -12,11 +15,11 @@ type ThumbCardProps = {
   height?: string;
 };
 
-type ThumbCardSecondary = Omit<ThumbCardProps, 'address'> & {
+type ThumbCardSecondary = Omit<ThumbCardProps, "address"> & {
   description: string;
   progressBarPercentage?: number;
   isSecondaryMarket: boolean;
-  pricePerToken?: number;
+  pricePerToken?: BigNumber;
 };
 
 export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
@@ -27,9 +30,9 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
   pricePerToken,
   progressBarPercentage,
   APY,
-  height = '264px',
+  height = "264px",
 }) => {
-  const memoizedStyle = useMemo(() => ({ '--card-height': height }), [height]);
+  const memoizedStyle = useMemo(() => ({ "--card-height": height }), [height]);
 
   return (
     <div
@@ -40,7 +43,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
       <div
         className={clsx(
           styles.thumbCardContent,
-          'flex flex-col justify-between p-4'
+          "flex flex-col justify-between p-4"
         )}
       >
         <div className="flex items-center gap-x-2">
@@ -49,17 +52,21 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
         <div className="flex flex-col items-start">
           <div className="flex-1 w-full flex justify-between">
             <div className="flex flex-col">
-              <h4 className="text-white text-slider-headline truncate max-w-[381px]">
+              <h4
+                className={clsx("text-white text-card-headline", styles.title)}
+              >
                 {title}
               </h4>
-              <p className="text-white text-body-xs leading-5">{description}</p>
+              <p className="text-white text-body-xs leading-5 capitalize">
+                {description}
+              </p>
             </div>
-            <div className="flex">
+            <div className="flex self-end">
               {pricePerToken && (
                 <div className="flex flex-col items-center pr-3 border-r border-sand-50 mr-3">
-                  <span className="text-card-headline text-sand-50">
-                    ${pricePerToken}
-                  </span>
+                  <div className="flex items-center text-card-headline text-sand-50">
+                    $<Money fiat>{pricePerToken}</Money>
+                  </div>
                   <span className="text-sand-50 text-body-xs leading-5">
                     Price
                   </span>
@@ -75,31 +82,73 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
             <div
               style={
                 {
-                  '--percentage': `${progressBarPercentage}%`,
+                  "--percentage": `${progressBarPercentage}%`,
                 } as CSSProperties
               }
               className={clsx(
                 styles.progressBarContainer,
-                'gap-x-2 w-full items-center'
+                "gap-x-2 w-full items-center"
               )}
             >
               <div
                 className={clsx(
-                  'overflow-hidden',
+                  "overflow-hidden",
                   styles.progressBar,
                   styles.progressPercentage,
                   progressBarPercentage === 100
-                    ? 'after:bg-[#0DB365]'
-                    : 'after:bg-background'
+                    ? "after:bg-[#0DB365]"
+                    : "after:bg-background"
                 )}
               />
               <span className="text-background text-caption">
                 {progressBarPercentage === 100
-                  ? 'FUNDED'
+                  ? "FUNDED"
                   : `${progressBarPercentage}%`}
               </span>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type PrimaryThumbCardProps = {
+  imgSrc: string;
+  title: string;
+  price: number;
+  annual: number;
+  tokensAvailable: number;
+};
+
+export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
+  imgSrc,
+  title,
+  price,
+  annual,
+  tokensAvailable,
+}) => {
+  return (
+    <div
+      className={clsx("p-6 flex flex-col gap-4 bg-white", styles.cardPrimary)}
+    >
+      <img src={imgSrc} alt={title} />
+
+      <div className="flex flex-col">
+        <h4
+          className={clsx(
+            "text-card-headline text-content mb-1",
+            styles.primaryHeader
+          )}
+        >
+          {title}
+        </h4>
+        <PriceDetailsLabel price={price} percentage={annual} />
+        <div className="flex items-center justify-between text-content mt-3">
+          <p className="text-sm">Tokens Available</p>
+          <div className="font-semibold text-sm">
+            <Money>{tokensAvailable}</Money>
+          </div>
         </div>
       </div>
     </div>

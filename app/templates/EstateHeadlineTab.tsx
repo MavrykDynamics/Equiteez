@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import { FC } from 'react';
+import clsx from "clsx";
+import { FC } from "react";
 
 type EstateHeadlineTabProps = {
   isSecondaryEstate: boolean;
@@ -11,13 +11,13 @@ export const EstateHeadlineTab: FC<EstateHeadlineTabProps> = ({
   return (
     <div
       className={clsx(
-        'py-1 px-2 rounded text-body-xs font-medium',
+        "py-1 px-2 rounded text-body-xs font-medium capitalize",
         isSecondaryEstate
-          ? 'bg-blue-opacity text-blue-950'
-          : 'bg-[#AACFB5] text-green-950'
+          ? "bg-blue-opacity text-blue-950"
+          : "bg-[#AACFB5] text-green-950"
       )}
     >
-      {isSecondaryEstate ? 'Secondary Market' : 'Primary Issuance'}
+      {isSecondaryEstate ? "Secondary Market" : "Primary Issuance"}
     </div>
   );
 };

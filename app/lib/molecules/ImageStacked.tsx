@@ -6,10 +6,10 @@ import React, {
   useMemo,
   useRef,
   CSSProperties,
-} from 'react';
+} from "react";
 
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { useImagesStackLoading } from '../ui/use-images-stack-loading';
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { useImagesStackLoading } from "../ui/use-images-stack-loading";
 
 export interface ImageStackedProps
   extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -77,7 +77,7 @@ export const ImageStacked: FC<ImageStackedProps> = ({
         onError={IS_WEB ? onFail : undefined}
       />
 
-      {isLoading ? loader ?? null : null}
+      {isLoading ? (loader ?? null) : null}
     </>
   );
 };

@@ -1,0 +1,123 @@
+.toasterContainer {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  z-index: 200; /* to show toasts on the front side when modal is opened*/
+  width: 400px;
+  background: transparent;
+}
+
+@keyframes revealFromRight {
+  0% {
+    transform: translateX(400px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes hideToRight {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(400px);
+  }
+}
+
+.toaster {
+  width: 100%;
+  position: relative;
+  padding: 20px;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: flex-start;
+  column-gap: 16px;
+
+  transition: all 1s ease-in-out;
+  overflow: hidden;
+
+  @apply border border-transparent;
+}
+
+.warning.toaster {
+  border-color: #ffd38f;
+  background-color: #fff0da;
+}
+.error.toaster {
+  border-color: #f18786;
+  background-color: #ffe5e5;
+}
+.success.toaster {
+  border-color: #b5d5c0;
+  background-color: #dff4e6;
+}
+.info.toaster {
+  border-color: #7c81c5;
+  background-color: #eff0ff;
+}
+
+.loading.toaster {
+  border-color: #7c81c5;
+  background-color: #eff0ff;
+}
+
+.hide {
+  animation-name: hideToRight;
+  animation-duration: 450ms;
+  animation-timing-function: ease-in-out;
+}
+.reveal {
+  animation-name: revealFromRight;
+  animation-duration: 450ms;
+  animation-timing-function: ease-in-out;
+}
+
+.title {
+  @apply text-sand-900 text-base font-semibold;
+  max-width: 390px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message {
+  @apply text-sm;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  max-width: 390px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.warning .iconWrapper {
+  background: #e68226;
+}
+.error .iconWrapper {
+  background: #db0505;
+}
+.success .iconWrapper {
+  background: #00b71d;
+}
+.info .iconWrapper {
+  background: #5f58ff;
+}
+
+.closeIconWrapper {
+  justify-self: flex-end;
+  cursor: pointer;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

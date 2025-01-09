@@ -5,6 +5,7 @@
     "symbol": "OHIO",
     "decimals": 6,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Bitcoin Miners",
     "assetDetails": {
       "coordinates": {
         "lat": -53.747637,
@@ -22,13 +23,13 @@
       "basicInfo": {
         "beds": 1,
         "baths": 3,
-        "sqft": 313,
-        "buildDate": "1973-06-08T09:20:37-03:00"
+        "sqft": 313
       },
       "propertyDetails": {
         "description": "Nostrud qui ut esse qui fugiat minim do eu quis. Dolor sit minim culpa fugiat ullamco tempor. Non sunt deserunt elit ex ad deserunt ut proident nisi occaecat anim eu id consequat.\r\n",
         "propertyType": "Apartment",
         "fullAddress": "264 Devoe Street, Bethany, Tennessee",
+        "shortAddress": "264 Devoe Street, Bethany, Tennessee",
         "zipCode": 1,
         "state": "Wisconsin",
         "country": "New Jersey",

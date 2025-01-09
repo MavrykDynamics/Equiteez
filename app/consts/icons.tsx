@@ -1,27 +1,29 @@
-import TelegramIcon from 'app/icons/telegram.svg?react';
-import GithubIcon from 'app/icons/github.svg?react';
-import TwitterIcon from 'app/icons/twitter.svg?react';
-import DiscordIcon from 'app/icons/discord.svg?react';
+import TelegramIcon from "app/icons/telegram.svg?react";
+import GithubIcon from "app/icons/github.svg?react";
+import TwitterIcon from "app/icons/twitter.svg?react";
+import DiscordIcon from "app/icons/discord.svg?react";
 
 export const SOCIALS = [
   {
-    id: 'twitter',
+    id: "twitter",
     Icon: TwitterIcon,
-    url: '/',
+    url: "/",
   },
   {
-    id: 'discrod',
+    id: "discord",
     Icon: DiscordIcon,
-    url: '/',
+    url: "/",
   },
   {
-    id: 'GithubIcon',
+    id: "GithubIcon",
     Icon: GithubIcon,
-    url: '/',
+    url: "/",
   },
   {
-    id: 'telegram',
+    id: "telegram",
     Icon: TelegramIcon,
-    url: '/',
+    url: "/",
   },
 ];
+
+export const SECONDARY_SOCIALS = [SOCIALS[0], SOCIALS[3]];

@@ -1,0 +1,14 @@
+.active {
+  animation: reveal 300ms linear;
+}
+
+@keyframes reveal {
+  from {
+    scale: 0.5;
+    @apply text-black-secondary bg-transparent;
+  }
+  to {
+    scale: 1;
+    @apply bg-black-secondary  text-white;
+  }
+}

@@ -1,8 +1,8 @@
 /* eslint-disable no-useless-catch */
-import { TezosToolkit } from '@mavrykdynamics/taquito';
-import { OrderbookMarketType, stablecoinContract } from '~/consts/contracts';
+import { TezosToolkit } from "@mavrykdynamics/taquito";
+import { OrderbookMarketType, stablecoinContract } from "~/consts/contracts";
 
-import { formatRWAPrice, tokensToAtoms } from '~/lib/utils/formaters';
+import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
 // Orderbook buy & sell for secondary market page
 
@@ -31,10 +31,10 @@ export async function orderbookBuy({
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
-    const currency = 'USDT';
+    const currency = "USDT";
     const orderExpiry = null;
 
-    const open_ops = tokenContract.methodsObject['update_operators']([
+    const open_ops = tokenContract.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -45,7 +45,7 @@ export async function orderbookBuy({
       // to avoid undefined values
     ]).toTransferParams();
 
-    const buy_order = marketContract.methodsObject['placeBuyOrder']([
+    const buy_order = marketContract.methodsObject["placeBuyOrder"]([
       {
         rwaTokenAmount,
         pricePerRwaToken,
@@ -54,7 +54,7 @@ export async function orderbookBuy({
       },
     ]).toTransferParams();
 
-    const close_ops = tokenContract.methodsObject['update_operators']([
+    const close_ops = tokenContract.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -65,7 +65,7 @@ export async function orderbookBuy({
     ]).toTransferParams();
 
     const match_orders =
-      marketContract.methodsObject['matchOrders'](1).toTransferParams();
+      marketContract.methodsObject["matchOrders"](1).toTransferParams();
 
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
@@ -97,10 +97,10 @@ export async function orderbookSell({
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
-    const currency = 'USDT';
+    const currency = "USDT";
     const orderExpiry = null;
 
-    const open_ops = tokenContact.methodsObject['update_operators']([
+    const open_ops = tokenContact.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -110,7 +110,7 @@ export async function orderbookSell({
       },
     ]).toTransferParams();
 
-    const sell_order = marketContract.methodsObject['placeSellOrder']([
+    const sell_order = marketContract.methodsObject["placeSellOrder"]([
       {
         rwaTokenAmount,
         pricePerRwaToken,
@@ -119,7 +119,7 @@ export async function orderbookSell({
       },
     ]).toTransferParams();
 
-    const close_ops = tokenContact.methodsObject['update_operators']([
+    const close_ops = tokenContact.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,

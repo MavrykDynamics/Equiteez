@@ -1,1 +1,0 @@
-export { IntegrationSection } from './IntegrationSection';
