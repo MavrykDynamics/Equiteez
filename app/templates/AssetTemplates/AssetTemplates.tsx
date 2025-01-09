@@ -257,7 +257,7 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
           <p>{data.recreation}</p>
         </TableItem>
         <TableItem>
-          <p>Watersports</p>
+          <p className="self-start">Watersports</p>
           <p className="whitespace-pre-wrap max-w-[50%] text-right">
             {data.watersports}
           </p>

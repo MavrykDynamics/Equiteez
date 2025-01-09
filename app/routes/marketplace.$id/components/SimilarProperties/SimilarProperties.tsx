@@ -37,7 +37,7 @@ export const SimilarProperties = () => {
   return (
     <section className="px-11 flex flex-col">
       <h2 className="text-content text-section-headline mb-11">
-        Similar OTC Properties on Equiteez
+        Similar OTC Assets on Equiteez
       </h2>
       <div className="grid grid-cols-3 gap-x-3">
         {!similarEstates.length ? (
