@@ -46,7 +46,7 @@ export default function Index() {
 
       <MarketRowBottom />
       <Container px={44}>
-        <Spacer height={120} />
+        <Spacer height={100} />
         <PortfolioSection />
         <Spacer />
         <PropertiesSlider />
