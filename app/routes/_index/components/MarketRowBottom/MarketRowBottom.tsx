@@ -53,7 +53,7 @@ const MarketRowBottomCard: FC<{
   percentage: number;
 }> = ({ name, imgSrc, price, percentage }) => {
   return (
-    <div className={clsx("flex items-center gap-4", styles.card)}>
+    <div className={clsx("flex items-center gap-4 ml-8", styles.card)}>
       <img src={imgSrc} alt="card" className={styles.cardImg} />
       <div className="flex items-center gap-2">
         <div className="flex flex-col items-start max-w-[184px] self-stretch justify-between">
