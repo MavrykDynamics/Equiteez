@@ -258,9 +258,7 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Watersports</p>
-          <p className="whitespace-pre-wrap max-w-[50%] text-right">
-            {data.watersports}
-          </p>
+          <p className="whitespace-pre-wrap text-right">{data.watersports}</p>
         </TableItem>
         <TableItem>
           <p>Atmosphere</p>
@@ -296,9 +294,7 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Address</p>
-          <p className="whitespace-pre-wrap text-right">
-            {data.fullAddress}
-          </p>
+          <p className="whitespace-pre-wrap text-right">{data.fullAddress}</p>
         </TableItem>
         <TableItem>
           <p>Number of Rooms</p>
@@ -570,7 +566,7 @@ export const MixedUseRealEstateTemplate: FC<{
         </TableItem>
         <TableItem>
           <p>Key Features</p>
-          <p className="whitespace-pre-wrap text-right max-w-[50%]">{data.keyFeatures}</p>
+          <p className="whitespace-pre-wrap text-right">{data.keyFeatures}</p>
         </TableItem>
         <TableItem>
           <p>Current Occupancy</p>
@@ -611,8 +607,8 @@ export const DefaultAssetDetailsTemplate: FC<{
         <TableHeader>About</TableHeader>
         <TableDescription>{propertyDetails.description}</TableDescription>
         <TableItem>
-          <p>Property Type</p>
-          <p>{propertyDetails.propertyType}</p>
+          <p>Asset Type</p>
+          <p className="capitalize">{propertyDetails.propertyType}</p>
         </TableItem>
         <TableItem>
           <p>Full Address</p>
