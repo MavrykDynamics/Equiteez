@@ -83,6 +83,8 @@ const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
     case Debt:
     case Treasuries:
     case InsuranceContract:
+    case Commodities:
+    case MixedUseRealEstate:
       return {
         data: activeEstate.assetDetails.propertyDetails,
       };
@@ -95,12 +97,6 @@ const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
         },
       };
 
-    case Commodities:
-    case MixedUseRealEstate:
-      return {
-        detailsData: activeEstate.assetDetails.propertyDetails,
-        buildingData: activeEstate.assetDetails.buildingInfo,
-      };
     default:
       return { activeEstate };
   }

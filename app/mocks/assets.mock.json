@@ -578,13 +578,15 @@
         "totalValue": "$50M",
         "fullAddress": "Texas, USA",
         "shortAddress": "Texas, USA",
-        "properties": "180 residential loans",
-        "ltvRatio": "Average 65%",
-        "yield": "4.8% default-adjusted",
+        "totalMortgages": "180 residential loans",
+        "regions": "Dallas, Houston, and Austin, Texas",
+        "loanTypes": "Primarily residential, prime borrowers",
         "borrowedProfile": "Average FICO score of 740",
         "underwriting": "Strict, high standards",
-        "regions": "Dallas, Houston, Austin",
-        "loanTypes": "Primarily residential, prime borrowers",
+        "ltvRatio": "Average of 65%, indicating substantial borrower equity",
+        "creditQuality": "Strong average FICO score of 740, representing low credit risk",
+        "yield": "4.8% default-adjusted",
+        "investmentOpportunity": "Well-suited for institutional or private investors",
         "investmentRisk": "Low-risk, strong borrower profiles",
         "liquidity": "High potential for future transactions"
       },
@@ -850,18 +852,14 @@
         "faceValue": "$10 million",
         "maturity": "10 years",
         "issuer": "U.S. Government",
-        "yield": "3.5% fixed annual",
+        "couponRate": " 6.5% fixed annual",
         "paymentFrequency": "Semi-annually",
+        "paymentDates": "April 22nd and October 22nd",
         "bondType": "Treasury Bonds (T-Bonds)",
-        "security": "Backed by the full faith and credit of the U.S.",
-        "marketPrice": "Trading at par value",
-        "riskLevel": "Low risk, government-backed",
+        "security": "Backed by the full faith and credit of the U.S. government",
+        "riskLevel": "Low risk",
         "investorSuitability": "Ideal for risk-averse investors",
-        "capitalPreservation": "Designed to preserve principal",
-        "interestRate": "Fixed over the life of the bond",
-        "liquidity": "Highly liquid, tradable in secondary market",
-        "taxTreatment": "Exempt from state and local taxes",
-        "currentDemand": "Steady market demand, stable investment environment"
+        "liquidity": "Highly liquid, tradable on the secondary market"
       },
 
       "financials": {
@@ -1385,26 +1383,19 @@
         "propertyType": "Commodities",
         "fullAddress": "7335 Wilburton Lane, Northport, AL 35473",
         "shortAddress": "Texas, USA",
-        "assetType": "Commodities",
-        "country": "USA",
-        "neighborhood": "Hubbell - Lyndon",
-        "rentaltype": "Long-Term",
-        "rented": "Fully Rented",
-        "rentSubsidy": "No",
-        "assetManager": "Mutual Property Management LLC",
-        "parking": "1 Detached Garage"
-      },
-      "buildingInfo": {
-        "stories": "2 stories",
-        "lotSize": "1,270 sqft",
-        "interiorSize": "704 sqft",
-        "buildingClass": "C",
-        "foundation": "Masonry Block",
-        "exteriorWalls": "Brick",
-        "roofType": "Asphalt",
-        "heating": "Forced Air / Gas",
-        "cooling": "None",
-        "renovated": "Entirely Renovated"
+        "totalWeight": "1,000 ounces",
+        "storage": "Securely stored in a Texas depository",
+        "insurance": "Fully insured and audited",
+        "standart": "London Good Delivery standards",
+        "marketValue": "$1,800 per ounce, total value of $1.8 million",
+        "annualAppreciation": "12% increase over the past year",
+        "performance": "Outperformed broader market indices",
+        "assetType": "Investment-grade gold",
+        "liquidity": "Fully liquid asset",
+        "marketDemand": "Strong demand",
+        "riskProfile": "Low-risk, tangible asset",
+        "taxTreatment": " Capital gains tax applies",
+        "security": "Secure, fully audited facility"
       },
 
       "financials": {
@@ -1663,28 +1654,20 @@
       "propertyDetails": {
         "description": "Queen Tower is a 27-story Class A office building in downtown Dubai. with 540,000 sq ft of premium space. Features include a stunning glass facade, three-story atrium, and LEED Platinum certification. Currently 92% leased to top-tier tech and financial tenants, delivering 8.2% annual returns.  With expansive floor-to-ceiling windows offering panoramic views of the city skyline, it's not just a place to work—it's a place to thrive. Ideal for companies looking to establish a prestigious address, this building offers unrivaled access to public transit, dining, and entertainment.",
         "propertyType": "Mixed-Use Real Estate",
-        "fullAddress": "7335 Wilburton Lane, Northport, AL 35473",
+        "fullAddress": "Dubai, UAE",
         "shortAddress": "Dubai, UAE",
-        "assetType": "Commercial Real-Estate",
-        "country": "USA",
-        "neighborhood": "Hubbell - Lyndon",
-        "rentaltype": "Long-Term",
-        "rented": "Fully Rented",
-        "rentSubsidy": "No",
-        "assetManager": "Mutual Property Management LLC",
+        "name": "Queen Tower",
+        "country": "UAE",
+        "neighborhood": "Downtown Dubai",
+        "type": "Class A office building",
+        "size": "540,000 sq ft of premium office space",
+        "height": "27 stories",
+        "keyFeatures": "Stunning glass facade, three-story atrium,\nLEED Platinum certification (sustainability-focused)",
+        "occupancy": "92% leased to top-tier tech and financial companies",
+        "annualReturns": "8.2%",
+        "amenities": "Expansive floor-to-ceiling windows with panoramic city skyline views",
+        "idealFor": "Companies seeking a prestigious, central address for work and growth",
         "parking": "1 Detached Garage"
-      },
-      "buildingInfo": {
-        "stories": "2 stories",
-        "lotSize": "1,270 sqft",
-        "interiorSize": "704 sqft",
-        "buildingClass": "C",
-        "foundation": "Masonry Block",
-        "exteriorWalls": "Brick",
-        "roofType": "Asphalt",
-        "heating": "Forced Air / Gas",
-        "cooling": "None",
-        "renovated": "Entirely Renovated"
       },
 
       "financials": {
@@ -1943,7 +1926,7 @@
       "propertyDetails": {
         "description": "Nestled in the picturesque countryside just outside the town of Vík, Hotel Katla is a 103-room country hotel situated 5 km east of Vík, on the south coast. A family-run gem on Iceland’s stunning south coast,  it boasts of majestic glaciers serving as a breathtaking backdrop. Since its inception in 1988 as a farmhouse accommodation, the hotel has evolved to cater primarily to group travel, with about 65% of its guests arriving through domestic and international travel agencies. \n\nThe area's natural beauty has attracted various advertising and film projects, further enhancing its appeal. The hotel benefits from its own geothermal heating utility and storage tank, ensuring a sustainable and efficient energy supply.\n\nGuests can enjoy all-day dining in a large dining hall that comfortably seats up to 250 people. For business and events, the hotel features a well-equipped conference room with a stage, accommodating up to 80 attendees. The central reception area includes a bar offering a variety of drinks and retail items. For relaxation, the outdoor area boasts a hot tub and sauna, perfect for unwinding amidst the natural beauty. \n\nHotel Katla is not just a place to stay; it's a destination where guests can immerse themselves in Iceland’s natural wonders while enjoying modern comforts and amenities.",
         "propertyType": "Hotel",
-        "fullAddress": "5 km east of Vík, South Coast, Iceland",
+        "fullAddress": "Höfðabrekka, 871 Vík, Iceland\nStar Rating: Three-star hotel",
         "shortAddress": "Iceland",
         "location": "5 km east of Vík, South Coast, Iceland",
         "rooms": "103 rooms, including Standard, Superior, and Suites",
@@ -1953,7 +1936,7 @@
         "amenities": "Hot tub, sauna, dressing rooms with showers",
         "additionalFacilities": "Own laundry, storage, heating utility (well)",
         "landSize": "4,700 hectares",
-        "natural": "Geothermal heat, hot water availability, gravel mine, hunting and fishing rights"
+        "natural": "Geothermal heat, hot water availability, gravel mine,\n hunting and fishing rights"
       },
 
       "financials": {

@@ -50,8 +50,13 @@ export const TableItem: FC<TableItemProps> = ({
 
 export const TableItemSmall: FC<
   Omit<TableItemProps, "customPadding" & "textVariant">
-> = ({ children, ...rest }) => (
-  <TableItem {...rest} customPadding={12} textVariant="caption-regular">
+> = ({ children, className, ...rest }) => (
+  <TableItem
+    {...rest}
+    className={clsx(className)}
+    customPadding={12}
+    textVariant="caption-regular"
+  >
     {children}
   </TableItem>
 );
