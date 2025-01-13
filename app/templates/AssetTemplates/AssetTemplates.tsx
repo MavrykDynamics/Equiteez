@@ -257,10 +257,8 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
           <p>{data.recreation}</p>
         </TableItem>
         <TableItem>
-          <p className="self-start">Watersports</p>
-          <p className="whitespace-pre-wrap max-w-[50%] text-right">
-            {data.watersports}
-          </p>
+          <p>Watersports</p>
+          <p className="whitespace-pre-wrap text-right">{data.watersports}</p>
         </TableItem>
         <TableItem>
           <p>Atmosphere</p>
@@ -296,7 +294,7 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem>
           <p>Address</p>
-          <p>{data.fullAddress}</p>
+          <p className="whitespace-pre-wrap text-right">{data.fullAddress}</p>
         </TableItem>
         <TableItem>
           <p>Number of Rooms</p>
@@ -328,7 +326,7 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
         <TableItem isLast>
           <p>Natural Features</p>
-          <p>{data.natural}</p>
+          <p className="whitespace-pre-wrap text-right">{data.natural}</p>
         </TableItem>
       </Table>
       <Spacer height={32} />
@@ -351,16 +349,16 @@ export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
           <p>{data.totalValue}</p>
         </TableItem>
         <TableItem>
-          <p>Properties</p>
-          <p>{data.properties}</p>
+          <p>Total Mortagages</p>
+          <p>{data.totalMortgages}</p>
         </TableItem>
         <TableItem>
-          <p>LTV Ratio</p>
-          <p>{data.ltvRatio}</p>
+          <p>Geographic Focus</p>
+          <p>{data.regions}</p>
         </TableItem>
         <TableItem>
-          <p>Yield</p>
-          <p>{data.yield}</p>
+          <p>Loan Types</p>
+          <p>{data.loanTypes}</p>
         </TableItem>
         <TableItem>
           <p>Borrowed Profile</p>
@@ -371,12 +369,20 @@ export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
           <p>{data.underwriting}</p>
         </TableItem>
         <TableItem>
-          <p>Regions Covered</p>
-          <p>{data.regions}</p>
+          <p>Loan-to-Value (LTV) Ratio</p>
+          <p>{data.ltvRatio}</p>
         </TableItem>
         <TableItem>
-          <p>Loan Types</p>
-          <p>{data.loanTypes}</p>
+          <p>Borrower Credit Quality</p>
+          <p>{data.creditQuality}</p>
+        </TableItem>
+        <TableItem>
+          <p>Yield</p>
+          <p>{data.yield}</p>
+        </TableItem>
+        <TableItem>
+          <p>Investment Opportunity</p>
+          <p>{data.investmentOpportunity}</p>
         </TableItem>
         <TableItem>
           <p>Investment Risk</p>
@@ -404,7 +410,11 @@ export const TreasuriesTemplate: FC<{ data: any }> = ({ data }) => {
         <TableDescription>{data.description}</TableDescription>
         <TableItem>
           <p>Face Value</p>
-          <p>{data.propertyType}</p>
+          <p>{data.faceValue}</p>
+        </TableItem>
+        <TableItem>
+          <p>Type</p>
+          <p>{data.bondType}</p>
         </TableItem>
         <TableItem>
           <p>Maturity</p>
@@ -415,52 +425,33 @@ export const TreasuriesTemplate: FC<{ data: any }> = ({ data }) => {
           <p>{data.issuer}</p>
         </TableItem>
         <TableItem>
-          <p>Yield</p>
-          <p>{data.yield}</p>
+          <p>Coupon Rate (Yield)</p>
+          <p>{data.couponRate}</p>
         </TableItem>
         <TableItem>
           <p>Payment Frequency</p>
           <p>{data.paymentFrequency}</p>
         </TableItem>
         <TableItem>
-          <p>Bond Type</p>
-          <p>{data.bondType}</p>
+          <p>Payment Dates</p>
+          <p>{data.paymentDates}</p>
         </TableItem>
         <TableItem>
           <p>Security</p>
           <p>{data.security}</p>
         </TableItem>
         <TableItem>
-          <p>Market Price</p>
-          <p>{data.marketPrice}</p>
-        </TableItem>
-        <TableItem>
           <p>Risk Level</p>
           <p>{data.riskLevel}</p>
-        </TableItem>
-        <TableItem>
-          <p>Investor Suitability</p>
-          <p>{data.investorSuitability}</p>
-        </TableItem>
-        <TableItem>
-          <p>Capital Preservation</p>
-          <p>{data.capitalPreservation}</p>
-        </TableItem>
-        <TableItem>
-          <p>Interest Rate</p>
-          <p>{data.interestRate}</p>
         </TableItem>
         <TableItem>
           <p>Liquidity</p>
           <p>{data.liquidity}</p>
         </TableItem>
-        <TableItem>
-          <p>Tax Treatment</p>
-          <p>{data.taxTreatment}</p>
-        </TableItem>
+
         <TableItem isLast>
-          <p>Current Demand</p>
-          <p>{data.currentDemand}</p>
+          <p>Investor Suitability</p>
+          <p>{data.investorSuitability}</p>
         </TableItem>
       </Table>
     </div>
@@ -478,28 +469,126 @@ export const InsuranceContractTemplate: FC<{ data: any }> = ({ data }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CommoditiesTemplate: FC<{
-  detailsData: any;
-  buildingData: any;
-}> = ({ detailsData, buildingData }) => {
+  data: any;
+}> = ({ data }) => {
   return (
-    <div>
-      <SharedAssetDetailsTemplate data={detailsData} />
-      <Spacer height={32} />
-      <SharedAssetBuildingInfoTemplate data={buildingData} />
-    </div>
+    <Table className="bg-white">
+      <TableHeader>About</TableHeader>
+      <TableDescription>{data.description}</TableDescription>
+      <TableItem>
+        <p>Total Weight</p>
+        <p>{data.totalWeight}</p>
+      </TableItem>
+      <TableItem>
+        <p>Storage</p>
+        <p>{data.storage}</p>
+      </TableItem>
+      <TableItem>
+        <p>Insurance</p>
+        <p>{data.insurance}</p>
+      </TableItem>
+      <TableItem>
+        <p>Standard</p>
+        <p>{data.standart}</p>
+      </TableItem>
+      <TableItem>
+        <p>Market Value</p>
+        <p>{data.marketValue}</p>
+      </TableItem>
+      <TableItem>
+        <p>Annual Appreciation</p>
+        <p>{data.annualAppreciation}</p>
+      </TableItem>
+      <TableItem>
+        <p>Performance</p>
+        <p>{data.performance}</p>
+      </TableItem>
+      <TableItem>
+        <p>Asset Type</p>
+        <p>{data.assetType}</p>
+      </TableItem>
+      <TableItem>
+        <p>Liquidity</p>
+        <p>{data.liquidity}</p>
+      </TableItem>
+      <TableItem>
+        <p>Market Demand</p>
+        <p>{data.marketDemand}</p>
+      </TableItem>
+      <TableItem>
+        <p>Risk Profile</p>
+        <p>{data.riskProfile}</p>
+      </TableItem>
+      <TableItem>
+        <p>Tax Treatment</p>
+        <p>{data.taxTreatment}</p>
+      </TableItem>
+      <TableItem isLast>
+        <p>Storage & Security</p>
+        <p>{data.security}</p>
+      </TableItem>
+    </Table>
   );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const MixedUseRealEstateTemplate: FC<{
-  detailsData: any;
-  buildingData: any;
-}> = ({ detailsData, buildingData }) => {
+  data: any;
+}> = ({ data }) => {
   return (
     <div>
-      <SharedAssetDetailsTemplate data={detailsData} />
-      <Spacer height={32} />
-      <SharedAssetBuildingInfoTemplate data={buildingData} />
+      <Table className="bg-white">
+        <TableHeader>About</TableHeader>
+        <TableDescription>{data.description}</TableDescription>
+        <TableItem>
+          <p>Building Name</p>
+          <p>{data.name}</p>
+        </TableItem>
+        <TableItem>
+          <p>Country</p>
+          <p>{data.country}</p>
+        </TableItem>
+        <TableItem>
+          <p>Neighborhood</p>
+          <p>{data.neighborhood}</p>
+        </TableItem>
+        <TableItem>
+          <p>Type</p>
+          <p>{data.type}</p>
+        </TableItem>
+        <TableItem>
+          <p>Size</p>
+          <p>{data.size}</p>
+        </TableItem>
+        <TableItem>
+          <p>Height</p>
+          <p>{data.height}</p>
+        </TableItem>
+        <TableItem>
+          <p>Key Features</p>
+          <p className="whitespace-pre-wrap text-right">{data.keyFeatures}</p>
+        </TableItem>
+        <TableItem>
+          <p>Current Occupancy</p>
+          <p>{data.occupancy}</p>
+        </TableItem>
+        <TableItem>
+          <p>Annual Returns</p>
+          <p>{data.annualReturns}</p>
+        </TableItem>
+        <TableItem>
+          <p>Amenities</p>
+          <p>{data.amenities}</p>
+        </TableItem>
+        <TableItem>
+          <p>Ideal For</p>
+          <p>{data.idealFor}</p>
+        </TableItem>
+        <TableItem isLast>
+          <p>Parking</p>
+          <p>{data.parking}</p>
+        </TableItem>
+      </Table>
       <Spacer height={32} />
       <LocationMap />
     </div>
@@ -518,8 +607,8 @@ export const DefaultAssetDetailsTemplate: FC<{
         <TableHeader>About</TableHeader>
         <TableDescription>{propertyDetails.description}</TableDescription>
         <TableItem>
-          <p>Property Type</p>
-          <p>{propertyDetails.propertyType}</p>
+          <p>Asset Type</p>
+          <p className="capitalize">{propertyDetails.propertyType}</p>
         </TableItem>
         <TableItem>
           <p>Full Address</p>

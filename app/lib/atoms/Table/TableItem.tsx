@@ -35,7 +35,7 @@ export const TableItem: FC<TableItemProps> = ({
         paddingBottom: isLast ? 0 : customPadding,
       }}
       className={clsx(
-        "flex items-center justify-between w-full text-content capitalize",
+        "flex items-center justify-between w-full text-content",
         lastSemiBold && "[&>*:nth-child(2)]:font-semibold",
         textVariants[textVariant],
         !isLast &&
@@ -50,8 +50,13 @@ export const TableItem: FC<TableItemProps> = ({
 
 export const TableItemSmall: FC<
   Omit<TableItemProps, "customPadding" & "textVariant">
-> = ({ children, ...rest }) => (
-  <TableItem {...rest} customPadding={12} textVariant="caption-regular">
+> = ({ children, className, ...rest }) => (
+  <TableItem
+    {...rest}
+    className={clsx(className)}
+    customPadding={12}
+    textVariant="caption-regular"
+  >
     {children}
   </TableItem>
 );
