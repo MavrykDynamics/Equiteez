@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { Container } from "~/lib/atoms/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { Link } from "@remix-run/react";
 
 export const MarketRowBottom = () => {
   const { estatesArr } = useEstatesContext();
@@ -33,6 +34,7 @@ export const MarketRowBottom = () => {
                 key={estate.slug}
                 name={estate.name}
                 imgSrc={estate.assetDetails.previewImage}
+                to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
                 price={estate.assetDetails.priceDetails.price}
                 percentage={
                   estate.assetDetails.priceDetails.projectedAnnualReturn
@@ -51,9 +53,10 @@ const MarketRowBottomCard: FC<{
   imgSrc: string;
   price: number;
   percentage: number;
-}> = ({ name, imgSrc, price, percentage }) => {
+  to: string;
+}> = ({ to, name, imgSrc, price, percentage }) => {
   return (
-    <div className={clsx("flex items-center gap-4 ml-8", styles.card)}>
+    <Link to={to} className={clsx("flex items-center gap-4 ml-8", styles.card)}>
       <img src={imgSrc} alt="card" className={styles.cardImg} />
       <div className="flex items-center gap-2">
         <div className="flex flex-col items-start max-w-[184px] self-stretch justify-between">
@@ -70,6 +73,6 @@ const MarketRowBottomCard: FC<{
 
         <ChartIcon className="max-w-[64px]" />
       </div>
-    </div>
+    </Link>
   );
 };

@@ -16,7 +16,10 @@ export const PriceDetailsLabel: FC<PriceDetailsLabelProps> = ({
   return (
     <div className="flex items-center text-body font-semibold text-[#37794e]">
       <div className="text-black-secondary">
-        $<Money fiat>{price}</Money>
+        $
+        <Money tooltip={false} fiat>
+          {price}
+        </Money>
       </div>
       <div
         className={clsx(styles.cardAnnualLabel, "text-body-xs font-semibold")}
