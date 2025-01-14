@@ -14,8 +14,12 @@
       "APY": 9.11,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/miners/2.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/miners/3.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/miners/4.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/miners/5.png"
       ],
-      "previewImage": "https://bits.media/upload/iblock/66d/kmuhg34j6vs3517vvb8lvvvfb4karhpn/intelion_data_systems_v_rossii_nachalsya_defitsit_moshchnostey_dlya_mayninga.webp",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/miners/1.png",
       "basicInfo": {
         "btcPrice": "10/month",
         "amount": "1,000"
@@ -285,8 +289,12 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/sapphire/2.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/sapphire/3.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/sapphire/4.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/sapphire/5.png"
       ],
-      "previewImage": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/0b/f0/97/e3.jpg",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/sapphire/1.png",
       "basicInfo": {
         "rooms": "60 rooms",
         "sqft": "704 sqft",
@@ -552,8 +560,12 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/home-deposit-loans/2.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/home-deposit-loans/3.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/home-deposit-loans/4.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/home-deposit-loans/5.png"
       ],
-      "previewImage": "https://nh.rdcpix.com/459606e377e3989f7cab51a66599e3c9l-f541004641rd-w960_h720.webp",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/home-deposit-loans/1.png",
       "basicInfo": {
         "homes": "180 Homes",
         "sqft": "704 sqft",
@@ -821,8 +833,12 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/us-bonds/2.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/us-bonds/3.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/us-bonds/4.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/us-bonds/5.png"
       ],
-      "previewImage": "https://cdn.corporatefinanceinstitute.com/assets/10-year-treasury-note.jpg",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/us-bonds/1.png",
       "basicInfo": {
         "bond": "Bond TVL",
         "yield": "Yield",
@@ -1088,8 +1104,10 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/insurance-bond/2.jpg",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/insurance-bond/3.jpg"
       ],
-      "previewImage": "https://scontent.flwo1-1.fna.fbcdn.net/v/t1.6435-9/170017694_1595976907458527_692495064941989045_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=0b6b33&_nc_ohc=8N--tGcw934Q7kNvgGJhgVV&_nc_zt=23&_nc_ht=scontent.flwo1-1.fna&_nc_gid=AgNaPKJwXYhjDmcGqjDfOQP&oh=00_AYBzpzWyNBWRrnt0bakqmwjYXC0HZoexcwOOTsmY_38RqA&oe=67A507B5",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/insurance-bond/6.png",
       "basicInfo": {
         "coverage": "Coverage",
         "policies": "Policies"
@@ -1351,8 +1369,9 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/gold/2.png"
       ],
-      "previewImage": "https://cf-images.us-east-1.prod.boltdns.net/v1/static/854081161001/2a2823c9-068a-47a7-95da-57d6c718fa14/7095aec2-d4db-414e-ac7c-55dbde44e218/1280x720/match/image.jpg",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/gold/1.png",
 
       "propertyDetails": {
         "description": "1,000 ounces of investment-grade gold, stored securely in a Texas depository, fully insured and audited. The gold meets London Good Delivery standards and is valued at $1,800 per ounce, providing a total market value of $1.8 million. Over the past year, this gold has appreciated by 12%, significantly outperforming broader market indices, as investors flock to safe-haven assets amid economic uncertainty. The asset is fully liquid, with the option for physical delivery or sale through reputable dealers.",
@@ -1616,8 +1635,12 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/queen-tower/2.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/queen-tower/3.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/queen-tower/4.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/queen-tower/5.png"
       ],
-      "previewImage": "https://graphicalthread.com.au/wp-content/uploads/2021/04/Final_03_Buchan_Roma-Street_Camera-01.jpg",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/queen-tower/1.png",
       "basicInfo": {
         "rooms": "60 rooms",
         "sqft": "704 sqft",
@@ -1884,8 +1907,12 @@
       "APY": 11.66,
       "type": "Secondary Market",
       "assetImages": [
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/katla/2.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/katla/3.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/katla/4.png",
+        "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/katla/5.png"
       ],
-      "previewImage": "https://cf.bstatic.com/xdata/images/hotel/max1280x900/21926394.jpg?k=cd70b731d978d3898a4779a965f35359256446d578c0e50d097acf2c2b58da02&o=&hp=1",
+      "previewImage": "https://equiteez.s3.ap-southeast-1.amazonaws.com/asset-images/katla/1.png",
       "basicInfo": {
         "rooms": "103 rooms",
         "sqft": "704 sqft",
