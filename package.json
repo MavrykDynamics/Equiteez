@@ -57,6 +57,7 @@
     "react-apexcharts": "^1.4.1",
     "react-css-transition-replace": "^5.0.1",
     "react-datepicker": "^7.2.0",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-fast-marquee": "^1.6.5",
     "react-hook-form": "^7.52.1",

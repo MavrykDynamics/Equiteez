@@ -77,28 +77,26 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
   } = useDataFromLoader<typeof loader>() ?? {};
 
   return (
-    <AppProvider>
-      <ApolloProvider>
-        <WalletProvider>
-          <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
-            <TokensProvider
-              initialTokens={tokens}
-              initialTokensMetadata={tokensMetadata}
-            >
-              <EstatesProvider>
-                <DexProvider>
-                  <UserProvider>
-                    <AppGlobalLoader>
-                      <PopupProvider>{children}</PopupProvider>
-                    </AppGlobalLoader>
-                  </UserProvider>
-                </DexProvider>
-              </EstatesProvider>
-            </TokensProvider>
-          </CurrencyProvider>
-        </WalletProvider>
-      </ApolloProvider>
-    </AppProvider>
+    <ApolloProvider>
+      <WalletProvider>
+        <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
+          <TokensProvider
+            initialTokens={tokens}
+            initialTokensMetadata={tokensMetadata}
+          >
+            <EstatesProvider>
+              <DexProvider>
+                <UserProvider>
+                  <AppGlobalLoader>
+                    <PopupProvider>{children}</PopupProvider>
+                  </AppGlobalLoader>
+                </UserProvider>
+              </DexProvider>
+            </EstatesProvider>
+          </TokensProvider>
+        </CurrencyProvider>
+      </WalletProvider>
+    </ApolloProvider>
   );
 };
 
@@ -117,10 +115,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <MobileView>
-              <AppWrapper>{children}</AppWrapper>
-            </MobileView>
-            <ToasterMessages />
+            <AppProvider>
+              <MobileView>
+                <AppWrapper>{children}</AppWrapper>
+              </MobileView>
+              <ToasterMessages />
+            </AppProvider>
           </ToasterProvider>
           <ScrollRestoration />
           <Scripts />

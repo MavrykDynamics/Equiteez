@@ -25,12 +25,14 @@
 .bg {
   position: absolute;
   width: 100%;
+
   bottom: 0;
 }
 
 .bg img {
   width: 100%;
   height: auto;
+  max-height: 350px;
 
   object-fit: cover;
 }

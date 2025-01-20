@@ -1,5 +1,5 @@
-import TelegramIcon from "app/icons/telegram.svg?react";
-import GithubIcon from "app/icons/icons-github.svg?react";
+// import TelegramIcon from "app/icons/telegram.svg?react";
+import GithubIcon from "app/icons/github.svg?react";
 import TwitterIcon from "app/icons/twitter.svg?react";
 // import DiscordIcon from "app/icons/discord.svg?react";
 
@@ -19,9 +19,9 @@ export const SOCIALS = [
     Icon: GithubIcon,
     url: "https://github.com/MavrykDynamics/",
   },
-  {
-    id: "telegram",
-    Icon: TelegramIcon,
-    url: "/",
-  },
+  // {
+  //   id: "telegram",
+  //   Icon: TelegramIcon,
+  //   url: "/",
+  // },
 ];

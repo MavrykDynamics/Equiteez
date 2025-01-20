@@ -27,7 +27,7 @@ export const CustomLink: FC<LinkProps & { disabled?: boolean }> = ({
         ? {
             target: "_blank",
             referrerPolicy: "no-referrer",
-            rel: "no-refferer",
+            rel: "no-referrer",
           }
         : {}),
     }),
