@@ -1,12 +1,12 @@
 import { Link, LinkProps } from "@remix-run/react";
 import { FC, useMemo } from "react";
 
-export const isExternalURL = (url: string) => {
+export const isExternalURL = (url: LinkProps["to"]) => {
   if (!url) return false;
 
   try {
     // Use window.location.origin as the base
-    const fullURL = new URL(url, window.location.origin);
+    const fullURL = new URL(url as string, window.location.origin);
     return fullURL.origin !== window.location.origin;
   } catch (e) {
     console.error("Invalid URL:", e);
