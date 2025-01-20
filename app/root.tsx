@@ -42,6 +42,7 @@ import {
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { FC } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
+import { MobileView } from "./providers/MobileView/MobileView";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -116,7 +117,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <AppWrapper>{children}</AppWrapper>
+            <MobileView>
+              <AppWrapper>{children}</AppWrapper>
+            </MobileView>
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
