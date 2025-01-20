@@ -1,101 +1,62 @@
-import React from 'react';
-import { EmblaOptionsType } from 'embla-carousel';
-import {
-  PrevButton,
-  NextButton,
-} from 'app/templates/EmblaCarouselArrowButtons';
-import useEmblaCarousel from 'embla-carousel-react';
+import React from "react";
 
-// icons
-import ArrowRight from 'app/icons/arrow-right.svg?react';
-
-import styles from './embla.module.css';
-import clsx from 'clsx';
-import { Button } from '~/lib/atoms/Button';
-import { Link, useNavigate } from '@remix-run/react';
+import styles from "./embla.module.css";
+import clsx from "clsx";
+import { Button } from "~/lib/atoms/Button";
+import { Link, useNavigate } from "@remix-run/react";
 import {
   PrimaryEstate,
-  SECONDARY_MARKET,
   SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
-import { usePrevNextButtons } from '~/lib/ui/use-embla-buttons';
-import { ThumbCardSecondary } from '~/templates/ThumbCard/ThumbCard';
+} from "~/providers/EstatesProvider/estates.types";
+import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
+import { EmblaViewportRefType } from "embla-carousel-react";
+
+export const SLIDER_VIEW_LIMIT = 4;
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
-  options?: EmblaOptionsType;
-};
+  childPosition: "before" | "after";
+  nextBtnDisabled: boolean;
+  emblaRef: EmblaViewportRefType;
+} & PropsWithChildren;
 
 const EmblaCarousel: React.FC<PropType> = (props) => {
-  const { slides, options } = props;
-  const [emblaRef, emblaApi] = useEmblaCarousel(options);
-  const navigate = useNavigate();
-
   const {
-    prevBtnDisabled,
+    emblaRef,
     nextBtnDisabled,
-    onPrevButtonClick,
-    onNextButtonClick,
-  } = usePrevNextButtons(emblaApi);
+    slides,
+    childPosition = "before",
+    children,
+  } = props;
+  const navigate = useNavigate();
 
   const handleSlideClick = (id: string, isLastSlide: boolean) => {
     if (isLastSlide) return;
-    navigate(`/properties/${id}`);
+    navigate(`/marketplace/${id}`);
   };
 
   return (
     <section className={styles.embla}>
-      <div className={'w-full flex justify-between items-center mb-11'}>
-        <Link to={'/properties'}>
-          <Button
-            variant="custom"
-            className="text-white bg-transparent border-2 border-white py-[8px]"
-          >
-            <div className="flex items-center gap-2">
-              View All
-              <ArrowRight className="w-6 h-6 stroke-current" />
-            </div>
-          </Button>
-        </Link>
-        <div className="flex items-center gap-x-3">
-          <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-          <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
-        </div>
-      </div>
+      {childPosition === "before" && children}
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
           {slides.map((estate, idx) => {
-            const isSecondaryMarket =
-              estate.assetDetails.type === SECONDARY_MARKET;
-
-            const restProps = isSecondaryMarket
-              ? {
-                  pricePerToken: (estate as SecondaryEstate).assetDetails
-                    .priceDetails.price,
-                }
-              : {
-                  // For the time being for fake data
-                  progressBarPercentage: +(
-                    (((estate as PrimaryEstate).assetDetails.priceDetails
-                      .tokensUsed || 1) /
-                      (estate as PrimaryEstate).assetDetails.priceDetails
-                        .tokensAvailable) *
-                    100
-                  ).toFixed(2),
-                };
             return (
               <div
                 role="presentation"
-                className={clsx(styles.embla__slide, 'cursor-pointer')}
+                className={clsx(styles.embla__slide, "cursor-pointer")}
                 key={estate.token_address}
                 onClick={() =>
                   handleSlideClick(
                     estate.assetDetails.blockchain[0].identifier,
-                    idx === slides.length - 1
+                    idx === slides.length - 1 &&
+                      slides.length > SLIDER_VIEW_LIMIT
                   )
                 }
               >
-                {nextBtnDisabled && idx === slides.length - 1 ? (
+                {nextBtnDisabled &&
+                idx === slides.length - 1 &&
+                slides.length > SLIDER_VIEW_LIMIT ? (
                   <div className={styles.embla__slide__number}>
                     <img
                       src={estate.assetDetails.previewImage}
@@ -105,7 +66,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                     <div
                       className={clsx(
                         styles.lastSlide,
-                        'flex items-center justify-center'
+                        "flex items-center justify-center"
                       )}
                     >
                       <div className="flex flex-col items-center gap-y-6">
@@ -113,23 +74,21 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                           Want to see more? <br />
                           Check out our marketplace
                         </h4>
-                        <Link to="/properties">
+                        <Link to="/marketplace">
                           <Button variant="white">Explore</Button>
                         </Link>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <ThumbCardSecondary
-                    height={'281px'}
+                  <ThumbCardPrimary
                     imgSrc={estate.assetDetails.previewImage}
                     title={estate.name}
-                    description={
-                      estate.assetDetails.propertyDetails.propertyType
+                    price={estate.assetDetails.priceDetails.price}
+                    annual={
+                      estate.assetDetails.priceDetails.projectedAnnualReturn
                     }
-                    isSecondaryMarket={isSecondaryMarket}
-                    APY={estate.assetDetails.APY}
-                    {...restProps}
+                    tokensAvailable={100000000}
                   />
                 )}
               </div>
@@ -137,6 +96,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
           })}
         </div>
       </div>
+
+      {childPosition === "after" && children}
     </section>
   );
 };

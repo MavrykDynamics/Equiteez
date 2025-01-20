@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import { FC } from 'react';
+import clsx from "clsx";
+import { FC } from "react";
 
 export type TabType<G = string> = {
   id: G;
@@ -9,41 +9,47 @@ export type TabType<G = string> = {
   handleClick: (id: G) => void;
 };
 
-export type TabVariant = 'primary' | 'secondary' | 'tertiary';
+export type TabVariant = "primary" | "secondary" | "tertiary";
 
 type TabProps = {
   active?: boolean;
   variant?: TabVariant;
+  minWidth?: number;
+  noActiveBg?: boolean;
 } & TabType;
 
 const variants = {
   primary: {
     className: clsx(
-      'px-4 py-[10px]  text-buttons cursor-pointer rounded-lg outline-none',
-      'flex justify-center items-center min-w-[115px]'
+      "px-4 py-[10px]  text-buttons cursor-pointer rounded-lg outline-none",
+      "flex justify-center items-center min-w-[115px]"
     ),
-    active: (active: boolean | undefined) =>
+    active: (active: boolean | undefined, noActiveBg?: boolean) =>
       active
-        ? 'bg-sand-800 text-white hover:bg-sand-700'
-        : 'bg-inactive-tab text-sand-700',
-    disabled: 'opacity-50 pointer-events-none',
+        ? "bg-sand-800 text-white hover:bg-sand-700".concat(
+            noActiveBg ? "" : " bg-sand-800 hover:bg-sand-700"
+          )
+        : "bg-inactive-tab text-sand-700",
+    disabled: "opacity-50 pointer-events-none",
   },
   secondary: {
     className: clsx(
-      'px-4 py-2  text-caption cursor-pointer rounded-lg outline-none',
-      'flex justify-center items-center min-w-[115px]'
+      "px-4 py-2  text-caption cursor-pointer rounded-lg outline-none",
+      "flex justify-center items-center min-w-[115px]"
     ),
-    active: (active: boolean | undefined) =>
+    active: (active: boolean | undefined, noActiveBg?: boolean) =>
       active
-        ? 'bg-sand-800 text-white hover:bg-sand-700'
-        : 'bg-inactive-tab text-sand-700',
-    disabled: 'opacity-50 pointer-events-none bg-gray-50',
+        ? "bg-sand-800 text-white hover:bg-sand-700".concat(
+            noActiveBg ? "" : " bg-sand-800 hover:bg-sand-700"
+          )
+        : "bg-inactive-tab text-sand-700",
+    disabled: "opacity-50 pointer-events-none bg-gray-50",
   },
   tertiary: {
-    className: clsx('text-caption cursor-pointer'),
+    className: clsx("text-caption cursor-pointer"),
     active: (active: boolean | undefined) =>
-      active ? 'text-dark-green-500 underline' : 'text-sand-300',
-    disabled: 'opacity-50 pointer-events-none',
+      active ? "text-dark-green-500 underline" : "text-sand-300",
+    disabled: "opacity-50 pointer-events-none",
   },
 };
 
@@ -54,17 +60,22 @@ export const Tab: FC<TabProps> = ({
   grow,
   id,
   handleClick,
-  variant = 'primary',
+  minWidth,
+  noActiveBg = false,
+  variant = "primary",
 }) => {
   const handleInternalClick = () => handleClick(id);
 
   return (
     <button
+      style={{ minWidth: minWidth ? minWidth : "unset" }}
       onClick={handleInternalClick}
       className={clsx(
+        "relative transition duration-200 ease-in",
+        active && "z-10",
         variants[variant].className,
-        variants[variant].active(active),
-        grow && 'flex-1',
+        variants[variant].active(active, noActiveBg),
+        grow && "flex-1",
         disabled && variants[variant].disabled
       )}
     >

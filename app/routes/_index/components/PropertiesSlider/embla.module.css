@@ -1,12 +1,12 @@
 .embla {
+  width: 100%;
   margin: auto;
-  --slide-height: 280px;
   --slide-spacing: 24px;
   --slide-size: 100%;
   --slide-spacing-sm: 1.6rem;
   --slide-size-sm: 50%;
   --slide-spacing-lg: 24px;
-  --slide-size-lg: calc(100% / 3);
+  --slide-size-lg: calc(100% / 4);
 }
 
 .embla__viewport {
@@ -52,7 +52,7 @@
 }
 .embla__slide__number {
   position: relative;
-  height: var(--slide-height);
+  height: 100%;
 
   border-radius: 16px;
 

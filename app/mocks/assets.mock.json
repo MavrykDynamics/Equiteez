@@ -1,0 +1,2137 @@
+[
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ1",
+    "name": "North Texas Bitcoin Miners LTD",
+    "symbol": "BTM",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Bitcoin Miners",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 9.11,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://bits.media/upload/iblock/66d/kmuhg34j6vs3517vvb8lvvvfb4karhpn/intelion_data_systems_v_rossii_nachalsya_defitsit_moshchnostey_dlya_mayninga.webp",
+      "basicInfo": {
+        "btcPrice": "10/month",
+        "amount": "1,000"
+      },
+      "propertyDetails": {
+        "description": "Welcome to North Texas BTC Miner, where cutting-edge technology meets sustainable energy to fuel the future of finance! Located in North Texas, this state-of-the-art cryptocurrency mining facility is designed for optimal Bitcoin production and cost efficiency. The facility is fully equipped with backup power systems and high-speed internet, including Starlink connectivity, ensuring 99.1% uptime.\n\nOperating 15,000 latest-gen miners with a hashrate of 185 PH/s, all while being powered by renewable energy sources at an incredible $500/kWh. Every day, it produces 22 BTC, contributing to the vibrant and ever-evolving cryptocurrency market.\n\nAs the cryptocurrency market matures, North Texas Bitcoin Miner offers an exciting opportunity to dive into one of the most dynamic sectors in modern finance.",
+        "propertyType": "Bitcoin Miners",
+        "location": "North Texas",
+        "fullAddress": "341, Lane 3, Alberton Port, TX, 345612",
+        "shortAddress": "Texas, USA",
+        "capacity": "15,000 latest-gen miners",
+        "miningHardware": "ASIC Miners",
+        "model": "S19 XP",
+        "hashRate": "185 PH/s",
+        "powerConsumption": "3,031 W",
+        "efficiency": "22 J/TH",
+        "energySource": "Powered by renewable energy",
+        "energyCost": "$0.032/kWh",
+        "electricityCost": "$500/kWh",
+        "dailyProduction": "22 BTC",
+        "redundancy": "Backup Power Systems",
+        "connectivity": "High-Speed Internet + Starlink",
+        "powerSource": "Renewable Energy",
+        "cooling": "Air-cooled/Water-cooled",
+        "security": "24/7 Surveillance"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "North Texas Bitcoin Miners LTD",
+          "identifier": "NORTH-TEXAS-BTC",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ2",
+    "name": "The Sapphire",
+    "symbol": "SPH",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Resort",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/0b/f0/97/e3.jpg",
+      "basicInfo": {
+        "rooms": "60 rooms",
+        "sqft": "704 sqft",
+        "rate": "80% rate"
+      },
+      "propertyDetails": {
+        "description": "The Sapphire is a luxurious beachfront resort offering breathtaking views of the Indian Ocean and direct access to pristine sands. Free WiFi access is available in all rooms. Staff can converse in French, Portuguese, and Chinese.\n\nFeaturing private sundecks and balconies, large villas are decorated with fine wood furnishings and warm colors. The property features elegantly designed Portuguese-style rooms, exquisite dining options, a rejuvenating spa, and a variety of wellness activities, including Yoga, Sculpting, and Sound Therapy. Premium toiletries and rain showers are provided.  Extras in the room include a dental kit and slippers. A wide range of water sports including diving, fishing, and windsurfing are available at the Sapphire Hotel and Resorts, Seychelles. Snorkeling and scuba diving can be arranged upon request. Alternatively, relax with soothing spa treatments at Amethyst Spa. All-day dining with a wide spread of international dishes is provided at 80 Degrees Restaurant.\n\nSapphire Hotel and Resorts, Seychelles, is 8 km from Seychelles International Airport, which takes 15 minutes by a private speedboat available 24 hours a day.",
+        "propertyType": "Resort",
+        "location": "Indian Ocean beachfront",
+        "fullAddress": "1 Oceanview Crescent, Coastal City, Seychelles 15645",
+        "shortAddress": "Seychelles",
+        "roomDesign": "Elegant Portuguese style",
+        "dining": "All-day dining at 80 Degrees Restaurant",
+        "spa": "Full-service rejuvenation, spa, sauna, massage",
+        "activities": "Yoga, Sculpting, Sound Therapy",
+        "beachAccsess": "Private, unspoiled white-sand beach",
+        "views": "Panoramic ocean vistas from all rooms",
+        "recreation": "Watersports, guided nature walks, and cultural experiences",
+        "watersports": "Diving, fishing, and windsurfing;\nsnorkeling and scuba diving upon request",
+        "atmosphere": "Tranquil, luxury retreat",
+        "adventure": "Activities for relaxation & exploration"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Sapphire",
+          "identifier": "Sapphire-1-X",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ3",
+    "name": "Home Deposit Loans",
+    "symbol": "NTBM",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Debt",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://nh.rdcpix.com/459606e377e3989f7cab51a66599e3c9l-f541004641rd-w960_h720.webp",
+      "basicInfo": {
+        "homes": "180 Homes",
+        "sqft": "704 sqft",
+        "beds": "2 bed",
+        "baths": "1 bath"
+      },
+      "propertyDetails": {
+        "description": "$50M portfolio of 180 prime Texas residential mortgages. Average 65% LTV ratio with 4.8% default-adjusted yield. Strong borrower profiles (740 FICO) and strict underwriting standards across Dallas, Houston, and Austin.",
+        "propertyType": "Debt",
+        "totalValue": "$50M",
+        "fullAddress": "Texas, USA",
+        "shortAddress": "Texas, USA",
+        "totalMortgages": "180 residential loans",
+        "regions": "Dallas, Houston, and Austin, Texas",
+        "loanTypes": "Primarily residential, prime borrowers",
+        "borrowedProfile": "Average FICO score of 740",
+        "underwriting": "Strict, high standards",
+        "ltvRatio": "Average of 65%, indicating substantial borrower equity",
+        "creditQuality": "Strong average FICO score of 740, representing low credit risk",
+        "yield": "4.8% default-adjusted",
+        "investmentOpportunity": "Well-suited for institutional or private investors",
+        "investmentRisk": "Low-risk, strong borrower profiles",
+        "liquidity": "High potential for future transactions"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Deposit Loans",
+          "identifier": "LOAN-1-DEPOSIT",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ4",
+    "name": "U.S. Treasury Bonds",
+    "symbol": "UTB",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Treasuries",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://cdn.corporatefinanceinstitute.com/assets/10-year-treasury-note.jpg",
+      "basicInfo": {
+        "bond": "Bond TVL",
+        "yield": "Yield",
+        "tvl": "TVL"
+      },
+      "propertyDetails": {
+        "description": "A cutting-edge cryptocurrency mining facility designed to harness digital wealth through efficient Bitcoin production. Located in prime energy territory for maximum cost efficiency. Operating 15,000 latest-gen miners with a hashrate of 185 PH/s, powered by renewable energy at $0.032/kWh. Currently producing 1 BTC daily with 99.1% uptime.  As the cryptocurrency market continues to mature, North Texas Bitcoin Miners offers an opportunity to participate in one of the most exciting and volatile sectors in modern finance, with the potential for high rewards but also inherent risk.",
+        "propertyType": "Treasuries",
+        "fullAddress": "USA",
+        "shortAddress": "USA",
+        "faceValue": "$10 million",
+        "maturity": "10 years",
+        "issuer": "U.S. Government",
+        "couponRate": " 6.5% fixed annual",
+        "paymentFrequency": "Semi-annually",
+        "paymentDates": "April 22nd and October 22nd",
+        "bondType": "Treasury Bonds (T-Bonds)",
+        "security": "Backed by the full faith and credit of the U.S. government",
+        "riskLevel": "Low risk",
+        "investorSuitability": "Ideal for risk-averse investors",
+        "liquidity": "Highly liquid, tradable on the secondary market"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Treasury Bonds",
+          "identifier": "TREASURY-BOUNDS-LTC",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ5",
+    "name": "Car Insurance Bonds",
+    "symbol": "LMB",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Insurance Contract",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://scontent.flwo1-1.fna.fbcdn.net/v/t1.6435-9/170017694_1595976907458527_692495064941989045_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=0b6b33&_nc_ohc=8N--tGcw934Q7kNvgGJhgVV&_nc_zt=23&_nc_ht=scontent.flwo1-1.fna&_nc_gid=AgNaPKJwXYhjDmcGqjDfOQP&oh=00_AYBzpzWyNBWRrnt0bakqmwjYXC0HZoexcwOOTsmY_38RqA&oe=67A507B5",
+      "basicInfo": {
+        "coverage": "Coverage",
+        "policies": "Policies"
+      },
+      "propertyDetails": {
+        "description": "A financial instrument that tokenizes car insurance policies, allowing investors to gain exposure to the car insurance market by purchasing and trading tokens that represent a share of an underlying portfolio of insured vehicles. Each token is backed by a pool of real-world car insurance contracts, with returns generated through premiums paid by policyholders, as well as potential payouts from claims",
+        "propertyType": "Insurance Contract",
+        "fullAddress": "7335 Wilburton Lane, Northport, AL 35473",
+        "shortAddress": "USA",
+        "assetType": "Insurance Linked Securities",
+        "country": "USA",
+        "neighborhood": "Hubbell - Lyndon",
+        "rentaltype": "Long-Term",
+        "rented": "Fully Rented",
+        "rentSubsidy": "No",
+        "assetManager": "Mutual Property Management LLC",
+        "parking": "1 Detached Garage"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Car Insurance Bonds",
+          "identifier": "LAMBINI-BONDS_-INC",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ6",
+    "name": "Gold",
+    "symbol": "GLD",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Commodities",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://cf-images.us-east-1.prod.boltdns.net/v1/static/854081161001/2a2823c9-068a-47a7-95da-57d6c718fa14/7095aec2-d4db-414e-ac7c-55dbde44e218/1280x720/match/image.jpg",
+
+      "propertyDetails": {
+        "description": "1,000 ounces of investment-grade gold, stored securely in a Texas depository, fully insured and audited. The gold meets London Good Delivery standards and is valued at $1,800 per ounce, providing a total market value of $1.8 million. Over the past year, this gold has appreciated by 12%, significantly outperforming broader market indices, as investors flock to safe-haven assets amid economic uncertainty. The asset is fully liquid, with the option for physical delivery or sale through reputable dealers.",
+        "propertyType": "Commodities",
+        "fullAddress": "7335 Wilburton Lane, Northport, AL 35473",
+        "shortAddress": "Texas, USA",
+        "totalWeight": "1,000 ounces",
+        "storage": "Securely stored in a Texas depository",
+        "insurance": "Fully insured and audited",
+        "standart": "London Good Delivery standards",
+        "marketValue": "$1,800 per ounce, total value of $1.8 million",
+        "annualAppreciation": "12% increase over the past year",
+        "performance": "Outperformed broader market indices",
+        "assetType": "Investment-grade gold",
+        "liquidity": "Fully liquid asset",
+        "marketDemand": "Strong demand",
+        "riskProfile": "Low-risk, tangible asset",
+        "taxTreatment": " Capital gains tax applies",
+        "security": "Secure, fully audited facility"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Gold Corporation",
+          "identifier": "GOLD-MILLION-2",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ7",
+    "name": "Queen Tower",
+    "symbol": "QTM",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Mixed-Use Real Estate",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://graphicalthread.com.au/wp-content/uploads/2021/04/Final_03_Buchan_Roma-Street_Camera-01.jpg",
+      "basicInfo": {
+        "rooms": "60 rooms",
+        "sqft": "704 sqft",
+        "rate": "80% rate"
+      },
+      "propertyDetails": {
+        "description": "Queen Tower is a 27-story Class A office building in downtown Dubai. with 540,000 sq ft of premium space. Features include a stunning glass facade, three-story atrium, and LEED Platinum certification. Currently 92% leased to top-tier tech and financial tenants, delivering 8.2% annual returns.  With expansive floor-to-ceiling windows offering panoramic views of the city skyline, it's not just a place to work—it's a place to thrive. Ideal for companies looking to establish a prestigious address, this building offers unrivaled access to public transit, dining, and entertainment.",
+        "propertyType": "Mixed-Use Real Estate",
+        "fullAddress": "Dubai, UAE",
+        "shortAddress": "Dubai, UAE",
+        "name": "Queen Tower",
+        "country": "UAE",
+        "neighborhood": "Downtown Dubai",
+        "type": "Class A office building",
+        "size": "540,000 sq ft of premium office space",
+        "height": "27 stories",
+        "keyFeatures": "Stunning glass facade, three-story atrium,\nLEED Platinum certification (sustainability-focused)",
+        "occupancy": "92% leased to top-tier tech and financial companies",
+        "annualReturns": "8.2%",
+        "amenities": "Expansive floor-to-ceiling windows with panoramic city skyline views",
+        "idealFor": "Companies seeking a prestigious, central address for work and growth",
+        "parking": "1 Detached Garage"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Queen Tower",
+          "identifier": "QUEEN-GAMBIT",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "token_address": "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ8",
+    "name": "Katla Icelandic Hotel",
+    "symbol": "KTL",
+    "decimals": 6,
+    "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "Hotel",
+    "assetDetails": {
+      "coordinates": {
+        "lat": 47.610516875601206,
+        "lng": -122.33565825768186
+      },
+      "APY": 11.66,
+      "type": "Secondary Market",
+      "assetImages": [
+      ],
+      "previewImage": "https://cf.bstatic.com/xdata/images/hotel/max1280x900/21926394.jpg?k=cd70b731d978d3898a4779a965f35359256446d578c0e50d097acf2c2b58da02&o=&hp=1",
+      "basicInfo": {
+        "rooms": "103 rooms",
+        "sqft": "704 sqft",
+        "rate": "80% rate"
+      },
+      "propertyDetails": {
+        "description": "Nestled in the picturesque countryside just outside the town of Vík, Hotel Katla is a 103-room country hotel situated 5 km east of Vík, on the south coast. A family-run gem on Iceland’s stunning south coast,  it boasts of majestic glaciers serving as a breathtaking backdrop. Since its inception in 1988 as a farmhouse accommodation, the hotel has evolved to cater primarily to group travel, with about 65% of its guests arriving through domestic and international travel agencies. \n\nThe area's natural beauty has attracted various advertising and film projects, further enhancing its appeal. The hotel benefits from its own geothermal heating utility and storage tank, ensuring a sustainable and efficient energy supply.\n\nGuests can enjoy all-day dining in a large dining hall that comfortably seats up to 250 people. For business and events, the hotel features a well-equipped conference room with a stage, accommodating up to 80 attendees. The central reception area includes a bar offering a variety of drinks and retail items. For relaxation, the outdoor area boasts a hot tub and sauna, perfect for unwinding amidst the natural beauty. \n\nHotel Katla is not just a place to stay; it's a destination where guests can immerse themselves in Iceland’s natural wonders while enjoying modern comforts and amenities.",
+        "propertyType": "Hotel",
+        "fullAddress": "Höfðabrekka, 871 Vík, Iceland\nStar Rating: Three-star hotel",
+        "shortAddress": "Iceland",
+        "location": "5 km east of Vík, South Coast, Iceland",
+        "rooms": "103 rooms, including Standard, Superior, and Suites",
+        "roomSizes": "Standard rooms (15-22 m²), Superior rooms (24-28 m²), Suites (34-42 m²)",
+        "capacity": "Seats 250 people",
+        "conferenceFacilities": "Accommodates 80 people, equipped with stage and essential devices",
+        "amenities": "Hot tub, sauna, dressing rooms with showers",
+        "additionalFacilities": "Own laundry, storage, heating utility (well)",
+        "landSize": "4,700 hectares",
+        "natural": "Geothermal heat, hot water availability, gravel mine,\n hunting and fishing rights"
+      },
+
+      "financials": {
+        "propertyFinancials": {
+          "grossRentYearly": 1218.31,
+          "grossRentMonthly": 195.05,
+          "monthlyCosts": {
+            "costs": 442.42,
+            "netReproperty": 48.62,
+            "platform": 15.67,
+            "expenses": 98,
+            "taxes": 128.61,
+            "insurance": 19.95,
+            "utilities": "Tenant-paid"
+          },
+          "netRentMonthly": 766.81,
+          "netRentYearly": 6195.75,
+          "totalInvestment": {
+            "total": 98517.53,
+            "underlyingAssetPrice": 41528.33,
+            "initialMaintenanceReserve": 2582.01
+          },
+          "expectedIncome": 9.29
+        },
+        "expectedIncome": {
+          "income": 44.83,
+          "incomePerTokenYearly": 22.98,
+          "incomeStartDate": "1991-03-24T08:50:10-03:00",
+          "tokenPrice": 69.91,
+          "totalTokens": 1018,
+          "description": "Ipsum aliquip duis consectetur excepteur do elit ad esse aliquip. Laboris aliquip culpa exercitation consequat. Velit ut esse eu est qui pariatur fugiat nulla velit consectetur non anim. Deserunt laborum aliqua mollit est tempor cupidatat ut. Qui enim magna commodo proident dolor labore incididunt veniam aliquip.\r\n"
+        }
+      },
+      "blockchain": [
+        {
+          "name": "Katla Hotel",
+          "identifier": "KATLA-HOTEL-SYSTEM",
+          "totalTokens": 1817,
+          "assetIssuer": "mv1DH8pehJz5kqSbkaXXpKjLaD1xpJO5vOpc7Y1EqSSC",
+          "assetId": "mv1SbKOTabqkdEzWufabpZt13MbKIkbMkmcaJPadswFG"
+        }
+      ],
+      "offering": {
+        "offeringDate": "2014-07-15T05:09:25-03:00",
+        "offeringIssuer": "Equiteez",
+        "minInvestmentAmount": 64.56,
+        "maxInvestmentAmount": 97346.11,
+        "raisedAmount": 93503.12,
+        "offeringPercent": 89.73
+      },
+      "valuation": {
+        "priorValuation": {
+          "date": "2003-11-14T02:38:38-02:00",
+          "assetValuation": 65257.99,
+          "annualChange": 4.98,
+          "totalInvestment": 20974.17,
+          "capitalROI": 44.39,
+          "tokenPrice": 56.79,
+          "regDistributed": 4453.8438,
+          "info": "?"
+        },
+        "initialValuation": {
+          "date": "2017-01-08T03:32:13-02:00",
+          "assetValuation": 6401.46,
+          "totalInvestment": 17366.1631,
+          "tokenPrice": 90.6,
+          "info": "?"
+        }
+      },
+      "priceDetails": {
+        "price": 100.0,
+        "annualReturn": 4.03,
+        "projectedAnnualReturn": 56.03,
+        "rentalYield": 28.43,
+        "projectedRentalYield": 28.43,
+        "totalLiquidity": 40.03,
+        "tokensAvailable": 548,
+        "tokensUsed": 300
+      },
+      "tradingHistory": [
+        {
+          "x": "2018-10-07T03:30:00.000Z",
+          "y": [7301, 8231, 6359, 7902]
+        },
+        {
+          "x": "2018-10-08T03:30:00.000Z",
+          "y": [2627, 2927, 1763, 2049]
+        },
+        {
+          "x": "2018-10-09T03:30:00.000Z",
+          "y": [7165, 8259, 6587, 6678]
+        },
+        {
+          "x": "2018-10-10T03:30:00.000Z",
+          "y": [1616, 1921, 1547, 1744]
+        },
+        {
+          "x": "2018-10-11T03:30:00.000Z",
+          "y": [6455, 7845, 5804, 6120]
+        },
+        {
+          "x": "2018-10-12T03:30:00.000Z",
+          "y": [9673, 10491, 8207, 9345]
+        },
+        {
+          "x": "2018-10-13T03:30:00.000Z",
+          "y": [6227, 6717, 5953, 5747]
+        },
+        {
+          "x": "2018-10-14T03:30:00.000Z",
+          "y": [6129, 7215, 5915, 6226]
+        },
+        {
+          "x": "2018-10-15T03:30:00.000Z",
+          "y": [3831, 4619, 2844, 3407]
+        },
+        {
+          "x": "2018-10-16T03:30:00.000Z",
+          "y": [9786, 10735, 9323, 9337]
+        },
+        {
+          "x": "2018-10-17T03:30:00.000Z",
+          "y": [2140, 3014, 1231, 2870]
+        },
+        {
+          "x": "2018-10-18T03:30:00.000Z",
+          "y": [5229, 5385, 4721, 5631]
+        },
+        {
+          "x": "2018-10-19T03:30:00.000Z",
+          "y": [3310, 4630, 2661, 3030]
+        },
+        {
+          "x": "2018-10-20T03:30:00.000Z",
+          "y": [3226, 4570, 1962, 3869]
+        },
+        {
+          "x": "2018-10-21T03:30:00.000Z",
+          "y": [10088, 10405, 8966, 9964]
+        },
+        {
+          "x": "2018-10-22T03:30:00.000Z",
+          "y": [6337, 7030, 5040, 7038]
+        },
+        {
+          "x": "2018-10-23T03:30:00.000Z",
+          "y": [7123, 7834, 6853, 7455]
+        },
+        {
+          "x": "2018-10-24T03:30:00.000Z",
+          "y": [2152, 3596, 1221, 2804]
+        },
+        {
+          "x": "2018-10-25T03:30:00.000Z",
+          "y": [2284, 3459, 1705, 2920]
+        },
+        {
+          "x": "2018-10-26T03:30:00.000Z",
+          "y": [8051, 9265, 7287, 8414]
+        }
+      ],
+      "otc": {
+        "buying": [
+          {
+            "seller": "Linda Martinez",
+            "tokensForSale": 89.97,
+            "price": 328.63,
+            "totalValue": 19060.23
+          },
+          {
+            "seller": "Marvin McKinney",
+            "tokensForSale": 124.67,
+            "price": 306.22,
+            "totalValue": 22062.21
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 288.41,
+            "price": 330.2,
+            "totalValue": 25499.78
+          },
+          {
+            "seller": "Cody Fisher",
+            "tokensForSale": 98.95,
+            "price": 305.89,
+            "totalValue": 19237.4
+          },
+          {
+            "seller": "John Doe",
+            "tokensForSale": 86.64,
+            "price": 197.93,
+            "totalValue": 11471.26
+          }
+        ],
+        "selling": [
+          {
+            "seller": "David Wilson",
+            "tokensForSale": 164.03,
+            "price": 242.67,
+            "totalValue": 33581.1
+          },
+          {
+            "seller": "Alice Johnson",
+            "tokensForSale": 231.86,
+            "price": 326.6,
+            "totalValue": 37321.63
+          },
+          {
+            "seller": "James Anderson",
+            "tokensForSale": 196.05,
+            "price": 93.23,
+            "totalValue": 34120.11
+          },
+          {
+            "seller": "Michael Brown",
+            "tokensForSale": 214.76,
+            "price": 183.09,
+            "totalValue": 26055.46
+          },
+          {
+            "seller": "Savannah Nguyen",
+            "tokensForSale": 91.18,
+            "price": 252.33,
+            "totalValue": 24049.12
+          }
+        ]
+      }
+    }
+  }
+]

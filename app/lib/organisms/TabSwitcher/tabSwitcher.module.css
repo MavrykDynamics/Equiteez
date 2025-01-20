@@ -1,0 +1,12 @@
+.glider {
+  position: absolute;
+  display: flex;
+  height: 100%;
+  width: var(--glider-width);
+  @apply rounded-lg bg-sand-800 hover:bg-sand-700;
+  transition: 200ms ease-out;
+}
+
+.glider.active {
+  transform: translateX(var(--tx));
+}

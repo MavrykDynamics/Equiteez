@@ -1,0 +1,53 @@
+.slider {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
+  row-gap: 20px;
+
+  overflow-x: hidden;
+
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 5%,
+    black 95%,
+    transparent 100%
+  );
+
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 5%,
+    black 95%,
+    transparent 100%
+  );
+}
+
+.card {
+  border-radius: 24px;
+  @apply border border-transparent;
+  padding: 16px;
+
+  transition: border 250ms linear;
+}
+.card:hover {
+  @apply border border-gray-200;
+}
+
+.cardImg {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.header {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  max-width: 163px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

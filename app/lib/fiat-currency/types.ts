@@ -21,7 +21,7 @@ export enum FiatCurrenciesEnum {
   TRY = 'TRY',
   TWD = 'TWD',
   UAH = 'UAH',
-  ZAR = 'ZAR'
+  ZAR = 'ZAR',
 }
 
 export interface FiatCurrencyOption {
@@ -31,6 +31,8 @@ export interface FiatCurrencyOption {
   symbol: string;
 }
 
-export interface CoingeckoFiatInterface {
-  tezos: Record<string, number>;
-}
+export type TokenPricesFeedsType = {
+  name: string;
+  last_completed_data: number;
+  decimals: number;
+}[];

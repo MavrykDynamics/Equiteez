@@ -1,36 +1,50 @@
-import type { MetaFunction } from '@remix-run/node';
-import ArrowDown from 'app/icons/arrow-down.svg?react';
-import ArrowUp from 'app/icons/arrow-up.svg?react';
+import type { MetaFunction } from "@remix-run/node";
+import ArrowDown from "app/icons/arrow-down.svg?react";
+import ArrowUp from "app/icons/arrow-up.svg?react";
 
-import PageLayout from 'app/layouts/PageLayout/Pagelayout';
+import PageLayout from "app/layouts/PageLayout/Pagelayout";
 
-import { Divider } from '~/lib/atoms/Divider';
-import { Spacer } from '~/lib/atoms/Spacer';
+import { Divider } from "~/lib/atoms/Divider";
+import { Spacer } from "~/lib/atoms/Spacer";
 
-import { ExchangeTabs } from './components/ExchangeTabs/ExchangeTabs';
-import { OrderTabs } from './components/OrderTabs/OrderTabs';
-import { BuySellTabs } from './components/BuySellTabs/BuySellTabs';
+import { ExchangeTabs } from "./components/ExchangeTabs/ExchangeTabs";
+import { OrderTabs } from "./components/OrderTabs/OrderTabs";
+import { BuySellTabs } from "./components/BuySellTabs/BuySellTabs";
 
-import { OrderBookTabs } from './components/OrderBookTabs/OrderBookTabs';
+import { OrderBookTabs } from "./components/OrderBookTabs/OrderBookTabs";
 
-import { Container } from '~/lib/atoms/Container';
-import { FullScreenSpinner } from '~/lib/atoms/Spinner/Spinner';
-import { usePropertyByAddress } from '../properties.$id/hooks/use-property-by-id';
+import { Container } from "~/lib/atoms/Container";
+import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
+import { usePropertyByAddress } from "../marketplace.$id/hooks/use-property-by-id";
 
 // icons
-import ArrowLinkIcon from 'app/icons/arrow-link.svg?react';
-import { AssetDropdown } from './components/AssetDropdown';
+import ArrowLinkIcon from "app/icons/arrow-link.svg?react";
+import { AssetDropdown } from "./components/AssetDropdown";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { useMemo } from "react";
+import Money from "~/lib/atoms/Money";
+import { Navigate } from "@remix-run/react";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Exchange' },
-    { name: 'description', content: 'Exchange data' },
+    { title: "Exchange" },
+    { name: "description", content: "Exchange data" },
   ];
 };
 export default function ExchangeDetails() {
+  const { isLoading } = useEstatesContext();
+  const { dodoMav } = useDexContext();
   const estateData = usePropertyByAddress();
 
-  if (!estateData) return <FullScreenSpinner />;
+  const tokenPrice = useMemo(
+    () => (estateData?.slug ? dodoMav[estateData.slug] : "0"),
+    [estateData?.slug, dodoMav]
+  );
+
+  if (isLoading) return <FullScreenSpinner />;
+
+  if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
     <PageLayout includeContainer={false} includeFooter={false}>
@@ -57,9 +71,9 @@ export default function ExchangeDetails() {
 
               <span className="min-w-[84px] flex flex-col">
                 <span className="text-caption-small">Price</span>
-                <span className="text-body-xs leading-5 font-semibold">
-                  $8.00
-                </span>
+                <div className="text-body-xs leading-5 font-semibold flex items-center">
+                  $<Money fiat>{tokenPrice}</Money>
+                </div>
               </span>
 
               <span className="min-w-[84px] flex flex-col">
@@ -113,14 +127,14 @@ export default function ExchangeDetails() {
             </div>
           </div>
 
-          <div className={'h-100 w-[1px] min-w-[1px] bg-divider'} />
+          <div className={"h-100 w-[1px] min-w-[1px] bg-divider"} />
 
           {/* Mid Panel ---------------------------- */}
           <div className="flex flex-grow">
             <ExchangeTabs estate={estateData} />
           </div>
 
-          <div className={'h-100 w-[1px] min-w-[1px] bg-divider'} />
+          <div className={"h-100 w-[1px] min-w-[1px] bg-divider"} />
 
           {/* Right Panel ---------------------------- */}
           <div className="flex flex-col w-[324px]">
@@ -128,6 +142,7 @@ export default function ExchangeDetails() {
               <BuySellTabs
                 symbol={estateData.symbol}
                 tokenAddress={estateData.token_address}
+                slug={estateData.slug}
               />
             </div>
           </div>

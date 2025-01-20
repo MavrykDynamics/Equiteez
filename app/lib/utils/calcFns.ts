@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from "bignumber.js";
 
 // Est fee
 export function calculateEstfee(x: BigNumber.Value) {
@@ -16,21 +16,32 @@ export function pseudoOperationFee(
 }
 
 // used for buy orders
-export function calcPositiveSlippage(
-  price: string | number,
-  slippage: number | string
+export function caclMinMaxQuoteBuying(
+  tokensAmount: BigNumber.Value | undefined,
+  slippagePercentage: string
 ) {
-  return new BigNumber(price)
-    .multipliedBy(1 + Number(slippage) / 100)
-    .toNumber();
+  if (!tokensAmount) return 0;
+  const slippageFactor = new BigNumber(1).minus(
+    new BigNumber(slippagePercentage).dividedBy(100)
+  );
+
+  const minMaxQuote = new BigNumber(tokensAmount).times(slippageFactor);
+  return minMaxQuote;
 }
 
 // used for sell orders
-export function calcNegativeSlippage(
-  price: string | number,
-  slippage: number | string
+export function caclMinMaxQuoteSelling(
+  tokensAmount: BigNumber.Value | undefined,
+  tokenPriceInUSDT: BigNumber.Value,
+  slippagePercentage: string
 ) {
-  return new BigNumber(price)
-    .multipliedBy(1 - Number(slippage) / 100)
-    .toNumber();
+  if (!tokensAmount) return 0;
+  const slippageFactor = new BigNumber(1).minus(
+    new BigNumber(slippagePercentage).dividedBy(100)
+  );
+
+  const totalValueInUSDT = new BigNumber(tokensAmount).times(tokenPriceInUSDT);
+  const minMaxQuoteInUSDT = totalValueInUSDT.times(slippageFactor);
+
+  return minMaxQuoteInUSDT;
 }
