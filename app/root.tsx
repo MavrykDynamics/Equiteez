@@ -7,7 +7,7 @@ import {
   ScrollRestoration,
   useRouteError,
 } from "@remix-run/react";
-import { json, LinksFunction } from "@remix-run/node";
+import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 // providers
 
 // global styles
@@ -51,7 +51,12 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: marqueeStylesheet },
 ];
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const userAgent = request.headers.get("user-agent") || "";
+
+  // Simple regex to detect mobile devices
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent);
+
   const tokens = await fetchTokensData();
 
   const [tokensMetadata, usdToToken] = await Promise.all([
@@ -62,8 +67,9 @@ export const loader = async () => {
   return json({
     tokens,
     tokensMetadata,
-    fiatToTezos: {},
     usdToToken,
+    isMobile,
+    fiatToTezos: {},
   });
 };
 
@@ -74,29 +80,34 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
     tokensMetadata = {},
     fiatToTezos = {},
     usdToToken = {},
+    isMobile = false,
   } = useDataFromLoader<typeof loader>() ?? {};
 
   return (
-    <ApolloProvider>
-      <WalletProvider>
-        <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
-          <TokensProvider
-            initialTokens={tokens}
-            initialTokensMetadata={tokensMetadata}
-          >
-            <EstatesProvider>
-              <DexProvider>
-                <UserProvider>
-                  <AppGlobalLoader>
-                    <PopupProvider>{children}</PopupProvider>
-                  </AppGlobalLoader>
-                </UserProvider>
-              </DexProvider>
-            </EstatesProvider>
-          </TokensProvider>
-        </CurrencyProvider>
-      </WalletProvider>
-    </ApolloProvider>
+    <AppProvider>
+      <MobileView isMobile={isMobile}>
+        <ApolloProvider>
+          <WalletProvider>
+            <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
+              <TokensProvider
+                initialTokens={tokens}
+                initialTokensMetadata={tokensMetadata}
+              >
+                <EstatesProvider>
+                  <DexProvider>
+                    <UserProvider>
+                      <AppGlobalLoader>
+                        <PopupProvider>{children}</PopupProvider>
+                      </AppGlobalLoader>
+                    </UserProvider>
+                  </DexProvider>
+                </EstatesProvider>
+              </TokensProvider>
+            </CurrencyProvider>
+          </WalletProvider>
+        </ApolloProvider>
+      </MobileView>
+    </AppProvider>
   );
 };
 
@@ -115,12 +126,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <AppProvider>
-              <MobileView>
-                <AppWrapper>{children}</AppWrapper>
-              </MobileView>
-              <ToasterMessages />
-            </AppProvider>
+            <AppWrapper>{children}</AppWrapper>
+            <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
           <Scripts />

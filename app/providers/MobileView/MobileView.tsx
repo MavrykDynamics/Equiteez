@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { isMobile } from "react-device-detect";
+// import { isMobile } from "react-device-detect";
 
 import styles from "./mobileView.module.css";
 import DocBg from "~/a11y/DocBg";
@@ -11,8 +11,10 @@ import LogoIcon from "app/icons/logo.svg?react";
 import { SOCIALS } from "~/consts/icons";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
-export const MobileView: FC<PropsWithChildren> = ({ children }) => {
-  // TODO fix hydration error
+export const MobileView: FC<PropsWithChildren & { isMobile?: boolean }> = ({
+  isMobile = false,
+  children,
+}) => {
   return isMobile ? (
     <div className={styles.wrapper}>
       <DocBg bgClassName="bg-dark-green-900" />
