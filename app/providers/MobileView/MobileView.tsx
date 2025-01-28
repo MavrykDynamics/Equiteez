@@ -1,11 +1,10 @@
 import { FC } from "react";
-// import { isMobile } from "react-device-detect";
 
 import styles from "./mobileView.module.css";
 import DocBg from "~/a11y/DocBg";
 
 // assets
-import BgImg from "app/assets/mobile/bg.png";
+import BgImg from "app/assets/mobile/bg.webp";
 
 import LogoIcon from "app/icons/logo.svg?react";
 import { SOCIALS } from "~/consts/icons";
