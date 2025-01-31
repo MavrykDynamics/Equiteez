@@ -8,7 +8,6 @@ import BgImg from "app/assets/mobile/bg.webp";
 
 import LogoIcon from "app/icons/logo.svg?react";
 import { SOCIALS } from "~/consts/icons";
-import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 export const MobileView: FC<PropsWithChildren & { isMobile?: boolean }> = ({
   isMobile = false,
@@ -34,11 +33,17 @@ export const MobileView: FC<PropsWithChildren & { isMobile?: boolean }> = ({
         </div>
         <div className="flex items-center gap-[21px] mt-11">
           {SOCIALS.map(({ id, url, Icon }) => (
-            <CustomLink key={id} to={url}>
+            <a
+              key={id}
+              href={url}
+              referrerPolicy="no-referrer"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <div className="flex justify-center items-center">
                 <Icon className={`fill-white`} />
               </div>
-            </CustomLink>
+            </a>
           ))}
         </div>
       </div>
