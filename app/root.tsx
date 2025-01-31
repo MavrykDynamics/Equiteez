@@ -7,7 +7,7 @@ import {
   ScrollRestoration,
   useRouteError,
 } from "@remix-run/react";
-import { json, LinksFunction } from "@remix-run/node";
+import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 // providers
 
 // global styles
@@ -42,6 +42,7 @@ import {
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { FC } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
+import { MobileView } from "./providers/MobileView/MobileView";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -50,7 +51,12 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: marqueeStylesheet },
 ];
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const userAgent = request.headers.get("user-agent") || "";
+
+  // Simple regex to detect mobile devices
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent);
+
   const tokens = await fetchTokensData();
 
   const [tokensMetadata, usdToToken] = await Promise.all([
@@ -61,8 +67,9 @@ export const loader = async () => {
   return json({
     tokens,
     tokensMetadata,
-    fiatToTezos: {},
     usdToToken,
+    isMobile,
+    fiatToTezos: {},
   });
 };
 
@@ -73,30 +80,33 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
     tokensMetadata = {},
     fiatToTezos = {},
     usdToToken = {},
+    isMobile = false,
   } = useDataFromLoader<typeof loader>() ?? {};
 
   return (
     <AppProvider>
-      <ApolloProvider>
-        <WalletProvider>
-          <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
-            <TokensProvider
-              initialTokens={tokens}
-              initialTokensMetadata={tokensMetadata}
-            >
-              <EstatesProvider>
-                <DexProvider>
-                  <UserProvider>
-                    <AppGlobalLoader>
-                      <PopupProvider>{children}</PopupProvider>
-                    </AppGlobalLoader>
-                  </UserProvider>
-                </DexProvider>
-              </EstatesProvider>
-            </TokensProvider>
-          </CurrencyProvider>
-        </WalletProvider>
-      </ApolloProvider>
+      <MobileView isMobile={isMobile}>
+        <ApolloProvider>
+          <WalletProvider>
+            <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
+              <TokensProvider
+                initialTokens={tokens}
+                initialTokensMetadata={tokensMetadata}
+              >
+                <EstatesProvider>
+                  <DexProvider>
+                    <UserProvider>
+                      <AppGlobalLoader>
+                        <PopupProvider>{children}</PopupProvider>
+                      </AppGlobalLoader>
+                    </UserProvider>
+                  </DexProvider>
+                </EstatesProvider>
+              </TokensProvider>
+            </CurrencyProvider>
+          </WalletProvider>
+        </ApolloProvider>
+      </MobileView>
     </AppProvider>
   );
 };
