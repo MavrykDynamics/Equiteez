@@ -1,7 +1,7 @@
 .wrapper {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100dvh;
   @apply bg-dark-green-900 relative;
 }
 
