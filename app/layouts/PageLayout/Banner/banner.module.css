@@ -24,13 +24,19 @@
   position: relative;
   @apply flex overflow-hidden z-20;
   transition:
-    border-radius 300ms linear,
-    margin-inline 300ms linear,
-    position 300ms linear;
+    border-radius var(--timing) linear,
+    margin-inline var(--timing) linear,
+    position var(--timing) linear,
+    transform var(--timing) linear,
+    opacity var(--timing) linear;
 }
 .sticky {
   position: sticky;
   top: 0;
+}
+
+.hiding {
+  animation: hide var(--timing) linear;
 }
 
 .crossBtn {
@@ -38,4 +44,15 @@
   right: 24px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+@keyframes hide {
+  from {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
 }

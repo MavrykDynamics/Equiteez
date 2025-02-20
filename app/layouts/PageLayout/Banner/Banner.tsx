@@ -11,6 +11,7 @@ import {
   BANNER_EMBLA_INTERVAL_TIME,
   BANNER_OFFSET_CLASSNAME,
   BANNER_VISIBILITY_VAR,
+  DEFAULT_BANNER_TRANSITION_TIME,
   SECONDARY_HEADER_Y_OFFSET,
 } from "./banner.consts";
 
@@ -30,14 +31,16 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
     loop: true,
     watchDrag: false,
   });
+
   const isFirstRun = useRef(true);
   const [activeBlockIdx, setActiveBlockIdx] = useState(0);
+
   const [isInRoundedMode, setIsInRoundedMode] = useState(false);
   const [isBannerSticky, setIsBannerSticky] = useState(() =>
     getItemFromStorage<boolean>(BANNER_VISIBILITY_VAR)
   );
 
-  console.log("render");
+  const [playAnimation, setPlayAnimation] = useState(false);
 
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -72,7 +75,7 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
   }, [activeBlockIdx, contantArr.length, emblaApi, skipBanner]);
 
   useEffect(() => {
-    if (skipBanner || !isBannerSticky) return;
+    if (skipBanner) return;
     const scrollContainer = window;
 
     const listenerCb = () => {
@@ -104,6 +107,11 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
   }, [skipBanner, isBannerSticky]);
 
   const handleBannerHideClick = () => {
+    setPlayAnimation(true);
+  };
+
+  const handleHideAnimationEnd = () => {
+    setPlayAnimation(false);
     setIsBannerSticky(false);
     setItemInStorage(BANNER_VISIBILITY_VAR, false);
   };
@@ -113,7 +121,17 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
   return (
     <div
       ref={ref}
-      className={clsx(styles.bannerWrapper, isBannerSticky && styles.sticky)}
+      style={
+        {
+          "--timing": `${DEFAULT_BANNER_TRANSITION_TIME}ms`,
+        } as React.CSSProperties
+      }
+      className={clsx(
+        styles.bannerWrapper,
+        isBannerSticky && styles.sticky,
+        playAnimation && styles.hiding
+      )}
+      onAnimationEnd={handleHideAnimationEnd}
     >
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
