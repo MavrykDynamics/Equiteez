@@ -36,7 +36,7 @@
 }
 
 .hiding {
-  animation: hide var(--timing) linear;
+  animation: hide var(--timing) linear forwards;
 }
 
 .crossBtn {

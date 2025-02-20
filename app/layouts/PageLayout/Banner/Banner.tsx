@@ -46,7 +46,6 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const skipBanner = !contantArr.length;
-
   const isTabActive = useTabActive();
 
   useEffect(() => {
