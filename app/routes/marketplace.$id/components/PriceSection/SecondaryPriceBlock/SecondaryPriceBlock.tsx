@@ -5,7 +5,6 @@ import { Button } from "~/lib/atoms/Button";
 import { Divider } from "~/lib/atoms/Divider";
 import { Table } from "~/lib/atoms/Table/Table";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
 //consts & types
 import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
@@ -80,7 +79,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <div className="text-content body flex justify-between mb-4">
           <div className="flex items-center gap-1">
             Total Return
-            <InfoTooltip className="w-6 h-6" content={"Total Liquidity"} />
+            {/* <InfoTooltip className="w-6 h-6" content={"Total Liquidity"} /> */}
           </div>
           <p className="text-buttons">
             {estate.assetDetails.priceDetails.annualReturn}%
@@ -89,7 +88,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <div className="text-content body flex justify-between mb-4">
           <div className="flex items-center gap-1">
             Expected Income
-            <InfoTooltip className="w-6 h-6" content={"Total Liquidity"} />
+            {/* <InfoTooltip className="w-6 h-6" content={"Total Liquidity"} /> */}
           </div>
           <p className="text-buttons">
             {estate.assetDetails.financials.expectedIncome.income}%

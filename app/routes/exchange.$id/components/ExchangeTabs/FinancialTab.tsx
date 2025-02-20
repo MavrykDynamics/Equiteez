@@ -1,13 +1,12 @@
-import { FC } from 'react';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import { FC } from "react";
+import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
 
 // icons
-import ClockIcon from 'app/icons/clock.svg?react';
-import { TableHeader } from '~/lib/atoms/Table/TableHeader';
-import { TableItemSmall } from '~/lib/atoms/Table/TableItem';
-import { formatDate } from '~/lib/utils/date';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { CommaNumber } from '~/lib/atoms/CommaNumber';
+import ClockIcon from "app/icons/clock.svg?react";
+import { TableHeader } from "~/lib/atoms/Table/TableHeader";
+import { TableItemSmall } from "~/lib/atoms/Table/TableItem";
+import { formatDate } from "~/lib/utils/date";
+import { CommaNumber } from "~/lib/atoms/CommaNumber";
 
 export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const {
@@ -35,7 +34,8 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </TableItemSmall>
       <TableItemSmall>
         <div className="flex items-center gap-x-1">
-          Annual Change <InfoTooltip content={'Annual Change'} />
+          Annual Change
+          {/* <InfoTooltip content={'Annual Change'} /> */}
         </div>
         <p className="text-success">+{priorValuation.annualChange}% </p>
       </TableItemSmall>
@@ -45,7 +45,8 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </TableItemSmall>
       <TableItemSmall>
         <div className="flex items-center gap-x-1">
-          Capital ROI <InfoTooltip content={'Capital ROI'} />
+          Capital ROI
+          {/* <InfoTooltip content={'Capital ROI'} /> */}
         </div>
         <p className="text-success">+{priorValuation.capitalROI}%</p>
       </TableItemSmall>
@@ -55,7 +56,8 @@ export const FinancialTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
       </TableItemSmall>
       <TableItemSmall isLast>
         <div className="flex items-center gap-x-1">
-          Reg Distributed <InfoTooltip content={'Capital ROI'} />
+          Reg Distributed
+          {/* <InfoTooltip content={'Capital ROI'} /> */}
         </div>
         <div className="text-success">
           <CommaNumber

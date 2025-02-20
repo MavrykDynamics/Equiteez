@@ -12,7 +12,6 @@ import {
   ExpanderBodyContent,
   ExpanderFaceContent,
 } from "~/lib/organisms/CustomExpander/CustomExpander";
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
 // icons
 import CheckIcon from "app/icons/ok.svg?react";
@@ -306,7 +305,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     <div className="mt-2 text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
                         Min Received
-                        <InfoTooltip content="Min Received" />
+                        {/* <InfoTooltip content="Min Received" /> */}
                       </div>
                       <div>
                         <Money smallFractionFont={false} shortened>
@@ -318,7 +317,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     <div className="mt-2 text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
                         Slippage
-                        <InfoTooltip content="Slippage" />
+                        {/* <InfoTooltip content="Slippage" /> */}
                       </div>
                       <SlippageDropdown
                         slippagePercentage={slippagePercentage}
@@ -328,7 +327,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     <div className="mt-[10px] text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
                         Est. Fee
-                        <InfoTooltip content="Est fee" />
+                        {/* <InfoTooltip content="Est fee" /> */}
                       </div>
                       <div>
                         {estFee}

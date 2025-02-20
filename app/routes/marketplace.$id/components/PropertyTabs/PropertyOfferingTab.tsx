@@ -9,7 +9,6 @@ import { TableItem } from "~/lib/atoms/Table/TableItem";
 import ClockIcon from "app/icons/clock.svg?react";
 
 // styles
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { formatDate } from "~/lib/utils/date";
 import Money from "~/lib/atoms/Money";
@@ -90,7 +89,8 @@ export const PropertyOfferingTab = () => {
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Annual Change <InfoTooltip content={"Annual Change"} />
+            Annual Change
+            {/* <InfoTooltip content={"Annual Change"} /> */}
           </div>
           <p className="text-success">+{priorValuation.annualChange}% </p>
         </TableItem>
@@ -103,7 +103,8 @@ export const PropertyOfferingTab = () => {
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Capital ROI <InfoTooltip content={"Capital ROI"} />
+            Capital ROI
+            {/* <InfoTooltip content={"Capital ROI"} /> */}
           </div>
           <p className="text-success">+{priorValuation.capitalROI}%</p>
         </TableItem>
@@ -115,7 +116,8 @@ export const PropertyOfferingTab = () => {
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Reg Distributed <InfoTooltip content={"Capital ROI"} />
+            Reg Distributed
+            {/* <InfoTooltip content={"Capital ROI"} /> */}
           </div>
 
           <p className="flex text-success">
