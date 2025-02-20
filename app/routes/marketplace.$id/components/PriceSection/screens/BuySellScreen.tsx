@@ -41,6 +41,7 @@ import {
   calculateMinReceived,
   getDodoMavLpFee,
 } from "~/providers/Dexprovider/utils";
+import { Alert } from "~/templates/Alert/Alert";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -344,6 +345,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           </div>
         </div>
       </div>
+
+      {!isKyced && (
+        <Alert type="info" header="Verify with Mavryk Pro to Trade">
+          Trading on Equiteez requires the Mavryk Pro wallet for enhanced
+          security and regulatory compliance. Upgrade to Mavryk Pro inside your
+          Mavryk Wallet.
+        </Alert>
+      )}
       <Button
         className="mt-6"
         onClick={handleContinueClick}

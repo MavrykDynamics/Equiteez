@@ -50,6 +50,7 @@ import {
   calculateEstFee,
   getDodoMavLpFee,
 } from "~/providers/Dexprovider/utils";
+import { Alert } from "~/templates/Alert/Alert";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -586,6 +587,18 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                     </div>
                   </div>
                 </div>
+              )}
+
+              {!isKyced && (
+                <Alert
+                  type="info"
+                  size="small"
+                  header="Verify with Mavryk Pro to Trade"
+                >
+                  Trading on Equiteez requires the Mavryk Pro wallet for
+                  enhanced security and regulatory compliance. Upgrade to Mavryk
+                  Pro inside your Mavryk Wallet.
+                </Alert>
               )}
 
               <div className="flex w-full">
