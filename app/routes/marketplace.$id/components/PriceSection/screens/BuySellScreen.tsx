@@ -68,7 +68,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
-  const { userTokensBalances } = useUserContext();
+  const { userTokensBalances, isKyced } = useUserContext();
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -224,6 +224,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     ? symbol
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
+  const isBtnDisabled =
+    hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -344,7 +347,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <Button
         className="mt-6"
         onClick={handleContinueClick}
-        disabled={hasTotalError || !amount || slippagePercentage.length <= 0}
+        disabled={isBtnDisabled}
       >
         Continue
       </Button>
