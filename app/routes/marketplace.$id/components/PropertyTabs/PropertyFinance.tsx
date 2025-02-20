@@ -3,7 +3,6 @@ import { Table } from "~/lib/atoms/Table/Table";
 import { TableHeader } from "~/lib/atoms/Table/TableHeader";
 import { TableItem } from "~/lib/atoms/Table/TableItem";
 import { ColoredCard } from "~/lib/atoms/ColoredCard";
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import {
   ClickableExpanderArea,
   CustomExpander,
@@ -167,7 +166,8 @@ export const PropertyFinanceTab = () => {
         </CustomExpander>
         <TableItem textVariant="bold" customPadding={8} isLast>
           <div className="flex items-center gap-x-1">
-            Expected Income <InfoTooltip content={"Expected Income "} />
+            Expected Income
+            {/* <InfoTooltip content={"Expected Income "} /> */}
           </div>
           <p>{expectedIncome.income}%</p>
         </TableItem>
