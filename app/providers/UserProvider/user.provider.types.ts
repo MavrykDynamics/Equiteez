@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // types
 
@@ -7,8 +7,8 @@ export type TokenAddressType = string;
 import {
   userTzktTokenBalancesSchema,
   userTzktWSAccountSchema,
-} from './helpers/user.schemes';
-import BigNumber from 'bignumber.js';
+} from "./helpers/user.schemes";
+import BigNumber from "bignumber.js";
 
 // User tokens types
 export type UserTzktTokensBalancesType = z.infer<
@@ -35,6 +35,7 @@ export type UserContext = UserContextStateType & {
 
 export type UserContextStateType = {
   userAddress: string | null;
+  isKyced: boolean;
   isAdmin: boolean;
 
   userTokensBalances: Record<TokenAddressType, BigNumber>;

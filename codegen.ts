@@ -9,7 +9,8 @@ const INDEXER_TABLES = {
   // Dexes
   orderbook: true,
   dodo_mav: true,
-  marketplace: true
+  marketplace: true,
+  kyc_member: true
 
 };
 

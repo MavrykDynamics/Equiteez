@@ -1,21 +1,23 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from "react";
 
 // consts
-import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from './helpers/user.consts';
+import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from "./helpers/user.consts";
 
 // hooks
-import { useUserApi } from './hooks/useUserApi';
+import { useUserApi } from "./hooks/useUserApi";
 
 import {
   UserContext,
   UserContextStateType,
   UserTzKtTokenBalances,
-} from './user.provider.types';
-import { useWalletContext } from '../WalletProvider/wallet.provider';
-import { useAppContext } from '../AppProvider/AppProvider';
-import type { AccountInfo } from '@mavrykdynamics/beacon-dapp';
-import { useUserSockets } from './helpers/sockets';
-import { useTokensContext } from '../TokensProvider/tokens.provider';
+} from "./user.provider.types";
+import { useWalletContext } from "../WalletProvider/wallet.provider";
+import { useAppContext } from "../AppProvider/AppProvider";
+import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
+import { useUserSockets } from "./helpers/sockets";
+import { useTokensContext } from "../TokensProvider/tokens.provider";
+import { useQuery } from "@apollo/client/index";
+import { USER_KYC_STATUS_QUERY } from "../EstatesProvider/queries/user.query";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -43,6 +45,8 @@ export const UserProvider = ({ children }: Props) => {
   const [userTzktTokens, setUserTzktTokens] = useState<UserTzKtTokenBalances>(
     DEFAULT_USER_TZKT_TOKENS
   );
+
+  console.log(userCtxState, "userCtxState");
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
@@ -105,8 +109,28 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
   ]);
 
+  const { loading: isUserStatusLoading } = useQuery(USER_KYC_STATUS_QUERY, {
+    variables: { address: account?.address ?? "" },
+    skip: !account?.address,
+    onCompleted: (data) => {
+      try {
+        const { kyc_member } = data;
+        if (
+          kyc_member.length > 0 &&
+          kyc_member[0].user?.address === account?.address
+        ) {
+          setUserCtxState((prev) => ({ ...prev, isKyced: true }));
+        }
+      } catch (e) {
+        console.log(e, "USER_KYC_STATUS_QUERY from catch");
+      }
+    },
+    onError: (error) => console.log(error, "USER_KYC_STATUS_QUERY"),
+  });
+
   const providerValue = useMemo(() => {
-    const isLoading = isUserLoading || tzktBalancesLoading;
+    const isLoading =
+      isUserLoading || tzktBalancesLoading || isUserStatusLoading;
 
     return {
       ...userCtxState,
@@ -130,6 +154,7 @@ export const UserProvider = ({ children }: Props) => {
     connect,
     signOut,
     changeUser,
+    isUserStatusLoading,
   ]);
 
   return (
@@ -143,7 +168,7 @@ export const useUserContext = () => {
   const context = useContext(userContext);
 
   if (!context) {
-    throw new Error('userContext should be used within UserProvider');
+    throw new Error("userContext should be used within UserProvider");
   }
 
   return context;
