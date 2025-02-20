@@ -16,6 +16,7 @@ import {
 } from "./banner.consts";
 
 import CrossIcon from "app/icons/cross.svg?react";
+import { useTabActive } from "~/hooks/useIsTabActive";
 
 type BannerContent = {
   id: string;
@@ -46,9 +47,11 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
 
   const skipBanner = !contantArr.length;
 
+  const isTabActive = useTabActive();
+
   useEffect(() => {
     if (skipBanner) return;
-    if (contantArr.length > 1) {
+    if (contantArr.length > 1 && isTabActive) {
       const interval = setInterval(() => {
         setActiveBlockIdx((prev) =>
           prev === contantArr.length - 1 ? 0 : prev + 1
@@ -59,11 +62,11 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
         clearInterval(interval);
       };
     }
-  }, [contantArr.length, skipBanner]);
+  }, [contantArr.length, skipBanner, isTabActive]);
 
   useEffect(() => {
     if (skipBanner) return;
-    if (contantArr.length > 1) {
+    if (contantArr.length > 1 && isTabActive) {
       if (!emblaApi) return;
       if (isFirstRun.current) {
         isFirstRun.current = false;
@@ -72,7 +75,7 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
 
       emblaApi?.scrollNext();
     }
-  }, [activeBlockIdx, contantArr.length, emblaApi, skipBanner]);
+  }, [activeBlockIdx, contantArr.length, emblaApi, skipBanner, isTabActive]);
 
   useEffect(() => {
     if (skipBanner) return;

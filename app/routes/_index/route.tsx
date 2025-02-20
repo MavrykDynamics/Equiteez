@@ -37,9 +37,6 @@ export default function Index() {
     [IS_WEB]
   );
 
-  console.log(window.innerHeight, " window.innerHeight");
-
-  console.log(offsetParameters, "offsetParameters");
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
