@@ -7,36 +7,36 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
+} from "react";
 
-import classNames, { clsx } from 'clsx';
+import classNames, { clsx } from "clsx";
 
-import CleanButton from 'app/lib/atoms/CleanButton';
-import CopyIcon from 'app/icons/copy.svg?react';
-import { useDidUpdate } from 'app/lib/ui/hooks';
+import CleanButton from "app/lib/atoms/CleanButton";
+import CopyIcon from "app/icons/copy.svg?react";
+import { useDidUpdate } from "app/lib/ui/hooks";
 import {
   blurHandler,
   focusHandler,
   inputChangeHandler,
-} from 'app/lib/ui/inputHandlers';
-import { useBlurElementOnTimeout } from 'app/lib/ui/use-blur-on-timeout';
-import useCopyToClipboard from 'app/lib/ui/useCopyToClipboard';
-import { combineRefs } from 'app/lib/ui/utils';
+} from "app/lib/ui/inputHandlers";
+import { useBlurElementOnTimeout } from "app/lib/ui/use-blur-on-timeout";
+import useCopyToClipboard from "app/lib/ui/useCopyToClipboard";
+import { combineRefs } from "app/lib/ui/utils";
 
-import { FieldLabel } from 'app/lib/atoms/FieldLabel';
-import { SecretCover } from 'app/lib/atoms/SecretCover';
-import { CopyButton } from '../atoms/CopyButton';
-import usePasswordToggle from '../ui/hooks/usePasswordToggle';
+import { FieldLabel } from "app/lib/atoms/FieldLabel";
+import { SecretCover } from "app/lib/atoms/SecretCover";
+import { CopyButton } from "../atoms/CopyButton";
+import usePasswordToggle from "../ui/hooks/usePasswordToggle";
 
-export const PASSWORD_ERROR_CAPTION = 'PASSWORD_ERROR_CAPTION';
+export const PASSWORD_ERROR_CAPTION = "PASSWORD_ERROR_CAPTION";
 
 export type FormFieldElement = HTMLInputElement | HTMLTextAreaElement;
 type FormFieldAttrs = InputHTMLAttributes<HTMLInputElement> &
   TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export interface FormFieldProps
-  extends Omit<FormFieldAttrs, 'type' | 'onBlur'> {
-  type?: 'text' | 'number' | 'password';
+  extends Omit<FormFieldAttrs, "type" | "onBlur"> {
+  type?: "text" | "number" | "password";
   extraSection?: ReactNode;
   label?: ReactNode;
   labelDescription?: ReactNode;
@@ -98,7 +98,7 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
       onReveal,
       className,
       spellCheck = false,
-      autoComplete = 'off',
+      autoComplete = "off",
       smallPaddings = false,
       copyable,
       childForInputWrapper,
@@ -108,7 +108,7 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
     ref
   ) => {
     const secret = secretProp && textarea;
-    const Field = textarea ? 'textarea' : 'input';
+    const Field = textarea ? "textarea" : "input";
 
     const [passwordInputType, RevealPasswordIcon] = usePasswordToggle(
       smallPaddings,
@@ -117,13 +117,13 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
       revealRef,
       onBlur
     );
-    const isPasswordInput = type === 'password';
+    const isPasswordInput = type === "password";
     const inputType = isPasswordInput ? passwordInputType : type;
 
     const { copy } = useCopyToClipboard();
 
-    const [localValue, setLocalValue] = useState(value ?? defaultValue ?? '');
-    useDidUpdate(() => void setLocalValue(value ?? ''), [value]);
+    const [localValue, setLocalValue] = useState(value ?? defaultValue ?? "");
+    useDidUpdate(() => void setLocalValue(value ?? ""), [value]);
 
     const [focused, setFocused] = useState(false);
 
@@ -144,7 +144,7 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
     );
 
     const secretCovered = useMemo(
-      () => Boolean(secret && localValue !== '' && !focused),
+      () => Boolean(secret && localValue !== "" && !focused),
       [secret, localValue, focused]
     );
 
@@ -158,11 +158,11 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
     const handleSecretBannerClick = () => void spareRef.current?.focus();
     const handleCleanClick = useCallback(() => void onClean?.(), [onClean]);
 
-    const showIcon = isPasswordInput && !revealForbidden && localValue !== '';
+    const showIcon = isPasswordInput && !revealForbidden && localValue !== "";
 
     return (
       <div
-        className={classNames('w-full flex flex-col', containerClassName)}
+        className={classNames("w-full flex flex-col", containerClassName)}
         style={containerStyle}
       >
         {label && (
@@ -170,26 +170,26 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
             label={label}
             warning={labelWarning}
             description={labelDescription}
-            className={clsx('mb-3', labelClassname)}
+            className={clsx("mb-3", labelClassname)}
             id={id}
           />
         )}
 
         <div
-          className={classNames('relative flex items-stretch overflow-hidden')}
+          className={classNames("relative flex items-stretch overflow-hidden")}
         >
           <Field
             ref={combineRefs(ref, spareRef)}
             className={clsx(
               className,
               FORM_FIELD_CLASS_NAME,
-              smallPaddings ? 'py-2 pl-2' : 'py-3 pl-4',
+              smallPaddings ? "py-2 pl-2" : "py-3 pl-4",
               buildPaddingRightClassName(
                 isPasswordInput,
                 smallPaddings,
                 showIcon
               ),
-              errorCaption ? 'border-error' : 'border-gray-100'
+              errorCaption ? "border-error" : "border-gray-100"
             )}
             id={id}
             type={inputType}
@@ -225,9 +225,9 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
 );
 
 export const FORM_FIELD_CLASS_NAME = classNames(
-  'appearance-none w-full border rounded-md bg-transparent',
-  'transition ease-in-out duration-200',
-  'text-sand-600 text-base-plus'
+  "appearance-none w-full border rounded-md bg-transparent",
+  "transition ease-in-out duration-200",
+  "text-sand-600 text-base-plus"
 );
 
 interface CleanableProps {
@@ -235,8 +235,10 @@ interface CleanableProps {
   cleanable: React.ReactNode;
 }
 
-const Cleanable: React.FC<CleanableProps> = ({ cleanable, handleCleanClick }) =>
-  cleanable ? <CleanButton onClick={handleCleanClick} /> : null;
+const Cleanable: React.FC<CleanableProps> = ({
+  cleanable,
+  handleCleanClick,
+}) => (cleanable ? <CleanButton onClick={handleCleanClick} /> : null);
 
 interface CopyableProps {
   value: React.ReactNode;
@@ -254,15 +256,15 @@ const Copyable: React.FC<CopyableProps> = ({
   copyable ? (
     <CopyButton
       style={{
-        position: 'absolute',
-        bottom: cleanable ? '3px' : '0px',
-        right: cleanable ? '30px' : '5px',
+        position: "absolute",
+        bottom: cleanable ? "3px" : "0px",
+        right: cleanable ? "30px" : "5px",
       }}
       text={value as string}
       type="link"
     >
       <CopyIcon
-        style={{ verticalAlign: 'inherit' }}
+        style={{ verticalAlign: "inherit" }}
         className="h-4 ml-1 w-auto inline text-blue-200 fill-current"
         onClick={() => copy()}
       />
@@ -287,11 +289,11 @@ const buildPaddingRightClassName = (
   smallPaddings: boolean,
   showIcon = false
 ) => {
-  if (withExtraInner) return 'pr-32';
+  if (withExtraInner) return "pr-32";
 
-  if (!showIcon) return 'pr-4';
+  if (!showIcon) return "pr-4";
 
-  if (isPasswordInput) return smallPaddings ? 'pr-9' : 'pr-12';
+  if (isPasswordInput) return smallPaddings ? "pr-9" : "pr-12";
 
-  return smallPaddings ? 'pr-2' : 'pr-4';
+  return smallPaddings ? "pr-2" : "pr-4";
 };

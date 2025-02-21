@@ -1,35 +1,42 @@
 // icons
-import DotFill from '~/icons/dot-fill.svg?react';
-import DotEmpty from '~/icons/dot-empty.svg?react';
-import EQLogo from '~/icons/eq-small-logo.svg?react';
-import { FC } from 'react';
+import DotFill from "~/icons/dot-fill.svg?react";
+import DotEmpty from "~/icons/dot-empty.svg?react";
+import EQLogo from "~/icons/eq-small-logo.svg?react";
+import { FC } from "react";
 
-import styles from './eSnakeBlock.module.css';
-import clsx from 'clsx';
+import styles from "./eSnakeBlock.module.css";
+import clsx from "clsx";
 
 const options = [0, 25, 50, 75, 100];
 
 type ESnakeblockProps = {
   selectedOption: number;
   setSelectedOption: (option: number) => void;
+  disabled?: boolean;
 };
 
 export const ESnakeblock: FC<ESnakeblockProps> = ({
   selectedOption = 0,
   setSelectedOption,
+  disabled = false,
 }) => {
   const handleOptionClick = (option: number) => {
-    setSelectedOption(option);
+    if (!disabled) setSelectedOption(option);
   };
 
   return (
-    <div className="flex flex-col w-full">
+    <div
+      className={clsx(
+        "flex flex-col w-full",
+        disabled && "opacity-50 pointer-events-none"
+      )}
+    >
       <div className="flex w-full h-4 relative">
         <div
           style={{ zIndex: 5 }}
           className={clsx(
-            'absolute w-full h-full flex justify-between',
-            'transition 0.3s linear'
+            "absolute w-full h-full flex justify-between",
+            "transition 0.3s linear"
           )}
         >
           {options.map((option, idx) => (
@@ -54,7 +61,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
 
         <div
           style={
-            { '--percentage': `${selectedOption}%` } as React.CSSProperties
+            { "--percentage": `${selectedOption}%` } as React.CSSProperties
           }
           className="absolute w-full h-full flex items-center z-1"
         >
@@ -69,8 +76,8 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           <button
             key={option}
             className={clsx(
-              'eq-slider outline-none focus:outline-none pt-1',
-              option !== 0 && option !== 100 && 'pl-[15px]'
+              "eq-slider outline-none focus:outline-none pt-1",
+              option !== 0 && option !== 100 && "pl-[15px]"
             )}
             onClick={() => handleOptionClick(option)}
           >

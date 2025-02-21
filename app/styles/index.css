@@ -306,3 +306,15 @@ input[type="number"] {
 .eq-table-cell-small {
   @apply whitespace-nowrap py-1 text-caption-regular;
 }
+
+.banner-rounded {
+  border-radius: 32px;
+  margin-inline: 8px;
+}
+
+@media (max-width: 600px) {
+  input,
+  button {
+    pointer-events: none;
+  }
+}
