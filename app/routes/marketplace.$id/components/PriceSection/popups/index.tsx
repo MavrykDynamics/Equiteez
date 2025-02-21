@@ -164,7 +164,7 @@ export const PopupContent: FC<{
         slippagePercentage
       ),
       decimals: selectedAssetMetadata?.decimals,
-      sellBaseToken: qouteAssetMetadata.decimals,
+      quoteDecimals: qouteAssetMetadata.decimals,
     }),
     [
       amountB,
