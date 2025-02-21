@@ -84,19 +84,21 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
       const scrollOffest = (scrollContainer as Window).pageYOffset;
       const isBeyondOffset = scrollOffest > SECONDARY_HEADER_Y_OFFSET;
 
-      if (
-        isBeyondOffset &&
-        !ref.current?.classList.contains(BANNER_OFFSET_CLASSNAME)
-      ) {
-        ref.current?.classList.add(BANNER_OFFSET_CLASSNAME);
-      } else if (
-        scrollOffest < SECONDARY_HEADER_Y_OFFSET &&
-        ref.current?.classList.contains(BANNER_OFFSET_CLASSNAME)
-      ) {
-        ref.current?.classList.remove(BANNER_OFFSET_CLASSNAME);
-      }
+      if (isBannerSticky) {
+        if (
+          isBeyondOffset &&
+          !ref.current?.classList.contains(BANNER_OFFSET_CLASSNAME)
+        ) {
+          ref.current?.classList.add(BANNER_OFFSET_CLASSNAME);
+        } else if (
+          scrollOffest < SECONDARY_HEADER_Y_OFFSET &&
+          ref.current?.classList.contains(BANNER_OFFSET_CLASSNAME)
+        ) {
+          ref.current?.classList.remove(BANNER_OFFSET_CLASSNAME);
+        }
 
-      setIsInRoundedMode(isBeyondOffset);
+        setIsInRoundedMode(isBeyondOffset);
+      }
     };
 
     if (scrollContainer) {
@@ -145,8 +147,8 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
                 idx !== activeBlockIdx && styles.hiddenBlock
               )}
             >
-              <div className={clsx(" bg-green-200 p-4 w-full text-center")}>
-                <p className="text-content text-body">{item.content}</p>
+              <div className={clsx(" bg-[#BBA1D2] p-4 w-full text-center")}>
+                <p className="text-content text-buttons">{item.content}</p>
               </div>
             </div>
           ))}
