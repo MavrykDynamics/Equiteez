@@ -36,7 +36,10 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
   const isFirstRun = useRef(true);
   const [activeBlockIdx, setActiveBlockIdx] = useState(0);
 
+  // while scroll
   const [isInRoundedMode, setIsInRoundedMode] = useState(false);
+
+  // if user hide banner -> local storage setting
   const [isBannerSticky, setIsBannerSticky] = useState(
     () => getItemFromStorage<boolean>(BANNER_VISIBILITY_VAR) ?? true
   );
@@ -155,7 +158,7 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
         </div>
       </div>
 
-      {isInRoundedMode && (
+      {isInRoundedMode && isBannerSticky && (
         <button className={styles.crossBtn} onClick={handleBannerHideClick}>
           <CrossIcon className="size-6 text-white stroke-current" />
         </button>
