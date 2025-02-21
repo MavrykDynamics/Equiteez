@@ -46,8 +46,6 @@ export const UserProvider = ({ children }: Props) => {
     DEFAULT_USER_TZKT_TOKENS
   );
 
-  console.log(userCtxState, "userCtxState");
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(true);
