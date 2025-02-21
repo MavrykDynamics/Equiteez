@@ -535,6 +535,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <ESnakeblock
                     selectedOption={selectedPercentage}
                     setSelectedOption={setSelectedPercentage}
+                    disabled
                   />
                 </div>
               </div>
