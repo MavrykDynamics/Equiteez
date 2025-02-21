@@ -156,7 +156,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   tokenAddress,
   slug,
 }) => {
-  const { isAdmin, userTokensBalances, isKyced } = useUserContext();
+  const { isAdmin, userTokensBalances } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
   const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
   // tabs state
@@ -233,16 +233,19 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
       ? amount.gt(new BigNumber(tokenBalance))
       : false;
 
-  const isBtnDisabled = useMemo(
-    () =>
-      amount?.lte(0) ||
-      price?.lte(0) ||
-      hasTotalError ||
-      !amount ||
-      !price ||
-      !isKyced,
-    [amount, hasTotalError, price, isKyced]
-  );
+  // TODO uncoment this after API assets
+  // const isBtnDisabled = useMemo(
+  //   () =>
+  //     amount?.lte(0) ||
+  //     price?.lte(0) ||
+  //     hasTotalError ||
+  //     !amount ||
+  //     !price ||
+  //     !isKyced,
+  //   [amount, hasTotalError, price, isKyced]
+  // );
+
+  const isBtnDisabled = true;
 
   // derived state (it's boolean value, so no need to memoize it)
   const isLimitType = activeItem === LIMIT_TYPE;
