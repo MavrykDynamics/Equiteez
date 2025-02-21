@@ -8,6 +8,9 @@ import DocBg from "app/a11y/DocBg";
 import { Header } from "./Header/Header";
 import { Footer } from "./Footer/Footer";
 import { Container } from "~/lib/atoms/Container";
+import { Banner } from "./Banner/Banner";
+
+import bannerContent from "app/mocks/banner.json";
 
 type PageLayoutProps = {
   bg?: string;
@@ -34,6 +37,7 @@ const PageLayout: FC<PageLayoutProps> = ({
 
       <div className={clsx("relative flex flex-col flex-1")}>
         <Header />
+        <Banner contantArr={bannerContent} />
         {includeContainer ? (
           <div className="flex-1">
             <Container>{children}</Container>
