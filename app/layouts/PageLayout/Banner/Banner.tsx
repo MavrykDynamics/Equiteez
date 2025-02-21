@@ -37,8 +37,8 @@ export const Banner = memo(({ contantArr }: BannerProps) => {
   const [activeBlockIdx, setActiveBlockIdx] = useState(0);
 
   const [isInRoundedMode, setIsInRoundedMode] = useState(false);
-  const [isBannerSticky, setIsBannerSticky] = useState(() =>
-    getItemFromStorage<boolean>(BANNER_VISIBILITY_VAR)
+  const [isBannerSticky, setIsBannerSticky] = useState(
+    () => getItemFromStorage<boolean>(BANNER_VISIBILITY_VAR) ?? true
   );
 
   const [playAnimation, setPlayAnimation] = useState(false);
