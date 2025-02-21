@@ -311,3 +311,10 @@ input[type="number"] {
   border-radius: 32px;
   margin-inline: 8px;
 }
+
+@media (max-width: 600px) {
+  input,
+  button {
+    pointer-events: none;
+  }
+}

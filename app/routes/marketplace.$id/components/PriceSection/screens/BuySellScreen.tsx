@@ -347,11 +347,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       </div>
 
       {!isKyced && (
-        <Alert type="info" header="Verify with Mavryk Pro to Trade">
-          Trading on Equiteez requires the Mavryk Pro wallet for enhanced
-          security and regulatory compliance. Upgrade to Mavryk Pro inside your
-          Mavryk Wallet.
-        </Alert>
+        <div className="mt-6">
+          <Alert type="info" header="Verify with Mavryk Pro to Trade">
+            Trading on Equiteez requires the Mavryk Pro wallet for enhanced
+            security and regulatory compliance. Upgrade to Mavryk Pro inside
+            your Mavryk Wallet.
+          </Alert>
+        </div>
       )}
       <Button
         className="mt-6"
