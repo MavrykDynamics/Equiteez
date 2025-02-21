@@ -35,7 +35,7 @@ import {
 } from "~/lib/utils/calcFns";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
-import { rateToNumber, ZERO } from "~/lib/utils/numbers";
+import { rateToNumber } from "~/lib/utils/numbers";
 import { isDefined } from "~/lib/utils";
 import { AssetField } from "~/lib/organisms/AssetField";
 import { CryptoBalance } from "~/templates/Balance";
@@ -156,7 +156,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   tokenAddress,
   slug,
 }) => {
-  const { isAdmin, userTokensBalances } = useUserContext();
+  const { isAdmin, userTokensBalances, isKyced } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
   const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
   // tabs state
@@ -234,8 +234,14 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
       : false;
 
   const isBtnDisabled = useMemo(
-    () => amount?.lte(0) || price?.lte(0) || hasTotalError || !amount || !price,
-    [amount, hasTotalError, price]
+    () =>
+      amount?.lte(0) ||
+      price?.lte(0) ||
+      hasTotalError ||
+      !amount ||
+      !price ||
+      !isKyced,
+    [amount, hasTotalError, price, isKyced]
   );
 
   // derived state (it's boolean value, so no need to memoize it)
