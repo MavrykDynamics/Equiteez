@@ -466,7 +466,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <div
                     role="presentation"
                     onClick={handlePriceFocus}
-                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                   >
                     <div className="text-content-secondary opacity-50">
                       Price
@@ -495,7 +495,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <div
                     role="presentation"
                     onClick={handleAmountFocus}
-                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                   >
                     <div className="text-content-secondary opacity-50">
                       Amount
@@ -538,7 +538,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
               <div className="w-full mb-3">
                 <div
-                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                 >
                   <div className="text-content-secondary opacity-50">Total</div>
 
