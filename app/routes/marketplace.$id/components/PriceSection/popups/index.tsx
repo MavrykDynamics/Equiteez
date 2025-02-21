@@ -216,7 +216,7 @@ export const PopupContent: FC<{
   );
 
   return (
-    <div className="flex flex-col justify-between text-content h-full relative">
+    <div className="flex flex-col justify-between text-content flex-1 relative">
       <>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center">
