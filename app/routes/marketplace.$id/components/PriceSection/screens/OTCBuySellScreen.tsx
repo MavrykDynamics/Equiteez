@@ -275,7 +275,7 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
           name={"total"}
         />
       </div>
-      <Button variant="dark" onClick={handleContinueClick} className="mt-6">
+      <Button variant="dark" onClick={handleContinueClick} className="mt-8">
         Continue
       </Button>
     </div>
