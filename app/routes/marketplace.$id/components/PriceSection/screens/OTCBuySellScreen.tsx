@@ -1,15 +1,15 @@
-import { FC, useCallback, useMemo, useState } from 'react';
-import { Button } from '~/lib/atoms/Button';
-import { HashShortView } from '~/lib/atoms/HashShortView';
+import { FC, useCallback, useMemo, useState } from "react";
+import { Button } from "~/lib/atoms/Button";
+import { HashShortView } from "~/lib/atoms/HashShortView";
 import {
   NativeTable,
   NativeTableColumn,
   NativeTableHeader,
   NativeTableRow,
-} from '~/lib/atoms/NativeTable/NativeTable';
-import { InputNumber } from '~/lib/molecules/Input/Input';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+} from "~/lib/atoms/NativeTable/NativeTable";
+import { InputNumber } from "~/lib/molecules/Input/Input";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
+import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
 import {
   BALANCE_LIMIT,
   OTC_BUY,
@@ -17,13 +17,13 @@ import {
   OTCTabType,
   TOKEN_BALANCE_LIMIT,
   TOKEN_PRICE,
-} from '../consts';
-import { Divider } from '~/lib/atoms/Divider';
+} from "../consts";
+import { Divider } from "~/lib/atoms/Divider";
 
 // icons
-import ArrowDownIcon from 'app/icons/arrow-down.svg?react';
-import { FormCheckbox } from '~/lib/molecules/FormCheckBox';
-import clsx from 'clsx';
+import ArrowDownIcon from "app/icons/arrow-down.svg?react";
+import { FormCheckbox } from "~/lib/molecules/FormCheckBox";
+import clsx from "clsx";
 
 type OTCBuySellScreenProps = {
   symbol: string;
@@ -36,12 +36,12 @@ type OTCBuySellScreenProps = {
 const tableBuyItems = [
   {
     id: 1,
-    content: '',
+    content: "",
     sortable: false,
   },
   {
     id: 2,
-    content: 'Seller',
+    content: "Seller",
     sortable: false,
   },
   {
@@ -66,7 +66,7 @@ const tableBuyItems = [
   },
   {
     id: 5,
-    content: 'Total Value',
+    content: "Total Value",
     sortable: false,
   },
 ];
@@ -74,12 +74,12 @@ const tableBuyItems = [
 const tableSellItems = [
   {
     id: 1,
-    content: '',
+    content: "",
     sortable: false,
   },
   {
     id: 2,
-    content: 'Buyer',
+    content: "Buyer",
     sortable: false,
   },
   {
@@ -104,7 +104,7 @@ const tableSellItems = [
   },
   {
     id: 5,
-    content: 'Total Value',
+    content: "Total Value",
     sortable: false,
   },
 ];
@@ -115,7 +115,7 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
   estate,
   activeTabId,
 }) => {
-  const [amount, setAmount] = useState<string | number>('');
+  const [amount, setAmount] = useState<string | number>("");
 
   const [checkboxesState, setCheckboxesState] = useState(() =>
     estate.assetDetails.otc.buying.reduce<{ [x: string]: boolean }>(
@@ -148,7 +148,7 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
   };
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen('confirm');
+    toggleScreen("confirm");
   }, [toggleScreen]);
 
   const toggleCheckbox = useCallback(
@@ -174,10 +174,10 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
               <NativeTableHeader
                 alternativeDesign
                 items={headerItems}
-                customGrid={'24px 148px repeat(3, 124px)'}
+                customGrid={"24px 148px repeat(3, 124px)"}
               />
               <div className="max-h-[267px] overflow-y-scroll">
-                {estate.assetDetails.otc[isBuytab ? 'buying' : 'selling'].map(
+                {estate.assetDetails.otc[isBuytab ? "buying" : "selling"].map(
                   ({ seller, price, tokensForSale, totalValue }) => {
                     const disabled = selectedSeller
                       ? selectedSeller !== seller
@@ -187,13 +187,13 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
                         role="presentation"
                         key={price}
                         className={clsx(
-                          disabled && 'pointer-events-none opacity-50',
-                          'cursor-pointer transition 0.3s ease-in-out'
+                          disabled && "pointer-events-none opacity-50",
+                          "cursor-pointer transition 0.3s ease-in-out"
                         )}
                         onClick={() => toggleCheckbox(seller)}
                       >
                         <NativeTableRow
-                          customGrid={'24px 148px repeat(3, 124px)'}
+                          customGrid={"24px 148px repeat(3, 124px)"}
                         >
                           <NativeTableColumn className="py-4">
                             <div className="pointer-events-none">
@@ -231,7 +231,7 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
             <h2 className="text-card-headline text-content">OTC Order</h2>
             <p className=" text-body-xs text-content flex justify-between">
               <span>
-                {isBuytab ? 'Available Balance' : 'Available For Sale'}
+                {isBuytab ? "Available Balance" : "Available For Sale"}
               </span>
               <span>20.00 NMD</span>
             </p>
@@ -245,14 +245,14 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
                     className="underline cursor-pointer"
                     onClick={hadleMaxPress}
                   >
-                    {isBuytab ? 'Max Buy' : 'Max Sell'}
+                    {isBuytab ? "Max Buy" : "Max Sell"}
                   </span>
                 </div>
               }
-              value={amount || ''}
-              placeholder={'Minimum 1'}
+              value={amount || ""}
+              placeholder={"Minimum 1"}
               valueText={symbol}
-              name={'amount'}
+              name={"amount"}
             />
           </div>
         </div>
@@ -262,24 +262,20 @@ export const OTCBuySellScreen: FC<OTCBuySellScreenProps> = ({
         <div className="text-body-xs flex justify-between mb-6">
           <div className="flex items-center gap-2">
             Est. Fee
-            <InfoTooltip content="Est fee" />
+            {/* <InfoTooltip content="Est fee" /> */}
           </div>
           <p>0.71 {symbol}</p>
         </div>
 
         <InputNumber
-          label={'Total'}
+          label={"Total"}
           value={amount}
-          placeholder={'0.00'}
+          placeholder={"0.00"}
           valueText="USDT"
-          name={'total'}
+          name={"total"}
         />
       </div>
-      <Button
-        variant="dark"
-        onClick={handleContinueClick}
-        className="mt-[145px]"
-      >
+      <Button variant="dark" onClick={handleContinueClick} className="mt-8">
         Continue
       </Button>
     </div>

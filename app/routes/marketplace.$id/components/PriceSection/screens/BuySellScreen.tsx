@@ -12,7 +12,6 @@ import {
   ExpanderBodyContent,
   ExpanderFaceContent,
 } from "~/lib/organisms/CustomExpander/CustomExpander";
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
 // icons
 import CheckIcon from "app/icons/ok.svg?react";
@@ -42,6 +41,7 @@ import {
   calculateMinReceived,
   getDodoMavLpFee,
 } from "~/providers/Dexprovider/utils";
+import { Alert } from "~/templates/Alert/Alert";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -69,7 +69,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
-  const { userTokensBalances } = useUserContext();
+  const { userTokensBalances, isKyced } = useUserContext();
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -225,6 +225,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     ? symbol
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
+  const isBtnDisabled =
+    hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -306,7 +309,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     <div className="mt-2 text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
                         Min Received
-                        <InfoTooltip content="Min Received" />
+                        {/* <InfoTooltip content="Min Received" /> */}
                       </div>
                       <div>
                         <Money smallFractionFont={false} shortened>
@@ -318,7 +321,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     <div className="mt-2 text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
                         Slippage
-                        <InfoTooltip content="Slippage" />
+                        {/* <InfoTooltip content="Slippage" /> */}
                       </div>
                       <SlippageDropdown
                         slippagePercentage={slippagePercentage}
@@ -328,7 +331,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                     <div className="mt-[10px] text-body-xs flex justify-between">
                       <div className="flex items-center gap-2">
                         Est. Fee
-                        <InfoTooltip content="Est fee" />
+                        {/* <InfoTooltip content="Est fee" /> */}
                       </div>
                       <div>
                         {estFee}
@@ -342,10 +345,20 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           </div>
         </div>
       </div>
+
+      {!isKyced && (
+        <div className="mt-8">
+          <Alert type="info" header="Verify with Mavryk Pro to Trade">
+            Trading on Equiteez requires the Mavryk Pro wallet for enhanced
+            security and regulatory compliance. Upgrade to Mavryk Pro inside
+            your Mavryk Wallet.
+          </Alert>
+        </div>
+      )}
       <Button
-        className="mt-6"
+        className="mt-8"
         onClick={handleContinueClick}
-        disabled={hasTotalError || !amount || slippagePercentage.length <= 0}
+        disabled={isBtnDisabled}
       >
         Continue
       </Button>

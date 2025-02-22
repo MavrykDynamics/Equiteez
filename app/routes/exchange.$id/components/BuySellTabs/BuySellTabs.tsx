@@ -35,7 +35,7 @@ import {
 } from "~/lib/utils/calcFns";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
-import { rateToNumber, ZERO } from "~/lib/utils/numbers";
+import { rateToNumber } from "~/lib/utils/numbers";
 import { isDefined } from "~/lib/utils";
 import { AssetField } from "~/lib/organisms/AssetField";
 import { CryptoBalance } from "~/templates/Balance";
@@ -233,10 +233,19 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
       ? amount.gt(new BigNumber(tokenBalance))
       : false;
 
-  const isBtnDisabled = useMemo(
-    () => amount?.lte(0) || price?.lte(0) || hasTotalError || !amount || !price,
-    [amount, hasTotalError, price]
-  );
+  // TODO uncoment this after API assets
+  // const isBtnDisabled = useMemo(
+  //   () =>
+  //     amount?.lte(0) ||
+  //     price?.lte(0) ||
+  //     hasTotalError ||
+  //     !amount ||
+  //     !price ||
+  //     !isKyced,
+  //   [amount, hasTotalError, price, isKyced]
+  // );
+
+  const isBtnDisabled = true;
 
   // derived state (it's boolean value, so no need to memoize it)
   const isLimitType = activeItem === LIMIT_TYPE;
@@ -460,7 +469,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <div
                     role="presentation"
                     onClick={handlePriceFocus}
-                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                   >
                     <div className="text-content-secondary opacity-50">
                       Price
@@ -489,7 +498,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <div
                     role="presentation"
                     onClick={handleAmountFocus}
-                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                   >
                     <div className="text-content-secondary opacity-50">
                       Amount
@@ -526,13 +535,14 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <ESnakeblock
                     selectedOption={selectedPercentage}
                     setSelectedOption={setSelectedPercentage}
+                    disabled
                   />
                 </div>
               </div>
 
               <div className="w-full mb-3">
                 <div
-                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-white gap-3`}
+                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                 >
                   <div className="text-content-secondary opacity-50">Total</div>
 
