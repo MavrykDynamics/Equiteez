@@ -226,7 +226,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   const isBtnDisabled =
-    hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
+    hasTotalError ||
+    !amount ||
+    slippagePercentage.length <= 0 ||
+    !isKyced ||
+    actionType === "buy";
 
   return (
     <div className="flex flex-col flex-1">
@@ -355,6 +359,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           </Alert>
         </div>
       )}
+      {actionType === "buy" && (
+        <div className="mt-8">
+          <Alert type="info" header="Low Liquidity Detected!">
+            The liquidity for {symbol} is critically low. Transactions may
+            experience high slippage or failure.
+          </Alert>
+        </div>
+      )}
+
       <Button
         className="mt-8"
         onClick={handleContinueClick}
