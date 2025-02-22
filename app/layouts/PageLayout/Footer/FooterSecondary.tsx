@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
-import { Link } from "@remix-run/react";
-import { SECONDARY_SOCIALS } from "~/consts/icons";
+import { SOCIALS } from "~/consts/icons";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 type FooterSecondaryProps = {
   theme?: "dark" | "light";
@@ -23,12 +23,12 @@ export const FooterSecondary: FC<FooterSecondaryProps> = ({
       </div>
 
       <div className="flex items-center gap-6">
-        {SECONDARY_SOCIALS.map(({ id, url, Icon }) => (
-          <Link key={id} to={url}>
-            <div className="size-6 flex justify-center items-center">
+        {SOCIALS.map(({ id, url, Icon }) => (
+          <CustomLink key={id} to={url}>
+            <div className="flex justify-center items-center">
               <Icon className={`fill-${color}`} />
             </div>
-          </Link>
+          </CustomLink>
         ))}
       </div>
     </section>

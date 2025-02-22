@@ -6,10 +6,12 @@ export const MaintancePageTemp = () => {
   return (
     <>
       <div className="h-screen overflow-hidden  bg-mvrk font-aeonik text-mvrk-main gap-3 flex justify-between flex-col w-screen bg-sand-50">
-        <Header />
+        <div className="hidden md:block">
+          <Header />
+        </div>
         <div className="flex flex-col items-center text-center z-10 justify-self-start transform">
           <div className="flex flex-col gap-5 items-center text-sand-900">
-            <h3 className="text-section-headline font-semibold">
+            <h3 className="p-8 mt-11 md:mt-0 md:p-0 text-[32px] md:text-section-headline font-semibold">
               The site is currently down <br />
               for maintenance
             </h3>
@@ -26,7 +28,7 @@ export const MaintancePageTemp = () => {
         <img
           src={MaintanceImg}
           alt="maintance"
-          className="w-full h-auto absolute left-0 bottom-0 right-0 "
+          className="w-full h-[350px] object-cover md:object-contain md:h-auto absolute left-0 bottom-0 right-0 "
         />
       </div>
     </>
