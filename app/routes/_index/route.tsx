@@ -14,8 +14,9 @@ import { Container } from "~/lib/atoms/Container";
 import { MarketRowTop } from "./components/MarketRowTop/MarketRowTop";
 import { MarketRowBottom } from "./components/MarketRowBottom/MarketRowBottom";
 import { PropertiesSliderSecondary } from "./components/PropertiesSlider/PropertiesSlider";
-import { useRef } from "react";
-import { useScroll, useTransform } from "framer-motion";
+import { useMemo, useRef } from "react";
+import { useScroll, UseScrollOptions, useTransform } from "framer-motion";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -25,10 +26,21 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  const { IS_WEB } = useAppContext();
+  const offsetParameters: UseScrollOptions["offset"] = useMemo(
+    () =>
+      IS_WEB
+        ? window.innerHeight > 900
+          ? ["start 30%", "end 30%"]
+          : ["start center", "end center"]
+        : ["start center", "end center"],
+    [IS_WEB]
+  );
+
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start center", "end center"],
+    offset: offsetParameters,
   });
   // used for banner section opacity transition
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);

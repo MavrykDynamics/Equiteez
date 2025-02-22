@@ -1,0 +1,58 @@
+.bannerWrapper .embla__viewport .embla__container {
+  @apply w-full;
+}
+
+/* Embla mobile styles */
+.embla__viewport {
+  overflow: hidden;
+  width: 100%;
+
+  --slide-height: auto;
+  --slide-size: 100%;
+}
+.embla__container {
+  display: flex !important;
+  touch-action: pan-y pinch-zoom;
+}
+.embla__slide {
+  transform: translate3d(0, 0, 0);
+  flex: 0 0 var(--slide-size);
+  min-width: 0;
+}
+
+.bannerWrapper {
+  position: relative;
+  @apply flex overflow-hidden z-20;
+  transition:
+    border-radius var(--timing) linear,
+    margin-inline var(--timing) linear,
+    position var(--timing) linear,
+    transform var(--timing) linear,
+    opacity var(--timing) linear;
+}
+.sticky {
+  position: sticky;
+  top: 0;
+}
+
+.hiding {
+  animation: hide var(--timing) linear forwards;
+}
+
+.crossBtn {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@keyframes hide {
+  from {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}

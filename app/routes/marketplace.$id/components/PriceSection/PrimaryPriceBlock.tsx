@@ -1,16 +1,15 @@
-import { Divider } from '~/lib/atoms/Divider';
-import { Table } from '~/lib/atoms/Table/Table';
+import { Divider } from "~/lib/atoms/Divider";
+import { Table } from "~/lib/atoms/Table/Table";
 
 // styles
-import styles from './priceSection.module.css';
-import clsx from 'clsx';
-import { Button } from '~/lib/atoms/Button';
-import { PopupWithIcon } from '~/templates/PopupWIthIcon/PopupWithIcon';
-import { FC, useCallback, useState } from 'react';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { PrimaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { PopupContent } from './popups';
+import styles from "./priceSection.module.css";
+import clsx from "clsx";
+import { Button } from "~/lib/atoms/Button";
+import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
+import { FC, useCallback, useState } from "react";
+import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { PrimaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { PopupContent } from "./popups";
 
 export const PrimaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,14 +36,14 @@ export const PrimaryPriceBlock = () => {
         <div className="text-content text-body flex justify-between mb-4">
           <div className="flex items-center gap-x-1">
             Annual Return
-            <InfoTooltip content="Annual Return" className="w-6 h-6" />
+            {/* <InfoTooltip content="Annual Return" className="w-6 h-6" /> */}
           </div>
           <p>{estate.assetDetails.priceDetails.projectedAnnualReturn}%</p>
         </div>
         <div className="text-content text-body flex justify-between mb-4">
           <div className="flex items-center gap-x-1">
             Rental Yield
-            <InfoTooltip content="Rental Yield" className="w-6 h-6" />
+            {/* <InfoTooltip content="Rental Yield" className="w-6 h-6" /> */}
           </div>
           <p>{estate.assetDetails.priceDetails.projectedRentalYield}%</p>
         </div>
@@ -65,9 +64,9 @@ export const PrimaryPriceBlock = () => {
       <PopupWithIcon
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
-        contentPosition={'right'}
+        contentPosition={"right"}
       >
-        <PopupContent estate={estate} orderType={'buy'} />
+        <PopupContent estate={estate} orderType={"buy"} />
       </PopupWithIcon>
     </section>
   );

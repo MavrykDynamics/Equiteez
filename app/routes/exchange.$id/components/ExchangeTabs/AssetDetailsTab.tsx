@@ -3,7 +3,6 @@ import { FC, useMemo, useState } from "react";
 import { TableHeader } from "~/lib/atoms/Table/TableHeader";
 import { TableItemSmall } from "~/lib/atoms/Table/TableItem";
 import { ImageStacked } from "~/lib/molecules/ImageStacked";
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
 import { IconsBlock } from "~/templates/IconsBlock";
 
@@ -97,14 +96,15 @@ export const AssetDetailsTab: FC<{ estate: SecondaryEstate }> = ({
         </TableItemSmall>
         <TableItemSmall>
           <div className="flex items-center gap-x-1">
-            Rented? <InfoTooltip content={"Rented"} />
+            Rented?
+            {/* <InfoTooltip content={"Rented"} /> */}
           </div>
           <p>{propertyDetails.rented}</p>
         </TableItemSmall>
         <TableItemSmall isLast>
           <div className="flex items-center gap-x-1">
             Rent Subsidy?
-            <InfoTooltip content={"Rent Subsidy?"} />
+            {/* <InfoTooltip content={"Rent Subsidy?"} /> */}
           </div>
           <p>{propertyDetails.rentSubsidy}</p>
         </TableItemSmall>

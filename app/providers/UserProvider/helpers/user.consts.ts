@@ -1,12 +1,13 @@
 import {
   UserContextStateType,
   UserTzKtTokenBalances,
-} from '../user.provider.types';
+} from "../user.provider.types";
 
 export const DEFAULT_USER: UserContextStateType = {
   userAddress: null,
   userTokensBalances: {},
   isAdmin: false,
+  isKyced: false,
 };
 
 export const DEFAULT_USER_TZKT_TOKENS: UserTzKtTokenBalances = {
@@ -27,6 +28,6 @@ function createAddressObject(trueAddresses: Array<string>) {
 }
 
 export const ADMIN_ADDRESSES: StringRecord<boolean> = createAddressObject([
-  'mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w',
-  'mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV',
+  "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
+  "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
 ]);

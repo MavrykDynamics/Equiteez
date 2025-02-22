@@ -5,7 +5,6 @@ import { TableItem } from "~/lib/atoms/Table/TableItem";
 import { LocationMap } from "../LocationMap/LocationMap";
 import { Spacer } from "~/lib/atoms/Spacer";
 import { FC } from "react";
-import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import { EstateType } from "~/providers/EstatesProvider/estates.types";
 import Money from "~/lib/atoms/Money";
 import { HashChip } from "~/lib/molecules/HashChip";
@@ -41,14 +40,15 @@ export const SharedAssetDetailsTemplate: FC<{ data: any }> = ({ data }) => {
       </TableItem>
       <TableItem>
         <div className="flex items-center gap-x-1">
-          Rented? <InfoTooltip content={"Rented"} />
+          Rented?
+          {/* <InfoTooltip content={"Rented"} /> */}
         </div>
         <p>{data.rented}</p>
       </TableItem>
       <TableItem>
         <div className="flex items-center gap-x-1">
           Rent Subsidy?
-          <InfoTooltip content={"Rent Subsidy?"} />
+          {/* <InfoTooltip content={"Rent Subsidy?"} /> */}
         </div>
         <p>{data.rentSubsidy}</p>
       </TableItem>
@@ -628,14 +628,15 @@ export const DefaultAssetDetailsTemplate: FC<{
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
-            Rented? <InfoTooltip content={"Rented"} />
+            Rented?
+            {/* <InfoTooltip content={"Rented"} /> */}
           </div>
           <p>{propertyDetails.rented}</p>
         </TableItem>
         <TableItem>
           <div className="flex items-center gap-x-1">
             Rent Subsidy?
-            <InfoTooltip content={"Rent Subsidy?"} />
+            {/* <InfoTooltip content={"Rent Subsidy?"} /> */}
           </div>
           <p>{propertyDetails.rentSubsidy}</p>
         </TableItem>

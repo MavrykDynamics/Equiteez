@@ -1,11 +1,11 @@
-import { BeaconWallet } from '@mavrykdynamics/taquito-beacon-wallet';
+import { BeaconWallet } from "@mavrykdynamics/taquito-beacon-wallet";
 import {
   AccountInfo,
   BeaconEvent,
   NetworkType,
-} from '@mavrykdynamics/beacon-dapp';
-import { TezosToolkit } from '@mavrykdynamics/taquito';
-import type { BeaconWallet as BeaconWalletType } from '@mavrykdynamics/taquito-beacon-wallet';
+} from "@mavrykdynamics/beacon-dapp";
+import { TezosToolkit } from "@mavrykdynamics/taquito";
+import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-beacon-wallet";
 
 // consts
 import {
@@ -13,16 +13,16 @@ import {
   RPC_NODE,
   rpcNodeSchema,
   RPCNodeType,
-} from 'app/consts/rpcNodes';
-import { getItemFromStorage } from '~/lib/utils/local-storage';
+} from "app/consts/rpcNodes";
+import { getItemFromStorage } from "~/lib/utils/local-storage";
 
 // utils
 
 // Need to use as cuz NetworkType is enum and ts don't understand that all types are correct
-const WALLET_NETWORK = 'atlasnet' as NetworkType;
+const WALLET_NETWORK = "atlasnet" as NetworkType;
 const DAPP_METADATA = {
   // name: process.env.REACT_APP_NAME,
-  name: 'Maven',
+  name: "Maven",
   preferredNetwork: WALLET_NETWORK,
 };
 
@@ -81,7 +81,7 @@ export function dappClient() {
         },
       });
     } catch (error) {
-      console.log('request account error:', error);
+      console.log("request account error:", error);
       throw error;
     }
   }
@@ -101,7 +101,7 @@ export function dappClient() {
       // await wallet.disconnect();
       await wallet.clearActiveAccount();
     } catch (error) {
-      console.log('disconnectWallet error:', error);
+      console.log("disconnectWallet error:", error);
       throw error;
     }
   }

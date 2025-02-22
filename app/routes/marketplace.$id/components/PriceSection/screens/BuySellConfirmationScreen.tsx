@@ -1,21 +1,20 @@
-import { FC } from 'react';
-import { FormCheckbox } from '~/lib/molecules/FormCheckBox';
-import { useForm, Controller } from 'react-hook-form';
-import { Button } from '~/lib/atoms/Button';
-import { InfoTooltip } from '~/lib/organisms/InfoTooltip';
-import { InputText } from '~/lib/molecules/Input/Input';
-import { Divider } from '~/lib/atoms/Divider';
-import { Link } from '@remix-run/react';
-import clsx from 'clsx';
+import { FC } from "react";
+import { FormCheckbox } from "~/lib/molecules/FormCheckBox";
+import { useForm, Controller } from "react-hook-form";
+import { Button } from "~/lib/atoms/Button";
+import { InputText } from "~/lib/molecules/Input/Input";
+import { Divider } from "~/lib/atoms/Divider";
+import { Link } from "@remix-run/react";
+import clsx from "clsx";
 import {
   getStatusLabel,
   STATUS_CONFIRMING,
   STATUS_PENDING,
   StatusFlag,
-} from '~/lib/ui/use-status-flag';
+} from "~/lib/ui/use-status-flag";
 
 type BuySellConfirmationScreenProps = {
-  actionType: 'buy' | 'sell' | 'otcBuy' | 'otcSell';
+  actionType: "buy" | "sell" | "otcBuy" | "otcSell";
   actionCb: () => void;
   status: StatusFlag;
 };
@@ -27,10 +26,10 @@ export type FormData = {
 };
 
 const actionLabels = {
-  buy: 'Buy',
-  sell: 'Sell',
-  otcBuy: 'Buy',
-  otcSell: 'Sell',
+  buy: "Buy",
+  sell: "Sell",
+  otcBuy: "Buy",
+  otcSell: "Sell",
 };
 
 export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
@@ -40,9 +39,9 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
 }) => {
   const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const { control, handleSubmit, formState } = useForm<FormData>({
-    mode: 'onSubmit',
+    mode: "onSubmit",
     defaultValues: {
-      initials: '',
+      initials: "",
       terms: false,
       investing: false,
     },
@@ -66,7 +65,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 onChange={onChange} // send value to hook form
                 onBlur={onBlur} // notify when input is touched/blur
                 checked={value}
-                errorCaption={formState.errors.terms ? 'Required' : null}
+                errorCaption={formState.errors.terms ? "Required" : null}
                 label={
                   <p className="text-content text-body-xs max-w-[521px] ">
                     I agree with the information laid out in the&nbsp;
@@ -94,15 +93,15 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 onChange={onChange} // send value to hook form
                 onBlur={onBlur} // notify when input is touched/blur
                 checked={value}
-                errorCaption={formState.errors.investing ? 'Required' : null}
+                errorCaption={formState.errors.investing ? "Required" : null}
                 label={
                   <p className="text-content text-body-xs max-w-[521px]">
                     I understand investing with the intention of holdling my
                     securities for the target investment period, and that
-                    Equiteez will{' '}
+                    Equiteez will{" "}
                     <span className="font-semibold">not offer refunds</span> on
                     my investment outside of the 24 hour cancellation window. To
-                    learn more about liquidity, check out the{' '}
+                    learn more about liquidity, check out the{" "}
                     <Link to="/" className="text-blue-700">
                       FAQ.
                     </Link>
@@ -120,7 +119,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
               <span className="text-body-xs text-content w-[364px]">
                 Please enter your First and Last name initials (ex. JS)
               </span>
-              <InfoTooltip className="size-6" content={'Initials'} />
+              {/* <InfoTooltip className="size-6" content={'Initials'} /> */}
             </div>
             <Controller
               render={({
@@ -132,7 +131,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                     <InputText
                       ref={ref}
                       errorCaption={
-                        errors.initials ? 'Enter your initials' : undefined
+                        errors.initials ? "Enter your initials" : undefined
                       }
                       value={value.slice(0, 2).toUpperCase()}
                       onChange={onChange} // send value to hook form
@@ -160,9 +159,9 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
             type="submit"
             isLoading={isLoading}
             className={clsx(
-              'w-full',
-              actionLabels[actionType].toLowerCase() === 'buy' &&
-                'bg-green-500 text-content hover:bg-green-300'
+              "w-full",
+              actionLabels[actionType].toLowerCase() === "buy" &&
+                "bg-green-500 text-content hover:bg-green-300"
             )}
           >
             {getStatusLabel(status, actionLabels[actionType])}
