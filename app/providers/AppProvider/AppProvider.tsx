@@ -24,6 +24,7 @@ export const AppProvider: FC<AppProviderProps> = ({ children }) => {
   // const { handleApolloError } = useApolloContext();
   const [isWeb, setIsWeb] = useState(false);
 
+  // TODO move to SipSupProvider
   /**
    * Subscribe to lvl that currently performed by EQuiteez API, to:
    *

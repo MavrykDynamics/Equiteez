@@ -1,0 +1,40 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  @apply bg-dark-green-900 relative;
+}
+
+.content {
+  position: relative;
+  padding-top: 115px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+}
+
+.content p {
+  text-align: center;
+  font-family: Poppins;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.bg {
+  position: absolute;
+  width: 100%;
+
+  bottom: 0;
+}
+
+.bg img {
+  width: 100%;
+  height: auto;
+  max-height: 350px;
+
+  object-fit: cover;
+}
