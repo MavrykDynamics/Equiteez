@@ -359,6 +359,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           </Alert>
         </div>
       )}
+      {actionType === "buy" && (
+        <div className="mt-8">
+          <Alert type="info" header="Low Liquidity Detected!">
+            The liquidity for {symbol} is critically low. Transactions may
+            experience high slippage or failure.
+          </Alert>
+        </div>
+      )}
 
       <Button
         className="mt-8"
