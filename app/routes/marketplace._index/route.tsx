@@ -58,7 +58,11 @@ export default function Properties() {
             );
           })}
         </div>
-        <Spacer height={188} />
+
+        <div className=" text-center text-sand-600 text-card-headline mt-11">
+          End of The Assets
+        </div>
+        <Spacer height={110} />
       </div>
     </PageLayout>
   );
