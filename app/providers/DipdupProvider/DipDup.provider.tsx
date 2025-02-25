@@ -18,13 +18,12 @@ export const DipdupProvider: FC<DipdupProviderProps> = ({ children }) => {
   const { IS_WEB } = useAppContext();
   const { handleApolloError } = useApolloContext();
 
-  // TODO move to SipSupProvider
   /**
    * Subscribe to lvl that currently performed by EQuiteez API, to:
    *
    * 1. refetch queries, that requires update on lvl change
    */
-  const { data: dipdupLvl } = useSubscription(DIP_DUP_QUERY, {
+  useSubscription(DIP_DUP_QUERY, {
     skip: !IS_WEB,
     shouldResubscribe: true,
     onData: ({ data: { data } }) => {
