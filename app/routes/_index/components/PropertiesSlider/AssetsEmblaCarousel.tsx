@@ -10,6 +10,7 @@ import {
 } from "~/providers/EstatesProvider/estates.types";
 import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
 import { EmblaViewportRefType } from "embla-carousel-react";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 export const SLIDER_VIEW_LIMIT = 4;
 
@@ -20,7 +21,7 @@ type PropType = {
   emblaRef: EmblaViewportRefType;
 } & PropsWithChildren;
 
-const EmblaCarousel: React.FC<PropType> = (props) => {
+const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
   const {
     emblaRef,
     nextBtnDisabled,
@@ -28,6 +29,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
     childPosition = "before",
     children,
   } = props;
+  const { dodoMav } = useDexContext();
   const navigate = useNavigate();
 
   const handleSlideClick = (id: string, isLastSlide: boolean) => {
@@ -41,6 +43,9 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
           {slides.map((estate, idx) => {
+            const pricePerToken =
+              dodoMav[estate.slug]?.toNumber() ??
+              estate.assetDetails.priceDetails.price;
             return (
               <div
                 role="presentation"
@@ -84,7 +89,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                   <ThumbCardPrimary
                     imgSrc={estate.assetDetails.previewImage}
                     title={estate.name}
-                    price={estate.assetDetails.priceDetails.price}
+                    price={pricePerToken}
                     annual={
                       estate.assetDetails.priceDetails.projectedAnnualReturn
                     }
@@ -102,4 +107,4 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
   );
 };
 
-export default EmblaCarousel;
+export default AssetsEmblaCarousel;

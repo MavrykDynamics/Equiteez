@@ -1,5 +1,5 @@
 import { EmblaOptionsType } from "embla-carousel";
-import EmblaCarousel from "./EmblaCarousel";
+import AssetsEmblaCarousel from "./AssetsEmblaCarousel";
 import { ViewAll } from "./components/ViewAll";
 import { SlidesNavigation } from "./components/SlidesNavigation";
 import useEmblaCarousel from "embla-carousel-react";
@@ -34,7 +34,7 @@ export const PropertiesSlider = () => {
       <h1 className="text-white text-section-headline max-w-[1017px] mb-6">
         Newly Listed
       </h1>
-      <EmblaCarousel
+      <AssetsEmblaCarousel
         emblaRef={emblaRef}
         slides={slides}
         nextBtnDisabled={nextBtnDisabled}
@@ -54,7 +54,7 @@ export const PropertiesSlider = () => {
             nextBtnDisabled={nextBtnDisabled}
           />
         </div>
-      </EmblaCarousel>
+      </AssetsEmblaCarousel>
     </div>
   );
 };
@@ -85,7 +85,7 @@ export const PropertiesSliderSecondary = () => {
       <h1 className="text-content text-section-headline font-bold w-full">
         Trending Assets
       </h1>
-      <EmblaCarousel
+      <AssetsEmblaCarousel
         emblaRef={emblaRef}
         slides={slides}
         nextBtnDisabled={nextBtnDisabled}
@@ -101,7 +101,7 @@ export const PropertiesSliderSecondary = () => {
             colorClassName="text-content"
           />
         </div>
-      </EmblaCarousel>
+      </AssetsEmblaCarousel>
     </div>
   );
 };
