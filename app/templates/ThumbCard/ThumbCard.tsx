@@ -2,7 +2,7 @@ import { CSSProperties, FC, useMemo } from "react";
 
 import styles from "./thumbCard.module.css";
 import clsx from "clsx";
-import { EstateHeadlineTab } from "../EstateHeadlineTab";
+import { EstateHeadlineTab, HeadlineTabBadge } from "../EstateHeadlineTab";
 import BigNumber from "bignumber.js";
 import Money from "~/lib/atoms/Money";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
@@ -20,6 +20,7 @@ type ThumbCardSecondary = Omit<ThumbCardProps, "address"> & {
   progressBarPercentage?: number;
   isSecondaryMarket: boolean;
   pricePerToken?: BigNumber;
+  isFutureAsset?: boolean;
 };
 
 export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
@@ -30,6 +31,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
   pricePerToken,
   progressBarPercentage,
   APY,
+  isFutureAsset = false,
   height = "264px",
 }) => {
   const memoizedStyle = useMemo(() => ({ "--card-height": height }), [height]);
@@ -47,6 +49,11 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
         )}
       >
         <div className="flex items-center gap-x-2">
+          {isFutureAsset && (
+            <HeadlineTabBadge className="bg-[#FFA726] text-[#492C00]">
+              Coming Soon
+            </HeadlineTabBadge>
+          )}
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
         </div>
         <div className="flex flex-col items-start">
