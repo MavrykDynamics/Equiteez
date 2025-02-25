@@ -9,9 +9,11 @@ import { Container } from "~/lib/atoms/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
 import { Link } from "@remix-run/react";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 export const MarketRowBottom = () => {
   const { estatesArr } = useEstatesContext();
+  const { dodoMav } = useDexContext();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -29,16 +31,18 @@ export const MarketRowBottom = () => {
           speed={45}
         >
           {estatesArr.map((estate) => {
+            const currentPrice = dodoMav[estate.slug];
             return (
               <MarketRowBottomCard
                 key={estate.slug}
                 name={estate.name}
                 imgSrc={estate.assetDetails.previewImage}
                 to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
-                price={estate.assetDetails.priceDetails.price}
-                percentage={
-                  estate.assetDetails.priceDetails.projectedAnnualReturn
+                price={
+                  currentPrice?.toNumber() ??
+                  estate.assetDetails.priceDetails.price
                 }
+                percentage={"0.00"}
               />
             );
           })}
@@ -52,7 +56,7 @@ const MarketRowBottomCard: FC<{
   name: string;
   imgSrc: string;
   price: number;
-  percentage: number;
+  percentage: number | string;
   to: string;
 }> = ({ to, name, imgSrc, price, percentage }) => {
   return (

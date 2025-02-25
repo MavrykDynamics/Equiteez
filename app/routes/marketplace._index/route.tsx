@@ -8,6 +8,7 @@ import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters";
 import { useState } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { STATIC_ASSETS_LIST } from "~/providers/EstatesProvider/estates.const";
 
 export const meta: MetaFunction = () => {
   return [
@@ -51,12 +52,17 @@ export default function Properties() {
                   isSecondaryMarket={isSecondaryMarket}
                   APY={es.assetDetails.APY}
                   pricePerToken={pricePerToken}
+                  isFutureAsset={!STATIC_ASSETS_LIST[es.token_address]}
                 />
               </Link>
             );
           })}
         </div>
-        <Spacer height={188} />
+
+        <div className=" text-center text-sand-600 text-card-headline mt-11">
+          End of The Assets
+        </div>
+        <Spacer height={110} />
       </div>
     </PageLayout>
   );
