@@ -1,0 +1,95 @@
+import BigNumber from "bignumber.js";
+import clsx from "clsx";
+import { FC } from "react";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { getTokenAmountFromLiquidity } from "~/providers/Dexprovider/utils";
+import {
+  PrimaryEstate,
+  SecondaryEstate,
+} from "~/providers/EstatesProvider/estates.types";
+
+import styles from "../embla.module.css";
+import { Link, useNavigate } from "@remix-run/react";
+import { SLIDER_VIEW_LIMIT } from "../AssetsEmblaCarousel";
+import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
+import { Button } from "~/lib/atoms/Button";
+
+type AssetEmblaSlideProps = {
+  estate: PrimaryEstate | SecondaryEstate;
+  idx: number;
+  nextBtnDisabled: boolean;
+  assetsArrLength: number;
+};
+
+export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
+  estate,
+  idx,
+  nextBtnDisabled,
+  assetsArrLength,
+}) => {
+  const { dodoMav, dodoStorages } = useDexContext();
+  const navigate = useNavigate();
+
+  const pricePerToken =
+    dodoMav[estate.slug] ??
+    new BigNumber(estate.assetDetails.priceDetails.price);
+
+  const tokensAmount = getTokenAmountFromLiquidity(
+    dodoStorages[estate.slug],
+    pricePerToken
+  );
+
+  const handleSlideClick = (id: string, isLastSlide: boolean) => {
+    if (isLastSlide) return;
+    navigate(`/marketplace/${id}`);
+  };
+  return (
+    <div
+      role="presentation"
+      className={clsx(styles.embla__slide, "cursor-pointer")}
+      key={estate.token_address}
+      onClick={() =>
+        handleSlideClick(
+          estate.assetDetails.blockchain[0].identifier,
+          idx === assetsArrLength - 1 && assetsArrLength > SLIDER_VIEW_LIMIT
+        )
+      }
+    >
+      {nextBtnDisabled &&
+      idx === assetsArrLength - 1 &&
+      assetsArrLength > SLIDER_VIEW_LIMIT ? (
+        <div className={styles.embla__slide__number}>
+          <img
+            src={estate.assetDetails.previewImage}
+            alt="house"
+            className={styles.embla__slide__image}
+          />
+          <div
+            className={clsx(
+              styles.lastSlide,
+              "flex items-center justify-center"
+            )}
+          >
+            <div className="flex flex-col items-center gap-y-6">
+              <h4 className="text-white text-card-headline text-center">
+                Want to see more? <br />
+                Check out our marketplace
+              </h4>
+              <Link to="/marketplace">
+                <Button variant="white">Explore</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <ThumbCardPrimary
+          imgSrc={estate.assetDetails.previewImage}
+          title={estate.name}
+          price={pricePerToken.toNumber()}
+          annual={estate.assetDetails.priceDetails.projectedAnnualReturn}
+          tokensAvailable={tokensAmount.toNumber()}
+        />
+      )}
+    </div>
+  );
+};
