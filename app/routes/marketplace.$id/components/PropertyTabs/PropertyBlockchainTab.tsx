@@ -84,7 +84,7 @@ export const PropertyBlockchainTab = () => {
             <p>Asset ID</p>
             <p>
               <HashChip
-                hash={chainData.assetId}
+                hash={activeEstate.token_address}
                 className="underline font-semibold"
               />
             </p>
