@@ -69,6 +69,20 @@ export const calculateLiquidityPercentages = (
   };
 };
 
+export const getTokenAmountFromLiquidity = (
+  storage: DodoStorageType | undefined,
+  baseTokenPriceInUSDT: BigNumber
+) => {
+  if (!storage || baseTokenPriceInUSDT.isZero()) return new BigNumber(0);
+
+  const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
+  const baseBalanceInUSD = new BigNumber(storage.baseBalance).times(
+    baseTokenPriceInUSDT.div(feeDecimals)
+  );
+
+  return baseBalanceInUSD.div(baseTokenPriceInUSDT);
+};
+
 export const getDodoMavLpFee = (storage: DodoStorageType | undefined) => {
   if (!storage) return ZERO;
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);

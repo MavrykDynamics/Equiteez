@@ -348,7 +348,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {!isKyced && (
         <div className="mt-8">
-          <Alert type="info" header="Verify with Mavryk Pro to Trade">
+          <Alert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.

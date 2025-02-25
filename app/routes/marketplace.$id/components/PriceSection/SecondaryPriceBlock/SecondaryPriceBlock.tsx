@@ -17,6 +17,7 @@ import Money from "~/lib/atoms/Money";
 import {
   calculateLiquidityPercentages,
   calculateTotalLiquidityInUSD,
+  getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
 import { useAssetMetadata } from "~/lib/metadata";
 import { toTokenSlug } from "~/lib/assets";
@@ -53,6 +54,8 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     const { basePercentage, quotePercentage } = calculateLiquidityPercentages(
       dodoStorages[slug]
     );
+
+    getTokenAmountFromLiquidity(dodoStorages[slug], currentPrice);
 
     return { totalLiquidityInUSD, basePercentage, quotePercentage };
   }, [dodoMav, dodoStorages, slug]);
