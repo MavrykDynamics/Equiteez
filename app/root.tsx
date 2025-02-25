@@ -43,6 +43,7 @@ import {
 import { FC } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { MobileView } from "./providers/MobileView/MobileView";
+import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -87,24 +88,29 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
     <AppProvider>
       <MobileView isMobile={isMobile}>
         <ApolloProvider>
-          <WalletProvider>
-            <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
-              <TokensProvider
-                initialTokens={tokens}
-                initialTokensMetadata={tokensMetadata}
+          <DipdupProvider>
+            <WalletProvider>
+              <CurrencyProvider
+                fiatToTezos={fiatToTezos}
+                usdToToken={usdToToken}
               >
-                <EstatesProvider>
-                  <DexProvider>
-                    <UserProvider>
-                      <AppGlobalLoader>
-                        <PopupProvider>{children}</PopupProvider>
-                      </AppGlobalLoader>
-                    </UserProvider>
-                  </DexProvider>
-                </EstatesProvider>
-              </TokensProvider>
-            </CurrencyProvider>
-          </WalletProvider>
+                <TokensProvider
+                  initialTokens={tokens}
+                  initialTokensMetadata={tokensMetadata}
+                >
+                  <EstatesProvider>
+                    <DexProvider>
+                      <UserProvider>
+                        <AppGlobalLoader>
+                          <PopupProvider>{children}</PopupProvider>
+                        </AppGlobalLoader>
+                      </UserProvider>
+                    </DexProvider>
+                  </EstatesProvider>
+                </TokensProvider>
+              </CurrencyProvider>
+            </WalletProvider>
+          </DipdupProvider>
         </ApolloProvider>
       </MobileView>
     </AppProvider>
