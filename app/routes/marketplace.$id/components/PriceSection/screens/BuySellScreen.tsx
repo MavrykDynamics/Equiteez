@@ -40,8 +40,10 @@ import {
   calculateEstFee,
   calculateMinReceived,
   getDodoMavLpFee,
+  getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
+import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -76,6 +78,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
 
+  const baseTokenAmount = useMemo(
+    () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
+    [dodoStorages, slug, tokenPrice]
+  );
+  console.log(baseTokenAmount.toNumber(), "baseTokenAmount");
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
@@ -355,14 +362,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           </Alert>
         </div>
       )}
-      {/* {actionType === "buy" && (
+      {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) && (
         <div className="mt-8">
-          <Alert type="info" header="Low Liquidity Detected!">
+          <Alert type="warning" header="Low Liquidity Detected!">
             The liquidity for {symbol} is critically low. Transactions may
             experience high slippage or failure.
           </Alert>
         </div>
-      )} */}
+      )}
 
       <Button
         className="mt-8"
