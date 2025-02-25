@@ -86,7 +86,7 @@ export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
           imgSrc={estate.assetDetails.previewImage}
           title={estate.name}
           price={pricePerToken.toNumber()}
-          annual={estate.assetDetails.priceDetails.projectedAnnualReturn}
+          annual={"0.00"}
           tokensAvailable={tokensAmount.toNumber()}
         />
       )}

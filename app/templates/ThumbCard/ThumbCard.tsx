@@ -124,7 +124,7 @@ type PrimaryThumbCardProps = {
   imgSrc: string;
   title: string;
   price: number;
-  annual: number;
+  annual: number | string;
   tokensAvailable: number;
 };
 

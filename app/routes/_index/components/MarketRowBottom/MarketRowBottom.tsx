@@ -42,9 +42,7 @@ export const MarketRowBottom = () => {
                   currentPrice?.toNumber() ??
                   estate.assetDetails.priceDetails.price
                 }
-                percentage={
-                  estate.assetDetails.priceDetails.projectedAnnualReturn
-                }
+                percentage={"0.00"}
               />
             );
           })}
@@ -58,7 +56,7 @@ const MarketRowBottomCard: FC<{
   name: string;
   imgSrc: string;
   price: number;
-  percentage: number;
+  percentage: number | string;
   to: string;
 }> = ({ to, name, imgSrc, price, percentage }) => {
   return (
