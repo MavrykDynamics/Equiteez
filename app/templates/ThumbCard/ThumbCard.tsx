@@ -57,7 +57,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
         </div>
         <div className="flex flex-col items-start">
-          <div className="flex-1 w-full flex justify-between">
+          <div className="flex-1 w-full flex justify-between gap-2">
             <div className="flex flex-col">
               <h4
                 className={clsx("text-white text-card-headline", styles.title)}
