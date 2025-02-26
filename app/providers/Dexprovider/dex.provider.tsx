@@ -51,7 +51,6 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   }, [estateAddresses, warning]);
 
   useAsyncWithRefetch(fetchDexDataCallback, {
-    blocksDiff: 5,
     refetchQueryVariables: estateAddresses,
   });
 
