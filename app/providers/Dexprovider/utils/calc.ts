@@ -48,17 +48,19 @@ export const calculateTotalLiquidityInUSD = (
   };
 };
 
+const DEFAULT_PERCENTAGES_DATA = {
+  basePercentage: "0",
+  quotePercentage: "0",
+};
+
 export const calculateLiquidityPercentages = (
   storage: DodoStorageType | undefined
 ) => {
-  if (!storage)
-    return {
-      basePercentage: "0",
-      quotePercentage: "0",
-    };
+  if (!storage) return DEFAULT_PERCENTAGES_DATA;
   const { baseBalance, quoteBalance, totalLiquidity } =
     calculateTotalLiquidity(storage);
 
+  if (totalLiquidity.isZero()) return DEFAULT_PERCENTAGES_DATA;
   // Calculate percentages
   const basePercentage = baseBalance.div(totalLiquidity).times(100); // Base token percentage
   const quotePercentage = quoteBalance.div(totalLiquidity).times(100); // Quote token percentage

@@ -41,6 +41,8 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
       const tokenPairs = getDodoMavTokenPairs(storages);
 
+      console.log(dodoPrices, "dodoPrices");
+
       setDodoStorages(storages);
       setDodomavPrices(dodoPrices);
       setDodoTokenPair(tokenPairs);
@@ -52,6 +54,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
 
   useAsyncWithRefetch(fetchDexDataCallback, {
     refetchQueryVariables: estateAddresses,
+    blocksDiff: 100,
   });
 
   const orderBookPrices = useMemo(
