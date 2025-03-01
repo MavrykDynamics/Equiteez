@@ -13,7 +13,7 @@ import styles from "./route.module.css";
 // components
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 
-import { usePropertyByAddress } from "../marketplace.$id/hooks/use-property-by-id";
+import { useMarketByParamIdentifier } from "../marketplace.$id/hooks/use-market-by-identifier";
 import { Link } from "@remix-run/react";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import DocBg from "~/a11y/DocBg";
@@ -27,7 +27,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  const estateData = usePropertyByAddress("estateId");
+  const estateData = useMarketByParamIdentifier("estateId");
   const [isOpen, setIsOpen] = useState(false);
   const [pickedImgIdx, setPickedImgIdx] = useState(0);
 

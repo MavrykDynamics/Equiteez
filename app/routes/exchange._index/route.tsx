@@ -2,7 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { useMemo } from "react";
 import { Navigate } from "react-router-dom";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,14 +12,14 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Exchange() {
-  const { estatesArr, isLoading } = useEstatesContext();
+  const { marketsArr, isLoading } = useMarketsContext();
 
   const id = useMemo(
     () =>
-      estatesArr.length > 0
-        ? estatesArr[0].assetDetails.blockchain[0].identifier
+      marketsArr.length > 0
+        ? marketsArr[0].assetDetails.blockchain[0].identifier
         : null,
-    [estatesArr]
+    [marketsArr]
   );
   if (isLoading) {
     return <FullScreenSpinner />;

@@ -9,7 +9,7 @@ import {
 
 import { useQuery } from "@apollo/client/index";
 
-// mocked assets
+// mocked assets === markets
 import estatesMocked from "app/mocks/rwas.json";
 
 import {
@@ -27,6 +27,7 @@ import {
   getUpdatedOrderbookMarketsConfig,
 } from "./utils/markets.utils";
 import { marketsConfigQuerySchema } from "./market.schemas";
+import { mapValuesToArray } from "~/lib/utils";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -142,10 +143,17 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [pickMarketByIdentifier]
   );
 
+  // convert markets map to array (used in a lot of place, f,e, embla carousel)
+  const marketsArr = useMemo(
+    () => mapValuesToArray(marketsState.markets),
+    [marketsState.markets]
+  );
+
   const memoizedEstatesProviderValue: MarketContext = useMemo(
     () => ({
       ...marketsState,
       ...activeMarketState,
+      marketsArr,
       pickMarketByIdentifier,
       updateActiveMarketState,
       marketAddresses: dodoBaseTokenAddresses,
@@ -154,6 +162,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [
       marketsState,
       activeMarketState,
+      marketsArr,
       pickMarketByIdentifier,
       updateActiveMarketState,
       dodoBaseTokenAddresses,

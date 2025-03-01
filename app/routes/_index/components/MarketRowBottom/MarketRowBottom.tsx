@@ -7,12 +7,12 @@ import styles from "./marketRowBottom.module.css";
 import clsx from "clsx";
 import { Container } from "~/lib/atoms/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { Link } from "@remix-run/react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 export const MarketRowBottom = () => {
-  const { estatesArr } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
   const { dodoMav } = useDexContext();
   const [isHovered, setIsHovered] = useState(false);
 
@@ -30,17 +30,17 @@ export const MarketRowBottom = () => {
           direction="left"
           speed={45}
         >
-          {estatesArr.map((estate) => {
-            const currentPrice = dodoMav[estate.slug];
+          {marketsArr.map((market) => {
+            const currentPrice = dodoMav[market.slug];
             return (
               <MarketRowBottomCard
-                key={estate.slug}
-                name={estate.name}
-                imgSrc={estate.assetDetails.previewImage}
-                to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
+                key={market.slug}
+                name={market.name}
+                imgSrc={market.assetDetails.previewImage}
+                to={`/marketplace/${market.assetDetails.blockchain[0].identifier}`}
                 price={
                   currentPrice?.toNumber() ??
-                  estate.assetDetails.priceDetails.price
+                  market.assetDetails.priceDetails.price
                 }
                 percentage={"0.00"}
               />

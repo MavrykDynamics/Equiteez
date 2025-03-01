@@ -23,10 +23,7 @@ import { pickDodoContractBasedOnToken } from "~/consts/contracts";
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
-import {
-  SECONDARY_MARKET,
-  SecondaryEstate,
-} from "~/providers/MarketsProvider/market.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import {
   BUY,
   CONFIRM,
@@ -55,6 +52,7 @@ import {
 } from "~/lib/utils/calcFns";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 
 export const spippageOptions = ["0.3", "0.5", "1", "custom"];
 

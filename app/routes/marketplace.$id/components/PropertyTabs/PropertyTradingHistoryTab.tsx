@@ -18,14 +18,14 @@ import { useAppContext } from "~/providers/AppProvider/AppProvider";
 
 import OriginalApexCharts from "react-apexcharts";
 import clsx from "clsx";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { formatChartData } from "~/lib/utils/chart";
 import { CHART_MOCK_SERIES } from "~/mocks/chart";
 
 export const PropertyTradingHistoryTab = () => {
   const { IS_WEB } = useAppContext();
-  const { activeEstate } = useEstatesContext();
+  const { activeMarket } = useMarketsContext();
 
   const {
     clientModule: ChartModule,
@@ -84,14 +84,14 @@ export const PropertyTradingHistoryTab = () => {
         {
           data: formatChartData(
             // TODO change trading history
-            (activeEstate as SecondaryEstate)?.assetDetails?.tradingHistory ??
+            (activeMarket as SecondaryEstate)?.assetDetails?.tradingHistory ??
               []
           ),
         },
       ],
       options: opts,
     }),
-    [activeEstate, opts]
+    [activeMarket, opts]
   );
 
   const chartModuleProps = useMemo(

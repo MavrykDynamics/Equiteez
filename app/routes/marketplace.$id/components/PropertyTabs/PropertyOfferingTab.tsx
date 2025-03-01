@@ -9,19 +9,20 @@ import { TableItem } from "~/lib/atoms/Table/TableItem";
 import ClockIcon from "app/icons/clock.svg?react";
 
 // styles
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { formatDate } from "~/lib/utils/date";
 import Money from "~/lib/atoms/Money";
+import { Spinner } from "~/lib/atoms/Spinner";
 
 export const PropertyOfferingTab = () => {
-  const { activeEstate } = useEstatesContext();
+  const { activeMarket } = useMarketsContext();
 
-  if (!activeEstate) return <>Loading...</>;
+  if (!activeMarket) return <Spinner size={56} />;
 
   const {
     offering,
     valuation: { priorValuation, initialValuation },
-  } = activeEstate.assetDetails;
+  } = activeMarket.assetDetails;
 
   return (
     <div>

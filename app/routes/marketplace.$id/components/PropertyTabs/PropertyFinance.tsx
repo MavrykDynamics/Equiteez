@@ -9,16 +9,17 @@ import {
   ExpanderBodyContent,
   ExpanderFaceContent,
 } from "~/lib/organisms/CustomExpander/CustomExpander";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { formatDate } from "~/lib/utils/date";
 import Money from "~/lib/atoms/Money";
+import { Spinner } from "~/lib/atoms/Spinner";
 
 export const PropertyFinanceTab = () => {
-  const { activeEstate } = useEstatesContext();
+  const { activeMarket } = useMarketsContext();
 
-  if (!activeEstate) return <>Loading...</>;
+  if (!activeMarket) return <Spinner size={56} />;
   const { propertyFinancials, expectedIncome } =
-    activeEstate.assetDetails.financials;
+    activeMarket.assetDetails.financials;
 
   return (
     <div>

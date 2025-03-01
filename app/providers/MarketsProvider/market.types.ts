@@ -6,9 +6,6 @@ export type SecondaryEstate = (typeof secondaryEstate)[0] & { slug: string };
 
 export type EstateType = PrimaryEstate | SecondaryEstate;
 
-export const SECONDARY_MARKET = "Secondary Market";
-export const PRIMARY_ISSUANCE = "Primary Issuance";
-
 // NEW ***************
 
 export type DodoMavConfigType = {
@@ -36,6 +33,7 @@ export type MarketInternalStateType = {
 
 export type MarketContext = MarketInternalStateType & {
   marketAddresses: string[];
+  marketsArr: EstateType[];
   activeMarket: EstateType | null;
   isLoading: boolean;
   isActiveMarketLoading: boolean;

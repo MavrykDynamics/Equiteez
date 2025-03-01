@@ -1,12 +1,21 @@
+import { SECONDARY_MARKET } from "../market.const";
 import { EstateType } from "../market.types";
 
-export function pickEstateByIdentifier(
-  address: string | undefined,
-  estates: StringRecord<EstateType>
+export * from "./marketTokenNormalizer";
+export * from "./markets.utils";
+
+export function pickMarketByIdentifier(
+  identifier: string | undefined,
+  markets: Map<string, EstateType>
 ): EstateType | null {
   return (
-    Object.values(estates).find(
-      (es) => es.assetDetails.blockchain[0].identifier === address
+    Array.from(markets.values()).find(
+      (es) => es.assetDetails.blockchain[0].identifier === identifier
     ) ?? null
   );
 }
+
+export const detectIfAssetIsSecondaryMarket = (estate: EstateType | null) => {
+  if (estate === null) return false;
+  return estate.assetDetails.type === SECONDARY_MARKET;
+};

@@ -16,7 +16,7 @@ import {
   popupOperationError,
 } from "../templates/operationPopupData";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 // Simplified version to handle operation calls
 // TODO adjust logic based on the new requirements
@@ -28,7 +28,7 @@ export const useContractAction = <G,>(
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys } = usePopupContext();
-  const { activeEstate } = useEstatesContext();
+  const { activeMarket } = useMarketsContext();
 
   const invokeAction = useCallback(async () => {
     try {
@@ -44,7 +44,7 @@ export const useContractAction = <G,>(
       dispatch(STATUS_SUCCESS);
       showPopup(
         popupKeys.txOperation,
-        popupOperationSuccess(activeEstate?.name ?? "Nomad")
+        popupOperationSuccess(activeMarket?.name ?? "Nomad")
       );
       await sleep(2000);
 
@@ -58,7 +58,7 @@ export const useContractAction = <G,>(
     }
   }, [
     actionFn,
-    activeEstate?.name,
+    activeMarket?.name,
     args,
     dapp,
     dispatch,

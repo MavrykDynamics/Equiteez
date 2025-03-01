@@ -11,7 +11,7 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import {
   EstateType,
   SECONDARY_MARKET,
@@ -55,11 +55,11 @@ type AssetDropdownProps = {
 export const AssetDropdown: FC<AssetDropdownProps> = ({
   estate: estateData,
 }) => {
-  const { estatesArr: allEstates } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
 
   const estates = useMemo(
-    () => allEstates.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
-    [allEstates]
+    () => marketsArr.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
+    [marketsArr]
   );
 
   // states ----------------------------------------------------------

@@ -7,13 +7,14 @@ import clsx from "clsx";
 import { Button } from "~/lib/atoms/Button";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { FC, useCallback, useState } from "react";
-import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { PrimaryEstate } from "~/providers/MarketsProvider/market.types";
 import { PopupContent } from "./popups";
+import { Spinner } from "~/lib/atoms/Spinner";
 
 export const PrimaryPriceBlock = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { activeEstate } = useEstatesContext();
+  const { activeMarket, isActiveMarketLoading } = useMarketsContext();
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -23,8 +24,8 @@ export const PrimaryPriceBlock = () => {
     setIsOpen(true);
   }, []);
 
-  if (!activeEstate) return <>Loading...</>;
-  const estate = activeEstate as PrimaryEstate;
+  if (isActiveMarketLoading || !activeMarket) return <Spinner size={56} />;
+  const estate = activeMarket as PrimaryEstate;
 
   return (
     <section className="self-start bg-white">
@@ -66,6 +67,7 @@ export const PrimaryPriceBlock = () => {
         onRequestClose={handleRequestClose}
         contentPosition={"right"}
       >
+        {/*  @ts-expect-error /TODO update or replce popup when primary estate data will be availble (no data for now) */}
         <PopupContent estate={estate} orderType={"buy"} />
       </PopupWithIcon>
     </section>

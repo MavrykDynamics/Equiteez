@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { DexProviderCtxType, DodoStorageType } from "./dex.provider.types";
-import { useEstatesContext } from "../MarketsProvider/markets.provider";
+import { useMarketsContext } from "../MarketsProvider/markets.provider";
 import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import {
@@ -25,7 +25,7 @@ type MarketProps = PropsWithChildren;
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
-  const { estates, estateAddresses } = useEstatesContext();
+  const { markets, marketAddresses } = useMarketsContext();
   const { usdToTokenRates } = useCurrencyContext();
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
@@ -37,7 +37,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
 
   const fetchDexDataCallback = useCallback(async () => {
     try {
-      const storages = await getDodoMavTokenStorages(estateAddresses);
+      const storages = await getDodoMavTokenStorages(marketAddresses);
       const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
       const tokenPairs = getDodoMavTokenPairs(storages);
 
@@ -50,21 +50,20 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       const err = unknownToError(e);
       warning("Prices", err.message);
     }
-  }, [estateAddresses, warning]);
+  }, [marketAddresses, warning]);
 
   useAsyncWithRefetch(fetchDexDataCallback, {
-    refetchQueryVariables: estateAddresses,
+    refetchQueryVariables: marketAddresses,
     blocksDiff: 100,
   });
 
   const orderBookPrices = useMemo(
     () =>
-      Object.keys(estates).reduce<StringRecord<string>>((acc, esKey) => {
+      Array.from(markets.keys()).reduce<StringRecord<string>>((acc, esKey) => {
         acc[esKey] = usdToTokenRates[esKey] ?? "0";
-
         return acc;
       }, {}),
-    [estates, usdToTokenRates]
+    [markets, usdToTokenRates]
   );
 
   const memoizedDexCtx: DexProviderCtxType = useMemo(

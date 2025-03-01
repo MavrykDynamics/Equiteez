@@ -6,7 +6,7 @@ export type TabType<G = string> = {
   label: string;
   grow?: boolean;
   disabled?: boolean;
-  handleClick: (id: G) => void;
+  handleClick?: (id: G) => void;
 };
 
 export type TabVariant = "primary" | "secondary" | "tertiary";
@@ -64,7 +64,7 @@ export const Tab: FC<TabProps> = ({
   noActiveBg = false,
   variant = "primary",
 }) => {
-  const handleInternalClick = () => handleClick(id);
+  const handleInternalClick = () => handleClick?.(id);
 
   return (
     <button
