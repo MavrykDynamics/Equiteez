@@ -22,6 +22,9 @@ export const dodoMavConfigTypeSchema = z.object({
 
 export const orderbookConfigTypeSchema = z.object({
   address: z.string(),
+  rwa_token: z.object({
+    address: z.string(),
+  }),
 });
 
 export const marketsConfigQuerySchema = z.object({

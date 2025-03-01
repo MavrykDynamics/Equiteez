@@ -37,6 +37,9 @@ export const MARKETS_ADDRESSES_QUERY = gql(`
   }
   orderbook {
     address
+    rwa_token {
+      address
+    }
   }
 }
 `);

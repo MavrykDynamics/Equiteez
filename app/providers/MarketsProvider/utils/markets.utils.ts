@@ -35,6 +35,7 @@ export function getUpdatedOrderbookMarketsConfig(
   gqlData.forEach((orderbookItem) => {
     updatedOrderbookConfig.set(orderbookItem.address, {
       address: orderbookItem.address,
+      rwaTokenAddress: orderbookItem.rwa_token.address,
     });
   });
 

@@ -28,6 +28,7 @@ import {
 } from "./utils/markets.utils";
 import { marketsConfigQuerySchema } from "./market.schemas";
 import { mapValuesToArray } from "~/lib/utils";
+import { createMarketPickers, createValidTokensRecord } from "./utils";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -101,7 +102,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         // @ts-expect-error // using mocked data from json
         const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
 
-        // TODO delete fake data fter api fixes
+        // TODO delete fake data reducer after api fixes
         // const fakeAssets = mockedAssets.reduce<StringRecord<EstateType>>(
         //   (acc, asset) => {
         //     const slug = toTokenSlug(asset.token_address);
@@ -149,6 +150,16 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [marketsState.markets]
   );
 
+  const pickers = useMemo(
+    () => createMarketPickers(marketsState.config),
+    [marketsState.config]
+  );
+
+  const validBaseTokens = useMemo(
+    () => createValidTokensRecord(marketsState.config.dodoMav),
+    [marketsState.config.dodoMav]
+  );
+
   const memoizedEstatesProviderValue: MarketContext = useMemo(
     () => ({
       ...marketsState,
@@ -157,6 +168,8 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       pickMarketByIdentifier,
       updateActiveMarketState,
       marketAddresses: dodoBaseTokenAddresses,
+      pickers,
+      validBaseTokens,
       isLoading: loading || isMarketsAddressesLoading || marketsState.isLoading,
     }),
     [
@@ -167,6 +180,8 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       updateActiveMarketState,
       dodoBaseTokenAddresses,
       loading,
+      pickers,
+      validBaseTokens,
       isMarketsAddressesLoading,
     ]
   );

@@ -3,6 +3,7 @@ import { EstateType } from "../market.types";
 
 export * from "./marketTokenNormalizer";
 export * from "./markets.utils";
+export * from "./marketPickers";
 
 export function pickMarketByIdentifier(
   identifier: string | undefined,

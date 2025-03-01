@@ -18,6 +18,7 @@ export type DodoMavConfigType = {
 
 export type OrderbookConfigType = {
   address: string;
+  rwaTokenAddress: string;
 };
 
 export type MarketConfig = {
@@ -39,4 +40,11 @@ export type MarketContext = MarketInternalStateType & {
   isActiveMarketLoading: boolean;
   pickMarketByIdentifier: (slug: string) => EstateType | null;
   updateActiveMarketState: (slug: string) => void;
+  validBaseTokens: StringRecord<boolean>;
+  pickers: {
+    pickOrderbookContract: StringRecord<string>;
+    pickDodoContractBasedOnToken: StringRecord<string>;
+    pickMockBaseToken: StringRecord<string>;
+    pickMockQuoteToken: StringRecord<string>;
+  };
 };
