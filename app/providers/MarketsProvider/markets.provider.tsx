@@ -29,20 +29,14 @@ import {
 import { marketsConfigQuerySchema } from "./market.schemas";
 import { mapValuesToArray } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
+import { MARKETS_INITIAL_STATE } from "./market.const";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [marketsState, setMarketsState] = useState<MarketInternalStateType>(
-    () => ({
-      config: {
-        dodoMav: new Map(), // dodoContract -> {adddress, baseToken, quoteToken, quoteLpToken, baseLpToken}
-        orderbook: new Map(),
-      },
-      markets: new Map(),
-      isLoading: true,
-    })
+    () => MARKETS_INITIAL_STATE
   );
 
   const [activeMarketState, setActiveMarketState] = useState<

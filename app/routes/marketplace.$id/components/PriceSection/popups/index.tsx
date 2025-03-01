@@ -16,9 +16,6 @@ import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 import { Divider } from "~/lib/atoms/Divider";
 import { TabType } from "~/lib/atoms/Tab";
 
-// contract actions
-import { pickDodoContractBasedOnToken } from "~/consts/contracts";
-
 // icons
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
@@ -53,6 +50,7 @@ import {
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 export const spippageOptions = ["0.3", "0.5", "1", "custom"];
 
@@ -62,6 +60,9 @@ export const PopupContent: FC<{
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
   const { dodoMav, dodoTokenPair } = useDexContext();
+  const {
+    pickers: { pickDodoContractBasedOnToken },
+  } = useMarketsContext();
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
   const prevTabId = usePrevious(
@@ -147,6 +148,7 @@ export const PopupContent: FC<{
       selectedAssetMetadata?.decimals,
       slippagePercentage,
       tokenPrice,
+      pickDodoContractBasedOnToken,
     ]
   );
 
@@ -171,6 +173,7 @@ export const PopupContent: FC<{
       selectedAssetMetadata?.decimals,
       slippagePercentage,
       tokenPrice,
+      pickDodoContractBasedOnToken,
     ]
   );
 

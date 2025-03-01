@@ -4,12 +4,7 @@ import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 
 // icons
 import { Button } from "~/lib/atoms/Button";
-import {
-  pickDodoContractBasedOnToken,
-  pickOrderbookContract,
-  stablecoinContract,
-  VALID_TOKENS,
-} from "~/consts/contracts";
+import { stablecoinContract, VALID_TOKENS } from "~/consts/contracts";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import {
@@ -50,6 +45,7 @@ import {
   calculateEstFee,
   getDodoMavLpFee,
 } from "~/providers/Dexprovider/utils";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -68,6 +64,9 @@ const useBuySellActions = (
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { tokensMetadata } = useTokensContext();
   const { usdToTokenRates } = useCurrencyContext();
+  const {
+    pickers: { pickDodoContractBasedOnToken, pickOrderbookContract },
+  } = useMarketsContext();
 
   const buyProps = useMemo(
     () => ({
@@ -76,7 +75,15 @@ const useBuySellActions = (
       pricePerToken: price?.toNumber(),
       decimals: tokensMetadata[slug]?.decimals,
     }),
-    [tokenAddress, amount, usdToTokenRates, slug, price, tokensMetadata]
+    [
+      tokenAddress,
+      amount,
+      usdToTokenRates,
+      slug,
+      price,
+      tokensMetadata,
+      pickOrderbookContract,
+    ]
   );
 
   const sellProps = useMemo(
@@ -87,7 +94,7 @@ const useBuySellActions = (
       pricePerToken: price?.toNumber(),
       decimals: tokensMetadata[slug]?.decimals,
     }),
-    [amount, price, slug, tokenAddress, tokensMetadata]
+    [amount, price, slug, tokenAddress, tokensMetadata, pickOrderbookContract]
   );
 
   const { invokeAction: handleLimitBuy, status: limitStatus1 } =
@@ -106,7 +113,13 @@ const useBuySellActions = (
       ),
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [tokenAddress, amount, tokenPrice, selectedAssetMetadata?.decimals]
+    [
+      tokenAddress,
+      amount,
+      tokenPrice,
+      selectedAssetMetadata?.decimals,
+      pickDodoContractBasedOnToken,
+    ]
   );
 
   const marketSellProps = useMemo(
@@ -125,6 +138,7 @@ const useBuySellActions = (
       tokenPrice,
       selectedAssetMetadata?.decimals,
       quoteAssetmetadata?.decimals,
+      pickDodoContractBasedOnToken,
     ]
   );
 
