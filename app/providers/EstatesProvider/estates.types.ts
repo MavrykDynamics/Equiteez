@@ -20,3 +20,28 @@ export type EstatesContext = {
   pickEstateByIdentifier: (address: string) => EstateType | null;
   setActiveEstate: (address: string) => void;
 };
+
+// NEW ***************
+
+export type DodoMavConfigType = {
+  address: string;
+  baseTokenAddress: string;
+  quoteTokenAddress: string;
+  quoteLpTokenAddress: string;
+  baseLpTokenAddress: string;
+};
+
+export type OrderbookConfigType = {
+  address: string;
+};
+
+export type MarketConfig = {
+  dodoMav: Map<string, DodoMavConfigType>;
+  orderbook: Map<string, OrderbookConfigType>;
+};
+
+export type MarketInternalStateType = {
+  config: MarketConfig;
+  markets: Map<string, EstateType>;
+  isLoading: boolean;
+};
