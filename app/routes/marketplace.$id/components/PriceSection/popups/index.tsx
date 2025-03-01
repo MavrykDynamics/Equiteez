@@ -26,7 +26,7 @@ import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 import {
   SECONDARY_MARKET,
   SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 import {
   BUY,
   CONFIRM,

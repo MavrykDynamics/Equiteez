@@ -9,7 +9,7 @@ import {
   ExpanderBodyContent,
   ExpanderFaceContent,
 } from "~/lib/organisms/CustomExpander/CustomExpander";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import { formatDate } from "~/lib/utils/date";
 import Money from "~/lib/atoms/Money";
 

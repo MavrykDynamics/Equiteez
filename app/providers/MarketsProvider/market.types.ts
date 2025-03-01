@@ -9,18 +9,6 @@ export type EstateType = PrimaryEstate | SecondaryEstate;
 export const SECONDARY_MARKET = "Secondary Market";
 export const PRIMARY_ISSUANCE = "Primary Issuance";
 
-export type EstatesContext = {
-  estates: StringRecord<EstateType>;
-  estatesArr: EstateType[];
-  estateAddresses: string[];
-  activeEstate: EstateType | null;
-  isActiveEstateSecondaryMarket: boolean;
-  isLoading: boolean;
-  isActiveEstateLoading: boolean;
-  pickEstateByIdentifier: (address: string) => EstateType | null;
-  setActiveEstate: (address: string) => void;
-};
-
 // NEW ***************
 
 export type DodoMavConfigType = {
@@ -44,4 +32,13 @@ export type MarketInternalStateType = {
   config: MarketConfig;
   markets: Map<string, EstateType>;
   isLoading: boolean;
+};
+
+export type MarketContext = MarketInternalStateType & {
+  marketAddresses: string[];
+  activeMarket: EstateType | null;
+  isLoading: boolean;
+  isActiveMarketLoading: boolean;
+  pickMarketByIdentifier: (slug: string) => EstateType | null;
+  updateActiveMarketState: (slug: string) => void;
 };

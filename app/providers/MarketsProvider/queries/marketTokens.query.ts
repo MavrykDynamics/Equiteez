@@ -1,7 +1,7 @@
 import { gql } from "~/utils/__generated__";
 
-export const MARKET_TOKENS__DATA_QUERY =
-  gql(`query MarketTokens($addresses: [String!]) {
+export const DODO_MAV_ASSET_METADATA_QUERY =
+  gql(`query dodoMAvAssetMetadata($addresses: [String!]) {
     token(where: {address: {_in: $addresses}}) {
       address
       token_id
@@ -15,7 +15,7 @@ export const MARKET_TOKENS__DATA_QUERY =
 // NEW ************************************************************
 
 export const MARKETS_ADDRESSES_QUERY = gql(`
-    query marketAddressesQuery {
+    query marketAddresses {
   dodo_mav {
     address
     base_token {

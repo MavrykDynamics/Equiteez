@@ -1,10 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
 import { FC, useMemo } from "react";
 
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import { AssetDetailsMapBlock } from "./components/AssetDetailsMapBlock";
 import { DefaultAssetDetailsTemplate } from "~/templates/AssetTemplates/AssetTemplates";
-import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 import { Navigate } from "@remix-run/react";
 import { pickTemplateBasedOnAssetType } from "~/templates/AssetTemplates";
 import {

@@ -1,5 +1,5 @@
 import { extractNumber } from "~/lib/utils/numbers";
-import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 import {
   MarketTokenAddressesQuery,
   MarketTokensQuery,
@@ -28,7 +28,7 @@ export const marketTokenNormalizer = (
   data: MarketTokensQuery["token"],
   estates: EstateType[]
 ) => {
-  const normalizedTokens = data.reduce<StringRecord<EstateType>>(
+  const normalizedTokens = data.reduce<Map<string, EstateType>>(
     (acc, token) => {
       const mockedPart = estates.find(
         (es) => es.token_address === token.address
@@ -67,7 +67,7 @@ export const marketTokenNormalizer = (
       // Asset slug used accross entire app to get specific data
       const slug = token.address.concat(`_${token.token_id}`);
 
-      acc[slug] = {
+      acc.set(slug, {
         slug,
         token_address: token.address,
         name: token.token_metadata.name,
@@ -354,11 +354,11 @@ export const marketTokenNormalizer = (
             ],
           },
         },
-      };
+      });
 
       return acc;
     },
-    {}
+    new Map()
   );
 
   return normalizedTokens;

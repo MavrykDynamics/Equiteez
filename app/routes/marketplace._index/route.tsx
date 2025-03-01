@@ -2,13 +2,13 @@ import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import { SECONDARY_MARKET } from "~/providers/EstatesProvider/estates.types";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters";
 import { useState } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { STATIC_ASSETS_LIST } from "~/providers/EstatesProvider/estates.const";
+import { STATIC_ASSETS_LIST } from "~/providers/MarketsProvider/market.const";
 
 export const meta: MetaFunction = () => {
   return [

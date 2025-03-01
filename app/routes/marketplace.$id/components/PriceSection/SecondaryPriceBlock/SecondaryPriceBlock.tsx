@@ -7,7 +7,7 @@ import { Table } from "~/lib/atoms/Table/Table";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 
 //consts & types
-import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";

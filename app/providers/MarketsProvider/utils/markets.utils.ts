@@ -1,4 +1,4 @@
-import { MarketConfig } from "../estates.types";
+import { MarketConfig } from "../market.types";
 import {
   GQL_DodoMavConfigType,
   GQL_OrderbookConfigType,

@@ -1,27 +1,27 @@
-import { Table } from '~/lib/atoms/Table/Table';
+import { Table } from "~/lib/atoms/Table/Table";
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
 
 // icons
-import ExpandIcon from 'app/icons/expand.svg?react';
-import SettingsIcon from 'app/icons/settings.svg?react';
-import { useEffect, useMemo } from 'react';
-import { ApexOptions } from 'apexcharts';
+import ExpandIcon from "app/icons/expand.svg?react";
+import SettingsIcon from "app/icons/settings.svg?react";
+import { useEffect, useMemo } from "react";
+import { ApexOptions } from "apexcharts";
 
-import { LoadableComponent } from '~/templates/CustomSuspense';
-import { useClientLibData } from '~/lib/ui/use-client-lib';
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
+import { LoadableComponent } from "~/templates/CustomSuspense";
+import { useClientLibData } from "~/lib/ui/use-client-lib";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
 
-import OriginalApexCharts from 'react-apexcharts';
-import clsx from 'clsx';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
-import { formatChartData } from '~/lib/utils/chart';
-import { CHART_MOCK_SERIES } from '~/mocks/chart';
+import OriginalApexCharts from "react-apexcharts";
+import clsx from "clsx";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+import { formatChartData } from "~/lib/utils/chart";
+import { CHART_MOCK_SERIES } from "~/mocks/chart";
 
 export const PropertyTradingHistoryTab = () => {
   const { IS_WEB } = useAppContext();
@@ -36,10 +36,10 @@ export const PropertyTradingHistoryTab = () => {
 
   useEffect(() => {
     if (IS_WEB) {
-      import('react-apexcharts')
+      import("react-apexcharts")
         .then((module) => setClientModule(() => module.default))
         .catch((error) => {
-          console.error('Error loading module:', error);
+          console.error("Error loading module:", error);
           setClientModuleError(error);
         });
     }
@@ -48,7 +48,7 @@ export const PropertyTradingHistoryTab = () => {
   const opts: ApexOptions = useMemo(
     () => ({
       chart: {
-        type: 'candlestick',
+        type: "candlestick",
         height: 400,
         zoom: {
           enabled: false,
@@ -58,10 +58,10 @@ export const PropertyTradingHistoryTab = () => {
         },
       },
       title: {
-        align: 'left',
+        align: "left",
       },
       xaxis: {
-        type: 'datetime',
+        type: "datetime",
       },
       yaxis: {
         tooltip: {
@@ -98,7 +98,7 @@ export const PropertyTradingHistoryTab = () => {
     () => ({
       options: state.options,
       series: CHART_MOCK_SERIES,
-      type: 'candlestick',
+      type: "candlestick",
       height: 565,
     }),
     [state.options]
@@ -156,7 +156,7 @@ export const PropertyTradingHistoryTab = () => {
 
       <div
         className={clsx(
-          loading && 'flex items-center justify-center h-[565px]'
+          loading && "flex items-center justify-center h-[565px]"
         )}
       >
         <LoadableComponent

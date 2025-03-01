@@ -23,7 +23,7 @@ import styles from "./propertyId.module.css";
 import { homeFAQ } from "../_index/index.const";
 import { PriceSection } from "./components/PriceSection/PriceSection";
 import PropertyTabs from "./components/PropertyTabs/PropertyTabs";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import clsx from "clsx";

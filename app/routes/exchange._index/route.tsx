@@ -2,7 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { useMemo } from "react";
 import { Navigate } from "react-router-dom";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 
 export const meta: MetaFunction = () => {
   return [

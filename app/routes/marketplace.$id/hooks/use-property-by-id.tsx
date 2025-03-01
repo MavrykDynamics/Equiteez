@@ -1,8 +1,8 @@
 import { useMatches } from "@remix-run/react";
 
 import { useEffect, useMemo } from "react";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import { pickEstateByIdentifier } from "~/providers/EstatesProvider/utils";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { pickEstateByIdentifier } from "~/providers/MarketsProvider/utils";
 
 export const usePropertyByAddress = (paramId = "id") => {
   const { estates, setActiveEstate } = useEstatesContext();

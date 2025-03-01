@@ -4,7 +4,7 @@ import { ViewAll } from "./components/ViewAll";
 import { SlidesNavigation } from "./components/SlidesNavigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import { useMemo } from "react";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };

@@ -1,22 +1,22 @@
 /* eslint-disable no-useless-catch */
-import { useCallback } from 'react';
+import { useCallback } from "react";
 import {
   STATUS_ERROR,
   STATUS_IDLE,
   STATUS_PENDING,
   STATUS_SUCCESS,
   useStatusFlag,
-} from '~/lib/ui/use-status-flag';
-import { sleep } from '~/lib/utils/sleep';
-import { usePopupContext } from '~/providers/PopupProvider/popup.provider';
+} from "~/lib/ui/use-status-flag";
+import { sleep } from "~/lib/utils/sleep";
+import { usePopupContext } from "~/providers/PopupProvider/popup.provider";
 
 // templates
 import {
   popupOperationSuccess,
   popupOperationError,
-} from '../templates/operationPopupData';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+} from "../templates/operationPopupData";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 
 // Simplified version to handle operation calls
 // TODO adjust logic based on the new requirements
@@ -44,7 +44,7 @@ export const useContractAction = <G,>(
       dispatch(STATUS_SUCCESS);
       showPopup(
         popupKeys.txOperation,
-        popupOperationSuccess(activeEstate?.name ?? 'Nomad')
+        popupOperationSuccess(activeEstate?.name ?? "Nomad")
       );
       await sleep(2000);
 

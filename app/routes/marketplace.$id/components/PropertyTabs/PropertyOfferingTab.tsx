@@ -9,7 +9,7 @@ import { TableItem } from "~/lib/atoms/Table/TableItem";
 import ClockIcon from "app/icons/clock.svg?react";
 
 // styles
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import { formatDate } from "~/lib/utils/date";
 import Money from "~/lib/atoms/Money";
 

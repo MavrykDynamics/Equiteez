@@ -19,7 +19,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
-import { EstatesProvider } from "./providers/EstatesProvider/estates.provider";
+import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
 import { AppGlobalLoader } from "./providers/AppGlobalLoader";
@@ -98,7 +98,7 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
                   initialTokens={tokens}
                   initialTokensMetadata={tokensMetadata}
                 >
-                  <EstatesProvider>
+                  <MarketsProvider>
                     <DexProvider>
                       <UserProvider>
                         <AppGlobalLoader>
@@ -106,7 +106,7 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
                         </AppGlobalLoader>
                       </UserProvider>
                     </DexProvider>
-                  </EstatesProvider>
+                  </MarketsProvider>
                 </TokensProvider>
               </CurrencyProvider>
             </WalletProvider>

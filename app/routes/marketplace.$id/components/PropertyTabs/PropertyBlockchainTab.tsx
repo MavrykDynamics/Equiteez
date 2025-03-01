@@ -3,7 +3,7 @@ import { HashChip } from "~/lib/molecules/HashChip";
 import { Table } from "~/lib/atoms/Table/Table";
 import { TableHeader } from "~/lib/atoms/Table/TableHeader";
 import { TableItem } from "~/lib/atoms/Table/TableItem";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import {
   ClickableExpanderArea,
   CustomExpander,

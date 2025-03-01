@@ -7,8 +7,8 @@ import clsx from "clsx";
 import { Button } from "~/lib/atoms/Button";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { FC, useCallback, useState } from "react";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import { PrimaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
+import { PrimaryEstate } from "~/providers/MarketsProvider/market.types";
 import { PopupContent } from "./popups";
 
 export const PrimaryPriceBlock = () => {

@@ -6,7 +6,7 @@ import { getTokenAmountFromLiquidity } from "~/providers/Dexprovider/utils";
 import {
   PrimaryEstate,
   SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 
 import styles from "../embla.module.css";
 import { Link, useNavigate } from "@remix-run/react";

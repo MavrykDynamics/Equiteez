@@ -24,7 +24,7 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useMemo } from "react";
 import Money from "~/lib/atoms/Money";
 import { Navigate } from "@remix-run/react";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 
 export const meta: MetaFunction = () => {
   return [

@@ -1,11 +1,11 @@
 import { Link } from "@remix-run/react";
 import { useMemo } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import {
   EstateType,
   SECONDARY_MARKET,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 
 function getThreeUniqueElements(items: EstateType[]) {

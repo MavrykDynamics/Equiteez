@@ -11,11 +11,11 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import {
   EstateType,
   SECONDARY_MARKET,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 
 // icons
 import StarIcon from "app/icons/star.svg?react";

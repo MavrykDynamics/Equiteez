@@ -1,4 +1,4 @@
-import { EstateType } from "../estates.types";
+import { EstateType } from "../market.types";
 
 export function pickEstateByIdentifier(
   address: string | undefined,

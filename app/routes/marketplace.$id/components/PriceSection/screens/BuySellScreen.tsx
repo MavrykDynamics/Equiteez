@@ -25,7 +25,7 @@ import {
 import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { stablecoinContract } from "~/consts/contracts";
-import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInput } from "~/templates/BalanceInput";

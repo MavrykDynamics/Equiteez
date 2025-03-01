@@ -4,7 +4,7 @@ import styles from "./embla.module.css";
 import {
   PrimaryEstate,
   SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 import { EmblaViewportRefType } from "embla-carousel-react";
 import { AssetEmblaSlide } from "./components/AssetEmblaSlide";
 

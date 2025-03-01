@@ -7,7 +7,7 @@ import styles from "./marketRowBottom.module.css";
 import clsx from "clsx";
 import { Container } from "~/lib/atoms/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useEstatesContext } from "~/providers/MarketsProvider/markets.provider";
 import { Link } from "@remix-run/react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 

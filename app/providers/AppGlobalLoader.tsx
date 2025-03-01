@@ -2,7 +2,7 @@ import { FC } from "react";
 import { useWalletContext } from "./WalletProvider/wallet.provider";
 import { Spinner } from "~/lib/atoms/Spinner/Spinner";
 import { useTokensContext } from "./TokensProvider/tokens.provider";
-import { useEstatesContext } from "./EstatesProvider/estates.provider";
+import { useEstatesContext } from "./MarketsProvider/markets.provider";
 
 export const AppGlobalLoader: FC<PropsWithChildren> = ({ children }) => {
   const { isLoading } = useWalletContext();

@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { DexProviderCtxType, DodoStorageType } from "./dex.provider.types";
-import { useEstatesContext } from "../EstatesProvider/estates.provider";
+import { useEstatesContext } from "../MarketsProvider/markets.provider";
 import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import {
