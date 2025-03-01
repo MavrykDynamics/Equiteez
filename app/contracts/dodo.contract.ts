@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-catch */
 import { TezosToolkit } from "@mavrykdynamics/taquito";
-import { DodoContractType, stablecoinContract } from "~/consts/contracts";
 
 import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
@@ -8,7 +7,7 @@ import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
 type DefaultContractProps = {
   tezos: TezosToolkit;
-  dodoContractAddress: DodoContractType;
+  dodoContractAddress: string;
   decimals: number;
 };
 
@@ -29,18 +28,20 @@ export async function buyBaseToken({
   tokensAmount,
   minMaxQuote,
   decimals,
-}: Omit<BuySellBaseToken, "mockQuoteLpToken">) {
+  quoteTokenAddress,
+  // quoteTokenAddress usually usdt
+}: Omit<BuySellBaseToken, "mockQuoteLpToken"> & { quoteTokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const stableCoinInstance = await tezos.wallet.at(stablecoinContract);
+    const quoteTokenInstance = await tezos.wallet.at(quoteTokenAddress);
 
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
 
-    const open_ops = stableCoinInstance.methodsObject["update_operators"]([
+    const open_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -55,7 +56,7 @@ export async function buyBaseToken({
       minMaxQuote: parsedMinMaxQuote,
     }).toTransferParams();
 
-    const close_ops = stableCoinInstance.methodsObject["update_operators"]([
+    const close_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -205,15 +206,16 @@ export async function depositQuoteToken({
   dodoContractAddress, // only dodo
   tokensAmount,
   decimals,
-}: DepositActionProps) {
+  quoteTokenAddress,
+}: DepositActionProps & { quoteTokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const rwaTokenInstance = await tezos.wallet.at(stablecoinContract);
+    const quoteTokenInstance = await tezos.wallet.at(quoteTokenAddress);
 
-    const open_ops = rwaTokenInstance.methodsObject["update_operators"]([
+    const open_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -227,7 +229,7 @@ export async function depositQuoteToken({
       tokensToAtoms(tokensAmount, decimals).toNumber() // stable coin
     ).toTransferParams();
 
-    const close_ops = rwaTokenInstance.methodsObject["update_operators"]([
+    const close_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,

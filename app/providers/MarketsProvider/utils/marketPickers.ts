@@ -23,6 +23,13 @@ export const createMarketPickers = (
     return acc;
   }, {});
 
+  const pickDodoContractQuoteToken = Array.from(dodoMav.values()).reduce<
+    StringRecord<string>
+  >((acc, curr) => {
+    acc[curr.baseTokenAddress] = curr.quoteTokenAddress;
+    return acc;
+  }, {});
+
   const pickMockBaseToken = Array.from(dodoMav.values()).reduce<
     StringRecord<string>
   >((acc, curr) => {
@@ -42,6 +49,7 @@ export const createMarketPickers = (
     pickDodoContractBasedOnToken,
     pickMockBaseToken,
     pickMockQuoteToken,
+    pickDodoContractQuoteToken,
   };
 };
 

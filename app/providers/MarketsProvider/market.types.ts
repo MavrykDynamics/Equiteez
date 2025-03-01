@@ -46,5 +46,6 @@ export type MarketContext = MarketInternalStateType & {
     pickDodoContractBasedOnToken: StringRecord<string>;
     pickMockBaseToken: StringRecord<string>;
     pickMockQuoteToken: StringRecord<string>;
+    pickDodoContractQuoteToken: StringRecord<string>;
   };
 };

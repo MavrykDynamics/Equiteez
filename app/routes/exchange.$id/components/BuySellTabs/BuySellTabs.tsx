@@ -65,7 +65,11 @@ const useBuySellActions = (
   const { tokensMetadata } = useTokensContext();
   const { usdToTokenRates } = useCurrencyContext();
   const {
-    pickers: { pickDodoContractBasedOnToken, pickOrderbookContract },
+    pickers: {
+      pickDodoContractBasedOnToken,
+      pickOrderbookContract,
+      pickDodoContractQuoteToken,
+    },
   } = useMarketsContext();
 
   const buyProps = useMemo(
@@ -106,6 +110,7 @@ const useBuySellActions = (
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       tokensAmount: amount?.toNumber(),
       minMaxQuote: caclMinMaxQuoteBuying(
         amount?.div(tokenPrice).toNumber(),
@@ -119,6 +124,7 @@ const useBuySellActions = (
       tokenPrice,
       selectedAssetMetadata?.decimals,
       pickDodoContractBasedOnToken,
+      pickDodoContractQuoteToken,
     ]
   );
 

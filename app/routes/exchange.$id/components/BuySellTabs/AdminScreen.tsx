@@ -14,7 +14,7 @@ import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider"
 
 const useAdminAction = (amount: number, tokenAddress: string) => {
   const {
-    pickers: { pickDodoContractBasedOnToken },
+    pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
   } = useMarketsContext();
   const { tokensMetadata } = useTokensContext();
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
@@ -26,11 +26,18 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
   const depositProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       rwaTokenAddress: tokenAddress,
       tokensAmount: amount,
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [tokenAddress, amount, selectedAssetMetadata, pickDodoContractBasedOnToken]
+    [
+      tokenAddress,
+      amount,
+      selectedAssetMetadata,
+      pickDodoContractBasedOnToken,
+      pickDodoContractQuoteToken,
+    ]
   );
 
   const { invokeAction: handleBaseTokenDeposit, status: depositBaseStatus } =
@@ -45,7 +52,12 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
       tokensAmount: amount,
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, selectedAssetMetadata]
+    [
+      pickDodoContractBasedOnToken,
+      tokenAddress,
+      amount,
+      selectedAssetMetadata?.decimals,
+    ]
   );
 
   const { invokeAction: handleBaseTokenWithdraw, status: withdrawBaseStatus } =

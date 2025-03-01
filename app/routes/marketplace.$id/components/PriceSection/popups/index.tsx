@@ -61,7 +61,7 @@ export const PopupContent: FC<{
 }> = ({ estate, orderType, setOrderType }) => {
   const { dodoMav, dodoTokenPair } = useDexContext();
   const {
-    pickers: { pickDodoContractBasedOnToken },
+    pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
   } = useMarketsContext();
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
@@ -135,6 +135,7 @@ export const PopupContent: FC<{
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
+      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.div(tokenPrice).toNumber(),
       minMaxQuote: caclMinMaxQuoteBuying(
         amountB?.div(tokenPrice).toNumber(),
@@ -149,6 +150,7 @@ export const PopupContent: FC<{
       slippagePercentage,
       tokenPrice,
       pickDodoContractBasedOnToken,
+      pickDodoContractQuoteToken,
     ]
   );
 
