@@ -1,6 +1,5 @@
 import { api } from "~/lib/utils/api";
 import { DodoStorageType, dodoStorageTypeSchema } from "../dex.provider.types";
-import { pickDodoContractBasedOnToken } from "~/consts/contracts";
 import { toTokenSlug } from "~/lib/assets";
 import { getPMMTokenPrice } from "./price";
 import BigNumber from "bignumber.js";
@@ -19,7 +18,10 @@ export const getContractStorageInfo = async (address: string) => {
   }
 };
 
-export const getDodoMavTokenStorages = async (addresses: string[]) => {
+export const getDodoMavTokenStorages = async (
+  addresses: string[],
+  pickDodoContractBasedOnToken: StringRecord<string>
+) => {
   const promises = addresses.map((address) =>
     getContractStorageInfo(pickDodoContractBasedOnToken[address])
   );

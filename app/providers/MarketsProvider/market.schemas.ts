@@ -1,23 +1,16 @@
 import { z } from "zod";
 
+const marketTokenSchema = z.object({
+  address: z.string(),
+  token_id: z.number(),
+});
+
 export const dodoMavConfigTypeSchema = z.object({
   address: z.string(),
-  base_token: z.object({
-    token_id: z.string(),
-    address: z.string(),
-  }),
-  quote_token: z.object({
-    token_id: z.string(),
-    address: z.string(),
-  }),
-  quote_lp_token: z.object({
-    address: z.string(),
-    token_id: z.string(),
-  }),
-  base_lp_token: z.object({
-    address: z.string(),
-    token_id: z.string(),
-  }),
+  base_token: marketTokenSchema,
+  quote_token: marketTokenSchema,
+  quote_lp_token: marketTokenSchema,
+  base_lp_token: marketTokenSchema,
 });
 
 export const orderbookConfigTypeSchema = z.object({

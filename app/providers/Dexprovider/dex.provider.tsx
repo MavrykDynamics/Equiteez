@@ -25,7 +25,12 @@ type MarketProps = PropsWithChildren;
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
-  const { markets, marketAddresses } = useMarketsContext();
+  const {
+    markets,
+    marketAddresses,
+    pickers: { pickDodoContractBasedOnToken },
+    isLoading,
+  } = useMarketsContext();
   const { usdToTokenRates } = useCurrencyContext();
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
@@ -37,20 +42,25 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
 
   const fetchDexDataCallback = useCallback(async () => {
     try {
-      const storages = await getDodoMavTokenStorages(marketAddresses);
-      const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
-      const tokenPairs = getDodoMavTokenPairs(storages);
+      if (!isLoading) {
+        const storages = await getDodoMavTokenStorages(
+          marketAddresses,
+          pickDodoContractBasedOnToken
+        );
+        const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
+        const tokenPairs = getDodoMavTokenPairs(storages);
 
-      console.log(dodoPrices, "dodoPrices");
+        console.log(dodoPrices, "dodoPrices");
 
-      setDodoStorages(storages);
-      setDodomavPrices(dodoPrices);
-      setDodoTokenPair(tokenPairs);
+        setDodoStorages(storages);
+        setDodomavPrices(dodoPrices);
+        setDodoTokenPair(tokenPairs);
+      }
     } catch (e) {
       const err = unknownToError(e);
       warning("Prices", err.message);
     }
-  }, [marketAddresses, warning]);
+  }, [marketAddresses, pickDodoContractBasedOnToken, warning, isLoading]);
 
   useAsyncWithRefetch(fetchDexDataCallback, {
     refetchQueryVariables: marketAddresses,

@@ -39,6 +39,8 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     () => MARKETS_INITIAL_STATE
   );
 
+  console.log(marketsState, "marketsState");
+
   const [activeMarketState, setActiveMarketState] = useState<
     Pick<MarketContext, "activeMarket" | "isActiveMarketLoading">
   >(() => ({
@@ -65,7 +67,11 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
 
           setMarketsState((prev) => ({
             ...prev,
-            config: { dodoMav: dodoConfig, orderbook: orderbookConfig },
+            config: {
+              ...prev.config,
+              dodoMav: dodoConfig,
+              orderbook: orderbookConfig,
+            },
           }));
         } catch (e) {
           console.log(e, "MARKETS_ADDRESSES_QUERY from catch");
@@ -79,7 +85,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const dodoBaseTokenAddresses = useMemo(
     () =>
       Array.from(marketsState.config.dodoMav.values()).map(
-        (entry) => entry.address
+        (entry) => entry.baseTokenAddress
       ),
     [marketsState.config.dodoMav]
   );
@@ -110,7 +116,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
           ...prev,
           markets: parsedMarkets,
           // estates: { ...parsedMarkets, ...fakeAssets },
-          areLoading: false,
+          isLoading: false,
         }));
       } catch (e) {
         console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
