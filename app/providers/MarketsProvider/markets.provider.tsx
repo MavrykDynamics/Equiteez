@@ -39,8 +39,6 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     () => MARKETS_INITIAL_STATE
   );
 
-  console.log(marketsState, "marketsState");
-
   const [activeMarketState, setActiveMarketState] = useState<
     Pick<MarketContext, "activeMarket" | "isActiveMarketLoading">
   >(() => ({

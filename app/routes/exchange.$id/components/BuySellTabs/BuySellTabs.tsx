@@ -4,7 +4,7 @@ import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 
 // icons
 import { Button } from "~/lib/atoms/Button";
-import { stablecoinContract, VALID_TOKENS } from "~/consts/contracts";
+import { stablecoinContract } from "~/consts/contracts";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import {
@@ -179,6 +179,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const { isAdmin, userTokensBalances } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
   const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
+  const { validBaseTokens } = useMarketsContext();
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
@@ -509,7 +510,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         placeholder="0.00"
                         style={{ padding: 0 }}
                         className="w-full bg-transparent focus:outline-none text-right font-semibold border-none"
-                        disabled={!isLimitType || !VALID_TOKENS[tokenAddress]}
+                        disabled={
+                          !isLimitType || !validBaseTokens[tokenAddress]
+                        }
                       ></AssetField>
                       <span className="font-semibold">USDT</span>
                     </div>
@@ -529,7 +532,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         ref={inputAmountRef}
                         name="amount"
                         type="text"
-                        disabled={!VALID_TOKENS[tokenAddress]}
+                        disabled={!validBaseTokens[tokenAddress]}
                         min={0}
                         max={9999999999999}
                         assetDecimals={selectedAssetMetadata?.decimals ?? 6}
@@ -549,7 +552,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                 <div
                   className={clsx(
                     "flex flex-col w-full gap-1",
-                    !VALID_TOKENS[tokenAddress] && "pointer-events-none"
+                    !validBaseTokens[tokenAddress] && "pointer-events-none"
                   )}
                 >
                   <ESnakeblock
@@ -590,7 +593,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                 )}
               </div>
 
-              {VALID_TOKENS[tokenAddress] && (
+              {validBaseTokens[tokenAddress] && (
                 <div className="flex flex-col w-full gap-1">
                   <div className="flex justify-between w-full">
                     <span className="text-caption-regular">Max Buy</span>
@@ -613,7 +616,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
               )}
 
               <div className="flex w-full">
-                {!VALID_TOKENS[tokenAddress] ? (
+                {!validBaseTokens[tokenAddress] ? (
                   <Button className="w-full" disabled>
                     Coming Soon
                   </Button>
