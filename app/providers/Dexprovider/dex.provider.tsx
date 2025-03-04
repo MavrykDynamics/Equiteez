@@ -18,6 +18,8 @@ import {
 import { unknownToError } from "~/errors/error";
 import BigNumber from "bignumber.js";
 import { useAsyncWithRefetch } from "../ApolloProvider/hooks/useAsyncWithRefetch";
+import { useQueryWithRefetch } from "../ApolloProvider/hooks/useQueryWithRefetch";
+import { DEX_STORAGE_QUERY } from "./queries/storage.query";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
@@ -25,12 +27,7 @@ type MarketProps = PropsWithChildren;
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
-  const {
-    markets,
-    marketAddresses,
-    pickers: { pickDodoContractBasedOnToken },
-    isLoading,
-  } = useMarketsContext();
+  const { markets, marketAddresses } = useMarketsContext();
   const { usdToTokenRates } = useCurrencyContext();
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
@@ -40,32 +37,34 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
-  const fetchDexDataCallback = useCallback(async () => {
-    try {
-      if (!isLoading) {
-        const storages = await getDodoMavTokenStorages(
-          marketAddresses,
-          pickDodoContractBasedOnToken
-        );
-        const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
-        const tokenPairs = getDodoMavTokenPairs(storages);
+  useQueryWithRefetch(
+    DEX_STORAGE_QUERY,
+    {
+      // query meta by base tokens from dodo_mav
+      // TODO use dynamic addresses to filetr query
+      // variables: { addresses: marketAddresses },
+      skip: marketAddresses.length === 0,
+      onCompleted: (data) => {
+        try {
+          console.log("Query in usage ! -------------");
 
-        console.log(dodoPrices, "dodoPrices");
+          const storages = getDodoMavTokenStorages(data);
 
-        setDodoStorages(storages);
-        setDodomavPrices(dodoPrices);
-        setDodoTokenPair(tokenPairs);
-      }
-    } catch (e) {
-      const err = unknownToError(e);
-      warning("Prices", err.message);
-    }
-  }, [marketAddresses, pickDodoContractBasedOnToken, warning, isLoading]);
+          const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
+          const tokenPairs = getDodoMavTokenPairs(storages);
 
-  useAsyncWithRefetch(fetchDexDataCallback, {
-    refetchQueryVariables: marketAddresses,
-    blocksDiff: 100,
-  });
+          setDodoStorages(storages);
+          setDodomavPrices(dodoPrices);
+          setDodoTokenPair(tokenPairs);
+        } catch (e) {
+          console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
+          warning("Prices", e.message);
+        }
+      },
+      onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
+    },
+    { blocksDiff: 1 }
+  );
 
   const orderBookPrices = useMemo(
     () =>

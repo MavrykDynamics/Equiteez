@@ -77,6 +77,7 @@ export const PopupContent: FC<{
 
   // metadata for selected asset
   const selectedAssetMetadata = useAssetMetadata(slug);
+
   const qouteAssetMetadata = useAssetMetadata(dodoTokenPair[slug]);
 
   const handleTabClick = useCallback(
@@ -166,12 +167,12 @@ export const PopupContent: FC<{
         slippagePercentage
       ),
       decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: qouteAssetMetadata.decimals,
+      quoteDecimals: qouteAssetMetadata?.decimals,
     }),
     [
       amountB,
       estate.token_address,
-      qouteAssetMetadata.decimals,
+      qouteAssetMetadata?.decimals,
       selectedAssetMetadata?.decimals,
       slippagePercentage,
       tokenPrice,

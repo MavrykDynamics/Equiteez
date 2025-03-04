@@ -3,6 +3,7 @@ import { DodoStorageType, dodoStorageTypeSchema } from "../dex.provider.types";
 import { toTokenSlug } from "~/lib/assets";
 import { getPMMTokenPrice } from "./price";
 import BigNumber from "bignumber.js";
+import { DexStorageQuery } from "~/utils/__generated__/graphql";
 
 export const getContractStorageInfo = async (address: string) => {
   try {
@@ -18,24 +19,62 @@ export const getContractStorageInfo = async (address: string) => {
   }
 };
 
-export const getDodoMavTokenStorages = async (
-  addresses: string[],
-  pickDodoContractBasedOnToken: StringRecord<string>
-) => {
-  const promises = addresses.map((address) =>
-    getContractStorageInfo(pickDodoContractBasedOnToken[address])
-  );
+export const getDodoMavTokenStorages = (
+  queryData: DexStorageQuery
+): StringRecord<DodoStorageType> => {
+  const { dodo_mav } = queryData;
 
-  const storages = await Promise.all(promises);
-
-  return storages.reduce<StringRecord<DodoStorageType>>((acc, storage) => {
+  return dodo_mav.reduce<StringRecord<DodoStorageType>>((acc, storage) => {
     const slug = toTokenSlug(
-      storage?.baseToken?.tokenContractAddress,
-      storage?.baseToken?.tokenId
+      storage?.base_token?.address,
+      storage?.base_token?.token_id
     );
 
-    if (slug) {
-      acc[slug] = storage;
+    if (!slug) return acc;
+
+    const parsedData = {
+      config: {
+        lpFee: storage.fee_decimals.toString(),
+        feeDecimals: storage.fee_decimals.toString(),
+        priceModel: storage.price_model,
+        maintainerFee: storage.maintainer_fee,
+        appraisalPrice: undefined,
+        fixedPricePercent: storage.fixed_price_percent?.toString(),
+        orderbookPricePercent: undefined,
+      },
+      rStatus: storage.r_status.toString(),
+      baseToken: {
+        tokenId: storage.base_token.token_id.toString(),
+        tokenContractAddress: storage.base_token.address,
+      },
+      guidePrice: storage.guide_price.toString(),
+      quoteToken: {
+        tokenId: storage.quote_token.token_id.toString(),
+        tokenContractAddress: storage.quote_token.address,
+      },
+      superAdmin: storage.address,
+      baseBalance: storage.base_balance.toString(),
+      baseLpToken: {
+        tokenId: storage.base_lp_token.token_id.toString(),
+        tokenContractAddress: storage.base_lp_token.address,
+      },
+      quoteBalance: storage.quote_balance.toString(),
+      quoteLpToken: {
+        tokenId: storage.quote_lp_token.token_id.toString(),
+        tokenContractAddress: storage.quote_lp_token.address,
+      },
+      slippageFactor: storage.slippage_factor.toString(),
+      baseBalanceLimit: storage.base_balance_limit.toString(),
+      quoteBalanceLimit: storage.quote_balance_limit.toString(),
+      targetBaseTokenAmount: storage.target_base_token_amount.toString(),
+      targetQuoteTokenAmount: storage.target_quote_token_amount.toString(),
+    };
+
+    const result = dodoStorageTypeSchema.safeParse(parsedData);
+    if (result.success) {
+      acc[slug] = result.data;
+    } else {
+      console.error("Validation failed for", slug, result.error.format());
     }
 
     return acc;

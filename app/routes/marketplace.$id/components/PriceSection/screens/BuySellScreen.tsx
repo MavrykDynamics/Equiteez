@@ -71,6 +71,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
+  // TODO check for token prices if the are empty
   const { userTokensBalances, isKyced } = useUserContext();
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
@@ -82,7 +83,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
     [dodoStorages, slug, tokenPrice]
   );
-  console.log(baseTokenAmount.toNumber(), "baseTokenAmount");
+
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
