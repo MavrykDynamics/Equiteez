@@ -12,10 +12,7 @@ import {
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import {
-  EstateType,
-  SECONDARY_MARKET,
-} from "~/providers/MarketsProvider/market.types";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 
 // icons
 import StarIcon from "app/icons/star.svg?react";
@@ -30,6 +27,7 @@ import {
   getItemFromStorage,
   setItemInStorage,
 } from "~/lib/utils/local-storage";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 
 // filter fns
 function filterByName(estates: EstateType[], name: string) {
