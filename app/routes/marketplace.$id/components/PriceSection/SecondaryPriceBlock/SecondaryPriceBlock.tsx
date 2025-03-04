@@ -11,7 +11,7 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { ProgresBar } from "../components/ProgressBar/ProgressBar";
 import { PopupContent } from "../popups";
-import { stablecoinContract, VALID_TOKENS } from "~/consts/contracts";
+import { stablecoinContract } from "~/consts/contracts";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import Money from "~/lib/atoms/Money";
 import {
@@ -21,6 +21,7 @@ import {
 } from "~/providers/Dexprovider/utils";
 import { useAssetMetadata } from "~/lib/metadata";
 import { toTokenSlug } from "~/lib/assets";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -32,6 +33,7 @@ type SecondaryPriceBlockProps = {
 export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
 }) => {
+  const { validBaseTokens } = useMarketsContext();
   const [isOpen, setIsOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
   const { dodoMav, dodoStorages, dodoTokenPair } = useDexContext();
@@ -118,7 +120,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           quoteTokenSymbol={quoteTokenMetadata.symbol}
         />
         <div className="mt-4">
-          {!VALID_TOKENS[estate.token_address] ? (
+          {!validBaseTokens[estate.token_address] ? (
             <Button className="w-full" disabled>
               Coming Soon
             </Button>
