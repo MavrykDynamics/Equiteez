@@ -15,9 +15,9 @@ export const dodoTokenSchema = z.object({
 
 export const configSchema = z.object({
   lpFee: z.string(),
-  priceModel: z.string().optional(),
+  priceModel: z.number().optional(),
   feeDecimals: z.string(),
-  maintainerFee: z.string(),
+  maintainerFee: z.number(),
   appraisalPrice: z.string().optional(),
   fixedPricePercent: z.string().optional(),
   orderbookPricePercent: z.string().optional(),

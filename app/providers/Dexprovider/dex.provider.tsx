@@ -1,11 +1,4 @@
-import {
-  createContext,
-  FC,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, FC, useContext, useMemo, useState } from "react";
 import { DexProviderCtxType, DodoStorageType } from "./dex.provider.types";
 import { useMarketsContext } from "../MarketsProvider/markets.provider";
 import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
@@ -17,7 +10,6 @@ import {
 } from "./utils/storage";
 import { unknownToError } from "~/errors/error";
 import BigNumber from "bignumber.js";
-import { useAsyncWithRefetch } from "../ApolloProvider/hooks/useAsyncWithRefetch";
 import { useQueryWithRefetch } from "../ApolloProvider/hooks/useQueryWithRefetch";
 import { DEX_STORAGE_QUERY } from "./queries/storage.query";
 
@@ -40,14 +32,10 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   useQueryWithRefetch(
     DEX_STORAGE_QUERY,
     {
-      // query meta by base tokens from dodo_mav
-      // TODO use dynamic addresses to filetr query
       // variables: { addresses: marketAddresses },
       skip: marketAddresses.length === 0,
       onCompleted: (data) => {
         try {
-          console.log("Query in usage ! -------------");
-
           const storages = getDodoMavTokenStorages(data);
 
           const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
@@ -58,7 +46,8 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
           setDodoTokenPair(tokenPairs);
         } catch (e) {
           console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
-          warning("Prices", e.message);
+          const err = unknownToError(e);
+          warning("Prices", err.message);
         }
       },
       onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
