@@ -76,11 +76,11 @@ export const getTokenAmountFromLiquidity = (
   if (!storage || baseTokenPriceInUSDT.isZero()) return new BigNumber(0);
 
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-  const baseBalanceInUSD = new BigNumber(storage.baseBalance).times(
-    baseTokenPriceInUSDT.div(feeDecimals)
-  );
 
-  return baseBalanceInUSD.div(baseTokenPriceInUSDT);
+  // Convert baseBalance to human-readable format
+  const baseBalance = new BigNumber(storage.baseBalance).div(feeDecimals);
+
+  return baseBalance; // This already represents the token amount in the pool
 };
 
 export const getDodoMavLpFee = (storage: DodoStorageType | undefined) => {
