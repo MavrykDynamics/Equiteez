@@ -21,6 +21,7 @@ import {
   CONFIRM,
   SellScreenState,
   OrderType,
+  SELL,
 } from "../consts";
 import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -39,6 +40,7 @@ import { useAssetMetadata } from "~/lib/metadata";
 import {
   calculateEstFee,
   calculateMinReceived,
+  detectQuoteTokenLimit,
   getDodoMavLpFee,
   getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
@@ -82,7 +84,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
     [dodoStorages, slug, tokenPrice]
   );
-  console.log(baseTokenAmount.toNumber(), "baseTokenAmount");
+
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
@@ -232,6 +234,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     ? symbol
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
+  const hasQuoteTokenLimitWarning = useMemo(
+    () =>
+      detectQuoteTokenLimit(
+        dodoStorages[slug],
+        amount,
+        isBuyAction ? BUY : SELL
+      ),
+    [dodoStorages, slug, amount, isBuyAction]
+  );
+
   const isBtnDisabled =
     hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
 
@@ -367,6 +379,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <Alert type="warning" header="Low Liquidity Detected!">
             The liquidity for {symbol} is critically low. Transactions may
             experience high slippage or failure.
+          </Alert>
+        </div>
+      )}
+
+      {hasQuoteTokenLimitWarning && (
+        <div className="mt-8">
+          <Alert type="warning" header="Pool Balance Limit Reached">
+            Your trade will exceed the pool limit, which may cause slippage or
+            failure. Please adjust the amount and try again.
           </Alert>
         </div>
       )}
