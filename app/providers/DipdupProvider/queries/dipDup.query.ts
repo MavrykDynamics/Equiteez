@@ -1,7 +1,7 @@
 import { gql } from "~/utils/__generated__";
 
 export const DIP_DUP_QUERY = gql(`
-  query DipDupHeadLvl {
+  subscription DipDupHeadLvl {
     dipdup_head {
       level
     }

@@ -21,6 +21,7 @@ import {
   CONFIRM,
   SellScreenState,
   OrderType,
+  SELL,
 } from "../consts";
 import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -39,9 +40,12 @@ import { useAssetMetadata } from "~/lib/metadata";
 import {
   calculateEstFee,
   calculateMinReceived,
+  detectQuoteTokenLimit,
   getDodoMavLpFee,
+  getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
+import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -75,6 +79,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const selectedAssetMetadata = useAssetMetadata(slug);
 
   const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+
+  const baseTokenAmount = useMemo(
+    () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
+    [dodoStorages, slug, tokenPrice]
+  );
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -160,11 +169,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? amount
-          ? `$${input1Props.amount?.toNumber()}`
-          : "--"
+          ? input1Props.amount
+          : new BigNumber(0)
         : amount
-          ? `$${input2Props.amount?.toNumber()}`
-          : "--",
+          ? input2Props.amount
+          : new BigNumber(0),
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
@@ -225,6 +234,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     ? symbol
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
+  const hasQuoteTokenLimitWarning = useMemo(
+    () =>
+      detectQuoteTokenLimit(
+        dodoStorages[slug],
+        amount,
+        isBuyAction ? BUY : SELL
+      ),
+    [dodoStorages, slug, amount, isBuyAction]
+  );
+
   const isBtnDisabled =
     hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
 
@@ -244,7 +263,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input1Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>{balanceTotal}</span>
+                <BalanceTotalBlock
+                  balanceTotal={balanceTotal}
+                  decimals={stableCoinMetadata?.decimals}
+                />
+
                 <div className="text-body-xs font-semibold">
                   Balance:&nbsp;
                   <CryptoBalance
@@ -268,7 +291,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input2Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>{balanceTotal}</span>
+                <BalanceTotalBlock
+                  balanceTotal={balanceTotal}
+                  decimals={stableCoinMetadata?.decimals}
+                />
                 <div className='className="text-body-xs font-semibold"'>
                   Balance:&nbsp;
                   <CryptoBalance
@@ -355,14 +381,23 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           </Alert>
         </div>
       )}
-      {/* {actionType === "buy" && (
+      {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) && (
         <div className="mt-8">
-          <Alert type="info" header="Low Liquidity Detected!">
+          <Alert type="warning" header="Low Liquidity Detected!">
             The liquidity for {symbol} is critically low. Transactions may
             experience high slippage or failure.
           </Alert>
         </div>
-      )} */}
+      )}
+
+      {hasQuoteTokenLimitWarning && (
+        <div className="mt-8">
+          <Alert type="warning" header="Pool Balance Limit Reached">
+            Your trade will exceed the pool limit, which may cause slippage or
+            failure. Please adjust the amount and try again.
+          </Alert>
+        </div>
+      )}
 
       <Button
         className="mt-8"
@@ -447,5 +482,28 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
         </DropdownBodyContent>
       </ClickableDropdownArea>
     </CustomDropdown>
+  );
+};
+
+type BalanceTotalBlockProps = {
+  balanceTotal: BigNumber | undefined;
+  decimals: number | undefined;
+};
+const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
+  balanceTotal,
+  decimals,
+}) => {
+  return (
+    <>
+      {" "}
+      {!balanceTotal || balanceTotal?.isZero() ? (
+        "--"
+      ) : (
+        <div className="flex items-center">
+          <span>$</span>
+          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
+        </div>
+      )}
+    </>
   );
 };
