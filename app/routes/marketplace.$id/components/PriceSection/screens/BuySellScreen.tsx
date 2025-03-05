@@ -169,11 +169,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? amount
-          ? `$${input1Props.amount?.toNumber()}`
-          : "--"
+          ? input1Props.amount
+          : new BigNumber(0)
         : amount
-          ? `$${input2Props.amount?.toNumber()}`
-          : "--",
+          ? input2Props.amount
+          : new BigNumber(0),
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
@@ -263,7 +263,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input1Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>{balanceTotal}</span>
+                <BalanceTotalBlock
+                  balanceTotal={balanceTotal}
+                  decimals={stableCoinMetadata?.decimals}
+                />
+
                 <div className="text-body-xs font-semibold">
                   Balance:&nbsp;
                   <CryptoBalance
@@ -287,7 +291,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input2Props}
             >
               <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <span>{balanceTotal}</span>
+                <BalanceTotalBlock
+                  balanceTotal={balanceTotal}
+                  decimals={stableCoinMetadata?.decimals}
+                />
                 <div className='className="text-body-xs font-semibold"'>
                   Balance:&nbsp;
                   <CryptoBalance
@@ -475,5 +482,28 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
         </DropdownBodyContent>
       </ClickableDropdownArea>
     </CustomDropdown>
+  );
+};
+
+type BalanceTotalBlockProps = {
+  balanceTotal: BigNumber | undefined;
+  decimals: number | undefined;
+};
+const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
+  balanceTotal,
+  decimals,
+}) => {
+  return (
+    <>
+      {" "}
+      {!balanceTotal || balanceTotal?.isZero() ? (
+        "--"
+      ) : (
+        <div className="flex items-center">
+          <span>$</span>
+          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
+        </div>
+      )}
+    </>
   );
 };
