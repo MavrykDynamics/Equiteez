@@ -1,0 +1,1 @@
+export const MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT = 100;

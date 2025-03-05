@@ -14,7 +14,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 const documents = {
-    "\n  query DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n": types.DipDupHeadLvlDocument,
+    "\n  subscription DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n": types.DipDupHeadLvlDocument,
     "query MarketTokenAddresses {\n  dodo_mav {\n    base_token {\n      address\n    }\n  }\n  orderbook {\n    rwa_token {\n      address\n    }\n  }\n}\n\n  ": types.MarketTokenAddressesDocument,
     "query MarketTokens($addresses: [String!]) {\n    token(where: {address: {_in: $addresses}}) {\n      address\n      token_id\n      token_standard\n      token_metadata\n      metadata\n    }\n  }\n  ": types.MarketTokensDocument,
     "\n  query UserKycStatus($address: String!) {\n   kyc_member(where: {user: {address: {_eq: $address}}}) {\n    user {\n      address\n    }\n  }\n}\n\n  ": types.UserKycStatusDocument,
@@ -37,7 +37,7 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n"): (typeof documents)["\n  query DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n"];
+export function gql(source: "\n  subscription DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n"): (typeof documents)["\n  subscription DipDupHeadLvl {\n    dipdup_head {\n      level\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

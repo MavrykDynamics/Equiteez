@@ -1,8 +1,8 @@
 import {
   createContext,
   FC,
+  useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -17,6 +17,7 @@ import {
 } from "./utils/storage";
 import { unknownToError } from "~/errors/error";
 import BigNumber from "bignumber.js";
+import { useAsyncWithRefetch } from "../ApolloProvider/hooks/useAsyncWithRefetch";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
@@ -34,23 +35,24 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
-  // TODO switch to gql query when API is ready
-  useEffect(() => {
-    (async function () {
-      try {
-        const storages = await getDodoMavTokenStorages(estateAddresses);
-        const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
-        const tokenPairs = getDodoMavTokenPairs(storages);
+  const fetchDexDataCallback = useCallback(async () => {
+    try {
+      const storages = await getDodoMavTokenStorages(estateAddresses);
+      const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
+      const tokenPairs = getDodoMavTokenPairs(storages);
 
-        setDodoStorages(storages);
-        setDodomavPrices(dodoPrices);
-        setDodoTokenPair(tokenPairs);
-      } catch (e) {
-        const err = unknownToError(e);
-        warning("Prices", err.message);
-      }
-    })();
-  }, [warning, estateAddresses]);
+      setDodoStorages(storages);
+      setDodomavPrices(dodoPrices);
+      setDodoTokenPair(tokenPairs);
+    } catch (e) {
+      const err = unknownToError(e);
+      warning("Prices", err.message);
+    }
+  }, [estateAddresses, warning]);
+
+  useAsyncWithRefetch(fetchDexDataCallback, {
+    refetchQueryVariables: estateAddresses,
+  });
 
   const orderBookPrices = useMemo(
     () =>
