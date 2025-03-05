@@ -24,19 +24,24 @@ export const calculateTotalLiquidityInUSD = (
 ) => {
   if (!storage)
     return {
-      totalLiquidityInUSD: ZERO.toString(),
-      baseBalanceInUSD: ZERO.toString(),
-      quoteBalanceInUSD: ZERO.toString(),
+      totalLiquidityInUSD: "0",
+      baseBalanceInUSD: "0",
+      quoteBalanceInUSD: "0",
     };
 
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-  const baseBalanceInUSD = new BigNumber(storage.baseBalance).times(
-    baseTokenPriceInUSDT.div(feeDecimals)
-  );
 
-  const quoteBalanceInUSD = new BigNumber(storage.quoteBalance).times(
-    baseTokenPriceInUSDT.div(feeDecimals)
-  );
+  // Convert baseBalance to human-readable format
+  const baseBalance = new BigNumber(storage.baseBalance).div(feeDecimals);
+
+  // Convert quoteBalance to human-readable format (already in USD)
+  const quoteBalance = new BigNumber(storage.quoteBalance).div(feeDecimals);
+
+  // Calculate USD value of base token in the pool
+  const baseBalanceInUSD = baseBalance.times(baseTokenPriceInUSDT);
+
+  // Since quote token is USDT, its balance is already in USD
+  const quoteBalanceInUSD = quoteBalance;
 
   // Calculate total liquidity in USD
   const totalLiquidityInUSD = baseBalanceInUSD.plus(quoteBalanceInUSD);
@@ -78,11 +83,11 @@ export const getTokenAmountFromLiquidity = (
   if (!storage || baseTokenPriceInUSDT.isZero()) return new BigNumber(0);
 
   const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-  const baseBalanceInUSD = new BigNumber(storage.baseBalance).times(
-    baseTokenPriceInUSDT.div(feeDecimals)
-  );
 
-  return baseBalanceInUSD.div(baseTokenPriceInUSDT);
+  // Convert baseBalance to human-readable format
+  const baseBalance = new BigNumber(storage.baseBalance).div(feeDecimals);
+
+  return baseBalance; // This already represents the token amount in the pool
 };
 
 export const getDodoMavLpFee = (storage: DodoStorageType | undefined) => {
