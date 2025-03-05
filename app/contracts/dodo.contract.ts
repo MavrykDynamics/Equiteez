@@ -28,8 +28,7 @@ export async function buyBaseToken({
   tokensAmount,
   minMaxQuote,
   decimals,
-  quoteTokenAddress,
-  // quoteTokenAddress usually usdt
+  quoteTokenAddress, // quoteTokenAddress usually usdt
 }: Omit<BuySellBaseToken, "mockQuoteLpToken"> & { quoteTokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();

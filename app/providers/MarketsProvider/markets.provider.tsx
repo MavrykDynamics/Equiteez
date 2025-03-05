@@ -11,6 +11,7 @@ import { useQuery } from "@apollo/client/index";
 
 // mocked assets === markets
 import estatesMocked from "app/mocks/rwas.json";
+import mockedAssets from "app/mocks/assets.mock.json";
 
 import {
   MarketContext,
@@ -30,6 +31,7 @@ import { marketsConfigQuerySchema } from "./market.schemas";
 import { mapValuesToArray } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
 import { MARKETS_INITIAL_STATE } from "./market.const";
+import { toTokenSlug } from "~/lib/assets";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -79,6 +81,8 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   );
 
+  console.log(marketsState, "marketsState");
+
   // retrieve base token addresses from Map
   const dodoBaseTokenAddresses = useMemo(
     () =>
@@ -101,19 +105,19 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
 
         // TODO delete fake data reducer after api fixes
-        // const fakeAssets = mockedAssets.reduce<StringRecord<EstateType>>(
-        //   (acc, asset) => {
-        //     const slug = toTokenSlug(asset.token_address);
-        //     acc[slug] = { ...asset, slug };
-        //     return acc;
-        //   },
-        //   {}
-        // );
+        const fakeAssets = mockedAssets.reduce<Map<string, EstateType>>(
+          (acc, asset) => {
+            const slug = toTokenSlug(asset.token_address);
+            acc.set(slug, { ...asset, slug });
+            return acc;
+          },
+          new Map()
+        );
 
         setMarketsState((prev) => ({
           ...prev,
-          markets: parsedMarkets,
-          // estates: { ...parsedMarkets, ...fakeAssets },
+          // markets: parsedMarkets,
+          markets: new Map([...parsedMarkets, ...fakeAssets]),
           isLoading: false,
         }));
       } catch (e) {
