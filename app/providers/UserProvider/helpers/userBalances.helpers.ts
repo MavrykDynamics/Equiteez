@@ -1,27 +1,26 @@
-import * as signalR from '@microsoft/signalr';
+import * as signalR from "@microsoft/signalr";
 
 // types
 import {
   UserContext,
   UserTzktTokensBalancesType,
-} from '../user.provider.types';
+} from "../user.provider.types";
 
 // helpers
-import { api } from 'app/lib/utils/api';
+import { api } from "app/lib/utils/api";
 import {
   emptyUserTzktAccountSchema,
   userTzktAccountSchema,
   userTzktTokenBalancesSchema,
-} from './user.schemes';
-import { TokenMetadata } from '~/lib/metadata';
-import { getTokenDataByAddress } from '~/providers/TokensProvider/utils/getTokenDataByAddress';
-import BigNumber from 'bignumber.js';
-import { atomsToTokens } from '~/lib/utils/formaters';
-import { toTokenSlug } from '~/lib/assets';
+} from "./user.schemes";
+import { TokenMetadata } from "~/lib/metadata";
+import { getTokenDataByAddress } from "~/providers/TokensProvider/utils/getTokenDataByAddress";
+import BigNumber from "bignumber.js";
+import { atomsToTokens } from "~/lib/utils/formaters";
+import { toTokenSlug } from "~/lib/assets";
 
 // consts
 const REACT_APP_TZKT_API = process.env.API_URL;
-const REACT_APP_ENV = process.env.REACT_APP_ENV;
 
 /**
  * nomalize user tokens fetched from tzkt, they have different structure from indexer ones
@@ -36,7 +35,7 @@ export const normalizeUserTzktTokensBalances = ({
   userAddress: string | null;
 }) => {
   const result = indexerData.reduce<
-    NonNullable<UserContext['userTokensBalances']>
+    NonNullable<UserContext["userTokensBalances"]>
   >(
     (
       acc,
@@ -72,7 +71,7 @@ export const getUserTokenBalanceByAddress = ({
   userTokensBalances,
   tokenAddress,
 }: {
-  userTokensBalances: UserContext['userTokensBalances'];
+  userTokensBalances: UserContext["userTokensBalances"];
   tokenAddress?: string | null;
 }): BigNumber => {
   if (!userTokensBalances || !tokenAddress) return new BigNumber(0);
@@ -119,7 +118,7 @@ export const fetchTzktUserBalances = async ({
     }
 
     throw new Error(
-      'Error occured while loading your balances, try to reload the page, or change user'
+      "Error occured while loading your balances, try to reload the page, or change user"
     );
   } catch (e) {
     // const convertedError = unknownToError(e);
@@ -166,29 +165,29 @@ export const attachTzktSocketsEventHandlers = ({
   handleDisconnect: (error?: Error) => void;
   handleOnReconnected: (userAddress: string) => void;
 }) => {
-  tzktSocket.on('token_balances', (msg) => {
+  tzktSocket.on("token_balances", (msg) => {
     if (!msg.data) return;
 
     try {
-      if (REACT_APP_ENV === 'dev')
-        console.log('%ctzktSocket on token_balances msg', 'color: aqua', {
+      if (process.env.NODE_ENV === "development")
+        console.log("%ctzktSocket on token_balances msg", "color: aqua", {
           data: msg.data,
         });
       const tokensBalances = userTzktTokenBalancesSchema.parse(msg.data);
       handleTokens(tokensBalances);
     } catch (e) {
-      if (REACT_APP_ENV === 'dev')
-        console.error('tzkt tokens balance parse error: ', { e, msg });
+      if (process.env.NODE_ENV === "development")
+        console.error("tzkt tokens balance parse error: ", { e, msg });
     }
   });
 
   // subscribe to account's tokens
-  tzktSocket.invoke('SubscribeToTokenBalances', {
+  tzktSocket.invoke("SubscribeToTokenBalances", {
     account: userAddress,
   });
 
   // subscribe to account data to get xtz balance ):
-  tzktSocket.invoke('SubscribeToAccounts', {
+  tzktSocket.invoke("SubscribeToAccounts", {
     addresses: [userAddress],
   });
 

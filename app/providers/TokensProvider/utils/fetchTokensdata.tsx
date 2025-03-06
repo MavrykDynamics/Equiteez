@@ -1,7 +1,7 @@
-import { api } from 'app/lib/utils/api';
-import { TokenType } from '../tokens.provider.types';
-import { TOKENS_SCAM_RECORD } from './consts';
-import { TokenMetadata } from '~/lib/metadata';
+import { api } from "app/lib/utils/api";
+import { TokenType } from "../tokens.provider.types";
+import { TOKENS_SCAM_RECORD } from "./consts";
+import { TokenMetadata } from "~/lib/metadata";
 
 type RwaTokenType = {
   contract: { address: string };
@@ -20,7 +20,7 @@ export const fetchTokensData = async () => {
     return tokens.filter((t) => !TOKENS_SCAM_RECORD[t.contract]);
   } catch (e) {
     console.log(e);
-    throw new Error('Error while fetching tokens');
+    throw new Error("Error while fetching tokens");
   }
 };
 
@@ -39,14 +39,14 @@ export const fetchTokensMetadata = async (
         }
       }`,
       variables: null,
-      operationName: 'TokensMetadataQuery',
+      operationName: "TokensMetadataQuery",
     };
 
     const { data: apiData } = await api<{
       data: { token_metadata: { contract: string; metadata: TokenMetadata }[] };
     }>(process.env.TOKENS_METADATA_API, {
       body: JSON.stringify(queryBody),
-      method: 'POST',
+      method: "POST",
     });
 
     const {
@@ -76,6 +76,6 @@ export const fetchTokensMetadata = async (
     return parsedData;
   } catch (e) {
     console.log(e);
-    throw new Error('Error while fetching tokens metadata');
+    throw new Error("Error while fetching tokens metadata");
   }
 };
