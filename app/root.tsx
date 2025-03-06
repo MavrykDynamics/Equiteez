@@ -86,7 +86,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   } = useDataFromLoader<typeof loader>() ?? {};
 
   useEffect(() => {
-    addGtmScript(gaTrackingId);
+    if (process.env.NODE_ENV === "production" && gaTrackingId) {
+      addGtmScript(gaTrackingId);
+    }
   }, [gaTrackingId]);
 
   return (
@@ -99,17 +101,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
 
       <body>
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
-          <iframe
-            src={`https://www.googletagmanager.com/ns.html?id=${gaTrackingId}`}
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-        {/* End Google Tag Manager */}
+        {process.env.NODE_ENV === "production" && gaTrackingId && (
+          <>
+            {/* Google Tag Manager (noscript) */}
+            <noscript>
+              {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
+              <iframe
+                src={`https://www.googletagmanager.com/ns.html?id=${gaTrackingId}`}
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              />
+            </noscript>
+            {/* End Google Tag Manager */}
+          </>
+        )}
+
         <div id="root">
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
