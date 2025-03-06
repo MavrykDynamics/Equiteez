@@ -123,7 +123,7 @@ export const useQueryWithRefetch = <
           if (newIndexerLevel - lastUpdatedBlock.current >= blocksDiff) {
             const refetchData = await queryResult.refetch(newRefetchVariables);
 
-            if (process.env.REACT_APP_ENV === "dev")
+            if (process.env.NODE_ENV === "development")
               console.log("%crefetch result", "color: violet", {
                 refetchData,
                 queryName,
@@ -141,7 +141,7 @@ export const useQueryWithRefetch = <
 
         const refetchData = await queryResult.refetch(newRefetchVariables);
 
-        if (process.env.REACT_APP_ENV === "dev")
+        if (process.env.NODE_ENV === "development")
           console.log("%crefetch result ", "color: violet", {
             refetchData,
             queryName,
@@ -163,14 +163,14 @@ export const useQueryWithRefetch = <
   useEffect(() => {
     // if query is active subscibe to indexer lvl change, and save id of subscription
     if (!currentUserSkipValue && !refetchId.current) {
-      if (process.env.REACT_APP_ENV === "dev")
+      if (process.env.NODE_ENV === "development")
         console.log(`%cregister ${queryName}`, "color: lime");
       refetchId.current = currentDipdupLvlProxy.registerListener(refetchQuery);
     }
 
     // if query is not active and we have id, then unsubscibe from indexer lvl change
     if (currentUserSkipValue && refetchId.current) {
-      if (process.env.REACT_APP_ENV === "dev")
+      if (process.env.NODE_ENV === "development")
         console.log(`%cunregister in callback ${queryName}`, "color: orange");
       currentDipdupLvlProxy.removeListener(refetchId.current);
       refetchId.current = null;
@@ -179,7 +179,7 @@ export const useQueryWithRefetch = <
     return () => {
       // if we have id and hook unmounts, then unsubscibe from indexer lvl change
       if (refetchId.current) {
-        if (process.env.REACT_APP_ENV === "dev")
+        if (process.env.NODE_ENV === "development")
           console.log(`%cunregister in cleanup ${queryName}`, "color: orange");
         currentDipdupLvlProxy.removeListener(refetchId.current);
         refetchId.current = null;
