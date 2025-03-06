@@ -34,7 +34,7 @@ export const DipdupProvider: FC<DipdupProviderProps> = ({ children }) => {
         if (
           currentDipdupLvlProxy.currentDipdupeddLevel < parsedLevelData[0].level
         ) {
-          if (process.env.REACT_APP_ENV === "dev")
+          if (process.env.NODE_ENV === "development")
             console.log(
               `%cnew indexer level: ${parsedLevelData[0].level}`,
               "color: fuchsia"

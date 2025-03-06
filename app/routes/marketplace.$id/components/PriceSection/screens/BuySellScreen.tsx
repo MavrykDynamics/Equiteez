@@ -13,6 +13,8 @@ import {
   ExpanderFaceContent,
 } from "~/lib/organisms/CustomExpander/CustomExpander";
 
+import * as gtag from "app/utils/gtags.client";
+
 // icons
 import CheckIcon from "app/icons/ok.svg?react";
 import {
@@ -107,6 +109,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
+
+    gtag.event({
+      action: "buy_base_token",
+      category: "Buy base token",
+      label: "Buy base token",
+    });
   }, [toggleScreen]);
 
   const handleOutputChange = useCallback(
