@@ -75,8 +75,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   });
 };
 
-const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
-  // TODO handle laoder data elsewhere
+export function Layout({ children }: { children: React.ReactNode }) {
   const {
     gaTrackingId,
     tokens = [],
@@ -90,41 +89,6 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
     addGtmScript(gaTrackingId);
   }, [gaTrackingId]);
 
-  return (
-    <AppProvider>
-      <MobileView isMobile={isMobile}>
-        <ApolloProvider>
-          <DipdupProvider>
-            <WalletProvider>
-              <CurrencyProvider
-                fiatToTezos={fiatToTezos}
-                usdToToken={usdToToken}
-              >
-                <TokensProvider
-                  initialTokens={tokens}
-                  initialTokensMetadata={tokensMetadata}
-                >
-                  <EstatesProvider>
-                    <DexProvider>
-                      <UserProvider>
-                        <AppGlobalLoader>
-                          <PopupProvider>{children}</PopupProvider>
-                        </AppGlobalLoader>
-                      </UserProvider>
-                    </DexProvider>
-                  </EstatesProvider>
-                </TokensProvider>
-              </CurrencyProvider>
-            </WalletProvider>
-          </DipdupProvider>
-        </ApolloProvider>
-      </MobileView>
-    </AppProvider>
-  );
-};
-
-export function Layout({ children }: { children: React.ReactNode }) {
-  const gaTrackingId = "GTM-TWZ386ZK";
   return (
     <html lang="en">
       <head>
@@ -150,7 +114,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <AppWrapper>{children}</AppWrapper>
+            {/* <AppWrapper>{children}</AppWrapper> */}
+            <AppProvider>
+              <MobileView isMobile={isMobile}>
+                <ApolloProvider>
+                  <DipdupProvider>
+                    <WalletProvider>
+                      <CurrencyProvider
+                        fiatToTezos={fiatToTezos}
+                        usdToToken={usdToToken}
+                      >
+                        <TokensProvider
+                          initialTokens={tokens}
+                          initialTokensMetadata={tokensMetadata}
+                        >
+                          <EstatesProvider>
+                            <DexProvider>
+                              <UserProvider>
+                                <AppGlobalLoader>
+                                  <PopupProvider>{children}</PopupProvider>
+                                </AppGlobalLoader>
+                              </UserProvider>
+                            </DexProvider>
+                          </EstatesProvider>
+                        </TokensProvider>
+                      </CurrencyProvider>
+                    </WalletProvider>
+                  </DipdupProvider>
+                </ApolloProvider>
+              </MobileView>
+            </AppProvider>
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
@@ -169,6 +162,7 @@ export default function App() {
   );
 }
 
+/** catch server errors ************************** */
 export function ErrorBoundary() {
   const error = useRouteError();
 
