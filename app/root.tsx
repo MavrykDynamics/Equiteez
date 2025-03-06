@@ -40,7 +40,7 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { MobileView } from "./providers/MobileView/MobileView";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
@@ -71,18 +71,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     usdToToken,
     isMobile,
     fiatToTezos: {},
+    gaTrackingId: process.env.GA_TRACKING_ID,
   });
 };
 
 const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
   // TODO handle laoder data elsewhere
   const {
+    gaTrackingId,
     tokens = [],
     tokensMetadata = {},
     fiatToTezos = {},
     usdToToken = {},
     isMobile = false,
   } = useDataFromLoader<typeof loader>() ?? {};
+
+  useEffect(() => {
+    addGtmScript(gaTrackingId);
+  }, [gaTrackingId]);
 
   return (
     <AppProvider>
@@ -118,6 +124,7 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const gaTrackingId = "GTM-TWZ386ZK";
   return (
     <html lang="en">
       <head>
@@ -128,6 +135,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
 
       <body>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${gaTrackingId}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+        {/* End Google Tag Manager */}
         <div id="root">
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
@@ -171,4 +189,53 @@ export function ErrorBoundary() {
       type="fatal"
     />
   );
+}
+
+/**
+ * GTAG configuration to avoid hydration errors *********************
+ */
+let gtmScriptAdded = false;
+
+declare global {
+  interface Window {
+    [key: string]: object[];
+  }
+}
+
+function addGtmScript(GTM_ID: string | undefined) {
+  if (!GTM_ID || gtmScriptAdded) {
+    return;
+  }
+
+  (function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+
+    function gtag() {
+      // eslint-disable-next-line prefer-rest-params
+      w[l].push(arguments);
+    }
+
+    w.gtag = gtag;
+    // @ts-expect-error // it uses arguments in general (see above gtag fn)
+    gtag("js", new Date());
+
+    if (!gtmScriptAdded) {
+      // Ensure the script is not loaded multiple times
+      const f = d.getElementsByTagName(s)[0];
+      const j = d.createElement(s);
+      const dl = l !== "dataLayer" ? "&l=" + l : "";
+      // @ts-expect-error //it is script tag
+      j.async = true;
+      // @ts-expect-error //it is script tag
+      j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+      f.parentNode?.insertBefore(j, f);
+    }
+  })(window, document, "script", "dataLayer", GTM_ID);
+
+  // @ts-expect-error // it uses arguments in general (see above gtag fn)
+  gtag("config", GTM_ID, {
+    page_path: window.location.pathname,
+  });
+
+  gtmScriptAdded = true;
 }
