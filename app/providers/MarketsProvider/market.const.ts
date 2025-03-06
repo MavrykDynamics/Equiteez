@@ -26,3 +26,5 @@ export const MARKETS_INITIAL_STATE = {
   markets: new Map(),
   isLoading: true,
 };
+
+export const MARKETS_PAGINATION_LIMIT = 1;

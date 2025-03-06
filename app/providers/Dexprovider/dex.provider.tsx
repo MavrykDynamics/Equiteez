@@ -45,7 +45,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
           setDodomavPrices(dodoPrices);
           setDodoTokenPair(tokenPairs);
         } catch (e) {
-          console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
+          console.log(e, "DEX_STORAGE_QUERY from catch");
           const err = unknownToError(e);
           warning("Prices", err.message);
         }

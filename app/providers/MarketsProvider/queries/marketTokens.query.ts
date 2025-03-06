@@ -15,31 +15,31 @@ export const DODO_MAV_ASSET_METADATA_QUERY =
 // NEW ************************************************************
 
 export const MARKETS_ADDRESSES_QUERY = gql(`
-    query marketAddresses {
-  dodo_mav {
-    address
-    base_token {
-      token_id
+  query marketAddresses(offset: Int!, $limit: Int!) {
+    dodo_mav(offset: $offset, limit: $limit) {
       address
+      base_token {
+        token_id
+        address
+      }
+      quote_token {
+        token_id
+        address
+      }
+      quote_lp_token {
+        address
+        token_id
+      }
+      base_lp_token {
+        address
+        token_id
+      }
     }
-    quote_token {
-      token_id
+    orderbook {
       address
-    }
-    quote_lp_token {
-      address
-      token_id
-    }
-    base_lp_token {
-      address
-      token_id
+      rwa_token {
+        address
+      }
     }
   }
-  orderbook {
-    address
-    rwa_token {
-      address
-    }
-  }
-}
 `);

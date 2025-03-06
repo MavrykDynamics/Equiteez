@@ -30,7 +30,10 @@ import {
 import { marketsConfigQuerySchema } from "./market.schemas";
 import { mapValuesToArray } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
-import { MARKETS_INITIAL_STATE } from "./market.const";
+import {
+  MARKETS_INITIAL_STATE,
+  MARKETS_PAGINATION_LIMIT,
+} from "./market.const";
 import { toTokenSlug } from "~/lib/assets";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
@@ -48,9 +51,15 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     isActiveMarketLoading: true,
   }));
 
+  const [marketsPagination, setMarketsPagination] = useState(() => ({
+    limit: MARKETS_PAGINATION_LIMIT,
+    offset: 0,
+  }));
+
   const { loading: isMarketsAddressesLoading } = useQuery(
     MARKETS_ADDRESSES_QUERY,
     {
+      variables: { ...marketsPagination },
       onCompleted: (data) => {
         try {
           const parsedConfigData = marketsConfigQuerySchema.parse(data);
@@ -81,8 +90,6 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   );
 
-  console.log(marketsState, "marketsState");
-
   // retrieve base token addresses from Map
   const dodoBaseTokenAddresses = useMemo(
     () =>
@@ -105,19 +112,23 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
 
         // TODO delete fake data reducer after api fixes
-        const fakeAssets = mockedAssets.reduce<Map<string, EstateType>>(
-          (acc, asset) => {
-            const slug = toTokenSlug(asset.token_address);
-            acc.set(slug, { ...asset, slug });
-            return acc;
-          },
-          new Map()
-        );
+        // const fakeAssets = mockedAssets.reduce<Map<string, EstateType>>(
+        //   (acc, asset) => {
+        //     const slug = toTokenSlug(asset.token_address);
+        //     acc.set(slug, { ...asset, slug });
+        //     return acc;
+        //   },
+        //   new Map()
+        // );
 
         setMarketsState((prev) => ({
           ...prev,
           // markets: parsedMarkets,
-          markets: new Map([...parsedMarkets, ...fakeAssets]),
+          markets: new Map([
+            ...marketsState.markets,
+            ...parsedMarkets,
+            // ...fakeAssets,
+          ]),
           isLoading: false,
         }));
       } catch (e) {
@@ -145,6 +156,13 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     },
     [pickMarketByIdentifier]
   );
+
+  const loadMoreMarkets = useCallback(() => {
+    setMarketsPagination((prev) => ({
+      limit: prev.limit + MARKETS_PAGINATION_LIMIT,
+      offset: prev.offset + MARKETS_PAGINATION_LIMIT,
+    }));
+  }, []);
 
   // convert markets map to array (used in a lot of place, f,e, embla carousel)
   const marketsArr = useMemo(
