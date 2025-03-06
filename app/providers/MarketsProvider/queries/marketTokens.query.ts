@@ -15,8 +15,8 @@ export const DODO_MAV_ASSET_METADATA_QUERY =
 // NEW ************************************************************
 
 export const MARKETS_ADDRESSES_QUERY = gql(`
-  query marketAddresses(offset: Int!, $limit: Int!) {
-    dodo_mav(offset: $offset, limit: $limit) {
+  query marketAddresses {
+    dodo_mav {
       address
       base_token {
         token_id

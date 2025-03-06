@@ -30,11 +30,6 @@ const config: CodegenConfig = {
 
               documentFile.document = visit(documentFile.document, {
                 Field(node) {
-                  console.log(
-                    "Before Transform:",
-                    node.name.value,
-                    node.arguments
-                  );
                   if (
                     node.alias &&
                     node.name?.value &&

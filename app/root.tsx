@@ -121,7 +121,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            {/* <AppWrapper>{children}</AppWrapper> */}
             <AppProvider>
               <MobileView isMobile={isMobile}>
                 <ApolloProvider>

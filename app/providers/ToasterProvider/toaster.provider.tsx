@@ -216,7 +216,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
    *
    */
   render(): JSX.Element {
-    const { error } = this.state.context;
+    const { error = null } = this.state.context;
     let type: InternalErrorType = ERROR_TYPE_ROUTER;
     let errorPageContent = null;
 
@@ -225,10 +225,10 @@ export default class ToasterProvider extends React.Component<Props, State> {
     }
 
     errorPageContent = getErrorPageData(type);
+    console.log(error, "error", errorPageContent);
 
     const shouldRenderChildren =
-      // eslint-disable-next-line no-extra-boolean-cast
-      !this.state.context.maintance || !Boolean(errorPageContent);
+      error === null && !this.state.context.maintance;
 
     return (
       <toasterContext.Provider value={this.state.context}>

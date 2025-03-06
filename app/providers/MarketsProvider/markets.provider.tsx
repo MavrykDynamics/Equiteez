@@ -35,10 +35,15 @@ import {
   MARKETS_PAGINATION_LIMIT,
 } from "./market.const";
 import { toTokenSlug } from "~/lib/assets";
+import { useApolloContext } from "../ApolloProvider/apollo.provider";
+import { useToasterContext } from "../ToasterProvider/toaster.provider";
+import { FatalError } from "~/errors/error";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
+  const { handleApolloError } = useApolloContext();
+  const { fatal } = useToasterContext();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [marketsState, setMarketsState] = useState<MarketInternalStateType>(
     () => MARKETS_INITIAL_STATE
@@ -83,10 +88,12 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
             },
           }));
         } catch (e) {
-          console.log(e, "MARKETS_ADDRESSES_QUERY from catch");
+          fatal(new FatalError("MARKETS_ADDRESSES_QUERY"));
         }
       },
-      onError: (error) => console.log(error, "MARKET_TOKENS_QUERY"),
+      onError: (error) => {
+        handleApolloError(error, "MARKETS_ADDRESSES_QUERY");
+      },
     }
   );
 
@@ -132,10 +139,10 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
           isLoading: false,
         }));
       } catch (e) {
-        console.log(e, "MARKET_TOKENS__DATA_QUERY from catch");
+        fatal(new FatalError("MARKET_TOKENS__DATA_QUERY"));
       }
     },
-    onError: (error) => console.log(error, "MARKET_TOKENS__DATA_QUERY"),
+    onError: (error) => handleApolloError(error, "MARKET_TOKENS__DATA_QUERY"),
   });
 
   const pickMarketByIdentifier = useCallback(
