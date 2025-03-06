@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { Suspense, useContext } from "react";
 import { ErrorPageTemp } from "~/templates/ErrorPageTemp/ErrorPageTemp";
 
 // types
@@ -225,35 +225,36 @@ export default class ToasterProvider extends React.Component<Props, State> {
     }
 
     errorPageContent = getErrorPageData(type);
-    console.log(error, "error", errorPageContent);
 
     const shouldRenderChildren =
       error === null && !this.state.context.maintance;
 
     return (
-      <toasterContext.Provider value={this.state.context}>
-        {shouldRenderChildren ? (
-          this.props.children
-        ) : (
-          <AppProvider>
-            <TokensProvider initialTokens={[]} initialTokensMetadata={{}}>
-              <WalletProvider>
-                <UserProvider>
-                  {this.state.context.maintance ? (
-                    <MaintancePageTemp />
-                  ) : (
-                    <ErrorPageTemp
-                      headerText={errorPageContent.header}
-                      descText={errorPageContent.desc}
-                      type={type}
-                    />
-                  )}
-                </UserProvider>
-              </WalletProvider>
-            </TokensProvider>
-          </AppProvider>
-        )}
-      </toasterContext.Provider>
+      <Suspense>
+        <toasterContext.Provider value={this.state.context}>
+          {shouldRenderChildren ? (
+            this.props.children
+          ) : (
+            <AppProvider>
+              <TokensProvider initialTokens={[]} initialTokensMetadata={{}}>
+                <WalletProvider>
+                  <UserProvider>
+                    {this.state.context.maintance ? (
+                      <MaintancePageTemp />
+                    ) : (
+                      <ErrorPageTemp
+                        headerText={errorPageContent.header}
+                        descText={errorPageContent.desc}
+                        type={type}
+                      />
+                    )}
+                  </UserProvider>
+                </WalletProvider>
+              </TokensProvider>
+            </AppProvider>
+          )}
+        </toasterContext.Provider>
+      </Suspense>
     );
   }
 }
