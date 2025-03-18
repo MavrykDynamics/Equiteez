@@ -60,15 +60,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const tokens = await fetchTokensData();
 
-  const [tokensMetadata, usdToToken] = await Promise.all([
+  const [tokensMetadata] = await Promise.all([
     fetchTokensMetadata(tokens),
-    fetchUsdToTokenRates(),
+    // fetchUsdToTokenRates(),
   ]);
 
   return json({
     tokens,
     tokensMetadata,
-    usdToToken,
+    usdToToken: {},
     isMobile,
     fiatToTezos: {},
     gaTrackingId: process.env.GA_TRACKING_ID,

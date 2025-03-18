@@ -371,8 +371,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
     const tokensAmount = amount;
     const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : quoteAssetmetadata.decimals;
+      ? selectedAssetMetadata?.decimals
+      : quoteAssetmetadata?.decimals;
 
     return calculateEstFee(
       tokensAmount,
@@ -385,8 +385,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     amount,
     dodoStorages,
     isBuyAction,
-    quoteAssetmetadata.decimals,
-    selectedAssetMetadata.decimals,
+    quoteAssetmetadata?.decimals,
+    selectedAssetMetadata?.decimals,
     slug,
     tokenPrice,
   ]);

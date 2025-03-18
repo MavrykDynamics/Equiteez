@@ -11,7 +11,6 @@ import { useQuery } from "@apollo/client/index";
 
 // mocked assets === markets
 import estatesMocked from "app/mocks/rwas.json";
-// import mockedAssets from "app/mocks/assets.mock.json";
 
 import {
   MarketContext,
@@ -40,6 +39,8 @@ import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import { FatalError } from "~/errors/error";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
+
+// assets to show without actual API data
 
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const { handleApolloError } = useApolloContext();
@@ -114,23 +115,40 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       try {
         // TODO add zod parser after API fixes
 
-        // TODO delete fake data reducer after api fixes
-        const fakeAssets = data.token.reduce<Map<string, EstateType>>(
+        const realAssetsFromApi = data.token.reduce<Map<string, EstateType>>(
           (acc, asset) => {
             const slug = toTokenSlug(asset.address, asset.token_id);
-            acc.set(slug, { ...asset, slug });
+            const assetMocked = estatesMocked.find(
+              (item) => item.token_address === asset.address
+            );
+            if (assetMocked) {
+              acc.set(slug, { ...assetMocked, slug });
+            }
+
             return acc;
           },
           new Map()
         );
 
+        const fakeAssetsToShow = estatesMocked
+          .filter(
+            (asset) => !realAssetsFromApi.has(toTokenSlug(asset.token_address))
+          )
+          .reduce<Map<string, EstateType>>((acc, asset) => {
+            const slug = toTokenSlug(asset.token_address);
+            if (slug) {
+              acc.set(slug, { ...asset, slug });
+            }
+
+            return acc;
+          }, new Map());
+
         setMarketsState((prev) => ({
           ...prev,
-          // markets: parsedMarkets,
           markets: new Map([
             ...marketsState.markets,
-            // ...parsedMarkets,
-            ...fakeAssets,
+            ...realAssetsFromApi,
+            ...fakeAssetsToShow,
           ]),
           isLoading: false,
         }));
