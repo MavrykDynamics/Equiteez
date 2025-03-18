@@ -11,7 +11,7 @@ import { useQuery } from "@apollo/client/index";
 
 // mocked assets === markets
 import estatesMocked from "app/mocks/rwas.json";
-import mockedAssets from "app/mocks/assets.mock.json";
+// import mockedAssets from "app/mocks/assets.mock.json";
 
 import {
   MarketContext,
@@ -22,7 +22,7 @@ import {
   DODO_MAV_ASSET_METADATA_QUERY,
   MARKETS_ADDRESSES_QUERY,
 } from "./queries/marketTokens.query";
-import { marketTokenNormalizer } from "./utils/marketTokenNormalizer";
+// import { marketTokenNormalizer } from "./utils/marketTokenNormalizer";
 import {
   getUpdatedDodoMavMarketsConfig,
   getUpdatedOrderbookMarketsConfig,
@@ -113,28 +113,24 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     onCompleted: (data) => {
       try {
         // TODO add zod parser after API fixes
-        // right now it doesnt make sense to add schema for this data
-        // so we use mocked data to dill missing data which can vary based on token address
-        // @ts-expect-error // using mocked data from json
-        const parsedMarkets = marketTokenNormalizer(data.token, estatesMocked);
 
         // TODO delete fake data reducer after api fixes
-        // const fakeAssets = mockedAssets.reduce<Map<string, EstateType>>(
-        //   (acc, asset) => {
-        //     const slug = toTokenSlug(asset.token_address);
-        //     acc.set(slug, { ...asset, slug });
-        //     return acc;
-        //   },
-        //   new Map()
-        // );
+        const fakeAssets = data.token.reduce<Map<string, EstateType>>(
+          (acc, asset) => {
+            const slug = toTokenSlug(asset.address, asset.token_id);
+            acc.set(slug, { ...asset, slug });
+            return acc;
+          },
+          new Map()
+        );
 
         setMarketsState((prev) => ({
           ...prev,
           // markets: parsedMarkets,
           markets: new Map([
             ...marketsState.markets,
-            ...parsedMarkets,
-            // ...fakeAssets,
+            // ...parsedMarkets,
+            ...fakeAssets,
           ]),
           isLoading: false,
         }));
