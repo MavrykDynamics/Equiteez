@@ -11,6 +11,7 @@ import { useQuery } from "@apollo/client/index";
 
 // mocked assets === markets
 import estatesMocked from "app/mocks/rwas.json";
+import fakeAssetsMocked from "app/mocks/assets.mock.json";
 
 import {
   MarketContext,
@@ -37,6 +38,7 @@ import { toTokenSlug } from "~/lib/assets";
 import { useApolloContext } from "../ApolloProvider/apollo.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import { FatalError } from "~/errors/error";
+import { buildTokenImagesStack } from "~/lib/images-uri";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -114,15 +116,36 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     onCompleted: (data) => {
       try {
         // TODO add zod parser after API fixes
-
         const realAssetsFromApi = data.token.reduce<Map<string, EstateType>>(
           (acc, asset) => {
+            const { token_metadata } = asset;
+            const {
+              decimals = 6,
+              icon = "",
+              name = "-",
+              symbol = "-",
+            } = token_metadata ?? {};
+
             const slug = toTokenSlug(asset.address, asset.token_id);
             const assetMocked = estatesMocked.find(
               (item) => item.token_address === asset.address
             );
             if (assetMocked) {
-              acc.set(slug, { ...assetMocked, slug });
+              // const [previewImg] = buildTokenImagesStack(thumbnailUri);
+
+              acc.set(slug, {
+                ...assetMocked,
+                slug,
+                token_address: asset.address,
+                decimals,
+                icon,
+                symbol,
+                name,
+                // assetDetails: {
+                //   ...assetMocked.assetDetails,
+                //   previewImage: previewImg,
+                // },
+              });
             }
 
             return acc;
@@ -130,18 +153,16 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
           new Map()
         );
 
-        const fakeAssetsToShow = estatesMocked
-          .filter(
-            (asset) => !realAssetsFromApi.has(toTokenSlug(asset.token_address))
-          )
-          .reduce<Map<string, EstateType>>((acc, asset) => {
-            const slug = toTokenSlug(asset.token_address);
-            if (slug) {
-              acc.set(slug, { ...asset, slug });
-            }
+        const fakeAssetsToShow = fakeAssetsMocked.reduce<
+          Map<string, EstateType>
+        >((acc, asset) => {
+          const slug = toTokenSlug(asset.token_address);
+          if (slug) {
+            acc.set(slug, { ...asset, slug });
+          }
 
-            return acc;
-          }, new Map());
+          return acc;
+        }, new Map());
 
         setMarketsState((prev) => ({
           ...prev,
