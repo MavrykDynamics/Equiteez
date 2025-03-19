@@ -1,24 +1,24 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { ADMIN_ADDRESSES } from './user.consts';
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { ADMIN_ADDRESSES } from "./user.consts";
 import {
   attachTzktSocketsEventHandlers,
   fetchTzktUserBalances,
   normalizeUserTzktTokensBalances,
   openTzktWebSocket,
-} from './userBalances.helpers';
-import { sleep } from '~/lib/utils/sleep';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
+} from "./userBalances.helpers";
+import { sleep } from "~/lib/utils/sleep";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import {
   UserContextStateType,
   UserTzKtTokenBalances,
   UserTzktTokensBalancesType,
-} from '../user.provider.types';
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
+} from "../user.provider.types";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
 
 // types
-import type { HubConnection } from '@microsoft/signalr';
-import { TokenMetadata } from '~/lib/metadata';
-import { AccountInfo } from '@mavrykdynamics/beacon-dapp';
+import type { HubConnection } from "@microsoft/signalr";
+import { TokenMetadata } from "~/lib/metadata";
+import { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 
 type UseUserSocketsType = {
   setIsTzktBalancesLoading: (newLoading: boolean) => void;
@@ -112,7 +112,7 @@ export const useUserSockets = ({
    */
   const handleDisconnect = useCallback((error?: Error) => {
     if (error) {
-      console.error('tzkt socket disconnected: ', { error });
+      console.error("tzkt socket disconnected: ", { error });
       // bug(
       //   'Connection to TZKT has been lost, try to reload page',
       //   'TZKT connection'
@@ -125,7 +125,7 @@ export const useUserSockets = ({
    */
   const handleOnReconnected = useCallback(
     async (userAddress: string) => {
-      console.log('Connection to TZKT has been resumed', 'TZKT connection');
+      console.log("Connection to TZKT has been resumed", "TZKT connection");
       await sleep(500);
       // const loadingToasterId = loading(
       //   'Updating balances of TZKT tokens...',
@@ -138,7 +138,7 @@ export const useUserSockets = ({
 
       await sleep(500);
       // hideToasterMessage(loadingToasterId);
-      console.log('TZKT tokens balances has been updated', 'TZKT connection');
+      console.log("TZKT tokens balances has been updated", "TZKT connection");
     },
     [loadInitialTzktTokensForNewlyConnectedUser, tokensMetadata]
   );

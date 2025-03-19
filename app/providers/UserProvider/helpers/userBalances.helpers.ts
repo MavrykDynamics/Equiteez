@@ -136,6 +136,7 @@ export const openTzktWebSocket = async (): Promise<signalR.HubConnection> => {
   try {
     const tzktSocket = new signalR.HubConnectionBuilder()
       .withUrl(`${REACT_APP_TZKT_API}/ws`, {
+        skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })
       .build();
