@@ -1,12 +1,15 @@
 import BigNumber from "bignumber.js";
 import { DodoStorageType } from "~/providers/Dexprovider/dex.provider.types";
 
-export const getPMMTokenPrice = (storage: DodoStorageType) => {
+export const getPMMTokenPrice = (
+  storage: DodoStorageType,
+  tokenDecimals: number
+) => {
   // TODO wait when api is updated
-  // const { feeDecimals } = storage.config;
-  const feeDecimals = 24;
+  const { feeDecimals } = storage.config;
 
   const decimals = new BigNumber(10).pow(new BigNumber(feeDecimals));
+  const tokenScale = new BigNumber(10).pow(tokenDecimals);
 
   // Guide price with feeDecimals adjustment
   const i = new BigNumber(storage.guidePrice).div(decimals);
@@ -31,7 +34,7 @@ export const getPMMTokenPrice = (storage: DodoStorageType) => {
   const R = calculateRFromStorage(B, B_0, Q, Q_0, k);
 
   // Calculate final token price
-  return i.times(R);
+  return i.times(R).div(tokenScale);
 };
 
 export function calculateRFromStorage(

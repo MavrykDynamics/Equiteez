@@ -38,7 +38,6 @@ import { toTokenSlug } from "~/lib/assets";
 import { useApolloContext } from "../ApolloProvider/apollo.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import { FatalError } from "~/errors/error";
-import { buildTokenImagesStack } from "~/lib/images-uri";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -122,7 +121,6 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
             const {
               decimals = 6,
               icon = "",
-              name = "-",
               symbol = "-",
             } = token_metadata ?? {};
 

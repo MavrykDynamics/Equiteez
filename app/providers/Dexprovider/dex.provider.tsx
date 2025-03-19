@@ -29,16 +29,21 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
+  console.log(markets, "markets");
+
   useQueryWithRefetch(
     DEX_STORAGE_QUERY,
     {
       // variables: { addresses: marketAddresses },
-      skip: marketAddresses.length === 0,
+      skip: marketAddresses.length === 0 || markets.size === 0,
       onCompleted: (data) => {
         try {
           const storages = getDodoMavTokenStorages(data);
 
-          const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
+          const dodoPrices = getDodoMavTokenPrices(
+            Object.values(storages),
+            markets
+          );
           const tokenPairs = getDodoMavTokenPairs(storages);
 
           setDodoStorages(storages);
