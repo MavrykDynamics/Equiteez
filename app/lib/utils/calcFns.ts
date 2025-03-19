@@ -17,15 +17,15 @@ export function pseudoOperationFee(
 
 // used for buy orders
 export function caclMinMaxQuoteBuying(
-  tokensAmount: BigNumber.Value | undefined,
+  payQuote: BigNumber.Value | undefined, // Expected price in USDT
   slippagePercentage: string
 ) {
-  if (!tokensAmount) return 0;
-  const slippageFactor = new BigNumber(1).minus(
+  if (!payQuote) return 0;
+  const slippageFactor = new BigNumber(1).plus(
     new BigNumber(slippagePercentage).dividedBy(100)
   );
 
-  const minMaxQuote = new BigNumber(tokensAmount).times(slippageFactor);
+  const minMaxQuote = new BigNumber(payQuote).times(slippageFactor);
   return minMaxQuote;
 }
 

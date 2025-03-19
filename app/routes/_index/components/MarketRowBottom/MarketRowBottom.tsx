@@ -10,6 +10,7 @@ import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetail
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { Link } from "@remix-run/react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 export const MarketRowBottom = () => {
   const { marketsArr } = useMarketsContext();
@@ -31,7 +32,10 @@ export const MarketRowBottom = () => {
           speed={45}
         >
           {marketsArr.map((market) => {
-            const currentPrice = dodoMav[market.slug];
+            const currentPrice = atomsToTokens(
+              dodoMav[market.slug],
+              market.decimals
+            );
             return (
               <MarketRowBottomCard
                 key={market.slug}

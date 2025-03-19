@@ -48,6 +48,7 @@ import {
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -81,7 +82,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
 
-  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+  const tokenPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
+    [dodoMav, slug, selectedAssetMetadata.decimals]
+  );
 
   const baseTokenAmount = useMemo(
     () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),

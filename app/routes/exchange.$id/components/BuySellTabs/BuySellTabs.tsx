@@ -19,7 +19,7 @@ import { AdminScreen } from "./AdminScreen";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
-import { rwaToFixed } from "~/lib/utils/formaters";
+import { atomsToTokens, rwaToFixed } from "~/lib/utils/formaters";
 import clsx from "clsx";
 import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
 import { toTokenSlug } from "~/lib/assets";
@@ -180,10 +180,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const { usdToTokenRates } = useCurrencyContext();
   const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
   const { validBaseTokens } = useMarketsContext();
+  // metadata
+  const selectedAssetMetadata = useAssetMetadata(slug);
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
-  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+  const tokenPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata?.decimals),
+    [dodoMav, slug, selectedAssetMetadata?.decimals]
+  );
 
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
 
@@ -199,8 +204,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
 
-  // metadata
-  const selectedAssetMetadata = useAssetMetadata(slug);
   // TODO remove "?? toTokenSlug(stablecoinContract)" after API assets
   const quoteAssetmetadata = useAssetMetadata(
     dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)

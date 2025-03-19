@@ -5,6 +5,7 @@ import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider"
 import { EstateType } from "~/providers/MarketsProvider/market.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 function getThreeUniqueElements(items: EstateType[]) {
   if (items.length < 3) {
@@ -42,7 +43,10 @@ export const SimilarProperties = () => {
           <h4>There aren&apos;t no similar markets.</h4>
         ) : (
           similarEstates.map((estate) => {
-            const pricePerToken = dodoMav[estate.slug];
+            const pricePerToken = atomsToTokens(
+              dodoMav[estate.slug],
+              estate.decimals
+            );
             return (
               <Link
                 to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}

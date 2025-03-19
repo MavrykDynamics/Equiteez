@@ -8,6 +8,7 @@ import { Filters } from "./components/Filters";
 import { useState } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 export const meta: MetaFunction = () => {
   return [
@@ -37,7 +38,7 @@ export default function Properties() {
           {filteredEstates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
 
-            const pricePerToken = dodoMav[es.slug];
+            const pricePerToken = atomsToTokens(dodoMav[es.slug], es.decimals);
 
             return (
               <Link

@@ -4,7 +4,6 @@ import { toTokenSlug } from "~/lib/assets";
 import { getPMMTokenPrice } from "./price";
 import BigNumber from "bignumber.js";
 import { DexStorageQuery } from "~/utils/__generated__/graphql";
-import { EstateType } from "~/providers/MarketsProvider/market.types";
 
 export const getContractStorageInfo = async (address: string) => {
   try {
@@ -82,10 +81,7 @@ export const getDodoMavTokenStorages = (
   }, {});
 };
 
-export const getDodoMavTokenPrices = (
-  storages: DodoStorageType[],
-  markets: Map<string, EstateType>
-) => {
+export const getDodoMavTokenPrices = (storages: DodoStorageType[]) => {
   return storages.reduce<StringRecord<BigNumber>>((acc, storage) => {
     const slug = toTokenSlug(
       storage?.baseToken?.tokenContractAddress,
@@ -93,8 +89,7 @@ export const getDodoMavTokenPrices = (
     );
 
     if (slug && storage) {
-      const baseTokenDecimals = markets.get(slug)?.decimals ?? 6;
-      const price = getPMMTokenPrice(storage, baseTokenDecimals);
+      const price = getPMMTokenPrice(storage);
       acc[slug] = price;
     }
     return acc;

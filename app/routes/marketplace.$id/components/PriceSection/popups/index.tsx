@@ -51,6 +51,7 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 export const spippageOptions = ["0.3", "0.5", "1", "custom"];
 
@@ -71,8 +72,11 @@ export const PopupContent: FC<{
   ) as OrderType;
 
   // derived
-  const { slug } = estate;
-  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+  const { slug, decimals } = estate;
+  const tokenPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], decimals),
+    [dodoMav, slug, decimals]
+  );
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   // metadata for selected asset
@@ -138,11 +142,9 @@ export const PopupContent: FC<{
       dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
       quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(
-        amountB?.div(tokenPrice).toNumber(),
-        slippagePercentage
-      ),
+      minMaxQuote: caclMinMaxQuoteBuying(tokenPrice, slippagePercentage),
       decimals: selectedAssetMetadata?.decimals,
+      quoteDecimals: qouteAssetMetadata?.decimals,
     }),
     [
       amountB,
@@ -152,6 +154,7 @@ export const PopupContent: FC<{
       tokenPrice,
       pickDodoContractBasedOnToken,
       pickDodoContractQuoteToken,
+      qouteAssetMetadata?.decimals,
     ]
   );
 

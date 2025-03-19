@@ -29,7 +29,11 @@ export async function buyBaseToken({
   minMaxQuote,
   decimals,
   quoteTokenAddress, // quoteTokenAddress usually usdt
-}: Omit<BuySellBaseToken, "mockQuoteLpToken"> & { quoteTokenAddress: string }) {
+  quoteDecimals,
+}: Omit<BuySellBaseToken, "mockQuoteLpToken"> & {
+  quoteTokenAddress: string;
+  quoteDecimals: number;
+}) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
@@ -38,7 +42,10 @@ export async function buyBaseToken({
     const quoteTokenInstance = await tezos.wallet.at(quoteTokenAddress);
 
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
-    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
+    const parsedMinMaxQuote = tokensToAtoms(
+      minMaxQuote,
+      quoteDecimals
+    ).toNumber();
 
     const open_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {

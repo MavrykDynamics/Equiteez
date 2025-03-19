@@ -22,6 +22,7 @@ import {
 import { useAssetMetadata } from "~/lib/metadata";
 import { toTokenSlug } from "~/lib/assets";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -45,12 +46,15 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
   );
 
-  const currentPrice = useMemo(() => dodoMav[slug] ?? "0", [dodoMav, slug]);
+  const currentPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], baseTokenMetadata.decimals) ?? "0",
+    [baseTokenMetadata.decimals, dodoMav, slug]
+  );
 
   const totalLiquidityInfo = useMemo(() => {
     const { totalLiquidityInUSD } = calculateTotalLiquidityInUSD(
       dodoStorages[slug],
-      dodoMav[slug]
+      currentPrice
     );
 
     const { basePercentage, quotePercentage } = calculateLiquidityPercentages(
@@ -60,7 +64,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     getTokenAmountFromLiquidity(dodoStorages[slug], currentPrice);
 
     return { totalLiquidityInUSD, basePercentage, quotePercentage };
-  }, [dodoMav, dodoStorages, slug]);
+  }, [currentPrice, dodoStorages, slug]);
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
