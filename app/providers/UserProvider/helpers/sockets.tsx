@@ -177,7 +177,7 @@ export const useUserSockets = ({
     return () => {
       tzktSocketRef?.current?.stop();
     };
-  }, [IS_WEB, attachSocketListeners]);
+  }, [IS_WEB]);
 
   return {
     loadInitialTzktTokensForNewlyConnectedUser,
