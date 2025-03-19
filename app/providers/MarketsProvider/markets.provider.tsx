@@ -140,7 +140,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
                 decimals,
                 icon,
                 symbol,
-                name,
+                // name,
                 // assetDetails: {
                 //   ...assetMocked.assetDetails,
                 //   previewImage: previewImg,
