@@ -31,17 +31,14 @@ export function caclMinMaxQuoteBuying(
 
 // used for sell orders
 export function caclMinMaxQuoteSelling(
-  tokensAmount: BigNumber.Value | undefined,
-  tokenPriceInUSDT: BigNumber.Value,
+  payQuote: BigNumber.Value | undefined,
   slippagePercentage: string
 ) {
-  if (!tokensAmount) return 0;
+  if (!payQuote) return 0;
   const slippageFactor = new BigNumber(1).minus(
     new BigNumber(slippagePercentage).dividedBy(100)
   );
 
-  const totalValueInUSDT = new BigNumber(tokensAmount).times(tokenPriceInUSDT);
-  const minMaxQuoteInUSDT = totalValueInUSDT.times(slippageFactor);
-
-  return minMaxQuoteInUSDT;
+  const minMaxQuote = new BigNumber(payQuote).times(slippageFactor);
+  return minMaxQuote;
 }

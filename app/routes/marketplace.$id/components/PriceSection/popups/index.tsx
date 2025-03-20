@@ -142,7 +142,7 @@ export const PopupContent: FC<{
       dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
       quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(tokenPrice, slippagePercentage),
+      minMaxQuote: caclMinMaxQuoteBuying(amountB, slippagePercentage),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: qouteAssetMetadata?.decimals,
     }),
@@ -165,8 +165,7 @@ export const PopupContent: FC<{
       tokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
       minMaxQuote: caclMinMaxQuoteSelling(
-        amountB,
-        tokenPrice,
+        tokenPrice.times(amountB ?? 0),
         slippagePercentage
       ),
       decimals: selectedAssetMetadata?.decimals,

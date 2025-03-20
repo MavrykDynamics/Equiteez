@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { TezosToolkit } from "@mavrykdynamics/taquito";
+// import BigNumber from "bignumber.js";
 
 import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
@@ -113,6 +114,12 @@ export async function sellBaseToken({
       minMaxQuote,
       quoteDecimals
     ).toNumber();
+
+    // let payQuote = await marketContract.contractViews
+    //   .querySellBaseToken(amount)
+    //   .executeView({ viewCaller: "KT1JkmXcgKQ3oNpLhjDD4WgvgMfyccUZwsws" });
+
+    // const parsedQuote = new BigNumber(payQuote).toString();
 
     const open_ops = quoteLpInstance.methodsObject["update_operators"]([
       {
