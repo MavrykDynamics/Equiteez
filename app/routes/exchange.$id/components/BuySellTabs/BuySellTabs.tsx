@@ -41,10 +41,7 @@ import {
 } from "~/lib/ui/use-status-flag";
 import { TokenMetadata, useAssetMetadata } from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import {
-  calculateEstFee,
-  getDodoMavLpFee,
-} from "~/providers/Dexprovider/utils";
+import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 type BuySellTabsProps = {
@@ -112,19 +109,17 @@ const useBuySellActions = (
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       tokensAmount: amount?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(
-        amount?.div(tokenPrice).toNumber(),
-        "0"
-      ),
+      minMaxQuote: caclMinMaxQuoteBuying(amount, "0"),
+      quoteDecimals: quoteAssetmetadata?.decimals,
       decimals: selectedAssetMetadata?.decimals,
     }),
     [
-      tokenAddress,
-      amount,
-      tokenPrice,
-      selectedAssetMetadata?.decimals,
       pickDodoContractBasedOnToken,
+      tokenAddress,
       pickDodoContractQuoteToken,
+      amount,
+      quoteAssetmetadata?.decimals,
+      selectedAssetMetadata?.decimals,
     ]
   );
 
@@ -134,7 +129,10 @@ const useBuySellActions = (
 
       tokenAddress: tokenAddress,
       tokensAmount: amount?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteSelling(amount, tokenPrice, "0"),
+      minMaxQuote: caclMinMaxQuoteSelling(
+        tokenPrice.times(amount ?? 0),
+        "0" // TODO need task to add slippage on ui
+      ),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: quoteAssetmetadata?.decimals,
     }),
@@ -370,29 +368,22 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   }, [isLimitType, slug, tokenAddress, tokenPrice, usdToTokenRates]);
 
   const estFee = useMemo(() => {
-    const lpFee = getDodoMavLpFee(dodoStorages[slug]);
+    const {
+      config: { lpFee, maintainerFee },
+    } = dodoStorages[slug];
 
     const tokensAmount = amount;
-    const decimals = isBuyAction
-      ? selectedAssetMetadata?.decimals
-      : quoteAssetmetadata?.decimals;
 
     return calculateEstFee(
       tokensAmount,
       tokenPrice,
       lpFee,
-      decimals,
+      maintainerFee,
+      18,
+      "0",
       isBuyAction
     );
-  }, [
-    amount,
-    dodoStorages,
-    isBuyAction,
-    quoteAssetmetadata?.decimals,
-    selectedAssetMetadata?.decimals,
-    slug,
-    tokenPrice,
-  ]);
+  }, [amount, dodoStorages, isBuyAction, slug, tokenPrice]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(

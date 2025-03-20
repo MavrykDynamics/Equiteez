@@ -43,7 +43,6 @@ import {
   calculateEstFee,
   calculateMinReceived,
   detectQuoteTokenLimit,
-  getDodoMavLpFee,
   getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
@@ -218,18 +217,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   ]);
 
   const estFee = useMemo(() => {
-    const lpFee = getDodoMavLpFee(dodoStorages[slug]);
+    const {
+      config: { lpFee, maintainerFee },
+    } = dodoStorages[slug];
 
-    const tokensAmount = isBuyAction ? input1Props.amount : input2Props.amount;
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
+    const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
 
     return calculateEstFee(
       tokensAmount,
       tokenPrice,
       lpFee,
-      decimals,
+      maintainerFee,
+      18,
+      slippagePercentage,
       isBuyAction
     );
   }, [
@@ -237,9 +237,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     input1Props.amount,
     input2Props.amount,
     isBuyAction,
-    selectedAssetMetadata.decimals,
+    slippagePercentage,
     slug,
-    stableCoinMetadata.decimals,
     tokenPrice,
   ]);
 
