@@ -52,7 +52,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       },
       onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
     },
-    { blocksDiff: 1 }
+    { blocksDiff: 5 }
   );
 
   const orderBookPrices = useMemo(

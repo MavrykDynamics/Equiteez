@@ -144,32 +144,25 @@ export const useUserSockets = ({
   );
 
   const attachSocketListeners = useCallback(
-    async (tzktSocket: HubConnection) => {
-      if (account?.address) {
-        attachTzktSocketsEventHandlers({
-          userAddress: account.address,
-          handleTokens: updateUserTzktTokenBalances(account.address),
-          tzktSocket,
-          handleDisconnect,
-          handleOnReconnected,
-        });
-      }
+    async (tzktSocket: HubConnection, address: string) => {
+      attachTzktSocketsEventHandlers({
+        userAddress: address,
+        handleTokens: updateUserTzktTokenBalances(address),
+        tzktSocket,
+        handleDisconnect,
+        handleOnReconnected,
+      });
     },
-    [
-      account,
-      handleDisconnect,
-      handleOnReconnected,
-      updateUserTzktTokenBalances,
-    ]
+    [handleDisconnect, handleOnReconnected, updateUserTzktTokenBalances]
   );
 
   // set socket
   useEffect(() => {
-    if (IS_WEB) {
+    if (IS_WEB && account?.address) {
       openTzktWebSocket()
         .then((socket) => {
           tzktSocketRef.current = socket;
-          attachSocketListeners(socket);
+          attachSocketListeners(socket, account?.address);
         })
         .catch((e) => console.error(e));
     }
@@ -177,7 +170,7 @@ export const useUserSockets = ({
     return () => {
       tzktSocketRef?.current?.stop();
     };
-  }, [IS_WEB]);
+  }, [IS_WEB, account?.address, attachSocketListeners]);
 
   return {
     loadInitialTzktTokensForNewlyConnectedUser,
