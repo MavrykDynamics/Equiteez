@@ -36,6 +36,7 @@ export const IconsBlock: FC<{
   small?: boolean;
   basicInfo: StringRecord<string | number>;
 }> = ({ basicInfo, small }) => {
+  console.log(basicInfo, "basicInfo");
   return (
     <section className="flex items-center gap-x-3">
       {Object.entries(basicInfo).map(([key, value]) => {

@@ -20,9 +20,9 @@
       ],
       "previewImage": "https://images.pexels.com/photos/8474984/pexels-photo-8474984.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
       "basicInfo": {
-        "beds": 1,
-        "baths": 3,
-        "sqft": 313
+        "beds": "1 beds",
+        "baths": "3 naths",
+        "sqft": "584 sqft"
       },
       "propertyDetails": {
         "description": "Welcome to your new oasis on the Red Planet! Hilton Mars 1 by Space X proudly presents an exquisite multi-story establishment designed for luxurious stays in the cosmos. Our exclusive property offers panoramic views of Mars' breathtaking landscapes and features state-of-the-art amenities for an unparalleled experience.",
@@ -304,9 +304,9 @@
       ],
       "previewImage": "https://images.pexels.com/photos/4846221/pexels-photo-4846221.jpeg?auto=compress&cs=tinysrgb&w=1200",
       "basicInfo": {
-        "beds": 5,
-        "baths": 2,
-        "sqft": 584
+        "beds": "5 beds",
+        "baths": "2 baths",
+        "sqft": "584 sqft"
       },
       "propertyDetails": {
         "description": "Sint pariatur excepteur in sunt. Ea veniam veniam ex et incididunt deserunt ullamco magna ea nulla. Aliquip reprehenderit enim irure irure fugiat. Nisi duis culpa voluptate cupidatat aute nisi adipisicing dolor velit ad. Velit incididunt dolor velit proident nulla.\r\n",

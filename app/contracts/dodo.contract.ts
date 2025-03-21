@@ -17,6 +17,16 @@ type BuySellBaseToken = {
   minMaxQuote: number;
 } & DefaultContractProps;
 
+// export const mintUsdt = async(tezos: TezosToolkit) => {
+//   try {
+//     const contract = await tezos.wallet.at("KT1D7ZQBhwxkMgZThqctYtMXigFvJRZL4eSy");
+//     const op = await contract.methods.mintOrBurn().send();
+//     await op.confirmation();
+//   } catch (e: unknown) {
+//     throw e;
+//   }
+// }
+
 /**
  *
  *  For buying base tokens, you need to update operators for the Quote Tokens and not the Base tokens,
