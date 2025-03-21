@@ -47,7 +47,7 @@ import {
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
-import { atomsToTokens } from "~/lib/utils/formaters";
+import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -218,27 +218,35 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const estFee = useMemo(() => {
     const {
-      config: { lpFee, maintainerFee },
+      config: { lpFee, maintainerFee, feeDecimals },
     } = dodoStorages[slug];
 
     const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
 
-    return calculateEstFee(
+    const result = calculateEstFee(
       tokensAmount,
       tokenPrice,
       lpFee,
       maintainerFee,
-      18,
+      Number(feeDecimals),
       slippagePercentage,
       isBuyAction
     );
+
+    const decimals = isBuyAction
+      ? selectedAssetMetadata.decimals
+      : stableCoinMetadata.decimals;
+
+    return downgradeDecimals(result, decimals);
   }, [
     dodoStorages,
     input1Props.amount,
     input2Props.amount,
     isBuyAction,
+    selectedAssetMetadata.decimals,
     slippagePercentage,
     slug,
+    stableCoinMetadata.decimals,
     tokenPrice,
   ]);
 
