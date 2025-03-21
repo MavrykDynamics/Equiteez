@@ -18,6 +18,7 @@ export const DEX_STORAGE_QUERY = gql(`
     r_status
     price_model
     maintainer_fee
+    lp_fee
     quote_token {
       token_id
       address

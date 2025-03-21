@@ -34,7 +34,7 @@ export const getDodoMavTokenStorages = (
 
     const parsedData = {
       config: {
-        lpFee: storage.fee_decimals.toString(),
+        lpFee: storage.lp_fee.toString(),
         feeDecimals: storage.fee_decimals.toString(),
         priceModel: storage.price_model,
         maintainerFee: storage.maintainer_fee,
