@@ -592,10 +592,11 @@
       "basicInfo": {
         "rooms": "60 rooms",
         "sqft": "704 sqft",
-        "rate": "80% rate"
+        "rate": "80% rate",
+        "date": "2023"
       },
       "propertyDetails": {
-        "description": "Queen Tower is a 27-story Class A office building in downtown Dubai. with 540,000 sq ft of premium space. Features include a stunning glass facade, three-story atrium, and LEED Platinum certification. Currently 92% leased to top-tier tech and financial tenants, delivering 8.2% annual returns.  With expansive floor-to-ceiling windows offering panoramic views of the city skyline, it's not just a place to work—it's a place to thrive. Ideal for companies looking to establish a prestigious address, this building offers unrivaled access to public transit, dining, and entertainment.",
+        "description": "Queen Tower is a premier 27-story Class A office building located in the heart of downtown Dubai, offering 540,000 square feet of state-of-the-art workspace. The building boasts a striking glass facade, a grand three-story atrium, and holds a prestigious LEED Platinum certification, highlighting its commitment to sustainability. Currently, 92% of the space is leased to leading tech and financial companies, delivering an impressive annual return of 8.2%.\n\nWith floor-to-ceiling windows providing breathtaking panoramic views of the city's iconic skyline, Queen Tower isn't just a workspace—it's an environment designed for growth and innovation. Its prime location ensures seamless access to public transit, world-class dining, and vibrant entertainment, making it the perfect choice for companies seeking an elite address to elevate their brand.",
         "propertyType": "Mixed-Use Real Estate",
         "fullAddress": "Dubai, UAE",
         "shortAddress": "Dubai, UAE",
