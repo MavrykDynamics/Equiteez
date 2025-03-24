@@ -423,7 +423,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {hasQuoteError && (
         <div className="mt-8">
-          <Alert type="warning" header="Low Quote Detected">
+          <Alert type="error" header="Low Quote Detected">
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
             percentage in your settings to ensure a successful transaction.
