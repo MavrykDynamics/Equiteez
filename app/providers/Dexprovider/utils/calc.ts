@@ -53,17 +53,19 @@ export const calculateTotalLiquidityInUSD = (
   };
 };
 
+const DEFAULT_PERCENTAGES_DATA = {
+  basePercentage: "0",
+  quotePercentage: "0",
+};
+
 export const calculateLiquidityPercentages = (
   storage: DodoStorageType | undefined
 ) => {
-  if (!storage)
-    return {
-      basePercentage: "0",
-      quotePercentage: "0",
-    };
+  if (!storage) return DEFAULT_PERCENTAGES_DATA;
   const { baseBalance, quoteBalance, totalLiquidity } =
     calculateTotalLiquidity(storage);
 
+  if (totalLiquidity.isZero()) return DEFAULT_PERCENTAGES_DATA;
   // Calculate percentages
   const basePercentage = baseBalance.div(totalLiquidity).times(100); // Base token percentage
   const quotePercentage = quoteBalance.div(totalLiquidity).times(100); // Quote token percentage
@@ -88,33 +90,39 @@ export const getTokenAmountFromLiquidity = (
   return baseBalance; // This already represents the token amount in the pool
 };
 
-export const getDodoMavLpFee = (storage: DodoStorageType | undefined) => {
-  if (!storage) return ZERO;
-  const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-  return new BigNumber(storage.config.lpFee).div(feeDecimals);
-};
-
 export const calculateEstFee = (
   tokensAmount: BigNumber | undefined,
   tokenPriceInUSDT: BigNumber.Value,
   lpFee: BigNumber.Value,
-  decimals: number,
+  maintainerFee: BigNumber.Value,
+  feeDecimals: number,
+  slippageFactor: BigNumber.Value,
   isBuying: boolean
 ) => {
   if (!tokensAmount) return "0";
-  const feeRate = lpFee;
+
+  // Convert fees and slippage factor to proper decimal scale
+  const totalFeeRate = new BigNumber(lpFee)
+    .plus(maintainerFee)
+    .div(new BigNumber(10).pow(feeDecimals));
+
+  const slippageMultiplier = new BigNumber(1).plus(
+    new BigNumber(slippageFactor).div(new BigNumber(10).pow(18))
+  );
 
   if (isBuying) {
-    // Fee in token X
-    const estFee = tokensAmount.times(feeRate);
-    return estFee.toFixed(decimals);
+    // Fee in base token
+    const estFee = tokensAmount.times(totalFeeRate).times(slippageMultiplier);
+    return estFee.toFixed(feeDecimals);
   } else {
     // Fee in USDT
     const tokenValueInUSDT = new BigNumber(tokensAmount).times(
       tokenPriceInUSDT
     );
-    const estFee = tokenValueInUSDT.times(feeRate);
-    return estFee.toFixed(decimals);
+    const estFee = tokenValueInUSDT
+      .times(totalFeeRate)
+      .times(slippageMultiplier);
+    return estFee.toFixed(feeDecimals);
   }
 };
 
@@ -129,9 +137,6 @@ export const calculateMinReceived = (
   const slippageFactor = new BigNumber(1).minus(
     new BigNumber(slippagePercentage).dividedBy(100)
   );
-
-  // const minMaxQuote = new BigNumber(tokensAmount).times(slippageFactor);
-  // console.log(tokensToAtoms(minMaxQuote, 3).toNumber(), "------");
 
   // For buying, calculate how much you receive in tokens
   const totalValueInUSDT = new BigNumber(tokensAmount).times(tokenPriceInUSDT);

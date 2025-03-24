@@ -12,6 +12,7 @@ import PoliciesIcon from "app/assets/propertyId/icons/policies.svg?react";
 import YieldIcon from "app/assets/propertyId/icons/yield.svg?react";
 import VortexesIcon from "app/assets/propertyId/icons/window-with-vortexes.svg?react";
 import LockIcon from "app/assets/propertyId/icons/lock.svg?react";
+import DateIcon from "app/icons/date.svg?react";
 import clsx from "clsx";
 
 const assetIconBasedOnKey: StringRecord<IconSVG> = {
@@ -28,6 +29,7 @@ const assetIconBasedOnKey: StringRecord<IconSVG> = {
   tvl: LockIcon,
   coverage: CoverageIcon,
   policies: PoliciesIcon,
+  date: DateIcon,
 };
 
 export const IconsBlock: FC<{

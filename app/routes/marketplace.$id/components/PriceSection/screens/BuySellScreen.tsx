@@ -28,7 +28,7 @@ import {
 import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { stablecoinContract } from "~/consts/contracts";
-import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInput } from "~/templates/BalanceInput";
@@ -43,11 +43,11 @@ import {
   calculateEstFee,
   calculateMinReceived,
   detectQuoteTokenLimit,
-  getDodoMavLpFee,
   getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
+import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -59,6 +59,7 @@ type BuySellScreenProps = {
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   slippagePercentage: string;
   setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
+  hasQuoteError?: boolean;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -70,17 +71,22 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   setAmount,
   slippagePercentage,
   setSlippagePercentage,
+  hasQuoteError = false,
 }) => {
   const { symbol, token_address, slug } = estate;
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
+  // TODO check for token prices if the are empty
   const { userTokensBalances, isKyced } = useUserContext();
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
 
-  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+  const tokenPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
+    [dodoMav, slug, selectedAssetMetadata.decimals]
+  );
 
   const baseTokenAmount = useMemo(
     () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
@@ -213,26 +219,34 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   ]);
 
   const estFee = useMemo(() => {
-    const lpFee = getDodoMavLpFee(dodoStorages[slug]);
+    const {
+      config: { lpFee, maintainerFee, feeDecimals },
+    } = dodoStorages[slug];
 
-    const tokensAmount = isBuyAction ? input1Props.amount : input2Props.amount;
+    const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
+
+    const result = calculateEstFee(
+      tokensAmount,
+      tokenPrice,
+      lpFee,
+      maintainerFee,
+      Number(feeDecimals),
+      slippagePercentage,
+      isBuyAction
+    );
+
     const decimals = isBuyAction
       ? selectedAssetMetadata.decimals
       : stableCoinMetadata.decimals;
 
-    return calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      decimals,
-      isBuyAction
-    );
+    return downgradeDecimals(result, decimals);
   }, [
     dodoStorages,
     input1Props.amount,
     input2Props.amount,
     isBuyAction,
     selectedAssetMetadata.decimals,
+    slippagePercentage,
     slug,
     stableCoinMetadata.decimals,
     tokenPrice,
@@ -403,6 +417,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <Alert type="warning" header="Pool Balance Limit Reached">
             Your trade will exceed the pool limit, which may cause slippage or
             failure. Please adjust the amount and try again.
+          </Alert>
+        </div>
+      )}
+
+      {hasQuoteError && (
+        <div className="mt-8">
+          <Alert type="error" header="Low Quote Detected">
+            The current quote is too low to complete the operation. This may
+            happen due to price fluctuations. Please adjust the slippage
+            percentage in your settings to ensure a successful transaction.
           </Alert>
         </div>
       )}

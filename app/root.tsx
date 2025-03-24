@@ -19,7 +19,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
-import { EstatesProvider } from "./providers/EstatesProvider/estates.provider";
+import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
 import { AppGlobalLoader } from "./providers/AppGlobalLoader";
@@ -60,15 +60,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const tokens = await fetchTokensData();
 
-  const [tokensMetadata, usdToToken] = await Promise.all([
+  const [tokensMetadata] = await Promise.all([
     fetchTokensMetadata(tokens),
-    fetchUsdToTokenRates(),
+    // fetchUsdToTokenRates(),
   ]);
 
   return json({
     tokens,
     tokensMetadata,
-    usdToToken,
+    usdToToken: {},
     isMobile,
     fiatToTezos: {},
     gaTrackingId: process.env.GA_TRACKING_ID,
@@ -121,7 +121,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            {/* <AppWrapper>{children}</AppWrapper> */}
             <AppProvider>
               <MobileView isMobile={isMobile}>
                 <ApolloProvider>
@@ -135,7 +134,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           initialTokens={tokens}
                           initialTokensMetadata={tokensMetadata}
                         >
-                          <EstatesProvider>
+                          <MarketsProvider>
                             <DexProvider>
                               <UserProvider>
                                 <AppGlobalLoader>
@@ -143,7 +142,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 </AppGlobalLoader>
                               </UserProvider>
                             </DexProvider>
-                          </EstatesProvider>
+                          </MarketsProvider>
                         </TokensProvider>
                       </CurrencyProvider>
                     </WalletProvider>

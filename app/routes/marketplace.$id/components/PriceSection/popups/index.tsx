@@ -16,17 +16,11 @@ import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 import { Divider } from "~/lib/atoms/Divider";
 import { TabType } from "~/lib/atoms/Tab";
 
-// contract actions
-import { pickDodoContractBasedOnToken } from "~/consts/contracts";
-
 // icons
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
-import {
-  SECONDARY_MARKET,
-  SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import {
   BUY,
   CONFIRM,
@@ -55,8 +49,11 @@ import {
 } from "~/lib/utils/calcFns";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
-export const spippageOptions = ["0.3", "0.5", "1", "custom"];
+export const spippageOptions = ["1", "3", "5", "custom"];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -64,6 +61,9 @@ export const PopupContent: FC<{
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
   const { dodoMav, dodoTokenPair } = useDexContext();
+  const {
+    pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
+  } = useMarketsContext();
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
   const prevTabId = usePrevious(
@@ -71,14 +71,26 @@ export const PopupContent: FC<{
     activetabId !== CONFIRM
   ) as OrderType;
 
+  // quote warning
+  const [hasQuoteError, setHasQuoteError] = useState(false);
+
   // derived
-  const { slug } = estate;
-  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+  const { slug, decimals } = estate;
+  const tokenPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], decimals),
+    [dodoMav, slug, decimals]
+  );
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   // metadata for selected asset
   const selectedAssetMetadata = useAssetMetadata(slug);
+
   const qouteAssetMetadata = useAssetMetadata(dodoTokenPair[slug]);
+
+  const showQuoteWarning = useCallback(() => {
+    setHasQuoteError(true);
+    setAvtiveTabId(prevTabId);
+  }, [prevTabId]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -104,6 +116,7 @@ export const PopupContent: FC<{
         id: OTC,
         label: "OTC",
         handleClick: handleTabClick,
+        disabled: true,
       },
     ],
     [handleTabClick]
@@ -136,19 +149,23 @@ export const PopupContent: FC<{
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
+      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(
-        amountB?.div(tokenPrice).toNumber(),
-        slippagePercentage
-      ),
+      minMaxQuote: caclMinMaxQuoteBuying(amountB, slippagePercentage),
       decimals: selectedAssetMetadata?.decimals,
+      quoteDecimals: qouteAssetMetadata?.decimals,
+      showQuoteWarning: showQuoteWarning,
     }),
     [
-      amountB,
+      pickDodoContractBasedOnToken,
       estate.token_address,
-      selectedAssetMetadata?.decimals,
-      slippagePercentage,
+      pickDodoContractQuoteToken,
+      amountB,
       tokenPrice,
+      slippagePercentage,
+      selectedAssetMetadata?.decimals,
+      qouteAssetMetadata?.decimals,
+      showQuoteWarning,
     ]
   );
 
@@ -159,20 +176,22 @@ export const PopupContent: FC<{
       tokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
       minMaxQuote: caclMinMaxQuoteSelling(
-        amountB,
-        tokenPrice,
+        tokenPrice.times(amountB ?? 0),
         slippagePercentage
       ),
       decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: qouteAssetMetadata.decimals,
+      quoteDecimals: qouteAssetMetadata?.decimals,
+      showQuoteWarning: showQuoteWarning,
     }),
     [
-      amountB,
+      pickDodoContractBasedOnToken,
       estate.token_address,
-      qouteAssetMetadata.decimals,
-      selectedAssetMetadata?.decimals,
-      slippagePercentage,
+      amountB,
       tokenPrice,
+      slippagePercentage,
+      selectedAssetMetadata?.decimals,
+      qouteAssetMetadata?.decimals,
+      showQuoteWarning,
     ]
   );
 
@@ -313,6 +332,7 @@ export const PopupContent: FC<{
               total={total}
               slippagePercentage={slippagePercentage}
               setSlippagePercentage={setSlippagePercentage}
+              hasQuoteError={hasQuoteError}
             />
           )}
 

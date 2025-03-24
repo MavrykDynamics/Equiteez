@@ -1,9 +1,10 @@
 import { FC, useMemo } from "react";
 import WarningIcon from "app/icons/info-alert.svg?react";
+import ErrorIcon from "app/icons/error.svg?react";
 import clsx from "clsx";
 
 type AlertProps = {
-  type: "warning";
+  type: "warning" | "error";
   header: string;
   size?: "regular" | "small";
 } & PropsWithChildren;
@@ -25,6 +26,12 @@ const alertTypeBasedStyles = {
     headerColor: "text-sand-900",
     bodyColor: "text-sand-700",
     bgColor: "bg-[#FFF0DA]",
+  },
+  error: {
+    Icon: ErrorIcon,
+    headerColor: "text-sand-900",
+    bodyColor: "text-sand-700",
+    bgColor: "bg-[#DB050540]",
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { Suspense, useContext } from "react";
 import { ErrorPageTemp } from "~/templates/ErrorPageTemp/ErrorPageTemp";
 
 // types
@@ -216,7 +216,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
    *
    */
   render(): JSX.Element {
-    const { error } = this.state.context;
+    const { error = null } = this.state.context;
     let type: InternalErrorType = ERROR_TYPE_ROUTER;
     let errorPageContent = null;
 
@@ -227,33 +227,34 @@ export default class ToasterProvider extends React.Component<Props, State> {
     errorPageContent = getErrorPageData(type);
 
     const shouldRenderChildren =
-      // eslint-disable-next-line no-extra-boolean-cast
-      !this.state.context.maintance || !Boolean(errorPageContent);
+      error === null && !this.state.context.maintance;
 
     return (
-      <toasterContext.Provider value={this.state.context}>
-        {shouldRenderChildren ? (
-          this.props.children
-        ) : (
-          <AppProvider>
-            <TokensProvider initialTokens={[]} initialTokensMetadata={{}}>
-              <WalletProvider>
-                <UserProvider>
-                  {this.state.context.maintance ? (
-                    <MaintancePageTemp />
-                  ) : (
-                    <ErrorPageTemp
-                      headerText={errorPageContent.header}
-                      descText={errorPageContent.desc}
-                      type={type}
-                    />
-                  )}
-                </UserProvider>
-              </WalletProvider>
-            </TokensProvider>
-          </AppProvider>
-        )}
-      </toasterContext.Provider>
+      <Suspense>
+        <toasterContext.Provider value={this.state.context}>
+          {shouldRenderChildren ? (
+            this.props.children
+          ) : (
+            <AppProvider>
+              <TokensProvider initialTokens={[]} initialTokensMetadata={{}}>
+                <WalletProvider>
+                  <UserProvider>
+                    {this.state.context.maintance ? (
+                      <MaintancePageTemp />
+                    ) : (
+                      <ErrorPageTemp
+                        headerText={errorPageContent.header}
+                        descText={errorPageContent.desc}
+                        type={type}
+                      />
+                    )}
+                  </UserProvider>
+                </WalletProvider>
+              </TokensProvider>
+            </AppProvider>
+          )}
+        </toasterContext.Provider>
+      </Suspense>
     );
   }
 }

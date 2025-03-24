@@ -1,10 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
 import { FC, useMemo } from "react";
 
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { AssetDetailsMapBlock } from "./components/AssetDetailsMapBlock";
 import { DefaultAssetDetailsTemplate } from "~/templates/AssetTemplates/AssetTemplates";
-import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 import { Navigate } from "@remix-run/react";
 import { pickTemplateBasedOnAssetType } from "~/templates/AssetTemplates";
 import {
@@ -19,23 +19,23 @@ import {
 } from "~/consts/asset.const";
 
 export const PropertyDetailsTab = () => {
-  const { activeEstate } = useEstatesContext();
+  const { activeMarket } = useMarketsContext();
 
-  if (!activeEstate) return <Navigate to="/marketplace" />;
+  if (!activeMarket) return <Navigate to="/marketplace" />;
   return (
     <div>
-      <AssetDetailsTemplate activeEstate={activeEstate} />
+      <AssetDetailsTemplate activeMarket={activeMarket} />
     </div>
   );
 };
 
 // Default view fore real assets from API (MARS & OCEAN at the moment)
-const DefaultAssetTemplate: FC<{ activeEstate: EstateType }> = ({
-  activeEstate,
+const DefaultAssetTemplate: FC<{ activeMarket: EstateType }> = ({
+  activeMarket,
 }) => {
   const {
     assetDetails: { buildingInfo, propertyDetails },
-  } = activeEstate;
+  } = activeMarket;
 
   return (
     <div>
@@ -44,8 +44,8 @@ const DefaultAssetTemplate: FC<{ activeEstate: EstateType }> = ({
         buildingInfo={buildingInfo}
       />
       <AssetDetailsMapBlock
-        address={activeEstate.assetDetails.propertyDetails.fullAddress}
-        coordinates={activeEstate.assetDetails.coordinates}
+        address={activeMarket.assetDetails.propertyDetails.fullAddress}
+        coordinates={activeMarket.assetDetails.coordinates}
       />
     </div>
   );
@@ -56,28 +56,28 @@ const DefaultAssetTemplate: FC<{ activeEstate: EstateType }> = ({
  * Generic Template screen based on asset type
  * no types for now, cuz there isn't any API for asset types
  */
-const AssetDetailsTemplate: FC<{ activeEstate: EstateType }> = ({
-  activeEstate,
+const AssetDetailsTemplate: FC<{ activeMarket: EstateType }> = ({
+  activeMarket,
 }) => {
   const Template = useMemo(
     () =>
-      (Boolean(activeEstate.assetType)
-        ? pickTemplateBasedOnAssetType[activeEstate.assetType.toLowerCase()]
+      (Boolean(activeMarket.assetType)
+        ? pickTemplateBasedOnAssetType[activeMarket.assetType.toLowerCase()]
         : DefaultAssetTemplate) ?? DefaultAssetTemplate,
-    [activeEstate.assetType]
+    [activeMarket.assetType]
   );
 
   const tempProps = useMemo(
-    () => getTemplatePropsBasedOnAssetType(activeEstate),
-    [activeEstate]
+    () => getTemplatePropsBasedOnAssetType(activeMarket),
+    [activeMarket]
   );
 
   return <Template {...tempProps} />;
 };
 
-const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
-  if (!activeEstate.assetType) return { activeEstate };
-  switch (activeEstate.assetType.toLowerCase()) {
+const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
+  if (!activeMarket.assetType) return { activeMarket };
+  switch (activeMarket.assetType.toLowerCase()) {
     case BitcoinMiners:
     case Resort:
     case Debt:
@@ -86,18 +86,18 @@ const getTemplatePropsBasedOnAssetType = (activeEstate: EstateType) => {
     case Commodities:
     case MixedUseRealEstate:
       return {
-        data: activeEstate.assetDetails.propertyDetails,
+        data: activeMarket.assetDetails.propertyDetails,
       };
 
     case Hotel:
       return {
         data: {
-          ...activeEstate.assetDetails.propertyDetails,
-          name: activeEstate.name,
+          ...activeMarket.assetDetails.propertyDetails,
+          name: activeMarket.name,
         },
       };
 
     default:
-      return { activeEstate };
+      return { activeMarket };
   }
 };

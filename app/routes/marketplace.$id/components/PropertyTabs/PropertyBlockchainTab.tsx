@@ -3,7 +3,7 @@ import { HashChip } from "~/lib/molecules/HashChip";
 import { Table } from "~/lib/atoms/Table/Table";
 import { TableHeader } from "~/lib/atoms/Table/TableHeader";
 import { TableItem } from "~/lib/atoms/Table/TableItem";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import {
   ClickableExpanderArea,
   CustomExpander,
@@ -11,6 +11,7 @@ import {
   ExpanderFaceContent,
 } from "~/lib/organisms/CustomExpander/CustomExpander";
 import Money from "~/lib/atoms/Money";
+import { Spinner } from "~/lib/atoms/Spinner";
 
 const mockedAdminPkhs = [
   {
@@ -24,10 +25,10 @@ const mockedAdminPkhs = [
 ];
 
 export const PropertyBlockchainTab = () => {
-  const { activeEstate } = useEstatesContext();
-  if (!activeEstate) return <>Loading...</>;
+  const { activeMarket, isActiveMarketLoading } = useMarketsContext();
+  if (isActiveMarketLoading || !activeMarket) return <Spinner size={56} />;
 
-  const { blockchain } = activeEstate.assetDetails;
+  const { blockchain } = activeMarket.assetDetails;
   return (
     <div>
       {blockchain.map((chainData) => (
@@ -84,7 +85,7 @@ export const PropertyBlockchainTab = () => {
             <p>Asset ID</p>
             <p>
               <HashChip
-                hash={activeEstate.token_address}
+                hash={activeMarket.token_address}
                 className="underline font-semibold"
               />
             </p>

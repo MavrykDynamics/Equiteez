@@ -9,7 +9,7 @@ import {
 } from "~/lib/atoms/NativeTable/NativeTable";
 import { InputNumber } from "~/lib/molecules/Input/Input";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
-import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import {
   BALANCE_LIMIT,
   OTC_BUY,

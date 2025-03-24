@@ -2,13 +2,13 @@ import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import { SECONDARY_MARKET } from "~/providers/EstatesProvider/estates.types";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters";
 import { useState } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { STATIC_ASSETS_LIST } from "~/providers/EstatesProvider/estates.const";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,16 +18,16 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Properties() {
-  const { estatesArr: estates } = useEstatesContext();
+  const { marketsArr, validBaseTokens } = useMarketsContext();
   const { dodoMav } = useDexContext();
-  const [filteredEstates, setFilteredEstates] = useState(() => estates);
+  const [filteredEstates, setFilteredEstates] = useState(() => marketsArr);
 
   return (
     <PageLayout>
       <div className="px-11">
         <Spacer height={32} />
         <Filters
-          originalEstates={estates}
+          originalEstates={marketsArr}
           estates={filteredEstates}
           setEstates={setFilteredEstates}
         />
@@ -38,7 +38,7 @@ export default function Properties() {
           {filteredEstates.map((es) => {
             const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
 
-            const pricePerToken = dodoMav[es.slug];
+            const pricePerToken = atomsToTokens(dodoMav[es.slug], es.decimals);
 
             return (
               <Link
@@ -52,7 +52,7 @@ export default function Properties() {
                   isSecondaryMarket={isSecondaryMarket}
                   APY={es.assetDetails.APY}
                   pricePerToken={pricePerToken}
-                  isFutureAsset={!STATIC_ASSETS_LIST[es.token_address]}
+                  isFutureAsset={!validBaseTokens[es.token_address]}
                 />
               </Link>
             );

@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { TezosToolkit } from "@mavrykdynamics/taquito";
-import { OrderbookMarketType, stablecoinContract } from "~/consts/contracts";
+import { stablecoinContract } from "~/consts/contracts";
 
 import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
@@ -8,7 +8,7 @@ import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
 type OrderbookBuySellParams = {
   tezos: TezosToolkit;
-  marketContractAddress: OrderbookMarketType;
+  marketContractAddress: string;
   tokensAmount: number;
   pricePerToken: number;
   decimals: number;
@@ -26,7 +26,7 @@ export async function orderbookBuy({
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(marketContractAddress);
-
+    // TODO fetch from API, for now it is disabled and work only with static USDT contract
     const tokenContract = await tezos.wallet.at(stablecoinContract);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();

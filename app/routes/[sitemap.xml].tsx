@@ -1,5 +1,5 @@
 import { BASE_URL, navbar, toXmlSitemap } from "~/consts/sitemap";
-import { estateSlugs } from "~/providers/EstatesProvider/estates.provider";
+import { estateSlugs } from "~/providers/MarketsProvider/markets.provider";
 
 export const loader = async () => {
   try {

@@ -3,7 +3,7 @@ import { FC, useMemo, useState } from "react";
 import { TableHeader } from "~/lib/atoms/Table/TableHeader";
 import { TableItemSmall } from "~/lib/atoms/Table/TableItem";
 import { ImageStacked } from "~/lib/molecules/ImageStacked";
-import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { IconsBlock } from "~/templates/IconsBlock";
 
 // styles

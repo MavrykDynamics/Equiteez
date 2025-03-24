@@ -4,21 +4,22 @@ import { ViewAll } from "./components/ViewAll";
 import { SlidesNavigation } from "./components/SlidesNavigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { useMemo } from "react";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
 export const PropertiesSlider = () => {
-  const { estatesArr } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
+
   const idxToSlice = useMemo(
-    () => Math.ceil(estatesArr.length / 2),
-    [estatesArr.length]
+    () => Math.ceil(marketsArr.length / 2),
+    [marketsArr.length]
   );
 
   const slides = useMemo(
-    () => estatesArr.slice(idxToSlice),
-    [estatesArr, idxToSlice]
+    () => marketsArr.slice(idxToSlice),
+    [marketsArr, idxToSlice]
   );
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
@@ -60,16 +61,16 @@ export const PropertiesSlider = () => {
 };
 
 export const PropertiesSliderSecondary = () => {
-  const { estatesArr } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
 
   const idxToSlice = useMemo(
-    () => Math.ceil(estatesArr.length / 2),
-    [estatesArr.length]
+    () => Math.ceil(marketsArr.length / 2),
+    [marketsArr.length]
   );
 
   const slides = useMemo(
-    () => estatesArr.slice(0, idxToSlice),
-    [estatesArr, idxToSlice]
+    () => marketsArr.slice(0, idxToSlice),
+    [marketsArr, idxToSlice]
   );
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 

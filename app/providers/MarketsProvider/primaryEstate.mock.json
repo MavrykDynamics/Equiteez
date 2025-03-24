@@ -5,6 +5,7 @@
     "symbol": "LOUI",
     "decimals": 4,
     "icon": "ipfs://QmRymVGWEudMfLrbjaEiXxngCRTDgWCsscjQMwizy4ZJjX",
+    "assetType": "some type",
     "assetDetails": {
       "coordinates": {
         "lat": -14.840383,

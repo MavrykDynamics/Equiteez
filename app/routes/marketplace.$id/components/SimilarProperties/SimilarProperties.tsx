@@ -1,12 +1,11 @@
 import { Link } from "@remix-run/react";
 import { useMemo } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import {
-  EstateType,
-  SECONDARY_MARKET,
-} from "~/providers/EstatesProvider/estates.types";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 function getThreeUniqueElements(items: EstateType[]) {
   if (items.length < 3) {
@@ -26,12 +25,12 @@ function getThreeUniqueElements(items: EstateType[]) {
 }
 
 export const SimilarProperties = () => {
-  const { estatesArr } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
   const { dodoMav } = useDexContext();
 
   const similarEstates = useMemo(
-    () => getThreeUniqueElements(estatesArr),
-    [estatesArr]
+    () => getThreeUniqueElements(marketsArr),
+    [marketsArr]
   );
 
   return (
@@ -44,7 +43,10 @@ export const SimilarProperties = () => {
           <h4>There aren&apos;t no similar markets.</h4>
         ) : (
           similarEstates.map((estate) => {
-            const pricePerToken = dodoMav[estate.slug];
+            const pricePerToken = atomsToTokens(
+              dodoMav[estate.slug],
+              estate.decimals
+            );
             return (
               <Link
                 to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}

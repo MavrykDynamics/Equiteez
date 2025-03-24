@@ -13,6 +13,8 @@ import {
   ApolloError,
 } from "@apollo/client/index";
 
+import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev/index";
+
 import { onError } from "@apollo/client/link/error";
 
 // types
@@ -29,6 +31,11 @@ import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import { useAppContext } from "../AppProvider/AppProvider";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
+
+if (process.env.NODE_ENV === "development") {
+  loadDevMessages();
+  loadErrorMessages();
+}
 
 // context
 const apolloContext = createContext<ApolloContext>(undefined!);

@@ -10,7 +10,6 @@ export const detectQuoteTokenLimit = (
   amount: BigNumber | undefined,
   actionType: typeof BUY | typeof SELL // New parameter for buying Token A
 ) => {
-  console.log(amount, "amount");
   if (!storage) {
     return false;
   }

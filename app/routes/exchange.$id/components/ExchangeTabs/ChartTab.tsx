@@ -1,15 +1,15 @@
-import { FC, useEffect, useMemo } from 'react';
-import { CHART_MOCK_SERIES } from '~/mocks/chart';
-import { ApexOptions } from 'apexcharts';
-import Expand from '~/icons/expand.svg?react';
-import Settings from '~/icons/settings.svg?react';
+import { FC, useEffect, useMemo } from "react";
+import { CHART_MOCK_SERIES } from "~/mocks/chart";
+import { ApexOptions } from "apexcharts";
+import Expand from "~/icons/expand.svg?react";
+import Settings from "~/icons/settings.svg?react";
 
-import { LoadableComponent } from '~/templates/CustomSuspense';
-import { useAppContext } from '~/providers/AppProvider/AppProvider';
-import { useClientLibData } from '~/lib/ui/use-client-lib';
+import { LoadableComponent } from "~/templates/CustomSuspense";
+import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { useClientLibData } from "~/lib/ui/use-client-lib";
 
-import OriginalApexCharts from 'react-apexcharts';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+import OriginalApexCharts from "react-apexcharts";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 
 export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
   const { IS_WEB } = useAppContext();
@@ -22,10 +22,10 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
 
   useEffect(() => {
     if (IS_WEB) {
-      import('react-apexcharts')
+      import("react-apexcharts")
         .then((module) => setClientModule(() => module.default))
         .catch((error) => {
-          console.error('Error loading module:', error);
+          console.error("Error loading module:", error);
           setClientModuleError(error);
         });
     }
@@ -34,7 +34,7 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
   const opts: ApexOptions = useMemo(
     () => ({
       chart: {
-        type: 'candlestick',
+        type: "candlestick",
         height: 400,
         zoom: {
           enabled: false,
@@ -44,10 +44,10 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
         },
       },
       title: {
-        align: 'left',
+        align: "left",
       },
       xaxis: {
-        type: 'datetime',
+        type: "datetime",
       },
       yaxis: {
         tooltip: {
@@ -77,7 +77,7 @@ export const ChartTab: FC<{ estate: SecondaryEstate }> = () => {
     () => ({
       options: state.options,
       series: state.series,
-      type: 'candlestick',
+      type: "candlestick",
       height: 500,
       width: 746,
     }),

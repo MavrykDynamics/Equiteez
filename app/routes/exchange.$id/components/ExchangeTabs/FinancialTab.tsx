@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { SecondaryEstate } from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 
 // icons
 import ClockIcon from "app/icons/clock.svg?react";

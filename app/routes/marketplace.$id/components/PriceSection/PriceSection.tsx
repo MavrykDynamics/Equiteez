@@ -4,7 +4,7 @@ import { SecondaryPriceBlock } from "./SecondaryPriceBlock";
 import {
   EstateType,
   SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 
 type PriceSectionProps = {
   isSecondaryEstate: boolean;

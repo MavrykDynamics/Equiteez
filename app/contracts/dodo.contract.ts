@@ -1,6 +1,7 @@
 /* eslint-disable no-useless-catch */
 import { TezosToolkit } from "@mavrykdynamics/taquito";
-import { DodoContractType, stablecoinContract } from "~/consts/contracts";
+import BigNumber from "bignumber.js";
+import { ADMIN_ADDRESS } from "~/consts/contracts";
 
 import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
@@ -8,7 +9,7 @@ import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
 type DefaultContractProps = {
   tezos: TezosToolkit;
-  dodoContractAddress: DodoContractType;
+  dodoContractAddress: string;
   decimals: number;
 };
 
@@ -29,18 +30,38 @@ export async function buyBaseToken({
   tokensAmount,
   minMaxQuote,
   decimals,
-}: Omit<BuySellBaseToken, "mockQuoteLpToken">) {
+  quoteTokenAddress, // quoteTokenAddress usually usdt
+  quoteDecimals,
+  showQuoteWarning,
+}: Omit<BuySellBaseToken, "mockQuoteLpToken"> & {
+  quoteTokenAddress: string;
+  quoteDecimals: number;
+  showQuoteWarning: () => void;
+}) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const stableCoinInstance = await tezos.wallet.at(stablecoinContract);
+    const quoteTokenInstance = await tezos.wallet.at(quoteTokenAddress);
 
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
-    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, decimals).toNumber();
+    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, quoteDecimals);
 
-    const open_ops = stableCoinInstance.methodsObject["update_operators"]([
+    const payQuote = await marketContract.contractViews
+      .queryBuyBaseToken(amount)
+      .executeView({ viewCaller: ADMIN_ADDRESS });
+
+    const hasOutdatedQuote = parsedMinMaxQuote.isLessThan(
+      new BigNumber(payQuote)
+    );
+
+    if (hasOutdatedQuote) {
+      showQuoteWarning();
+      return false;
+    }
+
+    const open_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -52,10 +73,10 @@ export async function buyBaseToken({
 
     const buy_order = marketContract.methodsObject["buyBaseToken"]({
       amount,
-      minMaxQuote: parsedMinMaxQuote,
+      minMaxQuote: parsedMinMaxQuote.toNumber(),
     }).toTransferParams();
 
-    const close_ops = stableCoinInstance.methodsObject["update_operators"]([
+    const close_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
@@ -90,9 +111,11 @@ export async function sellBaseToken({
   minMaxQuote,
   decimals,
   quoteDecimals,
+  showQuoteWarning,
 }: Omit<BuySellBaseToken, "mockQuoteLpToken"> & {
   tokenAddress: string;
   quoteDecimals: number;
+  showQuoteWarning: () => void;
 }) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -102,10 +125,19 @@ export async function sellBaseToken({
     const quoteLpInstance = await tezos.wallet.at(tokenAddress);
     const amount = tokensToAtoms(tokensAmount, decimals).toNumber();
 
-    const parsedMinMaxQuote = tokensToAtoms(
-      minMaxQuote,
-      quoteDecimals
-    ).toNumber();
+    const parsedMinMaxQuote = tokensToAtoms(minMaxQuote, quoteDecimals);
+
+    const payQuote = await marketContract.contractViews
+      .querySellBaseToken(amount)
+      .executeView({ viewCaller: ADMIN_ADDRESS });
+
+    const hasOutdatedQuote = new BigNumber(payQuote).isLessThan(
+      parsedMinMaxQuote
+    );
+
+    if (hasOutdatedQuote) {
+      return showQuoteWarning();
+    }
 
     const open_ops = quoteLpInstance.methodsObject["update_operators"]([
       {
@@ -205,15 +237,16 @@ export async function depositQuoteToken({
   dodoContractAddress, // only dodo
   tokensAmount,
   decimals,
-}: DepositActionProps) {
+  quoteTokenAddress,
+}: DepositActionProps & { quoteTokenAddress: string }) {
   try {
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const marketContract = await tezos.wallet.at(dodoContractAddress);
-    const rwaTokenInstance = await tezos.wallet.at(stablecoinContract);
+    const quoteTokenInstance = await tezos.wallet.at(quoteTokenAddress);
 
-    const open_ops = rwaTokenInstance.methodsObject["update_operators"]([
+    const open_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
@@ -227,7 +260,7 @@ export async function depositQuoteToken({
       tokensToAtoms(tokensAmount, decimals).toNumber() // stable coin
     ).toTransferParams();
 
-    const close_ops = rwaTokenInstance.methodsObject["update_operators"]([
+    const close_ops = quoteTokenInstance.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,

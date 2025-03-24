@@ -1,13 +1,6 @@
-import {
-  createContext,
-  FC,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, FC, useContext, useMemo, useState } from "react";
 import { DexProviderCtxType, DodoStorageType } from "./dex.provider.types";
-import { useEstatesContext } from "../EstatesProvider/estates.provider";
+import { useMarketsContext } from "../MarketsProvider/markets.provider";
 import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import {
@@ -17,7 +10,8 @@ import {
 } from "./utils/storage";
 import { unknownToError } from "~/errors/error";
 import BigNumber from "bignumber.js";
-import { useAsyncWithRefetch } from "../ApolloProvider/hooks/useAsyncWithRefetch";
+import { useQueryWithRefetch } from "../ApolloProvider/hooks/useQueryWithRefetch";
+import { DEX_STORAGE_QUERY } from "./queries/storage.query";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
@@ -25,7 +19,7 @@ type MarketProps = PropsWithChildren;
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
-  const { estates, estateAddresses } = useEstatesContext();
+  const { markets, marketAddresses } = useMarketsContext();
   const { usdToTokenRates } = useCurrencyContext();
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
@@ -35,33 +29,42 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
-  const fetchDexDataCallback = useCallback(async () => {
-    try {
-      const storages = await getDodoMavTokenStorages(estateAddresses);
-      const dodoPrices = getDodoMavTokenPrices(Object.values(storages));
-      const tokenPairs = getDodoMavTokenPairs(storages);
+  useQueryWithRefetch(
+    DEX_STORAGE_QUERY,
+    {
+      // variables: { addresses: marketAddresses },
+      skip: marketAddresses.length === 0 || markets.size === 0,
+      onCompleted: (data) => {
+        try {
+          const storages = getDodoMavTokenStorages(data);
 
-      setDodoStorages(storages);
-      setDodomavPrices(dodoPrices);
-      setDodoTokenPair(tokenPairs);
-    } catch (e) {
-      const err = unknownToError(e);
-      warning("Prices", err.message);
-    }
-  }, [estateAddresses, warning]);
+          const dodoPrices = getDodoMavTokenPrices(
+            Object.values(storages),
+            markets
+          );
+          const tokenPairs = getDodoMavTokenPairs(storages);
 
-  useAsyncWithRefetch(fetchDexDataCallback, {
-    refetchQueryVariables: estateAddresses,
-  });
+          setDodoStorages(storages);
+          setDodomavPrices(dodoPrices);
+          setDodoTokenPair(tokenPairs);
+        } catch (e) {
+          console.log(e, "DEX_STORAGE_QUERY from catch");
+          const err = unknownToError(e);
+          warning("Prices", err.message);
+        }
+      },
+      onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
+    },
+    { blocksDiff: 5 }
+  );
 
   const orderBookPrices = useMemo(
     () =>
-      Object.keys(estates).reduce<StringRecord<string>>((acc, esKey) => {
+      Array.from(markets.keys()).reduce<StringRecord<string>>((acc, esKey) => {
         acc[esKey] = usdToTokenRates[esKey] ?? "0";
-
         return acc;
       }, {}),
-    [estates, usdToTokenRates]
+    [markets, usdToTokenRates]
   );
 
   const memoizedDexCtx: DexProviderCtxType = useMemo(

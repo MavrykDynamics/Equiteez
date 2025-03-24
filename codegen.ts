@@ -10,8 +10,7 @@ const INDEXER_TABLES = {
   orderbook: true,
   dodo_mav: true,
   marketplace: true,
-  kyc_member: true
-
+  kyc_member: true,
 };
 
 const config: CodegenConfig = {
@@ -30,25 +29,25 @@ const config: CodegenConfig = {
               if (!documentFile?.document) return documentFile;
 
               documentFile.document = visit(documentFile.document, {
-                leave(node) {
-                  /**
-                   * if field has alias (node.alias)
-                   * if field has name (node?.name?.value)
-                   * if field is in INDEXER_TABLES mapper (INDEXER_TABLES[node.name.value])
-                   */
-                  // @ts-expect-error
+                Field(node) {
                   if (
                     node.alias &&
-                    node?.name?.value &&
+                    node.name?.value &&
                     INDEXER_TABLES[node.name.value]
                   ) {
-                    // update table tabe to use prefix based on env
-                    // @ts-expect-error
-                    node.name.value = `${node.name.value}`;
+                    return {
+                      ...node,
+                      name: {
+                        ...node.name,
+                        value: `${node.name.value}`, // Ensure name stays consistent
+                      },
+                      arguments: node.arguments || [], // Preserve arguments like limit and offset
+                    };
                   }
                   return node;
                 },
               });
+
               return documentFile;
             });
           },

@@ -1,18 +1,19 @@
 import BigNumber from "bignumber.js";
 import clsx from "clsx";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { getTokenAmountFromLiquidity } from "~/providers/Dexprovider/utils";
 import {
   PrimaryEstate,
   SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+} from "~/providers/MarketsProvider/market.types";
 
 import styles from "../embla.module.css";
 import { Link, useNavigate } from "@remix-run/react";
 import { SLIDER_VIEW_LIMIT } from "../AssetsEmblaCarousel";
 import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
 import { Button } from "~/lib/atoms/Button";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 type AssetEmblaSlideProps = {
   estate: PrimaryEstate | SecondaryEstate;
@@ -30,9 +31,10 @@ export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
   const { dodoMav, dodoStorages } = useDexContext();
   const navigate = useNavigate();
 
-  const pricePerToken =
-    dodoMav[estate.slug] ??
-    new BigNumber(estate.assetDetails.priceDetails.price);
+  const pricePerToken = useMemo(
+    () => atomsToTokens(dodoMav[estate.slug], estate.decimals) ?? 0,
+    [dodoMav, estate.decimals, estate.slug]
+  );
 
   const tokensAmount = getTokenAmountFromLiquidity(
     dodoStorages[estate.slug],

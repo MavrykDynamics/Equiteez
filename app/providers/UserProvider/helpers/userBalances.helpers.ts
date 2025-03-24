@@ -12,8 +12,9 @@ import {
   emptyUserTzktAccountSchema,
   userTzktAccountSchema,
   userTzktTokenBalancesSchema,
+  userTzktWSAccountSchema,
 } from "./user.schemes";
-import { TokenMetadata } from "~/lib/metadata";
+import { MVRK_CONTRACT_ADDRESS, TokenMetadata } from "~/lib/metadata";
 import { getTokenDataByAddress } from "~/providers/TokensProvider/utils/getTokenDataByAddress";
 import BigNumber from "bignumber.js";
 import { atomsToTokens } from "~/lib/utils/formaters";
@@ -136,6 +137,7 @@ export const openTzktWebSocket = async (): Promise<signalR.HubConnection> => {
   try {
     const tzktSocket = new signalR.HubConnectionBuilder()
       .withUrl(`${REACT_APP_TZKT_API}/ws`, {
+        skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })
       .build();
@@ -166,6 +168,8 @@ export const attachTzktSocketsEventHandlers = ({
   handleOnReconnected: (userAddress: string) => void;
 }) => {
   tzktSocket.on("token_balances", (msg) => {
+    console.log("%ctzktSocket on token_balances msg", "color: aqua", { msg });
+
     if (!msg.data) return;
 
     try {
@@ -178,6 +182,26 @@ export const attachTzktSocketsEventHandlers = ({
     } catch (e) {
       if (process.env.NODE_ENV === "development")
         console.error("tzkt tokens balance parse error: ", { e, msg });
+    }
+  });
+
+  tzktSocket.on("accounts", (msg) => {
+    console.log("%ctzktSocket on accounts msg", "color: aqua", { msg });
+
+    if (!msg.data) return;
+
+    try {
+      const [{ balance, address }] = userTzktWSAccountSchema.parse(msg.data);
+      handleTokens([
+        {
+          token: { contract: { address: MVRK_CONTRACT_ADDRESS } },
+          balance: balance.toString(),
+          account: { address },
+        },
+      ]);
+    } catch (e) {
+      if (process.env.REACT_APP_ENV === "prod")
+        console.error("tzkt xtz token balance parse error: ", { e, msg });
     }
   });
 

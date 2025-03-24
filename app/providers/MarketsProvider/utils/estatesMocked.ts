@@ -1,6 +1,6 @@
 import estatesMocked from "app/mocks/rwas.json";
 import { toTokenSlug } from "~/lib/assets";
-import { EstateType } from "../estates.types";
+import { EstateType } from "../market.types";
 
 export const getRestMockedAddresses = () => {
   const fakeAddresses = estatesMocked.slice(2).map((es) => es.token_address);
