@@ -71,6 +71,9 @@ export const PopupContent: FC<{
     activetabId !== CONFIRM
   ) as OrderType;
 
+  // quote warning
+  const [hasQuoteError, setHasQuoteError] = useState(false);
+
   // derived
   const { slug, decimals } = estate;
   const tokenPrice = useMemo(
@@ -83,6 +86,11 @@ export const PopupContent: FC<{
   const selectedAssetMetadata = useAssetMetadata(slug);
 
   const qouteAssetMetadata = useAssetMetadata(dodoTokenPair[slug]);
+
+  const showQuoteWarning = useCallback(() => {
+    setHasQuoteError(true);
+    setAvtiveTabId(prevTabId);
+  }, [prevTabId]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -145,16 +153,18 @@ export const PopupContent: FC<{
       minMaxQuote: caclMinMaxQuoteBuying(amountB, slippagePercentage),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: qouteAssetMetadata?.decimals,
+      showQuoteWarning: showQuoteWarning,
     }),
     [
-      amountB,
-      estate.token_address,
-      selectedAssetMetadata?.decimals,
-      slippagePercentage,
-      tokenPrice,
       pickDodoContractBasedOnToken,
+      estate.token_address,
       pickDodoContractQuoteToken,
+      amountB,
+      tokenPrice,
+      slippagePercentage,
+      selectedAssetMetadata?.decimals,
       qouteAssetMetadata?.decimals,
+      showQuoteWarning,
     ]
   );
 
@@ -170,15 +180,17 @@ export const PopupContent: FC<{
       ),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: qouteAssetMetadata?.decimals,
+      showQuoteWarning: showQuoteWarning,
     }),
     [
-      amountB,
-      estate.token_address,
-      qouteAssetMetadata?.decimals,
-      selectedAssetMetadata?.decimals,
-      slippagePercentage,
-      tokenPrice,
       pickDodoContractBasedOnToken,
+      estate.token_address,
+      amountB,
+      tokenPrice,
+      slippagePercentage,
+      selectedAssetMetadata?.decimals,
+      qouteAssetMetadata?.decimals,
+      showQuoteWarning,
     ]
   );
 
@@ -319,6 +331,7 @@ export const PopupContent: FC<{
               total={total}
               slippagePercentage={slippagePercentage}
               setSlippagePercentage={setSlippagePercentage}
+              hasQuoteError={hasQuoteError}
             />
           )}
 

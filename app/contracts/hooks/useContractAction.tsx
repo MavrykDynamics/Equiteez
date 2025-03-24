@@ -38,15 +38,15 @@ export const useContractAction = <G,>(
 
       dispatch(STATUS_PENDING);
 
-      // TODO check types
-      await actionFn({ ...(args as G), tezos });
-
-      dispatch(STATUS_SUCCESS);
-      showPopup(
-        popupKeys.txOperation,
-        popupOperationSuccess(activeMarket?.name ?? "Nomad")
-      );
-      await sleep(2000);
+      const shouldShowPopup = await actionFn({ ...(args as G), tezos });
+      if (shouldShowPopup === undefined) {
+        dispatch(STATUS_SUCCESS);
+        showPopup(
+          popupKeys.txOperation,
+          popupOperationSuccess(activeMarket?.name ?? "Nomad")
+        );
+        await sleep(2000);
+      }
 
       dispatch(STATUS_IDLE);
     } catch (e) {

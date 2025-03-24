@@ -8,3 +8,4 @@ export const NTBM_TOKEN_ADDRESS = "KT1HrjerqExE8MfrHBMgbcJVsmTY7HjDzHJu";
 
 // MAIN KYC CONTRACT! // TODO get from API, for now api returns old kyc contract
 export const KYC_CONTRACT = "KT1TYqkzAYKDrCmPo7Be1vZtC7kdUoNfKyZa";
+export const ADMIN_ADDRESS = "KT1JkmXcgKQ3oNpLhjDD4WgvgMfyccUZwsws";

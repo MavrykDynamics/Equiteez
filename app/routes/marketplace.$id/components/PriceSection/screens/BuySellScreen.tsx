@@ -59,6 +59,7 @@ type BuySellScreenProps = {
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   slippagePercentage: string;
   setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
+  hasQuoteError?: boolean;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -70,6 +71,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   setAmount,
   slippagePercentage,
   setSlippagePercentage,
+  hasQuoteError = false,
 }) => {
   const { symbol, token_address, slug } = estate;
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
@@ -415,6 +417,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <Alert type="warning" header="Pool Balance Limit Reached">
             Your trade will exceed the pool limit, which may cause slippage or
             failure. Please adjust the amount and try again.
+          </Alert>
+        </div>
+      )}
+
+      {hasQuoteError && (
+        <div className="mt-8">
+          <Alert type="warning" header="Low Quote Detected">
+            The current quote is too low to complete the operation. This may
+            happen due to price fluctuations. Please adjust the slippage
+            percentage in your settings to ensure a successful transaction.
           </Alert>
         </div>
       )}
