@@ -116,6 +116,7 @@ export const PopupContent: FC<{
         id: OTC,
         label: "OTC",
         handleClick: handleTabClick,
+        disabled: true,
       },
     ],
     [handleTabClick]
