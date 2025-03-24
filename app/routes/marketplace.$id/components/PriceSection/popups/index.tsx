@@ -53,7 +53,7 @@ import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
-export const spippageOptions = ["0.3", "0.5", "1", "custom"];
+export const spippageOptions = ["1", "3", "5", "custom"];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
