@@ -18,7 +18,6 @@ MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
 BASE_URL="https://stage.equiteez.pages.dev"
 GRAPHQL_API="https://api.equiteez.com/v1/graphql"
 GRAPHQL_WSS_API="wss://api.equiteez.com/v1/graphql"
-REACT_APP_MAINTANCE_MODE="off"
 NODE_VERSION="22.11.0"
 
 [env.production.vars]
@@ -33,5 +32,4 @@ MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
 BASE_URL="https://equiteez.com"
 GRAPHQL_API="https://api.equiteez.com/v1/graphql"
 GRAPHQL_WSS_API="wss://api.equiteez.com/v1/graphql"
-REACT_APP_MAINTANCE_MODE="off"
 NODE_VERSION="22.11.0"
