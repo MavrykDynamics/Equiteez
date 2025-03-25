@@ -7,19 +7,7 @@ compatibility_flags = [ "nodejs_compat_v2" ]
 
 
 [env.preview.vars]
-GOOGLE_MAPS_API_KEY="AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
-RPC_NODE_URL="https://atlasnet.rpc.mavryk.network"
-API_URL="https://atlasnet.api.mavryk.network/v1"
-BCD_API="https://better-call-api.mavryk.io/v1"
-TOKENS_METADATA_API="https://dipdup-metadata-api.mavryk.network/v1/graphql"
-BCD_NETWORK_TYPE="sandboxnet"
-GA_TRACKING_ID="GTM-TWZ386ZK"
-MAVRYK_WALLET_API_URL="https://temple-api-mainnet.prod.templewallet.com"
-BASE_URL="https://stage.equiteez.pages.dev"
-GRAPHQL_API="https://api.equiteez.com/v1/graphql"
-GRAPHQL_WSS_API="wss://api.equiteez.com/v1/graphql"
-REACT_APP_MAINTANCE_MODE="off"
-NODE_VERSION="22.11.0"
+
 
 [env.production.vars]
 GOOGLE_MAPS_API_KEY="AIzaSyB1m89Y6fViGcDek7D47ufWMRGJbKDFY5w"
