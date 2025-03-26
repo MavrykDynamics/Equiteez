@@ -267,7 +267,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   //   [amount, hasTotalError, price, isKyced]
   // );
 
-  const isBtnDisabled = true;
+  // const isBtnDisabled = true;
 
   // derived state (it's boolean value, so no need to memoize it)
   const isLimitType = activeItem === LIMIT_TYPE;
@@ -370,7 +370,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const estFee = useMemo(() => {
     const {
       config: { lpFee, maintainerFee },
-    } = dodoStorages[slug];
+    } = dodoStorages[slug] ?? { config: { lpFee: 0, maintainerFee: 0 } };
 
     const tokensAmount = amount;
 
@@ -610,10 +610,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
               )}
 
               <div className="flex w-full">
-                {!validBaseTokens[tokenAddress] ? (
-                  <Button className="w-full" disabled>
-                    Coming Soon
-                  </Button>
+                <Button className="w-full" disabled>
+                  Coming Soon
+                </Button>
+                {/* {!validBaseTokens[tokenAddress] ? (
+                
                 ) : (
                   <>
                     <Button
@@ -630,7 +631,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                       </span>
                     </Button>
                   </>
-                )}
+                )} */}
               </div>
             </div>
           </>

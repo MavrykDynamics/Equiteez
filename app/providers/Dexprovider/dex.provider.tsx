@@ -17,6 +17,13 @@ const dexContext = createContext<DexProviderCtxType>(undefined!);
 
 type MarketProps = PropsWithChildren;
 
+const priceProxyHandler: ProxyHandler<StringRecord<BigNumber>> = {
+  get(target, prop: string) {
+    // used to return price as 0 if not found
+    return target[prop] ?? new BigNumber(0);
+  },
+};
+
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
   const { markets, marketAddresses } = useMarketsContext();
@@ -24,9 +31,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
   >({});
-  const [dodoMavPrices, setDodomavPrices] = useState<StringRecord<BigNumber>>(
-    {}
-  );
+  const dodoMavPrices = useMemo(() => new Proxy({}, priceProxyHandler), []);
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
   useQueryWithRefetch(
@@ -45,8 +50,12 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
           const tokenPairs = getDodoMavTokenPairs(storages);
 
           setDodoStorages(storages);
-          setDodomavPrices(dodoPrices);
           setDodoTokenPair(tokenPairs);
+
+          // update proxy prices
+          Object.entries(dodoPrices).forEach(([key, value]) => {
+            dodoMavPrices[key] = value;
+          });
         } catch (e) {
           console.log(e, "DEX_STORAGE_QUERY from catch");
           const err = unknownToError(e);
