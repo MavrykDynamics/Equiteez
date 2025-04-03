@@ -2,22 +2,22 @@ import {
   ContractMethod,
   OpKind,
   SendParams,
-  TezosOperationError,
-  TezosToolkit,
+  MavrykOperationError,
+  MavrykToolkit,
   TransferParams,
   Wallet,
-} from '@mavrykdynamics/taquito';
+} from "@mavrykdynamics/taquito";
 import {
   EstimatedBatchCall,
   EstimatedOperation,
   WalletErrorPayload,
-} from '../error.type';
-import { isWalletOperationError } from '../error';
-import { DEFAULT_WALLET_ERROR } from '../consts/error.const';
-import { CONTRACT_ERROR_CODES } from '../consts/walletErrorCodes';
-import { SPECIFIC_CONTRACT_ERROR_CODES } from '../consts/customWalletErrorCodes';
-import { walletErrorPayload } from '../error.schema';
-import { toSentenceCase } from '~/lib/utils/toSentenceCase';
+} from "../error.type";
+import { isWalletOperationError } from "../error";
+import { DEFAULT_WALLET_ERROR } from "../consts/error.const";
+import { CONTRACT_ERROR_CODES } from "../consts/walletErrorCodes";
+import { SPECIFIC_CONTRACT_ERROR_CODES } from "../consts/customWalletErrorCodes";
+import { walletErrorPayload } from "../error.schema";
+import { toSentenceCase } from "~/lib/utils/toSentenceCase";
 
 /**
  * checks is it's wallet error and is yes - gets the error info by that specific code
@@ -31,14 +31,14 @@ export const getContractErrorMessage = (
 ): WalletErrorPayload => {
   const isTezosError = skipValidation ? true : isWalletOperationError(e);
   if (isTezosError) {
-    const error = e as TezosOperationError;
+    const error = e as MavrykOperationError;
     const errorCode = Number(error.message)
       ? Number(error.message)
       : error.message
-      ? error.message
-      : null;
+        ? error.message
+        : null;
 
-    const isNumberKey = typeof errorCode === 'number';
+    const isNumberKey = typeof errorCode === "number";
     let _error: WalletErrorPayload = DEFAULT_WALLET_ERROR;
 
     if (errorCode !== null) {
@@ -64,7 +64,7 @@ export const getContractErrorMessage = (
  * @returns estimation info with OR without error
  */
 export const estimateExecution = async (
-  tezos: TezosToolkit | null,
+  tezos: MavrykToolkit | null,
   tezosOperation: ContractMethod<Wallet>,
   args: Partial<SendParams> | undefined
 ): Promise<EstimatedOperation> => {
@@ -78,7 +78,7 @@ export const estimateExecution = async (
   };
 
   try {
-    if (!tezos) throw new Error('Tezos toolkit is null');
+    if (!tezos) throw new Error("Tezos toolkit is null");
     const estimatedOperation = await tezos?.estimate.transfer(
       tezosOperation.toTransferParams(args)
     );
@@ -98,7 +98,7 @@ export const estimateExecution = async (
  * @returns estimation info with OR without error
  */
 export const estimateBatchOperation = async (
-  tezos: TezosToolkit | null,
+  tezos: MavrykToolkit | null,
   tezosBatchOperation: (TransferParams & { kind: OpKind.TRANSACTION })[]
 ): Promise<EstimatedBatchCall> => {
   const defaultEstimatedBatchCalls: EstimatedBatchCall = {
@@ -108,7 +108,7 @@ export const estimateBatchOperation = async (
     totalSuggestedFeeMutez: 0,
   };
   try {
-    if (!tezos) throw new Error('Tezos toolkit is null');
+    if (!tezos) throw new Error("Tezos toolkit is null");
     const batchOpEstimate = await tezos?.estimate.batch(tezosBatchOperation);
     //We want to keep these data points for the future. We will need
     // them for some of the estimate ops we are doing

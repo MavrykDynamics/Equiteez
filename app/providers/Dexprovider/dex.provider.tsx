@@ -31,7 +31,9 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const [dodoStorages, setDodoStorages] = useState<
     StringRecord<DodoStorageType>
   >({});
-  const dodoMavPrices = useMemo(() => new Proxy({}, priceProxyHandler), []);
+  const [dodoMavPrices, setDodoMavPrices] = useState(
+    () => new Proxy({}, priceProxyHandler)
+  );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
   useQueryWithRefetch(
@@ -47,6 +49,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
             Object.values(storages),
             markets
           );
+
           const tokenPairs = getDodoMavTokenPairs(storages);
 
           setDodoStorages(storages);
@@ -56,6 +59,8 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
           Object.entries(dodoPrices).forEach(([key, value]) => {
             dodoMavPrices[key] = value;
           });
+
+          setDodoMavPrices(new Proxy({ ...dodoPrices }, priceProxyHandler));
         } catch (e) {
           console.log(e, "DEX_STORAGE_QUERY from catch");
           const err = unknownToError(e);
