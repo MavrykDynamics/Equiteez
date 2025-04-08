@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-import { TezosToolkit } from "@mavrykdynamics/taquito";
+import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import { stablecoinContract } from "~/consts/contracts";
 
 import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
@@ -7,7 +7,7 @@ import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 // Orderbook buy & sell for secondary market page
 
 type OrderbookBuySellParams = {
-  tezos: TezosToolkit;
+  tezos: MavrykToolkit;
   marketContractAddress: string;
   tokensAmount: number;
   pricePerToken: number;

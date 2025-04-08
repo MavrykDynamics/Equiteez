@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-import { TezosToolkit } from "@mavrykdynamics/taquito";
+import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import BigNumber from "bignumber.js";
 import { ADMIN_ADDRESS } from "~/consts/contracts";
 
@@ -8,7 +8,7 @@ import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 // Exchange market (market from dropdown & admin actions - [deposit, withdraw, transfer])
 
 type DefaultContractProps = {
-  tezos: TezosToolkit;
+  tezos: MavrykToolkit;
   dodoContractAddress: string;
   decimals: number;
 };
