@@ -37,7 +37,7 @@ import {
 import { toTokenSlug } from "~/lib/assets";
 import { useApolloContext } from "../ApolloProvider/apollo.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
-import { ApiError } from "~/errors/error";
+import { ApiError, unknownToError } from "~/errors/error";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -63,7 +63,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   //   offset: 0,
   // }));
 
-  const [hasApierror, setHasApiError] = useState(false);
+  const [marketApiError, setMarketApiError] = useState<ApiError | null>(null);
 
   const { loading: isMarketsAddressesLoading } = useQuery(
     MARKETS_ADDRESSES_QUERY,
@@ -92,12 +92,13 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
             },
           }));
         } catch (e) {
-          setHasApiError(true);
+          const error = unknownToError(e);
+          setMarketApiError(new ApiError(error));
           bug(new ApiError("MARKETS_ADDRESSES_QUERY"));
         }
       },
       onError: (error) => {
-        setHasApiError(true);
+        setMarketApiError(new ApiError(error));
         handleApolloError(error, "MARKETS_ADDRESSES_QUERY");
       },
     }
@@ -177,12 +178,13 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
           isLoading: false,
         }));
       } catch (e) {
-        setHasApiError(true);
+        const error = unknownToError(e);
+        setMarketApiError(new ApiError(error));
         bug(new ApiError("MARKET_TOKENS__DATA_QUERY"));
       }
     },
     onError: (error) => {
-      setHasApiError(true);
+      setMarketApiError(new ApiError(error));
       handleApolloError(error, "MARKET_TOKENS__DATA_QUERY");
     },
   });
@@ -239,7 +241,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       marketAddresses: dodoBaseTokenAddresses,
       pickers,
       validBaseTokens,
-      isLoading: hasApierror
+      isLoading: marketApiError
         ? false
         : loading || isMarketsAddressesLoading || marketsState.isLoading,
     }),
@@ -252,7 +254,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       dodoBaseTokenAddresses,
       pickers,
       validBaseTokens,
-      hasApierror,
+      marketApiError,
       loading,
       isMarketsAddressesLoading,
     ]
