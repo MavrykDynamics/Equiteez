@@ -22,11 +22,9 @@ import { ApolloContext } from "./apollo.provider.types";
 
 // consts
 import { httpLink, retryLink, splitLink } from "./apollo.config";
-import { FatalError, isAbortError } from "~/errors/error";
+import { ApiError, isAbortError } from "~/errors/error";
 
 // hooks
-import { TOASTER_TEXTS } from "../ToasterProvider/helpers/texts/toaster.texts";
-import { TOASTER_SUBSCRIPTION_ERROR } from "../ToasterProvider/toaster.provider.const";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import { useAppContext } from "../AppProvider/AppProvider";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
@@ -46,7 +44,7 @@ type Props = {
 
 export const ApolloProvider = ({ children }: Props) => {
   const { IS_WEB } = useAppContext();
-  const { bug, fatal } = useToasterContext();
+  const { bug } = useToasterContext();
   const [hasNetworkError, setHasNetworkError] = useState(false);
 
   const errorLink = useMemo(
@@ -68,7 +66,7 @@ export const ApolloProvider = ({ children }: Props) => {
           if (typeof window !== "undefined" && !window.navigator.onLine) {
             bug("Sorry, your browser is offline.");
           } else {
-            if (hasNetworkError) fatal(new FatalError("Server is disabled."));
+            if (hasNetworkError) bug(new ApiError("Server is disabled."));
 
             setHasNetworkError(true);
           }
@@ -87,7 +85,7 @@ export const ApolloProvider = ({ children }: Props) => {
               splitLink(
                 new GraphQLWsLink(
                   createClient({
-                    url: process.env.GRAPHQL_WSS_API ?? "",
+                    url: process.env.GRAPHQL_WS_API ?? "",
                   })
                 ),
                 httpLink
@@ -100,14 +98,10 @@ export const ApolloProvider = ({ children }: Props) => {
   );
 
   const handleApolloError = useCallback(
-    (error: ApolloError, subName: string, bugMessage?: string) => {
+    (error: ApolloError, subName: string, bugMessage = "") => {
       if (isAbortError(error.networkError)) return;
 
-      console.error(`${subName} query error: `, error);
-      bug(
-        TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]["message"],
-        bugMessage ?? TOASTER_TEXTS[TOASTER_SUBSCRIPTION_ERROR]["title"]
-      );
+      console.error(`${subName} query error: `, bugMessage, error);
     },
     []
   );
