@@ -28,7 +28,6 @@ import {
   fetchTokensData,
   fetchTokensMetadata,
 } from "./providers/TokensProvider/utils/fetchTokensdata";
-import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";

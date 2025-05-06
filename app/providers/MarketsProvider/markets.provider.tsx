@@ -241,6 +241,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       marketAddresses: dodoBaseTokenAddresses,
       pickers,
       validBaseTokens,
+      marketApiError,
       isLoading: marketApiError
         ? false
         : loading || isMarketsAddressesLoading || marketsState.isLoading,
