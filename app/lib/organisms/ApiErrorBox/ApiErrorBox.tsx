@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Button } from "~/lib/atoms/Button";
 
 const defaultOnRetry = () => {
@@ -16,7 +16,7 @@ export const ApiErrorBox: FC<ApiErrorBoxProps> = ({
 }) => {
   return (
     <div className="bg-red-300 text-white border-red-500 border-2 flex flex-col gap-4 rounded-4xl p-6 ">
-      <div className="text-xl">{message}</div>
+      <p className="text-xl">{message}</p>
       <div className="flex flex-col gap-2">
         <p className="text-base">
           Try reloading the page or come back again later.
