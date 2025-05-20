@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useMemo } from "react";
 import {
   ApolloClient,
   InMemoryCache,
@@ -22,7 +16,7 @@ import { ApolloContext } from "./apollo.provider.types";
 
 // consts
 import { httpLink, retryLink, splitLink } from "./apollo.config";
-import { ApiError, isAbortError } from "~/errors/error";
+import { isAbortError } from "~/errors/error";
 
 // hooks
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
@@ -45,7 +39,6 @@ type Props = {
 export const ApolloProvider = ({ children }: Props) => {
   const { IS_WEB } = useAppContext();
   const { bug } = useToasterContext();
-  const [hasNetworkError, setHasNetworkError] = useState(false);
 
   const errorLink = useMemo(
     () =>
@@ -65,14 +58,10 @@ export const ApolloProvider = ({ children }: Props) => {
 
           if (typeof window !== "undefined" && !window.navigator.onLine) {
             bug("Sorry, your browser is offline.");
-          } else {
-            if (hasNetworkError) bug(new ApiError("Server is disabled."));
-
-            setHasNetworkError(true);
           }
         }
       }),
-    [hasNetworkError]
+    []
   );
 
   const apolloClient = useMemo(

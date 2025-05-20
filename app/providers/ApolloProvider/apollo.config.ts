@@ -8,8 +8,7 @@ import { isAbortError } from "~/errors/error";
 
 // apollo client setup
 export const httpLink = new HttpLink({
-  uri: "https://invalid-domain-for-testing/graphql",
-  // uri: process.env.GRAPHQL_API ?? "",
+  uri: process.env.GRAPHQL_API ?? "",
 });
 
 export const splitLink = (wsLink: GraphQLWsLink, httpLink: HttpLink) =>
