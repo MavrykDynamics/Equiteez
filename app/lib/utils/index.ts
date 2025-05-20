@@ -21,7 +21,22 @@ export function mapValuesToArray<K, V>(map: Map<K, V>): V[] {
 }
 
 export function withSortedFromMap<K, V>(map: Map<K, V>, sortedKeys: K[]): V[] {
-  return sortedKeys
-    .map((key) => map.get(key))
-    .filter((value): value is V => value !== undefined);
+  const seen = new Set<K>();
+  const sortedValues: V[] = [];
+
+  for (const key of sortedKeys) {
+    const value = map.get(key);
+    if (value !== undefined) {
+      sortedValues.push(value);
+      seen.add(key);
+    }
+  }
+
+  for (const [key, value] of map) {
+    if (!seen.has(key)) {
+      sortedValues.push(value);
+    }
+  }
+
+  return sortedValues;
 }

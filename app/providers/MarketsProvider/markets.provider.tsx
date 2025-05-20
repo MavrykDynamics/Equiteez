@@ -242,8 +242,6 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [marketsState.markets, marketsState.sortedMarketAddresses]
   );
 
-  console.log(marketsState, "marketsState");
-
   const pickers = useMemo(
     () => createMarketPickers(marketsState.config),
     [marketsState.config]
