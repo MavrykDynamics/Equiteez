@@ -19,3 +19,9 @@ export const isDefined = <T>(value: T | null | undefined): value is T =>
 export function mapValuesToArray<K, V>(map: Map<K, V>): V[] {
   return Array.from(map.values());
 }
+
+export function withSortedFromMap<K, V>(map: Map<K, V>, sortedKeys: K[]): V[] {
+  return sortedKeys
+    .map((key) => map.get(key))
+    .filter((value): value is V => value !== undefined);
+}

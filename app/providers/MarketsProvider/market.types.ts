@@ -30,6 +30,7 @@ export type MarketConfig = {
 export type MarketInternalStateType = {
   config: MarketConfig;
   markets: Map<string, EstateType>;
+  sortedMarketAddresses: string[];
   isLoading: boolean;
 };
 

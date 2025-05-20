@@ -28,7 +28,7 @@ import {
   getUpdatedOrderbookMarketsConfig,
 } from "./utils/markets.utils";
 import { marketsConfigQuerySchema } from "./market.schemas";
-import { mapValuesToArray } from "~/lib/utils";
+import { withSortedFromMap } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
 import {
   MARKETS_INITIAL_STATE,
@@ -89,12 +89,25 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
 
           setMarketsState((prev) => ({
             ...prev,
+            sortedMarketAddresses: [
+              ...prev.sortedMarketAddresses,
+              ...dodo_mav.map((market) =>
+                toTokenSlug(
+                  market.base_token.address,
+                  market.base_token.token_id
+                )
+              ),
+            ],
             config: {
               ...prev.config,
               dodoMav: dodoConfig,
               orderbook: orderbookConfig,
             },
           }));
+
+          if (data.dodo_mav.length <= MARKETS_PAGINATION_LIMIT) {
+            return setReachedTheEnd(true);
+          }
         } catch (e) {
           const error = unknownToError(e);
           setMarketApiError(new ApiError(error));
@@ -175,8 +188,8 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         setMarketsState((prev) => ({
           ...prev,
           markets: new Map([
-            ...marketsState.markets,
             ...realAssetsFromApi,
+            ...marketsState.markets,
             ...fakeAssetsToShow,
           ]),
           isLoading: false,
@@ -221,9 +234,15 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
 
   // convert markets map to array (used in a lot of place, f,e, embla carousel)
   const marketsArr = useMemo(
-    () => mapValuesToArray(marketsState.markets),
-    [marketsState.markets]
+    () =>
+      withSortedFromMap(
+        marketsState.markets,
+        marketsState.sortedMarketAddresses
+      ),
+    [marketsState.markets, marketsState.sortedMarketAddresses]
   );
+
+  console.log(marketsState, "marketsState");
 
   const pickers = useMemo(
     () => createMarketPickers(marketsState.config),

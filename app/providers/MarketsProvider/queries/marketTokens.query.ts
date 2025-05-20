@@ -16,7 +16,7 @@ export const DODO_MAV_ASSET_METADATA_QUERY =
 // TODO move orderbook table into separate query when it will be in use
 export const MARKETS_ADDRESSES_QUERY = gql(`
   query marketAddresses($limit: Int, $offset: Int) {
-    dodo_mav(limit: $limit, offset: $offset) {
+    dodo_mav(limit: $limit, offset: $offset, order_by: {base_balance: desc, base_balance_limit: desc}) {
       address
       base_token {
         token_id

@@ -6,6 +6,7 @@ export const MARKETS_INITIAL_STATE = {
     dodoMav: new Map(), // dodoContract -> {adddress, baseToken, quoteToken, quoteLpToken, baseLpToken}
     orderbook: new Map(),
   },
+  sortedMarketAddresses: [],
   markets: new Map(),
   isLoading: true,
 };
