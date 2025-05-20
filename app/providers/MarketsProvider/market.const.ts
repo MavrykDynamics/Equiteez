@@ -6,8 +6,9 @@ export const MARKETS_INITIAL_STATE = {
     dodoMav: new Map(), // dodoContract -> {adddress, baseToken, quoteToken, quoteLpToken, baseLpToken}
     orderbook: new Map(),
   },
+  sortedMarketAddresses: [],
   markets: new Map(),
   isLoading: true,
 };
 
-export const MARKETS_PAGINATION_LIMIT = 1;
+export const MARKETS_PAGINATION_LIMIT = 10;

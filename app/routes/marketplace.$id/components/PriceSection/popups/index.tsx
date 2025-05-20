@@ -33,7 +33,10 @@ import {
   SELL,
 } from "../consts";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
-import { useContractAction } from "~/contracts/hooks/useContractAction";
+import {
+  ContractActionPopupProps,
+  useContractAction,
+} from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
@@ -63,6 +66,7 @@ export const PopupContent: FC<{
   const { dodoMav, dodoTokenPair } = useDexContext();
   const {
     pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
+    activeMarket,
   } = useMarketsContext();
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
@@ -196,11 +200,19 @@ export const PopupContent: FC<{
   );
 
   // Market buy | sell
+  const memoizedBuyPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
+    [activeMarket?.name]
+  );
   const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps);
+    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
 
+  const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
+    [activeMarket?.name]
+  );
   const { invokeAction: handleMarketSell, status: sellStatus } =
-    useContractAction(sellBaseToken, marketSellProps);
+    useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
 
   // status of the operation
   const status = useMemo(
@@ -290,9 +302,9 @@ export const PopupContent: FC<{
                   />
                 </div>
                 <div className="flex flex-col gap-1 items-start flex-1">
-                  <div className="flex justify-between text-card-headline text-sand-900 w-full">
+                  <div className="flex justify-between items-start gap-6 text-card-headline text-sand-900 w-full">
                     <h3>{estate.name}</h3>
-                    <h3>
+                    <h3 className="flex items-center gap-1">
                       {orderType === BUY ? (
                         <Money
                           smallFractionFont={false}
@@ -310,12 +322,12 @@ export const PopupContent: FC<{
                     <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
                       {estate.assetDetails.propertyDetails.propertyType}
                     </span>
-                    <span className="text-body text-sand-900">
+                    <div className="text-body text-sand-900">
                       $
-                      {orderType === BUY
-                        ? (amountB?.toNumber() ?? 0)
-                        : (total?.toNumber() ?? 0)}
-                    </span>
+                      <Money smallFractionFont={false}>
+                        {orderType === BUY ? (amountB ?? 0) : (total ?? 0)}
+                      </Money>
+                    </div>
                   </div>
                 </div>
               </div>

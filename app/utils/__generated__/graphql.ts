@@ -37,6 +37,23 @@ export type Boolean_Comparison_Exp = {
 };
 
 /** Boolean expression to compare columns of type "Int". All fields are combined with logical 'AND'. */
+export type Int_Array_Comparison_Exp = {
+  /** is the array contained in the given array value */
+  _contained_in?: InputMaybe<Array<Scalars['Int']['input']>>;
+  /** does the array contain the given value */
+  _contains?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _eq?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _gt?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _gte?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _in?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _lte?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _neq?: InputMaybe<Array<Scalars['Int']['input']>>;
+  _nin?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
+};
+
+/** Boolean expression to compare columns of type "Int". All fields are combined with logical 'AND'. */
 export type Int_Comparison_Exp = {
   _eq?: InputMaybe<Scalars['Int']['input']>;
   _gt?: InputMaybe<Scalars['Int']['input']>;
@@ -47,6 +64,23 @@ export type Int_Comparison_Exp = {
   _lte?: InputMaybe<Scalars['Int']['input']>;
   _neq?: InputMaybe<Scalars['Int']['input']>;
   _nin?: InputMaybe<Array<Scalars['Int']['input']>>;
+};
+
+/** Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'. */
+export type String_Array_Comparison_Exp = {
+  /** is the array contained in the given array value */
+  _contained_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** does the array contain the given value */
+  _contains?: InputMaybe<Array<Scalars['String']['input']>>;
+  _eq?: InputMaybe<Array<Scalars['String']['input']>>;
+  _gt?: InputMaybe<Array<Scalars['String']['input']>>;
+  _gte?: InputMaybe<Array<Scalars['String']['input']>>;
+  _in?: InputMaybe<Array<Array<Scalars['String']['input']>>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Array<Scalars['String']['input']>>;
+  _lte?: InputMaybe<Array<Scalars['String']['input']>>;
+  _neq?: InputMaybe<Array<Scalars['String']['input']>>;
+  _nin?: InputMaybe<Array<Array<Scalars['String']['input']>>>;
 };
 
 /** Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'. */
@@ -102,6 +136,173 @@ export enum Cursor_Ordering {
   /** descending ordering of the cursor */
   Desc = 'DESC'
 }
+
+/** Boolean expression to filter rows from the table "dex_storage_view". All fields are combined with a logical 'AND'. */
+export type Dex_Storage_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dex_Storage_View_Bool_Exp>>;
+  _not?: InputMaybe<Dex_Storage_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dex_Storage_View_Bool_Exp>>;
+  base_balance?: InputMaybe<Float8_Comparison_Exp>;
+  base_balance_limit?: InputMaybe<Float8_Comparison_Exp>;
+  base_lp_token_address?: InputMaybe<String_Comparison_Exp>;
+  base_lp_token_id?: InputMaybe<Int_Comparison_Exp>;
+  base_lp_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  base_token_address?: InputMaybe<String_Comparison_Exp>;
+  base_token_id?: InputMaybe<Int_Comparison_Exp>;
+  base_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  dodo_mav_id?: InputMaybe<Int_Comparison_Exp>;
+  fee_decimals?: InputMaybe<Bigint_Comparison_Exp>;
+  fixed_price_percent?: InputMaybe<Bigint_Comparison_Exp>;
+  guide_price?: InputMaybe<Float8_Comparison_Exp>;
+  maintainer_fee?: InputMaybe<Bigint_Comparison_Exp>;
+  metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  price_model?: InputMaybe<Smallint_Comparison_Exp>;
+  quote_balance?: InputMaybe<Float8_Comparison_Exp>;
+  quote_balance_limit?: InputMaybe<Float8_Comparison_Exp>;
+  quote_lp_token_address?: InputMaybe<String_Comparison_Exp>;
+  quote_lp_token_id?: InputMaybe<Int_Comparison_Exp>;
+  quote_lp_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  quote_token_address?: InputMaybe<String_Comparison_Exp>;
+  quote_token_id?: InputMaybe<Int_Comparison_Exp>;
+  quote_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  r_status?: InputMaybe<Bigint_Comparison_Exp>;
+  slippage_factor?: InputMaybe<Bigint_Comparison_Exp>;
+  target_base_token_amount?: InputMaybe<Float8_Comparison_Exp>;
+  target_quote_token_amount?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dex_storage_view". */
+export type Dex_Storage_View_Order_By = {
+  base_balance?: InputMaybe<Order_By>;
+  base_balance_limit?: InputMaybe<Order_By>;
+  base_lp_token_address?: InputMaybe<Order_By>;
+  base_lp_token_id?: InputMaybe<Order_By>;
+  base_lp_token_token_id?: InputMaybe<Order_By>;
+  base_token_address?: InputMaybe<Order_By>;
+  base_token_id?: InputMaybe<Order_By>;
+  base_token_token_id?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  fee_decimals?: InputMaybe<Order_By>;
+  fixed_price_percent?: InputMaybe<Order_By>;
+  guide_price?: InputMaybe<Order_By>;
+  maintainer_fee?: InputMaybe<Order_By>;
+  metadata?: InputMaybe<Order_By>;
+  price_model?: InputMaybe<Order_By>;
+  quote_balance?: InputMaybe<Order_By>;
+  quote_balance_limit?: InputMaybe<Order_By>;
+  quote_lp_token_address?: InputMaybe<Order_By>;
+  quote_lp_token_id?: InputMaybe<Order_By>;
+  quote_lp_token_token_id?: InputMaybe<Order_By>;
+  quote_token_address?: InputMaybe<Order_By>;
+  quote_token_id?: InputMaybe<Order_By>;
+  quote_token_token_id?: InputMaybe<Order_By>;
+  r_status?: InputMaybe<Order_By>;
+  slippage_factor?: InputMaybe<Order_By>;
+  target_base_token_amount?: InputMaybe<Order_By>;
+  target_quote_token_amount?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dex_storage_view" */
+export enum Dex_Storage_View_Select_Column {
+  /** column name */
+  BaseBalance = 'base_balance',
+  /** column name */
+  BaseBalanceLimit = 'base_balance_limit',
+  /** column name */
+  BaseLpTokenAddress = 'base_lp_token_address',
+  /** column name */
+  BaseLpTokenId = 'base_lp_token_id',
+  /** column name */
+  BaseLpTokenTokenId = 'base_lp_token_token_id',
+  /** column name */
+  BaseTokenAddress = 'base_token_address',
+  /** column name */
+  BaseTokenId = 'base_token_id',
+  /** column name */
+  BaseTokenTokenId = 'base_token_token_id',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  DodoMavId = 'dodo_mav_id',
+  /** column name */
+  FeeDecimals = 'fee_decimals',
+  /** column name */
+  FixedPricePercent = 'fixed_price_percent',
+  /** column name */
+  GuidePrice = 'guide_price',
+  /** column name */
+  MaintainerFee = 'maintainer_fee',
+  /** column name */
+  Metadata = 'metadata',
+  /** column name */
+  PriceModel = 'price_model',
+  /** column name */
+  QuoteBalance = 'quote_balance',
+  /** column name */
+  QuoteBalanceLimit = 'quote_balance_limit',
+  /** column name */
+  QuoteLpTokenAddress = 'quote_lp_token_address',
+  /** column name */
+  QuoteLpTokenId = 'quote_lp_token_id',
+  /** column name */
+  QuoteLpTokenTokenId = 'quote_lp_token_token_id',
+  /** column name */
+  QuoteTokenAddress = 'quote_token_address',
+  /** column name */
+  QuoteTokenId = 'quote_token_id',
+  /** column name */
+  QuoteTokenTokenId = 'quote_token_token_id',
+  /** column name */
+  RStatus = 'r_status',
+  /** column name */
+  SlippageFactor = 'slippage_factor',
+  /** column name */
+  TargetBaseTokenAmount = 'target_base_token_amount',
+  /** column name */
+  TargetQuoteTokenAmount = 'target_quote_token_amount'
+}
+
+/** Streaming cursor of the table "dex_storage_view" */
+export type Dex_Storage_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dex_Storage_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dex_Storage_View_Stream_Cursor_Value_Input = {
+  base_balance?: InputMaybe<Scalars['float8']['input']>;
+  base_balance_limit?: InputMaybe<Scalars['float8']['input']>;
+  base_lp_token_address?: InputMaybe<Scalars['String']['input']>;
+  base_lp_token_id?: InputMaybe<Scalars['Int']['input']>;
+  base_lp_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  base_token_address?: InputMaybe<Scalars['String']['input']>;
+  base_token_id?: InputMaybe<Scalars['Int']['input']>;
+  base_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  dodo_mav_id?: InputMaybe<Scalars['Int']['input']>;
+  fee_decimals?: InputMaybe<Scalars['bigint']['input']>;
+  fixed_price_percent?: InputMaybe<Scalars['bigint']['input']>;
+  guide_price?: InputMaybe<Scalars['float8']['input']>;
+  maintainer_fee?: InputMaybe<Scalars['bigint']['input']>;
+  metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  price_model?: InputMaybe<Scalars['smallint']['input']>;
+  quote_balance?: InputMaybe<Scalars['float8']['input']>;
+  quote_balance_limit?: InputMaybe<Scalars['float8']['input']>;
+  quote_lp_token_address?: InputMaybe<Scalars['String']['input']>;
+  quote_lp_token_id?: InputMaybe<Scalars['Int']['input']>;
+  quote_lp_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  quote_token_address?: InputMaybe<Scalars['String']['input']>;
+  quote_token_id?: InputMaybe<Scalars['Int']['input']>;
+  quote_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  r_status?: InputMaybe<Scalars['bigint']['input']>;
+  slippage_factor?: InputMaybe<Scalars['bigint']['input']>;
+  target_base_token_amount?: InputMaybe<Scalars['float8']['input']>;
+  target_quote_token_amount?: InputMaybe<Scalars['float8']['input']>;
+};
 
 /** Boolean expression to filter rows from the table "dipdup_contract". All fields are combined with a logical 'AND'. */
 export type Dipdup_Contract_Bool_Exp = {
@@ -791,6 +992,8 @@ export type Dodo_Mav_Bool_Exp = {
   fee_decimals?: InputMaybe<Bigint_Comparison_Exp>;
   fixed_price_percent?: InputMaybe<Bigint_Comparison_Exp>;
   guide_price?: InputMaybe<Float8_Comparison_Exp>;
+  history_data?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  history_data_aggregate?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   lambdas?: InputMaybe<Dodo_Mav_Lambda_Bool_Exp>;
   lambdas_aggregate?: InputMaybe<Dodo_Mav_Lambda_Aggregate_Bool_Exp>;
@@ -813,6 +1016,676 @@ export type Dodo_Mav_Bool_Exp = {
   super_admin?: InputMaybe<String_Comparison_Exp>;
   target_base_token_amount?: InputMaybe<Float8_Comparison_Exp>;
   target_quote_token_amount?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1d". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1d_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1d_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1d_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1d_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1d". */
+export type Dodo_Mav_Candles_1d_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1d" */
+export enum Dodo_Mav_Candles_1d_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1d" */
+export type Dodo_Mav_Candles_1d_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1d_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1d_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1d_view". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1d_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1d_View_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1d_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1d_View_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1d_view". */
+export type Dodo_Mav_Candles_1d_View_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1d_view" */
+export enum Dodo_Mav_Candles_1d_View_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1d_view" */
+export type Dodo_Mav_Candles_1d_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1d_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1d_View_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1h". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1h_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1h_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1h_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1h_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1h". */
+export type Dodo_Mav_Candles_1h_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1h" */
+export enum Dodo_Mav_Candles_1h_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1h" */
+export type Dodo_Mav_Candles_1h_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1h_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1h_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1h_view". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1h_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1h_View_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1h_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1h_View_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1h_view". */
+export type Dodo_Mav_Candles_1h_View_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1h_view" */
+export enum Dodo_Mav_Candles_1h_View_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1h_view" */
+export type Dodo_Mav_Candles_1h_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1h_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1h_View_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1m". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1m_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1m_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1m_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1m_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1m". */
+export type Dodo_Mav_Candles_1m_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1m" */
+export enum Dodo_Mav_Candles_1m_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1m" */
+export type Dodo_Mav_Candles_1m_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1m_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1m_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1m_view". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1m_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1m_View_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1m_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1m_View_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1m_view". */
+export type Dodo_Mav_Candles_1m_View_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1m_view" */
+export enum Dodo_Mav_Candles_1m_View_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1m_view" */
+export type Dodo_Mav_Candles_1m_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1m_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1m_View_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1w". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1w_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1w_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1w_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1w_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1w". */
+export type Dodo_Mav_Candles_1w_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1w" */
+export enum Dodo_Mav_Candles_1w_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1w" */
+export type Dodo_Mav_Candles_1w_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1w_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1w_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1w_view". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1w_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1w_View_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1w_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1w_View_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1w_view". */
+export type Dodo_Mav_Candles_1w_View_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1w_view" */
+export enum Dodo_Mav_Candles_1w_View_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1w_view" */
+export type Dodo_Mav_Candles_1w_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1w_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1w_View_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_1y_view". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_1y_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_1y_View_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_1y_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_1y_View_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_1y_view". */
+export type Dodo_Mav_Candles_1y_View_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_1y_view" */
+export enum Dodo_Mav_Candles_1y_View_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_1y_view" */
+export type Dodo_Mav_Candles_1y_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_1y_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_1y_View_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_candles_3y_view". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_Candles_3y_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_Candles_3y_View_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_Candles_3y_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_Candles_3y_View_Bool_Exp>>;
+  close?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  high?: InputMaybe<Float8_Comparison_Exp>;
+  low?: InputMaybe<Float8_Comparison_Exp>;
+  open?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trades?: InputMaybe<Bigint_Comparison_Exp>;
+  volume?: InputMaybe<Float8_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_candles_3y_view". */
+export type Dodo_Mav_Candles_3y_View_Order_By = {
+  close?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  high?: InputMaybe<Order_By>;
+  low?: InputMaybe<Order_By>;
+  open?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trades?: InputMaybe<Order_By>;
+  volume?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_candles_3y_view" */
+export enum Dodo_Mav_Candles_3y_View_Select_Column {
+  /** column name */
+  Close = 'close',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  High = 'high',
+  /** column name */
+  Low = 'low',
+  /** column name */
+  Open = 'open',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  Trades = 'trades',
+  /** column name */
+  Volume = 'volume'
+}
+
+/** Streaming cursor of the table "dodo_mav_candles_3y_view" */
+export type Dodo_Mav_Candles_3y_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_Candles_3y_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_Candles_3y_View_Stream_Cursor_Value_Input = {
+  close?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  high?: InputMaybe<Scalars['float8']['input']>;
+  low?: InputMaybe<Scalars['float8']['input']>;
+  open?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trades?: InputMaybe<Scalars['bigint']['input']>;
+  volume?: InputMaybe<Scalars['float8']['input']>;
 };
 
 export type Dodo_Mav_Entrypoint_Status_Aggregate_Bool_Exp = {
@@ -978,6 +1851,457 @@ export type Dodo_Mav_Entrypoint_Status_Var_Samp_Order_By = {
 export type Dodo_Mav_Entrypoint_Status_Variance_Order_By = {
   contract_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp = {
+  avg?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Avg>;
+  corr?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr>;
+  count?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Count>;
+  covar_samp?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp>;
+  max?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Max>;
+  min?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Min>;
+  stddev_samp?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Stddev_Samp>;
+  sum?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Sum>;
+  var_samp?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp_Var_Samp>;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Avg = {
+  arguments: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Avg_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr = {
+  arguments: Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr_Arguments;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr_Arguments = {
+  X: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr_Arguments_Columns;
+  Y: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr_Arguments_Columns;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Dodo_Mav_History_Data_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp = {
+  arguments: Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp_Arguments;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp_Arguments = {
+  X: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp_Arguments_Columns;
+  Y: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp_Arguments_Columns;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Max = {
+  arguments: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Max_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Min = {
+  arguments: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Min_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Stddev_Samp = {
+  arguments: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Stddev_Samp_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Sum = {
+  arguments: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Sum_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+export type Dodo_Mav_History_Data_Aggregate_Bool_Exp_Var_Samp = {
+  arguments: Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Var_Samp_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  predicate: Float8_Comparison_Exp;
+};
+
+/** order by aggregate values of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Aggregate_Order_By = {
+  avg?: InputMaybe<Dodo_Mav_History_Data_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Dodo_Mav_History_Data_Max_Order_By>;
+  min?: InputMaybe<Dodo_Mav_History_Data_Min_Order_By>;
+  stddev?: InputMaybe<Dodo_Mav_History_Data_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Dodo_Mav_History_Data_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Dodo_Mav_History_Data_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Dodo_Mav_History_Data_Sum_Order_By>;
+  var_pop?: InputMaybe<Dodo_Mav_History_Data_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Dodo_Mav_History_Data_Var_Samp_Order_By>;
+  variance?: InputMaybe<Dodo_Mav_History_Data_Variance_Order_By>;
+};
+
+/** order by avg() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Avg_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "dodo_mav_history_data". All fields are combined with a logical 'AND'. */
+export type Dodo_Mav_History_Data_Bool_Exp = {
+  _and?: InputMaybe<Array<Dodo_Mav_History_Data_Bool_Exp>>;
+  _not?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  _or?: InputMaybe<Array<Dodo_Mav_History_Data_Bool_Exp>>;
+  base_token_pool?: InputMaybe<Float8_Comparison_Exp>;
+  base_token_price?: InputMaybe<Float8_Comparison_Exp>;
+  base_token_qty?: InputMaybe<Float8_Comparison_Exp>;
+  dodo_mav?: InputMaybe<Dodo_Mav_Bool_Exp>;
+  dodo_mav_id?: InputMaybe<Int_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  level?: InputMaybe<Bigint_Comparison_Exp>;
+  quote_token_pool?: InputMaybe<Float8_Comparison_Exp>;
+  quote_token_qty?: InputMaybe<Float8_Comparison_Exp>;
+  timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  trader?: InputMaybe<Equiteez_User_Bool_Exp>;
+  trader_id?: InputMaybe<Int_Comparison_Exp>;
+  type?: InputMaybe<Smallint_Comparison_Exp>;
+};
+
+/** order by max() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Max_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** order by min() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Min_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** Ordering options when selecting data from "dodo_mav_history_data". */
+export type Dodo_Mav_History_Data_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav?: InputMaybe<Dodo_Mav_Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  timestamp?: InputMaybe<Order_By>;
+  trader?: InputMaybe<Equiteez_User_Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  type?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  DodoMavId = 'dodo_mav_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  Level = 'level',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty',
+  /** column name */
+  Timestamp = 'timestamp',
+  /** column name */
+  TraderId = 'trader_id',
+  /** column name */
+  Type = 'type'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_avg_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Avg_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_corr_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Corr_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_covar_samp_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Covar_Samp_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_max_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Max_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_min_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Min_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_stddev_samp_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Stddev_Samp_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_sum_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Sum_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** select "dodo_mav_history_data_aggregate_bool_exp_var_samp_arguments_columns" columns of table "dodo_mav_history_data" */
+export enum Dodo_Mav_History_Data_Select_Column_Dodo_Mav_History_Data_Aggregate_Bool_Exp_Var_Samp_Arguments_Columns {
+  /** column name */
+  BaseTokenPool = 'base_token_pool',
+  /** column name */
+  BaseTokenPrice = 'base_token_price',
+  /** column name */
+  BaseTokenQty = 'base_token_qty',
+  /** column name */
+  QuoteTokenPool = 'quote_token_pool',
+  /** column name */
+  QuoteTokenQty = 'quote_token_qty'
+}
+
+/** order by stddev() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Stddev_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_pop() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Stddev_Pop_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_samp() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Stddev_Samp_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Dodo_Mav_History_Data_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Dodo_Mav_History_Data_Stream_Cursor_Value_Input = {
+  base_token_pool?: InputMaybe<Scalars['float8']['input']>;
+  base_token_price?: InputMaybe<Scalars['float8']['input']>;
+  base_token_qty?: InputMaybe<Scalars['float8']['input']>;
+  dodo_mav_id?: InputMaybe<Scalars['Int']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  level?: InputMaybe<Scalars['bigint']['input']>;
+  quote_token_pool?: InputMaybe<Scalars['float8']['input']>;
+  quote_token_qty?: InputMaybe<Scalars['float8']['input']>;
+  timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  trader_id?: InputMaybe<Scalars['Int']['input']>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Scalars['smallint']['input']>;
+};
+
+/** order by sum() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Sum_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** order by var_pop() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Var_Pop_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** order by var_samp() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Var_Samp_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
+};
+
+/** order by variance() on columns of table "dodo_mav_history_data" */
+export type Dodo_Mav_History_Data_Variance_Order_By = {
+  base_token_pool?: InputMaybe<Order_By>;
+  base_token_price?: InputMaybe<Order_By>;
+  base_token_qty?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  level?: InputMaybe<Order_By>;
+  quote_token_pool?: InputMaybe<Order_By>;
+  quote_token_qty?: InputMaybe<Order_By>;
+  trader_id?: InputMaybe<Order_By>;
+  /** BUY: 0\nSELL: 1 */
+  type?: InputMaybe<Order_By>;
 };
 
 export type Dodo_Mav_Lambda_Aggregate_Bool_Exp = {
@@ -1200,6 +2524,7 @@ export type Dodo_Mav_Order_By = {
   fee_decimals?: InputMaybe<Order_By>;
   fixed_price_percent?: InputMaybe<Order_By>;
   guide_price?: InputMaybe<Order_By>;
+  history_data_aggregate?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   lambdas_aggregate?: InputMaybe<Dodo_Mav_Lambda_Aggregate_Order_By>;
   lp_fee?: InputMaybe<Order_By>;
@@ -1832,6 +3157,8 @@ export type Equiteez_User_Bool_Exp = {
   address?: InputMaybe<String_Comparison_Exp>;
   balances?: InputMaybe<Equiteez_User_Balance_Bool_Exp>;
   balances_aggregate?: InputMaybe<Equiteez_User_Balance_Aggregate_Bool_Exp>;
+  dodo_mav_history_datas?: InputMaybe<Dodo_Mav_History_Data_Bool_Exp>;
+  dodo_mav_history_datas_aggregate?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Bool_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   kyc_blacklists?: InputMaybe<Kyc_Blacklisted_Bool_Exp>;
   kyc_blacklists_aggregate?: InputMaybe<Kyc_Blacklisted_Aggregate_Bool_Exp>;
@@ -1845,6 +3172,8 @@ export type Equiteez_User_Bool_Exp = {
   marketplace_listings_aggregate?: InputMaybe<Marketplace_Listing_Aggregate_Bool_Exp>;
   marketplace_offers?: InputMaybe<Marketplace_Offer_Bool_Exp>;
   marketplace_offers_aggregate?: InputMaybe<Marketplace_Offer_Aggregate_Bool_Exp>;
+  orderbook_orders?: InputMaybe<Orderbook_Order_Bool_Exp>;
+  orderbook_orders_aggregate?: InputMaybe<Orderbook_Order_Aggregate_Bool_Exp>;
   super_admin_contract_admins?: InputMaybe<Super_Admin_Contract_Admin_Bool_Exp>;
   super_admin_contract_admins_aggregate?: InputMaybe<Super_Admin_Contract_Admin_Aggregate_Bool_Exp>;
   super_admin_general_admins?: InputMaybe<Super_Admin_General_Admin_Bool_Exp>;
@@ -1861,6 +3190,7 @@ export type Equiteez_User_Bool_Exp = {
 export type Equiteez_User_Order_By = {
   address?: InputMaybe<Order_By>;
   balances_aggregate?: InputMaybe<Equiteez_User_Balance_Aggregate_Order_By>;
+  dodo_mav_history_datas_aggregate?: InputMaybe<Dodo_Mav_History_Data_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   kyc_blacklists_aggregate?: InputMaybe<Kyc_Blacklisted_Aggregate_Order_By>;
   kyc_members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Order_By>;
@@ -1868,6 +3198,7 @@ export type Equiteez_User_Order_By = {
   kyc_whitelists_aggregate?: InputMaybe<Kyc_Whitelisted_Aggregate_Order_By>;
   marketplace_listings_aggregate?: InputMaybe<Marketplace_Listing_Aggregate_Order_By>;
   marketplace_offers_aggregate?: InputMaybe<Marketplace_Offer_Aggregate_Order_By>;
+  orderbook_orders_aggregate?: InputMaybe<Orderbook_Order_Aggregate_Order_By>;
   super_admin_contract_admins_aggregate?: InputMaybe<Super_Admin_Contract_Admin_Aggregate_Order_By>;
   super_admin_general_admins_aggregate?: InputMaybe<Super_Admin_General_Admin_Aggregate_Order_By>;
   super_admin_signatories_aggregate?: InputMaybe<Super_Admin_Signatory_Aggregate_Order_By>;
@@ -2385,14 +3716,14 @@ export type Kyc_Country_Transfer_Rule_Bool_Exp = {
   _and?: InputMaybe<Array<Kyc_Country_Transfer_Rule_Bool_Exp>>;
   _not?: InputMaybe<Kyc_Country_Transfer_Rule_Bool_Exp>;
   _or?: InputMaybe<Array<Kyc_Country_Transfer_Rule_Bool_Exp>>;
-  blacklist_countries?: InputMaybe<String_Comparison_Exp>;
+  blacklist_countries?: InputMaybe<String_Array_Comparison_Exp>;
   country?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   kyc?: InputMaybe<Kyc_Bool_Exp>;
   kyc_id?: InputMaybe<Int_Comparison_Exp>;
   receiving_frozen?: InputMaybe<Boolean_Comparison_Exp>;
   sending_frozen?: InputMaybe<Boolean_Comparison_Exp>;
-  whitelist_countries?: InputMaybe<String_Comparison_Exp>;
+  whitelist_countries?: InputMaybe<String_Array_Comparison_Exp>;
 };
 
 /** order by max() on columns of table "kyc_country_transfer_rule" */
@@ -2487,13 +3818,13 @@ export type Kyc_Country_Transfer_Rule_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Kyc_Country_Transfer_Rule_Stream_Cursor_Value_Input = {
-  blacklist_countries?: InputMaybe<Scalars['String']['input']>;
+  blacklist_countries?: InputMaybe<Array<Scalars['String']['input']>>;
   country?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
   receiving_frozen?: InputMaybe<Scalars['Boolean']['input']>;
   sending_frozen?: InputMaybe<Scalars['Boolean']['input']>;
-  whitelist_countries?: InputMaybe<Scalars['String']['input']>;
+  whitelist_countries?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** order by sum() on columns of table "kyc_country_transfer_rule" */
@@ -2974,6 +4305,98 @@ export enum Kyc_Member_Select_Column_Kyc_Member_Aggregate_Bool_Exp_Bool_Or_Argum
   Frozen = 'frozen'
 }
 
+/** Boolean expression to filter rows from the table "kyc_member_status_view". All fields are combined with a logical 'AND'. */
+export type Kyc_Member_Status_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Kyc_Member_Status_View_Bool_Exp>>;
+  _not?: InputMaybe<Kyc_Member_Status_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Kyc_Member_Status_View_Bool_Exp>>;
+  country?: InputMaybe<String_Comparison_Exp>;
+  expire_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  frozen?: InputMaybe<Boolean_Comparison_Exp>;
+  investor_type?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  is_expired?: InputMaybe<Boolean_Comparison_Exp>;
+  kyc_address?: InputMaybe<String_Comparison_Exp>;
+  kyc_id?: InputMaybe<Int_Comparison_Exp>;
+  kyc_member_id?: InputMaybe<Int_Comparison_Exp>;
+  kyc_registrar_id?: InputMaybe<Int_Comparison_Exp>;
+  region?: InputMaybe<String_Comparison_Exp>;
+  user_address?: InputMaybe<String_Comparison_Exp>;
+  user_id?: InputMaybe<Int_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "kyc_member_status_view". */
+export type Kyc_Member_Status_View_Order_By = {
+  country?: InputMaybe<Order_By>;
+  expire_at?: InputMaybe<Order_By>;
+  frozen?: InputMaybe<Order_By>;
+  investor_type?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  is_expired?: InputMaybe<Order_By>;
+  kyc_address?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  kyc_member_id?: InputMaybe<Order_By>;
+  kyc_registrar_id?: InputMaybe<Order_By>;
+  region?: InputMaybe<Order_By>;
+  user_address?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "kyc_member_status_view" */
+export enum Kyc_Member_Status_View_Select_Column {
+  /** column name */
+  Country = 'country',
+  /** column name */
+  ExpireAt = 'expire_at',
+  /** column name */
+  Frozen = 'frozen',
+  /** column name */
+  InvestorType = 'investor_type',
+  /** column name */
+  IsActive = 'is_active',
+  /** column name */
+  IsExpired = 'is_expired',
+  /** column name */
+  KycAddress = 'kyc_address',
+  /** column name */
+  KycId = 'kyc_id',
+  /** column name */
+  KycMemberId = 'kyc_member_id',
+  /** column name */
+  KycRegistrarId = 'kyc_registrar_id',
+  /** column name */
+  Region = 'region',
+  /** column name */
+  UserAddress = 'user_address',
+  /** column name */
+  UserId = 'user_id'
+}
+
+/** Streaming cursor of the table "kyc_member_status_view" */
+export type Kyc_Member_Status_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Kyc_Member_Status_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Kyc_Member_Status_View_Stream_Cursor_Value_Input = {
+  country?: InputMaybe<Scalars['String']['input']>;
+  expire_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  frozen?: InputMaybe<Scalars['Boolean']['input']>;
+  investor_type?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_expired?: InputMaybe<Scalars['Boolean']['input']>;
+  kyc_address?: InputMaybe<Scalars['String']['input']>;
+  kyc_id?: InputMaybe<Scalars['Int']['input']>;
+  kyc_member_id?: InputMaybe<Scalars['Int']['input']>;
+  kyc_registrar_id?: InputMaybe<Scalars['Int']['input']>;
+  region?: InputMaybe<Scalars['String']['input']>;
+  user_address?: InputMaybe<Scalars['String']['input']>;
+  user_id?: InputMaybe<Scalars['Int']['input']>;
+};
+
 /** order by stddev() on columns of table "kyc_member" */
 export type Kyc_Member_Stddev_Order_By = {
   id?: InputMaybe<Order_By>;
@@ -3128,7 +4551,7 @@ export type Kyc_Registrar_Bool_Exp = {
   freeze_member_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   kyc?: InputMaybe<Kyc_Bool_Exp>;
-  kyc_admins?: InputMaybe<String_Comparison_Exp>;
+  kyc_admins?: InputMaybe<String_Array_Comparison_Exp>;
   kyc_id?: InputMaybe<Int_Comparison_Exp>;
   member_verified?: InputMaybe<Bigint_Comparison_Exp>;
   members?: InputMaybe<Kyc_Member_Bool_Exp>;
@@ -3260,7 +4683,7 @@ export type Kyc_Registrar_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   freeze_member_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
-  kyc_admins?: InputMaybe<Scalars['String']['input']>;
+  kyc_admins?: InputMaybe<Array<Scalars['String']['input']>>;
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
   member_verified?: InputMaybe<Scalars['bigint']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -3375,7 +4798,7 @@ export type Kyc_Valid_Input_Bool_Exp = {
   id?: InputMaybe<Int_Comparison_Exp>;
   kyc?: InputMaybe<Kyc_Bool_Exp>;
   kyc_id?: InputMaybe<Int_Comparison_Exp>;
-  valid_inputs?: InputMaybe<String_Comparison_Exp>;
+  valid_inputs?: InputMaybe<String_Array_Comparison_Exp>;
 };
 
 /** order by max() on columns of table "kyc_valid_input" */
@@ -3455,7 +4878,7 @@ export type Kyc_Valid_Input_Stream_Cursor_Value_Input = {
   category?: InputMaybe<Scalars['smallint']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
-  valid_inputs?: InputMaybe<Scalars['String']['input']>;
+  valid_inputs?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** order by sum() on columns of table "kyc_valid_input" */
@@ -3632,6 +5055,128 @@ export type Kyc_Whitelisted_Variance_Order_By = {
   user_id?: InputMaybe<Order_By>;
 };
 
+/** Boolean expression to filter rows from the table "market_addresses_view". All fields are combined with a logical 'AND'. */
+export type Market_Addresses_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Market_Addresses_View_Bool_Exp>>;
+  _not?: InputMaybe<Market_Addresses_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Market_Addresses_View_Bool_Exp>>;
+  base_lp_token_address?: InputMaybe<String_Comparison_Exp>;
+  base_lp_token_id?: InputMaybe<Int_Comparison_Exp>;
+  base_lp_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  base_token_address?: InputMaybe<String_Comparison_Exp>;
+  base_token_id?: InputMaybe<Int_Comparison_Exp>;
+  base_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  dodo_mav_address?: InputMaybe<String_Comparison_Exp>;
+  dodo_mav_id?: InputMaybe<Int_Comparison_Exp>;
+  orderbook_address?: InputMaybe<String_Comparison_Exp>;
+  orderbook_id?: InputMaybe<Int_Comparison_Exp>;
+  quote_lp_token_address?: InputMaybe<String_Comparison_Exp>;
+  quote_lp_token_id?: InputMaybe<Int_Comparison_Exp>;
+  quote_lp_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  quote_token_address?: InputMaybe<String_Comparison_Exp>;
+  quote_token_id?: InputMaybe<Int_Comparison_Exp>;
+  quote_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  rwa_token_address?: InputMaybe<String_Comparison_Exp>;
+  rwa_token_id?: InputMaybe<Int_Comparison_Exp>;
+  rwa_token_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "market_addresses_view". */
+export type Market_Addresses_View_Order_By = {
+  base_lp_token_address?: InputMaybe<Order_By>;
+  base_lp_token_id?: InputMaybe<Order_By>;
+  base_lp_token_token_id?: InputMaybe<Order_By>;
+  base_token_address?: InputMaybe<Order_By>;
+  base_token_id?: InputMaybe<Order_By>;
+  base_token_token_id?: InputMaybe<Order_By>;
+  dodo_mav_address?: InputMaybe<Order_By>;
+  dodo_mav_id?: InputMaybe<Order_By>;
+  orderbook_address?: InputMaybe<Order_By>;
+  orderbook_id?: InputMaybe<Order_By>;
+  quote_lp_token_address?: InputMaybe<Order_By>;
+  quote_lp_token_id?: InputMaybe<Order_By>;
+  quote_lp_token_token_id?: InputMaybe<Order_By>;
+  quote_token_address?: InputMaybe<Order_By>;
+  quote_token_id?: InputMaybe<Order_By>;
+  quote_token_token_id?: InputMaybe<Order_By>;
+  rwa_token_address?: InputMaybe<Order_By>;
+  rwa_token_id?: InputMaybe<Order_By>;
+  rwa_token_token_id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "market_addresses_view" */
+export enum Market_Addresses_View_Select_Column {
+  /** column name */
+  BaseLpTokenAddress = 'base_lp_token_address',
+  /** column name */
+  BaseLpTokenId = 'base_lp_token_id',
+  /** column name */
+  BaseLpTokenTokenId = 'base_lp_token_token_id',
+  /** column name */
+  BaseTokenAddress = 'base_token_address',
+  /** column name */
+  BaseTokenId = 'base_token_id',
+  /** column name */
+  BaseTokenTokenId = 'base_token_token_id',
+  /** column name */
+  DodoMavAddress = 'dodo_mav_address',
+  /** column name */
+  DodoMavId = 'dodo_mav_id',
+  /** column name */
+  OrderbookAddress = 'orderbook_address',
+  /** column name */
+  OrderbookId = 'orderbook_id',
+  /** column name */
+  QuoteLpTokenAddress = 'quote_lp_token_address',
+  /** column name */
+  QuoteLpTokenId = 'quote_lp_token_id',
+  /** column name */
+  QuoteLpTokenTokenId = 'quote_lp_token_token_id',
+  /** column name */
+  QuoteTokenAddress = 'quote_token_address',
+  /** column name */
+  QuoteTokenId = 'quote_token_id',
+  /** column name */
+  QuoteTokenTokenId = 'quote_token_token_id',
+  /** column name */
+  RwaTokenAddress = 'rwa_token_address',
+  /** column name */
+  RwaTokenId = 'rwa_token_id',
+  /** column name */
+  RwaTokenTokenId = 'rwa_token_token_id'
+}
+
+/** Streaming cursor of the table "market_addresses_view" */
+export type Market_Addresses_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Market_Addresses_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Market_Addresses_View_Stream_Cursor_Value_Input = {
+  base_lp_token_address?: InputMaybe<Scalars['String']['input']>;
+  base_lp_token_id?: InputMaybe<Scalars['Int']['input']>;
+  base_lp_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  base_token_address?: InputMaybe<Scalars['String']['input']>;
+  base_token_id?: InputMaybe<Scalars['Int']['input']>;
+  base_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  dodo_mav_address?: InputMaybe<Scalars['String']['input']>;
+  dodo_mav_id?: InputMaybe<Scalars['Int']['input']>;
+  orderbook_address?: InputMaybe<Scalars['String']['input']>;
+  orderbook_id?: InputMaybe<Scalars['Int']['input']>;
+  quote_lp_token_address?: InputMaybe<Scalars['String']['input']>;
+  quote_lp_token_id?: InputMaybe<Scalars['Int']['input']>;
+  quote_lp_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  quote_token_address?: InputMaybe<Scalars['String']['input']>;
+  quote_token_id?: InputMaybe<Scalars['Int']['input']>;
+  quote_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  rwa_token_address?: InputMaybe<Scalars['String']['input']>;
+  rwa_token_id?: InputMaybe<Scalars['Int']['input']>;
+  rwa_token_token_id?: InputMaybe<Scalars['smallint']['input']>;
+};
+
 /** Boolean expression to filter rows from the table "marketplace". All fields are combined with a logical 'AND'. */
 export type Marketplace_Bool_Exp = {
   _and?: InputMaybe<Array<Marketplace_Bool_Exp>>;
@@ -3639,7 +5184,7 @@ export type Marketplace_Bool_Exp = {
   _or?: InputMaybe<Array<Marketplace_Bool_Exp>>;
   accept_offer_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   address?: InputMaybe<String_Comparison_Exp>;
-  admins?: InputMaybe<String_Comparison_Exp>;
+  admins?: InputMaybe<String_Array_Comparison_Exp>;
   create_listing_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   currencies?: InputMaybe<Marketplace_Currency_Bool_Exp>;
   currencies_aggregate?: InputMaybe<Marketplace_Currency_Aggregate_Bool_Exp>;
@@ -4953,7 +6498,7 @@ export type Marketplace_Stream_Cursor_Input = {
 export type Marketplace_Stream_Cursor_Value_Input = {
   accept_offer_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   address?: InputMaybe<Scalars['String']['input']>;
-  admins?: InputMaybe<Scalars['String']['input']>;
+  admins?: InputMaybe<Array<Scalars['String']['input']>>;
   create_listing_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   edit_listing_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
@@ -5982,6 +7527,7 @@ export type Orderbook_Order_Avg_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6005,7 +7551,8 @@ export type Orderbook_Order_Bool_Exp = {
   ended_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   fulfilled_amount?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
-  initiator?: InputMaybe<String_Comparison_Exp>;
+  initiator?: InputMaybe<Equiteez_User_Bool_Exp>;
+  initiator_id?: InputMaybe<Int_Comparison_Exp>;
   is_canceled?: InputMaybe<Boolean_Comparison_Exp>;
   is_expired?: InputMaybe<Boolean_Comparison_Exp>;
   is_fulfilled?: InputMaybe<Boolean_Comparison_Exp>;
@@ -6066,7 +7613,7 @@ export type Orderbook_Order_Max_Order_By = {
   ended_at?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  initiator?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_expiry?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
@@ -6087,7 +7634,7 @@ export type Orderbook_Order_Min_Order_By = {
   ended_at?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  initiator?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_expiry?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
@@ -6109,7 +7656,8 @@ export type Orderbook_Order_Order_By = {
   ended_at?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  initiator?: InputMaybe<Order_By>;
+  initiator?: InputMaybe<Equiteez_User_Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   is_canceled?: InputMaybe<Order_By>;
   is_expired?: InputMaybe<Order_By>;
   is_fulfilled?: InputMaybe<Order_By>;
@@ -6140,7 +7688,7 @@ export enum Orderbook_Order_Select_Column {
   /** column name */
   Id = 'id',
   /** column name */
-  Initiator = 'initiator',
+  InitiatorId = 'initiator_id',
   /** column name */
   IsCanceled = 'is_canceled',
   /** column name */
@@ -6200,6 +7748,7 @@ export type Orderbook_Order_Stddev_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6217,6 +7766,7 @@ export type Orderbook_Order_Stddev_Pop_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6234,6 +7784,7 @@ export type Orderbook_Order_Stddev_Samp_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6261,7 +7812,7 @@ export type Orderbook_Order_Stream_Cursor_Value_Input = {
   ended_at?: InputMaybe<Scalars['timestamptz']['input']>;
   fulfilled_amount?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
-  initiator?: InputMaybe<Scalars['String']['input']>;
+  initiator_id?: InputMaybe<Scalars['Int']['input']>;
   is_canceled?: InputMaybe<Scalars['Boolean']['input']>;
   is_expired?: InputMaybe<Scalars['Boolean']['input']>;
   is_fulfilled?: InputMaybe<Scalars['Boolean']['input']>;
@@ -6284,6 +7835,7 @@ export type Orderbook_Order_Sum_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6301,6 +7853,7 @@ export type Orderbook_Order_Var_Pop_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6318,6 +7871,7 @@ export type Orderbook_Order_Var_Samp_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6335,6 +7889,7 @@ export type Orderbook_Order_Variance_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   fulfilled_amount?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  initiator_id?: InputMaybe<Order_By>;
   order_id?: InputMaybe<Order_By>;
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
@@ -6439,7 +7994,7 @@ export type Orderbook_Rwa_Order_Buy_Order_Bool_Exp = {
   _not?: InputMaybe<Orderbook_Rwa_Order_Buy_Order_Bool_Exp>;
   _or?: InputMaybe<Array<Orderbook_Rwa_Order_Buy_Order_Bool_Exp>>;
   id?: InputMaybe<Int_Comparison_Exp>;
-  order_ids?: InputMaybe<String_Comparison_Exp>;
+  order_ids?: InputMaybe<Int_Array_Comparison_Exp>;
   price?: InputMaybe<Bigint_Comparison_Exp>;
   rwa_order?: InputMaybe<Orderbook_Rwa_Order_Bool_Exp>;
   rwa_order_id?: InputMaybe<Int_Comparison_Exp>;
@@ -6514,7 +8069,7 @@ export type Orderbook_Rwa_Order_Buy_Order_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type Orderbook_Rwa_Order_Buy_Order_Stream_Cursor_Value_Input = {
   id?: InputMaybe<Scalars['Int']['input']>;
-  order_ids?: InputMaybe<Scalars['String']['input']>;
+  order_ids?: InputMaybe<Array<Scalars['Int']['input']>>;
   price?: InputMaybe<Scalars['bigint']['input']>;
   rwa_order_id?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -6778,7 +8333,7 @@ export type Orderbook_Rwa_Order_Sell_Order_Bool_Exp = {
   _not?: InputMaybe<Orderbook_Rwa_Order_Sell_Order_Bool_Exp>;
   _or?: InputMaybe<Array<Orderbook_Rwa_Order_Sell_Order_Bool_Exp>>;
   id?: InputMaybe<Int_Comparison_Exp>;
-  order_ids?: InputMaybe<String_Comparison_Exp>;
+  order_ids?: InputMaybe<Int_Array_Comparison_Exp>;
   price?: InputMaybe<Bigint_Comparison_Exp>;
   rwa_order?: InputMaybe<Orderbook_Rwa_Order_Bool_Exp>;
   rwa_order_id?: InputMaybe<Int_Comparison_Exp>;
@@ -6853,7 +8408,7 @@ export type Orderbook_Rwa_Order_Sell_Order_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type Orderbook_Rwa_Order_Sell_Order_Stream_Cursor_Value_Input = {
   id?: InputMaybe<Scalars['Int']['input']>;
-  order_ids?: InputMaybe<Scalars['String']['input']>;
+  order_ids?: InputMaybe<Array<Scalars['Int']['input']>>;
   price?: InputMaybe<Scalars['bigint']['input']>;
   rwa_order_id?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -7276,6 +8831,93 @@ export type Orderbook_Sum_Order_By = {
   rwa_token_id?: InputMaybe<Order_By>;
   sell_order_counter?: InputMaybe<Order_By>;
   sell_order_fee?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "orderbook_summary_view". All fields are combined with a logical 'AND'. */
+export type Orderbook_Summary_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Orderbook_Summary_View_Bool_Exp>>;
+  _not?: InputMaybe<Orderbook_Summary_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Orderbook_Summary_View_Bool_Exp>>;
+  active_buy_orders_count?: InputMaybe<Bigint_Comparison_Exp>;
+  active_sell_orders_count?: InputMaybe<Bigint_Comparison_Exp>;
+  highest_buy_price?: InputMaybe<Bigint_Comparison_Exp>;
+  last_matched_price?: InputMaybe<Bigint_Comparison_Exp>;
+  last_matched_price_timestamp?: InputMaybe<Timetz_Comparison_Exp>;
+  lowest_sell_price?: InputMaybe<Bigint_Comparison_Exp>;
+  orderbook_address?: InputMaybe<String_Comparison_Exp>;
+  orderbook_id?: InputMaybe<Int_Comparison_Exp>;
+  rwa_token_address?: InputMaybe<String_Comparison_Exp>;
+  rwa_token_id?: InputMaybe<Smallint_Comparison_Exp>;
+  rwa_token_metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  volume_24h?: InputMaybe<Numeric_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "orderbook_summary_view". */
+export type Orderbook_Summary_View_Order_By = {
+  active_buy_orders_count?: InputMaybe<Order_By>;
+  active_sell_orders_count?: InputMaybe<Order_By>;
+  highest_buy_price?: InputMaybe<Order_By>;
+  last_matched_price?: InputMaybe<Order_By>;
+  last_matched_price_timestamp?: InputMaybe<Order_By>;
+  lowest_sell_price?: InputMaybe<Order_By>;
+  orderbook_address?: InputMaybe<Order_By>;
+  orderbook_id?: InputMaybe<Order_By>;
+  rwa_token_address?: InputMaybe<Order_By>;
+  rwa_token_id?: InputMaybe<Order_By>;
+  rwa_token_metadata?: InputMaybe<Order_By>;
+  volume_24h?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "orderbook_summary_view" */
+export enum Orderbook_Summary_View_Select_Column {
+  /** column name */
+  ActiveBuyOrdersCount = 'active_buy_orders_count',
+  /** column name */
+  ActiveSellOrdersCount = 'active_sell_orders_count',
+  /** column name */
+  HighestBuyPrice = 'highest_buy_price',
+  /** column name */
+  LastMatchedPrice = 'last_matched_price',
+  /** column name */
+  LastMatchedPriceTimestamp = 'last_matched_price_timestamp',
+  /** column name */
+  LowestSellPrice = 'lowest_sell_price',
+  /** column name */
+  OrderbookAddress = 'orderbook_address',
+  /** column name */
+  OrderbookId = 'orderbook_id',
+  /** column name */
+  RwaTokenAddress = 'rwa_token_address',
+  /** column name */
+  RwaTokenId = 'rwa_token_id',
+  /** column name */
+  RwaTokenMetadata = 'rwa_token_metadata',
+  /** column name */
+  Volume_24h = 'volume_24h'
+}
+
+/** Streaming cursor of the table "orderbook_summary_view" */
+export type Orderbook_Summary_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Orderbook_Summary_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Orderbook_Summary_View_Stream_Cursor_Value_Input = {
+  active_buy_orders_count?: InputMaybe<Scalars['bigint']['input']>;
+  active_sell_orders_count?: InputMaybe<Scalars['bigint']['input']>;
+  highest_buy_price?: InputMaybe<Scalars['bigint']['input']>;
+  last_matched_price?: InputMaybe<Scalars['bigint']['input']>;
+  last_matched_price_timestamp?: InputMaybe<Scalars['timetz']['input']>;
+  lowest_sell_price?: InputMaybe<Scalars['bigint']['input']>;
+  orderbook_address?: InputMaybe<Scalars['String']['input']>;
+  orderbook_id?: InputMaybe<Scalars['Int']['input']>;
+  rwa_token_address?: InputMaybe<Scalars['String']['input']>;
+  rwa_token_id?: InputMaybe<Scalars['smallint']['input']>;
+  rwa_token_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  volume_24h?: InputMaybe<Scalars['numeric']['input']>;
 };
 
 /** order by var_pop() on columns of table "orderbook" */
@@ -8678,6 +10320,145 @@ export type Token_Bool_Exp = {
   token_standard?: InputMaybe<Smallint_Comparison_Exp>;
 };
 
+/** Boolean expression to filter rows from the table "token_holders_view". All fields are combined with a logical 'AND'. */
+export type Token_Holders_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Token_Holders_View_Bool_Exp>>;
+  _not?: InputMaybe<Token_Holders_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Token_Holders_View_Bool_Exp>>;
+  holder_count?: InputMaybe<Bigint_Comparison_Exp>;
+  token_address?: InputMaybe<String_Comparison_Exp>;
+  token_id?: InputMaybe<Int_Comparison_Exp>;
+  token_number?: InputMaybe<Smallint_Comparison_Exp>;
+  total_supply?: InputMaybe<Numeric_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "token_holders_view". */
+export type Token_Holders_View_Order_By = {
+  holder_count?: InputMaybe<Order_By>;
+  token_address?: InputMaybe<Order_By>;
+  token_id?: InputMaybe<Order_By>;
+  token_number?: InputMaybe<Order_By>;
+  total_supply?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "token_holders_view" */
+export enum Token_Holders_View_Select_Column {
+  /** column name */
+  HolderCount = 'holder_count',
+  /** column name */
+  TokenAddress = 'token_address',
+  /** column name */
+  TokenId = 'token_id',
+  /** column name */
+  TokenNumber = 'token_number',
+  /** column name */
+  TotalSupply = 'total_supply'
+}
+
+/** Streaming cursor of the table "token_holders_view" */
+export type Token_Holders_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Token_Holders_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Token_Holders_View_Stream_Cursor_Value_Input = {
+  holder_count?: InputMaybe<Scalars['bigint']['input']>;
+  token_address?: InputMaybe<Scalars['String']['input']>;
+  token_id?: InputMaybe<Scalars['Int']['input']>;
+  token_number?: InputMaybe<Scalars['smallint']['input']>;
+  total_supply?: InputMaybe<Scalars['numeric']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "token_metadata_view". All fields are combined with a logical 'AND'. */
+export type Token_Metadata_View_Bool_Exp = {
+  _and?: InputMaybe<Array<Token_Metadata_View_Bool_Exp>>;
+  _not?: InputMaybe<Token_Metadata_View_Bool_Exp>;
+  _or?: InputMaybe<Array<Token_Metadata_View_Bool_Exp>>;
+  address?: InputMaybe<String_Comparison_Exp>;
+  artifact_uri?: InputMaybe<String_Comparison_Exp>;
+  decimals?: InputMaybe<String_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  symbol?: InputMaybe<String_Comparison_Exp>;
+  thumbnail_uri?: InputMaybe<String_Comparison_Exp>;
+  token_id?: InputMaybe<Int_Comparison_Exp>;
+  token_metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  token_number?: InputMaybe<Smallint_Comparison_Exp>;
+  token_standard?: InputMaybe<Smallint_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "token_metadata_view". */
+export type Token_Metadata_View_Order_By = {
+  address?: InputMaybe<Order_By>;
+  artifact_uri?: InputMaybe<Order_By>;
+  decimals?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  metadata?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  symbol?: InputMaybe<Order_By>;
+  thumbnail_uri?: InputMaybe<Order_By>;
+  token_id?: InputMaybe<Order_By>;
+  token_metadata?: InputMaybe<Order_By>;
+  token_number?: InputMaybe<Order_By>;
+  token_standard?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "token_metadata_view" */
+export enum Token_Metadata_View_Select_Column {
+  /** column name */
+  Address = 'address',
+  /** column name */
+  ArtifactUri = 'artifact_uri',
+  /** column name */
+  Decimals = 'decimals',
+  /** column name */
+  Description = 'description',
+  /** column name */
+  Metadata = 'metadata',
+  /** column name */
+  Name = 'name',
+  /** column name */
+  Symbol = 'symbol',
+  /** column name */
+  ThumbnailUri = 'thumbnail_uri',
+  /** column name */
+  TokenId = 'token_id',
+  /** column name */
+  TokenMetadata = 'token_metadata',
+  /** column name */
+  TokenNumber = 'token_number',
+  /** column name */
+  TokenStandard = 'token_standard'
+}
+
+/** Streaming cursor of the table "token_metadata_view" */
+export type Token_Metadata_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Token_Metadata_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Token_Metadata_View_Stream_Cursor_Value_Input = {
+  address?: InputMaybe<Scalars['String']['input']>;
+  artifact_uri?: InputMaybe<Scalars['String']['input']>;
+  decimals?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  symbol?: InputMaybe<Scalars['String']['input']>;
+  thumbnail_uri?: InputMaybe<Scalars['String']['input']>;
+  token_id?: InputMaybe<Scalars['Int']['input']>;
+  token_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  token_number?: InputMaybe<Scalars['smallint']['input']>;
+  token_standard?: InputMaybe<Scalars['smallint']['input']>;
+};
+
 /** Ordering options when selecting data from "token". */
 export type Token_Order_By = {
   address?: InputMaybe<Order_By>;
@@ -8735,6 +10516,120 @@ export type Token_Stream_Cursor_Value_Input = {
   token_standard?: InputMaybe<Scalars['smallint']['input']>;
 };
 
+/** Boolean expression to filter rows from the table "token_transfer_volume_daily". All fields are combined with a logical 'AND'. */
+export type Token_Transfer_Volume_Daily_Bool_Exp = {
+  _and?: InputMaybe<Array<Token_Transfer_Volume_Daily_Bool_Exp>>;
+  _not?: InputMaybe<Token_Transfer_Volume_Daily_Bool_Exp>;
+  _or?: InputMaybe<Array<Token_Transfer_Volume_Daily_Bool_Exp>>;
+  day?: InputMaybe<Timestamptz_Comparison_Exp>;
+  token_id?: InputMaybe<Int_Comparison_Exp>;
+  total_volume?: InputMaybe<Numeric_Comparison_Exp>;
+  transfer_count?: InputMaybe<Bigint_Comparison_Exp>;
+  transfer_type?: InputMaybe<Smallint_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "token_transfer_volume_daily". */
+export type Token_Transfer_Volume_Daily_Order_By = {
+  day?: InputMaybe<Order_By>;
+  token_id?: InputMaybe<Order_By>;
+  total_volume?: InputMaybe<Order_By>;
+  transfer_count?: InputMaybe<Order_By>;
+  transfer_type?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "token_transfer_volume_daily" */
+export enum Token_Transfer_Volume_Daily_Select_Column {
+  /** column name */
+  Day = 'day',
+  /** column name */
+  TokenId = 'token_id',
+  /** column name */
+  TotalVolume = 'total_volume',
+  /** column name */
+  TransferCount = 'transfer_count',
+  /** column name */
+  TransferType = 'transfer_type'
+}
+
+/** Streaming cursor of the table "token_transfer_volume_daily" */
+export type Token_Transfer_Volume_Daily_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Token_Transfer_Volume_Daily_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Token_Transfer_Volume_Daily_Stream_Cursor_Value_Input = {
+  day?: InputMaybe<Scalars['timestamptz']['input']>;
+  token_id?: InputMaybe<Scalars['Int']['input']>;
+  total_volume?: InputMaybe<Scalars['numeric']['input']>;
+  transfer_count?: InputMaybe<Scalars['bigint']['input']>;
+  transfer_type?: InputMaybe<Scalars['smallint']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "user_orders_summary_view". All fields are combined with a logical 'AND'. */
+export type User_Orders_Summary_View_Bool_Exp = {
+  _and?: InputMaybe<Array<User_Orders_Summary_View_Bool_Exp>>;
+  _not?: InputMaybe<User_Orders_Summary_View_Bool_Exp>;
+  _or?: InputMaybe<Array<User_Orders_Summary_View_Bool_Exp>>;
+  active_buy_orders_count?: InputMaybe<Bigint_Comparison_Exp>;
+  active_sell_orders_count?: InputMaybe<Bigint_Comparison_Exp>;
+  orderbook_address?: InputMaybe<String_Comparison_Exp>;
+  orderbook_id?: InputMaybe<Int_Comparison_Exp>;
+  total_buy_volume?: InputMaybe<Numeric_Comparison_Exp>;
+  total_sell_volume?: InputMaybe<Numeric_Comparison_Exp>;
+  user_address?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "user_orders_summary_view". */
+export type User_Orders_Summary_View_Order_By = {
+  active_buy_orders_count?: InputMaybe<Order_By>;
+  active_sell_orders_count?: InputMaybe<Order_By>;
+  orderbook_address?: InputMaybe<Order_By>;
+  orderbook_id?: InputMaybe<Order_By>;
+  total_buy_volume?: InputMaybe<Order_By>;
+  total_sell_volume?: InputMaybe<Order_By>;
+  user_address?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "user_orders_summary_view" */
+export enum User_Orders_Summary_View_Select_Column {
+  /** column name */
+  ActiveBuyOrdersCount = 'active_buy_orders_count',
+  /** column name */
+  ActiveSellOrdersCount = 'active_sell_orders_count',
+  /** column name */
+  OrderbookAddress = 'orderbook_address',
+  /** column name */
+  OrderbookId = 'orderbook_id',
+  /** column name */
+  TotalBuyVolume = 'total_buy_volume',
+  /** column name */
+  TotalSellVolume = 'total_sell_volume',
+  /** column name */
+  UserAddress = 'user_address'
+}
+
+/** Streaming cursor of the table "user_orders_summary_view" */
+export type User_Orders_Summary_View_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: User_Orders_Summary_View_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type User_Orders_Summary_View_Stream_Cursor_Value_Input = {
+  active_buy_orders_count?: InputMaybe<Scalars['bigint']['input']>;
+  active_sell_orders_count?: InputMaybe<Scalars['bigint']['input']>;
+  orderbook_address?: InputMaybe<Scalars['String']['input']>;
+  orderbook_id?: InputMaybe<Scalars['Int']['input']>;
+  total_buy_volume?: InputMaybe<Scalars['numeric']['input']>;
+  total_sell_volume?: InputMaybe<Scalars['numeric']['input']>;
+  user_address?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type DexStorageQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -8752,7 +10647,10 @@ export type DodoMAvAssetMetadataQueryVariables = Exact<{
 
 export type DodoMAvAssetMetadataQuery = { __typename?: 'query_root', token: Array<{ __typename?: 'token', address: string, token_id: any, token_standard?: any | null, token_metadata?: any | null, metadata?: any | null }> };
 
-export type MarketAddressesQueryVariables = Exact<{ [key: string]: never; }>;
+export type MarketAddressesQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
 
 
 export type MarketAddressesQuery = { __typename?: 'query_root', dodo_mav: Array<{ __typename?: 'dodo_mav', address: string, base_token: { __typename?: 'token', token_id: any, address: string }, quote_token: { __typename?: 'token', token_id: any, address: string }, quote_lp_token: { __typename?: 'token', address: string, token_id: any }, base_lp_token: { __typename?: 'token', address: string, token_id: any } }>, orderbook: Array<{ __typename?: 'orderbook', address: string, rwa_token?: { __typename?: 'token', address: string } | null }> };
@@ -8768,5 +10666,5 @@ export type UserKycStatusQuery = { __typename?: 'query_root', kyc_member: Array<
 export const DexStorageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DexStorage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dodo_mav"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"fee_decimals"}},{"kind":"Field","name":{"kind":"Name","value":"guide_price"}},{"kind":"Field","name":{"kind":"Name","value":"slippage_factor"}},{"kind":"Field","name":{"kind":"Name","value":"fixed_price_percent"}},{"kind":"Field","name":{"kind":"Name","value":"base_balance"}},{"kind":"Field","name":{"kind":"Name","value":"quote_balance"}},{"kind":"Field","name":{"kind":"Name","value":"target_base_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"target_quote_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"base_balance_limit"}},{"kind":"Field","name":{"kind":"Name","value":"quote_balance_limit"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"r_status"}},{"kind":"Field","name":{"kind":"Name","value":"price_model"}},{"kind":"Field","name":{"kind":"Name","value":"maintainer_fee"}},{"kind":"Field","name":{"kind":"Name","value":"lp_fee"}},{"kind":"Field","name":{"kind":"Name","value":"quote_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}},{"kind":"Field","name":{"kind":"Name","value":"quote_lp_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"base_lp_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"base_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}}]}}]} as unknown as DocumentNode<DexStorageQuery, DexStorageQueryVariables>;
 export const DipDupHeadLvlDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"DipDupHeadLvl"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dipdup_head"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"level"}}]}}]}}]} as unknown as DocumentNode<DipDupHeadLvlSubscription, DipDupHeadLvlSubscriptionVariables>;
 export const DodoMAvAssetMetadataDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"dodoMAvAssetMetadata"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"addresses"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"Variable","name":{"kind":"Name","value":"addresses"}}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"token_standard"}},{"kind":"Field","name":{"kind":"Name","value":"token_metadata"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}}]}}]}}]} as unknown as DocumentNode<DodoMAvAssetMetadataQuery, DodoMAvAssetMetadataQueryVariables>;
-export const MarketAddressesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"marketAddresses"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dodo_mav"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"base_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}},{"kind":"Field","name":{"kind":"Name","value":"quote_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}},{"kind":"Field","name":{"kind":"Name","value":"quote_lp_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"base_lp_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}}]}}]} as unknown as DocumentNode<MarketAddressesQuery, MarketAddressesQueryVariables>;
+export const MarketAddressesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"marketAddresses"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dodo_mav"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"base_balance"},"value":{"kind":"EnumValue","value":"desc"}},{"kind":"ObjectField","name":{"kind":"Name","value":"base_balance_limit"},"value":{"kind":"EnumValue","value":"desc"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"base_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}},{"kind":"Field","name":{"kind":"Name","value":"quote_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token_id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}},{"kind":"Field","name":{"kind":"Name","value":"quote_lp_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"base_lp_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}}]}}]} as unknown as DocumentNode<MarketAddressesQuery, MarketAddressesQueryVariables>;
 export const UserKycStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"UserKycStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kyc_member"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"user"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}}]}}]} as unknown as DocumentNode<UserKycStatusQuery, UserKycStatusQueryVariables>;

@@ -30,6 +30,7 @@ export type MarketConfig = {
 export type MarketInternalStateType = {
   config: MarketConfig;
   markets: Map<string, EstateType>;
+  sortedMarketAddresses: string[];
   isLoading: boolean;
 };
 
@@ -38,6 +39,8 @@ export type MarketContext = MarketInternalStateType & {
   marketsArr: EstateType[];
   activeMarket: EstateType | null;
   isLoading: boolean;
+  loadMoreMarkets: () => void;
+  reachedTheEnd: boolean;
   isActiveMarketLoading: boolean;
   pickMarketByIdentifier: (slug: string) => EstateType | null;
   updateActiveMarketState: (slug: string) => void;
