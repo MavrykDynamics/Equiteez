@@ -1,3 +1,4 @@
+import { ApiError } from "~/errors/error";
 import primaryEstate from "./primaryEstate.mock.json";
 import secondaryEstate from "./secondaryEstate.mock.json";
 
@@ -41,6 +42,7 @@ export type MarketContext = MarketInternalStateType & {
   pickMarketByIdentifier: (slug: string) => EstateType | null;
   updateActiveMarketState: (slug: string) => void;
   validBaseTokens: StringRecord<boolean>;
+  marketApiError: ApiError | null;
   pickers: {
     pickOrderbookContract: StringRecord<string>;
     pickDodoContractBasedOnToken: StringRecord<string>;

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,7 +19,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Properties() {
-  const { marketsArr, validBaseTokens } = useMarketsContext();
+  const { marketsArr, validBaseTokens, marketApiError } = useMarketsContext();
   const { dodoMav } = useDexContext();
   const [filteredEstates, setFilteredEstates] = useState(() => marketsArr);
 
@@ -31,38 +32,51 @@ export default function Properties() {
           estates={filteredEstates}
           setEstates={setFilteredEstates}
         />
-        <div className="mt-5 text-body text-content">
-          {filteredEstates.length} items
-        </div>
-        <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
-          {filteredEstates.map((es) => {
-            const isSecondaryMarket = es.assetDetails.type === SECONDARY_MARKET;
 
-            const pricePerToken = atomsToTokens(dodoMav[es.slug], es.decimals);
+        {marketApiError ? (
+          <div className="mt-5">
+            <ApiErrorBox message="The market data is unavailable at the moment" />
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 text-body text-content">
+              {filteredEstates.length} items
+            </div>
+            <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
+              {filteredEstates.map((es) => {
+                const isSecondaryMarket =
+                  es.assetDetails.type === SECONDARY_MARKET;
 
-            return (
-              <Link
-                to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
-                key={es.token_address}
-              >
-                <ThumbCardSecondary
-                  imgSrc={es.assetDetails.previewImage}
-                  title={es.name}
-                  description={es.assetDetails.propertyDetails.propertyType}
-                  isSecondaryMarket={isSecondaryMarket}
-                  APY={es.assetDetails.APY}
-                  pricePerToken={pricePerToken}
-                  isFutureAsset={!validBaseTokens[es.token_address]}
-                />
-              </Link>
-            );
-          })}
-        </div>
+                const pricePerToken = atomsToTokens(
+                  dodoMav[es.slug],
+                  es.decimals
+                );
 
-        <div className=" text-center text-sand-600 text-card-headline mt-11">
-          End of The Assets
-        </div>
-        <Spacer height={110} />
+                return (
+                  <Link
+                    to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
+                    key={es.token_address}
+                  >
+                    <ThumbCardSecondary
+                      imgSrc={es.assetDetails.previewImage}
+                      title={es.name}
+                      description={es.assetDetails.propertyDetails.propertyType}
+                      isSecondaryMarket={isSecondaryMarket}
+                      APY={es.assetDetails.APY}
+                      pricePerToken={pricePerToken}
+                      isFutureAsset={!validBaseTokens[es.token_address]}
+                    />
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className=" text-center text-sand-600 text-card-headline mt-11">
+              End of The Assets
+            </div>
+            <Spacer height={110} />
+          </>
+        )}
       </div>
     </PageLayout>
   );

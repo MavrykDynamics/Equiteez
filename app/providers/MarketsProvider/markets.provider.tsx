@@ -32,12 +32,12 @@ import { mapValuesToArray } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
 import {
   MARKETS_INITIAL_STATE,
-  MARKETS_PAGINATION_LIMIT,
+  // MARKETS_PAGINATION_LIMIT,
 } from "./market.const";
 import { toTokenSlug } from "~/lib/assets";
 import { useApolloContext } from "../ApolloProvider/apollo.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
-import { FatalError } from "~/errors/error";
+import { ApiError, unknownToError } from "~/errors/error";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -45,7 +45,7 @@ export const marketsContext = createContext<MarketContext>(undefined!);
 
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const { handleApolloError } = useApolloContext();
-  const { fatal } = useToasterContext();
+  const { bug } = useToasterContext();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [marketsState, setMarketsState] = useState<MarketInternalStateType>(
     () => MARKETS_INITIAL_STATE
@@ -58,15 +58,17 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     isActiveMarketLoading: true,
   }));
 
-  const [marketsPagination, setMarketsPagination] = useState(() => ({
-    limit: MARKETS_PAGINATION_LIMIT,
-    offset: 0,
-  }));
+  // const [marketsPagination, setMarketsPagination] = useState(() => ({
+  //   limit: MARKETS_PAGINATION_LIMIT,
+  //   offset: 0,
+  // }));
+
+  const [marketApiError, setMarketApiError] = useState<ApiError | null>(null);
 
   const { loading: isMarketsAddressesLoading } = useQuery(
     MARKETS_ADDRESSES_QUERY,
     {
-      variables: { ...marketsPagination },
+      // variables: { ...marketsPagination },
       onCompleted: (data) => {
         try {
           const parsedConfigData = marketsConfigQuerySchema.parse(data);
@@ -90,10 +92,13 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
             },
           }));
         } catch (e) {
-          fatal(new FatalError("MARKETS_ADDRESSES_QUERY"));
+          const error = unknownToError(e);
+          setMarketApiError(new ApiError(error));
+          bug(new ApiError("MARKETS_ADDRESSES_QUERY"));
         }
       },
       onError: (error) => {
+        setMarketApiError(new ApiError(error));
         handleApolloError(error, "MARKETS_ADDRESSES_QUERY");
       },
     }
@@ -130,7 +135,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
             );
             if (assetMocked) {
               // const [previewImg] = buildTokenImagesStack(thumbnailUri);
-
+              // @ts-expect-error // fake data
               acc.set(slug, {
                 ...assetMocked,
                 slug,
@@ -156,6 +161,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         >((acc, asset) => {
           const slug = toTokenSlug(asset.token_address);
           if (slug) {
+            // @ts-expect-error // fake data
             acc.set(slug, { ...asset, slug });
           }
 
@@ -172,10 +178,15 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
           isLoading: false,
         }));
       } catch (e) {
-        fatal(new FatalError("MARKET_TOKENS__DATA_QUERY"));
+        const error = unknownToError(e);
+        setMarketApiError(new ApiError(error));
+        bug(new ApiError("MARKET_TOKENS__DATA_QUERY"));
       }
     },
-    onError: (error) => handleApolloError(error, "MARKET_TOKENS__DATA_QUERY"),
+    onError: (error) => {
+      setMarketApiError(new ApiError(error));
+      handleApolloError(error, "MARKET_TOKENS__DATA_QUERY");
+    },
   });
 
   const pickMarketByIdentifier = useCallback(
@@ -197,12 +208,12 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [pickMarketByIdentifier]
   );
 
-  const loadMoreMarkets = useCallback(() => {
-    setMarketsPagination((prev) => ({
-      limit: prev.limit + MARKETS_PAGINATION_LIMIT,
-      offset: prev.offset + MARKETS_PAGINATION_LIMIT,
-    }));
-  }, []);
+  // const loadMoreMarkets = useCallback(() => {
+  //   setMarketsPagination((prev) => ({
+  //     limit: prev.limit + MARKETS_PAGINATION_LIMIT,
+  //     offset: prev.offset + MARKETS_PAGINATION_LIMIT,
+  //   }));
+  // }, []);
 
   // convert markets map to array (used in a lot of place, f,e, embla carousel)
   const marketsArr = useMemo(
@@ -230,7 +241,10 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       marketAddresses: dodoBaseTokenAddresses,
       pickers,
       validBaseTokens,
-      isLoading: loading || isMarketsAddressesLoading || marketsState.isLoading,
+      marketApiError,
+      isLoading: marketApiError
+        ? false
+        : loading || isMarketsAddressesLoading || marketsState.isLoading,
     }),
     [
       marketsState,
@@ -239,9 +253,10 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       pickMarketByIdentifier,
       updateActiveMarketState,
       dodoBaseTokenAddresses,
-      loading,
       pickers,
       validBaseTokens,
+      marketApiError,
+      loading,
       isMarketsAddressesLoading,
     ]
   );

@@ -6,6 +6,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { useMemo } from "react";
+import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
@@ -29,6 +30,8 @@ export const PropertiesSlider = () => {
     onPrevButtonClick,
     onNextButtonClick,
   } = usePrevNextButtons(emblaApi);
+
+  if (!marketsArr.length) return null;
 
   return (
     <div className="px-11 py-16 bg-green-main rounded-4xl">
@@ -61,7 +64,7 @@ export const PropertiesSlider = () => {
 };
 
 export const PropertiesSliderSecondary = () => {
-  const { marketsArr } = useMarketsContext();
+  const { marketsArr, marketApiError } = useMarketsContext();
 
   const idxToSlice = useMemo(
     () => Math.ceil(marketsArr.length / 2),
@@ -86,23 +89,27 @@ export const PropertiesSliderSecondary = () => {
       <h1 className="text-content text-section-headline font-bold w-full">
         Trending Assets
       </h1>
-      <AssetsEmblaCarousel
-        emblaRef={emblaRef}
-        slides={slides}
-        nextBtnDisabled={nextBtnDisabled}
-        childPosition="after"
-      >
-        <div className="w-full flex justify-end mt-8 text-content">
-          <SlidesNavigation
-            length={slides.length}
-            onPrevButtonClick={onPrevButtonClick}
-            onNextButtonClick={onNextButtonClick}
-            prevBtnDisabled={prevBtnDisabled}
-            nextBtnDisabled={nextBtnDisabled}
-            colorClassName="text-content"
-          />
-        </div>
-      </AssetsEmblaCarousel>
+      {marketApiError ? (
+        <ApiErrorBox message="The market data is unavailable at the moment" />
+      ) : (
+        <AssetsEmblaCarousel
+          emblaRef={emblaRef}
+          slides={slides}
+          nextBtnDisabled={nextBtnDisabled}
+          childPosition="after"
+        >
+          <div className="w-full flex justify-end mt-8 text-content">
+            <SlidesNavigation
+              length={slides.length}
+              onPrevButtonClick={onPrevButtonClick}
+              onNextButtonClick={onNextButtonClick}
+              prevBtnDisabled={prevBtnDisabled}
+              nextBtnDisabled={nextBtnDisabled}
+              colorClassName="text-content"
+            />
+          </div>
+        </AssetsEmblaCarousel>
+      )}
     </div>
   );
 };

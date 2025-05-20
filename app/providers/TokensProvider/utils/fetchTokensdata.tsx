@@ -19,8 +19,8 @@ export const fetchTokensData = async () => {
 
     return tokens.filter((t) => !TOKENS_SCAM_RECORD[t.contract]);
   } catch (e) {
-    console.log(e);
-    throw new Error("Error while fetching tokens");
+    console.error(e), "Error while fetching tokens";
+    return [];
   }
 };
 
@@ -75,7 +75,7 @@ export const fetchTokensMetadata = async (
 
     return parsedData;
   } catch (e) {
-    console.log(e);
-    throw new Error("Error while fetching tokens metadata");
+    console.error(e, "Error while fetching tokens metadata");
+    return {};
   }
 };
