@@ -10,4 +10,4 @@ export const MARKETS_INITIAL_STATE = {
   isLoading: true,
 };
 
-export const MARKETS_PAGINATION_LIMIT = 1;
+export const MARKETS_PAGINATION_LIMIT = 10;

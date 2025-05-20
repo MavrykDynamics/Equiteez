@@ -32,7 +32,7 @@ import { mapValuesToArray } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
 import {
   MARKETS_INITIAL_STATE,
-  // MARKETS_PAGINATION_LIMIT,
+  MARKETS_PAGINATION_LIMIT,
 } from "./market.const";
 import { toTokenSlug } from "~/lib/assets";
 import { useApolloContext } from "../ApolloProvider/apollo.provider";
@@ -42,7 +42,6 @@ import { ApiError, unknownToError } from "~/errors/error";
 export const marketsContext = createContext<MarketContext>(undefined!);
 
 // assets to show without actual API data
-
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const { handleApolloError } = useApolloContext();
   const { bug } = useToasterContext();
@@ -58,20 +57,25 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     isActiveMarketLoading: true,
   }));
 
-  // const [marketsPagination, setMarketsPagination] = useState(() => ({
-  //   limit: MARKETS_PAGINATION_LIMIT,
-  //   offset: 0,
-  // }));
+  const [marketsPagination, setMarketsPagination] = useState(() => ({
+    limit: MARKETS_PAGINATION_LIMIT,
+    offset: 0,
+  }));
+  const [reachedTheEnd, setReachedTheEnd] = useState(false);
 
   const [marketApiError, setMarketApiError] = useState<ApiError | null>(null);
 
   const { loading: isMarketsAddressesLoading } = useQuery(
     MARKETS_ADDRESSES_QUERY,
     {
-      // variables: { ...marketsPagination },
+      variables: { ...marketsPagination },
       onCompleted: (data) => {
         try {
           const parsedConfigData = marketsConfigQuerySchema.parse(data);
+
+          if (data.dodo_mav.length === 0) {
+            return setReachedTheEnd(true);
+          }
           const { dodo_mav, orderbook } = parsedConfigData;
 
           const dodoConfig = getUpdatedDodoMavMarketsConfig(
@@ -208,12 +212,12 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [pickMarketByIdentifier]
   );
 
-  // const loadMoreMarkets = useCallback(() => {
-  //   setMarketsPagination((prev) => ({
-  //     limit: prev.limit + MARKETS_PAGINATION_LIMIT,
-  //     offset: prev.offset + MARKETS_PAGINATION_LIMIT,
-  //   }));
-  // }, []);
+  const loadMoreMarkets = useCallback(() => {
+    setMarketsPagination((prev) => ({
+      limit: prev.limit + MARKETS_PAGINATION_LIMIT,
+      offset: prev.offset + MARKETS_PAGINATION_LIMIT,
+    }));
+  }, []);
 
   // convert markets map to array (used in a lot of place, f,e, embla carousel)
   const marketsArr = useMemo(
@@ -242,12 +246,16 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       pickers,
       validBaseTokens,
       marketApiError,
+      loadMoreMarkets,
+      reachedTheEnd,
       isLoading: marketApiError
         ? false
         : loading || isMarketsAddressesLoading || marketsState.isLoading,
     }),
     [
       marketsState,
+      loadMoreMarkets,
+      reachedTheEnd,
       activeMarketState,
       marketsArr,
       pickMarketByIdentifier,

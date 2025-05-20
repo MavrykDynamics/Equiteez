@@ -38,6 +38,8 @@ export type MarketContext = MarketInternalStateType & {
   marketsArr: EstateType[];
   activeMarket: EstateType | null;
   isLoading: boolean;
+  loadMoreMarkets: () => void;
+  reachedTheEnd: boolean;
   isActiveMarketLoading: boolean;
   pickMarketByIdentifier: (slug: string) => EstateType | null;
   updateActiveMarketState: (slug: string) => void;
