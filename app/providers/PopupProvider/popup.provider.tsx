@@ -5,15 +5,15 @@ import {
   useContext,
   useMemo,
   useState,
-} from 'react';
-import { DEFAULT_POPUPS_STATE, POPUP_KEYS } from './consts';
+} from "react";
+import { DEFAULT_POPUPS_STATE, POPUP_KEYS } from "./consts";
 import {
   TransactionOperationPopup,
   TransactionOperationPopupProps,
-} from './popups/TransactionOperationPopup/TransactionOperationPopup';
-import { PopupProviderContext, PopupState } from './popup.provider.types';
-import { sleep } from '~/lib/utils/sleep';
-import { DEFAULT_POPUP_ANIMATION_DELAY } from '~/lib/organisms/CustomPopup/CustomPopup';
+} from "./popups/TransactionOperationPopup/TransactionOperationPopup";
+import { PopupProviderContext, PopupState } from "./popup.provider.types";
+import { sleep } from "~/lib/utils/sleep";
+import { DEFAULT_POPUP_ANIMATION_DELAY } from "~/lib/organisms/CustomPopup/CustomPopup";
 
 const popupContext = createContext<PopupProviderContext>(undefined!);
 
@@ -22,6 +22,8 @@ export const PopupProvider: FC<PropsWithChildren> = ({ children }) => {
     useState<PopupState>(DEFAULT_POPUPS_STATE);
 
   const showPopup = useCallback(
+    // key for the transaction type
+    // props usually for template (children)
     <G,>(key: string, props: G) => {
       setPopupsState({ ...popupsState, [key]: { show: true, props } });
     },
@@ -64,11 +66,19 @@ export const PopupProvider: FC<PropsWithChildren> = ({ children }) => {
     <popupContext.Provider value={memoizedPopupVal}>
       {children}
       <TransactionOperationPopup
-        isOpen={popupsState.txOperation.show}
-        onRequestClose={() => hidePopup(POPUP_KEYS.txOperation)}
-        {...(popupsState.txOperation.props as Omit<
+        isOpen={popupsState.txRwaBuyOperation.show}
+        onRequestClose={() => hidePopup(POPUP_KEYS.txRwaBuyOperation)}
+        {...(popupsState.txRwaBuyOperation.props as Omit<
           TransactionOperationPopupProps,
-          'isOpen'
+          "isOpen"
+        >)}
+      />
+      <TransactionOperationPopup
+        isOpen={popupsState.txRwaSellOperation.show}
+        onRequestClose={() => hidePopup(POPUP_KEYS.txRwaSellOperation)}
+        {...(popupsState.txRwaSellOperation.props as Omit<
+          TransactionOperationPopupProps,
+          "isOpen"
         >)}
       />
     </popupContext.Provider>

@@ -33,7 +33,10 @@ import {
   SELL,
 } from "../consts";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
-import { useContractAction } from "~/contracts/hooks/useContractAction";
+import {
+  ContractActionPopupProps,
+  useContractAction,
+} from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
@@ -63,6 +66,7 @@ export const PopupContent: FC<{
   const { dodoMav, dodoTokenPair } = useDexContext();
   const {
     pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
+    activeMarket,
   } = useMarketsContext();
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
@@ -196,11 +200,19 @@ export const PopupContent: FC<{
   );
 
   // Market buy | sell
+  const memoizedBuyPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
+    [activeMarket?.name]
+  );
   const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps);
+    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
 
+  const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
+    [activeMarket?.name]
+  );
   const { invokeAction: handleMarketSell, status: sellStatus } =
-    useContractAction(sellBaseToken, marketSellProps);
+    useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
 
   // status of the operation
   const status = useMemo(

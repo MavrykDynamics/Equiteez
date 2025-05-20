@@ -9,26 +9,27 @@ import {
 } from "~/lib/ui/use-status-flag";
 import { sleep } from "~/lib/utils/sleep";
 import { usePopupContext } from "~/providers/PopupProvider/popup.provider";
+import { POPUP_KEYS, txTemplates } from "~/providers/PopupProvider/consts";
 
 // templates
-import {
-  popupOperationSuccess,
-  popupOperationError,
-} from "../templates/operationPopupData";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 // Simplified version to handle operation calls
-// TODO adjust logic based on the new requirements
+
+export type ContractActionPopupProps = {
+  key: keyof typeof POPUP_KEYS;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  props: any;
+};
 
 export const useContractAction = <G,>(
   actionFn: ((args: G) => void) | (() => void),
-  args: unknown
+  args: unknown,
+  popupDetails?: ContractActionPopupProps
 ) => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys } = usePopupContext();
-  const { activeMarket } = useMarketsContext();
 
   const invokeAction = useCallback(async () => {
     try {
@@ -39,11 +40,11 @@ export const useContractAction = <G,>(
       dispatch(STATUS_PENDING);
 
       const shouldShowPopup = await actionFn({ ...(args as G), tezos });
-      if (shouldShowPopup === undefined) {
+      if (shouldShowPopup === undefined && popupDetails) {
         dispatch(STATUS_SUCCESS);
         showPopup(
-          popupKeys.txOperation,
-          popupOperationSuccess(activeMarket?.name ?? "Nomad")
+          popupKeys[popupDetails.key],
+          txTemplates[popupDetails.key].success(popupDetails.props)
         );
         await sleep(2000);
       }
@@ -51,20 +52,16 @@ export const useContractAction = <G,>(
       dispatch(STATUS_IDLE);
     } catch (e) {
       dispatch(STATUS_ERROR);
-      showPopup(popupKeys.txOperation, popupOperationError());
+      if (popupDetails)
+        showPopup(
+          popupKeys[popupDetails.key],
+          txTemplates[popupDetails.key].error()
+        );
       await sleep(2000);
 
       dispatch(STATUS_IDLE);
     }
-  }, [
-    actionFn,
-    activeMarket?.name,
-    args,
-    dapp,
-    dispatch,
-    popupKeys.txOperation,
-    showPopup,
-  ]);
+  }, [actionFn, args, dapp, dispatch, popupDetails, popupKeys, showPopup]);
 
   return { invokeAction, isLoading, status };
 };
