@@ -130,6 +130,14 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [marketsState.config.dodoMav]
   );
 
+  const marketAddresses = useMemo(
+    () =>
+      Array.from(marketsState.config.dodoMav.values()).map(
+        (entry) => entry.address
+      ),
+    [marketsState.config.dodoMav]
+  );
+
   const { loading } = useQuery(DODO_MAV_ASSET_METADATA_QUERY, {
     // query meta by base tokens from dodo_mav
     variables: { addresses: dodoBaseTokenAddresses },
@@ -259,7 +267,8 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       marketsArr,
       pickMarketByIdentifier,
       updateActiveMarketState,
-      marketAddresses: dodoBaseTokenAddresses,
+      dodoBaseTokenAddresses,
+      marketAddresses,
       pickers,
       validBaseTokens,
       marketApiError,
@@ -270,6 +279,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         : loading || isMarketsAddressesLoading || marketsState.isLoading,
     }),
     [
+      marketAddresses,
       marketsState,
       loadMoreMarkets,
       reachedTheEnd,

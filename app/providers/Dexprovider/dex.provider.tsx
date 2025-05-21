@@ -39,7 +39,7 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   useQueryWithRefetch(
     DEX_STORAGE_QUERY,
     {
-      // variables: { addresses: marketAddresses },
+      variables: { marketAddresses },
       skip: marketAddresses.length === 0 || markets.size === 0,
       onCompleted: (data) => {
         try {

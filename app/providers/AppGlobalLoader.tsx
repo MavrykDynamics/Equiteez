@@ -6,13 +6,14 @@ import { useMarketsContext } from "./MarketsProvider/markets.provider";
 
 export const AppGlobalLoader: FC<PropsWithChildren> = ({ children }) => {
   const { isLoading } = useWalletContext();
-  const { isLoading: isMarketLoading, marketAddresses } = useMarketsContext();
+  const { isLoading: isMarketLoading, dodoBaseTokenAddresses } =
+    useMarketsContext();
   const { isLoading: isTokensMetaLoading } = useTokensContext();
 
   if (
     isLoading ||
     isTokensMetaLoading ||
-    (isMarketLoading && marketAddresses.length === 0)
+    (isMarketLoading && dodoBaseTokenAddresses.length === 0)
   )
     return (
       <div className="h-screen w-full flex items-center justify-center bg-mvrk-dark">

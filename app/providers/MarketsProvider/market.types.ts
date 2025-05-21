@@ -36,6 +36,7 @@ export type MarketInternalStateType = {
 
 export type MarketContext = MarketInternalStateType & {
   marketAddresses: string[];
+  dodoBaseTokenAddresses: string[];
   marketsArr: EstateType[];
   activeMarket: EstateType | null;
   isLoading: boolean;

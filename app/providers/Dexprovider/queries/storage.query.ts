@@ -1,8 +1,8 @@
 import { gql } from "~/utils/__generated__";
 
 export const DEX_STORAGE_QUERY = gql(`
-    query DexStorage {
- dodo_mav {
+    query DexStorage($marketAddresses: [String!]) {
+  dodo_mav(where: {address: {_in: $marketAddresses}}) {
     address
     fee_decimals
     guide_price
