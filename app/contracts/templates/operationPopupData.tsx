@@ -20,8 +20,9 @@ export const popupRwaBuyOperationSuccess = (tokenName: string) => ({
   title: "Congratulations!",
   body: (
     <span>
-      You are now an investor in <b>{tokenName}</b>.<br /> You can view your
-      assets in your{" "}
+      You are now an investor in{" "}
+      <span className="font-semibold">{tokenName}</span>.<br /> You can view
+      your assets in your{" "}
       <a
         href="https://chromewebstore.google.com/detail/mavryk-wallet/cgddkajmbckbjbnondgfcbcojjjdnmji"
         target="_blank"
@@ -40,8 +41,9 @@ export const popupRwaSellOperationSuccess = (tokenName: string) => ({
   title: "Sale Completed!",
   body: (
     <span>
-      You have successfully sold your assets of <b>{tokenName}</b>.<br /> You
-      can view your funds in the dashboard.
+      You have successfully sold your assets of{" "}
+      <span className="font-semibold">{tokenName}</span>.<br /> You can view
+      your funds in the dashboard.
     </span>
   ),
 });

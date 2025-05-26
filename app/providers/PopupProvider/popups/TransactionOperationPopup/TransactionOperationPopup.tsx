@@ -33,7 +33,7 @@ export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
       <div className="flex flex-col">
         <div className="mx-auto inline-block">{icon}</div>
 
-        <div className="inline-block mx-auto mt-6 mb-3 text-content text-xl font-bold">
+        <div className="inline-block mx-auto mt-6 mb-3 text-content text-xl font-semibold">
           {title}
         </div>
         <p className="text-body text-content text-center">{body}</p>
