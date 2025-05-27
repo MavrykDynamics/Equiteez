@@ -55,6 +55,7 @@ import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
 
 export const spippageOptions = ["1", "3", "5", "custom"];
 
@@ -64,6 +65,7 @@ export const PopupContent: FC<{
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
   const { dodoMav, dodoTokenPair } = useDexContext();
+  const { adminAddress } = useConfigContext();
   const {
     pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
     activeMarket,
@@ -158,6 +160,7 @@ export const PopupContent: FC<{
       minMaxQuote: caclMinMaxQuoteBuying(amountB, slippagePercentage),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: qouteAssetMetadata?.decimals,
+      adminAddress,
       showQuoteWarning: showQuoteWarning,
     }),
     [
@@ -169,6 +172,7 @@ export const PopupContent: FC<{
       slippagePercentage,
       selectedAssetMetadata?.decimals,
       qouteAssetMetadata?.decimals,
+      adminAddress,
       showQuoteWarning,
     ]
   );
@@ -185,6 +189,7 @@ export const PopupContent: FC<{
       ),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: qouteAssetMetadata?.decimals,
+      adminAddress,
       showQuoteWarning: showQuoteWarning,
     }),
     [
@@ -195,6 +200,7 @@ export const PopupContent: FC<{
       slippagePercentage,
       selectedAssetMetadata?.decimals,
       qouteAssetMetadata?.decimals,
+      adminAddress,
       showQuoteWarning,
     ]
   );
