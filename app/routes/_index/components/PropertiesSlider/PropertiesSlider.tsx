@@ -19,9 +19,10 @@ export const PropertiesSlider = () => {
   );
 
   const slides = useMemo(
-    () => marketsArr.slice(idxToSlice),
+    () => marketsArr.slice(0, idxToSlice),
     [marketsArr, idxToSlice]
   );
+
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
   const {
