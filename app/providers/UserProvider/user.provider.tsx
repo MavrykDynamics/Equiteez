@@ -16,7 +16,8 @@ import { useAppContext } from "../AppProvider/AppProvider";
 import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
-import { getKYCStatus } from "./helpers/userFetchers";
+import { useQuery } from "@apollo/client/index";
+import { USER_KYC_STATUS_QUERY } from "../MarketsProvider/queries/user.query";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -106,43 +107,28 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
   ]);
 
-  useEffect(() => {
-    async function getUserKYCData(address: string) {
+  const { loading: isUserStatusLoading } = useQuery(USER_KYC_STATUS_QUERY, {
+    variables: { address: account?.address ?? "" },
+    skip: !account?.address,
+    onCompleted: (data) => {
       try {
-        const status = await getKYCStatus(address);
-        setUserCtxState((prev) => ({ ...prev, isKyced: status }));
+        const { kyc_member } = data;
+        if (
+          kyc_member.length > 0 &&
+          kyc_member[0].user?.address === account?.address
+        ) {
+          setUserCtxState((prev) => ({ ...prev, isKyced: true }));
+        }
       } catch (e) {
         console.log(e, "USER_KYC_STATUS_QUERY from catch");
       }
-    }
-
-    if (account?.address) {
-      getUserKYCData(account?.address);
-    }
-  }, [account]);
-
-  // TODO unvoment this section after API fixes
-  // const { loading: isUserStatusLoading } = useQuery(USER_KYC_STATUS_QUERY, {
-  //   variables: { address: account?.address ?? "" },
-  //   skip: !account?.address,
-  //   onCompleted: (data) => {
-  //     try {
-  //       const { kyc_member } = data;
-  //       if (
-  //         kyc_member.length > 0 &&
-  //         kyc_member[0].user?.address === account?.address
-  //       ) {
-  //         setUserCtxState((prev) => ({ ...prev, isKyced: true }));
-  //       }
-  //     } catch (e) {
-  //       console.log(e, "USER_KYC_STATUS_QUERY from catch");
-  //     }
-  //   },
-  //   onError: (error) => console.log(error, "USER_KYC_STATUS_QUERY"),
-  // });
+    },
+    onError: (error) => console.log(error, "USER_KYC_STATUS_QUERY"),
+  });
 
   const providerValue = useMemo(() => {
-    const isLoading = isUserLoading || tzktBalancesLoading;
+    const isLoading =
+      isUserLoading || tzktBalancesLoading || isUserStatusLoading;
 
     return {
       ...userCtxState,
@@ -160,6 +146,7 @@ export const UserProvider = ({ children }: Props) => {
   }, [
     isUserLoading,
     tzktBalancesLoading,
+    isUserStatusLoading,
     userCtxState,
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
