@@ -107,24 +107,33 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
   ]);
 
-  const { loading: isUserStatusLoading } = useQuery(USER_KYC_STATUS_QUERY, {
-    variables: { address: account?.address ?? "" },
-    skip: !account?.address,
-    onCompleted: (data) => {
-      try {
-        const { kyc_member } = data;
-        if (
-          kyc_member.length > 0 &&
-          kyc_member[0].user?.address === account?.address
-        ) {
-          setUserCtxState((prev) => ({ ...prev, isKyced: true }));
+  const { loading: isUserStatusLoading, refetch } = useQuery(
+    USER_KYC_STATUS_QUERY,
+    {
+      variables: { address: account?.address ?? "" },
+      skip: !account?.address,
+      onCompleted: (data) => {
+        try {
+          const { kyc_member } = data;
+          if (
+            kyc_member.length > 0 &&
+            kyc_member[0].user?.address === account?.address
+          ) {
+            setUserCtxState((prev) => ({ ...prev, isKyced: true }));
+          }
+        } catch (e) {
+          console.log(e, "USER_KYC_STATUS_QUERY from catch");
         }
-      } catch (e) {
-        console.log(e, "USER_KYC_STATUS_QUERY from catch");
-      }
-    },
-    onError: (error) => console.log(error, "USER_KYC_STATUS_QUERY"),
-  });
+      },
+      onError: (error) => console.log(error, "USER_KYC_STATUS_QUERY"),
+    }
+  );
+
+  useEffect(() => {
+    if (account?.address) {
+      refetch({ address: account.address });
+    }
+  }, [account?.address, refetch]);
 
   const providerValue = useMemo(() => {
     const isLoading =
