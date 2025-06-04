@@ -19,7 +19,7 @@ const mockedAdminPkhs = [
     address: "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
   },
   {
-    name: "Account 1",
+    name: "Account 2",
     address: "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
   },
 ];
