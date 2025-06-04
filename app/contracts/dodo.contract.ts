@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import BigNumber from "bignumber.js";
-import { ADMIN_ADDRESS } from "~/consts/contracts";
 
 import { RWAToken, tokensToAtoms } from "~/lib/utils/formaters";
 
@@ -17,6 +16,7 @@ type BuySellBaseToken = {
   mockQuoteLpToken: string;
   tokensAmount: number;
   minMaxQuote: number;
+  adminAddress: string;
 } & DefaultContractProps;
 
 /**
@@ -32,6 +32,7 @@ export async function buyBaseToken({
   decimals,
   quoteTokenAddress, // quoteTokenAddress usually usdt
   quoteDecimals,
+  adminAddress,
   showQuoteWarning,
 }: Omit<BuySellBaseToken, "mockQuoteLpToken"> & {
   quoteTokenAddress: string;
@@ -50,7 +51,7 @@ export async function buyBaseToken({
 
     const payQuote = await marketContract.contractViews
       .queryBuyBaseToken(amount)
-      .executeView({ viewCaller: ADMIN_ADDRESS });
+      .executeView({ viewCaller: adminAddress });
 
     const hasOutdatedQuote = parsedMinMaxQuote.isLessThan(
       new BigNumber(payQuote)
@@ -90,7 +91,12 @@ export async function buyBaseToken({
     batch = batch.withTransfer(buy_order);
     batch = batch.withTransfer(close_ops);
 
-    const batchOp = await batch.send();
+    // @ts-expect-error // send params are not typed correctly
+    const batchOp = await batch.send({
+      storageLimit: 800,
+      gasLimit: 25000,
+      fee: 18000,
+    });
 
     await batchOp.confirmation();
   } catch (e: unknown) {
@@ -111,6 +117,7 @@ export async function sellBaseToken({
   minMaxQuote,
   decimals,
   quoteDecimals,
+  adminAddress,
   showQuoteWarning,
 }: Omit<BuySellBaseToken, "mockQuoteLpToken"> & {
   tokenAddress: string;
@@ -129,7 +136,7 @@ export async function sellBaseToken({
 
     const payQuote = await marketContract.contractViews
       .querySellBaseToken(amount)
-      .executeView({ viewCaller: ADMIN_ADDRESS });
+      .executeView({ viewCaller: adminAddress });
 
     const hasOutdatedQuote = new BigNumber(payQuote).isLessThan(
       parsedMinMaxQuote
@@ -168,7 +175,12 @@ export async function sellBaseToken({
     batch = batch.withTransfer(sell_order);
     batch = batch.withTransfer(close_ops);
 
-    const batchOp = await batch.send();
+    // @ts-expect-error // send params are not typed correctly
+    const batchOp = await batch.send({
+      storageLimit: 800,
+      gasLimit: 25000,
+      fee: 18000,
+    });
 
     await batchOp.confirmation();
   } catch (e: unknown) {

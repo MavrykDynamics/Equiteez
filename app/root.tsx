@@ -28,7 +28,6 @@ import {
   fetchTokensData,
   fetchTokensMetadata,
 } from "./providers/TokensProvider/utils/fetchTokensdata";
-import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
@@ -44,6 +43,7 @@ import { useEffect } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { MobileView } from "./providers/MobileView/MobileView";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
+import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -126,25 +126,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <ApolloProvider>
                   <DipdupProvider>
                     <WalletProvider>
-                      <CurrencyProvider
-                        fiatToTezos={fiatToTezos}
-                        usdToToken={usdToToken}
-                      >
-                        <TokensProvider
-                          initialTokens={tokens}
-                          initialTokensMetadata={tokensMetadata}
+                      <ConfigProvider>
+                        <CurrencyProvider
+                          fiatToTezos={fiatToTezos}
+                          usdToToken={usdToToken}
                         >
-                          <MarketsProvider>
-                            <DexProvider>
-                              <UserProvider>
-                                <AppGlobalLoader>
-                                  <PopupProvider>{children}</PopupProvider>
-                                </AppGlobalLoader>
-                              </UserProvider>
-                            </DexProvider>
-                          </MarketsProvider>
-                        </TokensProvider>
-                      </CurrencyProvider>
+                          <TokensProvider
+                            initialTokens={tokens}
+                            initialTokensMetadata={tokensMetadata}
+                          >
+                            <MarketsProvider>
+                              <DexProvider>
+                                <UserProvider>
+                                  <AppGlobalLoader>
+                                    <PopupProvider>{children}</PopupProvider>
+                                  </AppGlobalLoader>
+                                </UserProvider>
+                              </DexProvider>
+                            </MarketsProvider>
+                          </TokensProvider>
+                        </CurrencyProvider>
+                      </ConfigProvider>
                     </WalletProvider>
                   </DipdupProvider>
                 </ApolloProvider>

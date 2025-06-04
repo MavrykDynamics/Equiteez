@@ -6,7 +6,10 @@ import {
   SecondaryEstate,
 } from "~/providers/MarketsProvider/market.types";
 import { EmblaViewportRefType } from "embla-carousel-react";
-import { AssetEmblaSlide } from "./components/AssetEmblaSlide";
+import {
+  AssetEmblaLastSlide,
+  AssetEmblaSlide,
+} from "./components/AssetEmblaSlide";
 
 export const SLIDER_VIEW_LIMIT = 4;
 
@@ -26,12 +29,15 @@ const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
     children,
   } = props;
 
+  // last estate slide data
+  const lastSlide = slides[slides.length - 1];
+
   return (
     <section className={styles.embla}>
       {childPosition === "before" && children}
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
-          {slides.map((estate, idx) => (
+          {slides.slice(0, -1).map((estate, idx) => (
             <AssetEmblaSlide
               key={estate.token_address}
               estate={estate}
@@ -40,6 +46,7 @@ const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
               assetsArrLength={slides.length}
             />
           ))}
+          {lastSlide && <AssetEmblaLastSlide estate={lastSlide} />}
         </div>
       </div>
 

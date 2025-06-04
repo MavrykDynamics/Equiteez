@@ -2,7 +2,6 @@ import { useSubscription } from "@apollo/client/index";
 import { createContext, FC, useContext, useMemo } from "react";
 import { DIP_DUP_QUERY } from "./queries/dipDup.query";
 import { dipdupLvlSchema } from "./dipdup.schema";
-import { useApolloContext } from "../ApolloProvider/apollo.provider";
 import { currentDipdupLvlProxy } from "./utils/observeCurrentIndexerLevel";
 import { useAppContext } from "../AppProvider/AppProvider";
 
@@ -16,7 +15,6 @@ type DipdupProviderProps = PropsWithChildren;
 
 export const DipdupProvider: FC<DipdupProviderProps> = ({ children }) => {
   const { IS_WEB } = useAppContext();
-  const { handleApolloError } = useApolloContext();
 
   /**
    * Subscribe to lvl that currently performed by EQuiteez API, to:
@@ -48,7 +46,7 @@ export const DipdupProvider: FC<DipdupProviderProps> = ({ children }) => {
       }
     },
     onError: (error) => {
-      handleApolloError(error, "SUBSCRIPTION_INDEXER_LVL");
+      console.error(error, "SUBSCRIPTION_INDEXER_LVL");
     },
   });
 

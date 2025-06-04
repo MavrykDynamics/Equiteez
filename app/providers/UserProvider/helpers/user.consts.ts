@@ -27,7 +27,9 @@ function createAddressObject(trueAddresses: Array<string>) {
   );
 }
 
+// API dont have roles, herre is a hardcoded list of admin addresses
 export const ADMIN_ADDRESSES: StringRecord<boolean> = createAddressObject([
   "mv1TMgthRwT69X8WMqRyeMYLPEcoEfCKqX2w",
   "mv1Q3DyGiVYDrRj5PrUVQkTA1LHwYy8gHwQV",
+  "mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G",
 ]);

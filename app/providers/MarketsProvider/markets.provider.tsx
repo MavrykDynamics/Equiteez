@@ -28,7 +28,7 @@ import {
   getUpdatedOrderbookMarketsConfig,
 } from "./utils/markets.utils";
 import { marketsConfigQuerySchema } from "./market.schemas";
-import { mapValuesToArray } from "~/lib/utils";
+import { withSortedFromMap } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
 import {
   MARKETS_INITIAL_STATE,
@@ -37,15 +37,14 @@ import {
 import { toTokenSlug } from "~/lib/assets";
 import { useApolloContext } from "../ApolloProvider/apollo.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
-import { FatalError } from "~/errors/error";
+import { ApiError, unknownToError } from "~/errors/error";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
 // assets to show without actual API data
-
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const { handleApolloError } = useApolloContext();
-  const { fatal } = useToasterContext();
+  const { bug } = useToasterContext();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [marketsState, setMarketsState] = useState<MarketInternalStateType>(
     () => MARKETS_INITIAL_STATE
@@ -62,6 +61,9 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     limit: MARKETS_PAGINATION_LIMIT,
     offset: 0,
   }));
+  const [reachedTheEnd, setReachedTheEnd] = useState(false);
+
+  const [marketApiError, setMarketApiError] = useState<ApiError | null>(null);
 
   const { loading: isMarketsAddressesLoading } = useQuery(
     MARKETS_ADDRESSES_QUERY,
@@ -70,6 +72,10 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       onCompleted: (data) => {
         try {
           const parsedConfigData = marketsConfigQuerySchema.parse(data);
+
+          if (data.dodo_mav.length === 0) {
+            return setReachedTheEnd(true);
+          }
           const { dodo_mav, orderbook } = parsedConfigData;
 
           const dodoConfig = getUpdatedDodoMavMarketsConfig(
@@ -83,17 +89,33 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
 
           setMarketsState((prev) => ({
             ...prev,
+            sortedMarketAddresses: [
+              ...prev.sortedMarketAddresses,
+              ...dodo_mav.map((market) =>
+                toTokenSlug(
+                  market.base_token.address,
+                  market.base_token.token_id
+                )
+              ),
+            ],
             config: {
               ...prev.config,
               dodoMav: dodoConfig,
               orderbook: orderbookConfig,
             },
           }));
+
+          if (data.dodo_mav.length <= MARKETS_PAGINATION_LIMIT) {
+            return setReachedTheEnd(true);
+          }
         } catch (e) {
-          fatal(new FatalError("MARKETS_ADDRESSES_QUERY"));
+          const error = unknownToError(e);
+          setMarketApiError(new ApiError(error));
+          bug(new ApiError("MARKETS_ADDRESSES_QUERY"));
         }
       },
       onError: (error) => {
+        setMarketApiError(new ApiError(error));
         handleApolloError(error, "MARKETS_ADDRESSES_QUERY");
       },
     }
@@ -104,6 +126,14 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     () =>
       Array.from(marketsState.config.dodoMav.values()).map(
         (entry) => entry.baseTokenAddress
+      ),
+    [marketsState.config.dodoMav]
+  );
+
+  const marketAddresses = useMemo(
+    () =>
+      Array.from(marketsState.config.dodoMav.values()).map(
+        (entry) => entry.address
       ),
     [marketsState.config.dodoMav]
   );
@@ -130,7 +160,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
             );
             if (assetMocked) {
               // const [previewImg] = buildTokenImagesStack(thumbnailUri);
-
+              // @ts-expect-error // fake data
               acc.set(slug, {
                 ...assetMocked,
                 slug,
@@ -156,6 +186,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         >((acc, asset) => {
           const slug = toTokenSlug(asset.token_address);
           if (slug) {
+            // @ts-expect-error // fake data
             acc.set(slug, { ...asset, slug });
           }
 
@@ -165,17 +196,22 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         setMarketsState((prev) => ({
           ...prev,
           markets: new Map([
-            ...marketsState.markets,
             ...realAssetsFromApi,
+            ...marketsState.markets,
             ...fakeAssetsToShow,
           ]),
           isLoading: false,
         }));
       } catch (e) {
-        fatal(new FatalError("MARKET_TOKENS__DATA_QUERY"));
+        const error = unknownToError(e);
+        setMarketApiError(new ApiError(error));
+        bug(new ApiError("MARKET_TOKENS__DATA_QUERY"));
       }
     },
-    onError: (error) => handleApolloError(error, "MARKET_TOKENS__DATA_QUERY"),
+    onError: (error) => {
+      setMarketApiError(new ApiError(error));
+      handleApolloError(error, "MARKET_TOKENS__DATA_QUERY");
+    },
   });
 
   const pickMarketByIdentifier = useCallback(
@@ -206,8 +242,12 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
 
   // convert markets map to array (used in a lot of place, f,e, embla carousel)
   const marketsArr = useMemo(
-    () => mapValuesToArray(marketsState.markets),
-    [marketsState.markets]
+    () =>
+      withSortedFromMap(
+        marketsState.markets,
+        marketsState.sortedMarketAddresses
+      ),
+    [marketsState.markets, marketsState.sortedMarketAddresses]
   );
 
   const pickers = useMemo(
@@ -227,21 +267,31 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       marketsArr,
       pickMarketByIdentifier,
       updateActiveMarketState,
-      marketAddresses: dodoBaseTokenAddresses,
+      dodoBaseTokenAddresses,
+      marketAddresses,
       pickers,
       validBaseTokens,
-      isLoading: loading || isMarketsAddressesLoading || marketsState.isLoading,
+      marketApiError,
+      loadMoreMarkets,
+      reachedTheEnd,
+      isLoading: marketApiError
+        ? false
+        : loading || isMarketsAddressesLoading || marketsState.isLoading,
     }),
     [
+      marketAddresses,
       marketsState,
+      loadMoreMarkets,
+      reachedTheEnd,
       activeMarketState,
       marketsArr,
       pickMarketByIdentifier,
       updateActiveMarketState,
       dodoBaseTokenAddresses,
-      loading,
       pickers,
       validBaseTokens,
+      marketApiError,
+      loading,
       isMarketsAddressesLoading,
     ]
   );
