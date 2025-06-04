@@ -94,7 +94,7 @@ export async function buyBaseToken({
     // @ts-expect-error // send params are not typed correctly
     const batchOp = await batch.send({
       storageLimit: 800,
-      gasLimit: 8000,
+      gasLimit: 25000,
       fee: 18000,
     });
 
@@ -178,7 +178,7 @@ export async function sellBaseToken({
     // @ts-expect-error // send params are not typed correctly
     const batchOp = await batch.send({
       storageLimit: 800,
-      gasLimit: 8000,
+      gasLimit: 25000,
       fee: 18000,
     });
 
