@@ -91,12 +91,7 @@ export async function buyBaseToken({
     batch = batch.withTransfer(buy_order);
     batch = batch.withTransfer(close_ops);
 
-    // @ts-expect-error // send params are not typed correctly
-    const batchOp = await batch.send({
-      storageLimit: 800,
-      gasLimit: 25000,
-      fee: 18000,
-    });
+    const batchOp = await batch.send();
 
     await batchOp.confirmation();
   } catch (e: unknown) {
@@ -175,12 +170,7 @@ export async function sellBaseToken({
     batch = batch.withTransfer(sell_order);
     batch = batch.withTransfer(close_ops);
 
-    // @ts-expect-error // send params are not typed correctly
-    const batchOp = await batch.send({
-      storageLimit: 800,
-      gasLimit: 25000,
-      fee: 18000,
-    });
+    const batchOp = await batch.send();
 
     await batchOp.confirmation();
   } catch (e: unknown) {
