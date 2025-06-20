@@ -1,21 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ApolloQueryResult,
   DocumentNode,
   OperationVariables,
   QueryHookOptions,
   TypedDocumentNode,
   useQuery,
 } from "@apollo/client/index";
+
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import { isAbortError } from "~/errors/error";
-import { currentDipdupLvlProxy } from "~/providers/DipdupProvider/utils/observeCurrentIndexerLevel";
+import { forcedUpdateProxy } from "../utils/observeForcedUpdate";
+
+const REFRESH_INTERVAL = 30_000; // 30 seconds
 
 /**
  *
  * @param query - query we want to refetch
  * @param queryOptions – options for apollo's useQuery hook (do not modified)
  * @param refetchOptions – options for custom refetch logic
- *    @param refetchOptions -> @blocksDiff - load query with certain inverval of block difference
+ *    @param refetchOptions -> @blocksDiff - load query with certain inverval of block difference (NOT USED)
  *    @param refetchOptions -> @refetchQueryVariables - fn that returns variables, if value is dynamic, or variables itself for query refetch
  *
  *
@@ -34,6 +38,7 @@ export const useQueryWithRefetch = <
   query: DocumentNode | TypedDocumentNode<TData, TVariables>,
   queryOptions: QueryHookOptions<TData, TVariables>,
   refetchOptions?: {
+    // unused var left for future changes related to the indexer lvl head
     blocksDiff?: number;
     refetchQueryVariables?: (() => TVariables) | TVariables;
   }
@@ -41,11 +46,9 @@ export const useQueryWithRefetch = <
   // @ts-expect-error // test variable for debug
   const queryName = query.definitions?.[0]?.name?.value;
 
-  // lastUpdatedBlock -> block of last query refetch, used along with blocksDiff option
-  const lastUpdatedBlock = useRef<null | number>(null);
-
   // refetchId -> id of callback that subscibes to indexer block change
-  const refetchId = useRef<null | string>(null);
+  const refetchId = useRef<null | NodeJS.Timeout>(null);
+  const isRefetching = useRef(false);
 
   // shouldRunUseQuery -> when variables changing we need to rerun useQuery, isInitialQueryDone is ref so resetting it won't trigger useQuery rerun
   const [shouldRunUseQuery, setShouldRunUseQuery] = useState(true);
@@ -58,7 +61,7 @@ export const useQueryWithRefetch = <
   const prevUserSkipValue = usePrevious(queryOptions?.skip);
   const currentUserSkipValue = queryOptions?.skip;
 
-  const { blocksDiff, refetchQueryVariables } = refetchOptions ?? {};
+  const { refetchQueryVariables } = refetchOptions ?? {};
 
   // Effect to reset isInitialQueryDone, on variables change
   useEffect(() => {
@@ -101,87 +104,94 @@ export const useQueryWithRefetch = <
     fetchPolicy: "network-only",
   });
 
-  // callback to refetch query on block lvl change
+  // callback to refetch query on interval or forced update
   const refetchQuery = useCallback(
-    async (newIndexerLevel: number) => {
-      if (!isInitialQueryDone.current) return;
+    async (source: boolean | null = null) => {
+      if (
+        !isInitialQueryDone.current ||
+        isRefetching.current ||
+        document.hidden
+      )
+        return;
 
+      isRefetching.current = true;
       try {
-        const newRefetchVariables =
+        const variables =
           typeof refetchQueryVariables === "function"
             ? refetchQueryVariables()
             : refetchQueryVariables;
+        let refetchData: ApolloQueryResult<TData> | null = null;
 
-        // blocks diff case, call refetch only when block difference is more equal than specified in blocksDiff
-        if (typeof blocksDiff === "number") {
-          // if we don't have blocks diff first indexer change just set lastUpdatedBlock
-          if (lastUpdatedBlock.current === null) {
-            lastUpdatedBlock.current = newIndexerLevel;
-            return;
-          }
+        // refetch data logic
+        if (typeof source === "boolean") {
+          refetchData = await queryResult.refetch(variables);
 
-          if (newIndexerLevel - lastUpdatedBlock.current >= blocksDiff) {
-            const refetchData = await queryResult.refetch(newRefetchVariables);
-
-            if (process.env.NODE_ENV === "development")
-              console.log("%crefetch result", "color: violet", {
-                refetchData,
-                queryName,
-              });
-
-            // if from refetch we have data or error, run onComplete or onError query method, cuz refetch can't do this
-            if (refetchData.data) queryOptions?.onCompleted?.(refetchData.data);
-            if (refetchData.error) queryOptions?.onError?.(refetchData.error);
-
-            lastUpdatedBlock.current = newIndexerLevel;
-          }
-
-          return;
+          // reset proxy flag
+          forcedUpdateProxy.hasForcedUpdate = false;
         }
 
-        const refetchData = await queryResult.refetch(newRefetchVariables);
+        // run apollo methods on refetchData
+        if (refetchData !== null) {
+          if (process.env.REACT_APP_ENV === "dev")
+            console.log(`[${source}] Refetched`, { refetchData, queryName });
 
-        if (process.env.NODE_ENV === "development")
-          console.log("%crefetch result ", "color: violet", {
-            refetchData,
-            queryName,
-          });
-
-        // if from refetch we have data or error, run onComplete or onError query method, cuz refetch can't do this
-        if (refetchData.data) queryOptions?.onCompleted?.(refetchData.data);
-        if (refetchData.error) queryOptions?.onError?.(refetchData.error);
+          if (refetchData.data) queryOptions?.onCompleted?.(refetchData.data);
+          if (refetchData.error) queryOptions?.onError?.(refetchData.error);
+        }
       } catch (e) {
-        if (isAbortError(e)) return;
-        console.error("refetch error:", { e });
+        if (!isAbortError(e)) console.error(`[${source}] refetch error:`, e);
+      } finally {
+        isRefetching.current = false;
       }
     },
-    // TODO: pass additional agrs to refetch as refetchOptions to prevent often registering/unregistering
-    [blocksDiff, refetchQueryVariables, queryOptions?.onCompleted]
+    [refetchQueryVariables, queryOptions?.onCompleted]
   );
 
-  // subscribe to indexer lvl change, and unsibscribe when component unmounts, or query becomes inactive
+  // effect to run refetch query when forcedUpdateProxy has been changed to true
+  // it is used only in the Dapp provider ! DO NOT USE IT IN OTHER PLACES
   useEffect(() => {
-    // if query is active subscibe to indexer lvl change, and save id of subscription
-    if (!currentUserSkipValue && !refetchId.current) {
-      if (process.env.NODE_ENV === "development")
-        console.log(`%cregister ${queryName}`, "color: lime");
-      refetchId.current = currentDipdupLvlProxy.registerListener(refetchQuery);
-    }
+    const id = forcedUpdateProxy.registerListener(async () => {
+      if (!isInitialQueryDone.current) return;
 
-    // if query is not active and we have id, then unsubscibe from indexer lvl change
-    if (currentUserSkipValue && refetchId.current) {
-      if (process.env.NODE_ENV === "development")
-        console.log(`%cunregister in callback ${queryName}`, "color: orange");
-      currentDipdupLvlProxy.removeListener(refetchId.current);
-      refetchId.current = null;
-    }
+      try {
+        await refetchQuery(true);
+        // reset flag
+        forcedUpdateProxy.hasForcedUpdate = false;
+      } catch (e) {
+        if (isAbortError(e)) return;
+        console.error("refetch error from forcedUpdate:", e);
+      }
+    });
 
     return () => {
-      // if we have id and hook unmounts, then unsubscibe from indexer lvl change
+      forcedUpdateProxy.removeListener(id);
+    };
+  }, [refetchQuery]);
+
+  // refetch every N seconds, and unsibscribe when component unmounts, or query becomes inactive
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && refetchId.current) {
+        clearInterval(refetchId.current);
+        refetchId.current = null;
+      } else if (
+        !document.hidden &&
+        !refetchId.current &&
+        !currentUserSkipValue
+      ) {
+        refetchId.current = setInterval(() => {
+          refetchQuery(true);
+        }, REFRESH_INTERVAL);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    handleVisibilityChange();
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (refetchId.current) {
-        if (process.env.NODE_ENV === "development")
-          console.log(`%cunregister in cleanup ${queryName}`, "color: orange");
-        currentDipdupLvlProxy.removeListener(refetchId.current);
+        clearInterval(refetchId.current);
         refetchId.current = null;
       }
     };
