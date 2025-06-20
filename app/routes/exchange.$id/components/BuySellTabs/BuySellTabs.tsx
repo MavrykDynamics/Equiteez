@@ -52,7 +52,6 @@ import {
 } from "~/lib/utils/calcFns";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
-import { rateToNumber } from "~/lib/utils/numbers";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -71,7 +70,6 @@ const useBuySellActions = (
   const { adminAddress } = useConfigContext();
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
   const { tokensMetadata } = useTokensContext();
-  const { usdToTokenRates } = useCurrencyContext();
   const {
     pickers: {
       pickDodoContractBasedOnToken,
@@ -80,30 +78,34 @@ const useBuySellActions = (
     },
   } = useMarketsContext();
 
+  console.log(amount?.toNumber(), "amount");
+
   const buyProps = useMemo(
     () => ({
       baseTokenAddress: pickOrderbookContract[tokenAddress],
-      quoteTokenAddress: quoteAssetmetadata?.address,
-      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+      // TODO use orderbook picker
+      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
+      tokensAmount: amount?.div(tokenPrice).toNumber(),
       pricePerToken: price?.toNumber(),
       decimals: tokensMetadata[slug]?.decimals,
     }),
     [
       pickOrderbookContract,
       tokenAddress,
-      quoteAssetmetadata?.address,
+      pickDodoContractQuoteToken,
       amount,
-      usdToTokenRates,
-      slug,
+      tokenPrice,
       price,
       tokensMetadata,
+      slug,
     ]
   );
 
   const sellProps = useMemo(
     () => ({
       baseTokenAddress: pickOrderbookContract[tokenAddress],
-      quoteTokenAddress: quoteAssetmetadata?.address,
+      // TODO use orderbook picker
+      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       tokensAmount: amount?.toNumber(),
       pricePerToken: price?.toNumber(),
       decimals: tokensMetadata[slug]?.decimals,
@@ -111,7 +113,7 @@ const useBuySellActions = (
     [
       pickOrderbookContract,
       tokenAddress,
-      quoteAssetmetadata?.address,
+      pickDodoContractQuoteToken,
       amount,
       price,
       tokensMetadata,
@@ -230,7 +232,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
 
-  // TODO remove "?? toTokenSlug(stablecoinContract)" after API assets
   const quoteAssetmetadata = useAssetMetadata(
     dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
   );

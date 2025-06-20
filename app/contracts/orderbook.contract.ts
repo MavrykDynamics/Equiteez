@@ -23,6 +23,7 @@ export async function orderbookBuy({
   decimals,
 }: OrderbookBuySellParams) {
   try {
+    debugger;
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
@@ -34,8 +35,6 @@ export async function orderbookBuy({
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
     const currency = "USDT";
     const orderExpiry = null;
-
-    debugger;
 
     const open_ops = quoteTokenContract.methodsObject["update_operators"]([
       {
@@ -92,6 +91,7 @@ export async function orderbookSell({
   decimals,
 }: OrderbookBuySellParams & { rwaTokenAddress: string }) {
   try {
+    debugger;
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
@@ -102,8 +102,6 @@ export async function orderbookSell({
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
     const currency = "USDT";
     const orderExpiry = null;
-
-    debugger;
 
     const open_ops = tokenContact.methodsObject["update_operators"]([
       {
