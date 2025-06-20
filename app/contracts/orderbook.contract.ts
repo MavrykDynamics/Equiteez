@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-catch */
 import { MavrykToolkit } from "@mavrykdynamics/taquito";
-import { stablecoinContract } from "~/consts/contracts";
 
 import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
@@ -8,7 +7,8 @@ import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
 type OrderbookBuySellParams = {
   tezos: MavrykToolkit;
-  marketContractAddress: string;
+  baseTokenAddress: string;
+  quoteTokenAddress: string;
   tokensAmount: number;
   pricePerToken: number;
   decimals: number;
@@ -16,7 +16,8 @@ type OrderbookBuySellParams = {
 
 export async function orderbookBuy({
   tezos,
-  marketContractAddress,
+  baseTokenAddress,
+  quoteTokenAddress,
   tokensAmount,
   pricePerToken,
   decimals,
@@ -25,27 +26,29 @@ export async function orderbookBuy({
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
-    const marketContract = await tezos.wallet.at(marketContractAddress);
+    const baseTokenContract = await tezos.wallet.at(baseTokenAddress);
     // TODO fetch from API, for now it is disabled and work only with static USDT contract
-    const tokenContract = await tezos.wallet.at(stablecoinContract);
+    const quoteTokenContract = await tezos.wallet.at(quoteTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
     const currency = "USDT";
     const orderExpiry = null;
 
-    const open_ops = tokenContract.methodsObject["update_operators"]([
+    debugger;
+
+    const open_ops = quoteTokenContract.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
-          operator: marketContractAddress,
+          operator: quoteTokenAddress,
           token_id: 0,
         },
       },
       // to avoid undefined values
     ]).toTransferParams();
 
-    const buy_order = marketContract.methodsObject["placeBuyOrder"]([
+    const buy_order = baseTokenContract.methodsObject["placeBuyOrder"]([
       {
         rwaTokenAmount,
         pricePerRwaToken,
@@ -54,18 +57,18 @@ export async function orderbookBuy({
       },
     ]).toTransferParams();
 
-    const close_ops = tokenContract.methodsObject["update_operators"]([
+    const close_ops = quoteTokenContract.methodsObject["update_operators"]([
       {
         remove_operator: {
           owner: sender,
-          operator: marketContractAddress,
+          operator: quoteTokenAddress,
           token_id: 0,
         },
       },
     ]).toTransferParams();
 
     const match_orders =
-      marketContract.methodsObject["matchOrders"](1).toTransferParams();
+      baseTokenContract.methodsObject["matchOrders"](1).toTransferParams();
 
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
@@ -82,8 +85,8 @@ export async function orderbookBuy({
 
 export async function orderbookSell({
   tezos,
-  marketContractAddress,
-  rwaTokenAddress,
+  baseTokenAddress,
+  quoteTokenAddress,
   tokensAmount,
   pricePerToken,
   decimals,
@@ -92,25 +95,27 @@ export async function orderbookSell({
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
-    const marketContract = await tezos.wallet.at(marketContractAddress);
-    const tokenContact = await tezos.wallet.at(rwaTokenAddress);
+    const baseTokenContract = await tezos.wallet.at(baseTokenAddress);
+    const tokenContact = await tezos.wallet.at(quoteTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
     const currency = "USDT";
     const orderExpiry = null;
 
+    debugger;
+
     const open_ops = tokenContact.methodsObject["update_operators"]([
       {
         add_operator: {
           owner: sender,
-          operator: marketContractAddress,
+          operator: quoteTokenAddress,
           token_id: 0,
         },
       },
     ]).toTransferParams();
 
-    const sell_order = marketContract.methodsObject["placeSellOrder"]([
+    const sell_order = baseTokenContract.methodsObject["placeSellOrder"]([
       {
         rwaTokenAmount,
         pricePerRwaToken,
@@ -123,7 +128,7 @@ export async function orderbookSell({
       {
         remove_operator: {
           owner: sender,
-          operator: marketContractAddress,
+          operator: quoteTokenAddress,
           token_id: 0,
         },
       },

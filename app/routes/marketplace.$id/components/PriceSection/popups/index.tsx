@@ -437,8 +437,6 @@ export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
               total={price * amount}
               amount={amount}
               actionType={activeTabId}
-              estFee={0.21}
-              actionCb={() => {}}
             />
           )}
         </div>
