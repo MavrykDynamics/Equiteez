@@ -2,14 +2,12 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabType } from "~/lib/atoms/Tab";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 
-// icons
 import { Button } from "~/lib/atoms/Button";
 import { stablecoinContract } from "~/consts/contracts";
-// import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-// import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import {
   ADMIN,
   BUY_TAB,
+  DEFAULT_DODO_SLIPPAGE_PERCENTAGE,
   LIMIT_TYPE,
   MARKET_TYPE,
   MAX_TOKEN_AMOUNT,
@@ -20,7 +18,11 @@ import { AdminScreen } from "./AdminScreen";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 // import { useContractAction } from "~/contracts/hooks/useContractAction";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
-import { atomsToTokens, rwaToFixed } from "~/lib/utils/formaters";
+import {
+  atomsToTokens,
+  downgradeDecimals,
+  rwaToFixed,
+} from "~/lib/utils/formaters";
 import clsx from "clsx";
 import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
 import { toTokenSlug } from "~/lib/assets";
@@ -128,7 +130,10 @@ const useBuySellActions = (
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       tokensAmount: amount?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(amount, "3"),
+      minMaxQuote: caclMinMaxQuoteBuying(
+        amount,
+        DEFAULT_DODO_SLIPPAGE_PERCENTAGE
+      ),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: quoteAssetmetadata?.decimals,
       adminAddress,
@@ -151,7 +156,10 @@ const useBuySellActions = (
 
       tokenAddress: tokenAddress,
       tokensAmount: amount?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteSelling(tokenPrice.times(amount ?? 0), "5"),
+      minMaxQuote: caclMinMaxQuoteSelling(
+        tokenPrice.times(amount ?? 0),
+        DEFAULT_DODO_SLIPPAGE_PERCENTAGE
+      ),
       decimals: selectedAssetMetadata?.decimals,
       quoteDecimals: quoteAssetmetadata?.decimals,
       adminAddress,
@@ -189,7 +197,6 @@ const useBuySellActions = (
   };
 };
 
-// extract reusable components
 export const BuySellTabs: FC<BuySellTabsProps> = ({
   symbol,
   tokenAddress,
@@ -274,7 +281,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
       ? amount.gt(new BigNumber(tokenBalance))
       : false;
 
-  // TODO uncoment this after API assets
   const isBtnDisabled = useMemo(
     () =>
       amount?.lte(0) ||
@@ -323,7 +329,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
   // update total
   useEffect(() => {
-    if (amount && usdToTokenRates[slug] && price) {
+    if (amount && price) {
       setTotal(amount.multipliedBy(price));
     } else if (!amount) {
       setTotal(undefined);
@@ -386,21 +392,35 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
   const estFee = useMemo(() => {
     const {
-      config: { lpFee, maintainerFee },
-    } = dodoStorages[slug] ?? { config: { lpFee: 0, maintainerFee: 0 } };
+      config: { lpFee, maintainerFee, feeDecimals },
+    } = dodoStorages[slug] ?? { config: {} };
 
     const tokensAmount = amount;
 
-    return calculateEstFee(
+    const result = calculateEstFee(
       tokensAmount,
       tokenPrice,
       lpFee,
       maintainerFee,
-      18,
-      "0",
+      Number(feeDecimals),
+      DEFAULT_DODO_SLIPPAGE_PERCENTAGE,
       isBuyAction
     );
-  }, [amount, dodoStorages, isBuyAction, slug, tokenPrice]);
+
+    const decimals = isBuyAction
+      ? selectedAssetMetadata.decimals
+      : quoteAssetmetadata.decimals;
+
+    return downgradeDecimals(result, decimals);
+  }, [
+    amount,
+    dodoStorages,
+    isBuyAction,
+    quoteAssetmetadata.decimals,
+    selectedAssetMetadata.decimals,
+    slug,
+    tokenPrice,
+  ]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(
@@ -455,7 +475,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     [handleItemlick]
   );
 
-  const symbolToShow = !isBuyAction ? symbol : quoteAssetmetadata.symbol;
+  const symbolToShow = isBuyAction ? symbol : quoteAssetmetadata.symbol;
 
   return (
     <section className="flex flex-col w-full relative">
@@ -485,7 +505,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   {isBuyAction ? (
                     <CryptoBalance
                       value={userTokensBalances[stablecoinContract] || 0}
-                      cryptoDecimals={6}
+                      cryptoDecimals={quoteAssetmetadata?.decimals}
                     />
                   ) : (
                     <CryptoBalance
@@ -515,7 +535,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         min={0}
                         max={MAX_TOKEN_AMOUNT}
                         value={price
-                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
+                          ?.toFixed(selectedAssetMetadata?.decimals)
                           .toString()}
                         onChange={handlePriceChange}
                         placeholder="0.00"
@@ -546,9 +566,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         disabled={!validBaseTokens[tokenAddress]}
                         min={0}
                         max={MAX_TOKEN_AMOUNT}
-                        assetDecimals={selectedAssetMetadata?.decimals ?? 6}
+                        assetDecimals={selectedAssetMetadata?.decimals}
                         value={amount
-                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
+                          ?.toFixed(selectedAssetMetadata?.decimals)
                           .toString()}
                         onChange={handleAmountChange}
                         placeholder="Minimum 1"
