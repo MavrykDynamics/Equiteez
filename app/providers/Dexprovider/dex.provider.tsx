@@ -36,41 +36,37 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [dodoTokenPair, setDodoTokenPair] = useState({});
 
-  useQueryWithRefetch(
-    DEX_STORAGE_QUERY,
-    {
-      variables: { marketAddresses },
-      skip: marketAddresses.length === 0 || markets.size === 0,
-      onCompleted: (data) => {
-        try {
-          const storages = getDodoMavTokenStorages(data);
+  useQueryWithRefetch(DEX_STORAGE_QUERY, {
+    variables: { marketAddresses },
+    skip: marketAddresses.length === 0 || markets.size === 0,
+    onCompleted: (data) => {
+      try {
+        const storages = getDodoMavTokenStorages(data);
 
-          const dodoPrices = getDodoMavTokenPrices(
-            Object.values(storages),
-            markets
-          );
+        const dodoPrices = getDodoMavTokenPrices(
+          Object.values(storages),
+          markets
+        );
 
-          const tokenPairs = getDodoMavTokenPairs(storages);
+        const tokenPairs = getDodoMavTokenPairs(storages);
 
-          setDodoStorages(storages);
-          setDodoTokenPair(tokenPairs);
+        setDodoStorages(storages);
+        setDodoTokenPair(tokenPairs);
 
-          // update proxy prices
-          Object.entries(dodoPrices).forEach(([key, value]) => {
-            dodoMavPrices[key] = value;
-          });
+        // update proxy prices
+        Object.entries(dodoPrices).forEach(([key, value]) => {
+          dodoMavPrices[key] = value;
+        });
 
-          setDodoMavPrices(new Proxy({ ...dodoPrices }, priceProxyHandler));
-        } catch (e) {
-          console.log(e, "DEX_STORAGE_QUERY from catch");
-          const err = unknownToError(e);
-          warning("Prices", err.message);
-        }
-      },
-      onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
+        setDodoMavPrices(new Proxy({ ...dodoPrices }, priceProxyHandler));
+      } catch (e) {
+        console.log(e, "DEX_STORAGE_QUERY from catch");
+        const err = unknownToError(e);
+        warning("Prices", err.message);
+      }
     },
-    { blocksDiff: 5 }
-  );
+    onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
+  });
 
   const orderBookPrices = useMemo(
     () =>
