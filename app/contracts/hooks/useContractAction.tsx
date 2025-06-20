@@ -13,6 +13,7 @@ import { POPUP_KEYS, txTemplates } from "~/providers/PopupProvider/consts";
 
 // templates
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForcedUpdate";
 
 // Simplified version to handle operation calls
 
@@ -46,6 +47,9 @@ export const useContractAction = <G,>(
           popupKeys[popupDetails.key],
           txTemplates[popupDetails.key].success(popupDetails.props)
         );
+
+        // force refetching essential data (it is reseted in useQueryWithRefetch hook)
+        forcedUpdateProxy.hasForcedUpdate = true;
         await sleep(2000);
       }
 
