@@ -12,7 +12,7 @@ import usePrevious from "~/lib/ui/hooks/usePrevious";
 import { isAbortError } from "~/errors/error";
 import { forcedUpdateProxy } from "../utils/observeForcedUpdate";
 
-const REFRESH_INTERVAL = 30_000; // 30 seconds
+const REFRESH_INTERVAL = 15_000; // 30 seconds
 
 /**
  *
