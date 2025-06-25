@@ -350,7 +350,7 @@ export const PopupContent: FC<{
                 <div className="flex flex-col gap-1 items-start flex-1">
                   <div className="flex justify-between items-start gap-6 text-card-headline text-sand-900 w-full">
                     <h3>{estate.name}</h3>
-                    <h3 className="flex items-center gap-1">
+                    <h3 className="flex items-center gap-1 text-right">
                       {orderType === BUY ? (
                         <Money
                           smallFractionFont={false}

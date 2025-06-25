@@ -276,10 +276,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
             {/* ------------------------------------------------------------------------------------------- */}
             <div>
-              <div className="my-8">
+              <div className="my-4">
                 <ESnakeblock
                   selectedOption={selectedPercentage}
                   setSelectedOption={setSelectedPercentage}
+                  size="large"
                 />
               </div>
               <BalanceInput
