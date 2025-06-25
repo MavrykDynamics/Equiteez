@@ -10,7 +10,7 @@ import clsx from "clsx";
 const options = [0, 25, 50, 75, 100];
 
 type ESnakeblockProps = {
-  selectedOption: number;
+  selectedOption: number | null;
   setSelectedOption: (option: number) => void;
   disabled?: boolean;
   size?: "regular" | "large";
@@ -22,7 +22,7 @@ const sizeClassname = {
 };
 
 export const ESnakeblock: FC<ESnakeblockProps> = ({
-  selectedOption = 0,
+  selectedOption: originalSelectedOption = null,
   setSelectedOption,
   disabled = false,
   size = "regular",
@@ -31,6 +31,8 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
     if (!disabled) setSelectedOption(option);
   };
   const sizeClassnameValue = sizeClassname[size];
+
+  const selectedOption = originalSelectedOption ?? 0;
 
   return (
     <div

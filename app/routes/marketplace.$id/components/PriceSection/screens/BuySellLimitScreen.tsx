@@ -66,7 +66,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const { dodoTokenPair, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
-  const [selectedPercentage, setSelectedPercentage] = useState(0);
+  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
+    null
+  );
 
   const { userTokensBalances, isKyced } = useUserContext();
 

@@ -12,6 +12,7 @@ type OrderbookBuySellParams = {
   tokensAmount: number;
   pricePerToken: number;
   decimals: number;
+  quoteTokenDecimals: number;
 };
 
 export async function orderbookBuy({
@@ -21,18 +22,17 @@ export async function orderbookBuy({
   tokensAmount,
   pricePerToken,
   decimals,
+  quoteTokenDecimals,
 }: OrderbookBuySellParams) {
   try {
-    debugger;
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const baseTokenContract = await tezos.wallet.at(baseTokenAddress);
-    // TODO fetch from API, for now it is disabled and work only with static USDT contract
     const quoteTokenContract = await tezos.wallet.at(quoteTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
-    const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
+    const pricePerRwaToken = formatRWAPrice(pricePerToken, quoteTokenDecimals);
     const currency = "USDT";
     const orderExpiry = null;
 
@@ -89,6 +89,7 @@ export async function orderbookSell({
   tokensAmount,
   pricePerToken,
   decimals,
+  quoteTokenDecimals,
 }: OrderbookBuySellParams & { rwaTokenAddress: string }) {
   try {
     debugger;
@@ -99,7 +100,7 @@ export async function orderbookSell({
     const tokenContact = await tezos.wallet.at(quoteTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
-    const pricePerRwaToken = formatRWAPrice(pricePerToken, decimals);
+    const pricePerRwaToken = formatRWAPrice(pricePerToken, quoteTokenDecimals);
     const currency = "USDT";
     const orderExpiry = null;
 

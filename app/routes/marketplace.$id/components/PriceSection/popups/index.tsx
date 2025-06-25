@@ -57,6 +57,7 @@ import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider"
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
+import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
 
 export const spippageOptions = ["1", "3", "5", "custom"];
 
@@ -181,10 +182,9 @@ export const PopupContent: FC<{
 
   // reset values when switching tabs
   useLayoutEffect(() => {
-    if (prevTabId !== activetabId && activetabId !== CONFIRM) {
-      setAmountB(undefined);
-    }
-  }, [activetabId, prevTabId]);
+    setAmountB(undefined);
+    setLimitPrice(undefined);
+  }, [activetabId, marketType]);
 
   const marketBuyProps = useMemo(
     () => ({
@@ -244,20 +244,72 @@ export const PopupContent: FC<{
     () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
     [activeMarket?.name]
   );
-  const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
 
   const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
     () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
     [activeMarket?.name]
   );
+
+  // Orderbook limit buy | sell actions -----------------------------
+  const limitBuySellProps = useMemo(
+    () => ({
+      baseTokenAddress: estate.token_address,
+      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
+      tokensAmount: amountB?.toNumber(),
+      pricePerToken: limitPrice,
+      decimals: selectedAssetMetadata?.decimals,
+      quoteTokenDecimals: qouteAssetMetadata?.decimals,
+    }),
+    [
+      amountB,
+      estate.token_address,
+      limitPrice,
+      pickDodoContractQuoteToken,
+      qouteAssetMetadata?.decimals,
+      selectedAssetMetadata?.decimals,
+    ]
+  );
+
+  // actual contract calls and their handlers ---------------
+
+  const { invokeAction: handleMarketBuy, status: buyStatus } =
+    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
+
   const { invokeAction: handleMarketSell, status: sellStatus } =
     useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
 
+  const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
+    useContractAction(orderbookBuy, limitBuySellProps, memoizedBuyPopupProps);
+
+  const { invokeAction: handleLimitSell, status: limitSellStatus } =
+    useContractAction(orderbookSell, limitBuySellProps, memoizedBuyPopupProps);
+
+  // prop action to pass
+  const buySellActionCb = useMemo(() => {
+    if (isMarketTypeMarket) {
+      return orderType === BUY ? handleMarketBuy : handleMarketSell;
+    }
+
+    return orderType === BUY ? handleLimitBuy : handleLimitSell;
+  }, [
+    handleLimitBuy,
+    handleLimitSell,
+    handleMarketBuy,
+    handleMarketSell,
+    isMarketTypeMarket,
+    orderType,
+  ]);
+
   // status of the operation
   const status = useMemo(
-    () => pickStatusFromMultiple(buyStatus, sellStatus),
-    [buyStatus, sellStatus]
+    () =>
+      pickStatusFromMultiple(
+        buyStatus,
+        sellStatus,
+        limitBuyStatus,
+        limitSellStatus
+      ),
+    [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
   );
 
   const HeadlinePreviewSection = () => (
@@ -416,7 +468,7 @@ export const PopupContent: FC<{
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
               actionType={orderType === BUY ? BUY : SELL}
-              actionCb={orderType === BUY ? handleMarketBuy : handleMarketSell}
+              actionCb={buySellActionCb}
               status={status}
             />
           )}
