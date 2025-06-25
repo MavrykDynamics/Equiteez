@@ -56,6 +56,7 @@ import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
+import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
 
 export const spippageOptions = ["1", "3", "5", "custom"];
 
@@ -163,12 +164,16 @@ export const PopupContent: FC<{
   );
 
   useEffect(() => {
+    if (marketType === "limit") {
+      return;
+    }
+
     if (isDefined(amountB) && tokenPrice) {
       setTotal(amountB.times(tokenPrice));
     } else if (!isDefined(amountB)) {
       setTotal(undefined);
     }
-  }, [amountB, estate.token_address, slug, tokenPrice]);
+  }, [amountB, estate.token_address, marketType, slug, tokenPrice]);
 
   // reset values when switching tabs
   useLayoutEffect(() => {
@@ -328,7 +333,6 @@ export const PopupContent: FC<{
             </>
           )}
 
-          {/* TODO exctract as helper component */}
           {activetabId === CONFIRM && (
             <div className="bg-gray-50 rounded-2xl p-4 mb-8">
               <div className="flex items-center gap-3 font-medium">
@@ -372,20 +376,32 @@ export const PopupContent: FC<{
             </div>
           )}
 
-          {(activetabId === BUY || activetabId === SELL) && (
-            <BuySellScreen
-              estate={estate}
-              toggleScreen={() => setAvtiveTabId(CONFIRM)}
-              actionType={activetabId}
-              amount={amountB}
-              setAmount={setAmountB}
-              total={total}
-              slippagePercentage={slippagePercentage}
-              setSlippagePercentage={setSlippagePercentage}
-              hasQuoteError={hasQuoteError}
-              marketType={marketType}
-            />
-          )}
+          {(activetabId === BUY || activetabId === SELL) &&
+            (marketType === "market" ? (
+              <BuySellScreen
+                estate={estate}
+                toggleScreen={() => setAvtiveTabId(CONFIRM)}
+                actionType={activetabId}
+                amount={amountB}
+                setAmount={setAmountB}
+                total={total}
+                slippagePercentage={slippagePercentage}
+                setSlippagePercentage={setSlippagePercentage}
+                hasQuoteError={hasQuoteError}
+              />
+            ) : (
+              <BuySellLimitScreen
+                estate={estate}
+                toggleScreen={() => setAvtiveTabId(CONFIRM)}
+                actionType={activetabId}
+                amount={amountB}
+                setAmount={setAmountB}
+                total={total}
+                slippagePercentage={slippagePercentage}
+                setSlippagePercentage={setSlippagePercentage}
+                hasQuoteError={hasQuoteError}
+              />
+            ))}
 
           {activetabId === OTC && <OTCPopupContent estate={estate} />}
           {activetabId === CONFIRM && (

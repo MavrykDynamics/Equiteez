@@ -48,8 +48,9 @@ import {
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
+import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 
-type BuySellScreenProps = {
+type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
@@ -62,7 +63,7 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
 };
 
-export const BuySellScreen: FC<BuySellScreenProps> = ({
+export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   estate,
   toggleScreen,
   actionType,
@@ -77,11 +78,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
-  // TODO check for token prices if the are empty
+  const [selectedPercentage, setSelectedPercentage] = useState(0);
+
   const { userTokensBalances, isKyced } = useUserContext();
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
+
+  const isMarketTypeMarket = false;
 
   const tokenPrice = useMemo(
     () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
@@ -130,66 +134,92 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [isBuyAction, setAmount, tokenPrice]
   );
 
-  const input1Props = useMemo(
-    () =>
-      isBuyAction
-        ? {
-            amount,
-            selectedAssetSlug: dodoTokenPair[slug],
-            selectedAssetMetadata: stableCoinMetadata,
-            label: "You Pay",
-          }
-        : {
-            amount,
-            selectedAssetSlug: slug,
-            selectedAssetMetadata: selectedAssetMetadata,
-            label: "You Sell",
-          },
-    [
-      amount,
-      dodoTokenPair,
-      isBuyAction,
-      selectedAssetMetadata,
-      slug,
-      stableCoinMetadata,
-    ]
-  );
+  const input1Props = useMemo(() => {
+    if (!isMarketTypeMarket) {
+      return {
+        amount,
+        selectedAssetSlug: dodoTokenPair[slug],
+        selectedAssetMetadata: stableCoinMetadata,
+        label: "Price",
+      };
+    }
 
-  const input2Props = useMemo(
-    () =>
-      isBuyAction
-        ? {
-            amount: amount?.div(tokenPrice) || undefined,
-            selectedAssetSlug: slug,
-            selectedAssetMetadata: selectedAssetMetadata,
-          }
-        : {
-            amount: amount?.times(tokenPrice) || undefined,
-            selectedAssetSlug: dodoTokenPair[slug],
-            selectedAssetMetadata: stableCoinMetadata,
-          },
-    [
-      amount,
-      dodoTokenPair,
-      isBuyAction,
-      selectedAssetMetadata,
-      slug,
-      stableCoinMetadata,
-      tokenPrice,
-    ]
-  );
+    return isBuyAction
+      ? {
+          amount,
+          selectedAssetSlug: dodoTokenPair[slug],
+          selectedAssetMetadata: stableCoinMetadata,
+          label: "You Pay",
+        }
+      : {
+          amount,
+          selectedAssetSlug: slug,
+          selectedAssetMetadata: selectedAssetMetadata,
+          label: "You Sell",
+        };
+  }, [
+    amount,
+    dodoTokenPair,
+    isBuyAction,
+    isMarketTypeMarket,
+    selectedAssetMetadata,
+    slug,
+    stableCoinMetadata,
+  ]);
 
-  const balanceTotal = useMemo(
-    () =>
-      isBuyAction
-        ? amount
-          ? input1Props.amount
-          : new BigNumber(0)
-        : amount
-          ? input2Props.amount
-          : new BigNumber(0),
-    [amount, input1Props.amount, input2Props.amount, isBuyAction]
-  );
+  const input2Props = useMemo(() => {
+    if (!isMarketTypeMarket) {
+      return {
+        amount: undefined,
+        selectedAssetSlug: slug,
+        selectedAssetMetadata: selectedAssetMetadata,
+        label: "Amount",
+      };
+    }
+
+    return isBuyAction
+      ? {
+          amount: amount?.div(tokenPrice) || undefined,
+          selectedAssetSlug: slug,
+          selectedAssetMetadata: selectedAssetMetadata,
+        }
+      : {
+          amount: amount?.times(tokenPrice) || undefined,
+          selectedAssetSlug: dodoTokenPair[slug],
+          selectedAssetMetadata: stableCoinMetadata,
+        };
+  }, [
+    amount,
+    dodoTokenPair,
+    isBuyAction,
+    isMarketTypeMarket,
+    selectedAssetMetadata,
+    slug,
+    stableCoinMetadata,
+    tokenPrice,
+  ]);
+
+  const balanceTotal = useMemo(() => {
+    if (!isMarketTypeMarket) {
+      return new BigNumber(input1Props.amount || 0).multipliedBy(
+        input2Props.amount || 0
+      );
+    }
+
+    return isBuyAction
+      ? amount
+        ? input1Props.amount
+        : new BigNumber(0)
+      : amount
+        ? input2Props.amount
+        : new BigNumber(0);
+  }, [
+    amount,
+    input1Props.amount,
+    input2Props.amount,
+    isBuyAction,
+    isMarketTypeMarket,
+  ]);
 
   const minReceived = useMemo(() => {
     if (!total) return 0;
@@ -332,6 +362,38 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 </div>
               </div>
             </BalanceInput>
+
+            {/* ------------------------------------------------------------------------------------------- */}
+            <div>
+              <div className="my-8">
+                <ESnakeblock
+                  selectedOption={selectedPercentage}
+                  setSelectedOption={setSelectedPercentage}
+                />
+              </div>
+              <BalanceInput
+                onChange={handleOutputChange}
+                amountInputDisabled
+                label="Total"
+                amount={balanceTotal || new BigNumber(0)}
+                selectedAssetSlug={dodoTokenPair[slug]}
+                selectedAssetMetadata={stableCoinMetadata}
+              >
+                <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
+                  <BalanceTotalBlock
+                    balanceTotal={balanceTotal}
+                    decimals={stableCoinMetadata?.decimals}
+                  />
+                  <div className='className="text-body-xs font-semibold"'>
+                    Balance:&nbsp;
+                    <CryptoBalance
+                      value={balanceTotal || new BigNumber(0)}
+                      cryptoDecimals={stableCoinMetadata?.decimals}
+                    />
+                  </div>
+                </div>
+              </BalanceInput>
+            </div>
 
             {Number(slippagePercentage) <= 0 && (
               <WarningBlock>
