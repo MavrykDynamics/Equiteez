@@ -74,6 +74,7 @@ export const PopupContent: FC<{
 
   // MArket Type
   const [marketType, setMarkettype] = useState("market");
+  const isMarketTypeMarket = marketType === "market";
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
   const prevTabId = usePrevious(
@@ -95,10 +96,10 @@ export const PopupContent: FC<{
   const { slug, decimals } = estate;
   const tokenPrice = useMemo(
     () =>
-      marketType === "market"
+      isMarketTypeMarket
         ? atomsToTokens(dodoMav[slug], decimals)
         : limitPrice || new BigNumber(0),
-    [marketType, dodoMav, slug, decimals, limitPrice]
+    [isMarketTypeMarket, dodoMav, slug, decimals, limitPrice]
   );
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
@@ -355,7 +356,9 @@ export const PopupContent: FC<{
                           smallFractionFont={false}
                           cryptoDecimals={selectedAssetMetadata?.decimals}
                         >
-                          {amountB?.div(tokenPrice).toNumber() ?? 0}
+                          {isMarketTypeMarket
+                            ? (amountB?.div(tokenPrice).toNumber() ?? 0)
+                            : (amountB ?? 0)}
                         </Money>
                       ) : (
                         amountB?.toNumber()
@@ -370,7 +373,11 @@ export const PopupContent: FC<{
                     <div className="text-body text-sand-900">
                       $
                       <Money smallFractionFont={false}>
-                        {orderType === BUY ? (amountB ?? 0) : (total ?? 0)}
+                        {!isMarketTypeMarket
+                          ? (total ?? 0)
+                          : orderType === BUY
+                            ? (amountB ?? 0)
+                            : (total ?? 0)}
                       </Money>
                     </div>
                   </div>
