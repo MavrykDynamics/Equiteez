@@ -69,7 +69,11 @@ export const PopupContent: FC<{
   const { dodoMav, dodoTokenPair } = useDexContext();
   const { adminAddress } = useConfigContext();
   const {
-    pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
+    pickers: {
+      pickDodoContractBasedOnToken,
+      pickDodoContractQuoteToken,
+      pickOrderbookContract,
+    },
     activeMarket,
   } = useMarketsContext();
 
@@ -182,6 +186,8 @@ export const PopupContent: FC<{
 
   // reset values when switching tabs
   useLayoutEffect(() => {
+    if (activetabId === CONFIRM) return;
+
     setAmountB(undefined);
     setLimitPrice(undefined);
   }, [activetabId, marketType]);
@@ -253,10 +259,10 @@ export const PopupContent: FC<{
   // Orderbook limit buy | sell actions -----------------------------
   const limitBuySellProps = useMemo(
     () => ({
-      baseTokenAddress: estate.token_address,
+      orderbookContractAddress: pickOrderbookContract[estate.token_address],
       quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.toNumber(),
-      pricePerToken: limitPrice,
+      pricePerToken: limitPrice?.toNumber(),
       decimals: selectedAssetMetadata?.decimals,
       quoteTokenDecimals: qouteAssetMetadata?.decimals,
     }),
@@ -265,6 +271,7 @@ export const PopupContent: FC<{
       estate.token_address,
       limitPrice,
       pickDodoContractQuoteToken,
+      pickOrderbookContract,
       qouteAssetMetadata?.decimals,
       selectedAssetMetadata?.decimals,
     ]

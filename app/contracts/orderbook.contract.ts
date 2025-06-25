@@ -7,7 +7,7 @@ import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
 type OrderbookBuySellParams = {
   tezos: MavrykToolkit;
-  baseTokenAddress: string;
+  orderbookContractAddress: string;
   quoteTokenAddress: string;
   tokensAmount: number;
   pricePerToken: number;
@@ -17,7 +17,7 @@ type OrderbookBuySellParams = {
 
 export async function orderbookBuy({
   tezos,
-  baseTokenAddress,
+  orderbookContractAddress,
   quoteTokenAddress,
   tokensAmount,
   pricePerToken,
@@ -28,7 +28,7 @@ export async function orderbookBuy({
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
-    const baseTokenContract = await tezos.wallet.at(baseTokenAddress);
+    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
     const quoteTokenContract = await tezos.wallet.at(quoteTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
@@ -47,7 +47,7 @@ export async function orderbookBuy({
       // to avoid undefined values
     ]).toTransferParams();
 
-    const buy_order = baseTokenContract.methodsObject["placeBuyOrder"]([
+    const buy_order = orderbookContract.methodsObject["placeBuyOrder"]([
       {
         rwaTokenAmount,
         pricePerRwaToken,
@@ -67,7 +67,7 @@ export async function orderbookBuy({
     ]).toTransferParams();
 
     const match_orders =
-      baseTokenContract.methodsObject["matchOrders"](1).toTransferParams();
+      orderbookContract.methodsObject["matchOrders"](1).toTransferParams();
 
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
@@ -84,7 +84,7 @@ export async function orderbookBuy({
 
 export async function orderbookSell({
   tezos,
-  baseTokenAddress,
+  orderbookContractAddress,
   quoteTokenAddress,
   tokensAmount,
   pricePerToken,
@@ -92,11 +92,10 @@ export async function orderbookSell({
   quoteTokenDecimals,
 }: OrderbookBuySellParams & { rwaTokenAddress: string }) {
   try {
-    debugger;
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
-    const baseTokenContract = await tezos.wallet.at(baseTokenAddress);
+    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
     const tokenContact = await tezos.wallet.at(quoteTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
@@ -114,7 +113,7 @@ export async function orderbookSell({
       },
     ]).toTransferParams();
 
-    const sell_order = baseTokenContract.methodsObject["placeSellOrder"]([
+    const sell_order = orderbookContract.methodsObject["placeSellOrder"]([
       {
         rwaTokenAmount,
         pricePerRwaToken,
