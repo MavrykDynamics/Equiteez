@@ -39,7 +39,6 @@ import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 import { downgradeDecimals } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
-import usePrevious from "~/lib/ui/hooks/usePrevious";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -68,7 +67,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const { tokensMetadata } = useTokensContext();
 
   const [selectedPercentage, setSelectedPercentage] = useState(0);
-  const prevSelectedPercentage = usePrevious(selectedPercentage);
 
   const { userTokensBalances, isKyced } = useUserContext();
 
