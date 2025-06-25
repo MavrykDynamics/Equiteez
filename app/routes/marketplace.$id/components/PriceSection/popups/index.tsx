@@ -72,6 +72,9 @@ export const PopupContent: FC<{
     activeMarket,
   } = useMarketsContext();
 
+  // MArket Type
+  const [marketType, setMarkettype] = useState("market");
+
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
   const prevTabId = usePrevious(
     activetabId,
@@ -81,11 +84,21 @@ export const PopupContent: FC<{
   // quote warning
   const [hasQuoteError, setHasQuoteError] = useState(false);
 
+  // --- input state
+  const [amountB, setAmountB] = useState<BigNumber | undefined>();
+  const [total, setTotal] = useState<BigNumber | undefined>();
+
+  // for limit market
+  const [limitPrice, setLimitPrice] = useState<BigNumber | undefined>();
+
   // derived
   const { slug, decimals } = estate;
   const tokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], decimals),
-    [dodoMav, slug, decimals]
+    () =>
+      marketType === "market"
+        ? atomsToTokens(dodoMav[slug], decimals)
+        : limitPrice || new BigNumber(0),
+    [marketType, dodoMav, slug, decimals, limitPrice]
   );
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
@@ -129,8 +142,6 @@ export const PopupContent: FC<{
     [handleTabClick]
   );
 
-  const [marketType, setMarkettype] = useState("market");
-
   const handlaMarketChange = useCallback(
     (type: string) => {
       setMarkettype(type);
@@ -154,20 +165,12 @@ export const PopupContent: FC<{
     [handlaMarketChange]
   );
 
-  // --- input state
-  const [amountB, setAmountB] = useState<BigNumber | undefined>();
-  const [total, setTotal] = useState<BigNumber | undefined>();
-
   // Slippage
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
     spippageOptions[0]
   );
 
   useEffect(() => {
-    if (marketType === "limit") {
-      return;
-    }
-
     if (isDefined(amountB) && tokenPrice) {
       setTotal(amountB.times(tokenPrice));
     } else if (!isDefined(amountB)) {
@@ -391,6 +394,8 @@ export const PopupContent: FC<{
               />
             ) : (
               <BuySellLimitScreen
+                limitPrice={limitPrice}
+                setLimitPrice={setLimitPrice}
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}
                 actionType={activetabId}
