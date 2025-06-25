@@ -128,6 +128,31 @@ export const PopupContent: FC<{
     [handleTabClick]
   );
 
+  const [marketType, setMarkettype] = useState("market");
+
+  const handlaMarketChange = useCallback(
+    (type: string) => {
+      setMarkettype(type);
+    },
+    [setMarkettype]
+  );
+
+  const marketTabs: TabType[] = useMemo(
+    () => [
+      {
+        id: "market",
+        label: "Market",
+        handleClick: handlaMarketChange,
+      },
+      {
+        id: "limit",
+        label: "Limit",
+        handleClick: handlaMarketChange,
+      },
+    ],
+    [handlaMarketChange]
+  );
+
   // --- input state
   const [amountB, setAmountB] = useState<BigNumber | undefined>();
   const [total, setTotal] = useState<BigNumber | undefined>();
@@ -291,9 +316,16 @@ export const PopupContent: FC<{
           <Divider className="my-6" />
 
           {activetabId !== CONFIRM && isSecondaryEstate && (
-            <div className="mb-8">
-              <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-            </div>
+            <>
+              <div className="mb-6">
+                <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+              </div>
+              <div>
+                <div className="mb-8">
+                  <TabSwitcher tabs={marketTabs} activeTabId={marketType} />
+                </div>
+              </div>
+            </>
           )}
 
           {/* TODO exctract as helper component */}
@@ -351,6 +383,7 @@ export const PopupContent: FC<{
               slippagePercentage={slippagePercentage}
               setSlippagePercentage={setSlippagePercentage}
               hasQuoteError={hasQuoteError}
+              marketType={marketType}
             />
           )}
 

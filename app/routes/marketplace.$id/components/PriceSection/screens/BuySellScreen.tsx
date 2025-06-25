@@ -48,6 +48,7 @@ import {
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
+import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -60,6 +61,7 @@ type BuySellScreenProps = {
   slippagePercentage: string;
   setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
   hasQuoteError?: boolean;
+  marketType: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -72,10 +74,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   slippagePercentage,
   setSlippagePercentage,
   hasQuoteError = false,
+  marketType = "market",
 }) => {
   const { symbol, token_address, slug } = estate;
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
+
+  const [selectedPercentage, setSelectedPercentage] = useState(0);
 
   // TODO check for token prices if the are empty
   const { userTokensBalances, isKyced } = useUserContext();
@@ -332,6 +337,43 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 </div>
               </div>
             </BalanceInput>
+
+            {marketType === "limit" && (
+              <div>
+                <div className="my-8">
+                  <ESnakeblock
+                    selectedOption={selectedPercentage}
+                    setSelectedOption={setSelectedPercentage}
+                  />
+                </div>
+                <BalanceInput
+                  onChange={handleOutputChange}
+                  amountInputDisabled={false}
+                  label="Total"
+                  {...input2Props}
+                >
+                  <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
+                    <BalanceTotalBlock
+                      balanceTotal={balanceTotal}
+                      decimals={stableCoinMetadata?.decimals}
+                    />
+                    <div className='className="text-body-xs font-semibold"'>
+                      Balance:&nbsp;
+                      <CryptoBalance
+                        value={
+                          new BigNumber(isBuyAction ? tokenBalance : usdBalance)
+                        }
+                        cryptoDecimals={
+                          !isBuyAction
+                            ? stableCoinMetadata?.decimals
+                            : selectedAssetMetadata?.decimals
+                        }
+                      />
+                    </div>
+                  </div>
+                </BalanceInput>
+              </div>
+            )}
 
             {Number(slippagePercentage) <= 0 && (
               <WarningBlock>
