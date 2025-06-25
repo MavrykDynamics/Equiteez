@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 
 import {
@@ -39,6 +39,7 @@ import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 import { downgradeDecimals } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import usePrevious from "~/lib/ui/hooks/usePrevious";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -67,6 +68,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const { tokensMetadata } = useTokensContext();
 
   const [selectedPercentage, setSelectedPercentage] = useState(0);
+  const prevSelectedPercentage = usePrevious(selectedPercentage);
 
   const { userTokensBalances, isKyced } = useUserContext();
 
@@ -205,6 +207,16 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   const isBtnDisabled = hasTotalError || !amount || !isKyced;
+
+  useEffect(() => {
+    if (selectedPercentage != null) {
+      const percentage = new BigNumber(selectedPercentage);
+      const newAmount = new BigNumber(tokenBalance)
+        .multipliedBy(percentage)
+        .dividedBy(100);
+      setAmount(newAmount);
+    }
+  }, [selectedPercentage, setAmount, tokenBalance]);
 
   return (
     <div className="flex flex-col flex-1">
