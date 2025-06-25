@@ -402,9 +402,6 @@ export const PopupContent: FC<{
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
-                slippagePercentage={slippagePercentage}
-                setSlippagePercentage={setSlippagePercentage}
-                hasQuoteError={hasQuoteError}
               />
             ))}
 
