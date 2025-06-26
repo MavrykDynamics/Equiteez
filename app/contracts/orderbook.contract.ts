@@ -85,19 +85,20 @@ export async function orderbookBuy({
 export async function orderbookSell({
   tezos,
   orderbookContractAddress,
-  quoteTokenAddress,
+  rwaTokenAddress,
   tokensAmount,
   pricePerToken,
   decimals,
   quoteTokenDecimals,
-}: OrderbookBuySellParams & { rwaTokenAddress: string }) {
+}: Omit<OrderbookBuySellParams, "quoteTokenAddress"> & {
+  rwaTokenAddress: string;
+}) {
   try {
-    debugger;
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
-    const tokenContact = await tezos.wallet.at(quoteTokenAddress);
+    const tokenContact = await tezos.wallet.at(rwaTokenAddress);
 
     const rwaTokenAmount = tokensToAtoms(tokensAmount, decimals).toNumber();
     const pricePerRwaToken = formatRWAPrice(pricePerToken, quoteTokenDecimals);
@@ -108,7 +109,7 @@ export async function orderbookSell({
       {
         add_operator: {
           owner: sender,
-          operator: quoteTokenAddress,
+          operator: rwaTokenAddress,
           token_id: 0,
         },
       },
@@ -127,7 +128,7 @@ export async function orderbookSell({
       {
         remove_operator: {
           owner: sender,
-          operator: quoteTokenAddress,
+          operator: rwaTokenAddress,
           token_id: 0,
         },
       },

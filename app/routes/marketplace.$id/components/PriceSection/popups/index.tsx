@@ -257,7 +257,7 @@ export const PopupContent: FC<{
   );
 
   // Orderbook limit buy | sell actions -----------------------------
-  const limitBuySellProps = useMemo(
+  const limitBuyProps = useMemo(
     () => ({
       orderbookContractAddress: pickOrderbookContract[estate.token_address],
       quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
@@ -277,6 +277,16 @@ export const PopupContent: FC<{
     ]
   );
 
+  const limitSellProps = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { quoteTokenAddress, ...restBuyprops } = limitBuyProps;
+
+    return {
+      rwaTokenAddress: estate.token_address,
+      ...restBuyprops,
+    };
+  }, [estate.token_address, limitBuyProps]);
+
   // actual contract calls and their handlers ---------------
 
   const { invokeAction: handleMarketBuy, status: buyStatus } =
@@ -286,10 +296,10 @@ export const PopupContent: FC<{
     useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
-    useContractAction(orderbookBuy, limitBuySellProps, memoizedBuyPopupProps);
+    useContractAction(orderbookBuy, limitBuyProps, memoizedBuyPopupProps);
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
-    useContractAction(orderbookSell, limitBuySellProps, memoizedBuyPopupProps);
+    useContractAction(orderbookSell, limitSellProps, memoizedBuyPopupProps);
 
   // prop action to pass
   const buySellActionCb = useMemo(() => {
