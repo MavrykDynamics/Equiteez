@@ -336,7 +336,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
       {!isKyced && (
         <div className="mt-8">
-          <Alert type="warning" header="Verify with Mavryk Pro to Trade">
+          <Alert
+            type="warning"
+            header="Verify with Mavryk Pro to Trade"
+            expandable
+          >
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
@@ -347,7 +351,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         total &&
         !total.isZero() && (
           <div className="mt-8">
-            <Alert type="warning" header="Low Liquidity Detected!">
+            <Alert type="warning" header="Low Liquidity Detected!" expandable>
               The liquidity for {symbol} is critically low. Transactions may
               experience high slippage or failure.
             </Alert>

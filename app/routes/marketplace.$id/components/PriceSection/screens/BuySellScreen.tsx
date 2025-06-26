@@ -381,7 +381,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {!isKyced && (
         <div className="mt-8">
-          <Alert type="warning" header="Verify with Mavryk Pro to Trade">
+          <Alert
+            type="warning"
+            header="Verify with Mavryk Pro to Trade"
+            expandable
+          >
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
@@ -390,7 +394,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
       {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) && (
         <div className="mt-8">
-          <Alert type="warning" header="Low Liquidity Detected!">
+          <Alert type="warning" header="Low Liquidity Detected!" expandable>
             The liquidity for {symbol} is critically low. Transactions may
             experience high slippage or failure.
           </Alert>
@@ -399,7 +403,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {hasQuoteTokenLimitWarning && (
         <div className="mt-8">
-          <Alert type="warning" header="Pool Balance Limit Reached">
+          <Alert type="warning" header="Pool Balance Limit Reached" expandable>
             Your trade will exceed the pool limit, which may cause slippage or
             failure. Please adjust the amount and try again.
           </Alert>
@@ -408,7 +412,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {hasQuoteError && (
         <div className="mt-8">
-          <Alert type="error" header="Low Quote Detected">
+          <Alert type="error" header="Low Quote Detected" expandable>
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
             percentage in your settings to ensure a successful transaction.

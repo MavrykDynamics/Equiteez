@@ -2,11 +2,18 @@ import { FC, useMemo } from "react";
 import WarningIcon from "app/icons/info-alert.svg?react";
 import ErrorIcon from "app/icons/error.svg?react";
 import clsx from "clsx";
+import {
+  ClickableExpanderArea,
+  CustomExpander,
+  ExpanderBodyContent,
+  ExpanderFaceContent,
+} from "~/lib/organisms/CustomExpander/CustomExpander";
 
 type AlertProps = {
   type: "warning" | "error";
   header: string;
   size?: "regular" | "small";
+  expandable?: boolean;
 } & PropsWithChildren;
 
 const alertSize = {
@@ -38,6 +45,7 @@ const alertTypeBasedStyles = {
 export const Alert: FC<AlertProps> = ({
   type = "warning",
   size = "regular",
+  expandable = false,
   header,
   children,
 }) => {
@@ -47,6 +55,33 @@ export const Alert: FC<AlertProps> = ({
   );
 
   const { headerSize, bodySize } = useMemo(() => alertSize[size], [size]);
+
+  if (expandable) {
+    return (
+      <section
+        className={clsx(
+          "p-6 rounded-2xl overflow-hidden flex items-start gap-[10px] justify-between w-full",
+          bgColor
+        )}
+      >
+        <CustomExpander isExpanded>
+          <ClickableExpanderArea>
+            <ExpanderFaceContent
+              iconClassName={clsx(size === "small" ? "w-4 h-4" : "w-5 h-5")}
+            >
+              <div className="flex items-center gap-4 w-full">
+                <Icon className="size-6 min-w-6" />
+                <h4 className={clsx(headerSize, headerColor)}>{header}</h4>
+              </div>
+            </ExpanderFaceContent>
+          </ClickableExpanderArea>
+          <ExpanderBodyContent>
+            <p className={clsx(bodySize, bodyColor, "mt-[10px]")}>{children}</p>
+          </ExpanderBodyContent>
+        </CustomExpander>
+      </section>
+    );
+  }
 
   return (
     <section
