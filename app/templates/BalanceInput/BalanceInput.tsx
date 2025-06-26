@@ -1,12 +1,11 @@
-import BigNumber from 'bignumber.js';
-import { isDefined } from 'app/lib/utils';
-import { FC } from 'react';
-import { AssetField } from '~/lib/organisms/AssetField';
-import clsx from 'clsx';
-// import { AssetMetadataBase } from '~/lib/types/metadata';
-import { toLocalFormat } from '~/lib/formaters/formaters';
-import { AssetDropdown } from '../AssetDropdown';
-import { AssetMetadataBase } from '~/lib/metadata';
+import BigNumber from "bignumber.js";
+import { isDefined } from "app/lib/utils";
+import { FC, useCallback, useRef, useState } from "react";
+import { AssetField } from "~/lib/organisms/AssetField";
+import clsx from "clsx";
+import { toLocalFormat } from "~/lib/formaters/formaters";
+import { AssetDropdown } from "../AssetDropdown";
+import { AssetMetadataBase } from "~/lib/metadata";
 
 type BalanceInputProps = {
   label?: string;
@@ -29,18 +28,38 @@ export const BalanceInput: FC<BalanceInputProps> = ({
   errorCaption,
   selectedAssetMetadata,
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const handleAmountChange = (newAmount?: string) =>
     onChange?.(
       Boolean(newAmount) && isDefined(newAmount)
         ? new BigNumber(newAmount)
         : undefined
     );
+
+  console.log(isFocused, "isFocused");
+
+  const onFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const onBlur = useCallback(() => {
+    setIsFocused(false);
+  }, []);
+
   return (
     <div className="flex flex-col gap-2">
       <section
         className={clsx(
-          'p-4 bg-gray-50 flex flex-col gap-2 rounded-2xl border',
-          errorCaption ? 'border-red-500' : 'border-transparent'
+          "transition duration-250 linear",
+          "p-4 bg-gray-50 flex flex-col gap-2 rounded-2xl border",
+
+          isFocused && !errorCaption && "border-dark-green-100",
+          errorCaption && "border-red-500",
+          !errorCaption &&
+            !isFocused &&
+            "border-transparent hover:border-dark-green-50"
         )}
       >
         {label && (
@@ -48,11 +67,14 @@ export const BalanceInput: FC<BalanceInputProps> = ({
         )}
         <div className="overflow-y-hidden">
           <AssetField
+            ref={inputRef}
+            onFocus={onFocus}
+            onBlur={onBlur}
             value={amount
               ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
               .toString()}
             className={clsx(
-              'text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden'
+              "text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden"
             )}
             containerClassName="overflow-y-hidden"
             style={{ padding: 0, borderRadius: 0, height: 42 }}
