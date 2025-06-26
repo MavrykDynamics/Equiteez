@@ -24,10 +24,9 @@ import { stablecoinContract } from "~/consts/contracts";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
-import { BalanceInput } from "~/templates/BalanceInput";
+import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { toTokenSlug } from "~/lib/assets";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { CryptoBalance } from "~/templates/Balance";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import {
@@ -228,7 +227,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       <div className="flex-1 ">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
-            <BalanceInput
+            <BalanceInputWithTotal
               ref={ref1}
               onNext={() => ref2.current?.focus()}
               onChange={(data) => setLimitPrice(data ?? new BigNumber(0))}
@@ -239,24 +238,13 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                   : undefined
               }
               {...input1Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
+              balanceTotal={balanceTotal}
+              decimals={selectedAssetMetadata?.decimals}
+              cryptoDecimals={stableCoinMetadata?.decimals}
+              cryptoValue={usdBalance}
+            />
 
-                <div className="text-body-xs font-semibold">
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={new BigNumber(usdBalance)}
-                    cryptoDecimals={stableCoinMetadata?.decimals}
-                  />
-                </div>
-              </div>
-            </BalanceInput>
-
-            <BalanceInput
+            <BalanceInputWithTotal
               ref={ref2}
               onNext={() => ref3.current?.focus()}
               onPrev={() => ref1.current?.focus()}
@@ -268,21 +256,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                   : undefined
               }
               {...input2Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
-                <div className='className="text-body-xs font-semibold"'>
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={new BigNumber(tokenBalance)}
-                    cryptoDecimals={selectedAssetMetadata?.decimals}
-                  />
-                </div>
-              </div>
-            </BalanceInput>
+              balanceTotal={balanceTotal}
+              decimals={selectedAssetMetadata?.decimals}
+              cryptoDecimals={stableCoinMetadata?.decimals}
+              cryptoValue={tokenBalance}
+            />
 
             {/* ------------------------------------------------------------------------------------------- */}
             <div>
@@ -293,7 +271,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                   size="large"
                 />
               </div>
-              <BalanceInput
+
+              <BalanceInputWithTotal
                 ref={ref3}
                 onPrev={() => ref2.current?.focus()}
                 amountInputDisabled
@@ -301,21 +280,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 amount={balanceTotal}
                 selectedAssetSlug={dodoTokenPair[slug]}
                 selectedAssetMetadata={stableCoinMetadata}
-              >
-                <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                  <BalanceTotalBlock
-                    balanceTotal={balanceTotal}
-                    decimals={stableCoinMetadata?.decimals}
-                  />
-                  <div className='className="text-body-xs font-semibold"'>
-                    Balance:&nbsp;
-                    <CryptoBalance
-                      value={balanceTotal || new BigNumber(0)}
-                      cryptoDecimals={stableCoinMetadata?.decimals}
-                    />
-                  </div>
-                </div>
-              </BalanceInput>
+                balanceTotal={balanceTotal}
+                decimals={selectedAssetMetadata?.decimals}
+                cryptoDecimals={stableCoinMetadata?.decimals}
+                cryptoValue={balanceTotal?.toNumber() || 0}
+              />
             </div>
 
             <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
@@ -388,28 +357,5 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         Continue
       </Button>
     </div>
-  );
-};
-
-type BalanceTotalBlockProps = {
-  balanceTotal: BigNumber | undefined;
-  decimals: number | undefined;
-};
-const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
-  balanceTotal,
-  decimals,
-}) => {
-  return (
-    <>
-      {" "}
-      {!balanceTotal || balanceTotal?.isZero() ? (
-        "--"
-      ) : (
-        <div className="flex items-center">
-          <span>$</span>
-          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
-        </div>
-      )}
-    </>
   );
 };

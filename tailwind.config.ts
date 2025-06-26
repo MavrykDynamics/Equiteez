@@ -35,9 +35,9 @@ export default {
           },
         ],
         "asset-input": [
-          "2rem", // 32px
+          "1.25rem", // 32px
           {
-            lineHeight: "2.25rem", // 36px
+            lineHeight: "1.75rem", // 36px
             fontWeight: "600",
           },
         ],

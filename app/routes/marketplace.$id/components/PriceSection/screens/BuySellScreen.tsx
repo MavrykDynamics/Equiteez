@@ -31,10 +31,9 @@ import { stablecoinContract } from "~/consts/contracts";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
-import { BalanceInput } from "~/templates/BalanceInput";
+import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { toTokenSlug } from "~/lib/assets";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { CryptoBalance } from "~/templates/Balance";
 import { spippageOptions } from "../popups";
 import { WarningBlock } from "~/lib/molecules/WarningBlock";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -277,7 +276,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <div className="flex-1 ">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
-            <BalanceInput
+            <BalanceInputWithTotal
               ref={ref1}
               onNext={() => ref2.current?.focus()}
               onChange={(data) => setAmount(data)}
@@ -288,57 +287,36 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                   : undefined
               }
               {...input1Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
+              balanceTotal={balanceTotal}
+              decimals={stableCoinMetadata?.decimals}
+              cryptoValue={
+                new BigNumber(isBuyAction ? usdBalance : tokenBalance)
+              }
+              cryptoDecimals={
+                isBuyAction
+                  ? stableCoinMetadata?.decimals
+                  : selectedAssetMetadata?.decimals
+              }
+            />
 
-                <div className="text-body-xs font-semibold">
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={
-                      new BigNumber(isBuyAction ? usdBalance : tokenBalance)
-                    }
-                    cryptoDecimals={
-                      isBuyAction
-                        ? stableCoinMetadata?.decimals
-                        : selectedAssetMetadata?.decimals
-                    }
-                  />
-                </div>
-              </div>
-            </BalanceInput>
-
-            <BalanceInput
+            <BalanceInputWithTotal
               ref={ref2}
               onPrev={() => ref1.current?.focus()}
               onChange={handleOutputChange}
               amountInputDisabled={false}
               label="You Receive"
               {...input2Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
-                <div className='className="text-body-xs font-semibold"'>
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={
-                      new BigNumber(isBuyAction ? tokenBalance : usdBalance)
-                    }
-                    cryptoDecimals={
-                      !isBuyAction
-                        ? stableCoinMetadata?.decimals
-                        : selectedAssetMetadata?.decimals
-                    }
-                  />
-                </div>
-              </div>
-            </BalanceInput>
+              balanceTotal={balanceTotal}
+              decimals={stableCoinMetadata?.decimals}
+              cryptoValue={
+                new BigNumber(isBuyAction ? tokenBalance : usdBalance)
+              }
+              cryptoDecimals={
+                !isBuyAction
+                  ? stableCoinMetadata?.decimals
+                  : selectedAssetMetadata?.decimals
+              }
+            />
 
             {Number(slippagePercentage) <= 0 && (
               <WarningBlock>
@@ -521,28 +499,5 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
         </DropdownBodyContent>
       </ClickableDropdownArea>
     </CustomDropdown>
-  );
-};
-
-type BalanceTotalBlockProps = {
-  balanceTotal: BigNumber | undefined;
-  decimals: number | undefined;
-};
-const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
-  balanceTotal,
-  decimals,
-}) => {
-  return (
-    <>
-      {" "}
-      {!balanceTotal || balanceTotal?.isZero() ? (
-        "--"
-      ) : (
-        <div className="flex items-center">
-          <span>$</span>
-          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
-        </div>
-      )}
-    </>
   );
 };

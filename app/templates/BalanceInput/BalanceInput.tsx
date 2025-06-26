@@ -1,11 +1,12 @@
 import BigNumber from "bignumber.js";
 import { isDefined } from "app/lib/utils";
-import { forwardRef, useCallback, useState } from "react";
+import { FC, forwardRef, useCallback, useState } from "react";
 import { AssetField } from "~/lib/organisms/AssetField";
 import clsx from "clsx";
 import { toLocalFormat } from "~/lib/formaters/formaters";
 import { AssetDropdown } from "../AssetDropdown";
 import { AssetMetadataBase } from "~/lib/metadata";
+import { CryptoBalance } from "../Balance";
 
 type BalanceInputProps = {
   label?: string;
@@ -90,7 +91,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
           )}
         >
           {label && (
-            <div className="text-left text-body-xs text-sand-600">{label}</div>
+            <div className="text-left text-xs text-sand-600">{label}</div>
           )}
           <div className="overflow-y-hidden">
             <AssetField
@@ -128,3 +129,65 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
 );
 
 BalanceInput.displayName = "BalanceInput";
+
+// ---------------------------------------------------
+
+type BalanceTotalBlockProps = {
+  balanceTotal: BigNumber | undefined;
+  decimals: number | undefined;
+};
+const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
+  balanceTotal,
+  decimals,
+}) => {
+  return (
+    <>
+      {" "}
+      {!balanceTotal || balanceTotal?.isZero() ? (
+        "--"
+      ) : (
+        <div className="flex items-center">
+          <span>$</span>
+          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
+        </div>
+      )}
+    </>
+  );
+};
+
+export const BalanceInputWithTotal = forwardRef<
+  HTMLInputElement,
+  BalanceInputProps &
+    BalanceTotalBlockProps & {
+      cryptoValue: number | BigNumber;
+      cryptoDecimals: number;
+    }
+>((props, inputRef) => {
+  const {
+    balanceTotal,
+    decimals,
+    cryptoValue,
+    cryptoDecimals,
+    ...balanceInputProps
+  } = props;
+
+  return (
+    <>
+      <BalanceInput ref={inputRef} {...balanceInputProps}>
+        <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
+          <BalanceTotalBlock balanceTotal={balanceTotal} decimals={decimals} />
+
+          <div className="text-body-xs font-semibold">
+            Balance:&nbsp;
+            <CryptoBalance
+              value={new BigNumber(cryptoValue)}
+              cryptoDecimals={cryptoDecimals}
+            />
+          </div>
+        </div>
+      </BalanceInput>
+    </>
+  );
+});
+
+BalanceInputWithTotal.displayName = "BalanceInputWithTotal";
