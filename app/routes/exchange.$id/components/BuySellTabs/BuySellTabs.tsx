@@ -2,15 +2,16 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabType } from "~/lib/atoms/Tab";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 
+// icons
 import { Button } from "~/lib/atoms/Button";
 import { stablecoinContract } from "~/consts/contracts";
+// import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+// import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import {
   ADMIN,
   BUY_TAB,
-  DEFAULT_DODO_SLIPPAGE_PERCENTAGE,
   LIMIT_TYPE,
   MARKET_TYPE,
-  MAX_TOKEN_AMOUNT,
   OTC_TYPE,
   SELL_TAB,
 } from "./consts";
@@ -18,40 +19,30 @@ import { AdminScreen } from "./AdminScreen";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 // import { useContractAction } from "~/contracts/hooks/useContractAction";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
-import {
-  atomsToTokens,
-  downgradeDecimals,
-  rwaToFixed,
-} from "~/lib/utils/formaters";
+import { atomsToTokens, rwaToFixed } from "~/lib/utils/formaters";
 import clsx from "clsx";
 import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
 import { toTokenSlug } from "~/lib/assets";
 import BigNumber from "bignumber.js";
-
+// import {
+//   caclMinMaxQuoteBuying,
+//   caclMinMaxQuoteSelling,
+// } from "~/lib/utils/calcFns";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
-
+// import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+// import { rateToNumber } from "~/lib/utils/numbers";
 import { isDefined } from "~/lib/utils";
 import { AssetField } from "~/lib/organisms/AssetField";
 import { CryptoBalance } from "~/templates/Balance";
-
-import { TokenMetadata, useAssetMetadata } from "~/lib/metadata";
+// import {
+//   getStatusLabel,
+//   pickStatusFromMultiple,
+//   STATUS_PENDING,
+// } from "~/lib/ui/use-status-flag";
+import { useAssetMetadata } from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import {
-  getStatusLabel,
-  pickStatusFromMultiple,
-  STATUS_PENDING,
-} from "~/lib/ui/use-status-flag";
-import { useContractAction } from "~/contracts/hooks/useContractAction";
-import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
-import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
-import {
-  caclMinMaxQuoteBuying,
-  caclMinMaxQuoteSelling,
-} from "~/lib/utils/calcFns";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -59,152 +50,131 @@ type BuySellTabsProps = {
   slug: string;
 };
 
-const useBuySellActions = (
-  price: BigNumber | undefined,
-  amount: BigNumber | undefined,
-  tokenAddress: string,
-  tokenPrice: BigNumber,
-  selectedAssetMetadata: TokenMetadata,
-  quoteAssetmetadata: TokenMetadata
-) => {
-  const { adminAddress } = useConfigContext();
-  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
-  const { tokensMetadata } = useTokensContext();
-  const {
-    pickers: {
-      pickDodoContractBasedOnToken,
-      pickOrderbookContract,
-      pickDodoContractQuoteToken,
-    },
-  } = useMarketsContext();
+// const useBuySellActions = (
+//   price: BigNumber | undefined,
+//   amount: BigNumber | undefined,
+//   tokenAddress: string,
+//   tokenPrice: BigNumber,
+//   selectedAssetMetadata: TokenMetadata,
+//   quoteAssetmetadata: TokenMetadata
+// ) => {
+//   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
+//   const { tokensMetadata } = useTokensContext();
+//   const { usdToTokenRates } = useCurrencyContext();
+//   const {
+//     pickers: {
+//       pickDodoContractBasedOnToken,
+//       pickOrderbookContract,
+//       pickDodoContractQuoteToken,
+//     },
+//   } = useMarketsContext();
 
-  console.log(amount?.toNumber(), "amount");
+//   const buyProps = useMemo(
+//     () => ({
+//       marketContractAddress: pickOrderbookContract[tokenAddress],
+//       tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+//       pricePerToken: price?.toNumber(),
+//       decimals: tokensMetadata[slug]?.decimals,
+//     }),
+//     [
+//       tokenAddress,
+//       amount,
+//       usdToTokenRates,
+//       slug,
+//       price,
+//       tokensMetadata,
+//       pickOrderbookContract,
+//     ]
+//   );
 
-  const buyProps = useMemo(
-    () => ({
-      baseTokenAddress: pickOrderbookContract[tokenAddress],
-      // TODO use orderbook picker
-      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
-      tokensAmount: amount?.div(tokenPrice).toNumber(),
-      pricePerToken: price?.toNumber(),
-      decimals: tokensMetadata[slug]?.decimals,
-    }),
-    [
-      pickOrderbookContract,
-      tokenAddress,
-      pickDodoContractQuoteToken,
-      amount,
-      tokenPrice,
-      price,
-      tokensMetadata,
-      slug,
-    ]
-  );
+//   const sellProps = useMemo(
+//     () => ({
+//       marketContractAddress: pickOrderbookContract[tokenAddress],
+//       rwaTokenAddress: tokenAddress,
+//       tokensAmount: amount?.toNumber(),
+//       pricePerToken: price?.toNumber(),
+//       decimals: tokensMetadata[slug]?.decimals,
+//     }),
+//     [amount, price, slug, tokenAddress, tokensMetadata, pickOrderbookContract]
+//   );
 
-  const sellProps = useMemo(
-    () => ({
-      baseTokenAddress: pickOrderbookContract[tokenAddress],
-      // TODO use orderbook picker
-      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
-      tokensAmount: amount?.toNumber(),
-      pricePerToken: price?.toNumber(),
-      decimals: tokensMetadata[slug]?.decimals,
-    }),
-    [
-      pickOrderbookContract,
-      tokenAddress,
-      pickDodoContractQuoteToken,
-      amount,
-      price,
-      tokensMetadata,
-      slug,
-    ]
-  );
+//   const { invokeAction: handleLimitBuy, status: limitStatus1 } =
+//     useContractAction(orderbookBuy, buyProps);
 
-  const { invokeAction: handleLimitBuy, status: limitStatus1 } =
-    useContractAction(orderbookBuy, buyProps);
+//   const { invokeAction: handleLimitSell, status: limitStatus2 } =
+//     useContractAction(orderbookSell, sellProps);
 
-  const { invokeAction: handleLimitSell, status: limitStatus2 } =
-    useContractAction(orderbookSell, sellProps);
+//   const marketBuyProps = useMemo(
+//     () => ({
+//       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+//       quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
+//       tokensAmount: amount?.toNumber(),
+//       minMaxQuote: caclMinMaxQuoteBuying(amount, "0"),
+//       quoteDecimals: quoteAssetmetadata?.decimals,
+//       decimals: selectedAssetMetadata?.decimals,
+//     }),
+//     [
+//       pickDodoContractBasedOnToken,
+//       tokenAddress,
+//       pickDodoContractQuoteToken,
+//       amount,
+//       quoteAssetmetadata?.decimals,
+//       selectedAssetMetadata?.decimals,
+//     ]
+//   );
 
-  const marketBuyProps = useMemo(
-    () => ({
-      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
-      tokensAmount: amount?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(
-        amount,
-        DEFAULT_DODO_SLIPPAGE_PERCENTAGE
-      ),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: quoteAssetmetadata?.decimals,
-      adminAddress,
-    }),
-    [
-      pickDodoContractBasedOnToken,
-      tokenAddress,
-      pickDodoContractQuoteToken,
-      amount,
-      tokenPrice,
-      selectedAssetMetadata?.decimals,
-      quoteAssetmetadata?.decimals,
-      adminAddress,
-    ]
-  );
+//   const marketSellProps = useMemo(
+//     () => ({
+//       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
 
-  const marketSellProps = useMemo(
-    () => ({
-      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+//       tokenAddress: tokenAddress,
+//       tokensAmount: amount?.toNumber(),
+//       minMaxQuote: caclMinMaxQuoteSelling(
+//         tokenPrice.times(amount ?? 0),
+//         "0" // TODO need task to add slippage on ui
+//       ),
+//       decimals: selectedAssetMetadata?.decimals,
+//       quoteDecimals: quoteAssetmetadata?.decimals,
+//     }),
+//     [
+//       tokenAddress,
+//       amount,
+//       tokenPrice,
+//       selectedAssetMetadata?.decimals,
+//       quoteAssetmetadata?.decimals,
+//       pickDodoContractBasedOnToken,
+//     ]
+//   );
 
-      tokenAddress: tokenAddress,
-      tokensAmount: amount?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteSelling(
-        tokenPrice.times(amount ?? 0),
-        DEFAULT_DODO_SLIPPAGE_PERCENTAGE
-      ),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: quoteAssetmetadata?.decimals,
-      adminAddress,
-    }),
-    [
-      pickDodoContractBasedOnToken,
-      tokenAddress,
-      amount,
-      tokenPrice,
-      selectedAssetMetadata?.decimals,
-      quoteAssetmetadata?.decimals,
-      adminAddress,
-    ]
-  );
+//   // MArket buy | sell
+//   const { invokeAction: handleMarketBuy, status: marketStatus1 } =
+//     useContractAction(buyBaseToken, marketBuyProps);
 
-  // / -----------------------------
-  // MArket buy | sell
-  const { invokeAction: handleMarketBuy, status: marketStatus1 } =
-    useContractAction(buyBaseToken, marketBuyProps);
+//   const { invokeAction: handleMarketSell, status: marketStatus2 } =
+//     useContractAction(sellBaseToken, marketSellProps);
 
-  const { invokeAction: handleMarketSell, status: marketStatus2 } =
-    useContractAction(sellBaseToken, marketSellProps);
+//   return {
+//     handleLimitSell,
+//     handleLimitBuy,
+//     status: pickStatusFromMultiple(
+//       limitStatus1,
+//       limitStatus2,
+//       marketStatus1,
+//       marketStatus2
+//     ),
+//     handleMarketBuy,
+//     handleMarketSell,
+//   };
+// };
 
-  return {
-    handleLimitSell,
-    handleLimitBuy,
-    status: pickStatusFromMultiple(
-      limitStatus1,
-      limitStatus2,
-      marketStatus1,
-      marketStatus2
-    ),
-    handleMarketBuy,
-    handleMarketSell,
-  };
-};
-
+// TODO refector this component to use logic line on secondary markey BUY | SELL
+// extract reusable components
 export const BuySellTabs: FC<BuySellTabsProps> = ({
   symbol,
   tokenAddress,
   slug,
 }) => {
-  const { isAdmin, userTokensBalances, isKyced } = useUserContext();
+  const { isAdmin, userTokensBalances } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
   const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
   const { validBaseTokens } = useMarketsContext();
@@ -232,9 +202,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
 
+  // TODO remove "?? toTokenSlug(stablecoinContract)" after API assets
   const quoteAssetmetadata = useAssetMetadata(
     dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
   );
+
+  // derived
 
   // Handle input values for price and amount
   const handleAmountChange = (newAmount?: string) =>
@@ -282,16 +255,19 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
       ? amount.gt(new BigNumber(tokenBalance))
       : false;
 
-  const isBtnDisabled = useMemo(
-    () =>
-      amount?.lte(0) ||
-      price?.lte(0) ||
-      hasTotalError ||
-      !amount ||
-      !price ||
-      !isKyced,
-    [amount, hasTotalError, price, isKyced]
-  );
+  // TODO uncoment this after API assets
+  // const isBtnDisabled = useMemo(
+  //   () =>
+  //     amount?.lte(0) ||
+  //     price?.lte(0) ||
+  //     hasTotalError ||
+  //     !amount ||
+  //     !price ||
+  //     !isKyced,
+  //   [amount, hasTotalError, price, isKyced]
+  // );
+
+  // const isBtnDisabled = true;
 
   // derived state (it's boolean value, so no need to memoize it)
   const isLimitType = activeItem === LIMIT_TYPE;
@@ -330,7 +306,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
   // update total
   useEffect(() => {
-    if (amount && price) {
+    if (amount && usdToTokenRates[slug] && price) {
       setTotal(amount.multipliedBy(price));
     } else if (!amount) {
       setTotal(undefined);
@@ -338,20 +314,20 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
 
   // contract calls based on markt or limit
-  const {
-    handleLimitSell,
-    handleMarketBuy,
-    handleMarketSell,
-    handleLimitBuy,
-    status,
-  } = useBuySellActions(
-    price,
-    amount,
-    tokenAddress,
-    tokenPrice,
-    selectedAssetMetadata,
-    quoteAssetmetadata
-  );
+  // const {
+  //   handleLimitSell,
+  //   handleMarketBuy,
+  //   handleMarketSell,
+  //   handleLimitBuy,
+  //   // status,
+  // } = useBuySellActions(
+  //   price,
+  //   amount,
+  //   tokenAddress,
+  //   tokenPrice,
+  //   selectedAssetMetadata,
+  //   quoteAssetmetadata
+  // );
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -361,24 +337,24 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     setActiveItem(activeItem);
   }, []);
 
-  const pickBuySellAction = useMemo(
-    () =>
-      (() => {
-        if (isLimitType) {
-          return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
-        }
+  // const pickBuySellAction = useMemo(
+  //   () =>
+  //     (() => {
+  //       if (isLimitType) {
+  //         return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
+  //       }
 
-        return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
-      })(),
-    [
-      activetabId,
-      handleLimitBuy,
-      handleLimitSell,
-      handleMarketBuy,
-      handleMarketSell,
-      isLimitType,
-    ]
-  );
+  //       return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
+  //     })(),
+  //   [
+  //     activetabId,
+  //     handleLimitBuy,
+  //     handleLimitSell,
+  //     handleMarketBuy,
+  //     handleMarketSell,
+  //     isLimitType,
+  //   ]
+  // );
 
   // set fixed price for the market type
   useEffect(() => {
@@ -393,35 +369,21 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
   const estFee = useMemo(() => {
     const {
-      config: { lpFee, maintainerFee, feeDecimals },
-    } = dodoStorages[slug] ?? { config: {} };
+      config: { lpFee, maintainerFee },
+    } = dodoStorages[slug] ?? { config: { lpFee: 0, maintainerFee: 0 } };
 
     const tokensAmount = amount;
 
-    const result = calculateEstFee(
+    return calculateEstFee(
       tokensAmount,
       tokenPrice,
       lpFee,
       maintainerFee,
-      Number(feeDecimals),
-      DEFAULT_DODO_SLIPPAGE_PERCENTAGE,
+      18,
+      "0",
       isBuyAction
     );
-
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : quoteAssetmetadata.decimals;
-
-    return downgradeDecimals(result, decimals);
-  }, [
-    amount,
-    dodoStorages,
-    isBuyAction,
-    quoteAssetmetadata.decimals,
-    selectedAssetMetadata.decimals,
-    slug,
-    tokenPrice,
-  ]);
+  }, [amount, dodoStorages, isBuyAction, slug, tokenPrice]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(
@@ -476,7 +438,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     [handleItemlick]
   );
 
-  const symbolToShow = isBuyAction ? symbol : quoteAssetmetadata.symbol;
+  const symbolToShow = !isBuyAction ? symbol : quoteAssetmetadata.symbol;
 
   return (
     <section className="flex flex-col w-full relative">
@@ -506,7 +468,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   {isBuyAction ? (
                     <CryptoBalance
                       value={userTokensBalances[stablecoinContract] || 0}
-                      cryptoDecimals={quoteAssetmetadata?.decimals}
+                      cryptoDecimals={6}
                     />
                   ) : (
                     <CryptoBalance
@@ -522,7 +484,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <div
                     role="presentation"
                     onClick={handlePriceFocus}
-                    className={`w-full flex justify-between eq-input py-3 px-[14px] gap-3`}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                   >
                     <div className="text-content-secondary opacity-50">
                       Price
@@ -534,9 +496,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         name="price"
                         type="number"
                         min={0}
-                        max={MAX_TOKEN_AMOUNT}
+                        max={9999999999999}
                         value={price
-                          ?.toFixed(selectedAssetMetadata?.decimals)
+                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                           .toString()}
                         onChange={handlePriceChange}
                         placeholder="0.00"
@@ -553,7 +515,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <div
                     role="presentation"
                     onClick={handleAmountFocus}
-                    className={`w-full flex justify-between eq-input py-3 px-[14px] gap-3`}
+                    className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                   >
                     <div className="text-content-secondary opacity-50">
                       Amount
@@ -566,10 +528,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         type="text"
                         disabled={!validBaseTokens[tokenAddress]}
                         min={0}
-                        max={MAX_TOKEN_AMOUNT}
-                        assetDecimals={selectedAssetMetadata?.decimals}
+                        max={9999999999999}
+                        assetDecimals={selectedAssetMetadata?.decimals ?? 6}
                         value={amount
-                          ?.toFixed(selectedAssetMetadata?.decimals)
+                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                           .toString()}
                         onChange={handleAmountChange}
                         placeholder="Minimum 1"
@@ -590,13 +552,14 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                   <ESnakeblock
                     selectedOption={selectedPercentage}
                     setSelectedOption={setSelectedPercentage}
+                    disabled
                   />
                 </div>
               </div>
 
               <div className="w-full mb-3">
                 <div
-                  className={`w-full flex justify-between eq-input py-3 px-[14px] gap-3`}
+                  className={`w-full flex justify-between eq-input py-3 px-[14px] bg-gray-100 pointer-events-none gap-3`}
                 >
                   <div className="text-content-secondary opacity-50">Total</div>
 
@@ -605,7 +568,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                       type="text"
                       name="total"
                       min={0}
-                      max={MAX_TOKEN_AMOUNT}
+                      max={9999999999999}
                       value={total?.toFixed(quoteAssetmetadata.decimals)}
                       placeholder="0.00"
                       assetDecimals={6}
@@ -639,7 +602,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
                   <div className="flex justify-between w-full">
                     <span className="text-caption-regular">Est. Fee</span>
-                    <div className="text-caption-regular">
+                    <div className="text-caption-regula">
                       {estFee} {symbolToShow}
                     </div>
                   </div>
@@ -647,10 +610,11 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
               )}
 
               <div className="flex w-full">
-                {!validBaseTokens[tokenAddress] ? (
-                  <Button className="w-full" disabled>
-                    Token is not used
-                  </Button>
+                <Button className="w-full" disabled>
+                  Coming Soon
+                </Button>
+                {/* {!validBaseTokens[tokenAddress] ? (
+                
                 ) : (
                   <>
                     <Button
@@ -667,7 +631,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                       </span>
                     </Button>
                   </>
-                )}
+                )} */}
               </div>
             </div>
           </>

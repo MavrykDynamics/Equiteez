@@ -92,6 +92,7 @@ export async function orderbookSell({
   quoteTokenDecimals,
 }: OrderbookBuySellParams & { rwaTokenAddress: string }) {
   try {
+    debugger;
     const sender = await tezos.wallet.pkh();
     let batch = tezos.wallet.batch([]);
 
