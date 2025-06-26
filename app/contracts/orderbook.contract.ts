@@ -40,7 +40,7 @@ export async function orderbookBuy({
       {
         add_operator: {
           owner: sender,
-          operator: quoteTokenAddress,
+          operator: orderbookContractAddress,
           token_id: 0,
         },
       },
@@ -60,7 +60,7 @@ export async function orderbookBuy({
       {
         remove_operator: {
           owner: sender,
-          operator: quoteTokenAddress,
+          operator: orderbookContractAddress,
           token_id: 0,
         },
       },
@@ -109,7 +109,7 @@ export async function orderbookSell({
       {
         add_operator: {
           owner: sender,
-          operator: rwaTokenAddress,
+          operator: orderbookContractAddress,
           token_id: 0,
         },
       },
@@ -128,7 +128,7 @@ export async function orderbookSell({
       {
         remove_operator: {
           owner: sender,
-          operator: rwaTokenAddress,
+          operator: orderbookContractAddress,
           token_id: 0,
         },
       },
