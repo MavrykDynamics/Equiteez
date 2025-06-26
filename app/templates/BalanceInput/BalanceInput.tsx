@@ -81,7 +81,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
         <section
           className={clsx(
             "transition duration-250 linear",
-            "p-4 bg-gray-50 flex flex-col gap-2 rounded-2xl border",
+            "p-4 bg-gray-50 flex flex-col gap-1 rounded-2xl border",
 
             isFocused && !errorCaption && "border-dark-green-100",
             errorCaption && "border-red-500",
@@ -91,7 +91,9 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
           )}
         >
           {label && (
-            <div className="text-left text-xs text-sand-600">{label}</div>
+            <div className="text-left text-xs text-sand-600 leading-[18px]">
+              {label}
+            </div>
           )}
           <div className="overflow-y-hidden">
             <AssetField
@@ -106,7 +108,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
                 "text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden"
               )}
               containerClassName="overflow-y-hidden"
-              style={{ padding: 0, borderRadius: 0, height: 42 }}
+              style={{ padding: 0, borderRadius: 0, height: 32 }}
               placeholder={toLocalFormat(0, { decimalPlaces: 2 })}
               min={0}
               max={9999999999999}
@@ -174,10 +176,10 @@ export const BalanceInputWithTotal = forwardRef<
   return (
     <>
       <BalanceInput ref={inputRef} {...balanceInputProps}>
-        <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
+        <div className="text-xs text-sand-600 flex items-center justify-between font-semibold">
           <BalanceTotalBlock balanceTotal={balanceTotal} decimals={decimals} />
 
-          <div className="text-body-xs font-semibold">
+          <div className="text-xs font-semibold">
             Balance:&nbsp;
             <CryptoBalance
               value={new BigNumber(cryptoValue)}

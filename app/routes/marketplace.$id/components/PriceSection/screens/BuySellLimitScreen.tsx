@@ -36,7 +36,7 @@ import {
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
-import { downgradeDecimals } from "~/lib/utils/formaters";
+import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 
 type BuySellLimitScreenProps = {
@@ -62,7 +62,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setLimitPrice,
 }) => {
   const { symbol, token_address, slug } = estate;
-  const { dodoTokenPair, dodoStorages } = useDexContext();
+  const { dodoTokenPair, dodoStorages, dodoMav } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
   // input refs
@@ -78,6 +78,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
+
+  const marketTokenPrice = useMemo(
+    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
+    [dodoMav, slug, selectedAssetMetadata.decimals]
+  );
 
   const tokenPrice = useMemo(
     () => limitPrice || new BigNumber(0),
@@ -295,7 +300,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                       1 {symbol} =&nbsp;
                       <div>
                         <span className="-mr-[1px]">$</span>
-                        <Money fiat>{tokenPrice || "0"}</Money>
+                        <Money fiat>{marketTokenPrice || "0"}</Money>
                       </div>
                     </div>
                   </ExpanderFaceContent>
