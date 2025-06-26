@@ -44,7 +44,7 @@ const alertTypeBasedStyles = {
 
 export const Alert: FC<AlertProps> = ({
   type = "warning",
-  size = "regular",
+  size = "small",
   expandable = false,
   header,
   children,
