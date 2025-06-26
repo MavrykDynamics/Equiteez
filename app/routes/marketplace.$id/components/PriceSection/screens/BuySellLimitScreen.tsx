@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 
 import {
@@ -65,6 +65,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const { symbol, token_address, slug } = estate;
   const { dodoTokenPair, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
+
+  // input refs
+  const ref1 = useRef<HTMLInputElement>(null);
+  const ref2 = useRef<HTMLInputElement>(null);
+  const ref3 = useRef<HTMLInputElement>(null);
 
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
     null
@@ -224,6 +229,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
             <BalanceInput
+              ref={ref1}
+              onNext={() => ref2.current?.focus()}
               onChange={(data) => setLimitPrice(data ?? new BigNumber(0))}
               amountInputDisabled={false}
               errorCaption={
@@ -250,6 +257,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             </BalanceInput>
 
             <BalanceInput
+              ref={ref2}
+              onNext={() => ref3.current?.focus()}
+              onPrev={() => ref1.current?.focus()}
               onChange={handleOutputChange}
               amountInputDisabled={false}
               errorCaption={
@@ -284,6 +294,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 />
               </div>
               <BalanceInput
+                ref={ref3}
+                onPrev={() => ref2.current?.focus()}
                 amountInputDisabled
                 label="Total"
                 amount={balanceTotal}

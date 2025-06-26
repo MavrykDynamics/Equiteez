@@ -49,7 +49,7 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
     >
       <div
         onScroll={scrollEvent}
-        className="w-full h-full overflow-y-auto p-8 transition duration-300 ease-in-out flex flex-col"
+        className="w-full h-full overflow-y-auto p-8 transition duration-300 ease-in-out flex flex-col focus:outline-none"
       >
         <div
           className={clsx(

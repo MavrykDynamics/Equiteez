@@ -266,6 +266,9 @@ export default {
       borderRadius: {
         "4xl": "2rem",
       },
+      ringWidth: {
+        DEFAULT: "0",
+      },
       boxShadow: {
         card: "0.5px 0.5px 0px 0px rgba(0, 0, 0, 0.03), 1px 2px 15px 0px rgba(0, 0, 0, 0.05);",
         "card-secondary": "1px 2px 8px 0px rgba(0, 0, 0, 0.10);",

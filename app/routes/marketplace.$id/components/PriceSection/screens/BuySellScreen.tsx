@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 import {
   ClickableDropdownArea,
@@ -77,8 +77,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
-  // TODO check for token prices if the are empty
   const { userTokensBalances, isKyced } = useUserContext();
+
+  // input refs
+  const ref1 = useRef<HTMLInputElement>(null);
+  const ref2 = useRef<HTMLInputElement>(null);
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -275,6 +278,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
             <BalanceInput
+              ref={ref1}
+              onNext={() => ref2.current?.focus()}
               onChange={(data) => setAmount(data)}
               amountInputDisabled={false}
               errorCaption={
@@ -307,6 +312,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             </BalanceInput>
 
             <BalanceInput
+              ref={ref2}
+              onPrev={() => ref1.current?.focus()}
               onChange={handleOutputChange}
               amountInputDisabled={false}
               label="You Receive"
