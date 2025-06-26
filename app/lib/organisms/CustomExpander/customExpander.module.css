@@ -1,9 +1,0 @@
-.expanderData {
-  max-height: 0px;
-  overflow: hidden;
-}
-
-.expanderData.expanded {
-  max-height: 500px;
-  overflow: visible;
-}

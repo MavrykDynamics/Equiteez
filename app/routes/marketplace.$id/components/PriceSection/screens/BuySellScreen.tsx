@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 import {
   ClickableDropdownArea,
@@ -31,10 +31,9 @@ import { stablecoinContract } from "~/consts/contracts";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
-import { BalanceInput } from "~/templates/BalanceInput";
+import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { toTokenSlug } from "~/lib/assets";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { CryptoBalance } from "~/templates/Balance";
 import { spippageOptions } from "../popups";
 import { WarningBlock } from "~/lib/molecules/WarningBlock";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -77,8 +76,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
   const { tokensMetadata } = useTokensContext();
 
-  // TODO check for token prices if the are empty
   const { userTokensBalances, isKyced } = useUserContext();
+
+  // input refs
+  const ref1 = useRef<HTMLInputElement>(null);
+  const ref2 = useRef<HTMLInputElement>(null);
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -274,7 +276,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <div className="flex-1 ">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
-            <BalanceInput
+            <BalanceInputWithTotal
+              ref={ref1}
+              onNext={() => ref2.current?.focus()}
               onChange={(data) => setAmount(data)}
               amountInputDisabled={false}
               errorCaption={
@@ -283,55 +287,36 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                   : undefined
               }
               {...input1Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
+              balanceTotal={balanceTotal}
+              decimals={stableCoinMetadata?.decimals}
+              cryptoValue={
+                new BigNumber(isBuyAction ? usdBalance : tokenBalance)
+              }
+              cryptoDecimals={
+                isBuyAction
+                  ? stableCoinMetadata?.decimals
+                  : selectedAssetMetadata?.decimals
+              }
+            />
 
-                <div className="text-body-xs font-semibold">
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={
-                      new BigNumber(isBuyAction ? usdBalance : tokenBalance)
-                    }
-                    cryptoDecimals={
-                      isBuyAction
-                        ? stableCoinMetadata?.decimals
-                        : selectedAssetMetadata?.decimals
-                    }
-                  />
-                </div>
-              </div>
-            </BalanceInput>
-
-            <BalanceInput
+            <BalanceInputWithTotal
+              ref={ref2}
+              onPrev={() => ref1.current?.focus()}
               onChange={handleOutputChange}
               amountInputDisabled={false}
               label="You Receive"
               {...input2Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
-                <div className='className="text-body-xs font-semibold"'>
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={
-                      new BigNumber(isBuyAction ? tokenBalance : usdBalance)
-                    }
-                    cryptoDecimals={
-                      !isBuyAction
-                        ? stableCoinMetadata?.decimals
-                        : selectedAssetMetadata?.decimals
-                    }
-                  />
-                </div>
-              </div>
-            </BalanceInput>
+              balanceTotal={balanceTotal}
+              decimals={stableCoinMetadata?.decimals}
+              cryptoValue={
+                new BigNumber(isBuyAction ? tokenBalance : usdBalance)
+              }
+              cryptoDecimals={
+                !isBuyAction
+                  ? stableCoinMetadata?.decimals
+                  : selectedAssetMetadata?.decimals
+              }
+            />
 
             {Number(slippagePercentage) <= 0 && (
               <WarningBlock>
@@ -396,7 +381,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {!isKyced && (
         <div className="mt-8">
-          <Alert type="warning" header="Verify with Mavryk Pro to Trade">
+          <Alert
+            type="warning"
+            header="Verify with Mavryk Pro to Trade"
+            expandable
+          >
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
@@ -405,7 +394,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
       {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) && (
         <div className="mt-8">
-          <Alert type="warning" header="Low Liquidity Detected!">
+          <Alert type="warning" header="Low Liquidity Detected!" expandable>
             The liquidity for {symbol} is critically low. Transactions may
             experience high slippage or failure.
           </Alert>
@@ -414,7 +403,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {hasQuoteTokenLimitWarning && (
         <div className="mt-8">
-          <Alert type="warning" header="Pool Balance Limit Reached">
+          <Alert type="warning" header="Pool Balance Limit Reached" expandable>
             Your trade will exceed the pool limit, which may cause slippage or
             failure. Please adjust the amount and try again.
           </Alert>
@@ -423,7 +412,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {hasQuoteError && (
         <div className="mt-8">
-          <Alert type="error" header="Low Quote Detected">
+          <Alert type="error" header="Low Quote Detected" expandable>
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
             percentage in your settings to ensure a successful transaction.
@@ -514,28 +503,5 @@ const SlippageDropdown: FC<SlippageDropdownProps> = ({
         </DropdownBodyContent>
       </ClickableDropdownArea>
     </CustomDropdown>
-  );
-};
-
-type BalanceTotalBlockProps = {
-  balanceTotal: BigNumber | undefined;
-  decimals: number | undefined;
-};
-const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
-  balanceTotal,
-  decimals,
-}) => {
-  return (
-    <>
-      {" "}
-      {!balanceTotal || balanceTotal?.isZero() ? (
-        "--"
-      ) : (
-        <div className="flex items-center">
-          <span>$</span>
-          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
-        </div>
-      )}
-    </>
   );
 };
