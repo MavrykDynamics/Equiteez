@@ -68,7 +68,7 @@ export const ExpanderFaceContent: FC<
 export const ExpanderBodyContent: FC<PropsWithChildren> = ({ children }) => {
   const { expanded } = useExpanderContext();
   const ref = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState("0px");
+  const [height, setHeight] = useState<string | null>(null);
   const [shouldShowOverflow, setShouldShowOverflow] = useState(false);
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export const ExpanderBodyContent: FC<PropsWithChildren> = ({ children }) => {
     <div
       ref={ref}
       style={{
-        height,
+        height: height ? height : "auto",
         overflow: shouldShowOverflow ? "visible" : "hidden",
         transition: `height ${defaultExpanderTransitionDuration}ms ease`,
       }}

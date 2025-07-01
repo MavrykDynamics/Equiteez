@@ -399,8 +399,12 @@ export const PopupContent: FC<{
                 <TabSwitcher tabs={tabs} activeTabId={activetabId} />
               </div>
               <div>
-                <div className="mb-8">
-                  <TabSwitcher tabs={marketTabs} activeTabId={marketType} />
+                <div className="mb-8 text-base">
+                  <TabSwitcher
+                    tabs={marketTabs}
+                    activeTabId={marketType}
+                    variant="tertiary-buttons"
+                  />
                 </div>
               </div>
             </>
