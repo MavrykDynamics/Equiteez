@@ -20,12 +20,14 @@ const variants = {
   primary: "gap-3",
   secondary: "gap-2",
   tertiary: "gap-4",
+  "tertiary-buttons": "gap-3",
 };
 
 const gliderDistances = {
   primary: (idx: number) => `${getGliderDistance(idx, 12)}`,
   secondary: (idx: number) => `${getGliderDistance(idx, 8)}`,
   tertiary: (idx: number) => `${getGliderDistance(idx, 16)}`,
+  "tertiary-buttons": (idx: number) => `${getGliderDistance(idx, 12)}`,
   hoverable: (idx: number) => `${getGliderDistance(idx, 3)}`,
 };
 
