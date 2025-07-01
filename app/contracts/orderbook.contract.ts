@@ -5,6 +5,50 @@ import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 
 // Orderbook buy & sell for secondary market page
 
+const callMatchOrdersFromProxy = async (contractAddress: string) => {
+  try {
+    const payload = {
+      contractAddress,
+      rpcUrl: process.env.RPC_NODE_URL ?? "",
+    };
+    const nonce = Date.now().toString();
+    const secret = process.env.NEXT_PUBLIC_DAPP_HMAC_SECRET;
+
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const payloadData = encoder.encode(JSON.stringify(payload) + nonce);
+
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const signatureBuffer = await crypto.subtle.sign(
+      "HMAC",
+      cryptoKey,
+      payloadData
+    );
+    const signatureHex = Array.from(new Uint8Array(signatureBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    await fetch(process.env.PROXY_URL ?? "", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        payload,
+        nonce,
+        signature: signatureHex,
+      }),
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 type OrderbookBuySellParams = {
   tezos: MavrykToolkit;
   orderbookContractAddress: string;
@@ -66,17 +110,15 @@ export async function orderbookBuy({
       },
     ]).toTransferParams();
 
-    const match_orders =
-      orderbookContract.methodsObject["matchOrders"](1).toTransferParams();
-
     batch = batch.withTransfer(open_ops);
     batch = batch.withTransfer(buy_order);
     batch = batch.withTransfer(close_ops);
-    batch = batch.withTransfer(match_orders);
 
     const batchOp = await batch.send();
 
     await batchOp.confirmation();
+
+    await callMatchOrdersFromProxy(orderbookContractAddress);
   } catch (e: unknown) {
     throw e;
   }
