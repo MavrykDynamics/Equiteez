@@ -100,14 +100,24 @@
     1px 2px 15px 0px rgba(0, 0, 0, 0.05);
 }
 
-.cardPrimary img {
+.cardPrimary .imgWrapper {
   width: 100%;
   height: 249px;
 
-  object-fit: cover;
-
   border-radius: 16px;
   overflow: hidden;
+}
+
+.imgWrapper img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+
+  transition: transform 250ms ease-in-out;
+}
+
+.cardPrimary:hover .imgWrapper img {
+  transform: scale(1.2);
 }
 
 .primaryHeader {
