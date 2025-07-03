@@ -127,7 +127,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
-      setAmount(val ?? new BigNumber(0));
+      setAmount(val);
     },
     [setAmount]
   );
@@ -215,7 +215,13 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     ? symbol
     : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
-  const isBtnDisabled = hasTotalError || !amount || !isKyced;
+  const isBtnDisabled =
+    hasTotalError ||
+    !amount ||
+    !isKyced ||
+    !limitPrice ||
+    limitPrice?.isZero() ||
+    amount?.isZero();
 
   useEffect(() => {
     if (selectedPercentage != null) {
@@ -235,7 +241,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             <BalanceInputWithTotal
               ref={ref1}
               onNext={() => ref2.current?.focus()}
-              onChange={(data) => setLimitPrice(data ?? new BigNumber(0))}
+              onChange={(data) => setLimitPrice(data)}
               amountInputDisabled={false}
               errorCaption={
                 hasTotalError
