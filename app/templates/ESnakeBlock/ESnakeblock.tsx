@@ -41,7 +41,12 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
         disabled && "opacity-50 pointer-events-none"
       )}
     >
-      <div className="flex w-full h-4 relative">
+      <div
+        className={clsx(
+          "flex w-full h-4 relative",
+          size === "large" ? "h-6" : "h-4"
+        )}
+      >
         <div
           style={{ zIndex: 5 }}
           className={clsx(

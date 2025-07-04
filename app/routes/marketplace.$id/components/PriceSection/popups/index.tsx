@@ -395,11 +395,11 @@ export const PopupContent: FC<{
 
           {activetabId !== CONFIRM && isSecondaryEstate && (
             <>
-              <div className="mb-6">
+              <div className="mb-4">
                 <TabSwitcher tabs={tabs} activeTabId={activetabId} />
               </div>
               <div>
-                <div className="mb-8 text-base">
+                <div className="mb-4 text-base">
                   <TabSwitcher
                     tabs={marketTabs}
                     activeTabId={marketType}
