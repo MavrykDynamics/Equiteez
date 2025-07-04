@@ -35,9 +35,9 @@ export default {
           },
         ],
         "asset-input": [
-          "2rem", // 32px
+          "1.25rem", // 32px
           {
-            lineHeight: "2.25rem", // 36px
+            lineHeight: "1.75rem", // 36px
             fontWeight: "600",
           },
         ],
@@ -265,6 +265,9 @@ export default {
       },
       borderRadius: {
         "4xl": "2rem",
+      },
+      ringWidth: {
+        DEFAULT: "0",
       },
       boxShadow: {
         card: "0.5px 0.5px 0px 0px rgba(0, 0, 0, 0.03), 1px 2px 15px 0px rgba(0, 0, 0, 0.05);",

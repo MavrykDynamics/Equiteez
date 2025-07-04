@@ -10,19 +10,29 @@ import clsx from "clsx";
 const options = [0, 25, 50, 75, 100];
 
 type ESnakeblockProps = {
-  selectedOption: number;
+  selectedOption: number | null;
   setSelectedOption: (option: number) => void;
   disabled?: boolean;
+  size?: "regular" | "large";
+};
+
+const sizeClassname = {
+  regular: "size-4",
+  large: "size-6",
 };
 
 export const ESnakeblock: FC<ESnakeblockProps> = ({
-  selectedOption = 0,
+  selectedOption: originalSelectedOption = null,
   setSelectedOption,
   disabled = false,
+  size = "regular",
 }) => {
   const handleOptionClick = (option: number) => {
     if (!disabled) setSelectedOption(option);
   };
+  const sizeClassnameValue = sizeClassname[size];
+
+  const selectedOption = originalSelectedOption ?? 0;
 
   return (
     <div
@@ -31,7 +41,12 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
         disabled && "opacity-50 pointer-events-none"
       )}
     >
-      <div className="flex w-full h-4 relative">
+      <div
+        className={clsx(
+          "flex w-full h-4 relative",
+          size === "large" ? "h-6" : "h-4"
+        )}
+      >
         <div
           style={{ zIndex: 5 }}
           className={clsx(
@@ -47,13 +62,27 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
               onClick={() => handleOptionClick(option)}
             >
               {option === selectedOption ? (
-                <EQLogo className="size-4 text-dark-green-500 stroke-current" />
+                <EQLogo
+                  className={clsx(
+                    " text-dark-green-500 stroke-current",
+                    sizeClassnameValue
+                  )}
+                />
               ) : options.length - 1 === idx ? (
-                <DotFill className="size-4 fill-dark-green-200" />
+                <DotFill
+                  className={clsx("fill-dark-green-200", sizeClassnameValue)}
+                />
               ) : selectedOption > option ? (
-                <div className="size-4 bg-transparent"></div>
+                <div
+                  className={clsx("bg-transparent", sizeClassnameValue)}
+                ></div>
               ) : (
-                <DotEmpty className="size-4 text-dark-green-200 stroke-current" />
+                <DotEmpty
+                  className={clsx(
+                    "text-dark-green-200 stroke-current",
+                    sizeClassnameValue
+                  )}
+                />
               )}
             </span>
           ))}
@@ -76,7 +105,8 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           <button
             key={option}
             className={clsx(
-              "eq-slider outline-none focus:outline-none pt-1",
+              "outline-none focus:outline-none",
+              size === "regular" ? "text-[10px]  pt-1" : "text-sm pt-[10px]",
               option !== 0 && option !== 100 && "pl-[15px]"
             )}
             onClick={() => handleOptionClick(option)}

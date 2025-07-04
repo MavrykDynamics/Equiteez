@@ -72,10 +72,19 @@ export const AssetEmblaLastSlide: FC<Pick<AssetEmblaSlideProps, "estate">> = ({
   return (
     <div
       role="presentation"
-      className={clsx(styles.embla__slide, "cursor-pointer")}
+      className={clsx(
+        styles.embla__slide,
+        styles.lastSlideCard,
+        "cursor-pointer"
+      )}
       key={estate.token_address}
     >
-      <div className={styles.embla__slide__number}>
+      <div
+        className={clsx(
+          styles.embla__slide__number,
+          styles.lastSlideImgWrapper
+        )}
+      >
         <img
           src={estate.assetDetails.previewImage}
           alt="house"

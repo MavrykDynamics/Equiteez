@@ -139,7 +139,9 @@ export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
     <div
       className={clsx("p-6 flex flex-col gap-4 bg-white", styles.cardPrimary)}
     >
-      <img src={imgSrc} alt={title} />
+      <div className={styles.imgWrapper}>
+        <img src={imgSrc} alt={title} />
+      </div>
 
       <div className="flex flex-col">
         <h4
