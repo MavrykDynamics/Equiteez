@@ -74,7 +74,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced } = useUserContext();
+  const { userTokensBalances, isKyced, isAdmin } = useUserContext();
 
   const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -350,6 +350,13 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
+          </Alert>
+        </div>
+      )}
+      {isAdmin && (
+        <div className="mt-8">
+          <Alert type="warning" header="Attention to Admins!">
+            Your single order will be placed 10 times instead of 1 usual order!
           </Alert>
         </div>
       )}
