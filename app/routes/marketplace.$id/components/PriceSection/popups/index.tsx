@@ -58,6 +58,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
 import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 export const spippageOptions = ["1", "3", "5", "custom"];
 
@@ -67,6 +68,7 @@ export const PopupContent: FC<{
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
   const { dodoMav, dodoTokenPair } = useDexContext();
+  const { isAdmin } = useUserContext();
   const { adminAddress } = useConfigContext();
   const {
     pickers: {
@@ -265,6 +267,7 @@ export const PopupContent: FC<{
       pricePerToken: limitPrice?.toNumber(),
       decimals: selectedAssetMetadata?.decimals,
       quoteTokenDecimals: qouteAssetMetadata?.decimals,
+      isAdmin,
     }),
     [
       amountB,
@@ -274,6 +277,7 @@ export const PopupContent: FC<{
       pickOrderbookContract,
       qouteAssetMetadata?.decimals,
       selectedAssetMetadata?.decimals,
+      isAdmin,
     ]
   );
 
