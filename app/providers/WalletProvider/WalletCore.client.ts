@@ -22,7 +22,7 @@ import { getItemFromStorage } from "~/lib/utils/local-storage";
 const WALLET_NETWORK = "atlasnet" as NetworkType;
 const DAPP_METADATA = {
   // name: process.env.REACT_APP_NAME,
-  name: "Maven",
+  name: "Equiteez",
   preferredNetwork: WALLET_NETWORK,
 };
 
