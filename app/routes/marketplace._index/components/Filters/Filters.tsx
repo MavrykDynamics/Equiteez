@@ -293,10 +293,10 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
           <div className={styles.filterDivider} />
           <div
             role="presentation"
-            className={styles.searchBtn}
+            className={clsx(styles.searchBtn)}
             onClick={handleNavigateToSelectedFilters}
           >
-            <SearchIcon className={styles.searchIcon} />
+            <SearchIcon className={"text-white stroke-current w-5 h-5"} />
           </div>
         </div>
       </div>

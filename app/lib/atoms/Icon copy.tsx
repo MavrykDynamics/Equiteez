@@ -13,7 +13,7 @@ export const Icon: React.FC<IconProps> = ({ icon, className = "" }) => {
 
   useLayoutEffect(() => {
     // Dynamically import the icon using the svgName prop
-    import(`../../../icons/${icon}.svg?react`)
+    import(`../../icons/${icon}.svg?react`)
       .then((mod) => setSvgIcon(() => mod.default))
       .catch((err) => {
         console.error(`Failed to load icon "${icon}":`, err);
