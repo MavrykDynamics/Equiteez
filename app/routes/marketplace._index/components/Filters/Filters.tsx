@@ -9,10 +9,10 @@ import { ChangeEvent, FC, useCallback, useRef, useState } from "react";
 import clsx from "clsx";
 import SearchIcon from "app/icons/search.svg?react";
 import styles from "./filters.module.css";
-import { Icon } from "~/lib/atoms/Icon";
 import { FiltersProps } from "~/routes/marketplace._index/components/utils";
 import { Checkbox } from "~/lib/atoms/CheckBox";
 import { useFiltersContext } from "./FiltersProvider";
+import { Icon } from "~/lib/atoms/Icon";
 
 export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
   const inputRef = useRef<HTMLInputElement>(null);
