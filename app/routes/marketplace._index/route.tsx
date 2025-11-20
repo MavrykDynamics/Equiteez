@@ -41,7 +41,7 @@ export default function Properties() {
       <FiltersProvider>
         <div className="px-11">
           <Spacer height={32} />
-          <Filters isHideTagFilter />
+          <Filters />
 
           {marketApiError ? (
             <div className="mt-5">

@@ -136,7 +136,7 @@ export const DropdownFaceContent: FC<
       className={clsx(
         className,
         `w-full text-left  outline-none flex items-center gap-x-${gap}`,
-        withOverlay && opened && "relative z-10",
+        withOverlay && opened && "relative z-10 bg-white",
         opened && openedClassName
       )}
     >
@@ -201,7 +201,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
     >
       <div
         style={{ maxHeight, height: customHeight, overflow: customOverflow }}
-        className={styles.dropdownDataContent}
+        className={clsx(styles.dropdownDataContent, "bg-background")}
       >
         {children}
       </div>
