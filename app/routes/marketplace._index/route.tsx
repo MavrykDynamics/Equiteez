@@ -5,7 +5,6 @@ import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters/Filters";
-import { useState } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
@@ -31,7 +30,7 @@ export default function Properties() {
     reachedTheEnd,
   } = useMarketsContext();
   const { dodoMav } = useDexContext();
-  const [filteredEstates, setFilteredEstates] = useState(() => marketsArr);
+  const filteredEstates = marketsArr;
 
   const onScroll =
     isLoading || reachedTheEnd ? undefined : buildOnScroll(loadMoreMarkets);
