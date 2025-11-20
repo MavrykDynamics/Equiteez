@@ -98,6 +98,7 @@ export default function Properties() {
                         APY={es.assetDetails.APY}
                         pricePerToken={pricePerToken}
                         isFutureAsset={!validBaseTokens[es.token_address]}
+                        progressBarPercentage={50}
                       />
                     </Link>
                   );

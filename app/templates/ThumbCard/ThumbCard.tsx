@@ -86,27 +86,32 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
             </div>
           </div>
           {progressBarPercentage && (
-            <div
-              style={
-                {
-                  "--percentage": `${progressBarPercentage}%`,
-                } as CSSProperties
-              }
-              className={clsx(
-                styles.progressBarContainer,
-                "gap-x-2 w-full items-center"
-              )}
-            >
+            <div className="flex items-center gap-2 w-full">
+              <span className="text-sm text-sand-300 font-semibold leading-5">
+                Sold
+              </span>
               <div
+                style={
+                  {
+                    "--percentage": `${progressBarPercentage}%`,
+                  } as CSSProperties
+                }
                 className={clsx(
-                  "overflow-hidden",
-                  styles.progressBar,
-                  styles.progressPercentage,
-                  progressBarPercentage === 100
-                    ? "after:bg-[#0DB365]"
-                    : "after:bg-background"
+                  styles.progressBarContainer,
+                  "gap-x-2 flex-1 items-center"
                 )}
-              />
+              >
+                <div
+                  className={clsx(
+                    "overflow-hidden",
+                    styles.progressBar,
+                    styles.progressPercentage,
+                    progressBarPercentage === 100
+                      ? "after:bg-[#FF8A3D]"
+                      : "after:bg-[#FF8A3D]"
+                  )}
+                />
+              </div>
               <span className="text-background text-caption">
                 {progressBarPercentage === 100
                   ? "FUNDED"
