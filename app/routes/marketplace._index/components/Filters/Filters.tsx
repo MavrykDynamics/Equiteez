@@ -168,7 +168,7 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
                       iconClassName={styles.filterIcon}
                     >
                       <div className="w-full relative z-[1]">
-                        <p className="text-xs capitalize block mb-[4px]">
+                        <p className="text-xs capitalize block mb-[4px] ">
                           {filter.label}
                         </p>
                         <div className="w-full min-h-[27px]">
@@ -234,10 +234,7 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
                               )}
                             </div>
                           ) : (
-                            <p
-                              color="lightBlue"
-                              className="capitalize font-semibold"
-                            >
+                            <p className="capitalize font-semibold text-sand-500">
                               {filter.emptyText}
                             </p>
                           )}

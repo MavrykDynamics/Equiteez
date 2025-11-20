@@ -19,7 +19,6 @@
   box-shadow: 1px 2px 8px 0 #0000001a;
 }
 .dropdownDataContentItem {
-  background: var(--color-light-blue-500);
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
