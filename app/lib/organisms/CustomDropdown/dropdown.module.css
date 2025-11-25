@@ -1,16 +1,20 @@
 .dropdownData {
   position: absolute;
-  max-height: 0px;
-  overflow: hidden;
-  z-index: 200;
+  transform-origin: top;
+  transform: scaleY(0);
   opacity: 0;
+  z-index: 200;
   background-color: #fff;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .dropdownData.opened {
-  max-height: 700px;
+  transform: scaleY(1);
   opacity: 1;
 }
+
 .dropdownDataContent {
   border: 1px solid #f4fbf8;
   border-radius: 8px;
