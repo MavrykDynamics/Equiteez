@@ -21,18 +21,7 @@ import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
-import {
-  BUY,
-  CONFIRM,
-  OrderType,
-  OTC,
-  OTC_BUY,
-  OTC_SELL,
-  OTCScreenState,
-  OTCTabType,
-  SELL,
-} from "../consts";
-import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
+import { BUY, CONFIRM, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 
 import {
@@ -411,6 +400,7 @@ export const PopupContent: FC<{
                 <div className="mb-3 text-base">
                   <TabSwitcherV2
                     className={"min-w-full"}
+                    // @ts-expect-error // OrderType is string
                     tabs={tabs}
                     tabClassName={styles.tab}
                     activeTabId={activetabId}
@@ -495,7 +485,7 @@ export const PopupContent: FC<{
               />
             ))}
 
-          {activetabId === OTC && <OTCPopupContent estate={estate} />}
+          {/* {activetabId === OTC && <OTCPopupContent estate={estate} />} */}
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
               actionType={orderType === BUY ? BUY : SELL}
@@ -509,79 +499,79 @@ export const PopupContent: FC<{
   );
 };
 
-export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
-  estate,
-}) => {
-  const [activeScreenId, setActiveScreenId] = useState<OTCScreenState>(OTC);
-  const [activeTabId, setActiveTabId] = useState<OTCTabType>(OTC_BUY);
+// export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
+//   estate,
+// }) => {
+//   const [activeScreenId, setActiveScreenId] = useState<OTCScreenState>(OTC);
+//   const [activeTabId, setActiveTabId] = useState<OTCTabType>(OTC_BUY);
 
-  const toggleBuyScreen = useCallback((id: OTCScreenState) => {
-    setActiveScreenId(id);
-  }, []);
+//   const toggleBuyScreen = useCallback((id: OTCScreenState) => {
+//     setActiveScreenId(id);
+//   }, []);
 
-  const toggleTabScreen = useCallback((id: OTCTabType) => {
-    setActiveTabId(id);
-  }, []);
+//   const toggleTabScreen = useCallback((id: OTCTabType) => {
+//     setActiveTabId(id);
+//   }, []);
 
-  // TODO take from buysell screen
-  const amount = 10;
-  const price = 45;
+//   // TODO take from buysell screen
+//   const amount = 10;
+//   const price = 45;
 
-  const tabs: TabType<OTCTabType>[] = useMemo(
-    () => [
-      {
-        id: OTC_BUY,
-        label: "OTC Buy",
-        handleClick: toggleTabScreen,
-      },
-      {
-        id: OTC_SELL,
-        label: "OTC Sell",
-        handleClick: toggleTabScreen,
-      },
-    ],
-    [toggleTabScreen]
-  );
-  return (
-    <div className="flex flex-col justify-between text-content h-full">
-      <>
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center">
-            {activeScreenId === CONFIRM && (
-              <button onClick={() => toggleBuyScreen("otc")}>
-                <ArrowLeftIcon className="size-6 mr-2" />
-              </button>
-            )}
-          </div>
+//   const tabs: TabType<OTCTabType>[] = useMemo(
+//     () => [
+//       {
+//         id: OTC_BUY,
+//         label: "OTC Buy",
+//         handleClick: toggleTabScreen,
+//       },
+//       {
+//         id: OTC_SELL,
+//         label: "OTC Sell",
+//         handleClick: toggleTabScreen,
+//       },
+//     ],
+//     [toggleTabScreen]
+//   );
+//   return (
+//     <div className="flex flex-col justify-between text-content h-full">
+//       <>
+//         <div className="flex-1 flex flex-col">
+//           <div className="flex items-center">
+//             {activeScreenId === CONFIRM && (
+//               <button onClick={() => toggleBuyScreen("otc")}>
+//                 <ArrowLeftIcon className="size-6 mr-2" />
+//               </button>
+//             )}
+//           </div>
 
-          {activeScreenId !== CONFIRM && (
-            <TabSwitcher
-              variant="secondary"
-              tabs={tabs}
-              activeTabId={activeTabId}
-              grow={true}
-            />
-          )}
+//           {activeScreenId !== CONFIRM && (
+//             <TabSwitcher
+//               variant="secondary"
+//               tabs={tabs}
+//               activeTabId={activeTabId}
+//               grow={true}
+//             />
+//           )}
 
-          {/* {activeScreenId === OTC && (
-            <OTCBuySellScreen
-              symbol={estate.symbol}
-              estate={estate}
-              toggleScreen={toggleBuyScreen}
-              activeTabId={activeTabId}
-            />
-          )} */}
-          {activeScreenId === CONFIRM && (
-            <BuySellConfirmationScreen
-              estate={estate}
-              tokenPrice={price}
-              total={price * amount}
-              amount={amount}
-              actionType={activeTabId}
-            />
-          )}
-        </div>
-      </>
-    </div>
-  );
-};
+//           {/* {activeScreenId === OTC && (
+//             <OTCBuySellScreen
+//               symbol={estate.symbol}
+//               estate={estate}
+//               toggleScreen={toggleBuyScreen}
+//               activeTabId={activeTabId}
+//             />
+//           )} */}
+//           {activeScreenId === CONFIRM && (
+//             <BuySellConfirmationScreen
+//               estate={estate}
+//               tokenPrice={price}
+//               total={price * amount}
+//               amount={amount}
+//               actionType={activeTabId}
+//             />
+//           )}
+//         </div>
+//       </>
+//     </div>
+//   );
+// };

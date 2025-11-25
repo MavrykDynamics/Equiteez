@@ -279,7 +279,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 <ESnakeblock
                   selectedOption={selectedPercentage}
                   setSelectedOption={setSelectedPercentage}
-                  size="large"
                 />
               </div>
 
