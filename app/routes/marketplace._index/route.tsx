@@ -4,14 +4,14 @@ import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
-import { Filters } from "./components/Filters";
-import { useState } from "react";
+import { Filters } from "./components/Filters/Filters";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Spinner } from "~/lib/atoms/Spinner";
+import { FiltersProvider } from "./components/Filters/FiltersProvider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -30,84 +30,85 @@ export default function Properties() {
     reachedTheEnd,
   } = useMarketsContext();
   const { dodoMav } = useDexContext();
-  const [filteredEstates, setFilteredEstates] = useState(() => marketsArr);
+  const filteredEstates = marketsArr;
 
   const onScroll =
     isLoading || reachedTheEnd ? undefined : buildOnScroll(loadMoreMarkets);
 
   return (
     <PageLayout>
-      <div className="px-11">
-        <Spacer height={32} />
-        <Filters
-          originalEstates={marketsArr}
-          estates={filteredEstates}
-          setEstates={setFilteredEstates}
-        />
+      <FiltersProvider>
+        <div className="px-11">
+          <Spacer height={32} />
+          <Filters />
 
-        {marketApiError ? (
-          <div className="mt-5">
-            <ApiErrorBox message="The market data is unavailable at the moment" />
-          </div>
-        ) : (
-          <InfiniteScroll
-            dataLength={marketsArr.length}
-            hasMore={reachedTheEnd === false}
-            next={loadMoreMarkets}
-            loader={
-              isLoading && (
-                <div className="w-full flex justify-center h-12 mt-12 relative overflow-hidden">
-                  <Spinner size={36} />
-                </div>
-              )
-            }
-            onScroll={onScroll}
-            scrollableTarget={"historyContainer"}
-            endMessage={
-              marketsArr.length > 0 ? (
-                <>
-                  <div className=" text-center text-sand-600 text-card-headline mt-11">
-                    End of The Assets
+          {marketApiError ? (
+            <div className="mt-5">
+              <ApiErrorBox message="The market data is unavailable at the moment" />
+            </div>
+          ) : (
+            <InfiniteScroll
+              dataLength={marketsArr.length}
+              hasMore={reachedTheEnd === false}
+              next={loadMoreMarkets}
+              loader={
+                isLoading && (
+                  <div className="w-full flex justify-center h-12 mt-12 relative overflow-hidden">
+                    <Spinner size={36} />
                   </div>
-                </>
-              ) : null
-            }
-          >
-            <div className="mt-5 text-body text-content">
-              {filteredEstates.length} items
-            </div>
-            <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
-              {filteredEstates.map((es) => {
-                const isSecondaryMarket =
-                  es.assetDetails.type === SECONDARY_MARKET;
+                )
+              }
+              onScroll={onScroll}
+              scrollableTarget={"historyContainer"}
+              endMessage={
+                marketsArr.length > 0 ? (
+                  <>
+                    <div className=" text-center text-sand-600 text-card-headline mt-11">
+                      End of The Assets
+                    </div>
+                  </>
+                ) : null
+              }
+            >
+              <div className="mt-5 text-body text-content">
+                {filteredEstates.length} items
+              </div>
+              <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
+                {filteredEstates.map((es) => {
+                  const isSecondaryMarket =
+                    es.assetDetails.type === SECONDARY_MARKET;
 
-                const pricePerToken = atomsToTokens(
-                  dodoMav[es.slug],
-                  es.decimals
-                );
+                  const pricePerToken = atomsToTokens(
+                    dodoMav[es.slug],
+                    es.decimals
+                  );
 
-                return (
-                  <Link
-                    to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
-                    key={es.token_address}
-                  >
-                    <ThumbCardSecondary
-                      imgSrc={es.assetDetails.previewImage}
-                      title={es.name}
-                      description={es.assetDetails.propertyDetails.propertyType}
-                      isSecondaryMarket={isSecondaryMarket}
-                      APY={es.assetDetails.APY}
-                      pricePerToken={pricePerToken}
-                      isFutureAsset={!validBaseTokens[es.token_address]}
-                    />
-                  </Link>
-                );
-              })}
-            </div>
-          </InfiniteScroll>
-        )}
-        <Spacer height={110} />
-      </div>
+                  return (
+                    <Link
+                      to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
+                      key={es.token_address}
+                    >
+                      <ThumbCardSecondary
+                        imgSrc={es.assetDetails.previewImage}
+                        title={es.name}
+                        description={
+                          es.assetDetails.propertyDetails.propertyType
+                        }
+                        isSecondaryMarket={isSecondaryMarket}
+                        APY={es.assetDetails.APY}
+                        pricePerToken={pricePerToken}
+                        isFutureAsset={!validBaseTokens[es.token_address]}
+                        progressBarPercentage={50}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
+            </InfiniteScroll>
+          )}
+          <Spacer height={110} />
+        </div>
+      </FiltersProvider>
     </PageLayout>
   );
 }

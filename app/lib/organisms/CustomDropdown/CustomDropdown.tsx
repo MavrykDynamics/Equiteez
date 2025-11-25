@@ -83,7 +83,7 @@ export const CustomDropdown: FC<CustomDropdownProps> = ({
 
   return (
     <dropdownContext.Provider value={memoizedExpanderValue}>
-      <div ref={ref} className="relative">
+      <div ref={ref} className={`relative ${opened ? "" : "overflow-hidden"}`}>
         {opened && withOverlay && (
           <div
             style={{ zIndex: 30 }}
@@ -102,12 +102,14 @@ export const DropdownFaceContent: FC<
   PropsWithChildren & {
     iconClassName?: string;
     className?: string;
+    openedClassName?: string;
     gap?: number;
   }
 > = ({
   children,
   iconClassName = "w-4 h-4 text-content stroke-current",
   gap = 3,
+  openedClassName,
   className,
 }) => {
   const { IS_WEB } = useAppContext();
@@ -118,12 +120,14 @@ export const DropdownFaceContent: FC<
 
   useEffect(() => {
     if (IS_WEB && ref.current) {
-      setFaceContentDimensions({
-        width: ref.current.clientWidth,
-        height: ref.current.clientHeight,
-      });
+      setTimeout(() => {
+        setFaceContentDimensions({
+          width: ref.current!.clientWidth,
+          height: ref.current!.clientHeight,
+        });
+      }, 50);
     }
-  }, [IS_WEB, setFaceContentDimensions, ref.current]);
+  }, [IS_WEB, setFaceContentDimensions]);
 
   return (
     <button
@@ -132,7 +136,8 @@ export const DropdownFaceContent: FC<
       className={clsx(
         className,
         `w-full text-left  outline-none flex items-center gap-x-${gap}`,
-        withOverlay && opened && "bg-white relative z-10"
+        withOverlay && opened && "relative z-10 bg-white",
+        opened && openedClassName
       )}
     >
       {children}
@@ -140,7 +145,7 @@ export const DropdownFaceContent: FC<
         className={clsx(
           iconClassName,
           disabled && "pointer-events-none opacity-50",
-          "transition duration-300",
+          "transition duration-300  relative z-10",
           opened && !disabled && "rotate-180"
         )}
       />
@@ -151,15 +156,22 @@ export const DropdownFaceContent: FC<
 type DropdownBodyContentProps = {
   topMargin?: number;
   position?: "left" | "right" | "center";
-  customWidth?: number;
+  customWidth?: number | string;
   customHeight?: number;
+  customOverflow?: string;
   maxHeight?: number;
+} & PropsWithChildren;
+
+type DropdownBodyContentItemProps = {
+  onClick?: () => void | Promise<void>;
+  className?: string;
 } & PropsWithChildren;
 
 export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
   children,
   customWidth,
   customHeight = "auto",
+  customOverflow = "hidden",
   position = "left",
   topMargin = 0,
   maxHeight = 700,
@@ -175,6 +187,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
       style={{
         top: height + topMargin,
         width: customWidth ? customWidth : width,
+        overflow: customOverflow,
       }}
       className={clsx(
         position === "left" && "left-0",
@@ -187,11 +200,28 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
       )}
     >
       <div
-        style={{ maxHeight, height: customHeight }}
-        className="border border-divider overflow-hidden rounded-xl bg-background overflow-y-scroll min-w-full relative z-10"
+        style={{ maxHeight, height: customHeight, overflow: customOverflow }}
+        className={clsx(styles.dropdownDataContent, "bg-background")}
       >
         {children}
       </div>
+    </div>
+  );
+};
+
+export const DropdownBodyContentItem: FC<DropdownBodyContentItemProps> = ({
+  onClick,
+  children,
+  className,
+}) => {
+  return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div
+      aria-label="dropdown select item"
+      onClick={onClick}
+      className={clsx(styles.dropdownDataContentItem, className)}
+    >
+      <p className={styles.dropdownDataContentItemText}>{children}</p>
     </div>
   );
 };
