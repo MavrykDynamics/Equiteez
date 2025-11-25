@@ -28,6 +28,7 @@ import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
+import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -262,6 +263,15 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               totalFee={estFee}
               networkfee={0}
             />
+
+            <div className="mt-3">
+              <ProjectionCard
+                apy={0}
+                monthkyReturns={0}
+                yearlyReturns={0}
+                gradient={isBuyAction ? "blue" : "orange"}
+              />
+            </div>
           </div>
         </div>
       </div>
