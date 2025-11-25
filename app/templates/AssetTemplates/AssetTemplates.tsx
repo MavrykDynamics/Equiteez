@@ -8,6 +8,7 @@ import { FC } from "react";
 import { EstateType } from "~/providers/MarketsProvider/market.types";
 import Money from "~/lib/atoms/Money";
 import { HashChip } from "~/lib/molecules/HashChip";
+import { assetIconBasedOnKey } from "~/templates/IconsBlock";
 
 // TODO update templates based on API data (no API data at the moment)
 
@@ -130,7 +131,10 @@ export const SharedAssetBuildingInfoTemplate: FC<{ data: any }> = ({
 // --------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const BitCoinMinersTemplate: FC<{ data: any }> = ({ data }) => {
+export const BitCoinMinersTemplate: FC<{ data: any; basicInfo: any }> = ({
+  data,
+  basicInfo,
+}) => {
   return (
     <div>
       <Table className="bg-white">
@@ -206,6 +210,7 @@ export const BitCoinMinersTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
       </Table>
       <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
       <Table className="bg-white">
         <LocationMap />
       </Table>
@@ -214,7 +219,10 @@ export const BitCoinMinersTemplate: FC<{ data: any }> = ({ data }) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
+export const ResortTemplate: FC<{ data: any; basicInfo: any }> = ({
+  data,
+  basicInfo,
+}) => {
   return (
     <div>
       <Table className="bg-white">
@@ -270,6 +278,7 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
       </Table>
       <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
       <Table className="bg-white">
         <LocationMap />
       </Table>
@@ -278,7 +287,10 @@ export const ResortTemplate: FC<{ data: any }> = ({ data }) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
+export const HotelTemplate: FC<{ data: any; basicInfo: any }> = ({
+  data,
+  basicInfo,
+}) => {
   return (
     <div>
       <Table className="bg-white">
@@ -330,6 +342,7 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
       </Table>
       <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
       <Table className="bg-white">
         <LocationMap />
       </Table>
@@ -338,7 +351,10 @@ export const HotelTemplate: FC<{ data: any }> = ({ data }) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
+export const DebtTemplate: FC<{ data: any; basicInfo: any }> = ({
+  data,
+  basicInfo,
+}) => {
   return (
     <div>
       <Table className="bg-white">
@@ -394,6 +410,7 @@ export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
         </TableItem>
       </Table>
       <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
       <Table className="bg-white">
         <LocationMap />
       </Table>
@@ -402,7 +419,10 @@ export const DebtTemplate: FC<{ data: any }> = ({ data }) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const TreasuriesTemplate: FC<{ data: any }> = ({ data }) => {
+export const TreasuriesTemplate: FC<{ data: any; basicInfo: any }> = ({
+  data,
+  basicInfo,
+}) => {
   return (
     <div>
       <Table className="bg-white">
@@ -454,15 +474,22 @@ export const TreasuriesTemplate: FC<{ data: any }> = ({ data }) => {
           <p>{data.investorSuitability}</p>
         </TableItem>
       </Table>
+      <Spacer className="h-[16px] lg:h-[32px]" />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
     </div>
   );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const InsuranceContractTemplate: FC<{ data: any }> = ({ data }) => {
+export const InsuranceContractTemplate: FC<{ data: any; basicInfo: any }> = ({
+  data,
+  basicInfo,
+}) => {
   return (
     <div>
       <SharedAssetDetailsTemplate data={data} />
+      <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
     </div>
   );
 };
@@ -470,75 +497,81 @@ export const InsuranceContractTemplate: FC<{ data: any }> = ({ data }) => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CommoditiesTemplate: FC<{
   data: any;
-}> = ({ data }) => {
+  basicInfo: any;
+}> = ({ data, basicInfo }) => {
   return (
-    <Table className="bg-white">
-      <TableHeader>About</TableHeader>
-      <TableDescription>{data.description}</TableDescription>
-      <TableItem>
-        <p>Total Weight</p>
-        <p>{data.totalWeight}</p>
-      </TableItem>
-      <TableItem>
-        <p>Storage</p>
-        <p>{data.storage}</p>
-      </TableItem>
-      <TableItem>
-        <p>Insurance</p>
-        <p>{data.insurance}</p>
-      </TableItem>
-      <TableItem>
-        <p>Standard</p>
-        <p>{data.standart}</p>
-      </TableItem>
-      <TableItem>
-        <p>Market Value</p>
-        <p>{data.marketValue}</p>
-      </TableItem>
-      <TableItem>
-        <p>Annual Appreciation</p>
-        <p>{data.annualAppreciation}</p>
-      </TableItem>
-      <TableItem>
-        <p>Performance</p>
-        <p>{data.performance}</p>
-      </TableItem>
-      <TableItem>
-        <p>Asset Type</p>
-        <p>{data.assetType}</p>
-      </TableItem>
-      <TableItem>
-        <p>Liquidity</p>
-        <p>{data.liquidity}</p>
-      </TableItem>
-      <TableItem>
-        <p>Market Demand</p>
-        <p>{data.marketDemand}</p>
-      </TableItem>
-      <TableItem>
-        <p>Risk Profile</p>
-        <p>{data.riskProfile}</p>
-      </TableItem>
-      <TableItem>
-        <p>Tax Treatment</p>
-        <p>{data.taxTreatment}</p>
-      </TableItem>
-      <TableItem isLast>
-        <p>Storage & Security</p>
-        <p>{data.security}</p>
-      </TableItem>
-    </Table>
+    <>
+      <Table className="bg-white">
+        <TableHeader>About</TableHeader>
+        <TableDescription>{data.description}</TableDescription>
+        <TableItem>
+          <p>Total Weight</p>
+          <p>{data.totalWeight}</p>
+        </TableItem>
+        <TableItem>
+          <p>Storage</p>
+          <p>{data.storage}</p>
+        </TableItem>
+        <TableItem>
+          <p>Insurance</p>
+          <p>{data.insurance}</p>
+        </TableItem>
+        <TableItem>
+          <p>Standard</p>
+          <p>{data.standart}</p>
+        </TableItem>
+        <TableItem>
+          <p>Market Value</p>
+          <p>{data.marketValue}</p>
+        </TableItem>
+        <TableItem>
+          <p>Annual Appreciation</p>
+          <p>{data.annualAppreciation}</p>
+        </TableItem>
+        <TableItem>
+          <p>Performance</p>
+          <p>{data.performance}</p>
+        </TableItem>
+        <TableItem>
+          <p>Asset Type</p>
+          <p>{data.assetType}</p>
+        </TableItem>
+        <TableItem>
+          <p>Liquidity</p>
+          <p>{data.liquidity}</p>
+        </TableItem>
+        <TableItem>
+          <p>Market Demand</p>
+          <p>{data.marketDemand}</p>
+        </TableItem>
+        <TableItem>
+          <p>Risk Profile</p>
+          <p>{data.riskProfile}</p>
+        </TableItem>
+        <TableItem>
+          <p>Tax Treatment</p>
+          <p>{data.taxTreatment}</p>
+        </TableItem>
+        <TableItem isLast>
+          <p>Storage & Security</p>
+          <p>{data.security}</p>
+        </TableItem>
+      </Table>
+      <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
+    </>
   );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const MixedUseRealEstateTemplate: FC<{
   data: any;
-}> = ({ data }) => {
+  basicInfo: any;
+}> = ({ data, basicInfo }) => {
   return (
     <div>
       <Table className="bg-white">
-        <TableHeader>About</TableHeader>
+        <TableHeader>Description</TableHeader>
         <TableDescription>{data.description}</TableDescription>
         <TableItem>
           <p>Building Name</p>
@@ -590,8 +623,35 @@ export const MixedUseRealEstateTemplate: FC<{
         </TableItem>
       </Table>
       <Spacer height={32} />
+      <IconsDetailsTemplate basicInfo={basicInfo} />
       <LocationMap />
     </div>
+  );
+};
+
+export const IconsDetailsTemplate: FC<{
+  basicInfo: EstateType["assetDetails"]["basicInfo"];
+}> = ({ basicInfo }) => {
+  if (!basicInfo) return null;
+
+  return (
+    <>
+      <Table className="bg-white">
+        <TableHeader>What&apos;s In </TableHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8">
+          {Object.entries(basicInfo).map(([key, value]) => {
+            const Icon = assetIconBasedOnKey[key];
+            return (
+              <div key={key} className="w-[192px] flex gap-[8px] mt-4 lg:mt-0">
+                <Icon className="w-[24px] h-[24px] text-[var(--color-yellow-500)]" />
+                <span>{value}</span>
+              </div>
+            );
+          })}
+        </div>
+      </Table>
+      <Spacer height={32} />
+    </>
   );
 };
 

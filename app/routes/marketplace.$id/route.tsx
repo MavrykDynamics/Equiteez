@@ -28,6 +28,7 @@ import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import clsx from "clsx";
 import { detectIfAssetIsSecondaryMarket } from "~/providers/MarketsProvider/utils";
+import { WhyInvest } from "~/routes/marketplace.$id/components/WhyInvest/WhyInvest";
 
 export const meta: MetaFunction = () => {
   return [
@@ -96,11 +97,8 @@ export default function PropertyDetails() {
       />
       <section className={styles.detailsSection}>
         <div className="flex flex-col">
-          {estateData.assetDetails.basicInfo && (
-            <IconsBlock basicInfo={estateData.assetDetails.basicInfo} />
-          )}
-
-          <Divider className="my-6" />
+          <WhyInvest />
+          <Divider className="my-6 lg:my-8" />
           <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryMarket} />
         </div>
         <div className="sticky top-10 h-fit">

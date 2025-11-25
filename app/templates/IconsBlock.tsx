@@ -15,7 +15,7 @@ import LockIcon from "app/assets/propertyId/icons/lock.svg?react";
 import DateIcon from "app/icons/date.svg?react";
 import clsx from "clsx";
 
-const assetIconBasedOnKey: StringRecord<IconSVG> = {
+export const assetIconBasedOnKey: StringRecord<IconSVG> = {
   btcPrice: BitcoinIcon,
   amount: VortexesIcon,
   rooms: KeysIcon,

@@ -5,6 +5,7 @@ import { Button } from "~/lib/atoms/Button";
 import { Divider } from "~/lib/atoms/Divider";
 import { Table } from "~/lib/atoms/Table/Table";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
@@ -87,8 +88,8 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         </div>
         <div className="text-content body flex justify-between mb-4">
           <div className="flex items-center gap-1">
-            Total Return
-            {/* <InfoTooltip className="w-6 h-6" content={"Total Liquidity"} /> */}
+            Annual Return
+            <InfoTooltip className="w-6 h-6" content={"Annual Return"} />
           </div>
           <p className="text-buttons">
             {estate.assetDetails.priceDetails.annualReturn}%
@@ -96,8 +97,8 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         </div>
         <div className="text-content body flex justify-between mb-4">
           <div className="flex items-center gap-1">
-            Expected Income
-            {/* <InfoTooltip className="w-6 h-6" content={"Total Liquidity"} /> */}
+            Rental Yield
+            <InfoTooltip className="w-6 h-6" content={"Rental Yield"} />
           </div>
           <p className="text-buttons">
             {estate.assetDetails.financials.expectedIncome.income}%
@@ -117,13 +118,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           </div>
         </div>
 
-        <ProgresBar
-          baseTokenPercentage={totalLiquidityInfo.basePercentage}
-          quoteTokenPercentage={totalLiquidityInfo.quotePercentage}
-          baseTokenSymbol={baseTokenMetadata.symbol}
-          quoteTokenSymbol={quoteTokenMetadata.symbol}
-        />
-        <div className="mt-4">
+        <div>
           {!validBaseTokens[estate.token_address] ? (
             <Button className="w-full" disabled>
               Coming Soon
@@ -131,7 +126,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           ) : (
             <div className="grid gap-3 grid-cols-2 ">
               <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
-              <Button variant="outline" onClick={handleOpen.bind(null, SELL)}>
+              <Button variant="red" className="text-white" onClick={handleOpen.bind(null, SELL)}>
                 Sell
               </Button>
             </div>

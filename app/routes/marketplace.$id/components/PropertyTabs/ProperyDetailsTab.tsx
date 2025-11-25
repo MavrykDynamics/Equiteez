@@ -87,6 +87,7 @@ const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
     case MixedUseRealEstate:
       return {
         data: activeMarket.assetDetails.propertyDetails,
+        basicInfo: activeMarket.assetDetails.basicInfo,
       };
 
     case Hotel:
@@ -95,9 +96,10 @@ const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
           ...activeMarket.assetDetails.propertyDetails,
           name: activeMarket.name,
         },
+        basicInfo: activeMarket.assetDetails.basicInfo,
       };
 
     default:
-      return { activeMarket };
+      return { activeMarket, basicInfo: activeMarket.assetDetails.basicInfo, };
   }
 };
