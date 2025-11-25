@@ -60,7 +60,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
             >
               <div
                 className={clsx(
-                  "rounded-full overflow-hidden",
+                  "rounded-full overflow-hidden transition-background 150ms linear",
                   selectedOption >= option ? "bg-[#ED6C18]" : "bg-[#F2F2F2]",
                   sizeClassnameValue
                 )}
