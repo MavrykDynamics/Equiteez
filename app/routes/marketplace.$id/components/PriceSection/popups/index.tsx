@@ -10,7 +10,7 @@ import {
 //screens
 import { BuySellScreen } from "../screens/BuySellScreen";
 import { BuySellConfirmationScreen } from "../screens/BuySellConfirmationScreen";
-import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
+// import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 
 // components
 import { Divider } from "~/lib/atoms/Divider";
@@ -33,6 +33,8 @@ import {
   SELL,
 } from "../consts";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
+import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
+
 import {
   ContractActionPopupProps,
   useContractAction,
@@ -58,6 +60,8 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
 import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+
+import styles from "./popups.module.css";
 
 export const spippageOptions = ["1", "3", "5", "custom"];
 
@@ -138,12 +142,12 @@ export const PopupContent: FC<{
         label: "Sell",
         handleClick: handleTabClick,
       },
-      {
-        id: OTC,
-        label: "OTC",
-        handleClick: handleTabClick,
-        disabled: true,
-      },
+      // {
+      //   id: OTC,
+      //   label: "OTC",
+      //   handleClick: handleTabClick,
+      //   disabled: true,
+      // },
     ],
     [handleTabClick]
   );
@@ -396,14 +400,20 @@ export const PopupContent: FC<{
           {activetabId !== CONFIRM && isSecondaryEstate && (
             <>
               <div className="mb-4">
-                <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+                <TabSwitcherV2
+                  className={"min-w-full"}
+                  tabs={marketTabs}
+                  tabClassName={styles.tab}
+                  activeTabId={marketType}
+                />
               </div>
               <div>
-                <div className="mb-4 text-base">
-                  <TabSwitcher
-                    tabs={marketTabs}
-                    activeTabId={marketType}
-                    variant="tertiary-buttons"
+                <div className="mb-3 text-base">
+                  <TabSwitcherV2
+                    className={"min-w-full"}
+                    tabs={tabs}
+                    tabClassName={styles.tab}
+                    activeTabId={activetabId}
                   />
                 </div>
               </div>
@@ -553,14 +563,14 @@ export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
             />
           )}
 
-          {activeScreenId === OTC && (
+          {/* {activeScreenId === OTC && (
             <OTCBuySellScreen
               symbol={estate.symbol}
               estate={estate}
               toggleScreen={toggleBuyScreen}
               activeTabId={activeTabId}
             />
-          )}
+          )} */}
           {activeScreenId === CONFIRM && (
             <BuySellConfirmationScreen
               estate={estate}
