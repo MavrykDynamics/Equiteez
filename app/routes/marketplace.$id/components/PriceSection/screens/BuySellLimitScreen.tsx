@@ -1,13 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 
-import {
-  ClickableExpanderArea,
-  CustomExpander,
-  ExpanderBodyContent,
-  ExpanderFaceContent,
-} from "~/lib/organisms/CustomExpander/CustomExpander";
-
 import * as gtag from "app/utils/gtags.client";
 
 // icons
@@ -18,26 +11,24 @@ import {
   SellScreenState,
   OrderType,
 } from "../consts";
-import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { stablecoinContract } from "~/consts/contracts";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { toTokenSlug } from "~/lib/assets";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import {
   calculateEstFee,
-  calculateMinReceived,
   getTokenAmountFromLiquidity,
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
 import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import { FeesCard } from "../components/FeesCard/FeesCard";
+import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -63,7 +54,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 }) => {
   const { symbol, token_address, slug } = estate;
   const { dodoTokenPair, dodoStorages, dodoMav } = useDexContext();
-  const { tokensMetadata } = useTokensContext();
 
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);
@@ -152,32 +142,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const balanceTotal = total;
 
-  const minReceived = useMemo(() => {
-    if (!total) return 0;
-    const tokensAmount = !isBuyAction ? input1Props.amount : input2Props.amount;
-
-    if (!tokensAmount) return "0";
-
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-    return calculateMinReceived(
-      tokensAmount,
-      tokenPrice,
-      "0",
-      decimals,
-      isBuyAction
-    );
-  }, [
-    total,
-    isBuyAction,
-    input1Props.amount,
-    input2Props.amount,
-    selectedAssetMetadata.decimals,
-    stableCoinMetadata.decimals,
-    tokenPrice,
-  ]);
-
   const estFee = useMemo(() => {
     const {
       config: { lpFee, maintainerFee, feeDecimals },
@@ -210,10 +174,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     stableCoinMetadata.decimals,
     tokenPrice,
   ]);
-
-  const symbolToShow = isBuyAction
-    ? symbol
-    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   const isBtnDisabled =
     hasTotalError ||
@@ -275,11 +235,10 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
             {/* ------------------------------------------------------------------------------------------- */}
             <div>
-              <div className="my-4">
+              <div className="my-3">
                 <ESnakeblock
                   selectedOption={selectedPercentage}
                   setSelectedOption={setSelectedPercentage}
-                  size="large"
                 />
               </div>
 
@@ -298,43 +257,20 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               />
             </div>
 
-            <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
-              <CustomExpander>
-                <ClickableExpanderArea>
-                  <ExpanderFaceContent>
-                    <div className="text-body-xs font-semibold text-content flex items-center w-full">
-                      1 {symbol} =&nbsp;
-                      <div>
-                        <span className="-mr-[1px]">$</span>
-                        <Money fiat>{marketTokenPrice || "0"}</Money>
-                      </div>
-                    </div>
-                  </ExpanderFaceContent>
-                </ClickableExpanderArea>
-                <ExpanderBodyContent>
-                  <div className="mt-4 flex flex-col">
-                    <div className="mt-2 text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">
-                        Min Received
-                      </div>
-                      <div>
-                        <Money smallFractionFont={false} shortened>
-                          {minReceived}
-                        </Money>
-                        &nbsp;{symbolToShow}
-                      </div>
-                    </div>
+            <FeesCard
+              pricePerToken={marketTokenPrice}
+              txnFees={0}
+              totalFee={estFee}
+              networkfee={0}
+            />
 
-                    <div className="mt-[10px] text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">Est. Fee</div>
-                      <div>
-                        {estFee}
-                        &nbsp;{symbolToShow}
-                      </div>
-                    </div>
-                  </div>
-                </ExpanderBodyContent>
-              </CustomExpander>
+            <div className="mt-3">
+              <ProjectionCard
+                apy={0}
+                monthkyReturns={0}
+                yearlyReturns={0}
+                gradient={isBuyAction ? "blue" : "orange"}
+              />
             </div>
           </div>
         </div>

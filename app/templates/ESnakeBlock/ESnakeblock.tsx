@@ -1,7 +1,4 @@
 // icons
-import DotFill from "~/icons/dot-fill.svg?react";
-import DotEmpty from "~/icons/dot-empty.svg?react";
-import EQLogo from "~/icons/eq-small-logo.svg?react";
 import { FC } from "react";
 
 import styles from "./eSnakeBlock.module.css";
@@ -54,36 +51,20 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
             "transition 0.3s linear"
           )}
         >
-          {options.map((option, idx) => (
+          {options.map((option) => (
             <span
               role="presentation"
               key={option}
               className="cursor-pointer"
               onClick={() => handleOptionClick(option)}
             >
-              {option === selectedOption ? (
-                <EQLogo
-                  className={clsx(
-                    " text-dark-green-500 stroke-current",
-                    sizeClassnameValue
-                  )}
-                />
-              ) : options.length - 1 === idx ? (
-                <DotFill
-                  className={clsx("fill-dark-green-200", sizeClassnameValue)}
-                />
-              ) : selectedOption > option ? (
-                <div
-                  className={clsx("bg-transparent", sizeClassnameValue)}
-                ></div>
-              ) : (
-                <DotEmpty
-                  className={clsx(
-                    "text-dark-green-200 stroke-current",
-                    sizeClassnameValue
-                  )}
-                />
-              )}
+              <div
+                className={clsx(
+                  "rounded-full overflow-hidden transition-background 150ms linear",
+                  selectedOption >= option ? "bg-[#ED6C18]" : "bg-[#F2F2F2]",
+                  sizeClassnameValue
+                )}
+              />
             </span>
           ))}
         </div>
@@ -107,7 +88,8 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
             className={clsx(
               "outline-none focus:outline-none",
               size === "regular" ? "text-[10px]  pt-1" : "text-sm pt-[10px]",
-              option !== 0 && option !== 100 && "pl-[15px]"
+              option !== 0 && option !== 100 && "pl-[15px]",
+              styles.optionText
             )}
             onClick={() => handleOptionClick(option)}
           >

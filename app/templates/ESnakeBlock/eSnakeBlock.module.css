@@ -2,26 +2,36 @@
   position: relative;
   height: 2px;
   border-radius: 8px;
-  width: calc(100% - 2px);
+  width: 100%;
 }
 
 .progressBar::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
-  @apply bg-divider;
+  background-color: #f2f2f2;
   z-index: 0;
 }
 
 .progressPercentage::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 8px;
-  /* TODO replace with var passed from data */
   width: var(--percentage);
   height: 100%;
   inset: 0;
-  @apply bg-dark-green-200;
+  background-color: #ed6c18;
   z-index: 1;
+
+  transition: width 150ms linear;
+}
+
+.optionText {
+  color: #191918;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%;
+  letter-spacing: -0.011px;
 }
