@@ -11,11 +11,11 @@ import CoverageIcon from "app/assets/propertyId/icons/coverage.svg?react";
 import PoliciesIcon from "app/assets/propertyId/icons/policies.svg?react";
 import YieldIcon from "app/assets/propertyId/icons/yield.svg?react";
 import VortexesIcon from "app/assets/propertyId/icons/window-with-vortexes.svg?react";
-import LockIcon from "app/assets/propertyId/icons/lock.svg?react";
+import LockIcon from "app/assets/propertyId/icons/lockAsset.svg?react";
 import DateIcon from "app/icons/date.svg?react";
 import clsx from "clsx";
 
-const assetIconBasedOnKey: StringRecord<IconSVG> = {
+export const assetIconBasedOnKey: StringRecord<IconSVG> = {
   btcPrice: BitcoinIcon,
   amount: VortexesIcon,
   rooms: KeysIcon,

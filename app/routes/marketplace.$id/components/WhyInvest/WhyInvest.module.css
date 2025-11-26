@@ -1,0 +1,58 @@
+@import "../../../../styles/breakpoints.css";
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (--media-tablet-min) {
+    gap: 16px;
+  }
+
+  & .sectionTitle {
+    @media (--media-tablet-min) {
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 700;
+    }
+  }
+
+  & .reasonsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    @media (--media-phone) {
+      gap: 16px;
+    }
+
+    & .reasonRow {
+      display: flex;
+      justify-content: space-between;
+      gap: 33px;
+
+      @media (--media-tablet-min) {
+        gap: 16px;
+      }
+
+      @media (--media-phone) {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      & .reasonCard {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+
+        & .cardTitle,
+        & .cardText {
+          @media (--media-tablet-min) {
+            font-size: 14px;
+            line-height: 21px;
+          }
+        }
+      }
+    }
+  }
+}
