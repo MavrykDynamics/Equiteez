@@ -1,0 +1,131 @@
+@import "../../../styles/breakpoints.css";
+
+.regular {
+  font-weight: var(--regular-weight);
+}
+.medium {
+  font-weight: var(--medium-weight);
+}
+.semibold {
+  font-weight: var(--semibold-weight);
+}
+.bold {
+  font-weight: var(--bold-weight);
+}
+.extraBold {
+  font-weight: var(--extra-bold-weight);
+}
+
+.extraTinyBody {
+  font-size: var(--extra-tiny-body-size);
+  letter-spacing: 0.007px;
+  line-height: 15px;
+}
+.tinyBody {
+  font-size: var(--tiny-body-size);
+  line-height: 18px;
+  letter-spacing: 0.07%;
+}
+.smallBody {
+  font-size: var(--small-body-size);
+  line-height: 21px;
+  letter-spacing: -0.08%;
+}
+.body {
+  font-size: var(--body-size);
+  line-height: 24px;
+  letter-spacing: -0.24%;
+
+  @media (--media-tablet-min) {
+    font-size: var(--small-body-size);
+    line-height: 21px;
+  }
+}
+.largeBody {
+  font-size: var(--large-body-size);
+  line-height: 30px;
+  letter-spacing: 0.38%;
+
+  @media (--media-tablet-max) {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}
+
+.white {
+  color: var(--color-neutral-light);
+}
+.black {
+  color: var(--color-neutral-dark);
+}
+.yellow {
+  color: var(--color-yellow-500);
+}
+.darkBlue {
+  color: var(--color-dark-blue-500);
+}
+.lightBlue {
+  color: var(--color-light-blue-100);
+}
+.blue {
+  color: var(--color-blue-500);
+}
+.red {
+  color: var(--color-red-500);
+}
+.green {
+  color: var(--color-green-500);
+}
+.goldGradient {
+  background: var(--color-gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero {
+  font-weight: var(--extra-bold-weight);
+  font-size: var(--hero-size);
+  line-height: 96px;
+  letter-spacing: -0.5%;
+}
+.h1 {
+  font-weight: var(--extra-bold-weight);
+  font-size: var(--h1-size);
+  line-height: 84px;
+  letter-spacing: 0%;
+}
+.h2 {
+  font-weight: var(--extra-bold-weight);
+  font-size: var(--h2-size);
+  line-height: 66px;
+  letter-spacing: 0.41%;
+}
+.h3 {
+  font-weight: var(--extra-bold-weight);
+  font-size: var(--h3-size);
+  line-height: 48px;
+  letter-spacing: 0.41%;
+
+  @media (--media-tablet-max) {
+    font-size: 24px;
+    line-height: 36px;
+  }
+}
+.h4 {
+  font-weight: var(--extra-bold-weight);
+  font-size: var(--h4-size);
+  line-height: 36px;
+  letter-spacing: 0.34%;
+}
+.h5 {
+  font-weight: var(--extra-bold-weight);
+  font-size: var(--h5-size);
+  line-height: 30px;
+  letter-spacing: 0.38%;
+
+  @media (--media-tablet-max) {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: var(--bold-weight);
+  }
+}

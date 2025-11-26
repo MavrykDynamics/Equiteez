@@ -1,0 +1,111 @@
+@import "../../../../styles/breakpoints.css";
+
+.popupWrapper:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+.popupWrapper {
+  padding: 0;
+  width: 640px;
+  border: 1px solid var(--color-dark-blue-200);
+  @media (--media-phone-max) {
+    height: 100%;
+    border-radius: 0;
+  }
+}
+.contentWrapper {
+  padding: 52px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  @media (--media-phone-max) {
+    padding: 52px 16px 24px 16px;
+    gap: 32px;
+    height: 100%;
+    position: relative;
+  }
+}
+.confirmBtn {
+  margin-top: 24px;
+  margin-left: auto;
+  margin-right: auto;
+  @media (--media-phone-max) {
+    margin-top: 165%;
+  }
+}
+.withdrawBtn,
+.confirmBtn {
+  width: 254px;
+  @media (--media-phone-max) {
+    position: absolute;
+    bottom: 24px;
+    right: 16px;
+    left: 16px;
+    width: calc(100% - 32px);
+  }
+}
+.withdrawBtn,
+.confirmBtn {
+  @media (--media-phone-max) {
+    padding: 13px 32px;
+  }
+}
+.withdrawBtn span,
+.confirmBtn span {
+  @media (--media-phone-max) {
+    font-size: var(--body-size);
+  }
+}
+.textItem {
+  width: 100%;
+  border-radius: 8px;
+  padding: 12px 16px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--color-light-blue-500);
+}
+.selectCoinList {
+  display: flex;
+  z-index: 100;
+  flex-direction: column;
+  width: 100%;
+  position: absolute;
+  overflow: hidden;
+  top: 55px;
+  cursor: pointer;
+  border: 1px solid var(--color-light-blue-400);
+  background: var(--color-light-blue-500);
+  border-radius: 8px;
+}
+.selectCoinListItem {
+  height: 58px;
+  padding: 0 16px;
+  display: flex;
+  transition: all 0.2s ease;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-light-blue-400);
+}
+.selectCoinListItem:hover {
+  background: var(--color-dark-blue-500);
+}
+.selectCoinListItem:hover .tokenItemText {
+  color: var(--color-yellow-500);
+}
+.selectCoinListItem:last-child {
+  border-bottom: none;
+}
+.chip {
+  height: 40px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 158px;
+  border-radius: 8px;
+  background: var(--color-light-blue-500);
+}

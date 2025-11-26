@@ -1,0 +1,164 @@
+@import "../../../styles/breakpoints.css";
+
+.button {
+  border-radius: 8px;
+  padding: 12px 32px;
+  height: min-content;
+
+  transition: all 0.2s ease;
+
+  @media (--media-phone) {
+    padding: 8px 32px;
+  }
+}
+.button:active:not(:disabled) {
+  box-shadow: 0 0 8px 0 #00000066 inset;
+}
+.button:active {
+  box-shadow: none;
+}
+.button:disabled {
+  opacity: 0.5;
+}
+.buttonText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 4px;
+  font-size: 16px;
+  line-height: 24px;
+
+  @media (--media-phone) {
+    font-size: 14px;
+    line-height: 21px;
+  }
+}
+.buttonLoader {
+  margin: 0 auto;
+  animation: spin 2s linear infinite;
+}
+
+.goldPrimary {
+  background: var(--color-gold-gradient);
+}
+.goldPrimary:hover:not(:disabled) {
+  background: linear-gradient(90deg, #ffd393 0%, #cda660 100%);
+}
+.goldPrimary:active:not(:disabled) {
+  background: var(--color-gold-gradient);
+}
+.goldPrimary .buttonText {
+  color: var(--color-neutral-dark);
+}
+
+.goldOutlined {
+  border: 2px solid #fcc678;
+  padding: 10px 32px;
+}
+.goldOutlined:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(252, 198, 120, 0.25) 0%,
+    rgba(187, 144, 64, 0.25) 100%
+  );
+
+  @media (hover: none) {
+    background: none;
+  }
+}
+.goldOutlined:active:not(:disabled) {
+  background: linear-gradient(
+    90deg,
+    rgba(252, 198, 120, 0.15) 0%,
+    rgba(187, 144, 64, 0.15) 100%
+  );
+}
+.goldOutlined .buttonLoader,
+.goldOutlined .buttonText {
+  color: var(--color-neutral-light);
+}
+
+.yellowPrimary {
+  background: var(--color-yellow-500);
+}
+.yellowPrimary:hover:not(:disabled) {
+  background: var(--color-yellow-300);
+
+  @media (hover: none) {
+    background: var(--color-yellow-500);
+  }
+}
+.yellowPrimary:active:not(:disabled) {
+  background: var(--color-yellow-500);
+}
+.yellowPrimary .buttonText {
+  color: var(--color-neutral-dark);
+}
+
+.yellowOutlined {
+  background: var(--color-light-blue-500);
+}
+.yellowOutlined:hover:not(:disabled) {
+  background: var(--color-yellow-300);
+
+  @media (hover: none) {
+    background: var(--color-light-blue-500);
+  }
+}
+.yellowOutlined:active:not(:disabled) {
+  background: var(--color-yellow-500);
+}
+.yellowOutlined .buttonLoader,
+.yellowOutlined .buttonText {
+  color: var(--color-yellow-500);
+}
+.yellowOutlined:hover:not(:disabled) .buttonLoader,
+.yellowOutlined:hover:not(:disabled) .buttonText {
+  color: var(--color-neutral-dark);
+
+  @media (hover: none) {
+    color: var(--color-yellow-500);
+  }
+}
+
+.success {
+  background: var(--color-green-500);
+}
+.success:hover:not(:disabled) {
+  background: var(--color-green-300);
+
+  @media (hover: none) {
+    background: var(--color-green-500);
+  }
+}
+.success:active:not(:disabled) {
+  background: var(--color-green-500);
+}
+.success .buttonText {
+  color: var(--color-neutral-dark);
+}
+
+.error {
+  background: var(--color-red-500);
+}
+.error:hover:not(:disabled) {
+  background: var(--color-red-300);
+
+  @media (hover: none) {
+    background: var(--color-red-500);
+  }
+}
+.error:active:not(:disabled) {
+  background: var(--color-red-500);
+}
+.error .buttonText {
+  color: var(--color-neutral-dark);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

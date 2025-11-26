@@ -1,0 +1,91 @@
+@import "../../styles/breakpoints.css";
+
+.assetItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  padding: 0 24px;
+
+  @media (--media-tablet-max) {
+    padding: 0 16px;
+  }
+}
+.assetItem:hover {
+  background: var(--color-dark-blue-300);
+}
+.dotsBlock {
+  width: 56px;
+  height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--color-dark-blue-200);
+}
+.roundedWrapper {
+  padding: 24px 0;
+  @media (--media-tablet-max) {
+    padding: 16px 0;
+  }
+}
+.emptyDotsBlock {
+  width: 56px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--color-dark-blue-200);
+}
+.tabBadge span {
+  font-size: 10px;
+  line-height: 16px;
+}
+.tabBadge {
+  padding: 2px 8px;
+  width: fit-content;
+  height: 20px;
+  box-sizing: border-box;
+}
+
+.assetActionsDropdownIcon {
+  display: none;
+}
+.assetActionsDropdownWrapperActive svg {
+  color: var(--color-neutral-light);
+}
+.assetActionsItem {
+  display: flex;
+  align-items: center;
+  height: 58px;
+  box-sizing: border-box;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: 1px solid var(--color-light-blue-400);
+  background: var(--color-light-blue-500);
+}
+.assetActionsItemLite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 90px;
+}
+.assetActionsItemLite > span:first-child {
+  background: var(--color-light-blue-500);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.assetActionsItem:last-child {
+  border-bottom: none;
+}
+
+.assetActionsItem:hover span,
+.assetActionsItem:hover {
+  color: var(--color-yellow-500);
+  background: var(--color-dark-blue-500);
+}

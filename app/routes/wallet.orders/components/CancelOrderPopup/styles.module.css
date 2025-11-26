@@ -1,0 +1,51 @@
+@import "../../../../styles/breakpoints.css";
+
+.popupWrapper:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+.popupWrapper {
+  padding: 0;
+  width: 640px;
+  border: 1px solid var(--color-dark-blue-200);
+  @media (--media-phone-max) {
+    height: 100%;
+    border-radius: 0;
+    position: relative;
+  }
+}
+.contentWrapper {
+  padding: 52px 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 24px;
+  @media (--media-phone-max) {
+    padding: 52px 16px 120px 16px;
+    gap: 32px;
+    height: 100%;
+  }
+}
+.btnWrapper {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  @media (--media-phone-max) {
+    position: absolute;
+    bottom: 24px;
+    padding: 0 16px;
+    flex-direction: column;
+  }
+}
+.btnWrapper button {
+  @media (--media-phone-max) {
+    padding: 13px 32px;
+  }
+}
+.btnWrapper button span {
+  @media (--media-phone-max) {
+    font-size: var(--body-size);
+  }
+}
