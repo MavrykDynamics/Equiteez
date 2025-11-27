@@ -1,4 +1,4 @@
-import { OrderType } from "~/lib/userOrders/orders.types";
+import { OrderType } from "~/lib/apis/mbrwa/user/userOrders/orders.types";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
@@ -43,7 +43,7 @@ export function useHandleOrder(
   const { invokeAction: handleCancelOrder, status } = useContractAction(
     orderbookCancelOrder,
     cancelOrderProps,
-    undefined,
+    undefined
     // contractActionToastProps //TODO add toastMessages
   );
 

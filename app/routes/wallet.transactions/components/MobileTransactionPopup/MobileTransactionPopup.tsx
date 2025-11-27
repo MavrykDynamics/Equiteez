@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./styles.module.css";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
@@ -10,9 +9,9 @@ import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider"
 import { getAssetByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
 import { formatDate } from "~/lib/utils/date";
 import { TransactionOrderStatusFlag } from "~/routes/wallet.transactions/components/TransactionItem/TransactionOrderStatusFlag";
-import { TransactionTypes } from "~/lib/userTransactions/transactions.const";
+import { TransactionTypes } from "~/lib/apis/mbrwa/user/userTransactions/transactions.const";
 import { Icon } from "~/lib/atoms/Icon";
-import { TransactionType } from "~/lib/userTransactions/transactions.types";
+import { TransactionType } from "~/lib/apis/mbrwa/user/userTransactions/transactions.types";
 
 export function MobileTransactionPopup({
   transaction,

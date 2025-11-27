@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { OrderTypes } from "~/lib/userOrders/order.const";
+import { OrderTypes } from "./order.const";
 
 export const OrderSchema = z.object({
   id: z.number(),

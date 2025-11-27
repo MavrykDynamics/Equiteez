@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type {
   TransactionType,
   InitialTransactionType,
-} from "~/lib/userTransactions/transactions.types";
+} from "~/lib/apis/mbrwa/user/userTransactions/transactions.types";
 import { fetchUserTransactions } from "~/lib/apis/mbrwa/transactions";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { toTokenSlug } from "~/lib/assets";
@@ -13,7 +13,7 @@ import {
   OrderNameByType,
   OrderSymbolByType,
   OrderTypes,
-} from "~/lib/userOrders/order.const";
+} from "~/lib/apis/mbrwa/user/userOrders/order.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import {
   TransactionTypes,
@@ -21,7 +21,7 @@ import {
   TransferNameByType,
   TransferSymbolByType,
   TransferType,
-} from "~/lib/userTransactions/transactions.const";
+} from "~/lib/apis/mbrwa/user/userTransactions/transactions.const";
 import { unknownToError } from "~/errors/error";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 

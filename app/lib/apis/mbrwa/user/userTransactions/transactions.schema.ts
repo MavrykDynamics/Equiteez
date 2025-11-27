@@ -1,9 +1,12 @@
 import { z } from "zod";
-import { OrderStatus, OrderTypes } from "~/lib/userOrders/order.const";
+import {
+  OrderStatus,
+  OrderTypes,
+} from "~/lib/apis/mbrwa/user/userOrders/order.const";
 import {
   TransactionTypes,
   TransferType,
-} from "~/lib/userTransactions/transactions.const";
+} from "~/lib/apis/mbrwa/user/userTransactions/transactions.const";
 
 export const TransactionOrderSchema = z.object({
   id: z.string().optional(),

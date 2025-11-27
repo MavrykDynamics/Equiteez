@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserOpenOrders } from "~/lib/apis/mbrwa/orders";
-import type { OrderType } from "~/lib/userOrders/orders.types";
+import type { OrderType } from "~/lib/apis/mbrwa/user/userOrders/orders.types";
 import { toTokenSlug } from "~/lib/assets";
 import {
   OrderIconByType,
   OrderNameByType,
   OrderTypes,
-} from "~/lib/userOrders/order.const";
+} from "~/lib/apis/mbrwa/user/userOrders/order.const";
 import { getAssetLinkByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { unknownToError } from "~/errors/error";
