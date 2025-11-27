@@ -13,11 +13,11 @@ export function PersonalInfo() {
       <Heading level="5">Personal Information</Heading>
       <div className={styles.personalInfoContainer}>
         <div className={styles.personalInfoItem}>
-          <Text weight="bold">First Name</Text>
+          <Text size="smallBody">First Name</Text>
           <div className={styles.personalInfoItemContent}>
             <Text
               size="smallBody"
-              weight="bold"
+              color="lightSand"
               className={styles.personalInfoItemText}
             >
               Layla
@@ -26,11 +26,11 @@ export function PersonalInfo() {
         </div>
 
         <div className={styles.personalInfoItem}>
-          <Text weight="bold">Last Name</Text>
+          <Text size="smallBody">Last Name</Text>
           <div className={styles.personalInfoItemContent}>
             <Text
               size="smallBody"
-              weight="bold"
+              color="lightSand"
               className={styles.personalInfoItemText}
             >
               Al Hamadi
@@ -39,11 +39,11 @@ export function PersonalInfo() {
         </div>
 
         <div className={styles.personalInfoItem}>
-          <Text weight="bold">Email Address</Text>
+          <Text size="smallBody">Email Address</Text>
           <div className={styles.personalInfoItemContent}>
             <Text
               size="smallBody"
-              weight="bold"
+              color="lightSand"
               className={styles.personalInfoItemText}
             >
               layla.alhamadi96@gmail.com
@@ -52,11 +52,11 @@ export function PersonalInfo() {
         </div>
 
         <div className={styles.personalInfoItem}>
-          <Text weight="bold">Phone Number</Text>
+          <Text size="smallBody">Phone Number</Text>
           <div className={styles.personalInfoItemContent}>
             <Text
               size="smallBody"
-              weight="bold"
+              color="lightSand"
               className={styles.personalInfoItemText}
             >
               +971 50 748 2631
@@ -65,11 +65,11 @@ export function PersonalInfo() {
         </div>
 
         <div className={styles.personalInfoItem}>
-          <Text weight="bold">Country</Text>
+          <Text size="smallBody">Country</Text>
           <div className={styles.personalInfoItemContent}>
             <Text
               size="smallBody"
-              weight="bold"
+              color="lightSand"
               className={styles.personalInfoItemText}
             >
               United Arab Emirates
@@ -78,12 +78,12 @@ export function PersonalInfo() {
         </div>
 
         <div className={styles.personalInfoItem}>
-          <Text weight="bold">Date of Birth</Text>
+          <Text size="smallBody">Date of Birth</Text>
           <div className={styles.dateInfo}>
             <div className={styles.personalInfoItemContent}>
               <Text
                 size="smallBody"
-                weight="bold"
+                color="lightSand"
                 className={styles.personalInfoItemText}
               >
                 14
@@ -92,7 +92,7 @@ export function PersonalInfo() {
             <div className={styles.personalInfoItemContent}>
               <Text
                 size="smallBody"
-                weight="bold"
+                color="lightSand"
                 className={styles.personalInfoItemText}
               >
                 08
@@ -101,7 +101,7 @@ export function PersonalInfo() {
             <div className={styles.personalInfoItemContent}>
               <Text
                 size="smallBody"
-                weight="bold"
+                color="lightSand"
                 className={styles.personalInfoItemText}
               >
                 1996

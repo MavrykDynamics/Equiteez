@@ -22,7 +22,7 @@ export const WalletCard: FC<WalletCard> = ({
     <RoundedCard>
       <div className="flex flex-col gap-[24px]">
         <div className="flex items-center justify-between">
-          <Text size="largeBody" weight="extraBold">
+          <Text size="largeBody" weight="semibold">
             {header}
           </Text>
           {link && linkText && (
@@ -30,11 +30,11 @@ export const WalletCard: FC<WalletCard> = ({
               <button className={styles.link}>
                 <Text
                   weight="extraBold"
-                  color="yellow"
+                  color="darkGreen"
                   className="flex gap-[4px] items-center"
                 >
                   <span className="underline">{linkText}</span>
-                  <ArrowRight />
+                  <ArrowRight className="stroke-current" />
                 </Text>
               </button>
             </Link>

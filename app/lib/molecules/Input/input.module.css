@@ -12,7 +12,7 @@ input.textInput {
 
 input.textInput:focus,
 input.textInput.focused {
-  outline: 1px solid #33cb98;
+  outline: 1px solid var(--color-br-green-200);
 }
 
 input.textInput.error {

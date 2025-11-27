@@ -31,7 +31,7 @@ export function WalletOrderItemSecondaryContent({
         </div>
         <div className="flex flex-col">
           <div className="flex items-center">
-            <Text size="smallBody" weight="bold">
+            <Text size="smallBody" weight="semibold">
               {order.orderName}&nbsp;
             </Text>
             <Link to={order.assetLink} className={styles.assetName}>
@@ -41,17 +41,17 @@ export function WalletOrderItemSecondaryContent({
               </span>
             </Link>
           </div>
-          <Text size="tinyBody" color="lightBlue">
+          <Text size="tinyBody" color="lightSand">
             {formatDate(order.created_at, true)}
           </Text>
         </div>
       </div>
       <div className="flex gap-[12px] items-center">
         <div className="flex flex-col items-end">
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody" weight="semibold">
             <Money fiat>{order.rwa_token_amount}</Money> {order.token.symbol}
           </Text>
-          <Text size="tinyBody" color="lightBlue">
+          <Text size="tinyBody" color="lightSand">
             $<Money fiat>{order.price_per_rwa_token}</Money>/token
           </Text>
         </div>

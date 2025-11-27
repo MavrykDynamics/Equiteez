@@ -60,7 +60,7 @@ export function ApiPagination(props: Props) {
         disabled={page <= 0 || pageToShow === 0 || isLoading}
         className={styles.paginationBtn}
       >
-        <ArrowLeft />
+        <ArrowLeft className="stroke-current w-4 h-4" />
       </button>
 
       <div className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export function ApiPagination(props: Props) {
             pageError && styles.paginationInputError
           )}
         ></input>
-        <Text size="smallBody" weight="bold">
+        <Text size="smallBody">
           of <Money tooltip={false}>{totalPages || 1}</Money>
         </Text>
       </div>
@@ -89,7 +89,7 @@ export function ApiPagination(props: Props) {
         disabled={page >= totalPages - 1 || isLoading}
         className={styles.paginationBtn}
       >
-        <ArrowRight></ArrowRight>
+        <ArrowRight className="stroke-current w-4 h-4"></ArrowRight>
       </button>
     </div>
   );

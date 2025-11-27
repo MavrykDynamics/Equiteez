@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 224px;
 }
 
 .walletSidebarItem {
@@ -17,17 +18,12 @@
 }
 .walletSidebarItemActive,
 .walletSidebarItem:hover {
-  background-color: var(--color-dark-blue-400);
-}
-
-.walletSidebarItemActive .iconWrapper,
-.walletSidebarItem:hover .iconWrapper {
-  background-color: #ffb80f80;
+  background-color: var(--color-neutral-light);
 }
 
 .walletSidebarItemActive .iconWrapper svg,
 .walletSidebarItem:hover .iconWrapper svg {
-  color: var(--color-yellow-500);
+  color: var(--color-orange);
 }
 
 .sidebarItemContent {
@@ -36,25 +32,13 @@
 }
 .sidebarItemContentSubtext {
   font-size: 10px;
-  color: var(--color-light-blue-100);
-}
-.walletSidebarItemActive .sidebarItemContentSubtext {
-  color: var(--color-neutral-light);
+  color: var(--color-sand-700);
 }
 .iconWrapper {
-  width: 40px;
-  height: 40px;
-  background-color: #47526980;
-  opacity: 1;
-  clip-path: polygon(50% 0%, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  transition: background-color 150ms linear;
 }
-
 .iconWrapper svg {
   transition: background-color 150ms linear;
 }

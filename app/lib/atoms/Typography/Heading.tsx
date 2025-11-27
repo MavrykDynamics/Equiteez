@@ -14,7 +14,7 @@ type Props = {
 export function Heading({
   children,
   level = "1",
-  color = "white",
+  color = "sand",
   className,
   tagName,
 }: Props) {

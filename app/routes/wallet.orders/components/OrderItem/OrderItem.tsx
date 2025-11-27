@@ -31,16 +31,16 @@ export function WalletOrderItem({
         <div className="flex flex-col">
           <Text
             size="smallBody"
-            weight="bold"
+            weight="semibold"
             className="truncate max-w-[180px]"
           >
             {order.token.name}
           </Text>
           <div className="flex item-center gap-[8px]">
-            <Text size="tinyBody" color="lightBlue">
+            <Text size="tinyBody" color="lightSand">
               {order.token.symbol}
             </Text>
-            <Text size="tinyBody" color="goldGradient">
+            <Text size="tinyBody" color="orange">
               APY 6.2%
             </Text>
           </div>
@@ -50,23 +50,23 @@ export function WalletOrderItem({
         <Text
           size="smallBody"
           color={order.isSell ? "red" : "green"}
-          weight="bold"
+          weight="semibold"
         >
           {order.orderName}
         </Text>
       </div>
       <div className="flex items-center px-[8px]">
-        <Text size="smallBody" weight="bold">
+        <Text size="smallBody" weight="semibold">
           $<Money fiat>{order.price_per_rwa_token}</Money>
         </Text>
       </div>
       <div className="flex items-center px-[8px]">
-        <Text size="smallBody" weight="bold">
+        <Text size="smallBody" weight="semibold">
           <Money fiat>{order.rwa_token_amount}</Money> {order.token.symbol}
         </Text>
       </div>
       <div className="flex items-center px-[8px]">
-        <Text size="smallBody" weight="bold">
+        <Text size="smallBody" weight="semibold">
           $<Money fiat>{order.total_usd_value_of_rwa_token_amount || 0}</Money>
         </Text>
       </div>

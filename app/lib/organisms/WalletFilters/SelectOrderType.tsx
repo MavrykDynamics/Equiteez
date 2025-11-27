@@ -52,7 +52,7 @@ export function SelectOrderType({
 
   return (
     <div className="flex flex-col gap-[12px]">
-      <Text weight="extraBold">{title}</Text>
+      <Text weight="semibold">{title}</Text>
       <CustomDropdown>
         <ClickableDropdownArea>
           <DropdownFaceContent
@@ -63,13 +63,13 @@ export function SelectOrderType({
           >
             {selectedOption ? (
               <div className="flex items-center gap-[8px]">
-                <Text color="yellow">{selectedOption.icon}</Text>
-                <Text size="smallBody" weight="bold">
+                <Text>{selectedOption.icon}</Text>
+                <Text size="smallBody">
                   {selectedOption.label}
                 </Text>
               </div>
             ) : (
-              <Text size="smallBody" weight="bold" color="lightBlue">
+              <Text size="smallBody" color="lightSand">
                 {placeholder}
               </Text>
             )}
@@ -89,8 +89,8 @@ export function SelectOrderType({
                   className={styles.selectCoinListItem}
                   key={item.value}
                 >
-                  <Text color="yellow">{item.icon}</Text>
-                  <Text size="smallBody" weight="bold">
+                  <Text>{item.icon}</Text>
+                  <Text size="smallBody">
                     {item.label}
                   </Text>
                 </div>

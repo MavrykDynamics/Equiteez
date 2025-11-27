@@ -14,32 +14,32 @@ export const WalletTopBar = () => {
       <div className={styles.walletTopBarWrapper}>
         <div className="flex gap-y-[12px] gap-x-[50px] md:gap-x-[15px] w-full flex-1 justify-start flex-wrap md:justify-between lg:justify-start">
           <div className="flex flex-col lg:min-w-[205px]">
-            <Text size="tinyBody" color="lightBlue">
+            <Text size="tinyBody" color="lightSand">
               Account Value
             </Text>
-            <Heading level="5">
+            <Text size="largeBody" weight="semibold">
               $<Money>{userBalance.account_value}</Money>
-            </Heading>
+            </Text>
           </div>
           <div className="flex flex-col lg:min-w-[204px]">
-            <Text size="tinyBody" color="lightBlue">
+            <Text size="tinyBody" color="lightSand">
               Available USDT
             </Text>
-            <Heading level="5">
+            <Text size="largeBody" weight="semibold">
               $<Money>{userBalance.available_usdt}</Money>
-            </Heading>
+            </Text>
           </div>
           <div className="flex flex-col lg:min-w-[204px]">
-            <Text size="tinyBody" color="lightBlue">
+            <Text size="tinyBody" color="lightSand">
               PnL
             </Text>
             {userBalance.pnl >= 0 ? (
-              <Heading level="5" color="green">
+              <Text size="largeBody" color="green" weight="semibold">
                 +$5,000.00{" "}
-                <Text color="green" weight="bold">
+                <Text color="green" weight="semibold">
                   (+{userBalance.pnl}%)
                 </Text>
-              </Heading>
+              </Text>
             ) : (
               <Heading level="5" color="red">
                 -$5,000.00{" "}

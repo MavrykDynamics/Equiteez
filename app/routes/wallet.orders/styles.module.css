@@ -7,8 +7,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-light-blue-500);
-  color: var(--color-yellow-500);
+  background: var(--color-sand-50);
+  color: var(--color-orange);
 }
 .orderItem,
 .orderRow {
@@ -19,15 +19,12 @@
   align-items: center;
   transition: all 0.2s ease;
 }
-.orderItem:hover {
-  background: var(--color-dark-blue-300);
-}
 .roundedWrapper {
   padding: 24px 0;
 }
 .orderCancelBtn {
   text-decoration: underline;
-  color: var(--color-light-blue-100);
+  color: var(--color-sand-500);
   font-size: var(--small-body-size);
   font-weight: var(--extra-bold-weight);
   transition: all 0.2s ease;
@@ -40,7 +37,7 @@
 }
 
 .orderCancelBtn:hover {
-  color: var(--color-yellow-500);
+  color: var(--color-sand-800);
 }
 .orderItemSecondary {
   display: flex;
@@ -50,18 +47,18 @@
 
 .assetName {
   text-decoration: underline;
-  color: var(--color-yellow-100);
+  color: var(--color-br-green-400);
   text-overflow: ellipsis;
   overflow: hidden;
   max-width: 80px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
   display: block;
   white-space: nowrap;
   transition: all 0.2s ease;
 }
 .assetName:hover {
-  color: var(--color-yellow-300);
+  color: var(--color-br-green-500);
 }
 .desktopBlock {
   display: block;

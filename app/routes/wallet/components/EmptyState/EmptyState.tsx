@@ -15,8 +15,8 @@ export function EmptyState({
       style={{ height }}
       className="flex flex-col h-[640px] gpa-[8px] items-center justify-center"
     >
-      <Text weight="bold">{title}</Text>
-      <Text size="smallBody" color="lightBlue" className="text-center">
+      <Text weight="semibold">{title}</Text>
+      <Text size="smallBody" color="lightSand" className="text-center">
         {description}
       </Text>
     </div>

@@ -26,6 +26,7 @@ import { EmptyState } from "~/routes/wallet/components/EmptyState/EmptyState";
 import classNames from "clsx";
 import { getAssetLinkByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import {Button} from "~/lib/atoms/Button";
 
 const ITEMS_TO_SHOW = 4;
 
@@ -88,7 +89,7 @@ export const WalletAssetsBlock = ({
                 </div>
                 <div className={styles.divider} />
                 <div className="flex flex-col gap-[24px] min-w-full lg:min-w-[296px]">
-                  <Text weight="bold" className="hidden lg:block">
+                  <Text weight="semibold" className="hidden lg:block">
                     Largest Investments
                   </Text>
                   <div className="flex flex-col gap-[12px]">
@@ -146,42 +147,8 @@ export const WalletAssetsBlock = ({
 
         <div className="flex-1 lg:w-[368px] lg:min-w-[368px]">
           <WalletCard header="My Token Holdings" linkText="" link="">
-            <div className="flex justify-center lg:py-[26px] gap-[16px]">
-              <div className="flex flex-col w-full lg:w-[147px] gap-[8px] lg:gap-[24px] items-center">
-                <div className={styles.tokenImgWrapper}>
-                  <img
-                    src={mbgToken}
-                    alt="mbgToken"
-                    className={styles.tokenImg}
-                  />
-                </div>
-
-                <div className="w-full items-center flex flex-col gap-[12px]">
-                  <div className="flex flex-col items-center justify-center gap-[4px]">
-                    <Text size="tinyBody" color="lightBlue">
-                      $MBG Balance
-                    </Text>
-                    <Text weight="bold">
-                      $<Money fiat>{mbgBalance}</Money>
-                    </Text>
-                  </div>
-                  <Link
-                    rel="noreferrer"
-                    target="_blank"
-                    className="w-full flex justify-center"
-                    to={TRADE_MULTIBANK_LINK}
-                  >
-                    <ButtonV2
-                      variant="yellowOutlined"
-                      className={styles.buyBtn}
-                    >
-                      Buy
-                    </ButtonV2>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-[24px] gap-[8px] lg:gap-[24px] w-full lg:w-[147px] items-center">
+            <div className="flex justify-center lg:py-[21px] gap-[16px]">
+              <div className="flex flex-col gap-[16px] gap-[8px] lg:gap-[24px] w-full lg:w-[147px] items-center">
                 <div className={styles.mvrkTokenImgWrapper}>
                   <img
                     src={mvrkToken}
@@ -192,10 +159,10 @@ export const WalletAssetsBlock = ({
 
                 <div className=" w-full items-center flex flex-col gap-[12px]">
                   <div className="flex flex-col items-center justify-center gap-[4px]">
-                    <Text size="tinyBody" color="lightBlue">
+                    <Text size="tinyBody" color="lightSand">
                       $MVRK Balance
                     </Text>
-                    <Text weight="bold">
+                    <Text weight="semibold">
                       $<Money fiat>{mvrkBalance}</Money>
                     </Text>
                   </div>
@@ -205,12 +172,12 @@ export const WalletAssetsBlock = ({
                     className="w-full flex justify-center"
                     to={TRADE_MULTIBANK_LINK}
                   >
-                    <ButtonV2
-                      variant="yellowOutlined"
+                    <Button
+                      variant="outline"
                       className={styles.buyBtn}
                     >
                       Buy
-                    </ButtonV2>
+                    </Button>
                   </Link>
                 </div>
               </div>
