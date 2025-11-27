@@ -5,11 +5,10 @@ import {
   useContext,
   useCallback,
   useMemo,
+  useEffect,
 } from "react";
 
-import { useQuery } from "@apollo/client/index";
-
-// mocked assets === markets
+import { useQuery } from "@tanstack/react-query";
 import estatesMocked from "app/mocks/rwas.json";
 import fakeAssetsMocked from "app/mocks/assets.mock.json";
 
@@ -18,34 +17,18 @@ import {
   EstateType,
   MarketInternalStateType,
 } from "./market.types";
-import {
-  DODO_MAV_ASSET_METADATA_QUERY,
-  MARKETS_ADDRESSES_QUERY,
-} from "./queries/marketTokens.query";
-// import { marketTokenNormalizer } from "./utils/marketTokenNormalizer";
-import {
-  getUpdatedDodoMavMarketsConfig,
-  getUpdatedOrderbookMarketsConfig,
-} from "./utils/markets.utils";
-import { marketsConfigQuerySchema } from "./market.schemas";
 import { withSortedFromMap } from "~/lib/utils";
 import { createMarketPickers, createValidTokensRecord } from "./utils";
-import {
-  MARKETS_INITIAL_STATE,
-  MARKETS_PAGINATION_LIMIT,
-} from "./market.const";
+import { MARKETS_INITIAL_STATE } from "./market.const";
 import { toTokenSlug } from "~/lib/assets";
-import { useApolloContext } from "../ApolloProvider/apollo.provider";
-import { useToasterContext } from "../ToasterProvider/toaster.provider";
-import { ApiError, unknownToError } from "~/errors/error";
+import { ApiError } from "~/errors/error";
+import { fetchAssets } from "~/lib/apis/mbrwa/assets";
+import { transformAssetData } from "~/providers/MarketsProvider/utils/transformAssetData";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
 // assets to show without actual API data
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { handleApolloError } = useApolloContext();
-  const { bug } = useToasterContext();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [marketsState, setMarketsState] = useState<MarketInternalStateType>(
     () => MARKETS_INITIAL_STATE
   );
@@ -57,162 +40,83 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     isActiveMarketLoading: true,
   }));
 
-  const [marketsPagination, setMarketsPagination] = useState(() => ({
-    limit: MARKETS_PAGINATION_LIMIT,
-    offset: 0,
-  }));
-  const [reachedTheEnd, setReachedTheEnd] = useState(false);
-
   const [marketApiError, setMarketApiError] = useState<ApiError | null>(null);
 
-  const { loading: isMarketsAddressesLoading } = useQuery(
-    MARKETS_ADDRESSES_QUERY,
-    {
-      variables: { ...marketsPagination },
-      onCompleted: (data) => {
-        try {
-          const parsedConfigData = marketsConfigQuerySchema.parse(data);
+  const assetsData = useQuery({
+    queryKey: ["fetchAssets"],
+    queryFn: () => fetchAssets(),
+  });
 
-          if (data.dodo_mav.length === 0) {
-            return setReachedTheEnd(true);
-          }
-          const { dodo_mav, orderbook } = parsedConfigData;
+  useEffect(() => {
+    if (!assetsData.data) return;
+    const sortedMarketAddresses = assetsData.data.assets.map((item) =>
+      toTokenSlug(item.asset.token_address, item.asset.token_id)
+    );
+    const orderbookConfig = new Map();
+    assetsData.data.assets.forEach((item) => {
+      orderbookConfig.set(item.orderbook.address, {
+        address: item.orderbook.address,
+        rwaTokenAddress: item.asset.token_address,
+        currencies: item.orderbook.currencies?.map((currency) => ({
+          token: currency.token,
+        })) || [],
+      });
+    });
 
-          const dodoConfig = getUpdatedDodoMavMarketsConfig(
-            marketsState.config.dodoMav,
-            dodo_mav
-          );
-          const orderbookConfig = getUpdatedOrderbookMarketsConfig(
-            marketsState.config.orderbook,
-            orderbook
-          );
+    const realAssetsFromApi = assetsData.data.assets.reduce<
+      Map<string, EstateType>
+    >((acc, item) => {
+      const {
+        asset: { token_address, token_id },
+      } = item;
+      const transformedAsset = transformAssetData(item);
 
-          setMarketsState((prev) => ({
-            ...prev,
-            sortedMarketAddresses: [
-              ...prev.sortedMarketAddresses,
-              ...dodo_mav.map((market) =>
-                toTokenSlug(
-                  market.base_token.address,
-                  market.base_token.token_id
-                )
-              ),
-            ],
-            config: {
-              ...prev.config,
-              dodoMav: dodoConfig,
-              orderbook: orderbookConfig,
-            },
-          }));
+      const slug = toTokenSlug(token_address, token_id);
+      acc.set(slug, {
+        ...transformedAsset,
+        slug,
+      });
+      return acc;
+    }, new Map());
 
-          if (data.dodo_mav.length <= MARKETS_PAGINATION_LIMIT) {
-            return setReachedTheEnd(true);
-          }
-        } catch (e) {
-          const error = unknownToError(e);
-          setMarketApiError(new ApiError(error));
-          bug(new ApiError("MARKETS_ADDRESSES_QUERY"));
+    const fakeAssetsToShow = fakeAssetsMocked.reduce<Map<string, EstateType>>(
+      (acc, asset) => {
+        const slug = toTokenSlug(asset.token_address);
+        if (slug) {
+          // @ts-expect-error // fake data
+          acc.set(slug, { ...asset, slug });
         }
+
+        return acc;
       },
-      onError: (error) => {
-        setMarketApiError(new ApiError(error));
-        handleApolloError(error, "MARKETS_ADDRESSES_QUERY");
-      },
-    }
-  );
+      new Map()
+    );
+
+    setMarketsState((prevState) => ({
+      ...prevState,
+      config: { orderbook: orderbookConfig },
+      isLoading: false,
+      sortedMarketAddresses,
+      markets: new Map([...realAssetsFromApi, ...fakeAssetsToShow]),
+    }));
+  }, [JSON.stringify(assetsData.data)]);
 
   // retrieve base token addresses from Map
-  const dodoBaseTokenAddresses = useMemo(
-    () =>
-      Array.from(marketsState.config.dodoMav.values()).map(
-        (entry) => entry.baseTokenAddress
-      ),
-    [marketsState.config.dodoMav]
-  );
-
   const marketAddresses = useMemo(
     () =>
-      Array.from(marketsState.config.dodoMav.values()).map(
-        (entry) => entry.address
+      Array.from(marketsState.config.orderbook.values()).map(
+        (entry) => entry.rwaTokenAddress
       ),
-    [marketsState.config.dodoMav]
+    [marketsState.config.orderbook]
   );
 
-  const { loading } = useQuery(DODO_MAV_ASSET_METADATA_QUERY, {
-    // query meta by base tokens from dodo_mav
-    variables: { addresses: dodoBaseTokenAddresses },
-    skip: marketsState.config.dodoMav.size === 0,
-    onCompleted: (data) => {
-      try {
-        // TODO add zod parser after API fixes
-        const realAssetsFromApi = data.token.reduce<Map<string, EstateType>>(
-          (acc, asset) => {
-            const { token_metadata } = asset;
-            const {
-              decimals = 6,
-              icon = "",
-              symbol = "-",
-            } = token_metadata ?? {};
-
-            const slug = toTokenSlug(asset.address, asset.token_id);
-            const assetMocked = estatesMocked.find(
-              (item) => item.token_address === asset.address
-            );
-            if (assetMocked) {
-              // const [previewImg] = buildTokenImagesStack(thumbnailUri);
-              // @ts-expect-error // fake data
-              acc.set(slug, {
-                ...assetMocked,
-                slug,
-                token_address: asset.address,
-                decimals,
-                icon,
-                symbol,
-                // name,
-                // assetDetails: {
-                //   ...assetMocked.assetDetails,
-                //   previewImage: previewImg,
-                // },
-              });
-            }
-
-            return acc;
-          },
-          new Map()
-        );
-
-        const fakeAssetsToShow = fakeAssetsMocked.reduce<
-          Map<string, EstateType>
-        >((acc, asset) => {
-          const slug = toTokenSlug(asset.token_address);
-          if (slug) {
-            // @ts-expect-error // fake data
-            acc.set(slug, { ...asset, slug });
-          }
-
-          return acc;
-        }, new Map());
-
-        setMarketsState((prev) => ({
-          ...prev,
-          markets: new Map([
-            ...realAssetsFromApi,
-            ...marketsState.markets,
-            ...fakeAssetsToShow,
-          ]),
-          isLoading: false,
-        }));
-      } catch (e) {
-        const error = unknownToError(e);
-        setMarketApiError(new ApiError(error));
-        bug(new ApiError("MARKET_TOKENS__DATA_QUERY"));
-      }
-    },
-    onError: (error) => {
-      setMarketApiError(new ApiError(error));
-      handleApolloError(error, "MARKET_TOKENS__DATA_QUERY");
-    },
-  });
+  const orderbookAddresses = useMemo(
+    () =>
+      Array.from(marketsState.config.orderbook.values()).map(
+        (entry) => entry.address
+      ),
+    [marketsState.config.orderbook]
+  );
 
   const pickMarketByIdentifier = useCallback(
     (slug: string): EstateType | null => {
@@ -233,13 +137,6 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [pickMarketByIdentifier]
   );
 
-  const loadMoreMarkets = useCallback(() => {
-    setMarketsPagination((prev) => ({
-      limit: prev.limit + MARKETS_PAGINATION_LIMIT,
-      offset: prev.offset + MARKETS_PAGINATION_LIMIT,
-    }));
-  }, []);
-
   // convert markets map to array (used in a lot of place, f,e, embla carousel)
   const marketsArr = useMemo(
     () =>
@@ -256,43 +153,43 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const validBaseTokens = useMemo(
-    () => createValidTokensRecord(marketsState.config.dodoMav),
-    [marketsState.config.dodoMav]
+    () => createValidTokensRecord(marketsState.config.orderbook),
+    [marketsState.config.orderbook]
   );
 
   const memoizedEstatesProviderValue: MarketContext = useMemo(
     () => ({
       ...marketsState,
       ...activeMarketState,
-      marketsArr,
+      marketsArr, // markets by base token
       pickMarketByIdentifier,
       updateActiveMarketState,
-      dodoBaseTokenAddresses,
-      marketAddresses,
+      marketAddresses, // dodo contract
+      orderbookAddresses, // orderbook contract
       pickers,
       validBaseTokens,
       marketApiError,
-      loadMoreMarkets,
-      reachedTheEnd,
       isLoading: marketApiError
         ? false
-        : loading || isMarketsAddressesLoading || marketsState.isLoading,
+        : assetsData.isLoading ||
+          assetsData.isFetching ||
+          assetsData.isPending ||
+          marketsState.isLoading,
     }),
     [
-      marketAddresses,
       marketsState,
-      loadMoreMarkets,
-      reachedTheEnd,
       activeMarketState,
       marketsArr,
       pickMarketByIdentifier,
       updateActiveMarketState,
-      dodoBaseTokenAddresses,
+      marketAddresses,
+      orderbookAddresses,
       pickers,
       validBaseTokens,
       marketApiError,
-      loading,
-      isMarketsAddressesLoading,
+      assetsData.isLoading,
+      assetsData.isFetching,
+      assetsData.isPending,
     ]
   );
 

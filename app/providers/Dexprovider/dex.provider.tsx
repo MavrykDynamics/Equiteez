@@ -1,90 +1,95 @@
-import { createContext, FC, useContext, useMemo, useState } from "react";
-import { DexProviderCtxType, DodoStorageType } from "./dex.provider.types";
+import {
+  createContext,
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { DexProviderCtxType } from "./dex.provider.types";
 import { useMarketsContext } from "../MarketsProvider/markets.provider";
-import { useCurrencyContext } from "../CurrencyProvider/currency.provider";
 import { useToasterContext } from "../ToasterProvider/toaster.provider";
 import {
-  getDodoMavTokenPairs,
-  getDodoMavTokenPrices,
-  getDodoMavTokenStorages,
+  getOrderbookTokenPairs,
+  OrderBookPriceData,
+  getOrderbookStorages,
 } from "./utils/storage";
 import { unknownToError } from "~/errors/error";
-import BigNumber from "bignumber.js";
-import { useQueryWithRefetch } from "../ApolloProvider/hooks/useQueryWithRefetch";
-import { DEX_STORAGE_QUERY } from "./queries/storage.query";
+import { useApiQuery } from "~/hooks/useApiQuery";
+import { fetchOrderbooks } from "~/lib/apis/mbrwa/orderbooks";
+import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
 type MarketProps = PropsWithChildren;
 
-const priceProxyHandler: ProxyHandler<StringRecord<BigNumber>> = {
+const priceProxyHandler: ProxyHandler<StringRecord<OrderBookPriceData>> = {
   get(target, prop: string) {
     // used to return price as 0 if not found
-    return target[prop] ?? new BigNumber(0);
+    return (
+      target[prop] ?? {
+        lowestSellPrice: 0,
+        highestBuyPrice: 0,
+        buyOrderFee: 0,
+        sellOrderFee: 0,
+        rwaTokenAddress: prop,
+      }
+    );
   },
 };
 
 export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
-  const { markets, marketAddresses } = useMarketsContext();
-  const { usdToTokenRates } = useCurrencyContext();
-  const [dodoStorages, setDodoStorages] = useState<
-    StringRecord<DodoStorageType>
-  >({});
-  const [dodoMavPrices, setDodoMavPrices] = useState(
+  const { config } = useMarketsContext();
+
+  // Contains price info as well
+  const [orderbookStorages, setOrderbookStorages] = useState(
     () => new Proxy({}, priceProxyHandler)
   );
-  const [dodoTokenPair, setDodoTokenPair] = useState({});
 
-  useQueryWithRefetch(DEX_STORAGE_QUERY, {
-    variables: { marketAddresses },
-    skip: marketAddresses.length === 0 || markets.size === 0,
-    onCompleted: (data) => {
-      try {
-        const storages = getDodoMavTokenStorages(data);
+  // Token pairs
+  const [orderbookTokenPair, setOrderbookTokenPair] = useState({});
 
-        const dodoPrices = getDodoMavTokenPrices(
-          Object.values(storages),
-          markets
-        );
+  // We do not update query for storages cuz we have this data from the markets query
+  useEffect(() => {
+    const orderBookPairs = getOrderbookTokenPairs(config.orderbook);
+    setOrderbookTokenPair(orderBookPairs);
+  }, [config]);
 
-        const tokenPairs = getDodoMavTokenPairs(storages);
+  const handleOrderbookData = useCallback((data: OrderbooksList) => {
+    const orderbookStorages = getOrderbookStorages(data);
 
-        setDodoStorages(storages);
-        setDodoTokenPair(tokenPairs);
+    setOrderbookStorages(
+      new Proxy({ ...orderbookStorages }, priceProxyHandler)
+    );
+  }, []);
 
-        // update proxy prices
-        Object.entries(dodoPrices).forEach(([key, value]) => {
-          dodoMavPrices[key] = value;
-        });
-
-        setDodoMavPrices(new Proxy({ ...dodoPrices }, priceProxyHandler));
-      } catch (e) {
-        console.log(e, "DEX_STORAGE_QUERY from catch");
-        const err = unknownToError(e);
-        warning("Prices", err.message);
-      }
-    },
-    onError: (error) => console.log(error, "DEX_STORAGE_QUERY"),
+  const { data: orderbookData, error } = useApiQuery({
+    fetchFn: fetchOrderbooks,
+    deps: [],
   });
 
-  const orderBookPrices = useMemo(
-    () =>
-      Array.from(markets.keys()).reduce<StringRecord<string>>((acc, esKey) => {
-        acc[esKey] = usdToTokenRates[esKey] ?? "0";
-        return acc;
-      }, {}),
-    [markets, usdToTokenRates]
-  );
+  useEffect(() => {
+    if (error) {
+      console.log(error, "handleOrderbookData from catch");
+      const err = unknownToError(error);
+      warning("Error on get orderbook data", err.message);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (!orderbookData) return;
+
+    handleOrderbookData(orderbookData);
+  }, [JSON.stringify(orderbookData)]);
 
   const memoizedDexCtx: DexProviderCtxType = useMemo(
     () => ({
-      orderbook: orderBookPrices,
-      dodoMav: dodoMavPrices,
-      dodoStorages,
-      dodoTokenPair,
+      orderbookStorages,
+      orderbookTokenPair,
     }),
-    [orderBookPrices, dodoMavPrices, dodoStorages, dodoTokenPair]
+    [orderbookTokenPair, orderbookStorages]
   );
 
   return (
