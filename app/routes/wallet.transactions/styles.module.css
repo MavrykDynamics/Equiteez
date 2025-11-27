@@ -1,0 +1,72 @@
+@import "../../styles/breakpoints.css";
+
+.iconWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-light-blue-500);
+  color: var(--color-yellow-500);
+}
+.roundedWrapper {
+  padding: 24px 0;
+  @media (--media-tablet-max) {
+    padding: 16px 0;
+  }
+}
+.transactionItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+.transactionItemPadding {
+  padding: 12px 24px;
+
+  @media (--media-tablet-max) {
+    padding: 12px 16px;
+  }
+}
+.transactionItemPadding:hover {
+  background: var(--color-dark-blue-300);
+}
+.assetName {
+  text-decoration: underline;
+  color: var(--color-yellow-100);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 80px;
+  font-weight: 700;
+  font-size: 14px;
+  display: block;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.assetName:hover {
+  color: var(--color-yellow-300);
+}
+
+.transactionRefunded,
+.transactionCanceled,
+.transactionFilled {
+  height: 22px;
+  padding: 0 8px;
+  background: #7be0b340;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  color: var(--color-green-500);
+}
+.transactionCanceled {
+  background: #f9919e40;
+  color: var(--color-red-500);
+}
+.transactionRefunded {
+  background: #99bffd40;
+  color: var(--color-blue-500);
+}

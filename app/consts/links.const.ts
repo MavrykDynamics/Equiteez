@@ -1,0 +1,1 @@
+export const TRADE_MULTIBANK_LINK = "https://trade.multibank.io/";

@@ -1,0 +1,25 @@
+.dropdownIcon {
+  display: none;
+}
+.dropdownWrapperActive {
+}
+.dropdownBodyContent {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-light-blue-500);
+}
+.dropdownBodyContentItem {
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-dark-blue-400);
+}
+.dropdownBodyContentItem:hover span {
+  transition: all 0.2s ease;
+  color: var(--color-yellow-500);
+}

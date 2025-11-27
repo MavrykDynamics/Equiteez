@@ -1,0 +1,11 @@
+@import "../../../styles/breakpoints.css";
+
+.roundedCard {
+  background-color: var(--color-dark-blue-400);
+  border-radius: 16px;
+  padding: 24px;
+
+  @media (--media-tablet-max) {
+    padding: 16px;
+  }
+}
