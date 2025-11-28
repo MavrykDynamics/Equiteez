@@ -161,7 +161,7 @@ export default function WalletAssets() {
                 onChange={(checked) => setIsHideLowBalance(checked)}
                 checked={isHideLowBalance}
                 label={
-                  <Text size="smallBody" weight="bold" color="lightBlue">
+                  <Text size="smallBody" weight="semibold" color="lightSand">
                     Hide Low Balances
                   </Text>
                 }

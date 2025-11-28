@@ -51,7 +51,7 @@
 .transactionFilled {
   height: 22px;
   padding: 0 8px;
-  background: #7be0b340;
+  background: rgba(69, 151, 97, 0.25);
   border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
@@ -60,10 +60,10 @@
   color: var(--color-green-500);
 }
 .transactionCanceled {
-  background: #f9919e40;
+  background: rgba(232, 55, 54, 0.25);
   color: var(--color-red-500);
 }
 .transactionRefunded {
-  background: #99bffd40;
+  background: rgba(37, 45, 158, 0.25);
   color: var(--color-blue-500);
 }

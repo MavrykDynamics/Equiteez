@@ -134,7 +134,7 @@ export function WalletTransactionItem({
             )}
           </div>
           <Link to="" className="hidden lg:block">
-            <Text color="lightSand">
+            <Text color="extraLightSand">
               <Icon icon="link" />
             </Text>
           </Link>

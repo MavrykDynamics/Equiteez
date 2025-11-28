@@ -43,7 +43,7 @@ export function TableHeader({
           >
             <Text
               size="tinyBody"
-              color="lightBlue"
+              color="lightSand"
               className="flex items-center"
             >
               {item.name}

@@ -12,7 +12,6 @@ import {
   getAssetByAddress,
   getAssetLinkByAddress,
 } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { Icon } from "~/lib/atoms/Icon";
 import { AssetMarket } from "~/providers/UserAssets/userAssets.const";
 import Money from "~/lib/atoms/Money";
@@ -53,21 +52,18 @@ export function MobileAssetPopup({
   onClose: () => void;
 }) {
   const {
-    tokenSlug,
     token: { address: tokenAddress },
     market,
     token_price,
   } = asset;
 
   const { marketsArr } = useMarketsContext();
-  const { tokensMetadata } = useTokensContext();
 
   const assetLink = useMemo(
     () => getAssetLinkByAddress(marketsArr, tokenAddress),
     [tokenAddress, marketsArr]
   );
   const isSecondaryEstate = market === AssetMarket.secondary;
-  const token = tokensMetadata[tokenSlug];
   const currentMarket = getAssetByAddress(marketsArr, tokenAddress);
 
   const imageSrc =
@@ -105,7 +101,7 @@ export function MobileAssetPopup({
             alt={asset.token.symbol}
           />
           <Text size="largeBody" weight="bold" className="text-center w-full">
-            {token.name}
+            {asset.token.name}
           </Text>
 
           <div className="flex items-center px-[16px] gap-[32px]">

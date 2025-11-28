@@ -75,11 +75,7 @@ export function AssetActionDropdownContent({
     return (
       <Link to={TRADE_MULTIBANK_LINK} className={stylesClassName}>
         <img src={MbgTokenImg} alt="mbg token" className="w-[19px]" />
-        {!liteMod && (
-          <Text size="smallBody" weight="bold">
-            Buy on Multibank.io
-          </Text>
-        )}
+        {!liteMod && <Text size="smallBody">Buy on Multibank.io</Text>}
       </Link>
     );
 
@@ -90,29 +86,25 @@ export function AssetActionDropdownContent({
     return (
       <>
         <Link to={depositLink} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <DepositIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
-            Deposit
-          </Text>
+          <Text size="smallBody">Deposit</Text>
         </Link>
         <Link to={withdrawLink} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <WithdrawIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
-            Withdraw
-          </Text>
+          <Text size="smallBody">Withdraw</Text>
         </Link>
         <Link to={TRADE_MULTIBANK_LINK} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <BuyIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody">
             {liteMod ? "Buy on MBIO" : "Buy on Multibank.io"}
           </Text>
         </Link>
@@ -123,40 +115,32 @@ export function AssetActionDropdownContent({
     return (
       <>
         <Link to={`${assetLink}?action=buy`} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <BuyIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
-            Buy
-          </Text>
+          <Text size="smallBody">Buy</Text>
         </Link>
         <Link to={`${assetLink}?action=sell`} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <SellIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
-            Sell
-          </Text>
+          <Text size="smallBody">Sell</Text>
         </Link>
         <Link to={depositLink} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <DepositIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
-            Deposit
-          </Text>
+          <Text size="smallBody">Deposit</Text>
         </Link>
         <Link to={withdrawLink} className={stylesClassName}>
-          <Text color="yellow">
+          <Text color="orange">
             <WithdrawIcon />
           </Text>
 
-          <Text size="smallBody" weight="bold">
-            Withdraw
-          </Text>
+          <Text size="smallBody">Withdraw</Text>
         </Link>
       </>
     );
@@ -164,31 +148,25 @@ export function AssetActionDropdownContent({
   return (
     <>
       <Link to={`${assetLink}?action=buy`} className={stylesClassName}>
-        <Text color="yellow">
+        <Text color="orange">
           <BuyIcon />
         </Text>
 
-        <Text size="smallBody" weight="bold">
-          Buy
-        </Text>
+        <Text size="smallBody">Buy</Text>
       </Link>
       <Link to={depositLink} className={stylesClassName}>
-        <Text color="yellow">
+        <Text color="orange">
           <DepositIcon />
         </Text>
 
-        <Text size="smallBody" weight="bold">
-          Deposit
-        </Text>
+        <Text size="smallBody">Deposit</Text>
       </Link>
       <Link to={withdrawLink} className={stylesClassName}>
-        <Text color="yellow">
+        <Text color="orange">
           <WithdrawIcon />
         </Text>
 
-        <Text size="smallBody" weight="bold">
-          Withdraw
-        </Text>
+        <Text size="smallBody">Withdraw</Text>
       </Link>
     </>
   );
@@ -204,17 +182,16 @@ export function AssetActions({ asset }: { asset: AssetType }) {
             iconClassName={styles.assetActionsDropdownIcon}
           >
             <div className={styles.dotsBlock}>
-              <Text
-                className="cursor-pointer"
-                customColor="--color-light-blue-100"
-              >
+              <Text className="cursor-pointer" color="extraLightSand">
                 <DotsIcon />
               </Text>
             </div>
           </DropdownFaceContent>
         </ClickableDropdownArea>
-        <DropdownBodyContent position="right" topMargin={-20} customWidth={200}>
-          <AssetActionDropdownContent asset={asset} />
+        <DropdownBodyContent position="right" topMargin={-20} customWidth={241}>
+          <div className={styles.assetActionsContent}>
+            <AssetActionDropdownContent asset={asset} />
+          </div>
         </DropdownBodyContent>
       </CustomDropdown>
     </div>

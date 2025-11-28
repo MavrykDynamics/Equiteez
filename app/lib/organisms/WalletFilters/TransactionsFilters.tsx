@@ -8,7 +8,7 @@ import {
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import { Icon } from "~/lib/atoms/Icon";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { SelectOrderType } from "~/lib/organisms/WalletFilters/SelectOrderType";
 import SellIcon from "app/icons/wallet/sell.svg?react";
 import BuyIcon from "app/icons/wallet/buy.svg?react";
@@ -102,33 +102,32 @@ export function TransactionsFilters({
                       selectedOrderType={orderType}
                       setOrderType={setOrderType}
                       title="Action"
-                      placeholder="Action"
+                      placeholder="Select Action"
                       customWidth={294}
                       options={allOptions}
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-[12px]">
-                  <ButtonV2
+                  <Button
                     onClick={() => {
                       setOrderType("");
                       applyFilter("");
                     }}
                     className="flex-1"
                     disabled={!orderType}
-                    variant="yellowOutlined"
+                    variant="outline"
                   >
                     Reset
-                  </ButtonV2>
-                  <ButtonV2
+                  </Button>
+                  <Button
                     onClick={() => {
                       applyFilter(orderType);
                     }}
                     className="flex-1"
-                    variant="yellowPrimary"
                   >
                     Apply
-                  </ButtonV2>
+                  </Button>
                 </div>
               </div>
             </DropdownBodyContent>
@@ -137,13 +136,13 @@ export function TransactionsFilters({
       </div>
 
       <div className={styles.mobileContent}>
-        <ButtonV2
+        <Button
           onClick={() => setIsOpenFilterPopup(true)}
           className={styles.dropdownWrapper}
-          variant="yellowOutlined"
+          variant="outline"
         >
           <Icon icon="filter" className={styles.accountIcon} />
-        </ButtonV2>
+        </Button>
         <FilterPopup
           applyFilter={applyFilter}
           isOpen={isOpenFilterPopup}

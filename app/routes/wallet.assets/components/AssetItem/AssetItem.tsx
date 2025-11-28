@@ -41,16 +41,16 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
           <div className="flex flex-col">
             <Text
               size="smallBody"
-              weight="bold"
+              weight="semibold"
               className="truncate max-w-[120px] lg:max-w-[150px]"
             >
               {asset.token.name}
             </Text>
             <div className="flex item-center gap-[8px]">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 {asset.token.symbol}
               </Text>
-              <Text size="tinyBody" color="goldGradient">
+              <Text size="tinyBody" color="orange">
                 APY 6.2%
               </Text>
             </div>
@@ -59,7 +59,7 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
 
         <div className="flex flex-col w-[100px] hidden lg:flex">
           {asset.market === AssetMarket.empty ? (
-            <Text size="smallBody" weight="bold">
+            <Text size="smallBody" weight="semibold">
               N/A
             </Text>
           ) : (
@@ -72,18 +72,18 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
           )}
         </div>
         <div className="flex flex-col w-[130px] hidden lg:flex">
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody" weight="semibold">
             $<Money fiat>{asset.token_price}</Money>
           </Text>
           <Text
             size="tinyBody"
-            weight="bold"
+            weight="semibold"
             color="green"
             className="flex items-center"
           >
             <Text
               size="smallBody"
-              weight="bold"
+              weight="semibold"
               color="green"
               className="pt-[3px]"
             >
@@ -95,10 +95,10 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
           </Text>
         </div>
         <div className="flex flex-col w-[130px] hidden lg:flex">
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody" weight="semibold">
             $<Money fiat>{asset.available_balance_usd}</Money>
           </Text>
-          <Text size="tinyBody" color="lightBlue">
+          <Text size="tinyBody" color="lightSand">
             <Money fiat>{asset.available_balance}</Money> {asset.token.symbol}
           </Text>
         </div>
@@ -107,15 +107,15 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
           [MBG_CONTRACT_ADDRESS, MVRK_CONTRACT_ADDRESS].includes(
             asset.token.address
           ) ? (
-            <Text size="smallBody" weight="bold">
+            <Text size="smallBody" weight="semibold">
               N/A
             </Text>
           ) : (
             <>
-              <Text size="smallBody" weight="bold">
+              <Text size="smallBody" weight="semibold">
                 $<Money fiat>{asset.in_orders_usd}</Money>
               </Text>
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 <Money fiat>{asset.in_orders}</Money> {asset.token.symbol}
               </Text>
             </>
@@ -125,7 +125,7 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
           <Text size="smallBody" weight="bold">
             $<Money fiat>{asset.total_balance_usd}</Money>
           </Text>
-          <Text size="tinyBody" color="lightBlue">
+          <Text size="tinyBody" color="lightSand">
             <Money fiat>{asset.total_balance}</Money> {asset.token.symbol}
           </Text>
         </div>
