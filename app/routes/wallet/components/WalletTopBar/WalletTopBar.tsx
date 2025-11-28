@@ -12,7 +12,7 @@ export const WalletTopBar = () => {
   return (
     <RoundedCard>
       <div className={styles.walletTopBarWrapper}>
-        <div className="flex gap-y-[12px] gap-x-[50px] md:gap-x-[15px] w-full flex-1 justify-start flex-wrap md:justify-between lg:justify-start">
+        <div className="flex gap-y-[12px] gap-x-[50px] md:gap-x-[10px] w-full flex-1 justify-start flex-wrap md:justify-between lg:justify-start">
           <div className="flex flex-col lg:min-w-[205px]">
             <Text size="tinyBody" color="lightSand">
               Account Value
