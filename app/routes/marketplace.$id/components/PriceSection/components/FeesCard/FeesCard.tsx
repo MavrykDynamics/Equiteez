@@ -5,7 +5,7 @@ import Money from "~/lib/atoms/Money";
 type FeesCardProps = {
   pricePerToken: BigNumber | number;
   txnFees: BigNumber | number;
-  totalFee: BigNumber | number;
+  totalFee: BigNumber | number | string;
   networkfee: BigNumber | number;
 };
 

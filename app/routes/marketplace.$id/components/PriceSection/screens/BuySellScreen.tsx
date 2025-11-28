@@ -10,7 +10,6 @@ import {
   CONFIRM,
   SellScreenState,
   OrderType,
-  SELL,
 } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { stablecoinContract } from "~/consts/contracts";
@@ -20,17 +19,13 @@ import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
-import {
-  calculateEstFee,
-  detectQuoteTokenLimit,
-  getTokenAmountFromLiquidity,
-} from "~/providers/Dexprovider/utils";
+import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
-import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
-import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
+import { atomsToTokens } from "~/lib/utils/formaters";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import { ZERO } from "~/lib/utils/numbers";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -56,8 +51,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   // setSlippagePercentage,
   hasQuoteError = false,
 }) => {
-  const { symbol, token_address, slug } = estate;
-  const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
+  const { token_address, slug } = estate;
+  const { orderbookTokenPair, orderbookStorages } = useDexContext();
 
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
     null
@@ -69,17 +64,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const ref1 = useRef<HTMLInputElement>(null);
   const ref2 = useRef<HTMLInputElement>(null);
 
-  const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
+  const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
 
   const tokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
-    [dodoMav, slug, selectedAssetMetadata.decimals]
-  );
-
-  const baseTokenAmount = useMemo(
-    () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
-    [dodoStorages, slug, tokenPrice]
+    () =>
+      atomsToTokens(
+        orderbookStorages[slug]?.lowestSellPrice,
+        selectedAssetMetadata.decimals
+      ),
+    [orderbookStorages, slug, selectedAssetMetadata.decimals]
   );
 
   const usdBalance = useMemo(
@@ -124,7 +118,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       isBuyAction
         ? {
             amount,
-            selectedAssetSlug: dodoTokenPair[slug],
+            selectedAssetSlug: orderbookTokenPair[slug],
             selectedAssetMetadata: stableCoinMetadata,
             label: "You Pay",
           }
@@ -136,7 +130,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           },
     [
       amount,
-      dodoTokenPair,
+      orderbookTokenPair,
       isBuyAction,
       selectedAssetMetadata,
       slug,
@@ -148,18 +142,18 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount: amount?.div(tokenPrice) || undefined,
+            amount: amount?.div(tokenPrice) || undefined, // BUY: USDT -> Token
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }
         : {
-            amount: amount?.times(tokenPrice) || undefined,
-            selectedAssetSlug: dodoTokenPair[slug],
+            amount: amount?.times(tokenPrice) || undefined, // SELL: Token -> USDT
+            selectedAssetSlug: orderbookTokenPair[slug],
             selectedAssetMetadata: stableCoinMetadata,
           },
     [
       amount,
-      dodoTokenPair,
+      orderbookTokenPair,
       isBuyAction,
       selectedAssetMetadata,
       slug,
@@ -181,48 +175,29 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const estFee = useMemo(() => {
-    const {
-      config: { lpFee, maintainerFee, feeDecimals },
-    } = dodoStorages[slug];
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      buyOrderFee: 0,
+      sellOrderFee: 0,
+    };
 
-    const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
+    const tokensAmount = amount || ZERO;
+    const fee = isBuyAction ? buyOrderFee : sellOrderFee;
 
-    const result = calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      maintainerFee,
-      Number(feeDecimals),
-      slippagePercentage,
-      isBuyAction
-    );
-
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-
-    return downgradeDecimals(result, decimals);
+    return calculateEstFee({
+      amount: tokensAmount,
+      price: tokenPrice,
+      fee,
+      tokenDecimals: stableCoinMetadata.decimals,
+      isFeeInTokens: isBuyAction,
+    });
   }, [
-    dodoStorages,
-    input1Props.amount,
-    input2Props.amount,
+    amount,
     isBuyAction,
-    selectedAssetMetadata.decimals,
-    slippagePercentage,
+    orderbookStorages,
     slug,
     stableCoinMetadata.decimals,
     tokenPrice,
   ]);
-
-  const hasQuoteTokenLimitWarning = useMemo(
-    () =>
-      detectQuoteTokenLimit(
-        dodoStorages[slug],
-        amount,
-        isBuyAction ? BUY : SELL
-      ),
-    [dodoStorages, slug, amount, isBuyAction]
-  );
 
   const isBtnDisabled =
     hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
@@ -306,23 +281,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
-          </Alert>
-        </div>
-      )}
-      {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) && (
-        <div className="mt-8">
-          <Alert type="warning" header="Low Liquidity Detected!" expandable>
-            The liquidity for {symbol} is critically low. Transactions may
-            experience high slippage or failure.
-          </Alert>
-        </div>
-      )}
-
-      {hasQuoteTokenLimitWarning && (
-        <div className="mt-8">
-          <Alert type="warning" header="Pool Balance Limit Reached" expandable>
-            Your trade will exceed the pool limit, which may cause slippage or
-            failure. Please adjust the amount and try again.
           </Alert>
         </div>
       )}

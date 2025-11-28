@@ -43,6 +43,7 @@ import { useAssetMetadata } from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { ZERO } from "~/lib/utils/numbers";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -176,7 +177,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 }) => {
   const { isAdmin, userTokensBalances } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
-  const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
+  const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const { validBaseTokens } = useMarketsContext();
   // metadata
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -184,8 +185,12 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
   const tokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata?.decimals),
-    [dodoMav, slug, selectedAssetMetadata?.decimals]
+    () =>
+      atomsToTokens(
+        orderbookStorages[slug]?.lowestSellPrice,
+        selectedAssetMetadata?.decimals
+      ),
+    [orderbookStorages, slug, selectedAssetMetadata?.decimals]
   );
 
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
@@ -202,9 +207,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
 
-  // TODO remove "?? toTokenSlug(stablecoinContract)" after API assets
   const quoteAssetmetadata = useAssetMetadata(
-    dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
+    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract)
   );
 
   // derived
@@ -368,22 +372,28 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   }, [isLimitType, slug, tokenAddress, tokenPrice, usdToTokenRates]);
 
   const estFee = useMemo(() => {
-    const {
-      config: { lpFee, maintainerFee },
-    } = dodoStorages[slug] ?? { config: { lpFee: 0, maintainerFee: 0 } };
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      buyOrderFee: 0,
+      sellOrderFee: 0,
+    };
 
-    const tokensAmount = amount;
+    const tokensAmount = amount || ZERO;
+    const fee = isBuyAction ? buyOrderFee : sellOrderFee;
 
-    return calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      maintainerFee,
-      18,
-      "0",
-      isBuyAction
-    );
-  }, [amount, dodoStorages, isBuyAction, slug, tokenPrice]);
+    return calculateEstFee({
+      amount: tokensAmount,
+      price: tokenPrice,
+      fee,
+      tokenDecimals: quoteAssetmetadata.decimals,
+    });
+  }, [
+    amount,
+    isBuyAction,
+    orderbookStorages,
+    quoteAssetmetadata.decimals,
+    slug,
+    tokenPrice,
+  ]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(
