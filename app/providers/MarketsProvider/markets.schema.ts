@@ -7,150 +7,184 @@ export const orderbookSchema = z.object({
   highest_buy_price: z.number(),
   sell_order_fee: z.number(),
   buy_order_fee: z.number(),
-  currencies: z.array(
-    z.object({
-      currency_name: z.string(),
-      token: z.object({
-        address: z.string(),
-        token_id: z.number(),
-      }),
-    })
-  ).optional(),
+  quote_token: z.object({
+    address: z.string(),
+    token_id: z.number(),
+    symbol: z.string(),
+    decimals: z.number(),
+  }),
+  currencies: z
+    .array(
+      z.object({
+        currency_name: z.string(),
+        token: z.object({
+          address: z.string(),
+          token_id: z.number(),
+        }),
+      })
+    )
+    .optional(),
 });
 
-const tokenMetadataSchema = z.object({
-  icon: z.string(),
+const featureSchema = z.object({
+  id: z.string(),
   name: z.string(),
-  symbol: z.string(),
-  decimals: z.string(),
-  thumbnail_uri: z.string(),
-  should_prefer_symbol: z.string(),
 });
 
-const offeringSchema = z.object({
-  offering_date: z.string(),
-  raised_amount: z.number(),
-  offering_issuer: z.string(),
-  offering_percent: z.number(),
-  max_investment_amount: z.number(),
-  min_investment_amount: z.number(),
-});
-
-const basicInfoSchema = z.record(z.union([z.string(), z.number()]));
-
-const valuationRecordSchema = z.object({
-  date: z.string(),
-  info: z.string(),
-  capital_r_o_i: z.number().optional(),
-  token_price: z.number(),
-  annual_change: z.number().optional(),
-  asset_valuation: z.number(),
-  reg_distributed: z.number().optional(),
-  total_investment: z.number(),
-});
-
-const valuationSchema = z.object({
-  prior_valuation: valuationRecordSchema,
-  initial_valuation: valuationRecordSchema,
-});
-
-const blockchainSchema = z.record(z.union([z.string(), z.number()]));
-
-const monthlyCostsSchema = z.object({
-  costs: z.number(),
-  taxes: z.number(),
-  expenses: z.number(),
-  platform: z.number(),
-  insurance: z.number(),
-  utilities: z.string(),
-  net_reproperty: z.number(),
-});
-
-const totalInvestmentSchema = z.object({
-  total: z.number(),
-  underlying_asset_price: z.number(),
-  initial_maintenance_reserve: z.number(),
-});
-
-const propertyFinancialsSchema = z.object({
-  monthly_costs: monthlyCostsSchema,
-  net_rent_yearly: z.number(),
-  net_rent_monthly: z.number(),
-  gross_rent_yearly: z.number(),
-  gross_rent_monthly: z.number(),
-  total_investment: totalInvestmentSchema,
-});
-
-const expectedIncomeSchema = z.object({
-  income: z.number(),
-  income_start_date: z.string(),
-  description: z.string().optional()
-});
-
-const financialsSchema = z.object({
-  expected_income: expectedIncomeSchema,
-  property_financials: propertyFinancialsSchema,
-});
-
-const coordinatesSchema = z.object({
-  lat: z.number(),
-  lng: z.number(),
-});
-
-const buildingInfoSchema = z
-  .object({
-    cooling: z.string(),
-    heating: z.string(),
-    lot_size: z.number(),
-    stories: z.number(),
-    roof_type: z.string(),
-    renovated: z.string(),
-    foundation: z.string(),
-    interior_size: z.number(),
-    building_class: z.string(),
-    exterior_walls: z.string(),
-  })
-  .optional();
-
-const neighborhoodSchema = z
-  .object({
-    coordinates: coordinatesSchema,
-    description: z.string(),
-  })
-  .optional();
-
-const priceDetailsSchema = z.record(z.union([z.string(), z.number()]));
-
-const propertyDetailsSchema = z.record(z.union([z.string(), z.number()]));
-
-const assetDetailsSchema = z.object({
-  _a_p_y: z.number(),
+const listItemChildSchema = z.object({
+  name: z.string().optional(),
   type: z.string(),
-  offering: offeringSchema,
-  basic_info: basicInfoSchema,
-  valuation: valuationSchema,
-  blockchain: z.array(blockchainSchema),
-  financials: financialsSchema,
-  asset_images: z.array(z.string()),
-  coordinates: coordinatesSchema,
-  building_info: buildingInfoSchema,
-  neighborhood: neighborhoodSchema,
-  preview_image: z.string().url(),
-  price_details: priceDetailsSchema,
-  property_details: propertyDetailsSchema,
+  value: z.string().optional(),
+  highlight: z.boolean().optional(),
 });
+
+const listItemSchema = z.object({
+  name: z.string().optional(),
+  type: z.string(),
+  value: z.string().nullable().optional(),
+  children: z.array(listItemChildSchema).optional(),
+  highlight: z.boolean().optional(),
+});
+
+const valuationDetailSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  value: z.string(),
+});
+
+const imageUrlSchema = z.object({
+  url: z.string(),
+});
+
+// -------------------------
+// Main Schema
+// -------------------------
 
 export const assetSchema = z.object({
-  token_id: z.string(),
   token_address: z.string(),
-  token_standard: z.string(),
-  token_metadata: tokenMetadataSchema,
-  symbol: z.string(),
-  decimals: z.number(),
-  icon: z.string(),
-  asset_type: z.string(),
-  category: z.string(),
-  asset_details: assetDetailsSchema,
+  external_id: z.string(),
+
+  currency: z.object({
+    icon: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    decimals: z.number(),
+    change_in24h_percent: z.number(),
+  }),
+
+  web_url: z.string(),
+  headline: z.string(),
+  description: z.string(),
+  is_primary: z.boolean(),
+
+  address: z.object({
+    zip: z.string(),
+    city: z.string(),
+    line1: z.string(),
+    line2: z.string().nullable(),
+    state: z.string(),
+    country: z.string(),
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+
+  brand: z.object({
+    logo: z.string(),
+    name: z.string(),
+    background_url: z.string(),
+  }),
+
+  details: z.object({
+    features: z.array(featureSchema),
+    amenities: z.array(featureSchema),
+  }),
+
+  liquidity: z.number().nullable(),
+
+  supply: z.object({
+    sold: z.number(),
+    total: z.number().nullable(),
+    percentage: z.number(),
+  }),
+
+  apy: z.string(),
+  investors: z.number().nullable(),
+
+  tags: z.array(z.string()),
+
+  categories: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+    })
+  ),
+
+  sections: z.array(z.string()),
+
+  metadata: z.object({
+    is_live: z.boolean(),
+    live_time: z.string(),
+    asset_name: z.string(),
+    can_calculate_returns: z.boolean(),
+  }),
+
+  investment_info: z.array(listItemSchema),
+
+  financials: z.object({
+    income: z.array(
+      listItemSchema.extend({
+        children: z
+          .array(
+            z.object({
+              type: z.string(),
+              value: z.string(),
+            })
+          )
+          .optional(),
+      })
+    ),
+    investment: z.array(listItemSchema),
+  }),
+
+  valuation: z.array(
+    z.object({
+      date: z.number(),
+      title: z.string(),
+      details: z.array(valuationDetailSchema),
+      headline: z.string().nullable(),
+    })
+  ),
+
+  blockchain: z.object({
+    name: z.string(),
+    asset: z.object({
+      name: z.string(),
+      address: z.string(),
+      explorer: z.string().nullable(),
+    }),
+    issuer: z.object({
+      name: z.string(),
+      address: z.string(),
+      explorer: z.string().nullable(),
+    }),
+    identifier: z.string(),
+    total_tokens: z.number().nullable(),
+  }),
+
+  banners: z.object({
+    why_invest: z.array(
+      z.object({
+        type: z.string(),
+        title: z.string(),
+        message: z.string(),
+      })
+    ),
+  }),
+
+  images: z.object({
+    gallery: z.array(imageUrlSchema),
+    thumbnail: z.string(),
+  }),
 });
 
 export const assetDataSchema = z.object({

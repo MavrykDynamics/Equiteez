@@ -48,18 +48,26 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   });
 
   useEffect(() => {
+    if (assetsData.error) {
+      setMarketApiError(new ApiError(assetsData.error));
+      console.error(assetsData.error, "error");
+    }
+  }, [assetsData.error]);
+
+  useEffect(() => {
     if (!assetsData.data) return;
     const sortedMarketAddresses = assetsData.data.assets.map((item) =>
-      toTokenSlug(item.asset.token_address, item.asset.token_id)
+      toTokenSlug(item.asset.token_address, item.asset.token_id ?? 0)
     );
     const orderbookConfig = new Map();
     assetsData.data.assets.forEach((item) => {
       orderbookConfig.set(item.orderbook.address, {
         address: item.orderbook.address,
         rwaTokenAddress: item.asset.token_address,
-        currencies: item.orderbook.currencies?.map((currency) => ({
-          token: currency.token,
-        })) || [],
+        currencies:
+          item.orderbook.currencies?.map((currency) => ({
+            token: currency.token,
+          })) || [],
       });
     });
 
@@ -67,7 +75,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       Map<string, EstateType>
     >((acc, item) => {
       const {
-        asset: { token_address, token_id },
+        asset: { token_address, token_id = 0 },
       } = item;
       const transformedAsset = transformAssetData(item);
 
@@ -99,7 +107,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       sortedMarketAddresses,
       markets: new Map([...realAssetsFromApi, ...fakeAssetsToShow]),
     }));
-  }, [JSON.stringify(assetsData.data)]);
+  }, [assetsData.data]);
 
   // retrieve base token addresses from Map
   const marketAddresses = useMemo(
