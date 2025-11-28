@@ -70,8 +70,8 @@
   }
 }
 .buyBtn {
-  height: 33px;
-  width: 108px;
+  height: 40px;
+  width: 154px;
   box-sizing: border-box;
   padding: 0 10px;
   @media (--media-tablet-max) {
@@ -89,20 +89,20 @@
   margin: 0;
 }
 .link:hover span {
-  color: var(--color-yellow-300);
+  color: var(--color-br-green-700);
 }
 .link:active span {
-  color: var(--color-yellow-700);
+  color: var(--color-br-green-900);
 }
 .assetItemText {
   display: block;
-  color: var(--color-yellow-100);
+  color: var(--color-br-green-400);
   transition: all 0.2s ease;
   text-decoration: underline;
   cursor: pointer;
 }
 .assetItemText:hover {
-  color: var(--color-yellow-300);
+  color: var(--color-br-green-500);
 }
 .walletAssetBlockWrapper {
   display: flex;

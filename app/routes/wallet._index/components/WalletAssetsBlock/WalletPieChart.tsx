@@ -44,8 +44,8 @@ export const WalletPieChart = ({ userAssets }: { userAssets: AssetType[] }) => {
   const colors = useMemo(
     () =>
       hasData
-        ? ["#7757cf", "#8568d4", "#9279d9", "#a089dd", "#ad9ae2"]
-        : ["#4D5362"],
+        ? ["#252D9E", "#3B42A8", "#5157B1", "#666CBB", "#5157B1", "#666CBB"]
+        : ["#B0AFAC"],
     [hasData]
   );
 
@@ -96,19 +96,15 @@ export const WalletPieChart = ({ userAssets }: { userAssets: AssetType[] }) => {
 
           return `<div style="
                       padding: 8px;
-                      background: #20283B;
-                      color: #fff;
-                      border-radius: 8px;
+                      background: #E6E6E6;
+                      color: #191918;
                       font-size: 12px;
                       display: flex;
                       flex-direction: column;
                       align-items: center;
                   ">
-                    <span style="font-weight: 700; 
+                    <span style="font-weight: 600; 
                                  font-size: 12px;
-                                 background: var(--color-gold-gradient);
-                                 -webkit-background-clip: text;
-                                 -webkit-text-fill-color: transparent;
                     ">${percent}%</span>
                     <span style="font-weight: 400; 
                                  font-size: 10px; 

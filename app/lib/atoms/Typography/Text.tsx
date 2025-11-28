@@ -6,19 +6,22 @@ import styles from "./styles.module.css";
 export type TextColor =
   | "white"
   | "black"
-  | "yellow"
-  | "goldGradient"
-  | "darkBlue"
-  | "lightBlue"
-  | "blue"
+  | "sand"
+  | "lightSand"
+  | "extraLightSand"
   | "green"
+  | "orange"
+  | "darkGreen"
+  | "lightGreen"
   | "red";
+
 export type TextSize =
   | "largeBody"
   | "body"
   | "smallBody"
   | "tinyBody"
   | "extraTinyBody";
+
 export type TextWeight =
   | "regular"
   | "bold"
@@ -39,7 +42,7 @@ export function Text({
   children,
   size = "body",
   weight = "regular",
-  color = "white",
+  color = "sand",
   className,
   customColor,
   ...props

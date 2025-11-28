@@ -26,15 +26,17 @@ export const InputWithIcons: FC<InputWithIconsProps> = ({
   return (
     <div ref={ref} className="relative">
       {showSearchIcon && <SearchIcon className={styles.searchIcon} />}
-      <button
-        onClick={handleClose}
-        className={clsx(
-          styles.closeIcon,
-          "p-1 rounded-full bg-dark-green-opacity"
-        )}
-      >
-        <CrossIcon className="w-4 h-4 text-content stroke-current" />
-      </button>
+      {handleClose && (
+        <button
+          onClick={handleClose}
+          className={clsx(
+            styles.closeIcon,
+            "p-1 rounded-full bg-dark-green-opacity"
+          )}
+        >
+          <CrossIcon className="w-4 h-4 text-content stroke-current" />
+        </button>
+      )}
       <InputText {...rest} hasIcon />
     </div>
   );

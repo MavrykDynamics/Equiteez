@@ -3,9 +3,8 @@ import styles from "./styles.module.css";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
-import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 
 export function CancelOrderPopup({
   isOpen,
@@ -27,32 +26,24 @@ export function CancelOrderPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative stroke-current"
           onClick={onClose}
         />
       </button>
       <div className={styles.contentWrapper}>
         <div className="flex flex-col gap-[8px] justify-center items-center">
-          <Heading level="4">Confirm Cancellation</Heading>
+          <Text weight="semibold">Confirm Cancellation</Text>
           <Text size="smallBody">
             Are you sure you want to cancel your order?
           </Text>
         </div>
         <div className={styles.btnWrapper}>
-          <ButtonV2
-            onClick={onClose}
-            className="flex-1"
-            variant="yellowOutlined"
-          >
-            Keep Order
-          </ButtonV2>
-          <ButtonV2
-            onClick={onSubmit}
-            className="flex-1"
-            variant="yellowPrimary"
-          >
+          <Button onClick={onSubmit} className="flex-1" variant="outline">
             Cancel Order
-          </ButtonV2>
+          </Button>
+          <Button onClick={onClose} className="flex-1">
+            Keep Order
+          </Button>
         </div>
       </div>
     </CustomPopup>

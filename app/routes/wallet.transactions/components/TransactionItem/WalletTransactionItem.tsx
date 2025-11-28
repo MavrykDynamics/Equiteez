@@ -88,13 +88,13 @@ export function WalletTransactionItem({
               <div className="flex item-center">
                 <Text
                   size="smallBody"
-                  weight="bold"
+                  weight="semibold"
                   className="flex item-center"
                 >
                   {transaction.transactionName}&nbsp;
                 </Text>
                 {isNotRwa ? (
-                  <Text size="smallBody" weight="bold">
+                  <Text size="smallBody" weight="semibold">
                     {transaction.tokenMetadata.symbol.toUpperCase()}
                   </Text>
                 ) : (
@@ -116,25 +116,25 @@ export function WalletTransactionItem({
                 </div>
               )}
             </div>
-            <Text size="tinyBody" color="lightBlue">
+            <Text size="tinyBody" color="lightSand">
               {formatDate(transaction.date, true)}
             </Text>
           </div>
         </div>
         <div className="flex items-center gap-[12px]">
           <div className="flex flex-col items-end">
-            <Text size="smallBody" weight="bold">
+            <Text size="smallBody" weight="semibold">
               {transaction.transactionSymbol}
               <Money fiat>{amount}</Money> {transaction.token.symbol}
             </Text>
             {amountUsd && (
-              <Text color="lightBlue" size="tinyBody">
+              <Text color="lightSand" size="tinyBody">
                 $<Money fiat>{amountUsd}</Money>
               </Text>
             )}
           </div>
           <Link to="" className="hidden lg:block">
-            <Text color="lightBlue">
+            <Text color="lightSand">
               <Icon icon="link" />
             </Text>
           </Link>

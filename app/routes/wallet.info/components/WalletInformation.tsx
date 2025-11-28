@@ -1,7 +1,7 @@
 import styles from "~/routes/wallet.info/styles.module.css";
 import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { ExportKeyPopup } from "~/routes/wallet.info/components/ExportKeyPopup";
 import { BackupPopup } from "~/routes/wallet.info/components/BackupPopup";
 import classNames from "clsx";
@@ -34,19 +34,23 @@ export function WalletInformation() {
         <div className={styles.walletInformationContainer}>
           <div className={styles.walletInformationContent}>
             <div className={styles.walletInformationText}>
-              <Text weight="bold">Export Key</Text>
-              <Text size="smallBody" color="lightBlue" className="max-w-[420px] block">
+              <Text weight="semibold">Export Key</Text>
+              <Text
+                size="smallBody"
+                color="lightSand"
+                className="max-w-[420px] block"
+              >
                 Securely export your private key to store or use it elsewhere.
                 Only do this on trusted devices.
               </Text>
             </div>
-            <ButtonV2
+            <Button
               onClick={toggleOpenExportKeyPopup}
               className={styles.walletBtn}
-              variant="yellowOutlined"
+              variant="outline"
             >
               Export Key
-            </ButtonV2>
+            </Button>
             <ExportKeyPopup
               isOpen={isExportKeyPopupOpen}
               onClose={toggleOpenExportKeyPopup}
@@ -56,19 +60,23 @@ export function WalletInformation() {
 
           <div className={styles.walletInformationContent}>
             <div className={styles.walletInformationText}>
-              <Text weight="bold">Manual Backup</Text>
-              <Text size="smallBody" color="lightBlue" className="max-w-[430px] block">
+              <Text weight="semibold">Manual Backup</Text>
+              <Text
+                size="smallBody"
+                color="lightSand"
+                className="max-w-[430px] block"
+              >
                 Create a manual backup of your wallet to keep your access safe.
                 Keep it in a safe, offline location.
               </Text>
             </div>
-            <ButtonV2
+            <Button
               onClick={toggleOpenBackupPopup}
               className={styles.walletBtn}
-              variant="yellowOutlined"
+              variant="outline"
             >
               Backup
-            </ButtonV2>
+            </Button>
             <BackupPopup
               isOpen={isBackupPopupOpen}
               onClose={toggleOpenBackupPopup}
@@ -84,10 +92,10 @@ export function WalletInformation() {
         >
           <QrCode address={userAddress || ""} />
           <div className={styles.userAddressContainer}>
-            <Text weight="bold">Wallet Address</Text>
+            <Text>Wallet Address</Text>
 
             <div className={styles.qrItem}>
-              <Text size="smallBody" weight="bold">
+              <Text size="smallBody" color="extraLightSand">
                 {userAddress}
               </Text>
               <CopyButton text={userAddress || ""}>

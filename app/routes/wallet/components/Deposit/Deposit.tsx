@@ -6,7 +6,7 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { Text } from "~/lib/atoms/Typography/Text";
 import CryproIcon from "~/icons/wallet/crypto.svg?react";
 import SpotIcon from "~/icons/wallet/spot.svg?react";
@@ -53,13 +53,13 @@ export function Deposit() {
             openedClassName={styles.dropdownWrapperActive}
             iconClassName={styles.dropdownIcon}
           >
-            <ButtonV2
+            <Button
               className="w-full"
               disabled={!userAddress}
-              variant="yellowPrimary"
+              variant="green"
             >
               Deposit
-            </ButtonV2>
+            </Button>
           </DropdownFaceContent>
         </ClickableDropdownArea>
         <DropdownBodyContent

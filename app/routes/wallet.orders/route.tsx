@@ -81,7 +81,9 @@ export default function WalletOrders() {
       <RoundedCard className={styles.roundedWrapper}>
         <div className="flex flex-col gap-[16px]">
           <div className="flex flex-col gap-[12px] px-[16px] lg:px-[24px]">
-            <Heading level="5">Open Orders</Heading>
+            <Text size="largeBody" weight="semibold">
+              Open Orders
+            </Text>
             <div className="flex gap-[12px]">
               <div className="flex-1">
                 <InputWithIcons
@@ -106,19 +108,19 @@ export default function WalletOrders() {
             <>
               <div className="hidden lg:flex flex-col">
                 <div className={styles.orderRow}>
-                  <Text size="tinyBody" color="lightBlue" className="p-[8px]">
+                  <Text size="tinyBody" color="lightSand" className="p-[8px]">
                     Asset
                   </Text>
-                  <Text size="tinyBody" color="lightBlue" className="p-[8px]">
+                  <Text size="tinyBody" color="lightSand" className="p-[8px]">
                     Type
                   </Text>
-                  <Text size="tinyBody" color="lightBlue" className="p-[8px]">
+                  <Text size="tinyBody" color="lightSand" className="p-[8px]">
                     Price/Token
                   </Text>
-                  <Text size="tinyBody" color="lightBlue" className="p-[8px]">
+                  <Text size="tinyBody" color="lightSand" className="p-[8px]">
                     Amount
                   </Text>
-                  <Text size="tinyBody" color="lightBlue" className="p-[8px]">
+                  <Text size="tinyBody" color="lightSand" className="p-[8px]">
                     Total
                   </Text>
                   <span />

@@ -12,7 +12,6 @@ import { ROUTES } from "~/consts/routes";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Link, NavLink, useLocation } from "@remix-run/react";
-import { TierLabel } from "~/lib/molecules/MbgTier/TierLabel";
 import {
   ClickableDropdownArea,
   CustomDropdown,
@@ -61,7 +60,6 @@ export const WalletSidebar = ({ mbgBalance }: { mbgBalance: number }) => {
     <div className={styles.walletSidebar}>
       <div className="flex w-full justify-between">
         <Heading level="5">Wallet</Heading>
-        <TierLabel mbgBalance={mbgBalance} />
       </div>
 
       <div className={styles.walletSidebarList}>
@@ -101,7 +99,7 @@ const WalletSidebarItem: FC<WalletSidebarItemProps> = ({
       end
       className={({ isActive }) =>
         clsx(
-          "p-3 rounded-lg bg-transparent",
+          "p-[12px] rounded-lg bg-transparent",
           isActive && styles.walletSidebarItemActive,
           styles.walletSidebarItem
         )
@@ -111,10 +109,10 @@ const WalletSidebarItem: FC<WalletSidebarItemProps> = ({
         <Icon className="size-6" />
       </div>
       <div className={styles.sidebarItemContent}>
-        <Text size="smallBody" weight="bold">
+        <Text size="smallBody" weight="semibold">
           {subHeader}
         </Text>
-        <Text size="tinyBody" className={styles.sidebarItemContentSubtext}>
+        <Text size="extraTinyBody" className={styles.sidebarItemContentSubtext}>
           {body}
         </Text>
       </div>
@@ -142,7 +140,7 @@ function WalletMobileMenu() {
           iconClassName={styles.selectIcon}
         >
           <div className="flex items-center gap-[8px]">
-            <Text color="yellow">
+            <Text>
               <selectedOption.Icon />
             </Text>
             <Text size="smallBody" weight="bold">
@@ -160,7 +158,7 @@ function WalletMobileMenu() {
                 key={item.link}
                 to={item.link}
               >
-                <Text color="yellow">
+                <Text>
                   <item.Icon />
                 </Text>
                 <Text size="smallBody" weight="bold">

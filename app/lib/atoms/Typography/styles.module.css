@@ -58,50 +58,51 @@
 .black {
   color: var(--color-neutral-dark);
 }
-.yellow {
-  color: var(--color-yellow-500);
+.sand {
+  color: var(--color-sand-900);
 }
-.darkBlue {
-  color: var(--color-dark-blue-500);
+.lightSand {
+  color: var(--color-sand-700);
 }
-.lightBlue {
-  color: var(--color-light-blue-100);
-}
-.blue {
-  color: var(--color-blue-500);
-}
-.red {
-  color: var(--color-red-500);
+.extraLightSand {
+  color: var(--color-sand-500);
 }
 .green {
   color: var(--color-green-500);
 }
-.goldGradient {
-  background: var(--color-gold-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.darkGreen {
+  color: var(--color-br-green-500);
+}
+.lightGreen {
+  color: var(--color-br-green-400);
+}
+.red {
+  color: var(--color-red-500);
+}
+.orange {
+  color: var(--color-orange);
 }
 
 .hero {
-  font-weight: var(--extra-bold-weight);
+  font-weight: var(--semibold-weight);
   font-size: var(--hero-size);
   line-height: 96px;
   letter-spacing: -0.5%;
 }
 .h1 {
-  font-weight: var(--extra-bold-weight);
+  font-weight: var(--semibold-weight);
   font-size: var(--h1-size);
   line-height: 84px;
   letter-spacing: 0%;
 }
 .h2 {
-  font-weight: var(--extra-bold-weight);
+  font-weight: var(--semibold-weight);
   font-size: var(--h2-size);
   line-height: 66px;
   letter-spacing: 0.41%;
 }
 .h3 {
-  font-weight: var(--extra-bold-weight);
+  font-weight: var(--semibold-weight);
   font-size: var(--h3-size);
   line-height: 48px;
   letter-spacing: 0.41%;
@@ -112,13 +113,13 @@
   }
 }
 .h4 {
-  font-weight: var(--extra-bold-weight);
+  font-weight: var(--semibold-weight);
   font-size: var(--h4-size);
   line-height: 36px;
   letter-spacing: 0.34%;
 }
 .h5 {
-  font-weight: var(--extra-bold-weight);
+  font-weight: var(--semibold-weight);
   font-size: var(--h5-size);
   line-height: 30px;
   letter-spacing: 0.38%;

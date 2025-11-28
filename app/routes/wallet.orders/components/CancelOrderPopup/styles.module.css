@@ -8,7 +8,6 @@
 .popupWrapper {
   padding: 0;
   width: 640px;
-  border: 1px solid var(--color-dark-blue-200);
   @media (--media-phone-max) {
     height: 100%;
     border-radius: 0;
@@ -31,6 +30,7 @@
 .btnWrapper {
   width: 100%;
   display: flex;
+  max-width: 400px;
   gap: 12px;
   @media (--media-phone-max) {
     position: absolute;
