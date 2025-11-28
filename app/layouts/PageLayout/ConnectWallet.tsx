@@ -1,15 +1,17 @@
-import clsx from 'clsx';
-import { Button } from '~/lib/atoms/Button';
-import { HashShortView } from '~/lib/atoms/HashShortView';
+import clsx from "clsx";
+import { Button } from "~/lib/atoms/Button";
+import { HashShortView } from "~/lib/atoms/HashShortView";
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import IdentIcon from '~/lib/organisms/IdenIcon';
-import { useUserContext } from '~/providers/UserProvider/user.provider';
-import { CustomSuspense } from '~/templates/CustomSuspense';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
+import IdentIcon from "~/lib/organisms/IdenIcon";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { CustomSuspense } from "~/templates/CustomSuspense";
+import { Link } from "@remix-run/react";
+import { ROUTES } from "~/consts/routes";
 
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
@@ -23,10 +25,10 @@ export const ConnectWallet = () => {
             <ClickableDropdownArea>
               <DropdownFaceContent
                 className={clsx(
-                  'py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ',
-                  'hover:bg-dark-green-opacity hover:border-dark-green-500',
-                  'focus:border-dark-green-500 focus:bg-transparent',
-                  'transition duration-250 ease-in-out'
+                  "py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ",
+                  "hover:bg-dark-green-opacity hover:border-dark-green-500",
+                  "focus:border-dark-green-500 focus:bg-transparent",
+                  "transition duration-250 ease-in-out"
                 )}
               >
                 <div className="flex items-center">
@@ -47,6 +49,12 @@ export const ConnectWallet = () => {
               topMargin={16}
               customWidth={203}
             >
+              <Link
+                to={ROUTES.wallet}
+                className="bg-background block text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
+              >
+                Profile dashboard
+              </Link>
               <button
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                 onClick={changeUser}
