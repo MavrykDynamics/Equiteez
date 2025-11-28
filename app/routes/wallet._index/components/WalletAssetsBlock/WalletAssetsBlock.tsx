@@ -116,7 +116,8 @@ export const WalletAssetsBlock = ({
                               >
                                 <Text
                                   size="smallBody"
-                                  weight="bold"
+                                  weight="semibold"
+                                  color="lightGreen"
                                   className={classNames(
                                     styles.assetItemText,
                                     "max-w-[110px] truncate"
@@ -126,7 +127,7 @@ export const WalletAssetsBlock = ({
                                 </Text>
                               </Link>
                             </div>
-                            <Text size="smallBody" weight="bold">
+                            <Text size="smallBody" weight="semibold">
                               $<Money fiat>{item.available_balance_usd}</Money>
                             </Text>
                           </div>

@@ -96,13 +96,13 @@
 }
 .assetItemText {
   display: block;
-  color: var(--color-yellow-100);
+  color: var(--color-br-green-400);
   transition: all 0.2s ease;
   text-decoration: underline;
   cursor: pointer;
 }
 .assetItemText:hover {
-  color: var(--color-yellow-300);
+  color: var(--color-br-green-500);
 }
 .walletAssetBlockWrapper {
   display: flex;

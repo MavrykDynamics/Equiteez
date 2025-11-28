@@ -7,8 +7,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-light-blue-500);
-  color: var(--color-yellow-500);
+  background: var(--color-grey-50);
+  color: var(--color-orange);
 }
 .roundedWrapper {
   padding: 24px 0;
@@ -30,12 +30,9 @@
     padding: 12px 16px;
   }
 }
-.transactionItemPadding:hover {
-  background: var(--color-dark-blue-300);
-}
 .assetName {
   text-decoration: underline;
-  color: var(--color-yellow-100);
+  color: var(--color-br-green-400);
   text-overflow: ellipsis;
   overflow: hidden;
   max-width: 80px;
@@ -46,7 +43,7 @@
   transition: all 0.2s ease;
 }
 .assetName:hover {
-  color: var(--color-yellow-300);
+  color: var(--color-br-green-500);
 }
 
 .transactionRefunded,
