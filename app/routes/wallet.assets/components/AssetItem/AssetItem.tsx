@@ -51,7 +51,7 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
                 {asset.token.symbol}
               </Text>
               <Text size="tinyBody" color="orange">
-                APY 6.2%
+                APY {asset.token.apy}%
               </Text>
             </div>
           </div>
@@ -78,19 +78,15 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
           <Text
             size="tinyBody"
             weight="semibold"
-            color="green"
+            color={asset.price_change24h_percent >= 0 ? "green" : "red"}
             className="flex items-center"
           >
-            <Text
-              size="smallBody"
-              weight="semibold"
-              color="green"
-              className="pt-[3px]"
-            >
-              <Icon icon="upArrow" />
-            </Text>{" "}
+            <Icon
+              icon="upArrow"
+              className={asset.price_change24h_percent < 0 ? "rotate-180" : ""}
+            />
             <span>
-              <Money>2.8</Money>%
+              <Money>{asset.price_change24h_percent}</Money>%
             </span>
           </Text>
         </div>

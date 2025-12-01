@@ -67,26 +67,26 @@ export default function WalletTransactions() {
 
   return (
     <div className="flex flex-col gap-[16px]">
+      <div className="flex flex-col gap-[12px]">
+        <Heading level="5">Transactions</Heading>
+        <div className="flex gap-[12px]">
+          <div className="flex-1">
+            <InputWithIcons
+              className="min-h-[48px] bg-[var(--color-neutral-light)]"
+              placeholder="Search Assets"
+              value={searchValue}
+              onChange={onChange}
+              showSearchIcon
+            />
+          </div>
+          <TransactionsFilters
+            applyFilter={handleSelectTransactionType}
+            selectedType={queryParams.transactionType}
+          />
+        </div>
+      </div>
       <RoundedCard className={styles.roundedWrapper}>
         <div className="flex flex-col gap-[16px]">
-          <div className="flex flex-col gap-[12px] px-[16px] lg:px-[24px]">
-            <Heading level="5">Transactions</Heading>
-            <div className="flex gap-[12px]">
-              <div className="flex-1">
-                <InputWithIcons
-                  className="min-h-[48px]"
-                  placeholder="Search Assets"
-                  value={searchValue}
-                  onChange={onChange}
-                  showSearchIcon
-                />
-              </div>
-              <TransactionsFilters
-                applyFilter={handleSelectTransactionType}
-                selectedType={queryParams.transactionType}
-              />
-            </div>
-          </div>
           {loading ? (
             <div className="w-full h-full min-h-[400px] flex items-center justify-center">
               <Spinner />
