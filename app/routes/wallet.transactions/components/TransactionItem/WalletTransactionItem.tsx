@@ -1,6 +1,6 @@
-import { TransactionType } from "~/lib/userTransactions/transactions.types";
-import React, { useMemo, useState } from "react";
-import { TransactionTypes } from "~/lib/userTransactions/transactions.const";
+import { TransactionType } from "~/lib/apis/mbrwa/user/userTransactions/transactions.types";
+import { useMemo, useState } from "react";
+import { TransactionTypes } from "~/lib/apis/mbrwa/user/userTransactions/transactions.const";
 import {
   TABLET_MAX_WIDTH,
   useWindowDimensions,

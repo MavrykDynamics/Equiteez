@@ -1,7 +1,7 @@
 import { mbrwaApiUrl } from "~/lib/apis/mbrwa/index";
 import { api } from "~/lib/utils/api";
-import { TransactionsListSchema } from "~/lib/userTransactions/transactions.schema";
-import { TransactionsListType } from "~/lib/userTransactions/transactions.types";
+import { TransactionsListType } from "./user/userTransactions/transactions.types";
+import { TransactionsListSchema } from "./user/userTransactions/transactions.schema";
 
 export const fetchUserTransactions = async (
   userAddress: string,

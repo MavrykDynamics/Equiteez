@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { OrderSchema, OrdersListSchema } from "~/lib/userOrders/orders.schema";
+import {
+  OrderSchema,
+  OrdersListSchema,
+} from "~/lib/apis/mbrwa/user/userOrders/orders.schema";
 import { TokenMetadata } from "~/lib/metadata";
 import { JSX } from "react";
 

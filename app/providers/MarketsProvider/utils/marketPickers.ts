@@ -1,3 +1,4 @@
+import { stablecoinContract } from "~/consts/contracts";
 import { MarketInternalStateType } from "../market.types";
 
 /**
@@ -7,7 +8,7 @@ import { MarketInternalStateType } from "../market.types";
 export const createMarketPickers = (
   config: MarketInternalStateType["config"]
 ) => {
-  const { dodoMav, orderbook } = config;
+  const { orderbook } = config;
 
   const pickOrderbookContract = Array.from(orderbook.values()).reduce<
     StringRecord<string>
@@ -16,40 +17,25 @@ export const createMarketPickers = (
     return acc;
   }, {});
 
-  const pickDodoContractBasedOnToken = Array.from(dodoMav.values()).reduce<
+  const pickOrderbookToken = Array.from(orderbook.values()).reduce<
     StringRecord<string>
   >((acc, curr) => {
-    acc[curr.baseTokenAddress] = curr.address;
+    acc[curr.address] = curr.rwaTokenAddress;
     return acc;
   }, {});
 
-  const pickDodoContractQuoteToken = Array.from(dodoMav.values()).reduce<
+  const pickOrderbookContractQuoteToken = Array.from(orderbook.values()).reduce<
     StringRecord<string>
   >((acc, curr) => {
-    acc[curr.baseTokenAddress] = curr.quoteTokenAddress;
-    return acc;
-  }, {});
-
-  const pickMockBaseToken = Array.from(dodoMav.values()).reduce<
-    StringRecord<string>
-  >((acc, curr) => {
-    acc[curr.baseTokenAddress] = curr.baseLpTokenAddress;
-    return acc;
-  }, {});
-
-  const pickMockQuoteToken = Array.from(dodoMav.values()).reduce<
-    StringRecord<string>
-  >((acc, curr) => {
-    acc[curr.baseTokenAddress] = curr.quoteLpTokenAddress;
+    acc[curr.rwaTokenAddress] =
+      curr.currencies?.[0]?.token.address ?? stablecoinContract;
     return acc;
   }, {});
 
   return {
     pickOrderbookContract,
-    pickDodoContractBasedOnToken,
-    pickMockBaseToken,
-    pickMockQuoteToken,
-    pickDodoContractQuoteToken,
+    pickOrderbookContractQuoteToken,
+    pickOrderbookToken,
   };
 };
 
@@ -60,13 +46,13 @@ export const createMarketPickers = (
  * @returns valid tokens record
  */
 export const createValidTokensRecord = (
-  config: MarketInternalStateType["config"]["dodoMav"]
+  config: MarketInternalStateType["config"]["orderbook"]
 ) => {
   const validTokensObj = Array.from(config.values()).reduce<
     StringRecord<boolean>
   >((acc, curr) => {
-    acc[curr.baseTokenAddress] = true;
-    acc[curr.quoteTokenAddress] = true;
+    acc[curr.rwaTokenAddress] = true;
+    acc[curr.currencies[0]?.token?.address] = true;
     return acc;
   }, {});
 

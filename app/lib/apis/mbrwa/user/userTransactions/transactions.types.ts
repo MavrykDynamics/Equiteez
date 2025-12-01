@@ -3,7 +3,7 @@ import {
   TransactionOrderSchema,
   TransactionsListSchema,
   TransactionTransferSchema,
-} from "~/lib/userTransactions/transactions.schema";
+} from "~/lib/apis/mbrwa/user/userTransactions/transactions.schema";
 import { TokenMetadata } from "~/lib/metadata";
 import { JSX } from "react";
 

@@ -4,7 +4,7 @@ import { Heading } from "~/lib/atoms/Typography/Heading";
 import Money from "~/lib/atoms/Money";
 import { DepositWithdraw } from "~/routes/wallet/components/DepositWithdraw/DepositWithdraw";
 import styles from "../../route.module.css";
-import { useUserBalance } from "~/lib/userBalance/useUserBalance";
+import { useUserBalance } from "~/lib/apis/mbrwa/user/userBalance/useUserBalance";
 
 export const WalletTopBar = () => {
   const { userBalance } = useUserBalance();

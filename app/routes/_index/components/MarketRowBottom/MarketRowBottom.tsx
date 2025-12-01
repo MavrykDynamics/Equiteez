@@ -14,7 +14,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 
 export const MarketRowBottom = () => {
   const { marketsArr } = useMarketsContext();
-  const { dodoMav } = useDexContext();
+  const { orderbookStorages } = useDexContext();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -33,7 +33,7 @@ export const MarketRowBottom = () => {
         >
           {marketsArr.map((market) => {
             const currentPrice = atomsToTokens(
-              dodoMav[market.slug],
+              orderbookStorages[market.slug]?.lowestSellPrice,
               market.decimals
             );
             return (

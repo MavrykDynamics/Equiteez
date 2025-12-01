@@ -9,9 +9,11 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { Spinner } from "~/lib/atoms/Spinner";
 import { FiltersProvider } from "./components/Filters/FiltersProvider";
+
+import { usePagination } from "~/hooks/usePagination";
+import { Spinner } from "~/lib/atoms/Spinner";
+import { ApiPagination } from "~/lib/organisms/Pagination/ApiPagination";
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,21 +22,19 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+const PAGE_LIMIT = 12;
+
 export default function Properties() {
+  const { marketsArr, validBaseTokens, marketApiError, isLoading } =
+    useMarketsContext();
+  const { orderbookStorages } = useDexContext();
+
   const {
-    marketsArr,
-    validBaseTokens,
-    marketApiError,
-    loadMoreMarkets,
-    isLoading,
-    reachedTheEnd,
-  } = useMarketsContext();
-  const { dodoMav } = useDexContext();
-  const filteredEstates = marketsArr;
-
-  const onScroll =
-    isLoading || reachedTheEnd ? undefined : buildOnScroll(loadMoreMarkets);
-
+    data: filteredEstates,
+    page,
+    setPage,
+    totalPages,
+  } = usePagination(marketsArr, PAGE_LIMIT);
   return (
     <PageLayout>
       <FiltersProvider>
@@ -46,30 +46,12 @@ export default function Properties() {
             <div className="mt-5">
               <ApiErrorBox message="The market data is unavailable at the moment" />
             </div>
+          ) : isLoading ? (
+            <div className={"w-full flex items-center justify-center h-full"}>
+              <Spinner size={36} />
+            </div>
           ) : (
-            <InfiniteScroll
-              dataLength={marketsArr.length}
-              hasMore={reachedTheEnd === false}
-              next={loadMoreMarkets}
-              loader={
-                isLoading && (
-                  <div className="w-full flex justify-center h-12 mt-12 relative overflow-hidden">
-                    <Spinner size={36} />
-                  </div>
-                )
-              }
-              onScroll={onScroll}
-              scrollableTarget={"historyContainer"}
-              endMessage={
-                marketsArr.length > 0 ? (
-                  <>
-                    <div className=" text-center text-sand-600 text-card-headline mt-11">
-                      End of The Assets
-                    </div>
-                  </>
-                ) : null
-              }
-            >
+            <div>
               <div className="mt-5 text-body text-content">
                 {filteredEstates.length} items
               </div>
@@ -79,7 +61,7 @@ export default function Properties() {
                     es.assetDetails.type === SECONDARY_MARKET;
 
                   const pricePerToken = atomsToTokens(
-                    dodoMav[es.slug],
+                    orderbookStorages[es.slug]?.lowestSellPrice || 0,
                     es.decimals
                   );
 
@@ -104,7 +86,19 @@ export default function Properties() {
                   );
                 })}
               </div>
-            </InfiniteScroll>
+
+              {filteredEstates.length && (
+                <div className="lg:ml-auto">
+                  <ApiPagination
+                    setPage={setPage}
+                    page={page}
+                    totalPages={totalPages}
+                    paginatedDataLength={filteredEstates.length}
+                    isLoading={isLoading}
+                  />
+                </div>
+              )}
+            </div>
           )}
           <Spacer height={110} />
         </div>
@@ -112,19 +106,3 @@ export default function Properties() {
     </PageLayout>
   );
 }
-
-/**
- * Build onscroll listener to trigger next loading, when fetching data resulted in error.
- * `InfiniteScroll.props.next` won't be triggered in this case.
- */
-const buildOnScroll =
-  (next: EmptyFn) =>
-  ({ target }: { target: EventTarget | null }) => {
-    const elem: HTMLElement =
-      target instanceof Document
-        ? (target.scrollingElement! as HTMLElement)
-        : (target as HTMLElement);
-    const atBottom =
-      0 === elem.offsetHeight - elem.clientHeight - elem.scrollTop;
-    if (atBottom) next();
-  };

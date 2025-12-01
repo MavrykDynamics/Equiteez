@@ -3,7 +3,7 @@ import { Heading } from "~/lib/atoms/Typography/Heading";
 import { RoundedCard } from "~/lib/atoms/RoundedCard/RoundedCard";
 import styles from "./styles.module.css";
 import { InputWithIcons } from "~/lib/organisms/InputWithIcons/InputWithIcons";
-import { useTransactions } from "~/lib/userTransactions/useTransactions";
+import { useTransactions } from "~/lib/apis/mbrwa/user/userTransactions/useTransactions";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { ApiPagination } from "~/lib/organisms/Pagination/ApiPagination";

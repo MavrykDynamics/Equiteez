@@ -8,7 +8,7 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { ApiPagination } from "~/lib/organisms/Pagination/ApiPagination";
 import { useDebounce } from "use-debounce";
-import { useOrders } from "~/lib/userOrders/useOrders";
+import { useOrders } from "~/lib/apis/mbrwa/user/userOrders/useOrders";
 import { WalletOrderItem } from "~/routes/wallet.orders/components/OrderItem/OrderItem";
 import { EmptyState } from "~/routes/wallet/components/EmptyState/EmptyState";
 import { OpenOrdersFilters } from "~/lib/organisms/WalletFilters/OpenOrdersFilters";

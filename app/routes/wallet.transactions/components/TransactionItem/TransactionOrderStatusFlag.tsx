@@ -1,6 +1,8 @@
-import { OrderStatus, OrderStatusNames } from "~/lib/userOrders/order.const";
+import {
+  OrderStatus,
+  OrderStatusNames,
+} from "~/lib/apis/mbrwa/user/userOrders/order.const";
 import styles from "~/routes/wallet.transactions/styles.module.css";
-import React from "react";
 
 export function TransactionOrderStatusFlag({
   status,

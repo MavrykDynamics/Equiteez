@@ -11,7 +11,7 @@ import {
   OrderIconByType,
   OrderNameByType,
   OrderTypes,
-} from "~/lib/userOrders/order.const";
+} from "~/lib/apis/mbrwa/user/userOrders/order.const";
 
 export function SelectOrderType({
   selectedOrderType,
@@ -83,7 +83,8 @@ export function SelectOrderType({
             <div className="flex flex-col">
               {allOptions.map((item) => (
                 <div
-                  onClick={(e) => {
+                  role="listitem"
+                  onClick={() => {
                     setOrderType(item.value);
                   }}
                   className={styles.selectCoinListItem}

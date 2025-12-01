@@ -2,7 +2,6 @@ import clsx from "clsx";
 import { FC } from "react";
 import { TabType } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 import styles from "./styles.module.css";
-import { Text } from "~/lib/atoms/Typography/Text";
 
 type TabProps = {
   active?: boolean;
@@ -23,11 +22,21 @@ export const Tab: FC<TabProps> = ({
     <button
       disabled={disabled}
       onClick={handleInternalClick}
-      className={clsx(styles.tab, { [styles.tabActive]: active }, className)}
+      className={clsx(
+        styles.tab,
+        !active && "hover:bg-sand-300",
+        active && "bg-sand-800 ",
+        className
+      )}
     >
-      <Text weight="bold" color={active ? "yellow" : "lightBlue"}>
+      <p
+        className={clsx(
+          active ? "text-white" : "text-sand-700",
+          "text-base font-semibold"
+        )}
+      >
         {label}
-      </Text>
+      </p>
     </button>
   );
 };

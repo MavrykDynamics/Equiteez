@@ -1,5 +1,4 @@
-import type { OrderType } from "~/lib/userOrders/orders.types";
-import React from "react";
+import type { OrderType } from "~/lib/apis/mbrwa/user/userOrders/orders.types";
 import styles from "~/routes/wallet.orders/styles.module.css";
 import { AssetIcon } from "~/templates/AssetIcon";
 import { Text } from "~/lib/atoms/Typography/Text";

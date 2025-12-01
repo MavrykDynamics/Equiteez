@@ -21,7 +21,7 @@ export const InputWithIcons: FC<InputWithIconsProps> = ({
   triggerOutSideClick = true,
   ...rest
 }) => {
-  const ref = useOutsideClick(handleClose, !triggerOutSideClick);
+  const ref = useOutsideClick(handleClose || (() => {}), !triggerOutSideClick);
 
   return (
     <div ref={ref} className="relative">

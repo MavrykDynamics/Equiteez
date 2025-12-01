@@ -193,7 +193,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
         position === "left" && "left-0",
         position === "center" && "-translate-x-1/2 left-1/2",
         position === "right" && "right-0",
-        "transition duration-300 ease-in-out",
+        "transition duration-300 ease-in-out rounded-lg",
 
         styles.dropdownData,
         opened && styles.opened

@@ -1,11 +1,10 @@
-import React, { useMemo } from "react";
 import styles from "./styles.module.css";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
-import type { OrderType } from "~/lib/userOrders/orders.types";
+import type { OrderType } from "~/lib/apis/mbrwa/user/userOrders/orders.types";
 import { Link } from "@remix-run/react";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { getAssetByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
@@ -61,7 +60,7 @@ export function MobileOrderPopup({
                 </Money>
               </Text>
               <Text size="tinyBody" color="lightBlue">
-                {formatDate(order.created_at, true)}
+                {formatDate(order.created_at)}
               </Text>
             </div>
           </div>

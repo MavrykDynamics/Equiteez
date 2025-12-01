@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "../../styles.module.css";
-import type { OrderType } from "~/lib/userOrders/orders.types";
+import type { OrderType } from "~/lib/apis/mbrwa/user/userOrders/orders.types";
 import { useHandleOrder } from "~/routes/wallet.orders/components/OrderItem/useHandleOrder";
 import { AssetIcon } from "~/templates/AssetIcon";
 import { Text } from "~/lib/atoms/Typography/Text";

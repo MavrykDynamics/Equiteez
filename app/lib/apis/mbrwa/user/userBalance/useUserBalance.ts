@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { useQuery } from "@tanstack/react-query";
-import { UserBalanceType } from "~/lib/userBalance/balance.types";
 import { fetchUserBalanceDetails } from "~/lib/apis/mbrwa/user";
 import { unknownToError } from "~/errors/error";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
+import { UserBalanceType } from "./balance.types";
+import { useQuery } from "@tanstack/react-query";
 
 export function useUserBalance() {
   const { userAddress } = useUserContext();

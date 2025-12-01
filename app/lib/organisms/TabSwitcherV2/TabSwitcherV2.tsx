@@ -26,7 +26,7 @@ export const TabSwitcherV2: FC<TabSwitcherProps> = ({
   tabClassName,
 }) => {
   return (
-    <div className={clsx(styles.wrapper, className)}>
+    <div className={clsx(styles.wrapper, "bg-sand-200", className)}>
       {tabs.map((tab) => (
         <Tab
           key={tab.id}

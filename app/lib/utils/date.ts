@@ -1,14 +1,16 @@
-export function formatDate(inputDate: string) {
-  // Parse the input date string to a Date object
+export function formatDate(inputDate: string, includeTime?: boolean) {
   const date = new Date(inputDate);
 
-  // Define the options for formatting the date
-  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  const options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    ...(includeTime && {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  };
 
-  // Format the date to the desired format
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const formattedDate = new Intl.DateTimeFormat('en-GB', options).format(date);
-
-  return formattedDate;
+  return new Intl.DateTimeFormat("en-GB", options).format(date);
 }

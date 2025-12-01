@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { OrderTypes } from "~/lib/userOrders/order.const";
+import { OrderTypes } from "./order.const";
 
 export const OrderSchema = z.object({
   id: z.number(),
@@ -20,6 +20,14 @@ export const OrderSchema = z.object({
   refunded_amount: z.number(),
   order_id: z.number(),
 });
+
+export const OrderTotalSchema = z.object({
+  orderbook_address: z.string(),
+  total_token_amount: z.number(),
+  token_address: z.string(),
+});
+
+export const OrderTotalListSchema = z.array(OrderTotalSchema);
 
 export const OrdersListSchema = z.object({
   orders: z.array(OrderSchema),
