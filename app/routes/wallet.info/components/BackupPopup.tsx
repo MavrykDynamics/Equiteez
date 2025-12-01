@@ -3,9 +3,8 @@ import styles from "./styles.module.css";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
-import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import AttentionIcon from "app/icons/wallet/attension.svg?react";
 import { Checkbox } from "~/lib/atoms/CheckBox";
 
@@ -36,13 +35,15 @@ export function BackupPopup({
         />
       </button>
       <div className={styles.contentWrapper}>
-        <Heading level="4">Manual Backup</Heading>
+        <Text size="largeBody" weight="semibold">
+          Manual Backup
+        </Text>
         <div className="flex flex-col gap-[12px]">
           <div className={styles.attentionBLock}>
             <AttentionIcon className="min-w-[32px]" />
-            <div className="flex flex-col">
-              <Text weight="bold">Be Careful!</Text>
-              <Text size="smallBody">
+            <div className="flex flex-col gap-[4px]">
+              <Text weight="semibold">Be Careful!</Text>
+              <Text size="smallBody" color="lightSand">
                 Losing your backup means permanently losing access to your
                 wallet and funds. Store your backup securely offline and never
                 share it with anyone. Multibank.io cannot restore it if lost.
@@ -58,21 +59,12 @@ export function BackupPopup({
           </div>
         </div>
         <div className={styles.btnWrapper}>
-          <ButtonV2
-            onClick={onClose}
-            className="flex-1"
-            variant="yellowOutlined"
-          >
+          <Button onClick={onClose} className="flex-1" variant="outline">
             Cancel
-          </ButtonV2>
-          <ButtonV2
-            onClick={onSubmit}
-            className="flex-1"
-            disabled={!isAgree}
-            variant="yellowPrimary"
-          >
+          </Button>
+          <Button onClick={onSubmit} className="flex-1" disabled={!isAgree}>
             Manual Backup
-          </ButtonV2>
+          </Button>
         </div>
       </div>
     </CustomPopup>

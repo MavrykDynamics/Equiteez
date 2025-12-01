@@ -5,7 +5,7 @@ import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
 import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import AttentionIcon from "app/icons/wallet/attension.svg?react";
 import { Checkbox } from "~/lib/atoms/CheckBox";
 
@@ -40,9 +40,9 @@ export function ExportKeyPopup({
         <div className="flex flex-col gap-[12px]">
           <div className={styles.attentionBLock}>
             <AttentionIcon className="min-w-[32px]" />
-            <div className="flex flex-col">
-              <Text weight="bold">Be Careful!</Text>
-              <Text size="smallBody">
+            <div className="flex flex-col gap-[4px]">
+              <Text weight="semibold">Be Careful!</Text>
+              <Text size="smallBody" color="lightSand">
                 Your private key gives full access to your wallet and funds.
                 Anyone with it can control your assets.Export it only to a safe,
                 offline location and never share it. If lost or stolen, it
@@ -59,21 +59,12 @@ export function ExportKeyPopup({
           </div>
         </div>
         <div className={styles.btnWrapper}>
-          <ButtonV2
-            onClick={onClose}
-            className="flex-1"
-            variant="yellowOutlined"
-          >
+          <Button onClick={onClose} className="flex-1" variant="outline">
             Cancel
-          </ButtonV2>
-          <ButtonV2
-            onClick={onSubmit}
-            className="flex-1"
-            disabled={!isAgree}
-            variant="yellowPrimary"
-          >
+          </Button>
+          <Button onClick={onSubmit} className="flex-1" disabled={!isAgree}>
             Export Key
-          </ButtonV2>
+          </Button>
         </div>
       </div>
     </CustomPopup>

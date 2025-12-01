@@ -44,11 +44,12 @@ export function DepositCryptoPopup({
           <div className="flex flex-col gap-[4px] lg:gap-[12px]">
             <div className={styles.attentionBLock}>
               <AttentionIcon className="min-w-[32px]" />
-              <div className="flex flex-col">
-                <Text weight="bold">Please Note</Text>
-                <Text size="smallBody">
-                  You can deposit only USDT and MVRK. Any other assets won’t be
-                  credited to your account.
+              <div className="flex flex-col gap-[4px]">
+                <Text weight="semibold">Please Note</Text>
+                <Text size="smallBody" color="lightSand">
+                  You can deposit only USDT, MVRK, and RWA assets listed on the
+                  platform. Any other assets won’t be credited to your account
+                  and will not be recoverable.
                 </Text>
               </div>
             </div>
