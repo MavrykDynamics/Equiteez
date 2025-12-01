@@ -151,33 +151,33 @@ export default function WalletAssets() {
 
   return (
     <div className="flex flex-col gap-[16px]">
+      <div className="flex flex-col gap-[12px]">
+        <div className="flex justify-between">
+          <Heading level="5">Assets</Heading>
+          <FormCheckbox
+            labelClassName="items-center"
+            onChange={(checked) => setIsHideLowBalance(checked)}
+            checked={isHideLowBalance}
+            label={
+              <Text size="smallBody" weight="semibold" color="lightSand">
+                Hide Low Balances
+              </Text>
+            }
+          />
+        </div>
+
+        <div className="w-full">
+          <InputWithIcons
+            className="min-h-[48px] bg-[var(--color-neutral-light)]"
+            placeholder="Search"
+            value={searchValue}
+            onChange={onChange}
+            showSearchIcon
+          />
+        </div>
+      </div>
       <RoundedCard className={styles.roundedWrapper}>
         <div className="flex flex-col gap-[16px]">
-          <div className="flex flex-col gap-[12px] px-[16px] lg:px-[24px]">
-            <div className="flex justify-between">
-              <Heading level="5">Assets</Heading>
-              <FormCheckbox
-                labelClassName="items-center"
-                onChange={(checked) => setIsHideLowBalance(checked)}
-                checked={isHideLowBalance}
-                label={
-                  <Text size="smallBody" weight="semibold" color="lightSand">
-                    Hide Low Balances
-                  </Text>
-                }
-              />
-            </div>
-
-            <div className="w-full">
-              <InputWithIcons
-                className="min-h-[48px]"
-                placeholder="Search Assets"
-                value={searchValue}
-                onChange={onChange}
-                showSearchIcon
-              />
-            </div>
-          </div>
           {loading ? (
             <div className="w-full h-full min-h-[400px] flex items-center justify-center">
               <Spinner />
@@ -201,7 +201,7 @@ export default function WalletAssets() {
           )}
         </div>
       </RoundedCard>
-      {data.length && (
+      {Boolean(data.length) && (
         <div className="lg:ml-auto">
           <ApiPagination
             setPage={setPage}

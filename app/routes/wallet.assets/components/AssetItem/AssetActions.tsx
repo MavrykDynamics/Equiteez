@@ -189,9 +189,7 @@ export function AssetActions({ asset }: { asset: AssetType }) {
           </DropdownFaceContent>
         </ClickableDropdownArea>
         <DropdownBodyContent position="right" topMargin={-20} customWidth={241}>
-          <div className={styles.assetActionsContent}>
-            <AssetActionDropdownContent asset={asset} />
-          </div>
+          <AssetActionDropdownContent asset={asset} />
         </DropdownBodyContent>
       </CustomDropdown>
     </div>

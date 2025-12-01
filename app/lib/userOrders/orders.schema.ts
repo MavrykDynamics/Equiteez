@@ -18,6 +18,7 @@ export const OrderSchema = z.object({
   total_usd_value_of_rwa_token_amount: z.number(),
   unfulfilled_amount: z.number(),
   refunded_amount: z.number(),
+  order_id: z.number(),
 });
 
 export const OrdersListSchema = z.object({

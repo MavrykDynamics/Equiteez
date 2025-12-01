@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
 import { orderbookCancelOrder } from "~/contracts/orderbook.contract";
 import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
+import { OrderTypes } from "~/lib/userOrders/order.const";
 
 export function useHandleOrder(
   order: OrderType,
@@ -23,8 +24,12 @@ export function useHandleOrder(
   const cancelOrderProps = useMemo(
     () => ({
       orderbookContractAddress: pickOrderbookContract[order.token.address],
-      orderId: order.id,
-      orderType: order.order_type,
+      orderId: order.order_id,
+      orderType:
+        order.order_type === OrderTypes.LIMIT_BUY ||
+        order.order_type === OrderTypes.MARKET_BUY
+          ? "BUY"
+          : "SELL",
     }),
     [order.id, order.order_type, order.token.address, pickOrderbookContract]
   );
@@ -43,7 +48,7 @@ export function useHandleOrder(
   const { invokeAction: handleCancelOrder, status } = useContractAction(
     orderbookCancelOrder,
     cancelOrderProps,
-    undefined,
+    undefined
     // contractActionToastProps //TODO add toastMessages
   );
 
