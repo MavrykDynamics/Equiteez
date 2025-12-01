@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import styles from "./styles.module.css";
 import classNames from "clsx";
-import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { SelectCoin } from "~/routes/wallet/components/Withdraw/SelectCoin";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { toTokenSlug } from "~/lib/assets";
@@ -117,7 +116,7 @@ export function WithdrawSpotPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-content stroke-current"
           onClick={handleClosePopup}
         />
       </button>
@@ -135,28 +134,30 @@ export function WithdrawSpotPopup({
           <>
             <div className="flex flex-col items-center justify-center gap-[16px]">
               <div className="flex flex-col items-center justify-center gap-[12px]">
-                <Heading level="4">Withdraw Your Funds</Heading>
+                <Text size="largeBody" weight="semibold">
+                  Withdraw Your Funds
+                </Text>
                 <Text className="text-center">Withdraw to Spot Wallet</Text>
               </div>
               <div className="flex items-center justify-center gap-[12px]">
                 <div className={styles.chip}>
-                  <Text color="yellow">
-                    <HouseIcon />
+                  <Text>
+                    <HouseIcon className="text-content stroke-current" />
                   </Text>
-                  <Text size="smallBody" weight="bold">
+                  <Text size="smallBody" weight="semibold">
                     RWA Account
                   </Text>
                 </div>
 
-                <Text color="yellow">
-                  <Icon icon="arrow-right" />
+                <Text>
+                  <Icon icon="arrow-right" className="text-content text-content stroke-current" />
                 </Text>
 
                 <div className={styles.chip}>
-                  <Text color="yellow">
+                  <Text>
                     <Icon icon="wallet" />
                   </Text>
-                  <Text size="smallBody" weight="bold">
+                  <Text size="smallBody" weight="semibold">
                     Spot
                   </Text>
                 </div>
@@ -181,13 +182,12 @@ export function WithdrawSpotPopup({
                 availableValue={availableWithdraw}
               />
 
-              <ButtonV2
+              <Button
                 onClick={handleGoToConfirm}
-                variant="yellowPrimary"
                 className={styles.withdrawBtn}
               >
                 Withdraw
-              </ButtonV2>
+              </Button>
             </div>
           </>
         )}

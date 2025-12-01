@@ -1,10 +1,11 @@
 .dropdownData {
   position: absolute;
   max-height: 0px;
+  border-radius: 8px;
   overflow: hidden;
   z-index: 200;
   opacity: 0;
-  background-color: #fff;
+  box-shadow: 1px 2px 8px 0 #0000001a;
 }
 
 .dropdownData.opened {
@@ -12,11 +13,10 @@
   opacity: 1;
 }
 .dropdownDataContent {
-  border: 1px solid #f4fbf8;
-  border-radius: 8px;
+  border: 1px solid var(--color-grey-100);
   overflow: hidden;
-  background-color: #fff;
-  box-shadow: 1px 2px 8px 0 #0000001a;
+  border-radius: 8px;
+  background-color: var(--color-neutral-light);
 }
 .dropdownDataContentItem {
   padding: 12px 16px;

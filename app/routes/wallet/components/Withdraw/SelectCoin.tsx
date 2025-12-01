@@ -29,9 +29,7 @@ export function AssetView({ tokenAddress }: { tokenAddress: string }) {
         assetSlug={tokenSlug}
         className="w-[24px] h-[24px] rounded-[4px] overflow-hidden"
       />
-      <Text size="smallBody" weight="bold">
-        {token.symbol}
-      </Text>
+      <Text size="smallBody">{token.symbol}</Text>
     </div>
   );
 }
@@ -88,20 +86,22 @@ export function SelectCoin({
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-[12px]" ref={wrapperRef}>
-      <Text weight="bold">Select Coin</Text>
+    <div className="flex w-full flex-col gap-[8px]" ref={wrapperRef}>
+      <Text size="smallBody">Select Coin</Text>
       {selectedAsset ? (
         <div>
           <div className={styles.textItem}>
-            <div className="flex item-center gap-[10px]">
-              <Text color="lightBlue">
-                <SearchIcon className={styles.searchIcon} />
-              </Text>
+            <div className="flex items-center gap-[10px]">
+              <SearchIcon className={styles.searchIcon} />
+
               <AssetView tokenAddress={selectedAsset.token.address} />
             </div>
-            <div onClick={() => setTokenAddress("")} className="cursor-pointer">
+            <div
+              onClick={() => setTokenAddress("")}
+              className="flex items-center justify-center cursor-pointer w-[24px] h-[24px] bg-[var(--color-grey-100)] rounded-full"
+            >
               <Text>
-                <Icon className="w-[16pxs]" icon="cross" />
+                <Icon className="w-[16px]" icon="cross" />
               </Text>
             </div>
           </div>
@@ -141,7 +141,7 @@ export function SelectCoin({
                       {fixedAddresses.includes(item.token.address) ? (
                         <Text
                           size="smallBody"
-                          weight="bold"
+                          weight="semibold"
                           className={styles.tokenItemText}
                         >
                           {item.token.symbol}
@@ -150,12 +150,12 @@ export function SelectCoin({
                         <div className="flex flex-col">
                           <Text
                             size="smallBody"
-                            weight="bold"
+                            weight="semibold"
                             className={styles.tokenItemText}
                           >
                             {item.token.name}
                           </Text>
-                          <Text size="tinyBody" color="lightBlue">
+                          <Text size="tinyBody" color="lightSand">
                             {item.token.symbol}
                           </Text>
                         </div>

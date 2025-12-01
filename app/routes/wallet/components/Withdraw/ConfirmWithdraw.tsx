@@ -1,8 +1,7 @@
 import React from "react";
-import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
 import Money from "~/lib/atoms/Money";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import styles from "~/routes/wallet/components/Withdraw/styles.module.css";
 
 export function ConfirmWithdraw({
@@ -23,50 +22,48 @@ export function ConfirmWithdraw({
   return (
     <>
       <div className="flex flex-col items-center justify-center gap-[8px]">
-        <Heading level="4">Confirm Withdrawal</Heading>
+        <Text size="largeBody" weight="semibold">
+          Confirm Withdrawal
+        </Text>
       </div>
       <div className="flex flex-col gap-[8px]">
         {withdrawAddress && (
           <div className="flex items-center justify-between">
-            <Text size="smallBody" weight="bold" color="lightBlue">
+            <Text size="smallBody" color="lightSand">
               Address
             </Text>
-            <Text size="smallBody" weight="bold">
+            <Text size="smallBody" weight="semibold">
               {withdrawAddress}
             </Text>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <Text size="smallBody" weight="bold" color="lightBlue">
+          <Text size="smallBody" color="lightSand">
             Network
           </Text>
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody" weight="semibold">
             {network}
           </Text>
         </div>
         <div className="flex items-center justify-between">
-          <Text size="smallBody" weight="bold" color="lightBlue">
+          <Text size="smallBody" color="lightSand">
             Amount
           </Text>
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody" weight="semibold">
             <Money fiat>{amount}</Money> {tokenSymbol}
           </Text>
         </div>
         <div className="flex items-center justify-between">
-          <Text size="smallBody" weight="bold" color="lightBlue">
+          <Text size="smallBody" color="lightSand">
             Fees
           </Text>
-          <Text size="smallBody" weight="bold">
+          <Text size="smallBody" weight="semibold">
             <Money fiat>{fee}</Money> MVRK
           </Text>
         </div>
-        <ButtonV2
-          className={styles.confirmBtn}
-          onClick={confirm}
-          variant="yellowPrimary"
-        >
+        <Button className={styles.confirmBtn} onClick={confirm}>
           Confirm
-        </ButtonV2>
+        </Button>
       </div>
     </>
   );

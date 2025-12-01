@@ -53,11 +53,7 @@ export function Deposit() {
             openedClassName={styles.dropdownWrapperActive}
             iconClassName={styles.dropdownIcon}
           >
-            <Button
-              className="w-full"
-              disabled={!userAddress}
-              variant="green"
-            >
+            <Button className="w-full" disabled={!userAddress} variant="green">
               Deposit
             </Button>
           </DropdownFaceContent>
@@ -65,7 +61,7 @@ export function Deposit() {
         <DropdownBodyContent
           position={isMobile ? "left" : "right"}
           topMargin={20}
-          customWidth={isMobile ? 'calc(100vw - 64px)' : 334}
+          customWidth={isMobile ? "calc(100vw - 64px)" : 334}
         >
           <div className={styles.dropdownBodyContent}>
             <div
@@ -73,14 +69,14 @@ export function Deposit() {
               className={styles.dropdownBodyContentItem}
             >
               <SpotIcon />
-              <Text weight="extraBold">Deposit from Spot</Text>
+              <Text weight="semibold">Deposit from Spot</Text>
             </div>
             <div
               onClick={toggleOpenDepositCryptoPopup}
               className={styles.dropdownBodyContentItem}
             >
               <CryproIcon />
-              <Text weight="extraBold">Deposit Crypto</Text>
+              <Text weight="semibold">Deposit Crypto</Text>
             </div>
           </div>
         </DropdownBodyContent>

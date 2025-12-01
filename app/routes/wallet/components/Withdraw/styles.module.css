@@ -14,6 +14,11 @@
     border-radius: 0;
   }
 }
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  @apply text-content stroke-current;
+}
 .contentWrapper {
   padding: 52px 44px;
   display: flex;
@@ -64,9 +69,10 @@
   height: 45px;
   display: flex;
   align-items: center;
+  border: 1px solid var(--color-grey-100);
+  background-color: var(--color-neutral-light);
   justify-content: space-between;
   gap: 10px;
-  background: var(--color-light-blue-500);
 }
 .selectCoinList {
   display: flex;
@@ -77,8 +83,9 @@
   overflow: hidden;
   top: 55px;
   cursor: pointer;
-  border: 1px solid var(--color-light-blue-400);
-  background: var(--color-light-blue-500);
+  border: 1px solid var(--color-grey-100);
+  background-color: var(--color-neutral-light);
+  box-shadow: 1px 2px 8px 0 #0000001a;
   border-radius: 8px;
 }
 .selectCoinListItem {
@@ -88,16 +95,9 @@
   transition: all 0.2s ease;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid var(--color-light-blue-400);
 }
 .selectCoinListItem:hover {
-  background: var(--color-dark-blue-500);
-}
-.selectCoinListItem:hover .tokenItemText {
-  color: var(--color-yellow-500);
-}
-.selectCoinListItem:last-child {
-  border-bottom: none;
+  background: var(--color-grey-100);
 }
 .chip {
   height: 40px;
@@ -105,7 +105,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 158px;
+  width: 165px;
   border-radius: 8px;
-  background: var(--color-light-blue-500);
+  border: 1px solid var(--color-grey-100);
 }

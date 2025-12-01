@@ -35,16 +35,16 @@ export const WalletTopBar = () => {
             </Text>
             {userBalance.pnl >= 0 ? (
               <Text size="largeBody" color="green" weight="semibold">
-                +$5,000.00{" "}
+                +$<Money>{userBalance.pnl}</Money>{" "}
                 <Text color="green" weight="semibold">
-                  (+{userBalance.pnl}%)
+                  (+{userBalance.pnl_percentage}%)
                 </Text>
               </Text>
             ) : (
               <Heading level="5" color="red">
-                -$5,000.00{" "}
+                -$<Money>{userBalance.pnl}</Money>{" "}
                 <Text color="red" weight="bold">
-                  (-{userBalance.pnl}%)
+                  (-{userBalance.pnl_percentage}%)
                 </Text>
               </Heading>
             )}

@@ -41,8 +41,8 @@ export function EnterTokenAmount({
     : "";
 
   return (
-    <div className="flex w-full flex-col gap-[12px]">
-      <Text weight="bold">Amount</Text>
+    <div className="flex w-full flex-col gap-[8px]">
+      <Text size="smallBody">Amount</Text>
       <div className="relative flex flex-col gap-[8px]">
         <InputText
           className="h-[45px] pr-[100px]"
@@ -60,18 +60,18 @@ export function EnterTokenAmount({
               style={{ marginTop: error ? "20px" : "0" }}
               className="flex items-center justify-between"
             >
-              <Text size="smallBody" weight="bold" color="lightBlue">
+              <Text size="smallBody" color="lightSand">
                 {availableText}
               </Text>
-              <Text size="smallBody" weight="bold">
+              <Text size="smallBody" weight="semibold">
                 <Money fiat>{availableValue}</Money> {availableSymbol}
               </Text>
             </div>
             <div className="flex items-center justify-between">
-              <Text size="smallBody" weight="bold" color="lightBlue">
+              <Text size="smallBody" color="lightSand">
                 {feeText}
               </Text>
-              <Text size="smallBody" weight="bold">
+              <Text size="smallBody" weight="semibold">
                 <Money fiat>{feeValue}</Money> MVRK
               </Text>
             </div>

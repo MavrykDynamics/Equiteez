@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import styles from "./styles.module.css";
 import classNames from "clsx";
-import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { SelectCoin } from "~/routes/wallet/components/Withdraw/SelectCoin";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { toTokenSlug } from "~/lib/assets";
@@ -117,7 +116,7 @@ export function DepositSpotPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-current stroke-current"
           onClick={handleClosePopup}
         />
       </button>
@@ -134,28 +133,36 @@ export function DepositSpotPopup({
           <>
             <div className="flex flex-col items-center justify-center gap-[16px]">
               <div className="flex flex-col items-center justify-center gap-[12px]">
-                <Heading level="4">Deposit Into Account</Heading>
+                <Text size="largeBody" weight="semibold">
+                  Deposit Into Account
+                </Text>
                 <Text className="text-center">Add Funds to Your Wallet</Text>
               </div>
               <div className="flex items-center justify-center gap-[12px]">
                 <div className={styles.chip}>
-                  <Text color="yellow">
-                    <Icon icon="wallet" />
+                  <Text>
+                    <Icon
+                      icon="wallet"
+                      className="text-content stroke-current"
+                    />
                   </Text>
-                  <Text size="smallBody" weight="bold">
+                  <Text size="smallBody" weight="semibold">
                     Spot
                   </Text>
                 </div>
 
-                <Text color="yellow">
-                  <Icon icon="arrow-right" />
+                <Text>
+                  <Icon
+                    icon="arrow-right"
+                    className="text-content stroke-current"
+                  />
                 </Text>
 
                 <div className={styles.chip}>
-                  <Text color="yellow">
-                    <HouseIcon />
+                  <Text>
+                    <HouseIcon className="text-content stroke-current" />
                   </Text>
-                  <Text size="smallBody" weight="bold">
+                  <Text size="smallBody" weight="semibold">
                     RWA Account
                   </Text>
                 </div>
@@ -182,13 +189,9 @@ export function DepositSpotPopup({
                 />
               </div>
 
-              <ButtonV2
-                onClick={handleGoToConfirm}
-                variant="yellowPrimary"
-                className={styles.depositBtn}
-              >
+              <Button onClick={handleGoToConfirm} className={styles.depositBtn}>
                 Deposit
-              </ButtonV2>
+              </Button>
             </div>
           </>
         )}

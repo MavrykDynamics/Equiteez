@@ -201,7 +201,7 @@ export const DropdownBodyContent: FC<DropdownBodyContentProps> = ({
     >
       <div
         style={{ maxHeight, height: customHeight, overflow: customOverflow }}
-        className={clsx(styles.dropdownDataContent, "bg-background")}
+        className={clsx(styles.dropdownDataContent)}
       >
         {children}
       </div>

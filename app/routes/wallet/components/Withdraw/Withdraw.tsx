@@ -76,14 +76,14 @@ export function Withdraw() {
               className={styles.dropdownBodyContentItem}
             >
               <SpotIcon />
-              <Text weight="extraBold">Withdraw to Spot</Text>
+              <Text weight="semibold">Withdraw to Spot</Text>
             </div>
             <div
               onClick={toggleOpenWithdrawCryptoPopup}
               className={styles.dropdownBodyContentItem}
             >
               <CryproIcon />
-              <Text weight="extraBold">Withdraw Crypto</Text>
+              <Text weight="semibold">Withdraw Crypto</Text>
             </div>
           </div>
         </DropdownBodyContent>

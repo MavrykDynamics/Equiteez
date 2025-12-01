@@ -6,7 +6,7 @@ import { Text } from "~/lib/atoms/Typography/Text";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import { InputText } from "~/lib/molecules/Input/Input";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { SelectCoin } from "~/routes/wallet/components/Withdraw/SelectCoin";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { toTokenSlug } from "~/lib/assets";
@@ -200,7 +200,7 @@ export function WithdrawCryptoPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-content stroke-current"
           onClick={handleClosePopup}
         />
       </button>
@@ -217,7 +217,7 @@ export function WithdrawCryptoPopup({
         ) : (
           <>
             <div className="flex flex-col items-center justify-center gap-[8px]">
-              <Heading level="4">Withdraw Crypto</Heading>
+              <Text size="largeBody" weight="semibold">Withdraw Crypto</Text>
               <Text className="text-center">
                 Send crypto from your wallet to an external address. Make sure
                 the address is correct before confirming.
@@ -230,17 +230,13 @@ export function WithdrawCryptoPopup({
                 tokenAddress={tokenAddress}
               />
 
-              <div className="flex flex-col gap-[12px]">
-                <Text weight="bold">Withdraw To</Text>
+              <div className="flex flex-col gap-[8px]">
+                <Text size="smallBody">Withdraw To</Text>
                 <div className="flex flex-col gap-[8px]">
                   <div className={styles.textItem}>
                     <span>
-                      <Text size="smallBody" weight="bold">
-                        MVRK
-                      </Text>{" "}
-                      <Text size="smallBody" weight="bold" color="lightBlue">
-                        Mavryk Network (MRC20)
-                      </Text>
+                      <Text weight="semibold">MVRK</Text>{" "}
+                      <Text color="extraLightSand">Mavryk Network (MRC20)</Text>
                     </span>
                   </div>
                   <InputText
@@ -266,13 +262,12 @@ export function WithdrawCryptoPopup({
                   availableValue={availableWithdraw}
                 />
 
-                <ButtonV2
+                <Button
                   onClick={handleGoToConfirm}
-                  variant="yellowPrimary"
                   className={styles.withdrawBtn}
                 >
                   Withdraw
-                </ButtonV2>
+                </Button>
               </div>
             </div>
           </>
