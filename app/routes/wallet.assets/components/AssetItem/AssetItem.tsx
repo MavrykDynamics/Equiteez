@@ -63,12 +63,11 @@ export function WalletAssetItem({ asset }: { asset: AssetType }) {
               N/A
             </Text>
           ) : (
-            <HeadlineTabBadge
-              className={styles.tabBadge}
-              isSecondaryEstate={isSecondaryEstate}
+            <div
+              className={isSecondaryEstate ? styles.tabBadgeSecondary : styles.tabBadge}
             >
               {isSecondaryEstate ? "Secondary" : "Primary"}
-            </HeadlineTabBadge>
+            </div>
           )}
         </div>
         <div className="flex flex-col w-[130px] hidden lg:flex">
