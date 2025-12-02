@@ -3,7 +3,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { Link } from "@remix-run/react";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { getAssetByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
@@ -40,7 +40,7 @@ export function MobileTransactionPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-current stroke-current"
           onClick={onClose}
         />
       </button>
@@ -67,31 +67,31 @@ export function MobileTransactionPopup({
                   ? transaction.total_usd_value_of_rwa_token_amount
                   : transaction.usd_amount}
               </Text>
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 {formatDate(transaction.date, true)}
               </Text>
             </div>
           </div>
           <div className={styles.line} />
           <div className="flex flex-col px-[16px] gap-[8px]">
-            <Text size="tinyBody" color="lightBlue">
+            <Text size="tinyBody" color="lightSand">
               Name
             </Text>
-            <Text size="largeBody" weight="bold">
+            <Text size="largeBody" weight="semibold">
               {transaction.tokenMetadata.name}
             </Text>
           </div>
           <div className="flex items-center px-[16px] gap-[32px]">
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 Action
               </Text>
-              <Text size="largeBody" weight="bold">
+              <Text size="largeBody" weight="semibold">
                 {transaction.transactionName}
               </Text>
             </div>
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 Status
               </Text>
               {transaction.type === TransactionTypes.ORDER && (
@@ -104,7 +104,7 @@ export function MobileTransactionPopup({
             </div>
           </div>
           <div className="flex items-center justify-center gap-[8px] mt-[16px]">
-            <Text color="yellow">
+            <Text color="darkGreen">
               <Icon className="w-[16px]" icon="link" />
             </Text>
             <button onClick={() => {}} className={styles.orderCancelBtn}>
@@ -114,9 +114,7 @@ export function MobileTransactionPopup({
         </div>
 
         <Link className="w-full px-[16px] py-[24px]" to={transaction.assetLink}>
-          <ButtonV2 className={styles.submitBtn} variant="yellowPrimary">
-            View Asset
-          </ButtonV2>
+          <Button className={styles.submitBtn}>View Asset</Button>
         </Link>
       </div>
     </CustomPopup>

@@ -59,7 +59,9 @@ export const WalletSidebar = ({ mbgBalance }: { mbgBalance: number }) => {
   return (
     <div className={styles.walletSidebar}>
       <div className="flex w-full justify-between">
-        <Heading level="5">Wallet</Heading>
+        <Text size="largeBody" weight="semibold">
+          Wallet
+        </Text>
       </div>
 
       <div className={styles.walletSidebarList}>
@@ -143,7 +145,7 @@ function WalletMobileMenu() {
             <Text>
               <selectedOption.Icon />
             </Text>
-            <Text size="smallBody" weight="bold">
+            <Text size="smallBody" weight="semibold">
               {selectedOption.subHeader}
             </Text>
           </div>
@@ -161,7 +163,7 @@ function WalletMobileMenu() {
                 <Text>
                   <item.Icon />
                 </Text>
-                <Text size="smallBody" weight="bold">
+                <Text size="smallBody" weight="semibold">
                   {item.subHeader}
                 </Text>
               </Link>

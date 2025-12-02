@@ -132,35 +132,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <QueryClientProvider client={queryClient}>
               <AppProvider>
-                <MobileView isMobile={isMobile}>
-                  <ApolloProvider>
-                    <DipdupProvider>
-                      <WalletProvider>
-                        <ConfigProvider>
-                          <CurrencyProvider
-                            fiatToTezos={fiatToTezos}
-                            usdToToken={usdToToken}
+                <ApolloProvider>
+                  <DipdupProvider>
+                    <WalletProvider>
+                      <ConfigProvider>
+                        <CurrencyProvider
+                          fiatToTezos={fiatToTezos}
+                          usdToToken={usdToToken}
+                        >
+                          <TokensProvider
+                            initialTokens={tokens}
+                            initialTokensMetadata={tokensMetadata}
                           >
-                            <TokensProvider
-                              initialTokens={tokens}
-                              initialTokensMetadata={tokensMetadata}
-                            >
-                              <MarketsProvider>
-                                <DexProvider>
-                                  <UserProvider>
-                                    <AppGlobalLoader>
-                                      <PopupProvider>{children}</PopupProvider>
-                                    </AppGlobalLoader>
-                                  </UserProvider>
-                                </DexProvider>
-                              </MarketsProvider>
-                            </TokensProvider>
-                          </CurrencyProvider>
-                        </ConfigProvider>
-                      </WalletProvider>
-                    </DipdupProvider>
-                  </ApolloProvider>
-                </MobileView>
+                            <MarketsProvider>
+                              <DexProvider>
+                                <UserProvider>
+                                  <AppGlobalLoader>
+                                    <PopupProvider>{children}</PopupProvider>
+                                  </AppGlobalLoader>
+                                </UserProvider>
+                              </DexProvider>
+                            </MarketsProvider>
+                          </TokensProvider>
+                        </CurrencyProvider>
+                      </ConfigProvider>
+                    </WalletProvider>
+                  </DipdupProvider>
+                </ApolloProvider>
               </AppProvider>
             </QueryClientProvider>
             <ToasterMessages />

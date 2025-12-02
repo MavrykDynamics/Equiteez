@@ -10,7 +10,7 @@ import { PortfolioSection } from "./components/PortfolioSection";
 import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { MarketRowTop } from "./components/MarketRowTop/MarketRowTop";
 import { MarketRowBottom } from "./components/MarketRowBottom/MarketRowBottom";
 import { PropertiesSliderSecondary } from "./components/PropertiesSlider/PropertiesSlider";

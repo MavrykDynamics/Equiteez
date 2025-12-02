@@ -5,7 +5,7 @@ import ChartIcon from "app/icons/chart-mock.svg?react";
 
 import styles from "./marketRowBottom.module.css";
 import clsx from "clsx";
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { Link } from "@remix-run/react";

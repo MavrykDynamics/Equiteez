@@ -32,7 +32,7 @@ export default function Wallet() {
 
   return (
     <PageLayout>
-      <div className="mt-[24px] mb-[100px] px-[100px] relative">
+      <div className="mt-[24px] mb-[100px] max-w-[1240px] px-[40px] w-full m-auto relative">
         <div className={styles.container}>
           <WalletSidebar mbgBalance={0} />
 

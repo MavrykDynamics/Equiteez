@@ -15,14 +15,14 @@
   font-size: 14px;
   text-decoration: underline;
   margin-top: 16px;
-  color: var(--color-light-blue-100);
+  color: var(--color-sand-500);
   font-weight: 800;
   cursor: pointer;
 }
 .line {
   width: calc(100% - 32px);
   height: 1px;
-  background: var(--color-dark-blue-200);
+  background: var(--color-grey-100);
   margin: 0 16px;
 }
 .submitBtn {

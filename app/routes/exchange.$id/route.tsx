@@ -13,7 +13,7 @@ import { BuySellTabs } from "./components/BuySellTabs/BuySellTabs";
 
 import { OrderBookTabs } from "./components/OrderBookTabs/OrderBookTabs";
 
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import { useMarketByParamIdentifier } from "../marketplace.$id/hooks/use-market-by-identifier";
 

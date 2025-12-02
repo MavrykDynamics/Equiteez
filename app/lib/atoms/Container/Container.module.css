@@ -1,0 +1,25 @@
+@import "../../../styles/breakpoints.css";
+
+.container {
+  max-width: var(--container-width);
+  margin-inline: auto;
+  width: 100%;
+
+  @media (--media-laptop) {
+    max-width: var(--extra-large-width);
+  }
+
+  @media (--media-tablet-max) {
+    max-width: var(--large-width);
+    padding-inline: var(--space-8);
+  }
+
+  @media (--media-tablet-min) {
+    max-width: var(--medium-width);
+  }
+
+  @media (--media-phone) {
+    max-width: 100%;
+    padding-inline: var(--space-4);
+  }
+}

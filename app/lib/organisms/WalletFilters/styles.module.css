@@ -20,8 +20,11 @@
     padding: 12px;
   }
 }
+.dropdownWrapper:hover {
+  border: 1px solid var(--color-br-green-50);
+}
 .dropdownWrapperActive {
-  border: 1px solid var(--color-br-green-300);
+  border: 1px solid var(--color-br-green-200);
 }
 .filterContentWrapper {
   overflow: visible;

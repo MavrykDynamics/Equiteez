@@ -45,7 +45,6 @@
 }
 .mobileWrapper .tabSwitcher {
   width: 100%;
-  background-color: var(--color-dark-blue-400);
 }
 .mobileWrapper .tabSwitcherItem {
   width: 100%;

@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { FC } from "react";
+import styles from "./Container.module.css";
 
 type ContainerProps = {
   maxWidth?: number;
@@ -16,7 +17,7 @@ export const Container: FC<ContainerProps> = ({
   return (
     <div
       style={{ maxWidth, paddingInline: px }}
-      className={clsx("mx-auto w-full", className)}
+      className={clsx("mx-auto w-full", styles.container, className)}
     >
       {children}
     </div>

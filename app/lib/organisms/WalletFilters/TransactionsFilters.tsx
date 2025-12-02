@@ -95,7 +95,7 @@ export function TransactionsFilters({
                   }}
                   className="flex flex-col gap-[16px]"
                 >
-                  <Text weight="extraBold">Filter</Text>
+                  <Text weight="semibold">Filter</Text>
                   <div className={styles.line} />
                   <div>
                     <SelectOrderType

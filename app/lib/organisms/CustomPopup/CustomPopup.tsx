@@ -57,6 +57,8 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
         contentPosition === "center" && "flex items-center justify-center",
         contentPosition === "left" && "flex items-stretch justify-start",
         contentPosition === "right" && "flex items-stretch justify-end",
+        contentPosition === "bottom" &&
+          "flex flex-col items-stretch justify-end",
         overlayClassName
       )}
       portalClassName={clsx(portalClassName, popupAnimation[contentPosition])}

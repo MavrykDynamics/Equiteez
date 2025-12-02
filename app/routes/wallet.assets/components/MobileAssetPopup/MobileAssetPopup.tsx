@@ -4,7 +4,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { Link } from "@remix-run/react";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import {
@@ -15,7 +15,6 @@ import {
 import { Icon } from "~/lib/atoms/Icon";
 import { AssetMarket } from "~/providers/UserAssets/userAssets.const";
 import Money from "~/lib/atoms/Money";
-import { HeadlineTabBadge } from "~/templates/EstateHeadlineTab";
 import { MBG_CONTRACT_ADDRESS, MVRK_CONTRACT_ADDRESS } from "~/lib/metadata";
 import { TRADE_MULTIBANK_LINK } from "~/consts/links.const";
 import UsdtTablet from "app/assets/wallet/usdtTablet.png";
@@ -84,7 +83,7 @@ export function MobileAssetPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-current stroke-current"
           onClick={onClose}
         />
       </button>
@@ -100,29 +99,33 @@ export function MobileAssetPopup({
             className="w-full hidden md:block md:h-[244px] md:min-h-[244px] object-cover"
             alt={asset.token.symbol}
           />
-          <Text size="largeBody" weight="bold" className="text-center w-full">
+          <Text
+            size="largeBody"
+            weight="semibold"
+            className="text-center w-full"
+          >
             {asset.token.name}
           </Text>
 
           <div className="flex items-center px-[16px] gap-[32px]">
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 Total Balance
               </Text>
               <div className="flex flex-col">
-                <Text size="largeBody" weight="bold">
+                <Text size="largeBody" weight="semibold">
                   $<Money fiat>{asset.total_balance_usd}</Money>
                 </Text>
-                <Text size="tinyBody" color="lightBlue">
+                <Text size="tinyBody" color="lightSand">
                   <Money fiat>{asset.total_balance}</Money> {asset.token.symbol}
                 </Text>
               </div>
             </div>
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 APY
               </Text>
-              <Text size="largeBody" weight="bold" color="goldGradient">
+              <Text size="largeBody" weight="semibold">
                 6.2%
               </Text>
             </div>
@@ -132,48 +135,49 @@ export function MobileAssetPopup({
 
           <div className="flex items-center px-[16px] gap-[32px]">
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 Market
               </Text>
               {market === AssetMarket.empty ? (
-                <Text size="smallBody" weight="bold">
+                <Text size="smallBody" weight="semibold">
                   N/A
                 </Text>
               ) : (
-                <div className="w-fit">
-                  <HeadlineTabBadge
-                    className={styles.tabBadge}
-                    isSecondaryEstate={isSecondaryEstate}
-                  >
-                    {isSecondaryEstate ? "Secondary" : "Primary"}
-                  </HeadlineTabBadge>
+                <div
+                  className={
+                    isSecondaryEstate
+                      ? styles.tabBadgeSecondary
+                      : styles.tabBadge
+                  }
+                >
+                  {isSecondaryEstate ? "Secondary" : "Primary"}
                 </div>
               )}
             </div>
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 Price/token
               </Text>
               <div className="flex flex-col flex">
-                <Text size="smallBody" weight="bold">
+                <Text size="smallBody" weight="semibold">
                   $<Money fiat>{token_price}</Money>
                 </Text>
                 <Text
                   size="tinyBody"
-                  weight="bold"
+                  weight="semibold"
                   color="green"
                   className="flex items-center"
                 >
                   <Text
                     size="smallBody"
-                    weight="bold"
+                    weight="semibold"
                     color="green"
                     className="pt-[3px]"
                   >
                     <Icon icon="upArrow" />
                   </Text>{" "}
                   <span>
-                    <Money>2.8</Money>%
+                    <Money>{asset.price_change24h_percent}</Money>%
                   </span>
                 </Text>
               </div>
@@ -182,36 +186,36 @@ export function MobileAssetPopup({
 
           <div className="flex items-center px-[16px] gap-[32px]">
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 Avl Balance
               </Text>
               <div className="flex flex-col">
-                <Text size="largeBody" weight="bold">
+                <Text size="largeBody" weight="semibold">
                   $<Money fiat>{asset.available_balance_usd}</Money>
                 </Text>
-                <Text size="tinyBody" color="lightBlue">
+                <Text size="tinyBody" color="lightSand">
                   <Money fiat>{asset.available_balance}</Money>{" "}
                   {asset.token.symbol}
                 </Text>
               </div>
             </div>
             <div className="flex flex-col gap-[8px] flex-1">
-              <Text size="tinyBody" color="lightBlue">
+              <Text size="tinyBody" color="lightSand">
                 In Orders
               </Text>
               {market === AssetMarket.primary ||
               [MBG_CONTRACT_ADDRESS, MVRK_CONTRACT_ADDRESS].includes(
                 tokenAddress
               ) ? (
-                <Text size="smallBody" weight="bold">
+                <Text size="smallBody" weight="semibold">
                   N/A
                 </Text>
               ) : (
                 <div className="flex flex-col">
-                  <Text size="largeBody" weight="bold">
+                  <Text size="largeBody" weight="semibold">
                     $<Money fiat>{asset.in_orders_usd}</Money>
                   </Text>
-                  <Text size="tinyBody" color="lightBlue">
+                  <Text size="tinyBody" color="lightSand">
                     <Money fiat>{asset.in_orders}</Money> {asset.token.symbol}
                   </Text>
                 </div>
@@ -231,17 +235,13 @@ export function MobileAssetPopup({
             className="w-full px-[16px] py-[24px]"
             to={TRADE_MULTIBANK_LINK}
           >
-            <ButtonV2 className={styles.submitBtn} variant="goldPrimary">
-              Buy on MultiBank.io
-            </ButtonV2>
+            <Button className={styles.submitBtn}>Buy on MultiBank.io</Button>
           </Link>
         ) : [MVRK_CONTRACT_ADDRESS, stablecoinContract].includes(
             asset.token.address
           ) ? null : (
           <Link className="w-full px-[16px] py-[24px]" to={assetLink}>
-            <ButtonV2 className={styles.submitBtn} variant="yellowPrimary">
-              View Asset
-            </ButtonV2>
+            <Button className={styles.submitBtn}>View Asset</Button>
           </Link>
         )}
       </div>

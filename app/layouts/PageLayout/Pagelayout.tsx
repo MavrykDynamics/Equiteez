@@ -7,7 +7,7 @@ import DocBg from "app/a11y/DocBg";
 // layout components
 import { Header } from "./Header/Header";
 import { Footer } from "./Footer/Footer";
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { Banner } from "./Banner/Banner";
 
 import bannerContent from "app/mocks/banner.json";
