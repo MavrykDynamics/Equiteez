@@ -96,4 +96,7 @@
 .assetActionsItem:hover,
 .assetActionsItemLite:hover {
   background: var(--color-grey-100);
+  @media (--media-tablet-max) {
+    background: transparent;
+  }
 }
