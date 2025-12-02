@@ -195,7 +195,7 @@ export const WalletAssetsBlock = ({
             linkText="View All"
           >
             {isLoadingTransactions ? (
-              <div className="w-full h-full py-[19px] min-h-[218px] flex items-center justify-center">
+              <div className="w-full h-full py-[19px] min-h-[256px] flex items-center justify-center">
                 <Spinner />
               </div>
             ) : transactions.length ? (
@@ -224,7 +224,7 @@ export const WalletAssetsBlock = ({
             linkText="View All"
           >
             {isLoadingOrders ? (
-              <div className="w-full h-full py-[19px] min-h-[218px] flex items-center justify-center">
+              <div className="w-full h-full py-[19px] min-h-[256px] flex items-center justify-center">
                 <Spinner />
               </div>
             ) : openOrders.length ? (
