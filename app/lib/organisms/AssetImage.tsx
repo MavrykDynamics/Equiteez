@@ -35,9 +35,11 @@ export const AssetImage: FC<AssetImageProps> = ({
 
   const styleMemo: React.CSSProperties = useMemo(
     () => ({
-      objectFit: 'contain',
+      objectFit: 'cover',
       maxWidth: '100%',
       maxHeight: '100%',
+      width: '100%',
+      height: '100%',
       ...style,
     }),
     [style]
