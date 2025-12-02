@@ -5,7 +5,7 @@ import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
 import { Heading } from "~/lib/atoms/Typography/Heading";
 import { Text } from "~/lib/atoms/Typography/Text";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import LoginImg from "app/assets/wallet/login.png";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useNavigate } from "@remix-run/react";
@@ -59,20 +59,12 @@ export function LoginPopup({
         </div>
 
         <div className={styles.btnWrapper}>
-          <ButtonV2
-            onClick={onClose}
-            className="flex-1"
-            variant="yellowOutlined"
-          >
+          <Button className="flex-1" variant="outline">
             Create Account
-          </ButtonV2>
-          <ButtonV2
-            onClick={handleSubmitLogin}
-            className="flex-1"
-            variant="yellowPrimary"
-          >
+          </Button>
+          <Button onClick={handleSubmitLogin} className="flex-1">
             Login
-          </ButtonV2>
+          </Button>
         </div>
       </div>
     </CustomPopup>

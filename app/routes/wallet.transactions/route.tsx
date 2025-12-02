@@ -109,7 +109,7 @@ export default function WalletTransactions() {
           )}
         </div>
       </RoundedCard>
-      {transactionsCount && (
+      {Boolean(transactionsCount) && (
         <div className="lg:ml-auto">
           <ApiPagination
             setPage={(page) => {

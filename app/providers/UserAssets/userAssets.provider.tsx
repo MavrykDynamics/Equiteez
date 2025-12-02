@@ -101,7 +101,7 @@ export function UserAssetsProvider({ children }: { children: ReactNode }) {
     retry: false,
     queryKey: [userAddress, "fetchUserAssets"],
     queryFn: () => fetchUserAssets(userAddress || ""),
-    enabled: !!userAddress,
+    enabled: Boolean(userAddress),
   });
 
   // Error handling

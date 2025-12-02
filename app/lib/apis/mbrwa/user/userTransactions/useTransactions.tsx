@@ -75,6 +75,7 @@ export function useTransactions(
       searchTerm,
     ],
     retry: false,
+    enabled: Boolean(userAddress),
     queryFn: () =>
       fetchUserTransactions(userAddress || "", offset, limit, searchTerm),
   });

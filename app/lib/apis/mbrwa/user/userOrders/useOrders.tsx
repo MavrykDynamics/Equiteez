@@ -38,6 +38,7 @@ export function useOrders(
       searchTerm,
     ],
     retry: false,
+    enabled: Boolean(userAddress),
     queryFn: () =>
       fetchUserOpenOrders(
         userAddress || "",

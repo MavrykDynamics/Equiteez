@@ -151,7 +151,7 @@ export default function WalletOrders() {
           )}
         </div>
       </RoundedCard>
-      {openOrdersCount && (
+      {Boolean(openOrdersCount) && (
         <div className="lg:ml-auto">
           <ApiPagination
             setPage={(page) => {

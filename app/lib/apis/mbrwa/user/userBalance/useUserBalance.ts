@@ -14,14 +14,14 @@ export function useUserBalance() {
     pnl: 0,
     available_usdt: 0,
     account_value: 0,
-    pnl_percentage: 0
+    pnl_percentage: 0,
   });
 
   const balanceData = useQuery({
     retry: false,
     queryKey: [userAddress, "fetchUserBalanceDetails"],
     queryFn: () => fetchUserBalanceDetails(userAddress || ""),
-    enabled: !!userAddress,
+    enabled: Boolean(userAddress),
   });
 
   useEffect(() => {
