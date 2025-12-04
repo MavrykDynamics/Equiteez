@@ -7,6 +7,7 @@ import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { useMemo } from "react";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
+import styles from "./PropertiesSlider.module.css";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
@@ -35,30 +36,30 @@ export const PropertiesSlider = () => {
   if (!marketsArr.length) return null;
 
   return (
-    <div className="px-11 py-16 bg-green-main rounded-4xl">
-      <h1 className="text-white text-section-headline max-w-[1017px] mb-6">
-        Newly Listed
-      </h1>
+    <div className={styles.wrapper}>
+      <div className={styles.titleBlock}>
+        <h2 className={styles.title}>Newly Listed</h2>
+        <div className={styles.btnBlock}>
+          <ViewAll />
+          <div className={styles.desktopBlock}>
+            <SlidesNavigation
+              length={slides.length}
+              onPrevButtonClick={onPrevButtonClick}
+              onNextButtonClick={onNextButtonClick}
+              prevBtnDisabled={prevBtnDisabled}
+              nextBtnDisabled={nextBtnDisabled}
+            />
+          </div>
+        </div>
+      </div>
+
       <AssetsEmblaCarousel
         emblaRef={emblaRef}
         slides={slides}
         nextBtnDisabled={nextBtnDisabled}
         childPosition="before"
       >
-        <div
-          className={
-            "w-full flex justify-between items-center mb-11 text-white"
-          }
-        >
-          <ViewAll />
-          <SlidesNavigation
-            length={slides.length}
-            onPrevButtonClick={onPrevButtonClick}
-            onNextButtonClick={onNextButtonClick}
-            prevBtnDisabled={prevBtnDisabled}
-            nextBtnDisabled={nextBtnDisabled}
-          />
-        </div>
+        {null}
       </AssetsEmblaCarousel>
     </div>
   );
