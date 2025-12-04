@@ -4,6 +4,7 @@ import clsx from "clsx";
 
 import styles from "./navSlideTabs.module.css";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
+import classNames from "clsx";
 
 type Position = {
   left: number;
@@ -46,7 +47,10 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
           scale: 0,
         }));
       }}
-      className="relative mx-auto flex w-fit items-center gap-[1px] rounded-xl bg-gray-100 px-2 py-1"
+      className={classNames(
+        "relative mx-auto flex w-fit items-center gap-[1px] rounded-xl bg-gray-100 px-2 py-1",
+        styles.wrapper
+      )}
     >
       {tabs.map((tab, idx, arr) => (
         <React.Fragment key={tab.id}>

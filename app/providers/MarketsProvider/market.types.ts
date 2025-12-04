@@ -1,7 +1,7 @@
 import { ApiError } from "~/errors/error";
 import primaryEstate from "./primaryEstate.mock.json";
 import secondaryEstate from "./secondaryEstate.mock.json";
-import { assetDataSchema } from "~/providers/MarketsProvider/markets.schema";
+import { FullSchema } from "~/providers/MarketsProvider/markets.schema";
 import { z } from "zod";
 
 export type PrimaryEstate = (typeof primaryEstate)[0] & { slug: string };
@@ -26,7 +26,7 @@ export type MarketInternalStateType = {
   isLoading: boolean;
 };
 
-export type AssetData = z.infer<typeof assetDataSchema>;
+export type AssetData = z.infer<typeof FullSchema>;
 
 export type MarketContext = MarketInternalStateType & {
   marketAddresses: string[];

@@ -1,0 +1,16 @@
+@import "../../../styles/breakpoints.css";
+
+.menuButton {
+  display: none;
+}
+
+@media (--media-tablet-max) {
+  .menuButton {
+    display: block;
+    margin-right: 8px;
+  }
+  .headerWrapper,
+  .connectWalletWrapper {
+    width: auto;
+  }
+}

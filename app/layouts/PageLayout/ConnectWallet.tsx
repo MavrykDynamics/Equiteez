@@ -12,6 +12,9 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 import { Link } from "@remix-run/react";
 import { ROUTES } from "~/consts/routes";
+import styles from "./ConnectWallet.module.css";
+import classNames from "clsx";
+import {Icon} from "~/lib/atoms/Icon";
 
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
@@ -28,17 +31,25 @@ export const ConnectWallet = () => {
                   "py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ",
                   "hover:bg-dark-green-opacity hover:border-dark-green-500",
                   "focus:border-dark-green-500 focus:bg-transparent",
-                  "transition duration-250 ease-in-out"
+                  "transition duration-250 ease-in-out",
+                  styles.dropdown,
                 )}
+                iconClassName={styles.dropdownIcon}
               >
                 <div className="flex items-center">
                   <IdentIcon
                     type="bottts"
                     size={32}
-                    className="mr-2"
+                    className={classNames(styles.identIcon, "mr-2")}
                     hash={userAddress}
                   />
-                  <div className="text-caption-regular text-content">
+                  <Icon icon="account" className={styles.accountIcon} />
+                  <div
+                    className={classNames(
+                      styles.hashShortView,
+                      "text-caption-regular text-content"
+                    )}
+                  >
                     <HashShortView hash={userAddress} />
                   </div>
                 </div>

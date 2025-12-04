@@ -1,0 +1,24 @@
+@import "../../styles/breakpoints.css";
+
+.accountIcon {
+  display: none;
+}
+@media (--media-tablet-max) {
+  .accountIcon {
+    display: block;
+  }
+  .dropdownIcon,
+  .hashShortView {
+    display: none;
+  }
+  .dropdown {
+    border: none;
+    padding: 0 4px;
+  }
+  .dropdown:hover {
+    background: transparent;
+  }
+  .identIcon {
+    display: none;
+  }
+}
