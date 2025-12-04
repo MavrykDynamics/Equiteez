@@ -102,7 +102,7 @@
   letter-spacing: 0.41%;
 }
 .h3 {
-  font-weight: var(--semibold-weight);
+  font-weight: var(--bold-weight);
   font-size: var(--h3-size);
   line-height: 48px;
   letter-spacing: 0.41%;

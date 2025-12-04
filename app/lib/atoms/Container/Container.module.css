@@ -3,23 +3,31 @@
 .container {
   max-width: var(--container-width);
   margin-inline: auto;
+  padding-inline: 44px;
   width: 100%;
+}
 
-  @media (--media-laptop) {
-    max-width: var(--extra-large-width);
+@media (--media-laptop) {
+  .container {
+    max-width: 1140px;
   }
-
-  @media (--media-tablet-max) {
-    max-width: var(--large-width);
-    padding-inline: var(--space-8);
+}
+@media (--media-tablet-max) {
+  .container {
+    max-width: 1024px;
+    padding-inline: 32px;
   }
+}
 
-  @media (--media-tablet-min) {
-    max-width: var(--medium-width);
+@media (--media-tablet-min) {
+  .container {
+    max-width: 768px;
   }
+}
 
-  @media (--media-phone) {
+@media (--media-phone) {
+  .container {
     max-width: 100%;
-    padding-inline: var(--space-4);
+    padding-inline: 16px;
   }
 }

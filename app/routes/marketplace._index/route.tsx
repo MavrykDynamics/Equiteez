@@ -38,70 +38,66 @@ export default function Properties() {
   return (
     <PageLayout>
       <FiltersProvider>
-        <div className="px-11">
-          <Spacer height={32} />
-          <Filters />
+        <Spacer height={32} />
+        <Filters />
 
-          {marketApiError ? (
-            <div className="mt-5">
-              <ApiErrorBox message="The market data is unavailable at the moment" />
+        {marketApiError ? (
+          <div className="mt-5">
+            <ApiErrorBox message="The market data is unavailable at the moment" />
+          </div>
+        ) : isLoading ? (
+          <div className={"w-full flex items-center justify-center h-full"}>
+            <Spinner size={36} />
+          </div>
+        ) : (
+          <div>
+            <div className="mt-5 text-body text-content">
+              {filteredEstates.length} items
             </div>
-          ) : isLoading ? (
-            <div className={"w-full flex items-center justify-center h-full"}>
-              <Spinner size={36} />
+            <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
+              {filteredEstates.map((es) => {
+                const isSecondaryMarket =
+                  es.assetDetails.type === SECONDARY_MARKET;
+
+                const pricePerToken = atomsToTokens(
+                  orderbookStorages[es.slug]?.lowestSellPrice || 0,
+                  es.decimals
+                );
+
+                return (
+                  <Link
+                    to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
+                    key={es.token_address}
+                  >
+                    <ThumbCardSecondary
+                      imgSrc={es.assetDetails.previewImage}
+                      title={es.name}
+                      description={es.assetDetails.propertyDetails.propertyType}
+                      isSecondaryMarket={isSecondaryMarket}
+                      APY={es.assetDetails.APY}
+                      pricePerToken={pricePerToken}
+                      isFutureAsset={!validBaseTokens[es.token_address]}
+                      progressBarPercentage={50}
+                    />
+                  </Link>
+                );
+              })}
             </div>
-          ) : (
-            <div>
-              <div className="mt-5 text-body text-content">
-                {filteredEstates.length} items
+
+            {filteredEstates.length && (
+              <div className="lg:ml-auto">
+                <ApiPagination
+                  setPage={setPage}
+                  page={page}
+                  totalPages={totalPages}
+                  paginatedDataLength={filteredEstates.length}
+                  isLoading={isLoading}
+                />
               </div>
-              <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
-                {filteredEstates.map((es) => {
-                  const isSecondaryMarket =
-                    es.assetDetails.type === SECONDARY_MARKET;
-
-                  const pricePerToken = atomsToTokens(
-                    orderbookStorages[es.slug]?.lowestSellPrice || 0,
-                    es.decimals
-                  );
-
-                  return (
-                    <Link
-                      to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
-                      key={es.token_address}
-                    >
-                      <ThumbCardSecondary
-                        imgSrc={es.assetDetails.previewImage}
-                        title={es.name}
-                        description={
-                          es.assetDetails.propertyDetails.propertyType
-                        }
-                        isSecondaryMarket={isSecondaryMarket}
-                        APY={es.assetDetails.APY}
-                        pricePerToken={pricePerToken}
-                        isFutureAsset={!validBaseTokens[es.token_address]}
-                        progressBarPercentage={50}
-                      />
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {filteredEstates.length && (
-                <div className="lg:ml-auto">
-                  <ApiPagination
-                    setPage={setPage}
-                    page={page}
-                    totalPages={totalPages}
-                    paginatedDataLength={filteredEstates.length}
-                    isLoading={isLoading}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-          <Spacer height={110} />
-        </div>
+            )}
+          </div>
+        )}
+        <Spacer height={110} />
       </FiltersProvider>
     </PageLayout>
   );

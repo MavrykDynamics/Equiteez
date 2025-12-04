@@ -10,13 +10,12 @@ type ContainerProps = {
 
 export const Container: FC<ContainerProps> = ({
   maxWidth = 1440,
-  px = 0,
   children,
   className,
 }) => {
   return (
     <div
-      style={{ maxWidth, paddingInline: px }}
+      style={{ maxWidth }}
       className={clsx("mx-auto w-full", styles.container, className)}
     >
       {children}

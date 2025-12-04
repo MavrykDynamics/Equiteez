@@ -8,6 +8,7 @@ import styles from "./styles.module.css";
 import MenuIcon from "../../../icons/menu.svg?react";
 import MobileNavbar from "~/layouts/PageLayout/Header/MobileNavbar";
 import classNames from "clsx";
+import { Container } from "~/lib/atoms/Container/Container";
 
 export const Header = React.memo(() => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +20,7 @@ export const Header = React.memo(() => {
   return (
     <>
       <section className="flex justify-center border-b border-divider w-full bg-background">
-        <div className="px-11 flex items-center justify-between h-[60px] w-container bg-background">
+        <Container className="flex items-center justify-between h-[60px] bg-background">
           <div className="flex items-center">
             <button
               type="button"
@@ -35,7 +36,7 @@ export const Header = React.memo(() => {
           </div>
 
           <HeaderLinksBlock />
-        </div>
+        </Container>
       </section>
       <MobileNavbar isOpen={isOpen} toggleMenu={toggleMenu} />
     </>
@@ -54,10 +55,20 @@ const HeaderLinksBlock = () => {
   }, [pathname]);
 
   return (
-    <header className={classNames(styles.headerWrapper, "flex items-center h-full justify-between w-full")}>
+    <header
+      className={classNames(
+        styles.headerWrapper,
+        "flex items-center h-full justify-between w-full"
+      )}
+    >
       <NavSlideTabs tabs={links} fixedWidth={124} activeTabId={activeTabId} />
 
-      <div className={classNames("w-[234px] flex justify-end", styles.connectWalletWrapper)}>
+      <div
+        className={classNames(
+          "w-[234px] flex justify-end",
+          styles.connectWalletWrapper
+        )}
+      >
         <ConnectWallet />
       </div>
     </header>

@@ -47,7 +47,7 @@ export default function Index() {
 
   return (
     <PageLayout includeContainer={false}>
-      <Container px={44}>
+      <Container>
         <div ref={ref}>
           <BannerSection opacity={opacity} />
           <Spacer height={124} />
@@ -56,7 +56,7 @@ export default function Index() {
         </div>
       </Container>
       <MarketRowBottom />
-      <Container px={44}>
+      <Container>
         <Spacer height={100} />
         <PortfolioSection />
         <Spacer />
