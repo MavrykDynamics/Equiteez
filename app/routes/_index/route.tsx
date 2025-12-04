@@ -54,16 +54,20 @@ export default function Index() {
       </Container>
       <MarketRowTop />
       <MarketRowBottom />
+      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
       <Container>
-        <Spacer height={100} />
         <PortfolioSection />
-        <Spacer />
-        <PropertiesSlider />
-        <Spacer height={116} />
-        <PropertiesSliderSecondary />
-        <Spacer height={200} />
+        <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+      </Container>
+
+      <PropertiesSlider />
+      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+      <PropertiesSliderSecondary />
+      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+
+      <Container>
         <FAQSection data={homeFAQ} />
-        <Spacer height={220} />
+        <Spacer className="h-[100px]" />
       </Container>
     </PageLayout>
   );

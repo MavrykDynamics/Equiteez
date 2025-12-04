@@ -52,6 +52,7 @@
     display: block;
   }
   .wrapper {
+    overflow: hidden;
     gap: 24px;
     padding: 0;
     background: transparent;
@@ -61,5 +62,21 @@
     width: 100%;
     align-items: center;
     justify-content: space-between;
+  }
+  .mobileSlides {
+    margin-top: 24px;
+    display: block;
+    padding-inline: max(
+      var(--space-8),
+      calc((100% - var(--large-width)) / 2 + var(--space-8))
+    );
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+@media (--media-phone) {
+  .mobileSlides {
+    padding-inline: var(--space-4);
   }
 }
