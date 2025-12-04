@@ -499,6 +499,14 @@ input[type="number"] {
   margin-inline: 8px;
 }
 
+.remove-scrollbar {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox, Safari 18.2+, Chromium 121+ */
+}
+.remove-scrollbar::-webkit-scrollbar {
+  display: none; /* Older Safari and Chromium */
+}
+
 @media (max-width: 600px) {
   input,
   button {

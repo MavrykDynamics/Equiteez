@@ -50,10 +50,9 @@ export default function Index() {
       <Container>
         <div ref={ref}>
           <BannerSection opacity={opacity} />
-          <MarketRowTop />
-          <Spacer height={44} />
         </div>
       </Container>
+      <MarketRowTop />
       <MarketRowBottom />
       <Container>
         <Spacer height={100} />
