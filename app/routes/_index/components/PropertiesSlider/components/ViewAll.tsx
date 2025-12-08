@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { Button } from "~/lib/atoms/Button";
-
+import styles from './viewAll.module.css';
 // icons
 import ArrowRight from "app/icons/arrow-right.svg?react";
 
@@ -9,12 +9,10 @@ export const ViewAll = () => {
     <Link to={"/marketplace"}>
       <Button
         variant="custom"
-        className="text-white bg-transparent border-2 border-white py-[8px]"
+        className={styles.button}
       >
-        <div className="flex items-center gap-2">
           View All
           <ArrowRight className="w-6 h-6 stroke-current" />
-        </div>
       </Button>
     </Link>
   );

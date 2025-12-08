@@ -1,25 +1,14 @@
 import BigNumber from "bignumber.js";
-import { DodoStorageType } from "../dex.provider.types";
-import { ZERO } from "~/lib/utils/numbers";
 
 export const calculateTotalLiquidity = (
-  storage: DodoStorageType | undefined
+  aggregatedOrdersBuyPrice: BigNumber,
+  aggregatedOrdersSellPrice: BigNumber
 ) => {
-  if (!storage)
-    return { totalLiquidity: ZERO, baseBalance: ZERO, quoteBalance: ZERO };
-  const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-
-  const baseBalance = new BigNumber(storage.baseBalance).div(feeDecimals);
-
-  const quoteBalance = new BigNumber(storage.quoteBalance).div(feeDecimals);
-
-  const totalLiquidity = baseBalance.plus(quoteBalance); // Total liquidity is the sum of the base and quote liquidity
-
-  return { totalLiquidity, baseBalance, quoteBalance };
+  return aggregatedOrdersBuyPrice.plus(aggregatedOrdersSellPrice);
 };
 
 export const calculateTotalLiquidityInUSD = (
-  storage: DodoStorageType | undefined,
+  storage: any | undefined,
   baseTokenPriceInUSDT: BigNumber
 ) => {
   if (!storage)
@@ -53,101 +42,85 @@ export const calculateTotalLiquidityInUSD = (
   };
 };
 
-const DEFAULT_PERCENTAGES_DATA = {
-  basePercentage: "0",
-  quotePercentage: "0",
-};
-
 export const calculateLiquidityPercentages = (
-  storage: DodoStorageType | undefined
+  aggregatedOrdersBuyPrice: BigNumber,
+  aggregatedOrdersSellPrice: BigNumber
 ) => {
-  if (!storage) return DEFAULT_PERCENTAGES_DATA;
-  const { baseBalance, quoteBalance, totalLiquidity } =
-    calculateTotalLiquidity(storage);
+  const totalLiquidity = aggregatedOrdersBuyPrice.plus(
+    aggregatedOrdersSellPrice
+  );
 
-  if (totalLiquidity.isZero()) return DEFAULT_PERCENTAGES_DATA;
-  // Calculate percentages
-  const basePercentage = baseBalance.div(totalLiquidity).times(100); // Base token percentage
-  const quotePercentage = quoteBalance.div(totalLiquidity).times(100); // Quote token percentage
+  if (totalLiquidity.isZero()) {
+    return {
+      buyPercentage: "0.00",
+      sellPercentage: "0.00",
+    };
+  }
+
+  const buyPercentage = aggregatedOrdersBuyPrice
+    .div(totalLiquidity)
+    .times(100)
+    .toFixed(2);
+
+  const sellPercentage = aggregatedOrdersSellPrice
+    .div(totalLiquidity)
+    .times(100)
+    .toFixed(2);
 
   return {
-    basePercentage: basePercentage.toFixed(2), // Fixed to 2 decimal places
-    quotePercentage: quotePercentage.toFixed(2), // Fixed to 2 decimal places
+    buyPercentage,
+    sellPercentage,
   };
 };
 
-export const getTokenAmountFromLiquidity = (
-  storage: DodoStorageType | undefined,
-  baseTokenPriceInUSDT: BigNumber
-) => {
-  if (!storage || baseTokenPriceInUSDT.isZero()) return new BigNumber(0);
-
-  const feeDecimals = new BigNumber(10).pow(storage.config.feeDecimals);
-
-  // Convert baseBalance to human-readable format
-  const baseBalance = new BigNumber(storage.baseBalance).div(feeDecimals);
-
-  return baseBalance; // This already represents the token amount in the pool
-};
-
-export const calculateEstFee = (
-  tokensAmount: BigNumber | undefined,
-  tokenPriceInUSDT: BigNumber.Value,
-  lpFee: BigNumber.Value,
-  maintainerFee: BigNumber.Value,
-  feeDecimals: number,
-  slippageFactor: BigNumber.Value,
-  isBuying: boolean
-) => {
-  if (!tokensAmount) return "0";
-
-  // Convert fees and slippage factor to proper decimal scale
-  const totalFeeRate = new BigNumber(lpFee)
-    .plus(maintainerFee)
-    .div(new BigNumber(10).pow(feeDecimals));
-
-  const slippageMultiplier = new BigNumber(1).plus(
-    new BigNumber(slippageFactor).div(new BigNumber(10).pow(18))
+export const calculateEstFee = ({
+  amount,
+  price,
+  fee,
+  tokenDecimals,
+  isFeeInTokens = false,
+}: {
+  amount: BigNumber;
+  price: BigNumber;
+  fee: number;
+  tokenDecimals: number;
+  isFeeInTokens?: boolean;
+}) => {
+  const totalFeeRate = new BigNumber(fee).div(
+    new BigNumber(10).pow(tokenDecimals)
   );
 
-  if (isBuying) {
+  if (isFeeInTokens) {
     // Fee in base token
-    const estFee = tokensAmount.times(totalFeeRate).times(slippageMultiplier);
-    return estFee.toFixed(feeDecimals);
+    console.log(isFeeInTokens, "isFeeInTokens");
+    const estFee = amount.times(totalFeeRate);
+    return estFee.decimalPlaces(tokenDecimals, BigNumber.ROUND_DOWN).toString();
   } else {
     // Fee in USDT
-    const tokenValueInUSDT = new BigNumber(tokensAmount).times(
-      tokenPriceInUSDT
-    );
-    const estFee = tokenValueInUSDT
-      .times(totalFeeRate)
-      .times(slippageMultiplier);
-    return estFee.toFixed(feeDecimals);
+    const tokenValueInUSDT = new BigNumber(amount).times(price);
+    const estFee = tokenValueInUSDT.times(totalFeeRate);
+
+    return estFee.decimalPlaces(tokenDecimals, BigNumber.ROUND_DOWN).toString();
   }
 };
 
-export const calculateMinReceived = (
-  tokensAmount: BigNumber.Value,
+export const calculateMaxBuySell = (
+  tokensBalance: BigNumber.Value,
+  usdBalance: BigNumber.Value,
   tokenPriceInUSDT: BigNumber.Value,
-  slippagePercentage: string,
   decimals: number,
   isBuying: boolean
-) => {
-  // Parse slippage percentage and convert to factor (e.g., 1% slippage -> 0.99)
-  const slippageFactor = new BigNumber(1).minus(
-    new BigNumber(slippagePercentage).dividedBy(100)
-  );
+): BigNumber => {
+  const price = new BigNumber(tokenPriceInUSDT);
+  const usd = new BigNumber(usdBalance);
 
-  // For buying, calculate how much you receive in tokens
-  const totalValueInUSDT = new BigNumber(tokensAmount).times(tokenPriceInUSDT);
   if (isBuying) {
-    const minReceivedInTokens = totalValueInUSDT.div(tokenPriceInUSDT); // Tokens you receive for your USDT
-
-    return minReceivedInTokens.times(slippageFactor).toFixed(decimals); // Apply slippage and return
+    if (price.isZero()) return new BigNumber(0);
+    return usd.div(price).decimalPlaces(decimals, BigNumber.ROUND_DOWN);
+  } else {
+    const tokenBal = new BigNumber(tokensBalance);
+    return tokenBal
+      .times(tokenPriceInUSDT)
+      .decimalPlaces(decimals, BigNumber.ROUND_DOWN);
   }
-
-  // Apply slippage on the value in USDT
-  const minReceivedInUSDT = totalValueInUSDT.times(slippageFactor);
-
-  return minReceivedInUSDT.toFixed(decimals); // USDT has 6 decimals
 };

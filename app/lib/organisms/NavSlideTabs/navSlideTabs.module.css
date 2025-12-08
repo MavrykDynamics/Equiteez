@@ -1,3 +1,5 @@
+@import "../../../styles/breakpoints.css";
+
 .active {
   animation: reveal 300ms linear;
 }
@@ -10,5 +12,11 @@
   to {
     scale: 1;
     @apply bg-black-secondary  text-white;
+  }
+}
+
+@media (--media-tablet-max) {
+  .wrapper {
+    display: none;
   }
 }

@@ -1,29 +1,21 @@
 import { ApiError } from "~/errors/error";
 import primaryEstate from "./primaryEstate.mock.json";
 import secondaryEstate from "./secondaryEstate.mock.json";
+import { FullSchema } from "~/providers/MarketsProvider/markets.schema";
+import { z } from "zod";
 
 export type PrimaryEstate = (typeof primaryEstate)[0] & { slug: string };
 export type SecondaryEstate = (typeof secondaryEstate)[0] & { slug: string };
 
 export type EstateType = PrimaryEstate | SecondaryEstate;
 
-// NEW ***************
-
-export type DodoMavConfigType = {
-  address: string;
-  baseTokenAddress: string;
-  quoteTokenAddress: string;
-  quoteLpTokenAddress: string;
-  baseLpTokenAddress: string;
-};
-
 export type OrderbookConfigType = {
   address: string;
   rwaTokenAddress: string;
+  currencies: { token: { address: string; token_id: number } }[];
 };
 
 export type MarketConfig = {
-  dodoMav: Map<string, DodoMavConfigType>;
   orderbook: Map<string, OrderbookConfigType>;
 };
 
@@ -34,14 +26,14 @@ export type MarketInternalStateType = {
   isLoading: boolean;
 };
 
+export type AssetData = z.infer<typeof FullSchema>;
+
 export type MarketContext = MarketInternalStateType & {
   marketAddresses: string[];
-  dodoBaseTokenAddresses: string[];
+  orderbookAddresses: string[];
   marketsArr: EstateType[];
   activeMarket: EstateType | null;
   isLoading: boolean;
-  loadMoreMarkets: () => void;
-  reachedTheEnd: boolean;
   isActiveMarketLoading: boolean;
   pickMarketByIdentifier: (slug: string) => EstateType | null;
   updateActiveMarketState: (slug: string) => void;
@@ -49,9 +41,7 @@ export type MarketContext = MarketInternalStateType & {
   marketApiError: ApiError | null;
   pickers: {
     pickOrderbookContract: StringRecord<string>;
-    pickDodoContractBasedOnToken: StringRecord<string>;
-    pickMockBaseToken: StringRecord<string>;
-    pickMockQuoteToken: StringRecord<string>;
-    pickDodoContractQuoteToken: StringRecord<string>;
+    pickOrderbookToken: StringRecord<string>;
+    pickOrderbookContractQuoteToken: StringRecord<string>;
   };
 };

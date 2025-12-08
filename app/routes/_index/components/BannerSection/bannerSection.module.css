@@ -1,8 +1,45 @@
+@import "../../../../styles/breakpoints.css";
+
 .bannerMask {
+  height: 100%;
+  max-width: 100%;
+}
+.heroTitle {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  max-height: 104px;
+  z-index: 100;
+  color: var(--color-sand-900);
+  text-shadow: 0 1.629px 1.629px rgba(121, 121, 121, 0.25);
+  font-size: 44px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 66px;
+  text-transform: capitalize;
+}
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 112px;
+  box-sizing: content-box;
+  padding: 95px 0;
+}
+@media (--media-tablet-max) {
+  .heroTitle {
+    font-size: 36px;
+    line-height: 55.183px;
+  }
+  .wrapper {
+    padding: 30px 0 64px 0;
+    max-height: 94px;
+  }
+}
+@media (--media-tablet-min) {
+  .heroTitle {
+    font-size: 17.924px;
+    line-height: 26.886px;
+  }
+  .wrapper {
+    max-height: 45px;
+  }
 }

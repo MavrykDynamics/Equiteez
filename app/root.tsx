@@ -44,6 +44,7 @@ import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { MobileView } from "./providers/MobileView/MobileView";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -51,6 +52,14 @@ export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: marqueeStylesheet },
   { rel: "stylesheet", href: marqueeStylesheet },
 ];
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+    },
+  },
+});
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userAgent = request.headers.get("user-agent") || "";
@@ -121,8 +130,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <AppProvider>
-              <MobileView isMobile={isMobile}>
+            <QueryClientProvider client={queryClient}>
+              <AppProvider>
                 <ApolloProvider>
                   <DipdupProvider>
                     <WalletProvider>
@@ -150,8 +159,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </WalletProvider>
                   </DipdupProvider>
                 </ApolloProvider>
-              </MobileView>
-            </AppProvider>
+              </AppProvider>
+            </QueryClientProvider>
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />

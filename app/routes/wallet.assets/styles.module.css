@@ -1,0 +1,102 @@
+@import "../../styles/breakpoints.css";
+
+.assetItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  padding: 0 24px;
+
+  @media (--media-tablet-max) {
+    padding: 0 16px;
+  }
+}
+.dotsBlock {
+  width: 56px;
+  height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--color-grey-100);
+}
+.roundedWrapper {
+  padding: 24px 0;
+  @media (--media-tablet-max) {
+    padding: 16px 0;
+  }
+}
+.emptyDotsBlock {
+  width: 56px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--color-grey-100);
+}
+.tabBadgeSecondary,
+.tabBadge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 15px;
+  width: fit-content;
+  box-sizing: border-box;
+}
+
+.tabBadge {
+  background: rgba(143, 193, 160, 0.75);
+  color: var(--color-green-950);
+}
+.tabBadgeSecondary {
+  background: rgba(168, 171, 216, 0.75);
+  color: var(--color-blue-950);
+}
+
+.assetActionsDropdownIcon {
+  display: none;
+}
+.assetActionsContent {
+  background: var(--color-neutral-light);
+  cursor: initial;
+  border: 1px solid var(--color-grey-100);
+  box-shadow: 0 6px 8px 0 rgba(0, 0, 0, 0.25);
+}
+.assetActionsDropdownWrapperActive svg {
+  color: var(--color-sand-900);
+}
+.assetActionsItem {
+  display: flex;
+  align-items: center;
+  height: 58px;
+  box-sizing: border-box;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  background: var(--color-neutral-light);
+}
+.assetActionsItemLite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 90px;
+}
+.assetActionsItemLite > span:first-child {
+  background: var(--color-neutral-light);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.assetActionsItem:last-child {
+  border-bottom: none;
+}
+.assetActionsItem:hover,
+.assetActionsItemLite:hover {
+  background: var(--color-grey-100);
+  @media (--media-tablet-max) {
+    background: transparent;
+  }
+}

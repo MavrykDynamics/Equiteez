@@ -1,0 +1,163 @@
+@import "../../styles/breakpoints.css";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mobileWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.infoWrapper {
+  display: flex;
+  gap: 24px;
+}
+.roundedWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  padding: 16px 24px;
+  position: relative;
+}
+.userInfoWrapper {
+  width: 608px;
+  box-sizing: border-box;
+  @media (--media-tablet-max) {
+    width: 100%;
+  }
+}
+.personalInfoContainer {
+  display: grid;
+  min-width: 560px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.userInfoWrapper .personalInfoContainer {
+  @media (--media-phone-max) {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-width: auto;
+  }
+}
+.mobileWrapper .tabSwitcher {
+  width: 100%;
+}
+.mobileWrapper .tabSwitcherItem {
+  width: 100%;
+}
+.personalInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mobileWrapper .personalInfoItem span {
+  font-size: var(--small-body-size);
+}
+.qrItem,
+.personalInfoItemContent {
+  border-radius: 8px;
+  background: var(--color-neutral-light);
+  border: 1px solid var(--color-grey-100);
+  padding: 0 16px;
+  height: 45px;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  flex: 1;
+}
+.qrItem {
+  gap: 10px;
+}
+.qrItem span {
+  overflow-wrap: anywhere;
+}
+.personalInfoItemText {
+  opacity: 0.5;
+}
+.dateInfo {
+  display: flex;
+  gap: 12px;
+}
+.walletInformationWrapper {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 24px;
+  @media (--media-phone-max) {
+    gap: 16px;
+    flex-direction: column;
+  }
+}
+.walletInformationContainer {
+  min-width: 407px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (--media-tablet-max) {
+    min-width: auto;
+    flex: 1;
+  }
+}
+.walletQrContainer {
+  align-items: center;
+  justify-content: center;
+}
+.walletInformationContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.walletInformationText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.userAddressContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.walletBtn {
+  width: fit-content;
+}
+.accountIcon {
+  margin-top: 20px;
+  width: 98px;
+  height: 98px;
+  border-radius: 50%;
+  border: 1px solid var(--color-orange);
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @media (--media-phone-max) {
+    width: 66px;
+    height: 66px;
+  }
+}
+.accountIconContent {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-orange);
+}
+.editBtn {
+  width: fit-content;
+}
+.profileGradient {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 224px;
+  border-top-left-radius: 16px;
+}

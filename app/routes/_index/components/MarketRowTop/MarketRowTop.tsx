@@ -38,7 +38,7 @@ const cards = [
 
 export const MarketRowTop = () => {
   return (
-    <section className={styles.topRowGrid}>
+    <section className={clsx(styles.topRowGrid, "remove-scrollbar")}>
       {cards.map(({ header, description, link, imgSrc }) => {
         return (
           <div key={link} className={clsx("cursor-pointer")}>

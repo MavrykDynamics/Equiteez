@@ -19,16 +19,13 @@ import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
-import {
-  calculateEstFee,
-  getTokenAmountFromLiquidity,
-} from "~/providers/Dexprovider/utils";
+import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
-import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
-import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
+import { atomsToTokens } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
+import { ZERO } from "~/lib/utils/numbers";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -52,8 +49,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setLimitPrice,
 }) => {
-  const { symbol, token_address, slug } = estate;
-  const { dodoTokenPair, dodoStorages, dodoMav } = useDexContext();
+  const { token_address, slug } = estate;
+  const { orderbookTokenPair, orderbookStorages } = useDexContext();
 
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);
@@ -66,22 +63,21 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const { userTokensBalances, isKyced } = useUserContext();
 
-  const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
+  const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
 
   const marketTokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
-    [dodoMav, slug, selectedAssetMetadata.decimals]
+    () =>
+      atomsToTokens(
+        orderbookStorages[slug]?.lowestSellPrice,
+        selectedAssetMetadata.decimals
+      ),
+    [orderbookStorages, slug, selectedAssetMetadata.decimals]
   );
 
   const tokenPrice = useMemo(
     () => limitPrice || new BigNumber(0),
     [limitPrice]
-  );
-
-  const baseTokenAmount = useMemo(
-    () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
-    [dodoStorages, slug, tokenPrice]
   );
 
   const usdBalance = useMemo(
@@ -125,11 +121,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const input1Props = useMemo(() => {
     return {
       amount: limitPrice,
-      selectedAssetSlug: dodoTokenPair[slug],
+      selectedAssetSlug: orderbookTokenPair[slug],
       selectedAssetMetadata: stableCoinMetadata,
       label: "Price",
     };
-  }, [dodoTokenPair, limitPrice, slug, stableCoinMetadata]);
+  }, [orderbookTokenPair, limitPrice, slug, stableCoinMetadata]);
 
   const input2Props = useMemo(() => {
     return {
@@ -143,35 +139,27 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const estFee = useMemo(() => {
-    const {
-      config: { lpFee, maintainerFee, feeDecimals },
-    } = dodoStorages[slug];
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      buyOrderFee: 0,
+      sellOrderFee: 0,
+    };
 
-    const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
+    const tokensAmount = amount || ZERO;
+    const fee = isBuyAction ? buyOrderFee : sellOrderFee;
 
-    const result = calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      maintainerFee,
-      Number(feeDecimals),
-      "0",
-      isBuyAction
-    );
-
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-
-    return downgradeDecimals(result, decimals);
+    return calculateEstFee({
+      amount: tokensAmount,
+      price: tokenPrice,
+      fee,
+      tokenDecimals: stableCoinMetadata?.decimals,
+      isFeeInTokens: isBuyAction,
+    });
   }, [
-    dodoStorages,
-    input1Props.amount,
-    input2Props.amount,
+    amount,
     isBuyAction,
-    selectedAssetMetadata.decimals,
+    orderbookStorages,
     slug,
-    stableCoinMetadata.decimals,
+    stableCoinMetadata?.decimals,
     tokenPrice,
   ]);
 
@@ -248,7 +236,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 amountInputDisabled
                 label="Total"
                 amount={balanceTotal}
-                selectedAssetSlug={dodoTokenPair[slug]}
+                selectedAssetSlug={orderbookTokenPair[slug]}
                 selectedAssetMetadata={stableCoinMetadata}
                 balanceTotal={balanceTotal}
                 decimals={selectedAssetMetadata?.decimals}
@@ -289,16 +277,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           </Alert>
         </div>
       )}
-      {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) &&
-        total &&
-        !total.isZero() && (
-          <div className="mt-8">
-            <Alert type="warning" header="Low Liquidity Detected!" expandable>
-              The liquidity for {symbol} is critically low. Transactions may
-              experience high slippage or failure.
-            </Alert>
-          </div>
-        )}
 
       <Button
         className="mt-8"

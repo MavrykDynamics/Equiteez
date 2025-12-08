@@ -1,0 +1,106 @@
+@import "../../../styles/breakpoints.css";
+
+.backdrop {
+  background-color: var(--color-sand-900);
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+}
+
+.mobileNav {
+  position: absolute;
+  top: 61px;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: var(--color-dark-blue-500);
+  overflow: hidden;
+  max-width: var(--large-width);
+  padding: var(--space-1) var(--space-8);
+
+  @media (--media-tablet-min) {
+    max-width: var(--medium-width);
+  }
+
+  @media (--media-phone) {
+    max-width: 100%;
+    padding: var(--space-1) var(--space-4);
+  }
+
+  & .navList {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    & .navItem {
+      color: var(--color-neutral-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: var(--size-14);
+      font-size: 14px;
+      line-height: 21px;
+      font-weight: 800;
+    }
+  }
+
+  & .userInfo {
+    & .divider {
+      height: 1px;
+      background-color: var(--color-dark-blue-300);
+      width: 100%;
+      margin: var(--space-1) 0;
+    }
+
+    & .tokenItem,
+    & .tierInfo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: var(--size-11);
+
+      & .tokenTitleWrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      & .tokenTitleWrapper .title,
+      & .tokenTitleWrapper .tierTitle,
+      & .tokenValue {
+        font-size: 14px;
+        line-height: 21px;
+        font-weight: 700;
+        color: var(--color-neutral-light);
+      }
+
+      & .tierStatus {
+        font-size: 12px;
+        line-height: 18px;
+        font-weight: 700;
+        color: var(--color-neutral-light);
+        background-color: #a67f5980;
+        text-align: center;
+        border-radius: var(--space-8);
+        padding: var(--space-1) var(--space-4);
+      }
+    }
+
+    & .actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: var(--space-4);
+      margin-bottom: var(--space-1);
+
+      & .logoutButton {
+        width: 100%;
+        max-width: 237px;
+        height: var(--size-10);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  }
+}

@@ -10,7 +10,7 @@ import { PortfolioSection } from "./components/PortfolioSection";
 import { FAQSection } from "app/templates/FAQSection";
 
 import { homeFAQ } from "./index.const";
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { MarketRowTop } from "./components/MarketRowTop/MarketRowTop";
 import { MarketRowBottom } from "./components/MarketRowBottom/MarketRowBottom";
 import { PropertiesSliderSecondary } from "./components/PropertiesSlider/PropertiesSlider";
@@ -47,25 +47,27 @@ export default function Index() {
 
   return (
     <PageLayout includeContainer={false}>
-      <Container px={44}>
+      <Container>
         <div ref={ref}>
           <BannerSection opacity={opacity} />
-          <Spacer height={124} />
-          <MarketRowTop />
-          <Spacer height={44} />
         </div>
       </Container>
+      <MarketRowTop />
       <MarketRowBottom />
-      <Container px={44}>
-        <Spacer height={100} />
+      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+      <Container>
         <PortfolioSection />
-        <Spacer />
-        <PropertiesSlider />
-        <Spacer height={116} />
-        <PropertiesSliderSecondary />
-        <Spacer height={200} />
+        <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+      </Container>
+
+      <PropertiesSlider />
+      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+      <PropertiesSliderSecondary />
+      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+
+      <Container>
         <FAQSection data={homeFAQ} />
-        <Spacer height={220} />
+        <Spacer className="h-[100px]" />
       </Container>
     </PageLayout>
   );

@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .cards-container > div:nth-child(odd) .card {
   @apply bg-dark-green-50;
 }
@@ -25,4 +27,54 @@
   box-shadow:
     0.5px 0.5px 0px 0px rgba(0, 0, 0, 0.07),
     1px 2px 15px 0px rgba(0, 0, 0, 0.05);
+}
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 44px;
+}
+.tabletBlock {
+  display: none;
+}
+.title {
+  font-size: 36px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 44px;
+}
+
+@media (--media-tablet-max) {
+  .desktopBlock {
+    display: none;
+  }
+  .title {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+  }
+  .tabletBlock {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .tabletBlockItem {
+    width: 100%;
+    background: var(--color-neutral-light);
+    padding: 16px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 12px;
+  }
+  .tabletBlockItem > svg {
+    height: 50px;
+  }
+  .wrapper {
+    gap: 24px;
+  }
 }

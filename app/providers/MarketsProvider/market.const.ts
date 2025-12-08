@@ -3,11 +3,10 @@ export const PRIMARY_ISSUANCE = "Primary Issuance";
 
 export const MARKETS_INITIAL_STATE = {
   config: {
-    dodoMav: new Map(), // dodoContract -> {adddress, baseToken, quoteToken, quoteLpToken, baseLpToken}
-    orderbook: new Map(),
+    orderbook: new Map(), // orderbookContract
   },
   sortedMarketAddresses: [],
-  markets: new Map(),
+  markets: new Map(), // esttates by main(base) token address
   isLoading: true,
 };
 

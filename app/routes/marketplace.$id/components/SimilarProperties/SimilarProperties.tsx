@@ -26,7 +26,7 @@ function getThreeUniqueElements(items: EstateType[]) {
 
 export const SimilarProperties = () => {
   const { marketsArr } = useMarketsContext();
-  const { dodoMav } = useDexContext();
+  const { orderbookStorages } = useDexContext();
 
   const similarEstates = useMemo(
     () => getThreeUniqueElements(marketsArr),
@@ -44,7 +44,7 @@ export const SimilarProperties = () => {
         ) : (
           similarEstates.map((estate) => {
             const pricePerToken = atomsToTokens(
-              dodoMav[estate.slug],
+              orderbookStorages[estate.slug]?.lowestSellPrice,
               estate.decimals
             );
             return (

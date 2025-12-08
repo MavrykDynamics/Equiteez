@@ -13,6 +13,13 @@ type OrderbookBuySellParams = {
   quoteTokenDecimals: number;
 };
 
+type OrderbookCancelOrderParams = {
+  tezos: MavrykToolkit;
+  orderbookContractAddress: string;
+  orderId: number;
+  orderType: string;
+};
+
 export async function orderbookBuy({
   tezos,
   orderbookContractAddress,
@@ -135,6 +142,29 @@ export async function orderbookSell({
     const batchOp = await batch.send();
 
     await batchOp.confirmation();
+  } catch (e: unknown) {
+    throw e;
+  }
+}
+
+export async function orderbookCancelOrder({
+  tezos,
+  orderbookContractAddress,
+  orderId,
+  orderType,
+}: OrderbookCancelOrderParams) {
+  try {
+    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+
+    const rwaOrderbookOperation = await orderbookContract.methodsObject
+      .cancelOrders([
+        {
+          orderId,
+          orderType,
+        },
+      ])
+      .send();
+    await rwaOrderbookOperation.confirmation();
   } catch (e: unknown) {
     throw e;
   }

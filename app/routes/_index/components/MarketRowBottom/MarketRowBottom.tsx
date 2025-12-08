@@ -5,7 +5,7 @@ import ChartIcon from "app/icons/chart-mock.svg?react";
 
 import styles from "./marketRowBottom.module.css";
 import clsx from "clsx";
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { Link } from "@remix-run/react";
@@ -14,7 +14,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 
 export const MarketRowBottom = () => {
   const { marketsArr } = useMarketsContext();
-  const { dodoMav } = useDexContext();
+  const { orderbookStorages } = useDexContext();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -33,7 +33,7 @@ export const MarketRowBottom = () => {
         >
           {marketsArr.map((market) => {
             const currentPrice = atomsToTokens(
-              dodoMav[market.slug],
+              orderbookStorages[market.slug]?.lowestSellPrice,
               market.decimals
             );
             return (

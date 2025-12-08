@@ -13,7 +13,7 @@ import { BuySellTabs } from "./components/BuySellTabs/BuySellTabs";
 
 import { OrderBookTabs } from "./components/OrderBookTabs/OrderBookTabs";
 
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import { useMarketByParamIdentifier } from "../marketplace.$id/hooks/use-market-by-identifier";
 
@@ -34,12 +34,15 @@ export const meta: MetaFunction = () => {
 };
 export default function ExchangeDetails() {
   const { isLoading } = useMarketsContext();
-  const { dodoMav } = useDexContext();
+  const { orderbookStorages } = useDexContext();
   const estateData = useMarketByParamIdentifier();
 
   const tokenPrice = useMemo(
-    () => (estateData?.slug ? dodoMav[estateData.slug] : "0"),
-    [estateData?.slug, dodoMav]
+    () =>
+      estateData?.slug
+        ? orderbookStorages[estateData.slug]?.lowestSellPrice
+        : "0",
+    [estateData?.slug, orderbookStorages]
   );
 
   if (isLoading) return <FullScreenSpinner />;
