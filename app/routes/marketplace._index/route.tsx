@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { generatePath, Link } from "@remix-run/react";
 import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
@@ -9,11 +9,18 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
-import { FiltersProvider } from "./components/Filters/FiltersProvider";
-
+import styles from "./marketplace.module.css";
 import { usePagination } from "~/hooks/usePagination";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { ApiPagination } from "~/lib/organisms/Pagination/ApiPagination";
+import { Text } from "~/lib/atoms/Typography/Text";
+import EmptyStateIcon from "app/icons/marketplace/emptySearch.svg?react";
+import {
+  TABLET_MIN_WIDTH,
+  useWindowDimensions,
+} from "~/hooks/useWindowDimensions";
+import { MobileFilters } from "~/routes/marketplace._index/components/MobileFilters";
+import { ROUTES } from "~/consts/routes";
 
 export const meta: MetaFunction = () => {
   return [
@@ -29,76 +36,86 @@ export default function Properties() {
     useMarketsContext();
   const { orderbookStorages } = useDexContext();
 
-  const {
-    data: filteredEstates,
-    page,
-    setPage,
-    totalPages,
-  } = usePagination(marketsArr, PAGE_LIMIT);
+  const { width } = useWindowDimensions();
+  const shouldShowMobileFilters = width <= TABLET_MIN_WIDTH;
+
+  const { data, page, setPage, totalPages } = usePagination(
+    marketsArr,
+    PAGE_LIMIT
+  );
+
   return (
     <PageLayout>
-      <FiltersProvider>
-        <Spacer height={32} />
-        <Filters />
+      <Spacer height={32} />
+      <div className={styles.filtersWrapper}>
+        {shouldShowMobileFilters ? <MobileFilters /> : <Filters />}
+      </div>
 
+      <div className={styles.contentWrapper}>
         {marketApiError ? (
-          <div className="mt-5">
+          <div className={styles.errorWrapper}>
             <ApiErrorBox message="The market data is unavailable at the moment" />
           </div>
         ) : isLoading ? (
-          <div className={"w-full flex items-center justify-center h-full"}>
+          <div className={styles.spinnerWrapper}>
             <Spinner size={36} />
           </div>
+        ) : data.length ? (
+          <div className={styles.cardsWrapper}>
+            {data.map((es) => {
+              const isSecondaryMarket =
+                es.assetDetails.type === SECONDARY_MARKET;
+
+              const pricePerToken = atomsToTokens(
+                orderbookStorages[es.slug]?.lowestSellPrice || 0,
+                es.decimals
+              );
+
+              return (
+                <Link
+                  to={generatePath(ROUTES.singleAsset, {
+                    id: es.assetDetails.blockchain[0].identifier,
+                  })}
+                  key={es.token_address}
+                >
+                  <ThumbCardSecondary
+                    flag={es.assetDetails?.propertyDetails?.flag}
+                    imgSrc={es.assetDetails.previewImage}
+                    title={es.name}
+                    description={es.assetDetails.propertyDetails.propertyType}
+                    isSecondaryMarket={isSecondaryMarket}
+                    APY={es.assetDetails.APY}
+                    pricePerToken={pricePerToken}
+                    progressBarPercentage={22}
+                    isFutureAsset={!validBaseTokens[es.token_address]}
+                    height="276px"
+                  />
+                </Link>
+              );
+            })}
+          </div>
         ) : (
-          <div>
-            <div className="mt-5 text-body text-content">
-              {filteredEstates.length} items
-            </div>
-            <div className="mt-11 grid grid-cols-3 gap-x-6 gap-y-8">
-              {filteredEstates.map((es) => {
-                const isSecondaryMarket =
-                  es.assetDetails.type === SECONDARY_MARKET;
-
-                const pricePerToken = atomsToTokens(
-                  orderbookStorages[es.slug]?.lowestSellPrice || 0,
-                  es.decimals
-                );
-
-                return (
-                  <Link
-                    to={`/marketplace/${es.assetDetails.blockchain[0].identifier}`}
-                    key={es.token_address}
-                  >
-                    <ThumbCardSecondary
-                      imgSrc={es.assetDetails.previewImage}
-                      title={es.name}
-                      description={es.assetDetails.propertyDetails.propertyType}
-                      isSecondaryMarket={isSecondaryMarket}
-                      APY={es.assetDetails.APY}
-                      pricePerToken={pricePerToken}
-                      isFutureAsset={!validBaseTokens[es.token_address]}
-                      progressBarPercentage={50}
-                    />
-                  </Link>
-                );
-              })}
-            </div>
-
-            {filteredEstates.length && (
-              <div className="lg:ml-auto">
-                <ApiPagination
-                  setPage={setPage}
-                  page={page}
-                  totalPages={totalPages}
-                  paginatedDataLength={filteredEstates.length}
-                  isLoading={isLoading}
-                />
-              </div>
-            )}
+          <div className={styles.emptyStateWrapper}>
+            <EmptyStateIcon />
+            <Text weight="bold">
+              Oops, no properties match your filters. Try adjusting them or
+              broadening your search.
+            </Text>
           </div>
         )}
-        <Spacer height={110} />
-      </FiltersProvider>
+        {data.length && (
+          <div className="lg:ml-auto">
+            <ApiPagination
+              setPage={setPage}
+              page={page}
+              totalPages={totalPages}
+              paginatedDataLength={data.length}
+              isLoading={isLoading}
+            />
+          </div>
+        )}
+      </div>
+      <Spacer height={200} />
     </PageLayout>
   );
 }

@@ -99,10 +99,10 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
       className={clsx(styles.filterWrapper, isHideTagFilter && styles.hideTag)}
     >
       <div className={clsx("text-content relative", styles.filtersGrid)}>
-        <div className="flex items-center justify-between">
+        <div className="flex h-full items-center justify-between">
           <button
             className={clsx(
-              "flex flex-col gap-y-1 w-full px-[16px] py-[10px]",
+              "flex flex-col gap-y-1 w-full h-full px-[16px] py-[10px]",
               styles.searchWrapper,
               isSearchFocused && styles.searchWrapperFocused
             )}
@@ -234,7 +234,7 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
                               )}
                             </div>
                           ) : (
-                            <p className="capitalize font-semibold text-sand-500">
+                            <p className="capitalize text-sand-500">
                               {filter.emptyText}
                             </p>
                           )}

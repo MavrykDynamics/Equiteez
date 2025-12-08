@@ -1,0 +1,71 @@
+@import "../../../../styles/breakpoints.css";
+
+.screen {
+  width: 100dvw;
+  height: 100dvh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background-color: var(--color-dark-blue-500);
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-6);
+
+  & .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: var(--space-8);
+    padding-bottom: var(--space-6);
+
+    @media (--media-phone) {
+      padding-inline: var(--space-4);
+    }
+
+    & .title {
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: -0.0024em;
+      color: var(--color-neutral-light);
+    }
+
+    & .closeButton {
+      width: var(--size-6);
+      height: var(--size-6);
+    }
+  }
+
+  & .filters {
+    height: calc(100dvh - 150px);
+    overflow-y: auto;
+    padding-inline: var(--space-8);
+
+    @media (--media-phone) {
+      padding-inline: var(--space-4);
+    }
+  }
+
+  & .actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    border-top: 1px solid var(--color-dark-blue-300);
+    padding: var(--space-4) var(--space-8);
+
+    @media (--media-phone) {
+      padding: var(--space-4);
+    }
+
+    & .resetButton,
+    & .applyButton {
+      flex: 1;
+      height: 45px;
+      gap: var(--space-2);
+      padding: 0;
+      padding-inline: var(--space-1);
+    }
+  }
+}

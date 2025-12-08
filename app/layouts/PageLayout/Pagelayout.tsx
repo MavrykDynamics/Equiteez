@@ -11,6 +11,7 @@ import { Container } from "~/lib/atoms/Container/Container";
 import { Banner } from "./Banner/Banner";
 
 import bannerContent from "app/mocks/banner.json";
+import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 
 type PageLayoutProps = {
   bg?: string;
@@ -32,22 +33,24 @@ const PageLayout: FC<PageLayoutProps> = ({
   includeFooter = true,
 }) => {
   return (
-    <div className={clsx("min-h-screen flex flex-col")}>
-      <DocBg bgClassName={clsx(bg)} />
+    <FiltersProvider>
+      <div className={clsx("min-h-screen flex flex-col")}>
+        <DocBg bgClassName={clsx(bg)} />
 
-      <div className={clsx("relative flex flex-col flex-1")}>
-        <Header />
-        <Banner contantArr={bannerContent} />
-        {includeContainer ? (
-          <div className="flex-1">
-            <Container>{children}</Container>
-          </div>
-        ) : (
-          children
-        )}
-        {includeFooter && <Footer />}
+        <div className={clsx("relative flex flex-col flex-1")}>
+          <Header />
+          <Banner contantArr={bannerContent} />
+          {includeContainer ? (
+            <div className="flex-1">
+              <Container>{children}</Container>
+            </div>
+          ) : (
+            children
+          )}
+          {includeFooter && <Footer />}
+        </div>
       </div>
-    </div>
+    </FiltersProvider>
   );
 };
 
