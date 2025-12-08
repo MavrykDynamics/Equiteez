@@ -10,6 +10,7 @@ import MobileNavbar from "~/layouts/PageLayout/Header/MobileNavbar";
 import classNames from "clsx";
 import { Container } from "~/lib/atoms/Container/Container";
 
+
 export const Header = React.memo(() => {
   const [isOpen, setIsOpen] = useState(false);
 
