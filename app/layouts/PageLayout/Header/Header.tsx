@@ -64,10 +64,7 @@ const HeaderLinksBlock = () => {
       <NavSlideTabs tabs={links} fixedWidth={124} activeTabId={activeTabId} />
 
       <div
-        className={classNames(
-          "w-[234px] flex justify-end",
-          styles.connectWalletWrapper
-        )}
+        className={classNames("flex justify-end", styles.connectWalletWrapper)}
       >
         <ConnectWallet />
       </div>

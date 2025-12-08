@@ -3,7 +3,9 @@
 .menuButton {
   display: none;
 }
-
+.connectWalletWrapper {
+  width: 234px;
+}
 @media (--media-tablet-max) {
   .menuButton {
     display: block;
