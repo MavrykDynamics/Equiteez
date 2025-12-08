@@ -83,9 +83,9 @@ export const ConnectWallet = () => {
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          <Button size="small-plus" className="px-8 py-[10px]" disabled>
-            <span className="text-body-xs leading-5  font-bold">Sign Up</span>
-          </Button>
+          {/*<Button size="small-plus" className="px-8 py-[10px]" disabled>*/}
+          {/*  <span className="text-body-xs leading-5  font-bold">Sign Up</span>*/}
+          {/*</Button>*/}
           <Button
             variant="outline"
             size="outline"

@@ -1,0 +1,63 @@
+@import "../../styles/breakpoints.css";
+
+.filtersWrapper {
+  margin: auto;
+  max-width: 1162px;
+}
+
+.contentWrapper {
+  margin-top: var(--space-11);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  @media (--media-tablet-min) {
+    margin-top: var(--space-6);
+  }
+
+  @media (--media-phone) {
+    margin-top: var(--space-4);
+  }
+
+  & .errorWrapper {
+    margin-top: var(--space-5);
+  }
+
+  & .spinnerWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 700px;
+    margin-top: var(--space-12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  & .cardsWrapper {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6) var(--space-8);
+
+    @media (--media-tablet-min) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    @media (--media-phone) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  & .emptyStateWrapper {
+    height: 352px;
+    max-width: 700px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+    text-align: center;
+  }
+}

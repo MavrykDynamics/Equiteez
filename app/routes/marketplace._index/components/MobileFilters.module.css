@@ -1,0 +1,50 @@
+@import "../../../styles/breakpoints.css";
+
+.container {
+  display: none;
+  height: var(--size-12);
+  gap: var(--space-3);
+  width: 100%;
+
+  @media (--media-tablet-min) {
+    display: flex;
+  }
+
+  & .input {
+    position: relative;
+    flex: 1;
+
+    & .searchIcon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: var(--space-4);
+      z-index: 2;
+      color: var(--color-sand-900);
+    }
+
+    & .inputWrapper input {
+      height: 48px;
+      background: var(--color-neutral-light);
+      box-sizing: border-box;
+    }
+  }
+
+  & .button {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: var(--color-neutral-light);
+    color: var(--color-sand-900);
+    border: 1px solid var(--color-grey-100);
+    border-radius: 8px;
+
+    &:hover,
+    &:active {
+      color: var(--color-dark-blue-500);
+    }
+  }
+}

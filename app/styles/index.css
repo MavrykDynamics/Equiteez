@@ -511,10 +511,3 @@ input[type="number"] {
 .remove-scrollbar::-webkit-scrollbar {
   display: none; /* Older Safari and Chromium */
 }
-
-@media (max-width: 600px) {
-  input,
-  button {
-    pointer-events: none;
-  }
-}
