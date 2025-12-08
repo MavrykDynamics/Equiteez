@@ -15,6 +15,9 @@
   }
 }
 
+.wrapper {
+  display: flex;
+}
 @media (--media-tablet-max) {
   .wrapper {
     display: none;

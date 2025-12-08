@@ -47,7 +47,7 @@ export const NavSlideTabs: FC<SlideTabsProps> = ({
         }));
       }}
       className={clsx(
-        "relative mx-auto flex w-fit items-center gap-[1px] rounded-xl bg-gray-100 px-2 py-1",
+        "relative mx-auto w-fit items-center gap-[1px] rounded-xl bg-gray-100 px-2 py-1",
         styles.wrapper
       )}
     >
