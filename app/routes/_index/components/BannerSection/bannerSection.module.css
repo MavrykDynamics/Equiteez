@@ -6,7 +6,7 @@
 }
 .heroTitle {
   position: absolute;
-  z-index: 100;
+  z-index: 10;
   color: var(--color-sand-900);
   text-shadow: 0 1.629px 1.629px rgba(121, 121, 121, 0.25);
   font-size: 44px;

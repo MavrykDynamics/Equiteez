@@ -12,8 +12,8 @@
   top: 61px;
   left: 0;
   width: 100%;
-  z-index: 10;
-  background-color: var(--color-dark-blue-500);
+  z-index: 30;
+  background-color: var(--color-neutral-light);
   overflow: hidden;
   max-width: var(--large-width);
   padding: var(--space-1) var(--space-8);
@@ -33,21 +33,21 @@
     align-items: stretch;
 
     & .navItem {
-      color: var(--color-neutral-light);
+      color: var(--color-sand-900);
       display: flex;
       justify-content: space-between;
       align-items: center;
       height: var(--size-14);
       font-size: 14px;
       line-height: 21px;
-      font-weight: 800;
+      font-weight: 600;
     }
   }
 
   & .userInfo {
     & .divider {
       height: 1px;
-      background-color: var(--color-dark-blue-300);
+      background-color: var(--color-green-100);
       width: 100%;
       margin: var(--space-1) 0;
     }

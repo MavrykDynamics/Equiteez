@@ -2,25 +2,25 @@ export const links = [
   {
     id: 0,
     to: "/marketplace",
-    text: "marketplace",
+    text: "Marketplace",
     disabled: false,
   },
   {
     id: 1,
-    to: "/stake",
-    text: "stake",
+    to: "/",
+    text: "Stake",
     disabled: true,
   },
   {
     id: 2,
-    to: "/exchange",
-    text: "advanced trade",
+    to: "/",
+    text: "Advanced trade",
     disabled: false,
   },
   {
     id: 3,
-    to: "/borrow",
-    text: "borrow",
+    to: "/",
+    text: "Borrow",
     disabled: true,
   },
 ];

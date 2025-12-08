@@ -19,7 +19,7 @@ export const Header = React.memo(() => {
 
   return (
     <>
-      <section className="flex justify-center border-b border-divider w-full bg-background">
+      <section className="flex z-[30] justify-center border-b border-divider w-full bg-background">
         <Container className="flex items-center justify-between h-[60px] bg-background">
           <div className="flex items-center">
             <button

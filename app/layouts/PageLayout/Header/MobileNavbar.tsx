@@ -82,7 +82,7 @@ export const MobileNavbar = memo(
                     <ArrowRight
                       width={24}
                       height={24}
-                      stroke="var(--color-yellow-500)"
+                      stroke="var(--color-sand-900)"
                     />
                   </button>
                 ))}
