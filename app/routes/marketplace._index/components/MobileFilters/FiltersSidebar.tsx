@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import CloseIcon from "app/icons/close.svg?react";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 import { SectionSelectList } from "./SectionSelectList";
 
 import styles from "./FiltersSidebar.module.css";
@@ -98,7 +98,7 @@ export const FiltersSidebar = forwardRef<FiltersSidebarRefType, PropsType>(
                 <CloseIcon
                   width={24}
                   height={24}
-                  color="var(--color-neutral-light)"
+                  color="var(--color-sand-900)"
                 />
               </button>
             </div>
@@ -127,20 +127,19 @@ export const FiltersSidebar = forwardRef<FiltersSidebarRefType, PropsType>(
               })}
             </div>
             <div className={styles.actions}>
-              <ButtonV2
-                variant="yellowOutlined"
+              <Button
+                variant="outline"
                 className={styles.resetButton}
                 onClick={resetAllFilters}
               >
                 Reset All
-              </ButtonV2>
-              <ButtonV2
-                variant="yellowPrimary"
+              </Button>
+              <Button
                 className={styles.applyButton}
                 onClick={handleNavigateToSelectedFilters}
               >
                 Show {assetsCount > 0 ? `${assetsCount} Assets` : "All"}
-              </ButtonV2>
+              </Button>
             </div>
           </motion.div>
         )}

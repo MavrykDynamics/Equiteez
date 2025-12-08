@@ -77,7 +77,7 @@ export const SectionSelectList: FC<PropsType> = ({
           <ChevronDownIcon
             width={24}
             height={24}
-            color="var(--color-neutral-light)"
+            color="var(--color-sand-900)"
             className={styles.chevronIcon}
             data-opened={isOpen}
           />
