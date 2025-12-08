@@ -11,8 +11,10 @@
     display: block;
     margin-right: 8px;
   }
-  .headerWrapper,
-  .connectWalletWrapper {
+  .headerWrapper{
     width: auto;
+  }
+  .connectWalletWrapper {
+    width: 100%;
   }
 }
