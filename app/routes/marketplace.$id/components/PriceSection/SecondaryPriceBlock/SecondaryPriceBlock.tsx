@@ -6,7 +6,7 @@ import { Divider } from "~/lib/atoms/Divider";
 import { Table } from "~/lib/atoms/Table/Table";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
-
+import styles from "./../priceSection.module.css";
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
@@ -31,6 +31,7 @@ import { unknownToError } from "~/errors/error";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
+import { AnimatePresence, motion } from "framer-motion";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -38,6 +39,11 @@ export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
 type SecondaryPriceBlockProps = {
   activeEstate: SecondaryEstate;
   shouldExpand: boolean;
+};
+
+const expandVariants = {
+  expanded: { height: "auto", opacity: 1 },
+  collapsed: { height: 0, opacity: 0 },
 };
 
 export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
@@ -124,6 +130,55 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     setIsOpen(true);
   }, []);
 
+  const expandedContent = (
+    <>
+      <div className="text-content body flex justify-between mb-[8px]">
+        <Text className="flex items-center gap-1">
+          Annual Return
+          <InfoTooltip
+            className="w-4 h-4 lg:w-6 lg:h-6"
+            content={"Annual Return"}
+          />
+        </Text>
+        <Text weight="semibold">
+          {estate.assetDetails.priceDetails.annualReturn}%
+        </Text>
+      </div>
+      <div className="text-content body flex justify-between mb-[8px]">
+        <Text className="flex items-center gap-1">
+          Rental Yield
+          <InfoTooltip
+            className="w-4 h-4 lg:w-6 lg:h-6"
+            content={"Rental Yield"}
+          />
+        </Text>
+        <Text weight="semibold">
+          {estate.assetDetails.financials.expectedIncome.income}%
+        </Text>
+      </div>
+      <div className="text-content body flex justify-between">
+        <Text>Investors</Text>
+        <Text weight="semibold">
+          {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
+        </Text>
+      </div>
+      <Divider className="my-[8px]" />
+      <div className="text-content text-buttons flex justify-between mb-3">
+        <Text weight="semibold">Total Liquidity</Text>
+        <Text weight="semibold" className="flex items-center">
+          {isAggregatedOrdersLoading ? (
+            <Spinner size={6} />
+          ) : (
+            <>
+              {" "}
+              $<Money fiat>{totalLiquidityInfo.totalLiquidityInUSD}</Money>
+            </>
+          )}
+        </Text>
+      </div>
+    </>
+  );
+
   return (
     <section className="self-start">
       <Table className="bg-white">
@@ -135,51 +190,20 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
             $<Money fiat>{currentPrice}</Money>
           </Text>
         </div>
-        <div className="text-content body flex justify-between mb-[8px]">
-          <Text className="flex items-center gap-1">
-            Annual Return
-            <InfoTooltip
-              className="w-4 h-4 lg:w-6 lg:h-6"
-              content={"Annual Return"}
-            />
-          </Text>
-          <Text weight="semibold">
-            {estate.assetDetails.priceDetails.annualReturn}%
-          </Text>
-        </div>
-        <div className="text-content body flex justify-between mb-[8px]">
-          <Text className="flex items-center gap-1">
-            Rental Yield
-            <InfoTooltip
-              className="w-4 h-4 lg:w-6 lg:h-6"
-              content={"Rental Yield"}
-            />
-          </Text>
-          <Text weight="semibold">
-            {estate.assetDetails.financials.expectedIncome.income}%
-          </Text>
-        </div>
-        <div className="text-content body flex justify-between">
-          <Text>Investors</Text>
-          <Text weight="semibold">
-            {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
-          </Text>
-        </div>
-        <Divider className="my-[8px]" />
-        <div className="text-content text-buttons flex justify-between mb-3">
-          <Text weight="semibold">Total Liquidity</Text>
-          <Text weight="semibold" className="flex items-center">
-            {isAggregatedOrdersLoading ? (
-              <Spinner size={6} />
-            ) : (
-              <>
-                {" "}
-                $<Money fiat>{totalLiquidityInfo.totalLiquidityInUSD}</Money>
-              </>
-            )}
-          </Text>
-        </div>
 
+        <div className={styles.desktopContent}>{expandedContent}</div>
+        <AnimatePresence>
+          {shouldExpand && (
+            <motion.div
+              variants={expandVariants}
+              initial="collapsed"
+              animate="expanded"
+              exit="collapsed"
+            >
+              <div className={styles.mobileContent}>{expandedContent}</div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div>
           {!validBaseTokens[estate.token_address] ? (
             <Button className="w-full" disabled>

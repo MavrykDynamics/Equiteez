@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .progressBar {
   position: relative;
   height: 5px;
@@ -5,7 +7,7 @@
 }
 
 .progressBar::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
@@ -13,8 +15,26 @@
   z-index: 0;
 }
 
+.mobileContent {
+  display: none;
+}
+
+.desktopContent {
+  display: block;
+}
+
+@media (--media-tablet-max) {
+  .mobileContent {
+    display: block;
+  }
+
+  .desktopContent {
+    display: none;
+  }
+}
+
 .progressPercentage::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 8px;
   /* TODO replace with var passed from data */
