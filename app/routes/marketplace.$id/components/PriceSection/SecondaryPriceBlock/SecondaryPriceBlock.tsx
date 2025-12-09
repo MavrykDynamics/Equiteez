@@ -30,7 +30,7 @@ import { getRwaTokenPriceBasedOnOrders } from "~/providers/Dexprovider/utils/agg
 import { unknownToError } from "~/errors/error";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
-import {Text} from "~/lib/atoms/Typography/Text";
+import { Text } from "~/lib/atoms/Typography/Text";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -42,6 +42,7 @@ type SecondaryPriceBlockProps = {
 
 export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
+  shouldExpand,
 }) => {
   const { warning } = useToasterContext();
   const { validBaseTokens } = useMarketsContext();
@@ -127,7 +128,9 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     <section className="self-start">
       <Table className="bg-white">
         <div className="text-content text-card-headline flex justify-between mb-[16px]">
-          <Text size="largeBody" weight="semibold">Current Price</Text>
+          <Text size="largeBody" weight="semibold">
+            Current Price
+          </Text>
           <Text size="largeBody" weight="semibold">
             $<Money fiat>{currentPrice}</Money>
           </Text>
@@ -135,7 +138,10 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <div className="text-content body flex justify-between mb-[8px]">
           <Text className="flex items-center gap-1">
             Annual Return
-            <InfoTooltip className="w-6 h-6" content={"Annual Return"} />
+            <InfoTooltip
+              className="w-4 h-4 lg:w-6 lg:h-6"
+              content={"Annual Return"}
+            />
           </Text>
           <Text weight="semibold">
             {estate.assetDetails.priceDetails.annualReturn}%
@@ -144,7 +150,10 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <div className="text-content body flex justify-between mb-[8px]">
           <Text className="flex items-center gap-1">
             Rental Yield
-            <InfoTooltip className="w-6 h-6" content={"Rental Yield"} />
+            <InfoTooltip
+              className="w-4 h-4 lg:w-6 lg:h-6"
+              content={"Rental Yield"}
+            />
           </Text>
           <Text weight="semibold">
             {estate.assetDetails.financials.expectedIncome.income}%
