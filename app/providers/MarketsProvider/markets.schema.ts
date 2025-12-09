@@ -18,154 +18,277 @@ const ListItemDirectional = z.object({
   type: z.literal("list-item-directional"),
   value: z.number(),
   children: z
-      .object({
-        text: z.object({
-          type: z.string(),
-          value: z.string(),
-        }),
-      })
-      .optional(),
+    .object({
+      text: z.object({
+        type: z.string(),
+        value: z.string(),
+      }),
+    })
+    .optional(),
 });
 
 // --- MAIN ASSET SCHEMA ---
 export const AssetSchema = z.object({
-  token_address: z.string(),
-  external_id: z.string(),
-  currency: z.object({
-    icon: z.string(),
-    name: z.string(),
+  schemaVersion: z.number(),
+
+  identity: z.object({
+    assetName: z.string(),
+    assetType: z.string(),
+    isPrimary: z.boolean(),
+    slug: z.string(),
+    webUrl: z.string().url(),
+    headline: z.string().optional(),
+    description: z.string().optional(),
+    isLive: z.boolean(),
+    liveTime: z.string().optional(),
+  }),
+
+  token: z.object({
     symbol: z.string(),
-    token_id: z.number(),
+    name: z.string(),
     decimals: z.number(),
-    change_in24h_percent: z.number(),
-  }),
-  web_url: z.string(),
-  headline: z.string(),
-  description: z.string(),
-  is_primary: z.boolean(),
-  address: z.object({
-    zip: z.string(),
-    city: z.string(),
-    line1: z.string(),
-    line2: z.string().optional().nullable(),
-    state: z.string(),
-    country: z.string(),
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
-  brand: z.object({
-    logo: z.string(),
-    name: z.string(),
-    background_url: z.string(),
-  }),
-  details: z.object({
-    features: z.record(FeatureItem),
-    amenities: z.record(FeatureItem),
-  }),
-  liquidity: z.any().nullable(),
-  supply: z.object({
-    sold: z.number(),
-    total: z.number().nullable(),
-    percentage: z.number(),
-  }),
-  apy: z.number(),
-  investors: z.any().nullable(),
-  tags: z.record(z.string()),
-  categories: z.record(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-      })
-  ),
-  sections: z.record(z.string()),
-  metadata: z.object({
-    is_live: z.boolean(),
-    live_time: z.string(),
-    asset_name: z.string(),
-    can_calculate_returns: z.boolean(),
-  }),
-
-  investment_info: z.object({
-    investors: ListItem,
-    annual_return: ListItem,
-    projected_annual_return: ListItem.optional().nullable(),
-  }),
-
-  financials: z.object({
-    income: z.object({
-      token_price: ListItem,
-      expected_income: ListItemDirectional,
-      income_start_date: ListItem,
-    }),
-    investment: z.object({
-      net_rent_year: ListItem,
-      monthly_costs: z.object({
-        name: z.string(),
-        type: z.string(),
-        value: z.union([z.string(), z.number()]),
-        children: z.record(ListItem.or(z.object({ type: z.string() }))),
-      }),
-      gross_rent_year: ListItem,
-      expected_income: ListItemDirectional,
-      gross_rent_month: ListItem,
-      total_investment: z.object({
-        name: z.string(),
-        type: z.string(),
-        value: z.number(),
-        children: z.record(ListItem.or(z.object({ type: z.string() }))),
-      }),
-    }),
-  }),
-
-  valuation: z.object({
-    prior_valuation: z.object({
-      date: z.string(),
-      title: z.string(),
-      details: z.record(ListItem.or(ListItemDirectional)),
-      headline: z.string().nullable(),
-    }),
-    initial_valuation: z.object({
-      date: z.string(),
-      title: z.string(),
-      details: z.record(ListItem),
-      headline: z.string().nullable(),
-    }),
-  }),
-
-  blockchain: z.object({
-    name: z.string(),
-    asset: z.object({
-      name: z.string(),
-      address: z.string(),
-      explorer: z.string().nullable(),
-    }),
+    iconUrl: z.string().optional(),
+    address: z.string(),
+    network: z.string(),
     issuer: z.object({
       name: z.string(),
       address: z.string(),
-      explorer: z.string().nullable(),
     }),
-    identifier: z.string(),
-    total_tokens: z.number().nullable(),
+    totalSupply: z.number().nullable().optional(),
+    totalTokens: z.number().nullable().optional(),
   }),
 
-  banners: z.object({
-    why_invest: z.array(
-        z.object({
-          type: z.string(),
-          title: z.string(),
-          message: z.string(),
-        })
-    ),
+  market: z.object({
+    price: z.number(),
+    changeIn24hPercent: z.number().optional(),
+    totalLiquidity: z.number().nullable().optional(),
+    tokensAvailable: z.number().nullable().optional(),
+    tokensUsed: z.number().nullable().optional(),
+    annualReturn: z.number().nullable().optional(),
+    projectedAnnualReturn: z.number().nullable().optional(),
+    rentalYield: z.number().nullable().optional(),
+    projectedRentalYield: z.number().nullable().optional(),
   }),
 
-  images: z.object({
-    gallery: z.array(
-        z.object({
-          url: z.string(),
-        })
-    ),
-    thumbnail: z.string(),
+  location: z.object({
+    address: z.object({
+      line1: z.string().optional(),
+      line2: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      zip: z.string().optional(),
+      country: z.string().optional(),
+    }),
+    coordinates: z
+      .object({
+        lat: z.number(),
+        lng: z.number(),
+      })
+      .optional(),
   }),
+
+  property: z.object({
+    brand: z
+      .object({
+        name: z.string().optional(),
+      })
+      .optional(),
+
+    basicInfo: z.record(z.string()).optional(),
+
+    features: z
+      .array(
+        z.object({
+          id: z.string(),
+          label: z.string(),
+          value: z.string().optional(),
+        })
+      )
+      .optional(),
+
+    amenities: z
+      .array(
+        z.object({
+          id: z.string(),
+          label: z.string(),
+          value: z.string().optional(),
+        })
+      )
+      .optional(),
+
+    categories: z
+      .array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+        })
+      )
+      .optional(),
+
+    sections: z.array(z.string()).optional(),
+  }),
+
+  financials: z
+    .object({
+      investment: z
+        .object({
+          grossRentYear: z.number().optional(),
+          grossRentMonth: z.number().optional(),
+
+          monthlyCosts: z
+            .object({
+              total: z.union([z.number(), z.string()]).nullable().optional(),
+              netRePropertyManagement: z
+                .union([z.number(), z.string()])
+                .nullable()
+                .optional(),
+              platform: z.union([z.number(), z.string()]).nullable().optional(),
+              maintenanceExpenses: z
+                .union([z.number(), z.string()])
+                .nullable()
+                .optional(),
+              propertyTaxes: z
+                .union([z.number(), z.string()])
+                .nullable()
+                .optional(),
+              insurance: z
+                .union([z.number(), z.string()])
+                .nullable()
+                .optional(),
+              utilities: z
+                .union([z.number(), z.string()])
+                .nullable()
+                .optional(),
+            })
+            .optional(),
+
+          netRentYear: z.number().optional(),
+
+          totalInvestment: z
+            .object({
+              total: z.number().optional(),
+              underlyingAssetPrice: z.number().optional(),
+              initialMaintenanceReserve: z.number().optional(),
+            })
+            .optional(),
+
+          expectedIncome: z.number().optional(),
+        })
+        .optional(),
+
+      income: z
+        .object({
+          expectedIncome: z
+            .object({
+              value: z.number(),
+              note: z.string().optional(),
+            })
+            .optional(),
+
+          incomeStartDate: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+
+  valuation: z
+    .object({
+      initial: z
+        .object({
+          date: z.string().optional(),
+          title: z.string().optional(),
+          items: z
+            .object({
+              assetValuation: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              totalInvestment: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              tokenPrice: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+            })
+            .optional(),
+        })
+        .optional(),
+
+      prior: z
+        .object({
+          date: z.string().optional(),
+          title: z.string().optional(),
+          headline: z.string().optional(),
+          items: z
+            .object({
+              assetValuation: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              annualChange: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              totalInvestment: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              tokenPrice: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              capitalROI: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+              regDistributed: z
+                .object({
+                  label: z.string(),
+                  value: z.number(),
+                  type: z.string(),
+                })
+                .optional(),
+            })
+            .optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+
+  media: z
+    .object({
+      thumbnail: z.string().url().optional(),
+      gallery: z.array(z.object({ url: z.string().url() })).optional(),
+      brandLogo: z.string().url().optional(),
+      brandBackground: z.string().url().optional(),
+    })
+    .optional(),
 });
 
 // --- ORDERBOOK ---
@@ -197,6 +320,5 @@ export const FullSchema = z.object({
   asset: AssetSchema,
   orderbook: OrderbookSchema,
 });
-
 
 export const assetsListSchema = z.object({ assets: z.array(FullSchema) });

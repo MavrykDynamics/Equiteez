@@ -1,242 +1,237 @@
 import {
   AssetData,
-  EstateType,
+  AssetUniversal,
 } from "~/providers/MarketsProvider/market.types";
 
-export function transformAssetData(data: AssetData): EstateType {
-  const asset = data.asset ?? {};
+export function transformAssetData(payload: AssetData): AssetUniversal {
+  const data = payload.asset ?? {};
 
   return {
-    token_address: asset.token_address,
-    name: asset.currency.name,
-    symbol: asset.currency.symbol,
-    decimals: asset.currency.decimals,
-    icon: asset.currency.icon,
+    token_address: data.token.address,
+    name: data.token.name,
+    symbol: data.token.symbol,
+    decimals: data.token.decimals,
+    icon: data.token.iconUrl ?? "",
 
-    assetType: "", // TODO add value
+    assetType: data.identity.assetType ?? "",
 
     assetDetails: {
       coordinates: {
-        lat: asset.address.latitude,
-        lng: asset.address.longitude,
+        lat: data.location.coordinates?.lat ?? 0,
+        lng: data.location.coordinates?.lng ?? 0,
       },
 
-      APY: +asset.apy || 0,
+      APY: data.market.annualReturn ?? 0,
+      type: data.identity.isPrimary ? "Primary Market" : "Secondary Market",
 
-      type:
-        asset.sections?.secondary === "secondary"
-          ? "Secondary Market"
-          : "Primary Market",
-
-      assetImages: asset.images.gallery.map((i) => i.url),
-
-      previewImage: asset.images.thumbnail,
+      assetImages: data.media?.gallery?.map((i) => i.url) ?? [],
+      previewImage: data.media?.thumbnail ?? "",
 
       basicInfo: {
-        beds: 0, // TODO add value
-        baths: 0, // TODO add value
-        sqft: 0, // TODO add value
-
-        // btcPrice: BitcoinIcon,
-        // amount: VortexesIcon,
-        // rooms: KeysIcon,
-        // sqft: SqftIcon,
-        // rate: RateIcon,
-        // homes: HouseIcon,
-        // baths: ShowerIcon,
-        // beds: BedIcon,
-        // bond: BondIcon,
-        // yield: YieldIcon,
-        // tvl: LockIcon,
-        // coverage: CoverageIcon,
-        // policies: PoliciesIcon,
-        // date: DateIcon,
+        btcPrice: String(data.property?.basicInfo?.btcPrice ?? ""),
+        amount: String(data.property?.basicInfo?.amount ?? ""),
+        rooms: String(data.property?.basicInfo?.rooms ?? ""),
+        sqft: String(data.property?.basicInfo?.sqft ?? ""),
+        rate: String(data.property?.basicInfo?.rate ?? ""),
+        homes: String(data.property?.basicInfo?.homes ?? ""),
+        baths: String(data.property?.basicInfo?.baths ?? ""),
+        beds: String(data.property?.basicInfo?.beds ?? ""),
+        bond: String(data.property?.basicInfo?.bond ?? ""),
+        yield: String(data.property?.basicInfo?.yield ?? ""),
+        tvl: String(data.property?.basicInfo?.tvl ?? ""),
+        coverage: String(data.property?.basicInfo?.coverage ?? ""),
+        policies: String(data.property?.basicInfo?.policies ?? ""),
+        date: String(data.property?.basicInfo?.date ?? ""),
       },
 
       propertyDetails: {
-        flag: asset.tags?.new ?? null,
-        developer: asset.brand?.name ?? null,
-        description: asset.description ?? "",
-        propertyType: asset.categories?.mixed_use?.name ?? null,
-        fullAddress: `${asset.address.line1}, ${asset.address.city}, ${asset.address.country}`,
-        shortAddress: `${asset.address.city}, ${asset.address.country}`,
-        zipCode: asset.address.zip,
-        state: asset.address.state,
-        country: asset.address.country,
-        rentalType: "", // TODO add value
-        rented: "", // TODO add value
-        rentSubsidy: "", // TODO add value
-        propertyManager: "", // TODO add value
-        parking: asset.details?.amenities?.parking?.name ?? null,
+        description: data.identity.description ?? "",
+        propertyType:
+          data.property.features?.find((f) => f.id === "propertyType")?.value ??
+          "",
+        state: data.location.address?.state ?? "",
+        country: data.location.address?.country ?? "",
+        zipCode: Number(data.location.address?.zip ?? 0),
+        parking:
+          data.property?.features?.find((f) => f.id === "parking")?.value ?? "",
+        type: "",
+
+        shortAddress: [
+          data.location.address.city,
+          data.location.address.country,
+        ]
+          .filter(Boolean)
+          .join(", "),
       },
 
       buildingInfo: {
-        stories:
-          Number(asset.details?.features?.stories?.name?.split(" ")[0]) || 0,
-        lotSize: 0, // TODO add value
-        interiorSize: 0, // TODO add value
-        buildingClass: "", // TODO add value
-        foundation: "", // TODO add value
-        exteriorWalls: "", // TODO add value
-        roofType: "", // TODO add value
-        heating: "", // TODO add value
-        cooling: "", // TODO add value
-        renovated: "", // TODO add value
-      },
+        stories: Number(
+          data.property?.features
+            ?.find((f) => f.id === "stories")
+            ?.value?.split(" ")[0] ?? 0
+        ), //TODO string from API, we need number (API: "38 Stories", we need: 38)
 
-      neighborhood: {
-        description: "", // TODO add value
-        coordinates: {
-          lat: asset.address.latitude,
-          lng: asset.address.longitude,
-        },
+        //TODO not sure about these fields
+        lotSize: Number(
+          data.property?.features?.find((f) => f.id === "lotSize")?.value ?? 0
+        ),
+        interiorSize: Number(
+          data.property?.features?.find((f) => f.id === "interiorSize")
+            ?.value ?? 0
+        ),
+        buildingClass:
+          data.property?.features?.find((f) => f.id === "buildingClass")
+            ?.value ?? "",
+        foundation:
+          data.property?.features?.find((f) => f.id === "foundation")?.value ??
+          "",
+        exteriorWalls:
+          data.property?.features?.find((f) => f.id === "exteriorWalls")
+            ?.value ?? "",
+        roofType:
+          data.property?.features?.find((f) => f.id === "roofType")?.value ??
+          "",
+        heating:
+          data.property?.features?.find((f) => f.id === "heating")?.value ?? "",
+        cooling:
+          data.property?.features?.find((f) => f.id === "cooling")?.value ?? "",
+        renovated:
+          data.property?.features?.find((f) => f.id === "renovated")?.value ??
+          "",
       },
 
       financials: {
         propertyFinancials: {
-          grossRentYearly:
-            +asset.financials.investment.gross_rent_year?.value || 0,
-          grossRentMonthly:
-            +asset.financials.investment.gross_rent_month?.value  || 0,
+          grossRentYearly: data.financials?.investment?.grossRentYear ?? 0,
+          grossRentMonthly: data.financials?.investment?.grossRentMonth ?? 0,
 
           monthlyCosts: {
-            costs: Math.abs(
-              +asset.financials.investment.monthly_costs?.value || 0
+            costs: Number(
+              data.financials?.investment?.monthlyCosts?.total ?? 0
             ),
-            netReproperty: Math.abs(
-              asset.financials.investment.monthly_costs?.children
-                ?.net_re_property_management?.value ?? 0
+            netReproperty: Number(
+              data.financials?.investment?.monthlyCosts
+                ?.netRePropertyManagement ?? 0
             ),
-            platform: Math.abs(
-              asset.financials.investment.monthly_costs?.children?.platform
-                ?.value ?? 0
+            platform: Number(
+              data.financials?.investment?.monthlyCosts?.platform ?? 0
             ),
-            expenses: Math.abs(
-              asset.financials.investment.monthly_costs?.children
-                ?.maintenance_expenses?.value ?? 0
+            expenses: Number(
+              data.financials?.investment?.monthlyCosts?.maintenanceExpenses ??
+                0
             ),
-            taxes: Math.abs(
-              asset.financials.investment.monthly_costs?.children
-                ?.property_taxes?.value ?? 0
+            taxes: Number(
+              data.financials?.investment?.monthlyCosts?.propertyTaxes ?? 0
             ),
-            insurance: Math.abs(
-              asset.financials.investment.monthly_costs?.children?.insurance
-                ?.value ?? 0
+            insurance: Number(
+              data.financials?.investment?.monthlyCosts?.insurance ?? 0
             ),
-            utilities:
-              asset.financials.investment.monthly_costs?.children?.utilities
-                ?.value ?? null,
+            utilities: String(
+              data.financials?.investment?.monthlyCosts?.utilities ?? ""
+            ),
           },
 
-          netRentMonthly:
-            (asset.financials.investment.gross_rent_month?.value ?? 0) -
-            Math.abs(asset.financials.investment.monthly_costs?.value ?? 0),
-
-          netRentYearly:
-            asset.financials.investment.net_rent_year?.value ?? null,
+          netRentMonthly: (data.financials?.investment?.netRentYear ?? 0) / 12,
+          netRentYearly: data.financials?.investment?.netRentYear ?? 0,
 
           totalInvestment: {
-            total: asset.financials.investment.total_investment?.value ?? null,
+            total: data.financials?.investment?.totalInvestment?.total ?? 0,
             underlyingAssetPrice:
-              asset.financials.investment.total_investment?.children
-                ?.underlying_asset_price?.value ?? null,
+              data.financials?.investment?.totalInvestment
+                ?.underlyingAssetPrice ?? 0,
             initialMaintenanceReserve:
-              asset.financials.investment.total_investment?.children
-                ?.initial_maintenance_reserve?.value ?? null,
+              data.financials?.investment?.totalInvestment
+                ?.initialMaintenanceReserve ?? 0,
           },
 
-          expectedIncome:
-            asset.financials.investment.expected_income?.value ?? null,
+          expectedIncome: data.financials?.investment?.expectedIncome ?? 0,
         },
 
         expectedIncome: {
-          income: asset.financials.income.expected_income?.value ?? null,
-          incomePerTokenYearly: 0, // TODO add value
-          incomeStartDate:
-            asset.financials.income.income_start_date?.value ?? null,
-          tokenPrice: asset.financials.income.token_price?.value ?? null,
-          totalTokens: asset.blockchain.total_tokens ?? null,
-          description:
-            asset.financials.income.expected_income?.children?.text?.value ??
-            null,
+          income: data.financials?.income?.expectedIncome?.value ?? 0,
+          incomePerTokenYearly: 0,
+          incomeStartDate: data.financials?.income?.incomeStartDate ?? "",
+          tokenPrice: data.market.price ?? 0,
+          totalTokens: data.token.totalTokens ?? 0,
+          description: data.financials?.income?.expectedIncome?.note ?? "",
         },
       },
 
       blockchain: [
         {
-          name: asset.blockchain.name,
-          identifier: asset.blockchain.identifier,
-          totalTokens: asset.blockchain.total_tokens,
-          assetIssuer: asset.blockchain.issuer.address,
-          assetId: asset.blockchain.asset.address,
+          name: data.token.network,
+          identifier: data.token.address,
+          totalTokens: data.token.totalTokens ?? 0,
+          assetIssuer: data.token.issuer?.name ?? "",
+          assetId: data.identity.slug,
         },
       ],
 
       offering: {
-        offeringDate: asset.metadata.live_time,
-        offeringIssuer: asset.brand.name,
-        minInvestmentAmount: 0, // TODO add value
-        maxInvestmentAmount: 0, // TODO add value
-        raisedAmount: asset.supply.sold ?? null,
-        offeringPercent: asset.supply.percentage ?? null,
+        offeringDate: "",
+        offeringIssuer: "",
+        minInvestmentAmount: 0,
+        maxInvestmentAmount: 0,
+        raisedAmount: 0,
+        offeringPercent: 0,
       },
 
       valuation: {
         priorValuation: {
-          date: asset.valuation.prior_valuation?.date ?? null,
-          assetValuation:
-            asset.valuation.prior_valuation?.details?.asset_valuation?.value ??
-            null,
-          annualChange:
-            asset.valuation.prior_valuation?.details?.annual_change?.value ??
-            null,
-          totalInvestment:
-            asset.valuation.prior_valuation?.details?.total_investment?.value ??
-            null,
-          capitalROI:
-            asset.valuation.prior_valuation?.details?.capital_r_o_i?.value ??
-            null,
-          tokenPrice:
-            asset.valuation.prior_valuation?.details?.token_price?.value ??
-            null,
-          regDistributed:
-            asset.valuation.prior_valuation?.details?.reg_distributed?.value ??
-            null,
-          info: "?",
+          date: data.valuation?.prior?.date ?? "",
+          assetValuation: Number(
+            data.valuation?.prior?.items?.assetValuation?.value ?? 0
+          ),
+          annualChange: Number(
+            data.valuation?.prior?.items?.annualChange?.value ?? 0
+          ),
+          totalInvestment: Number(
+            data.valuation?.prior?.items?.totalInvestment?.value ?? 0
+          ),
+          capitalROI: Number(
+            data.valuation?.prior?.items?.capitalROI?.value ?? 0
+          ),
+          tokenPrice: Number(
+            data.valuation?.prior?.items?.tokenPrice?.value ?? 0
+          ),
+          regDistributed: Number(
+            data.valuation?.prior?.items?.regDistributed?.value ?? 0
+          ),
+          info: data.valuation?.prior?.headline ?? "",
         },
 
         initialValuation: {
-          date: asset.valuation.initial_valuation?.date ?? null,
-          assetValuation:
-            asset.valuation.initial_valuation?.details?.asset_valuation
-              ?.value ?? null,
-          totalInvestment:
-            asset.valuation.initial_valuation?.details?.total_investment
-              ?.value ?? null,
-          tokenPrice:
-            asset.valuation.initial_valuation?.details?.token_price?.value ??
-            null,
-          info: "?",
+          date: data.valuation?.initial?.date ?? "",
+          assetValuation: Number(
+            data.valuation?.initial?.items?.assetValuation?.value ?? 0
+          ),
+          totalInvestment: Number(
+            data.valuation?.initial?.items?.totalInvestment?.value ?? 0
+          ),
+          tokenPrice: Number(
+            data.valuation?.initial?.items?.tokenPrice?.value ?? 0
+          ),
+          info: data.valuation?.initial?.title ?? "",
         },
       },
 
       priceDetails: {
-        price: asset.financials.income.token_price?.value ?? null,
-        annualReturn: asset.investment_info.annual_return?.value ?? null,
-        projectedAnnualReturn:
-          asset.investment_info.projected_annual_return?.value ?? null,
-        rentalYield: 0, // TODO add value
-        projectedRentalYield: 0, // TODO add value
-        totalLiquidity: 0, // TODO add value
-        tokensAvailable: 0, // TODO add value
-        tokensUsed: 0, // TODO add value
+        price: data.market.price ?? 0,
+        annualReturn: data.market.annualReturn ?? 0,
+        projectedAnnualReturn: data.market.projectedAnnualReturn ?? 0,
+        rentalYield: data.market.rentalYield ?? 0,
+        projectedRentalYield: data.market.projectedRentalYield ?? 0,
+        totalLiquidity: data.market.totalLiquidity ?? 0,
+        tokensAvailable: data.market.tokensAvailable ?? 0,
+        tokensUsed: data.market.tokensUsed ?? 0,
       },
+
+      tradingHistory: [],
 
       otc: {
         buying: [],
         selling: [],
       },
-      tradingHistory: [],
     },
   };
 }
