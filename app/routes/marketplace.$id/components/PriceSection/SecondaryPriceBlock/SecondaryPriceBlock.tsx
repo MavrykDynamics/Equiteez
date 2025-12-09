@@ -30,12 +30,14 @@ import { getRwaTokenPriceBasedOnOrders } from "~/providers/Dexprovider/utils/agg
 import { unknownToError } from "~/errors/error";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
+import {Text} from "~/lib/atoms/Typography/Text";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
 
 type SecondaryPriceBlockProps = {
   activeEstate: SecondaryEstate;
+  shouldExpand: boolean;
 };
 
 export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
@@ -124,40 +126,40 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   return (
     <section className="self-start">
       <Table className="bg-white">
-        <div className="text-content text-card-headline flex justify-between mb-6">
-          <p>Current Price</p>
-          <div>
+        <div className="text-content text-card-headline flex justify-between mb-[16px]">
+          <Text size="largeBody" weight="semibold">Current Price</Text>
+          <Text size="largeBody" weight="semibold">
             $<Money fiat>{currentPrice}</Money>
-          </div>
+          </Text>
         </div>
-        <div className="text-content body flex justify-between mb-4">
-          <div className="flex items-center gap-1">
+        <div className="text-content body flex justify-between mb-[8px]">
+          <Text className="flex items-center gap-1">
             Annual Return
             <InfoTooltip className="w-6 h-6" content={"Annual Return"} />
-          </div>
-          <p className="text-buttons">
+          </Text>
+          <Text weight="semibold">
             {estate.assetDetails.priceDetails.annualReturn}%
-          </p>
+          </Text>
         </div>
-        <div className="text-content body flex justify-between mb-4">
-          <div className="flex items-center gap-1">
+        <div className="text-content body flex justify-between mb-[8px]">
+          <Text className="flex items-center gap-1">
             Rental Yield
             <InfoTooltip className="w-6 h-6" content={"Rental Yield"} />
-          </div>
-          <p className="text-buttons">
+          </Text>
+          <Text weight="semibold">
             {estate.assetDetails.financials.expectedIncome.income}%
-          </p>
+          </Text>
         </div>
         <div className="text-content body flex justify-between">
-          <p className="flex items-center gap-1">Investors</p>
-          <p className="text-buttons">
+          <Text>Investors</Text>
+          <Text weight="semibold">
             {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
-          </p>
+          </Text>
         </div>
-        <Divider className="my-4" />
+        <Divider className="my-[8px]" />
         <div className="text-content text-buttons flex justify-between mb-3">
-          <p>Total Liquidity</p>
-          <div className="flex items-center">
+          <Text weight="semibold">Total Liquidity</Text>
+          <Text weight="semibold" className="flex items-center">
             {isAggregatedOrdersLoading ? (
               <Spinner size={6} />
             ) : (
@@ -166,7 +168,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
                 $<Money fiat>{totalLiquidityInfo.totalLiquidityInUSD}</Money>
               </>
             )}
-          </div>
+          </Text>
         </div>
 
         <div>

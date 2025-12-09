@@ -1,6 +1,117 @@
+@import "../../styles/breakpoints.css";
+
 .detailsSection {
-  display: grid;
-  grid-template-columns: 1fr 435px;
-  column-gap: 24px;
-  padding-inline: 44px;
+  display: flex;
+  gap: 24px;
+}
+.tabletTitleBlock {
+  display: none;
+}
+.backLinkWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24px 0;
+}
+.tabletOptions {
+  display: none;
+}
+.optionsWrapper {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 16px;
+}
+.detailsContent {
+  display: flex;
+  flex-direction: column;
+}
+.openPriceButton {
+  display: none;
+  position: relative;
+  z-index: 10;
+}
+.asidePrice {
+  min-width: 435px;
+}
+.imageSlider {
+  display: none;
+  position: relative;
+  margin-bottom: 24px;
+
+  & .mobileHeadLineTabsWrapper {
+    position: absolute;
+    top: 0;
+    left: 16px;
+    width: 100%;
+    margin-top: var(--space-4);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  @media (--media-tablet-max) {
+    display: block;
+  }
+}
+
+@media (--media-tablet-max) {
+  .desktopTitleBlock {
+    display: none;
+  }
+
+  .tabletTitleBlockTitle {
+    font-size: 20px;
+  }
+  .optionsWrapper p {
+    display: none;
+  }
+  .tabletOptions {
+    display: block;
+  }
+  .tabletTitleBlock {
+    display: block;
+  }
+  .backLinkText {
+    display: none;
+  }
+
+  .asidePrice {
+    width: 100dvw;
+    min-width: auto;
+    top: initial;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+    border-bottom: none;
+    border-radius: var(--space-3) var(--space-3) 0 0;
+
+    & .openPriceButton {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: var(--size-10);
+      height: var(--size-10);
+      background-color: var(--color-neutral-light);
+      border: 1px solid var(--color-grey-100);
+      border-radius: calc(var(--size-10) / 2);
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transition: transform 0.3s ease;
+
+      &[data-open="false"] {
+        transform: translate(-50%, -50%) rotate(180deg);
+      }
+
+      & .arrowIcon {
+        stroke: var(--color-neutral-light);
+        width: var(--size-6);
+        height: var(--size-6);
+      }
+    }
+  }
 }

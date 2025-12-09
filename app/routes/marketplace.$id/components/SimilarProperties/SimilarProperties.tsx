@@ -34,7 +34,7 @@ export const SimilarProperties = () => {
   );
 
   return (
-    <section className="px-11 flex flex-col">
+    <section className="flex flex-col">
       <h2 className="text-content text-section-headline mb-11">
         Similar OTC Assets on Equiteez
       </h2>

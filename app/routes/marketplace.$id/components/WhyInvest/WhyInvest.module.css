@@ -2,10 +2,10 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
 
   @media (--media-tablet-min) {
-    gap: 16px;
+    gap: var(--space-4);
   }
 
   & .sectionTitle {
@@ -19,10 +19,10 @@
   & .reasonsGrid {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--space-6);
 
     @media (--media-phone) {
-      gap: 16px;
+      gap: var(--space-4);
     }
 
     & .reasonRow {
@@ -31,18 +31,18 @@
       gap: 33px;
 
       @media (--media-tablet-min) {
-        gap: 16px;
+        gap: var(--space-4);
       }
 
       @media (--media-phone) {
         flex-direction: column;
-        gap: 16px;
+        gap: var(--space-4);
       }
 
       & .reasonCard {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: var(--space-2);
         width: 100%;
 
         & .cardTitle,

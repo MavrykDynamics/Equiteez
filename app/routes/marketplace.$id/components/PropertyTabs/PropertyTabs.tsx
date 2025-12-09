@@ -17,6 +17,7 @@ import {
 import { useAppContext } from "~/providers/AppProvider/AppProvider";
 import { PropertyOfferingTab } from "./PropertyOfferingTab";
 import { PropertyTradingHistoryTab } from "./PropertyTradingHistoryTab";
+import styles from './propertyTabs.module.css';
 
 export const meta: MetaFunction = () => {
   return [
@@ -95,8 +96,8 @@ export default function PropertyTabs({
 
   return (
     <section className="flex flex-col">
-      <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-      <div className="mt-11">
+      <TabSwitcher tabs={tabs} className={styles.tabsWrapper} activeTabId={activetabId} />
+      <div className={styles.tabsContent}>
         {activetabId === PROPERTY_DETAILS_TAB && <PropertyDetailsTab />}
         {activetabId === PROPERTY_FINANCIALS_TAB && <PropertyFinanceTab />}
         {activetabId === PROPERTY_BLOCKCHAIN_TAB && <PropertyBlockchainTab />}

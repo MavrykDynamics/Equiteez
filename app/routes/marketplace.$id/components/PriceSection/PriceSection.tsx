@@ -9,16 +9,21 @@ import {
 type PriceSectionProps = {
   isSecondaryEstate: boolean;
   activeEstate: EstateType;
+  shouldExpand?: boolean;
 };
 
 // TODO map dynamicdata from the future API
 export const PriceSection: FC<PriceSectionProps> = ({
   isSecondaryEstate,
   activeEstate,
+  shouldExpand = true,
 }) => {
   return isSecondaryEstate ? (
-    <SecondaryPriceBlock activeEstate={activeEstate as SecondaryEstate} />
+    <SecondaryPriceBlock
+      activeEstate={activeEstate as SecondaryEstate}
+      shouldExpand={shouldExpand}
+    />
   ) : (
-    <PrimaryPriceBlock />
+    <PrimaryPriceBlock shouldExpand={shouldExpand} />
   );
 };

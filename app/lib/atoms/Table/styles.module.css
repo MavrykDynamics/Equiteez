@@ -1,0 +1,10 @@
+@import "../../../styles/breakpoints.css";
+
+.tableItem {
+  @media (--media-phone) {
+    & p:last-child {
+      max-width: 50%;
+      text-align: right;
+    }
+  }
+}
