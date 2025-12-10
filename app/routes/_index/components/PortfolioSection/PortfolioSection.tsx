@@ -36,8 +36,8 @@ const CARDS = [
   },
   {
     id: 2,
-    mobileTitle: "Stake",
-    MobileIcon: StakeIconMobile,
+    mobileTitle: null,
+    MobileIcon: null,
     Icon: StakeIcon,
     title: "Stake",
     to: "",
@@ -48,8 +48,8 @@ const CARDS = [
   },
   {
     id: 3,
-    mobileTitle: "Borrow",
-    MobileIcon: BorrowIconMobile,
+    mobileTitle: null,
+    MobileIcon: null,
     Icon: BorrowIcon,
     title: "Borrow",
     to: "",
@@ -62,8 +62,8 @@ const CARDS = [
 
 const CARDS_BOTTOM_ROW = [
   {
-    mobileTitle: "Trade",
-    MobileIcon: AdvancedTradeIconMobile,
+    mobileTitle: null,
+    MobileIcon: null,
     Icon: AdvancedTradeIcon,
     title: "Advanced Trade",
     link: "/exchange",
@@ -74,7 +74,7 @@ const CARDS_BOTTOM_ROW = [
     MobileIcon: AccountIconMobile,
     Icon: AccountIcon,
     title: "Account",
-    link: "",
+    link: "/wallet",
     disabled: true,
   },
   {
@@ -159,25 +159,25 @@ export const PortfolioSection = () => {
       </div>
 
       <div className={styles.tabletBlock}>
-        {CARDS.map((item) => (
+        {CARDS.filter((item) => item.MobileIcon).map((item) => (
           <Link
             className={styles.tabletBlockItem}
             key={item.mobileTitle}
             to={item.to}
           >
-            <item.MobileIcon />
+            {item.MobileIcon && <item.MobileIcon />}
             <Text size="smallBody" weight="semibold">
               {item.mobileTitle}
             </Text>
           </Link>
         ))}
-        {CARDS_BOTTOM_ROW.map((item) => (
+        {CARDS_BOTTOM_ROW.filter((item) => item.MobileIcon).map((item) => (
           <Link
             className={styles.tabletBlockItem}
             key={item.mobileTitle}
             to={item.link}
           >
-            <item.MobileIcon />
+            {item.MobileIcon && <item.MobileIcon />}
             <Text size="smallBody" weight="semibold">
               {item.mobileTitle}
             </Text>
