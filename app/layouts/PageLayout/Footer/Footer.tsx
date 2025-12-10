@@ -5,7 +5,7 @@ import LogoIcon from "app/icons/logoSecondary.svg?react";
 import { Container } from "~/lib/atoms/Container/Container";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { FOOTER_LINKS } from "~/layouts/PageLayout/pagelayout.consts";
-import { Link } from "@remix-run/react";
+import { MAVRYK_ORG_LINK } from "~/consts/links.const";
 
 const SocialBlock = () => {
   return (
@@ -45,11 +45,16 @@ export const Footer = () => {
           <div className={styles.linksWrapper}>
             <div className={styles.linksBlock}>
               {FOOTER_LINKS.map((item) => (
-                <Link to={item.url} key={item.id}>
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={item.url}
+                  key={item.id}
+                >
                   <Text color="white" size="smallBody" weight="semibold">
                     {item.title}
                   </Text>
-                </Link>
+                </a>
               ))}
             </div>
             <div className={styles.socialWrapper}>
@@ -62,10 +67,15 @@ export const Footer = () => {
           <Text size="tinyBody" customColor="--color-sand-400" c>
             © 2025 Mavryk Dynamics. All Rights Reserved
           </Text>
-          <div className="flex gap-[8px] items-center justify-center">
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={MAVRYK_ORG_LINK}
+            className="flex gap-[8px] items-center justify-center"
+          >
             <Text color="white">Built on</Text>
             <MavrykLogoIcon />
-          </div>
+          </a>
           <div className={styles.socialWrapper}>
             <SocialBlock />
           </div>
