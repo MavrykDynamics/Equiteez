@@ -12,7 +12,7 @@ export const SOCIALS = [
   {
     id: "discord",
     Icon: DiscordIcon,
-    url: "https://x.com/equiteezdotcom",
+    url: "https://discord.com/invite/FXYQyVf6fE",
   },
   {
     id: "GithubIcon",
@@ -22,6 +22,6 @@ export const SOCIALS = [
   {
     id: "telegram",
     Icon: TelegramIcon,
-    url: "/",
+    url: "https://t.me/+skFJjewPdRU5ZGQ0",
   },
 ];
