@@ -53,7 +53,20 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
 
   // We do not update query for storages cuz we have this data from the markets query
   useEffect(() => {
-    const orderBookPairs = getOrderbookTokenPairs(config.orderbook);
+    const orderBookPairs = getOrderbookTokenPairs(
+      new Map().set("KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ2", {
+        address: "KT1RZB8ZK4PtWPD8pV5hj4DJeke4am3A4gz2",
+        rwaTokenAddress: "KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ2",
+        currencies: [
+          {
+            token: {
+              address: "KT1D7ZQBhwxkMgZThqctYtMXigFvJRZL4eSy",
+              token_id: 0,
+            },
+          },
+        ],
+      })
+    );
     setOrderbookTokenPair(orderBookPairs);
   }, [config]);
 

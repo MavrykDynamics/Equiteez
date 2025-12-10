@@ -298,7 +298,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <Button
         className="mt-8"
         onClick={handleContinueClick}
-        disabled={isBtnDisabled}
+        // disabled={isBtnDisabled}
       >
         Continue
       </Button>

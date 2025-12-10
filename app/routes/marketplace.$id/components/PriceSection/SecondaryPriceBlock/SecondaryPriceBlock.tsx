@@ -205,7 +205,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           )}
         </AnimatePresence>
         <div>
-          {!validBaseTokens[estate.token_address] ? (
+          {validBaseTokens[estate.token_address] ? (
             <Button className="w-full" disabled>
               Coming Soon
             </Button>
