@@ -11,10 +11,50 @@
     display: block;
     margin-right: 8px;
   }
-  .headerWrapper{
+  .headerWrapper {
     width: auto;
   }
   .connectWalletWrapper {
     width: 100%;
   }
 }
+
+.mobileHeader {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--color-grey-100);
+  background: var(--color-neutral-light);
+  height: 66px;
+  justify-content: center;
+  align-items: center;
+  gap: 120px;
+  z-index: 10;
+  box-shadow:
+    0 -1px 11.1px 0 rgba(0, 0, 0, 0.07),
+    1px 2px 15px 0 rgba(0, 0, 0, 0.05);
+}
+.mobileHeaderLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--color-sand-500);
+}
+.mobileHeaderLink .mobileHeaderLinkText {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 15px; /* 150% */
+  letter-spacing: -0.24px;
+  color: var(--color-sand-500);
+}
+.mobileHeaderLinkActive {
+  color: var(--color-orange);
+}
+.mobileHeaderLinkActive .mobileHeaderLinkText {
+  color: var(--color-orange);
+}
+

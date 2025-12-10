@@ -17,6 +17,7 @@ import { PropertiesSliderSecondary } from "./components/PropertiesSlider/Propert
 import { useMemo, useRef } from "react";
 import { useScroll, UseScrollOptions, useTransform } from "framer-motion";
 import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { MobileFilters } from "~/routes/marketplace._index/components/MobileFilters";
 
 export const meta: MetaFunction = () => {
   return [
@@ -47,6 +48,9 @@ export default function Index() {
 
   return (
     <PageLayout includeContainer={false}>
+      <Container className="block md:hidden mt-[16px]">
+        <MobileFilters />
+      </Container>
       <Container>
         <div ref={ref}>
           <BannerSection opacity={opacity} />

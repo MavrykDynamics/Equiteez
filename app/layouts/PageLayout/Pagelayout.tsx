@@ -37,7 +37,7 @@ const PageLayout: FC<PageLayoutProps> = ({
       <div className={clsx("min-h-screen flex flex-col")}>
         <DocBg bgClassName={clsx(bg)} />
 
-        <div className={clsx("relative flex flex-col flex-1")}>
+        <div className={clsx("relative flex flex-col flex-1 pb-[66px] md:pb-0")}>
           <Header />
           <Banner contantArr={bannerContent} />
           {includeContainer ? (

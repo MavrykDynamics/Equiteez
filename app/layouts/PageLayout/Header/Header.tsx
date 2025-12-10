@@ -1,4 +1,4 @@
-import { useLocation } from "@remix-run/react";
+import { NavLink, useLocation } from "@remix-run/react";
 import { Logo } from "../../Logo";
 import { ConnectWallet } from "../ConnectWallet";
 import { links } from "./header.consts";
@@ -9,6 +9,10 @@ import MenuIcon from "../../../icons/menu.svg?react";
 import MobileNavbar from "~/layouts/PageLayout/Header/MobileNavbar";
 import classNames from "clsx";
 import { Container } from "~/lib/atoms/Container/Container";
+import { ROUTES } from "~/consts/routes";
+import HouseIcon from "~/icons/home.svg?react";
+import AccountIcon from "~/icons/account.svg?react";
+import { Text } from "~/lib/atoms/Typography/Text";
 
 export const Header = React.memo(() => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +23,7 @@ export const Header = React.memo(() => {
 
   return (
     <>
-      <section className="flex z-[30] justify-center border-b border-divider w-full bg-background">
+      <section className="md:flex hidden z-[30] justify-center border-b border-divider w-full bg-background">
         <Container className="flex items-center justify-between h-[60px] bg-background">
           <div className="flex items-center">
             <button
@@ -39,6 +43,31 @@ export const Header = React.memo(() => {
         </Container>
       </section>
       <MobileNavbar isOpen={isOpen} toggleMenu={toggleMenu} />
+
+      <section className={classNames(styles.mobileHeader, "md:hidden flex")}>
+        <NavLink
+          to={ROUTES.marketplace}
+          className={({ isActive }) =>
+            classNames(styles.mobileHeaderLink, {
+              [styles.mobileHeaderLinkActive]: isActive,
+            })
+          }
+        >
+          <HouseIcon />
+          <Text className={styles.mobileHeaderLinkText}>Marketplace</Text>
+        </NavLink>
+        <NavLink
+          to={ROUTES.wallet}
+          className={({ isActive }) =>
+            classNames(styles.mobileHeaderLink, {
+              [styles.mobileHeaderLinkActive]: isActive,
+            })
+          }
+        >
+          <AccountIcon />
+          <Text className={styles.mobileHeaderLinkText}>Profile</Text>
+        </NavLink>
+      </section>
     </>
   );
 });

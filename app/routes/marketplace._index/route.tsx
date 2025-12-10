@@ -46,7 +46,7 @@ export default function Properties() {
 
   return (
     <PageLayout>
-      <Spacer height={32} />
+      <Spacer className="h-[16px] md:h-[32px]" />
       <div className={styles.filtersWrapper}>
         {shouldShowMobileFilters ? <MobileFilters /> : <Filters />}
       </div>
