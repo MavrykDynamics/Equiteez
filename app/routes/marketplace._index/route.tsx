@@ -16,7 +16,7 @@ import { ApiPagination } from "~/lib/organisms/Pagination/ApiPagination";
 import { Text } from "~/lib/atoms/Typography/Text";
 import EmptyStateIcon from "app/icons/marketplace/emptySearch.svg?react";
 import {
-  TABLET_MIN_WIDTH,
+  TABLET_MAX_WIDTH,
   useWindowDimensions,
 } from "~/hooks/useWindowDimensions";
 import { MobileFilters } from "~/routes/marketplace._index/components/MobileFilters";
@@ -37,7 +37,7 @@ export default function Properties() {
   const { orderbookStorages } = useDexContext();
 
   const { width } = useWindowDimensions();
-  const shouldShowMobileFilters = width <= TABLET_MIN_WIDTH;
+  const shouldShowMobileFilters = width <= TABLET_MAX_WIDTH;
 
   const { data, page, setPage, totalPages } = usePagination(
     marketsArr,
@@ -86,7 +86,7 @@ export default function Properties() {
                     isSecondaryMarket={isSecondaryMarket}
                     APY={es.assetDetails.APY}
                     pricePerToken={pricePerToken}
-                    progressBarPercentage={22}
+                    progressBarPercentage={isSecondaryMarket ? undefined : 22}
                     isFutureAsset={!validBaseTokens[es.token_address]}
                     height="276px"
                   />
@@ -115,7 +115,7 @@ export default function Properties() {
           </div>
         )}
       </div>
-      <Spacer height={200} />
+      <Spacer className="xl:h-[200px] h-[64px] md:h-[64px]" />
     </PageLayout>
   );
 }

@@ -6,7 +6,7 @@ import { Button } from "~/lib/atoms/Button";
 import { SectionSelectList } from "./SectionSelectList";
 
 import styles from "./FiltersSidebar.module.css";
-import { useFiltersContext} from "~/routes/marketplace._index/components/Filters/FiltersProvider";
+import { useFiltersContext } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 
 export type FiltersSidebarRefType = {
   open: () => void;
@@ -136,7 +136,10 @@ export const FiltersSidebar = forwardRef<FiltersSidebarRefType, PropsType>(
               </Button>
               <Button
                 className={styles.applyButton}
-                onClick={handleNavigateToSelectedFilters}
+                onClick={() => {
+                  handleNavigateToSelectedFilters();
+                  setOpen(false);
+                }}
               >
                 Show {assetsCount > 0 ? `${assetsCount} Assets` : "All"}
               </Button>

@@ -11,7 +11,7 @@
   flex-direction: column;
   gap: var(--space-4);
 
-  @media (--media-tablet-min) {
+  @media (--media-tablet-max) {
     margin-top: var(--space-6);
   }
 

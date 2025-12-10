@@ -6,6 +6,7 @@ import { EstateHeadlineTab, HeadlineTabBadge } from "../EstateHeadlineTab";
 import BigNumber from "bignumber.js";
 import Money from "~/lib/atoms/Money";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
+import { AssetFlag } from "~/lib/atoms/AssetFlag/AssetFlag";
 
 type ThumbCardProps = {
   imgSrc: string;
@@ -21,6 +22,7 @@ type ThumbCardSecondary = Omit<ThumbCardProps, "address"> & {
   isSecondaryMarket: boolean;
   pricePerToken?: BigNumber;
   isFutureAsset?: boolean;
+  flag: string;
 };
 
 export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
@@ -31,6 +33,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
   pricePerToken,
   progressBarPercentage,
   APY,
+  flag,
   isFutureAsset = false,
   height = "264px",
 }) => {
@@ -55,6 +58,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
             </HeadlineTabBadge>
           )}
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
+          <AssetFlag flagValue={flag} />
         </div>
         <div className="flex flex-col items-start">
           <div className="flex-1 w-full flex justify-between gap-2">
@@ -72,7 +76,10 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
               {pricePerToken && (
                 <div className="flex flex-col items-center pr-3 border-r border-sand-50 mr-3">
                   <div className="flex items-center text-card-headline text-sand-50">
-                    $<Money fiat>{pricePerToken}</Money>
+                    $
+                    <Money tooltip={false} fiat>
+                      {pricePerToken}
+                    </Money>
                   </div>
                   <span className="text-sand-50 text-body-xs leading-5">
                     Price
@@ -161,7 +168,7 @@ export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
         <div className="flex items-center justify-between text-content mt-3">
           <p className="text-sm">Tokens Available</p>
           <div className="font-semibold text-sm">
-            <Money>{tokensAvailable}</Money>
+            <Money tooltip={false}>{tokensAvailable}</Money>
           </div>
         </div>
       </div>

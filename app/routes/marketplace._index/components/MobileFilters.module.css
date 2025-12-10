@@ -6,7 +6,7 @@
   gap: var(--space-3);
   width: 100%;
 
-  @media (--media-tablet-min) {
+  @media (--media-tablet-max) {
     display: flex;
   }
 
