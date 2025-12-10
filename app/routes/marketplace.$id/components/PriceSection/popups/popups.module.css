@@ -1,3 +1,18 @@
+@import "../../../../../styles/breakpoints.css";
+
 .tab {
   min-width: 50%;
+}
+.tabsWrapper {
+  min-width: 100%;
+}
+
+@media (--media-tablet-min) {
+  .tab {
+    min-width: auto;
+    flex: 1;
+  }
+  .tabsWrapper {
+    background: var(--color-sand-200);
+  }
 }

@@ -49,19 +49,17 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
     >
       <div
         onScroll={scrollEvent}
-        className="w-full h-full overflow-y-auto p-8 transition duration-300 ease-in-out flex flex-col focus:outline-none"
+        className="w-full h-full overflow-y-auto px-[16px] py-[32px] md:p-8 transition duration-300 ease-in-out flex flex-col focus:outline-none"
       >
         <div
           className={clsx(
-            "transition duration-300 ease-in-out",
-            animateCloseIcon
-              ? "sticky -top-8 h-14 right-0 w-full flex justify-end -mb-6"
-              : "absolute right-[32px] top-8",
-            " z-20",
-            animateCloseIcon && "bg-[#ffffffBF]"
+            "transition duration-300 ease-in-out fixed right-[16px] md:right-[48px]",
+            "top-8 flex justify-end",
+            animateCloseIcon ? "w-full" : "w-fit",
+            "z-20"
           )}
         >
-          <button id="close-icon" className={clsx(animateCloseIcon && "my-6")}>
+          <button id="close-icon">
             <CloseIcon
               className="w-6 h-6 cursor-pointer relative text-content stroke-current"
               onClick={restProps.onRequestClose}

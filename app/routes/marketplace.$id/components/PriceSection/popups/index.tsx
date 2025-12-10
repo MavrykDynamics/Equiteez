@@ -343,7 +343,7 @@ export const PopupContent: FC<{
             <>
               <div className="mb-4">
                 <TabSwitcherV2
-                  className={"min-w-full"}
+                  className={styles.tabsWrapper}
                   tabs={marketTabs}
                   tabClassName={styles.tab}
                   activeTabId={marketType}
@@ -352,7 +352,7 @@ export const PopupContent: FC<{
               <div>
                 <div className="mb-3 text-base">
                   <TabSwitcherV2
-                    className={"min-w-full"}
+                    className={styles.tabsWrapper}
                     // @ts-expect-error // OrderType is string
                     tabs={tabs}
                     tabClassName={styles.tab}
