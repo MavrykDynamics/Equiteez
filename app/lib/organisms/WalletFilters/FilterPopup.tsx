@@ -5,7 +5,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { SelectOrderType } from "~/lib/organisms/WalletFilters/SelectOrderType";
-import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
+import { Button } from "~/lib/atoms/Button";
 
 export function FilterPopup({
   isOpen,
@@ -39,13 +39,13 @@ export function FilterPopup({
     >
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-white stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-current stroke-current"
           onClick={handleClose}
         />
       </button>
       <div className="flex flex-col h-full justify-between">
         <div className={styles.contentWrapper}>
-          <Text weight="extraBold">Filter</Text>
+          <Text weight="semibold">Filter</Text>
           <div
             onClick={(e) => {
               e.preventDefault();
@@ -62,27 +62,26 @@ export function FilterPopup({
           </div>
         </div>
         <div className={styles.btnWrapper}>
-          <ButtonV2
+          <Button
             onClick={() => {
               applyFilter("");
               handleClose();
             }}
             className="flex-1"
             disabled={!selectedType}
-            variant="yellowOutlined"
+            variant="outline"
           >
             Reset
-          </ButtonV2>
-          <ButtonV2
+          </Button>
+          <Button
             onClick={() => {
               applyFilter(orderType);
               handleClose();
             }}
             className="flex-1"
-            variant="yellowPrimary"
           >
             Apply
-          </ButtonV2>
+          </Button>
         </div>
       </div>
     </CustomPopup>

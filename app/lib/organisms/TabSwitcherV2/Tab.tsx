@@ -6,6 +6,7 @@ import styles from "./styles.module.css";
 type TabProps = {
   active?: boolean;
   className?: string;
+  activeClassName?: string;
 } & TabType;
 
 export const Tab: FC<TabProps> = ({
@@ -13,6 +14,7 @@ export const Tab: FC<TabProps> = ({
   disabled,
   label,
   id,
+  activeClassName,
   handleClick,
   className,
 }) => {
@@ -26,6 +28,7 @@ export const Tab: FC<TabProps> = ({
         styles.tab,
         !active && "hover:bg-sand-300",
         active && "bg-sand-800 ",
+        active && activeClassName,
         className
       )}
     >

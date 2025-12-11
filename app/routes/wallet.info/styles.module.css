@@ -46,8 +46,17 @@
 .mobileWrapper .tabSwitcher {
   width: 100%;
 }
-.mobileWrapper .tabSwitcherItem {
+.tabSwitcherItem {
   width: 100%;
+
+  @media (--media-tablet-max) {
+    width: auto;
+    flex: 1;
+    background: var(--color-sand-200);
+  }
+}
+.tabSwitcherItemActive {
+  background: var(--color-sand-800);
 }
 .personalInfoItem {
   display: flex;

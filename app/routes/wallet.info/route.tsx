@@ -42,6 +42,7 @@ export default function WalletInfo() {
             className={styles.tabSwitcher}
             tabClassName={styles.tabSwitcherItem}
             tabs={tabs}
+            activeClassName={styles.tabSwitcherItemActive}
             activeTabId={activeTab}
           />
           {activeTab === "accountInfo" && (

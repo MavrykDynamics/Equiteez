@@ -17,6 +17,7 @@ type TabSwitcherProps = {
   activeTabId?: string;
   className?: string;
   tabClassName?: string;
+  activeClassName?: string;
 };
 
 export const TabSwitcherV2: FC<TabSwitcherProps> = ({
@@ -24,6 +25,7 @@ export const TabSwitcherV2: FC<TabSwitcherProps> = ({
   activeTabId,
   className,
   tabClassName,
+  activeClassName,
 }) => {
   return (
     <div className={clsx(styles.wrapper, "bg-sand-200", className)}>
@@ -31,6 +33,7 @@ export const TabSwitcherV2: FC<TabSwitcherProps> = ({
         <Tab
           key={tab.id}
           {...tab}
+          activeClassName={activeClassName}
           className={tabClassName}
           active={tab.id === activeTabId}
         />

@@ -143,7 +143,7 @@ function WalletMobileMenu() {
         >
           <div className="flex items-center gap-[8px]">
             <Text>
-              <selectedOption.Icon />
+              <selectedOption.Icon className="text-[var(--color-orange)]" />
             </Text>
             <Text size="smallBody" weight="semibold">
               {selectedOption.subHeader}
