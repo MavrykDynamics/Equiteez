@@ -11,6 +11,7 @@ import classNames from "clsx";
 import { Container } from "~/lib/atoms/Container/Container";
 import { ROUTES } from "~/consts/routes";
 import HouseIcon from "~/icons/home.svg?react";
+import HouseEquiteezIcon from "~/icons/homeEquiteez.svg?react";
 import AccountIcon from "~/icons/account.svg?react";
 import { Text } from "~/lib/atoms/Typography/Text";
 
@@ -46,6 +47,18 @@ export const Header = React.memo(() => {
 
       <section className={classNames(styles.mobileHeader, "md:hidden flex")}>
         <NavLink
+          to={ROUTES.home}
+          className={({ isActive }) =>
+            classNames(styles.mobileHeaderLink, {
+              [styles.mobileHeaderLinkActive]: isActive,
+            })
+          }
+        >
+          <HouseEquiteezIcon />
+          <Text className={styles.mobileHeaderLinkText}>Home</Text>
+        </NavLink>
+
+        <NavLink
           to={ROUTES.marketplace}
           className={({ isActive }) =>
             classNames(styles.mobileHeaderLink, {
@@ -56,6 +69,7 @@ export const Header = React.memo(() => {
           <HouseIcon />
           <Text className={styles.mobileHeaderLinkText}>Marketplace</Text>
         </NavLink>
+
         <NavLink
           to={ROUTES.wallet}
           className={({ isActive }) =>
