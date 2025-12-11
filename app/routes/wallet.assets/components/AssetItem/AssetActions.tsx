@@ -195,3 +195,27 @@ export function AssetActions({ asset }: { asset: AssetType }) {
     </div>
   );
 }
+
+export function AssetActionsCard({ asset }: { asset: AssetType }) {
+  return (
+    <div className="items-center gap-x-2 flex">
+      <CustomDropdown>
+        <ClickableDropdownArea>
+          <DropdownFaceContent
+            openedClassName={styles.assetActionsDropdownWrapperActive}
+            iconClassName={styles.assetActionsDropdownIcon}
+          >
+            <div className={styles.dotsBlockCard}>
+              <Text className="cursor-pointer" color="extraLightSand">
+                <DotsIcon />
+              </Text>
+            </div>
+          </DropdownFaceContent>
+        </ClickableDropdownArea>
+        <DropdownBodyContent position="right" topMargin={-6} customWidth={241}>
+          <AssetActionDropdownContent asset={asset} />
+        </DropdownBodyContent>
+      </CustomDropdown>
+    </div>
+  );
+}

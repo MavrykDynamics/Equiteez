@@ -14,6 +14,10 @@ import { EmptyState } from "~/routes/wallet/components/EmptyState/EmptyState";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import styles from "./styles.module.css";
 import { useUserAssetsContext } from "~/providers/UserAssets/userAssets.provider";
+import classNames from "clsx";
+import ListIcon from "~/icons/list.svg?react";
+import CardViewIcon from "~/icons/cardView.svg?react";
+import { AssetsList } from "~/routes/wallet.assets/components/AssetsList/AssetsList";
 
 const PAGE_LIMIT = 10;
 const SEARCH_START_LENGTH = 3;
@@ -24,7 +28,7 @@ export default function WalletAssets() {
   const [searchValue, setSearchValue] = useState("");
   const [isHideLowBalance, setIsHideLowBalance] = useState(false);
   const [activeSort, setActiveSort] = useState<ActiveSort | null>(null);
-
+  const [isCardView, setIsCardView] = useState(false);
   const { userAssets, fixedAssets, loading } = useUserAssetsContext();
 
   const handleSort = (value: string) => {
@@ -107,63 +111,41 @@ export default function WalletAssets() {
     [setPage]
   );
 
-  const columns = useMemo(
-    () => [
-      {
-        name: "Asset",
-        value: "asset",
-        isSortable: false,
-        width: "220px",
-      },
-      {
-        name: "Market",
-        value: "market",
-        isSortable: true,
-        width: "100px",
-      },
-      {
-        name: "Price/token",
-        value: "token_price",
-        isSortable: true,
-        width: "130px",
-      },
-      {
-        name: "Avl Balance",
-        value: "available_balance_usd",
-        isSortable: true,
-        width: "130px",
-      },
-      {
-        name: "In Orders",
-        value: "in_orders_usd",
-        isSortable: true,
-        width: "130px",
-      },
-      {
-        name: "Total",
-        value: "total_balance_usd",
-        isSortable: true,
-        width: "130px",
-      },
-    ],
-    []
-  );
-
   return (
     <div className="flex flex-col gap-[16px]">
       <div className="flex flex-col gap-[12px]">
-        <div className="flex justify-between">
+        <div className="flex justify-between items-end">
           <Heading level="5">Assets</Heading>
-          <FormCheckbox
-            labelClassName="items-center"
-            onChange={(checked) => setIsHideLowBalance(checked)}
-            checked={isHideLowBalance}
-            label={
-              <Text size="smallBody" weight="semibold" color="lightSand">
-                Hide Low Balances
-              </Text>
-            }
-          />
+          <div className="flex flex-col-reverse md:flex-row gap-[4px] md:gap-[24px] items-end md:items-center">
+            <FormCheckbox
+              labelClassName="items-center"
+              onChange={(checked) => setIsHideLowBalance(checked)}
+              checked={isHideLowBalance}
+              label={
+                <Text size="smallBody" weight="semibold" color="lightSand">
+                  Hide Low Balances
+                </Text>
+              }
+            />
+            <div className={styles.viewSwitcher}>
+              <button
+                onClick={() => setIsCardView(false)}
+                className={classNames(styles.viewSwitcherItem, {
+                  [styles.viewSwitcherItemActive]: !isCardView,
+                })}
+              >
+                <ListIcon />
+              </button>
+              <button
+                onClick={() => setIsCardView(true)}
+                className={classNames(styles.viewSwitcherItem, {
+                  [styles.viewSwitcherItemActive]: isCardView,
+                })}
+              >
+                <CardViewIcon />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="w-full">
@@ -176,23 +158,23 @@ export default function WalletAssets() {
           />
         </div>
       </div>
-      <RoundedCard className={styles.roundedWrapper}>
+      <RoundedCard
+        className={
+          isCardView ? styles.roundedWrapperCards : styles.roundedWrapper
+        }
+      >
         <div className="flex flex-col gap-[16px]">
           {loading ? (
             <div className="w-full h-full min-h-[400px] flex items-center justify-center">
               <Spinner />
             </div>
           ) : data.length && userAddress ? (
-            <div className="flex flex-col">
-              <TableHeader
-                handleSort={handleSort}
-                activeSort={activeSort}
-                columns={columns}
-              />
-              {data.map((asset, index) => (
-                <WalletAssetItem asset={asset} key={index} />
-              ))}
-            </div>
+            <AssetsList
+              data={data}
+              handleSort={handleSort}
+              activeSort={activeSort}
+              isCardView={isCardView}
+            />
           ) : (
             <EmptyState
               title="No assets yet"

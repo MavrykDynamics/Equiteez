@@ -26,7 +26,7 @@ import MbgMobile from "app/assets/wallet/mbgMobile.png";
 import { stablecoinContract } from "~/consts/contracts";
 import { AssetType } from "~/providers/UserAssets/userAssets.types";
 
-const assetImagesMock = {
+export const assetImagesMock = {
   [stablecoinContract]: {
     tablet: UsdtTablet,
     mobile: UsdtMobile,

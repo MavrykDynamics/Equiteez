@@ -11,6 +11,7 @@
     padding: 0 16px;
   }
 }
+.dotsBlockCard,
 .dotsBlock {
   width: 56px;
   height: 63px;
@@ -19,11 +20,21 @@
   justify-content: center;
   border-left: 1px solid var(--color-grey-100);
 }
+.dotsBlockCard {
+  width: 24px;
+  height: 24px;
+  border-left: none;
+}
 .roundedWrapper {
   padding: 24px 0;
   @media (--media-tablet-max) {
     padding: 16px 0;
   }
+}
+.roundedWrapperCards {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .emptyDotsBlock {
   width: 56px;
@@ -99,4 +110,26 @@
   @media (--media-tablet-max) {
     background: transparent;
   }
+}
+
+.viewSwitcher {
+  border-radius: 8px;
+  padding:2px;
+  background: var(--color-grey-100);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
+}
+.viewSwitcherItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+.viewSwitcherItemActive {
+  background: var(--color-neutral-light);
 }
