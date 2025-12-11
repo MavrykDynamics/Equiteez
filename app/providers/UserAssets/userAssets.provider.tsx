@@ -33,23 +33,23 @@ export const NOT_RWA_ASSETS = [
 
 // Fixed contracts
 const FIXED_CONTRACTS = [
-  {
-    token: {
-      address: MBG_CONTRACT_ADDRESS,
-      name: MBG_METADATA.name,
-      symbol: MBG_METADATA.symbol,
-      apy: 0,
-      icon: "",
-    },
-    total_balance: 0,
-    available_balance: 0,
-    available_balance_usd: 0,
-    token_price: 0,
-    price_change24h_percent: 0,
-    in_orders: 0,
-    in_orders_usd: 0,
-    total_balance_usd: 0,
-  },
+  // {
+  //   token: {
+  //     address: MBG_CONTRACT_ADDRESS,
+  //     name: MBG_METADATA.name,
+  //     symbol: MBG_METADATA.symbol,
+  //     apy: 0,
+  //     icon: "",
+  //   },
+  //   total_balance: 0,
+  //   available_balance: 0,
+  //   available_balance_usd: 0,
+  //   token_price: 0,
+  //   price_change24h_percent: 0,
+  //   in_orders: 0,
+  //   in_orders_usd: 0,
+  //   total_balance_usd: 0,
+  // },
 ];
 
 interface AssetsContextType {
