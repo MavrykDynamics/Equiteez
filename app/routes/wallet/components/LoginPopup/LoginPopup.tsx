@@ -42,7 +42,7 @@ export function LoginPopup({
       <button className="absolute top-6 right-7 z-10">
         <CloseIcon
           className="w-6 h-6 cursor-pointer relative text-current stroke-current"
-          onClick={() => navigate(ROUTES.home)}
+          onClick={onClose}
         />
       </button>
       <div className={styles.contentWrapper}>
