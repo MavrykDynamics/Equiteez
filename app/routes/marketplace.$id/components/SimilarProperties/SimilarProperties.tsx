@@ -6,6 +6,12 @@ import { EstateType } from "~/providers/MarketsProvider/market.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import styles from "./styles.module.css";
+import AssetsEmblaCarousel from "~/routes/_index/components/PropertiesSlider/AssetsEmblaCarousel";
+import useEmblaCarousel from "embla-carousel-react";
+import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
+import { EmblaOptionsType } from "embla-carousel";
+import classNames from "clsx";
 
 function getThreeUniqueElements(items: EstateType[]) {
   if (items.length < 3) {
@@ -24,6 +30,8 @@ function getThreeUniqueElements(items: EstateType[]) {
   return selectedItems;
 }
 
+const OPTIONS: EmblaOptionsType = { align: "start" };
+
 export const SimilarProperties = () => {
   const { marketsArr } = useMarketsContext();
   const { orderbookStorages } = useDexContext();
@@ -33,12 +41,23 @@ export const SimilarProperties = () => {
     [marketsArr]
   );
 
+  const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
+
+  const { nextBtnDisabled } = usePrevNextButtons(emblaApi);
+
   return (
     <section className="flex flex-col">
-      <h2 className="text-content text-section-headline mb-11">
+      <h2
+        className={classNames(
+          "text-content text-section-headline mb-11",
+          styles.title
+        )}
+      >
         Similar OTC Assets on Equiteez
       </h2>
-      <div className="grid grid-cols-3 gap-x-3">
+      <div
+        className={classNames("grid grid-cols-3 gap-x-3", styles.desktopBlock)}
+      >
         {!similarEstates.length ? (
           <h4>There aren&apos;t no similar markets.</h4>
         ) : (
@@ -53,6 +72,7 @@ export const SimilarProperties = () => {
                 key={estate.token_address}
               >
                 <ThumbCardSecondary
+                  flag=""
                   key={estate.token_address}
                   imgSrc={estate.assetDetails.previewImage}
                   pricePerToken={pricePerToken}
@@ -68,6 +88,18 @@ export const SimilarProperties = () => {
             );
           })
         )}
+      </div>
+
+      <div className={styles.tabletBlock}>
+        <AssetsEmblaCarousel
+          emblaRef={emblaRef}
+          slides={similarEstates}
+          nextBtnDisabled={nextBtnDisabled}
+          childPosition="after"
+          showAll
+        >
+          {null}
+        </AssetsEmblaCarousel>
       </div>
     </section>
   );
