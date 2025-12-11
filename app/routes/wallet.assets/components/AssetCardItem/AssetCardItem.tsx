@@ -12,6 +12,7 @@ import {
   getAssetLinkByAddress,
 } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
 import { AssetMarket } from "~/providers/UserAssets/userAssets.const";
+import { Icon } from "~/lib/atoms/Icon";
 
 export function AssetCardItem({ asset }: { asset: AssetType }) {
   const { marketsArr } = useMarketsContext();
@@ -39,8 +40,24 @@ export function AssetCardItem({ asset }: { asset: AssetType }) {
             <AssetActionsCard asset={asset} />
           </div>
           <div className={styles.titleBlockPrice}>
-            <Text size="smallBody" weight="semibold">
-              $<Money tooltip={false}>{asset.token_price}</Money>
+            <Text size="smallBody" weight="semibold" className="flex gap-[4px]">
+              $<Money tooltip={false}>{asset.token_price}</Money>{" "}
+              <Text
+                size="tinyBody"
+                weight="semibold"
+                color={asset.price_change24h_percent >= 0 ? "green" : "red"}
+                className="flex items-center"
+              >
+                <Icon
+                  icon="upArrow"
+                  className={
+                    asset.price_change24h_percent < 0 ? "rotate-180" : ""
+                  }
+                />
+                <span>
+                  <Money>{asset.price_change24h_percent}</Money>%
+                </span>
+              </Text>
             </Text>
             <Text weight="semibold" size="tinyBody" color="orange">
               APY {asset.token.apy}%
