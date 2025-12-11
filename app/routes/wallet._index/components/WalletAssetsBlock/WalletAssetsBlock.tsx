@@ -26,7 +26,7 @@ import { EmptyState } from "~/routes/wallet/components/EmptyState/EmptyState";
 import classNames from "clsx";
 import { getAssetLinkByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import {Button} from "~/lib/atoms/Button";
+import { Button } from "~/lib/atoms/Button";
 
 const ITEMS_TO_SHOW = 4;
 
@@ -149,7 +149,7 @@ export const WalletAssetsBlock = ({
         <div className="flex-1 lg:w-[368px] lg:min-w-[368px]">
           <WalletCard header="My Token Holdings" linkText="" link="">
             <div className="flex justify-center lg:py-[21px] gap-[16px]">
-              <div className="flex flex-col gap-[16px] gap-[8px] lg:gap-[24px] w-full lg:w-[147px] items-center">
+              <div className="flex justify-center flex-row md:flex-col gap-[16px] lg:gap-[24px] w-full lg:w-[147px] items-center">
                 <div className={styles.mvrkTokenImgWrapper}>
                   <img
                     src={mvrkToken}
@@ -158,7 +158,7 @@ export const WalletAssetsBlock = ({
                   />
                 </div>
 
-                <div className=" w-full items-center flex flex-col gap-[12px]">
+                <div className=" w-full max-w-[154px] md:max-w-[100%] items-center flex flex-col gap-[12px]">
                   <div className="flex flex-col items-center justify-center gap-[4px]">
                     <Text size="tinyBody" color="lightSand">
                       $MVRK Balance
@@ -173,10 +173,7 @@ export const WalletAssetsBlock = ({
                     className="w-full flex justify-center"
                     to={TRADE_MULTIBANK_LINK}
                   >
-                    <Button
-                      variant="outline"
-                      className={styles.buyBtn}
-                    >
+                    <Button variant="outline" className={styles.buyBtn}>
                       Buy
                     </Button>
                   </Link>
