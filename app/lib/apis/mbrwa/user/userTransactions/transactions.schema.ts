@@ -23,6 +23,7 @@ export const TransactionOrderSchema = z.object({
   price_per_rwa_token: z.number(),
   fulfilled_amount: z.number(),
   unfulfilled_amount: z.number(),
+  operation_hash: z.string().optional().nullable(),
   total_usd_value_of_rwa_token_amount: z.number(),
 });
 
@@ -30,6 +31,7 @@ export const TransactionTransferSchema = z.object({
   id: z.string().optional(),
   type: z.literal(TransactionTypes.TRANSFER),
   date: z.string(),
+  operation_hash: z.string().optional().nullable(),
   transfer_type: z.nativeEnum(TransferType),
   token: z.object({
     address: z.string(),

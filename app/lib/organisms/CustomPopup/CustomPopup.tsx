@@ -52,7 +52,7 @@ const CustomPopup: FC<CustomPopupProps> = (props) => {
       appElement={IS_WEB ? document.getElementById("root")! : undefined}
       closeTimeoutMS={DEFAULT_POPUP_ANIMATION_DELAY}
       overlayClassName={clsx(
-        "fixed inset-0 z-30",
+        "fixed inset-0 z-300",
         "bg-black bg-opacity-60",
         contentPosition === "center" && "flex items-center justify-center",
         contentPosition === "left" && "flex items-stretch justify-start",

@@ -70,7 +70,7 @@ export function TransactionsFilters({
     <>
       <div className={styles.desktopContent}>
         <CustomDropdown>
-          <ClickableDropdownArea>
+          {/*<ClickableDropdownArea>*/}
             <DropdownFaceContent
               gap={12}
               openedClassName={styles.dropdownWrapperActive}
@@ -131,7 +131,7 @@ export function TransactionsFilters({
                 </div>
               </div>
             </DropdownBodyContent>
-          </ClickableDropdownArea>
+          {/*</ClickableDropdownArea>*/}
         </CustomDropdown>
       </div>
 

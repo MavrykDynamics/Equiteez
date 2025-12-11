@@ -12,6 +12,7 @@ import { TransactionOrderStatusFlag } from "~/routes/wallet.transactions/compone
 import { TransactionTypes } from "~/lib/apis/mbrwa/user/userTransactions/transactions.const";
 import { Icon } from "~/lib/atoms/Icon";
 import { TransactionType } from "~/lib/apis/mbrwa/user/userTransactions/transactions.types";
+import { NEXUS_LINK } from "~/consts/links.const";
 
 export function MobileTransactionPopup({
   transaction,
@@ -103,14 +104,17 @@ export function MobileTransactionPopup({
               )}
             </div>
           </div>
-          <div className="flex items-center justify-center gap-[8px] mt-[16px]">
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={`${NEXUS_LINK}/explorer/operation/${transaction.operation_hash}`}
+            className="flex items-center justify-center gap-[8px] mt-[16px]"
+          >
             <Text color="darkGreen">
               <Icon className="w-[16px]" icon="link" />
             </Text>
-            <button onClick={() => {}} className={styles.orderCancelBtn}>
-              View on the Explorer
-            </button>
-          </div>
+            <div className={styles.orderCancelBtn}>View on the Explorer</div>
+          </a>
         </div>
 
         <Link className="w-full px-[16px] py-[24px]" to={transaction.assetLink}>

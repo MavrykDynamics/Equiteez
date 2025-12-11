@@ -16,6 +16,7 @@ import Money from "~/lib/atoms/Money";
 import { Icon } from "~/lib/atoms/Icon";
 import { MobileTransactionPopup } from "~/routes/wallet.transactions/components/MobileTransactionPopup/MobileTransactionPopup";
 import { NOT_RWA_ASSETS } from "~/providers/UserAssets/userAssets.provider";
+import { NEXUS_LINK } from "~/consts/links.const";
 
 export function WalletTransactionItem({
   transaction,
@@ -133,11 +134,16 @@ export function WalletTransactionItem({
               </Text>
             )}
           </div>
-          <Link to="" className="hidden lg:block">
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={`${NEXUS_LINK}/explorer/operation/${transaction.operation_hash}`}
+            className="hidden lg:block"
+          >
             <Text color="extraLightSand">
               <Icon icon="link" />
             </Text>
-          </Link>
+          </a>
         </div>
       </div>
       <MobileTransactionPopup
