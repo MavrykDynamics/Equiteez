@@ -71,7 +71,7 @@ export default function PropertyDetails() {
   if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
-    <PageLayout>
+    <PageLayout className={styles.mainWrapper}>
       <div className={styles.backLinkWrapper}>
         <LinkWithIcon
           iconPosition="start"
@@ -175,7 +175,7 @@ export default function PropertyDetails() {
       <SimilarProperties />
       <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
       <FAQSection data={homeFAQ} />
-      <Spacer className="h-[200px]" />
+      <Spacer className="xl:h-[200px] h-[104px] md:h-[100px]" />
     </PageLayout>
   );
 }

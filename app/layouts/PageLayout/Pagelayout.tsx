@@ -17,6 +17,7 @@ type PageLayoutProps = {
   bg?: string;
   includeContainer?: boolean;
   includeFooter?: boolean;
+  className?: string;
 } & PropsWithChildren;
 
 /**
@@ -31,13 +32,19 @@ const PageLayout: FC<PageLayoutProps> = ({
   bg = "bg-background",
   includeContainer = true,
   includeFooter = true,
+  className,
 }) => {
   return (
     <FiltersProvider>
       <div className={clsx("min-h-screen flex flex-col")}>
         <DocBg bgClassName={clsx(bg)} />
 
-        <div className={clsx("relative flex flex-col flex-1 pb-[66px] md:pb-0")}>
+        <div
+          className={clsx(
+            "relative flex flex-col flex-1 pb-[66px] md:pb-0",
+            className
+          )}
+        >
           <Header />
           <Banner contantArr={bannerContent} />
           {includeContainer ? (

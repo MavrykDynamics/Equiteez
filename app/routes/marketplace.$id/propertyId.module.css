@@ -1,5 +1,8 @@
 @import "../../styles/breakpoints.css";
 
+.mainWrapper {
+  padding-bottom: 0;
+}
 .detailsSection {
   display: flex;
   gap: 24px;
@@ -59,6 +62,9 @@
 @media (--media-tablet-max) {
   .desktopTitleBlock {
     display: none;
+  }
+  .mainWrapper {
+    padding-bottom: 138px;
   }
 
   .tabletTitleBlockTitle {
