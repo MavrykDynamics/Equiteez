@@ -21,7 +21,7 @@ import { ButtonV2 } from "~/lib/atoms/ButtonV2/ButtonV2";
 import { useTransactions } from "~/lib/apis/mbrwa/user/userTransactions/useTransactions";
 import { WalletTransactionItem } from "~/routes/wallet.transactions/components/TransactionItem/WalletTransactionItem";
 import { Link } from "@remix-run/react";
-import { TRADE_MULTIBANK_LINK } from "~/consts/links.const";
+import { TRADE_MULTIBANK_LINK, TRADE_MVRK_LINK } from "~/consts/links.const";
 import { EmptyState } from "~/routes/wallet/components/EmptyState/EmptyState";
 import classNames from "clsx";
 import { getAssetLinkByAddress } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
@@ -171,7 +171,7 @@ export const WalletAssetsBlock = ({
                     rel="noreferrer"
                     target="_blank"
                     className="w-full flex justify-center"
-                    to={TRADE_MULTIBANK_LINK}
+                    to={TRADE_MVRK_LINK}
                   >
                     <Button variant="outline" className={styles.buyBtn}>
                       Buy
