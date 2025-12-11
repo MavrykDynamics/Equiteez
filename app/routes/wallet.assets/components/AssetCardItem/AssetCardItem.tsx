@@ -6,10 +6,8 @@ import Money from "~/lib/atoms/Money";
 import { assetImagesMock } from "~/routes/wallet.assets/components/MobileAssetPopup/MobileAssetPopup";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import {
-  AssetActions,
   AssetActionsCard,
   getAssetByAddress,
-  getAssetLinkByAddress,
 } from "~/routes/wallet.assets/components/AssetItem/AssetActions";
 import { AssetMarket } from "~/providers/UserAssets/userAssets.const";
 import { Icon } from "~/lib/atoms/Icon";
@@ -17,10 +15,6 @@ import { Icon } from "~/lib/atoms/Icon";
 export function AssetCardItem({ asset }: { asset: AssetType }) {
   const { marketsArr } = useMarketsContext();
 
-  const assetLink = useMemo(
-    () => getAssetLinkByAddress(marketsArr, asset.token.address),
-    [asset.token.address, marketsArr]
-  );
   const isSecondaryEstate = asset.market === AssetMarket.secondary;
   const currentMarket = getAssetByAddress(marketsArr, asset.token.address);
 
@@ -30,7 +24,18 @@ export function AssetCardItem({ asset }: { asset: AssetType }) {
 
   return (
     <div className={styles.wrapper}>
-      <img className={styles.img} src={imageSrc} alt={asset.token.name} />
+      <div className="relative">
+        <img className={styles.img} src={imageSrc} alt={asset.token.name} />
+        {asset.market === AssetMarket.empty ? null : (
+          <div
+            className={
+              isSecondaryEstate ? styles.tabBadgeSecondary : styles.tabBadge
+            }
+          >
+            {isSecondaryEstate ? "Secondary Market" : "Primary"}
+          </div>
+        )}
+      </div>
       <div className={styles.content}>
         <div className={styles.titleBlockWrapper}>
           <div className={styles.titleBlock}>

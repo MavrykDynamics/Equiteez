@@ -39,3 +39,24 @@
   display: flex;
   justify-content: space-between;
 }
+.tabBadgeSecondary,
+.tabBadge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 15px;
+  width: fit-content;
+  box-sizing: border-box;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+
+.tabBadge {
+  background: rgba(143, 193, 160, 0.75);
+  color: var(--color-green-950);
+}
+.tabBadgeSecondary {
+  background: rgba(168, 171, 216, 0.75);
+  color: var(--color-blue-950);
+}
