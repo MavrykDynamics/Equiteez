@@ -24,7 +24,7 @@ export function AssetCardItem({ asset }: { asset: AssetType }) {
 
   return (
     <div className={styles.wrapper}>
-      <div className="relative">
+      <div className="relative z-0">
         <img className={styles.img} src={imageSrc} alt={asset.token.name} />
         {asset.market === AssetMarket.empty ? null : (
           <div
@@ -46,7 +46,9 @@ export function AssetCardItem({ asset }: { asset: AssetType }) {
           </div>
           <div className={styles.titleBlockPrice}>
             <Text size="smallBody" weight="semibold" className="flex gap-[4px]">
-              $<Money tooltip={false}>{asset.token_price}</Money>{" "}
+              <span>
+                $<Money tooltip={false}>{asset.token_price}</Money>
+              </span>{" "}
               <Text
                 size="tinyBody"
                 weight="semibold"
@@ -71,7 +73,7 @@ export function AssetCardItem({ asset }: { asset: AssetType }) {
         </div>
         <div className={styles.priceBlock}>
           <Text size="smallBody">Total</Text>
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end relative">
             <Text weight="semibold" size="smallBody">
               $<Money tooltip={false}>{asset.total_balance_usd}</Money>
             </Text>
@@ -79,6 +81,40 @@ export function AssetCardItem({ asset }: { asset: AssetType }) {
               <Money tooltip={false}>{asset.total_balance_usd}</Money>{" "}
               {asset.token.symbol}
             </Text>
+            <div className={styles.tooltipWrapper}>
+              <div className={styles.tooltipContent}>
+                <Text size="tinyBody">Avl Balance</Text>
+                <div className="flex flex-col items-end">
+                  <Text size="tinyBody" weight="semibold">
+                    $
+                    <Money tooltip={false}>{asset.available_balance_usd}</Money>
+                  </Text>
+                  <Text size="extraTinyBody" color="lightSand">
+                    <Money tooltip={false}>{asset.available_balance}</Money>{" "}
+                    {asset.token.symbol}
+                  </Text>
+                </div>
+              </div>
+
+              <div className={styles.tooltipContent}>
+                <Text size="tinyBody">In Orders</Text>
+                {asset.market ? (
+                  <div className="flex flex-col items-end">
+                    <Text size="tinyBody" weight="semibold">
+                      $<Money tooltip={false}>{asset.in_orders_usd}</Money>
+                    </Text>
+                    <Text size="extraTinyBody" color="lightSand">
+                      <Money tooltip={false}>{asset.in_orders}</Money>{" "}
+                      {asset.token.symbol}
+                    </Text>
+                  </div>
+                ) : (
+                  <Text size="tinyBody" weight="semibold">
+                    N/A
+                  </Text>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
