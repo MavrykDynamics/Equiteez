@@ -6,7 +6,7 @@ import {
   MavrykToolkit,
   TransferParams,
   Wallet,
-} from "@mavrykdynamics/taquito";
+} from "@mavrykdynamics/webmavryk";
 import {
   EstimatedBatchCall,
   EstimatedOperation,

@@ -1,4 +1,4 @@
-import { TransactionWalletOperation } from '@mavrykdynamics/taquito';
+import { TransactionWalletOperation } from '@mavrykdynamics/webmavryk';
 import { BatchWalletOperation } from '@mavrykdynamics/taquito/dist/types/wallet/batch-operation';
 import { WalletOperationError } from '~/errors/error';
 import { WalletErrorPayload } from '~/errors/error.type';

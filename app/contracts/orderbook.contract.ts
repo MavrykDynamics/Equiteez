@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-import { MavrykToolkit } from "@mavrykdynamics/taquito";
+import { MavrykToolkit } from "@mavrykdynamics/webmavryk";
 
 import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
 

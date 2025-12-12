@@ -3,7 +3,7 @@ import {
   WalletContract,
   Contract,
   ChainIds,
-} from "@mavrykdynamics/taquito";
+} from "@mavrykdynamics/webmavryk";
 import { HttpResponseError } from "@mavrykdynamics/taquito-http-utils";
 import retry from "async-retry";
 

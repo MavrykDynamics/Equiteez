@@ -1,11 +1,11 @@
-import { BeaconWallet } from "@mavrykdynamics/taquito-beacon-wallet";
+import { BeaconWallet } from "@mavrykdynamics/webmavryk-mavlet-wallet";
 import {
   AccountInfo,
   BeaconEvent,
   NetworkType,
 } from "@mavrykdynamics/beacon-dapp";
-import { MavrykToolkit } from "@mavrykdynamics/taquito";
-import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-beacon-wallet";
+import { MavrykToolkit } from "@mavrykdynamics/webmavryk";
+import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/webmavryk-mavlet-wallet";
 
 // consts
 import {

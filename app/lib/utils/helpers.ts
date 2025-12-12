@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { MavrykToolkit } from "@mavrykdynamics/taquito";
+import { MavrykToolkit } from "@mavrykdynamics/webmavryk";
 import memoizee from "memoizee";
 import type { AssetMetadataBase } from "~/lib/metadata";
 import { fromAssetSlug } from "~/lib/assets";
@@ -9,7 +9,7 @@ import { tokensToAtoms } from "~/lib/utils/formaters";
 import {
   validateAddress,
   ValidationResult,
-} from "@mavrykdynamics/taquito-utils";
+} from "@mavrykdynamics/webmavryk-utils";
 import { detectTokenStandard } from "~/lib/assets/standarts";
 
 export const loadContract = memoizee(fetchContract, {
