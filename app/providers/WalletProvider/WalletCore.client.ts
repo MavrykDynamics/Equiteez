@@ -1,11 +1,11 @@
-import { BeaconWallet } from "@mavrykdynamics/webmavryk-mavlet-wallet";
+import { MavletWallet } from "@mavrykdynamics/webmavryk-mavlet-wallet";
 import {
   AccountInfo,
-  BeaconEvent,
+  MavletEvent,
   NetworkType,
-} from "@mavrykdynamics/beacon-dapp";
+} from "@mavrykdynamics/mavlet-dapp";
 import { MavrykToolkit } from "@mavrykdynamics/webmavryk";
-import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/webmavryk-mavlet-wallet";
+import type { MavletWallet as BeaconWalletType } from "@mavrykdynamics/webmavryk-mavlet-wallet";
 
 // consts
 import {
@@ -36,7 +36,7 @@ export function dappClient() {
   let instance: BeaconWalletType | undefined;
 
   function init() {
-    return new BeaconWallet(DAPP_METADATA);
+    return new MavletWallet(DAPP_METADATA);
   }
 
   function loadWallet() {
@@ -56,10 +56,10 @@ export function dappClient() {
     const client = getDAppClient();
 
     client
-      .subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
+      .subscribeToEvent(MavletEvent.ACTIVE_ACCOUNT_SET, (account) => {
         // An active account has been set, update the dApp UI
         console.log(
-          `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
+          `${MavletEvent.ACTIVE_ACCOUNT_SET} triggered: `,
           account.address
         );
 

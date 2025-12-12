@@ -18,7 +18,7 @@ import { useAppContext } from "~/providers/AppProvider/AppProvider";
 // types
 import type { HubConnection } from "@microsoft/signalr";
 import { TokenMetadata } from "~/lib/metadata";
-import { AccountInfo } from "@mavrykdynamics/beacon-dapp";
+import { AccountInfo } from "@mavrykdynamics/mavlet-dapp";
 
 type UseUserSocketsType = {
   setIsTzktBalancesLoading: (newLoading: boolean) => void;

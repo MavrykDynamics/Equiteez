@@ -4,7 +4,7 @@ import {
   Contract,
   ChainIds,
 } from "@mavrykdynamics/webmavryk";
-import { HttpResponseError } from "@mavrykdynamics/taquito-http-utils";
+import { HttpResponseError } from "@mavrykdynamics/webmavryk-http-utils";
 import retry from "async-retry";
 
 import type { TokenStandardType } from "./types";

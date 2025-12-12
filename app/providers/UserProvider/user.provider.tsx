@@ -13,7 +13,7 @@ import {
 } from "./user.provider.types";
 import { useWalletContext } from "../WalletProvider/wallet.provider";
 import { useAppContext } from "../AppProvider/AppProvider";
-import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
+import type { AccountInfo } from "@mavrykdynamics/mavlet-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";

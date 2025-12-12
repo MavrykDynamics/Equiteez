@@ -1,6 +1,6 @@
-// rename-packages.js
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 
 const replacements = {
   "@mavrykdynamics/taquito": "@mavrykdynamics/webmavryk",
@@ -17,19 +17,20 @@ const replacements = {
   "@mavrykdynamics/taquito-tzip12": "@mavrykdynamics/webmavryk-tzip12",
   "@mavrykdynamics/taquito-tzip16": "@mavrykdynamics/webmavryk-tzip16",
   "@mavrykdynamics/taquito-utils": "@mavrykdynamics/webmavryk-utils",
+  "@mavrykdynamics/beacon-dapp": "@mavrykdynamics/mavlet-dapp",
   "@mavrykdynamics/taquito-beacon-wallet":
     "@mavrykdynamics/webmavryk-mavlet-wallet",
 };
+
 const exts = [".ts", ".tsx", ".js", ".jsx"];
 
-// Sort: longest keys first (prevents partial matches)
+// Sort longest keys first (to avoid partial matches)
 const ordered = Object.entries(replacements).sort(
   ([a], [b]) => b.length - a.length
 );
 
 function safeReplace(content) {
   for (const [oldPkg, newPkg] of ordered) {
-    // Match only exact strings, NOT substrings
     const regex = new RegExp(`(['"])${oldPkg}\\1`, "g");
     content = content.replace(regex, `$1${newPkg}$1`);
   }
@@ -57,6 +58,63 @@ function walk(dir) {
   }
 }
 
+// ----------------------
+// UPDATE package.json
+// ----------------------
+function updatePackageJson() {
+  const pkgPath = "./package.json";
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+
+  let uninstall = [];
+  let install = [];
+
+  const sections = ["dependencies", "devDependencies"];
+
+  for (const section of sections) {
+    if (!pkg[section]) continue;
+
+    for (const [oldPkg, newPkg] of Object.entries(replacements)) {
+      if (pkg[section][oldPkg]) {
+        const oldVersion = pkg[section][oldPkg];
+
+        // remove old
+        delete pkg[section][oldPkg];
+        uninstall.push(oldPkg);
+
+        // add new with same version (or "*" if you prefer)
+        pkg[section][newPkg] = oldVersion;
+        install.push(`${newPkg}@${oldVersion}`);
+      }
+    }
+  }
+
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+  console.log("Updated package.json");
+
+  return { uninstall, install };
+}
+
+// ----------------------
+// RUN NPM COMMANDS
+// ----------------------
+function runCommands(uninstall, install) {
+  if (uninstall.length > 0) {
+    console.log("Uninstalling:", uninstall.join(" "));
+    execSync(`npm uninstall ${uninstall.join(" ")}`, { stdio: "inherit" });
+  }
+
+  if (install.length > 0) {
+    console.log("Installing:", install.join(" "));
+    execSync(`npm install ${install.join(" ")}`, { stdio: "inherit" });
+  }
+}
+
+// ----------------------
+// MAIN EXECUTION
+// ----------------------
 walk("./app");
 
-console.log("Done!");
+const { uninstall, install } = updatePackageJson();
+runCommands(uninstall, install);
+
+console.log("All done!");
