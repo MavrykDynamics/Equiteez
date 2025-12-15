@@ -38,7 +38,6 @@ export const getOrderbookTokenPairs = (
   storagesMap: Map<string, OrderbookConfigType>
 ): StringRecord<string> => {
   const result: StringRecord<string> = {};
-  return {};
 
   for (const [, storage] of storagesMap) {
     result[toTokenSlug(storage.rwaTokenAddress)] = toTokenSlug(

@@ -42,73 +42,83 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const [marketApiError, setMarketApiError] = useState<ApiError | null>(null);
 
-  // const assetsData = useQuery({
-  //   queryKey: ["fetchAssets"],
-  //   queryFn: () => fetchAssets(),
-  // });
-  //
-  // useEffect(() => {
-  //   if (assetsData.error) {
-  //     setMarketApiError(new ApiError(assetsData.error));
-  //     console.error(assetsData.error, "error");
-  //   }
-  // }, [assetsData.error]);
+  const assetsData = useQuery({
+    queryKey: ["fetchAssets"],
+    queryFn: () => fetchAssets(),
+  });
 
   useEffect(() => {
-    // if (!assetsData.data) return;
-    // const sortedMarketAddresses = assetsData.data.assets.map((item) =>
-    //   toTokenSlug(item.asset.token_address, item.asset.token_id ?? 0)
-    // );
-    const orderbookConfig = new Map();
-    // assetsData.data.assets.forEach((item) => {
-    //   orderbookConfig.set(item.orderbook.address, {
-    //     address: item.orderbook.address,
-    //     rwaTokenAddress: item.asset.token_address,
-    //     currencies:
-    //       item.orderbook.currencies?.map((currency) => ({
-    //         token: currency.token,
-    //       })) || [],
-    //   });
-    // });
-    //
-    // const realAssetsFromApi = assetsData.data.assets.reduce<
-    //   Map<string, EstateType>
-    // >((acc, item) => {
-    //   const {
-    //     asset: { token_address, token_id = 0 },
-    //   } = item;
-    //   const transformedAsset = transformAssetData(item);
-    //
-    //   const slug = toTokenSlug(token_address, token_id);
-    //   acc.set(slug, {
-    //     ...transformedAsset,
-    //     slug,
-    //   });
-    //   return acc;
-    // }, new Map());
+    if (assetsData.error) {
+      setMarketApiError(new ApiError(assetsData.error));
+      console.error(assetsData.error, "error");
+    }
+  }, [assetsData.error]);
 
-    const fakeAssetsToShow = fakeAssetsMocked.reduce<Map<string, EstateType>>(
-      (acc, asset) => {
-        const slug = toTokenSlug(asset.token_address);
-        if (slug) {
-          // @ts-expect-error // fake data
-          acc.set(slug, { ...asset, slug });
-        }
+  useEffect(() => {
+    try {
+      if (!assetsData.data) return;
+      const sortedMarketAddresses = assetsData.data.assets.map(
+        (item) => toTokenSlug(item.asset.token.address, 0) //TODO add token_id
+      );
+      const orderbookConfig = new Map();
+      assetsData.data.assets.forEach((item) => {
+        orderbookConfig.set(item.orderbook.address, {
+          address: item.orderbook.address,
+          rwaTokenAddress: item.asset.token.address,
+          currencies: [
+            {
+              token: {
+                address: item.orderbook.quote_token.address,
+                token_id: item.orderbook.quote_token.token_id,
+              },
+            },
+          ],
+        });
+      });
 
+      const realAssetsFromApi = assetsData.data.assets.reduce<
+        Map<string, EstateType>
+      >((acc, item) => {
+        const {
+          asset: {
+            token: { address },
+          },
+        } = item;
+        const transformedAsset = transformAssetData(item);
+
+        const slug = toTokenSlug(address, 0); //TODO add token_id
+        acc.set(slug, {
+          ...transformedAsset,
+          slug,
+        });
         return acc;
-      },
-      new Map()
-    );
+      }, new Map());
 
-    setMarketsState((prevState) => ({
-      ...prevState,
-      config: { orderbook: orderbookConfig },
-      isLoading: false,
-      sortedMarketAddresses: [],
-      // markets: new Map([...realAssetsFromApi, ...fakeAssetsToShow]),
-      markets: new Map([...fakeAssetsToShow]),
-    }));
-  }, []);
+      const fakeAssetsToShow = fakeAssetsMocked.reduce<Map<string, EstateType>>(
+        (acc, asset) => {
+          const slug = toTokenSlug(asset.token_address);
+          if (slug) {
+            // @ts-expect-error // fake data
+            acc.set(slug, { ...asset, slug });
+          }
+
+          return acc;
+        },
+        new Map()
+      );
+
+      setMarketsState((prevState) => ({
+        ...prevState,
+        config: { orderbook: orderbookConfig },
+        isLoading: false,
+        sortedMarketAddresses,
+        markets: new Map([...realAssetsFromApi, ...fakeAssetsToShow]),
+      }));
+    } catch (e) {
+      setMarketApiError(new ApiError(e));
+      console.log(e);
+    }
+  }, [assetsData.data]);
 
   // retrieve base token addresses from Map
   const marketAddresses = useMemo(
@@ -180,9 +190,9 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       marketApiError,
       isLoading: marketApiError
         ? false
-        : // : assetsData.isLoading ||
-          //   assetsData.isFetching ||
-          //   assetsData.isPending ||
+        : assetsData.isLoading ||
+          assetsData.isFetching ||
+          assetsData.isPending ||
           marketsState.isLoading,
     }),
     [
@@ -196,9 +206,9 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
       pickers,
       validBaseTokens,
       marketApiError,
-      // assetsData.isLoading,
-      // assetsData.isFetching,
-      // assetsData.isPending,
+      assetsData.isLoading,
+      assetsData.isFetching,
+      assetsData.isPending,
     ]
   );
 

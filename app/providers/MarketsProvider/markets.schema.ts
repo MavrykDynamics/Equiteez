@@ -1,79 +1,50 @@
 import { z } from "zod";
 
-const FeatureItem = z.object({
-  id: z.string(),
-  name: z.string(),
-});
-
-const ListItem = z.object({
-  name: z.string(),
-  type: z.string(),
-  value: z.union([z.string(), z.number()]),
-  highlight: z.boolean().optional(),
-  children: z.any().optional(),
-});
-
-const ListItemDirectional = z.object({
-  name: z.string(),
-  type: z.literal("list-item-directional"),
-  value: z.number(),
-  children: z
-    .object({
-      text: z.object({
-        type: z.string(),
-        value: z.string(),
-      }),
-    })
-    .optional(),
-});
-
 // --- MAIN ASSET SCHEMA ---
 export const AssetSchema = z.object({
-  schemaVersion: z.number(),
-
   identity: z.object({
-    assetName: z.string(),
-    assetType: z.string(),
-    isPrimary: z.boolean(),
+    asset_name: z.string(),
+    asset_type: z.string(),
+    is_primary: z.boolean(),
     slug: z.string(),
-    webUrl: z.string().url(),
+    web_url: z.string().url(),
     headline: z.string().optional(),
     description: z.string().optional(),
-    isLive: z.boolean(),
-    liveTime: z.string().optional(),
+    is_live: z.boolean(),
+    live_time: z.string().optional(),
   }),
 
   token: z.object({
     symbol: z.string(),
     name: z.string(),
     decimals: z.number(),
-    iconUrl: z.string().optional(),
+    icon_url: z.string().optional(),
     address: z.string(),
     network: z.string(),
     issuer: z.object({
       name: z.string(),
       address: z.string(),
     }),
-    totalSupply: z.number().nullable().optional(),
-    totalTokens: z.number().nullable().optional(),
+    total_supply: z.number().nullable().optional(),
+    total_tokens: z.number().nullable().optional(),
   }),
 
   market: z.object({
     price: z.number(),
-    changeIn24hPercent: z.number().optional(),
-    totalLiquidity: z.number().nullable().optional(),
-    tokensAvailable: z.number().nullable().optional(),
-    tokensUsed: z.number().nullable().optional(),
-    annualReturn: z.number().nullable().optional(),
-    projectedAnnualReturn: z.number().nullable().optional(),
-    rentalYield: z.number().nullable().optional(),
-    projectedRentalYield: z.number().nullable().optional(),
+    change_in24h_percent: z.number().optional(),
+    total_liquidity: z.number().nullable().optional(),
+    tokens_available: z.number().nullable().optional(),
+    tokens_used: z.number().nullable().optional(),
+    annual_return: z.number().nullable().optional(),
+    projected_annual_return: z.number().nullable().optional(),
+    rental_yield: z.number().nullable().optional(),
+    projected_rental_yield: z.number().nullable().optional(),
   }),
 
   location: z.object({
     address: z.object({
       line1: z.string().optional(),
-      line2: z.string().optional(),
+      line2: z.string().optional().nullable(),
       city: z.string().optional(),
       state: z.string().optional(),
       zip: z.string().optional(),
@@ -88,20 +59,35 @@ export const AssetSchema = z.object({
   }),
 
   property: z.object({
+    building: z.object({
+      lot_size: z.number().nullable(),
+      interior_size: z.number().nullable(),
+      building_class: z.string().nullable(),
+      foundation: z.string().nullable(),
+      exterior_walls: z.string().nullable(),
+      roof_type: z.string().nullable(),
+      heating: z.string().nullable(),
+      cooling: z.string().nullable(),
+      renovated: z.string().nullable(),
+    }),
+
     brand: z
       .object({
         name: z.string().optional(),
       })
       .optional(),
 
-    basicInfo: z.record(z.string()).optional(),
+    basic_info: z
+      .record(z.union([z.string().nullable(), z.number().nullable()]))
+      .optional()
+      .nullable(),
 
     features: z
       .array(
         z.object({
           id: z.string(),
-          label: z.string(),
-          value: z.string().optional(),
+          label: z.string().optional(),
+          value: z.union([z.string().nullable(), z.number().nullable()]),
         })
       )
       .optional(),
@@ -110,7 +96,7 @@ export const AssetSchema = z.object({
       .array(
         z.object({
           id: z.string(),
-          label: z.string(),
+          label: z.string().optional(),
           value: z.string().optional(),
         })
       )
@@ -132,22 +118,22 @@ export const AssetSchema = z.object({
     .object({
       investment: z
         .object({
-          grossRentYear: z.number().optional(),
-          grossRentMonth: z.number().optional(),
+          gross_rent_year: z.number().optional(),
+          gross_rent_month: z.number().optional(),
 
-          monthlyCosts: z
+          monthly_costs: z
             .object({
               total: z.union([z.number(), z.string()]).nullable().optional(),
-              netRePropertyManagement: z
+              net_re_property_management: z
                 .union([z.number(), z.string()])
                 .nullable()
                 .optional(),
               platform: z.union([z.number(), z.string()]).nullable().optional(),
-              maintenanceExpenses: z
+              maintenance_expenses: z
                 .union([z.number(), z.string()])
                 .nullable()
                 .optional(),
-              propertyTaxes: z
+              property_taxes: z
                 .union([z.number(), z.string()])
                 .nullable()
                 .optional(),
@@ -162,30 +148,30 @@ export const AssetSchema = z.object({
             })
             .optional(),
 
-          netRentYear: z.number().optional(),
+          net_rent_year: z.number().optional(),
 
-          totalInvestment: z
+          total_investment: z
             .object({
               total: z.number().optional(),
-              underlyingAssetPrice: z.number().optional(),
-              initialMaintenanceReserve: z.number().optional(),
+              underlying_asset_price: z.number().optional(),
+              initial_maintenance_reserve: z.number().optional(),
             })
             .optional(),
 
-          expectedIncome: z.number().optional(),
+          expected_income: z.number().optional(),
         })
         .optional(),
 
       income: z
         .object({
-          expectedIncome: z
+          expected_income: z
             .object({
               value: z.number(),
               note: z.string().optional(),
             })
             .optional(),
 
-          incomeStartDate: z.string().optional(),
+          income_start_date: z.string().optional(),
         })
         .optional(),
     })
@@ -199,25 +185,25 @@ export const AssetSchema = z.object({
           title: z.string().optional(),
           items: z
             .object({
-              assetValuation: z
+              asset_valuation: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              totalInvestment: z
+              total_investment: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              tokenPrice: z
+              token_price: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
             })
@@ -232,46 +218,46 @@ export const AssetSchema = z.object({
           headline: z.string().optional(),
           items: z
             .object({
-              assetValuation: z
+              asset_valuation: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              annualChange: z
+              annual_change: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              totalInvestment: z
+              total_investment: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              tokenPrice: z
+              token_price: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              capitalROI: z
+              capital_r_o_i: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
-              regDistributed: z
+              reg_distributed: z
                 .object({
-                  label: z.string(),
+                  label: z.string().optional(),
                   value: z.number(),
-                  type: z.string(),
+                  type: z.string().optional(),
                 })
                 .optional(),
             })
@@ -285,8 +271,8 @@ export const AssetSchema = z.object({
     .object({
       thumbnail: z.string().url().optional(),
       gallery: z.array(z.object({ url: z.string().url() })).optional(),
-      brandLogo: z.string().url().optional(),
-      brandBackground: z.string().url().optional(),
+      brand_logo: z.string().url().optional(),
+      brand_background: z.string().url().optional(),
     })
     .optional(),
 });
@@ -305,7 +291,7 @@ export const OrderbookSchema = z.object({
     symbol: z.string(),
     icon: z.string(),
     decimals: z.number(),
-    token_id: z.number(),
+    token_id: z.number().optional(),
   }),
   quote_token: z.object({
     address: z.string(),
