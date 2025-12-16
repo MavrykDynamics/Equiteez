@@ -153,7 +153,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           />
         </Text>
         <Text weight="semibold">
-          {estate.assetDetails.financials.expectedIncome.income}%
+          {estate.assetDetails.priceDetails.rentalYield}%
         </Text>
       </div>
       <div className="text-content body flex justify-between">
