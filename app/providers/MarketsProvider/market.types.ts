@@ -52,6 +52,9 @@ export interface AssetUniversal {
       propertyType: string;
       fullAddress?: string;
       shortAddress?: string;
+      rentalType: string;
+      rented: string;
+      propertyManager: string;
       location?: string;
       name?: string;
       country?: string;

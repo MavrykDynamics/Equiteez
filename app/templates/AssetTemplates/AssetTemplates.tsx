@@ -591,7 +591,9 @@ export const MixedUseRealEstateTemplate: FC<{
         </TableItem>
         <TableItem>
           <p>Size</p>
-          <p>{data.size}</p>
+          <p>
+            <Money>{data.size}</Money> sqft
+          </p>
         </TableItem>
         <TableItem>
           <p>Height</p>
@@ -632,22 +634,28 @@ export const MixedUseRealEstateTemplate: FC<{
 export const IconsDetailsTemplate: FC<{
   basicInfo: EstateType["assetDetails"]["basicInfo"];
 }> = ({ basicInfo }) => {
-  if (!basicInfo) return null;
+  if (!basicInfo || !Object.values(basicInfo).filter(Boolean).length)
+    return null;
 
   return (
     <>
       <Table className="bg-white">
         <TableHeader>What&apos;s In </TableHeader>
         <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8">
-          {Object.entries(basicInfo).map(([key, value]) => {
-            const Icon = assetIconBasedOnKey[key];
-            return (
-              <div key={key} className="w-[192px] flex gap-[8px] mt-4 lg:mt-0">
-                <Icon className="w-[24px] h-[24px] text-[var(--color-yellow-500)]" />
-                <span>{value}</span>
-              </div>
-            );
-          })}
+          {Object.entries(basicInfo)
+            .filter(([key, value]) => value)
+            .map(([key, value]) => {
+              const Icon = assetIconBasedOnKey[key];
+              return (
+                <div
+                  key={key}
+                  className="w-[192px] flex gap-[8px] mt-4 lg:mt-0"
+                >
+                  <Icon className="w-[24px] h-[24px] text-[var(--color-yellow-500)]" />
+                  <span>{value}</span>
+                </div>
+              );
+            })}
         </div>
       </Table>
       <Spacer height={32} />
