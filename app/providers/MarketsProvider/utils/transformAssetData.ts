@@ -28,14 +28,28 @@ export function transformAssetData(payload: AssetData): AssetUniversal {
       previewImage: data.media?.thumbnail ?? "",
 
       basicInfo: {
-        btcPrice: String(data.property?.basic_info?.btcPrice ?? ""),
-        amount: String(data.property?.basic_info?.amount ?? ""),
-        rooms: String(data.property?.basic_info?.rooms ?? ""),
-        sqft: String(data.property?.basic_info?.sqft ?? ""),
+        btcPrice: data.property?.basic_info?.btcPrice
+          ? `${data.property?.basic_info?.btcPrice} BTC`
+          : "",
+        amount: data.property?.basic_info?.amount
+          ? String(data.property?.basic_info?.amount)
+          : "",
+        rooms: data.property?.basic_info?.rooms
+          ? `${data.property?.basic_info?.rooms} rooms`
+          : "",
+        sqft: data.property?.basic_info?.sqft
+          ? `${data.property?.basic_info?.sqft} sqft`
+          : "",
         rate: String(data.property?.basic_info?.rate ?? ""),
-        homes: String(data.property?.basic_info?.homes ?? ""),
-        baths: String(data.property?.basic_info?.baths ?? ""),
-        beds: String(data.property?.basic_info?.beds ?? ""),
+        homes: data.property?.basic_info?.homes
+          ? `${data.property?.basic_info?.homes} homes`
+          : "",
+        baths: data.property?.basic_info?.baths
+          ? `${data.property?.basic_info?.baths} baths`
+          : "",
+        beds: data.property?.basic_info?.beds
+          ? `${data.property?.basic_info?.beds} beds`
+          : "",
         bond: String(data.property?.basic_info?.bond ?? ""),
         yield: String(data.property?.basic_info?.yield ?? ""),
         tvl: String(data.property?.basic_info?.tvl ?? ""),
@@ -45,19 +59,78 @@ export function transformAssetData(payload: AssetData): AssetUniversal {
       },
 
       propertyDetails: {
+        location: data.location.address.state,
         description: data.identity.description ?? "",
         propertyType: String(
           data.property.features?.find((f) => f.id === "propertyType")?.value ??
+            data.identity.asset_type ??
             ""
         ),
+        rented:
+          data.property.amenities?.find((item) => item.id === "rentalStatus")
+            ?.value ?? "",
+        propertyManager:
+          data.property.amenities?.find((item) => item.id === "manager")
+            ?.value ?? "",
+        rentalType:
+          data.property.amenities?.find((item) => item.id === "rentalType")
+            ?.value ?? "",
         state: data.location.address?.state ?? "",
         country: data.location.address?.country ?? "",
         zipCode: Number(data.location.address?.zip ?? 0),
         parking: String(
-          data.property?.features?.find((f) => f.id === "parking")?.value ?? ""
+          data.property?.features?.find((f) => f.id === "parking")?.value ??
+            data.property?.amenities?.find((f) => f.id === "parking")?.value ??
+            ""
         ),
-        type: "",
+        occupancy: String(
+          data.property?.features?.find((f) => f.id === "occupancy")?.value ??
+            ""
+        ),
+        annualReturns: `${data.market.annual_return ?? 0}%`,
+        security: String(
+          data.property?.amenities?.find((f) => f.id === "security")?.value ??
+            ""
+        ),
+        capacity: String(
+          data.property?.features?.find((f) => f.id === "capacity")?.value ?? ""
+        ),
+        hashRate: String(
+          data.property?.features?.find((f) => f.id === "hashrate")?.value ?? ""
+        ),
+        redundancy: String(
+          data.property?.amenities?.find((f) => f.id === "redundancy")?.value ??
+            ""
+        ),
+        connectivity: String(
+          data.property?.amenities?.find((f) => f.id === "connectivity")
+            ?.value ?? ""
+        ),
+        energySource: String(
+          data.property?.features?.find((f) => f.id === "energy")?.value ?? ""
+        ),
+        powerSource: String(
+          data.property?.features?.find((f) => f.id === "energy")?.value ?? ""
+        ),
+        cooling: data.property.building.cooling ?? "",
+        type: String(
+          data.property?.features?.find((f) => f.id === "propertyType")
+            ?.value ?? ""
+        ),
+        size: data.property.building.interior_size,
+        amenities: data.property.amenities
+          ?.map((item) => item.value)
+          .join(", "),
 
+        fullAddress: [
+          data.location.address.line1,
+          data.location.address.line2,
+          data.location.address.city,
+          data.location.address.state,
+          data.location.address.country,
+        ]
+          .filter(Boolean)
+          .join(", "),
         shortAddress: [
           data.location.address.city,
           data.location.address.country,
@@ -68,9 +141,7 @@ export function transformAssetData(payload: AssetData): AssetUniversal {
 
       buildingInfo: {
         stories: Number(
-          data.property?.features
-            ?.find((f) => f.id === "stories")
-            ?.value ?? 0
+          data.property?.features?.find((f) => f.id === "stories")?.value ?? 0
         ),
 
         lotSize: data.property.building?.lot_size ?? 0,
@@ -153,7 +224,7 @@ export function transformAssetData(payload: AssetData): AssetUniversal {
       ],
 
       offering: {
-        offeringDate: "",
+        offeringDate: "2014-07-15T05:09:25-03:00",
         offeringIssuer: "",
         minInvestmentAmount: 0,
         maxInvestmentAmount: 0,
