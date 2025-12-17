@@ -32,6 +32,7 @@ import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider"
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { AnimatePresence, motion } from "framer-motion";
+import classNames from "clsx";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -245,13 +246,14 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           <AnimatePresence>
             {shouldExpand && (
               <motion.div
-                className="pt-[16px]"
                 variants={expandVariants}
                 initial="collapsed"
                 animate="expanded"
                 exit="collapsed"
               >
-                <div className={styles.mobileContent}>{expandedContent}</div>
+                <div className={classNames(styles.mobileContent, "pt-[16px]")}>
+                  {expandedContent}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
