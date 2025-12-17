@@ -1,0 +1,27 @@
+@import "../../styles/breakpoints.css";
+
+@media (--media-tablet-min) {
+  .detailsDescription {
+    margin-bottom: 12px;
+  }
+  .detailsTableItem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+  .detailsTableItem p {
+    line-height: 21px;
+  }
+  .detailsTableItem p:last-child {
+    max-width: 100%;
+    text-align: left;
+    font-weight: 400;
+  }
+  .detailsTableItem p:first-child {
+    font-weight: 600;
+  }
+}

@@ -43,7 +43,7 @@ export const PropertyFinanceTab = () => {
         <CustomExpander>
           <ClickableExpanderArea>
             <TableItem>
-              <ExpanderFaceContent>Monthly Costs</ExpanderFaceContent>
+              <ExpanderFaceContent><p>Monthly Costs</p></ExpanderFaceContent>
 
               <p className="flex">
                 -$
@@ -141,7 +141,7 @@ export const PropertyFinanceTab = () => {
               textVariant="bold"
               customBorder="border-none"
             >
-              <ExpanderFaceContent>Total Investment</ExpanderFaceContent>
+              <ExpanderFaceContent><p>Total Investment</p></ExpanderFaceContent>
 
               <p className="flex">
                 $<Money>{propertyFinancials.totalInvestment.total}</Money>
@@ -174,10 +174,10 @@ export const PropertyFinanceTab = () => {
           </ExpanderBodyContent>
         </CustomExpander>
         <TableItem textVariant="bold" customPadding={8} isLast>
-          <div className="flex items-center gap-x-1">
+          <p className="flex items-center gap-x-1">
             Expected Income
             {/* <InfoTooltip content={"Expected Income "} /> */}
-          </div>
+          </p>
           <p>{expectedIncome.income}%</p>
         </TableItem>
       </Table>
