@@ -1,5 +1,10 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import {generatePath, Navigate, useLoaderData, useNavigate} from "@remix-run/react";
+import {
+  generatePath,
+  Navigate,
+  useLoaderData,
+  useNavigate,
+} from "@remix-run/react";
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 import LikeIcon from "app/icons/like.svg?react";
 import ShareIcon from "app/icons/share.svg?react";
@@ -30,9 +35,9 @@ import { WhyInvest } from "~/routes/marketplace.$id/components/WhyInvest/WhyInve
 import classNames from "clsx";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { Icon } from "~/lib/atoms/Icon";
-import {ROUTES} from "~/consts/routes";
-import {AssetFlag} from "~/lib/atoms/AssetFlag/AssetFlag";
-import {ImageSlider} from "~/routes/marketplace.$id/components/ImageSlider/ImageSlider";
+import { ROUTES } from "~/consts/routes";
+import { AssetFlag } from "~/lib/atoms/AssetFlag/AssetFlag";
+import { ImageSlider } from "~/routes/marketplace.$id/components/ImageSlider/ImageSlider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -60,7 +65,7 @@ export default function PropertyDetails() {
     () => detectIfAssetIsSecondaryMarket(estateData),
     [estateData]
   );
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handlePriceToggle = () => {
     setIsPriceOpen((prev) => !prev);
@@ -107,10 +112,10 @@ export default function PropertyDetails() {
         <div className={styles.mobileHeadLineTabsWrapper}>
           <HeadLineTabs
             isSecondaryEstate={isSecondaryMarket}
-            houseType={estateData.assetDetails.propertyDetails.propertyType}
+            houseType=""
           />
           <AssetFlag
-            flagValue={estateData.assetDetails?.propertyDetails?.flag}
+            flagValue={estateData.assetDetails?.propertyDetails?.tags[0]}
           />
         </div>
         <ImageSlider
@@ -187,16 +192,18 @@ const HeadLineTabs: FC<{ isSecondaryEstate: boolean; houseType: string }> = ({
 }) => {
   return (
     <section className="flex items-center gap-x-2 text-body-xs font-medium">
-      <div
-        className={clsx(
-          "py-1 px-2 rounded font-medium capitalize",
-          isSecondaryEstate
-            ? "bg-[#F6AFAFBF] text-red-950"
-            : "text-yellow-950 bg-[#FFD38FBF]"
-        )}
-      >
-        {houseType}
-      </div>
+      {houseType && (
+        <div
+          className={clsx(
+            "py-1 px-2 rounded font-medium capitalize",
+            isSecondaryEstate
+              ? "bg-[#F6AFAFBF] text-red-950"
+              : "text-yellow-950 bg-[#FFD38FBF]"
+          )}
+        >
+          {houseType}
+        </div>
+      )}
 
       <EstateHeadlineTab isSecondaryEstate={isSecondaryEstate} />
     </section>

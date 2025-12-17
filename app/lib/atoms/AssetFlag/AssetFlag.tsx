@@ -11,9 +11,9 @@ export function AssetFlag({ flagValue }: { flagValue: string }) {
   if (!flag) return null;
 
   return (
-    <div className={classNames(styles.flag, { [styles[flag.value]]: true })}>
+    <div className={classNames(styles.flag, { [styles[flag.className]]: true })}>
       {flag.icon && <Icon icon={flag.icon} />}
-      <Text size="smallBody" weight="semibold">
+      <Text size="smallBody" weight="medium">
         {flag.name}
         {flag.image && ` ${flag.image}`}
       </Text>

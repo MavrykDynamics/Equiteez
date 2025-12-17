@@ -59,6 +59,7 @@ export function transformAssetData(payload: AssetData): AssetUniversal {
       },
 
       propertyDetails: {
+        tags: data.identity.tags,
         location: data.location.address.state,
         description: data.identity.description ?? "",
         propertyType: String(

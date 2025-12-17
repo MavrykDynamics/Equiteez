@@ -52,11 +52,6 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
         )}
       >
         <div className="flex items-center gap-x-2">
-          {isFutureAsset && (
-            <HeadlineTabBadge className="bg-[#FFA726] text-[#492C00]">
-              Coming Soon
-            </HeadlineTabBadge>
-          )}
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
           <AssetFlag flagValue={flag} />
         </div>

@@ -48,6 +48,7 @@ export interface AssetUniversal {
     };
 
     propertyDetails: {
+      tags: string[];
       description: string;
       propertyType: string;
       fullAddress?: string;
