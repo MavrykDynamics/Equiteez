@@ -133,31 +133,25 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const expandedContent = (
     <>
       <div className="text-content body flex justify-between mb-[8px]">
-        <Text className="flex items-center gap-1">
+        <Text size="smallBody" className="flex items-center gap-1">
           Annual Return
-          <InfoTooltip
-            className="w-4 h-4 lg:w-6 lg:h-6"
-            content={"Annual Return"}
-          />
+          <InfoTooltip className="w-4 h-4" content={"Annual Return"} />
         </Text>
         <Text weight="semibold">
           {estate.assetDetails.priceDetails.annualReturn}%
         </Text>
       </div>
       <div className="text-content body flex justify-between mb-[8px]">
-        <Text className="flex items-center gap-1">
+        <Text size="smallBody" className="flex items-center gap-1">
           Rental Yield
-          <InfoTooltip
-            className="w-4 h-4 lg:w-6 lg:h-6"
-            content={"Rental Yield"}
-          />
+          <InfoTooltip className="w-4 h-4" content={"Rental Yield"} />
         </Text>
         <Text weight="semibold">
           {estate.assetDetails.priceDetails.rentalYield}%
         </Text>
       </div>
       <div className="text-content body flex justify-between">
-        <Text>Investors</Text>
+        <Text size="smallBody">Investors</Text>
         <Text weight="semibold">
           {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
         </Text>
@@ -181,48 +175,88 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
   return (
     <section className="self-start">
-      <Table className="bg-white">
-        <div className="text-content text-card-headline flex justify-between mb-[16px]">
-          <Text size="largeBody" weight="semibold">
-            Current Price
-          </Text>
-          <Text size="largeBody" weight="semibold">
-            $<Money fiat>{currentPrice}</Money>
-          </Text>
-        </div>
+      <div className={styles.desktopContent}>
+        <Table className="bg-white">
+          <div className="text-content text-card-headline flex justify-between mb-[16px]">
+            <Text weight="semibold">Current Price</Text>
+            <Text size="largeBody" weight="semibold">
+              $<Money fiat>{currentPrice}</Money>
+            </Text>
+          </div>
 
-        <div className={styles.desktopContent}>{expandedContent}</div>
-        <AnimatePresence>
-          {shouldExpand && (
-            <motion.div
-              variants={expandVariants}
-              initial="collapsed"
-              animate="expanded"
-              exit="collapsed"
-            >
-              <div className={styles.mobileContent}>{expandedContent}</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <div>
-          {!validBaseTokens[estate.token_address] ? (
-            <Button className="w-full" disabled>
-              Coming Soon
-            </Button>
-          ) : (
-            <div className="grid gap-3 grid-cols-2 ">
-              <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
-              <Button
-                variant="red"
-                className="text-white"
-                onClick={handleOpen.bind(null, SELL)}
-              >
-                Sell
+          <div>{expandedContent}</div>
+          <div>
+            {!validBaseTokens[estate.token_address] ? (
+              <Button className="w-full" disabled>
+                Coming Soon
               </Button>
+            ) : (
+              <div className="grid gap-3 grid-cols-2 ">
+                <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
+                <Button
+                  variant="red"
+                  className="text-white"
+                  onClick={handleOpen.bind(null, SELL)}
+                >
+                  Sell
+                </Button>
+              </div>
+            )}
+          </div>
+        </Table>
+      </div>
+
+      <div className={styles.mobileContent}>
+        <div className={styles.mobileWrapper}>
+          <div className={styles.mobilePriceBlock}>
+            <div className="flex flex-col">
+              <Text size="smallBody" color="lightSand">
+                Current Price
+              </Text>
+              <Text size="largeBody" weight="semibold">
+                $<Money fiat>{currentPrice}</Money>
+              </Text>
             </div>
-          )}
+
+            <div className="flex items-center gap-[4px]">
+              {!validBaseTokens[estate.token_address] ? (
+                <Button className="w-full max-w-[200px]" disabled>
+                  Coming Soon
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    className="w-[105px]"
+                    onClick={handleOpen.bind(null, BUY)}
+                  >
+                    Buy
+                  </Button>
+                  <Button
+                    variant="red"
+                    className="text-white w-[105px]"
+                    onClick={handleOpen.bind(null, SELL)}
+                  >
+                    Sell
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          <AnimatePresence>
+            {shouldExpand && (
+              <motion.div
+                className="pt-[16px]"
+                variants={expandVariants}
+                initial="collapsed"
+                animate="expanded"
+                exit="collapsed"
+              >
+                <div className={styles.mobileContent}>{expandedContent}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </Table>
+      </div>
 
       <PopupWithIcon
         isOpen={isOpen}
