@@ -63,7 +63,7 @@
 
     @media (--media-phone) {
       right: var(--space-6);
-      bottom: var(--space-4);
+      bottom: 42px;
     }
   }
 }
