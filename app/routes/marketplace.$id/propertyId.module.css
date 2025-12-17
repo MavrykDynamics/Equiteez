@@ -40,7 +40,6 @@
 .imageSlider {
   display: none;
   position: relative;
-  margin-bottom: 24px;
 
   & .mobileHeadLineTabsWrapper {
     position: absolute;

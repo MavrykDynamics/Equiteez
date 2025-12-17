@@ -67,6 +67,7 @@ export const ImageSlider: FC<ImageSliderPropsType> = ({
           </span>
         </div>
       )}
+      <div className={styles.sliderAfterBlock} />
     </div>
   );
 };

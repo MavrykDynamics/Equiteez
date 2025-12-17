@@ -38,6 +38,7 @@ import { Icon } from "~/lib/atoms/Icon";
 import { ROUTES } from "~/consts/routes";
 import { AssetFlag } from "~/lib/atoms/AssetFlag/AssetFlag";
 import { ImageSlider } from "~/routes/marketplace.$id/components/ImageSlider/ImageSlider";
+import { Container } from "~/lib/atoms/Container/Container";
 
 export const meta: MetaFunction = () => {
   return [
@@ -76,44 +77,43 @@ export default function PropertyDetails() {
   if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
-    <PageLayout className={styles.mainWrapper}>
-      <div className={styles.backLinkWrapper}>
-        <LinkWithIcon
-          iconPosition="start"
-          CustomIcon={ArrowLeftIcon}
-          to="/marketplace"
-          variant="content"
-          className="underline"
-        >
-          <span className={styles.backLinkText}>Back to Properties</span>
-        </LinkWithIcon>
-        <div className={styles.tabletOptions}>
-          <Options />
+    <PageLayout includeContainer={false} className={styles.mainWrapper}>
+      <Container>
+        <div className={styles.backLinkWrapper}>
+          <LinkWithIcon
+            iconPosition="start"
+            CustomIcon={ArrowLeftIcon}
+            to="/marketplace"
+            variant="content"
+            className="underline"
+          >
+            <span className={styles.backLinkText}>Back to Properties</span>
+          </LinkWithIcon>
+          <div className={styles.tabletOptions}>
+            <Options />
+          </div>
         </div>
-      </div>
-      <div className={classNames("mb-6", styles.desktopTitleBlock)}>
-        <div className="flex items-center gap-x-3">
-          <h3 className="text-content text-section-headline">
-            {estateData.name}
-          </h3>
+        <div className={classNames("mb-6", styles.desktopTitleBlock)}>
+          <div className="flex items-center gap-x-3">
+            <h3 className="text-content text-section-headline">
+              {estateData.name}
+            </h3>
 
-          <HeadLineTabs
-            isSecondaryEstate={isSecondaryMarket}
-            houseType={estateData.assetDetails.propertyDetails.propertyType}
-          />
-          <Options />
+            <HeadLineTabs
+              isSecondaryEstate={isSecondaryMarket}
+              houseType={estateData.assetDetails.propertyDetails.propertyType}
+            />
+            <Options />
+          </div>
+          <p className="text-body text-content">
+            {estateData.assetDetails.propertyDetails.shortAddress ??
+              estateData.assetDetails.propertyDetails.fullAddress}
+          </p>
         </div>
-        <p className="text-body text-content">
-          {estateData.assetDetails.propertyDetails.shortAddress ??
-            estateData.assetDetails.propertyDetails.fullAddress}
-        </p>
-      </div>
+      </Container>
       <div className={styles.imageSlider}>
         <div className={styles.mobileHeadLineTabsWrapper}>
-          <HeadLineTabs
-            isSecondaryEstate={isSecondaryMarket}
-            houseType=""
-          />
+          <HeadLineTabs isSecondaryEstate={isSecondaryMarket} houseType="" />
           <AssetFlag
             flagValue={estateData.assetDetails?.propertyDetails?.tags[0]}
           />
@@ -133,54 +133,56 @@ export default function PropertyDetails() {
           alt="Property"
         />
       </div>
-      <Gallery
-        mainImgsrc={estateData.assetDetails.previewImage}
-        thumbs={estateData.assetDetails.assetImages}
-        propertyId={estateData.assetDetails.blockchain[0].identifier}
-      />
-      <section className={styles.detailsSection}>
-        <div className={styles.detailsContent}>
-          <div className={styles.tabletTitleBlock}>
-            <div className="flex items-center gap-x-3">
-              <Text
-                size="largeBody"
-                weight="semibold"
-                className={styles.tabletTitleBlockTitle}
-              >
-                {estateData.name}
+      <Container>
+        <Gallery
+          mainImgsrc={estateData.assetDetails.previewImage}
+          thumbs={estateData.assetDetails.assetImages}
+          propertyId={estateData.assetDetails.blockchain[0].identifier}
+        />
+        <section className={styles.detailsSection}>
+          <div className={styles.detailsContent}>
+            <div className={styles.tabletTitleBlock}>
+              <div className="flex items-center gap-x-3">
+                <Text
+                  size="largeBody"
+                  weight="semibold"
+                  className={styles.tabletTitleBlockTitle}
+                >
+                  {estateData.name}
+                </Text>
+              </div>
+              <Text size="smallBody">
+                {estateData.assetDetails.propertyDetails.shortAddress ??
+                  estateData.assetDetails.propertyDetails.fullAddress}
               </Text>
+              <Divider className="my-6 lg:my-8" />
             </div>
-            <Text size="smallBody">
-              {estateData.assetDetails.propertyDetails.shortAddress ??
-                estateData.assetDetails.propertyDetails.fullAddress}
-            </Text>
+            <WhyInvest />
             <Divider className="my-6 lg:my-8" />
+            <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryMarket} />
           </div>
-          <WhyInvest />
-          <Divider className="my-6 lg:my-8" />
-          <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryMarket} />
-        </div>
-        <div className={styles.asidePrice}>
-          <button
-            className={styles.openPriceButton}
-            aria-label="Open price section"
-            data-open={isPriceOpen}
-            onClick={handlePriceToggle}
-          >
-            <Icon icon="chevron-down" className={styles.arrowIcon} />
-          </button>
-          <PriceSection
-            shouldExpand={isPriceOpen}
-            isSecondaryEstate={isSecondaryMarket}
-            activeEstate={estateData}
-          />
-        </div>
-      </section>
-      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
-      <SimilarProperties />
-      <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
-      <FAQSection data={homeFAQ} />
-      <Spacer className="xl:h-[200px] h-[104px] md:h-[100px]" />
+          <div className={styles.asidePrice}>
+            <button
+              className={styles.openPriceButton}
+              aria-label="Open price section"
+              data-open={isPriceOpen}
+              onClick={handlePriceToggle}
+            >
+              <Icon icon="chevron-down" className={styles.arrowIcon} />
+            </button>
+            <PriceSection
+              shouldExpand={isPriceOpen}
+              isSecondaryEstate={isSecondaryMarket}
+              activeEstate={estateData}
+            />
+          </div>
+        </section>
+        <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+        <SimilarProperties />
+        <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
+        <FAQSection data={homeFAQ} />
+        <Spacer className="xl:h-[200px] h-[104px] md:h-[100px]" />
+      </Container>
     </PageLayout>
   );
 }
