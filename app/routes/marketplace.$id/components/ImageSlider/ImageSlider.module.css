@@ -69,10 +69,10 @@
 }
 .sliderAfterBlock {
   position: absolute;
-  bottom: -1px;
+  bottom: -26px;
   left: 0;
   right: 0;
-  height: 25px;
+  height: 50px;
   border-top-right-radius: 24px;
   border-top-left-radius: 24px;
   background: var(--color-sand-50);

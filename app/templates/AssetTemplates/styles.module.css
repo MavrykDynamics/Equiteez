@@ -16,12 +16,12 @@
   .detailsTableItem p {
     line-height: 21px;
   }
-  .detailsTableItem p:last-child {
+  section .detailsTableItem p:last-child {
     max-width: 100%;
     text-align: left;
     font-weight: 400;
   }
-  .detailsTableItem p:first-child {
+  section .detailsTableItem p:first-child {
     font-weight: 600;
   }
 }
