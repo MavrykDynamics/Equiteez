@@ -3,6 +3,7 @@ import { FC } from "react";
 
 import styles from "./eSnakeBlock.module.css";
 import clsx from "clsx";
+import EquiteezLogo from '~/icons/equiteezLogo.svg?react';
 
 const options = [0, 25, 50, 75, 100];
 
@@ -55,7 +56,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
             <span
               role="presentation"
               key={option}
-              className="cursor-pointer"
+              className="cursor-pointer relative flex items-center"
               onClick={() => handleOptionClick(option)}
             >
               <div
@@ -65,6 +66,7 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
                   sizeClassnameValue
                 )}
               />
+              {selectedOption === option && <span className="absolute"><EquiteezLogo /></span>}
             </span>
           ))}
         </div>

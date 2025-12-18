@@ -255,9 +255,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             />
 
             <FeesCard
-              pricePerToken={tokenPrice}
               txnFees={0}
-              totalFee={estFee}
+              //TODO add totalAmount
+              totalAmount={0}
               networkfee={0}
             />
 

@@ -246,9 +246,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             </div>
 
             <FeesCard
-              pricePerToken={marketTokenPrice}
               txnFees={0}
-              totalFee={estFee}
+              //TODO add totalAmount
+              totalAmount={0}
               networkfee={0}
             />
 
