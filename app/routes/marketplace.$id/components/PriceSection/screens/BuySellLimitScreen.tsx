@@ -26,6 +26,8 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
+import Money from "~/lib/atoms/Money";
+import { AssetView } from "~/templates/BalanceInput/AssetView";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -123,7 +125,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       amount: limitPrice,
       selectedAssetSlug: orderbookTokenPair[slug],
       selectedAssetMetadata: stableCoinMetadata,
-      label: "Price",
+      label: "I Want To Allocate",
     };
   }, [orderbookTokenPair, limitPrice, slug, stableCoinMetadata]);
 
@@ -132,7 +134,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       amount,
       selectedAssetSlug: slug,
       selectedAssetMetadata: selectedAssetMetadata,
-      label: "Amount",
+      label: "To Buy",
     };
   }, [selectedAssetMetadata, slug, amount]);
 
@@ -209,6 +211,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onPrev={() => ref1.current?.focus()}
               onChange={handleOutputChange}
               amountInputDisabled={false}
+              additionalBottomRightBlock={
+                <div className="text-xs text-sand-600 font-semibold">
+                  Est. Received
+                </div>
+              }
               errorCaption={
                 hasSellTokensBalanceError
                   ? "The amount entered exceeds your available balance."
@@ -234,8 +241,19 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 ref={ref3}
                 onPrev={() => ref2.current?.focus()}
                 amountInputDisabled
-                label="Total"
                 amount={balanceTotal}
+                additionalTopRightBlock=" "
+                label={
+                  <div className="flex items-center gap-[4px] text-xs text-sand-600">
+                    Take Profit when{" "}
+                    <AssetView selectedAssetSlug={slug} isSmallView />
+                  </div>
+                }
+                additionalBottomLeftBlock={
+                  <div className="text-xs text-sand-600">
+                    Market <span className="font-semibold underline">$45.00</span>
+                  </div>
+                }
                 selectedAssetSlug={orderbookTokenPair[slug]}
                 selectedAssetMetadata={stableCoinMetadata}
                 balanceTotal={balanceTotal}
