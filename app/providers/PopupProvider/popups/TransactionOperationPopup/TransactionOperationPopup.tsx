@@ -3,14 +3,17 @@ import { DefaultPopupProps } from "../../popup.provider.types";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 
+import styles from "./transactionOperation.module.css";
+import clsx from "clsx";
+
 export type TransactionOperationPopupProps = {
-  icon: React.ReactNode | null;
+  subTitle: string | React.ReactNode | null;
   title: string | React.ReactNode | null;
   body: string | React.ReactNode | null;
 } & DefaultPopupProps;
 
 export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
-  icon,
+  subTitle,
   title,
   body,
   isOpen,
@@ -22,21 +25,20 @@ export const TransactionOperationPopup: FC<TransactionOperationPopupProps> = ({
       onRequestClose={onRequestClose}
       contentPosition={"center"}
       overlayClassName="z-[9999]"
-      className={"w-[617px] max-h-screen px-11 py-16 z-100 relative"}
+      className={styles.popup}
     >
-      <button className="absolute top-8 right-8 z-10">
+      <button className="absolute top-4 right-4 md:top-11 md:right-11 z-10">
         <CloseIcon
-          className="w-6 h-6 cursor-pointer relative text-content stroke-current"
+          className="w-6 h-6 cursor-pointer relative text-sand-900 stroke-current"
           onClick={onRequestClose}
         />
       </button>
       <div className="flex flex-col">
-        <div className="mx-auto inline-block">{icon}</div>
-
-        <div className="inline-block mx-auto mt-6 mb-3 text-content text-xl font-semibold">
+        <div className={clsx("mb-2", styles.subTitle)}>{subTitle}</div>
+        <div className={clsx("block mx-auto mb-6 md:mb-8", styles.title)}>
           {title}
         </div>
-        <p className="text-body text-content text-center">{body}</p>
+        <div className="text-sand-900">{body}</div>
       </div>
     </CustomPopup>
   );
