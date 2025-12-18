@@ -26,6 +26,7 @@ import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 
 import {
   ContractActionPopupProps,
+  ContractActionToastProps,
   useContractAction,
 } from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
@@ -35,7 +36,6 @@ import { ProgresBar } from "../PrimaryPriceBlock";
 import clsx from "clsx";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import Money from "~/lib/atoms/Money";
-import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -224,28 +224,52 @@ export const PopupContent: FC<{
 
   // actual contract calls and their handlers ---------------
 
-  // Market buy | sell
-  const memoizedBuyPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
-    [activeMarket?.name]
+  const memoizedPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "inProgressRwaAd", props: {} }),
+    []
   );
 
-  const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
-    [activeMarket?.name]
-  );
+  const memoizedToastProps: ContractActionToastProps = useMemo(() => {
+    const action = orderType === BUY ? "bought" : "sold";
+    return {
+      success: {
+        title: `${activeMarket?.symbol} ${orderType === BUY ? "Buy" : "Sell"}`,
+        message: `Successfully ${action} ${activeMarket?.symbol}`,
+      },
+    };
+  }, [orderType, activeMarket?.symbol]);
 
   const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookBuy,
+      marketBuyProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
-    useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
+    useContractAction(
+      orderbookSell,
+      marketSellProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
-    useContractAction(orderbookBuy, limitBuyProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookBuy,
+      limitBuyProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
-    useContractAction(orderbookSell, limitSellProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookSell,
+      limitSellProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   // prop action to pass
   const buySellActionCb = useMemo(() => {

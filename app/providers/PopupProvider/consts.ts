@@ -1,28 +1,14 @@
-import {
-  popupOperationError,
-  popupRwaBuyOperationSuccess,
-  popupRwaSellOperationSuccess,
-} from "~/contracts/templates/operationPopupData";
+import { popupOperationInProgress } from "~/contracts/templates/operationPopupData";
 import { PopupState } from "./popup.provider.types";
 
 export const POPUP_KEYS = {
-  txRwaBuyOperation: "txRwaBuyOperation",
-  txRwaSellOperation: "txRwaSellOperation",
+  inProgressRwaAd: "inProgressRwaAd",
 };
 
 export const DEFAULT_POPUPS_STATE: PopupState = {
-  txRwaBuyOperation: {
+  inProgressRwaAd: {
     show: false,
     props: {
-      icon: null,
-      title: null,
-      body: null,
-    },
-  },
-  txRwaSellOperation: {
-    show: false,
-    props: {
-      icon: null,
       title: null,
       body: null,
     },
@@ -30,12 +16,5 @@ export const DEFAULT_POPUPS_STATE: PopupState = {
 };
 
 export const txTemplates = {
-  txRwaBuyOperation: {
-    success: popupRwaBuyOperationSuccess,
-    error: popupOperationError,
-  },
-  txRwaSellOperation: {
-    success: popupRwaSellOperationSuccess,
-    error: popupOperationError,
-  },
+  inProgressRwaAd: popupOperationInProgress,
 };
