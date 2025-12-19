@@ -477,6 +477,7 @@ export const PopupContent: FC<{
             ) : (
               <BuySellLimitScreen
                 limitPrice={limitPrice}
+                marketTokenPrice={tokenPrice}
                 setLimitPrice={setLimitPrice}
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}

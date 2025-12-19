@@ -27,12 +27,15 @@ import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
 import { AssetView } from "~/templates/BalanceInput/AssetView";
+import { PercentBlock } from "~/routes/marketplace.$id/components/PriceSection/components/PercentBlock/PercentBlock";
+import Money from "~/lib/atoms/Money";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
+  marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
@@ -49,6 +52,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   limitPrice,
   setAmount,
   setLimitPrice,
+  marketTokenPrice,
 }) => {
   const { token_address, slug } = estate;
   const { orderbookTokenPair, orderbookStorages } = useDexContext();
@@ -66,15 +70,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const marketTokenPrice = useMemo(
-    () =>
-      atomsToTokens(
-        orderbookStorages[slug]?.lowestSellPrice,
-        selectedAssetMetadata.decimals
-      ),
-    [orderbookStorages, slug, selectedAssetMetadata.decimals]
-  );
 
   const tokenPrice = useMemo(
     () => limitPrice || new BigNumber(0),
@@ -121,21 +116,41 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const input1Props = useMemo(() => {
     return {
-      amount: limitPrice,
-      selectedAssetSlug: orderbookTokenPair[slug],
-      selectedAssetMetadata: stableCoinMetadata,
+      amount: isBuyAction ? limitPrice : amount,
+      selectedAssetSlug: isBuyAction ? orderbookTokenPair[slug] : slug,
+      selectedAssetMetadata: isBuyAction
+        ? stableCoinMetadata
+        : selectedAssetMetadata,
       label: "I Want To Allocate",
     };
-  }, [orderbookTokenPair, limitPrice, slug, stableCoinMetadata]);
+  }, [
+    isBuyAction,
+    limitPrice,
+    amount,
+    orderbookTokenPair,
+    slug,
+    stableCoinMetadata,
+    selectedAssetMetadata,
+  ]);
 
   const input2Props = useMemo(() => {
     return {
-      amount,
-      selectedAssetSlug: slug,
-      selectedAssetMetadata: selectedAssetMetadata,
+      amount: isBuyAction ? amount : limitPrice,
+      selectedAssetSlug: isBuyAction ? slug : orderbookTokenPair[slug],
+      selectedAssetMetadata: isBuyAction
+        ? selectedAssetMetadata
+        : stableCoinMetadata,
       label: "To Buy",
     };
-  }, [selectedAssetMetadata, slug, amount]);
+  }, [
+    isBuyAction,
+    amount,
+    limitPrice,
+    slug,
+    orderbookTokenPair,
+    selectedAssetMetadata,
+    stableCoinMetadata,
+  ]);
 
   const balanceTotal = total;
 
@@ -190,7 +205,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             <BalanceInputWithTotal
               ref={ref1}
               onNext={() => ref2.current?.focus()}
-              onChange={(data) => setLimitPrice(data)}
+              onChange={
+                isBuyAction ? (data) => setLimitPrice(data) : handleOutputChange
+              }
               amountInputDisabled={false}
               errorCaption={
                 hasTotalError
@@ -201,14 +218,16 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata?.decimals}
               cryptoDecimals={stableCoinMetadata?.decimals}
-              cryptoValue={usdBalance}
+              cryptoValue={isBuyAction ? usdBalance : tokenBalance}
             />
 
             <BalanceInputWithTotal
               ref={ref2}
               onNext={() => ref3.current?.focus()}
               onPrev={() => ref1.current?.focus()}
-              onChange={handleOutputChange}
+              onChange={
+                isBuyAction ? handleOutputChange : (data) => setLimitPrice(data)
+              }
               amountInputDisabled={false}
               additionalBottomRightBlock={
                 <div className="text-xs text-sand-600 font-semibold">
@@ -224,7 +243,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata?.decimals}
               cryptoDecimals={stableCoinMetadata?.decimals}
-              cryptoValue={tokenBalance}
+              cryptoValue={isBuyAction ? tokenBalance : usdBalance}
             />
 
             {/* ------------------------------------------------------------------------------------------- */}
@@ -242,6 +261,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 amountInputDisabled
                 amount={balanceTotal}
                 additionalTopRightBlock=" "
+                additionalBottomRightBlock={<PercentBlock />}
                 label={
                   <div className="flex items-center gap-[4px] text-xs text-sand-600">
                     Take Profit when{" "}
@@ -251,7 +271,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 additionalBottomLeftBlock={
                   <div className="text-xs text-sand-600">
                     Market{" "}
-                    <span className="font-semibold underline">$45.00</span>
+                    <span className="font-semibold underline">
+                      $<Money>{marketTokenPrice}</Money>
+                    </span>
                   </div>
                 }
                 selectedAssetSlug={orderbookTokenPair[slug]}

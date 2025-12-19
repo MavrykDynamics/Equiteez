@@ -126,7 +126,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               onChange={handleAmountChange}
             />
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <div>{additionalBottomLeftBlock}</div>
 
             <div>{additionalBottomRightBlock}</div>
