@@ -40,7 +40,6 @@
 .imageSlider {
   display: none;
   position: relative;
-  margin-bottom: 24px;
 
   & .mobileHeadLineTabsWrapper {
     position: absolute;
@@ -64,7 +63,7 @@
     display: none;
   }
   .mainWrapper {
-    padding-bottom: 120px;
+    padding-bottom: 75px;
   }
 
   .tabletTitleBlockTitle {

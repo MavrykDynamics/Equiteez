@@ -14,7 +14,7 @@ import { Link } from "@remix-run/react";
 import { ROUTES } from "~/consts/routes";
 import styles from "./ConnectWallet.module.css";
 import classNames from "clsx";
-import {Icon} from "~/lib/atoms/Icon";
+import { Icon } from "~/lib/atoms/Icon";
 
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
@@ -28,13 +28,12 @@ export const ConnectWallet = () => {
             <ClickableDropdownArea>
               <DropdownFaceContent
                 className={clsx(
-                  "py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ",
+                  "p-[4px] pr-[8px] border-2 border-dark-green-50 rounded-4xl ",
                   "hover:bg-dark-green-opacity hover:border-dark-green-500",
                   "focus:border-dark-green-500 focus:bg-transparent",
                   "transition duration-250 ease-in-out",
-                  styles.dropdown,
+                  styles.dropdown
                 )}
-                iconClassName={styles.dropdownIcon}
               >
                 <div className="flex items-center">
                   <IdentIcon
@@ -47,7 +46,7 @@ export const ConnectWallet = () => {
                   <div
                     className={classNames(
                       styles.hashShortView,
-                      "text-caption-regular text-content"
+                      "text-caption-regular text-content font-semibold"
                     )}
                   >
                     <HashShortView hash={userAddress} />

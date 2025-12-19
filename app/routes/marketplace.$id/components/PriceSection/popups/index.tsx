@@ -50,6 +50,8 @@ import {
   calculateMarketBuy,
   calculateMarketSell,
 } from "~/providers/Dexprovider/utils";
+import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
+import { Text } from "~/lib/atoms/Typography/Text";
 
 export const spippageOptions = ["1", "3", "5", "custom"];
 
@@ -336,16 +338,14 @@ export const PopupContent: FC<{
       <div className="flex flex-col gap-1 items-start">
         <h3 className="text-card-headline text-sand-900">{estate.name}</h3>
 
-        <span
-          className={clsx(
-            "px-2 py-[2px] rounded-[4px] text-body-xs  text-center",
-            isSecondaryEstate
-              ? "text-sand-800 bg-[#F6AFAFBF]"
-              : "text-yellow-950 bg-[#FFD38FBF]"
-          )}
-        >
-          {estate.assetDetails.propertyDetails.propertyType}
-        </span>
+        <div className="flex items-center gap-[8px]">
+          <EstateHeadlineTab
+            isSecondaryEstate={estate.assetDetails.type === "Secondary Market"}
+          />
+          <Text size="smallBody" weight="semibold">
+            APY {estate.assetDetails.APY}%
+          </Text>
+        </div>
       </div>
     </div>
   );
@@ -390,7 +390,7 @@ export const PopupContent: FC<{
 
           {activetabId !== CONFIRM && isSecondaryEstate && (
             <>
-              <div className="mb-4">
+              <div className="mb-[8px]">
                 <TabSwitcherV2
                   className={styles.tabsWrapper}
                   tabs={marketTabs}

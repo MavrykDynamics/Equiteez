@@ -17,6 +17,7 @@ import { useMarketByParamIdentifier } from "../marketplace.$id/hooks/use-market-
 import { Link } from "@remix-run/react";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import DocBg from "~/a11y/DocBg";
+
 const GallerySlider = lazy(() => import("./components/GallerySlider"));
 
 export const meta: MetaFunction = () => {
@@ -57,7 +58,12 @@ export default function Index() {
     <section className={clsx("min-h-screen")}>
       <DocBg bgClassName={"bg-background"} />
       <div className="mx-auto max-w-[1440px]">
-        <header className="flex items-center justify-between px-11 pt-8">
+        <header
+          className={clsx(
+            "flex items-center justify-between px-11 pt-8",
+            styles.header
+          )}
+        >
           <Link
             to={`/marketplace/${estateData.assetDetails.blockchain[0].identifier}`}
           >
@@ -76,7 +82,12 @@ export default function Index() {
             </button>
           </section>
         </header>
-        <div className="max-w-[894px] mx-auto mt-16 mb-[120px]">
+        <div
+          className={clsx(
+            "max-w-[894px] mx-auto mt-16 mb-[120px]",
+            styles.galleryWrapper
+          )}
+        >
           <div className={clsx(styles.gallery, "cursor-pointer")}>
             {images.map((img, idx) => (
               <div

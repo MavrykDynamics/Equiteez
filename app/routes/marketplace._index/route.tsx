@@ -71,6 +71,8 @@ export default function Properties() {
                 es.decimals
               );
 
+              console.log("es", es);
+
               return (
                 <Link
                   to={generatePath(ROUTES.singleAsset, {
@@ -79,7 +81,7 @@ export default function Properties() {
                   key={es.token_address}
                 >
                   <ThumbCardSecondary
-                    flag={es.assetDetails?.propertyDetails?.flag}
+                    flag={es.assetDetails?.propertyDetails?.tags?.[0]}
                     imgSrc={es.assetDetails.previewImage}
                     title={es.name}
                     description={es.assetDetails.propertyDetails.propertyType}

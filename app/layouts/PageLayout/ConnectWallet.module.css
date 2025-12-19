@@ -1,15 +1,17 @@
 @import "../../styles/breakpoints.css";
 
-.accountIcon {
+.dropdown .accountIcon {
   display: none;
 }
 @media (--media-tablet-max) {
-  .accountIcon {
-    display: block;
-  }
-  .dropdownIcon,
   .hashShortView {
     display: none;
+  }
+  .dropdown svg {
+    display: none;
+  }
+  .dropdown .accountIcon {
+    display: block;
   }
   .dropdown {
     border: none;

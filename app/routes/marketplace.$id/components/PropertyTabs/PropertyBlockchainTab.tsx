@@ -36,7 +36,12 @@ export const PropertyBlockchainTab = () => {
           <TableHeader>{chainData.name} Blockchain</TableHeader>
           <TableItem>
             <p>Identifier</p>
-            <p>{chainData.identifier}</p>
+            <p>
+              <HashChip
+                hash={chainData.identifier}
+                className="underline font-semibold text-[14px] lg:text-[16px]"
+              />
+            </p>
           </TableItem>
           <TableItem>
             <p>Total Tokens</p>
@@ -53,7 +58,7 @@ export const PropertyBlockchainTab = () => {
             <p>
               <HashChip
                 hash={chainData.assetIssuer}
-                className="underline font-semibold"
+                className="underline font-semibold text-[14px] lg:text-[16px]"
               />
             </p>
           </TableItem>
@@ -61,7 +66,9 @@ export const PropertyBlockchainTab = () => {
           <CustomExpander>
             <ClickableExpanderArea>
               <TableItem>
-                <ExpanderFaceContent>Admin Addresses</ExpanderFaceContent>
+                <ExpanderFaceContent>
+                  <p>Admin Addresses</p>
+                </ExpanderFaceContent>
               </TableItem>
             </ClickableExpanderArea>
 
@@ -73,7 +80,7 @@ export const PropertyBlockchainTab = () => {
                     <p>
                       <HashChip
                         hash={item.address}
-                        className="underline font-semibold"
+                        className="underline font-semibold text-[14px] lg:text-[16px]"
                       />
                     </p>
                   </TableItem>
@@ -86,7 +93,7 @@ export const PropertyBlockchainTab = () => {
             <p>
               <HashChip
                 hash={activeMarket.token_address}
-                className="underline font-semibold"
+                className="underline font-semibold text-[14px] lg:text-[16px]"
               />
             </p>
           </TableItem>

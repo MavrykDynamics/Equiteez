@@ -1,20 +1,25 @@
 import BigNumber from "bignumber.js";
 import { isDefined } from "app/lib/utils";
-import { FC, forwardRef, useCallback, useState } from "react";
+import React, { FC, forwardRef, useCallback, useState } from "react";
 import { AssetField } from "~/lib/organisms/AssetField";
 import clsx from "clsx";
 import { toLocalFormat } from "~/lib/formaters/formaters";
 import { AssetDropdown } from "../AssetDropdown";
 import { AssetMetadataBase } from "~/lib/metadata";
 import { CryptoBalance } from "../Balance";
+import { Icon } from "~/lib/atoms/Icon";
+import { AssetView } from "~/templates/BalanceInput/AssetView";
 
 type BalanceInputProps = {
-  label?: string;
+  label?: React.ReactNode;
   onChange?: (value?: BigNumber) => void;
   amount: BigNumber | undefined;
   amountInputDisabled: boolean;
   selectedAssetSlug: string;
   children?: React.ReactNode;
+  additionalTopRightBlock?: React.ReactNode;
+  additionalBottomRightBlock?: React.ReactNode;
+  additionalBottomLeftBlock?: React.ReactNode;
   errorCaption?: string;
   selectedAssetMetadata: AssetMetadataBase;
   onNext?: () => void;
@@ -28,9 +33,11 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
       onChange,
       amount,
       amountInputDisabled,
-      children,
-      selectedAssetSlug,
+      additionalTopRightBlock,
+      additionalBottomLeftBlock,
+      additionalBottomRightBlock,
       errorCaption,
+      selectedAssetSlug,
       selectedAssetMetadata,
       onNext,
       onPrev,
@@ -90,12 +97,14 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               "border-transparent hover:border-dark-green-50"
           )}
         >
-          {label && (
+          <div className="flex justify-between items-center">
             <div className="text-left text-xs text-sand-600 leading-[18px]">
               {label}
             </div>
-          )}
-          <div className="overflow-y-hidden">
+            {additionalTopRightBlock}
+          </div>
+          <div className="flex justify-between overflow-y-hidden">
+            <AssetView selectedAssetSlug={selectedAssetSlug} />
             <AssetField
               ref={inputRef}
               onFocus={onFocus}
@@ -105,7 +114,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
                 ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                 .toString()}
               className={clsx(
-                "text-asset-input text-left text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden"
+                "text-asset-input text-right text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden"
               )}
               containerClassName="overflow-y-hidden"
               style={{ padding: 0, borderRadius: 0, height: 32 }}
@@ -114,13 +123,14 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               max={9999999999999}
               disabled={amountInputDisabled}
               assetDecimals={selectedAssetMetadata?.decimals ?? 6}
-              extraSection={
-                <AssetDropdown selectedAssetSlug={selectedAssetSlug} disabled />
-              }
               onChange={handleAmountChange}
             />
           </div>
-          {children && <div>{children}</div>}
+          <div className="flex justify-between">
+            <div>{additionalBottomLeftBlock}</div>
+
+            <div>{additionalBottomRightBlock}</div>
+          </div>
         </section>
         {errorCaption && (
           <div className="text-red-500 text-body-xs">{errorCaption}</div>
@@ -146,7 +156,10 @@ const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
     <>
       {" "}
       {!balanceTotal || balanceTotal?.isZero() ? (
-        "--"
+        <div className="flex items-center">
+          <span>$</span>
+          0.00
+        </div>
       ) : (
         <div className="flex items-center">
           <span>$</span>
@@ -168,26 +181,45 @@ export const BalanceInputWithTotal = forwardRef<
   const {
     balanceTotal,
     decimals,
+    selectedAssetMetadata,
     cryptoValue,
     cryptoDecimals,
+    additionalBottomLeftBlock,
+    additionalTopRightBlock,
+    additionalBottomRightBlock,
     ...balanceInputProps
   } = props;
 
   return (
     <>
-      <BalanceInput ref={inputRef} {...balanceInputProps}>
-        <div className="text-xs text-sand-600 flex items-center justify-between font-semibold">
-          <BalanceTotalBlock balanceTotal={balanceTotal} decimals={decimals} />
-
-          <div className="text-xs font-semibold">
-            Balance:&nbsp;
-            <CryptoBalance
-              value={new BigNumber(cryptoValue)}
-              cryptoDecimals={cryptoDecimals}
-            />
-          </div>
-        </div>
-      </BalanceInput>
+      <BalanceInput
+        ref={inputRef}
+        {...balanceInputProps}
+        selectedAssetMetadata={selectedAssetMetadata}
+        additionalTopRightBlock={
+          additionalTopRightBlock || (
+            <div className="text-xs text-sand-600 flex items-center gap-[4px] font-semibold">
+              <Icon icon="wallet-secondary" className="size-4" />
+              <CryptoBalance
+                value={new BigNumber(cryptoValue)}
+                cryptoDecimals={cryptoDecimals}
+              />
+              {selectedAssetMetadata.symbol}
+            </div>
+          )
+        }
+        additionalBottomLeftBlock={additionalBottomLeftBlock}
+        additionalBottomRightBlock={
+          additionalBottomRightBlock || (
+            <div className="text-xs text-sand-600 flex items-center justify-between font-semibold">
+              <BalanceTotalBlock
+                balanceTotal={balanceTotal}
+                decimals={decimals}
+              />
+            </div>
+          )
+        }
+      ></BalanceInput>
     </>
   );
 });

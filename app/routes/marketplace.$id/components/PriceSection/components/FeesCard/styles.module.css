@@ -1,0 +1,20 @@
+.openPriceButton {
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.openPriceButton .arrowIcon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+.openPriceButton[data-open="true"] .arrowIcon {
+  transform: rotate(0);
+}
+
+.arrowIcon {
+  stroke: var(--color-sand-900);
+  width: var(--size-4);
+  height: var(--size-4);
+}

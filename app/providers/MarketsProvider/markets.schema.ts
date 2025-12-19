@@ -6,6 +6,7 @@ export const AssetSchema = z.object({
     asset_name: z.string(),
     asset_type: z.string(),
     is_primary: z.boolean(),
+    tags: z.array(z.string()),
     slug: z.string(),
     web_url: z.string().url(),
     headline: z.string().optional(),

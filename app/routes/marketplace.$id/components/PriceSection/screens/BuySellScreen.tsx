@@ -26,6 +26,7 @@ import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
+import Money from "~/lib/atoms/Money";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -120,13 +121,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             amount,
             selectedAssetSlug: orderbookTokenPair[slug],
             selectedAssetMetadata: stableCoinMetadata,
-            label: "You Pay",
+            label: "Sell",
           }
         : {
             amount,
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
-            label: "You Sell",
+            label: "Buy",
           },
     [
       amount,
@@ -223,6 +224,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               cryptoValue={
                 new BigNumber(isBuyAction ? usdBalance : tokenBalance)
               }
+              additionalBottomLeftBlock={
+                isBuyAction ? undefined : (
+                  //TODO add market
+                  <div className="text-xs text-sand-600">
+                    Market $<Money>{45}</Money>
+                  </div>
+                )
+              }
               cryptoDecimals={
                 isBuyAction
                   ? stableCoinMetadata?.decimals
@@ -235,7 +244,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               onPrev={() => ref1.current?.focus()}
               onChange={handleOutputChange}
               amountInputDisabled={false}
-              label="You Receive"
+              additionalBottomLeftBlock={
+                isBuyAction ? (
+                  //TODO add price
+                  <div className="text-xs text-sand-600">
+                    Price $<Money>{2.23}</Money>
+                  </div>
+                ) : undefined
+              }
               {...input2Props}
               balanceTotal={balanceTotal}
               decimals={stableCoinMetadata?.decimals}
@@ -255,9 +271,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             />
 
             <FeesCard
-              pricePerToken={tokenPrice}
               txnFees={0}
-              totalFee={estFee}
+              //TODO add totalAmount
+              totalAmount={0}
               networkfee={0}
             />
 
