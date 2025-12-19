@@ -114,42 +114,46 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     [setAmount]
   );
 
-  const input1Props = useMemo(() => {
-    return {
-      amount: isBuyAction ? limitPrice : amount,
-      selectedAssetSlug: isBuyAction ? orderbookTokenPair[slug] : slug,
-      selectedAssetMetadata: isBuyAction
-        ? stableCoinMetadata
-        : selectedAssetMetadata,
-      label: "I Want To Allocate",
+  const { input1Props, input2Props } = useMemo(() => {
+    const buyProps = {
+      amount: limitPrice,
+      selectedAssetSlug: orderbookTokenPair[slug],
+      selectedAssetMetadata: stableCoinMetadata,
+      onChange: setLimitPrice,
+      cryptoValue: usdBalance,
+      errorCaption: hasTotalError
+        ? "The amount entered exceeds your available balance."
+        : undefined,
     };
-  }, [
-    isBuyAction,
-    limitPrice,
-    amount,
-    orderbookTokenPair,
-    slug,
-    stableCoinMetadata,
-    selectedAssetMetadata,
-  ]);
 
-  const input2Props = useMemo(() => {
-    return {
-      amount: isBuyAction ? amount : limitPrice,
-      selectedAssetSlug: isBuyAction ? slug : orderbookTokenPair[slug],
-      selectedAssetMetadata: isBuyAction
-        ? selectedAssetMetadata
-        : stableCoinMetadata,
-      label: "To Buy",
+    const sellProps = {
+      amount: amount,
+      selectedAssetSlug: slug,
+      selectedAssetMetadata: selectedAssetMetadata,
+      onChange: handleOutputChange,
+      cryptoValue: tokenBalance,
+      errorCaption: hasSellTokensBalanceError
+        ? "The amount entered exceeds your available balance."
+        : undefined,
     };
+
+    return isBuyAction
+      ? { input1Props: buyProps, input2Props: sellProps }
+      : { input1Props: sellProps, input2Props: buyProps };
   }, [
-    isBuyAction,
     amount,
+    handleOutputChange,
+    hasSellTokensBalanceError,
+    hasTotalError,
+    isBuyAction,
     limitPrice,
-    slug,
     orderbookTokenPair,
     selectedAssetMetadata,
+    setLimitPrice,
+    slug,
     stableCoinMetadata,
+    tokenBalance,
+    usdBalance,
   ]);
 
   const balanceTotal = total;
@@ -205,45 +209,29 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             <BalanceInputWithTotal
               ref={ref1}
               onNext={() => ref2.current?.focus()}
-              onChange={
-                isBuyAction ? (data) => setLimitPrice(data) : handleOutputChange
-              }
               amountInputDisabled={false}
-              errorCaption={
-                hasTotalError
-                  ? "The amount entered exceeds your available balance."
-                  : undefined
-              }
               {...input1Props}
+              label="I Want To Allocate"
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata?.decimals}
               cryptoDecimals={stableCoinMetadata?.decimals}
-              cryptoValue={isBuyAction ? usdBalance : tokenBalance}
             />
 
             <BalanceInputWithTotal
               ref={ref2}
               onNext={() => ref3.current?.focus()}
               onPrev={() => ref1.current?.focus()}
-              onChange={
-                isBuyAction ? handleOutputChange : (data) => setLimitPrice(data)
-              }
               amountInputDisabled={false}
               additionalBottomRightBlock={
                 <div className="text-xs text-sand-600 font-semibold">
                   Est. Received
                 </div>
               }
-              errorCaption={
-                hasSellTokensBalanceError
-                  ? "The amount entered exceeds your available balance."
-                  : undefined
-              }
               {...input2Props}
+              label="To Buy"
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata?.decimals}
               cryptoDecimals={stableCoinMetadata?.decimals}
-              cryptoValue={isBuyAction ? tokenBalance : usdBalance}
             />
 
             {/* ------------------------------------------------------------------------------------------- */}
