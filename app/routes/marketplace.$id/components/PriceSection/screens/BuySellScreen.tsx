@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 
 import * as gtag from "app/utils/gtags.client";
@@ -21,7 +21,6 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
@@ -194,6 +193,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const isBtnDisabled =
     hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
 
+  useEffect(() => {
+    if (selectedPercentage != null) {
+      const percentage = new BigNumber(selectedPercentage);
+      const newAmount = new BigNumber(isBuyAction ? usdBalance : tokenBalance)
+        .multipliedBy(percentage)
+        .dividedBy(100);
+      setAmount(newAmount);
+    }
+  }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -264,7 +273,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <FeesCard
               txnFees={0}
               totalAmount={(isBuyAction ? amount : total) ?? 0}
-              networkfee={0}
+              networkfee={new BigNumber(estFee)}
             />
 
             <ProjectionCard

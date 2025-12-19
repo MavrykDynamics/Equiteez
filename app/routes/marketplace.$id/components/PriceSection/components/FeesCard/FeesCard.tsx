@@ -3,7 +3,7 @@ import { FC, useCallback, useState } from "react";
 import Money from "~/lib/atoms/Money";
 import { AnimatePresence, motion } from "framer-motion";
 import styles from "./styles.module.css";
-import {Icon} from "~/lib/atoms/Icon";
+import { Icon } from "~/lib/atoms/Icon";
 
 const expandVariants = {
   expanded: {
@@ -90,10 +90,7 @@ export const FeesCard: FC<FeesCardProps> = ({
                 <div className="flex items-center justify-between">
                   <p className="text-sand-600">Network Fee</p>
                   <div className="text-sand-900 font-semibold">
-                    <Money tooltip={false} fiat>
-                      {networkfee}
-                    </Money>{" "}
-                    MVRK
+                    <Money tooltip={false}>{networkfee}</Money> MVRK
                   </div>
                 </div>
               </div>

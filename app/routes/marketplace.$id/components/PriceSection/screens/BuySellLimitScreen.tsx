@@ -26,7 +26,6 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
-import Money from "~/lib/atoms/Money";
 import { AssetView } from "~/templates/BalanceInput/AssetView";
 
 type BuySellLimitScreenProps = {
