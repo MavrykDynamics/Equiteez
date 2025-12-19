@@ -121,13 +121,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             amount,
             selectedAssetSlug: orderbookTokenPair[slug],
             selectedAssetMetadata: stableCoinMetadata,
-            label: "Sell",
           }
         : {
             amount,
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
-            label: "Buy",
           },
     [
       amount,
@@ -219,6 +217,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                   : undefined
               }
               {...input1Props}
+              label="Sell"
               balanceTotal={balanceTotal}
               decimals={stableCoinMetadata?.decimals}
               cryptoValue={
@@ -253,6 +252,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 ) : undefined
               }
               {...input2Props}
+              label="Buy"
               balanceTotal={balanceTotal}
               decimals={stableCoinMetadata?.decimals}
               cryptoValue={
