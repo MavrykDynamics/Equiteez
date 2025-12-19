@@ -470,6 +470,7 @@ export const PopupContent: FC<{
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
+                tokenPrice={tokenPrice}
                 slippagePercentage={slippagePercentage}
                 setSlippagePercentage={setSlippagePercentage}
               />

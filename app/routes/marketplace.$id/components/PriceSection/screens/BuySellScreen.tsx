@@ -34,6 +34,7 @@ type BuySellScreenProps = {
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
+  tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   slippagePercentage: string;
@@ -46,7 +47,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   toggleScreen,
   actionType,
   amount,
-  // total,
+  total,
+  tokenPrice,
   setAmount,
   slippagePercentage,
   // setSlippagePercentage,
@@ -67,15 +69,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const tokenPrice = useMemo(
-    () =>
-      atomsToTokens(
-        orderbookStorages[slug]?.lowestSellPrice,
-        selectedAssetMetadata.decimals
-      ),
-    [orderbookStorages, slug, selectedAssetMetadata.decimals]
-  );
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -226,9 +219,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               }
               additionalBottomLeftBlock={
                 isBuyAction ? undefined : (
-                  //TODO add market
                   <div className="text-xs text-sand-600">
-                    Market $<Money>{45}</Money>
+                    Market $<Money>{tokenPrice}</Money>
                   </div>
                 )
               }
@@ -246,9 +238,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               amountInputDisabled={false}
               additionalBottomLeftBlock={
                 isBuyAction ? (
-                  //TODO add price
                   <div className="text-xs text-sand-600">
-                    Price $<Money>{2.23}</Money>
+                    Price $<Money>{tokenPrice}</Money>
                   </div>
                 ) : undefined
               }
@@ -272,8 +263,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
             <FeesCard
               txnFees={0}
-              //TODO add totalAmount
-              totalAmount={0}
+              totalAmount={(isBuyAction ? amount : total) ?? 0}
               networkfee={0}
             />
 
