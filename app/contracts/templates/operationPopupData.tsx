@@ -1,49 +1,101 @@
-import { Link } from "@remix-run/react";
+import BigNumber from "bignumber.js";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
+import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 
-export const popupOperationError = () => ({
-  icon: <div className="mx-auto w-16 h-16 text-[52px] leading-[52px]">‼️</div>,
-  title: "Transaction Failed",
-  body: (
-    <span>
-      Please double check your balances and available tokens and try again. If
-      it fails again, please reach out to support{" "}
-      <Link to="/" className="underline">
-        here
-      </Link>
-      .
-    </span>
+import mvrkTokenSvg from "app/misc/mvrk-section.png";
+
+import styles from "./operationPopupData.module.css";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
+
+const withSeparator = (items: EstateType[]) => {
+  const [item1, item2] = items;
+
+  return [
+    {
+      id: "1",
+      title: item1.name,
+      imgSrc: item1.assetDetails.previewImage,
+      description: item1.assetType,
+      isSecondaryMarket: true,
+      pricePerToken: new BigNumber(
+        item1.assetDetails.financials.expectedIncome.tokenPrice
+      ),
+      height: "253px",
+      APY: item1.assetDetails.APY,
+    },
+    {
+      id: "2",
+      // TODO could be replaced with JSX section in the future
+      imgSrc: mvrkTokenSvg,
+    },
+    {
+      id: "3",
+      title: item2.name,
+      imgSrc: item2.assetDetails.previewImage,
+      description: item2.assetType,
+      isSecondaryMarket: true,
+      pricePerToken: new BigNumber(
+        item2.assetDetails.financials.expectedIncome.tokenPrice
+      ),
+      height: "253px",
+      APY: item2.assetDetails.APY,
+    },
+  ];
+};
+
+type popupOperationInProgressProps = {
+  rwas: EstateType[];
+};
+
+export const popupOperationInProgress = ({
+  rwas,
+}: popupOperationInProgressProps) => ({
+  subTitle: (
+    <div className="flex gap-1 justify-center items-baseline">
+      <div>while your transaction in progress </div>
+      <div className={styles["dots-loader"]}>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
   ),
-});
-
-export const popupRwaBuyOperationSuccess = (tokenName: string) => ({
-  icon: <div className="mx-auto w-16 h-16 text-[52px] leading-[52px]">🎉</div>,
-  title: "Congratulations!",
+  title: "Choose Your Next Investment ",
   body: (
-    <span>
-      You are now an investor in{" "}
-      <span className="font-semibold">{tokenName}</span>.<br /> You can view
-      your assets in your{" "}
-      <a
-        href="https://chromewebstore.google.com/detail/mavryk-wallet/cgddkajmbckbjbnondgfcbcojjjdnmji"
-        target="_blank"
-        rel="noreferrer"
-        className="underline text-blue-500 font-bold"
-      >
-        Mavryk Wallet
-      </a>
-      .
-    </span>
-  ),
-});
+    <div className="flex xl:flex-row flex-col gap-4 items-center w-full">
+      {withSeparator(rwas).map((asset) => {
+        if (asset.id === "2") {
+          return (
+            <div key={asset.id} className="max-w-[365px] w-full xl:w-[365px]">
+              <img
+                src={asset.imgSrc}
+                alt="asset card"
+                draggable={false}
+                className="w-full h-full"
+              />
+            </div>
+          );
+        }
 
-export const popupRwaSellOperationSuccess = (tokenName: string) => ({
-  icon: <div className="mx-auto w-16 h-16 text-[52px] leading-[52px]">✅</div>,
-  title: "Sale Completed!",
-  body: (
-    <span>
-      You have successfully sold your assets of{" "}
-      <span className="font-semibold">{tokenName}</span>.<br /> You can view
-      your funds in the dashboard.
-    </span>
+        return (
+          <CustomLink
+            to={"#"}
+            key={asset.id}
+            className="max-w-[365px] w-full xl:w-[365px]"
+          >
+            <ThumbCardSecondary
+              flag=""
+              imgSrc={asset.imgSrc}
+              title={asset.title ?? ""}
+              description={asset.description ?? ""}
+              isSecondaryMarket={asset.isSecondaryMarket || false}
+              APY={asset.APY ?? 0}
+              pricePerToken={asset.pricePerToken}
+              height={asset.height}
+            />
+          </CustomLink>
+        );
+      })}
+    </div>
   ),
 });

@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 
 import * as gtag from "app/utils/gtags.client";
@@ -21,7 +21,6 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
@@ -34,6 +33,7 @@ type BuySellScreenProps = {
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
+  tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   slippagePercentage: string;
@@ -46,7 +46,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   toggleScreen,
   actionType,
   amount,
-  // total,
+  total,
+  tokenPrice,
   setAmount,
   slippagePercentage,
   // setSlippagePercentage,
@@ -67,15 +68,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const tokenPrice = useMemo(
-    () =>
-      atomsToTokens(
-        orderbookStorages[slug]?.lowestSellPrice,
-        selectedAssetMetadata.decimals
-      ),
-    [orderbookStorages, slug, selectedAssetMetadata.decimals]
-  );
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -201,6 +193,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const isBtnDisabled =
     hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
 
+  useEffect(() => {
+    if (selectedPercentage != null) {
+      const percentage = new BigNumber(selectedPercentage);
+      const newAmount = new BigNumber(isBuyAction ? usdBalance : tokenBalance)
+        .multipliedBy(percentage)
+        .dividedBy(100);
+      setAmount(newAmount);
+    }
+  }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 ">
@@ -225,9 +227,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               }
               additionalBottomLeftBlock={
                 isBuyAction ? undefined : (
-                  //TODO add market
                   <div className="text-xs text-sand-600">
-                    Market $<Money>{45}</Money>
+                    Market $<Money>{tokenPrice}</Money>
                   </div>
                 )
               }
@@ -245,9 +246,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               amountInputDisabled={false}
               additionalBottomLeftBlock={
                 isBuyAction ? (
-                  //TODO add price
                   <div className="text-xs text-sand-600">
-                    Price $<Money>{2.23}</Money>
+                    Price $<Money>{tokenPrice}</Money>
                   </div>
                 ) : undefined
               }
@@ -272,9 +272,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
             <FeesCard
               txnFees={0}
-              //TODO add totalAmount
-              totalAmount={0}
-              networkfee={0}
+              totalAmount={(isBuyAction ? amount : total) ?? 0}
+              networkfee={new BigNumber(estFee)}
             />
 
             <ProjectionCard

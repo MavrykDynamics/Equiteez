@@ -26,6 +26,7 @@ import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 
 import {
   ContractActionPopupProps,
+  ContractActionToastProps,
   useContractAction,
 } from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
@@ -35,18 +36,20 @@ import { ProgresBar } from "../PrimaryPriceBlock";
 import clsx from "clsx";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import Money from "~/lib/atoms/Money";
-import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
 import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
+import {
+  calculateMarketBuy,
+  calculateMarketSell,
+} from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 
@@ -57,6 +60,9 @@ export const PopupContent: FC<{
   orderType: OrderType;
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
+  const { slug } = estate;
+  const { marketsArr } = useMarketsContext();
+
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const {
     pickers: { pickOrderbookContract, pickOrderbookContractQuoteToken },
@@ -80,21 +86,40 @@ export const PopupContent: FC<{
   // for limit market
   const [limitPrice, setLimitPrice] = useState<BigNumber | undefined>();
 
-  // derived
-  const { slug, decimals } = estate;
-  const tokenPrice = useMemo(
-    () =>
-      isMarketTypeMarket
-        ? atomsToTokens(orderbookStorages[slug]?.lowestSellPrice, decimals)
-        : limitPrice || new BigNumber(0),
-    [isMarketTypeMarket, orderbookStorages, slug, decimals, limitPrice]
-  );
-  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
-
   // metadata for selected asset
   const selectedAssetMetadata = useAssetMetadata(slug);
 
-  const qouteAssetMetadata = useAssetMetadata(orderbookTokenPair[slug]);
+  const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
+
+  // based on tab (buy|sell) token price may vary
+  const tokenPrice = useMemo(() => {
+    if (isMarketTypeMarket) {
+      const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
+
+      const buyPrice = calculateMarketBuy(
+        lowestSellPrice,
+        highestBuyPrice,
+        selectedAssetMetadata.decimals
+      );
+      const sellPrice = calculateMarketSell(
+        lowestSellPrice,
+        highestBuyPrice,
+        selectedAssetMetadata.decimals
+      );
+
+      return orderType === BUY ? buyPrice : sellPrice;
+    }
+
+    return limitPrice || new BigNumber(0);
+  }, [
+    isMarketTypeMarket,
+    limitPrice,
+    orderbookStorages,
+    slug,
+    orderType,
+    selectedAssetMetadata.decimals,
+  ]);
+  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -178,7 +203,7 @@ export const PopupContent: FC<{
       tokensAmount: amountB?.toNumber(),
       pricePerToken: limitPrice?.toNumber(),
       decimals: selectedAssetMetadata?.decimals,
-      quoteTokenDecimals: qouteAssetMetadata?.decimals,
+      quoteTokenDecimals: quoteAssetmetadata?.decimals,
     }),
     [
       amountB,
@@ -186,7 +211,7 @@ export const PopupContent: FC<{
       limitPrice,
       pickOrderbookContractQuoteToken,
       pickOrderbookContract,
-      qouteAssetMetadata?.decimals,
+      quoteAssetmetadata?.decimals,
       selectedAssetMetadata?.decimals,
     ]
   );
@@ -226,28 +251,52 @@ export const PopupContent: FC<{
 
   // actual contract calls and their handlers ---------------
 
-  // Market buy | sell
-  const memoizedBuyPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
-    [activeMarket?.name]
+  const memoizedPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "inProgressRwaAd", props: { rwas: marketsArr.slice(0, 2) } }),
+    [marketsArr]
   );
 
-  const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
-    [activeMarket?.name]
-  );
+  const memoizedToastProps: ContractActionToastProps = useMemo(() => {
+    const action = orderType === BUY ? "bought" : "sold";
+    return {
+      success: {
+        title: `${activeMarket?.symbol} ${orderType === BUY ? "Buy" : "Sell"}`,
+        message: `Successfully ${action} ${activeMarket?.symbol}`,
+      },
+    };
+  }, [orderType, activeMarket?.symbol]);
 
   const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookBuy,
+      marketBuyProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
-    useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
+    useContractAction(
+      orderbookSell,
+      marketSellProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
-    useContractAction(orderbookBuy, limitBuyProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookBuy,
+      limitBuyProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
-    useContractAction(orderbookSell, limitSellProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookSell,
+      limitSellProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   // prop action to pass
   const buySellActionCb = useMemo(() => {
@@ -421,6 +470,7 @@ export const PopupContent: FC<{
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
+                tokenPrice={tokenPrice}
                 slippagePercentage={slippagePercentage}
                 setSlippagePercentage={setSlippagePercentage}
               />

@@ -26,7 +26,6 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
-import Money from "~/lib/atoms/Money";
 import { AssetView } from "~/templates/BalanceInput/AssetView";
 
 type BuySellLimitScreenProps = {
@@ -251,7 +250,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 }
                 additionalBottomLeftBlock={
                   <div className="text-xs text-sand-600">
-                    Market <span className="font-semibold underline">$45.00</span>
+                    Market{" "}
+                    <span className="font-semibold underline">$45.00</span>
                   </div>
                 }
                 selectedAssetSlug={orderbookTokenPair[slug]}

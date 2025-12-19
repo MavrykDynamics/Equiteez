@@ -92,7 +92,6 @@ export const calculateEstFee = ({
 
   if (isFeeInTokens) {
     // Fee in base token
-    console.log(isFeeInTokens, "isFeeInTokens");
     const estFee = amount.times(totalFeeRate);
     return estFee.decimalPlaces(tokenDecimals, BigNumber.ROUND_DOWN).toString();
   } else {

@@ -66,17 +66,9 @@ export const PopupProvider: FC<PropsWithChildren> = ({ children }) => {
     <popupContext.Provider value={memoizedPopupVal}>
       {children}
       <TransactionOperationPopup
-        isOpen={popupsState.txRwaBuyOperation.show}
-        onRequestClose={() => hidePopup(POPUP_KEYS.txRwaBuyOperation)}
-        {...(popupsState.txRwaBuyOperation.props as Omit<
-          TransactionOperationPopupProps,
-          "isOpen"
-        >)}
-      />
-      <TransactionOperationPopup
-        isOpen={popupsState.txRwaSellOperation.show}
-        onRequestClose={() => hidePopup(POPUP_KEYS.txRwaSellOperation)}
-        {...(popupsState.txRwaSellOperation.props as Omit<
+        isOpen={popupsState.inProgressRwaAd.show}
+        onRequestClose={() => hidePopup(POPUP_KEYS.inProgressRwaAd)}
+        {...(popupsState.inProgressRwaAd.props as Omit<
           TransactionOperationPopupProps,
           "isOpen"
         >)}
