@@ -48,6 +48,7 @@ export default defineConfig({
       },
       workbox: {
         // caches your built client assets
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,woff2}"],
       },
       devOptions: {
