@@ -41,12 +41,14 @@ import {
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { useEffect } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
-import { MobileView } from "./providers/MobileView/MobileView";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const links: LinksFunction = () => [
+  { rel: "manifest", href: "/manifest.webmanifest" },
+  { rel: "icon", href: "/favicon.ico" },
+  { rel: "apple-touch-icon", href: "/logo-96.png" },
   { rel: "preload", as: "style", href: stylesheet },
   { rel: "stylesheet", href: stylesheet },
   { rel: "preload", as: "style", href: marqueeStylesheet },
