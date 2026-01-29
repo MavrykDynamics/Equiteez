@@ -217,9 +217,6 @@ export const PopupContent: FC<{
     }
   }, [activetabId, marketType, slippagePercentage]);
 
-  console.log(amountB?.toString(), "amountB");
-  console.log(limitPrice?.toString(), "limitPrice");
-
   useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
 

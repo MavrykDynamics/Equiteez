@@ -6,13 +6,11 @@ import clsx from "clsx";
 const PERCENT_REGEX = /^(?:50(?:\.0{0,2})?|[0-4]?\d(?:\.\d{0,2})?)$/;
 
 type PercentBlockProps = {
-  slippagePercentage: number;
   handleSlippageChange: (value: number) => void;
   isBuyAction: boolean;
 };
 
 export const PercentBlock: FC<PercentBlockProps> = ({
-  slippagePercentage,
   handleSlippageChange,
   isBuyAction,
 }) => {
@@ -27,6 +25,11 @@ export const PercentBlock: FC<PercentBlockProps> = ({
     }
   };
 
+  const handlePercentageClick = (percent: number) => {
+    handleSlippageChange(percent);
+    setCurrentPercent(percent);
+  };
+
   const symbol = isBuyAction ? "-" : "+";
 
   return (
@@ -34,11 +37,8 @@ export const PercentBlock: FC<PercentBlockProps> = ({
       {SLIPPAGE_OPTIONS.map((percent) => (
         <button
           key={percent}
-          onClick={() => handleSlippageChange(percent)}
-          className={clsx(
-            styles.percentButton,
-            percent === slippagePercentage && !currentPercent && styles.active
-          )}
+          onClick={() => handlePercentageClick(percent)}
+          className={clsx(styles.percentButton)}
         >
           {symbol}&nbsp;{percent}%
         </button>

@@ -265,7 +265,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 additionalBottomRightBlock={
                   <PercentBlock
                     isBuyAction={isBuyAction}
-                    slippagePercentage={slippagePercentage}
                     handleSlippageChange={handleSlippageChange}
                   />
                 }
