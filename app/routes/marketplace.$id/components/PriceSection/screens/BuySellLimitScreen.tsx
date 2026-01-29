@@ -21,7 +21,6 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
 import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
@@ -70,11 +69,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
   const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const tokenPrice = useMemo(
-    () => limitPrice || new BigNumber(0),
-    [limitPrice]
-  );
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -158,30 +152,30 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const balanceTotal = total;
 
-  const estFee = useMemo(() => {
-    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-      buyOrderFee: 0,
-      sellOrderFee: 0,
-    };
+  // const estFee = useMemo(() => {
+  //   const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+  //     buyOrderFee: 0,
+  //     sellOrderFee: 0,
+  //   };
 
-    const tokensAmount = amount || ZERO;
-    const fee = isBuyAction ? buyOrderFee : sellOrderFee;
+  //   const tokensAmount = amount || ZERO;
+  //   const fee = isBuyAction ? buyOrderFee : sellOrderFee;
 
-    return calculateEstFee({
-      amount: tokensAmount,
-      price: tokenPrice,
-      fee,
-      tokenDecimals: stableCoinMetadata?.decimals,
-      isFeeInTokens: isBuyAction,
-    });
-  }, [
-    amount,
-    isBuyAction,
-    orderbookStorages,
-    slug,
-    stableCoinMetadata?.decimals,
-    tokenPrice,
-  ]);
+  //   return calculateEstFee({
+  //     amount: tokensAmount,
+  //     price: tokenPrice,
+  //     fee,
+  //     tokenDecimals: stableCoinMetadata?.decimals,
+  //     isFeeInTokens: isBuyAction,
+  //   });
+  // }, [
+  //   amount,
+  //   isBuyAction,
+  //   orderbookStorages,
+  //   slug,
+  //   stableCoinMetadata?.decimals,
+  //   tokenPrice,
+  // ]);
 
   const isBtnDisabled =
     hasTotalError ||
@@ -193,13 +187,28 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   useEffect(() => {
     if (selectedPercentage != null) {
-      const percentage = new BigNumber(selectedPercentage);
-      const newAmount = new BigNumber(tokenBalance)
-        .multipliedBy(percentage)
-        .dividedBy(100);
-      setAmount(newAmount);
+      if (isBuyAction) {
+        const percentage = new BigNumber(selectedPercentage);
+        const newAmount = new BigNumber(usdBalance)
+          .multipliedBy(percentage)
+          .dividedBy(100);
+        setLimitPrice(newAmount);
+      } else {
+        const percentage = new BigNumber(selectedPercentage);
+        const newAmount = new BigNumber(tokenBalance)
+          .multipliedBy(percentage)
+          .dividedBy(100);
+        setAmount(newAmount);
+      }
     }
-  }, [selectedPercentage, setAmount, tokenBalance]);
+  }, [
+    isBuyAction,
+    selectedPercentage,
+    setAmount,
+    setLimitPrice,
+    tokenBalance,
+    usdBalance,
+  ]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -259,7 +268,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 additionalBottomLeftBlock={
                   <div className="text-xs text-sand-600">
                     Market{" "}
-                    <span className="font-semibold underline">
+                    <span>
                       $<Money>{marketTokenPrice}</Money>
                     </span>
                   </div>

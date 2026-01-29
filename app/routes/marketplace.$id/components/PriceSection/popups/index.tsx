@@ -33,7 +33,6 @@ import {
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
 import { ProgresBar } from "../PrimaryPriceBlock";
-import clsx from "clsx";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import Money from "~/lib/atoms/Money";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
@@ -93,32 +92,21 @@ export const PopupContent: FC<{
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
-    if (isMarketTypeMarket) {
-      const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
+    const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
 
-      const buyPrice = calculateMarketBuy(
-        lowestSellPrice,
-        highestBuyPrice,
-        selectedAssetMetadata.decimals
-      );
-      const sellPrice = calculateMarketSell(
-        lowestSellPrice,
-        highestBuyPrice,
-        selectedAssetMetadata.decimals
-      );
+    const buyPrice = calculateMarketBuy(
+      lowestSellPrice,
+      highestBuyPrice,
+      selectedAssetMetadata.decimals
+    );
+    const sellPrice = calculateMarketSell(
+      lowestSellPrice,
+      highestBuyPrice,
+      selectedAssetMetadata.decimals
+    );
 
-      return orderType === BUY ? buyPrice : sellPrice;
-    }
-
-    return limitPrice || new BigNumber(0);
-  }, [
-    isMarketTypeMarket,
-    limitPrice,
-    orderbookStorages,
-    slug,
-    orderType,
-    selectedAssetMetadata.decimals,
-  ]);
+    return orderType === BUY ? buyPrice : sellPrice;
+  }, [orderbookStorages, slug, orderType, selectedAssetMetadata.decimals]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   const handleTabClick = useCallback(
