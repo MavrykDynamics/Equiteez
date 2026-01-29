@@ -40,6 +40,8 @@ type BuySellLimitScreenProps = {
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  slippagePercentage: number;
+  handleSlippageChange: (value: number) => void;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -52,6 +54,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setLimitPrice,
   marketTokenPrice,
+  slippagePercentage,
+  handleSlippageChange,
 }) => {
   const { token_address, slug } = estate;
   const { orderbookTokenPair, orderbookStorages } = useDexContext();
@@ -258,7 +262,13 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 amountInputDisabled
                 amount={balanceTotal}
                 additionalTopRightBlock=" "
-                additionalBottomRightBlock={<PercentBlock />}
+                additionalBottomRightBlock={
+                  <PercentBlock
+                    isBuyAction={isBuyAction}
+                    slippagePercentage={slippagePercentage}
+                    handleSlippageChange={handleSlippageChange}
+                  />
+                }
                 label={
                   <div className="flex items-center gap-[4px] text-xs text-sand-600">
                     Take Profit when{" "}

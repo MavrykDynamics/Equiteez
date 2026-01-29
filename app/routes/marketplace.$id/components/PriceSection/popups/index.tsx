@@ -52,7 +52,7 @@ import {
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 
-export const spippageOptions = ["1", "3", "5", "custom"];
+export const SLIPPAGE_OPTIONS = [5, 10];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -78,12 +78,49 @@ export const PopupContent: FC<{
     activetabId !== CONFIRM
   ) as OrderType;
 
+  // Slippage percentage for price impact --------------------------------------------
+  const [slippagePercentage, setSlippagePercentage] = useState<number>(0);
+
+  const handleSlippageChange = useCallback(
+    (value: number) => {
+      setSlippagePercentage(value);
+    },
+    [setSlippagePercentage]
+  );
+
+  // --------------------------------------------
+
   // --- input state
   const [amountB, setAmountB] = useState<BigNumber | undefined>();
   const [total, setTotal] = useState<BigNumber | undefined>();
 
-  // for limit market
+  // for limit market and handling input values
   const [limitPrice, setLimitPrice] = useState<BigNumber | undefined>();
+
+  // const finalLimitPrice = useMemo(() => {
+  //   if (slippagePercentage !== 0 && !isMarketTypeMarket) {
+  //     const multiplier = new BigNumber(1).minus(
+  //       new BigNumber(slippagePercentage).div(100)
+  //     );
+
+  //     if (activetabId === BUY) {
+  //       // uses amount
+  //       return amountB?.times(multiplier);
+  //     }
+  //     if (activetabId === SELL) {
+  //       // uses limit price
+  //       return limitPrice?.times(multiplier);
+  //     }
+  //   }
+
+  //   return limitPrice;
+  // }, [
+  //   activetabId,
+  //   amountB,
+  //   isMarketTypeMarket,
+  //   limitPrice,
+  //   slippagePercentage,
+  // ]);
 
   // metadata for selected asset
   const selectedAssetMetadata = useAssetMetadata(slug);
@@ -162,18 +199,45 @@ export const PopupContent: FC<{
     [handlaMarketChange]
   );
 
-  // Slippage
-  const [slippagePercentage, setSlippagePercentage] = useState<string>(
-    spippageOptions[0]
-  );
+  useEffect(() => {
+    if (marketType === "limit") {
+      const multiplier = new BigNumber(1).plus(
+        new BigNumber(slippagePercentage).div(100)
+      );
+
+      // if buyAction -> amountB is cheaper for %
+      if (activetabId === BUY) {
+        setAmountB((prev) => (prev ? prev.times(multiplier) : undefined));
+      }
+
+      // if sellAction -> limitPrice is greater for %
+      if (activetabId === SELL) {
+        setLimitPrice((prev) => (prev ? prev.times(multiplier) : undefined));
+      }
+    }
+  }, [activetabId, marketType, slippagePercentage]);
+
+  console.log(amountB?.toString(), "amountB");
+  console.log(limitPrice?.toString(), "limitPrice");
 
   useEffect(() => {
-    if (isDefined(amountB) && tokenPrice) {
-      setTotal(amountB.times(tokenPrice));
+    const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
+
+    if (isDefined(amountB) && priceToUse) {
+      setTotal(amountB.times(priceToUse));
     } else if (!isDefined(amountB)) {
       setTotal(undefined);
     }
-  }, [amountB, estate.token_address, marketType, slug, tokenPrice]);
+  }, [
+    amountB,
+    estate.token_address,
+    marketType,
+    slug,
+    tokenPrice,
+    slippagePercentage,
+    limitPrice,
+    isMarketTypeMarket,
+  ]);
 
   // reset values when switching tabs
   useLayoutEffect(() => {
@@ -181,6 +245,7 @@ export const PopupContent: FC<{
 
     setAmountB(undefined);
     setLimitPrice(undefined);
+    setSlippagePercentage(0);
   }, [activetabId, marketType]);
 
   // Orderbook limit buy | sell with custom user price
@@ -194,13 +259,13 @@ export const PopupContent: FC<{
       quoteTokenDecimals: quoteAssetmetadata?.decimals,
     }),
     [
-      amountB,
-      estate.token_address,
-      limitPrice,
-      pickOrderbookContractQuoteToken,
       pickOrderbookContract,
-      quoteAssetmetadata?.decimals,
+      estate.token_address,
+      pickOrderbookContractQuoteToken,
+      amountB,
+      limitPrice,
       selectedAssetMetadata?.decimals,
+      quoteAssetmetadata?.decimals,
     ]
   );
 
@@ -209,8 +274,8 @@ export const PopupContent: FC<{
     const { quoteTokenAddress, ...restBuyprops } = limitBuyProps;
 
     return {
-      rwaTokenAddress: estate.token_address,
       ...restBuyprops,
+      rwaTokenAddress: estate.token_address,
     };
   }, [estate.token_address, limitBuyProps]);
 
@@ -459,8 +524,6 @@ export const PopupContent: FC<{
                 setAmount={setAmountB}
                 total={total}
                 tokenPrice={tokenPrice}
-                slippagePercentage={slippagePercentage}
-                setSlippagePercentage={setSlippagePercentage}
               />
             ) : (
               <BuySellLimitScreen
@@ -473,6 +536,8 @@ export const PopupContent: FC<{
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
+                slippagePercentage={slippagePercentage}
+                handleSlippageChange={handleSlippageChange}
               />
             ))}
 

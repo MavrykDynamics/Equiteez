@@ -36,8 +36,6 @@ type BuySellScreenProps = {
   tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  slippagePercentage: string;
-  setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
   hasQuoteError?: boolean;
 };
 
@@ -49,8 +47,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   total,
   tokenPrice,
   setAmount,
-  slippagePercentage,
-  // setSlippagePercentage,
   hasQuoteError = false,
 }) => {
   const { token_address, slug } = estate;
@@ -190,8 +186,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     tokenPrice,
   ]);
 
-  const isBtnDisabled =
-    hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
+  const isBtnDisabled = hasTotalError || !amount || !isKyced;
 
   useEffect(() => {
     if (selectedPercentage != null) {

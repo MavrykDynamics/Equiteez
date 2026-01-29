@@ -15,6 +15,11 @@
 .percentButton:hover {
   border: 1px solid var(--color-br-green-100);
 }
+
+.percentButton.active {
+  border: 1px solid var(--color-br-green-100);
+}
+
 .percentInput {
   background: var(--color-neutral-light);
   border: 1px solid var(--color-grey-100);
@@ -26,5 +31,9 @@
   margin-top: 0;
 }
 .percentInput:focus {
+  border: 1px solid var(--color-br-green-100);
+}
+
+.percentInput.active {
   border: 1px solid var(--color-br-green-100);
 }
