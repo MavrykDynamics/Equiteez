@@ -324,7 +324,13 @@ export const PopupContent: FC<{
       try {
         const estimateFnToUse =
           orderType === BUY ? orderbookBuyEstimation : orderbookSellEstimation;
-        const paramsToUse = orderType === BUY ? limitBuyProps : limitSellProps;
+        const paramsToUse = isMarketTypeMarket
+          ? orderType === BUY
+            ? marketBuyProps
+            : marketSellProps
+          : orderType === BUY
+            ? limitBuyProps
+            : limitSellProps;
 
         // @ts-expect-error // amount is defined
         const res = await estimateFnToUse({
@@ -576,6 +582,7 @@ export const PopupContent: FC<{
                 setAmount={setAmountB}
                 total={total}
                 tokenPrice={tokenPrice}
+                networkFee={networkFee}
               />
             ) : (
               <BuySellLimitScreen

@@ -19,13 +19,13 @@ import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
-import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -33,6 +33,7 @@ type BuySellScreenProps = {
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
+  networkFee: BigNumber;
   tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
@@ -45,11 +46,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   actionType,
   amount,
   total,
+  networkFee,
   tokenPrice,
   setAmount,
   hasQuoteError = false,
 }) => {
-  const { token_address, slug } = estate;
+  const { token_address, slug, assetDetails } = estate;
   const { orderbookTokenPair, orderbookStorages } = useDexContext();
 
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
@@ -161,31 +163,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
-  const estFee = useMemo(() => {
-    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-      buyOrderFee: 0,
-      sellOrderFee: 0,
-    };
-
-    const tokensAmount = amount || ZERO;
-    const fee = isBuyAction ? buyOrderFee : sellOrderFee;
-
-    return calculateEstFee({
-      amount: tokensAmount,
-      price: tokenPrice,
-      fee,
-      tokenDecimals: stableCoinMetadata.decimals,
-      isFeeInTokens: isBuyAction,
-    });
-  }, [
-    amount,
-    isBuyAction,
-    orderbookStorages,
-    slug,
-    stableCoinMetadata.decimals,
-    tokenPrice,
-  ]);
-
   const isBtnDisabled = hasTotalError || !amount || !isKyced;
 
   useEffect(() => {
@@ -197,6 +174,32 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       setAmount(newAmount);
     }
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
+
+  const { finalTotalValue, txnFee } = useMemo(() => {
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      finalTotalValue: 0,
+      txnFee: 0,
+    };
+
+    const fee = isBuyAction
+      ? atomsToTokens(buyOrderFee, stableCoinMetadata?.decimals)
+      : atomsToTokens(sellOrderFee, stableCoinMetadata?.decimals);
+
+    const finalTotalValue = (isBuyAction ? amount : total) ?? ZERO;
+
+    return {
+      finalTotalValue: finalTotalValue?.plus(fee)?.plus(networkFee) || ZERO,
+      txnFee: fee,
+    };
+  }, [
+    amount,
+    isBuyAction,
+    networkFee,
+    orderbookStorages,
+    slug,
+    stableCoinMetadata?.decimals,
+    total,
+  ]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -266,15 +269,17 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             />
 
             <FeesCard
-              txnFees={0}
-              totalAmount={(isBuyAction ? amount : total) ?? 0}
-              networkfee={new BigNumber(estFee)}
+              txnFees={txnFee}
+              totalAmount={finalTotalValue}
+              networkfee={networkFee}
             />
 
             <ProjectionCard
-              apy={0}
-              monthkyReturns={0}
-              yearlyReturns={0}
+              apy={assetDetails.APY}
+              monthkyReturns={assetDetails.financials.expectedIncome.income}
+              yearlyReturns={
+                assetDetails.financials.expectedIncome.incomePerTokenYearly
+              }
               gradient={isBuyAction ? "blue" : "orange"}
             />
           </div>

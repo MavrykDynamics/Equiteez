@@ -173,11 +173,12 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       : atomsToTokens(sellOrderFee, stableCoinMetadata?.decimals);
 
     return {
-      finalTotalValue: total?.plus(fee) || ZERO,
+      finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
       txnFee: fee,
     };
   }, [
     isBuyAction,
+    networkFee,
     orderbookStorages,
     slug,
     stableCoinMetadata?.decimals,
