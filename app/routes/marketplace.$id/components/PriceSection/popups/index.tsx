@@ -42,7 +42,12 @@ import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
-import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+import {
+  orderbookBuy,
+  orderbookBuyEstimation,
+  orderbookSell,
+  orderbookSellEstimation,
+} from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
 import {
@@ -51,6 +56,8 @@ import {
 } from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
+import { MILLION, ZERO } from "~/lib/utils/numbers";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 
@@ -61,6 +68,8 @@ export const PopupContent: FC<{
 }> = ({ estate, orderType, setOrderType }) => {
   const { slug } = estate;
   const { marketsArr } = useMarketsContext();
+  const { dapp } = useWalletContext();
+  const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
 
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const {
@@ -77,6 +86,9 @@ export const PopupContent: FC<{
     activetabId,
     activetabId !== CONFIRM
   ) as OrderType;
+
+  // network fee estimation state --------------------------------------------
+  const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
 
   // Slippage percentage for price impact --------------------------------------------
   const [slippagePercentage, setSlippagePercentage] = useState<number>(0);
@@ -250,7 +262,7 @@ export const PopupContent: FC<{
     () => ({
       orderbookContractAddress: pickOrderbookContract[estate.token_address],
       quoteTokenAddress: pickOrderbookContractQuoteToken[estate.token_address],
-      tokensAmount: amountB?.toNumber(),
+      tokensAmount: amountB?.toNumber() ?? ZERO,
       pricePerToken: limitPrice?.toNumber(),
       decimals: selectedAssetMetadata?.decimals,
       quoteTokenDecimals: quoteAssetmetadata?.decimals,
@@ -298,6 +310,49 @@ export const PopupContent: FC<{
       ...restBuyprops,
     };
   }, [estate.token_address, limitBuyProps, tokenPrice]);
+
+  // Operation estimation effect -------------------------------------------
+  useEffect(() => {
+    if (!mavrykToolkit || !total || total.lte(0)) {
+      setNetworkFee(ZERO);
+      return;
+    }
+
+    let cancelled = false;
+
+    const t = window.setTimeout(async () => {
+      try {
+        const estimateFnToUse =
+          orderType === BUY ? orderbookBuyEstimation : orderbookSellEstimation;
+        const paramsToUse = orderType === BUY ? limitBuyProps : limitSellProps;
+
+        // @ts-expect-error // amount is defined
+        const res = await estimateFnToUse({
+          ...paramsToUse,
+          tezos: mavrykToolkit,
+        });
+
+        if (cancelled) return;
+
+        if (res.actionSuccess) {
+          const { totalSuggestedFeeMutez } = res.data;
+
+          const networkFeeTez = new BigNumber(totalSuggestedFeeMutez).dividedBy(
+            MILLION
+          );
+
+          setNetworkFee(networkFeeTez); // string for UI
+        }
+      } catch (e) {
+        if (!cancelled) setNetworkFee(ZERO);
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [mavrykToolkit, total, limitBuyProps, orderType, limitSellProps]);
 
   // actual contract calls and their handlers ---------------
 
@@ -533,8 +588,8 @@ export const PopupContent: FC<{
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
-                slippagePercentage={slippagePercentage}
                 handleSlippageChange={handleSlippageChange}
+                networkFee={networkFee}
               />
             ))}
 

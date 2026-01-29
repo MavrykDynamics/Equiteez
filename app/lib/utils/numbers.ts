@@ -8,9 +8,9 @@ export const rateToNumber = (rate?: string) =>
 export const isPositiveNumber = (value?: number): value is number =>
   value != null && value > 0;
 
-const THOUSAND = 1_000;
-const MILLION = 1_000_000;
-const BILLION = 1_000_000_000;
+export const THOUSAND = 1_000;
+export const MILLION = 1_000_000;
+export const BILLION = 1_000_000_000;
 
 export const ONE_HOUR_MS = 3600_000;
 

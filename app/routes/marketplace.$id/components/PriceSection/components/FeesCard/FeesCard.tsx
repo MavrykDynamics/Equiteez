@@ -33,9 +33,9 @@ type FeesCardProps = {
 };
 
 export const FeesCard: FC<FeesCardProps> = ({
-  totalAmount = 0,
-  txnFees = 0,
-  networkfee = 0,
+  totalAmount,
+  txnFees,
+  networkfee,
 }) => {
   const [shouldExpand, setShouldExpand] = useState(false);
 
@@ -80,10 +80,7 @@ export const FeesCard: FC<FeesCardProps> = ({
                 <div className="flex items-center justify-between">
                   <p className="text-sand-600">Txn Fees</p>
                   <div className="text-sand-900 font-semibold">
-                    $
-                    <Money tooltip={false} fiat>
-                      {txnFees}
-                    </Money>
+                    $<Money tooltip={false}>{txnFees}</Money>
                   </div>
                 </div>
 

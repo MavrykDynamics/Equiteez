@@ -19,7 +19,6 @@ import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
-import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
@@ -28,6 +27,7 @@ import { ZERO } from "~/lib/utils/numbers";
 import { AssetView } from "~/templates/BalanceInput/AssetView";
 import { PercentBlock } from "~/routes/marketplace.$id/components/PriceSection/components/PercentBlock/PercentBlock";
 import Money from "~/lib/atoms/Money";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -36,11 +36,11 @@ type BuySellLimitScreenProps = {
   amount: BigNumber | undefined;
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
+  networkFee: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  slippagePercentage: number;
   handleSlippageChange: (value: number) => void;
 };
 
@@ -50,11 +50,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   actionType,
   amount,
   total,
+  networkFee,
   limitPrice,
   setAmount,
   setLimitPrice,
   marketTokenPrice,
-  slippagePercentage,
   handleSlippageChange,
 }) => {
   const { token_address, slug } = estate;
@@ -161,30 +161,27 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const balanceTotal = total;
 
-  // const estFee = useMemo(() => {
-  //   const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-  //     buyOrderFee: 0,
-  //     sellOrderFee: 0,
-  //   };
+  const { finalTotalValue, txnFee } = useMemo(() => {
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      total: 0,
+      txnFee: 0,
+    };
 
-  //   const tokensAmount = amount || ZERO;
-  //   const fee = isBuyAction ? buyOrderFee : sellOrderFee;
+    const fee = isBuyAction
+      ? atomsToTokens(buyOrderFee, stableCoinMetadata?.decimals)
+      : atomsToTokens(sellOrderFee, stableCoinMetadata?.decimals);
 
-  //   return calculateEstFee({
-  //     amount: tokensAmount,
-  //     price: tokenPrice,
-  //     fee,
-  //     tokenDecimals: stableCoinMetadata?.decimals,
-  //     isFeeInTokens: isBuyAction,
-  //   });
-  // }, [
-  //   amount,
-  //   isBuyAction,
-  //   orderbookStorages,
-  //   slug,
-  //   stableCoinMetadata?.decimals,
-  //   tokenPrice,
-  // ]);
+    return {
+      finalTotalValue: total?.plus(fee) || ZERO,
+      txnFee: fee,
+    };
+  }, [
+    isBuyAction,
+    orderbookStorages,
+    slug,
+    stableCoinMetadata?.decimals,
+    total,
+  ]);
 
   const isBtnDisabled =
     hasTotalError ||
@@ -282,7 +279,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 additionalBottomLeftBlock={
                   <div className="text-xs text-sand-600">
                     Market{" "}
-                    <span>
+                    <span className="font-semibold underline">
                       $<Money>{marketTokenPrice}</Money>
                     </span>
                   </div>
@@ -297,10 +294,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             </div>
 
             <FeesCard
-              txnFees={0}
-              //TODO add totalAmount
-              totalAmount={0}
-              networkfee={0}
+              txnFees={txnFee}
+              totalAmount={finalTotalValue}
+              networkfee={networkFee}
             />
 
             <div className="mt-3">

@@ -1,7 +1,12 @@
 /* eslint-disable no-useless-catch */
-import { MavrykToolkit } from "@mavrykdynamics/taquito";
+import { MavrykToolkit, OpKind } from "@mavrykdynamics/taquito";
+import {
+  getEstimationBatchResult,
+  sendContractBatchOperation,
+} from "~/errors/helpers/estimateAction.helper";
 
 import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
+import { BatchOperationKindType } from "./types";
 
 type OrderbookBuySellParams = {
   tezos: MavrykToolkit;
@@ -20,7 +25,7 @@ type OrderbookCancelOrderParams = {
   orderType: string;
 };
 
-export async function orderbookBuy({
+export async function orderbookBuyBatch({
   tezos,
   orderbookContractAddress,
   quoteTokenAddress,
@@ -31,7 +36,7 @@ export async function orderbookBuy({
 }: OrderbookBuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
-    let batch = tezos.wallet.batch([]);
+    const batch: BatchOperationKindType = [];
 
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
     const quoteTokenContract = await tezos.wallet.at(quoteTokenAddress);
@@ -71,19 +76,31 @@ export async function orderbookBuy({
       },
     ]).toTransferParams();
 
-    batch = batch.withTransfer(open_ops);
-    batch = batch.withTransfer(buy_order);
-    batch = batch.withTransfer(close_ops);
+    batch.push({ kind: OpKind.TRANSACTION, ...open_ops });
+    batch.push({ kind: OpKind.TRANSACTION, ...buy_order });
+    batch.push({ kind: OpKind.TRANSACTION, ...close_ops });
 
-    const batchOp = await batch.send();
-
-    await batchOp.confirmation();
+    return batch;
   } catch (e: unknown) {
     throw e;
   }
 }
 
-export async function orderbookSell({
+export async function orderbookBuy(params: OrderbookBuySellParams) {
+  try {
+    const batchArr = await orderbookBuyBatch(params);
+
+    await sendContractBatchOperation(params.tezos, batchArr);
+  } catch (e: unknown) {
+    throw e;
+  }
+}
+
+type OrderbookSellParams = Omit<OrderbookBuySellParams, "quoteTokenAddress"> & {
+  rwaTokenAddress: string;
+};
+
+export async function orderbookSellBatch({
   tezos,
   orderbookContractAddress,
   rwaTokenAddress,
@@ -91,12 +108,10 @@ export async function orderbookSell({
   pricePerToken,
   decimals,
   quoteTokenDecimals,
-}: Omit<OrderbookBuySellParams, "quoteTokenAddress"> & {
-  rwaTokenAddress: string;
-}) {
+}: OrderbookSellParams) {
   try {
     const sender = await tezos.wallet.pkh();
-    let batch = tezos.wallet.batch([]);
+    const batch: BatchOperationKindType = [];
 
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
     const tokenContact = await tezos.wallet.at(rwaTokenAddress);
@@ -135,13 +150,21 @@ export async function orderbookSell({
       },
     ]).toTransferParams();
 
-    batch = batch.withTransfer(open_ops);
-    batch = batch.withTransfer(sell_order);
-    batch = batch.withTransfer(close_ops);
+    batch.push({ kind: OpKind.TRANSACTION, ...open_ops });
+    batch.push({ kind: OpKind.TRANSACTION, ...sell_order });
+    batch.push({ kind: OpKind.TRANSACTION, ...close_ops });
 
-    const batchOp = await batch.send();
+    return batch;
+  } catch (e: unknown) {
+    throw e;
+  }
+}
 
-    await batchOp.confirmation();
+export async function orderbookSell(params: OrderbookSellParams) {
+  try {
+    const batchArr = await orderbookSellBatch(params);
+
+    await sendContractBatchOperation(params.tezos, batchArr);
   } catch (e: unknown) {
     throw e;
   }
@@ -165,6 +188,28 @@ export async function orderbookCancelOrder({
       ])
       .send();
     await rwaOrderbookOperation.confirmation();
+  } catch (e: unknown) {
+    throw e;
+  }
+}
+
+// Estimation functions
+
+export async function orderbookBuyEstimation(params: OrderbookBuySellParams) {
+  try {
+    const batchArr = await orderbookBuyBatch(params);
+
+    return await getEstimationBatchResult(params.tezos, batchArr);
+  } catch (e: unknown) {
+    throw e;
+  }
+}
+
+export async function orderbookSellEstimation(params: OrderbookSellParams) {
+  try {
+    const batchArr = await orderbookSellBatch(params);
+
+    return await getEstimationBatchResult(params.tezos, batchArr);
   } catch (e: unknown) {
     throw e;
   }
