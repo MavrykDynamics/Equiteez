@@ -8,8 +8,10 @@ import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 
-const { registerSW } = await import("virtual:pwa-register");
-registerSW({ immediate: true });
+if (process.env.NODE_ENV === "production") {
+  const { registerSW } = await import("virtual:pwa-register");
+  registerSW({ immediate: true });
+}
 
 startTransition(() => {
   hydrateRoot(
