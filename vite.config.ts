@@ -64,7 +64,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            if (id.includes("apexcharts")) return "apexcharts";
             if (id.includes("@apollo/client")) return "apollo";
             if (id.includes("react")) return "react-vendor";
             return "vendor";
