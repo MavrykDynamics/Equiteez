@@ -34,7 +34,7 @@ export const ProjectionCard: FC<ProjectionCardProps> = ({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between text-sm">
           <p>Estimated APY</p>
-          <span className="font-semibold">{apy}</span>
+          <span className="font-semibold">{apy}%</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <p>Projected Monthly Returns</p>

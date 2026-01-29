@@ -57,7 +57,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   marketTokenPrice,
   handleSlippageChange,
 }) => {
-  const { token_address, slug } = estate;
+  const { token_address, slug, assetDetails } = estate;
+
   const { orderbookTokenPair, orderbookStorages } = useDexContext();
 
   // input refs
@@ -301,9 +302,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
             <div className="mt-3">
               <ProjectionCard
-                apy={0}
-                monthkyReturns={0}
-                yearlyReturns={0}
+                apy={assetDetails.APY}
+                monthkyReturns={assetDetails.financials.expectedIncome.income}
+                yearlyReturns={
+                  assetDetails.financials.expectedIncome.incomePerTokenYearly
+                }
                 gradient={isBuyAction ? "blue" : "orange"}
               />
             </div>
