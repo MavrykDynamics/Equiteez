@@ -7,19 +7,26 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
-import { VitePWA } from "vite-plugin-pwa";
-// import { visualizer } from 'rollup-plugin-visualizer';
+import { RemixVitePWA } from "@vite-pwa/remix";
 
 installGlobals();
+
+const { RemixVitePWAPlugin, RemixPWAPreset } = RemixVitePWA();
 
 export default defineConfig({
   plugins: [
     remixCloudflareDevProxy(),
-    remix({ ssr: true }),
+
+    remix({
+      ssr: true,
+      presets: [RemixPWAPreset()],
+    }),
+
     tsconfigPaths(),
     svgr(),
     nodePolyfills({ exclude: ["fs", "util"] }),
-    VitePWA({
+
+    RemixVitePWAPlugin({
       registerType: "autoUpdate",
       includeAssets: [
         "favicon.ico",
@@ -36,42 +43,18 @@ export default defineConfig({
         background_color: "#0b1220",
         theme_color: "#0b1220",
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: "/icons/logo-96.png", sizes: "96x96", type: "image/png" },
+          { src: "/icons/logo-450.png", sizes: "450x450", type: "image/png" },
           {
-            src: "/icons/icon-512-maskable.png",
-            sizes: "512x512",
+            src: "/icons/logo-450-maskable.png",
+            sizes: "450",
             type: "image/png",
             purpose: "maskable",
           },
         ],
       },
-      workbox: {
-        // caches your built client assets
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,woff2}"],
-      },
-      devOptions: {
-        enabled: true,
-      },
+      devOptions: { enabled: true },
     }),
-    // visualizer({ open: false }),
   ],
-  // DO NOT PUT SECRETS HERE !
-  define: {
-    "process.env": process.env,
-  },
-  build: {
-    minify: "esbuild",
-    cssMinify: true,
-    ssr: true,
-    rollupOptions: {
-      plugins: [
-        // visualizer({
-        //   filename: 'stats.html',
-        //   template: 'treemap', // or 'sunburst', 'network'
-        // }),
-      ],
-    },
-  },
+  define: { "process.env": process.env },
 });

@@ -93,7 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     tokensMetadata = {},
     fiatToTezos = {},
     usdToToken = {},
-    isMobile = false,
+    // isMobile = false,
   } = useDataFromLoader<typeof loader>() ?? {};
 
   useEffect(() => {

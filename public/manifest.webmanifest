@@ -7,10 +7,10 @@
   "background_color": "#0b1220",
   "theme_color": "#0b1220",
   "icons": [
-    { "src": "/logo-96.png", "sizes": "96x96", "type": "image/png" },
-    { "src": "/logo-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icons/logo-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "/icons/logo-180.png", "sizes": "180x180", "type": "image/png" },
     {
-      "src": "/logo-450.png",
+      "src": "/icons/logo-450.png",
       "sizes": "450x450",
       "type": "image/png",
       "purpose": "maskable"
