@@ -95,6 +95,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     [amount, isBuyAction, tokenBalance]
   );
 
+  const hasBuyTokensBalanceError = useMemo(
+    () => isBuyAction && limitPrice && limitPrice.gt(usdBalance),
+    [limitPrice, isBuyAction, usdBalance]
+  );
+
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
 
@@ -119,7 +124,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       selectedAssetMetadata: stableCoinMetadata,
       onChange: setLimitPrice,
       cryptoValue: usdBalance,
-      errorCaption: hasTotalError
+      errorCaption: hasBuyTokensBalanceError
         ? "The amount entered exceeds your available balance."
         : undefined,
     };
@@ -141,8 +146,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   }, [
     amount,
     handleOutputChange,
+    hasBuyTokensBalanceError,
     hasSellTokensBalanceError,
-    hasTotalError,
     isBuyAction,
     limitPrice,
     orderbookTokenPair,
