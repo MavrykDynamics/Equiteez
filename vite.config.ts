@@ -34,6 +34,9 @@ export default defineConfig({
         "manifest.webmanifest",
         "icons/*.png",
       ],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+      },
       manifest: {
         name: "Equiteez",
         short_name: "Equiteez",
@@ -56,5 +59,19 @@ export default defineConfig({
       devOptions: { enabled: true },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("apexcharts")) return "apexcharts";
+            if (id.includes("@apollo/client")) return "apollo";
+            if (id.includes("react")) return "react-vendor";
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
   define: { "process.env": process.env },
 });
