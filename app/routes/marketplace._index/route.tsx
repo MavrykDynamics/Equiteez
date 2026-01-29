@@ -71,8 +71,6 @@ export default function Properties() {
                 es.decimals
               );
 
-              console.log("es", es);
-
               return (
                 <Link
                   to={generatePath(ROUTES.singleAsset, {
