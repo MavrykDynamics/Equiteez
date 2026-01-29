@@ -9,8 +9,9 @@ import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 
 if (process.env.NODE_ENV === "production") {
-  const { registerSW } = await import("virtual:pwa-register");
-  registerSW({ immediate: true });
+  import("virtual:pwa-register")
+    .then(({ registerSW }) => registerSW({ immediate: true }))
+    .catch(() => {});
 }
 
 startTransition(() => {
