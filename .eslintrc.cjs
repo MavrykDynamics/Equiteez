@@ -39,6 +39,7 @@ module.exports = {
         react: {
           version: "detect",
         },
+        "import/core-modules": ["virtual:pwa-register"],
         formComponents: ["Form"],
         linkComponents: [
           { name: "Link", linkAttribute: "to" },

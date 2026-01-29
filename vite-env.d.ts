@@ -4,6 +4,9 @@
 /// <reference types="react" />
 /// <reference types="react-dom" />
 
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
+
 declare type ImportedSVGComponent = React.FunctionComponent<
   React.SVGProps<SVGSVGElement> & { title?: string }
 >;
