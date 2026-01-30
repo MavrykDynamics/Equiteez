@@ -59,18 +59,5 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("@apollo/client")) return "apollo";
-            if (id.includes("react")) return "react-vendor";
-            return "vendor";
-          }
-        },
-      },
-    },
-  },
   define: { "process.env": process.env },
 });
