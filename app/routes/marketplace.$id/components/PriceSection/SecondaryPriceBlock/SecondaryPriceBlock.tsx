@@ -7,6 +7,7 @@ import { Table } from "~/lib/atoms/Table/Table";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import styles from "./../priceSection.module.css";
+import popupStyles from "../popups/popups.module.css";
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
@@ -47,6 +48,16 @@ const expandVariants = {
   collapsed: { height: 0, opacity: 0 },
 };
 
+const MOBILE_ORDER_BOOK_BREAKPOINT = "(max-width: 820px)";
+
+const getDefaultOrderBookOpenState = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return !window.matchMedia(MOBILE_ORDER_BOOK_BREAKPOINT).matches;
+};
+
 export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
   shouldExpand,
@@ -54,6 +65,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const { warning } = useToasterContext();
   const { validBaseTokens } = useMarketsContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
 
@@ -123,11 +135,13 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
+    setIsOrderBookOpen(false);
     setOrderType(BUY);
   }, []);
 
   const handleOpen = useCallback((orderType: OrderType) => {
     setOrderType(orderType);
+    setIsOrderBookOpen(getDefaultOrderBookOpenState());
     setIsOpen(true);
   }, []);
 
@@ -264,11 +278,16 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
         contentPosition={"right"}
-        className={"bg-white"}
+        className={classNames(
+          "bg-white",
+          isOrderBookOpen && popupStyles.popupWide
+        )}
       >
         <PopupContent
           estate={estate}
+          isOrderBookOpen={isOrderBookOpen}
           orderType={orderType}
+          setIsOrderBookOpen={setIsOrderBookOpen}
           setOrderType={setOrderType}
         />
       </PopupWithIcon>

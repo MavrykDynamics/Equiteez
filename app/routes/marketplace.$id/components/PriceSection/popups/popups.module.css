@@ -7,6 +7,21 @@
   min-width: 100%;
 }
 
+.popupLayout {
+  display: flex;
+  flex: 1;
+  min-height: 100%;
+  position: relative;
+}
+
+.popupMain {
+  min-width: 0;
+}
+
+.popupWide {
+  max-width: 976px;
+}
+
 @media (--media-tablet-min) {
   .tab {
     min-width: auto;
@@ -14,5 +29,13 @@
   }
   .tabsWrapper {
     background: var(--color-sand-200);
+  }
+
+  .popupLayout {
+    display: block;
+  }
+
+  .popupWide {
+    max-width: 100%;
   }
 }

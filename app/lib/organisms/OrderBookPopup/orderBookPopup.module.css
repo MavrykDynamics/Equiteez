@@ -1,0 +1,291 @@
+@import "../../../styles/breakpoints.css";
+
+.desktopWrapper {
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.mobileOverlay {
+  display: none;
+}
+
+.panel {
+  background: #fff;
+  height: 100%;
+  width: 100%;
+}
+
+.desktopPanel {
+  border-right: 1px solid var(--color-grey-100);
+}
+
+.desktopPanelInner {
+  padding: 36px 24px;
+}
+
+.mobilePanel {
+  position: relative;
+}
+
+.mobilePanelInner {
+  padding: 32px 16px 24px;
+}
+
+.panelInner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 100%;
+}
+
+.title {
+  color: var(--color-sand-900);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.mobileTitle {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.98fr) minmax(0, 1fr);
+  position: relative;
+}
+
+.tableHeader {
+  align-items: center;
+}
+
+.tableSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  min-height: 29px;
+}
+
+.cell {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  min-height: 29px;
+  padding-bottom: 4px;
+  padding-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.priceCell,
+.amountCell {
+  border-right: 1px solid var(--color-grey-200);
+}
+
+.tableHeader .cell {
+  border-bottom: 1px solid var(--color-grey-200);
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
+.tableRow .cell {
+  color: var(--color-sand-900);
+  border-bottom: 1px solid var(--color-grey-200);
+}
+
+.tableSection .tableRow:last-child .cell {
+  border-bottom: 0;
+}
+
+.priceCell {
+  padding-right: 8px;
+}
+
+.amountCell,
+.totalCell {
+  padding-left: 8px;
+  text-align: right;
+}
+
+.depthBar {
+  bottom: 0;
+  position: absolute;
+  top: 0;
+  width: var(--order-book-depth-width);
+  z-index: 0;
+}
+
+.askRow .depthBar {
+  background: rgba(232, 55, 54, 0.25);
+  right: 0;
+}
+
+.bidRow .depthBar {
+  background: rgba(69, 151, 97, 0.25);
+  left: 0;
+}
+
+.askPrice {
+  color: var(--color-red-500) !important;
+}
+
+.bidPrice {
+  color: var(--color-green-500) !important;
+}
+
+.spreadRow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 0;
+}
+
+.spreadPriceBlock {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+.spreadPrice {
+  color: var(--color-red-500);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.spreadReference {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.spreadIcon {
+  color: var(--color-red-500);
+  flex-shrink: 0;
+  height: 16px;
+  width: 12px;
+}
+
+.sentimentBar {
+  border-radius: 4px;
+  display: flex;
+  overflow: hidden;
+}
+
+.sentimentSide {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-height: 29px;
+  padding: 2px 8px;
+}
+
+.buySentiment {
+  background: rgba(69, 151, 97, 0.25);
+}
+
+.sellSentiment {
+  background: rgba(232, 55, 54, 0.25);
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.sentimentBadge {
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  height: 29px;
+  justify-content: center;
+  line-height: 21px;
+  width: 29px;
+}
+
+.buyBadge,
+.buyPercentage {
+  color: var(--color-green-500);
+}
+
+.sellBadge,
+.sellPercentage {
+  color: var(--color-red-500);
+}
+
+.buyPercentage,
+.sellPercentage {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.toggleButton {
+  align-items: center;
+  background: #f2f2f2;
+  border-radius: 32px;
+  color: var(--color-sand-900);
+  display: inline-flex;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 12px;
+}
+
+.toggleIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.mobileCloseButton {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 1;
+}
+
+.mobileCloseIcon {
+  color: var(--color-sand-900);
+  height: 24px;
+  width: 24px;
+}
+
+@media (--media-tablet-min) {
+  .desktopWrapper {
+    display: none;
+  }
+
+  .mobileOverlay {
+    background: #fff;
+    display: block;
+    inset: 0;
+    min-height: 100%;
+    position: absolute;
+    z-index: 20;
+  }
+
+  .panelInner {
+    gap: 12px;
+  }
+}
