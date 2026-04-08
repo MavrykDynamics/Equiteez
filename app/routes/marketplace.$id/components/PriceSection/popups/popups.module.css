@@ -10,6 +10,7 @@
 .popupLayout {
   display: flex;
   flex: 1;
+  gap: 32px;
   min-height: 100%;
   position: relative;
 }
@@ -19,7 +20,7 @@
 }
 
 .popupWide {
-  max-width: 976px;
+  max-width: 1008px;
 }
 
 @media (--media-tablet-min) {
@@ -33,6 +34,7 @@
 
   .popupLayout {
     display: block;
+    gap: 0;
   }
 
   .popupWide {

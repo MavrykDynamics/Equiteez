@@ -167,7 +167,10 @@ export const PopupContent: FC<{
     const baseTokenSymbol = selectedAssetMetadata?.symbol ?? estate.symbol;
     const quoteTokenSymbol = quoteAssetmetadata?.symbol ?? "USDT";
 
-    if (openOrders.buyOrders.length === 0 && openOrders.sellOrders.length === 0) {
+    if (
+      openOrders.buyOrders.length === 0 &&
+      openOrders.sellOrders.length === 0
+    ) {
       return createDefaultOrderBookData({
         baseTokenSymbol,
         quoteTokenSymbol,
