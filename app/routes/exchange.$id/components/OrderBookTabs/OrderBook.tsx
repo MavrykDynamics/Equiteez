@@ -1,22 +1,22 @@
-import orderbook from '~/mocks/orderbook.json';
-import RedArrowDown from '~/icons/red-arrow-down.svg?react';
-import clsx from 'clsx';
+import orderbook from "~/mocks/orderbook.json";
+import RedArrowDown from "~/icons/red-arrow-down.svg?react";
+import clsx from "clsx";
 
-import styles from './orderbook.module.css';
+import styles from "./orderbook.module.css";
 
 export const OrderBook = () => {
   const columns = [
     {
-      label: 'Price (USDT)',
-      field: 'price',
+      label: "Price (USDT)",
+      field: "price",
     },
     {
-      label: 'Amount',
-      field: 'amount',
+      label: "Amount",
+      field: "amount",
     },
     {
-      label: 'Total',
-      field: 'total',
+      label: "Total",
+      field: "total",
     },
   ];
 
@@ -28,7 +28,7 @@ export const OrderBook = () => {
         <div className="inline-block min-w-full align-middle">
           <table
             className={clsx(
-              'min-w-full divide-y divide-divider',
+              "min-w-full divide-y divide-divider",
               styles.orderTable
             )}
           >
@@ -39,8 +39,8 @@ export const OrderBook = () => {
                     key={column.label}
                     scope="col"
                     className={clsx(
-                      'whitespace-nowrap py-2 text-left text-caption-regular',
-                      idx === 0 ? 'text-left' : 'text-right'
+                      "whitespace-nowrap py-2 text-left text-caption-regular",
+                      idx === 0 ? "text-left" : "text-right"
                     )}
                   >
                     {column.label}
@@ -55,8 +55,8 @@ export const OrderBook = () => {
                     <td
                       className={`whitespace-nowrap flex items-center text-body-xs gap-1 pr-2 py-1 text-error ${
                         Number(order.price) > currentPrice
-                          ? 'text-success'
-                          : 'text-error'
+                          ? "text-success"
+                          : "text-error"
                       }`}
                     >
                       <span>{order.price}</span>
@@ -66,8 +66,8 @@ export const OrderBook = () => {
                     <td
                       className={`eq-table-cell-small text-caption-regular ${
                         Number(order.price) > currentPrice
-                          ? 'text-success'
-                          : 'text-error'
+                          ? "text-success"
+                          : "text-error"
                       }`}
                     >
                       {order.price}
@@ -75,11 +75,11 @@ export const OrderBook = () => {
                   )}
 
                   <td className="eq-table-cell-small text-right">
-                    {order.amount || ''}
+                    {order.amount || ""}
                   </td>
 
                   <td className="eq-table-cell-small text-right">
-                    {order.total || ''}
+                    {order.total || ""}
                   </td>
                 </tr>
               ))}

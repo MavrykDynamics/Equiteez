@@ -8,6 +8,8 @@ import EyeClosedBoldIcon from "app/icons/eye-closed-bold.svg?react";
 import EyeOpenBoldIcon from "app/icons/eye-open-bold.svg?react";
 import RedArrowDownIcon from "app/icons/red-arrow-down.svg?react";
 
+import { Spinner } from "~/lib/atoms/Spinner";
+
 import styles from "./orderBookPopup.module.css";
 
 const ORDER_BOOK_NUMBER_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -53,6 +55,8 @@ export type OrderBookData = {
 type OrderBookPopupProps = {
   className?: string;
   data: OrderBookData;
+  emptyMessage?: string;
+  isLoading?: boolean;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -66,6 +70,19 @@ type OrderBookToggleButtonProps = {
 
 const formatOrderBookNumber = (value: number) =>
   ORDER_BOOK_NUMBER_FORMATTER.format(value);
+
+const hasOrderBookRows = (data: OrderBookData) =>
+  data.asks.length > 0 || data.bids.length > 0;
+
+const OrderBookState: FC<{
+  isLoading?: boolean;
+  message: string;
+}> = ({ isLoading = false, message }) => (
+  <div className={styles.state}>
+    {isLoading && <Spinner size={28} />}
+    <span className={styles.stateText}>{message}</span>
+  </div>
+);
 
 const OrderBookTable: FC<{ data: OrderBookData }> = ({ data }) => (
   <>
@@ -169,9 +186,17 @@ const OrderBookTable: FC<{ data: OrderBookData }> = ({ data }) => (
 
 const OrderBookPanelContent: FC<{
   data: OrderBookData;
+  emptyMessage?: string;
+  isLoading?: boolean;
   isMobile: boolean;
   onClose: () => void;
-}> = ({ data, isMobile, onClose }) => (
+}> = ({
+  data,
+  emptyMessage = "No open orders available.",
+  isLoading = false,
+  isMobile,
+  onClose,
+}) => (
   <section
     className={clsx(
       styles.panel,
@@ -198,7 +223,13 @@ const OrderBookPanelContent: FC<{
       <h3 className={clsx(styles.title, isMobile && styles.mobileTitle)}>
         {data.title}
       </h3>
-      <OrderBookTable data={data} />
+      {isLoading ? (
+        <OrderBookState isLoading message="Loading order book..." />
+      ) : hasOrderBookRows(data) ? (
+        <OrderBookTable data={data} />
+      ) : (
+        <OrderBookState message={emptyMessage} />
+      )}
     </div>
   </section>
 );
@@ -229,6 +260,8 @@ export const OrderBookToggleButton: FC<OrderBookToggleButtonProps> = ({
 export const OrderBookPopup: FC<OrderBookPopupProps> = ({
   className,
   data,
+  emptyMessage,
+  isLoading = false,
   isOpen,
   onClose,
 }) => (
@@ -245,6 +278,8 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
         >
           <OrderBookPanelContent
             data={data}
+            emptyMessage={emptyMessage}
+            isLoading={isLoading}
             isMobile={false}
             onClose={onClose}
           />
@@ -258,7 +293,13 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
           exit={{ opacity: 0, x: "100%" }}
           transition={PANEL_TRANSITION}
         >
-          <OrderBookPanelContent data={data} isMobile onClose={onClose} />
+          <OrderBookPanelContent
+            data={data}
+            emptyMessage={emptyMessage}
+            isLoading={isLoading}
+            isMobile
+            onClose={onClose}
+          />
         </motion.div>
       </>
     )}

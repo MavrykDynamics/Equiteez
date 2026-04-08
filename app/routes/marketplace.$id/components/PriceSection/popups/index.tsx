@@ -62,8 +62,12 @@ import {
   OrderBookPopup,
   OrderBookToggleButton,
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
-import { SECONDARY_ORDER_BOOK_DATA } from "../orderBook.consts";
 import clsx from "clsx";
+import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
+import {
+  createDefaultOrderBookData,
+  createOrderBookData,
+} from "../orderBook.consts";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 
@@ -84,6 +88,7 @@ export const PopupContent: FC<{
   const { marketsArr } = useMarketsContext();
   const { dapp } = useWalletContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
+  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const {
@@ -153,6 +158,41 @@ export const PopupContent: FC<{
 
   const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
 
+  const { openOrders, loading: isOpenOrdersLoading } = useOpenOrders({
+    rwaAddress: estate.token_address,
+    enabled: isSecondaryEstate,
+  });
+
+  const orderBookData = useMemo(() => {
+    const baseTokenSymbol = selectedAssetMetadata?.symbol ?? estate.symbol;
+    const quoteTokenSymbol = quoteAssetmetadata?.symbol ?? "USDT";
+
+    if (openOrders.buyOrders.length === 0 && openOrders.sellOrders.length === 0) {
+      return createDefaultOrderBookData({
+        baseTokenSymbol,
+        quoteTokenSymbol,
+      });
+    }
+
+    return createOrderBookData({
+      buyOrders: openOrders.buyOrders,
+      sellOrders: openOrders.sellOrders,
+      baseTokenDecimals: selectedAssetMetadata?.decimals ?? estate.decimals,
+      baseTokenSymbol,
+      quoteTokenDecimals: quoteAssetmetadata?.decimals ?? 6,
+      quoteTokenSymbol,
+    });
+  }, [
+    estate.decimals,
+    estate.symbol,
+    openOrders.buyOrders,
+    openOrders.sellOrders,
+    quoteAssetmetadata?.decimals,
+    quoteAssetmetadata?.symbol,
+    selectedAssetMetadata?.decimals,
+    selectedAssetMetadata?.symbol,
+  ]);
+
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
     const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
@@ -170,7 +210,6 @@ export const PopupContent: FC<{
 
     return orderType === BUY ? buyPrice : sellPrice;
   }, [orderbookStorages, slug, orderType, selectedAssetMetadata.decimals]);
-  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -372,7 +411,16 @@ export const PopupContent: FC<{
       cancelled = true;
       window.clearTimeout(t);
     };
-  }, [mavrykToolkit, total, limitBuyProps, orderType, limitSellProps]);
+  }, [
+    isMarketTypeMarket,
+    limitBuyProps,
+    limitSellProps,
+    mavrykToolkit,
+    marketBuyProps,
+    marketSellProps,
+    orderType,
+    total,
+  ]);
 
   // actual contract calls and their handlers ---------------
 
@@ -489,7 +537,8 @@ export const PopupContent: FC<{
     <div className={styles.popupLayout}>
       {shouldRenderOrderBook && (
         <OrderBookPopup
-          data={SECONDARY_ORDER_BOOK_DATA}
+          data={orderBookData}
+          isLoading={isOpenOrdersLoading}
           isOpen={isOrderBookOpen}
           onClose={closeOrderBook}
         />
@@ -536,7 +585,7 @@ export const PopupContent: FC<{
               <div className="mb-3">
                 <OrderBookToggleButton
                   isOpen={isOrderBookOpen}
-                  labels={SECONDARY_ORDER_BOOK_DATA.toggleLabels}
+                  labels={orderBookData.toggleLabels}
                   onClick={toggleOrderBook}
                 />
               </div>
