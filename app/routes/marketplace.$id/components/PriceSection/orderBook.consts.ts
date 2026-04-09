@@ -8,11 +8,17 @@ import {
 import { atomsToTokens } from "~/lib/utils/formaters";
 
 const DEFAULT_QUOTE_TOKEN_SYMBOL = "USDT";
+const MAX_GROUPING_OPTIONS = 4;
+const MAX_GROUPING_PRECISION_FRACTION_DIGITS = 4;
+export const DEFAULT_ORDER_BOOK_GROUPING_PRECISION = 0.01;
+
+type OrderBookSide = "ask" | "bid";
 
 type CreateOrderBookDataParams = {
   baseTokenDecimals: number;
   baseTokenSymbol: string;
   buyOrders: OpenOrder[];
+  priceGroupingPrecision: number;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   sellOrders: OpenOrder[];
@@ -23,38 +29,39 @@ type CreateDefaultOrderBookDataParams = {
   quoteTokenSymbol?: string;
 };
 
+type GetOrderBookPrecisionOptionsParams = {
+  buyOrders: OpenOrder[];
+  quoteTokenDecimals: number;
+  sellOrders: OpenOrder[];
+};
+
+type GroupedOrderBookRow = {
+  amount: BigNumber;
+  price: BigNumber;
+  total: BigNumber;
+};
+
 const getDepthPercentage = (value: number, maxValue: number) => {
   if (maxValue === 0) return 0;
 
   return Number(((value / maxValue) * 100).toFixed(2));
 };
 
+const getFractionDigits = (value: BigNumber.Value) => {
+  const fractionPart = new BigNumber(value).toFixed().split(".")[1];
+
+  if (!fractionPart) return 0;
+
+  return fractionPart.replace(/0+$/, "").length;
+};
+
+const getPrecisionValue = (fractionDigits: number) =>
+  new BigNumber(1).div(new BigNumber(10).pow(fractionDigits)).toNumber();
+
 const sortRowsByPriceDesc = (rows: OrderBookRow[]) =>
   [...rows].sort((left, right) => right.price - left.price);
 
-const toOrderBookRows = (
-  orders: OpenOrder[],
-  baseTokenDecimals: number,
-  quoteTokenDecimals: number
-) => {
-  const rows = sortRowsByPriceDesc(
-    orders.map((order) => {
-      const amount = atomsToTokens(order.unfulfilled_amount, baseTokenDecimals);
-      const price = atomsToTokens(
-        order.price_per_rwa_token,
-        quoteTokenDecimals
-      );
-      const total = amount.multipliedBy(price);
-
-      return {
-        amount: amount.toNumber(),
-        depthPercentage: 0,
-        price: price.toNumber(),
-        total: total.toNumber(),
-      };
-    })
-  );
-
+const withDepthPercentages = (rows: OrderBookRow[]) => {
   const maxTotal = rows.reduce(
     (currentMax, row) => Math.max(currentMax, row.total),
     0
@@ -66,13 +73,84 @@ const toOrderBookRows = (
   }));
 };
 
-const getSpreadPrice = (asks: OrderBookRow[], bids: OrderBookRow[]) => {
+const getGroupedPriceLevel = (
+  price: BigNumber,
+  groupingPrecision: BigNumber,
+  side: OrderBookSide
+) => {
+  const roundingMode =
+    side === "ask" ? BigNumber.ROUND_CEIL : BigNumber.ROUND_FLOOR;
+
+  return price
+    .div(groupingPrecision)
+    .integerValue(roundingMode)
+    .multipliedBy(groupingPrecision);
+};
+
+const toOrderBookRows = (
+  orders: OpenOrder[],
+  baseTokenDecimals: number,
+  quoteTokenDecimals: number,
+  priceGroupingPrecision: number,
+  side: OrderBookSide
+) => {
+  const groupingPrecision = new BigNumber(priceGroupingPrecision);
+  const priceFractionDigits = getFractionDigits(groupingPrecision);
+  const groupedRows = orders.reduce<Map<string, GroupedOrderBookRow>>(
+    (rows, order) => {
+      const amount = atomsToTokens(order.unfulfilled_amount, baseTokenDecimals);
+      const price = atomsToTokens(
+        order.price_per_rwa_token,
+        quoteTokenDecimals
+      );
+      const total = amount.multipliedBy(price);
+      const groupedPrice = getGroupedPriceLevel(price, groupingPrecision, side);
+      const rowKey = groupedPrice.toFixed(priceFractionDigits);
+      const currentRow = rows.get(rowKey) ?? {
+        amount: new BigNumber(0),
+        price: groupedPrice,
+        total: new BigNumber(0),
+      };
+
+      rows.set(rowKey, {
+        amount: currentRow.amount.plus(amount),
+        price: groupedPrice,
+        total: currentRow.total.plus(total),
+      });
+
+      return rows;
+    },
+    new Map<string, GroupedOrderBookRow>()
+  );
+
+  return withDepthPercentages(
+    sortRowsByPriceDesc(
+      Array.from(groupedRows.values()).map((row) => ({
+        amount: row.amount.toNumber(),
+        depthPercentage: 0,
+        price: row.price.toNumber(),
+        total: row.total.toNumber(),
+      }))
+    )
+  );
+};
+
+const getSpread = (
+  asks: OrderBookRow[],
+  bids: OrderBookRow[]
+): OrderBookData["spread"] => {
   const bestAsk = asks.at(-1)?.price ?? 0;
   const bestBid = bids[0]?.price ?? 0;
 
-  if (bestAsk > 0) return bestAsk;
-
-  return bestBid;
+  return {
+    bestAsk,
+    bestBid,
+    price: bestAsk > 0 ? bestAsk : bestBid,
+    value:
+      bestAsk > 0 && bestBid > 0
+        ? new BigNumber(bestAsk).minus(bestBid).abs().toNumber()
+        : 0,
+  };
 };
 
 const getSentiment = (asks: OrderBookRow[], bids: OrderBookRow[]) => {
@@ -101,6 +179,43 @@ const getSentiment = (asks: OrderBookRow[], bids: OrderBookRow[]) => {
   };
 };
 
+export const getOrderBookPrecisionOptions = ({
+  buyOrders,
+  quoteTokenDecimals,
+  sellOrders,
+}: GetOrderBookPrecisionOptionsParams) => {
+  const orders = [...buyOrders, ...sellOrders];
+  const fallbackFractionDigits = Math.min(quoteTokenDecimals, 2);
+  const startFractionDigits =
+    orders.length === 0
+      ? fallbackFractionDigits
+      : Math.min(
+          orders.reduce((currentMax, order) => {
+            const price = atomsToTokens(
+              order.price_per_rwa_token,
+              quoteTokenDecimals
+            );
+
+            return Math.max(currentMax, getFractionDigits(price));
+          }, 0),
+          MAX_GROUPING_PRECISION_FRACTION_DIGITS
+        );
+
+  return Array.from(
+    new Set(
+      [
+        startFractionDigits,
+        startFractionDigits - 1,
+        startFractionDigits - 2,
+        startFractionDigits - 3,
+        0,
+      ].filter((digits) => digits >= 0)
+    )
+  )
+    .slice(0, MAX_GROUPING_OPTIONS)
+    .map(getPrecisionValue);
+};
+
 export const createDefaultOrderBookData = ({
   baseTokenSymbol,
   quoteTokenSymbol = DEFAULT_QUOTE_TOKEN_SYMBOL,
@@ -122,8 +237,10 @@ export const createDefaultOrderBookData = ({
     sell: 0,
   },
   spread: {
+    bestAsk: 0,
+    bestBid: 0,
     price: 0,
-    referencePrice: 0,
+    value: 0,
   },
 });
 
@@ -131,6 +248,7 @@ export const createOrderBookData = ({
   baseTokenDecimals,
   baseTokenSymbol,
   buyOrders,
+  priceGroupingPrecision,
   quoteTokenDecimals,
   quoteTokenSymbol = DEFAULT_QUOTE_TOKEN_SYMBOL,
   sellOrders,
@@ -138,14 +256,17 @@ export const createOrderBookData = ({
   const asks = toOrderBookRows(
     sellOrders,
     baseTokenDecimals,
-    quoteTokenDecimals
+    quoteTokenDecimals,
+    priceGroupingPrecision,
+    "ask"
   );
   const bids = toOrderBookRows(
     buyOrders,
     baseTokenDecimals,
-    quoteTokenDecimals
+    quoteTokenDecimals,
+    priceGroupingPrecision,
+    "bid"
   );
-  const spreadPrice = getSpreadPrice(asks, bids);
 
   return {
     ...createDefaultOrderBookData({
@@ -155,9 +276,6 @@ export const createOrderBookData = ({
     asks,
     bids,
     sentiment: getSentiment(asks, bids),
-    spread: {
-      price: spreadPrice,
-      referencePrice: spreadPrice,
-    },
+    spread: getSpread(asks, bids),
   };
 };

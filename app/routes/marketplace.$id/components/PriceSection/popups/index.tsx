@@ -67,6 +67,8 @@ import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import {
   createDefaultOrderBookData,
   createOrderBookData,
+  DEFAULT_ORDER_BOOK_GROUPING_PRECISION,
+  getOrderBookPrecisionOptions,
 } from "../orderBook.consts";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
@@ -158,10 +160,39 @@ export const PopupContent: FC<{
 
   const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
 
-  const { openOrders, loading: isOpenOrdersLoading } = useOpenOrders({
+  const {
+    openOrders,
+    loading: isOpenOrdersLoading,
+    isRefreshing: isOpenOrdersRefreshing,
+  } = useOpenOrders({
     rwaAddress: estate.token_address,
     enabled: isSecondaryEstate,
   });
+
+  const orderBookPrecisionOptions = useMemo(
+    () =>
+      getOrderBookPrecisionOptions({
+        buyOrders: openOrders.buyOrders,
+        sellOrders: openOrders.sellOrders,
+        quoteTokenDecimals: quoteAssetmetadata?.decimals ?? 6,
+      }),
+    [openOrders.buyOrders, openOrders.sellOrders, quoteAssetmetadata?.decimals]
+  );
+  const [orderBookPrecision, setOrderBookPrecision] = useState(
+    orderBookPrecisionOptions[0] ?? DEFAULT_ORDER_BOOK_GROUPING_PRECISION
+  );
+
+  useEffect(() => {
+    setOrderBookPrecision((currentPrecision) => {
+      if (orderBookPrecisionOptions.includes(currentPrecision)) {
+        return currentPrecision;
+      }
+
+      return (
+        orderBookPrecisionOptions[0] ?? DEFAULT_ORDER_BOOK_GROUPING_PRECISION
+      );
+    });
+  }, [orderBookPrecisionOptions]);
 
   const orderBookData = useMemo(() => {
     const baseTokenSymbol = selectedAssetMetadata?.symbol ?? estate.symbol;
@@ -182,6 +213,7 @@ export const PopupContent: FC<{
       sellOrders: openOrders.sellOrders,
       baseTokenDecimals: selectedAssetMetadata?.decimals ?? estate.decimals,
       baseTokenSymbol,
+      priceGroupingPrecision: orderBookPrecision,
       quoteTokenDecimals: quoteAssetmetadata?.decimals ?? 6,
       quoteTokenSymbol,
     });
@@ -190,6 +222,7 @@ export const PopupContent: FC<{
     estate.symbol,
     openOrders.buyOrders,
     openOrders.sellOrders,
+    orderBookPrecision,
     quoteAssetmetadata?.decimals,
     quoteAssetmetadata?.symbol,
     selectedAssetMetadata?.decimals,
@@ -542,8 +575,12 @@ export const PopupContent: FC<{
         <OrderBookPopup
           data={orderBookData}
           isLoading={isOpenOrdersLoading}
+          isRefreshing={isOpenOrdersRefreshing}
           isOpen={isOrderBookOpen}
+          onGroupingChange={setOrderBookPrecision}
           onClose={closeOrderBook}
+          priceGroupingOptions={orderBookPrecisionOptions}
+          selectedPriceGrouping={orderBookPrecision}
         />
       )}
 

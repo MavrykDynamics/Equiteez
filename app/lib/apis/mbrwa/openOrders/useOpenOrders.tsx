@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import { useQuery } from "@apollo/client/index";
 import { ALL_OPEN_ORDERS_QUERY } from "~/lib/apis/queries/openOrders.query";
 import {
   OpenOrder,
@@ -9,9 +8,17 @@ import {
 } from "./openOrders.schema";
 import { useApolloContext } from "~/providers/ApolloProvider/apollo.provider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
+import { useQueryWithRefetch } from "~/providers/ApolloProvider/hooks/useQueryWithRefetch";
 
-export const OPEN_ORDERS_LIMIT = 10;
 const OPEN_ORDERS_OFFSET = 0;
+const OPEN_ORDERS_REFETCH_INTERVAL = 30_000;
+const EMPTY_OPEN_ORDERS = {
+  buyOrders: [],
+  sellOrders: [],
+} satisfies {
+  buyOrders: OpenOrder[];
+  sellOrders: OpenOrder[];
+};
 
 type UseOpenOrdersParams = {
   enabled?: boolean;
@@ -25,17 +32,26 @@ export function useOpenOrders({
   const { handleApolloError } = useApolloContext();
   const { warning } = useToasterContext();
 
-  const openOrdersData = useQuery<OpenOrdersQueryData, OpenOrdersQueryVariables>(
+  const queryVariables = useMemo<OpenOrdersQueryVariables>(
+    () => ({
+      rwaAddress,
+      offset: OPEN_ORDERS_OFFSET,
+    }),
+    [rwaAddress]
+  );
+
+  const openOrdersData = useQueryWithRefetch<
+    OpenOrdersQueryData,
+    OpenOrdersQueryVariables
+  >(
     ALL_OPEN_ORDERS_QUERY,
     {
-      variables: {
-        rwaAddress,
-        offset: OPEN_ORDERS_OFFSET,
-        limit: OPEN_ORDERS_LIMIT,
-      },
+      variables: queryVariables,
       skip: !enabled || !rwaAddress,
-      notifyOnNetworkStatusChange: true,
-      fetchPolicy: "network-only",
+    },
+    {
+      refetchInterval: OPEN_ORDERS_REFETCH_INTERVAL,
+      refetchQueryVariables: queryVariables,
     }
   );
 
@@ -58,16 +74,14 @@ export function useOpenOrders({
     warning("Unable to parse open orders", parsedData.error.message);
   }, [parsedData, warning]);
 
+  const hasOrdersData = Boolean(parsedData?.success);
+  const openOrders: OpenOrdersQueryData = parsedData?.success
+    ? parsedData.data
+    : EMPTY_OPEN_ORDERS;
+
   return {
-    openOrders: parsedData?.success
-      ? parsedData.data
-      : ({
-          buyOrders: [],
-          sellOrders: [],
-        } satisfies {
-          buyOrders: OpenOrder[];
-          sellOrders: OpenOrder[];
-        }),
-    loading: openOrdersData.loading,
+    openOrders,
+    loading: openOrdersData.loading && !hasOrdersData,
+    isRefreshing: openOrdersData.loading && hasOrdersData,
   };
 }

@@ -4,7 +4,7 @@ export const ALL_OPEN_ORDERS_QUERY = gql`
   query allOpenOrdersQuery(
     $rwaAddress: String
     $offset: Int = 0
-    $limit: Int = 10
+    $limit: Int
   ) {
     buyOrders: orderbook_order(
       order_by: { price_per_rwa_token: desc, created_at: desc }
