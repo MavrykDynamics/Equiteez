@@ -5,6 +5,9 @@
   "type": "module",
   "mian": "build/server/index.js",
   "scripts": {
+    "generate:sitemap-routes": "node ./scripts/generate-sitemap-routes.mjs",
+    "prebuild": "npm run generate:sitemap-routes",
+    "predev": "npm run generate:sitemap-routes",
     "build": "remix vite:build",
     "deploy": "npm run build && wrangler pages deploy",
     "dev": "remix vite:dev",
