@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
-import {
+import type {
   OrderBookData,
   OrderBookRow,
-} from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+} from "~/lib/organisms/OrderBookPopup/orderBook.types";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
 const DEFAULT_QUOTE_TOKEN_SYMBOL = "USDT";

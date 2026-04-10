@@ -59,17 +59,11 @@ import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import {
+  ORDER_BOOK_TOGGLE_LABELS,
   OrderBookPopup,
   OrderBookToggleButton,
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
-import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
-import {
-  createDefaultOrderBookData,
-  createOrderBookData,
-  DEFAULT_ORDER_BOOK_GROUPING_PRECISION,
-  getOrderBookPrecisionOptions,
-} from "../orderBook.consts";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 
@@ -159,75 +153,8 @@ export const PopupContent: FC<{
   const selectedAssetMetadata = useAssetMetadata(slug);
 
   const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
-
-  const {
-    openOrders,
-    loading: isOpenOrdersLoading,
-    isRefreshing: isOpenOrdersRefreshing,
-  } = useOpenOrders({
-    rwaAddress: estate.token_address,
-    enabled: isSecondaryEstate,
-  });
-
-  const orderBookPrecisionOptions = useMemo(
-    () =>
-      getOrderBookPrecisionOptions({
-        buyOrders: openOrders.buyOrders,
-        sellOrders: openOrders.sellOrders,
-        quoteTokenDecimals: quoteAssetmetadata?.decimals ?? 6,
-      }),
-    [openOrders.buyOrders, openOrders.sellOrders, quoteAssetmetadata?.decimals]
-  );
-  const [orderBookPrecision, setOrderBookPrecision] = useState(
-    orderBookPrecisionOptions[0] ?? DEFAULT_ORDER_BOOK_GROUPING_PRECISION
-  );
-
-  useEffect(() => {
-    setOrderBookPrecision((currentPrecision) => {
-      if (orderBookPrecisionOptions.includes(currentPrecision)) {
-        return currentPrecision;
-      }
-
-      return (
-        orderBookPrecisionOptions[0] ?? DEFAULT_ORDER_BOOK_GROUPING_PRECISION
-      );
-    });
-  }, [orderBookPrecisionOptions]);
-
-  const orderBookData = useMemo(() => {
-    const baseTokenSymbol = selectedAssetMetadata?.symbol ?? estate.symbol;
-    const quoteTokenSymbol = quoteAssetmetadata?.symbol ?? "USDT";
-
-    if (
-      openOrders.buyOrders.length === 0 &&
-      openOrders.sellOrders.length === 0
-    ) {
-      return createDefaultOrderBookData({
-        baseTokenSymbol,
-        quoteTokenSymbol,
-      });
-    }
-
-    return createOrderBookData({
-      buyOrders: openOrders.buyOrders,
-      sellOrders: openOrders.sellOrders,
-      baseTokenDecimals: selectedAssetMetadata?.decimals ?? estate.decimals,
-      baseTokenSymbol,
-      priceGroupingPrecision: orderBookPrecision,
-      quoteTokenDecimals: quoteAssetmetadata?.decimals ?? 6,
-      quoteTokenSymbol,
-    });
-  }, [
-    estate.decimals,
-    estate.symbol,
-    openOrders.buyOrders,
-    openOrders.sellOrders,
-    orderBookPrecision,
-    quoteAssetmetadata?.decimals,
-    quoteAssetmetadata?.symbol,
-    selectedAssetMetadata?.decimals,
-    selectedAssetMetadata?.symbol,
-  ]);
+  const baseTokenDecimals = selectedAssetMetadata?.decimals ?? estate.decimals;
+  const quoteTokenDecimals = quoteAssetmetadata?.decimals ?? 6;
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
@@ -236,16 +163,17 @@ export const PopupContent: FC<{
     const buyPrice = calculateMarketBuy(
       lowestSellPrice,
       highestBuyPrice,
-      selectedAssetMetadata.decimals
+      baseTokenDecimals
     );
     const sellPrice = calculateMarketSell(
       lowestSellPrice,
       highestBuyPrice,
-      selectedAssetMetadata.decimals
+      baseTokenDecimals
     );
+    const nextPrice = orderType === BUY ? buyPrice : sellPrice;
 
-    return orderType === BUY ? buyPrice : sellPrice;
-  }, [orderbookStorages, slug, orderType, selectedAssetMetadata.decimals]);
+    return Number.isFinite(nextPrice) && nextPrice > 0 ? nextPrice : 1;
+  }, [baseTokenDecimals, orderType, orderbookStorages, slug]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -573,14 +501,16 @@ export const PopupContent: FC<{
     <div className={styles.popupLayout}>
       {shouldRenderOrderBook && (
         <OrderBookPopup
-          data={orderBookData}
-          isLoading={isOpenOrdersLoading}
-          isRefreshing={isOpenOrdersRefreshing}
+          baseTokenDecimals={baseTokenDecimals}
+          baseTokenSymbol={selectedAssetMetadata?.symbol ?? estate.symbol}
+          enabled={isSecondaryEstate}
           isOpen={isOrderBookOpen}
-          onGroupingChange={setOrderBookPrecision}
           onClose={closeOrderBook}
-          priceGroupingOptions={orderBookPrecisionOptions}
-          selectedPriceGrouping={orderBookPrecision}
+          quoteTokenDecimals={quoteTokenDecimals}
+          quoteTokenSymbol={quoteAssetmetadata?.symbol ?? "USDT"}
+          referencePrice={tokenPrice}
+          rwaAddress={estate.token_address}
+          useSimulatedOrders
         />
       )}
 
@@ -625,7 +555,7 @@ export const PopupContent: FC<{
               <div className="mb-3">
                 <OrderBookToggleButton
                   isOpen={isOrderBookOpen}
-                  labels={orderBookData.toggleLabels}
+                  labels={ORDER_BOOK_TOGGLE_LABELS}
                   onClick={toggleOrderBook}
                 />
               </div>
