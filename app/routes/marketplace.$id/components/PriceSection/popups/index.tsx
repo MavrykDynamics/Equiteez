@@ -510,7 +510,6 @@ export const PopupContent: FC<{
           quoteTokenSymbol={quoteAssetmetadata?.symbol ?? "USDT"}
           referencePrice={tokenPrice}
           rwaAddress={estate.token_address}
-          useSimulatedOrders
         />
       )}
 

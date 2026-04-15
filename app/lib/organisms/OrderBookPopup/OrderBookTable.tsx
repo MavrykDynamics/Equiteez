@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import clsx from "clsx";
+import ChevronDownIcon from "app/icons/chevron-down.svg?react";
 
 import {
   createDefaultOrderBookData,
@@ -17,7 +18,6 @@ import {
   getOrderBookPrecisionOptions,
 } from "~/routes/marketplace.$id/components/PriceSection/orderBook.consts";
 import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
-import { useSimulatedOpenOrders } from "~/lib/apis/mbrwa/openOrders/useSimulatedOpenOrders";
 import { Spinner } from "~/lib/atoms/Spinner";
 
 import { OrderRow } from "./OrderRow";
@@ -56,16 +56,13 @@ type OrderBookTableProps = {
   baseTokenSymbol: string;
   emptyMessage?: string;
   enabled?: boolean;
-  isMobile?: boolean;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
   rwaAddress?: string | null;
-  useSimulatedOrders?: boolean;
 };
 
 type OrderBookTableHeaderProps = {
-  isMobile?: boolean;
   onDisplayModeChange: (value: OrderBookDisplayMode) => void;
   onGroupingChange: (value: number) => void;
   priceGroupingOptions: number[];
@@ -85,8 +82,9 @@ type OrderBookRowsSectionProps = {
   formatters: OrderBookNumberFormatters;
   rows: OrderBookRow[];
   side: "ask" | "bid";
-  title: string;
 };
+
+type SpreadDirection = "up" | "down";
 
 const hasOrderBookRows = (data: OrderBookData) =>
   data.asks.length > 0 || data.bids.length > 0;
@@ -107,7 +105,10 @@ const getColumnFractionDigits = (values: number[]) => {
 
   return values.reduce(
     (currentMax, value) =>
-      Math.max(currentMax, getFractionDigits(value, MAX_METRIC_FRACTION_DIGITS)),
+      Math.max(
+        currentMax,
+        getFractionDigits(value, MAX_METRIC_FRACTION_DIGITS)
+      ),
     0
   );
 };
@@ -185,6 +186,7 @@ const getSpreadDisplayData = (
     return {
       label: "Best Bid",
       price: spread.bestBid,
+      side: "bid" as const,
       value: null,
     };
   }
@@ -193,6 +195,7 @@ const getSpreadDisplayData = (
     return {
       label: "Best Ask",
       price: spread.bestAsk,
+      side: "ask" as const,
       value: null,
     };
   }
@@ -200,9 +203,31 @@ const getSpreadDisplayData = (
   return {
     label: getSpreadLabel(spread),
     price: spread.price,
-    value:
-      spread.bestAsk > 0 && spread.bestBid > 0 ? spread.value : null,
+    side: spread.bestAsk > 0 ? ("ask" as const) : ("bid" as const),
+    value: spread.bestAsk > 0 && spread.bestBid > 0 ? spread.value : null,
   };
+};
+
+const getSpreadDirection = (
+  displayMode: OrderBookDisplayMode
+): SpreadDirection => (displayMode === "sell" ? "up" : "down");
+
+const getReferencePriceLabel = ({
+  formatPrice,
+  quoteTokenSymbol,
+  referencePrice,
+}: {
+  formatPrice: Intl.NumberFormat;
+  quoteTokenSymbol: string;
+  referencePrice: number;
+}) => {
+  const formattedReferencePrice = formatPrice.format(referencePrice);
+
+  if (quoteTokenSymbol === "USD" || quoteTokenSymbol === "USDT") {
+    return `$${formattedReferencePrice}`;
+  }
+
+  return `${formattedReferencePrice} ${quoteTokenSymbol}`;
 };
 
 const areRowsEqual = (left: OrderBookRow, right: OrderBookRow) =>
@@ -211,7 +236,10 @@ const areRowsEqual = (left: OrderBookRow, right: OrderBookRow) =>
   left.price === right.price &&
   left.total === right.total;
 
-const reconcileRows = (previousRows: OrderBookRow[], nextRows: OrderBookRow[]) => {
+const reconcileRows = (
+  previousRows: OrderBookRow[],
+  nextRows: OrderBookRow[]
+) => {
   if (previousRows.length === 0) return nextRows;
 
   const previousRowsByPrice = new Map(
@@ -297,11 +325,8 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
   formatters,
   rows,
   side,
-  title,
 }) => (
   <section className={styles.section}>
-    <div className={styles.sectionLabel}>{title}</div>
-
     <div className={styles.tableSection}>
       {rows.length === 0 ? (
         <div className={styles.sectionEmpty}>{emptyLabel}</div>
@@ -325,8 +350,65 @@ const OrderBookRowsSection = memo(OrderBookRowsSectionComponent);
 
 OrderBookRowsSection.displayName = "OrderBookRowsSection";
 
+const ORDER_BOOK_DISPLAY_MODE_ICON_TONES: Record<
+  OrderBookDisplayMode,
+  Array<"buy" | "neutral" | "sell">
+> = {
+  both: ["sell", "neutral", "buy", "neutral"],
+  buy: ["buy", "neutral", "neutral", "neutral"],
+  sell: ["neutral", "neutral", "sell", "neutral"],
+};
+
+const OrderBookDisplayModeIcon: FC<{
+  mode: OrderBookDisplayMode;
+}> = ({ mode }) => (
+  <span className={styles.displayModeIcon} aria-hidden="true">
+    {ORDER_BOOK_DISPLAY_MODE_ICON_TONES[mode].map((tone, index) => (
+      <span key={`${mode}-${index}`} className={styles.displayModeColumn}>
+        <span
+          className={clsx(
+            styles.displayModeCell,
+            tone === "buy" && styles.displayModeCellBuy,
+            tone === "sell" && styles.displayModeCellSell
+          )}
+        />
+        <span
+          className={clsx(
+            styles.displayModeCell,
+            tone === "buy" && styles.displayModeCellBuy,
+            tone === "sell" && styles.displayModeCellSell
+          )}
+        />
+      </span>
+    ))}
+  </span>
+);
+
+const SpreadDirectionIcon: FC<{
+  direction: SpreadDirection;
+  side: "ask" | "bid";
+}> = ({ direction, side }) => (
+  <svg
+    viewBox="0 0 16 16"
+    aria-hidden="true"
+    className={clsx(
+      styles.spreadDirectionIcon,
+      direction === "up" && styles.spreadDirectionIconUp,
+      side === "ask" ? styles.askPrice : styles.bidPrice
+    )}
+  >
+    <path
+      d="M8 1.5v13M8 14.5l4-4M8 14.5l-4-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.75"
+    />
+  </svg>
+);
+
 const OrderBookTableHeaderComponent: FC<OrderBookTableHeaderProps> = ({
-  isMobile = false,
   onDisplayModeChange,
   onGroupingChange,
   priceGroupingOptions,
@@ -338,49 +420,50 @@ const OrderBookTableHeaderComponent: FC<OrderBookTableHeaderProps> = ({
 
   return (
     <div className={styles.header}>
-      <div className={styles.headerTop}>
-        <h3 className={clsx(styles.title, isMobile && styles.mobileTitle)}>
-          {title}
-        </h3>
-
-        <div className={styles.headerActions}>
-          {shouldShowGroupingControl && (
-            <label className={styles.groupingControl}>
-              <span className={styles.groupingControlLabel}>Group</span>
-              <select
-                className={styles.groupingSelect}
-                onChange={(event) =>
-                  onGroupingChange(Number(event.currentTarget.value))
-                }
-                value={String(selectedPriceGrouping)}
-              >
-                {priceGroupingOptions.map((option) => (
-                  <option key={option} value={String(option)}>
-                    {formatGroupingValue(option)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
+      <div className={styles.headerTabs}>
+        <span className={styles.headerTabActive}>{title}</span>
+        <span className={styles.headerTab}>Last Trades</span>
       </div>
 
-      <div className={styles.displayModeSwitcher} role="tablist">
-        {ORDER_BOOK_DISPLAY_MODE_OPTIONS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            aria-pressed={selectedDisplayMode === option.id}
-            className={clsx(
-              styles.displayModeButton,
-              selectedDisplayMode === option.id &&
-                styles.displayModeButtonActive
-            )}
-            onClick={() => onDisplayModeChange(option.id)}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className={styles.headerActions}>
+        <div className={styles.displayModeSwitcher} role="tablist">
+          {ORDER_BOOK_DISPLAY_MODE_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              aria-label={option.label}
+              aria-pressed={selectedDisplayMode === option.id}
+              className={clsx(
+                styles.displayModeButton,
+                selectedDisplayMode === option.id &&
+                  styles.displayModeButtonActive
+              )}
+              onClick={() => onDisplayModeChange(option.id)}
+            >
+              <OrderBookDisplayModeIcon mode={option.id} />
+            </button>
+          ))}
+        </div>
+
+        {shouldShowGroupingControl && (
+          <label className={styles.groupingControl}>
+            <select
+              aria-label="Price grouping"
+              className={styles.groupingSelect}
+              onChange={(event) =>
+                onGroupingChange(Number(event.currentTarget.value))
+              }
+              value={String(selectedPriceGrouping)}
+            >
+              {priceGroupingOptions.map((option) => (
+                <option key={option} value={String(option)}>
+                  {formatGroupingValue(option)}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon className={styles.groupingSelectIcon} />
+          </label>
+        )}
       </div>
     </div>
   );
@@ -395,27 +478,15 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   baseTokenSymbol,
   emptyMessage = "No open orders available.",
   enabled = true,
-  isMobile = false,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
-  referencePrice = 1,
+  referencePrice = 0,
   rwaAddress,
-  useSimulatedOrders = true,
 }) => {
-  const liveOpenOrdersState = useOpenOrders({
+  const { openOrders, loading } = useOpenOrders({
     rwaAddress,
-    enabled: enabled && !useSimulatedOrders,
+    enabled,
   });
-  const simulatedOpenOrdersState = useSimulatedOpenOrders({
-    baseTokenDecimals,
-    quoteTokenDecimals,
-    referencePrice,
-    rwaAddress,
-    enabled: enabled && useSimulatedOrders,
-  });
-  const { openOrders, loading } = useSimulatedOrders
-    ? simulatedOpenOrdersState
-    : liveOpenOrdersState;
 
   const defaultData = useMemo(
     () =>
@@ -491,7 +562,9 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const [renderData, setRenderData] = useState<OrderBookData>(nextData);
 
   useEffect(() => {
-    setRenderData((currentData) => reconcileOrderBookData(currentData, nextData));
+    setRenderData((currentData) =>
+      reconcileOrderBookData(currentData, nextData)
+    );
   }, [nextData]);
 
   const visibleAsks = useStableVisibleRows(
@@ -532,13 +605,31 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     }),
     [amountFractionDigits, priceFractionDigits, totalFractionDigits]
   );
+  const shouldShowReferencePrice = referencePrice > 0;
   const shouldShowSentimentBar = selectedDisplayMode === "both";
-  const handleDisplayModeChange = useCallback(
-    (value: OrderBookDisplayMode) => {
-      setSelectedDisplayMode(value);
-    },
-    []
+  const spreadDirection = useMemo(
+    () => getSpreadDirection(selectedDisplayMode),
+    [selectedDisplayMode]
   );
+  const referencePriceLabel = useMemo(
+    () =>
+      shouldShowReferencePrice
+        ? getReferencePriceLabel({
+            formatPrice: formatters.price,
+            quoteTokenSymbol,
+            referencePrice,
+          })
+        : null,
+    [
+      formatters.price,
+      quoteTokenSymbol,
+      referencePrice,
+      shouldShowReferencePrice,
+    ]
+  );
+  const handleDisplayModeChange = useCallback((value: OrderBookDisplayMode) => {
+    setSelectedDisplayMode(value);
+  }, []);
   const handleGroupingChange = useCallback((value: number) => {
     setSelectedPriceGrouping(value);
   }, []);
@@ -546,7 +637,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   return (
     <>
       <OrderBookTableHeader
-        isMobile={isMobile}
         onDisplayModeChange={handleDisplayModeChange}
         onGroupingChange={handleGroupingChange}
         priceGroupingOptions={priceGroupingOptions}
@@ -578,37 +668,48 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
                 formatters={formatters}
                 rows={visibleAsks}
                 side="ask"
-                title="Asks"
               />
             )}
 
             <div className={styles.spreadRow}>
               <span
-                className={clsx(styles.cell, styles.priceCell, styles.spreadPrice)}
+                className={clsx(
+                  styles.spreadPrice,
+                  spreadDisplayData.side === "ask"
+                    ? styles.askPrice
+                    : styles.bidPrice
+                )}
               >
                 {spreadDisplayData.price > 0
                   ? formatters.price.format(spreadDisplayData.price)
                   : "--"}
               </span>
-              <span
-                className={clsx(
-                  styles.cell,
-                  styles.amountCell,
-                  styles.spreadLabel
+
+              <span className={styles.spreadMeta}>
+                {shouldShowReferencePrice ? (
+                  <SpreadDirectionIcon
+                    direction={spreadDirection}
+                    side={spreadDisplayData.side}
+                  />
+                ) : (
+                  <span className={styles.spreadLabel}>
+                    {spreadDisplayData.label}
+                  </span>
                 )}
-              >
-                {spreadDisplayData.label}
               </span>
+
               <span
                 className={clsx(
-                  styles.cell,
-                  styles.totalCell,
-                  styles.spreadValue
+                  shouldShowReferencePrice
+                    ? styles.spreadReference
+                    : styles.spreadValue
                 )}
               >
-                {spreadDisplayData.value !== null
-                  ? formatters.price.format(spreadDisplayData.value)
-                  : "--"}
+                {shouldShowReferencePrice
+                  ? referencePriceLabel
+                  : spreadDisplayData.value !== null
+                    ? formatters.price.format(spreadDisplayData.value)
+                    : "--"}
               </span>
             </div>
 
@@ -618,7 +719,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
                 formatters={formatters}
                 rows={visibleBids}
                 side="bid"
-                title="Bids"
               />
             )}
 
@@ -628,7 +728,9 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
                   className={clsx(styles.sentimentSide, styles.buySentiment)}
                   style={{ width: `${renderData.sentiment.buy}%` }}
                 >
-                  <span className={clsx(styles.sentimentBadge, styles.buyBadge)}>
+                  <span
+                    className={clsx(styles.sentimentBadge, styles.buyBadge)}
+                  >
                     B
                   </span>
                   <span className={styles.buyPercentage}>
@@ -643,7 +745,9 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
                   <span className={styles.sellPercentage}>
                     {renderData.sentiment.sell}%
                   </span>
-                  <span className={clsx(styles.sentimentBadge, styles.sellBadge)}>
+                  <span
+                    className={clsx(styles.sentimentBadge, styles.sellBadge)}
+                  >
                     S
                   </span>
                 </div>

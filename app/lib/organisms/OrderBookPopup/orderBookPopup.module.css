@@ -45,109 +45,130 @@
   background: #fff;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
   padding-bottom: 12px;
   position: sticky;
   top: 0;
   z-index: 3;
 }
 
-.headerTop {
-  align-items: flex-start;
+.headerTabs {
+  align-items: center;
   display: flex;
   gap: 12px;
-  justify-content: space-between;
+}
+
+.headerTabActive {
+  color: var(--color-sand-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.headerTab {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .headerActions {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-left: auto;
-}
-
-.refreshingLabel {
-  background: var(--color-grey-100);
-  border-radius: 999px;
-  color: var(--color-sand-600);
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 16px;
-  padding: 4px 10px;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 .groupingControl {
   align-items: center;
-  background: var(--color-grey-100);
-  border: 1px solid var(--color-grey-200);
-  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--color-grey-100);
+  border-radius: 8px;
   display: inline-flex;
+  flex-shrink: 0;
   gap: 8px;
-  padding: 4px 10px 4px 12px;
-}
-
-.groupingControlLabel {
-  color: var(--color-sand-600);
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 16px;
+  min-height: 34px;
+  padding: 0 14px;
 }
 
 .groupingSelect {
+  appearance: none;
   background: transparent;
   border: 0;
   color: var(--color-sand-900);
   cursor: pointer;
   font-size: 12px;
   font-style: normal;
-  font-weight: 700;
-  line-height: 16px;
-  min-height: 24px;
+  font-weight: 400;
+  line-height: 18px;
+  min-height: 34px;
+  min-width: 38px;
   outline: none;
-  padding-right: 4px;
+  padding: 8px 20px 8px 0;
+}
+
+.groupingSelectIcon {
+  color: var(--color-sand-900);
+  flex-shrink: 0;
+  height: 16px;
+  pointer-events: none;
+  width: 16px;
 }
 
 .displayModeSwitcher {
-  background: var(--color-grey-100);
-  border: 1px solid var(--color-grey-200);
-  border-radius: 999px;
   display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  width: fit-content;
+  gap: 8px;
 }
 
 .displayModeButton {
+  align-items: center;
   background: transparent;
-  border-radius: 999px;
-  color: var(--color-sand-600);
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 16px;
-  min-height: 28px;
-  padding: 6px 10px;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-  white-space: nowrap;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  width: 24px;
 }
 
 .displayModeButtonActive {
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(18, 18, 18, 0.08);
-  color: var(--color-sand-900);
+  opacity: 1;
+}
+
+.displayModeIcon {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(4, 3px);
+}
+
+.displayModeColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.displayModeCell {
+  background: var(--color-grey-100);
+  border-radius: 1px;
+  height: 6px;
+  width: 3px;
+}
+
+.displayModeCellBuy {
+  background: rgba(69, 151, 97, 1);
+}
+
+.displayModeCellSell {
+  background: rgba(232, 55, 54, 1);
 }
 
 .content {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .state {
@@ -169,45 +190,16 @@
   line-height: 20px;
 }
 
-.title {
-  color: var(--color-sand-900);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 28px;
-}
-
-.mobileTitle {
-  font-size: 16px;
-  line-height: 24px;
-}
-
 .tableHeader,
-.tableRow,
-.spreadRow {
+.tableRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   position: relative;
-}
-
-.tableHeader {
-  border-bottom: 1px solid var(--color-grey-200);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.sectionLabel {
-  color: var(--color-sand-600);
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 16px;
-  text-transform: uppercase;
 }
 
 .sectionEmpty {
@@ -229,57 +221,41 @@
 }
 
 .tableRow {
-  min-height: 36px;
+  min-height: 24px;
   overflow: hidden;
 }
 
 .cell {
   align-items: center;
-  color: var(--color-sand-600);
+  color: var(--color-sand-900);
   display: flex;
-  font-size: 13px;
+  font-size: 14px;
   font-style: normal;
-  font-weight: 500;
-  line-height: 18px;
-  min-height: 36px;
-  padding-bottom: 8px;
-  padding-top: 8px;
+  font-weight: 400;
+  line-height: 20px;
+  min-height: 24px;
+  padding: 2px 8px 2px 0;
   position: relative;
   z-index: 1;
-}
-
-.priceCell,
-.amountCell {
-  border-right: 1px solid var(--color-grey-200);
 }
 
 .tableHeader .cell {
   color: var(--color-sand-600);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 18px;
   min-height: auto;
-  padding-bottom: 10px;
-  padding-top: 0;
-}
-
-.tableRow .cell {
-  border-bottom: 1px solid var(--color-grey-100);
-  color: var(--color-sand-900);
-}
-
-.tableSection .tableRow:last-child .cell {
-  border-bottom: 0;
+  padding-bottom: 4px;
+  padding-top: 4px;
 }
 
 .priceCell {
   justify-content: flex-start;
-  padding-right: 10px;
 }
 
 .amountCell,
 .totalCell {
   justify-content: flex-end;
-  padding-left: 10px;
   text-align: right;
 }
 
@@ -292,22 +268,12 @@
 }
 
 .askRow .depthBar {
-  background: linear-gradient(
-    90deg,
-    rgba(232, 55, 54, 0) 0%,
-    rgba(232, 55, 54, 0.08) 18%,
-    rgba(232, 55, 54, 0.24) 100%
-  );
+  background: rgba(232, 55, 54, 0.25);
   right: 0;
 }
 
 .bidRow .depthBar {
-  background: linear-gradient(
-    90deg,
-    rgba(69, 151, 97, 0.24) 0%,
-    rgba(69, 151, 97, 0.08) 82%,
-    rgba(69, 151, 97, 0) 100%
-  );
+  background: rgba(69, 151, 97, 0.25);
   left: 0;
 }
 
@@ -321,48 +287,60 @@
 
 .spreadRow {
   align-items: center;
-  background: var(--color-grey-100);
-  border: 1px solid var(--color-grey-200);
-  border-radius: 12px;
-  min-height: 40px;
-  padding: 0 12px;
-}
-
-.spreadRow .cell {
-  border-bottom: 0;
-  min-height: 40px;
-}
-
-.spreadRow .priceCell,
-.spreadRow .amountCell {
-  border-right: 1px solid var(--color-grey-200);
+  display: flex;
+  gap: 4px;
+  min-height: 27px;
+  padding: 1px 8px 1px 0;
 }
 
 .spreadPrice {
-  color: var(--color-sand-900);
-  font-size: 15px;
+  font-size: 16px;
   font-style: normal;
-  font-weight: 700;
-  line-height: 20px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.spreadMeta {
+  align-items: center;
+  display: flex;
+  min-width: 16px;
 }
 
 .spreadLabel {
   color: var(--color-sand-600);
   font-size: 12px;
   font-style: normal;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 16px;
-  text-transform: uppercase;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.spreadDirectionIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.spreadDirectionIconUp {
+  transform: rotate(180deg);
+}
+
+.spreadReference {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .spreadValue {
   color: var(--color-sand-900);
-  font-weight: 600;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .sentimentBar {
-  border-radius: 12px;
+  border-radius: 4px;
   display: flex;
   overflow: hidden;
 }
@@ -371,33 +349,33 @@
   align-items: center;
   display: flex;
   gap: 8px;
-  min-height: 32px;
-  padding: 4px 10px;
+  min-height: 29px;
+  padding: 4px 8px;
 }
 
 .buySentiment {
-  background: rgba(69, 151, 97, 0.2);
+  background: rgba(69, 151, 97, 0.25);
 }
 
 .sellSentiment {
-  background: rgba(232, 55, 54, 0.2);
+  background: rgba(232, 55, 54, 0.25);
   justify-content: flex-end;
   margin-left: auto;
 }
 
 .sentimentBadge {
   align-items: center;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid currentColor;
   display: flex;
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 700;
-  height: 24px;
+  height: 29px;
   justify-content: center;
-  line-height: 18px;
-  width: 24px;
+  line-height: 21px;
+  width: 29px;
 }
 
 .buyBadge,
@@ -412,10 +390,10 @@
 
 .buyPercentage,
 .sellPercentage {
-  font-size: 13px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 700;
-  line-height: 18px;
+  line-height: 21px;
 }
 
 .toggleButton {
@@ -472,38 +450,7 @@
     gap: 0;
   }
 
-  .header {
-    gap: 10px;
-  }
-
-  .headerTop {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .headerActions {
-    justify-content: space-between;
-    margin-left: 0;
-  }
-
-  .groupingControl {
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  .displayModeSwitcher {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  .displayModeButton {
-    padding-left: 8px;
-    padding-right: 8px;
-    text-align: center;
-  }
-
-  .content {
-    gap: 14px;
+    gap: 16px;
   }
 }

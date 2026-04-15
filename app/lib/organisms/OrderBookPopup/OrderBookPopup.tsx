@@ -35,7 +35,6 @@ type OrderBookPopupProps = {
   quoteTokenSymbol?: string;
   referencePrice?: number;
   rwaAddress?: string | null;
-  useSimulatedOrders?: boolean;
 };
 
 type OrderBookToggleButtonProps = {
@@ -103,7 +102,6 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
   quoteTokenSymbol,
   referencePrice,
   rwaAddress,
-  useSimulatedOrders = true,
 }) => {
   const isMobileViewport = useIsMobileViewport();
   const isMobile = isMobileViewport;
@@ -118,9 +116,19 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
         <motion.div
           key={isMobile ? "mobile-order-book" : "desktop-order-book"}
           className={wrapperClassName}
-          initial={isMobile ? { opacity: 0, x: "100%" } : { opacity: 0, width: 0, x: -32 }}
-          animate={isMobile ? { opacity: 1, x: 0 } : { opacity: 1, width: 359, x: 0 }}
-          exit={isMobile ? { opacity: 0, x: "100%" } : { opacity: 0, width: 0, x: -32 }}
+          initial={
+            isMobile
+              ? { opacity: 0, x: "100%" }
+              : { opacity: 0, width: 0, x: -32 }
+          }
+          animate={
+            isMobile ? { opacity: 1, x: 0 } : { opacity: 1, width: 359, x: 0 }
+          }
+          exit={
+            isMobile
+              ? { opacity: 0, x: "100%" }
+              : { opacity: 0, width: 0, x: -32 }
+          }
           transition={PANEL_TRANSITION}
         >
           <section
@@ -151,12 +159,10 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
                 baseTokenSymbol={baseTokenSymbol}
                 emptyMessage={emptyMessage}
                 enabled={enabled}
-                isMobile={isMobile}
                 quoteTokenDecimals={quoteTokenDecimals}
                 quoteTokenSymbol={quoteTokenSymbol}
                 referencePrice={referencePrice}
                 rwaAddress={rwaAddress}
-                useSimulatedOrders={useSimulatedOrders}
               />
             </div>
           </section>
