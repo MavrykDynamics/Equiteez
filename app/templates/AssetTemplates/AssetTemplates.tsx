@@ -9,6 +9,7 @@ import { EstateType } from "~/providers/MarketsProvider/market.types";
 import Money from "~/lib/atoms/Money";
 import { HashChip } from "~/lib/molecules/HashChip";
 import { assetIconBasedOnKey } from "~/templates/IconsBlock";
+import { ROICalculator, ROICalculatorData } from "./components/ROICalculator";
 import styles from "./styles.module.css";
 // TODO update templates based on API data (no API data at the moment)
 
@@ -129,10 +130,19 @@ export const SharedAssetBuildingInfoTemplate: FC<{ data: any }> = ({
 
 // --------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const BitCoinMinersTemplate: FC<{ data: any; basicInfo: any }> = ({
+type AssetTemplateProps = {
+  basicInfo: EstateType["assetDetails"]["basicInfo"];
+  // Asset-specific fields are still partially typed in the market schema.
+  // Keep data flexible here until those variants are modeled explicitly.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+  roiCalculatorData?: ROICalculatorData;
+};
+
+export const BitCoinMinersTemplate: FC<AssetTemplateProps> = ({
   data,
   basicInfo,
+  roiCalculatorData,
 }) => {
   return (
     <div>
@@ -210,17 +220,15 @@ export const BitCoinMinersTemplate: FC<{ data: any; basicInfo: any }> = ({
       </Table>
       <Spacer height={32} />
       <IconsDetailsTemplate basicInfo={basicInfo} />
-      <Table className="bg-white">
-        <LocationMap />
-      </Table>
+      <AssetLocationSection roiCalculatorData={roiCalculatorData} />
     </div>
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const ResortTemplate: FC<{ data: any; basicInfo: any }> = ({
+export const ResortTemplate: FC<AssetTemplateProps> = ({
   data,
   basicInfo,
+  roiCalculatorData,
 }) => {
   return (
     <div>
@@ -278,17 +286,15 @@ export const ResortTemplate: FC<{ data: any; basicInfo: any }> = ({
       </Table>
       <Spacer height={32} />
       <IconsDetailsTemplate basicInfo={basicInfo} />
-      <Table className="bg-white">
-        <LocationMap />
-      </Table>
+      <AssetLocationSection roiCalculatorData={roiCalculatorData} />
     </div>
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const HotelTemplate: FC<{ data: any; basicInfo: any }> = ({
+export const HotelTemplate: FC<AssetTemplateProps> = ({
   data,
   basicInfo,
+  roiCalculatorData,
 }) => {
   return (
     <div>
@@ -342,17 +348,15 @@ export const HotelTemplate: FC<{ data: any; basicInfo: any }> = ({
       </Table>
       <Spacer height={32} />
       <IconsDetailsTemplate basicInfo={basicInfo} />
-      <Table className="bg-white">
-        <LocationMap />
-      </Table>
+      <AssetLocationSection roiCalculatorData={roiCalculatorData} />
     </div>
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const DebtTemplate: FC<{ data: any; basicInfo: any }> = ({
+export const DebtTemplate: FC<AssetTemplateProps> = ({
   data,
   basicInfo,
+  roiCalculatorData,
 }) => {
   return (
     <div>
@@ -410,9 +414,7 @@ export const DebtTemplate: FC<{ data: any; basicInfo: any }> = ({
       </Table>
       <Spacer height={32} />
       <IconsDetailsTemplate basicInfo={basicInfo} />
-      <Table className="bg-white">
-        <LocationMap />
-      </Table>
+      <AssetLocationSection roiCalculatorData={roiCalculatorData} />
     </div>
   );
 };
@@ -562,11 +564,11 @@ export const CommoditiesTemplate: FC<{
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const MixedUseRealEstateTemplate: FC<{
-  data: any;
-  basicInfo: any;
-}> = ({ data, basicInfo }) => {
+export const MixedUseRealEstateTemplate: FC<AssetTemplateProps> = ({
+  data,
+  basicInfo,
+  roiCalculatorData,
+}) => {
   return (
     <div>
       <Table className="bg-white">
@@ -625,7 +627,7 @@ export const MixedUseRealEstateTemplate: FC<{
       </Table>
       <Spacer height={32} />
       <IconsDetailsTemplate basicInfo={basicInfo} />
-      <LocationMap />
+      <AssetLocationSection roiCalculatorData={roiCalculatorData} />
     </div>
   );
 };
@@ -771,6 +773,20 @@ export const DefaultAssetDetailsTemplate: FC<{
           <p>Renovated</p>
           <p>{buildingInfo.renovated}</p>
         </TableItem>
+      </Table>
+    </>
+  );
+};
+
+const AssetLocationSection: FC<{ roiCalculatorData?: ROICalculatorData }> = ({
+  roiCalculatorData,
+}) => {
+  return (
+    <>
+      <ROICalculator data={roiCalculatorData} />
+      <Spacer height={32} />
+      <Table className="bg-white">
+        <LocationMap />
       </Table>
     </>
   );
