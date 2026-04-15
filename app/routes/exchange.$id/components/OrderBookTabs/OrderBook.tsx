@@ -1,92 +1,55 @@
-import orderbook from "~/mocks/orderbook.json";
-import RedArrowDown from "~/icons/red-arrow-down.svg?react";
-import clsx from "clsx";
+import { FC, useMemo } from "react";
 
-import styles from "./orderbook.module.css";
+import { stablecoinContract } from "~/consts/contracts";
+import { toTokenSlug } from "~/lib/assets";
+import { useAssetMetadata } from "~/lib/metadata";
+import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
+import { atomsToTokens } from "~/lib/utils/formaters";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
-export const OrderBook = () => {
-  const columns = [
-    {
-      label: "Price (USDT)",
-      field: "price",
-    },
-    {
-      label: "Amount",
-      field: "amount",
-    },
-    {
-      label: "Total",
-      field: "total",
-    },
-  ];
+type OrderBookProps = {
+  baseTokenDecimals: number;
+  rwaAddress: string;
+  slug: string;
+  symbol: string;
+};
 
-  const currentPrice = 51;
+export const OrderBook: FC<OrderBookProps> = ({
+  baseTokenDecimals,
+  rwaAddress,
+  slug,
+  symbol,
+}) => {
+  const { orderbookStorages, orderbookTokenPair } = useDexContext();
+  const selectedAssetMetadata = useAssetMetadata(slug);
+  const quoteTokenSlug =
+    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
+  const quoteAssetMetadata = useAssetMetadata(quoteTokenSlug);
+  const quoteTokenDecimals = quoteAssetMetadata?.decimals ?? 6;
+  const referencePrice = useMemo(() => {
+    const orderbookStorage = orderbookStorages[slug];
+
+    if (!orderbookStorage) return 0;
+
+    const rawReferencePrice =
+      orderbookStorage.lowestSellPrice > 0
+        ? orderbookStorage.lowestSellPrice
+        : orderbookStorage.highestBuyPrice;
+
+    if (rawReferencePrice <= 0) return 0;
+
+    return atomsToTokens(rawReferencePrice, quoteTokenDecimals).toNumber();
+  }, [orderbookStorages, quoteTokenDecimals, slug]);
 
   return (
-    <div className="flow-root">
-      <div className="overflow-x-auto">
-        <div className="inline-block min-w-full align-middle">
-          <table
-            className={clsx(
-              "min-w-full divide-y divide-divider",
-              styles.orderTable
-            )}
-          >
-            <thead>
-              <tr>
-                {columns.map((column, idx) => (
-                  <th
-                    key={column.label}
-                    scope="col"
-                    className={clsx(
-                      "whitespace-nowrap py-2 text-left text-caption-regular",
-                      idx === 0 ? "text-left" : "text-right"
-                    )}
-                  >
-                    {column.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-transparent">
-              {orderbook.map((order, index) => (
-                <tr key={`${order.price}${index}`}>
-                  {Number(order.price) == currentPrice ? (
-                    <td
-                      className={`whitespace-nowrap flex items-center text-body-xs gap-1 pr-2 py-1 text-error ${
-                        Number(order.price) > currentPrice
-                          ? "text-success"
-                          : "text-error"
-                      }`}
-                    >
-                      <span>{order.price}</span>
-                      <RedArrowDown className="w-4 h-4" />
-                    </td>
-                  ) : (
-                    <td
-                      className={`eq-table-cell-small text-caption-regular ${
-                        Number(order.price) > currentPrice
-                          ? "text-success"
-                          : "text-error"
-                      }`}
-                    >
-                      {order.price}
-                    </td>
-                  )}
-
-                  <td className="eq-table-cell-small text-right">
-                    {order.amount || ""}
-                  </td>
-
-                  <td className="eq-table-cell-small text-right">
-                    {order.total || ""}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <OrderBookTable
+      baseTokenDecimals={selectedAssetMetadata?.decimals ?? baseTokenDecimals}
+      baseTokenSymbol={selectedAssetMetadata?.symbol ?? symbol}
+      enabled={Boolean(rwaAddress)}
+      quoteTokenDecimals={quoteTokenDecimals}
+      quoteTokenSymbol={quoteAssetMetadata?.symbol ?? "USDT"}
+      referencePrice={referencePrice}
+      rwaAddress={rwaAddress}
+    />
   );
 };
