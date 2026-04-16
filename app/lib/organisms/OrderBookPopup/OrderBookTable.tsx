@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 
+import BigNumberJs from "bignumber.js";
 import clsx from "clsx";
 import ChevronDownIcon from "app/icons/chevron-down.svg?react";
 
@@ -17,8 +18,10 @@ import {
   DEFAULT_ORDER_BOOK_GROUPING_PRECISION,
   getOrderBookPrecisionOptions,
 } from "~/routes/marketplace.$id/components/PriceSection/orderBook.consts";
+import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { Spinner } from "~/lib/atoms/Spinner";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 import { OrderRow } from "./OrderRow";
 import type {
@@ -31,6 +34,7 @@ import styles from "./orderBookPopup.module.css";
 const DEFAULT_METRIC_FRACTION_DIGITS = 2;
 const MAX_METRIC_FRACTION_DIGITS = 4;
 const DEFAULT_ROWS_PER_SIDE = 10;
+const ORDER_BOOK_SUMMARY_SAMPLE_SIZE = 10;
 const SINGLE_SIDE_ROWS = 20;
 
 const ORDER_BOOK_DISPLAY_MODE_OPTIONS: Array<{
@@ -56,6 +60,7 @@ type OrderBookTableProps = {
   baseTokenSymbol: string;
   emptyMessage?: string;
   enabled?: boolean;
+  onPriceClick?: (price: number, side: "ask" | "bid") => void;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -80,11 +85,23 @@ type OrderBookNumberFormatters = {
 type OrderBookRowsSectionProps = {
   emptyLabel: string;
   formatters: OrderBookNumberFormatters;
+  onPriceClick?: (price: number, side: "ask" | "bid") => void;
   rows: OrderBookRow[];
   side: "ask" | "bid";
 };
 
 type SpreadDirection = "up" | "down";
+
+type OrderBookFooterSummary = {
+  buyDisplayPercentage: number;
+  buyPercentage: number;
+  buyTotal: number;
+  difference: number;
+  dominantSide: "buy" | "neutral" | "sell";
+  sellDisplayPercentage: number;
+  sellPercentage: number;
+  sellTotal: number;
+};
 
 const hasOrderBookRows = (data: OrderBookData) =>
   data.asks.length > 0 || data.bids.length > 0;
@@ -212,22 +229,22 @@ const getSpreadDirection = (
   displayMode: OrderBookDisplayMode
 ): SpreadDirection => (displayMode === "sell" ? "up" : "down");
 
-const getReferencePriceLabel = ({
-  formatPrice,
+const formatQuoteTokenValue = ({
+  formatter,
   quoteTokenSymbol,
-  referencePrice,
+  value,
 }: {
-  formatPrice: Intl.NumberFormat;
+  formatter: Intl.NumberFormat;
   quoteTokenSymbol: string;
-  referencePrice: number;
+  value: number;
 }) => {
-  const formattedReferencePrice = formatPrice.format(referencePrice);
+  const formattedValue = formatter.format(value);
 
   if (quoteTokenSymbol === "USD" || quoteTokenSymbol === "USDT") {
-    return `$${formattedReferencePrice}`;
+    return `$${formattedValue}`;
   }
 
-  return `${formattedReferencePrice} ${quoteTokenSymbol}`;
+  return `${formattedValue} ${quoteTokenSymbol}`;
 };
 
 const areRowsEqual = (left: OrderBookRow, right: OrderBookRow) =>
@@ -323,6 +340,7 @@ const OrderBookState: FC<{
 const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
   emptyLabel,
   formatters,
+  onPriceClick,
   rows,
   side,
 }) => (
@@ -335,6 +353,7 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
           <OrderRow
             key={`${side}-${row.price}`}
             amountLabel={formatters.amount.format(row.amount)}
+            onPriceClick={onPriceClick}
             priceLabel={formatters.price.format(row.price)}
             row={row}
             side={side}
@@ -349,6 +368,135 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
 const OrderBookRowsSection = memo(OrderBookRowsSectionComponent);
 
 OrderBookRowsSection.displayName = "OrderBookRowsSection";
+
+const getOpenOrderTotal = ({
+  baseTokenDecimals,
+  order,
+  quoteTokenDecimals,
+}: {
+  baseTokenDecimals: number;
+  order: OpenOrder;
+  quoteTokenDecimals: number;
+}) =>
+  atomsToTokens(order.unfulfilled_amount, baseTokenDecimals).times(
+    atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
+  );
+
+const getOrdersTotal = ({
+  baseTokenDecimals,
+  orders,
+  quoteTokenDecimals,
+}: {
+  baseTokenDecimals: number;
+  orders: OpenOrder[];
+  quoteTokenDecimals: number;
+}) =>
+  orders
+    .slice(0, ORDER_BOOK_SUMMARY_SAMPLE_SIZE)
+    .reduce(
+      (total, order) =>
+        total.plus(
+          getOpenOrderTotal({
+            baseTokenDecimals,
+            order,
+            quoteTokenDecimals,
+          })
+        ),
+      new BigNumberJs(0)
+    );
+
+const getSummaryPercentage = (value: number, total: number) => {
+  if (total === 0) return 0;
+
+  return Number(new BigNumberJs(value).div(total).times(100).toFixed(2));
+};
+
+const getOrderBookFooterSummary = ({
+  baseTokenDecimals,
+  buyOrders,
+  quoteTokenDecimals,
+  sellOrders,
+}: {
+  baseTokenDecimals: number;
+  buyOrders: OpenOrder[];
+  quoteTokenDecimals: number;
+  sellOrders: OpenOrder[];
+}): OrderBookFooterSummary => {
+  const buyTotal = getOrdersTotal({
+    baseTokenDecimals,
+    orders: buyOrders,
+    quoteTokenDecimals,
+  }).toNumber();
+  const sellTotal = getOrdersTotal({
+    baseTokenDecimals,
+    orders: sellOrders,
+    quoteTokenDecimals,
+  }).toNumber();
+  const combinedTotal = new BigNumberJs(buyTotal).plus(sellTotal).toNumber();
+  const difference = new BigNumberJs(buyTotal)
+    .minus(sellTotal)
+    .abs()
+    .toNumber();
+  const buyPercentage = getSummaryPercentage(buyTotal, combinedTotal);
+  const sellPercentage = getSummaryPercentage(sellTotal, combinedTotal);
+  const buyDisplayPercentage = Math.round(buyPercentage);
+
+  return {
+    buyDisplayPercentage,
+    buyPercentage,
+    buyTotal,
+    difference,
+    dominantSide:
+      buyTotal === sellTotal ? "neutral" : buyTotal > sellTotal ? "buy" : "sell",
+    sellDisplayPercentage: 100 - buyDisplayPercentage,
+    sellPercentage,
+    sellTotal,
+  };
+};
+
+const OrderBookFooterSummaryComponent: FC<{
+  buyDisplayPercentage: number;
+  buyPercentage: number;
+  buyTotalLabel: string;
+  differenceLabel: string;
+  sellDisplayPercentage: number;
+  sellPercentage: number;
+  sellTotalLabel: string;
+}> = ({
+  buyDisplayPercentage,
+  buyPercentage,
+  buyTotalLabel,
+  differenceLabel,
+  sellDisplayPercentage,
+  sellPercentage,
+  sellTotalLabel,
+}) => (
+  <div
+    className={styles.sentimentBar}
+    aria-label={`Buy ${buyTotalLabel}. Sell ${sellTotalLabel}. 10-order delta ${differenceLabel}.`}
+    title={`Buy ${buyTotalLabel} | Sell ${sellTotalLabel} | 10-order delta ${differenceLabel}`}
+  >
+    <div
+      className={clsx(styles.sentimentSide, styles.buySentiment)}
+      style={{ width: `${buyPercentage}%` }}
+    >
+      <span className={clsx(styles.sentimentBadge, styles.buyBadge)}>B</span>
+      <span className={styles.buyPercentage}>{buyDisplayPercentage}%</span>
+    </div>
+
+    <div
+      className={clsx(styles.sentimentSide, styles.sellSentiment)}
+      style={{ width: `${sellPercentage}%` }}
+    >
+      <span className={styles.sellPercentage}>{sellDisplayPercentage}%</span>
+      <span className={clsx(styles.sentimentBadge, styles.sellBadge)}>S</span>
+    </div>
+  </div>
+);
+
+const OrderBookFooterSummaryBar = memo(OrderBookFooterSummaryComponent);
+
+OrderBookFooterSummaryBar.displayName = "OrderBookFooterSummaryBar";
 
 const ORDER_BOOK_DISPLAY_MODE_ICON_TONES: Record<
   OrderBookDisplayMode,
@@ -478,6 +626,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   baseTokenSymbol,
   emptyMessage = "No open orders available.",
   enabled = true,
+  onPriceClick,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
   referencePrice = 0,
@@ -581,6 +730,21 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     () => [...visibleAsks, ...visibleBids],
     [visibleAsks, visibleBids]
   );
+  const footerSummary = useMemo(
+    () =>
+      getOrderBookFooterSummary({
+        baseTokenDecimals,
+        buyOrders: openOrders.buyOrders,
+        quoteTokenDecimals,
+        sellOrders: openOrders.sellOrders,
+      }),
+    [
+      baseTokenDecimals,
+      openOrders.buyOrders,
+      openOrders.sellOrders,
+      quoteTokenDecimals,
+    ]
+  );
   const spreadDisplayData = useMemo(
     () => getSpreadDisplayData(renderData.spread, selectedDisplayMode),
     [renderData.spread, selectedDisplayMode]
@@ -606,18 +770,30 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     [amountFractionDigits, priceFractionDigits, totalFractionDigits]
   );
   const shouldShowReferencePrice = referencePrice > 0;
-  const shouldShowSentimentBar = selectedDisplayMode === "both";
   const spreadDirection = useMemo(
     () => getSpreadDirection(selectedDisplayMode),
     [selectedDisplayMode]
   );
+  const footerSummaryFractionDigits = useMemo(
+    () =>
+      getColumnFractionDigits([
+        footerSummary.buyTotal,
+        footerSummary.difference,
+        footerSummary.sellTotal,
+      ]),
+    [footerSummary.buyTotal, footerSummary.difference, footerSummary.sellTotal]
+  );
+  const footerSummaryFormatter = useMemo(
+    () => createNumberFormatter(footerSummaryFractionDigits),
+    [footerSummaryFractionDigits]
+  );
   const referencePriceLabel = useMemo(
     () =>
       shouldShowReferencePrice
-        ? getReferencePriceLabel({
-            formatPrice: formatters.price,
+        ? formatQuoteTokenValue({
+            formatter: formatters.price,
             quoteTokenSymbol,
-            referencePrice,
+            value: referencePrice,
           })
         : null,
     [
@@ -627,6 +803,42 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
       shouldShowReferencePrice,
     ]
   );
+  const buyTotalLabel = useMemo(
+    () =>
+      formatQuoteTokenValue({
+        formatter: footerSummaryFormatter,
+        quoteTokenSymbol,
+        value: footerSummary.buyTotal,
+      }),
+    [footerSummary.buyTotal, footerSummaryFormatter, quoteTokenSymbol]
+  );
+  const sellTotalLabel = useMemo(
+    () =>
+      formatQuoteTokenValue({
+        formatter: footerSummaryFormatter,
+        quoteTokenSymbol,
+        value: footerSummary.sellTotal,
+      }),
+    [footerSummaryFormatter, footerSummary.sellTotal, quoteTokenSymbol]
+  );
+  const differenceLabel = useMemo(() => {
+    const formattedDifference = formatQuoteTokenValue({
+      formatter: footerSummaryFormatter,
+      quoteTokenSymbol,
+      value: footerSummary.difference,
+    });
+
+    if (footerSummary.dominantSide === "neutral") {
+      return formattedDifference;
+    }
+
+    return `${footerSummary.dominantSide === "buy" ? "+" : "-"}${formattedDifference}`;
+  }, [
+    footerSummary.difference,
+    footerSummary.dominantSide,
+    footerSummaryFormatter,
+    quoteTokenSymbol,
+  ]);
   const handleDisplayModeChange = useCallback((value: OrderBookDisplayMode) => {
     setSelectedDisplayMode(value);
   }, []);
@@ -666,6 +878,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
               <OrderBookRowsSection
                 emptyLabel="No asks"
                 formatters={formatters}
+                onPriceClick={onPriceClick}
                 rows={visibleAsks}
                 side="ask"
               />
@@ -717,42 +930,21 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
               <OrderBookRowsSection
                 emptyLabel="No bids"
                 formatters={formatters}
+                onPriceClick={onPriceClick}
                 rows={visibleBids}
                 side="bid"
               />
             )}
 
-            {shouldShowSentimentBar && (
-              <div className={styles.sentimentBar}>
-                <div
-                  className={clsx(styles.sentimentSide, styles.buySentiment)}
-                  style={{ width: `${renderData.sentiment.buy}%` }}
-                >
-                  <span
-                    className={clsx(styles.sentimentBadge, styles.buyBadge)}
-                  >
-                    B
-                  </span>
-                  <span className={styles.buyPercentage}>
-                    {renderData.sentiment.buy}%
-                  </span>
-                </div>
-
-                <div
-                  className={clsx(styles.sentimentSide, styles.sellSentiment)}
-                  style={{ width: `${renderData.sentiment.sell}%` }}
-                >
-                  <span className={styles.sellPercentage}>
-                    {renderData.sentiment.sell}%
-                  </span>
-                  <span
-                    className={clsx(styles.sentimentBadge, styles.sellBadge)}
-                  >
-                    S
-                  </span>
-                </div>
-              </div>
-            )}
+            <OrderBookFooterSummaryBar
+              buyDisplayPercentage={footerSummary.buyDisplayPercentage}
+              buyPercentage={footerSummary.buyPercentage}
+              buyTotalLabel={buyTotalLabel}
+              differenceLabel={differenceLabel}
+              sellDisplayPercentage={footerSummary.sellDisplayPercentage}
+              sellPercentage={footerSummary.sellPercentage}
+              sellTotalLabel={sellTotalLabel}
+            />
           </>
         ) : (
           <OrderBookState message={emptyMessage} />

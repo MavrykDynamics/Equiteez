@@ -259,6 +259,27 @@
   text-align: right;
 }
 
+.priceButton {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.priceButton:not(:disabled):focus-visible,
+.priceButton:not(:disabled):hover {
+  text-decoration: underline;
+}
+
+.priceButton:not(:disabled):focus-visible {
+  outline: 2px solid var(--color-grey-200);
+  outline-offset: 2px;
+}
+
+.priceButton:disabled {
+  cursor: default;
+}
+
 .depthBar {
   bottom: 0;
   position: absolute;

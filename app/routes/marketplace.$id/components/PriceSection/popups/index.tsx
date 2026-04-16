@@ -172,7 +172,7 @@ export const PopupContent: FC<{
     );
     const nextPrice = orderType === BUY ? buyPrice : sellPrice;
 
-    return Number.isFinite(nextPrice) && nextPrice > 0 ? nextPrice : 1;
+    return nextPrice.isFinite() && nextPrice.gt(0) ? nextPrice : new BigNumber(1);
   }, [baseTokenDecimals, orderType, orderbookStorages, slug]);
 
   const handleTabClick = useCallback(
@@ -471,6 +471,19 @@ export const PopupContent: FC<{
     setIsOrderBookOpen(false);
   }, [setIsOrderBookOpen]);
 
+  const handleOrderBookPriceSelect = useCallback(
+    (price: number) => {
+      if (marketType !== "limit" || price <= 0) return;
+
+      setLimitPrice((currentPrice) => {
+        const nextPrice = new BigNumber(price);
+
+        return currentPrice?.eq(nextPrice) ? currentPrice : nextPrice;
+      });
+    },
+    [marketType]
+  );
+
   const HeadlinePreviewSection = () => (
     <div className="flex items-center gap-3 font-medium">
       <div className="w-[76px] h-[57px] rounded-lg overflow-hidden">
@@ -506,9 +519,12 @@ export const PopupContent: FC<{
           enabled={isSecondaryEstate}
           isOpen={isOrderBookOpen}
           onClose={closeOrderBook}
+          onPriceClick={
+            isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
+          }
           quoteTokenDecimals={quoteTokenDecimals}
           quoteTokenSymbol={quoteAssetmetadata?.symbol ?? "USDT"}
-          referencePrice={tokenPrice}
+          referencePrice={tokenPrice.toNumber()}
           rwaAddress={estate.token_address}
         />
       )}

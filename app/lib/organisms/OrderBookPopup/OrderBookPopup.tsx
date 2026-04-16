@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, memo, useEffect, useState } from "react";
 
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,6 +31,7 @@ type OrderBookPopupProps = {
   enabled?: boolean;
   isOpen: boolean;
   onClose: () => void;
+  onPriceClick?: (price: number, side: "ask" | "bid") => void;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -90,7 +91,7 @@ export const OrderBookToggleButton: FC<OrderBookToggleButtonProps> = ({
   );
 };
 
-export const OrderBookPopup: FC<OrderBookPopupProps> = ({
+const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
   baseTokenDecimals,
   baseTokenSymbol,
   className,
@@ -98,6 +99,7 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
   enabled = true,
   isOpen,
   onClose,
+  onPriceClick,
   quoteTokenDecimals,
   quoteTokenSymbol,
   referencePrice,
@@ -159,6 +161,7 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
                 baseTokenSymbol={baseTokenSymbol}
                 emptyMessage={emptyMessage}
                 enabled={enabled}
+                onPriceClick={onPriceClick}
                 quoteTokenDecimals={quoteTokenDecimals}
                 quoteTokenSymbol={quoteTokenSymbol}
                 referencePrice={referencePrice}
@@ -171,3 +174,7 @@ export const OrderBookPopup: FC<OrderBookPopupProps> = ({
     </AnimatePresence>
   );
 };
+
+export const OrderBookPopup = memo(OrderBookPopupComponent);
+
+OrderBookPopup.displayName = "OrderBookPopup";
