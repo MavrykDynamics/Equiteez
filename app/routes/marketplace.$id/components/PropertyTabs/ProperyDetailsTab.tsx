@@ -59,14 +59,13 @@ const DefaultAssetTemplate: FC<{ activeMarket: EstateType }> = ({
 const AssetDetailsTemplate: FC<{ activeMarket: EstateType }> = ({
   activeMarket,
 }) => {
-  const assetTypeKey =
-    activeMarket.assetType.toLowerCase() as keyof typeof pickTemplateBasedOnAssetType;
+  const assetTypeKey = activeMarket.assetType.trim().toLowerCase();
   const Template = useMemo(
     () =>
-      (Boolean(activeMarket.assetType)
-        ? pickTemplateBasedOnAssetType[assetTypeKey]
-        : DefaultAssetTemplate) as FC<Record<string, unknown>>,
-    [activeMarket.assetType, assetTypeKey]
+      (pickTemplateBasedOnAssetType[
+        assetTypeKey as keyof typeof pickTemplateBasedOnAssetType
+      ] ?? DefaultAssetTemplate) as FC<Record<string, unknown>>,
+    [assetTypeKey]
   );
 
   const tempProps = useMemo(
@@ -79,9 +78,10 @@ const AssetDetailsTemplate: FC<{ activeMarket: EstateType }> = ({
 
 const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
   const roiCalculatorData = getROICalculatorData(activeMarket);
+  const assetTypeKey = activeMarket.assetType.trim().toLowerCase();
 
-  if (!activeMarket.assetType) return { activeMarket };
-  switch (activeMarket.assetType.toLowerCase()) {
+  if (!assetTypeKey) return { activeMarket };
+  switch (assetTypeKey) {
     case BitcoinMiners:
     case Resort:
     case Debt:
