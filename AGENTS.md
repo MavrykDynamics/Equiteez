@@ -71,6 +71,19 @@ Current pinned stack in `package.json`:
 - Avoid incidental refactors while making focused changes.
 - Never log secrets or PII.
 
+## Avoid duplicate abstractions
+
+- Do NOT create new components, hooks, or utilities if a similar or identical abstraction already exists.
+- Always search in `lib/`, `hooks/`, and related folders before adding anything new.
+- Prefer reusing and extending existing implementations over duplicating logic.
+- If an existing abstraction is close but not perfect:
+  - refactor or extend it
+  - do NOT create a parallel version with similar behavior
+- Avoid slight variations of the same component (e.g. `ButtonAlt`, `CustomButton2`, etc.)
+- Keep a single source of truth for shared logic and UI.
+
+Goal: minimize duplication, keep the codebase clean, and avoid fragmented abstractions.
+
 ## Project Commands
 
 - `npm run dev`: start Remix Vite dev mode
