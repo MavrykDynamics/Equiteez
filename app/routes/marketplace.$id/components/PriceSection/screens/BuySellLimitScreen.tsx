@@ -1,4 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { Button } from "~/lib/atoms/Button";
 
 import * as gtag from "app/utils/gtags.client";
@@ -86,6 +87,10 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
+  const marketPriceDifference = useMemo(
+    () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
+    [limitPrice, marketTokenPrice]
+  );
   const hasTotalError = useMemo(
     () => total && total.gt(usdBalance),
     [total, usdBalance]
@@ -192,6 +197,16 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !limitPrice ||
     limitPrice?.isZero() ||
     amount?.isZero();
+  const priceDifferencePrefix = marketPriceDifference?.gt(0)
+    ? "+"
+    : marketPriceDifference?.lt(0)
+      ? "-"
+      : "";
+  const priceDifferenceTextColorClassName = marketPriceDifference?.gt(0)
+    ? "text-green-500"
+    : marketPriceDifference?.lt(0)
+      ? "text-red-500"
+      : "text-sand-600";
 
   useEffect(() => {
     if (selectedPercentage != null) {
@@ -279,11 +294,19 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                   </div>
                 }
                 additionalBottomLeftBlock={
-                  <div className="text-xs text-sand-600">
-                    Market{" "}
-                    <span className="font-semibold underline">
-                      $<Money>{marketTokenPrice}</Money>
+                  <div className="flex items-center gap-2 text-xs text-sand-600">
+                    <span>
+                      Market{" "}
+                      <span className="font-semibold underline">
+                        $<Money>{marketTokenPrice}</Money>
+                      </span>
                     </span>
+                    {marketPriceDifference && (
+                      <span className={`font-semibold ${priceDifferenceTextColorClassName}`}>
+                        Diff {priceDifferencePrefix}$
+                        <Money>{marketPriceDifference.abs()}</Money>
+                      </span>
+                    )}
                   </div>
                 }
                 selectedAssetSlug={orderbookTokenPair[slug]}

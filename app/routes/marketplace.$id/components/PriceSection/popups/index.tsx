@@ -58,18 +58,33 @@ import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import {
+  ORDER_BOOK_TOGGLE_LABELS,
+  OrderBookPopup,
+  OrderBookToggleButton,
+} from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import clsx from "clsx";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
+  isOrderBookOpen: boolean;
   orderType: OrderType;
+  setIsOrderBookOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
-}> = ({ estate, orderType, setOrderType }) => {
+}> = ({
+  estate,
+  isOrderBookOpen,
+  orderType,
+  setIsOrderBookOpen,
+  setOrderType,
+}) => {
   const { slug } = estate;
   const { marketsArr } = useMarketsContext();
   const { dapp } = useWalletContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
+  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const {
@@ -138,6 +153,8 @@ export const PopupContent: FC<{
   const selectedAssetMetadata = useAssetMetadata(slug);
 
   const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
+  const baseTokenDecimals = selectedAssetMetadata?.decimals ?? estate.decimals;
+  const quoteTokenDecimals = quoteAssetmetadata?.decimals ?? 6;
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
@@ -146,17 +163,17 @@ export const PopupContent: FC<{
     const buyPrice = calculateMarketBuy(
       lowestSellPrice,
       highestBuyPrice,
-      selectedAssetMetadata.decimals
+      baseTokenDecimals
     );
     const sellPrice = calculateMarketSell(
       lowestSellPrice,
       highestBuyPrice,
-      selectedAssetMetadata.decimals
+      baseTokenDecimals
     );
+    const nextPrice = orderType === BUY ? buyPrice : sellPrice;
 
-    return orderType === BUY ? buyPrice : sellPrice;
-  }, [orderbookStorages, slug, orderType, selectedAssetMetadata.decimals]);
-  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+    return nextPrice.isFinite() && nextPrice.gt(0) ? nextPrice : new BigNumber(1);
+  }, [baseTokenDecimals, orderType, orderbookStorages, slug]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -358,7 +375,16 @@ export const PopupContent: FC<{
       cancelled = true;
       window.clearTimeout(t);
     };
-  }, [mavrykToolkit, total, limitBuyProps, orderType, limitSellProps]);
+  }, [
+    isMarketTypeMarket,
+    limitBuyProps,
+    limitSellProps,
+    mavrykToolkit,
+    marketBuyProps,
+    marketSellProps,
+    orderType,
+    total,
+  ]);
 
   // actual contract calls and their handlers ---------------
 
@@ -437,6 +463,27 @@ export const PopupContent: FC<{
     [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
   );
 
+  const toggleOrderBook = useCallback(() => {
+    setIsOrderBookOpen((prev) => !prev);
+  }, [setIsOrderBookOpen]);
+
+  const closeOrderBook = useCallback(() => {
+    setIsOrderBookOpen(false);
+  }, [setIsOrderBookOpen]);
+
+  const handleOrderBookPriceSelect = useCallback(
+    (price: number) => {
+      if (marketType !== "limit" || price <= 0) return;
+
+      setLimitPrice((currentPrice) => {
+        const nextPrice = new BigNumber(price);
+
+        return currentPrice?.eq(nextPrice) ? currentPrice : nextPrice;
+      });
+    },
+    [marketType]
+  );
+
   const HeadlinePreviewSection = () => (
     <div className="flex items-center gap-3 font-medium">
       <div className="w-[76px] h-[57px] rounded-lg overflow-hidden">
@@ -461,10 +508,29 @@ export const PopupContent: FC<{
     </div>
   );
 
+  const shouldRenderOrderBook = isSecondaryEstate && activetabId !== CONFIRM;
+
   return (
-    <div className="flex flex-col justify-between text-content flex-1 relative">
-      <>
-        <div className="flex-1 flex flex-col">
+    <div className={styles.popupLayout}>
+      {shouldRenderOrderBook && (
+        <OrderBookPopup
+          baseTokenDecimals={baseTokenDecimals}
+          baseTokenSymbol={selectedAssetMetadata?.symbol ?? estate.symbol}
+          enabled={isSecondaryEstate}
+          isOpen={isOrderBookOpen}
+          onClose={closeOrderBook}
+          onPriceClick={
+            isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
+          }
+          quoteTokenDecimals={quoteTokenDecimals}
+          quoteTokenSymbol={quoteAssetmetadata?.symbol ?? "USDT"}
+          referencePrice={tokenPrice.toNumber()}
+          rwaAddress={estate.token_address}
+        />
+      )}
+
+      <div className={clsx("flex-1 flex flex-col min-w-0", styles.popupMain)}>
+        <div className="flex flex-col justify-between text-content flex-1 relative min-w-0">
           <div className="flex items-center">
             {activetabId === CONFIRM ? (
               <div
@@ -501,6 +567,13 @@ export const PopupContent: FC<{
 
           {activetabId !== CONFIRM && isSecondaryEstate && (
             <>
+              <div className="mb-3">
+                <OrderBookToggleButton
+                  isOpen={isOrderBookOpen}
+                  labels={ORDER_BOOK_TOGGLE_LABELS}
+                  onClick={toggleOrderBook}
+                />
+              </div>
               <div className="mb-[8px]">
                 <TabSwitcherV2
                   className={styles.tabsWrapper}
@@ -609,7 +682,7 @@ export const PopupContent: FC<{
             />
           )}
         </div>
-      </>
+      </div>
     </div>
   );
 };

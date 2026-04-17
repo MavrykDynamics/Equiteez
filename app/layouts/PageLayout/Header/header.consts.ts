@@ -13,7 +13,7 @@ export const links = [
   },
   {
     id: 2,
-    to: "/",
+    to: "/exchange",
     text: "Advanced trade",
     disabled: false,
   },

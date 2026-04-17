@@ -126,7 +126,12 @@ export default function ExchangeDetails() {
           <div className="flex flex-col w-[324px] p-4">
             {/* Order Book View */}
             <div className="flex flex-col w-full">
-              <OrderBookTabs />
+              <OrderBookTabs
+                baseTokenDecimals={estateData.decimals}
+                rwaAddress={estateData.token_address}
+                slug={estateData.slug}
+                symbol={estateData.symbol}
+              />
             </div>
           </div>
 

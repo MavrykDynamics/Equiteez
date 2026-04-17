@@ -59,12 +59,13 @@ const DefaultAssetTemplate: FC<{ activeMarket: EstateType }> = ({
 const AssetDetailsTemplate: FC<{ activeMarket: EstateType }> = ({
   activeMarket,
 }) => {
+  const assetTypeKey = activeMarket.assetType.trim().toLowerCase();
   const Template = useMemo(
     () =>
-      (Boolean(activeMarket.assetType)
-        ? pickTemplateBasedOnAssetType[activeMarket.assetType.toLowerCase()]
-        : DefaultAssetTemplate) ?? DefaultAssetTemplate,
-    [activeMarket.assetType]
+      (pickTemplateBasedOnAssetType[
+        assetTypeKey as keyof typeof pickTemplateBasedOnAssetType
+      ] ?? DefaultAssetTemplate) as FC<Record<string, unknown>>,
+    [assetTypeKey]
   );
 
   const tempProps = useMemo(
@@ -76,8 +77,11 @@ const AssetDetailsTemplate: FC<{ activeMarket: EstateType }> = ({
 };
 
 const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
-  if (!activeMarket.assetType) return { activeMarket };
-  switch (activeMarket.assetType.toLowerCase()) {
+  const roiCalculatorData = getROICalculatorData(activeMarket);
+  const assetTypeKey = activeMarket.assetType.trim().toLowerCase();
+
+  if (!assetTypeKey) return { activeMarket };
+  switch (assetTypeKey) {
     case BitcoinMiners:
     case Resort:
     case Debt:
@@ -88,6 +92,7 @@ const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
       return {
         data: activeMarket.assetDetails.propertyDetails,
         basicInfo: activeMarket.assetDetails.basicInfo,
+        roiCalculatorData,
       };
 
     case Hotel:
@@ -97,9 +102,29 @@ const getTemplatePropsBasedOnAssetType = (activeMarket: EstateType) => {
           name: activeMarket.name,
         },
         basicInfo: activeMarket.assetDetails.basicInfo,
+        roiCalculatorData,
       };
 
     default:
-      return { activeMarket, basicInfo: activeMarket.assetDetails.basicInfo, };
+      return {
+        activeMarket,
+        basicInfo: activeMarket.assetDetails.basicInfo,
+      };
   }
+};
+
+const getROICalculatorData = (activeMarket: EstateType) => {
+  const { assetDetails } = activeMarket;
+
+  return {
+    annualGrowth:
+      assetDetails.priceDetails.projectedAnnualReturn ||
+      assetDetails.valuation.priorValuation.annualChange ||
+      assetDetails.APY,
+    annualRentalYield:
+      assetDetails.APY || assetDetails.priceDetails.projectedRentalYield,
+    initialInvestment:
+      assetDetails.valuation.priorValuation.totalInvestment ||
+      assetDetails.financials.propertyFinancials.totalInvestment.total,
+  };
 };

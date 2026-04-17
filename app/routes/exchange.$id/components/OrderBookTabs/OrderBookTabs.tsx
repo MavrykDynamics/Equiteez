@@ -1,59 +1,28 @@
-import { FC, useCallback, useMemo, useState } from 'react';
-import { TabType } from '~/lib/atoms/Tab';
-import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
-import { OrderBook } from './OrderBook';
+import { FC } from "react";
 
-export const OrderBookTabs = () => {
-  const [activetabId, setAvtiveTabId] = useState('orderBook');
+import { OrderBook } from "./OrderBook";
 
-  const handleTabClick = useCallback((id: string) => {
-    setAvtiveTabId(id);
-  }, []);
+type OrderBookTabsProps = {
+  baseTokenDecimals: number;
+  rwaAddress: string;
+  slug: string;
+  symbol: string;
+};
 
-  const tabs: TabType[] = useMemo(
-    () => [
-      {
-        id: 'orderBook',
-        label: 'Order Book',
-        handleClick: handleTabClick,
-      },
-      {
-        id: 'recents',
-        label: 'Recent Trades',
-        handleClick: handleTabClick,
-      },
-    ],
-    [handleTabClick]
-  );
-
+export const OrderBookTabs: FC<OrderBookTabsProps> = ({
+  baseTokenDecimals,
+  rwaAddress,
+  slug,
+  symbol,
+}) => {
   return (
     <section className="flex flex-col w-full">
-      <TabSwitcher
-        variant="secondary"
-        tabs={tabs}
-        activeTabId={activetabId}
-        grow={true}
+      <OrderBook
+        baseTokenDecimals={baseTokenDecimals}
+        rwaAddress={rwaAddress}
+        slug={slug}
+        symbol={symbol}
       />
-      <div className="mt-2">
-        <OrderBookTab tabId={activetabId} />
-      </div>
     </section>
   );
-};
-
-type OrderBookTabKey = keyof typeof OrderBookTabsComponents;
-
-type OrderBookTabProps = {
-  tabId: string;
-};
-
-const OrderBookTab: FC<OrderBookTabProps> = ({ tabId }) => {
-  const Component = OrderBookTabsComponents[tabId as OrderBookTabKey];
-
-  return Component;
-};
-
-const OrderBookTabsComponents = {
-  orderBook: <OrderBook />,
-  recents: <OrderBook />,
 };

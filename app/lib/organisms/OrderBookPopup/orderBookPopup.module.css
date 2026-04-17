@@ -1,0 +1,477 @@
+@import "../../../styles/breakpoints.css";
+
+.desktopWrapper {
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.mobileOverlay {
+  display: none;
+}
+
+.panel {
+  background: #fff;
+  height: 100%;
+  width: 100%;
+}
+
+.desktopPanel {
+  border-right: 1px solid var(--color-grey-100);
+}
+
+.desktopPanelInner {
+  padding: 36px 24px;
+}
+
+.mobilePanel {
+  position: relative;
+}
+
+.mobilePanelInner {
+  padding: 32px 16px 24px;
+}
+
+.panelInner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.header {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.headerTabs {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.headerTabActive {
+  color: var(--color-sand-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.headerTab {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.headerActions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.groupingControl {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--color-grey-100);
+  border-radius: 8px;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+.groupingSelect {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--color-sand-900);
+  cursor: pointer;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  min-height: 34px;
+  min-width: 38px;
+  outline: none;
+  padding: 8px 20px 8px 0;
+}
+
+.groupingSelectIcon {
+  color: var(--color-sand-900);
+  flex-shrink: 0;
+  height: 16px;
+  pointer-events: none;
+  width: 16px;
+}
+
+.displayModeSwitcher {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.displayModeButton {
+  align-items: center;
+  background: transparent;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  width: 24px;
+}
+
+.displayModeButtonActive {
+  opacity: 1;
+}
+
+.displayModeIcon {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(4, 3px);
+}
+
+.displayModeColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.displayModeCell {
+  background: var(--color-grey-100);
+  border-radius: 1px;
+  height: 6px;
+  width: 3px;
+}
+
+.displayModeCellBuy {
+  background: rgba(69, 151, 97, 1);
+}
+
+.displayModeCellSell {
+  background: rgba(232, 55, 54, 1);
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.state {
+  align-items: center;
+  color: var(--color-sand-600);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 280px;
+  text-align: center;
+}
+
+.stateText {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  position: relative;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionEmpty {
+  background: var(--color-grey-100);
+  border: 1px dashed var(--color-grey-200);
+  border-radius: 12px;
+  color: var(--color-sand-600);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 18px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.tableSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  min-height: 24px;
+  overflow: hidden;
+}
+
+.cell {
+  align-items: center;
+  color: var(--color-sand-900);
+  display: flex;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  min-height: 24px;
+  padding: 2px 8px 2px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.tableHeader .cell {
+  color: var(--color-sand-600);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  min-height: auto;
+  padding-bottom: 4px;
+  padding-top: 4px;
+}
+
+.priceCell {
+  justify-content: flex-start;
+}
+
+.amountCell,
+.totalCell {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.priceButton {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.priceButton:not(:disabled):focus-visible,
+.priceButton:not(:disabled):hover {
+  text-decoration: underline;
+}
+
+.priceButton:not(:disabled):focus-visible {
+  outline: 2px solid var(--color-grey-200);
+  outline-offset: 2px;
+}
+
+.priceButton:disabled {
+  cursor: default;
+}
+
+.depthBar {
+  bottom: 0;
+  position: absolute;
+  top: 0;
+  width: var(--order-book-depth-width);
+  z-index: 0;
+}
+
+.askRow .depthBar {
+  background: rgba(232, 55, 54, 0.25);
+  right: 0;
+}
+
+.bidRow .depthBar {
+  background: rgba(69, 151, 97, 0.25);
+  left: 0;
+}
+
+.askPrice {
+  color: var(--color-red-500) !important;
+}
+
+.bidPrice {
+  color: var(--color-green-500) !important;
+}
+
+.spreadRow {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-height: 27px;
+  padding: 1px 8px 1px 0;
+}
+
+.spreadPrice {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.spreadMeta {
+  align-items: center;
+  display: flex;
+  min-width: 16px;
+}
+
+.spreadLabel {
+  color: var(--color-sand-600);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.spreadDirectionIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.spreadDirectionIconUp {
+  transform: rotate(180deg);
+}
+
+.spreadReference {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.spreadValue {
+  color: var(--color-sand-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.sentimentBar {
+  border-radius: 4px;
+  display: flex;
+  overflow: hidden;
+}
+
+.sentimentSide {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-height: 29px;
+  padding: 4px 8px;
+}
+
+.buySentiment {
+  background: rgba(69, 151, 97, 0.25);
+}
+
+.sellSentiment {
+  background: rgba(232, 55, 54, 0.25);
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.sentimentBadge {
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  height: 29px;
+  justify-content: center;
+  line-height: 21px;
+  width: 29px;
+}
+
+.buyBadge,
+.buyPercentage {
+  color: var(--color-green-500);
+}
+
+.sellBadge,
+.sellPercentage {
+  color: var(--color-red-500);
+}
+
+.buyPercentage,
+.sellPercentage {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.toggleButton {
+  align-items: center;
+  background: #f2f2f2;
+  border-radius: 32px;
+  color: var(--color-sand-900);
+  display: inline-flex;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 12px;
+}
+
+.toggleIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.mobileCloseButton {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 4;
+}
+
+.mobileCloseIcon {
+  color: var(--color-sand-900);
+  height: 24px;
+  width: 24px;
+}
+
+@media (--media-tablet-min) {
+  .desktopWrapper {
+    display: none;
+  }
+
+  .mobileOverlay {
+    background: #fff;
+    display: block;
+    inset: 0;
+    min-height: 100%;
+    position: absolute;
+    z-index: 20;
+  }
+
+  .panelInner {
+    gap: 0;
+  }
+
+  .headerActions {
+    gap: 16px;
+  }
+}
