@@ -6,7 +6,6 @@ import SearchIcon from "app/icons/search.svg?react";
 
 import styles from "./MobileFilters.module.css";
 import { FiltersSidebarRefType } from "./MobileFilters/FiltersSidebar";
-import { useNavigate } from "@remix-run/react";
 import { useFiltersContext } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 import { Button } from "~/lib/atoms/Button";
 import { InputWithIcons } from "~/lib/organisms/InputWithIcons/InputWithIcons";
@@ -27,7 +26,6 @@ export const MobileFilters: FC<FiltersProps> = ({ isHideTagFilter }) => {
     setFiltersState,
     handleNavigateToSelectedFilters,
   } = useFiltersContext();
-  const navigate = useNavigate();
 
   const handleOpenFilters = () => {
     sidebarRef.current?.open();
@@ -53,13 +51,6 @@ export const MobileFilters: FC<FiltersProps> = ({ isHideTagFilter }) => {
     }));
   };
 
-  const handleClearSearch = () => {
-    setFiltersState((prev) => ({
-      ...prev,
-      searchValue: "",
-    }));
-  };
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -75,7 +66,7 @@ export const MobileFilters: FC<FiltersProps> = ({ isHideTagFilter }) => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isFocused, handleNavigateToSelectedFilters, navigate]);
+  }, [isFocused, handleNavigateToSelectedFilters]);
 
   return (
     <section className={styles.container}>

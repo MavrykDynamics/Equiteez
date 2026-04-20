@@ -1,4 +1,3 @@
-import { useNavigate, useSearchParams } from "@remix-run/react";
 import {
   createContext,
   FC,
@@ -70,6 +69,7 @@ type FiltersStateType = {
 
 type FiltersContextType = {
   filtersState: FiltersStateType;
+  appliedFiltersState: FiltersStateType;
   filtersOptions: FiltersOptionsType;
   filtersOptionsRecord: FiltersOptionsRecordType;
   setFiltersState: React.Dispatch<React.SetStateAction<FiltersStateType>>;
@@ -89,68 +89,26 @@ export const initialFiltersState: FiltersStateType = {
   tag: [],
 };
 
-function parseFiltersFromParams(
-  searchParams: URLSearchParams
-): FiltersStateType {
-  const searchValue = searchParams.get("search") || "";
-  const type = searchParams.get("type")
-    ? searchParams.get("type")!.split(",").filter(Boolean)
-    : [];
-  const developer = searchParams.get("developer")
-    ? searchParams.get("developer")!.split(",").filter(Boolean)
-    : [];
-  const tag = searchParams.get("tag")
-    ? searchParams.get("tag")!.split(",").filter(Boolean)
-    : [];
-
-  return {
-    searchValue,
-    type,
-    developer,
-    tag,
-  };
-}
+const cloneFiltersState = (filters: FiltersStateType): FiltersStateType => ({
+  searchValue: filters.searchValue.trim(),
+  type: [...filters.type],
+  developer: [...filters.developer],
+  tag: [...filters.tag],
+});
 
 export const FiltersProvider: FC<ProviderPropsType> = ({ children }) => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [filters, setFilters] = useState<FiltersStateType>(
-    parseFiltersFromParams(searchParams)
-  );
+  const [filters, setFilters] = useState<FiltersStateType>(initialFiltersState);
+  const [appliedFilters, setAppliedFilters] =
+    useState<FiltersStateType>(initialFiltersState);
 
   const handleNavigateToSelectedFilters = useCallback(() => {
-    const searchParams = {};
-
-    if (filters.searchValue) {
-      Object.assign(searchParams, { search: filters.searchValue });
-    }
-    if (filters.type.length) {
-      Object.assign(searchParams, { type: Array.from(filters.type).join(",") });
-    }
-    if (filters.developer.length) {
-      Object.assign(searchParams, {
-        developer: Array.from(filters.developer).join(","),
-      });
-    }
-    if (filters.tag.length) {
-      Object.assign(searchParams, { tag: Array.from(filters.tag).join(",") });
-    }
-
-    navigate({
-      search: new URLSearchParams(searchParams).toString(),
-      pathname: "/marketplace",
-    });
-  }, [
-    navigate,
-    filters.searchValue,
-    filters.type,
-    filters.developer,
-    filters.tag,
-  ]);
+    setAppliedFilters(cloneFiltersState(filters));
+  }, [filters]);
 
   const contextValue = useMemo<FiltersContextType>(
     () => ({
       filtersState: filters,
+      appliedFiltersState: appliedFilters,
       filtersOptions,
       filtersOptionsRecord: {
         type: filtersOptions[0],
@@ -160,7 +118,7 @@ export const FiltersProvider: FC<ProviderPropsType> = ({ children }) => {
       setFiltersState: setFilters,
       handleNavigateToSelectedFilters,
     }),
-    [filters, handleNavigateToSelectedFilters]
+    [appliedFilters, filters, handleNavigateToSelectedFilters]
   );
 
   return (

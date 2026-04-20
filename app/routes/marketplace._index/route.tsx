@@ -10,7 +10,6 @@ import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 import styles from "./marketplace.module.css";
-import { usePagination } from "~/hooks/usePagination";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { ApiPagination } from "~/lib/organisms/Pagination/ApiPagination";
 import { Text } from "~/lib/atoms/Typography/Text";
@@ -21,6 +20,7 @@ import {
 } from "~/hooks/useWindowDimensions";
 import { MobileFilters } from "~/routes/marketplace._index/components/MobileFilters";
 import { ROUTES } from "~/consts/routes";
+import { useMarketplaceAssets } from "~/routes/marketplace._index/hooks/useMarketplaceAssets";
 
 export const meta: MetaFunction = () => {
   return [
@@ -29,23 +29,32 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const PAGE_LIMIT = 12;
-
 export default function Properties() {
-  const { marketsArr, validBaseTokens, marketApiError, isLoading } =
-    useMarketsContext();
+  return (
+    <PageLayout>
+      <PropertiesContent />
+    </PageLayout>
+  );
+}
+
+const PropertiesContent = () => {
+  const { validBaseTokens } = useMarketsContext();
   const { orderbookStorages } = useDexContext();
+  const {
+    assets,
+    marketApiError,
+    isLoading,
+    isFetching,
+    page,
+    setPage,
+    totalPages,
+  } = useMarketplaceAssets();
 
   const { width } = useWindowDimensions();
   const shouldShowMobileFilters = width <= TABLET_MAX_WIDTH;
 
-  const { data, page, setPage, totalPages } = usePagination(
-    marketsArr,
-    PAGE_LIMIT
-  );
-
   return (
-    <PageLayout>
+    <>
       <Spacer className="h-[16px] md:h-[32px]" />
       <div className={styles.filtersWrapper}>
         {shouldShowMobileFilters ? <MobileFilters /> : <Filters />}
@@ -60,9 +69,9 @@ export default function Properties() {
           <div className={styles.spinnerWrapper}>
             <Spinner size={36} />
           </div>
-        ) : data.length ? (
+        ) : assets.length ? (
           <div className={styles.cardsWrapper}>
-            {data.map((es) => {
+            {assets.map((es) => {
               const isSecondaryMarket =
                 es.assetDetails.type === SECONDARY_MARKET;
 
@@ -103,19 +112,19 @@ export default function Properties() {
             </Text>
           </div>
         )}
-        {data.length && (
+        {assets.length ? (
           <div className="lg:ml-auto">
             <ApiPagination
               setPage={setPage}
               page={page}
               totalPages={totalPages}
-              paginatedDataLength={data.length}
-              isLoading={isLoading}
+              paginatedDataLength={assets.length}
+              isLoading={isFetching}
             />
           </div>
-        )}
+        ) : null}
       </div>
       <Spacer className="xl:h-[200px] h-[64px] md:h-[64px]" />
-    </PageLayout>
+    </>
   );
-}
+};
