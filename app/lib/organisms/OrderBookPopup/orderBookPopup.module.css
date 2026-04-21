@@ -21,7 +21,7 @@
 }
 
 .desktopPanelInner {
-  padding: 36px 24px;
+  padding: 0 24px;
 }
 
 .mobilePanel {
@@ -29,7 +29,7 @@
 }
 
 .mobilePanelInner {
-  padding: 32px 16px 24px;
+  padding: 0 16px;
 }
 
 .panelInner {
@@ -37,8 +37,17 @@
   flex-direction: column;
   height: 100%;
   min-height: 100%;
-  overflow: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  container-name: orderBookTable;
+  container-type: inline-size;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .header {
@@ -46,10 +55,9 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-bottom: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 3;
+  padding: 36px 0 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .headerTabs {
@@ -138,30 +146,9 @@
 }
 
 .displayModeIcon {
-  display: grid;
-  gap: 2px;
-  grid-template-columns: repeat(4, 3px);
-}
-
-.displayModeColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.displayModeCell {
-  background: var(--color-grey-100);
-  border-radius: 1px;
-  height: 6px;
-  width: 3px;
-}
-
-.displayModeCellBuy {
-  background: rgba(69, 151, 97, 1);
-}
-
-.displayModeCellSell {
-  background: rgba(232, 55, 54, 1);
+  flex-shrink: 0;
+  height: 24px;
+  width: 24px;
 }
 
 .content {
@@ -169,6 +156,21 @@
   flex: 1;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.desktopPanelInner .content {
+  padding-bottom: 36px;
+}
+
+.mobilePanelInner .header {
+  padding-right: 40px;
+  padding-top: 32px;
+}
+
+.mobilePanelInner .content {
+  padding-bottom: 24px;
 }
 
 .state {
@@ -188,13 +190,6 @@
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
-}
-
-.tableHeader,
-.tableRow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  position: relative;
 }
 
 .section {
@@ -220,12 +215,50 @@
   flex-direction: column;
 }
 
-.tableRow {
-  min-height: 24px;
-  overflow: hidden;
+.tableHeader {
+  align-items: end;
+  column-gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 
-.cell {
+.tableRow {
+  align-items: center;
+  display: flex;
+  min-height: 24px;
+  overflow: hidden;
+  padding: 2px 0;
+  position: relative;
+}
+
+.tableHeaderCell {
+  color: var(--color-sand-600);
+  display: flex;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.amountColumnHeader {
+  display: flex;
+}
+
+.rowPrimary {
+  align-items: center;
+  column-gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.rowSecondary {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.rowValue {
   align-items: center;
   color: var(--color-sand-900);
   display: flex;
@@ -233,37 +266,46 @@
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
-  min-height: 24px;
-  padding: 2px 8px 2px 0;
+  min-width: 0;
   position: relative;
   z-index: 1;
 }
 
-.tableHeader .cell {
+.amountInlineLabel {
   color: var(--color-sand-600);
   font-size: 12px;
+  font-style: normal;
   font-weight: 400;
   line-height: 18px;
-  min-height: auto;
-  padding-bottom: 4px;
-  padding-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.priceHeaderCell,
 .priceCell {
   justify-content: flex-start;
 }
 
+.amountHeaderCell {
+  justify-content: center;
+  text-align: center;
+}
+
 .amountCell,
+.totalHeaderCell,
 .totalCell {
   justify-content: flex-end;
   text-align: right;
 }
 
 .priceButton {
+  align-self: flex-start;
   background: transparent;
   border: 0;
   cursor: pointer;
   font: inherit;
+  padding: 0;
 }
 
 .priceButton:not(:disabled):focus-visible,
@@ -295,7 +337,7 @@
 
 .bidRow .depthBar {
   background: rgba(69, 151, 97, 0.25);
-  left: 0;
+  right: 0;
 }
 
 .askPrice {
@@ -311,7 +353,7 @@
   display: flex;
   gap: 4px;
   min-height: 27px;
-  padding: 1px 8px 1px 0;
+  padding: 4px 0;
 }
 
 .spreadPrice {
@@ -364,13 +406,17 @@
   border-radius: 4px;
   display: flex;
   overflow: hidden;
+  width: 100%;
 }
 
 .sentimentSide {
   align-items: center;
+  box-sizing: border-box;
   display: flex;
+  flex: 0 0 auto;
   gap: 8px;
   min-height: 29px;
+  min-width: 0;
   padding: 4px 8px;
 }
 
@@ -381,7 +427,6 @@
 .sellSentiment {
   background: rgba(232, 55, 54, 0.25);
   justify-content: flex-end;
-  margin-left: auto;
 }
 
 .sentimentBadge {
@@ -415,6 +460,12 @@
   font-style: normal;
   font-weight: 700;
   line-height: 21px;
+}
+
+@container orderBookTable (max-width: 300px) {
+  .tableHeader {
+    column-gap: 0;
+  }
 }
 
 .toggleButton {

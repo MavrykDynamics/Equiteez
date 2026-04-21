@@ -11,6 +11,9 @@ import {
 import BigNumberJs from "bignumber.js";
 import clsx from "clsx";
 import ChevronDownIcon from "app/icons/chevron-down.svg?react";
+import BuyOnlyIcon from "app/icons/buy-only-icon.svg?react";
+import BuySellIcon from "app/icons/buy-sell-icon.svg?react";
+import SellOnlyIcon from "app/icons/sell-only-icon.svg?react";
 
 import {
   createDefaultOrderBookData,
@@ -159,6 +162,33 @@ const getVisibleRows = (
   return side === "ask"
     ? rows.slice(-DEFAULT_ROWS_PER_SIDE)
     : rows.slice(0, DEFAULT_ROWS_PER_SIDE);
+};
+
+const withVisibleDepthPercentages = (rows: OrderBookRow[]) => {
+  const maxTotal = rows.reduce(
+    (currentMax, row) => Math.max(currentMax, row.total),
+    0
+  );
+
+  if (maxTotal === 0) return rows;
+
+  let hasChanged = false;
+  const nextRows = rows.map((row) => {
+    const nextDepthPercentage = getSummaryPercentage(row.total, maxTotal);
+
+    if (row.depthPercentage === nextDepthPercentage) {
+      return row;
+    }
+
+    hasChanged = true;
+
+    return {
+      ...row,
+      depthPercentage: nextDepthPercentage,
+    };
+  });
+
+  return hasChanged ? nextRows : rows;
 };
 
 const useStableVisibleRows = (
@@ -352,12 +382,10 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
         rows.map((row) => (
           <OrderRow
             key={`${side}-${row.price}`}
-            amountLabel={formatters.amount.format(row.amount)}
             onPriceClick={onPriceClick}
             priceLabel={formatters.price.format(row.price)}
             row={row}
             side={side}
-            totalLabel={formatters.total.format(row.total)}
           />
         ))
       )}
@@ -382,16 +410,37 @@ const getOpenOrderTotal = ({
     atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
   );
 
+const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
+  [...orders].sort((left, right) => {
+    const priceDifference = new BigNumberJs(left.price_per_rwa_token).minus(
+      right.price_per_rwa_token
+    );
+
+    if (!priceDifference.isZero()) {
+      if (priceDifference.isPositive()) {
+        return side === "buy" ? -1 : 1;
+      }
+
+      return side === "buy" ? 1 : -1;
+    }
+
+    return (
+      Date.parse(right.created_at || "") - Date.parse(left.created_at || "")
+    );
+  });
+
 const getOrdersTotal = ({
   baseTokenDecimals,
   orders,
   quoteTokenDecimals,
+  side,
 }: {
   baseTokenDecimals: number;
   orders: OpenOrder[];
   quoteTokenDecimals: number;
+  side: "buy" | "sell";
 }) =>
-  orders
+  sortOrdersForSummary(orders, side)
     .slice(0, ORDER_BOOK_SUMMARY_SAMPLE_SIZE)
     .reduce(
       (total, order) =>
@@ -426,11 +475,13 @@ const getOrderBookFooterSummary = ({
     baseTokenDecimals,
     orders: buyOrders,
     quoteTokenDecimals,
+    side: "buy",
   }).toNumber();
   const sellTotal = getOrdersTotal({
     baseTokenDecimals,
     orders: sellOrders,
     quoteTokenDecimals,
+    side: "sell",
   }).toNumber();
   const combinedTotal = new BigNumberJs(buyTotal).plus(sellTotal).toNumber();
   const difference = new BigNumberJs(buyTotal)
@@ -439,7 +490,8 @@ const getOrderBookFooterSummary = ({
     .toNumber();
   const buyPercentage = getSummaryPercentage(buyTotal, combinedTotal);
   const sellPercentage = getSummaryPercentage(sellTotal, combinedTotal);
-  const buyDisplayPercentage = Math.round(buyPercentage);
+  const buyDisplayPercentage =
+    combinedTotal > 0 ? Math.round(buyPercentage) : 0;
 
   return {
     buyDisplayPercentage,
@@ -447,8 +499,12 @@ const getOrderBookFooterSummary = ({
     buyTotal,
     difference,
     dominantSide:
-      buyTotal === sellTotal ? "neutral" : buyTotal > sellTotal ? "buy" : "sell",
-    sellDisplayPercentage: 100 - buyDisplayPercentage,
+      buyTotal === sellTotal
+        ? "neutral"
+        : buyTotal > sellTotal
+          ? "buy"
+          : "sell",
+    sellDisplayPercentage: combinedTotal > 0 ? 100 - buyDisplayPercentage : 0,
     sellPercentage,
     sellTotal,
   };
@@ -498,39 +554,14 @@ const OrderBookFooterSummaryBar = memo(OrderBookFooterSummaryComponent);
 
 OrderBookFooterSummaryBar.displayName = "OrderBookFooterSummaryBar";
 
-const ORDER_BOOK_DISPLAY_MODE_ICON_TONES: Record<
-  OrderBookDisplayMode,
-  Array<"buy" | "neutral" | "sell">
-> = {
-  both: ["sell", "neutral", "buy", "neutral"],
-  buy: ["buy", "neutral", "neutral", "neutral"],
-  sell: ["neutral", "neutral", "sell", "neutral"],
-};
-
 const OrderBookDisplayModeIcon: FC<{
   mode: OrderBookDisplayMode;
-}> = ({ mode }) => (
-  <span className={styles.displayModeIcon} aria-hidden="true">
-    {ORDER_BOOK_DISPLAY_MODE_ICON_TONES[mode].map((tone, index) => (
-      <span key={`${mode}-${index}`} className={styles.displayModeColumn}>
-        <span
-          className={clsx(
-            styles.displayModeCell,
-            tone === "buy" && styles.displayModeCellBuy,
-            tone === "sell" && styles.displayModeCellSell
-          )}
-        />
-        <span
-          className={clsx(
-            styles.displayModeCell,
-            tone === "buy" && styles.displayModeCellBuy,
-            tone === "sell" && styles.displayModeCellSell
-          )}
-        />
-      </span>
-    ))}
-  </span>
-);
+}> = ({ mode }) => {
+  const Icon =
+    mode === "both" ? BuySellIcon : mode === "buy" ? BuyOnlyIcon : SellOnlyIcon;
+
+  return <Icon className={styles.displayModeIcon} aria-hidden="true" />;
+};
 
 const SpreadDirectionIcon: FC<{
   direction: SpreadDirection;
@@ -716,15 +747,23 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     );
   }, [nextData]);
 
-  const visibleAsks = useStableVisibleRows(
+  const visibleAskRows = useStableVisibleRows(
     renderData.asks,
     "ask",
     selectedDisplayMode
   );
-  const visibleBids = useStableVisibleRows(
+  const visibleBidRows = useStableVisibleRows(
     renderData.bids,
     "bid",
     selectedDisplayMode
+  );
+  const visibleAsks = useMemo(
+    () => withVisibleDepthPercentages(visibleAskRows),
+    [visibleAskRows]
+  );
+  const visibleBids = useMemo(
+    () => withVisibleDepthPercentages(visibleBidRows),
+    [visibleBidRows]
   );
   const visibleRows = useMemo(
     () => [...visibleAsks, ...visibleBids],
@@ -847,7 +886,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   }, []);
 
   return (
-    <>
+    <div className={styles.table}>
       <OrderBookTableHeader
         onDisplayModeChange={handleDisplayModeChange}
         onGroupingChange={handleGroupingChange}
@@ -863,13 +902,23 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
         ) : hasOrderBookRows(renderData) ? (
           <>
             <div className={styles.tableHeader}>
-              <span className={clsx(styles.cell, styles.priceCell)}>
+              <span
+                className={clsx(styles.tableHeaderCell, styles.priceHeaderCell)}
+              >
                 {renderData.headers.price}
               </span>
-              <span className={clsx(styles.cell, styles.amountCell)}>
+              <span
+                className={clsx(
+                  styles.tableHeaderCell,
+                  styles.amountHeaderCell,
+                  styles.amountColumnHeader
+                )}
+              >
                 {renderData.headers.amount}
               </span>
-              <span className={clsx(styles.cell, styles.totalCell)}>
+              <span
+                className={clsx(styles.tableHeaderCell, styles.totalHeaderCell)}
+              >
                 {renderData.headers.total}
               </span>
             </div>
@@ -950,6 +999,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
           <OrderBookState message={emptyMessage} />
         )}
       </div>
-    </>
+    </div>
   );
 };

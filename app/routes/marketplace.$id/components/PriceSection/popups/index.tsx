@@ -172,7 +172,9 @@ export const PopupContent: FC<{
     );
     const nextPrice = orderType === BUY ? buyPrice : sellPrice;
 
-    return nextPrice.isFinite() && nextPrice.gt(0) ? nextPrice : new BigNumber(1);
+    return nextPrice.isFinite() && nextPrice.gt(0)
+      ? nextPrice
+      : new BigNumber(1);
   }, [baseTokenDecimals, orderType, orderbookStorages, slug]);
 
   const handleTabClick = useCallback(

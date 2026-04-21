@@ -6,21 +6,17 @@ import type { OrderBookRow } from "./orderBook.types";
 import styles from "./orderBookPopup.module.css";
 
 type OrderRowProps = {
-  amountLabel: string;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
   priceLabel: string;
   row: OrderBookRow;
   side: "ask" | "bid";
-  totalLabel: string;
 };
 
 const OrderRowComponent: FC<OrderRowProps> = ({
-  amountLabel,
   onPriceClick,
   priceLabel,
   row,
   side,
-  totalLabel,
 }) => {
   const handlePriceClick = useCallback(() => {
     onPriceClick?.(row.price, side);
@@ -43,7 +39,7 @@ const OrderRowComponent: FC<OrderRowProps> = ({
         type="button"
         aria-label={`Select price ${priceLabel}`}
         className={clsx(
-          styles.cell,
+          styles.rowValue,
           styles.priceCell,
           styles.priceButton,
           side === "ask" ? styles.askPrice : styles.bidPrice
@@ -53,8 +49,6 @@ const OrderRowComponent: FC<OrderRowProps> = ({
       >
         {priceLabel}
       </button>
-      <span className={clsx(styles.cell, styles.amountCell)}>{amountLabel}</span>
-      <span className={clsx(styles.cell, styles.totalCell)}>{totalLabel}</span>
     </div>
   );
 };
@@ -65,9 +59,7 @@ export const OrderRow = memo(
     previousProps.row === nextProps.row &&
     previousProps.side === nextProps.side &&
     previousProps.onPriceClick === nextProps.onPriceClick &&
-    previousProps.amountLabel === nextProps.amountLabel &&
-    previousProps.priceLabel === nextProps.priceLabel &&
-    previousProps.totalLabel === nextProps.totalLabel
+    previousProps.priceLabel === nextProps.priceLabel
 );
 
 OrderRow.displayName = "OrderRow";
