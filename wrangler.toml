@@ -17,7 +17,7 @@ BASE_URL="https://stage.equiteez.pages.dev"
 GRAPHQL_API="https://api.equiteez.com/v1/graphql"
 GRAPHQL_WSS_API="wss://api.equiteez.com/v1/graphql"
 NODE_VERSION="22.11.0"
-MBRWA_API="https://api.mbrwa.equiteez.com"
+MBRWA_API="https://legacy-api.mbrwa.equiteez.com/"
 
 [env.production.vars]
 RPC_NODE_URL="https://atlasnet.rpc.mavryk.network"

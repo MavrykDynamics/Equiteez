@@ -9,7 +9,6 @@ import {
 } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import estatesMocked from "app/mocks/rwas.json";
 import fakeAssetsMocked from "app/mocks/assets.mock.json";
 
 import {
@@ -114,6 +113,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
         sortedMarketAddresses,
         markets: new Map([...realAssetsFromApi, ...fakeAssetsToShow]),
       }));
+      setMarketApiError(null);
     } catch (e) {
       setMarketApiError(new ApiError(e));
       console.log(e);

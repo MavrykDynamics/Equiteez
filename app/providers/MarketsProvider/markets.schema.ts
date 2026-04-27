@@ -286,14 +286,16 @@ export const OrderbookSchema = z.object({
   highest_buy_price: z.number(),
   sell_order_fee: z.number(),
   buy_order_fee: z.number(),
-  rwa_token: z.object({
-    address: z.string(),
-    name: z.string(),
-    symbol: z.string(),
-    icon: z.string(),
-    decimals: z.number(),
-    token_id: z.number().optional(),
-  }),
+  rwa_token: z
+    .object({
+      address: z.string(),
+      name: z.string(),
+      symbol: z.string(),
+      icon: z.string(),
+      decimals: z.number(),
+      token_id: z.number().optional(),
+    })
+    .optional(),
   quote_token: z.object({
     address: z.string(),
     token_id: z.number(),

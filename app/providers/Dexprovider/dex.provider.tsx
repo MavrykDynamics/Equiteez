@@ -58,12 +58,12 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   }, [config]);
 
   const handleOrderbookData = useCallback((data: OrderbooksList) => {
-    const orderbookStorages = getOrderbookStorages(data);
+    const orderbookStorages = getOrderbookStorages(data, config.orderbook);
 
     setOrderbookStorages(
       new Proxy({ ...orderbookStorages }, priceProxyHandler)
     );
-  }, []);
+  }, [config.orderbook]);
 
   const { data: orderbookData, error } = useApiQuery({
     fetchFn: fetchOrderbooks,
@@ -76,13 +76,13 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       const err = unknownToError(error);
       warning("Error on get orderbook data", err.message);
     }
-  }, [error]);
+  }, [error, warning]);
 
   useEffect(() => {
     if (!orderbookData) return;
 
     handleOrderbookData(orderbookData);
-  }, [JSON.stringify(orderbookData)]);
+  }, [handleOrderbookData, orderbookData]);
 
   const memoizedDexCtx: DexProviderCtxType = useMemo(
     () => ({
