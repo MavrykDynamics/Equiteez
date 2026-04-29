@@ -11,7 +11,7 @@ import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider"
 import { useQueryWithRefetch } from "~/providers/ApolloProvider/hooks/useQueryWithRefetch";
 
 const OPEN_ORDERS_OFFSET = 0;
-const OPEN_ORDERS_REFETCH_INTERVAL = 30_000;
+const OPEN_ORDERS_REFETCH_INTERVAL = 10_000;
 const EMPTY_OPEN_ORDERS = {
   buyOrders: [],
   sellOrders: [],
@@ -22,11 +22,13 @@ const EMPTY_OPEN_ORDERS = {
 
 type UseOpenOrdersParams = {
   enabled?: boolean;
+  limit?: number;
   rwaAddress?: string | null;
 };
 
 export function useOpenOrders({
   enabled = true,
+  limit,
   rwaAddress,
 }: UseOpenOrdersParams) {
   const { handleApolloError } = useApolloContext();
@@ -34,10 +36,11 @@ export function useOpenOrders({
 
   const queryVariables = useMemo<OpenOrdersQueryVariables>(
     () => ({
+      limit,
       rwaAddress,
       offset: OPEN_ORDERS_OFFSET,
     }),
-    [rwaAddress]
+    [limit, rwaAddress]
   );
 
   const openOrdersData = useQueryWithRefetch<

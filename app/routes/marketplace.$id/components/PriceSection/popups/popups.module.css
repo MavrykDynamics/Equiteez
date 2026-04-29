@@ -8,19 +8,42 @@
 }
 
 .popupLayout {
+  align-items: stretch;
   display: flex;
   flex: 1;
-  gap: 32px;
-  min-height: 100%;
+  gap: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   position: relative;
 }
 
+.popupLayoutWithOrderBook {
+  gap: 32px;
+}
+
 .popupMain {
+  align-self: stretch;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
   min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.popupContent {
+  overflow: hidden;
 }
 
 .popupWide {
   max-width: 1008px;
+}
+
+.hideContinueButtonMobile {
 }
 
 @media (--media-tablet-min) {
@@ -33,11 +56,15 @@
   }
 
   .popupLayout {
-    display: block;
+    flex-direction: column;
     gap: 0;
   }
 
   .popupWide {
     max-width: 100%;
+  }
+
+  .hideContinueButtonMobile {
+    display: none;
   }
 }

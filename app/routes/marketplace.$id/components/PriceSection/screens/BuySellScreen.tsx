@@ -30,6 +30,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 type BuySellScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
+  continueButtonClassName?: string;
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
@@ -44,6 +45,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   estate,
   toggleScreen,
   actionType,
+  continueButtonClassName,
   amount,
   total,
   networkFee,
@@ -311,7 +313,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
 
       <Button
-        className="mt-8"
+        className={
+          continueButtonClassName
+            ? `mt-8 ${continueButtonClassName}`
+            : "mt-8"
+        }
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
       >

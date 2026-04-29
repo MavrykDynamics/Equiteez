@@ -1,9 +1,9 @@
 import { ApexOptions } from "apexcharts";
 import clsx from "clsx";
-import ArrowUpIcon from "app/icons/arrow-up.svg?react";
-import HomeIcon from "app/icons/home.svg?react";
 import InfoIcon from "app/icons/info.svg?react";
-import WalletIcon from "app/icons/wallet.svg?react";
+import RoiDividendYieldIcon from "app/icons/roi-dividend-yield.svg?react";
+import RoiEvergrowthIcon from "app/icons/roi-evergrowth.svg?react";
+import RoiInvestmentIcon from "app/icons/roi-investment.svg?react";
 import { FC, SVGProps, useEffect, useMemo, useState } from "react";
 import OriginalApexCharts from "react-apexcharts";
 
@@ -274,40 +274,67 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
     }),
     [chartData.series, chartOptions]
   );
+  const metricCards = [
+    {
+      Icon: RoiInvestmentIcon,
+      label: "Investment",
+      value: formatCurrency(investment),
+    },
+    {
+      Icon: RoiDividendYieldIcon,
+      label: "Dividend Yield",
+      value: formatPercent(yieldRate),
+    },
+    {
+      Icon: RoiEvergrowthIcon,
+      label: "Evergrowth",
+      value: formatPercent(growth),
+    },
+  ] satisfies ReadonlyArray<{
+    Icon: FC<SVGProps<SVGSVGElement>>;
+    label: string;
+    value: string;
+  }>;
 
   return (
     <Table className="bg-white overflow-hidden !p-0">
-      <div className="bg-br-green-400 px-6 py-4 lg:px-7">
+      <div className="bg-dark-green-400 px-6 py-4 lg:px-7">
         <h3 className="text-card-headline text-white">ROI Calculator</h3>
       </div>
 
       <div className="flex flex-col gap-6 px-6 py-6 lg:grid lg:grid-cols-[261px_minmax(0,1fr)] lg:gap-4 lg:px-7 lg:py-7">
         <div className="flex flex-col gap-6">
-          <div>
-            <h4 className="mb-6 text-card-headline text-sand-900">
+          <div className="flex flex-col gap-6">
+            <h4 className="text-card-headline text-sand-900">
               Investment Parameters
             </h4>
 
-            <div className="flex rounded-lg bg-gray-50 p-[2px]">
-              {YEAR_OPTIONS.map((option) => {
-                const isActive = option.id === selectedPeriodId;
+            <div className="flex flex-col gap-2">
+              <p className="text-body-xs font-semibold text-sand-900">
+                Time Period
+              </p>
 
-                return (
-                  <button
-                    key={option.id}
-                    className={clsx(
-                      "flex-1 rounded-lg px-3 py-2 text-caption transition-colors",
-                      isActive
-                        ? "bg-sand-800 text-white"
-                        : "text-sand-700 hover:bg-sand-100"
-                    )}
-                    onClick={() => setSelectedPeriodId(option.id)}
-                    type="button"
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
+              <div className="flex rounded-lg bg-gray-50 p-[2px]">
+                {YEAR_OPTIONS.map((option) => {
+                  const isActive = option.id === selectedPeriodId;
+
+                  return (
+                    <button
+                      key={option.id}
+                      className={clsx(
+                        "flex-1 rounded-lg px-3 py-2 text-caption transition-colors",
+                        isActive
+                          ? "bg-sand-800 text-white"
+                          : "text-sand-700 hover:bg-sand-100"
+                      )}
+                      onClick={() => setSelectedPeriodId(option.id)}
+                      type="button"
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -344,21 +371,14 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
 
         <div className="flex flex-col gap-3 border-sand-100 lg:border-l lg:pl-4">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <MetricCard
-              Icon={HomeIcon}
-              label="Investment"
-              value={formatCurrency(investment)}
-            />
-            <MetricCard
-              Icon={WalletIcon}
-              label="Dividend Yield"
-              value={formatPercent(yieldRate)}
-            />
-            <MetricCard
-              Icon={ArrowUpIcon}
-              label="Growth Rate"
-              value={formatPercent(growth)}
-            />
+            {metricCards.map((card) => (
+              <MetricCard
+                key={card.label}
+                Icon={card.Icon}
+                label={card.label}
+                value={card.value}
+              />
+            ))}
           </div>
 
           <div className={clsx(styles.chart, "rounded-xl bg-gray-50 p-4")}>
@@ -384,7 +404,7 @@ const MetricCard: FC<{
       <div className="mb-1 flex items-center gap-1 text-caption-regular text-sand-900">
         <Icon className="h-4 w-4 text-blue-300" />
         <span>{label}</span>
-        <InfoIcon className="h-4 w-4 text-sand-900" />
+        <InfoIcon className="h-4 w-4 text-sand-600" />
       </div>
       <p className="text-body font-bold text-sand-900">{value}</p>
     </div>

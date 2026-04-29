@@ -10,7 +10,9 @@ import {
 
 import BigNumberJs from "bignumber.js";
 import clsx from "clsx";
-import ChevronDownIcon from "app/icons/chevron-down.svg?react";
+import BuyOnlyIcon from "app/icons/buy-only-icon.svg?react";
+import BuySellIcon from "app/icons/buy-sell-icon.svg?react";
+import SellOnlyIcon from "app/icons/sell-only-icon.svg?react";
 
 import {
   createDefaultOrderBookData,
@@ -21,6 +23,12 @@ import {
 import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { Spinner } from "~/lib/atoms/Spinner";
+import {
+  ClickableDropdownArea,
+  CustomDropdown,
+  DropdownBodyContent,
+  DropdownFaceContent,
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
 import { OrderRow } from "./OrderRow";
@@ -33,9 +41,10 @@ import styles from "./orderBookPopup.module.css";
 
 const DEFAULT_METRIC_FRACTION_DIGITS = 2;
 const MAX_METRIC_FRACTION_DIGITS = 4;
-const DEFAULT_ROWS_PER_SIDE = 10;
+const ORDER_BOOK_FETCH_LIMIT = 32;
+const DEFAULT_ROWS_PER_SIDE = 16;
 const ORDER_BOOK_SUMMARY_SAMPLE_SIZE = 10;
-const SINGLE_SIDE_ROWS = 20;
+const SINGLE_SIDE_ROWS = 32;
 
 const ORDER_BOOK_DISPLAY_MODE_OPTIONS: Array<{
   id: OrderBookDisplayMode;
@@ -161,6 +170,33 @@ const getVisibleRows = (
     : rows.slice(0, DEFAULT_ROWS_PER_SIDE);
 };
 
+const withVisibleDepthPercentages = (rows: OrderBookRow[]) => {
+  const maxTotal = rows.reduce(
+    (currentMax, row) => Math.max(currentMax, row.total),
+    0
+  );
+
+  if (maxTotal === 0) return rows;
+
+  let hasChanged = false;
+  const nextRows = rows.map((row) => {
+    const nextDepthPercentage = getSummaryPercentage(row.total, maxTotal);
+
+    if (row.depthPercentage === nextDepthPercentage) {
+      return row;
+    }
+
+    hasChanged = true;
+
+    return {
+      ...row,
+      depthPercentage: nextDepthPercentage,
+    };
+  });
+
+  return hasChanged ? nextRows : rows;
+};
+
 const useStableVisibleRows = (
   rows: OrderBookRow[],
   side: "ask" | "bid",
@@ -250,6 +286,7 @@ const formatQuoteTokenValue = ({
 const areRowsEqual = (left: OrderBookRow, right: OrderBookRow) =>
   left.amount === right.amount &&
   left.depthPercentage === right.depthPercentage &&
+  left.id === right.id &&
   left.price === right.price &&
   left.total === right.total;
 
@@ -259,11 +296,11 @@ const reconcileRows = (
 ) => {
   if (previousRows.length === 0) return nextRows;
 
-  const previousRowsByPrice = new Map(
-    previousRows.map((row) => [row.price, row] as const)
+  const previousRowsById = new Map(
+    previousRows.map((row) => [row.id, row] as const)
   );
   const reconciledRows = nextRows.map((row) => {
-    const previousRow = previousRowsByPrice.get(row.price);
+    const previousRow = previousRowsById.get(row.id);
 
     return previousRow && areRowsEqual(previousRow, row) ? previousRow : row;
   });
@@ -351,13 +388,11 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
       ) : (
         rows.map((row) => (
           <OrderRow
-            key={`${side}-${row.price}`}
-            amountLabel={formatters.amount.format(row.amount)}
+            key={row.id}
             onPriceClick={onPriceClick}
             priceLabel={formatters.price.format(row.price)}
             row={row}
             side={side}
-            totalLabel={formatters.total.format(row.total)}
           />
         ))
       )}
@@ -382,16 +417,37 @@ const getOpenOrderTotal = ({
     atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
   );
 
+const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
+  [...orders].sort((left, right) => {
+    const priceDifference = new BigNumberJs(left.price_per_rwa_token).minus(
+      right.price_per_rwa_token
+    );
+
+    if (!priceDifference.isZero()) {
+      if (priceDifference.isPositive()) {
+        return side === "buy" ? -1 : 1;
+      }
+
+      return side === "buy" ? 1 : -1;
+    }
+
+    return (
+      Date.parse(right.created_at || "") - Date.parse(left.created_at || "")
+    );
+  });
+
 const getOrdersTotal = ({
   baseTokenDecimals,
   orders,
   quoteTokenDecimals,
+  side,
 }: {
   baseTokenDecimals: number;
   orders: OpenOrder[];
   quoteTokenDecimals: number;
+  side: "buy" | "sell";
 }) =>
-  orders
+  sortOrdersForSummary(orders, side)
     .slice(0, ORDER_BOOK_SUMMARY_SAMPLE_SIZE)
     .reduce(
       (total, order) =>
@@ -426,11 +482,13 @@ const getOrderBookFooterSummary = ({
     baseTokenDecimals,
     orders: buyOrders,
     quoteTokenDecimals,
+    side: "buy",
   }).toNumber();
   const sellTotal = getOrdersTotal({
     baseTokenDecimals,
     orders: sellOrders,
     quoteTokenDecimals,
+    side: "sell",
   }).toNumber();
   const combinedTotal = new BigNumberJs(buyTotal).plus(sellTotal).toNumber();
   const difference = new BigNumberJs(buyTotal)
@@ -439,7 +497,8 @@ const getOrderBookFooterSummary = ({
     .toNumber();
   const buyPercentage = getSummaryPercentage(buyTotal, combinedTotal);
   const sellPercentage = getSummaryPercentage(sellTotal, combinedTotal);
-  const buyDisplayPercentage = Math.round(buyPercentage);
+  const buyDisplayPercentage =
+    combinedTotal > 0 ? Math.round(buyPercentage) : 0;
 
   return {
     buyDisplayPercentage,
@@ -447,8 +506,12 @@ const getOrderBookFooterSummary = ({
     buyTotal,
     difference,
     dominantSide:
-      buyTotal === sellTotal ? "neutral" : buyTotal > sellTotal ? "buy" : "sell",
-    sellDisplayPercentage: 100 - buyDisplayPercentage,
+      buyTotal === sellTotal
+        ? "neutral"
+        : buyTotal > sellTotal
+          ? "buy"
+          : "sell",
+    sellDisplayPercentage: combinedTotal > 0 ? 100 - buyDisplayPercentage : 0,
     sellPercentage,
     sellTotal,
   };
@@ -498,39 +561,14 @@ const OrderBookFooterSummaryBar = memo(OrderBookFooterSummaryComponent);
 
 OrderBookFooterSummaryBar.displayName = "OrderBookFooterSummaryBar";
 
-const ORDER_BOOK_DISPLAY_MODE_ICON_TONES: Record<
-  OrderBookDisplayMode,
-  Array<"buy" | "neutral" | "sell">
-> = {
-  both: ["sell", "neutral", "buy", "neutral"],
-  buy: ["buy", "neutral", "neutral", "neutral"],
-  sell: ["neutral", "neutral", "sell", "neutral"],
-};
-
 const OrderBookDisplayModeIcon: FC<{
   mode: OrderBookDisplayMode;
-}> = ({ mode }) => (
-  <span className={styles.displayModeIcon} aria-hidden="true">
-    {ORDER_BOOK_DISPLAY_MODE_ICON_TONES[mode].map((tone, index) => (
-      <span key={`${mode}-${index}`} className={styles.displayModeColumn}>
-        <span
-          className={clsx(
-            styles.displayModeCell,
-            tone === "buy" && styles.displayModeCellBuy,
-            tone === "sell" && styles.displayModeCellSell
-          )}
-        />
-        <span
-          className={clsx(
-            styles.displayModeCell,
-            tone === "buy" && styles.displayModeCellBuy,
-            tone === "sell" && styles.displayModeCellSell
-          )}
-        />
-      </span>
-    ))}
-  </span>
-);
+}> = ({ mode }) => {
+  const Icon =
+    mode === "both" ? BuySellIcon : mode === "buy" ? BuyOnlyIcon : SellOnlyIcon;
+
+  return <Icon className={styles.displayModeIcon} aria-hidden="true" />;
+};
 
 const SpreadDirectionIcon: FC<{
   direction: SpreadDirection;
@@ -594,23 +632,42 @@ const OrderBookTableHeaderComponent: FC<OrderBookTableHeaderProps> = ({
         </div>
 
         {shouldShowGroupingControl && (
-          <label className={styles.groupingControl}>
-            <select
-              aria-label="Price grouping"
-              className={styles.groupingSelect}
-              onChange={(event) =>
-                onGroupingChange(Number(event.currentTarget.value))
-              }
-              value={String(selectedPriceGrouping)}
-            >
-              {priceGroupingOptions.map((option) => (
-                <option key={option} value={String(option)}>
-                  {formatGroupingValue(option)}
-                </option>
-              ))}
-            </select>
-            <ChevronDownIcon className={styles.groupingSelectIcon} />
-          </label>
+          <CustomDropdown>
+            <ClickableDropdownArea>
+              <DropdownFaceContent
+                gap={8}
+                className={styles.groupingControl}
+                iconClassName={styles.groupingSelectIcon}
+                openedClassName={styles.groupingControlActive}
+              >
+                <span className={styles.groupingValue}>
+                  {formatGroupingValue(selectedPriceGrouping)}
+                </span>
+              </DropdownFaceContent>
+
+              <DropdownBodyContent position="right" topMargin={8}>
+                <div className={styles.groupingMenu}>
+                  {priceGroupingOptions.map((option) => {
+                    const isSelected = option === selectedPriceGrouping;
+
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        className={clsx(
+                          styles.groupingMenuItem,
+                          isSelected && styles.groupingMenuItemActive
+                        )}
+                        onClick={() => onGroupingChange(option)}
+                      >
+                        {formatGroupingValue(option)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </DropdownBodyContent>
+            </ClickableDropdownArea>
+          </CustomDropdown>
         )}
       </div>
     </div>
@@ -632,9 +689,12 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   referencePrice = 0,
   rwaAddress,
 }) => {
+  const [selectedDisplayMode, setSelectedDisplayMode] =
+    useState<OrderBookDisplayMode>("both");
   const { openOrders, loading } = useOpenOrders({
-    rwaAddress,
     enabled,
+    limit: ORDER_BOOK_FETCH_LIMIT,
+    rwaAddress,
   });
 
   const defaultData = useMemo(
@@ -662,8 +722,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const [selectedPriceGrouping, setSelectedPriceGrouping] = useState(
     nextPriceGroupingOptions[0] ?? DEFAULT_ORDER_BOOK_GROUPING_PRECISION
   );
-  const [selectedDisplayMode, setSelectedDisplayMode] =
-    useState<OrderBookDisplayMode>("both");
 
   useEffect(() => {
     setPriceGroupingOptions((currentOptions) =>
@@ -716,15 +774,23 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     );
   }, [nextData]);
 
-  const visibleAsks = useStableVisibleRows(
+  const visibleAskRows = useStableVisibleRows(
     renderData.asks,
     "ask",
     selectedDisplayMode
   );
-  const visibleBids = useStableVisibleRows(
+  const visibleBidRows = useStableVisibleRows(
     renderData.bids,
     "bid",
     selectedDisplayMode
+  );
+  const visibleAsks = useMemo(
+    () => withVisibleDepthPercentages(visibleAskRows),
+    [visibleAskRows]
+  );
+  const visibleBids = useMemo(
+    () => withVisibleDepthPercentages(visibleBidRows),
+    [visibleBidRows]
   );
   const visibleRows = useMemo(
     () => [...visibleAsks, ...visibleBids],
@@ -845,9 +911,10 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const handleGroupingChange = useCallback((value: number) => {
     setSelectedPriceGrouping(value);
   }, []);
+  const hasRows = hasOrderBookRows(renderData);
 
   return (
-    <>
+    <div className={styles.table}>
       <OrderBookTableHeader
         onDisplayModeChange={handleDisplayModeChange}
         onGroupingChange={handleGroupingChange}
@@ -859,97 +926,115 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
 
       <div className={styles.content}>
         {loading ? (
-          <OrderBookState isLoading message="Loading order book..." />
-        ) : hasOrderBookRows(renderData) ? (
+          <div className={styles.tableViewport}>
+            <OrderBookState isLoading message="Loading order book..." />
+          </div>
+        ) : hasRows ? (
           <>
             <div className={styles.tableHeader}>
-              <span className={clsx(styles.cell, styles.priceCell)}>
+              <span
+                className={clsx(styles.tableHeaderCell, styles.priceHeaderCell)}
+              >
                 {renderData.headers.price}
               </span>
-              <span className={clsx(styles.cell, styles.amountCell)}>
+              <span
+                className={clsx(
+                  styles.tableHeaderCell,
+                  styles.amountHeaderCell,
+                  styles.amountColumnHeader
+                )}
+              >
                 {renderData.headers.amount}
               </span>
-              <span className={clsx(styles.cell, styles.totalCell)}>
+              <span
+                className={clsx(styles.tableHeaderCell, styles.totalHeaderCell)}
+              >
                 {renderData.headers.total}
               </span>
             </div>
 
-            {selectedDisplayMode !== "buy" && (
-              <OrderBookRowsSection
-                emptyLabel="No asks"
-                formatters={formatters}
-                onPriceClick={onPriceClick}
-                rows={visibleAsks}
-                side="ask"
-              />
-            )}
+            <div className={styles.tableViewport}>
+              {selectedDisplayMode !== "buy" && (
+                <OrderBookRowsSection
+                  emptyLabel="No asks"
+                  formatters={formatters}
+                  onPriceClick={onPriceClick}
+                  rows={visibleAsks}
+                  side="ask"
+                />
+              )}
 
-            <div className={styles.spreadRow}>
-              <span
-                className={clsx(
-                  styles.spreadPrice,
-                  spreadDisplayData.side === "ask"
-                    ? styles.askPrice
-                    : styles.bidPrice
-                )}
-              >
-                {spreadDisplayData.price > 0
-                  ? formatters.price.format(spreadDisplayData.price)
-                  : "--"}
-              </span>
-
-              <span className={styles.spreadMeta}>
-                {shouldShowReferencePrice ? (
-                  <SpreadDirectionIcon
-                    direction={spreadDirection}
-                    side={spreadDisplayData.side}
-                  />
-                ) : (
-                  <span className={styles.spreadLabel}>
-                    {spreadDisplayData.label}
-                  </span>
-                )}
-              </span>
-
-              <span
-                className={clsx(
-                  shouldShowReferencePrice
-                    ? styles.spreadReference
-                    : styles.spreadValue
-                )}
-              >
-                {shouldShowReferencePrice
-                  ? referencePriceLabel
-                  : spreadDisplayData.value !== null
-                    ? formatters.price.format(spreadDisplayData.value)
+              <div className={styles.spreadRow}>
+                <span
+                  className={clsx(
+                    styles.spreadPrice,
+                    spreadDisplayData.side === "ask"
+                      ? styles.askPrice
+                      : styles.bidPrice
+                  )}
+                >
+                  {spreadDisplayData.price > 0
+                    ? formatters.price.format(spreadDisplayData.price)
                     : "--"}
-              </span>
+                </span>
+
+                <span className={styles.spreadMeta}>
+                  {shouldShowReferencePrice ? (
+                    <SpreadDirectionIcon
+                      direction={spreadDirection}
+                      side={spreadDisplayData.side}
+                    />
+                  ) : (
+                    <span className={styles.spreadLabel}>
+                      {spreadDisplayData.label}
+                    </span>
+                  )}
+                </span>
+
+                <span
+                  className={clsx(
+                    shouldShowReferencePrice
+                      ? styles.spreadReference
+                      : styles.spreadValue
+                  )}
+                >
+                  {shouldShowReferencePrice
+                    ? referencePriceLabel
+                    : spreadDisplayData.value !== null
+                      ? formatters.price.format(spreadDisplayData.value)
+                      : "--"}
+                </span>
+              </div>
+
+              {selectedDisplayMode !== "sell" && (
+                <OrderBookRowsSection
+                  emptyLabel="No bids"
+                  formatters={formatters}
+                  onPriceClick={onPriceClick}
+                  rows={visibleBids}
+                  side="bid"
+                />
+              )}
             </div>
 
-            {selectedDisplayMode !== "sell" && (
-              <OrderBookRowsSection
-                emptyLabel="No bids"
-                formatters={formatters}
-                onPriceClick={onPriceClick}
-                rows={visibleBids}
-                side="bid"
+            <div className={styles.tableFooter}>
+              <OrderBookFooterSummaryBar
+                buyDisplayPercentage={footerSummary.buyDisplayPercentage}
+                buyPercentage={footerSummary.buyPercentage}
+                buyTotalLabel={buyTotalLabel}
+                differenceLabel={differenceLabel}
+                sellDisplayPercentage={footerSummary.sellDisplayPercentage}
+                sellPercentage={footerSummary.sellPercentage}
+                sellTotalLabel={sellTotalLabel}
               />
-            )}
-
-            <OrderBookFooterSummaryBar
-              buyDisplayPercentage={footerSummary.buyDisplayPercentage}
-              buyPercentage={footerSummary.buyPercentage}
-              buyTotalLabel={buyTotalLabel}
-              differenceLabel={differenceLabel}
-              sellDisplayPercentage={footerSummary.sellDisplayPercentage}
-              sellPercentage={footerSummary.sellPercentage}
-              sellTotalLabel={sellTotalLabel}
-            />
+            </div>
           </>
         ) : (
-          <OrderBookState message={emptyMessage} />
+          <div className={styles.tableViewport}>
+            <OrderBookState message={emptyMessage} />
+          </div>
         )}
       </div>
-    </>
+    </div>
   );
 };

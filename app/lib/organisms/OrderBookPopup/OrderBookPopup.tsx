@@ -16,6 +16,7 @@ const PANEL_TRANSITION = {
   ease: "easeInOut",
 } as const;
 
+const DESKTOP_PANEL_WIDTH = 359;
 const MOBILE_BREAKPOINT = 820;
 
 export const ORDER_BOOK_TOGGLE_LABELS = {
@@ -27,6 +28,7 @@ type OrderBookPopupProps = {
   baseTokenDecimals: number;
   baseTokenSymbol: string;
   className?: string;
+  desktopHeight?: number;
   emptyMessage?: string;
   enabled?: boolean;
   isOpen: boolean;
@@ -95,6 +97,7 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
   baseTokenDecimals,
   baseTokenSymbol,
   className,
+  desktopHeight,
   emptyMessage,
   enabled = true,
   isOpen,
@@ -111,64 +114,86 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
     isMobile ? styles.mobileOverlay : styles.desktopWrapper,
     className
   );
+  const desktopWrapperStyle = isMobile
+    ? undefined
+    : {
+        flexBasis: isOpen ? DESKTOP_PANEL_WIDTH : 0,
+        height: desktopHeight,
+        width: isOpen ? DESKTOP_PANEL_WIDTH : 0,
+      };
+  const panel = (
+    <section
+      className={clsx(
+        styles.panel,
+        isMobile ? styles.mobilePanel : styles.desktopPanel
+      )}
+    >
+      {isMobile && (
+        <button
+          type="button"
+          aria-label={ORDER_BOOK_TOGGLE_LABELS.hide}
+          className={styles.mobileCloseButton}
+          onClick={onClose}
+        >
+          <CloseIcon className={styles.mobileCloseIcon} />
+        </button>
+      )}
+
+      <div
+        className={clsx(
+          styles.panelInner,
+          isMobile ? styles.mobilePanelInner : styles.desktopPanelInner
+        )}
+      >
+        <OrderBookTable
+          baseTokenDecimals={baseTokenDecimals}
+          baseTokenSymbol={baseTokenSymbol}
+          emptyMessage={emptyMessage}
+          enabled={enabled}
+          onPriceClick={onPriceClick}
+          quoteTokenDecimals={quoteTokenDecimals}
+          quoteTokenSymbol={quoteTokenSymbol}
+          referencePrice={referencePrice}
+          rwaAddress={rwaAddress}
+        />
+      </div>
+    </section>
+  );
+
+  if (!isMobile) {
+    return (
+      <div className={wrapperClassName} style={desktopWrapperStyle}>
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div
+              key="desktop-order-book"
+              className={styles.desktopPanelMotion}
+              style={{ width: DESKTOP_PANEL_WIDTH }}
+              initial={{ opacity: 0, x: "100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "100%" }}
+              transition={PANEL_TRANSITION}
+            >
+              {panel}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence initial={false}>
       {isOpen && (
         <motion.div
-          key={isMobile ? "mobile-order-book" : "desktop-order-book"}
+          key="mobile-order-book"
           className={wrapperClassName}
-          initial={
-            isMobile
-              ? { opacity: 0, x: "100%" }
-              : { opacity: 0, width: 0, x: -32 }
-          }
-          animate={
-            isMobile ? { opacity: 1, x: 0 } : { opacity: 1, width: 359, x: 0 }
-          }
-          exit={
-            isMobile
-              ? { opacity: 0, x: "100%" }
-              : { opacity: 0, width: 0, x: -32 }
-          }
+          initial={{ opacity: 0, x: "100%" }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: "100%" }}
           transition={PANEL_TRANSITION}
         >
-          <section
-            className={clsx(
-              styles.panel,
-              isMobile ? styles.mobilePanel : styles.desktopPanel
-            )}
-          >
-            {isMobile && (
-              <button
-                type="button"
-                aria-label={ORDER_BOOK_TOGGLE_LABELS.hide}
-                className={styles.mobileCloseButton}
-                onClick={onClose}
-              >
-                <CloseIcon className={styles.mobileCloseIcon} />
-              </button>
-            )}
-
-            <div
-              className={clsx(
-                styles.panelInner,
-                isMobile ? styles.mobilePanelInner : styles.desktopPanelInner
-              )}
-            >
-              <OrderBookTable
-                baseTokenDecimals={baseTokenDecimals}
-                baseTokenSymbol={baseTokenSymbol}
-                emptyMessage={emptyMessage}
-                enabled={enabled}
-                onPriceClick={onPriceClick}
-                quoteTokenDecimals={quoteTokenDecimals}
-                quoteTokenSymbol={quoteTokenSymbol}
-                referencePrice={referencePrice}
-                rwaAddress={rwaAddress}
-              />
-            </div>
-          </section>
+          {panel}
         </motion.div>
       )}
     </AnimatePresence>

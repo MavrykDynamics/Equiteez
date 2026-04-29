@@ -48,8 +48,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   });
 
   const marketApiError = useMemo(
-    () =>
-      bootstrapQuery.error ? new ApiError(bootstrapQuery.error) : null,
+    () => (bootstrapQuery.error ? new ApiError(bootstrapQuery.error) : null),
     [bootstrapQuery.error]
   );
 
@@ -91,8 +90,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   const marketsArr = useMemo(
-    () =>
-      withSortedFromMap(markets, bootstrapCollection.sortedMarketAddresses),
+    () => withSortedFromMap(markets, bootstrapCollection.sortedMarketAddresses),
     [markets, bootstrapCollection.sortedMarketAddresses]
   );
 

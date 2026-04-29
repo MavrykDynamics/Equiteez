@@ -1,7 +1,6 @@
 import { toTokenSlug } from "~/lib/assets";
-import { DexStorageQuery } from "~/utils/__generated__/graphql";
 import { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
-import {OrderbooksList} from "~/providers/Dexprovider/schemas/orderbook.schema";
+import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
 
 export type OrderBookPriceData = {
   lowestSellPrice: number;
@@ -12,19 +11,31 @@ export type OrderBookPriceData = {
   orderbookAddress: string;
 };
 
-export const getOrderbookStorages = (orderbooksList: OrderbooksList) => {
+export const getOrderbookStorages = (
+  orderbooksList: OrderbooksList,
+  storagesMap: Map<string, OrderbookConfigType>
+) => {
+  const rwaTokenAddressesByOrderbook = new Map<string, string>();
+
+  for (const [, storage] of storagesMap) {
+    rwaTokenAddressesByOrderbook.set(storage.address, storage.rwaTokenAddress);
+  }
+
   return orderbooksList.reduce<Record<string, OrderBookPriceData>>(
     (acc, item) => {
-      if (!item.rwa_token?.address) return acc;
+      const rwaTokenAddress =
+        item.rwa_token?.address ?? rwaTokenAddressesByOrderbook.get(item.address);
 
-      const tokenSlug = toTokenSlug(item.rwa_token.address);
+      if (!rwaTokenAddress) return acc;
+
+      const tokenSlug = toTokenSlug(rwaTokenAddress);
 
       acc[tokenSlug] = {
         lowestSellPrice: item.lowest_sell_price,
         highestBuyPrice: item.highest_buy_price,
         buyOrderFee: item.buy_order_fee,
         sellOrderFee: item.sell_order_fee,
-        rwaTokenAddress: item.rwa_token.address,
+        rwaTokenAddress,
         orderbookAddress: item.address,
       };
 
