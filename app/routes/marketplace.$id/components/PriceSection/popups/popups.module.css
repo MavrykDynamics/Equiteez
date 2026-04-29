@@ -11,11 +11,15 @@
   align-items: stretch;
   display: flex;
   flex: 1;
-  gap: 32px;
+  gap: 0;
   height: 100%;
   min-height: 0;
   overflow: hidden;
   position: relative;
+}
+
+.popupLayoutWithOrderBook {
+  gap: 32px;
 }
 
 .popupMain {

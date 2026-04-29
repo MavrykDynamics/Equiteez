@@ -514,6 +514,7 @@ export const PopupContent: FC<{
   );
 
   const shouldRenderOrderBook = isSecondaryEstate && activetabId !== CONFIRM;
+  const hasOpenOrderBook = shouldRenderOrderBook && isOrderBookOpen;
   const continueButtonClassName = isOrderBookOpen
     ? styles.hideContinueButtonMobile
     : undefined;
@@ -543,7 +544,11 @@ export const PopupContent: FC<{
   }, [shouldRenderOrderBook]);
 
   return (
-    <div className={styles.popupLayout}>
+    <div
+      className={clsx(styles.popupLayout, {
+        [styles.popupLayoutWithOrderBook]: hasOpenOrderBook,
+      })}
+    >
       {shouldRenderOrderBook && (
         <OrderBookPopup
           baseTokenDecimals={baseTokenDecimals}
