@@ -277,7 +277,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
 
   return (
     <Table className="bg-white overflow-hidden !p-0">
-      <div className="bg-br-green-400 px-6 py-4 lg:px-7">
+      <div className="bg-dark-green-400 px-6 py-4 lg:px-7">
         <h3 className="text-card-headline text-white">ROI Calculator</h3>
       </div>
 
