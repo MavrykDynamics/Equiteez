@@ -277,6 +277,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
       <PopupWithIcon
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
+        contentClassName={popupStyles.popupContent}
         contentPosition={"right"}
         className={classNames(
           "bg-white",

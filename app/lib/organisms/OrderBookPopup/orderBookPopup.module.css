@@ -26,6 +26,7 @@
   flex: 1;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   width: 100%;
 }
 
@@ -206,19 +207,15 @@
   flex-direction: column;
   gap: 12px;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .desktopPanelInner .content {
-  overflow: visible;
+  overflow: hidden;
 }
 
 .mobilePanelInner .header {
   padding-right: 40px;
-}
-
-.mobilePanelInner .content {
-  padding-bottom: 24px;
 }
 
 .state {
@@ -261,6 +258,26 @@
 .tableSection {
   display: flex;
   flex-direction: column;
+}
+
+.tableViewport {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableViewport > * {
+  flex-shrink: 0;
+}
+
+.tableFooter {
+  flex-shrink: 0;
 }
 
 .tableHeader {
@@ -575,15 +592,18 @@
 
   .mobileOverlay {
     background: #fff;
-    display: block;
+    display: flex;
+    flex-direction: column;
     inset: 0;
-    min-height: 100%;
+    min-height: 0;
     position: absolute;
     z-index: 20;
   }
 
   .mobilePanel {
+    flex: 1;
     height: 100%;
+    min-height: 0;
   }
 
   .panelInner {

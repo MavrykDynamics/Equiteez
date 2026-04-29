@@ -911,6 +911,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const handleGroupingChange = useCallback((value: number) => {
     setSelectedPriceGrouping(value);
   }, []);
+  const hasRows = hasOrderBookRows(renderData);
 
   return (
     <div className={styles.table}>
@@ -925,8 +926,10 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
 
       <div className={styles.content}>
         {loading ? (
-          <OrderBookState isLoading message="Loading order book..." />
-        ) : hasOrderBookRows(renderData) ? (
+          <div className={styles.tableViewport}>
+            <OrderBookState isLoading message="Loading order book..." />
+          </div>
+        ) : hasRows ? (
           <>
             <div className={styles.tableHeader}>
               <span
@@ -950,80 +953,86 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
               </span>
             </div>
 
-            {selectedDisplayMode !== "buy" && (
-              <OrderBookRowsSection
-                emptyLabel="No asks"
-                formatters={formatters}
-                onPriceClick={onPriceClick}
-                rows={visibleAsks}
-                side="ask"
-              />
-            )}
+            <div className={styles.tableViewport}>
+              {selectedDisplayMode !== "buy" && (
+                <OrderBookRowsSection
+                  emptyLabel="No asks"
+                  formatters={formatters}
+                  onPriceClick={onPriceClick}
+                  rows={visibleAsks}
+                  side="ask"
+                />
+              )}
 
-            <div className={styles.spreadRow}>
-              <span
-                className={clsx(
-                  styles.spreadPrice,
-                  spreadDisplayData.side === "ask"
-                    ? styles.askPrice
-                    : styles.bidPrice
-                )}
-              >
-                {spreadDisplayData.price > 0
-                  ? formatters.price.format(spreadDisplayData.price)
-                  : "--"}
-              </span>
-
-              <span className={styles.spreadMeta}>
-                {shouldShowReferencePrice ? (
-                  <SpreadDirectionIcon
-                    direction={spreadDirection}
-                    side={spreadDisplayData.side}
-                  />
-                ) : (
-                  <span className={styles.spreadLabel}>
-                    {spreadDisplayData.label}
-                  </span>
-                )}
-              </span>
-
-              <span
-                className={clsx(
-                  shouldShowReferencePrice
-                    ? styles.spreadReference
-                    : styles.spreadValue
-                )}
-              >
-                {shouldShowReferencePrice
-                  ? referencePriceLabel
-                  : spreadDisplayData.value !== null
-                    ? formatters.price.format(spreadDisplayData.value)
+              <div className={styles.spreadRow}>
+                <span
+                  className={clsx(
+                    styles.spreadPrice,
+                    spreadDisplayData.side === "ask"
+                      ? styles.askPrice
+                      : styles.bidPrice
+                  )}
+                >
+                  {spreadDisplayData.price > 0
+                    ? formatters.price.format(spreadDisplayData.price)
                     : "--"}
-              </span>
+                </span>
+
+                <span className={styles.spreadMeta}>
+                  {shouldShowReferencePrice ? (
+                    <SpreadDirectionIcon
+                      direction={spreadDirection}
+                      side={spreadDisplayData.side}
+                    />
+                  ) : (
+                    <span className={styles.spreadLabel}>
+                      {spreadDisplayData.label}
+                    </span>
+                  )}
+                </span>
+
+                <span
+                  className={clsx(
+                    shouldShowReferencePrice
+                      ? styles.spreadReference
+                      : styles.spreadValue
+                  )}
+                >
+                  {shouldShowReferencePrice
+                    ? referencePriceLabel
+                    : spreadDisplayData.value !== null
+                      ? formatters.price.format(spreadDisplayData.value)
+                      : "--"}
+                </span>
+              </div>
+
+              {selectedDisplayMode !== "sell" && (
+                <OrderBookRowsSection
+                  emptyLabel="No bids"
+                  formatters={formatters}
+                  onPriceClick={onPriceClick}
+                  rows={visibleBids}
+                  side="bid"
+                />
+              )}
             </div>
 
-            {selectedDisplayMode !== "sell" && (
-              <OrderBookRowsSection
-                emptyLabel="No bids"
-                formatters={formatters}
-                onPriceClick={onPriceClick}
-                rows={visibleBids}
-                side="bid"
+            <div className={styles.tableFooter}>
+              <OrderBookFooterSummaryBar
+                buyDisplayPercentage={footerSummary.buyDisplayPercentage}
+                buyPercentage={footerSummary.buyPercentage}
+                buyTotalLabel={buyTotalLabel}
+                differenceLabel={differenceLabel}
+                sellDisplayPercentage={footerSummary.sellDisplayPercentage}
+                sellPercentage={footerSummary.sellPercentage}
+                sellTotalLabel={sellTotalLabel}
               />
-            )}
-
-            <OrderBookFooterSummaryBar
-              buyDisplayPercentage={footerSummary.buyDisplayPercentage}
-              buyPercentage={footerSummary.buyPercentage}
-              buyTotalLabel={buyTotalLabel}
-              differenceLabel={differenceLabel}
-              sellDisplayPercentage={footerSummary.sellDisplayPercentage}
-              sellPercentage={footerSummary.sellPercentage}
-              sellTotalLabel={sellTotalLabel}
-            />
+            </div>
           </>
         ) : (
-          <OrderBookState message={emptyMessage} />
+          <div className={styles.tableViewport}>
+            <OrderBookState message={emptyMessage} />
+          </div>
         )}
       </div>
     </div>

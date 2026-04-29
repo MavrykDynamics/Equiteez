@@ -11,6 +11,7 @@ import CustomPopup, {
 import CloseIcon from "app/icons/cross.svg?react";
 
 type PopupWithIconProps = {
+  contentClassName?: string;
   contentPosition?: CustomPopupContentPositionType;
 } & CustomPopupProps;
 
@@ -19,6 +20,7 @@ const SCROLL_INDEX_POS = 24;
 export const PopupWithIcon: FC<PopupWithIconProps> = ({
   children,
   className,
+  contentClassName,
   contentPosition = "center",
   ...restProps
 }) => {
@@ -49,7 +51,10 @@ export const PopupWithIcon: FC<PopupWithIconProps> = ({
     >
       <div
         onScroll={scrollEvent}
-        className="w-full h-full overflow-y-auto px-[16px] py-[32px] md:p-8 transition duration-300 ease-in-out flex flex-col focus:outline-none"
+        className={clsx(
+          "box-border w-full h-full min-h-0 overflow-y-auto px-[16px] py-[32px] md:p-8 transition duration-300 ease-in-out flex flex-col focus:outline-none",
+          contentClassName
+        )}
       >
         <div
           className={clsx(
