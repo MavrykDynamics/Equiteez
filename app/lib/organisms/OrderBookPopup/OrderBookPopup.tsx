@@ -188,10 +188,10 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
         <motion.div
           key="mobile-order-book"
           className={wrapperClassName}
-          // initial={{ opacity: 0, x: "100%" }}
-          // animate={{ opacity: 1, x: 0, zIndex: -1 }}
-          // exit={{ opacity: 0, x: "100%", zIndex: -1 }}
-          // transition={PANEL_TRANSITION}
+          initial={{ opacity: 0, x: "100%" }}
+          animate={{ opacity: 1, x: 0, zIndex: -1 }}
+          exit={{ opacity: 0, x: "100%", zIndex: -1 }}
+          transition={PANEL_TRANSITION}
         >
           {panel}
         </motion.div>
