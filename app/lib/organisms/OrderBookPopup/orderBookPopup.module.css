@@ -269,6 +269,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -285,6 +286,11 @@
   column-gap: 12px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.tableHeader,
+.tableFooter {
+  padding-inline-end: 6px;
 }
 
 .tableRow {
