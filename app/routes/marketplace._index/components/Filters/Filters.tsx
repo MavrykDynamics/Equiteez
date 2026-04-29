@@ -5,7 +5,14 @@ import {
   DropdownBodyContentItem,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import { ChangeEvent, FC, useCallback, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  KeyboardEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import clsx from "clsx";
 import SearchIcon from "app/icons/search.svg?react";
 import styles from "./filters.module.css";
@@ -86,13 +93,26 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
     [setFiltersState]
   );
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     setIsSearchFocused(false);
     setFiltersState((prev) => ({
       ...prev,
       searchValue: prev.searchValue.trim(),
     }));
-  };
+  }, [setFiltersState]);
+
+  const handleSearchKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+
+      event.preventDefault();
+      inputRef.current?.blur();
+      handleNavigateToSelectedFilters();
+    },
+    [handleNavigateToSelectedFilters]
+  );
 
   return (
     <section
@@ -119,6 +139,7 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
                 <input
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={handleBlur}
+                  onKeyDown={handleSearchKeyDown}
                   ref={inputRef}
                   placeholder="Search..."
                   value={filtersState.searchValue}
@@ -286,15 +307,16 @@ export const Filters: FC<FiltersProps> = ({ isHideTagFilter }) => {
             </div>
           ))}
 
-        <div className="flex items-center pl-[12px]">
+        <div className={styles.actionsWrapper}>
           <div className={styles.filterDivider} />
-          <div
-            role="presentation"
+          <button
+            type="button"
             className={clsx(styles.searchBtn)}
             onClick={handleNavigateToSelectedFilters}
+            aria-label="Apply filters"
           >
-            <SearchIcon className={"text-white stroke-current w-5 h-5"} />
-          </div>
+            <SearchIcon className="text-white stroke-current w-5 h-5" />
+          </button>
         </div>
       </div>
     </section>

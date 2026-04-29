@@ -73,6 +73,11 @@ type FiltersContextType = {
   filtersOptions: FiltersOptionsType;
   filtersOptionsRecord: FiltersOptionsRecordType;
   setFiltersState: React.Dispatch<React.SetStateAction<FiltersStateType>>;
+  applyFiltersState: (
+    filtersState: React.SetStateAction<FiltersStateType>
+  ) => void;
+  clearSelectedFilters: () => void;
+  hasSelectedFilters: boolean;
   handleNavigateToSelectedFilters: () => void;
 };
 
@@ -96,14 +101,60 @@ const cloneFiltersState = (filters: FiltersStateType): FiltersStateType => ({
   tag: [...filters.tag],
 });
 
+const resolveFiltersState = (
+  currentFilters: FiltersStateType,
+  nextFilters:
+    | FiltersStateType
+    | ((prevState: FiltersStateType) => FiltersStateType)
+) =>
+  typeof nextFilters === "function"
+    ? nextFilters(currentFilters)
+    : nextFilters;
+
+const clearSelectableFilters = (
+  filters: FiltersStateType
+): FiltersStateType => ({
+  ...filters,
+  type: [],
+  developer: [],
+  tag: [],
+});
+
+const hasSelectableFilters = (filters: FiltersStateType) =>
+  Boolean(filters.type.length || filters.developer.length || filters.tag.length);
+
 export const FiltersProvider: FC<ProviderPropsType> = ({ children }) => {
   const [filters, setFilters] = useState<FiltersStateType>(initialFiltersState);
   const [appliedFilters, setAppliedFilters] =
     useState<FiltersStateType>(initialFiltersState);
 
+  const applyFiltersState = useCallback(
+    (nextFilters: React.SetStateAction<FiltersStateType>) => {
+      setFilters((prevFilters) => {
+        const resolvedFilters = cloneFiltersState(
+          resolveFiltersState(prevFilters, nextFilters)
+        );
+
+        setAppliedFilters(resolvedFilters);
+
+        return resolvedFilters;
+      });
+    },
+    []
+  );
+
   const handleNavigateToSelectedFilters = useCallback(() => {
-    setAppliedFilters(cloneFiltersState(filters));
-  }, [filters]);
+    applyFiltersState((prevFilters) => prevFilters);
+  }, [applyFiltersState]);
+
+  const clearSelectedFilters = useCallback(() => {
+    applyFiltersState((prevFilters) => clearSelectableFilters(prevFilters));
+  }, [applyFiltersState]);
+
+  const hasSelectedFilters = useMemo(
+    () => hasSelectableFilters(filters),
+    [filters]
+  );
 
   const contextValue = useMemo<FiltersContextType>(
     () => ({
@@ -116,9 +167,19 @@ export const FiltersProvider: FC<ProviderPropsType> = ({ children }) => {
         tag: filtersOptions[2],
       },
       setFiltersState: setFilters,
+      applyFiltersState,
+      clearSelectedFilters,
+      hasSelectedFilters,
       handleNavigateToSelectedFilters,
     }),
-    [appliedFilters, filters, handleNavigateToSelectedFilters]
+    [
+      appliedFilters,
+      applyFiltersState,
+      clearSelectedFilters,
+      filters,
+      hasSelectedFilters,
+      handleNavigateToSelectedFilters,
+    ]
   );
 
   return (

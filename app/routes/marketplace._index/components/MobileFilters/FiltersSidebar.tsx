@@ -37,6 +37,8 @@ export const FiltersSidebar = forwardRef<FiltersSidebarRefType, PropsType>(
       filtersOptions,
       filtersState,
       setFiltersState,
+      clearSelectedFilters,
+      hasSelectedFilters,
       handleNavigateToSelectedFilters,
     } = useFiltersContext();
 
@@ -57,15 +59,6 @@ export const FiltersSidebar = forwardRef<FiltersSidebarRefType, PropsType>(
 
     const handleClose = () => {
       setOpen(false);
-    };
-
-    const resetAllFilters = () => {
-      setFiltersState((prev) => ({
-        ...prev,
-        tag: [],
-        type: [],
-        developer: [],
-      }));
     };
 
     useImperativeHandle(ref, () => ({
@@ -130,7 +123,8 @@ export const FiltersSidebar = forwardRef<FiltersSidebarRefType, PropsType>(
               <Button
                 variant="outline"
                 className={styles.resetButton}
-                onClick={resetAllFilters}
+                onClick={clearSelectedFilters}
+                disabled={!hasSelectedFilters}
               >
                 Reset All
               </Button>

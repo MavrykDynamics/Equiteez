@@ -15,6 +15,16 @@ type FetchAssetsParams = {
 
 export type FetchAssetsResponse = z.infer<typeof assetsListSchema>;
 
+const emptyFetchAssetsResponse: FetchAssetsResponse = {
+  assets: [],
+  total_count: 0,
+};
+
+const noAssetsFoundErrorSchema = z.object({
+  statusCode: z.literal(404),
+  message: z.literal("No assets found"),
+});
+
 const appendValue = (
   queryParts: string[],
   key: string,
@@ -35,6 +45,30 @@ const appendValues = (
   values.forEach((value) => {
     appendValue(queryParts, key, value);
   });
+};
+
+const hasAppliedAssetFilters = ({
+  search,
+  developers,
+  tags,
+  types,
+}: FetchAssetsParams) =>
+  Boolean(
+    search?.trim() || developers?.length || tags?.length || types?.length
+  );
+
+const getErrorMessage = (responseData: unknown) => {
+  if (
+    typeof responseData !== "object" ||
+    responseData === null ||
+    !("message" in responseData)
+  ) {
+    return null;
+  }
+
+  const { message } = responseData as { message?: unknown };
+
+  return typeof message === "string" ? message : null;
 };
 
 export const fetchAssets = async (
@@ -61,10 +95,25 @@ export const fetchAssets = async (
 
   const query = queryParts.join("&");
   const url = `${mbrwaApiUrl}assets${query ? `?${query}` : ""}`;
+  const response = await fetch(url, { method: "GET" });
+  const responseData: unknown = await response.json();
 
-  const { data } = await api(url, { method: "GET" }, assetsListSchema);
+  if (!response.ok) {
+    const isNoAssetsFoundError =
+      response.status === 404 &&
+      hasAppliedAssetFilters(paramsConfig) &&
+      noAssetsFoundErrorSchema.safeParse(responseData).success;
 
-  return data;
+    if (isNoAssetsFoundError) {
+      return emptyFetchAssetsResponse;
+    }
+
+    throw new Error(
+      getErrorMessage(responseData) ?? `Failed to fetch assets (${response.status})`
+    );
+  }
+
+  return assetsListSchema.parse(responseData);
 };
 
 export const fetchUserAssets = async (userAddress: string) => {

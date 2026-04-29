@@ -24,7 +24,7 @@ export const MobileFilters: FC<FiltersProps> = ({ isHideTagFilter }) => {
   const {
     filtersState: { searchValue },
     setFiltersState,
-    handleNavigateToSelectedFilters,
+    applyFiltersState,
   } = useFiltersContext();
 
   const handleOpenFilters = () => {
@@ -36,7 +36,7 @@ export const MobileFilters: FC<FiltersProps> = ({ isHideTagFilter }) => {
   };
 
   const handleBlur = () => {
-    setFiltersState((prev) => ({
+    applyFiltersState((prev) => ({
       ...prev,
       searchValue: prev.searchValue.trim(),
     }));
@@ -59,14 +59,13 @@ export const MobileFilters: FC<FiltersProps> = ({ isHideTagFilter }) => {
 
       if (isFocused && event.key === "Enter") {
         inputRef.current?.blur();
-        handleNavigateToSelectedFilters();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isFocused, handleNavigateToSelectedFilters]);
+  }, [isFocused]);
 
   return (
     <section className={styles.container}>
