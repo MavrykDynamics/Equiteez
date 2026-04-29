@@ -4,6 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -485,6 +486,8 @@ export const PopupContent: FC<{
     },
     [marketType]
   );
+  const popupMainRef = useRef<HTMLDivElement>(null);
+  const [popupMainHeight, setPopupMainHeight] = useState<number>();
 
   const HeadlinePreviewSection = () => (
     <div className="flex items-center gap-3 font-medium">
@@ -511,6 +514,33 @@ export const PopupContent: FC<{
   );
 
   const shouldRenderOrderBook = isSecondaryEstate && activetabId !== CONFIRM;
+  const continueButtonClassName = isOrderBookOpen
+    ? styles.hideContinueButtonMobile
+    : undefined;
+
+  useLayoutEffect(() => {
+    const popupMainElement = popupMainRef.current;
+
+    if (!popupMainElement || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    const updatePopupMainHeight = () => {
+      setPopupMainHeight(popupMainElement.getBoundingClientRect().height);
+    };
+
+    updatePopupMainHeight();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updatePopupMainHeight();
+    });
+
+    resizeObserver.observe(popupMainElement);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [shouldRenderOrderBook]);
 
   return (
     <div className={styles.popupLayout}>
@@ -518,6 +548,7 @@ export const PopupContent: FC<{
         <OrderBookPopup
           baseTokenDecimals={baseTokenDecimals}
           baseTokenSymbol={selectedAssetMetadata?.symbol ?? estate.symbol}
+          desktopHeight={popupMainHeight}
           enabled={isSecondaryEstate}
           isOpen={isOrderBookOpen}
           onClose={closeOrderBook}
@@ -531,7 +562,10 @@ export const PopupContent: FC<{
         />
       )}
 
-      <div className={clsx("flex-1 flex flex-col min-w-0", styles.popupMain)}>
+      <div
+        ref={popupMainRef}
+        className={clsx("flex-1 flex flex-col min-w-0", styles.popupMain)}
+      >
         <div className="flex flex-col justify-between text-content flex-1 relative min-w-0">
           <div className="flex items-center">
             {activetabId === CONFIRM ? (
@@ -653,6 +687,7 @@ export const PopupContent: FC<{
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}
                 actionType={activetabId}
+                continueButtonClassName={continueButtonClassName}
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
@@ -667,6 +702,7 @@ export const PopupContent: FC<{
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}
                 actionType={activetabId}
+                continueButtonClassName={continueButtonClassName}
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}

@@ -35,12 +35,6 @@ type GetOrderBookPrecisionOptionsParams = {
   sellOrders: OpenOrder[];
 };
 
-type GroupedOrderBookRow = {
-  amount: BigNumber;
-  price: BigNumber;
-  total: BigNumber;
-};
-
 const getDepthPercentage = (value: number, maxValue: number) => {
   if (maxValue === 0) return 0;
 
@@ -95,42 +89,25 @@ const toOrderBookRows = (
   side: OrderBookSide
 ) => {
   const groupingPrecision = new BigNumber(priceGroupingPrecision);
-  const priceFractionDigits = getFractionDigits(groupingPrecision);
-  const groupedRows = orders.reduce<Map<string, GroupedOrderBookRow>>(
-    (rows, order) => {
-      const amount = atomsToTokens(order.unfulfilled_amount, baseTokenDecimals);
-      const price = atomsToTokens(
-        order.price_per_rwa_token,
-        quoteTokenDecimals
-      );
-      const total = amount.multipliedBy(price);
-      const groupedPrice = getGroupedPriceLevel(price, groupingPrecision, side);
-      const rowKey = groupedPrice.toFixed(priceFractionDigits);
-      const currentRow = rows.get(rowKey) ?? {
-        amount: new BigNumber(0),
-        price: groupedPrice,
-        total: new BigNumber(0),
-      };
-
-      rows.set(rowKey, {
-        amount: currentRow.amount.plus(amount),
-        price: groupedPrice,
-        total: currentRow.total.plus(total),
-      });
-
-      return rows;
-    },
-    new Map<string, GroupedOrderBookRow>()
-  );
 
   return withDepthPercentages(
     sortRowsByPriceDesc(
-      Array.from(groupedRows.values()).map((row) => ({
-        amount: row.amount.toNumber(),
-        depthPercentage: 0,
-        price: row.price.toNumber(),
-        total: row.total.toNumber(),
-      }))
+      orders.map((order) => {
+        const amount = atomsToTokens(order.unfulfilled_amount, baseTokenDecimals);
+        const price = atomsToTokens(
+          order.price_per_rwa_token,
+          quoteTokenDecimals
+        );
+        const groupedPrice = getGroupedPriceLevel(price, groupingPrecision, side);
+
+        return {
+          amount: amount.toNumber(),
+          depthPercentage: 0,
+          id: `${side}-${order.id}`,
+          price: groupedPrice.toNumber(),
+          total: amount.multipliedBy(price).toNumber(),
+        };
+      })
     )
   );
 };

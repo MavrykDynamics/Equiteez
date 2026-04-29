@@ -1,3 +1,11 @@
+.dropdownRoot {
+  position: relative;
+}
+
+.dropdownRootOpened {
+  z-index: 20;
+}
+
 .dropdownData {
   position: absolute;
   transform-origin: top;
@@ -5,6 +13,7 @@
   opacity: 0;
   border-radius: 8px;
   z-index: 200;
+  pointer-events: none;
   overflow: hidden;
   background-color: #fff;
   transition:
@@ -16,6 +25,7 @@
 .dropdownData.opened {
   transform: scaleY(1);
   opacity: 1;
+  pointer-events: auto;
 }
 
 .dropdownDataContent {

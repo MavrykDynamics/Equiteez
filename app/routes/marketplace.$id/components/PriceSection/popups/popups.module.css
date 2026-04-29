@@ -8,6 +8,7 @@
 }
 
 .popupLayout {
+  align-items: stretch;
   display: flex;
   flex: 1;
   gap: 32px;
@@ -16,11 +17,16 @@
 }
 
 .popupMain {
+  align-self: stretch;
   min-width: 0;
+  position: relative;
 }
 
 .popupWide {
   max-width: 1008px;
+}
+
+.hideContinueButtonMobile {
 }
 
 @media (--media-tablet-min) {
@@ -39,5 +45,9 @@
 
   .popupWide {
     max-width: 100%;
+  }
+
+  .hideContinueButtonMobile {
+    display: none;
   }
 }

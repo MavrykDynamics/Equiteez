@@ -1,6 +1,7 @@
 export type OrderBookRow = {
   amount: number;
   depthPercentage: number;
+  id: string;
   price: number;
   total: number;
 };

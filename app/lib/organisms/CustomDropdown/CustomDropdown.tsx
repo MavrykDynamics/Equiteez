@@ -83,7 +83,14 @@ export const CustomDropdown: FC<CustomDropdownProps> = ({
 
   return (
     <dropdownContext.Provider value={memoizedExpanderValue}>
-      <div ref={ref} className={`relative ${opened ? "" : "overflow-hidden"}`}>
+      <div
+        ref={ref}
+        className={clsx(
+          styles.dropdownRoot,
+          opened && styles.dropdownRootOpened,
+          !opened && "overflow-hidden"
+        )}
+      >
         {opened && withOverlay && (
           <div
             style={{ zIndex: 30 }}

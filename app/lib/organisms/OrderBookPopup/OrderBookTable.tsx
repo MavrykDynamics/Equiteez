@@ -10,7 +10,6 @@ import {
 
 import BigNumberJs from "bignumber.js";
 import clsx from "clsx";
-import ChevronDownIcon from "app/icons/chevron-down.svg?react";
 import BuyOnlyIcon from "app/icons/buy-only-icon.svg?react";
 import BuySellIcon from "app/icons/buy-sell-icon.svg?react";
 import SellOnlyIcon from "app/icons/sell-only-icon.svg?react";
@@ -24,6 +23,12 @@ import {
 import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { Spinner } from "~/lib/atoms/Spinner";
+import {
+  ClickableDropdownArea,
+  CustomDropdown,
+  DropdownBodyContent,
+  DropdownFaceContent,
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
 import { OrderRow } from "./OrderRow";
@@ -36,9 +41,10 @@ import styles from "./orderBookPopup.module.css";
 
 const DEFAULT_METRIC_FRACTION_DIGITS = 2;
 const MAX_METRIC_FRACTION_DIGITS = 4;
-const DEFAULT_ROWS_PER_SIDE = 10;
+const ORDER_BOOK_FETCH_LIMIT = 32;
+const DEFAULT_ROWS_PER_SIDE = 16;
 const ORDER_BOOK_SUMMARY_SAMPLE_SIZE = 10;
-const SINGLE_SIDE_ROWS = 20;
+const SINGLE_SIDE_ROWS = 32;
 
 const ORDER_BOOK_DISPLAY_MODE_OPTIONS: Array<{
   id: OrderBookDisplayMode;
@@ -280,6 +286,7 @@ const formatQuoteTokenValue = ({
 const areRowsEqual = (left: OrderBookRow, right: OrderBookRow) =>
   left.amount === right.amount &&
   left.depthPercentage === right.depthPercentage &&
+  left.id === right.id &&
   left.price === right.price &&
   left.total === right.total;
 
@@ -289,11 +296,11 @@ const reconcileRows = (
 ) => {
   if (previousRows.length === 0) return nextRows;
 
-  const previousRowsByPrice = new Map(
-    previousRows.map((row) => [row.price, row] as const)
+  const previousRowsById = new Map(
+    previousRows.map((row) => [row.id, row] as const)
   );
   const reconciledRows = nextRows.map((row) => {
-    const previousRow = previousRowsByPrice.get(row.price);
+    const previousRow = previousRowsById.get(row.id);
 
     return previousRow && areRowsEqual(previousRow, row) ? previousRow : row;
   });
@@ -381,7 +388,7 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
       ) : (
         rows.map((row) => (
           <OrderRow
-            key={`${side}-${row.price}`}
+            key={row.id}
             onPriceClick={onPriceClick}
             priceLabel={formatters.price.format(row.price)}
             row={row}
@@ -625,23 +632,42 @@ const OrderBookTableHeaderComponent: FC<OrderBookTableHeaderProps> = ({
         </div>
 
         {shouldShowGroupingControl && (
-          <label className={styles.groupingControl}>
-            <select
-              aria-label="Price grouping"
-              className={styles.groupingSelect}
-              onChange={(event) =>
-                onGroupingChange(Number(event.currentTarget.value))
-              }
-              value={String(selectedPriceGrouping)}
-            >
-              {priceGroupingOptions.map((option) => (
-                <option key={option} value={String(option)}>
-                  {formatGroupingValue(option)}
-                </option>
-              ))}
-            </select>
-            <ChevronDownIcon className={styles.groupingSelectIcon} />
-          </label>
+          <CustomDropdown>
+            <ClickableDropdownArea>
+              <DropdownFaceContent
+                gap={8}
+                className={styles.groupingControl}
+                iconClassName={styles.groupingSelectIcon}
+                openedClassName={styles.groupingControlActive}
+              >
+                <span className={styles.groupingValue}>
+                  {formatGroupingValue(selectedPriceGrouping)}
+                </span>
+              </DropdownFaceContent>
+
+              <DropdownBodyContent position="right" topMargin={8}>
+                <div className={styles.groupingMenu}>
+                  {priceGroupingOptions.map((option) => {
+                    const isSelected = option === selectedPriceGrouping;
+
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        className={clsx(
+                          styles.groupingMenuItem,
+                          isSelected && styles.groupingMenuItemActive
+                        )}
+                        onClick={() => onGroupingChange(option)}
+                      >
+                        {formatGroupingValue(option)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </DropdownBodyContent>
+            </ClickableDropdownArea>
+          </CustomDropdown>
         )}
       </div>
     </div>
@@ -663,9 +689,12 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   referencePrice = 0,
   rwaAddress,
 }) => {
+  const [selectedDisplayMode, setSelectedDisplayMode] =
+    useState<OrderBookDisplayMode>("both");
   const { openOrders, loading } = useOpenOrders({
-    rwaAddress,
     enabled,
+    limit: ORDER_BOOK_FETCH_LIMIT,
+    rwaAddress,
   });
 
   const defaultData = useMemo(
@@ -693,8 +722,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const [selectedPriceGrouping, setSelectedPriceGrouping] = useState(
     nextPriceGroupingOptions[0] ?? DEFAULT_ORDER_BOOK_GROUPING_PRECISION
   );
-  const [selectedDisplayMode, setSelectedDisplayMode] =
-    useState<OrderBookDisplayMode>("both");
 
   useEffect(() => {
     setPriceGroupingOptions((currentOptions) =>

@@ -1,9 +1,19 @@
 @import "../../../styles/breakpoints.css";
 
 .desktopWrapper {
-  display: block;
+  align-self: stretch;
+  display: flex;
   flex-shrink: 0;
-  overflow: hidden;
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.desktopPanelMotion {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .mobileOverlay {
@@ -12,6 +22,9 @@
 
 .panel {
   background: #fff;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   height: 100%;
   width: 100%;
 }
@@ -21,6 +34,7 @@
 }
 
 .desktopPanelInner {
+  overflow: visible;
   padding: 0 24px;
 }
 
@@ -34,9 +48,9 @@
 
 .panelInner {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  height: 100%;
-  min-height: 100%;
+  min-height: 0;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
 }
@@ -47,7 +61,9 @@
   display: flex;
   flex: 1;
   flex-direction: column;
+  height: 100%;
   min-height: 0;
+  overflow: visible;
 }
 
 .header {
@@ -55,9 +71,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 36px 0 12px;
+  overflow: visible;
+  padding: 0 0 12px;
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .headerTabs {
@@ -87,6 +104,8 @@
   display: flex;
   gap: 12px;
   justify-content: space-between;
+  position: relative;
+  z-index: 1;
 }
 
 .groupingControl {
@@ -101,8 +120,28 @@
   padding: 0 14px;
 }
 
-.groupingSelect {
-  appearance: none;
+.groupingControl:hover {
+  border-color: var(--color-grey-200);
+}
+
+.groupingControlActive {
+  border-color: var(--color-sand-900);
+}
+
+.groupingValue {
+  color: var(--color-sand-900);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.groupingMenu {
+  display: flex;
+  flex-direction: column;
+}
+
+.groupingMenuItem {
   background: transparent;
   border: 0;
   color: var(--color-sand-900);
@@ -112,9 +151,19 @@
   font-weight: 400;
   line-height: 18px;
   min-height: 34px;
-  min-width: 38px;
-  outline: none;
-  padding: 8px 20px 8px 0;
+  padding: 8px 14px;
+  text-align: left;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.groupingMenuItem:hover {
+  background: rgba(28, 98, 82, 0.08);
+}
+
+.groupingMenuItemActive {
+  background: rgba(28, 98, 82, 0.12);
+  font-weight: 500;
 }
 
 .groupingSelectIcon {
@@ -161,12 +210,11 @@
 }
 
 .desktopPanelInner .content {
-  padding-bottom: 36px;
+  overflow: visible;
 }
 
 .mobilePanelInner .header {
   padding-right: 40px;
-  padding-top: 32px;
 }
 
 .mobilePanelInner .content {
@@ -412,6 +460,7 @@
 .sentimentBar {
   border-radius: 4px;
   display: flex;
+  margin-top: auto;
   min-height: 29px;
   overflow: hidden;
   width: 100%;
@@ -531,6 +580,10 @@
     min-height: 100%;
     position: absolute;
     z-index: 20;
+  }
+
+  .mobilePanel {
+    height: 100%;
   }
 
   .panelInner {
