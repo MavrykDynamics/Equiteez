@@ -2,7 +2,6 @@ import type { MetaFunction } from "@remix-run/node";
 import { generatePath, Link } from "@remix-run/react";
 import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
-import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters/Filters";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -21,6 +20,7 @@ import {
 import { MobileFilters } from "~/routes/marketplace._index/components/MobileFilters";
 import { ROUTES } from "~/consts/routes";
 import { useMarketplaceAssets } from "~/routes/marketplace._index/hooks/useMarketplaceAssets";
+import { EMPTY_ARRAY } from "~/consts";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,7 +38,6 @@ export default function Properties() {
 }
 
 const PropertiesContent = () => {
-  const { validBaseTokens } = useMarketsContext();
   const { orderbookStorages } = useDexContext();
   const {
     assets,
@@ -88,7 +87,9 @@ const PropertiesContent = () => {
                   key={es.token_address}
                 >
                   <ThumbCardSecondary
-                    flag={es.assetDetails?.propertyDetails?.tags?.[0]}
+                    flags={
+                      es.assetDetails?.propertyDetails?.tags ?? EMPTY_ARRAY
+                    }
                     imgSrc={es.assetDetails.previewImage}
                     title={es.name}
                     description={es.assetDetails.propertyDetails.propertyType}
@@ -96,7 +97,6 @@ const PropertiesContent = () => {
                     APY={es.assetDetails.APY}
                     pricePerToken={pricePerToken}
                     progressBarPercentage={isSecondaryMarket ? undefined : 22}
-                    isFutureAsset={!validBaseTokens[es.token_address]}
                     height="276px"
                   />
                 </Link>

@@ -6,6 +6,7 @@ import mvrkTokenSvg from "app/misc/mvrk-section.png";
 
 import styles from "./operationPopupData.module.css";
 import { EstateType } from "~/providers/MarketsProvider/market.types";
+import { EMPTY_ARRAY } from "~/consts";
 
 const withSeparator = (items: EstateType[]) => {
   const [item1, item2] = items;
@@ -84,7 +85,7 @@ export const popupOperationInProgress = ({
             className="max-w-[365px] w-full xl:w-[365px]"
           >
             <ThumbCardSecondary
-              flag=""
+              flags={EMPTY_ARRAY}
               imgSrc={asset.imgSrc}
               title={asset.title ?? ""}
               description={asset.description ?? ""}

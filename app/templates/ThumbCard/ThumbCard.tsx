@@ -2,7 +2,7 @@ import { CSSProperties, FC, useMemo } from "react";
 
 import styles from "./thumbCard.module.css";
 import clsx from "clsx";
-import { EstateHeadlineTab, HeadlineTabBadge } from "../EstateHeadlineTab";
+import { EstateHeadlineTab } from "../EstateHeadlineTab";
 import BigNumber from "bignumber.js";
 import Money from "~/lib/atoms/Money";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
@@ -21,8 +21,7 @@ type ThumbCardSecondary = Omit<ThumbCardProps, "address"> & {
   progressBarPercentage?: number;
   isSecondaryMarket: boolean;
   pricePerToken?: BigNumber;
-  isFutureAsset?: boolean;
-  flag: string;
+  flags: string[];
 };
 
 export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
@@ -33,8 +32,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
   pricePerToken,
   progressBarPercentage,
   APY,
-  flag,
-  isFutureAsset = false,
+  flags,
   height = "264px",
 }) => {
   const memoizedStyle = useMemo(() => ({ "--card-height": height }), [height]);
@@ -51,9 +49,11 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
           "flex flex-col justify-between p-4"
         )}
       >
-        <div className="flex items-center gap-x-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
-          <AssetFlag flagValue={flag} />
+          {flags.slice(0, 1).map((flag) => (
+            <AssetFlag key={flag} flagValue={flag} />
+          ))}
         </div>
         <div className="flex flex-col items-start">
           <div className="flex-1 w-full flex justify-between gap-2">

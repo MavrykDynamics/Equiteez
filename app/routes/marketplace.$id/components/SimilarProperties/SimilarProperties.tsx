@@ -12,6 +12,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { EmblaOptionsType } from "embla-carousel";
 import classNames from "clsx";
+import { EMPTY_ARRAY } from "~/consts";
 
 function getThreeUniqueElements(items: EstateType[]) {
   if (items.length < 3) {
@@ -72,7 +73,7 @@ export const SimilarProperties = () => {
                 key={estate.token_address}
               >
                 <ThumbCardSecondary
-                  flag=""
+                  flags={EMPTY_ARRAY}
                   key={estate.token_address}
                   imgSrc={estate.assetDetails.previewImage}
                   pricePerToken={pricePerToken}
