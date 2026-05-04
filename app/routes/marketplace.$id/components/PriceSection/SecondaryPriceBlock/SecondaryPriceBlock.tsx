@@ -66,6 +66,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const { validBaseTokens } = useMarketsContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
+  const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
 
@@ -136,12 +137,16 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
     setIsOrderBookOpen(false);
+    setHasVisibleOrderBook(false);
     setOrderType(BUY);
   }, []);
 
   const handleOpen = useCallback((orderType: OrderType) => {
+    const shouldOpenOrderBook = getDefaultOrderBookOpenState();
+
     setOrderType(orderType);
-    setIsOrderBookOpen(getDefaultOrderBookOpenState());
+    setIsOrderBookOpen(shouldOpenOrderBook);
+    setHasVisibleOrderBook(shouldOpenOrderBook);
     setIsOpen(true);
   }, []);
 
@@ -281,12 +286,13 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         contentPosition={"right"}
         className={classNames(
           "bg-white",
-          isOrderBookOpen && popupStyles.popupWide
+          hasVisibleOrderBook && popupStyles.popupWide
         )}
       >
         <PopupContent
           estate={estate}
           isOrderBookOpen={isOrderBookOpen}
+          onOrderBookVisibilityChange={setHasVisibleOrderBook}
           orderType={orderType}
           setIsOrderBookOpen={setIsOrderBookOpen}
           setOrderType={setOrderType}

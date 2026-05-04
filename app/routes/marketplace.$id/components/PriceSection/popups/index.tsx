@@ -68,15 +68,19 @@ import clsx from "clsx";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 
-export const PopupContent: FC<{
+type PopupContentProps = {
   estate: SecondaryEstate;
   isOrderBookOpen: boolean;
+  onOrderBookVisibilityChange?: (isVisible: boolean) => void;
   orderType: OrderType;
   setIsOrderBookOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
-}> = ({
+};
+
+export const PopupContent: FC<PopupContentProps> = ({
   estate,
   isOrderBookOpen,
+  onOrderBookVisibilityChange,
   orderType,
   setIsOrderBookOpen,
   setOrderType,
@@ -518,6 +522,10 @@ export const PopupContent: FC<{
   const continueButtonClassName = isOrderBookOpen
     ? styles.hideContinueButtonMobile
     : undefined;
+
+  useEffect(() => {
+    onOrderBookVisibilityChange?.(hasOpenOrderBook);
+  }, [hasOpenOrderBook, onOrderBookVisibilityChange]);
 
   useLayoutEffect(() => {
     const popupMainElement = popupMainRef.current;
