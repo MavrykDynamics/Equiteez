@@ -6,17 +6,21 @@ import type { OrderBookRow } from "./orderBook.types";
 import styles from "./orderBookPopup.module.css";
 
 type OrderRowProps = {
+  amountLabel: string;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
   priceLabel: string;
   row: OrderBookRow;
   side: "ask" | "bid";
+  totalLabel: string;
 };
 
 const OrderRowComponent: FC<OrderRowProps> = ({
+  amountLabel,
   onPriceClick,
   priceLabel,
   row,
   side,
+  totalLabel,
 }) => {
   const handlePriceClick = useCallback(() => {
     onPriceClick?.(row.price, side);
@@ -49,6 +53,14 @@ const OrderRowComponent: FC<OrderRowProps> = ({
       >
         {priceLabel}
       </button>
+
+      <span className={clsx(styles.rowValue, styles.amountCell)}>
+        {amountLabel}
+      </span>
+
+      <span className={clsx(styles.rowValue, styles.totalCell)}>
+        {totalLabel}
+      </span>
     </div>
   );
 };
@@ -56,10 +68,12 @@ const OrderRowComponent: FC<OrderRowProps> = ({
 export const OrderRow = memo(
   OrderRowComponent,
   (previousProps, nextProps) =>
+    previousProps.amountLabel === nextProps.amountLabel &&
     previousProps.row === nextProps.row &&
     previousProps.side === nextProps.side &&
     previousProps.onPriceClick === nextProps.onPriceClick &&
-    previousProps.priceLabel === nextProps.priceLabel
+    previousProps.priceLabel === nextProps.priceLabel &&
+    previousProps.totalLabel === nextProps.totalLabel
 );
 
 OrderRow.displayName = "OrderRow";

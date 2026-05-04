@@ -388,11 +388,13 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
       ) : (
         rows.map((row) => (
           <OrderRow
+            amountLabel={formatters.amount.format(row.amount)}
             key={row.id}
             onPriceClick={onPriceClick}
             priceLabel={formatters.price.format(row.price)}
             row={row}
             side={side}
+            totalLabel={formatters.total.format(row.total)}
           />
         ))
       )}
