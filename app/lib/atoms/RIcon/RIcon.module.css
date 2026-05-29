@@ -1,0 +1,27 @@
+.icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--r-icon-size);
+  height: var(--r-icon-size);
+  color: currentColor;
+  vertical-align: middle;
+}
+
+.small {
+  --r-icon-size: var(--r-size-icon-small);
+}
+
+.medium {
+  --r-icon-size: var(--r-size-icon-medium);
+}
+
+.spin {
+  animation: rIconSpin 1s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes rIconSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

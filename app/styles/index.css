@@ -1,5 +1,6 @@
 @import "tippy.js/dist/tippy.css";
 @import "tippy.js/animations/shift-away-subtle.css";
+@import "./redesign.css";
 
 /**
  * Poppins UI font

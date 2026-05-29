@@ -1,0 +1,139 @@
+:root {
+  /* Redesign color tokens from Equiteez 2.0 Figma references. */
+  --r-color-neutral-black: #010101;
+  --r-color-neutral-900: #1a1a1a;
+  --r-color-neutral-800: #343434;
+  --r-color-neutral-700: #4d4d4d;
+  --r-color-neutral-600: #676767;
+  --r-color-neutral-500: #808080;
+  --r-color-neutral-400: #999999;
+  --r-color-neutral-300: #b3b3b3;
+  --r-color-neutral-200: #cccccc;
+  --r-color-neutral-100: #e6e6e6;
+  --r-color-neutral-50: #f6f6f7;
+  --r-color-neutral-white: #ffffff;
+
+  --r-color-accent-green-950: #0b2721;
+  --r-color-accent-green-900: #113b31;
+  --r-color-accent-green-800: #144539;
+  --r-color-accent-green-700: #164e42;
+  --r-color-accent-green-600: #19584a;
+  --r-color-accent-green-500: #1c6252;
+  --r-color-accent-green-400: #337263;
+  --r-color-accent-green-300: #498175;
+  --r-color-accent-green-200: #609186;
+  --r-color-accent-green-100: #77a197;
+  --r-color-accent-green-50: #a4c0ba;
+
+  --r-color-blue-900: #234e94;
+  --r-color-blue-800: #295bac;
+  --r-color-blue-700: #2f68c5;
+  --r-color-blue-600: #3575dd;
+  --r-color-blue-500: #3b82f6;
+  --r-color-blue-400: #4f8ff7;
+  --r-color-blue-300: #629bf8;
+  --r-color-blue-200: #76a8f9;
+  --r-color-blue-100: #89b4fa;
+
+  --r-color-green-900: #146337;
+  --r-color-green-800: #187440;
+  --r-color-green-700: #1b8449;
+  --r-color-green-600: #1f9552;
+  --r-color-green-500: #22a55b;
+  --r-color-green-400: #38ae6b;
+  --r-color-green-300: #4eb77c;
+  --r-color-green-200: #64c08c;
+  --r-color-green-100: #7ac99d;
+
+  --r-color-yellow-900: #8c6b05;
+  --r-color-yellow-800: #a47d06;
+  --r-color-yellow-700: #bb8f06;
+  --r-color-yellow-600: #d3a107;
+  --r-color-yellow-500: #eab308;
+  --r-color-yellow-400: #ecbb21;
+  --r-color-yellow-300: #eec239;
+  --r-color-yellow-200: #f0ca52;
+  --r-color-yellow-100: #f2d16b;
+
+  --r-color-red-900: #8f2929;
+  --r-color-red-800: #a73030;
+  --r-color-red-700: #bf3636;
+  --r-color-red-600: #d73d3d;
+  --r-color-red-500: #ef4444;
+  --r-color-red-400: #f15757;
+  --r-color-red-300: #f26969;
+  --r-color-red-200: #f47c7c;
+  --r-color-red-100: #f58f8f;
+
+  --r-color-primary: var(--r-color-accent-green-500);
+  --color-primary: var(--r-color-primary);
+
+  --r-text-heading-white: var(--r-color-neutral-white);
+  --r-text-body-white: var(--r-color-neutral-white);
+  --r-text-body-black: var(--r-color-neutral-black);
+  --r-text-disabled-white: var(--r-color-neutral-500);
+  --r-text-disabled-black: var(--r-color-neutral-200);
+
+  --r-surface-primary-white-button-default: var(--r-color-neutral-white);
+  --r-surface-primary-white-button-hover: var(--r-color-neutral-50);
+  --r-surface-primary-white-button-disabled: var(--r-color-neutral-white);
+  --r-surface-primary-black-button-default: var(--r-color-neutral-black);
+  --r-surface-primary-black-button-hover: var(--r-color-neutral-800);
+  --r-surface-primary-black-button-disabled: var(--r-color-neutral-500);
+  --r-surface-secondary-white-button-hover: rgba(246, 246, 247, 0.1);
+  --r-surface-secondary-black-button-hover: var(--r-color-neutral-50);
+  --r-border-secondary-button-default: var(--r-color-neutral-300);
+  --r-border-secondary-button-hover: var(--r-color-neutral-300);
+  --r-border-secondary-button-disabled: var(--r-color-neutral-300);
+
+  --r-font-heading: "General Sans", Poppins, system-ui, sans-serif;
+  --r-font-body: Inter, Poppins, system-ui, sans-serif;
+  --r-font-weight-regular: 400;
+  --r-font-weight-medium: 500;
+
+  --r-font-size-heading-h1: 64px;
+  --r-font-size-heading-h2: 56px;
+  --r-font-size-heading-h3: 44px;
+  --r-font-size-heading-h4: 32px;
+  --r-font-size-heading-h5: 24px;
+  --r-font-size-heading-h6: 20px;
+  --r-font-size-heading-h7: 16px;
+
+  --r-line-height-heading-h1: 84px;
+  --r-line-height-heading-h2: 72px;
+  --r-line-height-heading-h3: 58px;
+  --r-line-height-heading-h4: 44px;
+  --r-line-height-heading-h5: 32px;
+  --r-line-height-heading-h6: 28px;
+  --r-line-height-heading-h7: 24px;
+
+  --r-font-size-body-l: 20px;
+  --r-font-size-body-m: 16px;
+  --r-font-size-body-sm: 14px;
+  --r-font-size-body-s: 12px;
+  --r-font-size-body-xs: 10px;
+
+  --r-line-height-body-l: 30px;
+  --r-line-height-body-m: 24px;
+  --r-line-height-body-sm: 21px;
+  --r-line-height-body-s: 18px;
+  --r-line-height-body-xs: 15px;
+
+  --r-letter-spacing-heading: 0;
+  --r-letter-spacing-body: 0;
+
+  --r-space-1: 4px;
+  --r-space-2: 8px;
+  --r-space-3: 12px;
+  --r-space-4: 16px;
+  --r-space-5: 20px;
+  --r-space-6: 24px;
+  --r-space-8: 32px;
+
+  --r-size-icon-small: 16px;
+  --r-size-icon-medium: 24px;
+  --r-radius-pill: 32px;
+  --r-border-width-sm: 1px;
+  --r-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.32);
+  --r-transition-duration-fast: 160ms;
+}
