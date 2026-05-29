@@ -129,9 +129,16 @@
   --r-space-5: 20px;
   --r-space-6: 24px;
   --r-space-8: 32px;
+  --r-space-10: 40px;
+  --r-space-11: 44px;
+  --r-space-12: 48px;
+  --r-space-18: 72px;
+  --r-space-25: 100px;
 
   --r-size-icon-small: 16px;
   --r-size-icon-medium: 24px;
+  --r-radius-md: 16px;
+  --r-radius-lg: 20px;
   --r-radius-pill: 32px;
   --r-border-width-sm: 1px;
   --r-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.32);

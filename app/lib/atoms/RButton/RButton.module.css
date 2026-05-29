@@ -28,6 +28,11 @@
   cursor: not-allowed;
 }
 
+.disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .large {
   min-height: 52px;
   padding: 14px 32px;

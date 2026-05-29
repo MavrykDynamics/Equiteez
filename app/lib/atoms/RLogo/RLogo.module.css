@@ -1,0 +1,100 @@
+.logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--r-color-neutral-white);
+  font-family: var(--r-font-heading);
+  font-weight: var(--r-font-weight-medium);
+  letter-spacing: var(--r-letter-spacing-heading);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--r-transition-duration-fast) ease;
+}
+
+.black {
+  color: var(--r-color-neutral-black);
+}
+
+.white {
+  color: var(--r-color-neutral-white);
+}
+
+.primaryLine {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mark {
+  flex: 0 0 auto;
+}
+
+.mark * {
+  stroke: currentColor;
+}
+
+.mark,
+.mavrykWordmark {
+  --fill-0: currentColor;
+  --stroke-0: currentColor;
+}
+
+.wordmark {
+  line-height: 1;
+}
+
+.byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 1.05;
+}
+
+.mavrykWordmark * {
+  fill: currentColor;
+}
+
+.medium .primaryLine {
+  gap: 9.5px;
+}
+
+.medium .mark {
+  width: 16.23px;
+  height: 16.98px;
+}
+
+.medium .wordmark {
+  font-size: 22.47px;
+}
+
+.medium .byline {
+  font-size: 6.55px;
+  margin-top: 2px;
+}
+
+.medium .mavrykWordmark {
+  width: 57.84px;
+  height: 15.07px;
+}
+
+.small .primaryLine {
+  gap: 8.5px;
+}
+
+.small .mark {
+  width: 14.69px;
+  height: 15.56px;
+}
+
+.small .wordmark {
+  font-size: 22px;
+}
+
+.small .byline {
+  font-size: 6px;
+  margin-top: 2px;
+}
+
+.small .mavrykWordmark {
+  width: 53px;
+  height: 13.81px;
+}

@@ -42,8 +42,9 @@ Use these token groups:
 - Semantic primary: `--r-color-primary`
 - Typography: `--r-font-*`, `--r-font-size-*`, `--r-line-height-*`, `--r-letter-spacing-*`
 - Spacing: `--r-space-*`
+- Landing/shared layout spacing additions: `--r-space-10`, `--r-space-11`, `--r-space-12`, `--r-space-18`, `--r-space-25`
 - Icon sizes: `--r-size-icon-small`, `--r-size-icon-medium`
-- Radius, border, focus, transitions: `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
+- Radius, border, focus, transitions: `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
 
 Add new tokens only when they are shared by multiple redesign components or map directly to the Figma system.
 
@@ -78,6 +79,10 @@ Button dimensions:
 - `small`: 38px min-height, 10px 16px padding, body S typography
 
 Button states must use tokens for default, hover, disabled, focus, and loading.
+
+`RButton` can render native buttons, Remix links, and anchor links through the
+`as` prop. Use `as="link"` for internal Remix navigation and `as="a"` for hash
+or external links.
 
 # Icons
 
@@ -169,7 +174,7 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Redesign button atom based on the Equiteez 2.0 button system.
 - Location: `app/lib/atoms/RButton/RButton.tsx`
 - Styles: `app/lib/atoms/RButton/RButton.module.css`
-- Reusability notes: Use for all redesign buttons before creating specialized button variants. Supports variants, tones, sizes, left/right icons, disabled, and loading states.
+- Reusability notes: Use for all redesign buttons before creating specialized button variants. Supports variants, tones, sizes, left/right icons, disabled, loading states, internal Remix links, and anchor links.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-surface-*button*`, `--r-text-*`, `--r-space-1`, `--r-transition-duration-fast`
 
 ## RIcon
@@ -179,6 +184,46 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/atoms/RIcon/RIcon.module.css`
 - Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
+
+## RLogo
+
+- Purpose: Redesign Equiteez by Mavryk logo atom with white and black tones.
+- Location: `app/lib/atoms/RLogo/RLogo.tsx`
+- Styles: `app/lib/atoms/RLogo/RLogo.module.css`
+- Reusability notes: Use in redesign headers, footers, and marketing layouts before creating page-specific logo markup. Uses Figma-exported SVG mark/wordmark assets and tone-driven black/white rendering.
+- Related tokens: `--r-font-heading`, `--r-color-neutral-*`, `--r-transition-duration-fast`, `app/assets/redesign/logo/*`
+
+## RSectionHeader
+
+- Purpose: Shared redesign section heading block with eyebrow, multi-line heading, optional description, alignment, and tone.
+- Location: `app/lib/molecules/RSectionHeader/RSectionHeader.tsx`
+- Styles: `app/lib/molecules/RSectionHeader/RSectionHeader.module.css`
+- Reusability notes: Use for marketing and informational redesign sections that follow the Equiteez 2.0 heading rhythm.
+- Related tokens: `--r-font-heading`, `--r-font-body`, `--r-font-size-heading-*`, `--r-line-height-heading-*`, `--r-font-size-body-*`, `--r-color-neutral-*`
+
+## RHeader
+
+- Purpose: Shared fixed redesign header with overlay-friendly transparent state, scrolled state, scroll-direction hide/show behavior, desktop navigation, and mobile-ready menu structure.
+- Location: `app/layouts/RHeader/RHeader.tsx`
+- Styles: `app/layouts/RHeader/RHeader.module.css`
+- Reusability notes: Use for redesign pages that need the Equiteez 2.0 top navigation without consuming page layout height.
+- Related tokens: `RLogo`, `RButton`, `RIcon`, `--r-space-*`, `--r-color-neutral-*`, `--r-border-width-sm`, `--r-radius-pill`
+
+## RFooter
+
+- Purpose: Shared redesign footer with logo, grouped links, legal/social links, and Mavryk attribution.
+- Location: `app/layouts/RFooter/RFooter.tsx`
+- Styles: `app/layouts/RFooter/RFooter.module.css`
+- Reusability notes: Use for redesign pages that need the Equiteez 2.0 footer. Link groups can be overridden through props.
+- Related tokens: `RLogo`, `--r-space-*`, `--r-color-neutral-*`, `--r-border-width-sm`
+
+## RLandingPage
+
+- Purpose: Route-level Equiteez 2.0 landing page composition for the home route.
+- Location: `app/routes/_index/components/RLandingPage/RLandingPage.tsx`
+- Styles: `app/routes/_index/components/RLandingPage/RLandingPage.module.css`
+- Reusability notes: Keep page-specific section data here until sections are reused elsewhere, then promote reusable sections into `app/templates` or shared R components.
+- Related tokens: `RHeader`, `RFooter`, `RButton`, `RIcon`, `RSectionHeader`, `MarqueeCarousel`, `app/assets/redesign/landing/*`
 
 # Registry Update Protocol
 
