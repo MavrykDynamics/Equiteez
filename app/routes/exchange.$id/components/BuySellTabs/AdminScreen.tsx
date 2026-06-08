@@ -1,18 +1,21 @@
-import { FC, useMemo, useState } from 'react';
-import { pickDodoContractBasedOnToken } from '~/consts/contracts';
+import { FC, useMemo, useState } from "react";
 import {
   depositBaseToken,
   depositQuoteToken,
   withdrawBaseToken,
   withdrawQuoteToken,
-} from '~/contracts/dodo.contract';
-import { useContractAction } from '~/contracts/hooks/useContractAction';
-import { getStatusLabel } from '~/lib/ui/use-status-flag';
-import { Button } from '~/lib/atoms/Button';
-import { useTokensContext } from '~/providers/TokensProvider/tokens.provider';
-import { toTokenSlug } from '~/lib/assets';
+} from "~/contracts/dodo.contract";
+import { useContractAction } from "~/contracts/hooks/useContractAction";
+import { getStatusLabel } from "~/lib/ui/use-status-flag";
+import { Button } from "~/lib/atoms/Button";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { toTokenSlug } from "~/lib/assets";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 const useAdminAction = (amount: number, tokenAddress: string) => {
+  const {
+    pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
+  } = useMarketsContext();
   const { tokensMetadata } = useTokensContext();
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
 
@@ -23,11 +26,18 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
   const depositProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       rwaTokenAddress: tokenAddress,
       tokensAmount: amount,
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [tokenAddress, amount, selectedAssetMetadata]
+    [
+      tokenAddress,
+      amount,
+      selectedAssetMetadata,
+      pickDodoContractBasedOnToken,
+      pickDodoContractQuoteToken,
+    ]
   );
 
   const { invokeAction: handleBaseTokenDeposit, status: depositBaseStatus } =
@@ -42,7 +52,12 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
       tokensAmount: amount,
       decimals: selectedAssetMetadata?.decimals,
     }),
-    [amount, tokenAddress, selectedAssetMetadata]
+    [
+      pickDodoContractBasedOnToken,
+      tokenAddress,
+      amount,
+      selectedAssetMetadata?.decimals,
+    ]
   );
 
   const { invokeAction: handleBaseTokenWithdraw, status: withdrawBaseStatus } =
@@ -70,7 +85,7 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
   symbol,
   tokenAddress,
 }) => {
-  const [amount, setAmount] = useState<number | string>(Number(''));
+  const [amount, setAmount] = useState<number | string>(Number(""));
 
   const {
     handleBaseTokenDeposit,
@@ -101,7 +116,7 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
                 name="amount"
                 type="number"
                 min={1}
-                value={amount || ''}
+                value={amount || ""}
                 onChange={(e) => setAmount(Number(e.target.value))}
                 placeholder="Minimum 1"
                 className="w-full bg-transparent focus:outline-none text-right"
@@ -112,16 +127,16 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
         </div>
         <div className="flex flex-col gap-4 mt-4">
           <Button className="w-full" onClick={handleBaseTokenDeposit}>
-            {getStatusLabel(depositBaseStatus, 'Deposit Base')}
+            {getStatusLabel(depositBaseStatus, "Deposit Base")}
           </Button>
           <Button className="w-full" onClick={handleQuoteTokenDeposit}>
-            {getStatusLabel(depositQuoteStatus, 'Deposit Quote')}
+            {getStatusLabel(depositQuoteStatus, "Deposit Quote")}
           </Button>
           <Button className="w-full" onClick={handleBaseTokenWithdraw}>
-            {getStatusLabel(withdrawBaseStatus, 'Withdraw Base')}
+            {getStatusLabel(withdrawBaseStatus, "Withdraw Base")}
           </Button>
           <Button className="w-full" onClick={handleQuoteTokenWithdraw}>
-            {getStatusLabel(withdrawQuoteStatus, 'Withdraw Quote')}
+            {getStatusLabel(withdrawQuoteStatus, "Withdraw Quote")}
           </Button>
         </div>
       </div>

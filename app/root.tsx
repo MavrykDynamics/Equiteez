@@ -19,7 +19,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
-import { EstatesProvider } from "./providers/EstatesProvider/estates.provider";
+import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
 import { AppGlobalLoader } from "./providers/AppGlobalLoader";
@@ -28,7 +28,6 @@ import {
   fetchTokensData,
   fetchTokensMetadata,
 } from "./providers/TokensProvider/utils/fetchTokensdata";
-import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
@@ -40,9 +39,11 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
-import { FC } from "react";
+import { useEffect } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { MobileView } from "./providers/MobileView/MobileView";
+import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
+import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preload", as: "style", href: stylesheet },
@@ -59,23 +60,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const tokens = await fetchTokensData();
 
-  const [tokensMetadata, usdToToken] = await Promise.all([
+  const [tokensMetadata] = await Promise.all([
     fetchTokensMetadata(tokens),
-    fetchUsdToTokenRates(),
+    // fetchUsdToTokenRates(),
   ]);
 
   return json({
     tokens,
     tokensMetadata,
-    usdToToken,
+    usdToToken: {},
     isMobile,
     fiatToTezos: {},
+    gaTrackingId: process.env.GA_TRACKING_ID,
   });
 };
 
-const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
-  // TODO handle laoder data elsewhere
+export function Layout({ children }: { children: React.ReactNode }) {
   const {
+    gaTrackingId,
     tokens = [],
     tokensMetadata = {},
     fiatToTezos = {},
@@ -83,35 +85,12 @@ const AppWrapper: FC<PropsWithChildren> = ({ children }) => {
     isMobile = false,
   } = useDataFromLoader<typeof loader>() ?? {};
 
-  return (
-    <AppProvider>
-      <MobileView isMobile={isMobile}>
-        <ApolloProvider>
-          <WalletProvider>
-            <CurrencyProvider fiatToTezos={fiatToTezos} usdToToken={usdToToken}>
-              <TokensProvider
-                initialTokens={tokens}
-                initialTokensMetadata={tokensMetadata}
-              >
-                <EstatesProvider>
-                  <DexProvider>
-                    <UserProvider>
-                      <AppGlobalLoader>
-                        <PopupProvider>{children}</PopupProvider>
-                      </AppGlobalLoader>
-                    </UserProvider>
-                  </DexProvider>
-                </EstatesProvider>
-              </TokensProvider>
-            </CurrencyProvider>
-          </WalletProvider>
-        </ApolloProvider>
-      </MobileView>
-    </AppProvider>
-  );
-};
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" && gaTrackingId) {
+      addGtmScript(gaTrackingId);
+    }
+  }, [gaTrackingId]);
 
-export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -122,11 +101,57 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
 
       <body>
+        {process.env.NODE_ENV === "production" && gaTrackingId && (
+          <>
+            {/* Google Tag Manager (noscript) */}
+            <noscript>
+              {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
+              <iframe
+                src={`https://www.googletagmanager.com/ns.html?id=${gaTrackingId}`}
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              />
+            </noscript>
+            {/* End Google Tag Manager */}
+          </>
+        )}
+
         <div id="root">
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <AppWrapper>{children}</AppWrapper>
+            <AppProvider>
+              <MobileView isMobile={isMobile}>
+                <ApolloProvider>
+                  <DipdupProvider>
+                    <WalletProvider>
+                      <ConfigProvider>
+                        <CurrencyProvider
+                          fiatToTezos={fiatToTezos}
+                          usdToToken={usdToToken}
+                        >
+                          <TokensProvider
+                            initialTokens={tokens}
+                            initialTokensMetadata={tokensMetadata}
+                          >
+                            <MarketsProvider>
+                              <DexProvider>
+                                <UserProvider>
+                                  <AppGlobalLoader>
+                                    <PopupProvider>{children}</PopupProvider>
+                                  </AppGlobalLoader>
+                                </UserProvider>
+                              </DexProvider>
+                            </MarketsProvider>
+                          </TokensProvider>
+                        </CurrencyProvider>
+                      </ConfigProvider>
+                    </WalletProvider>
+                  </DipdupProvider>
+                </ApolloProvider>
+              </MobileView>
+            </AppProvider>
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
@@ -145,6 +170,7 @@ export default function App() {
   );
 }
 
+/** catch server errors ************************** */
 export function ErrorBoundary() {
   const error = useRouteError();
 
@@ -165,4 +191,53 @@ export function ErrorBoundary() {
       type="fatal"
     />
   );
+}
+
+/**
+ * GTAG configuration to avoid hydration errors *********************
+ */
+let gtmScriptAdded = false;
+
+declare global {
+  interface Window {
+    [key: string]: object[];
+  }
+}
+
+function addGtmScript(GTM_ID: string | undefined) {
+  if (!GTM_ID || gtmScriptAdded) {
+    return;
+  }
+
+  (function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+
+    function gtag() {
+      // eslint-disable-next-line prefer-rest-params
+      w[l].push(arguments);
+    }
+
+    w.gtag = gtag;
+    // @ts-expect-error // it uses arguments in general (see above gtag fn)
+    gtag("js", new Date());
+
+    if (!gtmScriptAdded) {
+      // Ensure the script is not loaded multiple times
+      const f = d.getElementsByTagName(s)[0];
+      const j = d.createElement(s);
+      const dl = l !== "dataLayer" ? "&l=" + l : "";
+      // @ts-expect-error //it is script tag
+      j.async = true;
+      // @ts-expect-error //it is script tag
+      j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+      f.parentNode?.insertBefore(j, f);
+    }
+  })(window, document, "script", "dataLayer", GTM_ID);
+
+  // @ts-expect-error // it uses arguments in general (see above gtag fn)
+  gtag("config", GTM_ID, {
+    page_path: window.location.pathname,
+  });
+
+  gtmScriptAdded = true;
 }

@@ -15,7 +15,7 @@ import { OrderBookTabs } from "./components/OrderBookTabs/OrderBookTabs";
 
 import { Container } from "~/lib/atoms/Container";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
-import { usePropertyByAddress } from "../marketplace.$id/hooks/use-property-by-id";
+import { useMarketByParamIdentifier } from "../marketplace.$id/hooks/use-market-by-identifier";
 
 // icons
 import ArrowLinkIcon from "app/icons/arrow-link.svg?react";
@@ -24,7 +24,7 @@ import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useMemo } from "react";
 import Money from "~/lib/atoms/Money";
 import { Navigate } from "@remix-run/react";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 export const meta: MetaFunction = () => {
   return [
@@ -33,9 +33,9 @@ export const meta: MetaFunction = () => {
   ];
 };
 export default function ExchangeDetails() {
-  const { isLoading } = useEstatesContext();
+  const { isLoading } = useMarketsContext();
   const { dodoMav } = useDexContext();
-  const estateData = usePropertyByAddress();
+  const estateData = useMarketByParamIdentifier();
 
   const tokenPrice = useMemo(
     () => (estateData?.slug ? dodoMav[estateData.slug] : "0"),

@@ -1,17 +1,17 @@
-import { FC } from 'react';
-import Money from '~/lib/atoms/Money';
+import { FC } from "react";
+import Money from "~/lib/atoms/Money";
 import {
   NativeTable,
   NativeTableColumnSmall,
   NativeTableHeader,
   NativeTableRow,
-} from '~/lib/atoms/NativeTable/NativeTable';
-import { TableHeader } from '~/lib/atoms/Table/TableHeader';
-import { SecondaryEstate } from '~/providers/EstatesProvider/estates.types';
+} from "~/lib/atoms/NativeTable/NativeTable";
+import { TableHeader } from "~/lib/atoms/Table/TableHeader";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 
 // Consts
-const headerItems = ['Seller', 'Tokens for Sale', 'Price', 'Total Value'];
-const headerItems2 = ['Buyer', ...headerItems.slice(1)];
+const headerItems = ["Seller", "Tokens for Sale", "Price", "Total Value"];
+const headerItems2 = ["Buyer", ...headerItems.slice(1)];
 
 export const OTCTab: FC<{ estate: SecondaryEstate }> = ({ estate }) => {
   const { otc } = estate.assetDetails;

@@ -1,6 +1,6 @@
 import { TokenMetadata, TokenStandardsEnum } from "./types";
 
-export const MVRK_CONTRACT_ADDRESS = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg";
+export const MVRK_CONTRACT_ADDRESS = "mv2ZZZZZZZZZZZZZZZZZZZZZZZZZZZDXMF2d";
 export const MVRK_ASSET_SLUG = "mav";
 
 export const MVRK_METADATA: TokenMetadata = {

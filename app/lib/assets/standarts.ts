@@ -1,48 +1,48 @@
 import {
-  TezosToolkit,
+  MavrykToolkit,
   WalletContract,
   Contract,
   ChainIds,
-} from '@mavrykdynamics/taquito';
-import { HttpResponseError } from '@mavrykdynamics/taquito-http-utils';
-import retry from 'async-retry';
+} from "@mavrykdynamics/taquito";
+import { HttpResponseError } from "@mavrykdynamics/taquito-http-utils";
+import retry from "async-retry";
 
-import type { TokenStandardType } from './types';
+import type { TokenStandardType } from "./types";
 
-const NULL_ADDRESS = 'mv1WbZRUmFnpDSjoSfJT5dkvip8SE2NehuNC';
+const NULL_ADDRESS = "mv1WbZRUmFnpDSjoSfJT5dkvip8SE2NehuNC";
 const RETRY_PARAMS = { retries: 2, minTimeout: 0, maxTimeout: 0 };
 
 const FA1_2_ENTRYPOINTS_SCHEMA = [
-  ['approve', 'pair', 'address', 'nat'],
+  ["approve", "pair", "address", "nat"],
   // TODO: investigate why different FA 1.2 tokens have different transfer schema
   // ['transfer', 'pair', 'address', 'pair'],
-  ['getAllowance', 'pair', 'pair', 'contract'],
-  ['getBalance', 'pair', 'address', 'contract'],
-  ['getTotalSupply', 'pair', 'unit', 'contract'],
+  ["getAllowance", "pair", "pair", "contract"],
+  ["getBalance", "pair", "address", "contract"],
+  ["getTotalSupply", "pair", "unit", "contract"],
   // ['updateGeneralContracts', 'prim', 'pair', 'annots']
 ];
 
 const FA2_ENTRYPOINTS_SCHEMA = [
-  ['balance_of', 'pair', 'list', 'contract'],
-  ['transfer', 'list', 'pair'],
-  ['update_operators', 'list', 'or'],
+  ["balance_of", "pair", "list", "contract"],
+  ["transfer", "list", "pair"],
+  ["update_operators", "list", "or"],
 ];
 
 export const detectTokenStandard = async (
-  tezos: TezosToolkit,
+  tezos: MavrykToolkit,
   contract: string | Contract | WalletContract
 ): Promise<TokenStandardType | null> => {
   const { entrypoints } =
-    typeof contract === 'string'
+    typeof contract === "string"
       ? await retry(() => tezos.rpc.getEntrypoints(contract), RETRY_PARAMS)
       : contract.entrypoints;
 
   switch (true) {
     case isEntrypointsMatched(entrypoints, FA2_ENTRYPOINTS_SCHEMA):
-      return 'fa2';
+      return "fa2";
 
     case isEntrypointsMatched(entrypoints, FA1_2_ENTRYPOINTS_SCHEMA):
-      return 'fa1.2';
+      return "fa1.2";
 
     default:
       return null;
@@ -50,7 +50,7 @@ export const detectTokenStandard = async (
 };
 
 export const assertFa2TokenDefined = async (
-  tezos: TezosToolkit,
+  tezos: MavrykToolkit,
   contract: WalletContract,
   tokenId = 0
 ) => {
@@ -67,12 +67,12 @@ export const assertFa2TokenDefined = async (
         error.status === 500 && error.body ? JSON.parse(error.body) : null;
       if (
         Array.isArray(issues) &&
-        issues.find((issue) => issue.with?.string === 'FA2_TOKEN_UNDEFINED')
+        issues.find((issue) => issue.with?.string === "FA2_TOKEN_UNDEFINED")
       )
-        throw new IncorrectTokenIdError('incorrectTokenIdErrorMessage');
+        throw new IncorrectTokenIdError("incorrectTokenIdErrorMessage");
     }
 
-    throw new Error('unknownErrorCheckingSomeEntrypoint');
+    throw new Error("unknownErrorCheckingSomeEntrypoint");
   }
 };
 

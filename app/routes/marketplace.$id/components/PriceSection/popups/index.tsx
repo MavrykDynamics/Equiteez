@@ -16,17 +16,11 @@ import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 import { Divider } from "~/lib/atoms/Divider";
 import { TabType } from "~/lib/atoms/Tab";
 
-// contract actions
-import { pickDodoContractBasedOnToken } from "~/consts/contracts";
-
 // icons
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
-import {
-  SECONDARY_MARKET,
-  SecondaryEstate,
-} from "~/providers/EstatesProvider/estates.types";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import {
   BUY,
   CONFIRM,
@@ -39,7 +33,10 @@ import {
   SELL,
 } from "../consts";
 import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
-import { useContractAction } from "~/contracts/hooks/useContractAction";
+import {
+  ContractActionPopupProps,
+  useContractAction,
+} from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
@@ -55,8 +52,14 @@ import {
 } from "~/lib/utils/calcFns";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useAssetMetadata } from "~/lib/metadata";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { atomsToTokens } from "~/lib/utils/formaters";
+import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
+import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
+import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
 
-export const spippageOptions = ["0.3", "0.5", "1", "custom"];
+export const spippageOptions = ["1", "3", "5", "custom"];
 
 export const PopupContent: FC<{
   estate: SecondaryEstate;
@@ -64,6 +67,19 @@ export const PopupContent: FC<{
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 }> = ({ estate, orderType, setOrderType }) => {
   const { dodoMav, dodoTokenPair } = useDexContext();
+  const { adminAddress } = useConfigContext();
+  const {
+    pickers: {
+      pickDodoContractBasedOnToken,
+      pickDodoContractQuoteToken,
+      pickOrderbookContract,
+    },
+    activeMarket,
+  } = useMarketsContext();
+
+  // MArket Type
+  const [marketType, setMarkettype] = useState("market");
+  const isMarketTypeMarket = marketType === "market";
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
   const prevTabId = usePrevious(
@@ -71,14 +87,36 @@ export const PopupContent: FC<{
     activetabId !== CONFIRM
   ) as OrderType;
 
+  // quote warning
+  const [hasQuoteError, setHasQuoteError] = useState(false);
+
+  // --- input state
+  const [amountB, setAmountB] = useState<BigNumber | undefined>();
+  const [total, setTotal] = useState<BigNumber | undefined>();
+
+  // for limit market
+  const [limitPrice, setLimitPrice] = useState<BigNumber | undefined>();
+
   // derived
-  const { slug } = estate;
-  const tokenPrice = useMemo(() => dodoMav[slug], [slug, dodoMav]);
+  const { slug, decimals } = estate;
+  const tokenPrice = useMemo(
+    () =>
+      isMarketTypeMarket
+        ? atomsToTokens(dodoMav[slug], decimals)
+        : limitPrice || new BigNumber(0),
+    [isMarketTypeMarket, dodoMav, slug, decimals, limitPrice]
+  );
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   // metadata for selected asset
   const selectedAssetMetadata = useAssetMetadata(slug);
+
   const qouteAssetMetadata = useAssetMetadata(dodoTokenPair[slug]);
+
+  const showQuoteWarning = useCallback(() => {
+    setHasQuoteError(true);
+    setAvtiveTabId(prevTabId);
+  }, [prevTabId]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -104,14 +142,34 @@ export const PopupContent: FC<{
         id: OTC,
         label: "OTC",
         handleClick: handleTabClick,
+        disabled: true,
       },
     ],
     [handleTabClick]
   );
 
-  // --- input state
-  const [amountB, setAmountB] = useState<BigNumber | undefined>();
-  const [total, setTotal] = useState<BigNumber | undefined>();
+  const handlaMarketChange = useCallback(
+    (type: string) => {
+      setMarkettype(type);
+    },
+    [setMarkettype]
+  );
+
+  const marketTabs: TabType[] = useMemo(
+    () => [
+      {
+        id: "market",
+        label: "Market",
+        handleClick: handlaMarketChange,
+      },
+      {
+        id: "limit",
+        label: "Limit",
+        handleClick: handlaMarketChange,
+      },
+    ],
+    [handlaMarketChange]
+  );
 
   // Slippage
   const [slippagePercentage, setSlippagePercentage] = useState<string>(
@@ -124,31 +182,38 @@ export const PopupContent: FC<{
     } else if (!isDefined(amountB)) {
       setTotal(undefined);
     }
-  }, [amountB, estate.token_address, slug, tokenPrice]);
+  }, [amountB, estate.token_address, marketType, slug, tokenPrice]);
 
   // reset values when switching tabs
   useLayoutEffect(() => {
-    if (prevTabId !== activetabId && activetabId !== CONFIRM) {
-      setAmountB(undefined);
-    }
-  }, [activetabId, prevTabId]);
+    if (activetabId === CONFIRM) return;
+
+    setAmountB(undefined);
+    setLimitPrice(undefined);
+  }, [activetabId, marketType]);
 
   const marketBuyProps = useMemo(
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
+      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(
-        amountB?.div(tokenPrice).toNumber(),
-        slippagePercentage
-      ),
+      minMaxQuote: caclMinMaxQuoteBuying(amountB, slippagePercentage),
       decimals: selectedAssetMetadata?.decimals,
+      quoteDecimals: qouteAssetMetadata?.decimals,
+      adminAddress,
+      showQuoteWarning: showQuoteWarning,
     }),
     [
-      amountB,
+      pickDodoContractBasedOnToken,
       estate.token_address,
-      selectedAssetMetadata?.decimals,
-      slippagePercentage,
+      pickDodoContractQuoteToken,
+      amountB,
       tokenPrice,
+      slippagePercentage,
+      selectedAssetMetadata?.decimals,
+      qouteAssetMetadata?.decimals,
+      adminAddress,
+      showQuoteWarning,
     ]
   );
 
@@ -159,34 +224,109 @@ export const PopupContent: FC<{
       tokenAddress: estate.token_address,
       tokensAmount: amountB?.toNumber(),
       minMaxQuote: caclMinMaxQuoteSelling(
-        amountB,
-        tokenPrice,
+        tokenPrice.times(amountB ?? 0),
         slippagePercentage
       ),
       decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: qouteAssetMetadata.decimals,
+      quoteDecimals: qouteAssetMetadata?.decimals,
+      adminAddress,
+      showQuoteWarning: showQuoteWarning,
     }),
     [
-      amountB,
+      pickDodoContractBasedOnToken,
       estate.token_address,
-      qouteAssetMetadata.decimals,
-      selectedAssetMetadata?.decimals,
-      slippagePercentage,
+      amountB,
       tokenPrice,
+      slippagePercentage,
+      selectedAssetMetadata?.decimals,
+      qouteAssetMetadata?.decimals,
+      adminAddress,
+      showQuoteWarning,
     ]
   );
 
   // Market buy | sell
+  const memoizedBuyPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
+    [activeMarket?.name]
+  );
+
+  const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
+    () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
+    [activeMarket?.name]
+  );
+
+  // Orderbook limit buy | sell actions -----------------------------
+  const limitBuyProps = useMemo(
+    () => ({
+      orderbookContractAddress: pickOrderbookContract[estate.token_address],
+      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
+      tokensAmount: amountB?.toNumber(),
+      pricePerToken: limitPrice?.toNumber(),
+      decimals: selectedAssetMetadata?.decimals,
+      quoteTokenDecimals: qouteAssetMetadata?.decimals,
+    }),
+    [
+      amountB,
+      estate.token_address,
+      limitPrice,
+      pickDodoContractQuoteToken,
+      pickOrderbookContract,
+      qouteAssetMetadata?.decimals,
+      selectedAssetMetadata?.decimals,
+    ]
+  );
+
+  const limitSellProps = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { quoteTokenAddress, ...restBuyprops } = limitBuyProps;
+
+    return {
+      rwaTokenAddress: estate.token_address,
+      ...restBuyprops,
+    };
+  }, [estate.token_address, limitBuyProps]);
+
+  // actual contract calls and their handlers ---------------
+
   const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps);
+    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
-    useContractAction(sellBaseToken, marketSellProps);
+    useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
+
+  const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
+    useContractAction(orderbookBuy, limitBuyProps, memoizedBuyPopupProps);
+
+  const { invokeAction: handleLimitSell, status: limitSellStatus } =
+    useContractAction(orderbookSell, limitSellProps, memoizedBuyPopupProps);
+
+  // prop action to pass
+  const buySellActionCb = useMemo(() => {
+    if (isMarketTypeMarket) {
+      return orderType === BUY ? handleMarketBuy : handleMarketSell;
+    }
+
+    return orderType === BUY ? handleLimitBuy : handleLimitSell;
+  }, [
+    handleLimitBuy,
+    handleLimitSell,
+    handleMarketBuy,
+    handleMarketSell,
+    isMarketTypeMarket,
+    orderType,
+  ]);
 
   // status of the operation
   const status = useMemo(
-    () => pickStatusFromMultiple(buyStatus, sellStatus),
-    [buyStatus, sellStatus]
+    () =>
+      pickStatusFromMultiple(
+        buyStatus,
+        sellStatus,
+        limitBuyStatus,
+        limitSellStatus
+      ),
+    [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
   );
 
   const HeadlinePreviewSection = () => (
@@ -254,12 +394,22 @@ export const PopupContent: FC<{
           <Divider className="my-6" />
 
           {activetabId !== CONFIRM && isSecondaryEstate && (
-            <div className="mb-8">
-              <TabSwitcher tabs={tabs} activeTabId={activetabId} />
-            </div>
+            <>
+              <div className="mb-4">
+                <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+              </div>
+              <div>
+                <div className="mb-4 text-base">
+                  <TabSwitcher
+                    tabs={marketTabs}
+                    activeTabId={marketType}
+                    variant="tertiary-buttons"
+                  />
+                </div>
+              </div>
+            </>
           )}
 
-          {/* TODO exctract as helper component */}
           {activetabId === CONFIRM && (
             <div className="bg-gray-50 rounded-2xl p-4 mb-8">
               <div className="flex items-center gap-3 font-medium">
@@ -271,15 +421,17 @@ export const PopupContent: FC<{
                   />
                 </div>
                 <div className="flex flex-col gap-1 items-start flex-1">
-                  <div className="flex justify-between text-card-headline text-sand-900 w-full">
+                  <div className="flex justify-between items-start gap-6 text-card-headline text-sand-900 w-full">
                     <h3>{estate.name}</h3>
-                    <h3>
+                    <h3 className="flex items-center gap-1 text-right">
                       {orderType === BUY ? (
                         <Money
                           smallFractionFont={false}
                           cryptoDecimals={selectedAssetMetadata?.decimals}
                         >
-                          {amountB?.div(tokenPrice).toNumber() ?? 0}
+                          {isMarketTypeMarket
+                            ? (amountB?.div(tokenPrice).toNumber() ?? 0)
+                            : (amountB ?? 0)}
                         </Money>
                       ) : (
                         amountB?.toNumber()
@@ -291,36 +443,53 @@ export const PopupContent: FC<{
                     <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
                       {estate.assetDetails.propertyDetails.propertyType}
                     </span>
-                    <span className="text-body text-sand-900">
+                    <div className="text-body text-sand-900">
                       $
-                      {orderType === BUY
-                        ? (amountB?.toNumber() ?? 0)
-                        : (total?.toNumber() ?? 0)}
-                    </span>
+                      <Money smallFractionFont={false}>
+                        {!isMarketTypeMarket
+                          ? (total ?? 0)
+                          : orderType === BUY
+                            ? (amountB ?? 0)
+                            : (total ?? 0)}
+                      </Money>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {(activetabId === BUY || activetabId === SELL) && (
-            <BuySellScreen
-              estate={estate}
-              toggleScreen={() => setAvtiveTabId(CONFIRM)}
-              actionType={activetabId}
-              amount={amountB}
-              setAmount={setAmountB}
-              total={total}
-              slippagePercentage={slippagePercentage}
-              setSlippagePercentage={setSlippagePercentage}
-            />
-          )}
+          {(activetabId === BUY || activetabId === SELL) &&
+            (marketType === "market" ? (
+              <BuySellScreen
+                estate={estate}
+                toggleScreen={() => setAvtiveTabId(CONFIRM)}
+                actionType={activetabId}
+                amount={amountB}
+                setAmount={setAmountB}
+                total={total}
+                slippagePercentage={slippagePercentage}
+                setSlippagePercentage={setSlippagePercentage}
+                hasQuoteError={hasQuoteError}
+              />
+            ) : (
+              <BuySellLimitScreen
+                limitPrice={limitPrice}
+                setLimitPrice={setLimitPrice}
+                estate={estate}
+                toggleScreen={() => setAvtiveTabId(CONFIRM)}
+                actionType={activetabId}
+                amount={amountB}
+                setAmount={setAmountB}
+                total={total}
+              />
+            ))}
 
           {activetabId === OTC && <OTCPopupContent estate={estate} />}
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
               actionType={orderType === BUY ? BUY : SELL}
-              actionCb={orderType === BUY ? handleMarketBuy : handleMarketSell}
+              actionCb={buySellActionCb}
               status={status}
             />
           )}
@@ -399,8 +568,6 @@ export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
               total={price * amount}
               amount={amount}
               actionType={activeTabId}
-              estFee={0.21}
-              actionCb={() => {}}
             />
           )}
         </div>

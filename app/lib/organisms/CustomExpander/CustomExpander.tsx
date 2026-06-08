@@ -3,13 +3,16 @@ import {
   FC,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
-} from 'react';
-import ArrowDown from 'app/icons/chevron-down.svg?react';
+} from "react";
+import ArrowDown from "app/icons/chevron-down.svg?react";
 
-import styles from './customExpander.module.css';
-import clsx from 'clsx';
+import clsx from "clsx";
+
+const defaultExpanderTransitionDuration = 300; // in milliseconds
 
 type ExpanderContextType = {
   expanded: boolean;
@@ -46,7 +49,7 @@ export const CustomExpander: FC<CustomExpanderProps> = ({
 
 export const ExpanderFaceContent: FC<
   PropsWithChildren & { iconClassName?: string }
-> = ({ children, iconClassName = 'w-4 h-4 text-content stroke-current' }) => {
+> = ({ children, iconClassName = "w-4 h-4 text-content stroke-current" }) => {
   const { expanded } = useExpanderContext();
   return (
     <div className="flex items-center gap-x-1" role="presentation">
@@ -54,8 +57,8 @@ export const ExpanderFaceContent: FC<
       <ArrowDown
         className={clsx(
           iconClassName,
-          'transition duration-300',
-          expanded && 'rotate-180'
+          `transition duration-${defaultExpanderTransitionDuration} linear`,
+          expanded && "rotate-180"
         )}
       />
     </div>
@@ -64,14 +67,36 @@ export const ExpanderFaceContent: FC<
 
 export const ExpanderBodyContent: FC<PropsWithChildren> = ({ children }) => {
   const { expanded } = useExpanderContext();
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<string | null>(null);
+  const [shouldShowOverflow, setShouldShowOverflow] = useState(false);
+
+  useEffect(() => {
+    if (ref.current) {
+      const el = ref.current;
+
+      if (expanded) {
+        setHeight(`${el.scrollHeight}px`);
+        const timeout = setTimeout(() => {
+          setShouldShowOverflow(true);
+        }, defaultExpanderTransitionDuration); // match transition duration
+
+        return () => clearTimeout(timeout);
+      } else {
+        setHeight("0px");
+        setShouldShowOverflow(false);
+      }
+    }
+  }, [expanded]);
 
   return (
     <div
-      className={clsx(
-        'transition duration-300 ease-in-out',
-        styles.expanderData,
-        expanded && styles.expanded
-      )}
+      ref={ref}
+      style={{
+        height: height ? height : "auto",
+        overflow: shouldShowOverflow ? "visible" : "hidden",
+        transition: `height ${defaultExpanderTransitionDuration}ms ease`,
+      }}
     >
       {children}
     </div>
@@ -93,7 +118,7 @@ const useExpanderContext = () => {
 
   if (!context) {
     throw new Error(
-      'useExpanderContent must be used within CustomExpander provider!'
+      "useExpanderContent must be used within CustomExpander provider!"
     );
   }
 

@@ -1,17 +1,13 @@
-import { BASE_URL } from '~/consts/sitemap';
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { getRobotsTxt } from "~/lib/sitemap/sitemap.server";
 
-export const loader = () => {
-  const robotText = `
-          User-agent: Googlebot
-          Disallow: /nogooglebot/
-          User-agent: *
-          Allow: /
-          Sitemap: ${BASE_URL}/sitemap.xml`;
+export const loader = ({ request }: LoaderFunctionArgs) => {
+  const robotText = getRobotsTxt(request);
 
   return new Response(robotText, {
     status: 200,
     headers: {
-      'Content-Type': 'text/plain',
+      "Content-Type": "text/plain; charset=utf-8",
     },
   });
 };

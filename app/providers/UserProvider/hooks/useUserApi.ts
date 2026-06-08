@@ -1,13 +1,13 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
 
 // consts
-import { DEFAULT_USER } from '../helpers/user.consts';
+import { DEFAULT_USER } from "../helpers/user.consts";
 
 // types
-import { UserContextStateType } from '../user.provider.types';
+import { UserContextStateType } from "../user.provider.types";
 
-import { dappClient } from 'app/providers/WalletProvider/WalletCore.client';
-import { HubConnection } from '@microsoft/signalr';
+import { dappClient } from "app/providers/WalletProvider/WalletCore.client";
+import { HubConnection } from "@microsoft/signalr";
 
 type UseUserApiType = {
   DAPP_INSTANCE: ReturnType<typeof dappClient> | null;

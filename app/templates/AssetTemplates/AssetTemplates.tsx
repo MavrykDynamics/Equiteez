@@ -5,7 +5,7 @@ import { TableItem } from "~/lib/atoms/Table/TableItem";
 import { LocationMap } from "../LocationMap/LocationMap";
 import { Spacer } from "~/lib/atoms/Spacer";
 import { FC } from "react";
-import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 import Money from "~/lib/atoms/Money";
 import { HashChip } from "~/lib/molecules/HashChip";
 

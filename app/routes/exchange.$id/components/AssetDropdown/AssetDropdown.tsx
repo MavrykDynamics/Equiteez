@@ -11,11 +11,8 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
-import {
-  EstateType,
-  SECONDARY_MARKET,
-} from "~/providers/EstatesProvider/estates.types";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 
 // icons
 import StarIcon from "app/icons/star.svg?react";
@@ -30,6 +27,7 @@ import {
   getItemFromStorage,
   setItemInStorage,
 } from "~/lib/utils/local-storage";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 
 // filter fns
 function filterByName(estates: EstateType[], name: string) {
@@ -55,11 +53,11 @@ type AssetDropdownProps = {
 export const AssetDropdown: FC<AssetDropdownProps> = ({
   estate: estateData,
 }) => {
-  const { estatesArr: allEstates } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
 
   const estates = useMemo(
-    () => allEstates.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
-    [allEstates]
+    () => marketsArr.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
+    [marketsArr]
   );
 
   // states ----------------------------------------------------------

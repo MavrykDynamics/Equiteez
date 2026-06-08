@@ -6,10 +6,14 @@ export type TabType<G = string> = {
   label: string;
   grow?: boolean;
   disabled?: boolean;
-  handleClick: (id: G) => void;
+  handleClick?: (id: G) => void;
 };
 
-export type TabVariant = "primary" | "secondary" | "tertiary";
+export type TabVariant =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "tertiary-buttons";
 
 type TabProps = {
   active?: boolean;
@@ -51,6 +55,12 @@ const variants = {
       active ? "text-dark-green-500 underline" : "text-sand-300",
     disabled: "opacity-50 pointer-events-none",
   },
+  "tertiary-buttons": {
+    className: clsx("text-buttons cursor-pointer"),
+    active: (active: boolean | undefined) =>
+      active ? "text-dark-green-500 underline" : "text-sand-300",
+    disabled: "opacity-50 pointer-events-none",
+  },
 };
 
 export const Tab: FC<TabProps> = ({
@@ -64,7 +74,7 @@ export const Tab: FC<TabProps> = ({
   noActiveBg = false,
   variant = "primary",
 }) => {
-  const handleInternalClick = () => handleClick(id);
+  const handleInternalClick = () => handleClick?.(id);
 
   return (
     <button

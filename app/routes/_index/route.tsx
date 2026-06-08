@@ -55,7 +55,6 @@ export default function Index() {
           <Spacer height={44} />
         </div>
       </Container>
-
       <MarketRowBottom />
       <Container px={44}>
         <Spacer height={100} />

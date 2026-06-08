@@ -14,7 +14,7 @@ import SearchIcon from "app/icons/search.svg?react";
 import { InputWithIcons } from "~/lib/organisms/InputWithIcons/InputWithIcons";
 
 // types
-import { EstateType } from "~/providers/EstatesProvider/estates.types";
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 
 // calc functions
 import _ from "lodash";

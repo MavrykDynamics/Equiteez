@@ -1,38 +1,34 @@
 import BigNumber from "bignumber.js";
 import { DodoStorageType } from "~/providers/Dexprovider/dex.provider.types";
 
-export const getPMMTokenPrice = (storage: DodoStorageType) => {
+export const getPMMTokenPrice = (
+  storage: DodoStorageType,
+  tokenDecimals = 6
+) => {
   const { feeDecimals } = storage.config;
 
+  const guideDecimals = new BigNumber(feeDecimals).minus(tokenDecimals);
+
+  const decimals = new BigNumber(10).pow(new BigNumber(feeDecimals));
+  const decimals12 = new BigNumber(10).pow(guideDecimals);
+
   // Guide price with feeDecimals adjustment
-  const i = new BigNumber(storage.guidePrice).div(
-    new BigNumber(10).pow(feeDecimals)
-  );
+  const i = new BigNumber(storage.guidePrice).div(decimals12);
 
   // Slippage factor adjustment
-  const k = new BigNumber(storage.slippageFactor).div(
-    new BigNumber(10).pow(feeDecimals)
-  );
+  const k = new BigNumber(storage.slippageFactor).div(decimals);
 
-  // Base token balance (3 decimals)
-  const B = new BigNumber(storage.baseBalance).div(
-    new BigNumber(10).pow(feeDecimals)
-  );
+  // Base token balance
+  const B = new BigNumber(storage.baseBalance).div(decimals);
 
-  // Target base token amount (3 decimals)
-  const B_0 = new BigNumber(storage.targetBaseTokenAmount).div(
-    new BigNumber(10).pow(feeDecimals)
-  );
+  // Target base token amount
+  const B_0 = new BigNumber(storage.targetBaseTokenAmount).div(decimals);
 
-  // Quote token balance (6 decimals)
-  const Q = new BigNumber(storage.quoteBalance).div(
-    new BigNumber(10).pow(feeDecimals)
-  );
+  // Quote token balance
+  const Q = new BigNumber(storage.quoteBalance).div(decimals);
 
-  // Target quote token amount (6 decimals)
-  const Q_0 = new BigNumber(storage.targetQuoteTokenAmount).div(
-    new BigNumber(10).pow(feeDecimals)
-  );
+  // Target quote token amount
+  const Q_0 = new BigNumber(storage.targetQuoteTokenAmount).div(decimals);
 
   // Calculate R based on the balances and slippage
   const R = calculateRFromStorage(B, B_0, Q, Q_0, k);

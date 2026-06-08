@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js';
-import { RWA_TOKEN_DECIMALS } from '~/consts/tokens';
-import { TokenMetadata } from '../metadata';
+import BigNumber from "bignumber.js";
+import { RWA_TOKEN_DECIMALS } from "~/consts/tokens";
+import { TokenMetadata } from "../metadata";
 
 export const RWAToken = (value: number = 1) => {
   return value * 10 ** 3;
@@ -55,4 +55,20 @@ export const convertRawValueToSelectedCurrency = (
   return new BigNumber(rawValue)
     .div(new BigNumber(10).pow(metadata.decimals))
     .times(Number(price));
+};
+
+export const downgradeDecimals = (value: BigNumber.Value, decimals: number) => {
+  const bigValue = new BigNumber(value);
+
+  if (bigValue.isZero()) return 0;
+
+  let formattedValue = bigValue.decimalPlaces(decimals, BigNumber.ROUND_DOWN);
+
+  // If the result is 0, set it to the smallest possible value (0.000001 for 6 decimals, etc.)
+  const minValue = new BigNumber("1e-" + decimals);
+  if (formattedValue.isEqualTo(0)) {
+    formattedValue = minValue;
+  }
+
+  return formattedValue.toNumber();
 };

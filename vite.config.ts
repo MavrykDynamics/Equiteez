@@ -1,12 +1,12 @@
 import {
   vitePlugin as remix,
   cloudflareDevProxyVitePlugin as remixCloudflareDevProxy,
-} from '@remix-run/dev';
-import { installGlobals } from '@remix-run/node';
-import { defineConfig } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
-import svgr from 'vite-plugin-svgr';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
+} from "@remix-run/dev";
+import { installGlobals } from "@remix-run/node";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+import svgr from "vite-plugin-svgr";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 // import { visualizer } from 'rollup-plugin-visualizer';
 
 installGlobals();
@@ -17,14 +17,15 @@ export default defineConfig({
     remix({ ssr: true }),
     tsconfigPaths(),
     svgr(),
-    nodePolyfills({ exclude: ['fs', 'util'] }),
+    nodePolyfills({ exclude: ["fs", "util"] }),
     // visualizer({ open: false }),
   ],
+  // DO NOT PUT SECRETS HERE !
   define: {
-    'process.env': process.env,
+    "process.env": process.env,
   },
   build: {
-    minify: 'esbuild',
+    minify: "esbuild",
     cssMinify: true,
     ssr: true,
     rollupOptions: {

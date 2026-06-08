@@ -4,7 +4,6 @@ import { useForm, Controller } from "react-hook-form";
 import { Button } from "~/lib/atoms/Button";
 import { InputText } from "~/lib/molecules/Input/Input";
 import { Divider } from "~/lib/atoms/Divider";
-import { Link } from "@remix-run/react";
 import clsx from "clsx";
 import {
   getStatusLabel,
@@ -12,6 +11,7 @@ import {
   STATUS_PENDING,
   StatusFlag,
 } from "~/lib/ui/use-status-flag";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 type BuySellConfirmationScreenProps = {
   actionType: "buy" | "sell" | "otcBuy" | "otcSell";
@@ -69,14 +69,24 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 label={
                   <p className="text-content text-body-xs max-w-[521px] ">
                     I agree with the information laid out in the&nbsp;
-                    <Link to="/" className="text-blue-700 text-nowrap">
+                    <CustomLink
+                      to="/"
+                      className="text-blue-700 text-nowrap"
+                      aria-disabled="true"
+                      disabled
+                    >
                       Subscription Agreement
-                    </Link>
+                    </CustomLink>
                     ,&nbsp;
                     <br />
-                    <Link to="/" className="text-blue-700">
+                    <CustomLink
+                      to="/"
+                      className="text-blue-700"
+                      aria-disabled="true"
+                      disabled
+                    >
                       Offering Circular
-                    </Link>
+                    </CustomLink>
                     &nbsp;and any supplements therein.
                   </p>
                 }
@@ -102,9 +112,14 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                     <span className="font-semibold">not offer refunds</span> on
                     my investment outside of the 24 hour cancellation window. To
                     learn more about liquidity, check out the{" "}
-                    <Link to="/" className="text-blue-700">
+                    <CustomLink
+                      to="/"
+                      className="text-blue-700"
+                      aria-disabled="true"
+                      disabled
+                    >
                       FAQ.
-                    </Link>
+                    </CustomLink>
                   </p>
                 }
               />

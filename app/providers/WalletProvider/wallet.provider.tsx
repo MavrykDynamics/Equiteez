@@ -1,5 +1,5 @@
-import { FC, createContext, useEffect, useState, useContext } from 'react';
-import { dappClient } from './WalletCore.client';
+import { FC, createContext, useEffect, useState, useContext } from "react";
+import { dappClient } from "./WalletCore.client";
 
 type WalletContext = {
   dapp: ReturnType<typeof dappClient> | null;
@@ -16,7 +16,6 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     const dapp = dappClient();
-    // const tezos = dapp.tezos();
     setWalletState({ dapp, isLoading: false });
   }, []);
 
@@ -31,7 +30,7 @@ export const useWalletContext = () => {
   const context = useContext(walletContext);
 
   if (!context) {
-    throw new Error('walletContext should be used within WalletProvider');
+    throw new Error("walletContext should be used within WalletProvider");
   }
 
   return context;

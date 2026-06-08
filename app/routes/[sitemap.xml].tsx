@@ -1,17 +1,9 @@
-import { BASE_URL, navbar, toXmlSitemap } from "~/consts/sitemap";
-import { estateSlugs } from "~/providers/EstatesProvider/estates.provider";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { getSitemapUrls, toXmlSitemap } from "~/lib/sitemap/sitemap.server";
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
-    const estates = estateSlugs;
-
-    const sitemap = toXmlSitemap([
-      ...navbar
-        .filter(({ to }) => to !== "/")
-        .map(({ to }) => `${BASE_URL}${to}`),
-      ...estates.map((slug) => `${BASE_URL}/exchange/${slug}`),
-      ...estates.map((slug) => `${BASE_URL}/marketplace/${slug}`),
-    ]);
+    const sitemap = toXmlSitemap(getSitemapUrls(request));
 
     return new Response(sitemap, {
       status: 200,
@@ -21,7 +13,8 @@ export const loader = async () => {
         "Cache-Control": "public, max-age=3600",
       },
     });
-  } catch (e) {
+  } catch (error) {
+    console.error("Failed to generate sitemap.xml", error);
     throw new Response("Internal Server Error", { status: 500 });
   }
 };

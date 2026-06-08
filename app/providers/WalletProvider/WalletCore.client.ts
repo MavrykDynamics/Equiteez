@@ -4,7 +4,7 @@ import {
   BeaconEvent,
   NetworkType,
 } from "@mavrykdynamics/beacon-dapp";
-import { TezosToolkit } from "@mavrykdynamics/taquito";
+import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-beacon-wallet";
 
 // consts
@@ -22,7 +22,7 @@ import { getItemFromStorage } from "~/lib/utils/local-storage";
 const WALLET_NETWORK = "atlasnet" as NetworkType;
 const DAPP_METADATA = {
   // name: process.env.REACT_APP_NAME,
-  name: "Maven",
+  name: "Equiteez",
   preferredNetwork: WALLET_NETWORK,
 };
 
@@ -88,7 +88,7 @@ export function dappClient() {
 
   function tezos() {
     const wallet = getDAppClientWallet();
-    const Tezos = new TezosToolkit(getRpcNode());
+    const Tezos = new MavrykToolkit(getRpcNode());
 
     if (wallet) Tezos.setWalletProvider(wallet);
 

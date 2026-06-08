@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { NextButton, PrevButton } from "~/templates/EmblaCarouselArrowButtons";
-import { SLIDER_VIEW_LIMIT } from "../EmblaCarousel";
+import { SLIDER_VIEW_LIMIT } from "../AssetsEmblaCarousel";
 
 type SlidesNavigationProps = {
   length: number;

@@ -5,6 +5,7 @@ node_modules
 .env
 
 .wrangler
+.wrangler.toml
 
 .dev.vars
 
@@ -14,3 +15,4 @@ stats.html
 # Ignore artifacts:
 build
 coverage
+.DS_Store

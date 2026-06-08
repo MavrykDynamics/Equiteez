@@ -88,6 +88,15 @@
   margin-top: 1.8rem;
 }
 
+/* Last slide styles */
+.lastSlideCard:hover .lastSlideImgWrapper img {
+  transform: scale(1.2);
+}
+
+.lastSlideImgWrapper img {
+  transition: transform 250ms ease-in-out;
+}
+
 .lastSlide {
   position: absolute;
   inset: 0;

@@ -1,34 +1,36 @@
 /* eslint-disable no-useless-catch */
-import { useCallback } from 'react';
+import { useCallback } from "react";
 import {
   STATUS_ERROR,
   STATUS_IDLE,
   STATUS_PENDING,
   STATUS_SUCCESS,
   useStatusFlag,
-} from '~/lib/ui/use-status-flag';
-import { sleep } from '~/lib/utils/sleep';
-import { usePopupContext } from '~/providers/PopupProvider/popup.provider';
+} from "~/lib/ui/use-status-flag";
+import { sleep } from "~/lib/utils/sleep";
+import { usePopupContext } from "~/providers/PopupProvider/popup.provider";
+import { POPUP_KEYS, txTemplates } from "~/providers/PopupProvider/consts";
 
 // templates
-import {
-  popupOperationSuccess,
-  popupOperationError,
-} from '../templates/operationPopupData';
-import { useWalletContext } from '~/providers/WalletProvider/wallet.provider';
-import { useEstatesContext } from '~/providers/EstatesProvider/estates.provider';
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForcedUpdate";
 
 // Simplified version to handle operation calls
-// TODO adjust logic based on the new requirements
+
+export type ContractActionPopupProps = {
+  key: keyof typeof POPUP_KEYS;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  props: any;
+};
 
 export const useContractAction = <G,>(
   actionFn: ((args: G) => void) | (() => void),
-  args: unknown
+  args: unknown,
+  popupDetails?: ContractActionPopupProps
 ) => {
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys } = usePopupContext();
-  const { activeEstate } = useEstatesContext();
 
   const invokeAction = useCallback(async () => {
     try {
@@ -38,33 +40,32 @@ export const useContractAction = <G,>(
 
       dispatch(STATUS_PENDING);
 
-      // TODO check types
-      await actionFn({ ...(args as G), tezos });
+      const shouldShowPopup = await actionFn({ ...(args as G), tezos });
+      if (shouldShowPopup === undefined && popupDetails) {
+        dispatch(STATUS_SUCCESS);
+        showPopup(
+          popupKeys[popupDetails.key],
+          txTemplates[popupDetails.key].success(popupDetails.props)
+        );
 
-      dispatch(STATUS_SUCCESS);
-      showPopup(
-        popupKeys.txOperation,
-        popupOperationSuccess(activeEstate?.name ?? 'Nomad')
-      );
-      await sleep(2000);
+        // force refetching essential data (it is reseted in useQueryWithRefetch hook)
+        forcedUpdateProxy.hasForcedUpdate = true;
+        await sleep(2000);
+      }
 
       dispatch(STATUS_IDLE);
     } catch (e) {
       dispatch(STATUS_ERROR);
-      showPopup(popupKeys.txOperation, popupOperationError());
+      if (popupDetails)
+        showPopup(
+          popupKeys[popupDetails.key],
+          txTemplates[popupDetails.key].error()
+        );
       await sleep(2000);
 
       dispatch(STATUS_IDLE);
     }
-  }, [
-    actionFn,
-    activeEstate?.name,
-    args,
-    dapp,
-    dispatch,
-    popupKeys.txOperation,
-    showPopup,
-  ]);
+  }, [actionFn, args, dapp, dispatch, popupDetails, popupKeys, showPopup]);
 
   return { invokeAction, isLoading, status };
 };

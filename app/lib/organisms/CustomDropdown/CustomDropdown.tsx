@@ -86,7 +86,7 @@ export const CustomDropdown: FC<CustomDropdownProps> = ({
       <div ref={ref} className="relative">
         {opened && withOverlay && (
           <div
-            style={{ zIndex: 15 }}
+            style={{ zIndex: 30 }}
             role="presentation"
             className="fixed inset-0 bg-[#00000099]"
             onClick={toggleOpened}

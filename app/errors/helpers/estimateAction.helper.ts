@@ -2,17 +2,17 @@ import {
   ContractMethod,
   OpKind,
   SendParams,
-  TezosToolkit,
+  MavrykToolkit,
   TransferParams,
   Wallet,
-} from '@mavrykdynamics/taquito';
+} from "@mavrykdynamics/taquito";
 
-import { getContractErrorMessage } from './walletError.helper';
-import { checkWhetherWalletAbortError, WalletOperationError } from '../error';
+import { getContractErrorMessage } from "./walletError.helper";
+import { checkWhetherWalletAbortError, WalletOperationError } from "../error";
 import {
   ActionErrorReturnType,
   ActionSuccessReturnType,
-} from '~/contracts/actions.type';
+} from "~/contracts/actions.type";
 
 type EstimationResultParams = {
   callback?: () => void;
@@ -26,7 +26,7 @@ function handleErrorWhenEstimationLogicIsDisabled(e: unknown) {
   if (checkWhetherWalletAbortError(rawError))
     return {
       actionSuccess: false,
-      error: new WalletOperationError('Operation is aborted'),
+      error: new WalletOperationError("Operation is aborted"),
     };
   else if (rawError.data[1]?.with?.string || rawError.data[1]?.with?.int) {
     const _with = rawError.data[1]?.with;
@@ -41,8 +41,8 @@ function handleErrorWhenEstimationLogicIsDisabled(e: unknown) {
   return {
     actionSuccess: false,
     error: {
-      message: 'Invalid Transaction',
-      description: 'Please review documentation',
+      message: "Invalid Transaction",
+      description: "Please review documentation",
     },
   };
 }
@@ -63,7 +63,7 @@ export async function getEstimationResult(
 }
 
 export async function getEstimationBatchResult(
-  tezos: TezosToolkit,
+  tezos: MavrykToolkit,
   batchArr: (TransferParams & { kind: OpKind.TRANSACTION })[],
   cb?: () => void
 ) {

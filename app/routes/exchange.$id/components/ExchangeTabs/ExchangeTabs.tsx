@@ -1,21 +1,21 @@
-import { FC, useCallback, useMemo, useState } from 'react';
-import { TabType } from '~/lib/atoms/Tab';
-import { TabSwitcher } from '~/lib/organisms/TabSwitcher';
+import { FC, useCallback, useMemo, useState } from "react";
+import { TabType } from "~/lib/atoms/Tab";
+import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 
 // Tab screens
-import { ChartTab } from './ChartTab';
-import { OTCTab } from './OTCTab';
-import { FinancialTab } from './FinancialTab';
-import { AssetDetailsTab } from './AssetDetailsTab';
+import { ChartTab } from "./ChartTab";
+import { OTCTab } from "./OTCTab";
+import { FinancialTab } from "./FinancialTab";
+import { AssetDetailsTab } from "./AssetDetailsTab";
 
 // Types
 import {
   EstateType,
   SecondaryEstate,
-} from '~/providers/EstatesProvider/estates.types';
+} from "~/providers/MarketsProvider/market.types";
 
 export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
-  const [activetabId, setAvtiveTabId] = useState('chart');
+  const [activetabId, setAvtiveTabId] = useState("chart");
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -24,23 +24,23 @@ export const ExchangeTabs: FC<{ estate: EstateType }> = ({ estate }) => {
   const tabs: TabType[] = useMemo(
     () => [
       {
-        id: 'chart',
-        label: 'Chart',
+        id: "chart",
+        label: "Chart",
         handleClick: handleTabClick,
       },
       {
-        id: 'financials',
-        label: 'Financials',
+        id: "financials",
+        label: "Financials",
         handleClick: handleTabClick,
       },
       {
-        id: 'otcOffers',
-        label: 'OTC Offers',
+        id: "otcOffers",
+        label: "OTC Offers",
         handleClick: handleTabClick,
       },
       {
-        id: 'assetDetails',
-        label: 'Asset Details',
+        id: "assetDetails",
+        label: "Asset Details",
         handleClick: handleTabClick,
       },
     ],

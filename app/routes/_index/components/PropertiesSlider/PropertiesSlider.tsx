@@ -1,25 +1,28 @@
 import { EmblaOptionsType } from "embla-carousel";
-import EmblaCarousel from "./EmblaCarousel";
+import AssetsEmblaCarousel from "./AssetsEmblaCarousel";
 import { ViewAll } from "./components/ViewAll";
 import { SlidesNavigation } from "./components/SlidesNavigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { useMemo } from "react";
+import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
 export const PropertiesSlider = () => {
-  const { estatesArr } = useEstatesContext();
+  const { marketsArr } = useMarketsContext();
+
   const idxToSlice = useMemo(
-    () => Math.ceil(estatesArr.length / 2),
-    [estatesArr.length]
+    () => Math.ceil(marketsArr.length / 2),
+    [marketsArr.length]
   );
 
   const slides = useMemo(
-    () => estatesArr.slice(idxToSlice),
-    [estatesArr, idxToSlice]
+    () => marketsArr.slice(0, idxToSlice),
+    [marketsArr, idxToSlice]
   );
+
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
   const {
@@ -29,12 +32,14 @@ export const PropertiesSlider = () => {
     onNextButtonClick,
   } = usePrevNextButtons(emblaApi);
 
+  if (!marketsArr.length) return null;
+
   return (
     <div className="px-11 py-16 bg-green-main rounded-4xl">
       <h1 className="text-white text-section-headline max-w-[1017px] mb-6">
         Newly Listed
       </h1>
-      <EmblaCarousel
+      <AssetsEmblaCarousel
         emblaRef={emblaRef}
         slides={slides}
         nextBtnDisabled={nextBtnDisabled}
@@ -54,22 +59,22 @@ export const PropertiesSlider = () => {
             nextBtnDisabled={nextBtnDisabled}
           />
         </div>
-      </EmblaCarousel>
+      </AssetsEmblaCarousel>
     </div>
   );
 };
 
 export const PropertiesSliderSecondary = () => {
-  const { estatesArr } = useEstatesContext();
+  const { marketsArr, marketApiError } = useMarketsContext();
 
   const idxToSlice = useMemo(
-    () => Math.ceil(estatesArr.length / 2),
-    [estatesArr.length]
+    () => Math.ceil(marketsArr.length / 2),
+    [marketsArr.length]
   );
 
   const slides = useMemo(
-    () => estatesArr.slice(0, idxToSlice),
-    [estatesArr, idxToSlice]
+    () => marketsArr.slice(0, idxToSlice),
+    [marketsArr, idxToSlice]
   );
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
@@ -85,23 +90,27 @@ export const PropertiesSliderSecondary = () => {
       <h1 className="text-content text-section-headline font-bold w-full">
         Trending Assets
       </h1>
-      <EmblaCarousel
-        emblaRef={emblaRef}
-        slides={slides}
-        nextBtnDisabled={nextBtnDisabled}
-        childPosition="after"
-      >
-        <div className="w-full flex justify-end mt-8 text-content">
-          <SlidesNavigation
-            length={slides.length}
-            onPrevButtonClick={onPrevButtonClick}
-            onNextButtonClick={onNextButtonClick}
-            prevBtnDisabled={prevBtnDisabled}
-            nextBtnDisabled={nextBtnDisabled}
-            colorClassName="text-content"
-          />
-        </div>
-      </EmblaCarousel>
+      {marketApiError ? (
+        <ApiErrorBox message="The market data is unavailable at the moment" />
+      ) : (
+        <AssetsEmblaCarousel
+          emblaRef={emblaRef}
+          slides={slides}
+          nextBtnDisabled={nextBtnDisabled}
+          childPosition="after"
+        >
+          <div className="w-full flex justify-end mt-8 text-content">
+            <SlidesNavigation
+              length={slides.length}
+              onPrevButtonClick={onPrevButtonClick}
+              onNextButtonClick={onNextButtonClick}
+              prevBtnDisabled={prevBtnDisabled}
+              nextBtnDisabled={nextBtnDisabled}
+              colorClassName="text-content"
+            />
+          </div>
+        </AssetsEmblaCarousel>
+      )}
     </div>
   );
 };

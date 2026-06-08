@@ -6,7 +6,7 @@ import clsx from "clsx";
 
 type PriceDetailsLabelProps = {
   price: number;
-  percentage: number;
+  percentage: number | string;
 };
 
 export const PriceDetailsLabel: FC<PriceDetailsLabelProps> = ({

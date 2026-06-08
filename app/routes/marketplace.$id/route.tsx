@@ -5,9 +5,9 @@ import LikeIcon from "app/icons/like.svg?react";
 import ShareIcon from "app/icons/share.svg?react";
 
 import PageLayout from "app/layouts/PageLayout/Pagelayout";
-import { usePropertyByAddress } from "./hooks/use-property-by-id";
+import { useMarketByParamIdentifier } from "./hooks/use-market-by-identifier";
 import { LinkWithIcon } from "~/lib/atoms/LinkWithIcon";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Gallery } from "./components/Gallery/Gallery";
 
 import { IconsBlock } from "~/templates/IconsBlock";
@@ -23,10 +23,11 @@ import styles from "./propertyId.module.css";
 import { homeFAQ } from "../_index/index.const";
 import { PriceSection } from "./components/PriceSection/PriceSection";
 import PropertyTabs from "./components/PropertyTabs/PropertyTabs";
-import { useEstatesContext } from "~/providers/EstatesProvider/estates.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import clsx from "clsx";
+import { detectIfAssetIsSecondaryMarket } from "~/providers/MarketsProvider/utils";
 
 export const meta: MetaFunction = () => {
   return [
@@ -43,17 +44,18 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function PropertyDetails() {
   // setting active estate in provider
-  const estateData = usePropertyByAddress();
+  const estateData = useMarketByParamIdentifier();
 
-  const {
-    isActiveEstateSecondaryMarket: isSecondaryEstate,
-    isLoading,
-    isActiveEstateLoading,
-  } = useEstatesContext();
+  const { isLoading, isActiveMarketLoading } = useMarketsContext();
 
   const tabId = useLoaderData<typeof loader>() as string | undefined;
 
-  if (isLoading || isActiveEstateLoading) return <FullScreenSpinner />;
+  const isSecondaryMarket = useMemo(
+    () => detectIfAssetIsSecondaryMarket(estateData),
+    [estateData]
+  );
+
+  if (isLoading || isActiveMarketLoading) return <FullScreenSpinner />;
 
   if (estateData === null) return <Navigate to={"/marketplace"} />;
 
@@ -77,7 +79,7 @@ export default function PropertyDetails() {
           </h3>
 
           <HeadLineTabs
-            isSecondaryEstate={isSecondaryEstate}
+            isSecondaryEstate={isSecondaryMarket}
             houseType={estateData.assetDetails.propertyDetails.propertyType}
           />
           <Options />
@@ -99,11 +101,11 @@ export default function PropertyDetails() {
           )}
 
           <Divider className="my-6" />
-          <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryEstate} />
+          <PropertyTabs tabId={tabId} isSecondaryEstate={isSecondaryMarket} />
         </div>
         <div className="sticky top-10 h-fit">
           <PriceSection
-            isSecondaryEstate={isSecondaryEstate}
+            isSecondaryEstate={isSecondaryMarket}
             activeEstate={estateData}
           />
         </div>
