@@ -1,0 +1,41 @@
+.card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border-radius: var(--r-radius-md);
+}
+
+.default {
+  overflow: visible;
+}
+
+.mock {
+  overflow: hidden;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-lg);
+}
+
+.light {
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.mock.light {
+  border-color: var(--r-color-neutral-100);
+}
+
+.dark {
+  background: rgba(246, 246, 247, 0.1);
+}
+
+.green {
+  background: var(--r-color-accent-green-500);
+}
+
+.softShadow {
+  box-shadow: 0 30px 60px -15px rgba(1, 1, 1, 0.12);
+}
+
+.strongShadow {
+  box-shadow: 0 36px 80px -18px rgba(1, 1, 1, 0.16);
+}
