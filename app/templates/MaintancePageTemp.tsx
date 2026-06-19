@@ -12,13 +12,9 @@ export const MaintancePageTemp = () => {
         <div className="flex flex-col items-center text-center z-10 justify-self-start transform">
           <div className="flex flex-col gap-5 items-center text-sand-900">
             <h3 className="p-8 mt-11 md:mt-0 md:p-0 text-[32px] md:text-section-headline font-semibold">
-              The site is currently down <br />
-              for maintenance
+              We're busy updating Equiteez for you
             </h3>
-            <p className="text-base text-center">
-              The Equiteez app will be back up shortly, we apologize for any
-              inconveniences caused. <br /> See you soon!
-            </p>
+            <p className="text-base text-center">Please check back soon</p>
           </div>
         </div>
 
