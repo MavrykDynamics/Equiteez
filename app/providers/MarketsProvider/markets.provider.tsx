@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -24,6 +25,7 @@ import {
   createMarketPickers,
   createValidTokensRecord,
 } from "./utils";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -66,6 +68,7 @@ const createFakeMarkets = () =>
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const [activeMarketSlug, setActiveMarketSlug] = useState<string | null>(null);
   const [isActiveMarketLoading, setIsActiveMarketLoading] = useState(true);
+  const { upsertTokensData } = useTokensContext();
 
   const bootstrapQuery = useQuery({
     queryKey: ["fetchAssets", "all"],
@@ -138,6 +141,21 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     () => createValidTokensRecord(config.orderbook),
     [config.orderbook]
   );
+
+  useEffect(() => {
+    if (!bootstrapCollection.tokens.length) {
+      return;
+    }
+
+    upsertTokensData(
+      bootstrapCollection.tokens,
+      bootstrapCollection.tokensMetadata
+    );
+  }, [
+    bootstrapCollection.tokens,
+    bootstrapCollection.tokensMetadata,
+    upsertTokensData,
+  ]);
 
   const isLoading = bootstrapQuery.isPending;
 

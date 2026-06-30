@@ -1,5 +1,5 @@
-import React from "react";
 import { Text } from "~/lib/atoms/Typography/Text";
+import { getAssetSymbol } from "~/lib/metadata";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { AssetIcon } from "~/templates/AssetIcon";
 import styles from "./styles.module.css";
@@ -32,7 +32,7 @@ export function AssetView({
         }
       />
       <Text size={isSmallView ? "tinyBody" : "smallBody"} weight="semibold">
-        {metadata.symbol}
+        {getAssetSymbol(metadata)}
       </Text>
     </div>
   );

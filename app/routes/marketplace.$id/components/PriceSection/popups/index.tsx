@@ -39,7 +39,6 @@ import Money from "~/lib/atoms/Money";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
@@ -65,6 +64,7 @@ import {
   OrderBookToggleButton,
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 
@@ -91,7 +91,7 @@ export const PopupContent: FC<PopupContentProps> = ({
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
-  const { orderbookStorages, orderbookTokenPair } = useDexContext();
+  const { orderbookStorages } = useDexContext();
   const {
     pickers: { pickOrderbookContract, pickOrderbookContractQuoteToken },
     activeMarket,
@@ -154,12 +154,12 @@ export const PopupContent: FC<PopupContentProps> = ({
   //   slippagePercentage,
   // ]);
 
-  // metadata for selected asset
-  const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
-  const baseTokenDecimals = selectedAssetMetadata?.decimals ?? estate.decimals;
-  const quoteTokenDecimals = quoteAssetmetadata?.decimals ?? 6;
+  const {
+    baseTokenDecimals,
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenDecimals,
+    quoteTokenMetadata: quoteAssetmetadata,
+  } = useOrderbookTokenMetadata(estate);
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
@@ -288,8 +288,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       quoteTokenAddress: pickOrderbookContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.toNumber() ?? ZERO,
       pricePerToken: limitPrice?.toNumber(),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteTokenDecimals: quoteAssetmetadata?.decimals,
+      decimals: selectedAssetMetadata.decimals,
+      quoteTokenDecimals: quoteAssetmetadata.decimals,
     }),
     [
       pickOrderbookContract,
@@ -297,8 +297,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       pickOrderbookContractQuoteToken,
       amountB,
       limitPrice,
-      selectedAssetMetadata?.decimals,
-      quoteAssetmetadata?.decimals,
+      selectedAssetMetadata.decimals,
+      quoteAssetmetadata.decimals,
     ]
   );
 
@@ -560,7 +560,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       {shouldRenderOrderBook && (
         <OrderBookPopup
           baseTokenDecimals={baseTokenDecimals}
-          baseTokenSymbol={selectedAssetMetadata?.symbol ?? estate.symbol}
+          baseTokenSymbol={selectedAssetMetadata.symbol}
           desktopHeight={popupMainHeight}
           enabled={isSecondaryEstate}
           isOpen={isOrderBookOpen}
@@ -569,7 +569,7 @@ export const PopupContent: FC<PopupContentProps> = ({
             isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
           }
           quoteTokenDecimals={quoteTokenDecimals}
-          quoteTokenSymbol={quoteAssetmetadata?.symbol ?? "USDT"}
+          quoteTokenSymbol={quoteAssetmetadata.symbol}
           referencePrice={tokenPrice.toNumber()}
           rwaAddress={estate.token_address}
         />
@@ -662,7 +662,7 @@ export const PopupContent: FC<PopupContentProps> = ({
                       {orderType === BUY ? (
                         <Money
                           smallFractionFont={false}
-                          cryptoDecimals={selectedAssetMetadata?.decimals}
+                          cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
                             ? (amountB?.div(tokenPrice).toNumber() ?? 0)

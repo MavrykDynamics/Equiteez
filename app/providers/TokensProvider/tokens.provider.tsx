@@ -26,6 +26,57 @@ type TokensProviderProps = {
   initialTokensMetadata: StringRecord<TokenMetadata>;
 } & PropsWithChildren;
 
+const getTokenKey = ({ contract, id }: TokenType) => `${contract}_${id}`;
+
+const mergeTokens = (currentTokens: TokenType[], nextTokens: TokenType[]) => {
+  const tokenKeys = new Set(currentTokens.map(getTokenKey));
+  let hasChanges = false;
+
+  const mergedTokens = [...currentTokens];
+
+  nextTokens.forEach((token) => {
+    const key = getTokenKey(token);
+
+    if (tokenKeys.has(key)) {
+      return;
+    }
+
+    tokenKeys.add(key);
+    mergedTokens.push(token);
+    hasChanges = true;
+  });
+
+  return hasChanges ? mergedTokens : currentTokens;
+};
+
+const mergeTokensMetadata = (
+  currentMetadata: StringRecord<TokenMetadata>,
+  nextMetadata: StringRecord<TokenMetadata>
+) => {
+  let hasChanges = false;
+  const mergedMetadata = { ...currentMetadata };
+
+  Object.entries(nextMetadata).forEach(([slug, metadata]) => {
+    const currentTokenMetadata = currentMetadata[slug];
+
+    if (
+      currentTokenMetadata?.name === metadata.name &&
+      currentTokenMetadata?.symbol === metadata.symbol &&
+      currentTokenMetadata?.decimals === metadata.decimals &&
+      currentTokenMetadata?.thumbnailUri === metadata.thumbnailUri &&
+      currentTokenMetadata?.address === metadata.address &&
+      currentTokenMetadata?.id === metadata.id
+    ) {
+      return;
+    }
+
+    mergedMetadata[slug] = metadata;
+    hasChanges = true;
+  });
+
+  return hasChanges ? mergedMetadata : currentMetadata;
+};
+
 export const TokensProvider: FC<TokensProviderProps> = ({
   initialTokens,
   initialTokensMetadata,
@@ -39,35 +90,40 @@ export const TokensProvider: FC<TokensProviderProps> = ({
 
   const initializeTokensData = useCallback(async () => {
     try {
-      setTokens(
-        initialTokens
-          .concat({
-            contract: MVRK_CONTRACT_ADDRESS,
-            id: MVRK_METADATA.id,
-          })
-          .concat(
-            MOCKED_ASSET_ADDRESSES.map((address) => ({
-              contract: address,
-              id: "0",
-            }))
-          )
-      );
+      const nextTokens = initialTokens
+        .concat({
+          contract: MVRK_CONTRACT_ADDRESS,
+          id: MVRK_METADATA.id,
+        })
+        .concat(
+          MOCKED_ASSET_ADDRESSES.map((address) => ({
+            contract: address,
+            id: "0",
+          }))
+        );
 
-      setTokensMetadata({
+      const nextTokensMetadata = {
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
         ...MOCKED_ASSET_ADDRESSES.reduce<StringRecord<TokenMetadata>>(
           (acc, address) => {
             const slug = toTokenSlug(address);
-            acc[slug] = getMockedMetadata(
-              address,
-              MOCKED_ASSET_SYMBOLS[address] ?? "NMDT"
-            );
+            const symbol =
+              MOCKED_ASSET_SYMBOLS[
+                address as keyof typeof MOCKED_ASSET_SYMBOLS
+              ] ?? "NMDT";
+
+            acc[slug] = getMockedMetadata(address, symbol);
             return acc;
           },
           {}
         ),
-      });
+      };
+
+      setTokens((currentTokens) => mergeTokens(currentTokens, nextTokens));
+      setTokensMetadata((currentMetadata) =>
+        mergeTokensMetadata(currentMetadata, nextTokensMetadata)
+      );
 
       setIsLoading(false);
     } catch (e) {
@@ -75,6 +131,19 @@ export const TokensProvider: FC<TokensProviderProps> = ({
       setIsLoading(false);
     }
   }, [initialTokens, initialTokensMetadata]);
+
+  const upsertTokensData = useCallback(
+    (
+      nextTokens: TokenType[],
+      nextTokensMetadata: StringRecord<TokenMetadata>
+    ) => {
+      setTokens((currentTokens) => mergeTokens(currentTokens, nextTokens));
+      setTokensMetadata((currentMetadata) =>
+        mergeTokensMetadata(currentMetadata, nextTokensMetadata)
+      );
+    },
+    []
+  );
 
   /**Fetch tokens and tokens metadta on init */
   useEffect(() => {
@@ -86,8 +155,9 @@ export const TokensProvider: FC<TokensProviderProps> = ({
       tokens,
       tokensMetadata,
       isLoading,
+      upsertTokensData,
     }),
-    [isLoading, tokens, tokensMetadata]
+    [isLoading, tokens, tokensMetadata, upsertTokensData]
   );
 
   return (

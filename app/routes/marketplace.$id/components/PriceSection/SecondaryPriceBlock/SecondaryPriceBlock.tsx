@@ -8,19 +8,17 @@ import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import styles from "./../priceSection.module.css";
 import popupStyles from "../popups/popups.module.css";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { PopupContent } from "../popups";
-import { stablecoinContract } from "~/consts/contracts";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import Money from "~/lib/atoms/Money";
 import {
   calculateLiquidityPercentages,
   calculateTotalLiquidity,
 } from "~/providers/Dexprovider/utils";
-import { useAssetMetadata } from "~/lib/metadata";
-import { toTokenSlug } from "~/lib/assets";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import BigNumber from "bignumber.js";
@@ -49,15 +47,6 @@ const expandVariants = {
 };
 
 const MOBILE_ORDER_BOOK_BREAKPOINT = "(max-width: 820px)";
-const DEFAULT_QUOTE_TOKEN_DECIMALS = 6;
-
-const resolveTokenDecimals = (
-  metadataDecimals: number | undefined,
-  fallbackDecimals: number
-) =>
-  typeof metadataDecimals === "number" && Number.isFinite(metadataDecimals)
-    ? metadataDecimals
-    : fallbackDecimals;
 
 const getDefaultOrderBookOpenState = () => {
   if (typeof window === "undefined") {
@@ -77,22 +66,12 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
-  const { orderbookStorages, orderbookTokenPair } = useDexContext();
+  const { orderbookStorages } = useDexContext();
 
   const { slug } = estate;
-  const baseTokenMetadata = useAssetMetadata(slug);
+  const { baseTokenDecimals, quoteTokenDecimals } =
+    useOrderbookTokenMetadata(estate);
   const orderbookAddress = orderbookStorages[slug]?.orderbookAddress;
-  const quoteTokenMetadata = useAssetMetadata(
-    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract)
-  );
-  const baseTokenDecimals = resolveTokenDecimals(
-    baseTokenMetadata?.decimals,
-    estate.decimals
-  );
-  const quoteTokenDecimals = resolveTokenDecimals(
-    quoteTokenMetadata?.decimals,
-    DEFAULT_QUOTE_TOKEN_DECIMALS
-  );
 
   // stores buy and sell prices based on orders
   const [totalLiquidity, setTotalLiquidity] = useState<{

@@ -48,14 +48,10 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
     () => new Proxy({}, priceProxyHandler)
   );
 
-  // Token pairs
-  const [orderbookTokenPair, setOrderbookTokenPair] = useState({});
-
-  // We do not update query for storages cuz we have this data from the markets query
-  useEffect(() => {
-    const orderBookPairs = getOrderbookTokenPairs(config.orderbook);
-    setOrderbookTokenPair(orderBookPairs);
-  }, [config]);
+  const orderbookTokenPair = useMemo(
+    () => getOrderbookTokenPairs(config.orderbook),
+    [config.orderbook]
+  );
 
   const handleOrderbookData = useCallback((data: OrderbooksList) => {
     const orderbookStorages = getOrderbookStorages(data, config.orderbook);
