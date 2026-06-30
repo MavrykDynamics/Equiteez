@@ -49,6 +49,15 @@ const expandVariants = {
 };
 
 const MOBILE_ORDER_BOOK_BREAKPOINT = "(max-width: 820px)";
+const DEFAULT_QUOTE_TOKEN_DECIMALS = 6;
+
+const resolveTokenDecimals = (
+  metadataDecimals: number | undefined,
+  fallbackDecimals: number
+) =>
+  typeof metadataDecimals === "number" && Number.isFinite(metadataDecimals)
+    ? metadataDecimals
+    : fallbackDecimals;
 
 const getDefaultOrderBookOpenState = () => {
   if (typeof window === "undefined") {
@@ -72,8 +81,17 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
   const { slug } = estate;
   const baseTokenMetadata = useAssetMetadata(slug);
+  const orderbookAddress = orderbookStorages[slug]?.orderbookAddress;
   const quoteTokenMetadata = useAssetMetadata(
     orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract)
+  );
+  const baseTokenDecimals = resolveTokenDecimals(
+    baseTokenMetadata?.decimals,
+    estate.decimals
+  );
+  const quoteTokenDecimals = resolveTokenDecimals(
+    quoteTokenMetadata?.decimals,
+    DEFAULT_QUOTE_TOKEN_DECIMALS
   );
 
   // stores buy and sell prices based on orders
@@ -90,9 +108,9 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     error,
     loading: isAggregatedOrdersLoading,
   } = useApiQuery({
-    fetchFn: async () =>
-      fetchOrderbookPrices(orderbookStorages[slug]?.orderbookAddress),
-    deps: [orderbookStorages[slug]?.orderbookAddress],
+    fetchFn: async () => fetchOrderbookPrices(orderbookAddress ?? ""),
+    deps: [orderbookAddress],
+    enabled: Boolean(orderbookAddress),
   });
 
   useEffect(() => {
@@ -105,19 +123,19 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
     const { buyPrice, sellPrice } = getRwaTokenPriceBasedOnOrders(
       orderbookPricesData,
-      quoteTokenMetadata?.decimals
+      quoteTokenDecimals
     );
 
     setTotalLiquidity({ buyPrice, sellPrice });
-  }, [JSON.stringify(orderbookPricesData), error]);
+  }, [error, orderbookPricesData, quoteTokenDecimals, warning]);
 
   const currentPrice = useMemo(
     () =>
       atomsToTokens(
-        orderbookStorages[slug]?.lowestSellPrice,
-        baseTokenMetadata.decimals
+        orderbookStorages[slug]?.lowestSellPrice ?? 0,
+        baseTokenDecimals
       ) ?? "0",
-    [baseTokenMetadata.decimals, orderbookStorages, slug]
+    [baseTokenDecimals, orderbookStorages, slug]
   );
 
   const totalLiquidityInfo = useMemo(() => {

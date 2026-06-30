@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 import fakeAssetsMocked from "app/mocks/assets.mock.json";
+import legacyRwasMocked from "app/mocks/rwas.json";
 
 import { fetchAssets } from "~/lib/apis/mbrwa/assets";
 import { toTokenSlug } from "~/lib/assets";
@@ -26,14 +27,38 @@ import {
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
-const createFakeMarkets = () =>
-  fakeAssetsMocked.reduce<Map<string, EstateType>>((acc, asset) => {
-    const slug = toTokenSlug(asset.token_address);
+const fallbackAssetsMocked = [...fakeAssetsMocked, ...legacyRwasMocked];
 
-    acc.set(slug, {
-      ...asset,
-      slug,
-    } as unknown as EstateType);
+const normalizeFallbackMarket = (asset: EstateType): EstateType => {
+  const slug = toTokenSlug(asset.token_address);
+  const [blockchain, ...restBlockchain] = asset.assetDetails.blockchain;
+
+  return {
+    ...asset,
+    assetType: asset.assetType ?? "",
+    slug,
+    assetDetails: {
+      ...asset.assetDetails,
+      propertyDetails: {
+        ...asset.assetDetails.propertyDetails,
+        tags: asset.assetDetails.propertyDetails.tags ?? [],
+      },
+      blockchain: [
+        {
+          ...blockchain,
+          identifier: asset.token_address,
+        },
+        ...restBlockchain,
+      ],
+    },
+  };
+};
+
+const createFakeMarkets = () =>
+  fallbackAssetsMocked.reduce<Map<string, EstateType>>((acc, asset) => {
+    const market = normalizeFallbackMarket(asset as unknown as EstateType);
+
+    acc.set(market.slug, market);
 
     return acc;
   }, new Map());
