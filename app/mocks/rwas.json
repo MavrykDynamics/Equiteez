@@ -1,6 +1,6 @@
 [
   {
-    "token_address": "KT1M3U8zRf3AwaerkTXCThcffUqWpie3UMoj",
+    "token_address": "KT1XLUiaPpivxi2e4U1wEctQ7DKDkdz9GQgK",
     "name": "Hilton Mars 1",
     "symbol": "MARS1",
     "decimals": 6,
@@ -284,7 +284,7 @@
     }
   },
   {
-    "token_address": "KT1P6hE9g2sPeTCqcHDX2Sk4zdaF2aGAGCrZ",
+    "token_address": "KT1WyJZEfkM623Q4SugEaBCcFQReHYJ22avD",
     "name": "Ocean Front",
     "symbol": "OCEAN",
     "decimals": 6,
@@ -569,7 +569,7 @@
   },
 
   {
-    "token_address": "KT1PgkWg76a3EqkVyt2aTaR91Y3dSQrm3sWG",
+    "token_address": "KT1SYFeAjDsu7KXfN3VUgyuzfdMth16r8BQ2",
     "name": "Queen Tower",
     "symbol": "QTM",
     "decimals": 6,
@@ -842,7 +842,7 @@
     }
   },
   {
-    "token_address": "KT1HrjerqExE8MfrHBMgbcJVsmTY7HjDzHJu",
+    "token_address": "KT1Xd6Q4Gkvdt9avjisJr9cyN8M8aj111ayL",
     "name": "North Texas Bitcoin Miners LTD",
     "symbol": "BTM",
     "decimals": 6,

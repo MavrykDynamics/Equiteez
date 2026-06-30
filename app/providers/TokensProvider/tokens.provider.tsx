@@ -15,6 +15,8 @@ import {
   MVRK_ASSET_SLUG,
   MVRK_CONTRACT_ADDRESS,
   MVRK_METADATA,
+  STABLECOIN_ASSET_SLUG,
+  STABLECOIN_METADATA,
   TokenMetadata,
 } from "~/lib/metadata";
 import { toTokenSlug } from "~/lib/assets";
@@ -95,6 +97,10 @@ export const TokensProvider: FC<TokensProviderProps> = ({
           contract: MVRK_CONTRACT_ADDRESS,
           id: MVRK_METADATA.id,
         })
+        .concat({
+          contract: STABLECOIN_METADATA.address,
+          id: STABLECOIN_METADATA.id,
+        })
         .concat(
           MOCKED_ASSET_ADDRESSES.map((address) => ({
             contract: address,
@@ -105,6 +111,7 @@ export const TokensProvider: FC<TokensProviderProps> = ({
       const nextTokensMetadata = {
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
+        [STABLECOIN_ASSET_SLUG]: STABLECOIN_METADATA,
         ...MOCKED_ASSET_ADDRESSES.reduce<StringRecord<TokenMetadata>>(
           (acc, address) => {
             const slug = toTokenSlug(address);

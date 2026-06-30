@@ -14,9 +14,13 @@ import fakeAssetsMocked from "app/mocks/assets.mock.json";
 import legacyRwasMocked from "app/mocks/rwas.json";
 
 import { fetchAssets } from "~/lib/apis/mbrwa/assets";
-import { toTokenSlug } from "~/lib/assets";
+import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
 import { ApiError } from "~/errors/error";
 import { withSortedFromMap } from "~/lib/utils";
+import {
+  createFallbackTokenMetadata,
+  type TokenMetadata,
+} from "~/lib/metadata";
 
 import { MarketContext, EstateType } from "./market.types";
 import {
@@ -26,6 +30,7 @@ import {
   createValidTokensRecord,
 } from "./utils";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import type { TokenType } from "~/providers/TokensProvider/tokens.provider.types";
 
 export const marketsContext = createContext<MarketContext>(undefined!);
 
@@ -65,6 +70,36 @@ const createFakeMarkets = () =>
     return acc;
   }, new Map());
 
+const createFallbackTokensData = (
+  markets: Map<string, EstateType>
+): {
+  tokens: TokenType[];
+  tokensMetadata: StringRecord<TokenMetadata>;
+} => {
+  const tokens: TokenType[] = [];
+  const tokensMetadata: StringRecord<TokenMetadata> = {};
+
+  markets.forEach((market) => {
+    const [, id = "0"] = fromAssetSlug(market.slug);
+
+    tokens.push({
+      contract: market.token_address,
+      id,
+    });
+
+    tokensMetadata[market.slug] = createFallbackTokenMetadata({
+      address: market.token_address,
+      decimals: market.decimals,
+      id,
+      name: market.name,
+      symbol: market.symbol,
+      thumbnailUri: market.icon || undefined,
+    });
+  });
+
+  return { tokens, tokensMetadata };
+};
+
 export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   const [activeMarketSlug, setActiveMarketSlug] = useState<string | null>(null);
   const [isActiveMarketLoading, setIsActiveMarketLoading] = useState(true);
@@ -89,6 +124,11 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const fakeMarkets = useMemo(() => createFakeMarkets(), []);
+
+  const fallbackTokensData = useMemo(
+    () => createFallbackTokensData(fakeMarkets),
+    [fakeMarkets]
+  );
 
   const config = useMemo(
     () => ({
@@ -141,6 +181,17 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     () => createValidTokensRecord(config.orderbook),
     [config.orderbook]
   );
+
+  useEffect(() => {
+    if (!fallbackTokensData.tokens.length) {
+      return;
+    }
+
+    upsertTokensData(
+      fallbackTokensData.tokens,
+      fallbackTokensData.tokensMetadata
+    );
+  }, [fallbackTokensData, upsertTokensData]);
 
   useEffect(() => {
     if (!bootstrapCollection.tokens.length) {

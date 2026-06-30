@@ -2,8 +2,12 @@ import { useMemo } from "react";
 
 import { stablecoinContract } from "~/consts/contracts";
 import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
-import type { TokenMetadata } from "~/lib/metadata";
-import { useAssetMetadata } from "~/lib/metadata";
+import {
+  createFallbackTokenMetadata,
+  STABLECOIN_METADATA,
+  type TokenMetadata,
+  useAssetMetadata,
+} from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 
@@ -12,14 +16,14 @@ const UNKNOWN_TOKEN_SYMBOL = "???";
 
 const createBaseTokenFallbackMetadata = (
   estate: SecondaryEstate
-): TokenMetadata => ({
-  address: estate.token_address,
-  id: "0",
-  name: estate.name,
-  symbol: estate.symbol,
-  decimals: estate.decimals,
-  thumbnailUri: estate.icon || undefined,
-});
+): TokenMetadata =>
+  createFallbackTokenMetadata({
+    address: estate.token_address,
+    decimals: estate.decimals,
+    name: estate.name,
+    symbol: estate.symbol,
+    thumbnailUri: estate.icon || undefined,
+  });
 
 const createQuoteTokenFallbackMetadata = (
   quoteTokenSlug: string
@@ -27,13 +31,17 @@ const createQuoteTokenFallbackMetadata = (
   const [address, id = "0"] = fromAssetSlug(quoteTokenSlug);
   const isStablecoin = address === stablecoinContract;
 
-  return {
+  if (isStablecoin) {
+    return STABLECOIN_METADATA;
+  }
+
+  return createFallbackTokenMetadata({
     address,
+    name: "Unknown Token",
     id,
-    name: isStablecoin ? "USDT" : "Unknown Token",
-    symbol: isStablecoin ? "USDT" : UNKNOWN_TOKEN_SYMBOL,
+    symbol: UNKNOWN_TOKEN_SYMBOL,
     decimals: DEFAULT_QUOTE_TOKEN_DECIMALS,
-  };
+  });
 };
 
 export const useOrderbookTokenMetadata = (estate: SecondaryEstate) => {

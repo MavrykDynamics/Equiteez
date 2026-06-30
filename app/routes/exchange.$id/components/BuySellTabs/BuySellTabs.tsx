@@ -39,7 +39,11 @@ import { CryptoBalance } from "~/templates/Balance";
 //   pickStatusFromMultiple,
 //   STATUS_PENDING,
 // } from "~/lib/ui/use-status-flag";
-import { useAssetMetadata } from "~/lib/metadata";
+import {
+  createFallbackTokenMetadata,
+  STABLECOIN_METADATA,
+  useAssetMetadata,
+} from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { calculateEstFee } from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
@@ -180,7 +184,16 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const { validBaseTokens } = useMarketsContext();
   // metadata
-  const selectedAssetMetadata = useAssetMetadata(slug);
+  const loadedSelectedAssetMetadata = useAssetMetadata(slug);
+  const selectedAssetMetadata = useMemo(
+    () =>
+      loadedSelectedAssetMetadata ??
+      createFallbackTokenMetadata({
+        address: tokenAddress,
+        symbol,
+      }),
+    [loadedSelectedAssetMetadata, symbol, tokenAddress]
+  );
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
@@ -207,9 +220,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
 
-  const quoteAssetmetadata = useAssetMetadata(
-    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract)
-  );
+  const quoteTokenSlug =
+    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
+  const loadedQuoteAssetMetadata = useAssetMetadata(quoteTokenSlug);
+  const quoteAssetmetadata = loadedQuoteAssetMetadata ?? STABLECOIN_METADATA;
 
   // derived
 
