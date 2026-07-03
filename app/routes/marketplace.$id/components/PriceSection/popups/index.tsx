@@ -21,7 +21,10 @@ import { TabType } from "~/lib/atoms/Tab";
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
-import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+import {
+  EstateType,
+  SecondaryEstate,
+} from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 
@@ -67,6 +70,18 @@ import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
+const POPUP_RECOMMENDATIONS_LIMIT = 2;
+
+const getMarketIdentifier = (market: EstateType) =>
+  market.assetDetails.blockchain[0]?.identifier;
+
+const isCurrentPopupMarket = (
+  market: EstateType,
+  currentMarket: SecondaryEstate
+) =>
+  market.slug === currentMarket.slug ||
+  market.token_address === currentMarket.token_address ||
+  getMarketIdentifier(market) === getMarketIdentifier(currentMarket);
 
 type PopupContentProps = {
   estate: SecondaryEstate;
@@ -86,13 +101,14 @@ export const PopupContent: FC<PopupContentProps> = ({
   setOrderType,
 }) => {
   const { slug } = estate;
-  const { marketsArr } = useMarketsContext();
   const { dapp } = useWalletContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
   const { orderbookStorages } = useDexContext();
   const {
+    marketsArr,
+    sortedMarketAddresses,
     pickers: { pickOrderbookContract, pickOrderbookContractQuoteToken },
     activeMarket,
   } = useMarketsContext();
@@ -400,9 +416,27 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // actual contract calls and their handlers ---------------
 
-  const memoizedPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "inProgressRwaAd", props: { rwas: marketsArr.slice(0, 2) } }),
-    [marketsArr]
+  const popupRecommendedMarkets = useMemo(() => {
+    const visibleMarketSlugs = new Set(sortedMarketAddresses);
+
+    return marketsArr
+      .filter(
+        (market) =>
+          visibleMarketSlugs.has(market.slug) &&
+          !isCurrentPopupMarket(market, estate)
+      )
+      .slice(0, POPUP_RECOMMENDATIONS_LIMIT);
+  }, [estate, marketsArr, sortedMarketAddresses]);
+
+  const memoizedPopupProps: ContractActionPopupProps | undefined = useMemo(
+    () =>
+      popupRecommendedMarkets.length
+        ? {
+            key: "inProgressRwaAd",
+            props: { rwas: popupRecommendedMarkets },
+          }
+        : undefined,
+    [popupRecommendedMarkets]
   );
 
   const memoizedToastProps: ContractActionToastProps = useMemo(() => {

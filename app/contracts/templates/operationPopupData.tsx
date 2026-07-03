@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js";
+import { generatePath } from "@remix-run/react";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 
@@ -7,41 +8,77 @@ import mvrkTokenSvg from "app/misc/mvrk-section.png";
 import styles from "./operationPopupData.module.css";
 import { EstateType } from "~/providers/MarketsProvider/market.types";
 import { EMPTY_ARRAY } from "~/consts";
+import { ROUTES } from "~/consts/routes";
+import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 
-const withSeparator = (items: EstateType[]) => {
-  const [item1, item2] = items;
+type PopupAssetCard = {
+  type: "asset";
+  id: string;
+  link: string;
+  title: string;
+  imgSrc: string;
+  description: string;
+  isSecondaryMarket: boolean;
+  pricePerToken: BigNumber;
+  height: string;
+  APY: number;
+  flags: string[];
+};
 
-  return [
-    {
-      id: "1",
-      title: item1.name,
-      imgSrc: item1.assetDetails.previewImage,
-      description: item1.assetType,
-      isSecondaryMarket: true,
-      pricePerToken: new BigNumber(
-        item1.assetDetails.financials.expectedIncome.tokenPrice
-      ),
-      height: "253px",
-      APY: item1.assetDetails.APY,
-    },
-    {
-      id: "2",
-      // TODO could be replaced with JSX section in the future
-      imgSrc: mvrkTokenSvg,
-    },
-    {
-      id: "3",
-      title: item2.name,
-      imgSrc: item2.assetDetails.previewImage,
-      description: item2.assetType,
-      isSecondaryMarket: true,
-      pricePerToken: new BigNumber(
-        item2.assetDetails.financials.expectedIncome.tokenPrice
-      ),
-      height: "253px",
-      APY: item2.assetDetails.APY,
-    },
-  ];
+type PopupSeparator = {
+  type: "separator";
+  id: string;
+  imgSrc: string;
+};
+
+type PopupAssetItem = PopupAssetCard | PopupSeparator;
+
+const createPopupAssetCard = (asset: EstateType): PopupAssetCard | null => {
+  const identifier = asset.assetDetails.blockchain[0]?.identifier;
+
+  if (!identifier) return null;
+
+  return {
+    type: "asset",
+    id: asset.slug,
+    link: generatePath(ROUTES.singleAsset, { id: identifier }),
+    title: asset.name,
+    imgSrc: asset.assetDetails.previewImage,
+    description: asset.assetType,
+    isSecondaryMarket: asset.assetDetails.type === SECONDARY_MARKET,
+    pricePerToken: new BigNumber(
+      asset.assetDetails.financials.expectedIncome.tokenPrice
+    ),
+    height: "253px",
+    APY: asset.assetDetails.APY,
+    flags: asset.assetDetails.propertyDetails.tags ?? EMPTY_ARRAY,
+  };
+};
+
+const withSeparator = (items: EstateType[]): PopupAssetItem[] => {
+  const assetCards = items.reduce<PopupAssetCard[]>((acc, asset) => {
+    const assetCard = createPopupAssetCard(asset);
+
+    if (assetCard) {
+      acc.push(assetCard);
+    }
+
+    return acc;
+  }, []);
+
+  return assetCards.reduce<PopupAssetItem[]>((acc, assetCard, index) => {
+    if (index > 0) {
+      acc.push({
+        type: "separator",
+        id: `separator-${assetCard.id}`,
+        imgSrc: mvrkTokenSvg,
+      });
+    }
+
+    acc.push(assetCard);
+
+    return acc;
+  }, []);
 };
 
 type popupOperationInProgressProps = {
@@ -65,7 +102,7 @@ export const popupOperationInProgress = ({
   body: (
     <div className="flex xl:flex-row flex-col gap-4 items-center w-full">
       {withSeparator(rwas).map((asset) => {
-        if (asset.id === "2") {
+        if (asset.type === "separator") {
           return (
             <div key={asset.id} className="max-w-[365px] w-full xl:w-[365px]">
               <img
@@ -80,17 +117,19 @@ export const popupOperationInProgress = ({
 
         return (
           <CustomLink
-            to={"#"}
+            to={asset.link}
             key={asset.id}
             className="max-w-[365px] w-full xl:w-[365px]"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <ThumbCardSecondary
-              flags={EMPTY_ARRAY}
+              flags={asset.flags}
               imgSrc={asset.imgSrc}
-              title={asset.title ?? ""}
-              description={asset.description ?? ""}
-              isSecondaryMarket={asset.isSecondaryMarket || false}
-              APY={asset.APY ?? 0}
+              title={asset.title}
+              description={asset.description}
+              isSecondaryMarket={asset.isSecondaryMarket}
+              APY={asset.APY}
               pricePerToken={asset.pricePerToken}
               height={asset.height}
             />
