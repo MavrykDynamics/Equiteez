@@ -4,13 +4,14 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 //screens
 import { BuySellScreen } from "../screens/BuySellScreen";
 import { BuySellConfirmationScreen } from "../screens/BuySellConfirmationScreen";
-import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
+// import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 
 // components
 import { Divider } from "~/lib/atoms/Divider";
@@ -20,60 +21,95 @@ import { TabType } from "~/lib/atoms/Tab";
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
-import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import {
-  BUY,
-  CONFIRM,
-  OrderType,
-  OTC,
-  OTC_BUY,
-  OTC_SELL,
-  OTCScreenState,
-  OTCTabType,
-  SELL,
-} from "../consts";
-import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
+  EstateType,
+  SecondaryEstate,
+} from "~/providers/MarketsProvider/market.types";
+import { BUY, CONFIRM, OrderType, SELL } from "../consts";
+import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
+
 import {
   ContractActionPopupProps,
+  ContractActionToastProps,
   useContractAction,
 } from "~/contracts/hooks/useContractAction";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
 import { ProgresBar } from "../PrimaryPriceBlock";
-import clsx from "clsx";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
 import Money from "~/lib/atoms/Money";
-import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
-import {
-  caclMinMaxQuoteSelling,
-  caclMinMaxQuoteBuying,
-} from "~/lib/utils/calcFns";
+
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import { atomsToTokens } from "~/lib/utils/formaters";
-import { useConfigContext } from "~/providers/ConfigProvider/Config.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
-import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+import {
+  orderbookBuy,
+  orderbookBuyEstimation,
+  orderbookSell,
+  orderbookSellEstimation,
+} from "~/contracts/orderbook.contract";
 
-export const spippageOptions = ["1", "3", "5", "custom"];
+import styles from "./popups.module.css";
+import {
+  calculateMarketBuy,
+  calculateMarketSell,
+} from "~/providers/Dexprovider/utils";
+import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
+import { Text } from "~/lib/atoms/Typography/Text";
+import { MILLION, ZERO } from "~/lib/utils/numbers";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import {
+  ORDER_BOOK_TOGGLE_LABELS,
+  OrderBookPopup,
+  OrderBookToggleButton,
+} from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import clsx from "clsx";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
-export const PopupContent: FC<{
+export const SLIPPAGE_OPTIONS = [5, 10];
+const POPUP_RECOMMENDATIONS_LIMIT = 2;
+
+const getMarketIdentifier = (market: EstateType) =>
+  market.assetDetails.blockchain[0]?.identifier;
+
+const isCurrentPopupMarket = (
+  market: EstateType,
+  currentMarket: SecondaryEstate
+) =>
+  market.slug === currentMarket.slug ||
+  market.token_address === currentMarket.token_address ||
+  getMarketIdentifier(market) === getMarketIdentifier(currentMarket);
+
+type PopupContentProps = {
   estate: SecondaryEstate;
+  isOrderBookOpen: boolean;
+  onOrderBookVisibilityChange?: (isVisible: boolean) => void;
   orderType: OrderType;
+  setIsOrderBookOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
-}> = ({ estate, orderType, setOrderType }) => {
-  const { dodoMav, dodoTokenPair } = useDexContext();
-  const { adminAddress } = useConfigContext();
+};
+
+export const PopupContent: FC<PopupContentProps> = ({
+  estate,
+  isOrderBookOpen,
+  onOrderBookVisibilityChange,
+  orderType,
+  setIsOrderBookOpen,
+  setOrderType,
+}) => {
+  const { slug } = estate;
+  const { dapp } = useWalletContext();
+  const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
+  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+
+  const { orderbookStorages } = useDexContext();
   const {
-    pickers: {
-      pickDodoContractBasedOnToken,
-      pickDodoContractQuoteToken,
-      pickOrderbookContract,
-    },
+    marketsArr,
+    sortedMarketAddresses,
+    pickers: { pickOrderbookContract, pickOrderbookContractQuoteToken },
     activeMarket,
   } = useMarketsContext();
 
@@ -87,36 +123,85 @@ export const PopupContent: FC<{
     activetabId !== CONFIRM
   ) as OrderType;
 
-  // quote warning
-  const [hasQuoteError, setHasQuoteError] = useState(false);
+  // network fee estimation state --------------------------------------------
+  const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
+
+  // Slippage percentage for price impact --------------------------------------------
+  const [slippagePercentage, setSlippagePercentage] = useState<number>(0);
+
+  const handleSlippageChange = useCallback(
+    (value: number) => {
+      setSlippagePercentage(value);
+    },
+    [setSlippagePercentage]
+  );
+
+  // --------------------------------------------
 
   // --- input state
   const [amountB, setAmountB] = useState<BigNumber | undefined>();
   const [total, setTotal] = useState<BigNumber | undefined>();
 
-  // for limit market
+  // for limit market and handling input values
   const [limitPrice, setLimitPrice] = useState<BigNumber | undefined>();
 
-  // derived
-  const { slug, decimals } = estate;
-  const tokenPrice = useMemo(
-    () =>
-      isMarketTypeMarket
-        ? atomsToTokens(dodoMav[slug], decimals)
-        : limitPrice || new BigNumber(0),
-    [isMarketTypeMarket, dodoMav, slug, decimals, limitPrice]
-  );
-  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+  // const finalLimitPrice = useMemo(() => {
+  //   if (slippagePercentage !== 0 && !isMarketTypeMarket) {
+  //     const multiplier = new BigNumber(1).minus(
+  //       new BigNumber(slippagePercentage).div(100)
+  //     );
 
-  // metadata for selected asset
-  const selectedAssetMetadata = useAssetMetadata(slug);
+  //     if (activetabId === BUY) {
+  //       // uses amount
+  //       return amountB?.times(multiplier);
+  //     }
+  //     if (activetabId === SELL) {
+  //       // uses limit price
+  //       return limitPrice?.times(multiplier);
+  //     }
+  //   }
 
-  const qouteAssetMetadata = useAssetMetadata(dodoTokenPair[slug]);
+  //   return limitPrice;
+  // }, [
+  //   activetabId,
+  //   amountB,
+  //   isMarketTypeMarket,
+  //   limitPrice,
+  //   slippagePercentage,
+  // ]);
 
-  const showQuoteWarning = useCallback(() => {
-    setHasQuoteError(true);
-    setAvtiveTabId(prevTabId);
-  }, [prevTabId]);
+  const {
+    baseTokenDecimals,
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenDecimals,
+    quoteTokenMetadata: quoteAssetmetadata,
+  } = useOrderbookTokenMetadata(estate);
+
+  // based on tab (buy|sell) token price may vary
+  const tokenPrice = useMemo(() => {
+    const { lowestSellPrice, highestBuyPrice, tickSize } =
+      orderbookStorages[slug];
+
+    if (tickSize <= 0) return new BigNumber(1);
+
+    const buyPrice = calculateMarketBuy(
+      lowestSellPrice,
+      highestBuyPrice,
+      quoteTokenDecimals,
+      tickSize
+    );
+    const sellPrice = calculateMarketSell(
+      lowestSellPrice,
+      highestBuyPrice,
+      quoteTokenDecimals,
+      tickSize
+    );
+    const nextPrice = orderType === BUY ? buyPrice : sellPrice;
+
+    return nextPrice.isFinite() && nextPrice.gt(0)
+      ? nextPrice
+      : new BigNumber(1);
+  }, [orderType, orderbookStorages, quoteTokenDecimals, slug]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -138,12 +223,12 @@ export const PopupContent: FC<{
         label: "Sell",
         handleClick: handleTabClick,
       },
-      {
-        id: OTC,
-        label: "OTC",
-        handleClick: handleTabClick,
-        disabled: true,
-      },
+      // {
+      //   id: OTC,
+      //   label: "OTC",
+      //   handleClick: handleTabClick,
+      //   disabled: true,
+      // },
     ],
     [handleTabClick]
   );
@@ -171,18 +256,42 @@ export const PopupContent: FC<{
     [handlaMarketChange]
   );
 
-  // Slippage
-  const [slippagePercentage, setSlippagePercentage] = useState<string>(
-    spippageOptions[0]
-  );
+  useEffect(() => {
+    if (marketType === "limit") {
+      const multiplier = new BigNumber(1).plus(
+        new BigNumber(slippagePercentage).div(100)
+      );
+
+      // if buyAction -> amountB is cheaper for %
+      if (activetabId === BUY) {
+        setAmountB((prev) => (prev ? prev.times(multiplier) : undefined));
+      }
+
+      // if sellAction -> limitPrice is greater for %
+      if (activetabId === SELL) {
+        setLimitPrice((prev) => (prev ? prev.times(multiplier) : undefined));
+      }
+    }
+  }, [activetabId, marketType, slippagePercentage]);
 
   useEffect(() => {
-    if (isDefined(amountB) && tokenPrice) {
-      setTotal(amountB.times(tokenPrice));
+    const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
+
+    if (isDefined(amountB) && priceToUse) {
+      setTotal(amountB.times(priceToUse));
     } else if (!isDefined(amountB)) {
       setTotal(undefined);
     }
-  }, [amountB, estate.token_address, marketType, slug, tokenPrice]);
+  }, [
+    amountB,
+    estate.token_address,
+    marketType,
+    slug,
+    tokenPrice,
+    slippagePercentage,
+    limitPrice,
+    isMarketTypeMarket,
+  ]);
 
   // reset values when switching tabs
   useLayoutEffect(() => {
@@ -190,90 +299,27 @@ export const PopupContent: FC<{
 
     setAmountB(undefined);
     setLimitPrice(undefined);
+    setSlippagePercentage(0);
   }, [activetabId, marketType]);
 
-  const marketBuyProps = useMemo(
-    () => ({
-      dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
-      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
-      tokensAmount: amountB?.div(tokenPrice).toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(amountB, slippagePercentage),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: qouteAssetMetadata?.decimals,
-      adminAddress,
-      showQuoteWarning: showQuoteWarning,
-    }),
-    [
-      pickDodoContractBasedOnToken,
-      estate.token_address,
-      pickDodoContractQuoteToken,
-      amountB,
-      tokenPrice,
-      slippagePercentage,
-      selectedAssetMetadata?.decimals,
-      qouteAssetMetadata?.decimals,
-      adminAddress,
-      showQuoteWarning,
-    ]
-  );
-
-  const marketSellProps = useMemo(
-    () => ({
-      dodoContractAddress: pickDodoContractBasedOnToken[estate.token_address],
-
-      tokenAddress: estate.token_address,
-      tokensAmount: amountB?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteSelling(
-        tokenPrice.times(amountB ?? 0),
-        slippagePercentage
-      ),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: qouteAssetMetadata?.decimals,
-      adminAddress,
-      showQuoteWarning: showQuoteWarning,
-    }),
-    [
-      pickDodoContractBasedOnToken,
-      estate.token_address,
-      amountB,
-      tokenPrice,
-      slippagePercentage,
-      selectedAssetMetadata?.decimals,
-      qouteAssetMetadata?.decimals,
-      adminAddress,
-      showQuoteWarning,
-    ]
-  );
-
-  // Market buy | sell
-  const memoizedBuyPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "txRwaBuyOperation", props: activeMarket?.name }),
-    [activeMarket?.name]
-  );
-
-  const memoizedSellPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "txRwaSellOperation", props: activeMarket?.name }),
-    [activeMarket?.name]
-  );
-
-  // Orderbook limit buy | sell actions -----------------------------
+  // Orderbook limit buy | sell with custom user price
   const limitBuyProps = useMemo(
     () => ({
       orderbookContractAddress: pickOrderbookContract[estate.token_address],
-      quoteTokenAddress: pickDodoContractQuoteToken[estate.token_address],
-      tokensAmount: amountB?.toNumber(),
+      quoteTokenAddress: pickOrderbookContractQuoteToken[estate.token_address],
+      tokensAmount: amountB?.toNumber() ?? ZERO,
       pricePerToken: limitPrice?.toNumber(),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteTokenDecimals: qouteAssetMetadata?.decimals,
+      decimals: selectedAssetMetadata.decimals,
+      quoteTokenDecimals: quoteAssetmetadata.decimals,
     }),
     [
-      amountB,
-      estate.token_address,
-      limitPrice,
-      pickDodoContractQuoteToken,
       pickOrderbookContract,
-      qouteAssetMetadata?.decimals,
-      selectedAssetMetadata?.decimals,
+      estate.token_address,
+      pickOrderbookContractQuoteToken,
+      amountB,
+      limitPrice,
+      selectedAssetMetadata.decimals,
+      quoteAssetmetadata.decimals,
     ]
   );
 
@@ -282,24 +328,158 @@ export const PopupContent: FC<{
     const { quoteTokenAddress, ...restBuyprops } = limitBuyProps;
 
     return {
-      rwaTokenAddress: estate.token_address,
       ...restBuyprops,
+      rwaTokenAddress: estate.token_address,
     };
   }, [estate.token_address, limitBuyProps]);
 
+  // Orderbook market with dynamic price
+  const marketBuyProps = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { pricePerToken, tokensAmount, ...restBuyprops } = limitBuyProps;
+
+    return {
+      pricePerToken: tokenPrice,
+      tokensAmount: amountB?.div(tokenPrice).toNumber(),
+      ...restBuyprops,
+    };
+  }, [limitBuyProps, tokenPrice, amountB]);
+
+  const marketSellProps = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { quoteTokenAddress, pricePerToken, ...restBuyprops } = limitBuyProps;
+
+    return {
+      pricePerToken: tokenPrice,
+      rwaTokenAddress: estate.token_address,
+      ...restBuyprops,
+    };
+  }, [estate.token_address, limitBuyProps, tokenPrice]);
+
+  // Operation estimation effect -------------------------------------------
+  useEffect(() => {
+    if (!mavrykToolkit || !total || total.lte(0)) {
+      setNetworkFee(ZERO);
+      return;
+    }
+
+    let cancelled = false;
+
+    const t = window.setTimeout(async () => {
+      try {
+        const estimateFnToUse =
+          orderType === BUY ? orderbookBuyEstimation : orderbookSellEstimation;
+        const paramsToUse = isMarketTypeMarket
+          ? orderType === BUY
+            ? marketBuyProps
+            : marketSellProps
+          : orderType === BUY
+            ? limitBuyProps
+            : limitSellProps;
+
+        // @ts-expect-error // amount is defined
+        const res = await estimateFnToUse({
+          ...paramsToUse,
+          tezos: mavrykToolkit,
+        });
+
+        if (cancelled) return;
+
+        if (res.actionSuccess) {
+          const { totalSuggestedFeeMutez } = res.data;
+
+          const networkFeeTez = new BigNumber(totalSuggestedFeeMutez).dividedBy(
+            MILLION
+          );
+
+          setNetworkFee(networkFeeTez); // string for UI
+        }
+      } catch (e) {
+        if (!cancelled) setNetworkFee(ZERO);
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [
+    isMarketTypeMarket,
+    limitBuyProps,
+    limitSellProps,
+    mavrykToolkit,
+    marketBuyProps,
+    marketSellProps,
+    orderType,
+    total,
+  ]);
+
   // actual contract calls and their handlers ---------------
 
+  const popupRecommendedMarkets = useMemo(() => {
+    const visibleMarketSlugs = new Set(sortedMarketAddresses);
+
+    return marketsArr
+      .filter(
+        (market) =>
+          visibleMarketSlugs.has(market.slug) &&
+          !isCurrentPopupMarket(market, estate)
+      )
+      .slice(0, POPUP_RECOMMENDATIONS_LIMIT);
+  }, [estate, marketsArr, sortedMarketAddresses]);
+
+  const memoizedPopupProps: ContractActionPopupProps | undefined = useMemo(
+    () =>
+      popupRecommendedMarkets.length
+        ? {
+            key: "inProgressRwaAd",
+            props: { rwas: popupRecommendedMarkets },
+          }
+        : undefined,
+    [popupRecommendedMarkets]
+  );
+
+  const memoizedToastProps: ContractActionToastProps = useMemo(() => {
+    const action = orderType === BUY ? "bought" : "sold";
+    return {
+      success: {
+        title: `${activeMarket?.symbol} ${orderType === BUY ? "Buy" : "Sell"}`,
+        message: `Successfully ${action} ${activeMarket?.symbol}`,
+      },
+    };
+  }, [orderType, activeMarket?.symbol]);
+
   const { invokeAction: handleMarketBuy, status: buyStatus } =
-    useContractAction(buyBaseToken, marketBuyProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookBuy,
+      marketBuyProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
-    useContractAction(sellBaseToken, marketSellProps, memoizedSellPopupProps);
+    useContractAction(
+      orderbookSell,
+      marketSellProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
-    useContractAction(orderbookBuy, limitBuyProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookBuy,
+      limitBuyProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
-    useContractAction(orderbookSell, limitSellProps, memoizedBuyPopupProps);
+    useContractAction(
+      orderbookSell,
+      limitSellProps,
+      memoizedPopupProps,
+      memoizedToastProps
+    );
 
   // prop action to pass
   const buySellActionCb = useMemo(() => {
@@ -329,6 +509,29 @@ export const PopupContent: FC<{
     [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
   );
 
+  const toggleOrderBook = useCallback(() => {
+    setIsOrderBookOpen((prev) => !prev);
+  }, [setIsOrderBookOpen]);
+
+  const closeOrderBook = useCallback(() => {
+    setIsOrderBookOpen(false);
+  }, [setIsOrderBookOpen]);
+
+  const handleOrderBookPriceSelect = useCallback(
+    (price: number) => {
+      if (marketType !== "limit" || price <= 0) return;
+
+      setLimitPrice((currentPrice) => {
+        const nextPrice = new BigNumber(price);
+
+        return currentPrice?.eq(nextPrice) ? currentPrice : nextPrice;
+      });
+    },
+    [marketType]
+  );
+  const popupMainRef = useRef<HTMLDivElement>(null);
+  const [popupMainHeight, setPopupMainHeight] = useState<number>();
+
   const HeadlinePreviewSection = () => (
     <div className="flex items-center gap-3 font-medium">
       <div className="w-[76px] h-[57px] rounded-lg overflow-hidden">
@@ -341,24 +544,81 @@ export const PopupContent: FC<{
       <div className="flex flex-col gap-1 items-start">
         <h3 className="text-card-headline text-sand-900">{estate.name}</h3>
 
-        <span
-          className={clsx(
-            "px-2 py-[2px] rounded-[4px] text-body-xs  text-center",
-            isSecondaryEstate
-              ? "text-sand-800 bg-[#F6AFAFBF]"
-              : "text-yellow-950 bg-[#FFD38FBF]"
-          )}
-        >
-          {estate.assetDetails.propertyDetails.propertyType}
-        </span>
+        <div className="flex items-center gap-[8px]">
+          <EstateHeadlineTab
+            isSecondaryEstate={estate.assetDetails.type === "Secondary Market"}
+          />
+          <Text size="smallBody" weight="semibold">
+            APY {estate.assetDetails.APY}%
+          </Text>
+        </div>
       </div>
     </div>
   );
 
+  const shouldRenderOrderBook = isSecondaryEstate && activetabId !== CONFIRM;
+  const hasOpenOrderBook = shouldRenderOrderBook && isOrderBookOpen;
+  const continueButtonClassName = isOrderBookOpen
+    ? styles.hideContinueButtonMobile
+    : undefined;
+
+  useEffect(() => {
+    onOrderBookVisibilityChange?.(hasOpenOrderBook);
+  }, [hasOpenOrderBook, onOrderBookVisibilityChange]);
+
+  useLayoutEffect(() => {
+    const popupMainElement = popupMainRef.current;
+
+    if (!popupMainElement || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    const updatePopupMainHeight = () => {
+      setPopupMainHeight(popupMainElement.getBoundingClientRect().height);
+    };
+
+    updatePopupMainHeight();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updatePopupMainHeight();
+    });
+
+    resizeObserver.observe(popupMainElement);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [shouldRenderOrderBook]);
+
   return (
-    <div className="flex flex-col justify-between text-content flex-1 relative">
-      <>
-        <div className="flex-1 flex flex-col">
+    <div
+      className={clsx(styles.popupLayout, {
+        [styles.popupLayoutWithOrderBook]: hasOpenOrderBook,
+      })}
+    >
+      {shouldRenderOrderBook && (
+        <OrderBookPopup
+          baseTokenDecimals={baseTokenDecimals}
+          baseTokenSymbol={selectedAssetMetadata.symbol}
+          desktopHeight={popupMainHeight}
+          enabled={isSecondaryEstate}
+          isOpen={isOrderBookOpen}
+          onClose={closeOrderBook}
+          onPriceClick={
+            isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
+          }
+          quoteTokenDecimals={quoteTokenDecimals}
+          quoteTokenSymbol={quoteAssetmetadata.symbol}
+          referencePrice={tokenPrice.toNumber()}
+          rwaAddress={estate.token_address}
+        />
+      )}
+
+      <div
+        ref={popupMainRef}
+        className={clsx("flex-1 flex flex-col min-w-0", styles.popupMain)}
+      >
+        <div className="flex flex-col text-content flex-1 min-h-0 relative min-w-0 bg-white">
           <div className="flex items-center">
             {activetabId === CONFIRM ? (
               <div
@@ -395,15 +655,29 @@ export const PopupContent: FC<{
 
           {activetabId !== CONFIRM && isSecondaryEstate && (
             <>
-              <div className="mb-4">
-                <TabSwitcher tabs={tabs} activeTabId={activetabId} />
+              <div className="mb-3">
+                <OrderBookToggleButton
+                  isOpen={isOrderBookOpen}
+                  labels={ORDER_BOOK_TOGGLE_LABELS}
+                  onClick={toggleOrderBook}
+                />
+              </div>
+              <div className="mb-[8px]">
+                <TabSwitcherV2
+                  className={styles.tabsWrapper}
+                  tabs={marketTabs}
+                  tabClassName={styles.tab}
+                  activeTabId={marketType}
+                />
               </div>
               <div>
-                <div className="mb-4 text-base">
-                  <TabSwitcher
-                    tabs={marketTabs}
-                    activeTabId={marketType}
-                    variant="tertiary-buttons"
+                <div className="mb-3 text-base">
+                  <TabSwitcherV2
+                    className={styles.tabsWrapper}
+                    // @ts-expect-error // OrderType is string
+                    tabs={tabs}
+                    tabClassName={styles.tab}
+                    activeTabId={activetabId}
                   />
                 </div>
               </div>
@@ -427,7 +701,7 @@ export const PopupContent: FC<{
                       {orderType === BUY ? (
                         <Money
                           smallFractionFont={false}
-                          cryptoDecimals={selectedAssetMetadata?.decimals}
+                          cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
                             ? (amountB?.div(tokenPrice).toNumber() ?? 0)
@@ -465,27 +739,31 @@ export const PopupContent: FC<{
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}
                 actionType={activetabId}
+                continueButtonClassName={continueButtonClassName}
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
-                slippagePercentage={slippagePercentage}
-                setSlippagePercentage={setSlippagePercentage}
-                hasQuoteError={hasQuoteError}
+                tokenPrice={tokenPrice}
+                networkFee={networkFee}
               />
             ) : (
               <BuySellLimitScreen
                 limitPrice={limitPrice}
+                marketTokenPrice={tokenPrice}
                 setLimitPrice={setLimitPrice}
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}
                 actionType={activetabId}
+                continueButtonClassName={continueButtonClassName}
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
+                handleSlippageChange={handleSlippageChange}
+                networkFee={networkFee}
               />
             ))}
 
-          {activetabId === OTC && <OTCPopupContent estate={estate} />}
+          {/* {activetabId === OTC && <OTCPopupContent estate={estate} />} */}
           {activetabId === CONFIRM && (
             <BuySellConfirmationScreen
               actionType={orderType === BUY ? BUY : SELL}
@@ -494,84 +772,84 @@ export const PopupContent: FC<{
             />
           )}
         </div>
-      </>
+      </div>
     </div>
   );
 };
 
-export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
-  estate,
-}) => {
-  const [activeScreenId, setActiveScreenId] = useState<OTCScreenState>(OTC);
-  const [activeTabId, setActiveTabId] = useState<OTCTabType>(OTC_BUY);
+// export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
+//   estate,
+// }) => {
+//   const [activeScreenId, setActiveScreenId] = useState<OTCScreenState>(OTC);
+//   const [activeTabId, setActiveTabId] = useState<OTCTabType>(OTC_BUY);
 
-  const toggleBuyScreen = useCallback((id: OTCScreenState) => {
-    setActiveScreenId(id);
-  }, []);
+//   const toggleBuyScreen = useCallback((id: OTCScreenState) => {
+//     setActiveScreenId(id);
+//   }, []);
 
-  const toggleTabScreen = useCallback((id: OTCTabType) => {
-    setActiveTabId(id);
-  }, []);
+//   const toggleTabScreen = useCallback((id: OTCTabType) => {
+//     setActiveTabId(id);
+//   }, []);
 
-  // TODO take from buysell screen
-  const amount = 10;
-  const price = 45;
+//   // TODO take from buysell screen
+//   const amount = 10;
+//   const price = 45;
 
-  const tabs: TabType<OTCTabType>[] = useMemo(
-    () => [
-      {
-        id: OTC_BUY,
-        label: "OTC Buy",
-        handleClick: toggleTabScreen,
-      },
-      {
-        id: OTC_SELL,
-        label: "OTC Sell",
-        handleClick: toggleTabScreen,
-      },
-    ],
-    [toggleTabScreen]
-  );
-  return (
-    <div className="flex flex-col justify-between text-content h-full">
-      <>
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center">
-            {activeScreenId === CONFIRM && (
-              <button onClick={() => toggleBuyScreen("otc")}>
-                <ArrowLeftIcon className="size-6 mr-2" />
-              </button>
-            )}
-          </div>
+//   const tabs: TabType<OTCTabType>[] = useMemo(
+//     () => [
+//       {
+//         id: OTC_BUY,
+//         label: "OTC Buy",
+//         handleClick: toggleTabScreen,
+//       },
+//       {
+//         id: OTC_SELL,
+//         label: "OTC Sell",
+//         handleClick: toggleTabScreen,
+//       },
+//     ],
+//     [toggleTabScreen]
+//   );
+//   return (
+//     <div className="flex flex-col justify-between text-content h-full">
+//       <>
+//         <div className="flex-1 flex flex-col">
+//           <div className="flex items-center">
+//             {activeScreenId === CONFIRM && (
+//               <button onClick={() => toggleBuyScreen("otc")}>
+//                 <ArrowLeftIcon className="size-6 mr-2" />
+//               </button>
+//             )}
+//           </div>
 
-          {activeScreenId !== CONFIRM && (
-            <TabSwitcher
-              variant="secondary"
-              tabs={tabs}
-              activeTabId={activeTabId}
-              grow={true}
-            />
-          )}
+//           {activeScreenId !== CONFIRM && (
+//             <TabSwitcher
+//               variant="secondary"
+//               tabs={tabs}
+//               activeTabId={activeTabId}
+//               grow={true}
+//             />
+//           )}
 
-          {activeScreenId === OTC && (
-            <OTCBuySellScreen
-              symbol={estate.symbol}
-              estate={estate}
-              toggleScreen={toggleBuyScreen}
-              activeTabId={activeTabId}
-            />
-          )}
-          {activeScreenId === CONFIRM && (
-            <BuySellConfirmationScreen
-              estate={estate}
-              tokenPrice={price}
-              total={price * amount}
-              amount={amount}
-              actionType={activeTabId}
-            />
-          )}
-        </div>
-      </>
-    </div>
-  );
-};
+//           {/* {activeScreenId === OTC && (
+//             <OTCBuySellScreen
+//               symbol={estate.symbol}
+//               estate={estate}
+//               toggleScreen={toggleBuyScreen}
+//               activeTabId={activeTabId}
+//             />
+//           )} */}
+//           {activeScreenId === CONFIRM && (
+//             <BuySellConfirmationScreen
+//               estate={estate}
+//               tokenPrice={price}
+//               total={price * amount}
+//               amount={amount}
+//               actionType={activeTabId}
+//             />
+//           )}
+//         </div>
+//       </>
+//     </div>
+//   );
+// };

@@ -53,11 +53,16 @@ type AssetDropdownProps = {
 export const AssetDropdown: FC<AssetDropdownProps> = ({
   estate: estateData,
 }) => {
-  const { marketsArr } = useMarketsContext();
+  const { marketsArr, validBaseTokens } = useMarketsContext();
 
   const estates = useMemo(
-    () => marketsArr.filter((es) => es.assetDetails.type === SECONDARY_MARKET),
-    [marketsArr]
+    () =>
+      marketsArr.filter(
+        (estate) =>
+          estate.assetDetails.type === SECONDARY_MARKET &&
+          validBaseTokens[estate.token_address]
+      ),
+    [marketsArr, validBaseTokens]
   );
 
   // states ----------------------------------------------------------

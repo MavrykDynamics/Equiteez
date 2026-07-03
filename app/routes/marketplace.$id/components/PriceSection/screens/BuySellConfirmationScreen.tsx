@@ -129,7 +129,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
             control={control}
           />
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1">
               <span className="text-body-xs text-content w-[364px]">
                 Please enter your First and Last name initials (ex. JS)

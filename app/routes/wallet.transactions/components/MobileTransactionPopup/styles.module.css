@@ -1,0 +1,33 @@
+.popupWrapper:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+.popupWrapper {
+  padding: 0;
+  width: 100%;
+  height: 80%;
+  border: none;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+.orderCancelBtn {
+  font-size: 14px;
+  text-decoration: underline;
+  color: var(--color-green-700);
+  font-weight: 800;
+  cursor: pointer;
+}
+.line {
+  width: calc(100% - 32px);
+  height: 1px;
+  background: var(--color-dark-blue-200);
+  margin: 0 16px;
+}
+.submitBtn {
+  width: 100%;
+  padding: 13px 32px;
+}
+.submitBtn span {
+  font-size: var(--body-size);
+}

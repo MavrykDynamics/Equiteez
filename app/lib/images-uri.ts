@@ -4,7 +4,7 @@ type TcInfraMediaSize = "small" | "medium" | "large" | "raw";
 type ObjktMediaTail = "display" | "artifact" | "thumb288";
 
 const IPFS_PROTOCOL = "ipfs://";
-const IPFS_GATE = "https://cloudflare-ipfs.com/ipfs";
+const IPFS_GATE = "https://ipfs.io/ipfs";
 const MEDIA_HOST = "https://static.tcinfra.net/media";
 const DEFAULT_MEDIA_SIZE: TcInfraMediaSize = "small";
 const OBJKT_MEDIA_HOST = "https://assets.objkt.media/file/assets-003";
@@ -106,7 +106,7 @@ const buildObjktMediaUriForItemPath = (itemId: string, tail: ObjktMediaTail) =>
 const buildIpfsMediaUriByInfo = (
   { uri, ipfs: ipfsInfo }: MediaUriInfo,
   size: TcInfraMediaSize = DEFAULT_MEDIA_SIZE,
-  useMediaHost = true
+  useMediaHost = false
 ): string => {
   if (!uri) return "";
 

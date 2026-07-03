@@ -17,7 +17,7 @@ import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
-import { USER_KYC_STATUS_QUERY } from "../MarketsProvider/queries/user.query";
+import { USER_KYC_STATUS_QUERY } from "./queries/user.query";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 

@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .bg {
   width: 100%;
   height: 100%;
@@ -11,11 +13,37 @@
 .rowTopWrapper:hover .bg {
   transform: scale(1.2);
 }
+.rowTopWrapper {
+  cursor: pointer;
+  width: 100%;
+  min-width: 200px;
+}
 
 .topRowGrid {
   width: 100%;
-  margin: 0 auto;
+  margin-inline: auto;
+  padding-inline: 44px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+  overflow: auto hidden;
+  position: relative;
+  max-width: 1440px;
+  margin-bottom: 44px;
+}
+
+@media (--media-tablet-max) {
+  .topRowGrid {
+    padding-inline: 32px;
+  }
+  .topRowGrid {
+    margin-bottom: 24px;
+  }
+}
+
+@media (--media-phone) {
+  .topRowGrid {
+    max-width: 100%;
+    padding-inline: 16px;
+  }
 }

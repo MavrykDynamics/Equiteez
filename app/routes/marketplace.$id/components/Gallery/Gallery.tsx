@@ -6,6 +6,7 @@ import ImagePlaceholder from "app/icons/image.svg?react";
 import styles from "./gallery.module.css";
 import clsx from "clsx";
 import { Link } from "@remix-run/react";
+import classNames from "clsx";
 
 const IMAGES_PREVIEW_MAX = 5;
 
@@ -36,7 +37,7 @@ export const Gallery: FC<GalleryProps> = ({
   );
 
   return (
-    <section className="px-11 mb-16">
+    <section className={classNames(styles.wrapper, "mb-16")}>
       <div
         className={clsx(
           styles.gallery,

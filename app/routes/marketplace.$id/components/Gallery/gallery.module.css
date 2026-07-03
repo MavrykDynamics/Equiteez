@@ -1,3 +1,10 @@
+@import "../../../../styles/breakpoints.css";
+
+@media (--media-tablet-max) {
+  .wrapper {
+    display: none;
+  }
+}
 .gallery {
   display: grid;
   gap: 16px;

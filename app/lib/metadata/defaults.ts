@@ -1,4 +1,7 @@
 import { TokenMetadata, TokenStandardsEnum } from "./types";
+import { stablecoinContract } from "~/consts/contracts";
+import { toTokenSlug } from "~/lib/assets";
+import { Asset, FA2Token } from "~/lib/assets/types";
 
 export const MVRK_CONTRACT_ADDRESS = "mv2ZZZZZZZZZZZZZZZZZZZZZZZZZZZDXMF2d";
 export const MVRK_ASSET_SLUG = "mav";
@@ -10,6 +13,69 @@ export const MVRK_METADATA: TokenMetadata = {
   standard: TokenStandardsEnum.Mav,
   thumbnailUri: "ipfs://QmbHaFX2gyFEzdwp54vqtf7McL74BvT7r4pw6UVyfEdKhu",
   address: MVRK_CONTRACT_ADDRESS,
+  id: "0",
+};
+
+export const isMavSlug = (
+  asset: Asset | string
+): asset is typeof MVRK_ASSET_SLUG => asset === MVRK_ASSET_SLUG;
+export const isFA2Token = (asset: Asset): asset is FA2Token =>
+  isMavSlug(asset) ? false : typeof asset.id !== "undefined";
+
+type FallbackTokenMetadataParams = {
+  address: string;
+  decimals?: number;
+  id?: string | number;
+  name?: string;
+  standard?: TokenStandardsEnum;
+  symbol: string;
+  thumbnailUri?: string;
+};
+
+export const createFallbackTokenMetadata = ({
+  address,
+  decimals = 6,
+  id = "0",
+  name,
+  standard,
+  symbol,
+  thumbnailUri,
+}: FallbackTokenMetadataParams): TokenMetadata => ({
+  address,
+  decimals,
+  id: String(id),
+  name: name ?? symbol,
+  standard,
+  symbol,
+  thumbnailUri,
+});
+
+export const STABLECOIN_TOKEN_ID = "0";
+export const STABLECOIN_ASSET_SLUG = toTokenSlug(
+  stablecoinContract,
+  STABLECOIN_TOKEN_ID
+);
+
+export const STABLECOIN_METADATA: TokenMetadata = createFallbackTokenMetadata({
+  address: stablecoinContract,
+  decimals: 6,
+  id: STABLECOIN_TOKEN_ID,
+  name: "USDT",
+  standard: TokenStandardsEnum.Fa2,
+  symbol: "USDT",
+});
+
+export const MBG_CONTRACT_ADDRESS = "mbg2ZZZZZZZZZZZZZZZZZZZZZZZZZZDXMF11";
+export const MBG_ASSET_SLUG = toTokenSlug(MBG_CONTRACT_ADDRESS);
+
+export const MBG_METADATA: TokenMetadata = {
+  decimals: 6,
+  symbol: "MBG",
+  name: "MBG",
+  standard: TokenStandardsEnum.Mbg,
+  thumbnailUri:
+      "ipfs://bafkreiggfphjwug5y2uw2we6kfxkyvgqlvbxugnkq33dgslwqg27a6puem",
+  address: MBG_CONTRACT_ADDRESS,
   id: "0",
 };
 

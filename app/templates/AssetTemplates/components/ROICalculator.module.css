@@ -1,0 +1,57 @@
+.rangeInput {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+}
+
+.rangeInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ff8a3d;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(25, 25, 25, 0.04);
+  cursor: pointer;
+}
+
+.rangeInput::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ff8a3d;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(25, 25, 25, 0.04);
+  cursor: pointer;
+}
+
+.rangeInput::-moz-range-track {
+  height: 6px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+.chart :global(.apexcharts-canvas) {
+  margin: 0 auto;
+}
+
+.chart :global(.apexcharts-legend) {
+  justify-content: flex-end !important;
+}
+
+.chart :global(.apexcharts-legend-series) {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  margin: 0 12px 0 0 !important;
+}
+
+.chart :global(.apexcharts-legend-text) {
+  color: var(--color-sand-900) !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}

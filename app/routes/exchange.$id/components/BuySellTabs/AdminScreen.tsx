@@ -11,8 +11,13 @@ import { Button } from "~/lib/atoms/Button";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { toTokenSlug } from "~/lib/assets";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { createFallbackTokenMetadata } from "~/lib/metadata";
 
-const useAdminAction = (amount: number, tokenAddress: string) => {
+const useAdminAction = (
+  amount: number,
+  symbol: string,
+  tokenAddress: string
+) => {
   const {
     pickers: { pickDodoContractBasedOnToken, pickDodoContractQuoteToken },
   } = useMarketsContext();
@@ -20,8 +25,13 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
 
   const selectedAssetMetadata = useMemo(
-    () => tokensMetadata[slug],
-    [slug, tokensMetadata]
+    () =>
+      tokensMetadata[slug] ??
+      createFallbackTokenMetadata({
+        address: tokenAddress,
+        symbol,
+      }),
+    [slug, symbol, tokenAddress, tokensMetadata]
   );
   const depositProps = useMemo(
     () => ({
@@ -29,7 +39,7 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
       quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
       rwaTokenAddress: tokenAddress,
       tokensAmount: amount,
-      decimals: selectedAssetMetadata?.decimals,
+      decimals: selectedAssetMetadata.decimals,
     }),
     [
       tokenAddress,
@@ -50,13 +60,13 @@ const useAdminAction = (amount: number, tokenAddress: string) => {
     () => ({
       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
       tokensAmount: amount,
-      decimals: selectedAssetMetadata?.decimals,
+      decimals: selectedAssetMetadata.decimals,
     }),
     [
       pickDodoContractBasedOnToken,
       tokenAddress,
       amount,
-      selectedAssetMetadata?.decimals,
+      selectedAssetMetadata.decimals,
     ]
   );
 
@@ -96,7 +106,7 @@ export const AdminScreen: FC<{ symbol: string; tokenAddress: string }> = ({
     depositQuoteStatus,
     withdrawBaseStatus,
     withdrawQuoteStatus,
-  } = useAdminAction(Number(amount), tokenAddress);
+  } = useAdminAction(Number(amount), symbol, tokenAddress);
 
   return (
     <section>

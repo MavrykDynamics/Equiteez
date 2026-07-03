@@ -1,6 +1,8 @@
+@import "../../../../styles/breakpoints.css";
+
 .mapBlockNumber {
   position: absolute;
-  content: '';
+  content: "";
   z-index: 1;
   top: 50%;
   left: 50%;
@@ -9,4 +11,27 @@
   font-size: 24px;
   font-weight: 600;
   line-height: 28px;
+}
+.tabsWrapper {
+  flex-wrap: wrap;
+}
+.tabsContent {
+  margin-top: 44px;
+}
+
+@media (--media-tablet-max) {
+  .tabsWrapper {
+    gap: 8px;
+  }
+  .tabsContent {
+    margin-top: 24px;
+  }
+  .tabsContent p {
+    font-size: 14px;
+  }
+
+  .tabsWrapper button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ApolloQueryResult,
   DocumentNode,
@@ -12,7 +12,7 @@ import usePrevious from "~/lib/ui/hooks/usePrevious";
 import { isAbortError } from "~/errors/error";
 import { forcedUpdateProxy } from "../utils/observeForcedUpdate";
 
-const REFRESH_INTERVAL = 15_000; // 30 seconds
+const DEFAULT_REFRESH_INTERVAL = 15_000; // 15 seconds
 
 /**
  *
@@ -21,6 +21,7 @@ const REFRESH_INTERVAL = 15_000; // 30 seconds
  * @param refetchOptions – options for custom refetch logic
  *    @param refetchOptions -> @blocksDiff - load query with certain inverval of block difference (NOT USED)
  *    @param refetchOptions -> @refetchQueryVariables - fn that returns variables, if value is dynamic, or variables itself for query refetch
+ *    @param refetchOptions -> @refetchInterval - polling interval for automatic refetches
  *
  *
  * @returns returned default params from apollo's useQuery
@@ -40,6 +41,7 @@ export const useQueryWithRefetch = <
   refetchOptions?: {
     // unused var left for future changes related to the indexer lvl head
     blocksDiff?: number;
+    refetchInterval?: number;
     refetchQueryVariables?: (() => TVariables) | TVariables;
   }
 ) => {
@@ -60,8 +62,25 @@ export const useQueryWithRefetch = <
   const currentQueryVariables = queryOptions?.variables;
   const prevUserSkipValue = usePrevious(queryOptions?.skip);
   const currentUserSkipValue = queryOptions?.skip;
+  const onCompleted = queryOptions?.onCompleted;
+  const onError = queryOptions?.onError;
+  const currentVariablesKey = useMemo(
+    () => JSON.stringify(queryOptions?.variables ?? {}),
+    [queryOptions?.variables]
+  );
+  const [persistedData, setPersistedData] = useState<TData>();
+  const persistedDataVariablesKey = useRef<string | null>(null);
 
-  const { refetchQueryVariables } = refetchOptions ?? {};
+  const { refetchInterval = DEFAULT_REFRESH_INTERVAL, refetchQueryVariables } =
+    refetchOptions ?? {};
+
+  const storeData = useCallback(
+    (data: TData) => {
+      setPersistedData(data);
+      persistedDataVariablesKey.current = currentVariablesKey;
+    },
+    [currentVariablesKey]
+  );
 
   // Effect to reset isInitialQueryDone, on variables change
   useEffect(() => {
@@ -78,7 +97,12 @@ export const useQueryWithRefetch = <
       // if variables are different, we need to reset isInitialQueryDone, to load it's data, without waiting for refetch, same for skip
       if (isVarsChanged || isSkipChanged) setShouldRunUseQuery(true);
     }
-  }, [queryOptions?.skip, queryOptions.variables]);
+  }, [
+    currentQueryVariables,
+    currentUserSkipValue,
+    prevQueryVariables,
+    prevUserSkipValue,
+  ]);
 
   /**
    * completing 1st query fetch and getting callback to refetch this query later
@@ -95,14 +119,16 @@ export const useQueryWithRefetch = <
       currentUserSkipValue,
     onCompleted: (data) => {
       if (!data) return;
+      storeData(data);
       setShouldRunUseQuery(false);
       isInitialQueryDone.current = true;
 
-      queryOptions?.onCompleted?.(data);
+      onCompleted?.(data);
     },
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
   });
+  const { refetch } = queryResult;
 
   // callback to refetch query on interval or forced update
   const refetchQuery = useCallback(
@@ -124,7 +150,7 @@ export const useQueryWithRefetch = <
 
         // refetch data logic
         if (typeof source === "boolean") {
-          refetchData = await queryResult.refetch(variables);
+          refetchData = await refetch(variables);
 
           // reset proxy flag
           forcedUpdateProxy.hasForcedUpdate = false;
@@ -135,8 +161,11 @@ export const useQueryWithRefetch = <
           if (process.env.REACT_APP_ENV === "dev")
             console.log(`[${source}] Refetched`, { refetchData, queryName });
 
-          if (refetchData.data) queryOptions?.onCompleted?.(refetchData.data);
-          if (refetchData.error) queryOptions?.onError?.(refetchData.error);
+          if (refetchData.data) {
+            storeData(refetchData.data);
+            onCompleted?.(refetchData.data);
+          }
+          if (refetchData.error) onError?.(refetchData.error);
         }
       } catch (e) {
         if (!isAbortError(e)) console.error(`[${source}] refetch error:`, e);
@@ -144,7 +173,7 @@ export const useQueryWithRefetch = <
         isRefetching.current = false;
       }
     },
-    [refetchQueryVariables, queryOptions?.onCompleted]
+    [onCompleted, onError, queryName, refetch, refetchQueryVariables, storeData]
   );
 
   // effect to run refetch query when forcedUpdateProxy has been changed to true
@@ -181,7 +210,7 @@ export const useQueryWithRefetch = <
       ) {
         refetchId.current = setInterval(() => {
           refetchQuery(true);
-        }, REFRESH_INTERVAL);
+        }, refetchInterval);
       }
     };
 
@@ -195,7 +224,14 @@ export const useQueryWithRefetch = <
         refetchId.current = null;
       }
     };
-  }, [refetchQuery, currentUserSkipValue]);
+  }, [refetchInterval, refetchQuery, currentUserSkipValue]);
 
-  return queryResult;
+  return {
+    ...queryResult,
+    data:
+      currentUserSkipValue ||
+      persistedDataVariablesKey.current !== currentVariablesKey
+        ? queryResult.data
+        : queryResult.data ?? persistedData,
+  };
 };

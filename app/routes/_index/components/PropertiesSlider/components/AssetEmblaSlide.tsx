@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { FC, useMemo } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { getTokenAmountFromLiquidity } from "~/providers/Dexprovider/utils";
 import {
   PrimaryEstate,
   SecondaryEstate,
@@ -26,17 +25,16 @@ export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
   idx,
   assetsArrLength,
 }) => {
-  const { dodoMav, dodoStorages } = useDexContext();
+  const { orderbookStorages } = useDexContext();
   const navigate = useNavigate();
 
   const pricePerToken = useMemo(
-    () => atomsToTokens(dodoMav[estate.slug], estate.decimals) ?? 0,
-    [dodoMav, estate.decimals, estate.slug]
-  );
-
-  const tokensAmount = getTokenAmountFromLiquidity(
-    dodoStorages[estate.slug],
-    pricePerToken
+    () =>
+      atomsToTokens(
+        orderbookStorages[estate.slug]?.lowestSellPrice,
+        estate.decimals
+      ) ?? 0,
+    [estate.decimals, estate.slug, orderbookStorages]
   );
 
   const handleSlideClick = (id: string, isLastSlide: boolean) => {
@@ -60,7 +58,7 @@ export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
         title={estate.name}
         price={pricePerToken.toNumber()}
         annual={"0.00"}
-        tokensAvailable={tokensAmount.toNumber()}
+        tokensAvailable={0}
       />
     </div>
   );

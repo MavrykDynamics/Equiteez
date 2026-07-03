@@ -1,0 +1,31 @@
+.flag {
+  height: 29px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  padding: 4px 8px;
+  gap: 8px;
+  display: flex;
+  align-items: center;
+}
+.new {
+  background: linear-gradient(270deg, #2b75eb 0%, #81abef 100%);
+}
+.justLaunched {
+  background: linear-gradient(270deg, #fac821 0%, #ffe89b 100%);
+}
+.trending {
+  background: linear-gradient(90deg, #ff9e4f 0%, #ff7300 100%);
+}
+.highYield {
+  background: linear-gradient(90deg, #78d7ad 0%, #11bd71 100%);
+}
+.soldOut {
+  background: linear-gradient(270deg, #5d3bbd 0%, #8671bf 100%);
+}
+.MBG {
+  background: linear-gradient(90deg, #111b3f 0%, #070d27 100%);
+  border: 1px solid #fcc678;
+}
+.comingSoon {
+  background: linear-gradient(270deg, #2daf9f 0%, #82fff0 100%);
+}

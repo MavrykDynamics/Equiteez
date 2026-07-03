@@ -1,0 +1,24 @@
+.dropdownIcon {
+  display: none;
+}
+.dropdownWrapperActive {
+}
+.dropdownBodyContent {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 8px;
+}
+.dropdownBodyContentItem {
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--color-grey-100);
+}
+.dropdownBodyContentItem:hover {
+  border: 1px solid var(--color-br-green-50);
+}

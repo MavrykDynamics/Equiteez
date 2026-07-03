@@ -7,15 +7,17 @@ import DocBg from "app/a11y/DocBg";
 // layout components
 import { Header } from "./Header/Header";
 import { Footer } from "./Footer/Footer";
-import { Container } from "~/lib/atoms/Container";
+import { Container } from "~/lib/atoms/Container/Container";
 import { Banner } from "./Banner/Banner";
 
 import bannerContent from "app/mocks/banner.json";
+import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 
 type PageLayoutProps = {
   bg?: string;
   includeContainer?: boolean;
   includeFooter?: boolean;
+  className?: string;
 } & PropsWithChildren;
 
 /**
@@ -30,24 +32,32 @@ const PageLayout: FC<PageLayoutProps> = ({
   bg = "bg-background",
   includeContainer = true,
   includeFooter = true,
+  className,
 }) => {
   return (
-    <div className={clsx("min-h-screen flex flex-col")}>
-      <DocBg bgClassName={clsx(bg)} />
+    <FiltersProvider>
+      <div className={clsx("min-h-screen flex flex-col")}>
+        <DocBg bgClassName={clsx(bg)} />
 
-      <div className={clsx("relative flex flex-col flex-1")}>
-        <Header />
-        <Banner contantArr={bannerContent} />
-        {includeContainer ? (
-          <div className="flex-1">
-            <Container>{children}</Container>
-          </div>
-        ) : (
-          children
-        )}
-        {includeFooter && <Footer />}
+        <div
+          className={clsx(
+            "relative flex flex-col flex-1 pb-[66px] md:pb-0",
+            className
+          )}
+        >
+          <Header />
+          <Banner contantArr={bannerContent} />
+          {includeContainer ? (
+            <div className="flex-1">
+              <Container>{children}</Container>
+            </div>
+          ) : (
+            children
+          )}
+          {includeFooter && <Footer />}
+        </div>
       </div>
-    </div>
+    </FiltersProvider>
   );
 };
 

@@ -1,0 +1,13 @@
+.assetWrapper {
+    background: var(--color-neutral-light);
+    padding: 4px 10px 4px 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+}
+.assetWrapperSmall {
+    gap: 4px;
+    padding: 0;
+    background: transparent;
+}

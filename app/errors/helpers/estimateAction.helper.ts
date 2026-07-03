@@ -5,14 +5,20 @@ import {
   MavrykToolkit,
   TransferParams,
   Wallet,
+  WalletOperationBatch,
 } from "@mavrykdynamics/taquito";
 
-import { getContractErrorMessage } from "./walletError.helper";
+import {
+  estimateBatchOperation,
+  getContractErrorMessage,
+} from "./walletError.helper";
 import { checkWhetherWalletAbortError, WalletOperationError } from "../error";
 import {
   ActionErrorReturnType,
   ActionSuccessReturnType,
 } from "~/contracts/actions.type";
+import { EstimatedBatchCall, WalletErrorPayload } from "../error.type";
+import { BatchOperationKindType } from "~/contracts/types";
 
 type EstimationResultParams = {
   callback?: () => void;
@@ -62,23 +68,51 @@ export async function getEstimationResult(
   }
 }
 
+type EstimationResultSuccess = {
+  actionSuccess: true;
+  data: EstimatedBatchCall;
+  error: null;
+};
+
+type EstimationResultError = {
+  actionSuccess: false;
+  data: null;
+  error: WalletErrorPayload | string;
+};
+
+type EstimationResult = EstimationResultSuccess | EstimationResultError;
+
 export async function getEstimationBatchResult(
-  tezos: MavrykToolkit,
-  batchArr: (TransferParams & { kind: OpKind.TRANSACTION })[],
-  cb?: () => void
+  mavryk: MavrykToolkit,
+  batchArr: (TransferParams & { kind: OpKind.TRANSACTION })[]
+): Promise<EstimationResult> {
+  const estimateBatchOp = await estimateBatchOperation(mavryk, batchArr);
+
+  if (estimateBatchOp.error) {
+    return {
+      actionSuccess: false,
+      error: estimateBatchOp.error,
+      data: null,
+    };
+  }
+
+  return {
+    actionSuccess: true,
+    data: estimateBatchOp,
+    error: null,
+  };
+}
+
+// Call the actual contract batch operation
+export async function sendContractBatchOperation(
+  mavryk: MavrykToolkit,
+  batchArr: BatchOperationKindType
 ) {
-  // const estimateBatchOp = await estimateBatchOperation(batchArr)
-
-  // if (estimateBatchOp.error) {
-  //   return { actionSuccess: false, error: estimateBatchOp.error }
-  // }
   try {
-    const operation = await tezos.wallet.batch(batchArr).send();
-
-    cb?.();
-
-    return { actionSuccess: true, operation };
+    const batchOp = await mavryk.wallet.batch(batchArr).send();
+    await batchOp.confirmation();
   } catch (e) {
-    return handleErrorWhenEstimationLogicIsDisabled(e);
+    console.error("Error during executing operation");
+    throw e;
   }
 }

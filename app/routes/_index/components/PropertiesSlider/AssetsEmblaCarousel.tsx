@@ -17,6 +17,7 @@ type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
   childPosition: "before" | "after";
   nextBtnDisabled: boolean;
+  showAll?: boolean;
   emblaRef: EmblaViewportRefType;
 } & PropsWithChildren;
 
@@ -27,17 +28,19 @@ const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
     slides,
     childPosition = "before",
     children,
+    showAll,
   } = props;
 
   // last estate slide data
   const lastSlide = slides[slides.length - 1];
+  const slidesToShow = showAll ? slides : slides.slice(0, -1);
 
   return (
     <section className={styles.embla}>
       {childPosition === "before" && children}
       <div className={styles.embla__viewport} ref={emblaRef}>
         <div className={styles.embla__container}>
-          {slides.slice(0, -1).map((estate, idx) => (
+          {slidesToShow.map((estate, idx) => (
             <AssetEmblaSlide
               key={estate.token_address}
               estate={estate}
@@ -46,7 +49,7 @@ const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
               assetsArrLength={slides.length}
             />
           ))}
-          {lastSlide && <AssetEmblaLastSlide estate={lastSlide} />}
+          {lastSlide && !showAll && <AssetEmblaLastSlide estate={lastSlide} />}
         </div>
       </div>
 

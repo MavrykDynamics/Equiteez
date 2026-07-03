@@ -1,0 +1,86 @@
+@import "../../../../styles/breakpoints.css";
+
+.walletSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 224px;
+}
+
+.walletSidebarItem {
+  transition: background-color 150ms linear;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.walletSidebarItem .iconWrapper svg {
+  color: var(--color-light-blue-100);
+}
+.walletSidebarItemActive,
+.walletSidebarItem:hover {
+  background-color: var(--color-neutral-light);
+}
+
+.walletSidebarItemActive .iconWrapper svg,
+.walletSidebarItem:hover .iconWrapper svg {
+  color: var(--color-orange);
+}
+
+.sidebarItemContent {
+  display: flex;
+  flex-direction: column;
+}
+.sidebarItemContentSubtext {
+  font-size: 10px;
+  color: var(--color-sand-700);
+}
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iconWrapper svg {
+  transition: background-color 150ms linear;
+}
+
+.walletSidebarList {
+  display: block;
+  @media (--media-tablet-max) {
+    display: none;
+  }
+}
+.walletSidebarListMobile {
+  display: none;
+  @media (--media-tablet-max) {
+    display: block;
+  }
+}
+.selectWrapper {
+  border: 1px solid var(--color-grey-100);
+  padding: 12px 16px;
+  background: var(--color-neutral-light);
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+.selectWrapper:hover {
+  border: 1px solid var(--color-br-green-50);
+}
+.selectWrapperActive {
+  border: 1px solid var(--color-br-green-200);
+}
+.selectItem {
+  height: 58px;
+  padding: 0 16px;
+  cursor: pointer;
+  display: flex;
+  transition: all 0.2s ease;
+  align-items: center;
+  gap: 12px;
+}
+.selectItem:hover {
+  background: var(--color-grey-100);
+}
+.selectIcon {
+  margin-left: auto;
+  width: 16px;
+}

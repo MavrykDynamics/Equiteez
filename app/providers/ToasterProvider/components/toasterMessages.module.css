@@ -8,6 +8,7 @@
   z-index: 200; /* to show toasts on the front side when modal is opened*/
   width: 400px;
   background: transparent;
+  z-index: 99999;
 }
 
 @keyframes revealFromRight {

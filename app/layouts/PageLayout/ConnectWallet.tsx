@@ -1,15 +1,20 @@
-import clsx from 'clsx';
-import { Button } from '~/lib/atoms/Button';
-import { HashShortView } from '~/lib/atoms/HashShortView';
+import clsx from "clsx";
+import { Button } from "~/lib/atoms/Button";
+import { HashShortView } from "~/lib/atoms/HashShortView";
 import {
   ClickableDropdownArea,
   CustomDropdown,
   DropdownBodyContent,
   DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import IdentIcon from '~/lib/organisms/IdenIcon';
-import { useUserContext } from '~/providers/UserProvider/user.provider';
-import { CustomSuspense } from '~/templates/CustomSuspense';
+} from "~/lib/organisms/CustomDropdown/CustomDropdown";
+import IdentIcon from "~/lib/organisms/IdenIcon";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { CustomSuspense } from "~/templates/CustomSuspense";
+import { Link } from "@remix-run/react";
+import { ROUTES } from "~/consts/routes";
+import styles from "./ConnectWallet.module.css";
+import classNames from "clsx";
+import { Icon } from "~/lib/atoms/Icon";
 
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
@@ -23,20 +28,27 @@ export const ConnectWallet = () => {
             <ClickableDropdownArea>
               <DropdownFaceContent
                 className={clsx(
-                  'py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ',
-                  'hover:bg-dark-green-opacity hover:border-dark-green-500',
-                  'focus:border-dark-green-500 focus:bg-transparent',
-                  'transition duration-250 ease-in-out'
+                  "p-[4px] pr-[8px] border-2 border-dark-green-50 rounded-4xl ",
+                  "hover:bg-dark-green-opacity hover:border-dark-green-500",
+                  "focus:border-dark-green-500 focus:bg-transparent",
+                  "transition duration-250 ease-in-out",
+                  styles.dropdown
                 )}
               >
                 <div className="flex items-center">
                   <IdentIcon
                     type="bottts"
                     size={32}
-                    className="mr-2"
+                    className={classNames(styles.identIcon, "mr-2")}
                     hash={userAddress}
                   />
-                  <div className="text-caption-regular text-content">
+                  <Icon icon="account" className={styles.accountIcon} />
+                  <div
+                    className={classNames(
+                      styles.hashShortView,
+                      "text-caption-regular text-content font-semibold"
+                    )}
+                  >
                     <HashShortView hash={userAddress} />
                   </div>
                 </div>
@@ -47,6 +59,12 @@ export const ConnectWallet = () => {
               topMargin={16}
               customWidth={203}
             >
+              <Link
+                to={ROUTES.wallet}
+                className="bg-background block text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
+              >
+                Profile dashboard
+              </Link>
               <button
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                 onClick={changeUser}
@@ -64,9 +82,9 @@ export const ConnectWallet = () => {
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          <Button size="small-plus" className="px-8 py-[10px]" disabled>
-            <span className="text-body-xs leading-5  font-bold">Sign Up</span>
-          </Button>
+          {/*<Button size="small-plus" className="px-8 py-[10px]" disabled>*/}
+          {/*  <span className="text-body-xs leading-5  font-bold">Sign Up</span>*/}
+          {/*</Button>*/}
           <Button
             variant="outline"
             size="outline"

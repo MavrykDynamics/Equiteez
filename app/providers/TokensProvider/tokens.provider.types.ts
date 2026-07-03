@@ -9,4 +9,8 @@ export type TokensProviderCtx = {
   tokens: TokenType[];
   tokensMetadata: StringRecord<TokenMetadata>;
   isLoading: boolean;
+  upsertTokensData: (
+    nextTokens: TokenType[],
+    nextTokensMetadata: StringRecord<TokenMetadata>
+  ) => void;
 };

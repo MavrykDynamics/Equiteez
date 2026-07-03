@@ -8,9 +8,24 @@ type RwaTokenType = {
   tokenId: string;
 };
 
+const withIndexerBypass = (url: string) => {
+  const bypassSecret = process.env.INDEXER_ALLOWLIST_BYPASS_SECRET;
+
+  if (!bypassSecret) {
+    return url;
+  }
+
+  const indexerUrl = new URL(url);
+  indexerUrl.searchParams.set("bypass", bypassSecret);
+
+  return indexerUrl.toString();
+};
+
 export const fetchTokensData = async () => {
   try {
-    const { data } = await api<RwaTokenType[]>(`${process.env.API_URL}/tokens`);
+    const { data } = await api<RwaTokenType[]>(
+      withIndexerBypass(`${process.env.API_URL}/tokens`)
+    );
 
     const tokens: TokenType[] = data.map((t) => ({
       contract: t.contract.address,
@@ -44,7 +59,7 @@ export const fetchTokensMetadata = async (
 
     const { data: apiData } = await api<{
       data: { token_metadata: { contract: string; metadata: TokenMetadata }[] };
-    }>(process.env.TOKENS_METADATA_API, {
+    }>(withIndexerBypass(process.env.TOKENS_METADATA_API), {
       body: JSON.stringify(queryBody),
       method: "POST",
     });
@@ -64,9 +79,19 @@ export const fetchTokensMetadata = async (
 
     const parsedData = token_metadata.reduce<StringRecord<TokenMetadata>>(
       (acc, meta) => {
-        acc[meta.contract.concat(`_${tokensRecord[meta.contract].id}`)] = {
+        const token = tokensRecord[meta.contract];
+
+        if (!token) {
+          return acc;
+        }
+
+        const decimals = Number(meta.metadata?.decimals);
+
+        acc[meta.contract.concat(`_${token.id}`)] = {
           ...meta.metadata,
-          decimals: Number(meta.metadata?.decimals) ?? undefined,
+          address: meta.contract,
+          id: token.id,
+          decimals: Number.isFinite(decimals) ? decimals : 0,
         };
         return acc;
       },

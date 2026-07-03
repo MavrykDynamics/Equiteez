@@ -1,12 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "~/lib/atoms/Button";
 
-import {
-  ClickableExpanderArea,
-  CustomExpander,
-  ExpanderBodyContent,
-  ExpanderFaceContent,
-} from "~/lib/organisms/CustomExpander/CustomExpander";
+import { Button } from "~/lib/atoms/Button";
 
 import * as gtag from "app/utils/gtags.client";
 
@@ -18,52 +12,62 @@ import {
   SellScreenState,
   OrderType,
 } from "../consts";
-import Money from "~/lib/atoms/Money";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { stablecoinContract } from "~/consts/contracts";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { toTokenSlug } from "~/lib/assets";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
-import {
-  calculateEstFee,
-  calculateMinReceived,
-  getTokenAmountFromLiquidity,
-} from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
-import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
-import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import { FeesCard } from "../components/FeesCard/FeesCard";
+import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
+import { ZERO } from "~/lib/utils/numbers";
+import { AssetView } from "~/templates/BalanceInput/AssetView";
+import { PercentBlock } from "~/routes/marketplace.$id/components/PriceSection/components/PercentBlock/PercentBlock";
+import Money from "~/lib/atoms/Money";
+import { atomsToTokens } from "~/lib/utils/formaters";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
+  continueButtonClassName?: string;
   toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
+  marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
+  networkFee: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  handleSlippageChange: (value: number) => void;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   estate,
   toggleScreen,
   actionType,
+  continueButtonClassName,
   amount,
   total,
+  networkFee,
   limitPrice,
   setAmount,
   setLimitPrice,
+  marketTokenPrice,
+  handleSlippageChange,
 }) => {
-  const { symbol, token_address, slug } = estate;
-  const { dodoTokenPair, dodoStorages, dodoMav } = useDexContext();
-  const { tokensMetadata } = useTokensContext();
+  const { token_address, slug, assetDetails } = estate;
+
+  const { orderbookStorages } = useDexContext();
+  const {
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenMetadata: stableCoinMetadata,
+    quoteTokenSlug,
+  } = useOrderbookTokenMetadata(estate);
 
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);
@@ -76,24 +80,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const { userTokensBalances, isKyced } = useUserContext();
 
-  const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
-  const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const marketTokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
-    [dodoMav, slug, selectedAssetMetadata.decimals]
-  );
-
-  const tokenPrice = useMemo(
-    () => limitPrice || new BigNumber(0),
-    [limitPrice]
-  );
-
-  const baseTokenAmount = useMemo(
-    () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
-    [dodoStorages, slug, tokenPrice]
-  );
-
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
     [userTokensBalances]
@@ -105,6 +91,10 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
+  const marketPriceDifference = useMemo(
+    () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
+    [limitPrice, marketTokenPrice]
+  );
   const hasTotalError = useMemo(
     () => total && total.gt(usdBalance),
     [total, usdBalance]
@@ -113,6 +103,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const hasSellTokensBalanceError = useMemo(
     () => !isBuyAction && amount && amount.gt(tokenBalance),
     [amount, isBuyAction, tokenBalance]
+  );
+
+  const hasBuyTokensBalanceError = useMemo(
+    () => isBuyAction && limitPrice && limitPrice.gt(usdBalance),
+    [limitPrice, isBuyAction, usdBalance]
   );
 
   const handleContinueClick = useCallback(() => {
@@ -132,88 +127,72 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     [setAmount]
   );
 
-  const input1Props = useMemo(() => {
-    return {
+  const { input1Props, input2Props } = useMemo(() => {
+    const buyProps = {
       amount: limitPrice,
-      selectedAssetSlug: dodoTokenPair[slug],
+      selectedAssetSlug: quoteTokenSlug,
       selectedAssetMetadata: stableCoinMetadata,
-      label: "Price",
+      onChange: setLimitPrice,
+      cryptoValue: usdBalance,
+      errorCaption: hasBuyTokensBalanceError
+        ? "The amount entered exceeds your available balance."
+        : undefined,
     };
-  }, [dodoTokenPair, limitPrice, slug, stableCoinMetadata]);
 
-  const input2Props = useMemo(() => {
-    return {
-      amount,
+    const sellProps = {
+      amount: amount,
       selectedAssetSlug: slug,
       selectedAssetMetadata: selectedAssetMetadata,
-      label: "Amount",
+      onChange: handleOutputChange,
+      cryptoValue: tokenBalance,
+      errorCaption: hasSellTokensBalanceError
+        ? "The amount entered exceeds your available balance."
+        : undefined,
     };
-  }, [selectedAssetMetadata, slug, amount]);
+
+    return isBuyAction
+      ? { input1Props: buyProps, input2Props: sellProps }
+      : { input1Props: sellProps, input2Props: buyProps };
+  }, [
+    amount,
+    handleOutputChange,
+    hasBuyTokensBalanceError,
+    hasSellTokensBalanceError,
+    isBuyAction,
+    limitPrice,
+    quoteTokenSlug,
+    selectedAssetMetadata,
+    setLimitPrice,
+    slug,
+    stableCoinMetadata,
+    tokenBalance,
+    usdBalance,
+  ]);
 
   const balanceTotal = total;
 
-  const minReceived = useMemo(() => {
-    if (!total) return 0;
-    const tokensAmount = !isBuyAction ? input1Props.amount : input2Props.amount;
+  const { finalTotalValue, txnFee } = useMemo(() => {
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      total: 0,
+      txnFee: 0,
+    };
 
-    if (!tokensAmount) return "0";
+    const fee = isBuyAction
+      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
+      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
 
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-    return calculateMinReceived(
-      tokensAmount,
-      tokenPrice,
-      "0",
-      decimals,
-      isBuyAction
-    );
+    return {
+      finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
+      txnFee: fee,
+    };
   }, [
-    total,
     isBuyAction,
-    input1Props.amount,
-    input2Props.amount,
-    selectedAssetMetadata.decimals,
-    stableCoinMetadata.decimals,
-    tokenPrice,
-  ]);
-
-  const estFee = useMemo(() => {
-    const {
-      config: { lpFee, maintainerFee, feeDecimals },
-    } = dodoStorages[slug];
-
-    const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
-
-    const result = calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      maintainerFee,
-      Number(feeDecimals),
-      "0",
-      isBuyAction
-    );
-
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-
-    return downgradeDecimals(result, decimals);
-  }, [
-    dodoStorages,
-    input1Props.amount,
-    input2Props.amount,
-    isBuyAction,
-    selectedAssetMetadata.decimals,
+    networkFee,
+    orderbookStorages,
     slug,
     stableCoinMetadata.decimals,
-    tokenPrice,
+    total,
   ]);
-
-  const symbolToShow = isBuyAction
-    ? symbol
-    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
 
   const isBtnDisabled =
     hasTotalError ||
@@ -222,16 +201,41 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !limitPrice ||
     limitPrice?.isZero() ||
     amount?.isZero();
+  const priceDifferencePrefix = marketPriceDifference?.gt(0)
+    ? "+"
+    : marketPriceDifference?.lt(0)
+      ? "-"
+      : "";
+  const priceDifferenceTextColorClassName = marketPriceDifference?.gt(0)
+    ? "text-green-500"
+    : marketPriceDifference?.lt(0)
+      ? "text-red-500"
+      : "text-sand-600";
 
   useEffect(() => {
     if (selectedPercentage != null) {
-      const percentage = new BigNumber(selectedPercentage);
-      const newAmount = new BigNumber(tokenBalance)
-        .multipliedBy(percentage)
-        .dividedBy(100);
-      setAmount(newAmount);
+      if (isBuyAction) {
+        const percentage = new BigNumber(selectedPercentage);
+        const newAmount = new BigNumber(usdBalance)
+          .multipliedBy(percentage)
+          .dividedBy(100);
+        setLimitPrice(newAmount);
+      } else {
+        const percentage = new BigNumber(selectedPercentage);
+        const newAmount = new BigNumber(tokenBalance)
+          .multipliedBy(percentage)
+          .dividedBy(100);
+        setAmount(newAmount);
+      }
     }
-  }, [selectedPercentage, setAmount, tokenBalance]);
+  }, [
+    isBuyAction,
+    selectedPercentage,
+    setAmount,
+    setLimitPrice,
+    tokenBalance,
+    usdBalance,
+  ]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -241,45 +245,37 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             <BalanceInputWithTotal
               ref={ref1}
               onNext={() => ref2.current?.focus()}
-              onChange={(data) => setLimitPrice(data)}
               amountInputDisabled={false}
-              errorCaption={
-                hasTotalError
-                  ? "The amount entered exceeds your available balance."
-                  : undefined
-              }
               {...input1Props}
+              label="I Want To Allocate"
               balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata?.decimals}
-              cryptoDecimals={stableCoinMetadata?.decimals}
-              cryptoValue={usdBalance}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
             />
 
             <BalanceInputWithTotal
               ref={ref2}
               onNext={() => ref3.current?.focus()}
               onPrev={() => ref1.current?.focus()}
-              onChange={handleOutputChange}
               amountInputDisabled={false}
-              errorCaption={
-                hasSellTokensBalanceError
-                  ? "The amount entered exceeds your available balance."
-                  : undefined
+              additionalBottomRightBlock={
+                <div className="text-xs text-sand-600 font-semibold">
+                  Est. Received
+                </div>
               }
               {...input2Props}
+              label="To Buy"
               balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata?.decimals}
-              cryptoDecimals={stableCoinMetadata?.decimals}
-              cryptoValue={tokenBalance}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
             />
 
             {/* ------------------------------------------------------------------------------------------- */}
             <div>
-              <div className="my-4">
+              <div className="my-3">
                 <ESnakeblock
                   selectedOption={selectedPercentage}
                   setSelectedOption={setSelectedPercentage}
-                  size="large"
                 />
               </div>
 
@@ -287,54 +283,60 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 ref={ref3}
                 onPrev={() => ref2.current?.focus()}
                 amountInputDisabled
-                label="Total"
                 amount={balanceTotal}
-                selectedAssetSlug={dodoTokenPair[slug]}
+                additionalTopRightBlock=" "
+                additionalBottomRightBlock={
+                  <PercentBlock
+                    isBuyAction={isBuyAction}
+                    handleSlippageChange={handleSlippageChange}
+                  />
+                }
+                label={
+                  <div className="flex items-center gap-[4px] text-xs text-sand-600">
+                    Take Profit when{" "}
+                    <AssetView selectedAssetSlug={slug} isSmallView />
+                  </div>
+                }
+                additionalBottomLeftBlock={
+                  <div className="flex items-center gap-2 text-xs text-sand-600">
+                    <span>
+                      Market{" "}
+                      <span className="font-semibold underline">
+                        $<Money>{marketTokenPrice}</Money>
+                      </span>
+                    </span>
+                    {marketPriceDifference && (
+                      <span className={`font-semibold ${priceDifferenceTextColorClassName}`}>
+                        Diff {priceDifferencePrefix}$
+                        <Money>{marketPriceDifference.abs()}</Money>
+                      </span>
+                    )}
+                  </div>
+                }
+                selectedAssetSlug={quoteTokenSlug}
                 selectedAssetMetadata={stableCoinMetadata}
                 balanceTotal={balanceTotal}
-                decimals={selectedAssetMetadata?.decimals}
-                cryptoDecimals={stableCoinMetadata?.decimals}
+                decimals={selectedAssetMetadata.decimals}
+                cryptoDecimals={stableCoinMetadata.decimals}
                 cryptoValue={balanceTotal?.toNumber() || 0}
               />
             </div>
 
-            <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
-              <CustomExpander>
-                <ClickableExpanderArea>
-                  <ExpanderFaceContent>
-                    <div className="text-body-xs font-semibold text-content flex items-center w-full">
-                      1 {symbol} =&nbsp;
-                      <div>
-                        <span className="-mr-[1px]">$</span>
-                        <Money fiat>{marketTokenPrice || "0"}</Money>
-                      </div>
-                    </div>
-                  </ExpanderFaceContent>
-                </ClickableExpanderArea>
-                <ExpanderBodyContent>
-                  <div className="mt-4 flex flex-col">
-                    <div className="mt-2 text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">
-                        Min Received
-                      </div>
-                      <div>
-                        <Money smallFractionFont={false} shortened>
-                          {minReceived}
-                        </Money>
-                        &nbsp;{symbolToShow}
-                      </div>
-                    </div>
+            <FeesCard
+              txnFees={txnFee}
+              totalAmount={finalTotalValue}
+              networkfee={networkFee}
+            />
 
-                    <div className="mt-[10px] text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">Est. Fee</div>
-                      <div>
-                        {estFee}
-                        &nbsp;{symbolToShow}
-                      </div>
-                    </div>
-                  </div>
-                </ExpanderBodyContent>
-              </CustomExpander>
+            <div className="mt-3">
+              <ProjectionCard
+                apy={assetDetails.APY}
+                monthkyReturns={assetDetails.financials.expectedIncome.income}
+                yearlyReturns={
+                  assetDetails.financials.expectedIncome.incomePerTokenYearly
+                }
+                gradient={isBuyAction ? "blue" : "orange"}
+              />
             </div>
           </div>
         </div>
@@ -353,19 +355,13 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           </Alert>
         </div>
       )}
-      {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) &&
-        total &&
-        !total.isZero() && (
-          <div className="mt-8">
-            <Alert type="warning" header="Low Liquidity Detected!" expandable>
-              The liquidity for {symbol} is critically low. Transactions may
-              experience high slippage or failure.
-            </Alert>
-          </div>
-        )}
 
       <Button
-        className="mt-8"
+        className={
+          continueButtonClassName
+            ? `mt-8 ${continueButtonClassName}`
+            : "mt-8"
+        }
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
       >

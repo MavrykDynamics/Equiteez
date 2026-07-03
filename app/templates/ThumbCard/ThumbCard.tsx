@@ -2,10 +2,11 @@ import { CSSProperties, FC, useMemo } from "react";
 
 import styles from "./thumbCard.module.css";
 import clsx from "clsx";
-import { EstateHeadlineTab, HeadlineTabBadge } from "../EstateHeadlineTab";
+import { EstateHeadlineTab } from "../EstateHeadlineTab";
 import BigNumber from "bignumber.js";
 import Money from "~/lib/atoms/Money";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
+import { AssetFlag } from "~/lib/atoms/AssetFlag/AssetFlag";
 
 type ThumbCardProps = {
   imgSrc: string;
@@ -20,7 +21,7 @@ type ThumbCardSecondary = Omit<ThumbCardProps, "address"> & {
   progressBarPercentage?: number;
   isSecondaryMarket: boolean;
   pricePerToken?: BigNumber;
-  isFutureAsset?: boolean;
+  flags: string[];
 };
 
 export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
@@ -31,7 +32,7 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
   pricePerToken,
   progressBarPercentage,
   APY,
-  isFutureAsset = false,
+  flags,
   height = "264px",
 }) => {
   const memoizedStyle = useMemo(() => ({ "--card-height": height }), [height]);
@@ -48,13 +49,11 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
           "flex flex-col justify-between p-4"
         )}
       >
-        <div className="flex items-center gap-x-2">
-          {isFutureAsset && (
-            <HeadlineTabBadge className="bg-[#FFA726] text-[#492C00]">
-              Coming Soon
-            </HeadlineTabBadge>
-          )}
+        <div className="flex items-center gap-2 flex-wrap">
           <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
+          {flags.slice(0, 1).map((flag) => (
+            <AssetFlag key={flag} flagValue={flag} />
+          ))}
         </div>
         <div className="flex flex-col items-start">
           <div className="flex-1 w-full flex justify-between gap-2">
@@ -72,7 +71,10 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
               {pricePerToken && (
                 <div className="flex flex-col items-center pr-3 border-r border-sand-50 mr-3">
                   <div className="flex items-center text-card-headline text-sand-50">
-                    $<Money fiat>{pricePerToken}</Money>
+                    $
+                    <Money tooltip={false} fiat>
+                      {pricePerToken}
+                    </Money>
                   </div>
                   <span className="text-sand-50 text-body-xs leading-5">
                     Price
@@ -86,27 +88,32 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
             </div>
           </div>
           {progressBarPercentage && (
-            <div
-              style={
-                {
-                  "--percentage": `${progressBarPercentage}%`,
-                } as CSSProperties
-              }
-              className={clsx(
-                styles.progressBarContainer,
-                "gap-x-2 w-full items-center"
-              )}
-            >
+            <div className="flex items-center gap-2 w-full">
+              <span className="text-sm text-sand-300 font-semibold leading-5">
+                Sold
+              </span>
               <div
+                style={
+                  {
+                    "--percentage": `${progressBarPercentage}%`,
+                  } as CSSProperties
+                }
                 className={clsx(
-                  "overflow-hidden",
-                  styles.progressBar,
-                  styles.progressPercentage,
-                  progressBarPercentage === 100
-                    ? "after:bg-[#0DB365]"
-                    : "after:bg-background"
+                  styles.progressBarContainer,
+                  "gap-x-2 flex-1 items-center"
                 )}
-              />
+              >
+                <div
+                  className={clsx(
+                    "overflow-hidden",
+                    styles.progressBar,
+                    styles.progressPercentage,
+                    progressBarPercentage === 100
+                      ? "after:bg-[#FF8A3D]"
+                      : "after:bg-[#FF8A3D]"
+                  )}
+                />
+              </div>
               <span className="text-background text-caption">
                 {progressBarPercentage === 100
                   ? "FUNDED"
@@ -156,7 +163,7 @@ export const ThumbCardPrimary: FC<PrimaryThumbCardProps> = ({
         <div className="flex items-center justify-between text-content mt-3">
           <p className="text-sm">Tokens Available</p>
           <div className="font-semibold text-sm">
-            <Money>{tokensAvailable}</Money>
+            <Money tooltip={false}>{tokensAvailable}</Money>
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-b
 
 // consts
 import {
-  atlasNetRpcnode,
+  basenetNetRpcnode,
   RPC_NODE,
   rpcNodeSchema,
   RPCNodeType,
@@ -19,7 +19,7 @@ import { getItemFromStorage } from "~/lib/utils/local-storage";
 // utils
 
 // Need to use as cuz NetworkType is enum and ts don't understand that all types are correct
-const WALLET_NETWORK = "atlasnet" as NetworkType;
+const WALLET_NETWORK = "basenet" as NetworkType;
 const DAPP_METADATA = {
   // name: process.env.REACT_APP_NAME,
   name: "Equiteez",
@@ -28,7 +28,8 @@ const DAPP_METADATA = {
 
 const getRpcNode = (): RPCNodeType => {
   const rpcNode =
-    getItemFromStorage<RPCNodeType>(RPC_NODE, rpcNodeSchema) ?? atlasNetRpcnode;
+    getItemFromStorage<RPCNodeType>(RPC_NODE, rpcNodeSchema) ??
+    basenetNetRpcnode;
   return rpcNode;
 };
 

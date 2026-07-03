@@ -1,0 +1,638 @@
+@import "../../../styles/breakpoints.css";
+
+.desktopWrapper {
+  align-self: stretch;
+  display: flex;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.desktopPanelMotion {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.mobileOverlay {
+  display: none;
+}
+
+.panel {
+  background: #fff;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+.desktopPanel {
+  border-right: 1px solid var(--color-grey-100);
+}
+
+.desktopPanelInner {
+  overflow: visible;
+  padding: 0 24px;
+}
+
+.mobilePanel {
+  position: relative;
+}
+
+.mobilePanelInner {
+  padding: 0 16px;
+}
+
+.panelInner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  container-name: orderBookTable;
+  container-type: inline-size;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: visible;
+}
+
+.header {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: visible;
+  padding: 0 0 12px;
+  position: relative;
+  z-index: 3;
+}
+
+.headerTabs {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.headerTabActive {
+  color: var(--color-sand-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.headerTab {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.headerActions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.groupingControl {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--color-grey-100);
+  border-radius: 8px;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+.groupingControl:hover {
+  border-color: var(--color-grey-200);
+}
+
+.groupingControlActive {
+  border-color: var(--color-sand-900);
+}
+
+.groupingValue {
+  color: var(--color-sand-900);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.groupingMenu {
+  display: flex;
+  flex-direction: column;
+}
+
+.groupingMenuItem {
+  background: transparent;
+  border: 0;
+  color: var(--color-sand-900);
+  cursor: pointer;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  min-height: 34px;
+  padding: 8px 14px;
+  text-align: left;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.groupingMenuItem:hover {
+  background: rgba(28, 98, 82, 0.08);
+}
+
+.groupingMenuItemActive {
+  background: rgba(28, 98, 82, 0.12);
+  font-weight: 500;
+}
+
+.groupingSelectIcon {
+  color: var(--color-sand-900);
+  flex-shrink: 0;
+  height: 16px;
+  pointer-events: none;
+  width: 16px;
+}
+
+.displayModeSwitcher {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.displayModeButton {
+  align-items: center;
+  background: transparent;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  width: 24px;
+}
+
+.displayModeButtonActive {
+  opacity: 1;
+}
+
+.displayModeIcon {
+  flex-shrink: 0;
+  height: 24px;
+  width: 24px;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.desktopPanelInner .content {
+  overflow: hidden;
+}
+
+.mobilePanelInner .header {
+  padding-right: 40px;
+}
+
+.state {
+  align-items: center;
+  color: var(--color-sand-600);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 280px;
+  text-align: center;
+}
+
+.stateText {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionEmpty {
+  background: var(--color-grey-100);
+  border: 1px dashed var(--color-grey-200);
+  border-radius: 12px;
+  color: var(--color-sand-600);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 18px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.tableSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableViewport {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableViewport > * {
+  flex-shrink: 0;
+}
+
+.tableFooter {
+  flex-shrink: 0;
+}
+
+.tableHeader {
+  align-items: end;
+  column-gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.tableHeader,
+.tableFooter {
+  padding-inline-end: 6px;
+}
+
+.tableRow {
+  align-items: center;
+  column-gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  min-height: 24px;
+  overflow: hidden;
+  padding: 2px 8px 2px 0;
+  position: relative;
+}
+
+.tableHeaderCell {
+  color: var(--color-sand-600);
+  display: flex;
+  font-family: Poppins, system-ui, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 18px;
+}
+
+.amountColumnHeader {
+  display: flex;
+}
+
+.rowPrimary {
+  align-items: center;
+  column-gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.rowSecondary {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.rowValue {
+  align-items: center;
+  color: var(--color-sand-900);
+  display: flex;
+  font-family: Poppins, system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 20px;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.amountInlineLabel {
+  color: var(--color-sand-600);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priceHeaderCell,
+.priceCell {
+  justify-content: flex-start;
+}
+
+.amountHeaderCell {
+  justify-content: center;
+  text-align: center;
+}
+
+.amountCell,
+.totalHeaderCell,
+.totalCell {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.priceButton {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  width: 100%;
+}
+
+.priceButton:not(:disabled):focus-visible,
+.priceButton:not(:disabled):hover {
+  text-decoration: underline;
+}
+
+.priceButton:not(:disabled):focus-visible {
+  outline: 2px solid var(--color-grey-200);
+  outline-offset: 2px;
+}
+
+.priceButton:disabled {
+  cursor: default;
+}
+
+.depthBar {
+  bottom: 0;
+  position: absolute;
+  top: 0;
+  width: var(--order-book-depth-width);
+  z-index: 0;
+}
+
+.askRow .depthBar {
+  background: rgba(232, 55, 54, 0.25);
+  right: 0;
+}
+
+.bidRow .depthBar {
+  background: rgba(69, 151, 97, 0.25);
+  right: 0;
+}
+
+.askPrice {
+  color: var(--color-red-500) !important;
+}
+
+.bidPrice {
+  color: var(--color-green-500) !important;
+}
+
+.spreadRow {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-height: 27px;
+  padding: 4px 0;
+}
+
+.spreadPrice {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.spreadMeta {
+  align-items: center;
+  display: flex;
+  min-width: 16px;
+}
+
+.spreadLabel {
+  color: var(--color-sand-600);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.spreadDirectionIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.spreadDirectionIconUp {
+  transform: rotate(180deg);
+}
+
+.spreadReference {
+  color: var(--color-sand-600);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.spreadValue {
+  color: var(--color-sand-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.sentimentBar {
+  border-radius: 4px;
+  display: flex;
+  margin-top: auto;
+  min-height: 29px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.sentimentSide {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  min-height: 29px;
+  min-width: 0;
+}
+
+.buySentiment {
+  background: rgba(69, 151, 97, 0.25);
+}
+
+.sellSentiment {
+  background: rgba(232, 55, 54, 0.25);
+}
+
+.sentimentBadge {
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  bottom: 0;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 21px;
+  position: absolute;
+  top: 0;
+  width: 29px;
+  z-index: 1;
+}
+
+.buyBadge,
+.buyPercentage {
+  color: var(--color-green-500);
+}
+
+.sellBadge,
+.sellPercentage {
+  color: var(--color-red-500);
+}
+
+.buyPercentage,
+.sellPercentage {
+  align-items: center;
+  display: flex;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 21px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.buySentiment .sentimentBadge {
+  left: 1px;
+}
+
+.sellSentiment .sentimentBadge {
+  right: 1px;
+}
+
+.buyPercentage {
+  left: 38px;
+}
+
+.sellPercentage {
+  right: 38px;
+}
+
+@container orderBookTable (max-width: 300px) {
+  .tableHeader {
+    column-gap: 0;
+  }
+}
+
+.toggleButton {
+  align-items: center;
+  background: #f2f2f2;
+  border-radius: 32px;
+  color: var(--color-sand-900);
+  display: inline-flex;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 12px;
+}
+
+.toggleIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.mobileCloseButton {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 4;
+}
+
+.mobileCloseIcon {
+  color: var(--color-sand-900);
+  height: 24px;
+  width: 24px;
+}
+
+@media (--media-tablet-min) {
+  .desktopWrapper {
+    display: none;
+  }
+
+  .mobileOverlay {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    inset: 0;
+    min-height: 0;
+    position: absolute;
+    z-index: 20;
+  }
+
+  .mobilePanel {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .panelInner {
+    gap: 0;
+  }
+
+  .headerActions {
+    gap: 16px;
+  }
+}

@@ -2,6 +2,7 @@ export enum TokenStandardsEnum {
   Fa2 = 'fa2',
   Fa12 = 'fa12',
   Mav = 'mav',
+  Mbg = 'mbg',
   Fa1dot2 = 'fa1.2',
 }
 

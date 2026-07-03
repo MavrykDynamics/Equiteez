@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .progressBar {
   position: relative;
   height: 5px;
@@ -5,7 +7,7 @@
 }
 
 .progressBar::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
@@ -13,8 +15,26 @@
   z-index: 0;
 }
 
+.mobileContent {
+  display: none;
+}
+
+.desktopContent {
+  display: block;
+}
+
+@media (--media-tablet-max) {
+  .mobileContent {
+    display: block;
+  }
+
+  .desktopContent {
+    display: none;
+  }
+}
+
 .progressPercentage::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 8px;
   /* TODO replace with var passed from data */
@@ -23,4 +43,18 @@
   inset: 0;
   @apply bg-[#609186];
   z-index: 1;
+}
+.mobileWrapper {
+  background: var(--color-neutral-light);
+  padding: 24px 16px 20px 16px;
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  box-shadow: 4px 0 11.7px 0 rgba(154, 154, 154, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+.mobilePriceBlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

@@ -1,0 +1,63 @@
+@import "../../styles/breakpoints.css";
+
+.section {
+  border-bottom: 0;
+}
+
+.shell {
+  padding: var(--r-space-18) clamp(var(--r-space-8), 6.94vw, var(--r-space-25));
+}
+
+.header {
+  max-width: 973px;
+  margin: 0 auto;
+}
+
+.header p:last-child {
+  max-width: 706px;
+  font-size: var(--r-font-size-body-l);
+  line-height: var(--r-line-height-body-l);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--r-space-4);
+  justify-content: center;
+  margin-top: var(--r-space-10);
+}
+
+@media (max-width: 1304px) {
+  .shell {
+    padding-right: var(--r-space-16);
+    padding-left: var(--r-space-16);
+  }
+}
+
+@media (max-width: 820px) {
+  .shell {
+    padding: var(--r-marketing-cta-tablet-padding-y, var(--r-space-16))
+      var(--r-space-8);
+  }
+
+  .header p:last-child {
+    font-size: var(--r-font-size-body-m);
+    line-height: var(--r-line-height-body-m);
+  }
+}
+
+@media (max-width: 480px) {
+  .shell {
+    padding: var(--r-marketing-cta-phone-padding-y, var(--r-space-16))
+      var(--r-space-4);
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .actions > * {
+    width: var(--r-marketing-cta-phone-action-width, auto);
+  }
+}
