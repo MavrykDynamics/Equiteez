@@ -163,24 +163,29 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
+    const { lowestSellPrice, highestBuyPrice, tickSize } =
+      orderbookStorages[slug];
+
+    if (tickSize <= 0) return new BigNumber(1);
 
     const buyPrice = calculateMarketBuy(
       lowestSellPrice,
       highestBuyPrice,
-      baseTokenDecimals
+      quoteTokenDecimals,
+      tickSize
     );
     const sellPrice = calculateMarketSell(
       lowestSellPrice,
       highestBuyPrice,
-      baseTokenDecimals
+      quoteTokenDecimals,
+      tickSize
     );
     const nextPrice = orderType === BUY ? buyPrice : sellPrice;
 
     return nextPrice.isFinite() && nextPrice.gt(0)
       ? nextPrice
       : new BigNumber(1);
-  }, [baseTokenDecimals, orderType, orderbookStorages, slug]);
+  }, [orderType, orderbookStorages, quoteTokenDecimals, slug]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
