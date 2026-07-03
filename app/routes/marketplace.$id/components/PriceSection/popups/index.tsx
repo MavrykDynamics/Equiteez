@@ -21,7 +21,10 @@ import { TabType } from "~/lib/atoms/Tab";
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 
 //consts & types
-import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+import {
+  EstateType,
+  SecondaryEstate,
+} from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 
@@ -39,7 +42,6 @@ import Money from "~/lib/atoms/Money";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
@@ -65,8 +67,21 @@ import {
   OrderBookToggleButton,
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
+const POPUP_RECOMMENDATIONS_LIMIT = 2;
+
+const getMarketIdentifier = (market: EstateType) =>
+  market.assetDetails.blockchain[0]?.identifier;
+
+const isCurrentPopupMarket = (
+  market: EstateType,
+  currentMarket: SecondaryEstate
+) =>
+  market.slug === currentMarket.slug ||
+  market.token_address === currentMarket.token_address ||
+  getMarketIdentifier(market) === getMarketIdentifier(currentMarket);
 
 type PopupContentProps = {
   estate: SecondaryEstate;
@@ -86,13 +101,14 @@ export const PopupContent: FC<PopupContentProps> = ({
   setOrderType,
 }) => {
   const { slug } = estate;
-  const { marketsArr } = useMarketsContext();
   const { dapp } = useWalletContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
-  const { orderbookStorages, orderbookTokenPair } = useDexContext();
+  const { orderbookStorages } = useDexContext();
   const {
+    marketsArr,
+    sortedMarketAddresses,
     pickers: { pickOrderbookContract, pickOrderbookContractQuoteToken },
     activeMarket,
   } = useMarketsContext();
@@ -154,33 +170,38 @@ export const PopupContent: FC<PopupContentProps> = ({
   //   slippagePercentage,
   // ]);
 
-  // metadata for selected asset
-  const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const quoteAssetmetadata = useAssetMetadata(orderbookTokenPair[slug]);
-  const baseTokenDecimals = selectedAssetMetadata?.decimals ?? estate.decimals;
-  const quoteTokenDecimals = quoteAssetmetadata?.decimals ?? 6;
+  const {
+    baseTokenDecimals,
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenDecimals,
+    quoteTokenMetadata: quoteAssetmetadata,
+  } = useOrderbookTokenMetadata(estate);
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
+    const { lowestSellPrice, highestBuyPrice, tickSize } =
+      orderbookStorages[slug];
+
+    if (tickSize <= 0) return new BigNumber(1);
 
     const buyPrice = calculateMarketBuy(
       lowestSellPrice,
       highestBuyPrice,
-      baseTokenDecimals
+      quoteTokenDecimals,
+      tickSize
     );
     const sellPrice = calculateMarketSell(
       lowestSellPrice,
       highestBuyPrice,
-      baseTokenDecimals
+      quoteTokenDecimals,
+      tickSize
     );
     const nextPrice = orderType === BUY ? buyPrice : sellPrice;
 
     return nextPrice.isFinite() && nextPrice.gt(0)
       ? nextPrice
       : new BigNumber(1);
-  }, [baseTokenDecimals, orderType, orderbookStorages, slug]);
+  }, [orderType, orderbookStorages, quoteTokenDecimals, slug]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -288,8 +309,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       quoteTokenAddress: pickOrderbookContractQuoteToken[estate.token_address],
       tokensAmount: amountB?.toNumber() ?? ZERO,
       pricePerToken: limitPrice?.toNumber(),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteTokenDecimals: quoteAssetmetadata?.decimals,
+      decimals: selectedAssetMetadata.decimals,
+      quoteTokenDecimals: quoteAssetmetadata.decimals,
     }),
     [
       pickOrderbookContract,
@@ -297,8 +318,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       pickOrderbookContractQuoteToken,
       amountB,
       limitPrice,
-      selectedAssetMetadata?.decimals,
-      quoteAssetmetadata?.decimals,
+      selectedAssetMetadata.decimals,
+      quoteAssetmetadata.decimals,
     ]
   );
 
@@ -395,9 +416,27 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // actual contract calls and their handlers ---------------
 
-  const memoizedPopupProps: ContractActionPopupProps = useMemo(
-    () => ({ key: "inProgressRwaAd", props: { rwas: marketsArr.slice(0, 2) } }),
-    [marketsArr]
+  const popupRecommendedMarkets = useMemo(() => {
+    const visibleMarketSlugs = new Set(sortedMarketAddresses);
+
+    return marketsArr
+      .filter(
+        (market) =>
+          visibleMarketSlugs.has(market.slug) &&
+          !isCurrentPopupMarket(market, estate)
+      )
+      .slice(0, POPUP_RECOMMENDATIONS_LIMIT);
+  }, [estate, marketsArr, sortedMarketAddresses]);
+
+  const memoizedPopupProps: ContractActionPopupProps | undefined = useMemo(
+    () =>
+      popupRecommendedMarkets.length
+        ? {
+            key: "inProgressRwaAd",
+            props: { rwas: popupRecommendedMarkets },
+          }
+        : undefined,
+    [popupRecommendedMarkets]
   );
 
   const memoizedToastProps: ContractActionToastProps = useMemo(() => {
@@ -560,7 +599,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       {shouldRenderOrderBook && (
         <OrderBookPopup
           baseTokenDecimals={baseTokenDecimals}
-          baseTokenSymbol={selectedAssetMetadata?.symbol ?? estate.symbol}
+          baseTokenSymbol={selectedAssetMetadata.symbol}
           desktopHeight={popupMainHeight}
           enabled={isSecondaryEstate}
           isOpen={isOrderBookOpen}
@@ -569,7 +608,7 @@ export const PopupContent: FC<PopupContentProps> = ({
             isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
           }
           quoteTokenDecimals={quoteTokenDecimals}
-          quoteTokenSymbol={quoteAssetmetadata?.symbol ?? "USDT"}
+          quoteTokenSymbol={quoteAssetmetadata.symbol}
           referencePrice={tokenPrice.toNumber()}
           rwaAddress={estate.token_address}
         />
@@ -662,7 +701,7 @@ export const PopupContent: FC<PopupContentProps> = ({
                       {orderType === BUY ? (
                         <Money
                           smallFractionFont={false}
-                          cryptoDecimals={selectedAssetMetadata?.decimals}
+                          cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
                             ? (amountB?.div(tokenPrice).toNumber() ?? 0)

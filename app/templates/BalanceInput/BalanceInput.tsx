@@ -4,7 +4,6 @@ import React, { FC, forwardRef, useCallback, useState } from "react";
 import { AssetField } from "~/lib/organisms/AssetField";
 import clsx from "clsx";
 import { toLocalFormat } from "~/lib/formaters/formaters";
-import { AssetDropdown } from "../AssetDropdown";
 import { AssetMetadataBase } from "~/lib/metadata";
 import { CryptoBalance } from "../Balance";
 import { Icon } from "~/lib/atoms/Icon";
@@ -21,7 +20,7 @@ type BalanceInputProps = {
   additionalBottomRightBlock?: React.ReactNode;
   additionalBottomLeftBlock?: React.ReactNode;
   errorCaption?: string;
-  selectedAssetMetadata: AssetMetadataBase;
+  selectedAssetMetadata?: AssetMetadataBase;
   onNext?: () => void;
   onPrev?: () => void;
 };
@@ -175,7 +174,7 @@ export const BalanceInputWithTotal = forwardRef<
   BalanceInputProps &
     BalanceTotalBlockProps & {
       cryptoValue: number | BigNumber;
-      cryptoDecimals: number;
+      cryptoDecimals?: number;
     }
 >((props, inputRef) => {
   const {
@@ -204,7 +203,7 @@ export const BalanceInputWithTotal = forwardRef<
                 value={new BigNumber(cryptoValue)}
                 cryptoDecimals={cryptoDecimals}
               />
-              {selectedAssetMetadata.symbol}
+              {selectedAssetMetadata?.symbol ?? "???"}
             </div>
           )
         }

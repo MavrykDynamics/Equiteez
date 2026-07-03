@@ -1,4 +1,6 @@
-import { toTokenSlug } from "~/lib/assets";
+import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
+import type { TokenMetadata } from "~/lib/metadata/types";
+import type { TokenType } from "~/providers/TokensProvider/tokens.provider.types";
 import {
   AssetData,
   EstateType,
@@ -11,6 +13,8 @@ type MarketAssetsCollection = {
   marketsArr: EstateType[];
   orderbook: Map<string, OrderbookConfigType>;
   sortedMarketAddresses: string[];
+  tokens: TokenType[];
+  tokensMetadata: StringRecord<TokenMetadata>;
 };
 
 export const EMPTY_MARKET_ASSETS_COLLECTION: MarketAssetsCollection = {
@@ -18,6 +22,8 @@ export const EMPTY_MARKET_ASSETS_COLLECTION: MarketAssetsCollection = {
   marketsArr: [],
   orderbook: new Map(),
   sortedMarketAddresses: [],
+  tokens: [],
+  tokensMetadata: {},
 };
 
 const createMarketAsset = (asset: AssetData): EstateType => {
@@ -36,13 +42,58 @@ export const createMarketAssetsCollection = (
   const orderbook = new Map<string, OrderbookConfigType>();
   const marketsArr: EstateType[] = [];
   const sortedMarketAddresses: string[] = [];
+  const tokens = new Map<string, TokenType>();
+  const tokensMetadata: StringRecord<TokenMetadata> = {};
+
+  const registerToken = ({
+    address,
+    id,
+    metadata,
+  }: {
+    address: string;
+    id: number | string;
+    metadata: Omit<TokenMetadata, "address" | "id">;
+  }) => {
+    const tokenId = String(id);
+    const slug = toTokenSlug(address, tokenId);
+
+    tokens.set(slug, { contract: address, id: tokenId });
+    tokensMetadata[slug] = {
+      ...metadata,
+      address,
+      id: tokenId,
+    };
+  };
 
   assets.forEach((asset) => {
     const marketAsset = createMarketAsset(asset);
+    const [, rwaTokenId = "0"] = fromAssetSlug(marketAsset.slug);
+    const quoteToken = asset.orderbook.quote_token;
 
     markets.set(marketAsset.slug, marketAsset);
     marketsArr.push(marketAsset);
     sortedMarketAddresses.push(marketAsset.slug);
+
+    registerToken({
+      address: asset.asset.token.address,
+      id: rwaTokenId,
+      metadata: {
+        decimals: asset.asset.token.decimals,
+        name: asset.asset.token.name,
+        symbol: asset.asset.token.symbol,
+        thumbnailUri: asset.asset.token.icon_url,
+      },
+    });
+
+    registerToken({
+      address: quoteToken.address,
+      id: quoteToken.token_id,
+      metadata: {
+        decimals: quoteToken.decimals,
+        name: quoteToken.symbol,
+        symbol: quoteToken.symbol,
+      },
+    });
 
     orderbook.set(asset.orderbook.address, {
       address: asset.orderbook.address,
@@ -63,5 +114,7 @@ export const createMarketAssetsCollection = (
     marketsArr,
     orderbook,
     sortedMarketAddresses,
+    tokens: Array.from(tokens.values()),
+    tokensMetadata,
   };
 };

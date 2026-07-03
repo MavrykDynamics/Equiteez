@@ -1,10 +1,12 @@
 import { toTokenSlug } from "~/lib/assets";
 import { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
 import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
+import type { OrderbookTickSizesByAddress } from "./orderbookConfig";
 
 export type OrderBookPriceData = {
   lowestSellPrice: number;
   highestBuyPrice: number;
+  tickSize: number;
   buyOrderFee: number;
   sellOrderFee: number;
   rwaTokenAddress: string;
@@ -13,7 +15,8 @@ export type OrderBookPriceData = {
 
 export const getOrderbookStorages = (
   orderbooksList: OrderbooksList,
-  storagesMap: Map<string, OrderbookConfigType>
+  storagesMap: Map<string, OrderbookConfigType>,
+  tickSizesByAddress: OrderbookTickSizesByAddress
 ) => {
   const rwaTokenAddressesByOrderbook = new Map<string, string>();
 
@@ -29,10 +32,14 @@ export const getOrderbookStorages = (
       if (!rwaTokenAddress) return acc;
 
       const tokenSlug = toTokenSlug(rwaTokenAddress);
+      const tickSize = tickSizesByAddress[item.address];
+
+      if (!tickSize) return acc;
 
       acc[tokenSlug] = {
         lowestSellPrice: item.lowest_sell_price,
         highestBuyPrice: item.highest_buy_price,
+        tickSize,
         buyOrderFee: item.buy_order_fee,
         sellOrderFee: item.sell_order_fee,
         rwaTokenAddress,

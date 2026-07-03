@@ -15,6 +15,8 @@ import {
   OrderBookPriceData,
   getOrderbookStorages,
 } from "./utils/storage";
+import { getOrderbookTickSizes } from "./utils/orderbookConfig";
+import type { OrderbookTickSizesByAddress } from "./utils/orderbookConfig";
 import { unknownToError } from "~/errors/error";
 import { useApiQuery } from "~/hooks/useApiQuery";
 import { fetchOrderbooks } from "~/lib/apis/mbrwa/orderbooks";
@@ -31,6 +33,7 @@ const priceProxyHandler: ProxyHandler<StringRecord<OrderBookPriceData>> = {
       target[prop] ?? {
         lowestSellPrice: 0,
         highestBuyPrice: 0,
+        tickSize: 0,
         buyOrderFee: 0,
         sellOrderFee: 0,
         rwaTokenAddress: prop,
@@ -47,23 +50,31 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const [orderbookStorages, setOrderbookStorages] = useState(
     () => new Proxy({}, priceProxyHandler)
   );
+  const [orderbookTickSizes, setOrderbookTickSizes] =
+    useState<OrderbookTickSizesByAddress>({});
 
-  // Token pairs
-  const [orderbookTokenPair, setOrderbookTokenPair] = useState({});
-
-  // We do not update query for storages cuz we have this data from the markets query
-  useEffect(() => {
-    const orderBookPairs = getOrderbookTokenPairs(config.orderbook);
-    setOrderbookTokenPair(orderBookPairs);
-  }, [config]);
+  const orderbookTokenPair = useMemo(
+    () => getOrderbookTokenPairs(config.orderbook),
+    [config.orderbook]
+  );
 
   const handleOrderbookData = useCallback((data: OrderbooksList) => {
-    const orderbookStorages = getOrderbookStorages(data, config.orderbook);
+    const hasTickSizes = Array.from(config.orderbook.values()).every(
+      ({ address }) => orderbookTickSizes[address]
+    );
+
+    if (!hasTickSizes) return;
+
+    const orderbookStorages = getOrderbookStorages(
+      data,
+      config.orderbook,
+      orderbookTickSizes
+    );
 
     setOrderbookStorages(
       new Proxy({ ...orderbookStorages }, priceProxyHandler)
     );
-  }, [config.orderbook]);
+  }, [config.orderbook, orderbookTickSizes]);
 
   const { data: orderbookData, error } = useApiQuery({
     fetchFn: fetchOrderbooks,
@@ -77,6 +88,31 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
       warning("Error on get orderbook data", err.message);
     }
   }, [error, warning]);
+
+  useEffect(() => {
+    if (!config.orderbook.size) {
+      setOrderbookTickSizes({});
+      return;
+    }
+
+    let cancelled = false;
+
+    getOrderbookTickSizes(config.orderbook)
+      .then((tickSizes) => {
+        if (!cancelled) setOrderbookTickSizes(tickSizes);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+
+        setOrderbookTickSizes({});
+        const err = unknownToError(error);
+        warning("Error on get orderbook tick sizes", err.message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config.orderbook, warning]);
 
   useEffect(() => {
     if (!orderbookData) return;

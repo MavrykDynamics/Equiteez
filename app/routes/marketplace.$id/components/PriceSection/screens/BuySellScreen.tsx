@@ -18,7 +18,6 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
@@ -26,6 +25,7 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -54,7 +54,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   hasQuoteError = false,
 }) => {
   const { token_address, slug, assetDetails } = estate;
-  const { orderbookTokenPair, orderbookStorages } = useDexContext();
+  const { orderbookStorages } = useDexContext();
+  const {
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenMetadata: stableCoinMetadata,
+    quoteTokenSlug,
+  } = useOrderbookTokenMetadata(estate);
 
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
     null
@@ -65,9 +70,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);
   const ref2 = useRef<HTMLInputElement>(null);
-
-  const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
-  const selectedAssetMetadata = useAssetMetadata(slug);
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -111,7 +113,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       isBuyAction
         ? {
             amount,
-            selectedAssetSlug: orderbookTokenPair[slug],
+            selectedAssetSlug: quoteTokenSlug,
             selectedAssetMetadata: stableCoinMetadata,
           }
         : {
@@ -121,8 +123,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           },
     [
       amount,
-      orderbookTokenPair,
       isBuyAction,
+      quoteTokenSlug,
       selectedAssetMetadata,
       slug,
       stableCoinMetadata,
@@ -139,13 +141,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           }
         : {
             amount: amount?.times(tokenPrice) || undefined, // SELL: Token -> USDT
-            selectedAssetSlug: orderbookTokenPair[slug],
+            selectedAssetSlug: quoteTokenSlug,
             selectedAssetMetadata: stableCoinMetadata,
           },
     [
       amount,
-      orderbookTokenPair,
       isBuyAction,
+      quoteTokenSlug,
       selectedAssetMetadata,
       slug,
       stableCoinMetadata,
@@ -184,8 +186,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     };
 
     const fee = isBuyAction
-      ? atomsToTokens(buyOrderFee, stableCoinMetadata?.decimals)
-      : atomsToTokens(sellOrderFee, stableCoinMetadata?.decimals);
+      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
+      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
 
     const finalTotalValue = (isBuyAction ? amount : total) ?? ZERO;
 
@@ -199,7 +201,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     networkFee,
     orderbookStorages,
     slug,
-    stableCoinMetadata?.decimals,
+    stableCoinMetadata.decimals,
     total,
   ]);
 
@@ -221,7 +223,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input1Props}
               label="Sell"
               balanceTotal={balanceTotal}
-              decimals={stableCoinMetadata?.decimals}
+              decimals={stableCoinMetadata.decimals}
               cryptoValue={
                 new BigNumber(isBuyAction ? usdBalance : tokenBalance)
               }
@@ -234,8 +236,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               }
               cryptoDecimals={
                 isBuyAction
-                  ? stableCoinMetadata?.decimals
-                  : selectedAssetMetadata?.decimals
+                  ? stableCoinMetadata.decimals
+                  : selectedAssetMetadata.decimals
               }
             />
 
@@ -254,14 +256,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               {...input2Props}
               label="Buy"
               balanceTotal={balanceTotal}
-              decimals={stableCoinMetadata?.decimals}
+              decimals={stableCoinMetadata.decimals}
               cryptoValue={
                 new BigNumber(isBuyAction ? tokenBalance : usdBalance)
               }
               cryptoDecimals={
                 !isBuyAction
-                  ? stableCoinMetadata?.decimals
-                  : selectedAssetMetadata?.decimals
+                  ? stableCoinMetadata.decimals
+                  : selectedAssetMetadata.decimals
               }
             />
 
@@ -314,9 +316,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       <Button
         className={
-          continueButtonClassName
-            ? `mt-8 ${continueButtonClassName}`
-            : "mt-8"
+          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
         }
         onClick={handleContinueClick}
         disabled={isBtnDisabled}

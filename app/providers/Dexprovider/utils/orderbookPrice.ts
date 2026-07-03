@@ -31,11 +31,40 @@ export const getOrderBookPricesPerToken = (
 
 const toBigNumber = (value: number) => new BigNumber(value);
 
+const getValidTick = (tickSize: number) => {
+  const tick = new BigNumber(tickSize);
+
+  if (!tick.isFinite() || tick.isLessThanOrEqualTo(0)) {
+    throw new Error("Invalid orderbook tick size");
+  }
+
+  return tick;
+};
+
+const roundUpToTick = (value: BigNumber, tickSize: number): BigNumber => {
+  const tick = getValidTick(tickSize);
+
+  return value
+    .dividedBy(tick)
+    .integerValue(BigNumber.ROUND_CEIL)
+    .multipliedBy(tick);
+};
+
+const roundDownToTick = (value: BigNumber, tickSize: number): BigNumber => {
+  const tick = getValidTick(tickSize);
+
+  return value
+    .dividedBy(tick)
+    .integerValue(BigNumber.ROUND_FLOOR)
+    .multipliedBy(tick);
+};
+
 // Orderbook Market logic
 export function calculateMarketBuy(
   lowestSellPrice: number,
   highestBuyPrice: number,
-  decimals: number,
+  quoteTokenDecimals: number,
+  tickSize: number,
   percentage: number = 0.25
 ): BigNumber {
   const refPrice =
@@ -43,15 +72,17 @@ export function calculateMarketBuy(
       ? toBigNumber(lowestSellPrice)
       : toBigNumber(highestBuyPrice);
 
-  const buyPrice = refPrice.multipliedBy(1 + percentage);
+  const rawBuyPrice = refPrice.multipliedBy(1 + percentage);
+  const tickAlignedBuyPrice = roundUpToTick(rawBuyPrice, tickSize);
 
-  return atomsToTokens(buyPrice.integerValue(BigNumber.ROUND_CEIL), decimals);
+  return atomsToTokens(tickAlignedBuyPrice, quoteTokenDecimals);
 }
 
 export function calculateMarketSell(
   lowestSellPrice: number,
   highestBuyPrice: number,
-  decimals: number,
+  quoteTokenDecimals: number,
+  tickSize: number,
   percentage: number = 0.25
 ): BigNumber {
   const refPrice =
@@ -59,7 +90,8 @@ export function calculateMarketSell(
       ? toBigNumber(highestBuyPrice)
       : toBigNumber(lowestSellPrice);
 
-  const sellPrice = refPrice.multipliedBy(1 - percentage);
+  const rawSellPrice = refPrice.multipliedBy(1 - percentage);
+  const tickAlignedSellPrice = roundDownToTick(rawSellPrice, tickSize);
 
-  return atomsToTokens(sellPrice.integerValue(BigNumber.ROUND_FLOOR), decimals);
+  return atomsToTokens(tickAlignedSellPrice, quoteTokenDecimals);
 }

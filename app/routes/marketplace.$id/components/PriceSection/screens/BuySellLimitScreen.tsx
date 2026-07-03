@@ -19,7 +19,6 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
 import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
@@ -29,6 +28,7 @@ import { AssetView } from "~/templates/BalanceInput/AssetView";
 import { PercentBlock } from "~/routes/marketplace.$id/components/PriceSection/components/PercentBlock/PercentBlock";
 import Money from "~/lib/atoms/Money";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -62,7 +62,12 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
-  const { orderbookTokenPair, orderbookStorages } = useDexContext();
+  const { orderbookStorages } = useDexContext();
+  const {
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenMetadata: stableCoinMetadata,
+    quoteTokenSlug,
+  } = useOrderbookTokenMetadata(estate);
 
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);
@@ -74,9 +79,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const { userTokensBalances, isKyced } = useUserContext();
-
-  const stableCoinMetadata = useAssetMetadata(orderbookTokenPair[slug]);
-  const selectedAssetMetadata = useAssetMetadata(slug);
 
   const usdBalance = useMemo(
     () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
@@ -128,7 +130,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const { input1Props, input2Props } = useMemo(() => {
     const buyProps = {
       amount: limitPrice,
-      selectedAssetSlug: orderbookTokenPair[slug],
+      selectedAssetSlug: quoteTokenSlug,
       selectedAssetMetadata: stableCoinMetadata,
       onChange: setLimitPrice,
       cryptoValue: usdBalance,
@@ -158,7 +160,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     hasSellTokensBalanceError,
     isBuyAction,
     limitPrice,
-    orderbookTokenPair,
+    quoteTokenSlug,
     selectedAssetMetadata,
     setLimitPrice,
     slug,
@@ -176,8 +178,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     };
 
     const fee = isBuyAction
-      ? atomsToTokens(buyOrderFee, stableCoinMetadata?.decimals)
-      : atomsToTokens(sellOrderFee, stableCoinMetadata?.decimals);
+      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
+      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
 
     return {
       finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
@@ -188,7 +190,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     networkFee,
     orderbookStorages,
     slug,
-    stableCoinMetadata?.decimals,
+    stableCoinMetadata.decimals,
     total,
   ]);
 
@@ -247,8 +249,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               {...input1Props}
               label="I Want To Allocate"
               balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata?.decimals}
-              cryptoDecimals={stableCoinMetadata?.decimals}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
             />
 
             <BalanceInputWithTotal
@@ -264,8 +266,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               {...input2Props}
               label="To Buy"
               balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata?.decimals}
-              cryptoDecimals={stableCoinMetadata?.decimals}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
             />
 
             {/* ------------------------------------------------------------------------------------------- */}
@@ -311,11 +313,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                     )}
                   </div>
                 }
-                selectedAssetSlug={orderbookTokenPair[slug]}
+                selectedAssetSlug={quoteTokenSlug}
                 selectedAssetMetadata={stableCoinMetadata}
                 balanceTotal={balanceTotal}
-                decimals={selectedAssetMetadata?.decimals}
-                cryptoDecimals={stableCoinMetadata?.decimals}
+                decimals={selectedAssetMetadata.decimals}
+                cryptoDecimals={stableCoinMetadata.decimals}
                 cryptoValue={balanceTotal?.toNumber() || 0}
               />
             </div>

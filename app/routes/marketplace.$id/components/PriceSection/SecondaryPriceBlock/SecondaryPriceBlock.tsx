@@ -8,19 +8,17 @@ import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import styles from "./../priceSection.module.css";
 import popupStyles from "../popups/popups.module.css";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { PopupContent } from "../popups";
-import { stablecoinContract } from "~/consts/contracts";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import Money from "~/lib/atoms/Money";
 import {
   calculateLiquidityPercentages,
   calculateTotalLiquidity,
 } from "~/providers/Dexprovider/utils";
-import { useAssetMetadata } from "~/lib/metadata";
-import { toTokenSlug } from "~/lib/assets";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import BigNumber from "bignumber.js";
@@ -68,13 +66,12 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
-  const { orderbookStorages, orderbookTokenPair } = useDexContext();
+  const { orderbookStorages } = useDexContext();
 
   const { slug } = estate;
-  const baseTokenMetadata = useAssetMetadata(slug);
-  const quoteTokenMetadata = useAssetMetadata(
-    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract)
-  );
+  const { baseTokenDecimals, quoteTokenDecimals } =
+    useOrderbookTokenMetadata(estate);
+  const orderbookAddress = orderbookStorages[slug]?.orderbookAddress;
 
   // stores buy and sell prices based on orders
   const [totalLiquidity, setTotalLiquidity] = useState<{
@@ -90,9 +87,9 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     error,
     loading: isAggregatedOrdersLoading,
   } = useApiQuery({
-    fetchFn: async () =>
-      fetchOrderbookPrices(orderbookStorages[slug]?.orderbookAddress),
-    deps: [orderbookStorages[slug]?.orderbookAddress],
+    fetchFn: async () => fetchOrderbookPrices(orderbookAddress ?? ""),
+    deps: [orderbookAddress],
+    enabled: Boolean(orderbookAddress),
   });
 
   useEffect(() => {
@@ -105,19 +102,19 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
     const { buyPrice, sellPrice } = getRwaTokenPriceBasedOnOrders(
       orderbookPricesData,
-      quoteTokenMetadata?.decimals
+      quoteTokenDecimals
     );
 
     setTotalLiquidity({ buyPrice, sellPrice });
-  }, [JSON.stringify(orderbookPricesData), error]);
+  }, [error, orderbookPricesData, quoteTokenDecimals, warning]);
 
   const currentPrice = useMemo(
     () =>
       atomsToTokens(
-        orderbookStorages[slug]?.lowestSellPrice,
-        baseTokenMetadata.decimals
+        orderbookStorages[slug]?.lowestSellPrice ?? 0,
+        baseTokenDecimals
       ) ?? "0",
-    [baseTokenMetadata.decimals, orderbookStorages, slug]
+    [baseTokenDecimals, orderbookStorages, slug]
   );
 
   const totalLiquidityInfo = useMemo(() => {
