@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import { useMemo } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
@@ -13,6 +12,7 @@ import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { EmblaOptionsType } from "embla-carousel";
 import classNames from "clsx";
 import { EMPTY_ARRAY } from "~/consts";
+import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
 
 const SIMILAR_MARKETS_LIMIT = 3;
 
@@ -106,8 +106,10 @@ export const SimilarProperties = ({ activeMarket }: SimilarPropertiesProps) => {
               estate.decimals
             );
             return (
-              <Link
+              <CustomLink
                 to={`/marketplace/${estate.assetDetails.blockchain[0].identifier}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 key={estate.token_address}
               >
                 <ThumbCardSecondary
@@ -123,7 +125,7 @@ export const SimilarProperties = ({ activeMarket }: SimilarPropertiesProps) => {
                   }
                   height={"302px"}
                 />
-              </Link>
+              </CustomLink>
             );
           })
         )}
