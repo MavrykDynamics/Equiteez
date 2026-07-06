@@ -74,7 +74,7 @@ export const MBG_METADATA: TokenMetadata = {
   name: "MBG",
   standard: TokenStandardsEnum.Mbg,
   thumbnailUri:
-      "ipfs://bafkreiggfphjwug5y2uw2we6kfxkyvgqlvbxugnkq33dgslwqg27a6puem",
+    "ipfs://bafkreiggfphjwug5y2uw2we6kfxkyvgqlvbxugnkq33dgslwqg27a6puem",
   address: MBG_CONTRACT_ADDRESS,
   id: "0",
 };
@@ -93,7 +93,7 @@ export const MOCKED_ASSET_ADDRESSES = [
 ];
 
 export const MOCKED_ASSET_SYMBOLS = {
-  KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ1: "BTM",
+  KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ1: "NBTM",
   KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ2: "SPH",
   KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ3: "NTBM",
   KT1CgLvrzj5MziwPWWzPkZj1eDeEpRAsYvQ4: "UTB",

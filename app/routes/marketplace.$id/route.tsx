@@ -178,7 +178,7 @@ export default function PropertyDetails() {
           </div>
         </section>
         <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
-        <SimilarProperties />
+        <SimilarProperties activeMarket={estateData} />
         <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
         <FAQSection data={homeFAQ} />
         <Spacer className="xl:h-[200px] h-[104px] md:h-[100px]" />
