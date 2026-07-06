@@ -138,7 +138,7 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const markets = useMemo(
-    () => new Map([...bootstrapCollection.markets, ...fakeMarkets]),
+    () => new Map([...fakeMarkets, ...bootstrapCollection.markets]),
     [bootstrapCollection.markets, fakeMarkets]
   );
 

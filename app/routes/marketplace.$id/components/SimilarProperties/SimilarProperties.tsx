@@ -2,7 +2,7 @@ import { Link } from "@remix-run/react";
 import { useMemo } from "react";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import { EstateType } from "~/providers/MarketsProvider/market.types";
+import type { EstateType } from "~/providers/MarketsProvider/market.types";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
@@ -14,32 +14,70 @@ import { EmblaOptionsType } from "embla-carousel";
 import classNames from "clsx";
 import { EMPTY_ARRAY } from "~/consts";
 
-function getThreeUniqueElements(items: EstateType[]) {
-  if (items.length < 3) {
-    return items;
-  }
+const SIMILAR_MARKETS_LIMIT = 3;
 
-  const selectedItems: EstateType[] = [];
-  while (selectedItems.length < 3) {
-    const randomIndex = Math.floor(Math.random() * items.length);
-    const item = items[randomIndex];
-    if (!selectedItems.includes(item)) {
-      selectedItems.push(item);
+const getMarketIdentifier = (market: EstateType) =>
+  market.assetDetails.blockchain[0]?.identifier;
+
+const isSameMarket = (market: EstateType, activeMarket: EstateType) => {
+  const marketIdentifier = getMarketIdentifier(market);
+  const activeMarketIdentifier = getMarketIdentifier(activeMarket);
+
+  return (
+    market.slug === activeMarket.slug ||
+    market.token_address === activeMarket.token_address ||
+    (Boolean(marketIdentifier && activeMarketIdentifier) &&
+      marketIdentifier === activeMarketIdentifier)
+  );
+};
+
+function getUniqueRealSimilarMarkets(
+  markets: Map<string, EstateType>,
+  realMarketSlugs: string[],
+  activeMarket: EstateType
+) {
+  const selectedMarkets: EstateType[] = [];
+  const selectedKeys = new Set<string>();
+
+  for (const slug of realMarketSlugs) {
+    const market = markets.get(slug);
+
+    if (!market || isSameMarket(market, activeMarket)) {
+      continue;
+    }
+
+    const marketKey = getMarketIdentifier(market) ?? market.slug;
+
+    if (selectedKeys.has(marketKey)) {
+      continue;
+    }
+
+    selectedKeys.add(marketKey);
+    selectedMarkets.push(market);
+
+    if (selectedMarkets.length === SIMILAR_MARKETS_LIMIT) {
+      break;
     }
   }
 
-  return selectedItems;
+  return selectedMarkets;
 }
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
-export const SimilarProperties = () => {
-  const { marketsArr } = useMarketsContext();
+type SimilarPropertiesProps = {
+  activeMarket: EstateType;
+};
+
+export const SimilarProperties = ({ activeMarket }: SimilarPropertiesProps) => {
+  const { markets, sortedMarketAddresses } = useMarketsContext();
+
   const { orderbookStorages } = useDexContext();
 
   const similarEstates = useMemo(
-    () => getThreeUniqueElements(marketsArr),
-    [marketsArr]
+    () =>
+      getUniqueRealSimilarMarkets(markets, sortedMarketAddresses, activeMarket),
+    [activeMarket, markets, sortedMarketAddresses]
   );
 
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
