@@ -289,6 +289,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <PopupContent
           estate={estate}
           isOrderBookOpen={isOrderBookOpen}
+          onSuccessfulTransaction={handleRequestClose}
           onOrderBookVisibilityChange={setHasVisibleOrderBook}
           orderType={orderType}
           setIsOrderBookOpen={setIsOrderBookOpen}

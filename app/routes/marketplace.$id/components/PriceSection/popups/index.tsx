@@ -86,6 +86,7 @@ const isCurrentPopupMarket = (
 type PopupContentProps = {
   estate: SecondaryEstate;
   isOrderBookOpen: boolean;
+  onSuccessfulTransaction?: () => void;
   onOrderBookVisibilityChange?: (isVisible: boolean) => void;
   orderType: OrderType;
   setIsOrderBookOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -95,6 +96,7 @@ type PopupContentProps = {
 export const PopupContent: FC<PopupContentProps> = ({
   estate,
   isOrderBookOpen,
+  onSuccessfulTransaction,
   onOrderBookVisibilityChange,
   orderType,
   setIsOrderBookOpen,
@@ -307,8 +309,8 @@ export const PopupContent: FC<PopupContentProps> = ({
     () => ({
       orderbookContractAddress: pickOrderbookContract[estate.token_address],
       quoteTokenAddress: pickOrderbookContractQuoteToken[estate.token_address],
-      tokensAmount: amountB?.toNumber() ?? ZERO,
-      pricePerToken: limitPrice?.toNumber(),
+      tokensAmount: amountB?.toNumber() ?? 0,
+      pricePerToken: limitPrice?.toNumber() ?? 0,
       decimals: selectedAssetMetadata.decimals,
       quoteTokenDecimals: quoteAssetmetadata.decimals,
     }),
@@ -339,8 +341,8 @@ export const PopupContent: FC<PopupContentProps> = ({
     const { pricePerToken, tokensAmount, ...restBuyprops } = limitBuyProps;
 
     return {
-      pricePerToken: tokenPrice,
-      tokensAmount: amountB?.div(tokenPrice).toNumber(),
+      pricePerToken: tokenPrice.toNumber(),
+      tokensAmount: amountB?.div(tokenPrice).toNumber() ?? 0,
       ...restBuyprops,
     };
   }, [limitBuyProps, tokenPrice, amountB]);
@@ -350,7 +352,7 @@ export const PopupContent: FC<PopupContentProps> = ({
     const { quoteTokenAddress, pricePerToken, ...restBuyprops } = limitBuyProps;
 
     return {
-      pricePerToken: tokenPrice,
+      pricePerToken: tokenPrice.toNumber(),
       rwaTokenAddress: estate.token_address,
       ...restBuyprops,
     };
@@ -449,12 +451,20 @@ export const PopupContent: FC<PopupContentProps> = ({
     };
   }, [orderType, activeMarket?.symbol]);
 
+  const contractActionOptions = useMemo(
+    () => ({
+      onSuccess: onSuccessfulTransaction,
+    }),
+    [onSuccessfulTransaction]
+  );
+
   const { invokeAction: handleMarketBuy, status: buyStatus } =
     useContractAction(
       orderbookBuy,
       marketBuyProps,
       memoizedPopupProps,
-      memoizedToastProps
+      memoizedToastProps,
+      contractActionOptions
     );
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
@@ -462,7 +472,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       orderbookSell,
       marketSellProps,
       memoizedPopupProps,
-      memoizedToastProps
+      memoizedToastProps,
+      contractActionOptions
     );
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
@@ -470,7 +481,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       orderbookBuy,
       limitBuyProps,
       memoizedPopupProps,
-      memoizedToastProps
+      memoizedToastProps,
+      contractActionOptions
     );
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
@@ -478,7 +490,8 @@ export const PopupContent: FC<PopupContentProps> = ({
       orderbookSell,
       limitSellProps,
       memoizedPopupProps,
-      memoizedToastProps
+      memoizedToastProps,
+      contractActionOptions
     );
 
   // prop action to pass
