@@ -6,6 +6,7 @@ import {
 } from "~/errors/helpers/estimateAction.helper";
 
 import { formatRWAPrice, tokensToAtoms } from "~/lib/utils/formaters";
+import type { ContractActionLifecycleCallbacks } from "./actions.type";
 import { BatchOperationKindType } from "./types";
 
 type OrderbookBuySellParams = {
@@ -16,14 +17,14 @@ type OrderbookBuySellParams = {
   pricePerToken: number;
   decimals: number;
   quoteTokenDecimals: number;
-};
+} & ContractActionLifecycleCallbacks;
 
 type OrderbookCancelOrderParams = {
   tezos: MavrykToolkit;
   orderbookContractAddress: string;
   orderId: number;
   orderType: string;
-};
+} & ContractActionLifecycleCallbacks;
 
 export async function orderbookBuyBatch({
   tezos,
@@ -90,7 +91,9 @@ export async function orderbookBuy(params: OrderbookBuySellParams) {
   try {
     const batchArr = await orderbookBuyBatch(params);
 
-    await sendContractBatchOperation(params.tezos, batchArr);
+    await sendContractBatchOperation(params.tezos, batchArr, {
+      onTransactionSubmitted: params.onTransactionSubmitted,
+    });
   } catch (e: unknown) {
     throw e;
   }
@@ -164,7 +167,9 @@ export async function orderbookSell(params: OrderbookSellParams) {
   try {
     const batchArr = await orderbookSellBatch(params);
 
-    await sendContractBatchOperation(params.tezos, batchArr);
+    await sendContractBatchOperation(params.tezos, batchArr, {
+      onTransactionSubmitted: params.onTransactionSubmitted,
+    });
   } catch (e: unknown) {
     throw e;
   }
@@ -175,6 +180,7 @@ export async function orderbookCancelOrder({
   orderbookContractAddress,
   orderId,
   orderType,
+  onTransactionSubmitted,
 }: OrderbookCancelOrderParams) {
   try {
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
@@ -187,6 +193,7 @@ export async function orderbookCancelOrder({
         },
       ])
       .send();
+    onTransactionSubmitted?.();
     await rwaOrderbookOperation.confirmation();
   } catch (e: unknown) {
     throw e;

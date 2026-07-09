@@ -279,7 +279,10 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
       <PopupWithIcon
         isOpen={isOpen}
         onRequestClose={handleRequestClose}
-        contentClassName={popupStyles.popupContent}
+        contentClassName={classNames(
+          popupStyles.popupContent,
+          hasVisibleOrderBook && popupStyles.popupContentWithOrderBook
+        )}
         contentPosition={"right"}
         className={classNames(
           "bg-white",
@@ -289,6 +292,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         <PopupContent
           estate={estate}
           isOrderBookOpen={isOrderBookOpen}
+          onSuccessfulTransaction={handleRequestClose}
           onOrderBookVisibilityChange={setHasVisibleOrderBook}
           orderType={orderType}
           setIsOrderBookOpen={setIsOrderBookOpen}

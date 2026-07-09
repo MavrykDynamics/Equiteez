@@ -12,6 +12,7 @@ import {
   StatusFlag,
 } from "~/lib/ui/use-status-flag";
 import { CustomLink } from "~/lib/atoms/CustomLink/CustomLink";
+import styles from "./BuySellConfirmationScreen.module.css";
 
 type BuySellConfirmationScreenProps = {
   actionType: "buy" | "sell" | "otcBuy" | "otcSell";
@@ -129,9 +130,9 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
             control={control}
           />
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1">
-              <span className="text-body-xs text-content w-[364px]">
+          <div className={styles.initialsField}>
+            <div className={styles.initialsLabel}>
+              <span className="text-body-xs text-content">
                 Please enter your First and Last name initials (ex. JS)
               </span>
               {/* <InfoTooltip className="size-6" content={'Initials'} /> */}
@@ -142,7 +143,7 @@ export const BuySellConfirmationScreen: FC<BuySellConfirmationScreenProps> = ({
                 formState: { errors },
               }) => {
                 return (
-                  <div className="pr-[1px]">
+                  <div className={styles.initialsInput}>
                     <InputText
                       ref={ref}
                       errorCaption={

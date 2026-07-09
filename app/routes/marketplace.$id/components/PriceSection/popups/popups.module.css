@@ -39,6 +39,12 @@
   overflow: hidden;
 }
 
+@media (min-width: 768px) {
+  .popupContent.popupContentWithOrderBook {
+    padding-left: 0;
+  }
+}
+
 .popupWide {
   max-width: 1008px;
 }

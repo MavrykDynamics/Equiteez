@@ -13,11 +13,11 @@ import { PopupContent } from "./popups";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 
-export const PrimaryPriceBlock = ({
-  shouldExpand,
-}: {
+type PrimaryPriceBlockProps = {
   shouldExpand: boolean;
-}) => {
+};
+
+export const PrimaryPriceBlock: FC<PrimaryPriceBlockProps> = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { activeMarket, isActiveMarketLoading } = useMarketsContext();
 
@@ -89,7 +89,7 @@ export const PrimaryPriceBlock = ({
         contentPosition={"right"}
       >
         {/*  @ts-expect-error /TODO update or replce popup when primary estate data will be availble (no data for now) */}
-        <PopupContent estate={estate} orderType={"buy"} />
+        <PopupContent estate={estate} onSuccessfulTransaction={handleRequestClose} orderType={"buy"} />
       </PopupWithIcon>
     </section>
   );
