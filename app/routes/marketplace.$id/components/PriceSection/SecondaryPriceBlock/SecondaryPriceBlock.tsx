@@ -69,8 +69,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const { orderbookStorages } = useDexContext();
 
   const { slug } = estate;
-  const { baseTokenDecimals, quoteTokenDecimals } =
-    useOrderbookTokenMetadata(estate);
+  const { quoteTokenDecimals } = useOrderbookTokenMetadata(estate);
   const orderbookAddress = orderbookStorages[slug]?.orderbookAddress;
 
   // stores buy and sell prices based on orders
@@ -112,9 +111,9 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     () =>
       atomsToTokens(
         orderbookStorages[slug]?.lowestSellPrice ?? 0,
-        baseTokenDecimals
+        quoteTokenDecimals
       ) ?? "0",
-    [baseTokenDecimals, orderbookStorages, slug]
+    [quoteTokenDecimals, orderbookStorages, slug]
   );
 
   const totalLiquidityInfo = useMemo(() => {

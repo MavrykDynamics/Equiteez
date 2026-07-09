@@ -16,3 +16,4 @@ stats.html
 build
 coverage
 .DS_Store
+/.claude/

@@ -29,69 +29,23 @@ export const getOrderBookPricesPerToken = (
   };
 };
 
-const toBigNumber = (value: number) => new BigNumber(value);
-
-const getValidTick = (tickSize: number) => {
-  const tick = new BigNumber(tickSize);
-
-  if (!tick.isFinite() || tick.isLessThanOrEqualTo(0)) {
-    throw new Error("Invalid orderbook tick size");
-  }
-
-  return tick;
-};
-
-const roundUpToTick = (value: BigNumber, tickSize: number): BigNumber => {
-  const tick = getValidTick(tickSize);
-
-  return value
-    .dividedBy(tick)
-    .integerValue(BigNumber.ROUND_CEIL)
-    .multipliedBy(tick);
-};
-
-const roundDownToTick = (value: BigNumber, tickSize: number): BigNumber => {
-  const tick = getValidTick(tickSize);
-
-  return value
-    .dividedBy(tick)
-    .integerValue(BigNumber.ROUND_FLOOR)
-    .multipliedBy(tick);
-};
-
 // Orderbook Market logic
-export function calculateMarketBuy(
+// The contract ignores whatever price a market order is submitted with - it
+// overwrites it with a protected sentinel price so the order always matches
+// first (see marketBuyProtectedPrice/marketSellProtectedPrice in
+// rwaOrderbookLambdas.ligo). So the front end has no execution price to
+// protect here; it should just show the real current price, same as a CEX
+// market order quote: best ask for a buy, best bid for a sell.
+export function getMarketBuyPrice(
   lowestSellPrice: number,
-  highestBuyPrice: number,
-  quoteTokenDecimals: number,
-  tickSize: number,
-  percentage: number = 0.25
+  quoteTokenDecimals: number
 ): BigNumber {
-  const refPrice =
-    lowestSellPrice > highestBuyPrice
-      ? toBigNumber(lowestSellPrice)
-      : toBigNumber(highestBuyPrice);
-
-  const rawBuyPrice = refPrice.multipliedBy(1 + percentage);
-  const tickAlignedBuyPrice = roundUpToTick(rawBuyPrice, tickSize);
-
-  return atomsToTokens(tickAlignedBuyPrice, quoteTokenDecimals);
+  return atomsToTokens(lowestSellPrice, quoteTokenDecimals);
 }
 
-export function calculateMarketSell(
-  lowestSellPrice: number,
+export function getMarketSellPrice(
   highestBuyPrice: number,
-  quoteTokenDecimals: number,
-  tickSize: number,
-  percentage: number = 0.25
+  quoteTokenDecimals: number
 ): BigNumber {
-  const refPrice =
-    lowestSellPrice > highestBuyPrice
-      ? toBigNumber(highestBuyPrice)
-      : toBigNumber(lowestSellPrice);
-
-  const rawSellPrice = refPrice.multipliedBy(1 - percentage);
-  const tickAlignedSellPrice = roundDownToTick(rawSellPrice, tickSize);
-
-  return atomsToTokens(tickAlignedSellPrice, quoteTokenDecimals);
+  return atomsToTokens(highestBuyPrice, quoteTokenDecimals);
 }

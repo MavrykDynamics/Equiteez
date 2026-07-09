@@ -54,8 +54,8 @@ import {
 
 import styles from "./popups.module.css";
 import {
-  calculateMarketBuy,
-  calculateMarketSell,
+  getMarketBuyPrice,
+  getMarketSellPrice,
 } from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
@@ -181,24 +181,12 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice, tickSize } =
-      orderbookStorages[slug];
+    const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
 
-    if (tickSize <= 0) return new BigNumber(1);
-
-    const buyPrice = calculateMarketBuy(
-      lowestSellPrice,
-      highestBuyPrice,
-      quoteTokenDecimals,
-      tickSize
-    );
-    const sellPrice = calculateMarketSell(
-      lowestSellPrice,
-      highestBuyPrice,
-      quoteTokenDecimals,
-      tickSize
-    );
-    const nextPrice = orderType === BUY ? buyPrice : sellPrice;
+    const nextPrice =
+      orderType === BUY
+        ? getMarketBuyPrice(lowestSellPrice, quoteTokenDecimals)
+        : getMarketSellPrice(highestBuyPrice, quoteTokenDecimals);
 
     return nextPrice.isFinite() && nextPrice.gt(0)
       ? nextPrice
@@ -313,6 +301,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       pricePerToken: limitPrice?.toNumber() ?? 0,
       decimals: selectedAssetMetadata.decimals,
       quoteTokenDecimals: quoteAssetmetadata.decimals,
+      isMarketOrder: false,
     }),
     [
       pickOrderbookContract,
@@ -344,6 +333,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       pricePerToken: tokenPrice.toNumber(),
       tokensAmount: amountB?.div(tokenPrice).toNumber() ?? 0,
       ...restBuyprops,
+      isMarketOrder: true,
     };
   }, [limitBuyProps, tokenPrice, amountB]);
 
@@ -355,6 +345,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       pricePerToken: tokenPrice.toNumber(),
       rwaTokenAddress: estate.token_address,
       ...restBuyprops,
+      isMarketOrder: true,
     };
   }, [estate.token_address, limitBuyProps, tokenPrice]);
 

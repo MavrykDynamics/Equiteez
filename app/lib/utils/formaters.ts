@@ -9,10 +9,9 @@ export const rwaToFixed = (value: number = 1) => {
   return parseFloat(value.toFixed(2).toString());
 };
 
-export function formatRWAPrice(price: number, exponent = 1000000) {
+export function formatRWAPrice(price: number, decimals = RWA_TOKEN_DECIMALS) {
   const bigPrice = new BigNumber(price);
-  const bigExponent = new BigNumber(exponent);
-  const powerOfTen = new BigNumber(10).pow(bigExponent);
+  const powerOfTen = new BigNumber(10).pow(decimals);
   const formattedPrice = bigPrice.multipliedBy(powerOfTen);
   return formattedPrice.toNumber();
 }

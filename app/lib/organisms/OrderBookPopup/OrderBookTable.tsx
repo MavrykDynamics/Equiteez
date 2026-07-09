@@ -390,8 +390,10 @@ const OrderBookRowsSectionComponent: FC<OrderBookRowsSectionProps> = ({
           <OrderRow
             amountLabel={formatters.amount.format(row.amount)}
             key={row.id}
-            onPriceClick={onPriceClick}
-            priceLabel={formatters.price.format(row.price)}
+            onPriceClick={row.isMarketOrder ? undefined : onPriceClick}
+            priceLabel={
+              row.isMarketOrder ? "Market" : formatters.price.format(row.price)
+            }
             row={row}
             side={side}
             totalLabel={formatters.total.format(row.total)}
@@ -406,18 +408,17 @@ const OrderBookRowsSection = memo(OrderBookRowsSectionComponent);
 
 OrderBookRowsSection.displayName = "OrderBookRowsSection";
 
+// Uses the contract's own escrow reference value rather than re-deriving
+// amount*price client-side, since market orders are stored at a sentinel
+// price and amount*price would produce a meaningless total for them.
 const getOpenOrderTotal = ({
-  baseTokenDecimals,
   order,
   quoteTokenDecimals,
 }: {
-  baseTokenDecimals: number;
   order: OpenOrder;
   quoteTokenDecimals: number;
 }) =>
-  atomsToTokens(order.unfulfilled_amount, baseTokenDecimals).times(
-    atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
-  );
+  atomsToTokens(order.total_usd_value_of_rwa_token_amount, quoteTokenDecimals);
 
 const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
   [...orders].sort((left, right) => {
@@ -439,12 +440,10 @@ const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
   });
 
 const getOrdersTotal = ({
-  baseTokenDecimals,
   orders,
   quoteTokenDecimals,
   side,
 }: {
-  baseTokenDecimals: number;
   orders: OpenOrder[];
   quoteTokenDecimals: number;
   side: "buy" | "sell";
@@ -455,7 +454,6 @@ const getOrdersTotal = ({
       (total, order) =>
         total.plus(
           getOpenOrderTotal({
-            baseTokenDecimals,
             order,
             quoteTokenDecimals,
           })
@@ -470,24 +468,20 @@ const getSummaryPercentage = (value: number, total: number) => {
 };
 
 const getOrderBookFooterSummary = ({
-  baseTokenDecimals,
   buyOrders,
   quoteTokenDecimals,
   sellOrders,
 }: {
-  baseTokenDecimals: number;
   buyOrders: OpenOrder[];
   quoteTokenDecimals: number;
   sellOrders: OpenOrder[];
 }): OrderBookFooterSummary => {
   const buyTotal = getOrdersTotal({
-    baseTokenDecimals,
     orders: buyOrders,
     quoteTokenDecimals,
     side: "buy",
   }).toNumber();
   const sellTotal = getOrdersTotal({
-    baseTokenDecimals,
     orders: sellOrders,
     quoteTokenDecimals,
     side: "sell",
@@ -801,13 +795,11 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const footerSummary = useMemo(
     () =>
       getOrderBookFooterSummary({
-        baseTokenDecimals,
         buyOrders: openOrders.buyOrders,
         quoteTokenDecimals,
         sellOrders: openOrders.sellOrders,
       }),
     [
-      baseTokenDecimals,
       openOrders.buyOrders,
       openOrders.sellOrders,
       quoteTokenDecimals,
