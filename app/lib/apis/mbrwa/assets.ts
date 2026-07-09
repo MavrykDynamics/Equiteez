@@ -1,4 +1,3 @@
-import { api } from "~/lib/utils/api";
 import { assetsListSchema } from "~/providers/MarketsProvider/markets.schema";
 import { mbrwaApiUrl } from "~/lib/apis/mbrwa/index";
 import { AssetsListSchema } from "~/providers/UserAssets/userAssets.schema";
@@ -14,6 +13,7 @@ type FetchAssetsParams = {
 };
 
 export type FetchAssetsResponse = z.infer<typeof assetsListSchema>;
+export type FetchUserAssetsResponse = z.infer<typeof AssetsListSchema>;
 
 const emptyFetchAssetsResponse: FetchAssetsResponse = {
   assets: [],
@@ -116,12 +116,21 @@ export const fetchAssets = async (
   return assetsListSchema.parse(responseData);
 };
 
-export const fetchUserAssets = async (userAddress: string) => {
-  const { data } = await api(
+export const fetchUserAssets = async (
+  userAddress: string
+): Promise<FetchUserAssetsResponse> => {
+  const response = await fetch(
     mbrwaApiUrl.concat(`wallet/${userAddress}/assets`),
-    undefined,
-    AssetsListSchema
+    { method: "GET" }
   );
+  const responseData: unknown = await response.json();
 
-  return data;
+  if (!response.ok) {
+    throw new Error(
+      getErrorMessage(responseData) ??
+        `Failed to fetch user assets (${response.status})`
+    );
+  }
+
+  return AssetsListSchema.parse(responseData);
 };
