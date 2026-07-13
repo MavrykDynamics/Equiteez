@@ -95,3 +95,41 @@ export function safeDivByPrice(
 ): BigNumber | undefined {
   return amount && price.gt(0) ? amount.div(price) : undefined;
 }
+
+/**
+ * Token quantity that a percentage of a quote-token balance can buy at a given
+ * per-token price. Returns undefined when the price is not positive (can't size
+ * a buy without a price). Used by the limit-buy percentage selector.
+ */
+export function deriveQuantityFromPercent(
+  balance: BigNumber.Value,
+  percent: BigNumber.Value,
+  pricePerToken: BigNumber
+): BigNumber | undefined {
+  const spend = new BigNumber(balance).times(percent).div(100);
+  return safeDivByPrice(spend, pricePerToken);
+}
+
+/**
+ * Side-aware balance check: a BUY overspends when the quote total exceeds the
+ * quote balance; a SELL oversells when the token amount exceeds the token
+ * balance. Returns a real boolean — a BigNumber NaN or undefined resolves to
+ * false (BigNumber NaN comparisons are false), so callers get a safe guard.
+ */
+export function exceedsAvailableBalance({
+  isBuyAction,
+  total,
+  amount,
+  usdBalance,
+  tokenBalance,
+}: {
+  isBuyAction: boolean;
+  total: BigNumber | undefined;
+  amount: BigNumber | undefined;
+  usdBalance: BigNumber.Value;
+  tokenBalance: BigNumber.Value;
+}): boolean {
+  return isBuyAction
+    ? Boolean(total?.gt(usdBalance))
+    : Boolean(amount?.gt(tokenBalance));
+}
