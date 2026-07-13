@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 
 // components
 import { Button } from "~/lib/atoms/Button";
@@ -15,19 +15,10 @@ import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { PopupContent } from "../popups";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import Money from "~/lib/atoms/Money";
-import {
-  calculateLiquidityPercentages,
-  calculateTotalLiquidity,
-} from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
-import BigNumber from "bignumber.js";
-import { ZERO } from "~/lib/utils/numbers";
-import { useApiQuery } from "~/hooks/useApiQuery";
-import { fetchOrderbookPrices } from "~/lib/apis/mbrwa/orderbooks";
-import { getRwaTokenPriceBasedOnOrders } from "~/providers/Dexprovider/utils/aggregateData";
-import { unknownToError } from "~/errors/error";
-import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
+import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
+import { getTotalOrderBookLiquidity } from "../orderBook.consts";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { AnimatePresence, motion } from "framer-motion";
@@ -60,7 +51,6 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
   shouldExpand,
 }) => {
-  const { warning } = useToasterContext();
   const { validBaseTokens } = useMarketsContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
@@ -69,43 +59,12 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const { orderbookStorages } = useDexContext();
 
   const { slug } = estate;
-  const { quoteTokenDecimals } = useOrderbookTokenMetadata(estate);
-  const orderbookAddress = orderbookStorages[slug]?.orderbookAddress;
+  const { baseTokenDecimals, quoteTokenDecimals } =
+    useOrderbookTokenMetadata(estate);
 
-  // stores buy and sell prices based on orders
-  const [totalLiquidity, setTotalLiquidity] = useState<{
-    buyPrice: BigNumber;
-    sellPrice: BigNumber;
-  }>({
-    buyPrice: ZERO,
-    sellPrice: ZERO,
+  const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
+    rwaAddress: estate.token_address,
   });
-
-  const {
-    data: orderbookPricesData,
-    error,
-    loading: isAggregatedOrdersLoading,
-  } = useApiQuery({
-    fetchFn: async () => fetchOrderbookPrices(orderbookAddress ?? ""),
-    deps: [orderbookAddress],
-    enabled: Boolean(orderbookAddress),
-  });
-
-  useEffect(() => {
-    if (error) {
-      console.log(error, "Error fetchOrderbookPrices");
-      const err = unknownToError(error);
-      warning("Unable to fetch orderbook prices", err.message);
-    }
-    if (!orderbookPricesData) return;
-
-    const { buyPrice, sellPrice } = getRwaTokenPriceBasedOnOrders(
-      orderbookPricesData,
-      quoteTokenDecimals
-    );
-
-    setTotalLiquidity({ buyPrice, sellPrice });
-  }, [error, orderbookPricesData, quoteTokenDecimals, warning]);
 
   const currentPrice = useMemo(
     () =>
@@ -116,19 +75,22 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     [quoteTokenDecimals, orderbookStorages, slug]
   );
 
-  const totalLiquidityInfo = useMemo(() => {
-    const totalLiquidityInUSD = calculateTotalLiquidity(
-      totalLiquidity.buyPrice,
-      totalLiquidity.sellPrice
-    );
-
-    const { buyPercentage, sellPercentage } = calculateLiquidityPercentages(
-      totalLiquidity.buyPrice,
-      totalLiquidity.sellPrice
-    );
-
-    return { totalLiquidityInUSD, buyPercentage, sellPercentage };
-  }, [totalLiquidity.buyPrice, totalLiquidity.sellPrice]);
+  // Total liquidity = USD value of every resting bid + ask in the book.
+  const totalLiquidityInUSD = useMemo(
+    () =>
+      getTotalOrderBookLiquidity({
+        buyOrders: openOrders.buyOrders,
+        sellOrders: openOrders.sellOrders,
+        baseTokenDecimals,
+        quoteTokenDecimals,
+      }),
+    [
+      openOrders.buyOrders,
+      openOrders.sellOrders,
+      baseTokenDecimals,
+      quoteTokenDecimals,
+    ]
+  );
 
   const handleRequestClose = useCallback(() => {
     setIsOpen(false);
@@ -176,12 +138,12 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
       <div className="text-content text-buttons flex justify-between mb-3">
         <Text weight="semibold">Total Liquidity</Text>
         <Text weight="semibold" className="flex items-center">
-          {isAggregatedOrdersLoading ? (
+          {isLiquidityLoading ? (
             <Spinner size={6} />
           ) : (
             <>
               {" "}
-              $<Money fiat>{totalLiquidityInfo.totalLiquidityInUSD}</Money>
+              $<Money fiat>{totalLiquidityInUSD}</Money>
             </>
           )}
         </Text>

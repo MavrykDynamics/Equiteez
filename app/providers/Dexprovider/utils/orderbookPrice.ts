@@ -49,3 +49,35 @@ export function getMarketSellPrice(
 ): BigNumber {
   return atomsToTokens(highestBuyPrice, quoteTokenDecimals);
 }
+
+/**
+ * Resolve the market price to quote for a market order.
+ *
+ * Prefer the natural side of the book (best ask for a buy, best bid for a
+ * sell). When that side is empty, fall back to the opposite side's real price
+ * so the two sides stay correlated — e.g. a market sell with no bids quotes the
+ * best ask instead of a placeholder. Returns 0 only when the book has no orders
+ * on either side.
+ */
+export function resolveMarketPrice(
+  isBuyOrder: boolean,
+  lowestSellPrice: number,
+  highestBuyPrice: number,
+  quoteTokenDecimals: number
+): BigNumber {
+  const marketBuyPrice = getMarketBuyPrice(lowestSellPrice, quoteTokenDecimals);
+  const marketSellPrice = getMarketSellPrice(
+    highestBuyPrice,
+    quoteTokenDecimals
+  );
+
+  const primaryPrice = isBuyOrder ? marketBuyPrice : marketSellPrice;
+  const fallbackPrice = isBuyOrder ? marketSellPrice : marketBuyPrice;
+
+  const isUsable = (price: BigNumber) => price.isFinite() && price.gt(0);
+
+  if (isUsable(primaryPrice)) return primaryPrice;
+  if (isUsable(fallbackPrice)) return fallbackPrice;
+
+  return new BigNumber(0);
+}

@@ -22,7 +22,7 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { atomsToTokens, rwaToFixed } from "~/lib/utils/formaters";
 import clsx from "clsx";
 import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
-import { toTokenSlug } from "~/lib/assets";
+import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
 import BigNumber from "bignumber.js";
 // import {
 //   caclMinMaxQuoteBuying,
@@ -249,9 +249,17 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     inputPriceRef.current?.focus();
   };
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(
@@ -491,8 +499,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                 <div className="text-caption-regular">
                   {isBuyAction ? (
                     <CryptoBalance
-                      value={userTokensBalances[stablecoinContract] || 0}
-                      cryptoDecimals={6}
+                      value={userTokensBalances[quoteTokenAddress] || 0}
+                      cryptoDecimals={quoteAssetmetadata.decimals ?? 6}
                     />
                   ) : (
                     <CryptoBalance

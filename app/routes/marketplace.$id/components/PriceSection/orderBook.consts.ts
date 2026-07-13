@@ -135,7 +135,7 @@ const toOrderBookRows = (
   );
 };
 
-const getSpread = (
+export const getSpread = (
   asks: OrderBookRow[],
   bids: OrderBookRow[]
 ): OrderBookData["spread"] => {
@@ -177,6 +177,48 @@ const getSentiment = (asks: OrderBookRow[], bids: OrderBookRow[]) => {
     buy,
     sell: 100 - buy,
   };
+};
+
+type GetTotalOrderBookLiquidityParams = {
+  buyOrders: OpenOrder[];
+  sellOrders: OpenOrder[];
+  baseTokenDecimals: number;
+  quoteTokenDecimals: number;
+};
+
+/**
+ * Total USD value of all resting orders on both sides of the book — the real
+ * liquidity available in the orderbook. Each order's value is derived the same
+ * way as its row total in toOrderBookRows: market/sentinel orders use their
+ * escrowed USD reference value, limit orders use amount * price.
+ */
+export const getTotalOrderBookLiquidity = ({
+  buyOrders,
+  sellOrders,
+  baseTokenDecimals,
+  quoteTokenDecimals,
+}: GetTotalOrderBookLiquidityParams): BigNumber => {
+  const sumSide = (orders: OpenOrder[], side: OrderBookSide) =>
+    orders.reduce((runningTotal, order) => {
+      const isMarketOrder =
+        side === "bid"
+          ? order.price_per_rwa_token === MARKET_BUY_SENTINEL_PRICE
+          : order.price_per_rwa_token === MARKET_SELL_SENTINEL_PRICE;
+
+      const orderValue = isMarketOrder
+        ? atomsToTokens(
+            order.total_usd_value_of_rwa_token_amount,
+            quoteTokenDecimals
+          )
+        : atomsToTokens(order.unfulfilled_amount, baseTokenDecimals).multipliedBy(
+            atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
+          );
+
+      return runningTotal.plus(orderValue);
+    }, new BigNumber(0));
+
+  // buyOrders are bids, sellOrders are asks.
+  return sumSide(buyOrders, "bid").plus(sumSide(sellOrders, "ask"));
 };
 
 export const getOrderBookPrecisionOptions = ({

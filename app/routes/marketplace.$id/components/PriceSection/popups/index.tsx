@@ -53,10 +53,7 @@ import {
 } from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
-import {
-  getMarketBuyPrice,
-  getMarketSellPrice,
-} from "~/providers/Dexprovider/utils";
+import { resolveMarketPrice } from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
@@ -183,14 +180,12 @@ export const PopupContent: FC<PopupContentProps> = ({
   const tokenPrice = useMemo(() => {
     const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
 
-    const nextPrice =
-      orderType === BUY
-        ? getMarketBuyPrice(lowestSellPrice, quoteTokenDecimals)
-        : getMarketSellPrice(highestBuyPrice, quoteTokenDecimals);
-
-    return nextPrice.isFinite() && nextPrice.gt(0)
-      ? nextPrice
-      : new BigNumber(1);
+    return resolveMarketPrice(
+      orderType === BUY,
+      lowestSellPrice,
+      highestBuyPrice,
+      quoteTokenDecimals
+    );
   }, [orderType, orderbookStorages, quoteTokenDecimals, slug]);
 
   const handleTabClick = useCallback(
@@ -331,7 +326,9 @@ export const PopupContent: FC<PopupContentProps> = ({
 
     return {
       pricePerToken: tokenPrice.toNumber(),
-      tokensAmount: amountB?.div(tokenPrice).toNumber() ?? 0,
+      tokensAmount: tokenPrice.gt(0)
+        ? (amountB?.div(tokenPrice).toNumber() ?? 0)
+        : 0,
       ...restBuyprops,
       isMarketOrder: true,
     };
