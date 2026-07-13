@@ -17,3 +17,4 @@ build
 coverage
 .DS_Store
 /.claude/
+/.idea/
