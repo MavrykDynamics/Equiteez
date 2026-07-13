@@ -344,13 +344,13 @@ export const PopupContent: FC<PopupContentProps> = ({
         if (cancelled) return;
 
         if (res.actionSuccess) {
-          const { totalSuggestedFeeMutez } = res.data;
+          // Full on-chain cost of the transaction (network fee + storage burn),
+          // not just the suggested fee.
+          const { totalCost } = res.data;
 
-          const networkFeeTez = new BigNumber(totalSuggestedFeeMutez).dividedBy(
-            MILLION
-          );
+          const networkFeeTez = new BigNumber(totalCost).dividedBy(MILLION);
 
-          setNetworkFee(networkFeeTez); // string for UI
+          setNetworkFee(networkFeeTez);
         }
       } catch (e) {
         if (!cancelled) setNetworkFee(ZERO);

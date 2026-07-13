@@ -17,7 +17,6 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
@@ -25,7 +24,7 @@ import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
-import { atomsToTokens } from "~/lib/utils/formaters";
+import { PLATFORM_FEE_RATE } from "./buySell.consts";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellScreenProps = {
@@ -55,7 +54,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   hasQuoteError = false,
 }) => {
   const { token_address, slug, assetDetails } = estate;
-  const { orderbookStorages } = useDexContext();
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
@@ -189,28 +187,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-      finalTotalValue: 0,
-      txnFee: 0,
-    };
-
-    const fee = isBuyAction
-      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
-      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
-
-    const finalTotalValue = (isBuyAction ? amount : total) ?? ZERO;
+    // Platform fee = 2% of the order's USDT total (amount paid on a buy, or
+    // proceeds on a sell).
+    const orderValue = (isBuyAction ? amount : total) ?? ZERO;
+    const fee = orderValue.times(PLATFORM_FEE_RATE);
 
     return {
-      finalTotalValue: finalTotalValue?.plus(fee)?.plus(networkFee) || ZERO,
+      finalTotalValue: orderValue.plus(fee).plus(networkFee) || ZERO,
       txnFee: fee,
     };
   }, [
     amount,
     isBuyAction,
     networkFee,
-    orderbookStorages,
-    slug,
-    stableCoinMetadata.decimals,
     total,
   ]);
 

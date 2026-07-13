@@ -18,19 +18,18 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import { PLATFORM_FEE_RATE } from "./buySell.consts";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -62,7 +61,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
-  const { orderbookStorages } = useDexContext();
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
@@ -181,27 +179,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-      total: 0,
-      txnFee: 0,
-    };
-
-    const fee = isBuyAction
-      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
-      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
+    // Platform fee = 2% of the order total.
+    const fee = total ? total.times(PLATFORM_FEE_RATE) : ZERO;
 
     return {
       finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
       txnFee: fee,
     };
-  }, [
-    isBuyAction,
-    networkFee,
-    orderbookStorages,
-    slug,
-    stableCoinMetadata.decimals,
-    total,
-  ]);
+  }, [networkFee, total]);
 
   const isBtnDisabled =
     hasBalanceError ||

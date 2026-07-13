@@ -17,7 +17,7 @@ export const FeesCard: FC<FeesCardProps> = ({ txnFees, networkfee }) => {
 
       <div className="flex flex-col gap-[4px]">
         <div className="flex items-center justify-between">
-          <p className="text-sand-600">Txn Fees</p>
+          <p className="text-sand-600">Platform Fees</p>
           <div className="text-sand-900 font-semibold">
             $<Money tooltip={false}>{txnFees}</Money>
           </div>
