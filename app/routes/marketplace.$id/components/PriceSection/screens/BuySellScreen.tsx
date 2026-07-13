@@ -18,6 +18,7 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
@@ -111,7 +112,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
       if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
-      else setAmount(val?.div(tokenPrice) ?? new BigNumber(0));
+      else setAmount(safeDivByPrice(val, tokenPrice) ?? new BigNumber(0));
     },
     [isBuyAction, setAmount, tokenPrice]
   );
@@ -143,7 +144,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount: amount?.div(tokenPrice) || undefined, // BUY: USDT -> Token
+            amount: safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }

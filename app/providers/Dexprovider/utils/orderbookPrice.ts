@@ -81,3 +81,17 @@ export function resolveMarketPrice(
 
   return new BigNumber(0);
 }
+
+/**
+ * Convert a quote amount into a token quantity at a market price, guarding
+ * against an empty-book price of 0 (resolveMarketPrice returns 0 when the book
+ * has no orders on either side). A raw amount.div(0) yields Infinity, which is
+ * truthy and slips past `|| undefined` / `?? 0`, rendering "∞" in the UI.
+ * Returns undefined when the amount is missing or the price is not positive.
+ */
+export function safeDivByPrice(
+  amount: BigNumber | undefined,
+  price: BigNumber
+): BigNumber | undefined {
+  return amount && price.gt(0) ? amount.div(price) : undefined;
+}

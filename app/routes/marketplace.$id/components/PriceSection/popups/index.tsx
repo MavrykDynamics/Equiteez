@@ -53,7 +53,7 @@ import {
 } from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
-import { resolveMarketPrice } from "~/providers/Dexprovider/utils";
+import { resolveMarketPrice, safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
@@ -326,9 +326,7 @@ export const PopupContent: FC<PopupContentProps> = ({
 
     return {
       pricePerToken: tokenPrice.toNumber(),
-      tokensAmount: tokenPrice.gt(0)
-        ? (amountB?.div(tokenPrice).toNumber() ?? 0)
-        : 0,
+      tokensAmount: safeDivByPrice(amountB, tokenPrice)?.toNumber() ?? 0,
       ...restBuyprops,
       isMarketOrder: true,
     };
@@ -705,7 +703,8 @@ export const PopupContent: FC<PopupContentProps> = ({
                           cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
-                            ? (amountB?.div(tokenPrice).toNumber() ?? 0)
+                            ? (safeDivByPrice(amountB, tokenPrice)?.toNumber() ??
+                              0)
                             : (amountB ?? 0)}
                         </Money>
                       ) : (

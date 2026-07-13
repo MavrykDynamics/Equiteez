@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+// eslint-disable-next-line import/no-named-as-default
+import BigNumber from "bignumber.js";
 
 import {
   getBestBuyPrice,
@@ -7,6 +9,7 @@ import {
   getMarketSellPrice,
   getOrderBookPricesPerToken,
   resolveMarketPrice,
+  safeDivByPrice,
 } from "./orderbookPrice";
 
 // Raw orderbook prices are stored in atoms; with 6 decimals a raw value of
@@ -128,5 +131,35 @@ describe("resolveMarketPrice (market order quote)", () => {
   it("applies quote decimals to the resolved price", () => {
     // raw ask 250 with 2 decimals -> $2.50
     expect(resolveMarketPrice(true, 250, 0, 2).toNumber()).toBe(2.5);
+  });
+});
+
+describe("safeDivByPrice (empty-book division guard)", () => {
+  it("divides a quote amount by the price to get a token quantity", () => {
+    expect(
+      safeDivByPrice(new BigNumber(100), new BigNumber(5))?.toNumber()
+    ).toBe(20);
+  });
+
+  // The regression guard: resolveMarketPrice returns 0 for an empty book, and a
+  // raw div(0) would yield Infinity (which is truthy and slips past || / ??).
+  it("returns undefined when the price is 0 (never Infinity)", () => {
+    const result = safeDivByPrice(new BigNumber(100), new BigNumber(0));
+    expect(result).toBeUndefined();
+  });
+
+  it("returns undefined when the amount is missing", () => {
+    expect(safeDivByPrice(undefined, new BigNumber(5))).toBeUndefined();
+  });
+
+  it("returns 0 tokens for a 0 spend at a valid price", () => {
+    expect(
+      safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()
+    ).toBe(0);
+  });
+
+  it("never produces a non-finite result for a 0 price", () => {
+    const result = safeDivByPrice(new BigNumber(999), new BigNumber(0));
+    expect(result === undefined || result.isFinite()).toBe(true);
   });
 });
