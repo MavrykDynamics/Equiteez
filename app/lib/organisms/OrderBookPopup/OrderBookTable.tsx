@@ -70,6 +70,7 @@ type OrderBookTableProps = {
   emptyMessage?: string;
   enabled?: boolean;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
+  orderbookAddress?: string | null;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -680,6 +681,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   emptyMessage = "No open orders available.",
   enabled = true,
   onPriceClick,
+  orderbookAddress,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
   referencePrice = 0,
@@ -690,6 +692,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const { openOrders, loading } = useOpenOrders({
     enabled,
     limit: ORDER_BOOK_FETCH_LIMIT,
+    orderbookAddress,
     rwaAddress,
   });
 

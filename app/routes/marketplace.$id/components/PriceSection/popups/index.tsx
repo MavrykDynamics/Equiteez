@@ -606,6 +606,7 @@ export const PopupContent: FC<PopupContentProps> = ({
           onPriceClick={
             isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
           }
+          orderbookAddress={pickOrderbookContract[estate.token_address]}
           quoteTokenDecimals={quoteTokenDecimals}
           quoteTokenSymbol={quoteAssetmetadata.symbol}
           referencePrice={tokenPrice.toNumber()}

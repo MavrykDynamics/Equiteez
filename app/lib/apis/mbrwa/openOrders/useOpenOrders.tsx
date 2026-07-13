@@ -24,12 +24,14 @@ type UseOpenOrdersParams = {
   enabled?: boolean;
   limit?: number;
   rwaAddress?: string | null;
+  orderbookAddress?: string | null;
 };
 
 export function useOpenOrders({
   enabled = true,
   limit,
   rwaAddress,
+  orderbookAddress,
 }: UseOpenOrdersParams) {
   const { handleApolloError } = useApolloContext();
   const { warning } = useToasterContext();
@@ -38,9 +40,10 @@ export function useOpenOrders({
     () => ({
       limit,
       rwaAddress,
+      orderbookAddress,
       offset: OPEN_ORDERS_OFFSET,
     }),
-    [limit, rwaAddress]
+    [limit, orderbookAddress, rwaAddress]
   );
 
   const openOrdersData = useQueryWithRefetch<
@@ -50,7 +53,7 @@ export function useOpenOrders({
     ALL_OPEN_ORDERS_QUERY,
     {
       variables: queryVariables,
-      skip: !enabled || !rwaAddress,
+      skip: !enabled || !orderbookAddress || !rwaAddress,
     },
     {
       refetchInterval: OPEN_ORDERS_REFETCH_INTERVAL,
