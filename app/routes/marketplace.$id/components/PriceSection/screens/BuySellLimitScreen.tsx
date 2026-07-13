@@ -25,9 +25,12 @@ import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
 import { AssetView } from "~/templates/BalanceInput/AssetView";
-import { PercentBlock } from "~/routes/marketplace.$id/components/PriceSection/components/PercentBlock/PercentBlock";
 import Money from "~/lib/atoms/Money";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import {
+  deriveQuantityFromPercent,
+  exceedsAvailableBalance,
+} from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellLimitScreenProps = {
@@ -43,7 +46,6 @@ type BuySellLimitScreenProps = {
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  handleSlippageChange: (value: number) => void;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -58,7 +60,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setLimitPrice,
   marketTokenPrice,
-  handleSlippageChange,
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
@@ -103,19 +104,19 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
     [limitPrice, marketTokenPrice]
   );
-  const hasTotalError = useMemo(
-    () => total && total.gt(usdBalance),
-    [total, usdBalance]
-  );
-
-  const hasSellTokensBalanceError = useMemo(
-    () => !isBuyAction && amount && amount.gt(tokenBalance),
-    [amount, isBuyAction, tokenBalance]
-  );
-
-  const hasBuyTokensBalanceError = useMemo(
-    () => isBuyAction && limitPrice && limitPrice.gt(usdBalance),
-    [limitPrice, isBuyAction, usdBalance]
+  // Side-aware balance guard: BUY overspends when total (amount × limit price)
+  // exceeds the quote balance; SELL oversells when amount exceeds the token
+  // balance. Drives both the input caption and the Continue button.
+  const hasBalanceError = useMemo(
+    () =>
+      exceedsAvailableBalance({
+        isBuyAction,
+        total,
+        amount,
+        usdBalance,
+        tokenBalance,
+      }),
+    [isBuyAction, total, amount, usdBalance, tokenBalance]
   );
 
   const handleContinueClick = useCallback(() => {
@@ -136,36 +137,37 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const { input1Props, input2Props } = useMemo(() => {
-    const buyProps = {
+    // The limit price (per token, in the quote token) field.
+    const priceProps = {
       amount: limitPrice,
       selectedAssetSlug: quoteTokenSlug,
       selectedAssetMetadata: stableCoinMetadata,
       onChange: setLimitPrice,
       cryptoValue: usdBalance,
-      errorCaption: hasBuyTokensBalanceError
-        ? "The amount entered exceeds your available balance."
-        : undefined,
+      label: "Limit Price",
     };
 
-    const sellProps = {
+    // The order-quantity (base token) field. The balance error lives here since
+    // it's what the user adjusts to fix an over-budget buy or over-holding sell.
+    const amountProps = {
       amount: amount,
       selectedAssetSlug: slug,
       selectedAssetMetadata: selectedAssetMetadata,
       onChange: handleOutputChange,
       cryptoValue: tokenBalance,
-      errorCaption: hasSellTokensBalanceError
+      label: "Amount",
+      errorCaption: hasBalanceError
         ? "The amount entered exceeds your available balance."
         : undefined,
     };
 
     return isBuyAction
-      ? { input1Props: buyProps, input2Props: sellProps }
-      : { input1Props: sellProps, input2Props: buyProps };
+      ? { input1Props: priceProps, input2Props: amountProps }
+      : { input1Props: amountProps, input2Props: priceProps };
   }, [
     amount,
     handleOutputChange,
-    hasBuyTokensBalanceError,
-    hasSellTokensBalanceError,
+    hasBalanceError,
     isBuyAction,
     limitPrice,
     quoteTokenSlug,
@@ -203,12 +205,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   ]);
 
   const isBtnDisabled =
-    hasTotalError ||
+    hasBalanceError ||
     !amount ||
-    !isKyced ||
+    amount.isZero() ||
+    amount.isNaN() ||
     !limitPrice ||
-    limitPrice?.isZero() ||
-    amount?.isZero();
+    limitPrice.isZero() ||
+    limitPrice.isNaN() ||
+    !isKyced;
   const priceDifferencePrefix = marketPriceDifference?.gt(0)
     ? "+"
     : marketPriceDifference?.lt(0)
@@ -221,28 +225,30 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       : "text-sand-600";
 
   useEffect(() => {
-    if (selectedPercentage != null) {
-      if (isBuyAction) {
-        const percentage = new BigNumber(selectedPercentage);
-        const newAmount = new BigNumber(usdBalance)
-          .multipliedBy(percentage)
-          .dividedBy(100);
-        setLimitPrice(newAmount);
-      } else {
-        const percentage = new BigNumber(selectedPercentage);
-        const newAmount = new BigNumber(tokenBalance)
-          .multipliedBy(percentage)
-          .dividedBy(100);
-        setAmount(newAmount);
-      }
+    if (selectedPercentage == null) return;
+
+    if (isBuyAction) {
+      // Spend a % of the quote balance at the current limit price -> token qty.
+      setAmount(
+        limitPrice
+          ? deriveQuantityFromPercent(usdBalance, selectedPercentage, limitPrice)
+          : undefined
+      );
+    } else {
+      // Sell a % of the token holdings.
+      setAmount(
+        new BigNumber(tokenBalance)
+          .multipliedBy(selectedPercentage)
+          .dividedBy(100)
+      );
     }
   }, [
     isBuyAction,
     selectedPercentage,
     setAmount,
-    setLimitPrice,
     tokenBalance,
     usdBalance,
+    limitPrice,
   ]);
 
   return (
@@ -255,7 +261,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onNext={() => ref2.current?.focus()}
               amountInputDisabled={false}
               {...input1Props}
-              label="I Want To Allocate"
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
               cryptoDecimals={stableCoinMetadata.decimals}
@@ -272,7 +277,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 </div>
               }
               {...input2Props}
-              label="To Buy"
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
               cryptoDecimals={stableCoinMetadata.decimals}
@@ -293,12 +297,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 amountInputDisabled
                 amount={balanceTotal}
                 additionalTopRightBlock=" "
-                additionalBottomRightBlock={
-                  <PercentBlock
-                    isBuyAction={isBuyAction}
-                    handleSlippageChange={handleSlippageChange}
-                  />
-                }
                 label={
                   <div className="flex items-center gap-[4px] text-xs text-sand-600">
                     Take Profit when{" "}

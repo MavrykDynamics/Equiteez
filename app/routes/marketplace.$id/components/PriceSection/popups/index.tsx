@@ -125,16 +125,6 @@ export const PopupContent: FC<PopupContentProps> = ({
   // network fee estimation state --------------------------------------------
   const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
 
-  // Slippage percentage for price impact --------------------------------------------
-  const [slippagePercentage, setSlippagePercentage] = useState<number>(0);
-
-  const handleSlippageChange = useCallback(
-    (value: number) => {
-      setSlippagePercentage(value);
-    },
-    [setSlippagePercentage]
-  );
-
   // --------------------------------------------
 
   // --- input state
@@ -242,24 +232,6 @@ export const PopupContent: FC<PopupContentProps> = ({
   );
 
   useEffect(() => {
-    if (marketType === "limit") {
-      const multiplier = new BigNumber(1).plus(
-        new BigNumber(slippagePercentage).div(100)
-      );
-
-      // if buyAction -> amountB is cheaper for %
-      if (activetabId === BUY) {
-        setAmountB((prev) => (prev ? prev.times(multiplier) : undefined));
-      }
-
-      // if sellAction -> limitPrice is greater for %
-      if (activetabId === SELL) {
-        setLimitPrice((prev) => (prev ? prev.times(multiplier) : undefined));
-      }
-    }
-  }, [activetabId, marketType, slippagePercentage]);
-
-  useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
 
     if (isDefined(amountB) && priceToUse) {
@@ -273,7 +245,6 @@ export const PopupContent: FC<PopupContentProps> = ({
     marketType,
     slug,
     tokenPrice,
-    slippagePercentage,
     limitPrice,
     isMarketTypeMarket,
   ]);
@@ -284,7 +255,6 @@ export const PopupContent: FC<PopupContentProps> = ({
 
     setAmountB(undefined);
     setLimitPrice(undefined);
-    setSlippagePercentage(0);
   }, [activetabId, marketType]);
 
   // Orderbook limit buy | sell with custom user price
@@ -518,7 +488,8 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   const handleOrderBookPriceSelect = useCallback(
     (price: number) => {
-      if (marketType !== "limit" || price <= 0) return;
+      if (marketType !== "limit" || !Number.isFinite(price) || price <= 0)
+        return;
 
       setLimitPrice((currentPrice) => {
         const nextPrice = new BigNumber(price);
@@ -758,7 +729,6 @@ export const PopupContent: FC<PopupContentProps> = ({
                 amount={amountB}
                 setAmount={setAmountB}
                 total={total}
-                handleSlippageChange={handleSlippageChange}
                 networkFee={networkFee}
               />
             ))}
