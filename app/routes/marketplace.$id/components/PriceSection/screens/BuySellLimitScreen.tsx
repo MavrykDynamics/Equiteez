@@ -24,7 +24,6 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
-import { AssetView } from "~/templates/BalanceInput/AssetView";
 import Money from "~/lib/atoms/Money";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import {
@@ -271,11 +270,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onNext={() => ref3.current?.focus()}
               onPrev={() => ref1.current?.focus()}
               amountInputDisabled={false}
-              additionalBottomRightBlock={
-                <div className="text-xs text-sand-600 font-semibold">
-                  Est. Received
-                </div>
-              }
               {...input2Props}
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
@@ -299,8 +293,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 additionalTopRightBlock=" "
                 label={
                   <div className="flex items-center gap-[4px] text-xs text-sand-600">
-                    Take Profit when{" "}
-                    <AssetView selectedAssetSlug={slug} isSmallView />
+                    Order Total
                   </div>
                 }
                 additionalBottomLeftBlock={
