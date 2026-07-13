@@ -41,7 +41,7 @@ import usePrevious from "~/lib/ui/hooks/usePrevious";
 import Money from "~/lib/atoms/Money";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
@@ -53,7 +53,11 @@ import {
 } from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
-import { resolveMarketPrice, safeDivByPrice } from "~/providers/Dexprovider/utils";
+import {
+  getBestPricesFromOpenOrders,
+  resolveMarketPrice,
+  safeDivByPrice,
+} from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
@@ -104,7 +108,7 @@ export const PopupContent: FC<PopupContentProps> = ({
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
-  const { orderbookStorages } = useDexContext();
+  const { openOrders } = useOpenOrders({ rwaAddress: estate.token_address });
   const {
     marketsArr,
     sortedMarketAddresses,
@@ -166,9 +170,14 @@ export const PopupContent: FC<PopupContentProps> = ({
     quoteTokenMetadata: quoteAssetmetadata,
   } = useOrderbookTokenMetadata(estate);
 
-  // based on tab (buy|sell) token price may vary
+  // based on tab (buy|sell) token price may vary. Source best ask/bid from the
+  // LIVE order book (same as the order-book table), not the 30s-stale REST
+  // snapshot, so the quoted price can't disagree with the visible orders.
   const tokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
+    const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOpenOrders(
+      openOrders.buyOrders,
+      openOrders.sellOrders
+    );
 
     return resolveMarketPrice(
       orderType === BUY,
@@ -176,7 +185,12 @@ export const PopupContent: FC<PopupContentProps> = ({
       highestBuyPrice,
       quoteTokenDecimals
     );
-  }, [orderType, orderbookStorages, quoteTokenDecimals, slug]);
+  }, [
+    orderType,
+    openOrders.buyOrders,
+    openOrders.sellOrders,
+    quoteTokenDecimals,
+  ]);
 
   const handleTabClick = useCallback(
     (id: OrderType) => {

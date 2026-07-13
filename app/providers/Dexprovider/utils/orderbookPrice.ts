@@ -133,3 +133,33 @@ export function exceedsAvailableBalance({
     ? Boolean(total?.gt(usdBalance))
     : Boolean(amount?.gt(tokenBalance));
 }
+
+// Sentinel prices used on-chain for market orders (mirror
+// marketBuyProtectedPrice/marketSellProtectedPrice); they are not real prices.
+const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
+const MARKET_SELL_SENTINEL_PRICE = 0;
+
+/**
+ * Best ask (lowest real sell price) and best bid (highest real buy price) from
+ * the LIVE open orders, excluding sentinel-priced market orders. Returned in
+ * raw atom units so they can feed resolveMarketPrice exactly like the
+ * orderbookStorages fields do. Using this instead of the 30s-polled REST
+ * snapshot keeps the displayed price consistent with the visible order book.
+ */
+export function getBestPricesFromOpenOrders(
+  buyOrders: { price_per_rwa_token: number }[],
+  sellOrders: { price_per_rwa_token: number }[]
+): { lowestSellPrice: number; highestBuyPrice: number } {
+  const realSellPrices = sellOrders
+    .map((order) => order.price_per_rwa_token)
+    .filter((price) => price > 0 && price !== MARKET_SELL_SENTINEL_PRICE);
+
+  const realBuyPrices = buyOrders
+    .map((order) => order.price_per_rwa_token)
+    .filter((price) => price > 0 && price !== MARKET_BUY_SENTINEL_PRICE);
+
+  return {
+    lowestSellPrice: realSellPrices.length ? Math.min(...realSellPrices) : 0,
+    highestBuyPrice: realBuyPrices.length ? Math.max(...realBuyPrices) : 0,
+  };
+}

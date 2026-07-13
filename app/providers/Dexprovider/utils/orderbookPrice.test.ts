@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
+  getBestPricesFromOpenOrders,
   getBestBuyPrice,
   getBestSellPrice,
   getMarketBuyPrice,
@@ -190,6 +191,33 @@ describe("deriveQuantityFromPercent (limit-buy % selector)", () => {
     expect(
       deriveQuantityFromPercent(1000, 100, new BigNumber(4))?.toNumber()
     ).toBe(250);
+  });
+});
+
+describe("getBestPricesFromOpenOrders (live best ask/bid)", () => {
+  it("takes the lowest sell as best ask and highest buy as best bid", () => {
+    expect(
+      getBestPricesFromOpenOrders(
+        [{ price_per_rwa_token: 10 }, { price_per_rwa_token: 8 }],
+        [{ price_per_rwa_token: 35 }, { price_per_rwa_token: 30 }]
+      )
+    ).toEqual({ lowestSellPrice: 30, highestBuyPrice: 10 });
+  });
+
+  it("excludes sentinel-priced market orders (sell 0, buy 999_999_999_999)", () => {
+    expect(
+      getBestPricesFromOpenOrders(
+        [{ price_per_rwa_token: 999_999_999_999 }, { price_per_rwa_token: 10 }],
+        [{ price_per_rwa_token: 0 }, { price_per_rwa_token: 30 }]
+      )
+    ).toEqual({ lowestSellPrice: 30, highestBuyPrice: 10 });
+  });
+
+  it("returns 0 for an empty side (so no orders -> 0, handled by fallback)", () => {
+    expect(getBestPricesFromOpenOrders([], [])).toEqual({
+      lowestSellPrice: 0,
+      highestBuyPrice: 0,
+    });
   });
 });
 

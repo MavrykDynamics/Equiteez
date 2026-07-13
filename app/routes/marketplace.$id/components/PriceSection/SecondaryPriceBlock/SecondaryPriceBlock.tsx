@@ -13,10 +13,12 @@ import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OTC, SELL } from "../consts";
 import { PopupContent } from "../popups";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import {
+  getBestPricesFromOpenOrders,
+  resolveMarketPrice,
+} from "~/providers/Dexprovider/utils";
 import Money from "~/lib/atoms/Money";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { getTotalOrderBookLiquidity } from "../orderBook.consts";
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -56,9 +58,6 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
-  const { orderbookStorages } = useDexContext();
-
-  const { slug } = estate;
   const { baseTokenDecimals, quoteTokenDecimals } =
     useOrderbookTokenMetadata(estate);
 
@@ -66,14 +65,22 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     rwaAddress: estate.token_address,
   });
 
-  const currentPrice = useMemo(
-    () =>
-      atomsToTokens(
-        orderbookStorages[slug]?.lowestSellPrice ?? 0,
-        quoteTokenDecimals
-      ) ?? "0",
-    [quoteTokenDecimals, orderbookStorages, slug]
-  );
+  // Current Price from the LIVE order book (best ask, falling back to best
+  // bid), not the 30s-stale REST snapshot — so it can't show $0 while the book
+  // clearly has orders.
+  const currentPrice = useMemo(() => {
+    const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOpenOrders(
+      openOrders.buyOrders,
+      openOrders.sellOrders
+    );
+
+    return resolveMarketPrice(
+      true,
+      lowestSellPrice,
+      highestBuyPrice,
+      quoteTokenDecimals
+    );
+  }, [openOrders.buyOrders, openOrders.sellOrders, quoteTokenDecimals]);
 
   // Total liquidity = USD value of every resting bid + ask in the book.
   const totalLiquidityInUSD = useMemo(
