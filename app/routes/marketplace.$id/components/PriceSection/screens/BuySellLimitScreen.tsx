@@ -13,7 +13,7 @@ import {
   OrderType,
 } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { stablecoinContract } from "~/consts/contracts";
+import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
@@ -80,9 +80,17 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const { userTokensBalances, isKyced } = useUserContext();
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(

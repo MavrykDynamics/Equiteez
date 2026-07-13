@@ -12,12 +12,13 @@ import {
   OrderType,
 } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { stablecoinContract } from "~/consts/contracts";
+import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
@@ -71,9 +72,17 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const ref1 = useRef<HTMLInputElement>(null);
   const ref2 = useRef<HTMLInputElement>(null);
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(
@@ -103,7 +112,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
       if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
-      else setAmount(val?.div(tokenPrice) ?? new BigNumber(0));
+      else setAmount(safeDivByPrice(val, tokenPrice) ?? new BigNumber(0));
     },
     [isBuyAction, setAmount, tokenPrice]
   );
@@ -135,7 +144,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount: amount?.div(tokenPrice) || undefined, // BUY: USDT -> Token
+            amount: safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }

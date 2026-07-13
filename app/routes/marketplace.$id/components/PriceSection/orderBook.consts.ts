@@ -12,6 +12,13 @@ const MAX_GROUPING_OPTIONS = 4;
 const MAX_GROUPING_PRECISION_FRACTION_DIGITS = 4;
 export const DEFAULT_ORDER_BOOK_GROUPING_PRECISION = 0.01;
 
+// Mirrors marketBuyProtectedPrice/marketSellProtectedPrice in the orderbook
+// contract's constants.ligo. Market orders are stored on-chain at these
+// sentinel prices so they always match first - they are not real prices and
+// must not be shown or used as one.
+const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
+const MARKET_SELL_SENTINEL_PRICE = 0;
+
 type OrderBookSide = "ask" | "bid";
 
 type CreateOrderBookDataParams = {
@@ -100,19 +107,35 @@ const toOrderBookRows = (
         );
         const groupedPrice = getGroupedPriceLevel(price, groupingPrecision, side);
 
+        const isMarketOrder =
+          side === "bid"
+            ? order.price_per_rwa_token === MARKET_BUY_SENTINEL_PRICE
+            : order.price_per_rwa_token === MARKET_SELL_SENTINEL_PRICE;
+
+        // Market orders are stored at a sentinel price, so price*amount is
+        // meaningless. Use the contract's own escrow reference value instead
+        // of implying a fake USDT total.
+        const total = isMarketOrder
+          ? atomsToTokens(
+              order.total_usd_value_of_rwa_token_amount,
+              quoteTokenDecimals
+            ).toNumber()
+          : amount.multipliedBy(price).toNumber();
+
         return {
           amount: amount.toNumber(),
           depthPercentage: 0,
           id: `${side}-${order.id}`,
+          isMarketOrder,
           price: groupedPrice.toNumber(),
-          total: amount.multipliedBy(price).toNumber(),
+          total,
         };
       })
     )
   );
 };
 
-const getSpread = (
+export const getSpread = (
   asks: OrderBookRow[],
   bids: OrderBookRow[]
 ): OrderBookData["spread"] => {
@@ -156,12 +179,62 @@ const getSentiment = (asks: OrderBookRow[], bids: OrderBookRow[]) => {
   };
 };
 
+type GetTotalOrderBookLiquidityParams = {
+  buyOrders: OpenOrder[];
+  sellOrders: OpenOrder[];
+  baseTokenDecimals: number;
+  quoteTokenDecimals: number;
+};
+
+/**
+ * Total USD value of all resting orders on both sides of the book — the real
+ * liquidity available in the orderbook. Each order's value is derived the same
+ * way as its row total in toOrderBookRows: market/sentinel orders use their
+ * escrowed USD reference value, limit orders use amount * price.
+ */
+export const getTotalOrderBookLiquidity = ({
+  buyOrders,
+  sellOrders,
+  baseTokenDecimals,
+  quoteTokenDecimals,
+}: GetTotalOrderBookLiquidityParams): BigNumber => {
+  const sumSide = (orders: OpenOrder[], side: OrderBookSide) =>
+    orders.reduce((runningTotal, order) => {
+      const isMarketOrder =
+        side === "bid"
+          ? order.price_per_rwa_token === MARKET_BUY_SENTINEL_PRICE
+          : order.price_per_rwa_token === MARKET_SELL_SENTINEL_PRICE;
+
+      const orderValue = isMarketOrder
+        ? atomsToTokens(
+            order.total_usd_value_of_rwa_token_amount,
+            quoteTokenDecimals
+          )
+        : atomsToTokens(order.unfulfilled_amount, baseTokenDecimals).multipliedBy(
+            atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
+          );
+
+      return runningTotal.plus(orderValue);
+    }, new BigNumber(0));
+
+  // buyOrders are bids, sellOrders are asks.
+  return sumSide(buyOrders, "bid").plus(sumSide(sellOrders, "ask"));
+};
+
 export const getOrderBookPrecisionOptions = ({
   buyOrders,
   quoteTokenDecimals,
   sellOrders,
 }: GetOrderBookPrecisionOptionsParams) => {
-  const orders = [...buyOrders, ...sellOrders];
+  // Exclude market orders - their sentinel price would otherwise skew the
+  // computed grouping precision.
+  const realBuyOrders = buyOrders.filter(
+    (order) => order.price_per_rwa_token !== MARKET_BUY_SENTINEL_PRICE
+  );
+  const realSellOrders = sellOrders.filter(
+    (order) => order.price_per_rwa_token !== MARKET_SELL_SENTINEL_PRICE
+  );
+  const orders = [...realBuyOrders, ...realSellOrders];
   const fallbackFractionDigits = Math.min(quoteTokenDecimals, 2);
   const startFractionDigits =
     orders.length === 0

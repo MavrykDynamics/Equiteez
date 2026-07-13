@@ -17,6 +17,7 @@ type OrderbookBuySellParams = {
   pricePerToken: number;
   decimals: number;
   quoteTokenDecimals: number;
+  isMarketOrder: boolean;
 } & ContractActionLifecycleCallbacks;
 
 type OrderbookCancelOrderParams = {
@@ -34,6 +35,7 @@ export async function orderbookBuyBatch({
   pricePerToken,
   decimals,
   quoteTokenDecimals,
+  isMarketOrder,
 }: OrderbookBuySellParams) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -64,6 +66,7 @@ export async function orderbookBuyBatch({
         pricePerRwaToken,
         currency: currency,
         orderExpiry: orderExpiry,
+        isMarketOrder,
       },
     ]).toTransferParams();
 
@@ -111,6 +114,7 @@ export async function orderbookSellBatch({
   pricePerToken,
   decimals,
   quoteTokenDecimals,
+  isMarketOrder,
 }: OrderbookSellParams) {
   try {
     const sender = await tezos.wallet.pkh();
@@ -140,6 +144,7 @@ export async function orderbookSellBatch({
         pricePerRwaToken,
         currency: currency,
         orderExpiry: orderExpiry,
+        isMarketOrder,
       },
     ]).toTransferParams();
 

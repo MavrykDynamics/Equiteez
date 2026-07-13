@@ -16,3 +16,12 @@ stats.html
 build
 coverage
 .DS_Store
+/.claude/
+/.idea/
+
+# Ignore loose screenshots dropped in the repo root
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webp

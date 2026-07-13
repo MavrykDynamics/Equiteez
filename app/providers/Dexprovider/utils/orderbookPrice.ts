@@ -29,69 +29,69 @@ export const getOrderBookPricesPerToken = (
   };
 };
 
-const toBigNumber = (value: number) => new BigNumber(value);
-
-const getValidTick = (tickSize: number) => {
-  const tick = new BigNumber(tickSize);
-
-  if (!tick.isFinite() || tick.isLessThanOrEqualTo(0)) {
-    throw new Error("Invalid orderbook tick size");
-  }
-
-  return tick;
-};
-
-const roundUpToTick = (value: BigNumber, tickSize: number): BigNumber => {
-  const tick = getValidTick(tickSize);
-
-  return value
-    .dividedBy(tick)
-    .integerValue(BigNumber.ROUND_CEIL)
-    .multipliedBy(tick);
-};
-
-const roundDownToTick = (value: BigNumber, tickSize: number): BigNumber => {
-  const tick = getValidTick(tickSize);
-
-  return value
-    .dividedBy(tick)
-    .integerValue(BigNumber.ROUND_FLOOR)
-    .multipliedBy(tick);
-};
-
 // Orderbook Market logic
-export function calculateMarketBuy(
+// The contract ignores whatever price a market order is submitted with - it
+// overwrites it with a protected sentinel price so the order always matches
+// first (see marketBuyProtectedPrice/marketSellProtectedPrice in
+// rwaOrderbookLambdas.ligo). So the front end has no execution price to
+// protect here; it should just show the real current price, same as a CEX
+// market order quote: best ask for a buy, best bid for a sell.
+export function getMarketBuyPrice(
   lowestSellPrice: number,
-  highestBuyPrice: number,
-  quoteTokenDecimals: number,
-  tickSize: number,
-  percentage: number = 0.25
+  quoteTokenDecimals: number
 ): BigNumber {
-  const refPrice =
-    lowestSellPrice > highestBuyPrice
-      ? toBigNumber(lowestSellPrice)
-      : toBigNumber(highestBuyPrice);
-
-  const rawBuyPrice = refPrice.multipliedBy(1 + percentage);
-  const tickAlignedBuyPrice = roundUpToTick(rawBuyPrice, tickSize);
-
-  return atomsToTokens(tickAlignedBuyPrice, quoteTokenDecimals);
+  return atomsToTokens(lowestSellPrice, quoteTokenDecimals);
 }
 
-export function calculateMarketSell(
+export function getMarketSellPrice(
+  highestBuyPrice: number,
+  quoteTokenDecimals: number
+): BigNumber {
+  return atomsToTokens(highestBuyPrice, quoteTokenDecimals);
+}
+
+/**
+ * Resolve the market price to quote for a market order.
+ *
+ * Prefer the natural side of the book (best ask for a buy, best bid for a
+ * sell). When that side is empty, fall back to the opposite side's real price
+ * so the two sides stay correlated — e.g. a market sell with no bids quotes the
+ * best ask instead of a placeholder. Returns 0 only when the book has no orders
+ * on either side.
+ */
+export function resolveMarketPrice(
+  isBuyOrder: boolean,
   lowestSellPrice: number,
   highestBuyPrice: number,
-  quoteTokenDecimals: number,
-  tickSize: number,
-  percentage: number = 0.25
+  quoteTokenDecimals: number
 ): BigNumber {
-  const refPrice =
-    lowestSellPrice > highestBuyPrice
-      ? toBigNumber(highestBuyPrice)
-      : toBigNumber(lowestSellPrice);
+  const marketBuyPrice = getMarketBuyPrice(lowestSellPrice, quoteTokenDecimals);
+  const marketSellPrice = getMarketSellPrice(
+    highestBuyPrice,
+    quoteTokenDecimals
+  );
 
-  const rawSellPrice = refPrice.multipliedBy(1 - percentage);
-  const tickAlignedSellPrice = roundDownToTick(rawSellPrice, tickSize);
+  const primaryPrice = isBuyOrder ? marketBuyPrice : marketSellPrice;
+  const fallbackPrice = isBuyOrder ? marketSellPrice : marketBuyPrice;
 
-  return atomsToTokens(tickAlignedSellPrice, quoteTokenDecimals);
+  const isUsable = (price: BigNumber) => price.isFinite() && price.gt(0);
+
+  if (isUsable(primaryPrice)) return primaryPrice;
+  if (isUsable(fallbackPrice)) return fallbackPrice;
+
+  return new BigNumber(0);
+}
+
+/**
+ * Convert a quote amount into a token quantity at a market price, guarding
+ * against an empty-book price of 0 (resolveMarketPrice returns 0 when the book
+ * has no orders on either side). A raw amount.div(0) yields Infinity, which is
+ * truthy and slips past `|| undefined` / `?? 0`, rendering "∞" in the UI.
+ * Returns undefined when the amount is missing or the price is not positive.
+ */
+export function safeDivByPrice(
+  amount: BigNumber | undefined,
+  price: BigNumber
+): BigNumber | undefined {
+  return amount && price.gt(0) ? amount.div(price) : undefined;
 }

@@ -53,10 +53,7 @@ import {
 } from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
-import {
-  calculateMarketBuy,
-  calculateMarketSell,
-} from "~/providers/Dexprovider/utils";
+import { resolveMarketPrice, safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
@@ -181,28 +178,14 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // based on tab (buy|sell) token price may vary
   const tokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice, tickSize } =
-      orderbookStorages[slug];
+    const { lowestSellPrice, highestBuyPrice } = orderbookStorages[slug];
 
-    if (tickSize <= 0) return new BigNumber(1);
-
-    const buyPrice = calculateMarketBuy(
+    return resolveMarketPrice(
+      orderType === BUY,
       lowestSellPrice,
       highestBuyPrice,
-      quoteTokenDecimals,
-      tickSize
+      quoteTokenDecimals
     );
-    const sellPrice = calculateMarketSell(
-      lowestSellPrice,
-      highestBuyPrice,
-      quoteTokenDecimals,
-      tickSize
-    );
-    const nextPrice = orderType === BUY ? buyPrice : sellPrice;
-
-    return nextPrice.isFinite() && nextPrice.gt(0)
-      ? nextPrice
-      : new BigNumber(1);
   }, [orderType, orderbookStorages, quoteTokenDecimals, slug]);
 
   const handleTabClick = useCallback(
@@ -313,6 +296,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       pricePerToken: limitPrice?.toNumber() ?? 0,
       decimals: selectedAssetMetadata.decimals,
       quoteTokenDecimals: quoteAssetmetadata.decimals,
+      isMarketOrder: false,
     }),
     [
       pickOrderbookContract,
@@ -342,8 +326,9 @@ export const PopupContent: FC<PopupContentProps> = ({
 
     return {
       pricePerToken: tokenPrice.toNumber(),
-      tokensAmount: amountB?.div(tokenPrice).toNumber() ?? 0,
+      tokensAmount: safeDivByPrice(amountB, tokenPrice)?.toNumber() ?? 0,
       ...restBuyprops,
+      isMarketOrder: true,
     };
   }, [limitBuyProps, tokenPrice, amountB]);
 
@@ -355,6 +340,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       pricePerToken: tokenPrice.toNumber(),
       rwaTokenAddress: estate.token_address,
       ...restBuyprops,
+      isMarketOrder: true,
     };
   }, [estate.token_address, limitBuyProps, tokenPrice]);
 
@@ -717,7 +703,8 @@ export const PopupContent: FC<PopupContentProps> = ({
                           cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
-                            ? (amountB?.div(tokenPrice).toNumber() ?? 0)
+                            ? (safeDivByPrice(amountB, tokenPrice)?.toNumber() ??
+                              0)
                             : (amountB ?? 0)}
                         </Money>
                       ) : (
