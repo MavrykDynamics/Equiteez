@@ -17,14 +17,16 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { safeDivByPrice } from "~/providers/Dexprovider/utils";
+import {
+  calculateOrderValueFee,
+  safeDivByPrice,
+} from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
-import { PLATFORM_FEE_RATE } from "./buySell.consts";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellScreenProps = {
@@ -39,6 +41,9 @@ type BuySellScreenProps = {
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   hasQuoteError?: boolean;
+  buyOrderFee: number;
+  sellOrderFee: number;
+  isMarketOrderExecutable: boolean;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -52,6 +57,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   tokenPrice,
   setAmount,
   hasQuoteError = false,
+  buyOrderFee,
+  sellOrderFee,
+  isMarketOrderExecutable,
 }) => {
   const { token_address, slug, assetDetails } = estate;
   const {
@@ -174,7 +182,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
-  const isBtnDisabled = hasTotalError || !amount || !isKyced;
+  const hasInvalidAmount = !amount || amount.isZero() || amount.isNaN();
+  const hasInvalidPrice =
+    !tokenPrice.isFinite() || tokenPrice.isZero() || tokenPrice.isNaN();
+  const isBtnDisabled =
+    hasTotalError ||
+    hasInvalidAmount ||
+    hasInvalidPrice ||
+    !isKyced ||
+    !isMarketOrderExecutable;
 
   useEffect(() => {
     if (selectedPercentage != null) {
@@ -187,10 +203,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    // Platform fee = 2% of the order's USDT total (amount paid on a buy, or
-    // proceeds on a sell).
     const orderValue = (isBuyAction ? amount : total) ?? ZERO;
-    const fee = orderValue.times(PLATFORM_FEE_RATE);
+    const fee = calculateOrderValueFee({
+      fee: isBuyAction ? buyOrderFee : sellOrderFee,
+      orderValue,
+      tokenDecimals: stableCoinMetadata.decimals,
+    });
 
     return {
       finalTotalValue: orderValue.plus(fee).plus(networkFee) || ZERO,
@@ -198,8 +216,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     };
   }, [
     amount,
+    buyOrderFee,
     isBuyAction,
     networkFee,
+    sellOrderFee,
+    stableCoinMetadata.decimals,
     total,
   ]);
 
@@ -273,7 +294,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             <FeesCard
               txnFees={txnFee}
               totalAmount={finalTotalValue}
-              networkfee={networkFee}
+              networkCost={networkFee}
             />
 
             <ProjectionCard
@@ -308,6 +329,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
             percentage in your settings to ensure a successful transaction.
+          </Alert>
+        </div>
+      )}
+
+      {!isMarketOrderExecutable && (
+        <div className="mt-8">
+          <Alert type="error" header="Market Order Unavailable" expandable>
+            {isBuyAction
+              ? "There are no executable sell orders for this market buy."
+              : "There are no executable buy orders for this market sell."}
           </Alert>
         </div>
       )}

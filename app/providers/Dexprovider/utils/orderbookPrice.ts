@@ -29,6 +29,18 @@ export const getOrderBookPricesPerToken = (
   };
 };
 
+// Sentinel prices used on-chain for market orders (mirror
+// marketBuyProtectedPrice/marketSellProtectedPrice); they are not real prices.
+export const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
+export const MARKET_SELL_SENTINEL_PRICE = 0;
+
+export type BestOpenOrderPrices = {
+  lowestSellPrice: number;
+  highestBuyPrice: number;
+  hasAskLiquidity: boolean;
+  hasBidLiquidity: boolean;
+};
+
 // Orderbook Market logic
 // The contract ignores whatever price a market order is submitted with - it
 // overwrites it with a protected sentinel price so the order always matches
@@ -96,6 +108,37 @@ export function safeDivByPrice(
   return amount && price.gt(0) ? amount.div(price) : undefined;
 }
 
+export function hasExecutableMarketPrice(
+  isBuyOrder: boolean,
+  { hasAskLiquidity, hasBidLiquidity }: BestOpenOrderPrices
+): boolean {
+  return isBuyOrder ? hasAskLiquidity : hasBidLiquidity;
+}
+
+export function alignLimitPriceToTick({
+  isBuyOrder,
+  price,
+  quoteTokenDecimals,
+  tickSize,
+}: {
+  isBuyOrder: boolean;
+  price: BigNumber | undefined;
+  quoteTokenDecimals: number;
+  tickSize: number;
+}): BigNumber | undefined {
+  if (!price) return undefined;
+  if (!price.isFinite() || price.lte(0)) return price;
+
+  const tickPrice = atomsToTokens(tickSize, quoteTokenDecimals);
+
+  if (!tickPrice.isFinite() || tickPrice.lte(0)) return price;
+
+  return price
+    .div(tickPrice)
+    .integerValue(isBuyOrder ? BigNumber.ROUND_FLOOR : BigNumber.ROUND_CEIL)
+    .multipliedBy(tickPrice);
+}
+
 /**
  * Token quantity that a percentage of a quote-token balance can buy at a given
  * per-token price. Returns undefined when the price is not positive (can't size
@@ -134,11 +177,6 @@ export function exceedsAvailableBalance({
     : Boolean(amount?.gt(tokenBalance));
 }
 
-// Sentinel prices used on-chain for market orders (mirror
-// marketBuyProtectedPrice/marketSellProtectedPrice); they are not real prices.
-const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
-const MARKET_SELL_SENTINEL_PRICE = 0;
-
 /**
  * Best ask (lowest real sell price) and best bid (highest real buy price) from
  * the LIVE open orders, excluding sentinel-priced market orders. Returned in
@@ -149,7 +187,7 @@ const MARKET_SELL_SENTINEL_PRICE = 0;
 export function getBestPricesFromOpenOrders(
   buyOrders: { price_per_rwa_token: number }[],
   sellOrders: { price_per_rwa_token: number }[]
-): { lowestSellPrice: number; highestBuyPrice: number } {
+): BestOpenOrderPrices {
   const realSellPrices = sellOrders
     .map((order) => order.price_per_rwa_token)
     .filter((price) => price > 0 && price !== MARKET_SELL_SENTINEL_PRICE);
@@ -161,5 +199,7 @@ export function getBestPricesFromOpenOrders(
   return {
     lowestSellPrice: realSellPrices.length ? Math.min(...realSellPrices) : 0,
     highestBuyPrice: realBuyPrices.length ? Math.max(...realBuyPrices) : 0,
+    hasAskLiquidity: realSellPrices.length > 0,
+    hasBidLiquidity: realBuyPrices.length > 0,
   };
 }

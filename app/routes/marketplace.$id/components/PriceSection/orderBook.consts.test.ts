@@ -3,13 +3,12 @@ import { describe, expect, it } from "vitest";
 import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import type { OrderBookRow } from "~/lib/organisms/OrderBookPopup/orderBook.types";
 import { OrderTypes } from "~/lib/apis/mbrwa/user/userOrders/order.const";
+import {
+  MARKET_BUY_SENTINEL_PRICE,
+  MARKET_SELL_SENTINEL_PRICE,
+} from "~/providers/Dexprovider/utils";
 
 import { getSpread, getTotalOrderBookLiquidity } from "./orderBook.consts";
-
-// Mirrors the sentinel prices in orderBook.consts (market orders are stored at
-// these on-chain so they always match first).
-const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
-const MARKET_SELL_SENTINEL_PRICE = 0;
 
 const makeOrder = (overrides: Partial<OpenOrder>): OpenOrder => ({
   id: 1,
@@ -44,6 +43,12 @@ const row = (price: number): OrderBookRow => ({
   isMarketOrder: false,
   price,
   total: 0,
+});
+
+const marketRow = (price: number): OrderBookRow => ({
+  ...row(price),
+  id: `market-row-${price}`,
+  isMarketOrder: true,
 });
 
 describe("getSpread", () => {
@@ -89,6 +94,18 @@ describe("getSpread", () => {
       bestBid: 0,
       price: 0,
       value: 0,
+    });
+  });
+
+  it("excludes sentinel market rows from best ask, best bid, and spread", () => {
+    const asks = [row(7), row(6), row(5), marketRow(0)];
+    const bids = [marketRow(999_999.999999), row(4), row(3)];
+
+    expect(getSpread(asks, bids)).toEqual({
+      bestAsk: 5,
+      bestBid: 4,
+      price: 5,
+      value: 1,
     });
   });
 });

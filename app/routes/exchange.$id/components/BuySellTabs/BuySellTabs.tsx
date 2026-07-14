@@ -194,6 +194,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
       }),
     [loadedSelectedAssetMetadata, symbol, tokenAddress]
   );
+  const quoteTokenSlug =
+    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
+  const loadedQuoteAssetMetadata = useAssetMetadata(quoteTokenSlug);
+  const quoteAssetmetadata = loadedQuoteAssetMetadata ?? STABLECOIN_METADATA;
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
@@ -201,9 +205,9 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     () =>
       atomsToTokens(
         orderbookStorages[slug]?.lowestSellPrice,
-        selectedAssetMetadata?.decimals
+        quoteAssetmetadata.decimals
       ),
-    [orderbookStorages, slug, selectedAssetMetadata?.decimals]
+    [orderbookStorages, quoteAssetmetadata.decimals, slug]
   );
 
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
@@ -221,11 +225,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   // refs
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
-
-  const quoteTokenSlug =
-    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
-  const loadedQuoteAssetMetadata = useAssetMetadata(quoteTokenSlug);
-  const quoteAssetmetadata = loadedQuoteAssetMetadata ?? STABLECOIN_METADATA;
 
   // derived
 
@@ -538,7 +537,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                         min={0}
                         max={9999999999999}
                         value={price
-                          ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
+                          ?.toFixed(quoteAssetmetadata.decimals)
                           .toString()}
                         onChange={handlePriceChange}
                         placeholder="0.00"
@@ -611,7 +610,7 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                       max={9999999999999}
                       value={total?.toFixed(quoteAssetmetadata.decimals)}
                       placeholder="0.00"
-                      assetDecimals={6}
+                      assetDecimals={quoteAssetmetadata.decimals}
                       style={{ padding: 0 }}
                       className="w-full bg-transparent focus:outline-none text-right font-semibold p-0 border-none"
                       disabled

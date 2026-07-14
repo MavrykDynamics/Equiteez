@@ -41,7 +41,7 @@ import usePrevious from "~/lib/ui/hooks/usePrevious";
 import Money from "~/lib/atoms/Money";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
-import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
+import type { OpenOrdersQueryData } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
@@ -54,10 +54,13 @@ import {
 
 import styles from "./popups.module.css";
 import {
+  alignLimitPriceToTick,
   getBestPricesFromOpenOrders,
+  hasExecutableMarketPrice,
   resolveMarketPrice,
   safeDivByPrice,
 } from "~/providers/Dexprovider/utils";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
@@ -84,11 +87,17 @@ const isCurrentPopupMarket = (
   market.token_address === currentMarket.token_address ||
   getMarketIdentifier(market) === getMarketIdentifier(currentMarket);
 
+const EMPTY_OPEN_ORDERS: OpenOrdersQueryData = {
+  buyOrders: [],
+  sellOrders: [],
+};
+
 type PopupContentProps = {
   estate: SecondaryEstate;
   isOrderBookOpen: boolean;
   onSuccessfulTransaction?: () => void;
   onOrderBookVisibilityChange?: (isVisible: boolean) => void;
+  openOrders?: OpenOrdersQueryData;
   orderType: OrderType;
   setIsOrderBookOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
@@ -99,6 +108,7 @@ export const PopupContent: FC<PopupContentProps> = ({
   isOrderBookOpen,
   onSuccessfulTransaction,
   onOrderBookVisibilityChange,
+  openOrders,
   orderType,
   setIsOrderBookOpen,
   setOrderType,
@@ -107,8 +117,9 @@ export const PopupContent: FC<PopupContentProps> = ({
   const { dapp } = useWalletContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
+  const orderbookOpenOrders = openOrders ?? EMPTY_OPEN_ORDERS;
 
-  const { openOrders } = useOpenOrders({ rwaAddress: estate.token_address });
+  const { orderbookStorages } = useDexContext();
   const {
     marketsArr,
     sortedMarketAddresses,
@@ -169,28 +180,53 @@ export const PopupContent: FC<PopupContentProps> = ({
     quoteTokenDecimals,
     quoteTokenMetadata: quoteAssetmetadata,
   } = useOrderbookTokenMetadata(estate);
+  const orderbookStorage = orderbookStorages[slug];
+  const tickSize = orderbookStorage?.tickSize ?? 0;
+  const buyOrderFee = orderbookStorage?.buyOrderFee ?? 0;
+  const sellOrderFee = orderbookStorage?.sellOrderFee ?? 0;
+
+  const bestOpenOrderPrices = useMemo(
+    () =>
+      getBestPricesFromOpenOrders(
+        orderbookOpenOrders.buyOrders,
+        orderbookOpenOrders.sellOrders
+      ),
+    [orderbookOpenOrders.buyOrders, orderbookOpenOrders.sellOrders]
+  );
+  const isMarketOrderExecutable = useMemo(
+    () =>
+      !isSecondaryEstate ||
+      hasExecutableMarketPrice(orderType === BUY, bestOpenOrderPrices),
+    [bestOpenOrderPrices, isSecondaryEstate, orderType]
+  );
 
   // based on tab (buy|sell) token price may vary. Source best ask/bid from the
   // LIVE order book (same as the order-book table), not the 30s-stale REST
   // snapshot, so the quoted price can't disagree with the visible orders.
-  const tokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOpenOrders(
-      openOrders.buyOrders,
-      openOrders.sellOrders
-    );
+  const tokenPrice = useMemo(
+    () =>
+      resolveMarketPrice(
+        orderType === BUY,
+        bestOpenOrderPrices.lowestSellPrice,
+        bestOpenOrderPrices.highestBuyPrice,
+        quoteTokenDecimals
+      ),
+    [bestOpenOrderPrices, orderType, quoteTokenDecimals]
+  );
 
-    return resolveMarketPrice(
-      orderType === BUY,
-      lowestSellPrice,
-      highestBuyPrice,
-      quoteTokenDecimals
-    );
-  }, [
-    orderType,
-    openOrders.buyOrders,
-    openOrders.sellOrders,
-    quoteTokenDecimals,
-  ]);
+  const handleLimitPriceChange = useCallback(
+    (price: BigNumber | undefined) => {
+      setLimitPrice(
+        alignLimitPriceToTick({
+          isBuyOrder: activetabId === BUY,
+          price,
+          quoteTokenDecimals,
+          tickSize,
+        })
+      );
+    },
+    [activetabId, quoteTokenDecimals, tickSize]
+  );
 
   const handleTabClick = useCallback(
     (id: OrderType) => {
@@ -244,6 +280,8 @@ export const PopupContent: FC<PopupContentProps> = ({
     ],
     [handlaMarketChange]
   );
+
+  const noopMarketAction = useCallback(() => undefined, []);
 
   useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
@@ -310,11 +348,13 @@ export const PopupContent: FC<PopupContentProps> = ({
 
     return {
       pricePerToken: tokenPrice.toNumber(),
-      tokensAmount: safeDivByPrice(amountB, tokenPrice)?.toNumber() ?? 0,
+      tokensAmount: isMarketOrderExecutable
+        ? (safeDivByPrice(amountB, tokenPrice)?.toNumber() ?? 0)
+        : 0,
       ...restBuyprops,
       isMarketOrder: true,
     };
-  }, [limitBuyProps, tokenPrice, amountB]);
+  }, [amountB, isMarketOrderExecutable, limitBuyProps, tokenPrice]);
 
   const marketSellProps = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -324,13 +364,19 @@ export const PopupContent: FC<PopupContentProps> = ({
       pricePerToken: tokenPrice.toNumber(),
       rwaTokenAddress: estate.token_address,
       ...restBuyprops,
+      tokensAmount: isMarketOrderExecutable ? restBuyprops.tokensAmount : 0,
       isMarketOrder: true,
     };
-  }, [estate.token_address, limitBuyProps, tokenPrice]);
+  }, [estate.token_address, isMarketOrderExecutable, limitBuyProps, tokenPrice]);
 
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
-    if (!mavrykToolkit || !total || total.lte(0)) {
+    if (
+      !mavrykToolkit ||
+      !total ||
+      total.lte(0) ||
+      (isMarketTypeMarket && !isMarketOrderExecutable)
+    ) {
       setNetworkFee(ZERO);
       return;
     }
@@ -377,6 +423,7 @@ export const PopupContent: FC<PopupContentProps> = ({
     };
   }, [
     isMarketTypeMarket,
+    isMarketOrderExecutable,
     limitBuyProps,
     limitSellProps,
     mavrykToolkit,
@@ -466,6 +513,10 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // prop action to pass
   const buySellActionCb = useMemo(() => {
+    if (isMarketTypeMarket && !isMarketOrderExecutable) {
+      return noopMarketAction;
+    }
+
     if (isMarketTypeMarket) {
       return orderType === BUY ? handleMarketBuy : handleMarketSell;
     }
@@ -476,7 +527,9 @@ export const PopupContent: FC<PopupContentProps> = ({
     handleLimitSell,
     handleMarketBuy,
     handleMarketSell,
+    isMarketOrderExecutable,
     isMarketTypeMarket,
+    noopMarketAction,
     orderType,
   ]);
 
@@ -505,13 +558,9 @@ export const PopupContent: FC<PopupContentProps> = ({
       if (marketType !== "limit" || !Number.isFinite(price) || price <= 0)
         return;
 
-      setLimitPrice((currentPrice) => {
-        const nextPrice = new BigNumber(price);
-
-        return currentPrice?.eq(nextPrice) ? currentPrice : nextPrice;
-      });
+      handleLimitPriceChange(new BigNumber(price));
     },
-    [marketType]
+    [handleLimitPriceChange, marketType]
   );
   const popupMainRef = useRef<HTMLDivElement>(null);
   const [popupMainHeight, setPopupMainHeight] = useState<number>();
@@ -595,6 +644,7 @@ export const PopupContent: FC<PopupContentProps> = ({
           quoteTokenSymbol={quoteAssetmetadata.symbol}
           referencePrice={tokenPrice.toNumber()}
           rwaAddress={estate.token_address}
+          openOrders={orderbookOpenOrders}
         />
       )}
 
@@ -730,12 +780,15 @@ export const PopupContent: FC<PopupContentProps> = ({
                 total={total}
                 tokenPrice={tokenPrice}
                 networkFee={networkFee}
+                buyOrderFee={buyOrderFee}
+                sellOrderFee={sellOrderFee}
+                isMarketOrderExecutable={isMarketOrderExecutable}
               />
             ) : (
               <BuySellLimitScreen
                 limitPrice={limitPrice}
                 marketTokenPrice={tokenPrice}
-                setLimitPrice={setLimitPrice}
+                setLimitPrice={handleLimitPriceChange}
                 estate={estate}
                 toggleScreen={() => setAvtiveTabId(CONFIRM)}
                 actionType={activetabId}
@@ -744,6 +797,8 @@ export const PopupContent: FC<PopupContentProps> = ({
                 setAmount={setAmountB}
                 total={total}
                 networkFee={networkFee}
+                buyOrderFee={buyOrderFee}
+                sellOrderFee={sellOrderFee}
               />
             ))}
 

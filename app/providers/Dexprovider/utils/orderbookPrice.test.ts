@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import BigNumber from "bignumber.js";
 
 import {
+  alignLimitPriceToTick,
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
   getBestPricesFromOpenOrders,
@@ -11,6 +12,7 @@ import {
   getMarketBuyPrice,
   getMarketSellPrice,
   getOrderBookPricesPerToken,
+  hasExecutableMarketPrice,
   resolveMarketPrice,
   safeDivByPrice,
 } from "./orderbookPrice";
@@ -201,7 +203,12 @@ describe("getBestPricesFromOpenOrders (live best ask/bid)", () => {
         [{ price_per_rwa_token: 10 }, { price_per_rwa_token: 8 }],
         [{ price_per_rwa_token: 35 }, { price_per_rwa_token: 30 }]
       )
-    ).toEqual({ lowestSellPrice: 30, highestBuyPrice: 10 });
+    ).toEqual({
+      lowestSellPrice: 30,
+      highestBuyPrice: 10,
+      hasAskLiquidity: true,
+      hasBidLiquidity: true,
+    });
   });
 
   it("excludes sentinel-priced market orders (sell 0, buy 999_999_999_999)", () => {
@@ -210,14 +217,104 @@ describe("getBestPricesFromOpenOrders (live best ask/bid)", () => {
         [{ price_per_rwa_token: 999_999_999_999 }, { price_per_rwa_token: 10 }],
         [{ price_per_rwa_token: 0 }, { price_per_rwa_token: 30 }]
       )
-    ).toEqual({ lowestSellPrice: 30, highestBuyPrice: 10 });
+    ).toEqual({
+      lowestSellPrice: 30,
+      highestBuyPrice: 10,
+      hasAskLiquidity: true,
+      hasBidLiquidity: true,
+    });
   });
 
   it("returns 0 for an empty side (so no orders -> 0, handled by fallback)", () => {
     expect(getBestPricesFromOpenOrders([], [])).toEqual({
       lowestSellPrice: 0,
       highestBuyPrice: 0,
+      hasAskLiquidity: false,
+      hasBidLiquidity: false,
     });
+  });
+});
+
+describe("hasExecutableMarketPrice (natural-side liquidity guard)", () => {
+  it("allows market buys only when there is executable ask liquidity", () => {
+    expect(
+      hasExecutableMarketPrice(true, {
+        lowestSellPrice: 5 * ATOM,
+        highestBuyPrice: 0,
+        hasAskLiquidity: true,
+        hasBidLiquidity: false,
+      })
+    ).toBe(true);
+  });
+
+  it("blocks market buys when only bids exist", () => {
+    expect(
+      hasExecutableMarketPrice(true, {
+        lowestSellPrice: 0,
+        highestBuyPrice: 4 * ATOM,
+        hasAskLiquidity: false,
+        hasBidLiquidity: true,
+      })
+    ).toBe(false);
+  });
+
+  it("allows market sells only when there is executable bid liquidity", () => {
+    expect(
+      hasExecutableMarketPrice(false, {
+        lowestSellPrice: 0,
+        highestBuyPrice: 4 * ATOM,
+        hasAskLiquidity: false,
+        hasBidLiquidity: true,
+      })
+    ).toBe(true);
+  });
+
+  it("blocks market sells when only asks exist", () => {
+    expect(
+      hasExecutableMarketPrice(false, {
+        lowestSellPrice: 5 * ATOM,
+        highestBuyPrice: 0,
+        hasAskLiquidity: true,
+        hasBidLiquidity: false,
+      })
+    ).toBe(false);
+  });
+});
+
+describe("alignLimitPriceToTick (side-aware price alignment)", () => {
+  it("rounds buy limit prices down to the nearest tick", () => {
+    expect(
+      alignLimitPriceToTick({
+        isBuyOrder: true,
+        price: new BigNumber(1.13),
+        quoteTokenDecimals: DECIMALS,
+        tickSize: 250_000,
+      })?.toNumber()
+    ).toBe(1);
+  });
+
+  it("rounds sell limit prices up to the nearest tick", () => {
+    expect(
+      alignLimitPriceToTick({
+        isBuyOrder: false,
+        price: new BigNumber(1.13),
+        quoteTokenDecimals: DECIMALS,
+        tickSize: 250_000,
+      })?.toNumber()
+    ).toBe(1.25);
+  });
+
+  it("returns the original price when tick size is unavailable", () => {
+    const price = new BigNumber(1.13);
+
+    expect(
+      alignLimitPriceToTick({
+        isBuyOrder: true,
+        price,
+        quoteTokenDecimals: DECIMALS,
+        tickSize: 0,
+      })
+    ).toBe(price);
   });
 });
 

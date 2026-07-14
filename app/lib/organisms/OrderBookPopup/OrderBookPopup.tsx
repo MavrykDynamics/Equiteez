@@ -9,6 +9,7 @@ import EyeOpenBoldIcon from "app/icons/eye-open-bold.svg?react";
 
 import { OrderBookTable } from "./OrderBookTable";
 import type { OrderBookToggleLabels } from "./orderBook.types";
+import type { OpenOrdersQueryData } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import styles from "./orderBookPopup.module.css";
 
 const PANEL_TRANSITION = {
@@ -34,6 +35,7 @@ type OrderBookPopupProps = {
   isOpen: boolean;
   onClose: () => void;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
+  openOrders?: OpenOrdersQueryData;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -103,6 +105,7 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
   isOpen,
   onClose,
   onPriceClick,
+  openOrders,
   quoteTokenDecimals,
   quoteTokenSymbol,
   referencePrice,
@@ -151,6 +154,7 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
           emptyMessage={emptyMessage}
           enabled={enabled}
           onPriceClick={onPriceClick}
+          openOrders={openOrders}
           quoteTokenDecimals={quoteTokenDecimals}
           quoteTokenSymbol={quoteTokenSymbol}
           referencePrice={referencePrice}

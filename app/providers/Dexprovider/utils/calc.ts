@@ -103,6 +103,24 @@ export const calculateEstFee = ({
   }
 };
 
+export const calculateOrderValueFee = ({
+  fee,
+  orderValue,
+  tokenDecimals,
+}: {
+  fee: number;
+  orderValue: BigNumber;
+  tokenDecimals: number;
+}): BigNumber => {
+  const totalFeeRate = new BigNumber(fee).div(
+    new BigNumber(10).pow(tokenDecimals)
+  );
+
+  return orderValue
+    .times(totalFeeRate)
+    .decimalPlaces(tokenDecimals, BigNumber.ROUND_DOWN);
+};
+
 export const calculateMaxBuySell = (
   tokensBalance: BigNumber.Value,
   usdBalance: BigNumber.Value,

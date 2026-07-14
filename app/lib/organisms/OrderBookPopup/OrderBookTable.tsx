@@ -20,7 +20,10 @@ import {
   DEFAULT_ORDER_BOOK_GROUPING_PRECISION,
   getOrderBookPrecisionOptions,
 } from "~/routes/marketplace.$id/components/PriceSection/orderBook.consts";
-import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
+import type {
+  OpenOrder,
+  OpenOrdersQueryData,
+} from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
 import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { Spinner } from "~/lib/atoms/Spinner";
 import {
@@ -70,6 +73,7 @@ type OrderBookTableProps = {
   emptyMessage?: string;
   enabled?: boolean;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
+  openOrders?: OpenOrdersQueryData;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -680,6 +684,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   emptyMessage = "No open orders available.",
   enabled = true,
   onPriceClick,
+  openOrders: controlledOpenOrders,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
   referencePrice = 0,
@@ -687,11 +692,13 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
 }) => {
   const [selectedDisplayMode, setSelectedDisplayMode] =
     useState<OrderBookDisplayMode>("both");
-  const { openOrders, loading } = useOpenOrders({
-    enabled,
+  const { openOrders: fetchedOpenOrders, loading } = useOpenOrders({
+    enabled: enabled && !controlledOpenOrders,
     limit: ORDER_BOOK_FETCH_LIMIT,
     rwaAddress,
   });
+  const openOrders = controlledOpenOrders ?? fetchedOpenOrders;
+  const isLoading = controlledOpenOrders ? false : loading;
 
   const defaultData = useMemo(
     () =>
@@ -919,7 +926,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
       />
 
       <div className={styles.content}>
-        {loading ? (
+        {isLoading ? (
           <div className={styles.tableViewport}>
             <OrderBookState isLoading message="Loading order book..." />
           </div>

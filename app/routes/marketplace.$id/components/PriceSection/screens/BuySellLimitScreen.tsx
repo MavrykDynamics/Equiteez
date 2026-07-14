@@ -25,11 +25,11 @@ import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
 import {
+  calculateOrderValueFee,
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
-import { PLATFORM_FEE_RATE } from "./buySell.consts";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -43,7 +43,9 @@ type BuySellLimitScreenProps = {
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
-  setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setLimitPrice: (price: BigNumber | undefined) => void;
+  buyOrderFee: number;
+  sellOrderFee: number;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -58,6 +60,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setLimitPrice,
   marketTokenPrice,
+  buyOrderFee,
+  sellOrderFee,
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
@@ -179,14 +183,24 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    // Platform fee = 2% of the order total.
-    const fee = total ? total.times(PLATFORM_FEE_RATE) : ZERO;
+    const fee = calculateOrderValueFee({
+      fee: isBuyAction ? buyOrderFee : sellOrderFee,
+      orderValue: total ?? ZERO,
+      tokenDecimals: stableCoinMetadata.decimals,
+    });
 
     return {
       finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
       txnFee: fee,
     };
-  }, [networkFee, total]);
+  }, [
+    buyOrderFee,
+    isBuyAction,
+    networkFee,
+    sellOrderFee,
+    stableCoinMetadata.decimals,
+    total,
+  ]);
 
   const isBtnDisabled =
     hasBalanceError ||
@@ -309,7 +323,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             <FeesCard
               txnFees={txnFee}
               totalAmount={finalTotalValue}
-              networkfee={networkFee}
+              networkCost={networkFee}
             />
 
             <div className="mt-3">

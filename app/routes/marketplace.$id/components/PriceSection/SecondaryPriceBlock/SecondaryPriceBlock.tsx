@@ -262,6 +262,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           isOrderBookOpen={isOrderBookOpen}
           onSuccessfulTransaction={handleRequestClose}
           onOrderBookVisibilityChange={setHasVisibleOrderBook}
+          openOrders={openOrders}
           orderType={orderType}
           setIsOrderBookOpen={setIsOrderBookOpen}
           setOrderType={setOrderType}
