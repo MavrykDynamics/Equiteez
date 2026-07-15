@@ -119,6 +119,8 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
     isMobile ? styles.mobileOverlay : styles.desktopWrapper,
     className
   );
+
+  console.log(orderbookAddress, "orderbookAddress");
   const desktopWrapperStyle = isMobile
     ? undefined
     : {

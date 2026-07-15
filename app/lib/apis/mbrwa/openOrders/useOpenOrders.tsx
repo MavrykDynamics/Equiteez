@@ -30,7 +30,6 @@ type UseOpenOrdersParams = {
 export function useOpenOrders({
   enabled = true,
   limit,
-  rwaAddress,
   orderbookAddress,
 }: UseOpenOrdersParams) {
   const { handleApolloError } = useApolloContext();
@@ -39,11 +38,10 @@ export function useOpenOrders({
   const queryVariables = useMemo<OpenOrdersQueryVariables>(
     () => ({
       limit,
-      rwaAddress,
       orderbookAddress,
       offset: OPEN_ORDERS_OFFSET,
     }),
-    [limit, orderbookAddress, rwaAddress]
+    [limit, orderbookAddress]
   );
 
   const openOrdersData = useQueryWithRefetch<
@@ -53,7 +51,7 @@ export function useOpenOrders({
     ALL_OPEN_ORDERS_QUERY,
     {
       variables: queryVariables,
-      skip: !enabled || !orderbookAddress || !rwaAddress,
+      skip: !enabled || !orderbookAddress,
     },
     {
       refetchInterval: OPEN_ORDERS_REFETCH_INTERVAL,

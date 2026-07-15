@@ -66,7 +66,6 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
     useOrderbookTokenMetadata(estate);
 
   const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
-    rwaAddress: estate.token_address,
     orderbookAddress,
   });
 

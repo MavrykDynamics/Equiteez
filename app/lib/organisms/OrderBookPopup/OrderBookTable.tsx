@@ -690,7 +690,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
   referencePrice = 0,
-  rwaAddress,
 }) => {
   const [selectedDisplayMode, setSelectedDisplayMode] =
     useState<OrderBookDisplayMode>("both");
@@ -698,7 +697,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     enabled: enabled && !controlledOpenOrders,
     limit: ORDER_BOOK_FETCH_LIMIT,
     orderbookAddress,
-    rwaAddress,
   });
   const openOrders = controlledOpenOrders ?? fetchedOpenOrders;
   const isLoading = controlledOpenOrders ? false : loading;
@@ -809,11 +807,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
         quoteTokenDecimals,
         sellOrders: openOrders.sellOrders,
       }),
-    [
-      openOrders.buyOrders,
-      openOrders.sellOrders,
-      quoteTokenDecimals,
-    ]
+    [openOrders.buyOrders, openOrders.sellOrders, quoteTokenDecimals]
   );
   const spreadDisplayData = useMemo(
     () => getSpreadDisplayData(renderData.spread, selectedDisplayMode),
