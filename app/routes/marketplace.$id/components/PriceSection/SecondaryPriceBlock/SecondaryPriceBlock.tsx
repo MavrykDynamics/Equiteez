@@ -53,16 +53,21 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
   shouldExpand,
 }) => {
-  const { validBaseTokens } = useMarketsContext();
+  const {
+    validBaseTokens,
+    pickers: { pickOrderbookContract },
+  } = useMarketsContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
+  const orderbookAddress = pickOrderbookContract[estate.token_address];
   const { baseTokenDecimals, quoteTokenDecimals } =
     useOrderbookTokenMetadata(estate);
 
   const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
     rwaAddress: estate.token_address,
+    orderbookAddress,
   });
 
   // Current Price from the LIVE order book (best ask, falling back to best

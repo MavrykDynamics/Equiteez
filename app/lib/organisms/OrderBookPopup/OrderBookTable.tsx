@@ -74,6 +74,7 @@ type OrderBookTableProps = {
   enabled?: boolean;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
   openOrders?: OpenOrdersQueryData;
+  orderbookAddress?: string | null;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -685,6 +686,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   enabled = true,
   onPriceClick,
   openOrders: controlledOpenOrders,
+  orderbookAddress,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
   referencePrice = 0,
@@ -695,6 +697,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const { openOrders: fetchedOpenOrders, loading } = useOpenOrders({
     enabled: enabled && !controlledOpenOrders,
     limit: ORDER_BOOK_FETCH_LIMIT,
+    orderbookAddress,
     rwaAddress,
   });
   const openOrders = controlledOpenOrders ?? fetchedOpenOrders;

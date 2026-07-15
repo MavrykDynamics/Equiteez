@@ -36,6 +36,7 @@ type OrderBookPopupProps = {
   onClose: () => void;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
   openOrders?: OpenOrdersQueryData;
+  orderbookAddress?: string | null;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
   referencePrice?: number;
@@ -106,6 +107,7 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
   onClose,
   onPriceClick,
   openOrders,
+  orderbookAddress,
   quoteTokenDecimals,
   quoteTokenSymbol,
   referencePrice,
@@ -155,6 +157,7 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
           enabled={enabled}
           onPriceClick={onPriceClick}
           openOrders={openOrders}
+          orderbookAddress={orderbookAddress}
           quoteTokenDecimals={quoteTokenDecimals}
           quoteTokenSymbol={quoteTokenSymbol}
           referencePrice={referencePrice}
