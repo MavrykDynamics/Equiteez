@@ -158,9 +158,9 @@ describe("safeDivByPrice (empty-book division guard)", () => {
   });
 
   it("returns 0 tokens for a 0 spend at a valid price", () => {
-    expect(
-      safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()
-    ).toBe(0);
+    expect(safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()).toBe(
+      0
+    );
   });
 
   it("never produces a non-finite result for a 0 price", () => {
@@ -341,6 +341,18 @@ describe("exceedsAvailableBalance (side-aware order guard)", () => {
         tokenBalance: 0,
       })
     ).toBe(true);
+  });
+
+  it("BUY: compares quote spend, not token quantity", () => {
+    expect(
+      exceedsAvailableBalance({
+        isBuyAction: true,
+        total: new BigNumber(90),
+        amount: new BigNumber(1000),
+        usdBalance: new BigNumber(100),
+        tokenBalance: 0,
+      })
+    ).toBe(false);
   });
 
   it("SELL: true when amount exceeds the token balance (oversell)", () => {

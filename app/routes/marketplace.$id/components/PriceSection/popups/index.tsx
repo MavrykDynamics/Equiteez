@@ -286,11 +286,12 @@ export const PopupContent: FC<PopupContentProps> = ({
   useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
 
-    if (isDefined(amountB) && priceToUse) {
+    if (isDefined(amountB) && priceToUse?.isFinite() && priceToUse.gt(0)) {
       setTotal(amountB.times(priceToUse));
-    } else if (!isDefined(amountB)) {
-      setTotal(undefined);
+      return;
     }
+
+    setTotal(undefined);
   }, [
     amountB,
     estate.token_address,
@@ -367,7 +368,12 @@ export const PopupContent: FC<PopupContentProps> = ({
       tokensAmount: isMarketOrderExecutable ? restBuyprops.tokensAmount : 0,
       isMarketOrder: true,
     };
-  }, [estate.token_address, isMarketOrderExecutable, limitBuyProps, tokenPrice]);
+  }, [
+    estate.token_address,
+    isMarketOrderExecutable,
+    limitBuyProps,
+    tokenPrice,
+  ]);
 
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
@@ -739,8 +745,10 @@ export const PopupContent: FC<PopupContentProps> = ({
                           cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
-                            ? (safeDivByPrice(amountB, tokenPrice)?.toNumber() ??
-                              0)
+                            ? (safeDivByPrice(
+                                amountB,
+                                tokenPrice
+                              )?.toNumber() ?? 0)
                             : (amountB ?? 0)}
                         </Money>
                       ) : (

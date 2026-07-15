@@ -19,6 +19,7 @@ import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import {
   calculateOrderValueFee,
+  exceedsAvailableBalance,
   safeDivByPrice,
 } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
@@ -87,23 +88,27 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const usdBalance = useMemo(
-    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    () => userTokensBalances[quoteTokenAddress] ?? ZERO,
     [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
+    () => userTokensBalances[token_address] ?? ZERO,
     [userTokensBalances, token_address]
   );
 
   const isBuyAction = actionType === BUY;
-  const hasTotalError = isBuyAction
-    ? amount
-      ? amount.toNumber() > usdBalance
-      : false
-    : amount
-      ? amount?.toNumber() > tokenBalance
-      : false;
+  const hasBalanceError = useMemo(
+    () =>
+      exceedsAvailableBalance({
+        isBuyAction,
+        total: amount,
+        amount,
+        usdBalance,
+        tokenBalance,
+      }),
+    [amount, isBuyAction, tokenBalance, usdBalance]
+  );
 
   const handleContinueClick = useCallback(() => {
     toggleScreen(CONFIRM);
@@ -186,7 +191,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const hasInvalidPrice =
     !tokenPrice.isFinite() || tokenPrice.isZero() || tokenPrice.isNaN();
   const isBtnDisabled =
-    hasTotalError ||
+    hasBalanceError ||
     hasInvalidAmount ||
     hasInvalidPrice ||
     !isKyced ||
@@ -235,7 +240,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               onChange={(data) => setAmount(data)}
               amountInputDisabled={false}
               errorCaption={
-                hasTotalError
+                hasBalanceError
                   ? "The amount entered exceeds your available balance."
                   : undefined
               }
@@ -243,9 +248,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               label="Sell"
               balanceTotal={balanceTotal}
               decimals={stableCoinMetadata.decimals}
-              cryptoValue={
-                new BigNumber(isBuyAction ? usdBalance : tokenBalance)
-              }
+              cryptoValue={isBuyAction ? usdBalance : tokenBalance}
               additionalBottomLeftBlock={
                 isBuyAction ? undefined : (
                   <div className="text-xs text-sand-600">
@@ -276,9 +279,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               label="Buy"
               balanceTotal={balanceTotal}
               decimals={stableCoinMetadata.decimals}
-              cryptoValue={
-                new BigNumber(isBuyAction ? tokenBalance : usdBalance)
-              }
+              cryptoValue={isBuyAction ? tokenBalance : usdBalance}
               cryptoDecimals={
                 !isBuyAction
                   ? stableCoinMetadata.decimals

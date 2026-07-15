@@ -54,7 +54,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   actionType,
   continueButtonClassName,
   amount,
-  total,
   networkFee,
   limitPrice,
   setAmount,
@@ -91,16 +90,20 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const usdBalance = useMemo(
-    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    () => userTokensBalances[quoteTokenAddress] ?? ZERO,
     [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
+    () => userTokensBalances[token_address] ?? ZERO,
     [userTokensBalances, token_address]
   );
 
   const isBuyAction = actionType === BUY;
+  const balanceTotal = useMemo(
+    () => (amount && limitPrice ? amount.times(limitPrice) : undefined),
+    [amount, limitPrice]
+  );
   const marketPriceDifference = useMemo(
     () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
     [limitPrice, marketTokenPrice]
@@ -112,12 +115,12 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     () =>
       exceedsAvailableBalance({
         isBuyAction,
-        total,
+        total: balanceTotal,
         amount,
         usdBalance,
         tokenBalance,
       }),
-    [isBuyAction, total, amount, usdBalance, tokenBalance]
+    [isBuyAction, balanceTotal, amount, usdBalance, tokenBalance]
   );
 
   const handleContinueClick = useCallback(() => {
@@ -180,26 +183,27 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     usdBalance,
   ]);
 
-  const balanceTotal = total;
-
   const { finalTotalValue, txnFee } = useMemo(() => {
+    const orderValue = balanceTotal ?? ZERO;
     const fee = calculateOrderValueFee({
       fee: isBuyAction ? buyOrderFee : sellOrderFee,
-      orderValue: total ?? ZERO,
+      orderValue,
       tokenDecimals: stableCoinMetadata.decimals,
     });
 
     return {
-      finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
+      finalTotalValue: balanceTotal
+        ? orderValue.plus(fee).plus(networkFee)
+        : ZERO,
       txnFee: fee,
     };
   }, [
+    balanceTotal,
     buyOrderFee,
     isBuyAction,
     networkFee,
     sellOrderFee,
     stableCoinMetadata.decimals,
-    total,
   ]);
 
   const isBtnDisabled =
@@ -229,7 +233,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       // Spend a % of the quote balance at the current limit price -> token qty.
       setAmount(
         limitPrice
-          ? deriveQuantityFromPercent(usdBalance, selectedPercentage, limitPrice)
+          ? deriveQuantityFromPercent(
+              usdBalance,
+              selectedPercentage,
+              limitPrice
+            )
           : undefined
       );
     } else {
@@ -304,7 +312,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                       </span>
                     </span>
                     {marketPriceDifference && (
-                      <span className={`font-semibold ${priceDifferenceTextColorClassName}`}>
+                      <span
+                        className={`font-semibold ${priceDifferenceTextColorClassName}`}
+                      >
                         Diff {priceDifferencePrefix}$
                         <Money>{marketPriceDifference.abs()}</Money>
                       </span>
@@ -356,9 +366,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
       <Button
         className={
-          continueButtonClassName
-            ? `mt-8 ${continueButtonClassName}`
-            : "mt-8"
+          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
         }
         onClick={handleContinueClick}
         disabled={isBtnDisabled}

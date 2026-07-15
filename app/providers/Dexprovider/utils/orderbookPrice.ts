@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
@@ -172,9 +173,12 @@ export function exceedsAvailableBalance({
   usdBalance: BigNumber.Value;
   tokenBalance: BigNumber.Value;
 }): boolean {
+  const quoteBalance = new BigNumber(usdBalance);
+  const baseBalance = new BigNumber(tokenBalance);
+
   return isBuyAction
-    ? Boolean(total?.gt(usdBalance))
-    : Boolean(amount?.gt(tokenBalance));
+    ? Boolean(total?.gt(quoteBalance))
+    : Boolean(amount?.gt(baseBalance));
 }
 
 /**
