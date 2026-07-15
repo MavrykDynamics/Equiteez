@@ -67,6 +67,7 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 
   const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
     orderbookAddress,
+    rwaAddress: estate.token_address,
   });
 
   // Current Price from the LIVE order book (best ask, falling back to best

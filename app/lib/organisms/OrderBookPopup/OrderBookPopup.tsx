@@ -120,7 +120,6 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
     className
   );
 
-  console.log(orderbookAddress, "orderbookAddress");
   const desktopWrapperStyle = isMobile
     ? undefined
     : {

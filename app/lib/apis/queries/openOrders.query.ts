@@ -2,6 +2,7 @@ import { gql } from "@apollo/client/index";
 
 export const ALL_OPEN_ORDERS_QUERY = gql`
   query allOpenOrdersQuery(
+    $rwaAddress: String
     $orderbookAddress: String
     $offset: Int = 0
     $limit: Int
@@ -14,7 +15,10 @@ export const ALL_OPEN_ORDERS_QUERY = gql`
         is_fulfilled: { _eq: false }
         is_refunded: { _eq: false }
         order_type: { _eq: 0 }
-        orderbook: { address: { _eq: $orderbookAddress } }
+        _or: [
+          { orderbook: { rwa_token: { address: { _eq: $rwaAddress } } } }
+          { orderbook: { address: { _eq: $orderbookAddress } } }
+        ]
       }
       offset: $offset
       limit: $limit
@@ -51,7 +55,10 @@ export const ALL_OPEN_ORDERS_QUERY = gql`
         is_fulfilled: { _eq: false }
         is_refunded: { _eq: false }
         order_type: { _eq: 1 }
-        orderbook: { address: { _eq: $orderbookAddress } }
+        _or: [
+          { orderbook: { rwa_token: { address: { _eq: $rwaAddress } } } }
+          { orderbook: { address: { _eq: $orderbookAddress } } }
+        ]
       }
       offset: $offset
       limit: $limit
