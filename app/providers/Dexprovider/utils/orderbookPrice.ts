@@ -1,5 +1,7 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import { atomsToTokens } from "~/lib/utils/formaters";
+
+export const DEFAULT_QUOTE_TOKEN_DECIMALS = 6;
 
 export const getBestBuyPrice = (rawSellPrices: number[]): BigNumber => {
   if (!rawSellPrices.length) return new BigNumber(0);
@@ -162,4 +164,26 @@ export function getBestPricesFromOpenOrders(
     lowestSellPrice: realSellPrices.length ? Math.min(...realSellPrices) : 0,
     highestBuyPrice: realBuyPrices.length ? Math.max(...realBuyPrices) : 0,
   };
+}
+
+export function getCurrentPriceFromOpenOrders({
+  buyOrders,
+  sellOrders,
+  quoteTokenDecimals,
+}: {
+  buyOrders: { price_per_rwa_token: number }[];
+  sellOrders: { price_per_rwa_token: number }[];
+  quoteTokenDecimals: number;
+}): BigNumber {
+  const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOpenOrders(
+    buyOrders,
+    sellOrders
+  );
+
+  return resolveMarketPrice(
+    true,
+    lowestSellPrice,
+    highestBuyPrice,
+    quoteTokenDecimals
+  );
 }

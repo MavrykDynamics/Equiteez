@@ -8,6 +8,7 @@ import {
   getBestPricesFromOpenOrders,
   getBestBuyPrice,
   getBestSellPrice,
+  getCurrentPriceFromOpenOrders,
   getMarketBuyPrice,
   getMarketSellPrice,
   getOrderBookPricesPerToken,
@@ -156,9 +157,9 @@ describe("safeDivByPrice (empty-book division guard)", () => {
   });
 
   it("returns 0 tokens for a 0 spend at a valid price", () => {
-    expect(
-      safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()
-    ).toBe(0);
+    expect(safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()).toBe(
+      0
+    );
   });
 
   it("never produces a non-finite result for a 0 price", () => {
@@ -218,6 +219,31 @@ describe("getBestPricesFromOpenOrders (live best ask/bid)", () => {
       lowestSellPrice: 0,
       highestBuyPrice: 0,
     });
+  });
+});
+
+describe("getCurrentPriceFromOpenOrders", () => {
+  it("uses the same live best ask/bid resolver as the secondary price block", () => {
+    const currentPrice = getCurrentPriceFromOpenOrders({
+      buyOrders: [{ price_per_rwa_token: 4 * ATOM }],
+      sellOrders: [
+        { price_per_rwa_token: 7 * ATOM },
+        { price_per_rwa_token: 5 * ATOM },
+      ],
+      quoteTokenDecimals: DECIMALS,
+    });
+
+    expect(currentPrice.toNumber()).toBe(5);
+  });
+
+  it("falls back to the best bid when there are no sell orders", () => {
+    const currentPrice = getCurrentPriceFromOpenOrders({
+      buyOrders: [{ price_per_rwa_token: 4 * ATOM }],
+      sellOrders: [],
+      quoteTokenDecimals: DECIMALS,
+    });
+
+    expect(currentPrice.toNumber()).toBe(4);
   });
 });
 

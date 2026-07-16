@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   useRouteError,
 } from "@remix-run/react";
 import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
@@ -39,7 +40,7 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
@@ -166,6 +167,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
+          <RouteScrollReset />
           <Scripts />
         </div>
       </body>
@@ -179,6 +181,33 @@ export default function App() {
       <Outlet />
     </>
   );
+}
+
+function RouteScrollReset() {
+  const location = useLocation();
+  const isInitialRender = useRef(true);
+  const previousPathname = useRef(location.pathname);
+
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    if (previousPathname.current === location.pathname) {
+      return;
+    }
+
+    previousPathname.current = location.pathname;
+
+    if (location.hash) {
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.hash, location.pathname]);
+
+  return null;
 }
 
 /** catch server errors ************************** */

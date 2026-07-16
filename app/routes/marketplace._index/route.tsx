@@ -4,9 +4,7 @@ import { Spacer } from "~/lib/atoms/Spacer";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters/Filters";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 import styles from "./marketplace.module.css";
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -21,6 +19,7 @@ import { MobileFilters } from "~/routes/marketplace._index/components/MobileFilt
 import { ROUTES } from "~/consts/routes";
 import { useMarketplaceAssets } from "~/routes/marketplace._index/hooks/useMarketplaceAssets";
 import { EMPTY_ARRAY } from "~/consts";
+import { useOrderbookCurrentPrices } from "~/lib/apis/mbrwa/openOrders/useOrderbookCurrentPrices";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,7 +37,6 @@ export default function Properties() {
 }
 
 const PropertiesContent = () => {
-  const { orderbookStorages } = useDexContext();
   const {
     assets,
     marketApiError,
@@ -48,6 +46,7 @@ const PropertiesContent = () => {
     setPage,
     totalPages,
   } = useMarketplaceAssets();
+  const { pricesByAssetSlug } = useOrderbookCurrentPrices({ assets });
 
   const { width } = useWindowDimensions();
   const shouldShowMobileFilters = width <= TABLET_MAX_WIDTH;
@@ -74,11 +73,6 @@ const PropertiesContent = () => {
               const isSecondaryMarket =
                 es.assetDetails.type === SECONDARY_MARKET;
 
-              const pricePerToken = atomsToTokens(
-                orderbookStorages[es.slug]?.lowestSellPrice || 0,
-                es.decimals
-              );
-
               return (
                 <Link
                   to={generatePath(ROUTES.singleAsset, {
@@ -95,7 +89,7 @@ const PropertiesContent = () => {
                     description={es.assetDetails.propertyDetails.propertyType}
                     isSecondaryMarket={isSecondaryMarket}
                     APY={es.assetDetails.APY}
-                    pricePerToken={pricePerToken}
+                    pricePerToken={pricesByAssetSlug[es.slug]}
                     progressBarPercentage={isSecondaryMarket ? undefined : 22}
                     height="276px"
                   />

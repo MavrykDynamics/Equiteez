@@ -43,3 +43,6 @@ export type OpenOrdersQueryVariables = {
   offset?: number;
   limit?: number;
 };
+export type OpenOrdersByRwaAddressesQueryVariables = {
+  rwaAddresses: string[];
+};
