@@ -55,6 +55,7 @@ import {
 import styles from "./popups.module.css";
 import {
   getBestPricesFromOpenOrders,
+  isPriceAlignedToTickSize,
   resolveMarketPrice,
   safeDivByPrice,
 } from "~/providers/Dexprovider/utils";
@@ -69,6 +70,7 @@ import {
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
@@ -105,6 +107,7 @@ export const PopupContent: FC<PopupContentProps> = ({
 }) => {
   const { slug } = estate;
   const { dapp } = useWalletContext();
+  const { orderbookStorages } = useDexContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
@@ -169,6 +172,17 @@ export const PopupContent: FC<PopupContentProps> = ({
     quoteTokenDecimals,
     quoteTokenMetadata: quoteAssetmetadata,
   } = useOrderbookTokenMetadata(estate);
+  const rawTickSize = orderbookStorages[slug]?.tickSize ?? 0;
+  const hasLimitPriceTickError = useMemo(
+    () =>
+      !isMarketTypeMarket &&
+      !isPriceAlignedToTickSize({
+        price: limitPrice,
+        rawTickSize,
+        quoteTokenDecimals,
+      }),
+    [isMarketTypeMarket, limitPrice, quoteTokenDecimals, rawTickSize]
+  );
 
   // based on tab (buy|sell) token price may vary. Source best ask/bid from the
   // LIVE order book (same as the order-book table), not the 30s-stale REST
@@ -330,7 +344,7 @@ export const PopupContent: FC<PopupContentProps> = ({
 
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
-    if (!mavrykToolkit || !total || total.lte(0)) {
+    if (!mavrykToolkit || !total || total.lte(0) || hasLimitPriceTickError) {
       setNetworkFee(ZERO);
       return;
     }
@@ -376,6 +390,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       window.clearTimeout(t);
     };
   }, [
+    hasLimitPriceTickError,
     isMarketTypeMarket,
     limitBuyProps,
     limitSellProps,
@@ -688,8 +703,10 @@ export const PopupContent: FC<PopupContentProps> = ({
                           cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
-                            ? (safeDivByPrice(amountB, tokenPrice)?.toNumber() ??
-                              0)
+                            ? (safeDivByPrice(
+                                amountB,
+                                tokenPrice
+                              )?.toNumber() ?? 0)
                             : (amountB ?? 0)}
                         </Money>
                       ) : (
@@ -733,6 +750,7 @@ export const PopupContent: FC<PopupContentProps> = ({
               />
             ) : (
               <BuySellLimitScreen
+                rawTickSize={rawTickSize}
                 limitPrice={limitPrice}
                 marketTokenPrice={tokenPrice}
                 setLimitPrice={setLimitPrice}

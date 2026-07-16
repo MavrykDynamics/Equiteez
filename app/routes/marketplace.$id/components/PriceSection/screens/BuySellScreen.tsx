@@ -174,7 +174,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
-  const isBtnDisabled = hasTotalError || !amount || !isKyced;
+  const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
+  const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
+  const isBtnDisabled =
+    hasTotalError || hasInvalidAmount || hasInvalidMarketPrice || !isKyced;
 
   useEffect(() => {
     if (selectedPercentage != null) {
@@ -196,12 +199,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       finalTotalValue: orderValue.plus(fee).plus(networkFee) || ZERO,
       txnFee: fee,
     };
-  }, [
-    amount,
-    isBuyAction,
-    networkFee,
-    total,
-  ]);
+  }, [amount, isBuyAction, networkFee, total]);
 
   return (
     <div className="flex flex-col flex-1">
