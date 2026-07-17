@@ -11,7 +11,10 @@ import { getSpread, getTotalOrderBookLiquidity } from "./orderBook.consts";
 const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
 const MARKET_SELL_SENTINEL_PRICE = 0;
 
-const makeOrder = (overrides: Partial<OpenOrder>): OpenOrder => ({
+const makeOrder = (
+  overrides: Partial<Record<keyof OpenOrder, unknown>>
+): OpenOrder =>
+  ({
   id: 1,
   orderbook: { rwa_token: { address: "KT1rwa" } },
   is_canceled: false,
@@ -23,27 +26,31 @@ const makeOrder = (overrides: Partial<OpenOrder>): OpenOrder => ({
   order_type: OrderTypes.LIMIT_BUY,
   created_at: "",
   ended_at: null,
-  fulfilled_amount: 0,
+  fulfilled_amount: "0",
   orderbook_id: 1,
-  price_per_rwa_token: 0,
-  refunded_amount: 0,
-  rwa_token_amount: 0,
-  total_paid_out: 0,
-  total_usd_value_of_rwa_token_amount: 0,
-  unfulfilled_amount: 0,
+  price_per_rwa_token: "0",
+  refunded_amount: "0",
+  rwa_token_amount: "0",
+  total_paid_out: "0",
+  total_usd_value_of_rwa_token_amount: "0",
+  unfulfilled_amount: "0",
   ...overrides,
-});
+}) as OpenOrder;
 
 // Minimal row factory - getSpread only reads `price`. Asks are ordered so the
 // last element is the best (lowest) ask; bids so the first is the best (highest)
 // bid, matching how createOrderBookData feeds them in.
-const row = (price: number): OrderBookRow => ({
+const row = (
+  price: number,
+  overrides: Partial<OrderBookRow> = {}
+): OrderBookRow => ({
   amount: 0,
   depthPercentage: 0,
   id: `row-${price}`,
   isMarketOrder: false,
   price,
   total: 0,
+  ...overrides,
 });
 
 describe("getSpread", () => {
@@ -89,6 +96,25 @@ describe("getSpread", () => {
       bestBid: 0,
       price: 0,
       value: 0,
+    });
+  });
+
+  it("ignores market rows when computing best prices and spread", () => {
+    const asks = [
+      row(7),
+      row(5),
+      row(0, { isMarketOrder: true }),
+    ];
+    const bids = [
+      row(MARKET_BUY_SENTINEL_PRICE, { isMarketOrder: true }),
+      row(4),
+    ];
+
+    expect(getSpread(asks, bids)).toEqual({
+      bestAsk: 5,
+      bestBid: 4,
+      price: 5,
+      value: 1,
     });
   });
 });
@@ -150,9 +176,7 @@ describe("getTotalOrderBookLiquidity", () => {
     ).toBe(0);
   });
 
-  // Sentinel-priced market orders must use their escrowed USD value, not
-  // price * amount (which would be astronomical for a buy sentinel).
-  it("values a market buy order by its escrowed USD, not the sentinel price", () => {
+  it("excludes market buy orders from resting book liquidity", () => {
     const marketBid = makeOrder({
       order_type: OrderTypes.MARKET_BUY,
       price_per_rwa_token: MARKET_BUY_SENTINEL_PRICE,
@@ -166,10 +190,10 @@ describe("getTotalOrderBookLiquidity", () => {
         sellOrders: [],
         ...DECIMALS,
       }).toNumber()
-    ).toBe(30);
+    ).toBe(0);
   });
 
-  it("values a market sell order (sentinel price 0) by its escrowed USD", () => {
+  it("excludes market sell orders from resting book liquidity", () => {
     const marketAsk = makeOrder({
       order_type: OrderTypes.MARKET_SELL,
       price_per_rwa_token: MARKET_SELL_SENTINEL_PRICE,
@@ -183,7 +207,7 @@ describe("getTotalOrderBookLiquidity", () => {
         sellOrders: [marketAsk],
         ...DECIMALS,
       }).toNumber()
-    ).toBe(12);
+    ).toBe(0);
   });
 
   it("applies base and quote decimals to the correct fields", () => {

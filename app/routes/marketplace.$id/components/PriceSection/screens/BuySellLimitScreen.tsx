@@ -31,7 +31,6 @@ import {
   isPriceAlignedToTickSize,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
-import { PLATFORM_FEE_RATE } from "./buySell.consts";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -47,6 +46,7 @@ type BuySellLimitScreenProps = {
   limitPrice: BigNumber | undefined;
   rawTickSize: number;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  validationMessage?: string;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -62,6 +62,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setLimitPrice,
   marketTokenPrice,
+  validationMessage,
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
@@ -91,13 +92,16 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const usdBalance = useMemo(
-    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
-    [userTokensBalances, quoteTokenAddress]
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
-    [userTokensBalances, token_address]
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
   );
 
   const isBuyAction = actionType === BUY;
@@ -203,12 +207,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    // Platform fee = 2% of the order total.
-    const fee = total ? total.times(PLATFORM_FEE_RATE) : ZERO;
-
     return {
-      finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
-      txnFee: fee,
+      finalTotalValue: total?.plus(networkFee) || ZERO,
+      txnFee: undefined,
     };
   }, [networkFee, total]);
 
@@ -221,7 +222,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !limitPrice ||
     !limitPrice.isFinite() ||
     limitPrice.lte(0) ||
-    !isKyced;
+    !isKyced ||
+    Boolean(validationMessage);
   const priceDifferencePrefix = marketPriceDifference?.gt(0)
     ? "+"
     : marketPriceDifference?.lt(0)
@@ -367,6 +369,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
+          </Alert>
+        </div>
+      )}
+
+      {validationMessage && (
+        <div className="mt-8">
+          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+            {validationMessage}
           </Alert>
         </div>
       )}

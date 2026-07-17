@@ -11,6 +11,13 @@ export type OrderType = {
   tokenSlug: string;
   isSell: boolean;
   orderName: string;
+  orderStatus: string;
+  originalAmount: number;
+  fulfilledAmount: number;
+  remainingAmount: number;
+  refundedAmount: number;
+  refundableAmount: number;
+  canRefund: boolean;
   assetLink: string;
   orderIcon: JSX.Element;
 } & z.infer<typeof OrderSchema>;

@@ -37,3 +37,24 @@ export const fetchUserOpenOrders = async (
 
   return data;
 };
+
+export const fetchUserRefundableOrders = async (
+  userAddress: string,
+  offset: number,
+  limit: number,
+  orderType: string | null | undefined,
+  searchTerm: string | null
+): Promise<OrdersListType> => {
+  const params = new URLSearchParams({
+    offset: offset.toString(),
+    limit: limit.toString(),
+    ...(searchTerm ? { searchTerm } : {}),
+    ...(orderType !== undefined && orderType !== null ? { orderType } : {}),
+  });
+
+  const url = `${mbrwaApiUrl}wallet/${userAddress}/refundable-orders?${params.toString()}`;
+
+  const { data } = await api(url, { method: "GET" }, OrdersListSchema);
+
+  return data;
+};

@@ -4,6 +4,7 @@ import BigNumber from "bignumber.js";
 
 import {
   getDisplayTickSize,
+  isPriceAtomsAlignedToTickSize,
   isPriceAlignedToTickSize,
 } from "./orderbookConfig";
 
@@ -69,6 +70,64 @@ describe("isPriceAlignedToTickSize", () => {
         price: "5.125",
         rawTickSize: 0,
         quoteTokenDecimals: 6,
+      })
+    ).toBe(true);
+  });
+
+  it("rejects a price with more precision than quote-token atoms", () => {
+    expect(
+      isPriceAlignedToTickSize({
+        price: "1.0000001",
+        rawTickSize: 1,
+        quoteTokenDecimals: 6,
+      })
+    ).toBe(false);
+  });
+});
+
+describe("isPriceAtomsAlignedToTickSize", () => {
+  it("accepts an exactly aligned atom price", () => {
+    expect(
+      isPriceAtomsAlignedToTickSize({
+        priceAtoms: "10000000",
+        tickSizeAtoms: "10000",
+      })
+    ).toBe(true);
+  });
+
+  it("rejects a price one atom below a tick", () => {
+    expect(
+      isPriceAtomsAlignedToTickSize({
+        priceAtoms: "9999999",
+        tickSizeAtoms: "10000",
+      })
+    ).toBe(false);
+  });
+
+  it("rejects a price one atom above a tick", () => {
+    expect(
+      isPriceAtomsAlignedToTickSize({
+        priceAtoms: "10000001",
+        tickSizeAtoms: "10000",
+      })
+    ).toBe(false);
+  });
+
+  it("handles decimal quote-token atom values", () => {
+    expect(
+      isPriceAlignedToTickSize({
+        price: "1.25",
+        rawTickSize: 25,
+        quoteTokenDecimals: 2,
+      })
+    ).toBe(true);
+  });
+
+  it("handles large atom values", () => {
+    expect(
+      isPriceAtomsAlignedToTickSize({
+        priceAtoms: "90071992547409930000",
+        tickSizeAtoms: "10000",
       })
     ).toBe(true);
   });

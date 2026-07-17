@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Heading } from "~/lib/atoms/Typography/Heading";
 import { RoundedCard } from "~/lib/atoms/RoundedCard/RoundedCard";
 import { Text } from "~/lib/atoms/Typography/Text";
 import styles from "./styles.module.css";
@@ -80,7 +79,7 @@ export default function WalletOrders() {
     <div className="flex flex-col gap-[16px]">
       <div className="flex flex-col gap-[12px]">
         <Text size="largeBody" weight="semibold">
-          Open Orders
+          Orders
         </Text>
         <div className="flex gap-[12px]">
           <div className="flex-1">
@@ -146,7 +145,7 @@ export default function WalletOrders() {
           ) : (
             <EmptyState
               title="No open orders"
-              description="Create a buy or sell order to see it here."
+              description="Create an order or claim a refundable closed order to see it here."
             />
           )}
         </div>

@@ -9,11 +9,20 @@ export const rwaToFixed = (value: number = 1) => {
   return parseFloat(value.toFixed(2).toString());
 };
 
-export function formatRWAPrice(price: number, decimals = RWA_TOKEN_DECIMALS) {
-  const bigPrice = new BigNumber(price);
-  const powerOfTen = new BigNumber(10).pow(decimals);
-  const formattedPrice = bigPrice.multipliedBy(powerOfTen);
-  return formattedPrice.toNumber();
+export function decimalScale(decimals: number): BigNumber {
+  if (!Number.isInteger(decimals) || decimals < 0) {
+    throw new Error(`Invalid token decimals: ${decimals}`);
+  }
+
+  return new BigNumber(10).pow(decimals);
+}
+
+export function formatRWAPrice(
+  price: BigNumber.Value,
+  decimals = RWA_TOKEN_DECIMALS,
+  roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN
+) {
+  return priceToAtoms(price, decimals, roundingMode);
 }
 
 // QuoteToken Formatter
@@ -32,11 +41,48 @@ export const Stablecoin = (value: number = 1) => {
 };
 
 export function atomsToTokens(x: BigNumber.Value, decimals: number) {
-  return new BigNumber(x).integerValue().div(new BigNumber(10).pow(decimals));
+  return new BigNumber(x)
+    .integerValue(BigNumber.ROUND_DOWN)
+    .div(decimalScale(decimals));
 }
 
-export function tokensToAtoms(x: BigNumber.Value, decimals: number) {
-  return new BigNumber(x).times(10 ** decimals).integerValue();
+export function tokensToAtoms(
+  x: BigNumber.Value,
+  decimals: number,
+  roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN
+) {
+  return new BigNumber(x).times(decimalScale(decimals)).integerValue(roundingMode);
+}
+
+export function priceToAtoms(
+  x: BigNumber.Value,
+  decimals: number,
+  roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN
+) {
+  return tokensToAtoms(x, decimals, roundingMode);
+}
+
+export function toNatString(value: BigNumber.Value, label = "value"): string {
+  const bn = new BigNumber(value);
+
+  if (!bn.isFinite() || !bn.isInteger() || bn.lt(0)) {
+    throw new Error(`${label} must be a non-negative integer atom value`);
+  }
+
+  return bn.toFixed(0);
+}
+
+export function toPositiveNatString(
+  value: BigNumber.Value,
+  label = "value"
+): string {
+  const nat = toNatString(value, label);
+
+  if (new BigNumber(nat).lte(0)) {
+    throw new Error(`${label} must be greater than zero`);
+  }
+
+  return nat;
 }
 
 export function bnToFixed(x: BigNumber, decimals = RWA_TOKEN_DECIMALS) {

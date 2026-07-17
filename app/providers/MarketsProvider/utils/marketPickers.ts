@@ -1,5 +1,8 @@
-import { stablecoinContract } from "~/consts/contracts";
-import { MarketInternalStateType } from "../market.types";
+import { toTokenSlug } from "~/lib/assets";
+import {
+  MarketInternalStateType,
+  OrderbookConfigType,
+} from "../market.types";
 
 /**
  * create dynamic pickers to get contract addresses based on token addresses for contract calls
@@ -27,13 +30,27 @@ export const createMarketPickers = (
   const pickOrderbookContractQuoteToken = Array.from(orderbook.values()).reduce<
     StringRecord<string>
   >((acc, curr) => {
-    acc[curr.rwaTokenAddress] =
-      curr.currencies?.[0]?.token.address ?? stablecoinContract;
+    const quoteTokenAddress = curr.currencies?.[0]?.token.address;
+
+    if (quoteTokenAddress) {
+      acc[curr.rwaTokenAddress] = quoteTokenAddress;
+    }
+
+    return acc;
+  }, {});
+
+  const pickOrderbookConfig = Array.from(orderbook.values()).reduce<
+    Record<string, OrderbookConfigType>
+  >((acc, curr) => {
+    acc[curr.rwaTokenAddress] = curr;
     return acc;
   }, {});
 
   return {
+    pickDodoContractBasedOnToken: {},
+    pickDodoContractQuoteToken: {},
     pickOrderbookContract,
+    pickOrderbookConfig,
     pickOrderbookContractQuoteToken,
     pickOrderbookToken,
   };
@@ -51,8 +68,15 @@ export const createValidTokensRecord = (
   const validTokensObj = Array.from(config.values()).reduce<
     StringRecord<boolean>
   >((acc, curr) => {
+    const quoteToken = curr.currencies[0]?.token;
+
     acc[curr.rwaTokenAddress] = true;
-    acc[curr.currencies[0]?.token?.address] = true;
+
+    if (quoteToken) {
+      acc[quoteToken.address] = true;
+      acc[toTokenSlug(quoteToken.address, quoteToken.token_id)] = true;
+    }
+
     return acc;
   }, {});
 

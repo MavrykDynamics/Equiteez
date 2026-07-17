@@ -3,7 +3,7 @@ import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import BigNumber from "bignumber.js";
 
 import { basenetNetRpcnode } from "~/consts";
-import { atomsToTokens } from "~/lib/utils/formaters";
+import { atomsToTokens, decimalScale } from "~/lib/utils/formaters";
 import type { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
 
 export type OrderbookTickSizesByAddress = StringRecord<number>;
@@ -71,7 +71,30 @@ export const isPriceAlignedToTickSize = ({
   if (!value.isFinite() || value.lte(0)) return true;
   if (!tickSize.isFinite() || tickSize.lte(0)) return true;
 
-  const rawPrice = value.times(new BigNumber(10).pow(quoteTokenDecimals));
+  const rawPrice = value.times(decimalScale(quoteTokenDecimals));
 
-  return rawPrice.mod(tickSize).isZero();
+  if (!rawPrice.isInteger()) return false;
+
+  return isPriceAtomsAlignedToTickSize({
+    priceAtoms: rawPrice,
+    tickSizeAtoms: tickSize,
+  });
+};
+
+export const isPriceAtomsAlignedToTickSize = ({
+  priceAtoms,
+  tickSizeAtoms,
+}: {
+  priceAtoms: BigNumber.Value;
+  tickSizeAtoms: BigNumber.Value;
+}): boolean => {
+  const price = new BigNumber(priceAtoms);
+  const tickSize = new BigNumber(tickSizeAtoms);
+
+  if (!price.isFinite() || !price.isInteger() || price.lte(0)) return true;
+  if (!tickSize.isFinite() || !tickSize.isInteger() || tickSize.lte(0)) {
+    return true;
+  }
+
+  return price.mod(tickSize).isZero();
 };
