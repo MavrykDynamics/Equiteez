@@ -5,12 +5,19 @@ import BigNumber from "bignumber.js";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
+  getBestLimitAsk,
+  getBestLimitBid,
   getBestPricesFromOpenOrders,
   getBestBuyPrice,
   getBestSellPrice,
+  getCurrentPriceFromOpenOrders,
+  getMarketBuyReferencePrice,
+  getMarketBuyTokenAmountAtoms,
   getMarketBuyPrice,
+  getMarketSellReferencePrice,
   getMarketSellPrice,
   getOrderBookPricesPerToken,
+  getQuoteValueAtomsForOrder,
   resolveMarketPrice,
   safeDivByPrice,
 } from "./orderbookPrice";
@@ -156,9 +163,9 @@ describe("safeDivByPrice (empty-book division guard)", () => {
   });
 
   it("returns 0 tokens for a 0 spend at a valid price", () => {
-    expect(
-      safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()
-    ).toBe(0);
+    expect(safeDivByPrice(new BigNumber(0), new BigNumber(5))?.toNumber()).toBe(
+      0
+    );
   });
 
   it("never produces a non-finite result for a 0 price", () => {
@@ -213,11 +220,156 @@ describe("getBestPricesFromOpenOrders (live best ask/bid)", () => {
     ).toEqual({ lowestSellPrice: 30, highestBuyPrice: 10 });
   });
 
+  it("excludes rows explicitly marked as market orders", () => {
+    expect(
+      getBestPricesFromOpenOrders(
+        [
+          { price_per_rwa_token: 12, isMarketOrder: true },
+          { price_per_rwa_token: 10 },
+        ],
+        [
+          { price_per_rwa_token: 8, isMarketOrder: true },
+          { price_per_rwa_token: 30 },
+        ]
+      )
+    ).toEqual({ lowestSellPrice: 30, highestBuyPrice: 10 });
+  });
+
   it("returns 0 for an empty side (so no orders -> 0, handled by fallback)", () => {
     expect(getBestPricesFromOpenOrders([], [])).toEqual({
       lowestSellPrice: 0,
       highestBuyPrice: 0,
     });
+  });
+});
+
+describe("strict market placement reference prices", () => {
+  it("market buy uses only the best real limit ask", () => {
+    const ask = getBestLimitAsk([
+      { price_per_rwa_token: 12 * ATOM },
+      { price_per_rwa_token: 10 * ATOM },
+      { price_per_rwa_token: 0 },
+    ]);
+
+    expect(ask?.toFixed()).toBe(String(10 * ATOM));
+    expect(
+      getMarketBuyReferencePrice(
+        [
+          { price_per_rwa_token: 12 * ATOM },
+          { price_per_rwa_token: 10 * ATOM },
+        ],
+        DECIMALS
+      )?.toNumber()
+    ).toBe(10);
+  });
+
+  it("market buy returns null when no real asks exist", () => {
+    expect(getBestLimitAsk([{ price_per_rwa_token: 0 }])).toBeNull();
+    expect(getMarketBuyReferencePrice([], DECIMALS)).toBeNull();
+  });
+
+  it("market sell uses only the best real limit bid", () => {
+    const bid = getBestLimitBid([
+      { price_per_rwa_token: 8 * ATOM },
+      { price_per_rwa_token: 9 * ATOM },
+      { price_per_rwa_token: 999_999_999_999 },
+    ]);
+
+    expect(bid?.toFixed()).toBe(String(9 * ATOM));
+    expect(
+      getMarketSellReferencePrice(
+        [
+          { price_per_rwa_token: 8 * ATOM },
+          { price_per_rwa_token: 9 * ATOM },
+        ],
+        DECIMALS
+      )?.toNumber()
+    ).toBe(9);
+  });
+
+  it("market sell returns null when no real bids exist", () => {
+    expect(
+      getBestLimitBid([{ price_per_rwa_token: 999_999_999_999 }])
+    ).toBeNull();
+    expect(getMarketSellReferencePrice([], DECIMALS)).toBeNull();
+  });
+});
+
+describe("getMarketBuyTokenAmountAtoms", () => {
+  it("floors 40 / 6 so the implied quote cost stays within budget", () => {
+    const tokenAtoms = getMarketBuyTokenAmountAtoms({
+      quoteBudget: "40",
+      quoteTokenDecimals: 6,
+      baseTokenDecimals: 6,
+      pricePerTokenAtoms: "6000000",
+    });
+
+    expect(tokenAtoms.toFixed()).toBe("6666666");
+    expect(
+      getQuoteValueAtomsForOrder({
+        tokenAmountAtoms: tokenAtoms,
+        pricePerTokenAtoms: "6000000",
+        baseTokenDecimals: 6,
+      }).lte("40000000")
+    ).toBe(true);
+  });
+
+  it("floors 1 / 3 instead of rounding up", () => {
+    expect(
+      getMarketBuyTokenAmountAtoms({
+        quoteBudget: "1",
+        quoteTokenDecimals: 6,
+        baseTokenDecimals: 6,
+        pricePerTokenAtoms: "3000000",
+      }).toFixed()
+    ).toBe("333333");
+  });
+
+  it("handles a value near a token-atom boundary", () => {
+    expect(
+      getMarketBuyTokenAmountAtoms({
+        quoteBudget: "0.000001",
+        quoteTokenDecimals: 6,
+        baseTokenDecimals: 6,
+        pricePerTokenAtoms: "3",
+      }).toFixed()
+    ).toBe("333333");
+  });
+
+  it("handles large amounts above Number.MAX_SAFE_INTEGER without precision loss", () => {
+    const tokenAtoms = getMarketBuyTokenAmountAtoms({
+      quoteBudget: "9007199254740993",
+      quoteTokenDecimals: 6,
+      baseTokenDecimals: 6,
+      pricePerTokenAtoms: "3000000",
+    });
+
+    expect(tokenAtoms.toFixed()).toBe("3002399751580331000000");
+  });
+});
+
+describe("getCurrentPriceFromOpenOrders", () => {
+  it("uses the same live best ask/bid resolver as the secondary price block", () => {
+    const currentPrice = getCurrentPriceFromOpenOrders({
+      buyOrders: [{ price_per_rwa_token: 4 * ATOM }],
+      sellOrders: [
+        { price_per_rwa_token: 7 * ATOM },
+        { price_per_rwa_token: 5 * ATOM },
+      ],
+      quoteTokenDecimals: DECIMALS,
+    });
+
+    expect(currentPrice.toNumber()).toBe(5);
+  });
+
+  it("falls back to the best bid when there are no sell orders", () => {
+    const currentPrice = getCurrentPriceFromOpenOrders({
+      buyOrders: [{ price_per_rwa_token: 4 * ATOM }],
+      sellOrders: [],
+      quoteTokenDecimals: DECIMALS,
+    });
+
+    expect(currentPrice.toNumber()).toBe(4);
   });
 });
 

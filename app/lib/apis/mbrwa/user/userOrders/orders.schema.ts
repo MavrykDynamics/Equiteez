@@ -3,6 +3,7 @@ import { OrderTypes } from "./order.const";
 
 export const OrderSchema = z.object({
   id: z.number(),
+  orderbook_address: z.string().optional(),
   token: z.object({
     address: z.string(),
     name: z.string(),
@@ -19,6 +20,11 @@ export const OrderSchema = z.object({
   unfulfilled_amount: z.number(),
   refunded_amount: z.number(),
   order_id: z.number(),
+  is_canceled: z.boolean().optional(),
+  is_expired: z.boolean().optional(),
+  is_fulfilled: z.boolean().optional(),
+  is_refunded: z.boolean().optional(),
+  refundable_amount: z.number().optional(),
 });
 
 export const OrderTotalSchema = z.object({

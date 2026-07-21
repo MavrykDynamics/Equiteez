@@ -27,9 +27,10 @@ import Money from "~/lib/atoms/Money";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
+  getDisplayTickSize,
+  isPriceAlignedToTickSize,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
-import { PLATFORM_FEE_RATE } from "./buySell.consts";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -43,7 +44,9 @@ type BuySellLimitScreenProps = {
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
+  rawTickSize: number;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  validationMessage?: string;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -55,9 +58,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   total,
   networkFee,
   limitPrice,
+  rawTickSize,
   setAmount,
   setLimitPrice,
   marketTokenPrice,
+  validationMessage,
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
@@ -87,13 +92,16 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const usdBalance = useMemo(
-    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
-    [userTokensBalances, quoteTokenAddress]
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
-    [userTokensBalances, token_address]
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
   );
 
   const isBuyAction = actionType === BUY;
@@ -101,6 +109,24 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
     [limitPrice, marketTokenPrice]
   );
+  const displayTickSize = useMemo(
+    () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
+    [rawTickSize, stableCoinMetadata.decimals]
+  );
+  const hasLimitPriceTickError = useMemo(
+    () =>
+      !isPriceAlignedToTickSize({
+        price: limitPrice,
+        rawTickSize,
+        quoteTokenDecimals: stableCoinMetadata.decimals,
+      }),
+    [limitPrice, rawTickSize, stableCoinMetadata.decimals]
+  );
+  const limitPriceTickErrorCaption =
+    hasLimitPriceTickError && displayTickSize.gt(0)
+      ? `Limit price must be a multiple of ${displayTickSize.toFixed()} ${stableCoinMetadata.symbol}.`
+      : undefined;
+
   // Side-aware balance guard: BUY overspends when total (amount × limit price)
   // exceeds the quote balance; SELL oversells when amount exceeds the token
   // balance. Drives both the input caption and the Continue button.
@@ -142,6 +168,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       onChange: setLimitPrice,
       cryptoValue: usdBalance,
       label: "Limit Price",
+      errorCaption: limitPriceTickErrorCaption,
     };
 
     // The order-quantity (base token) field. The balance error lives here since
@@ -167,6 +194,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     hasBalanceError,
     isBuyAction,
     limitPrice,
+    limitPriceTickErrorCaption,
     quoteTokenSlug,
     selectedAssetMetadata,
     setLimitPrice,
@@ -179,24 +207,23 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    // Platform fee = 2% of the order total.
-    const fee = total ? total.times(PLATFORM_FEE_RATE) : ZERO;
-
     return {
-      finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
-      txnFee: fee,
+      finalTotalValue: total?.plus(networkFee) || ZERO,
+      txnFee: undefined,
     };
   }, [networkFee, total]);
 
   const isBtnDisabled =
     hasBalanceError ||
+    hasLimitPriceTickError ||
     !amount ||
-    amount.isZero() ||
-    amount.isNaN() ||
+    !amount.isFinite() ||
+    amount.lte(0) ||
     !limitPrice ||
-    limitPrice.isZero() ||
-    limitPrice.isNaN() ||
-    !isKyced;
+    !limitPrice.isFinite() ||
+    limitPrice.lte(0) ||
+    !isKyced ||
+    Boolean(validationMessage);
   const priceDifferencePrefix = marketPriceDifference?.gt(0)
     ? "+"
     : marketPriceDifference?.lt(0)
@@ -215,7 +242,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       // Spend a % of the quote balance at the current limit price -> token qty.
       setAmount(
         limitPrice
-          ? deriveQuantityFromPercent(usdBalance, selectedPercentage, limitPrice)
+          ? deriveQuantityFromPercent(
+              usdBalance,
+              selectedPercentage,
+              limitPrice
+            )
           : undefined
       );
     } else {
@@ -290,7 +321,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                       </span>
                     </span>
                     {marketPriceDifference && (
-                      <span className={`font-semibold ${priceDifferenceTextColorClassName}`}>
+                      <span
+                        className={`font-semibold ${priceDifferenceTextColorClassName}`}
+                      >
                         Diff {priceDifferencePrefix}$
                         <Money>{marketPriceDifference.abs()}</Money>
                       </span>
@@ -340,11 +373,17 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       )}
 
+      {validationMessage && (
+        <div className="mt-8">
+          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+            {validationMessage}
+          </Alert>
+        </div>
+      )}
+
       <Button
         className={
-          continueButtonClassName
-            ? `mt-8 ${continueButtonClassName}`
-            : "mt-8"
+          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
         }
         onClick={handleContinueClick}
         disabled={isBtnDisabled}

@@ -30,6 +30,7 @@ import {
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { isMarketOrderPrice } from "~/providers/Dexprovider/utils";
 
 import { OrderRow } from "./OrderRow";
 import type {
@@ -448,7 +449,10 @@ const getOrdersTotal = ({
   quoteTokenDecimals: number;
   side: "buy" | "sell";
 }) =>
-  sortOrdersForSummary(orders, side)
+  sortOrdersForSummary(
+    orders.filter((order) => !isMarketOrderPrice(order, side)),
+    side
+  )
     .slice(0, ORDER_BOOK_SUMMARY_SAMPLE_SIZE)
     .reduce(
       (total, order) =>

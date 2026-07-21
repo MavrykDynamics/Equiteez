@@ -208,10 +208,32 @@ export interface AssetUniversal {
   };
 }
 
+export type OrderbookTokenConfigType = {
+  address: string;
+  token_id: string;
+  decimals?: number;
+  symbol?: string;
+};
+
+export type OrderbookCurrencyConfigType = {
+  currencyKey?: string;
+  token: OrderbookTokenConfigType;
+};
+
 export type OrderbookConfigType = {
   address: string;
   rwaTokenAddress: string;
-  currencies: { token: { address: string; token_id: number } }[];
+  rwaTokenId: string;
+  rwaTokenDecimals: number;
+  rwaTokenSymbol?: string;
+  buyOrderFee?: number;
+  sellOrderFee?: number;
+  minBuyOrderAmount?: number;
+  minBuyOrderValue?: number;
+  minSellOrderAmount?: number;
+  minSellOrderValue?: number;
+  minExpiryTime?: number;
+  currencies: OrderbookCurrencyConfigType[];
 };
 
 export type MarketConfig = {
@@ -240,7 +262,10 @@ export type MarketContext = MarketInternalStateType & {
   marketApiError: ApiError | null;
   pickers: {
     pickOrderbookContract: StringRecord<string>;
+    pickOrderbookConfig: Record<string, OrderbookConfigType | undefined>;
     pickOrderbookToken: StringRecord<string>;
     pickOrderbookContractQuoteToken: StringRecord<string>;
+    pickDodoContractBasedOnToken: StringRecord<string>;
+    pickDodoContractQuoteToken: StringRecord<string>;
   };
 };

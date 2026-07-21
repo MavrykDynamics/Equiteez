@@ -9,12 +9,13 @@ import { Container } from "~/lib/atoms/Container/Container";
 import { PriceDetailsLabel } from "~/lib/molecules/PriceDetailsLabel/PriceDetailsLabel";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { Link } from "@remix-run/react";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { atomsToTokens } from "~/lib/utils/formaters";
+import { useOrderbookCurrentPrices } from "~/lib/apis/mbrwa/openOrders/useOrderbookCurrentPrices";
 
 export const MarketRowBottom = () => {
   const { marketsArr } = useMarketsContext();
-  const { orderbookStorages } = useDexContext();
+  const { pricesByAssetSlug } = useOrderbookCurrentPrices({
+    assets: marketsArr,
+  });
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -32,10 +33,6 @@ export const MarketRowBottom = () => {
           speed={45}
         >
           {marketsArr.map((market) => {
-            const currentPrice = atomsToTokens(
-              orderbookStorages[market.slug]?.lowestSellPrice,
-              market.decimals
-            );
             return (
               <MarketRowBottomCard
                 key={market.slug}
@@ -43,7 +40,7 @@ export const MarketRowBottom = () => {
                 imgSrc={market.assetDetails.previewImage}
                 to={`/marketplace/${market.assetDetails.blockchain[0].identifier}`}
                 price={
-                  currentPrice?.toNumber() ??
+                  pricesByAssetSlug[market.slug]?.toNumber() ??
                   market.assetDetails.priceDetails.price
                 }
                 percentage={"0.00"}

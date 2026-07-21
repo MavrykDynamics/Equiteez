@@ -7,16 +7,24 @@ const OrderbookItemSchema = z.object({
   highest_buy_price: z.number(),
   sell_order_fee: z.number(),
   buy_order_fee: z.number(),
+  min_buy_order_amount: z.number().optional().nullable(),
+  min_buy_order_value: z.number().optional().nullable(),
+  min_sell_order_amount: z.number().optional().nullable(),
+  min_sell_order_value: z.number().optional().nullable(),
+  min_expiry_time: z.number().optional().nullable(),
   rwa_token: z
     .object({
       address: z.string(),
       name: z.string(),
       symbol: z.string(),
       decimals: z.number(),
+      token_id: z.number().optional(),
     })
     .optional(),
   quote_token: z.object({
     address: z.string(),
+    token_id: z.number().optional(),
+    currency_name: z.string().optional(),
     symbol: z.string(),
     decimals: z.number(),
   }),

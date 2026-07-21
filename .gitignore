@@ -25,3 +25,6 @@ coverage
 /*.jpeg
 /*.gif
 /*.webp
+
+# ignore folders with docs
+revised

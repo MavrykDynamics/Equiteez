@@ -24,7 +24,6 @@ import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
-import { PLATFORM_FEE_RATE } from "./buySell.consts";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellScreenProps = {
@@ -39,6 +38,7 @@ type BuySellScreenProps = {
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   hasQuoteError?: boolean;
+  validationMessage?: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -52,6 +52,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   tokenPrice,
   setAmount,
   hasQuoteError = false,
+  validationMessage,
 }) => {
   const { token_address, slug, assetDetails } = estate;
   const {
@@ -79,22 +80,25 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const usdBalance = useMemo(
-    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
-    [userTokensBalances, quoteTokenAddress]
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
-    [userTokensBalances, token_address]
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
   );
 
   const isBuyAction = actionType === BUY;
   const hasTotalError = isBuyAction
     ? amount
-      ? amount.toNumber() > usdBalance
+      ? amount.gt(usdBalance)
       : false
     : amount
-      ? amount?.toNumber() > tokenBalance
+      ? amount.gt(tokenBalance)
       : false;
 
   const handleContinueClick = useCallback(() => {
@@ -174,7 +178,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
-  const isBtnDisabled = hasTotalError || !amount || !isKyced;
+  const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
+  const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
+  const isBtnDisabled =
+    hasTotalError || hasInvalidAmount || hasInvalidMarketPrice || !isKyced;
+  const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);
 
   useEffect(() => {
     if (selectedPercentage != null) {
@@ -187,21 +195,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    // Platform fee = 2% of the order's USDT total (amount paid on a buy, or
-    // proceeds on a sell).
     const orderValue = (isBuyAction ? amount : total) ?? ZERO;
-    const fee = orderValue.times(PLATFORM_FEE_RATE);
 
     return {
-      finalTotalValue: orderValue.plus(fee).plus(networkFee) || ZERO,
-      txnFee: fee,
+      finalTotalValue: orderValue.plus(networkFee) || ZERO,
+      txnFee: undefined,
     };
-  }, [
-    amount,
-    isBuyAction,
-    networkFee,
-    total,
-  ]);
+  }, [amount, isBuyAction, networkFee, total]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -312,12 +312,20 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       )}
 
+      {validationMessage && (
+        <div className="mt-8">
+          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+            {validationMessage}
+          </Alert>
+        </div>
+      )}
+
       <Button
         className={
           continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
         }
         onClick={handleContinueClick}
-        disabled={isBtnDisabled}
+        disabled={isContinueDisabled}
       >
         Continue
       </Button>

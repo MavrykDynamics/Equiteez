@@ -54,9 +54,18 @@ import {
 
 import styles from "./popups.module.css";
 import {
+  atomsToTokens,
+  priceToAtoms,
+  tokensToAtoms,
+} from "~/lib/utils/formaters";
+import {
+  getBestLimitAsk,
+  getBestLimitBid,
   getBestPricesFromOpenOrders,
+  getMarketBuyTokenAmountAtoms,
+  getQuoteValueAtomsForOrder,
+  isPriceAlignedToTickSize,
   resolveMarketPrice,
-  safeDivByPrice,
 } from "~/providers/Dexprovider/utils";
 import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
@@ -69,6 +78,7 @@ import {
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
@@ -105,6 +115,7 @@ export const PopupContent: FC<PopupContentProps> = ({
 }) => {
   const { slug } = estate;
   const { dapp } = useWalletContext();
+  const { orderbookStorages } = useDexContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
@@ -112,7 +123,7 @@ export const PopupContent: FC<PopupContentProps> = ({
   const {
     marketsArr,
     sortedMarketAddresses,
-    pickers: { pickOrderbookContract, pickOrderbookContractQuoteToken },
+    pickers: { pickOrderbookConfig },
     activeMarket,
   } = useMarketsContext();
 
@@ -169,11 +180,36 @@ export const PopupContent: FC<PopupContentProps> = ({
     quoteTokenDecimals,
     quoteTokenMetadata: quoteAssetmetadata,
   } = useOrderbookTokenMetadata(estate);
+  const rawTickSize = orderbookStorages[slug]?.tickSize ?? 0;
+  const orderbookConfig = pickOrderbookConfig[estate.token_address];
+  const quoteCurrency = orderbookConfig?.currencies[0];
+  const currencyKey = quoteCurrency?.currencyKey ?? "";
+  const quoteTokenAddress = quoteCurrency?.token.address ?? "";
+  const quoteTokenId = quoteCurrency?.token.token_id ?? "";
+  const rwaTokenId = orderbookConfig?.rwaTokenId ?? "";
+  const hasLimitPriceTickError = useMemo(
+    () =>
+      !isMarketTypeMarket &&
+      !isPriceAlignedToTickSize({
+        price: limitPrice,
+        rawTickSize,
+        quoteTokenDecimals,
+      }),
+    [isMarketTypeMarket, limitPrice, quoteTokenDecimals, rawTickSize]
+  );
 
-  // based on tab (buy|sell) token price may vary. Source best ask/bid from the
-  // LIVE order book (same as the order-book table), not the 30s-stale REST
-  // snapshot, so the quoted price can't disagree with the visible orders.
-  const tokenPrice = useMemo(() => {
+  const bestLimitAskAtoms = useMemo(
+    () => getBestLimitAsk(openOrders.sellOrders),
+    [openOrders.sellOrders]
+  );
+  const bestLimitBidAtoms = useMemo(
+    () => getBestLimitBid(openOrders.buyOrders),
+    [openOrders.buyOrders]
+  );
+
+  // Display price may fall back to the opposite side for a generic current
+  // quote, but placement prices below are strict side-specific values.
+  const displayTokenPrice = useMemo(() => {
     const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOpenOrders(
       openOrders.buyOrders,
       openOrders.sellOrders
@@ -190,6 +226,31 @@ export const PopupContent: FC<PopupContentProps> = ({
     openOrders.buyOrders,
     openOrders.sellOrders,
     quoteTokenDecimals,
+  ]);
+  const marketBuyTokenPrice = useMemo(
+    () =>
+      bestLimitAskAtoms
+        ? atomsToTokens(bestLimitAskAtoms, quoteTokenDecimals)
+        : ZERO,
+    [bestLimitAskAtoms, quoteTokenDecimals]
+  );
+  const marketSellTokenPrice = useMemo(
+    () =>
+      bestLimitBidAtoms
+        ? atomsToTokens(bestLimitBidAtoms, quoteTokenDecimals)
+        : ZERO,
+    [bestLimitBidAtoms, quoteTokenDecimals]
+  );
+  const tokenPrice = useMemo(() => {
+    if (!isMarketTypeMarket) return displayTokenPrice;
+
+    return orderType === BUY ? marketBuyTokenPrice : marketSellTokenPrice;
+  }, [
+    displayTokenPrice,
+    isMarketTypeMarket,
+    marketBuyTokenPrice,
+    marketSellTokenPrice,
+    orderType,
   ]);
 
   const handleTabClick = useCallback(
@@ -248,13 +309,16 @@ export const PopupContent: FC<PopupContentProps> = ({
   useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
 
-    if (isDefined(amountB) && priceToUse) {
-      setTotal(amountB.times(priceToUse));
-    } else if (!isDefined(amountB)) {
+    if (!isDefined(amountB)) {
       setTotal(undefined);
+    } else if (isMarketTypeMarket && activetabId === BUY) {
+      setTotal(amountB);
+    } else if (priceToUse) {
+      setTotal(amountB.times(priceToUse));
     }
   }, [
     amountB,
+    activetabId,
     estate.token_address,
     marketType,
     slug,
@@ -271,66 +335,308 @@ export const PopupContent: FC<PopupContentProps> = ({
     setLimitPrice(undefined);
   }, [activetabId, marketType]);
 
+  const limitAmountAtoms = useMemo(
+    () =>
+      amountB
+        ? tokensToAtoms(amountB, baseTokenDecimals, BigNumber.ROUND_DOWN)
+        : ZERO,
+    [amountB, baseTokenDecimals]
+  );
+  const limitPriceAtoms = useMemo(
+    () =>
+      limitPrice
+        ? priceToAtoms(limitPrice, quoteTokenDecimals, BigNumber.ROUND_DOWN)
+        : ZERO,
+    [limitPrice, quoteTokenDecimals]
+  );
+  const marketBuyAmountAtoms = useMemo(() => {
+    if (!amountB || !bestLimitAskAtoms) return ZERO;
+
+    try {
+      return getMarketBuyTokenAmountAtoms({
+        quoteBudget: amountB,
+        quoteTokenDecimals,
+        baseTokenDecimals,
+        pricePerTokenAtoms: bestLimitAskAtoms,
+      });
+    } catch {
+      return ZERO;
+    }
+  }, [amountB, baseTokenDecimals, bestLimitAskAtoms, quoteTokenDecimals]);
+  const marketSellAmountAtoms = useMemo(
+    () =>
+      amountB
+        ? tokensToAtoms(amountB, baseTokenDecimals, BigNumber.ROUND_DOWN)
+        : ZERO,
+    [amountB, baseTokenDecimals]
+  );
+  const marketBuyDisplayAmount = useMemo(
+    () => atomsToTokens(marketBuyAmountAtoms, baseTokenDecimals),
+    [baseTokenDecimals, marketBuyAmountAtoms]
+  );
+
+  const commonOrderProps = useMemo(
+    () => ({
+      orderbookContractAddress: orderbookConfig?.address ?? "",
+      currency: currencyKey,
+      orderExpiry: null,
+      baseTokenDecimals,
+      tickSizeAtoms: rawTickSize || undefined,
+    }),
+    [baseTokenDecimals, currencyKey, orderbookConfig?.address, rawTickSize]
+  );
+
   // Orderbook limit buy | sell with custom user price
   const limitBuyProps = useMemo(
     () => ({
-      orderbookContractAddress: pickOrderbookContract[estate.token_address],
-      quoteTokenAddress: pickOrderbookContractQuoteToken[estate.token_address],
-      tokensAmount: amountB?.toNumber() ?? 0,
-      pricePerToken: limitPrice?.toNumber() ?? 0,
-      decimals: selectedAssetMetadata.decimals,
-      quoteTokenDecimals: quoteAssetmetadata.decimals,
+      ...commonOrderProps,
+      quoteTokenAddress,
+      quoteTokenId,
+      rwaTokenAmount: limitAmountAtoms.toFixed(0),
+      pricePerRwaToken: limitPriceAtoms.toFixed(0),
+      minRwaTokenAmount: orderbookConfig?.minBuyOrderAmount,
+      minQuoteValue: orderbookConfig?.minBuyOrderValue,
       isMarketOrder: false,
     }),
     [
-      pickOrderbookContract,
-      estate.token_address,
-      pickOrderbookContractQuoteToken,
-      amountB,
-      limitPrice,
-      selectedAssetMetadata.decimals,
-      quoteAssetmetadata.decimals,
+      commonOrderProps,
+      limitAmountAtoms,
+      limitPriceAtoms,
+      orderbookConfig?.minBuyOrderAmount,
+      orderbookConfig?.minBuyOrderValue,
+      quoteTokenAddress,
+      quoteTokenId,
     ]
   );
 
   const limitSellProps = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { quoteTokenAddress, ...restBuyprops } = limitBuyProps;
+    const { quoteTokenAddress, quoteTokenId, ...restBuyprops } = limitBuyProps;
 
     return {
       ...restBuyprops,
+      rwaTokenId,
       rwaTokenAddress: estate.token_address,
+      minRwaTokenAmount: orderbookConfig?.minSellOrderAmount,
+      minQuoteValue: orderbookConfig?.minSellOrderValue,
     };
-  }, [estate.token_address, limitBuyProps]);
+  }, [
+    estate.token_address,
+    limitBuyProps,
+    orderbookConfig?.minSellOrderAmount,
+    orderbookConfig?.minSellOrderValue,
+    rwaTokenId,
+  ]);
 
   // Orderbook market with dynamic price
   const marketBuyProps = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pricePerToken, tokensAmount, ...restBuyprops } = limitBuyProps;
-
     return {
-      pricePerToken: tokenPrice.toNumber(),
-      tokensAmount: safeDivByPrice(amountB, tokenPrice)?.toNumber() ?? 0,
-      ...restBuyprops,
+      ...commonOrderProps,
+      quoteTokenAddress,
+      quoteTokenId,
+      rwaTokenAmount: marketBuyAmountAtoms.toFixed(0),
+      pricePerRwaToken: bestLimitAskAtoms?.toFixed(0) ?? "0",
+      minRwaTokenAmount: orderbookConfig?.minBuyOrderAmount,
+      minQuoteValue: orderbookConfig?.minBuyOrderValue,
       isMarketOrder: true,
     };
-  }, [limitBuyProps, tokenPrice, amountB]);
+  }, [
+    bestLimitAskAtoms,
+    commonOrderProps,
+    marketBuyAmountAtoms,
+    orderbookConfig?.minBuyOrderAmount,
+    orderbookConfig?.minBuyOrderValue,
+    quoteTokenAddress,
+    quoteTokenId,
+  ]);
 
   const marketSellProps = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { quoteTokenAddress, pricePerToken, ...restBuyprops } = limitBuyProps;
-
     return {
-      pricePerToken: tokenPrice.toNumber(),
+      ...commonOrderProps,
+      rwaTokenAmount: marketSellAmountAtoms.toFixed(0),
+      pricePerRwaToken: bestLimitBidAtoms?.toFixed(0) ?? "0",
+      minRwaTokenAmount: orderbookConfig?.minSellOrderAmount,
+      minQuoteValue: orderbookConfig?.minSellOrderValue,
+      rwaTokenId,
       rwaTokenAddress: estate.token_address,
-      ...restBuyprops,
       isMarketOrder: true,
     };
-  }, [estate.token_address, limitBuyProps, tokenPrice]);
+  }, [
+    bestLimitBidAtoms,
+    commonOrderProps,
+    estate.token_address,
+    marketSellAmountAtoms,
+    orderbookConfig?.minSellOrderAmount,
+    orderbookConfig?.minSellOrderValue,
+    rwaTokenId,
+  ]);
+
+  const marketConfigValidationMessage = useMemo(() => {
+    if (!orderbookConfig?.address) {
+      return "Selected market is missing orderbook configuration.";
+    }
+
+    if (!quoteTokenAddress) {
+      return "Selected market is missing quote-token address.";
+    }
+
+    if (quoteTokenId === "") {
+      return "Selected market is missing quote-token ID.";
+    }
+
+    if (rwaTokenId === "") {
+      return "Selected market is missing RWA token ID.";
+    }
+
+    if (!currencyKey) {
+      return "Selected market is missing currency key.";
+    }
+
+    if (!Number.isInteger(baseTokenDecimals) || baseTokenDecimals < 0) {
+      return "Selected market is missing base-token decimals.";
+    }
+
+    if (!Number.isInteger(quoteTokenDecimals) || quoteTokenDecimals < 0) {
+      return "Selected market is missing quote-token decimals.";
+    }
+
+    if (new BigNumber(rawTickSize).lte(0)) {
+      return "Selected market is missing tick-size configuration.";
+    }
+
+    return undefined;
+  }, [
+    baseTokenDecimals,
+    currencyKey,
+    orderbookConfig?.address,
+    quoteTokenDecimals,
+    quoteTokenAddress,
+    quoteTokenId,
+    rawTickSize,
+    rwaTokenId,
+  ]);
+
+  const liquidityValidationMessage = useMemo(() => {
+    if (!isMarketTypeMarket) return undefined;
+
+    if (orderType === BUY && !bestLimitAskAtoms) {
+      return "No sell liquidity is available for a market buy.";
+    }
+
+    if (orderType === SELL && !bestLimitBidAtoms) {
+      return "No buy liquidity is available for a market sell.";
+    }
+
+    return undefined;
+  }, [bestLimitAskAtoms, bestLimitBidAtoms, isMarketTypeMarket, orderType]);
+
+  const minOrderValidationMessage = useMemo(() => {
+    const amountAtoms = isMarketTypeMarket
+      ? orderType === BUY
+        ? marketBuyAmountAtoms
+        : marketSellAmountAtoms
+      : limitAmountAtoms;
+    const priceAtoms = isMarketTypeMarket
+      ? orderType === BUY
+        ? (bestLimitAskAtoms ?? ZERO)
+        : (bestLimitBidAtoms ?? ZERO)
+      : limitPriceAtoms;
+    const minAmount =
+      orderType === BUY
+        ? orderbookConfig?.minBuyOrderAmount
+        : orderbookConfig?.minSellOrderAmount;
+    const minQuoteValue =
+      orderType === BUY
+        ? orderbookConfig?.minBuyOrderValue
+        : orderbookConfig?.minSellOrderValue;
+
+    if (!amountAtoms.isFinite() || amountAtoms.lte(0)) return undefined;
+
+    if (minAmount !== undefined && amountAtoms.lt(minAmount)) {
+      return "Order amount is below the selected orderbook minimum.";
+    }
+
+    if (minQuoteValue !== undefined && priceAtoms.gt(0)) {
+      const quoteValueAtoms = getQuoteValueAtomsForOrder({
+        tokenAmountAtoms: amountAtoms,
+        pricePerTokenAtoms: priceAtoms,
+        baseTokenDecimals,
+      });
+
+      if (quoteValueAtoms.lt(minQuoteValue)) {
+        return "Order value is below the selected orderbook minimum.";
+      }
+    }
+
+    return undefined;
+  }, [
+    baseTokenDecimals,
+    bestLimitAskAtoms,
+    bestLimitBidAtoms,
+    isMarketTypeMarket,
+    limitAmountAtoms,
+    limitPriceAtoms,
+    marketBuyAmountAtoms,
+    marketSellAmountAtoms,
+    orderType,
+    orderbookConfig?.minBuyOrderAmount,
+    orderbookConfig?.minBuyOrderValue,
+    orderbookConfig?.minSellOrderAmount,
+    orderbookConfig?.minSellOrderValue,
+  ]);
+
+  const marketBuyBudgetValidationMessage = useMemo(() => {
+    if (
+      !isMarketTypeMarket ||
+      orderType !== BUY ||
+      !amountB ||
+      !bestLimitAskAtoms
+    ) {
+      return undefined;
+    }
+
+    const quoteBudgetAtoms = priceToAtoms(
+      amountB,
+      quoteTokenDecimals,
+      BigNumber.ROUND_DOWN
+    );
+    const requiredQuoteAtoms = getQuoteValueAtomsForOrder({
+      tokenAmountAtoms: marketBuyAmountAtoms,
+      pricePerTokenAtoms: bestLimitAskAtoms,
+      baseTokenDecimals,
+      roundingMode: BigNumber.ROUND_UP,
+    });
+
+    if (requiredQuoteAtoms.gt(quoteBudgetAtoms)) {
+      return "Market buy amount exceeds the quote budget after atom rounding.";
+    }
+
+    return undefined;
+  }, [
+    amountB,
+    baseTokenDecimals,
+    bestLimitAskAtoms,
+    isMarketTypeMarket,
+    marketBuyAmountAtoms,
+    orderType,
+    quoteTokenDecimals,
+  ]);
+
+  const orderValidationMessage =
+    marketConfigValidationMessage ||
+    liquidityValidationMessage ||
+    minOrderValidationMessage ||
+    marketBuyBudgetValidationMessage;
 
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
-    if (!mavrykToolkit || !total || total.lte(0)) {
+    if (
+      !mavrykToolkit ||
+      !total ||
+      total.lte(0) ||
+      hasLimitPriceTickError ||
+      orderValidationMessage
+    ) {
       setNetworkFee(ZERO);
       return;
     }
@@ -376,6 +682,7 @@ export const PopupContent: FC<PopupContentProps> = ({
       window.clearTimeout(t);
     };
   }, [
+    hasLimitPriceTickError,
     isMarketTypeMarket,
     limitBuyProps,
     limitSellProps,
@@ -383,6 +690,7 @@ export const PopupContent: FC<PopupContentProps> = ({
     marketBuyProps,
     marketSellProps,
     orderType,
+    orderValidationMessage,
     total,
   ]);
 
@@ -688,8 +996,7 @@ export const PopupContent: FC<PopupContentProps> = ({
                           cryptoDecimals={selectedAssetMetadata.decimals}
                         >
                           {isMarketTypeMarket
-                            ? (safeDivByPrice(amountB, tokenPrice)?.toNumber() ??
-                              0)
+                            ? marketBuyDisplayAmount
                             : (amountB ?? 0)}
                         </Money>
                       ) : (
@@ -730,9 +1037,11 @@ export const PopupContent: FC<PopupContentProps> = ({
                 total={total}
                 tokenPrice={tokenPrice}
                 networkFee={networkFee}
+                validationMessage={orderValidationMessage}
               />
             ) : (
               <BuySellLimitScreen
+                rawTickSize={rawTickSize}
                 limitPrice={limitPrice}
                 marketTokenPrice={tokenPrice}
                 setLimitPrice={setLimitPrice}
@@ -744,6 +1053,7 @@ export const PopupContent: FC<PopupContentProps> = ({
                 setAmount={setAmountB}
                 total={total}
                 networkFee={networkFee}
+                validationMessage={orderValidationMessage}
               />
             ))}
 

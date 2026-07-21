@@ -6,7 +6,7 @@ type FeesCardProps = {
   // Kept optional for backwards compatibility with callers; the grand total is
   // shown separately as "Order Total", so this card only surfaces the fees.
   totalAmount?: BigNumber | number;
-  txnFees: BigNumber | number;
+  txnFees?: BigNumber | number;
   networkfee: BigNumber | number;
 };
 
@@ -19,7 +19,13 @@ export const FeesCard: FC<FeesCardProps> = ({ txnFees, networkfee }) => {
         <div className="flex items-center justify-between">
           <p className="text-sand-600">Platform Fees</p>
           <div className="text-sand-900 font-semibold">
-            $<Money tooltip={false}>{txnFees}</Money>
+            {txnFees === undefined ? (
+              "On fill"
+            ) : (
+              <>
+                $<Money tooltip={false}>{txnFees}</Money>
+              </>
+            )}
           </div>
         </div>
 
