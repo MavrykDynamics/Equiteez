@@ -39,3 +39,14 @@ export const OrdersListSchema = z.object({
   orders: z.array(OrderSchema),
   total_count: z.number(),
 });
+
+export const RefundableOrdersListSchema = OrdersListSchema.extend({
+  orders: z.array(OrderSchema).optional(),
+});
+
+export const normalizeRefundableOrdersList = (
+  ordersList: z.infer<typeof RefundableOrdersListSchema>
+): z.infer<typeof OrdersListSchema> => ({
+  ...ordersList,
+  orders: ordersList.orders ?? [],
+});
