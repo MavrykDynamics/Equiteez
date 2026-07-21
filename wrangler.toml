@@ -18,6 +18,7 @@ GRAPHQL_API="https://basenet.api.equiteez.com/v1/graphql"
 GRAPHQL_WSS_API="wss:/basenet.api.equiteez.com/v1/graphql"
 NODE_VERSION="22.11.0"
 MBRWA_API="https://legacy-api.mbrwa.equiteez.com/"
+RWA_API="https://test-api.rwa.equiteez.com/api/v1"
 
 [env.production.vars]
 RPC_NODE_URL="https://basenet.rpc.mavryk.network"
@@ -31,3 +32,4 @@ GRAPHQL_API="https://basenet.api.equiteez.com/v1/graphql"
 GRAPHQL_WSS_API="wss:/basenet.api.equiteez.com/v1/graphql"
 NODE_VERSION="22.11.0"
 MBRWA_API="https://legacy-api.mbrwa.equiteez.com/"
+RWA_API="https://test-api.rwa.equiteez.com/api/v1"
