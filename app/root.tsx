@@ -45,6 +45,7 @@ import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AssetProvider } from "./providers/AssetProvider/asset.provider";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -147,15 +148,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             initialTokens={tokens}
                             initialTokensMetadata={tokensMetadata}
                           >
-                            <MarketsProvider>
-                              <DexProvider>
-                                <UserProvider>
-                                  <AppGlobalLoader>
-                                    <PopupProvider>{children}</PopupProvider>
-                                  </AppGlobalLoader>
-                                </UserProvider>
-                              </DexProvider>
-                            </MarketsProvider>
+                            <AssetProvider>
+                              <MarketsProvider>
+                                <DexProvider>
+                                  <UserProvider>
+                                    <AppGlobalLoader>
+                                      <PopupProvider>{children}</PopupProvider>
+                                    </AppGlobalLoader>
+                                  </UserProvider>
+                                </DexProvider>
+                              </MarketsProvider>
+                            </AssetProvider>
                           </TokensProvider>
                         </CurrencyProvider>
                       </ConfigProvider>
