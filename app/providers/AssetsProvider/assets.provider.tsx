@@ -1,24 +1,18 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchAssets } from "~/lib/apis/rwa/assets/assets";
 import type {
-  AssetProviderContextType,
-  AssetProviderProps,
-} from "~/providers/AssetProvider/asset.provider.types";
+  AssetsProviderContextType,
+  AssetsProviderProps,
+} from "~/providers/AssetsProvider/assets.provider.types";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 
-const AssetContext = createContext<AssetProviderContextType | null>(null);
+const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 
-export function AssetProvider({ children }: AssetProviderProps) {
+export function AssetsProvider({ children }: AssetsProviderProps) {
   const [assets, setAssets] = useState<AssetType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const assetsQuery = useQuery({
     queryKey: ["rwa-assets"],
@@ -34,31 +28,31 @@ export function AssetProvider({ children }: AssetProviderProps) {
   }, [assetsQuery.data]);
 
   useEffect(() => {
-    setLoading(
+    setIsLoading(
       assetsQuery.isLoading || assetsQuery.isFetching || assetsQuery.isPending
     );
   }, [assetsQuery.isFetching, assetsQuery.isLoading, assetsQuery.isPending]);
 
-  const contextValue = useMemo<AssetProviderContextType>(
+  const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
       assets,
-      loading,
+      isLoading,
     }),
-    [assets, loading]
+    [assets, isLoading]
   );
 
   return (
-    <AssetContext.Provider value={contextValue}>
+    <AssetsContext.Provider value={contextValue}>
       {children}
-    </AssetContext.Provider>
+    </AssetsContext.Provider>
   );
 }
 
-export function useAssetContext() {
-  const context = useContext(AssetContext);
+export function useAssetsContext() {
+  const context = useContext(AssetsContext);
 
   if (!context) {
-    throw new Error("useAssetContext must be used within AssetProvider");
+    throw new Error("useAssetsContext must be used within AssetsProvider");
   }
 
   return context;

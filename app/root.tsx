@@ -45,7 +45,7 @@ import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AssetProvider } from "./providers/AssetProvider/asset.provider";
+import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -148,7 +148,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             initialTokens={tokens}
                             initialTokensMetadata={tokensMetadata}
                           >
-                            <AssetProvider>
+                            <AssetsProvider>
                               <MarketsProvider>
                                 <DexProvider>
                                   <UserProvider>
@@ -158,7 +158,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                   </UserProvider>
                                 </DexProvider>
                               </MarketsProvider>
-                            </AssetProvider>
+                            </AssetsProvider>
                           </TokensProvider>
                         </CurrencyProvider>
                       </ConfigProvider>
