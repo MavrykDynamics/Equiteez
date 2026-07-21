@@ -10,11 +10,13 @@ import {
   AssetEmblaLastSlide,
   AssetEmblaSlide,
 } from "./components/AssetEmblaSlide";
+import type { BigNumber } from "bignumber.js";
 
 export const SLIDER_VIEW_LIMIT = 4;
 
 type PropType = {
   slides: (PrimaryEstate | SecondaryEstate)[];
+  pricesByAssetSlug?: Record<string, BigNumber>;
   childPosition: "before" | "after";
   nextBtnDisabled: boolean;
   showAll?: boolean;
@@ -26,6 +28,7 @@ const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
     emblaRef,
     nextBtnDisabled,
     slides,
+    pricesByAssetSlug,
     childPosition = "before",
     children,
     showAll,
@@ -47,6 +50,7 @@ const AssetsEmblaCarousel: React.FC<PropType> = (props) => {
               idx={idx}
               nextBtnDisabled={nextBtnDisabled}
               assetsArrLength={slides.length}
+              pricePerToken={pricesByAssetSlug?.[estate.slug]}
             />
           ))}
           {lastSlide && !showAll && <AssetEmblaLastSlide estate={lastSlide} />}

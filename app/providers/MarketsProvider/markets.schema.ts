@@ -21,6 +21,7 @@ export const AssetSchema = z.object({
     decimals: z.number(),
     icon_url: z.string().optional(),
     address: z.string(),
+    token_id: z.number().optional(),
     network: z.string(),
     issuer: z.object({
       name: z.string(),
@@ -286,6 +287,11 @@ export const OrderbookSchema = z.object({
   highest_buy_price: z.number(),
   sell_order_fee: z.number(),
   buy_order_fee: z.number(),
+  min_buy_order_amount: z.number().optional().nullable(),
+  min_buy_order_value: z.number().optional().nullable(),
+  min_sell_order_amount: z.number().optional().nullable(),
+  min_sell_order_value: z.number().optional().nullable(),
+  min_expiry_time: z.number().optional().nullable(),
   rwa_token: z
     .object({
       address: z.string(),
@@ -299,6 +305,7 @@ export const OrderbookSchema = z.object({
   quote_token: z.object({
     address: z.string(),
     token_id: z.number(),
+    currency_name: z.string().optional(),
     symbol: z.string(),
     decimals: z.number(),
   }),

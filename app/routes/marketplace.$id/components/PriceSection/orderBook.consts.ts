@@ -6,18 +6,12 @@ import type {
   OrderBookRow,
 } from "~/lib/organisms/OrderBookPopup/orderBook.types";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { isMarketOrderPrice } from "~/providers/Dexprovider/utils";
 
 const DEFAULT_QUOTE_TOKEN_SYMBOL = "USDT";
 const MAX_GROUPING_OPTIONS = 4;
 const MAX_GROUPING_PRECISION_FRACTION_DIGITS = 4;
 export const DEFAULT_ORDER_BOOK_GROUPING_PRECISION = 0.01;
-
-// Mirrors marketBuyProtectedPrice/marketSellProtectedPrice in the orderbook
-// contract's constants.ligo. Market orders are stored on-chain at these
-// sentinel prices so they always match first - they are not real prices and
-// must not be shown or used as one.
-const MARKET_BUY_SENTINEL_PRICE = 999_999_999_999;
-const MARKET_SELL_SENTINEL_PRICE = 0;
 
 type OrderBookSide = "ask" | "bid";
 
@@ -63,14 +57,16 @@ const sortRowsByPriceDesc = (rows: OrderBookRow[]) =>
   [...rows].sort((left, right) => right.price - left.price);
 
 const withDepthPercentages = (rows: OrderBookRow[]) => {
-  const maxTotal = rows.reduce(
+  const maxTotal = rows.filter((row) => !row.isMarketOrder).reduce(
     (currentMax, row) => Math.max(currentMax, row.total),
     0
   );
 
   return rows.map((row) => ({
     ...row,
-    depthPercentage: getDepthPercentage(row.total, maxTotal),
+    depthPercentage: row.isMarketOrder
+      ? 0
+      : getDepthPercentage(row.total, maxTotal),
   }));
 };
 
@@ -107,10 +103,10 @@ const toOrderBookRows = (
         );
         const groupedPrice = getGroupedPriceLevel(price, groupingPrecision, side);
 
-        const isMarketOrder =
-          side === "bid"
-            ? order.price_per_rwa_token === MARKET_BUY_SENTINEL_PRICE
-            : order.price_per_rwa_token === MARKET_SELL_SENTINEL_PRICE;
+        const isMarketOrder = isMarketOrderPrice(
+          order,
+          side === "bid" ? "buy" : "sell"
+        );
 
         // Market orders are stored at a sentinel price, so price*amount is
         // meaningless. Use the contract's own escrow reference value instead
@@ -139,8 +135,10 @@ export const getSpread = (
   asks: OrderBookRow[],
   bids: OrderBookRow[]
 ): OrderBookData["spread"] => {
-  const bestAsk = asks.at(-1)?.price ?? 0;
-  const bestBid = bids[0]?.price ?? 0;
+  const realAsks = asks.filter((row) => !row.isMarketOrder);
+  const realBids = bids.filter((row) => !row.isMarketOrder);
+  const bestAsk = realAsks.at(-1)?.price ?? 0;
+  const bestBid = realBids[0]?.price ?? 0;
 
   return {
     bestAsk,
@@ -200,19 +198,19 @@ export const getTotalOrderBookLiquidity = ({
 }: GetTotalOrderBookLiquidityParams): BigNumber => {
   const sumSide = (orders: OpenOrder[], side: OrderBookSide) =>
     orders.reduce((runningTotal, order) => {
-      const isMarketOrder =
-        side === "bid"
-          ? order.price_per_rwa_token === MARKET_BUY_SENTINEL_PRICE
-          : order.price_per_rwa_token === MARKET_SELL_SENTINEL_PRICE;
+      const isMarketOrder = isMarketOrderPrice(
+        order,
+        side === "bid" ? "buy" : "sell"
+      );
 
-      const orderValue = isMarketOrder
-        ? atomsToTokens(
-            order.total_usd_value_of_rwa_token_amount,
-            quoteTokenDecimals
-          )
-        : atomsToTokens(order.unfulfilled_amount, baseTokenDecimals).multipliedBy(
-            atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
-          );
+      if (isMarketOrder) return runningTotal;
+
+      const orderValue = atomsToTokens(
+        order.unfulfilled_amount,
+        baseTokenDecimals
+      ).multipliedBy(
+        atomsToTokens(order.price_per_rwa_token, quoteTokenDecimals)
+      );
 
       return runningTotal.plus(orderValue);
     }, new BigNumber(0));
@@ -229,10 +227,10 @@ export const getOrderBookPrecisionOptions = ({
   // Exclude market orders - their sentinel price would otherwise skew the
   // computed grouping precision.
   const realBuyOrders = buyOrders.filter(
-    (order) => order.price_per_rwa_token !== MARKET_BUY_SENTINEL_PRICE
+    (order) => !isMarketOrderPrice(order, "buy")
   );
   const realSellOrders = sellOrders.filter(
-    (order) => order.price_per_rwa_token !== MARKET_SELL_SENTINEL_PRICE
+    (order) => !isMarketOrderPrice(order, "sell")
   );
   const orders = [...realBuyOrders, ...realSellOrders];
   const fallbackFractionDigits = Math.min(quoteTokenDecimals, 2);

@@ -13,10 +13,15 @@ export function WalletOrderItem({
   order: OrderType;
   handleAfterCancelOrder: () => Promise<void>;
 }) {
-  const { handleCancelOrder, handleTogglePopup, isOpenPopup } = useHandleOrder(
-    order,
-    handleAfterCancelOrder
-  );
+  const {
+    actionLabel,
+    handleOrderAction,
+    handleTogglePopup,
+    isOpenPopup,
+    popupDescription,
+    popupSubmitLabel,
+    popupTitle,
+  } = useHandleOrder(order, handleAfterCancelOrder);
 
   return (
     <div className={styles.orderItem}>
@@ -53,6 +58,9 @@ export function WalletOrderItem({
         >
           {order.orderName}
         </Text>
+        <Text size="tinyBody" color="lightSand" className="ml-2">
+          {order.orderStatus}
+        </Text>
       </div>
       <div className="flex items-center px-[8px]">
         <Text size="smallBody" weight="semibold">
@@ -60,9 +68,21 @@ export function WalletOrderItem({
         </Text>
       </div>
       <div className="flex items-center px-[8px]">
-        <Text size="smallBody" weight="semibold">
-          <Money fiat>{order.rwa_token_amount}</Money> {order.token.symbol}
-        </Text>
+        <div className="flex flex-col">
+          <Text size="smallBody" weight="semibold">
+            <Money fiat>{order.originalAmount}</Money> {order.token.symbol}
+          </Text>
+          <Text size="tinyBody" color="lightSand">
+            Filled <Money fiat>{order.fulfilledAmount}</Money> / Remaining{" "}
+            <Money fiat>{order.remainingAmount}</Money>
+          </Text>
+          {(order.refundedAmount > 0 || order.refundableAmount > 0) && (
+            <Text size="tinyBody" color="lightSand">
+              Refunded <Money fiat>{order.refundedAmount}</Money> / Refundable{" "}
+              <Money fiat>{order.refundableAmount}</Money>
+            </Text>
+          )}
+        </div>
       </div>
       <div className="flex items-center px-[8px]">
         <Text size="smallBody" weight="semibold">
@@ -71,13 +91,16 @@ export function WalletOrderItem({
       </div>
       <div className="flex items-center px-[16px]">
         <button onClick={handleTogglePopup} className={styles.orderCancelBtn}>
-          cancel
+          {actionLabel}
         </button>
       </div>
       <CancelOrderPopup
         onClose={handleTogglePopup}
         isOpen={isOpenPopup}
-        onSubmit={handleCancelOrder}
+        onSubmit={handleOrderAction}
+        title={popupTitle}
+        description={popupDescription}
+        submitLabel={popupSubmitLabel}
       />
     </div>
   );

@@ -37,6 +37,7 @@ const priceProxyHandler: ProxyHandler<StringRecord<OrderBookPriceData>> = {
         buyOrderFee: 0,
         sellOrderFee: 0,
         rwaTokenAddress: prop,
+        orderbookAddress: "",
       }
     );
   },
