@@ -1,8 +1,10 @@
 import { api } from "~/lib/utils/api";
 import { mbrwaApiUrl } from "~/lib/apis/mbrwa/index";
 import {
+  normalizeRefundableOrdersList,
   OrdersListSchema,
   OrderTotalListSchema,
+  RefundableOrdersListSchema,
 } from "./user/userOrders/orders.schema";
 import { OrdersListType } from "./user/userOrders/orders.types";
 
@@ -54,7 +56,11 @@ export const fetchUserRefundableOrders = async (
 
   const url = `${mbrwaApiUrl}wallet/${userAddress}/refundable-orders?${params.toString()}`;
 
-  const { data } = await api(url, { method: "GET" }, OrdersListSchema);
+  const { data } = await api(
+    url,
+    { method: "GET" },
+    RefundableOrdersListSchema
+  );
 
-  return data;
+  return normalizeRefundableOrdersList(data);
 };
