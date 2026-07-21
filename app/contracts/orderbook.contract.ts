@@ -47,6 +47,11 @@ export type OrderbookSellParams = Omit<
   rwaTokenId: BigNumber.Value;
 };
 
+const ORDER_EXPIRY_TEST_WINDOW_MS = 30_000;
+
+const getTestOrderExpiry = () =>
+  new Date(Date.now() + ORDER_EXPIRY_TEST_WINDOW_MS).toISOString();
+
 const assertAddress = (value: string, label: string) => {
   if (!value || typeof value !== "string") {
     throw new Error(`${label} is required`);
@@ -84,7 +89,10 @@ const buildOrderPayload = ({
   | "isMarketOrder"
 >) => {
   assertCurrency(currency);
-  assertOrderExpiry(orderExpiry);
+
+  const resolvedOrderExpiry = orderExpiry ?? getTestOrderExpiry();
+
+  assertOrderExpiry(resolvedOrderExpiry);
 
   return {
     rwaTokenAmount: toPositiveNatString(rwaTokenAmount, "RWA token amount"),
@@ -93,7 +101,7 @@ const buildOrderPayload = ({
       "Price per RWA token"
     ),
     currency: currency.trim(),
-    orderExpiry,
+    orderExpiry: resolvedOrderExpiry,
     isMarketOrder,
   };
 };
