@@ -2,12 +2,14 @@ import styles from "./styles.module.css";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { Text } from "~/lib/atoms/Typography/Text";
 import Money from "~/lib/atoms/Money";
+import { Link } from "@remix-run/react";
 
 export function HighlightCard(props: { asset: AssetType }) {
   const {asset} = props;
   
   return (
-    <div className={styles.cardWrapper}>
+    //TODO add correct link
+    <Link to="/" className={styles.cardWrapper}>
       <div className={styles.cardBlock}>
         <Text size="smallBody" weight="medium">
           {asset.metadata.name}
@@ -25,6 +27,6 @@ export function HighlightCard(props: { asset: AssetType }) {
           $<Money>{asset.stats?.price.usd ?? 0}</Money>
         </Text>
       </div>
-    </div>
+    </Link>
   );
 }

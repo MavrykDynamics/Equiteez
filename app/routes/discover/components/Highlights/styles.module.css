@@ -1,0 +1,38 @@
+.wrapper {
+  padding: 44px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  gap: 20px;
+}
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cardWrapper {
+  border: 1px solid var(--r-color-neutral-100);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+.cardWrapper:hover {
+  background: var(--r-color-neutral-50);
+}
+.cardBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cardWrapper .cardBlock:last-child {
+  justify-content: end;
+  align-items: end;
+}
