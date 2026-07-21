@@ -13,21 +13,23 @@ import {
   OrderType,
 } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { stablecoinContract } from "~/consts/contracts";
+import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
-import { AssetView } from "~/templates/BalanceInput/AssetView";
-import { PercentBlock } from "~/routes/marketplace.$id/components/PriceSection/components/PercentBlock/PercentBlock";
 import Money from "~/lib/atoms/Money";
-import { atomsToTokens } from "~/lib/utils/formaters";
+import {
+  deriveQuantityFromPercent,
+  exceedsAvailableBalance,
+  getDisplayTickSize,
+  isPriceAlignedToTickSize,
+} from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellLimitScreenProps = {
@@ -42,8 +44,9 @@ type BuySellLimitScreenProps = {
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
+  rawTickSize: number;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  handleSlippageChange: (value: number) => void;
+  validationMessage?: string;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -55,14 +58,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   total,
   networkFee,
   limitPrice,
+  rawTickSize,
   setAmount,
   setLimitPrice,
   marketTokenPrice,
-  handleSlippageChange,
+  validationMessage,
 }) => {
   const { token_address, slug, assetDetails } = estate;
 
-  const { orderbookStorages } = useDexContext();
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
@@ -80,14 +83,25 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const { userTokensBalances, isKyced } = useUserContext();
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
-    [userTokensBalances, token_address]
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
   );
 
   const isBuyAction = actionType === BUY;
@@ -95,19 +109,37 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
     [limitPrice, marketTokenPrice]
   );
-  const hasTotalError = useMemo(
-    () => total && total.gt(usdBalance),
-    [total, usdBalance]
+  const displayTickSize = useMemo(
+    () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
+    [rawTickSize, stableCoinMetadata.decimals]
   );
-
-  const hasSellTokensBalanceError = useMemo(
-    () => !isBuyAction && amount && amount.gt(tokenBalance),
-    [amount, isBuyAction, tokenBalance]
+  const hasLimitPriceTickError = useMemo(
+    () =>
+      !isPriceAlignedToTickSize({
+        price: limitPrice,
+        rawTickSize,
+        quoteTokenDecimals: stableCoinMetadata.decimals,
+      }),
+    [limitPrice, rawTickSize, stableCoinMetadata.decimals]
   );
+  const limitPriceTickErrorCaption =
+    hasLimitPriceTickError && displayTickSize.gt(0)
+      ? `Limit price must be a multiple of ${displayTickSize.toFixed()} ${stableCoinMetadata.symbol}.`
+      : undefined;
 
-  const hasBuyTokensBalanceError = useMemo(
-    () => isBuyAction && limitPrice && limitPrice.gt(usdBalance),
-    [limitPrice, isBuyAction, usdBalance]
+  // Side-aware balance guard: BUY overspends when total (amount × limit price)
+  // exceeds the quote balance; SELL oversells when amount exceeds the token
+  // balance. Drives both the input caption and the Continue button.
+  const hasBalanceError = useMemo(
+    () =>
+      exceedsAvailableBalance({
+        isBuyAction,
+        total,
+        amount,
+        usdBalance,
+        tokenBalance,
+      }),
+    [isBuyAction, total, amount, usdBalance, tokenBalance]
   );
 
   const handleContinueClick = useCallback(() => {
@@ -128,38 +160,41 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const { input1Props, input2Props } = useMemo(() => {
-    const buyProps = {
+    // The limit price (per token, in the quote token) field.
+    const priceProps = {
       amount: limitPrice,
       selectedAssetSlug: quoteTokenSlug,
       selectedAssetMetadata: stableCoinMetadata,
       onChange: setLimitPrice,
       cryptoValue: usdBalance,
-      errorCaption: hasBuyTokensBalanceError
-        ? "The amount entered exceeds your available balance."
-        : undefined,
+      label: "Limit Price",
+      errorCaption: limitPriceTickErrorCaption,
     };
 
-    const sellProps = {
+    // The order-quantity (base token) field. The balance error lives here since
+    // it's what the user adjusts to fix an over-budget buy or over-holding sell.
+    const amountProps = {
       amount: amount,
       selectedAssetSlug: slug,
       selectedAssetMetadata: selectedAssetMetadata,
       onChange: handleOutputChange,
       cryptoValue: tokenBalance,
-      errorCaption: hasSellTokensBalanceError
+      label: "Amount",
+      errorCaption: hasBalanceError
         ? "The amount entered exceeds your available balance."
         : undefined,
     };
 
     return isBuyAction
-      ? { input1Props: buyProps, input2Props: sellProps }
-      : { input1Props: sellProps, input2Props: buyProps };
+      ? { input1Props: priceProps, input2Props: amountProps }
+      : { input1Props: amountProps, input2Props: priceProps };
   }, [
     amount,
     handleOutputChange,
-    hasBuyTokensBalanceError,
-    hasSellTokensBalanceError,
+    hasBalanceError,
     isBuyAction,
     limitPrice,
+    limitPriceTickErrorCaption,
     quoteTokenSlug,
     selectedAssetMetadata,
     setLimitPrice,
@@ -172,35 +207,23 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-      total: 0,
-      txnFee: 0,
-    };
-
-    const fee = isBuyAction
-      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
-      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
-
     return {
-      finalTotalValue: total?.plus(fee)?.plus(networkFee) || ZERO,
-      txnFee: fee,
+      finalTotalValue: total?.plus(networkFee) || ZERO,
+      txnFee: undefined,
     };
-  }, [
-    isBuyAction,
-    networkFee,
-    orderbookStorages,
-    slug,
-    stableCoinMetadata.decimals,
-    total,
-  ]);
+  }, [networkFee, total]);
 
   const isBtnDisabled =
-    hasTotalError ||
+    hasBalanceError ||
+    hasLimitPriceTickError ||
     !amount ||
-    !isKyced ||
+    !amount.isFinite() ||
+    amount.lte(0) ||
     !limitPrice ||
-    limitPrice?.isZero() ||
-    amount?.isZero();
+    !limitPrice.isFinite() ||
+    limitPrice.lte(0) ||
+    !isKyced ||
+    Boolean(validationMessage);
   const priceDifferencePrefix = marketPriceDifference?.gt(0)
     ? "+"
     : marketPriceDifference?.lt(0)
@@ -213,28 +236,34 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       : "text-sand-600";
 
   useEffect(() => {
-    if (selectedPercentage != null) {
-      if (isBuyAction) {
-        const percentage = new BigNumber(selectedPercentage);
-        const newAmount = new BigNumber(usdBalance)
-          .multipliedBy(percentage)
-          .dividedBy(100);
-        setLimitPrice(newAmount);
-      } else {
-        const percentage = new BigNumber(selectedPercentage);
-        const newAmount = new BigNumber(tokenBalance)
-          .multipliedBy(percentage)
-          .dividedBy(100);
-        setAmount(newAmount);
-      }
+    if (selectedPercentage == null) return;
+
+    if (isBuyAction) {
+      // Spend a % of the quote balance at the current limit price -> token qty.
+      setAmount(
+        limitPrice
+          ? deriveQuantityFromPercent(
+              usdBalance,
+              selectedPercentage,
+              limitPrice
+            )
+          : undefined
+      );
+    } else {
+      // Sell a % of the token holdings.
+      setAmount(
+        new BigNumber(tokenBalance)
+          .multipliedBy(selectedPercentage)
+          .dividedBy(100)
+      );
     }
   }, [
     isBuyAction,
     selectedPercentage,
     setAmount,
-    setLimitPrice,
     tokenBalance,
     usdBalance,
+    limitPrice,
   ]);
 
   return (
@@ -247,7 +276,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onNext={() => ref2.current?.focus()}
               amountInputDisabled={false}
               {...input1Props}
-              label="I Want To Allocate"
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
               cryptoDecimals={stableCoinMetadata.decimals}
@@ -258,13 +286,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onNext={() => ref3.current?.focus()}
               onPrev={() => ref1.current?.focus()}
               amountInputDisabled={false}
-              additionalBottomRightBlock={
-                <div className="text-xs text-sand-600 font-semibold">
-                  Est. Received
-                </div>
-              }
               {...input2Props}
-              label="To Buy"
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
               cryptoDecimals={stableCoinMetadata.decimals}
@@ -285,16 +307,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                 amountInputDisabled
                 amount={balanceTotal}
                 additionalTopRightBlock=" "
-                additionalBottomRightBlock={
-                  <PercentBlock
-                    isBuyAction={isBuyAction}
-                    handleSlippageChange={handleSlippageChange}
-                  />
-                }
                 label={
                   <div className="flex items-center gap-[4px] text-xs text-sand-600">
-                    Take Profit when{" "}
-                    <AssetView selectedAssetSlug={slug} isSmallView />
+                    Order Total
                   </div>
                 }
                 additionalBottomLeftBlock={
@@ -306,7 +321,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
                       </span>
                     </span>
                     {marketPriceDifference && (
-                      <span className={`font-semibold ${priceDifferenceTextColorClassName}`}>
+                      <span
+                        className={`font-semibold ${priceDifferenceTextColorClassName}`}
+                      >
                         Diff {priceDifferencePrefix}$
                         <Money>{marketPriceDifference.abs()}</Money>
                       </span>
@@ -356,11 +373,17 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       )}
 
+      {validationMessage && (
+        <div className="mt-8">
+          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+            {validationMessage}
+          </Alert>
+        </div>
+      )}
+
       <Button
         className={
-          continueButtonClassName
-            ? `mt-8 ${continueButtonClassName}`
-            : "mt-8"
+          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
         }
         onClick={handleContinueClick}
         disabled={isBtnDisabled}

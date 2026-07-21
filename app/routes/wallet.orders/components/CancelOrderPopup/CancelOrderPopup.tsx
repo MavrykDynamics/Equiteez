@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./styles.module.css";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
@@ -7,13 +6,19 @@ import { Text } from "~/lib/atoms/Typography/Text";
 import { Button } from "~/lib/atoms/Button";
 
 export function CancelOrderPopup({
+  description = "Are you sure you want to cancel your order?",
   isOpen,
   onClose,
   onSubmit,
+  submitLabel = "Cancel Order",
+  title = "Confirm Cancellation",
 }: {
+  description?: string;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => Promise<void>;
+  submitLabel?: string;
+  title?: string;
 }) {
   return (
     <CustomPopup
@@ -32,14 +37,12 @@ export function CancelOrderPopup({
       </button>
       <div className={styles.contentWrapper}>
         <div className="flex flex-col gap-[8px] justify-center items-center">
-          <Text weight="semibold">Confirm Cancellation</Text>
-          <Text size="smallBody">
-            Are you sure you want to cancel your order?
-          </Text>
+          <Text weight="semibold">{title}</Text>
+          <Text size="smallBody">{description}</Text>
         </div>
         <div className={styles.btnWrapper}>
           <Button onClick={onSubmit} className="flex-1" variant="outline">
-            Cancel Order
+            {submitLabel}
           </Button>
           <Button onClick={onClose} className="flex-1">
             Keep Order

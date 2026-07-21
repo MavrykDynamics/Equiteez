@@ -1,6 +1,5 @@
 import clsx from "clsx";
-import { FC, useMemo } from "react";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { FC } from "react";
 import {
   PrimaryEstate,
   SecondaryEstate,
@@ -11,31 +10,23 @@ import { Link, useNavigate } from "@remix-run/react";
 import { SLIDER_VIEW_LIMIT } from "../AssetsEmblaCarousel";
 import { ThumbCardPrimary } from "~/templates/ThumbCard/ThumbCard";
 import { Button } from "~/lib/atoms/Button";
-import { atomsToTokens } from "~/lib/utils/formaters";
+import type { BigNumber } from "bignumber.js";
 
 type AssetEmblaSlideProps = {
   estate: PrimaryEstate | SecondaryEstate;
   idx: number;
   nextBtnDisabled?: boolean;
   assetsArrLength: number;
+  pricePerToken?: BigNumber;
 };
 
 export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
   estate,
   idx,
   assetsArrLength,
+  pricePerToken,
 }) => {
-  const { orderbookStorages } = useDexContext();
   const navigate = useNavigate();
-
-  const pricePerToken = useMemo(
-    () =>
-      atomsToTokens(
-        orderbookStorages[estate.slug]?.lowestSellPrice,
-        estate.decimals
-      ) ?? 0,
-    [estate.decimals, estate.slug, orderbookStorages]
-  );
 
   const handleSlideClick = (id: string, isLastSlide: boolean) => {
     if (isLastSlide) return;
@@ -56,7 +47,9 @@ export const AssetEmblaSlide: FC<AssetEmblaSlideProps> = ({
       <ThumbCardPrimary
         imgSrc={estate.assetDetails.previewImage}
         title={estate.name}
-        price={pricePerToken.toNumber()}
+        price={
+          pricePerToken?.toNumber() ?? estate.assetDetails.priceDetails.price
+        }
         annual={"0.00"}
         tokensAvailable={0}
       />

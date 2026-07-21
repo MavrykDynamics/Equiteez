@@ -16,6 +16,8 @@
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "wrangler pages dev ./build/client",
     "typecheck": "tsc",
+    "test": "vitest",
+    "test:run": "vitest run",
     "typegen": "wrangler types",
     "preview": "npm run build && wrangler pages dev",
     "cf-typegen": "wrangler types",
@@ -108,6 +110,7 @@
     "vite": "^5.1.0",
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-tsconfig-paths": "^4.2.1",
+    "vitest": "^2.1.9",
     "wrangler": "^3.78.3"
   },
   "engines": {

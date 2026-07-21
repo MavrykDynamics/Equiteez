@@ -22,7 +22,7 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { atomsToTokens, rwaToFixed } from "~/lib/utils/formaters";
 import clsx from "clsx";
 import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
-import { toTokenSlug } from "~/lib/assets";
+import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
 import BigNumber from "bignumber.js";
 // import {
 //   caclMinMaxQuoteBuying,
@@ -45,7 +45,7 @@ import {
   useAssetMetadata,
 } from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { calculateEstFee } from "~/providers/Dexprovider/utils";
+import { calculateEstFee, safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { ZERO } from "~/lib/utils/numbers";
 
@@ -207,6 +207,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   );
 
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
+  // derived state (it's boolean value, so no need to memoize it)
+  const isLimitType = activeItem === LIMIT_TYPE;
 
   // inputs state
   const [price, setPrice] = useState<BigNumber | undefined>();
@@ -249,9 +251,17 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     inputPriceRef.current?.focus();
   };
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(
@@ -260,9 +270,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   );
 
   const maxBuy = useMemo(() => {
-    const amountToSpend = (100 * usdBalance) / 100;
-    return rwaToFixed(new BigNumber(amountToSpend).div(tokenPrice).toNumber());
-  }, [usdBalance, tokenPrice]);
+    // In limit mode size against the user's limit price; guard the empty-book /
+    // no-price case so we never divide by 0/undefined (Infinity).
+    const effectivePrice = isLimitType ? price : tokenPrice;
+    const affordable = safeDivByPrice(
+      new BigNumber(usdBalance),
+      effectivePrice ?? ZERO
+    );
+    return rwaToFixed((affordable ?? ZERO).toNumber());
+  }, [usdBalance, isLimitType, price, tokenPrice]);
 
   // extract logic into separate hook
   const hasTotalError = isBuyAction
@@ -286,9 +302,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   // );
 
   // const isBtnDisabled = true;
-
-  // derived state (it's boolean value, so no need to memoize it)
-  const isLimitType = activeItem === LIMIT_TYPE;
 
   useEffect(() => {
     if (selectedPercentage) {
@@ -322,14 +335,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     tokenPrice,
   ]);
 
-  // update total
+  // update total = amount × price (limit price or market price). Reset when
+  // either is missing so a stale total can't linger in limit mode.
   useEffect(() => {
-    if (amount && usdToTokenRates[slug] && price) {
+    if (amount && price) {
       setTotal(amount.multipliedBy(price));
-    } else if (!amount) {
+    } else {
       setTotal(undefined);
     }
-  }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
+  }, [amount, price]);
 
   // contract calls based on markt or limit
   // const {
@@ -396,14 +410,16 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 
     return calculateEstFee({
       amount: tokensAmount,
-      price: tokenPrice,
+      price: isLimitType ? (price ?? ZERO) : tokenPrice,
       fee,
       tokenDecimals: quoteAssetmetadata.decimals,
     });
   }, [
     amount,
     isBuyAction,
+    isLimitType,
     orderbookStorages,
+    price,
     quoteAssetmetadata.decimals,
     slug,
     tokenPrice,
@@ -491,8 +507,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                 <div className="text-caption-regular">
                   {isBuyAction ? (
                     <CryptoBalance
-                      value={userTokensBalances[stablecoinContract] || 0}
-                      cryptoDecimals={6}
+                      value={userTokensBalances[quoteTokenAddress] || 0}
+                      cryptoDecimals={quoteAssetmetadata.decimals ?? 6}
                     />
                   ) : (
                     <CryptoBalance

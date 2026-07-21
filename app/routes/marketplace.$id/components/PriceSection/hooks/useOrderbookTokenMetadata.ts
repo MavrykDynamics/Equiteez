@@ -9,9 +9,9 @@ import {
   useAssetMetadata,
 } from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { DEFAULT_QUOTE_TOKEN_DECIMALS } from "~/providers/Dexprovider/utils";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 
-const DEFAULT_QUOTE_TOKEN_DECIMALS = 6;
 const UNKNOWN_TOKEN_SYMBOL = "???";
 
 const createBaseTokenFallbackMetadata = (

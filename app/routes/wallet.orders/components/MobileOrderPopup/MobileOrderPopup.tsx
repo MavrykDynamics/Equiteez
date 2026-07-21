@@ -12,11 +12,13 @@ import { formatDate } from "~/lib/utils/date";
 import Money from "~/lib/atoms/Money";
 
 export function MobileOrderPopup({
+  actionLabel = "Cancel Order",
   order,
   handleTogglePopup,
   isOpen,
   onClose,
 }: {
+  actionLabel?: string;
   isOpen: boolean;
   order: OrderType;
   onClose: () => void;
@@ -51,6 +53,9 @@ export function MobileOrderPopup({
           <div className="flex flex-col gap-[12px] px-[16px] items-center">
             <Text color={order.isSell ? "red" : "green"} size="largeBody">
               {order.orderName}
+            </Text>
+            <Text size="tinyBody" color="lightSand">
+              {order.orderStatus}
             </Text>
             <div className="flex flex-col gap-[4px] items-center">
               <Text size="largeBody" weight="semibold">
@@ -87,9 +92,19 @@ export function MobileOrderPopup({
                 Amount
               </Text>
               <Text size="largeBody" weight="semibold">
-                <Money fiat>{order.rwa_token_amount}</Money>{" "}
+                <Money fiat>{order.originalAmount}</Money>{" "}
                 {order.token.symbol}
               </Text>
+              <Text size="tinyBody" color="lightSand">
+                Filled <Money fiat>{order.fulfilledAmount}</Money> / Remaining{" "}
+                <Money fiat>{order.remainingAmount}</Money>
+              </Text>
+              {(order.refundedAmount > 0 || order.refundableAmount > 0) && (
+                <Text size="tinyBody" color="lightSand">
+                  Refunded <Money fiat>{order.refundedAmount}</Money> /
+                  Refundable <Money fiat>{order.refundableAmount}</Money>
+                </Text>
+              )}
             </div>
           </div>
           <button
@@ -99,7 +114,7 @@ export function MobileOrderPopup({
             }}
             className={styles.orderCancelBtn}
           >
-            Cancel Order
+            {actionLabel}
           </button>
         </div>
 

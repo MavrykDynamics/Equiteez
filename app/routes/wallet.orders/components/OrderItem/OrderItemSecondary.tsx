@@ -13,9 +13,11 @@ import { MobileOrderPopup } from "~/routes/wallet.orders/components/MobileOrderP
 export function WalletOrderItemSecondaryContent({
   order,
   handleTogglePopup,
+  actionLabel,
 }: {
   order: OrderType;
   handleTogglePopup: () => void;
+  actionLabel: string;
 }) {
   return (
     <div className={styles.orderItemSecondary}>
@@ -34,6 +36,9 @@ export function WalletOrderItemSecondaryContent({
             <Text size="smallBody" weight="semibold">
               {order.orderName}&nbsp;
             </Text>
+            <Text size="tinyBody" color="lightSand">
+              {order.orderStatus}&nbsp;
+            </Text>
             <Link to={order.assetLink} className={styles.assetName}>
               <span className="hidden lg:inline">{order.token.name}</span>
               <span className="inline lg:hidden">
@@ -49,7 +54,11 @@ export function WalletOrderItemSecondaryContent({
       <div className="flex gap-[12px] items-center">
         <div className="flex flex-col items-end">
           <Text size="smallBody" weight="semibold">
-            <Money fiat>{order.rwa_token_amount}</Money> {order.token.symbol}
+            <Money fiat>{order.originalAmount}</Money> {order.token.symbol}
+          </Text>
+          <Text size="tinyBody" color="lightSand">
+            Filled <Money fiat>{order.fulfilledAmount}</Money> / Remaining{" "}
+            <Money fiat>{order.remainingAmount}</Money>
           </Text>
           <Text size="tinyBody" color="lightSand">
             $<Money fiat>{order.price_per_rwa_token}</Money>/token
@@ -57,7 +66,7 @@ export function WalletOrderItemSecondaryContent({
         </div>
 
         <button onClick={handleTogglePopup} className={styles.orderCancelBtn}>
-          cancel
+          {actionLabel}
         </button>
       </div>
     </div>
@@ -71,36 +80,56 @@ export function WalletOrderItemSecondary({
   order: OrderType;
   handleAfterCancelOrder: () => Promise<void>;
 }) {
-  const { handleCancelOrder, handleTogglePopup, isOpenPopup } = useHandleOrder(
-    order,
-    handleAfterCancelOrder
-  );
+  const {
+    actionLabel,
+    handleOrderAction,
+    handleTogglePopup,
+    isOpenPopup,
+    popupDescription,
+    popupSubmitLabel,
+    popupTitle,
+  } = useHandleOrder(order, handleAfterCancelOrder);
 
   const [isOpenDetailsPopup, setIsOpenDetailsPopup] = useState(false);
+  const handleOpenDetails = () => setIsOpenDetailsPopup(true);
 
   return (
     <>
       <div className={styles.desktopBlock}>
         <WalletOrderItemSecondaryContent
           order={order}
+          actionLabel={actionLabel}
           handleTogglePopup={handleTogglePopup}
         />
       </div>
       <div
         className={styles.mobileBlock}
-        onClick={() => setIsOpenDetailsPopup(true)}
+        onClick={handleOpenDetails}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleOpenDetails();
+          }
+        }}
+        role="button"
+        tabIndex={0}
       >
         <WalletOrderItemSecondaryContent
           order={order}
+          actionLabel={actionLabel}
           handleTogglePopup={handleTogglePopup}
         />
       </div>
       <CancelOrderPopup
         onClose={handleTogglePopup}
         isOpen={isOpenPopup}
-        onSubmit={handleCancelOrder}
+        onSubmit={handleOrderAction}
+        title={popupTitle}
+        description={popupDescription}
+        submitLabel={popupSubmitLabel}
       />
       <MobileOrderPopup
+        actionLabel={popupSubmitLabel}
         order={order}
         handleTogglePopup={handleTogglePopup}
         isOpen={isOpenDetailsPopup}

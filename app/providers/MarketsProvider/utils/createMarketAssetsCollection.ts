@@ -27,7 +27,10 @@ export const EMPTY_MARKET_ASSETS_COLLECTION: MarketAssetsCollection = {
 };
 
 const createMarketAsset = (asset: AssetData): EstateType => {
-  const slug = toTokenSlug(asset.asset.token.address, 0);
+  const slug = toTokenSlug(
+    asset.asset.token.address,
+    asset.asset.token.token_id ?? asset.orderbook.rwa_token?.token_id ?? 0
+  );
 
   return {
     ...transformAssetData(asset),
@@ -69,6 +72,8 @@ export const createMarketAssetsCollection = (
     const marketAsset = createMarketAsset(asset);
     const [, rwaTokenId = "0"] = fromAssetSlug(marketAsset.slug);
     const quoteToken = asset.orderbook.quote_token;
+    const quoteTokenId = String(quoteToken.token_id);
+    const currencyKey = quoteToken.currency_name ?? quoteToken.symbol;
 
     markets.set(marketAsset.slug, marketAsset);
     marketsArr.push(marketAsset);
@@ -87,7 +92,7 @@ export const createMarketAssetsCollection = (
 
     registerToken({
       address: quoteToken.address,
-      id: quoteToken.token_id,
+      id: quoteTokenId,
       metadata: {
         decimals: quoteToken.decimals,
         name: quoteToken.symbol,
@@ -98,11 +103,24 @@ export const createMarketAssetsCollection = (
     orderbook.set(asset.orderbook.address, {
       address: asset.orderbook.address,
       rwaTokenAddress: asset.asset.token.address,
+      rwaTokenId,
+      rwaTokenDecimals: asset.asset.token.decimals,
+      rwaTokenSymbol: asset.asset.token.symbol,
+      buyOrderFee: asset.orderbook.buy_order_fee,
+      sellOrderFee: asset.orderbook.sell_order_fee,
+      minBuyOrderAmount: asset.orderbook.min_buy_order_amount ?? undefined,
+      minBuyOrderValue: asset.orderbook.min_buy_order_value ?? undefined,
+      minSellOrderAmount: asset.orderbook.min_sell_order_amount ?? undefined,
+      minSellOrderValue: asset.orderbook.min_sell_order_value ?? undefined,
+      minExpiryTime: asset.orderbook.min_expiry_time ?? undefined,
       currencies: [
         {
+          currencyKey,
           token: {
             address: asset.orderbook.quote_token.address,
-            token_id: asset.orderbook.quote_token.token_id,
+            token_id: quoteTokenId,
+            decimals: quoteToken.decimals,
+            symbol: quoteToken.symbol,
           },
         },
       ],

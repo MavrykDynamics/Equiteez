@@ -12,19 +12,18 @@ import {
   OrderType,
 } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { stablecoinContract } from "~/consts/contracts";
+import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 
 type BuySellScreenProps = {
@@ -39,6 +38,7 @@ type BuySellScreenProps = {
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   hasQuoteError?: boolean;
+  validationMessage?: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -52,9 +52,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   tokenPrice,
   setAmount,
   hasQuoteError = false,
+  validationMessage,
 }) => {
   const { token_address, slug, assetDetails } = estate;
-  const { orderbookStorages } = useDexContext();
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
@@ -71,23 +71,34 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const ref1 = useRef<HTMLInputElement>(null);
   const ref2 = useRef<HTMLInputElement>(null);
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
-    [userTokensBalances, token_address]
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
   );
 
   const isBuyAction = actionType === BUY;
   const hasTotalError = isBuyAction
     ? amount
-      ? amount.toNumber() > usdBalance
+      ? amount.gt(usdBalance)
       : false
     : amount
-      ? amount?.toNumber() > tokenBalance
+      ? amount.gt(tokenBalance)
       : false;
 
   const handleContinueClick = useCallback(() => {
@@ -103,7 +114,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
       if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
-      else setAmount(val?.div(tokenPrice) ?? new BigNumber(0));
+      else setAmount(safeDivByPrice(val, tokenPrice) ?? new BigNumber(0));
     },
     [isBuyAction, setAmount, tokenPrice]
   );
@@ -135,7 +146,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount: amount?.div(tokenPrice) || undefined, // BUY: USDT -> Token
+            amount: safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }
@@ -167,7 +178,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
-  const isBtnDisabled = hasTotalError || !amount || !isKyced;
+  const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
+  const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
+  const isBtnDisabled =
+    hasTotalError || hasInvalidAmount || hasInvalidMarketPrice || !isKyced;
+  const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);
 
   useEffect(() => {
     if (selectedPercentage != null) {
@@ -180,30 +195,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
   const { finalTotalValue, txnFee } = useMemo(() => {
-    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
-      finalTotalValue: 0,
-      txnFee: 0,
-    };
-
-    const fee = isBuyAction
-      ? atomsToTokens(buyOrderFee, stableCoinMetadata.decimals)
-      : atomsToTokens(sellOrderFee, stableCoinMetadata.decimals);
-
-    const finalTotalValue = (isBuyAction ? amount : total) ?? ZERO;
+    const orderValue = (isBuyAction ? amount : total) ?? ZERO;
 
     return {
-      finalTotalValue: finalTotalValue?.plus(fee)?.plus(networkFee) || ZERO,
-      txnFee: fee,
+      finalTotalValue: orderValue.plus(networkFee) || ZERO,
+      txnFee: undefined,
     };
-  }, [
-    amount,
-    isBuyAction,
-    networkFee,
-    orderbookStorages,
-    slug,
-    stableCoinMetadata.decimals,
-    total,
-  ]);
+  }, [amount, isBuyAction, networkFee, total]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -314,12 +312,20 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       )}
 
+      {validationMessage && (
+        <div className="mt-8">
+          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+            {validationMessage}
+          </Alert>
+        </div>
+      )}
+
       <Button
         className={
           continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
         }
         onClick={handleContinueClick}
-        disabled={isBtnDisabled}
+        disabled={isContinueDisabled}
       >
         Continue
       </Button>

@@ -2,6 +2,7 @@ export type OrderBookRow = {
   amount: number;
   depthPercentage: number;
   id: string;
+  isMarketOrder: boolean;
   price: number;
   total: number;
 };

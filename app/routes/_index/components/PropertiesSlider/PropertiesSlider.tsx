@@ -11,6 +11,7 @@ import styles from "./PropertiesSlider.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
 import { AssetEmblaSlide } from "~/routes/_index/components/PropertiesSlider/components/AssetEmblaSlide";
 import classNames from "clsx";
+import { useOrderbookCurrentPrices } from "~/lib/apis/mbrwa/openOrders/useOrderbookCurrentPrices";
 
 const OPTIONS: EmblaOptionsType = { align: "start" };
 
@@ -26,6 +27,7 @@ export const PropertiesSlider = () => {
     () => marketsArr.slice(0, idxToSlice),
     [marketsArr, idxToSlice]
   );
+  const { pricesByAssetSlug } = useOrderbookCurrentPrices({ assets: slides });
 
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
@@ -64,6 +66,7 @@ export const PropertiesSlider = () => {
             <AssetsEmblaCarousel
               emblaRef={emblaRef}
               slides={slides}
+              pricesByAssetSlug={pricesByAssetSlug}
               nextBtnDisabled={nextBtnDisabled}
               childPosition="before"
             >
@@ -106,6 +109,7 @@ export const PropertiesSlider = () => {
                     idx={idx}
                     nextBtnDisabled={nextBtnDisabled}
                     assetsArrLength={slides.length}
+                    pricePerToken={pricesByAssetSlug[estate.slug]}
                   />
                 </div>
               ))}
@@ -129,6 +133,7 @@ export const PropertiesSliderSecondary = () => {
     () => marketsArr.slice(0, idxToSlice),
     [marketsArr, idxToSlice]
   );
+  const { pricesByAssetSlug } = useOrderbookCurrentPrices({ assets: slides });
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
 
   const {
@@ -151,6 +156,7 @@ export const PropertiesSliderSecondary = () => {
             <AssetsEmblaCarousel
               emblaRef={emblaRef}
               slides={slides}
+              pricesByAssetSlug={pricesByAssetSlug}
               nextBtnDisabled={nextBtnDisabled}
               childPosition="after"
             >
@@ -192,6 +198,7 @@ export const PropertiesSliderSecondary = () => {
                     idx={idx}
                     nextBtnDisabled={nextBtnDisabled}
                     assetsArrLength={slides.length}
+                    pricePerToken={pricesByAssetSlug[estate.slug]}
                   />
                 </div>
               ))}
