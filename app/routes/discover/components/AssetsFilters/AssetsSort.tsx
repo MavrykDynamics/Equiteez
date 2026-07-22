@@ -6,12 +6,8 @@ import {
   RDropdownFaceContent,
 } from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 
+import type { AssetsSortOption } from "./assetsFilters.types";
 import styles from "./styles.module.css";
-
-export type AssetsSortOption = {
-  label: string;
-  value: string;
-};
 
 type AssetsSortProps = {
   onChange: (value: string) => void;
@@ -24,7 +20,9 @@ export function AssetsSort({ onChange, options, value }: AssetsSortProps) {
 
   return (
     <div className={styles.sort}>
-      <RText size="body-sm" className={styles.sortTitle}>Sort By</RText>
+      <RText className={styles.sortTitle} size="body-sm">
+        Sort By
+      </RText>
       <RCustomDropdown className={styles.sortDropdown}>
         <RDropdownFaceContent className={styles.sortDropdownTrigger}>
           {selectedOption?.label ?? "Sort"}
