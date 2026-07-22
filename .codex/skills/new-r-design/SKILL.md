@@ -217,16 +217,16 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Single redesign tab atom with selected, hover, focus, and disabled states.
 - Location: `app/lib/atoms/RTab/RTab.tsx`
 - Styles: `app/lib/atoms/RTab/RTab.module.css`
-- Reusability notes: Use inside redesign tablist controls such as `RTabSwitcher`.
-- Related tokens: `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`, `--r-radius-pill`, `--r-focus-ring`, `--r-color-neutral-*`
+- Reusability notes: Use inside redesign tablist controls such as `RTabSwitcher`. Supports the Figma-selected state and an optional numeric count; labels and counts use `RText`.
+- Related tokens: `RText`, `--r-space-*`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
 ## RTabSwitcher
 
 - Purpose: Redesign tablist organism that groups `RTab` items for controlled tab switching.
 - Location: `app/lib/organisms/RTabSwitcher/RTabSwitcher.tsx`
 - Styles: `app/lib/organisms/RTabSwitcher/RTabSwitcher.module.css`
-- Reusability notes: Use for compact redesign tab switchers before creating page-specific switcher markup.
-- Related tokens: `RTab`, `--r-radius-pill`, `--r-color-neutral-100`
+- Reusability notes: Use for compact redesign tab switchers before creating page-specific switcher markup. Each item can expose an optional count and matches the separated pill-tab Figma pattern.
+- Related tokens: `RTab`, `RText`, `--r-space-2`, `--r-color-neutral-*`
 
 ## RFeatureCard
 
