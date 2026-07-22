@@ -6,6 +6,7 @@ import { useAssetMetadata } from "~/lib/metadata";
 import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 type OrderBookProps = {
   baseTokenDecimals: number;
@@ -21,7 +22,11 @@ export const OrderBook: FC<OrderBookProps> = ({
   symbol,
 }) => {
   const { orderbookStorages, orderbookTokenPair } = useDexContext();
+  const {
+    pickers: { pickOrderbookContract },
+  } = useMarketsContext();
   const selectedAssetMetadata = useAssetMetadata(slug);
+  const orderbookAddress = pickOrderbookContract[rwaAddress];
   const quoteTokenSlug =
     orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
   const quoteAssetMetadata = useAssetMetadata(quoteTokenSlug);
@@ -45,9 +50,11 @@ export const OrderBook: FC<OrderBookProps> = ({
     <OrderBookTable
       baseTokenDecimals={selectedAssetMetadata?.decimals ?? baseTokenDecimals}
       baseTokenSymbol={selectedAssetMetadata?.symbol ?? symbol}
-      enabled={Boolean(rwaAddress)}
+      enabled={Boolean(orderbookAddress)}
+      orderbookAddress={orderbookAddress}
       quoteTokenDecimals={quoteTokenDecimals}
       quoteTokenSymbol={quoteAssetMetadata?.symbol ?? "USDT"}
+      rawTickSize={orderbookStorages[slug]?.tickSize || undefined}
       referencePrice={referencePrice}
       rwaAddress={rwaAddress}
     />

@@ -43,6 +43,7 @@ export type OpenOrder = z.infer<typeof OpenOrderSchema>;
 export type OpenOrdersQueryData = z.infer<typeof OpenOrdersQuerySchema>;
 export type OpenOrdersQueryVariables = {
   rwaAddress?: string | null;
+  orderbookAddress?: string | null;
   offset?: number;
   limit?: number;
 };
