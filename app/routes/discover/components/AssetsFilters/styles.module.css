@@ -1,0 +1,8 @@
+.search {
+  max-width: 295px;
+}
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

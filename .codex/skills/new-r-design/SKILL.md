@@ -44,7 +44,7 @@ Use these token groups:
 - Spacing: `--r-space-*`
 - Landing/shared layout spacing additions: `--r-space-10`, `--r-space-11`, `--r-space-12`, `--r-space-14`, `--r-space-16`, `--r-space-18`, `--r-space-25`
 - Icon sizes: `--r-size-icon-small`, `--r-size-icon-medium`
-- Radius, border, focus, transitions: `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
+- Radius, border, focus, transitions: `--r-radius-xs`, `--r-radius-sm`, `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
 - Motion: `--r-motion-ease-premium`, `--r-motion-duration-fast`, `--r-motion-duration-base`, `--r-motion-duration-reveal`
 
 Add new tokens only when they are shared by multiple redesign components or map directly to the Figma system.
@@ -108,10 +108,13 @@ Current icon names:
 - `arrow-round`
 - `burger-menu`
 - `check`
+- `grid`
+- `list`
 - `loading`
 - `lock`
 - `lock-open`
 - `radio`
+- `search`
 - `trending-down`
 - `trending-up`
 - `web`
@@ -195,6 +198,22 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/atoms/RIcon/RIcon.module.css`
 - Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
+
+## RInput
+
+- Purpose: Redesign text-input atom with an optional leading `RIcon`.
+- Location: `app/lib/atoms/RInput/RInput.tsx`
+- Styles: `app/lib/atoms/RInput/RInput.module.css`
+- Reusability notes: Use native input props and pass an `RIconName` via `icon` for a leading decorative icon. Use `inputClassName` only for input-specific layout overrides.
+- Related tokens: `RIcon`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`, `--r-space-2`, `--r-space-3`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-*`
+
+## RViewSwitcher
+
+- Purpose: Compact, controlled grid/list view selector.
+- Location: `app/lib/atoms/RViewSwitcher/RViewSwitcher.tsx`
+- Styles: `app/lib/atoms/RViewSwitcher/RViewSwitcher.module.css`
+- Reusability notes: Use `value` and `onChange` to switch between `grid` and `list` layouts. Renders the shared `grid` and `list` `RIcon` glyphs.
+- Related tokens: `RIcon`, `--r-space-1`, `--r-radius-xs`, `--r-radius-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
 ## RCard
 

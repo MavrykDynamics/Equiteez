@@ -16,10 +16,13 @@ export type RIconName =
   | "arrow-round"
   | "burger-menu"
   | "check"
+  | "grid"
+  | "list"
   | "loading"
   | "lock"
   | "lock-open"
   | "radio"
+  | "search"
   | "trending-down"
   | "trending-up"
   | "web";
@@ -83,6 +86,24 @@ const rIconPaths: Record<RIconName, ReactNode> = {
     </>
   ),
   check: <path d="m7 12 3 3 7-7" />,
+  grid: (
+    <>
+      <rect x="5" y="5" width="5" height="5" rx="0.5" />
+      <rect x="14" y="5" width="5" height="5" rx="0.5" />
+      <rect x="5" y="14" width="5" height="5" rx="0.5" />
+      <rect x="14" y="14" width="5" height="5" rx="0.5" />
+    </>
+  ),
+  list: (
+    <>
+      <path d="M10 7h9" />
+      <path d="M10 12h9" />
+      <path d="M10 17h9" />
+      <circle cx="6" cy="7" r="0.75" fill="currentColor" stroke="none" />
+      <circle cx="6" cy="12" r="0.75" fill="currentColor" stroke="none" />
+      <circle cx="6" cy="17" r="0.75" fill="currentColor" stroke="none" />
+    </>
+  ),
   loading: <path d="M12 3a9 9 0 1 0 9 9" />,
   lock: (
     <>
@@ -100,6 +121,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
     <>
       <circle cx="12" cy="12" r="7" />
       <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="10.5" cy="10.5" r="5.5" />
+      <path d="m15 15 4 4" />
     </>
   ),
   "trending-down": (

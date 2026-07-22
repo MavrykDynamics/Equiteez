@@ -1,12 +1,12 @@
 import styles from "./styles.module.css";
-import { Text } from "~/lib/atoms/Typography/Text";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
-import { useMemo } from "react";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
+import { useState } from "react";
 import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
+import { RInput } from "~/lib/atoms/RInput/RInput";
+import { RViewSwitcher, type RViewMode } from "~/lib/atoms/RViewSwitcher/RViewSwitcher";
 
 export function AssetsFilters() {
-  const { assets } = useAssetsContext();
+  const [activeTabId, setActiveTabId] = useState("1");
+  const [viewMode, setViewMode] = useState<RViewMode>("grid");
 
   return (
     <div className={styles.wrapper}>
@@ -16,9 +16,11 @@ export function AssetsFilters() {
           { id: "1", label: "label 1" },
           { id: "2", label: "label 2" },
         ]}
-        activeTabId={"1"}
-        onChange={(b: string) => {}}
+        activeTabId={activeTabId}
+        onChange={setActiveTabId}
       />
+      <RInput icon="search" placeholder="Search" className={styles.search} />
+      <RViewSwitcher onChange={setViewMode} value={viewMode} />
     </div>
   );
 }

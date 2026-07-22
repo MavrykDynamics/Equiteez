@@ -1,0 +1,39 @@
+.switcher {
+  display: inline-flex;
+  padding: var(--r-space-1);
+  background: var(--r-color-neutral-50);
+  border-radius: var(--r-radius-sm);
+}
+
+.option {
+  display: inline-flex;
+  padding: var(--r-space-1);
+  color: var(--r-color-neutral-700);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+  cursor: pointer;
+  transition:
+    color var(--r-transition-duration-fast) ease,
+    background-color var(--r-transition-duration-fast) ease,
+    box-shadow var(--r-transition-duration-fast) ease;
+}
+
+.option:hover:not(:disabled) {
+  color: var(--r-color-neutral-black);
+}
+
+.option:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.selected {
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+}
