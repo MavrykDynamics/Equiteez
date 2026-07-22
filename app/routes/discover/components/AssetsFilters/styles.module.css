@@ -1,8 +1,39 @@
 .search {
   max-width: 295px;
+  min-width: 295px;
 }
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-3);
+}
+
+.sortDropdownTrigger {
+  gap: var(--r-space-2);
+  min-height: auto;
+  padding: var(--r-space-2) var(--r-space-3) var(--r-space-2) var(--r-space-4);
+  border-radius: var(--r-radius-pill);
+}
+
+.sortDropdownTrigger > span:first-child {
+  width: 59px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.rightBlock {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-4);
+}
+.sortTitle {
+  text-wrap: nowrap;
 }

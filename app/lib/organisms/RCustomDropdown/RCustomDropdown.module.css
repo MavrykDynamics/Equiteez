@@ -13,7 +13,7 @@
   color: var(--r-color-neutral-black);
   background: var(--r-color-neutral-white);
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-sm);
+  border-radius: var(--r-radius-pill);
   cursor: pointer;
   transition:
     border-color var(--r-transition-duration-fast) ease,
