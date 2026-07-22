@@ -57,8 +57,20 @@
 
 .assetContent {
   display: flex;
+  min-width: 0;
   gap: var(--r-space-1);
   align-items: center;
+  white-space: nowrap;
+}
+
+.assetSymbol {
+  flex: 0 0 auto;
+}
+
+.assetName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

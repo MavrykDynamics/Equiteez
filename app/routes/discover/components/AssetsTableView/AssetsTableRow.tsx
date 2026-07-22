@@ -10,28 +10,19 @@ type AssetsTableRowProps = {
   asset: AssetType;
 };
 
-const usdFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-});
-
-function formatUsd(value: number | undefined) {
-  return value === undefined ? "--" : `$${usdFormatter.format(value)}`;
-}
-
-function formatApy(value: number | undefined) {
-  return value === undefined ? "--" : `${value.toFixed(2)}%`;
-}
-
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
   return (
     <Link className={styles.row} role="row" to="/">
       <div className={styles.cell} role="cell">
         <div className={styles.assetContent}>
-          <RText size="body-sm" weight="medium">
+          <RText className={styles.assetSymbol} size="body-sm" weight="medium">
             {asset.metadata.symbol || "--"}
           </RText>
-          <RText color="neutral-600" size="body-sm">
+          <RText
+            className={styles.assetName}
+            color="neutral-600"
+            size="body-sm"
+          >
             {asset.metadata.name || "--"}
           </RText>
         </div>
