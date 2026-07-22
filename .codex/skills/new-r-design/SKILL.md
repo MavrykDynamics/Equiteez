@@ -181,6 +181,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for all redesign buttons before creating specialized button variants. Supports variants, tones, sizes, left/right icons, disabled, loading states, internal Remix links, and anchor links.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-surface-*button*`, `--r-text-*`, `--r-space-1`, `--r-transition-duration-fast`
 
+## RTypography
+
+- Purpose: Shared redesign typography atoms for Figma-aligned body text and headings.
+- Location: `app/lib/atoms/RTypography/RText.tsx` and `app/lib/atoms/RTypography/RHeading.tsx`
+- Reusability notes: Use `RText` with `body-l` through `body-xs`, and `RHeading` with `h1` through `h7`. Both support `400` and `500` weights plus the typed `--r-color-*` palette through their `color` prop.
+- Related tokens: `--r-font-heading`, `--r-font-body`, `--r-font-size-heading-*`, `--r-line-height-heading-*`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-font-weight-*`, `--r-color-*`
+
 ## RIcon
 
 - Purpose: Typed inline SVG icon atom for the redesign icon system.
