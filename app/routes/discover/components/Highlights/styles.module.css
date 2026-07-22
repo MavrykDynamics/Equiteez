@@ -1,28 +1,28 @@
 .wrapper {
-  padding: 44px 0;
+  padding: var(--r-space-11) 0;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
-  gap: 20px;
+  gap: var(--r-space-5);
 }
 .section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--r-space-3);
 }
 .sectionList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--r-space-3);
 }
 .cardWrapper {
   border: 1px solid var(--r-color-neutral-100);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: var(--r-radius-md);
+  padding: var(--r-space-4);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s ease;
+  transition: all var(--r-transition-duration-base) ease;
 }
 .cardWrapper:hover {
   background: var(--r-color-neutral-50);
@@ -30,7 +30,7 @@
 .cardBlock {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--r-space-1);
 }
 .cardWrapper .cardBlock:last-child {
   justify-content: end;

@@ -20,7 +20,7 @@ export function RHeading({
   children,
   className,
   size = "h2",
-  weight = 500,
+  weight = "regular",
   color = "neutral-black",
   ...props
 }: RHeadingProps) {
