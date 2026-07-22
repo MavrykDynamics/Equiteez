@@ -14,6 +14,7 @@ export function HighlightCard(props: { asset: AssetType }) {
         <Text size="smallBody" weight="medium">
           {asset.metadata.name}
         </Text>
+        {/*TODO ask what value use here*/}
         <Text size="tinyBody" color="sand">
           {asset.metadata.symbol}
         </Text>
@@ -23,6 +24,7 @@ export function HighlightCard(props: { asset: AssetType }) {
         <Text size="smallBody" weight="medium">
           $<Money>{asset.stats?.price.usd ?? 0}</Money>
         </Text>
+        {/*TODO ask what value use here*/}
         <Text size="tinyBody" color="sand">
           $<Money>{asset.stats?.price.usd ?? 0}</Money>
         </Text>
