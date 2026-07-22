@@ -4,3 +4,9 @@
   gap: var(--r-space-6);
   padding: var(--r-space-8) 0 var(--r-space-18) 0;
 }
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--r-space-18) 0;
+}

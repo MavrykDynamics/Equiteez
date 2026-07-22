@@ -9,6 +9,7 @@ import {
   INITIAL_ASSETS_FILTER_STATE,
 } from "~/routes/discover/components/AssetsFilters/assetsFilters.const";
 import type { AssetsFilterState } from "~/routes/discover/components/AssetsFilters/assetsFilters.types";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();
@@ -47,7 +48,13 @@ export function ExploreAssets() {
           }))
         }
       />
-      <AssetsTableView assets={filteredAssets} />
+      {filteredAssets.length ? (
+        <AssetsTableView assets={filteredAssets} />
+      ) : (
+        <div className={styles.emptyState}>
+          <RText size="body-sm" color="neutral-600">No Results Found</RText>
+        </div>
+      )}
     </div>
   );
 }
