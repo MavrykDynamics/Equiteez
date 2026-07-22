@@ -13,11 +13,11 @@
   letter-spacing: var(--r-letter-spacing-heading);
 }
 
-.weight400 {
+.regular {
   font-weight: var(--r-font-weight-regular);
 }
 
-.weight500 {
+.medium {
   font-weight: var(--r-font-weight-medium);
 }
 

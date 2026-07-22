@@ -9,7 +9,7 @@ export function RText({
   children,
   className,
   size = "body-m",
-  weight = 400,
+  weight = "regular",
   color = "neutral-black",
   ...props
 }: RTextProps) {
@@ -19,7 +19,7 @@ export function RText({
       className={clsx(
         styles.text,
         styles[size],
-        styles[`weight${weight}`],
+        styles[weight],
         styles[color],
         className
       )}

@@ -1,33 +1,33 @@
 import styles from "./styles.module.css";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
-import { Text } from "~/lib/atoms/Typography/Text";
 import Money from "~/lib/atoms/Money";
 import { Link } from "@remix-run/react";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 export function HighlightCard(props: { asset: AssetType }) {
-  const {asset} = props;
-  
+  const { asset } = props;
+
   return (
     //TODO add correct link
     <Link to="/" className={styles.cardWrapper}>
       <div className={styles.cardBlock}>
-        <Text size="smallBody" weight="medium">
+        <RText size="body-sm" weight="medium">
           {asset.metadata.name}
-        </Text>
+        </RText>
         {/*TODO ask what value use here*/}
-        <Text size="tinyBody" color="sand">
+        <RText size="body-s" color="neutral-600">
           {asset.metadata.symbol}
-        </Text>
+        </RText>
       </div>
 
       <div className={styles.cardBlock}>
-        <Text size="smallBody" weight="medium">
+        <RText size="body-sm" weight="medium">
           $<Money>{asset.stats?.price.usd ?? 0}</Money>
-        </Text>
+        </RText>
         {/*TODO ask what value use here*/}
-        <Text size="tinyBody" color="sand">
-          $<Money>{asset.stats?.price.usd ?? 0}</Money>
-        </Text>
+        <RText size="body-s" color="green-500">
+          +<Money>{asset.stats?.price.usd ?? 0}</Money>%
+        </RText>
       </div>
     </Link>
   );

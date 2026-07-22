@@ -62,7 +62,7 @@ export type RTypographyColor =
   | "red-100"
   | "primary";
 
-export type RTypographyWeight = 400 | 500;
+export type RTypographyWeight = "regular" | "medium";
 
 export type RTextSize = "body-l" | "body-m" | "body-sm" | "body-s" | "body-xs";
 

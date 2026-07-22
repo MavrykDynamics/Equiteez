@@ -1,8 +1,8 @@
 import styles from "./styles.module.css";
-import { Text } from "~/lib/atoms/Typography/Text";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { useMemo } from "react";
 import { HighlightCard } from "~/routes/discover/components/Highlights/HighlightCard";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 export function Highlights() {
   const { assets } = useAssetsContext();
@@ -14,7 +14,7 @@ export function Highlights() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.section}>
-        <Text weight="medium">Top Gainers</Text>
+        <RText weight="medium">Top Gainers</RText>
         <div className={styles.sectionList}>
           {topGainers.map((asset) => (
             <HighlightCard asset={asset} key={asset.address} />
@@ -23,7 +23,7 @@ export function Highlights() {
       </div>
 
       <div className={styles.section}>
-        <Text weight="medium">Trending</Text>
+        <RText weight="medium">Trending</RText>
         <div className={styles.sectionList}>
           {trending.map((asset) => (
             <HighlightCard asset={asset} key={asset.address} />
@@ -32,7 +32,7 @@ export function Highlights() {
       </div>
 
       <div className={styles.section}>
-        <Text weight="medium">Newly Added</Text>
+        <RText weight="medium">Newly Added</RText>
         <div className={styles.sectionList}>
           {newlyAdded.map((asset) => (
             <HighlightCard asset={asset} key={asset.address} />
