@@ -44,6 +44,7 @@ Use these token groups:
 - Spacing: `--r-space-*`
 - Landing/shared layout spacing additions: `--r-space-10`, `--r-space-11`, `--r-space-12`, `--r-space-14`, `--r-space-16`, `--r-space-18`, `--r-space-25`
 - Icon sizes: `--r-size-icon-small`, `--r-size-icon-medium`
+- Control sizes: `--r-size-control-medium`
 - Radius, border, focus, transitions: `--r-radius-xs`, `--r-radius-sm`, `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
 - Motion: `--r-motion-ease-premium`, `--r-motion-duration-fast`, `--r-motion-duration-base`, `--r-motion-duration-reveal`
 
@@ -246,6 +247,14 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/organisms/RTabSwitcher/RTabSwitcher.module.css`
 - Reusability notes: Use for compact redesign tab switchers before creating page-specific switcher markup. Each item can expose an optional count and matches the separated pill-tab Figma pattern.
 - Related tokens: `RTab`, `RText`, `--r-space-2`, `--r-color-neutral-*`
+
+## RCustomDropdown
+
+- Purpose: Compositional redesign dropdown with context-managed state, trigger, menu, and selectable options.
+- Location: `app/lib/organisms/RCustomDropdown/RCustomDropdown.tsx`
+- Styles: `app/lib/organisms/RCustomDropdown/RCustomDropdown.module.css`
+- Reusability notes: Compose `RCustomDropdown`, `RDropdownFaceContent`, `RDropdownBodyContent`, and `RDropdownBodyContentItem`. The menu closes on selection, outside interaction, or Escape.
+- Related tokens: `RText`, `RIcon`, `--r-size-control-medium`, `--r-space-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
 ## RFeatureCard
 
