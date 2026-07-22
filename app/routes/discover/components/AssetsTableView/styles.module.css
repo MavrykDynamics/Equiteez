@@ -1,0 +1,75 @@
+.viewport {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tableFrame {
+  min-width: 1240px;
+  overflow: hidden;
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+}
+
+.table {
+  width: 100%;
+}
+
+.headerRow,
+.row {
+  display: grid;
+  grid-template-columns: 15% 13.21% 9.92% 13.21% 13.21% 13.21% 17.42% 4.84%;
+}
+
+.row {
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.row:hover {
+  background: var(--r-color-neutral-50);
+}
+
+.row:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.headerCell,
+.cell {
+  box-sizing: border-box;
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  text-align: left;
+}
+
+.headerCell {
+  padding: var(--r-space-3);
+  font-weight: var(--r-font-weight-regular);
+}
+
+.cell {
+  padding: var(--r-space-5) var(--r-space-3);
+  vertical-align: middle;
+}
+
+.assetContent {
+  display: flex;
+  gap: var(--r-space-1);
+  align-items: center;
+  white-space: nowrap;
+}
+
+.chartCell {
+  padding: var(--r-space-5) var(--r-space-3);
+}
+
+.actionCell {
+  text-align: center;
+}
+
+.table > [role="rowgroup"] > .row:last-child .cell {
+  border-bottom: 0;
+}
