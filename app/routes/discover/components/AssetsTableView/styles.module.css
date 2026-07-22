@@ -74,6 +74,19 @@
   white-space: nowrap;
 }
 
+.assetTypeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px var(--r-space-3);
+  background: var(--r-surface-accent-green-subtle);
+  border-radius: var(--r-radius-pill);
+}
+
+.assetTypeLabel {
+  text-transform: uppercase;
+}
+
 .chartCell {
   padding: var(--r-space-5) var(--r-space-3);
 }

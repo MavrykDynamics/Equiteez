@@ -3,15 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 
 import { fetchAssets } from "~/lib/apis/rwa/assets/assets";
 import type {
+  AssetTypeOption,
   AssetsProviderContextType,
   AssetsProviderProps,
 } from "~/providers/AssetsProvider/assets.provider.types";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import { getAssetTypeLabelsFromAssets } from "~/providers/AssetsProvider/helpers/formatAssetTypeLabel";
 
 const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 
 export function AssetsProvider({ children }: AssetsProviderProps) {
   const [assets, setAssets] = useState<AssetType[]>([]);
+  const [assetTypes, setAssetTypes] = useState<Record<string, AssetTypeOption>>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const assetsQuery = useQuery({
@@ -24,7 +29,11 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
       return;
     }
 
-    setAssets(assetsQuery.data.items);
+    const nextAssets = assetsQuery.data.items;
+    const nextAssetTypes = getAssetTypeLabelsFromAssets(nextAssets);
+
+    setAssets(nextAssets);
+    setAssetTypes(nextAssetTypes);
   }, [assetsQuery.data]);
 
   useEffect(() => {
@@ -36,9 +45,10 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
   const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
       assets,
+      assetTypes,
       isLoading,
     }),
-    [assets, isLoading]
+    [assets, assetTypes, isLoading]
   );
 
   return (

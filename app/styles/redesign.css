@@ -81,6 +81,7 @@
   --r-surface-primary-black-button-hover: var(--r-color-neutral-800);
   --r-surface-primary-black-button-disabled: var(--r-color-neutral-500);
   --r-surface-neutral-glass-subtle: rgba(246, 246, 247, 0.1);
+  --r-surface-accent-green-subtle: rgba(164, 192, 186, 0.25);
   --r-surface-secondary-white-button-hover: rgba(246, 246, 247, 0.1);
   --r-surface-secondary-black-button-hover: var(--r-color-neutral-50);
   --r-border-secondary-button-default: var(--r-color-neutral-300);

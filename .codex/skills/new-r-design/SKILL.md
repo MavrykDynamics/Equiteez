@@ -47,6 +47,7 @@ Use these token groups:
 - Control sizes: `--r-size-control-medium`
 - Radius, border, focus, transitions: `--r-radius-xs`, `--r-radius-sm`, `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
 - Motion: `--r-motion-ease-premium`, `--r-motion-duration-fast`, `--r-motion-duration-base`, `--r-motion-duration-reveal`
+- Shared surfaces: `--r-surface-accent-green-subtle`
 
 Add new tokens only when they are shared by multiple redesign components or map directly to the Figma system.
 
