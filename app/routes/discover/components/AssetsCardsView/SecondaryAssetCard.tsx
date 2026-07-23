@@ -1,12 +1,11 @@
 import { Link } from "@remix-run/react";
 
-import negativeChartSrc from "~/assets/redesign/charts/secondary-asset-chart-negative.svg";
-import positiveChartSrc from "~/assets/redesign/charts/secondary-asset-chart-positive.svg";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import styles from "./styles.module.css";
+import { AssetPriceChart, type AssetPriceChartPoint } from "../AssetPriceChart/AssetPriceChart";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
 
@@ -18,12 +17,14 @@ type AssetPriceChange = {
 type SecondaryAssetCardProps = {
   asset: AssetType;
   priceChange?: AssetPriceChange;
+  points?: AssetPriceChartPoint[];
   trend?: "positive" | "negative";
 };
 
 export function SecondaryAssetCard({
   asset,
   priceChange,
+  points = [],
   trend,
 }: SecondaryAssetCardProps) {
   const isNegative =
@@ -78,13 +79,11 @@ export function SecondaryAssetCard({
         </div>
       </div>
 
-      <div className={styles.secondaryChart}>
-        <img
-          alt=""
-          className={styles.chartImage}
-          src={isNegative ? negativeChartSrc : positiveChartSrc}
-        />
-      </div>
+      <AssetPriceChart
+        className={styles.secondaryChart}
+        points={points}
+        tone={isNegative ? "negative" : "positive"}
+      />
 
       <div className={styles.projectedYield}>
         <RText color="neutral-600" size="body-s">

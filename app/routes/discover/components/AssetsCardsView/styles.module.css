@@ -150,17 +150,14 @@
 }
 
 .secondaryChart {
-  width: calc(100% + (var(--r-space-5) * 2));
+  width: calc(100% + (var(--r-space-5) * 2) + var(--r-border-width-sm));
   height: 72px;
-  margin: 0 calc(var(--r-space-5) * -1);
+  margin-top: 0;
+  margin-right: calc((var(--r-space-5) + var(--r-border-width-sm)) * -1);
+  margin-bottom: 0;
+  margin-left: calc(var(--r-space-5) * -1);
   overflow: hidden;
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-}
-
-.chartImage {
-  display: block;
-  width: 100%;
-  height: 100%;
 }
 
 @media (--media-laptop) {
