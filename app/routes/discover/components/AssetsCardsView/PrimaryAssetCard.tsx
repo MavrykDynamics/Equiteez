@@ -1,0 +1,59 @@
+import { Link } from "@remix-run/react";
+
+import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import Money from "~/lib/atoms/Money";
+import { RIcon } from "~/lib/atoms/RIcon";
+import { RText } from "~/lib/atoms/RTypography/RText";
+import { AssetSaleProgress } from "./AssetSaleProgress";
+import styles from "./styles.module.css";
+import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
+import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
+
+type PrimaryAssetCardProps = {
+  asset: AssetType;
+};
+
+export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
+  return (
+    <Link className={styles.primaryAssetCard} to="/">
+      <div className={styles.cardHeader}>
+        <AssetBadge asset={asset} />
+
+        <RIcon aria-hidden="true" name="arrow-long-up-right" />
+      </div>
+
+      <AssetIdentity asset={asset} />
+
+      <div className={styles.priceSection}>
+        <RText className={styles.price} weight="medium">
+          $
+          <Money fiat tooltip={false}>
+            {asset.finance.value_per_token}
+          </Money>
+        </RText>
+        <div className={styles.priceDescription}>
+          <RText color="neutral-600" size="body-s">
+            Listing Price
+          </RText>
+          <span aria-hidden="true" className={styles.separator} />
+          <RText color="neutral-600" size="body-s">
+            Fixed
+          </RText>
+        </div>
+      </div>
+
+      <div className={styles.saleProgressSection}>
+        <AssetSaleProgress asset={asset} />
+      </div>
+
+      <div className={styles.projectedYield}>
+        <RText color="neutral-600" size="body-s">
+          Projected Yield
+        </RText>
+        <RText size="body-s" weight="medium">
+          <Money tooltip={false}>{asset.apy}</Money>%
+        </RText>
+      </div>
+    </Link>
+  );
+}

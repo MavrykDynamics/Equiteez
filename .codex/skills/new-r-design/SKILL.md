@@ -38,6 +38,7 @@ Use these token groups:
 - Blue: `--r-color-blue-900` through `--r-color-blue-100`
 - Green: `--r-color-green-900` through `--r-color-green-100`
 - Yellow: `--r-color-yellow-900` through `--r-color-yellow-100`
+- Orange: `--r-color-orange-500`
 - Red: `--r-color-red-900` through `--r-color-red-100`
 - Semantic primary: `--r-color-primary`
 - Typography: `--r-font-*`, `--r-font-size-*`, `--r-line-height-*`, `--r-letter-spacing-*`

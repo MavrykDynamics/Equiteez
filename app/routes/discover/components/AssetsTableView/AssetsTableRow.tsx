@@ -5,16 +5,13 @@ import { Link } from "@remix-run/react";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 
 type AssetsTableRowProps = {
   asset: AssetType;
 };
 
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
-  const { assetTypes } = useAssetsContext();
-  const assetType = assetTypes[asset.profile.asset_type];
-
   return (
     <Link className={styles.row} role="row" to="/">
       <div className={styles.cell} role="cell">
@@ -32,21 +29,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
         </div>
       </div>
       <div className={styles.cell} role="cell">
-        {assetType ? (
-          <span className={styles.assetTypeBadge}>
-            <RText
-              className={styles.assetTypeLabel}
-              color="accent-green-500"
-              size="body-s"
-            >
-              {assetType.label}
-            </RText>
-          </span>
-        ) : (
-          <RText color="neutral-600" size="body-sm">
-            --
-          </RText>
-        )}
+        <AssetBadge asset={asset} />
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">

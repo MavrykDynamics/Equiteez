@@ -4,6 +4,7 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { AssetsFilters } from "~/routes/discover/components/AssetsFilters/AssetsFilters";
 import { AssetsTableView } from "~/routes/discover/components/AssetsTableView/AssetsTableView";
+import { AssetsCardsView } from "~/routes/discover/components/AssetsCardsView/AssetsCardsView";
 import {
   ALL_ASSETS_FILTER_VALUE,
   INITIAL_ASSETS_FILTER_STATE,
@@ -49,10 +50,16 @@ export function ExploreAssets() {
         }
       />
       {filteredAssets.length ? (
-        <AssetsTableView assets={filteredAssets} />
+        filters.viewType === "grid" ? (
+          <AssetsCardsView assets={filteredAssets} />
+        ) : (
+          <AssetsTableView assets={filteredAssets} />
+        )
       ) : (
         <div className={styles.emptyState}>
-          <RText size="body-sm" color="neutral-600">No Results Found</RText>
+          <RText size="body-sm" color="neutral-600">
+            No Results Found
+          </RText>
         </div>
       )}
     </div>
