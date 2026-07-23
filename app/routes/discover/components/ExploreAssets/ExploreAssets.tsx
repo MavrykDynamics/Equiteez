@@ -11,6 +11,8 @@ import {
 } from "~/routes/discover/components/AssetsFilters/assetsFilters.const";
 import type { AssetsFilterState } from "~/routes/discover/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RButton } from "~/lib/atoms/RButton";
+import { RIcon } from "~/lib/atoms/RIcon";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();
@@ -37,9 +39,20 @@ export function ExploreAssets() {
 
   return (
     <div className={styles.wrapper}>
-      <RHeading size="h5" weight="medium">
-        Explore Assets
-      </RHeading>
+      <div className={styles.titleBlock}>
+        <RHeading size="h5" weight="medium">
+          Explore Assets
+        </RHeading>
+        <RButton className={styles.depositButton} variant="secondary">
+          <RText size="body-sm" weight="medium">
+            Deposit Funds
+          </RText>
+          <RText size="body-s">
+          <RIcon name="arrow-long-up-right" />
+          </RText>
+        </RButton>
+      </div>
+
       <AssetsFilters
         filters={filters}
         onChange={(updates: Partial<AssetsFilterState>) =>

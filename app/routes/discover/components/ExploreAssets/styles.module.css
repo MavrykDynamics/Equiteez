@@ -10,3 +10,11 @@
   justify-content: center;
   padding: var(--r-space-18) 0;
 }
+.titleBlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.titleBlock .depositButton {
+  padding: var(--r-space-3) var(--r-space-4) var(--r-space-3) var(--r-space-6);
+}
