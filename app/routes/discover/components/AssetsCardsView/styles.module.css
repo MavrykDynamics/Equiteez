@@ -140,6 +140,9 @@
   gap: var(--r-space-1);
   align-items: center;
 }
+.arrowIcon {
+  color: var(--r-color-neutral-400);
+}
 
 .positiveChange {
   color: var(--r-color-green-500);

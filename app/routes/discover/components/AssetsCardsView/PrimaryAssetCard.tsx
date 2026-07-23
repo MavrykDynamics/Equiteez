@@ -19,7 +19,11 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
       <div className={styles.cardHeader}>
         <AssetBadge asset={asset} />
 
-        <RIcon aria-hidden="true" name="arrow-long-up-right" />
+        <RIcon
+          aria-hidden="true"
+          className={styles.arrowIcon}
+          name="arrow-long-up-right"
+        />
       </div>
 
       <AssetIdentity asset={asset} />
