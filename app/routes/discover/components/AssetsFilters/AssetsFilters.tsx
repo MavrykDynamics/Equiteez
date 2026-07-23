@@ -15,14 +15,26 @@ type AssetsFiltersProps = {
   onChange: (updates: Partial<AssetsFilterState>) => void;
 };
 
-export function AssetsFilters({
-  filters,
-  onChange,
-}: AssetsFiltersProps) {
-  const { assetTypes  } = useAssetsContext();
+export function AssetsFilters({ filters, onChange }: AssetsFiltersProps) {
+  const { assets, assetTypes } = useAssetsContext();
+  const assetTypeCounts = assets.reduce<Record<string, number>>(
+    (counts, asset) => {
+      const assetType = asset.profile.asset_type;
+
+      counts[assetType] = (counts[assetType] ?? 0) + 1;
+
+      return counts;
+    },
+    {}
+  );
   const filterTabs = [
-    { id: ALL_ASSETS_FILTER_VALUE, label: "All" },
+    {
+      count: assets.length,
+      id: ALL_ASSETS_FILTER_VALUE,
+      label: "All",
+    },
     ...Object.values(assetTypes).map((assetType) => ({
+      count: assetTypeCounts[assetType.value] ?? 0,
       id: assetType.value,
       label: assetType.label,
     })),
