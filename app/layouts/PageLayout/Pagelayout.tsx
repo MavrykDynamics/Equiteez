@@ -29,7 +29,6 @@ type PageLayoutProps = {
  */
 const PageLayout: FC<PageLayoutProps> = ({
   children,
-  bg = "bg-background",
   includeContainer = true,
   includeFooter = true,
   className,
@@ -37,7 +36,6 @@ const PageLayout: FC<PageLayoutProps> = ({
   return (
     <FiltersProvider>
       <div className={clsx("min-h-screen flex flex-col")}>
-        <DocBg bgClassName={clsx(bg)} />
 
         <div
           className={clsx(
