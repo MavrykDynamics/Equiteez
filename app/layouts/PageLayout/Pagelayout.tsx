@@ -12,6 +12,7 @@ import { Banner } from "./Banner/Banner";
 
 import bannerContent from "app/mocks/banner.json";
 import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
+import { RFooter } from "~/layouts/RFooter";
 
 type PageLayoutProps = {
   bg?: string;
@@ -44,7 +45,6 @@ const PageLayout: FC<PageLayoutProps> = ({
           )}
         >
           <Header />
-          <Banner contantArr={bannerContent} />
           {includeContainer ? (
             <div className="flex-1">
               <Container>{children}</Container>
@@ -52,7 +52,7 @@ const PageLayout: FC<PageLayoutProps> = ({
           ) : (
             children
           )}
-          {includeFooter && <Footer />}
+          {includeFooter && <RFooter />}
         </div>
       </div>
     </FiltersProvider>
