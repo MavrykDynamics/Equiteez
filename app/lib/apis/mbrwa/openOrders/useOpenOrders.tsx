@@ -12,6 +12,7 @@ import { useQueryWithRefetch } from "~/providers/ApolloProvider/hooks/useQueryWi
 
 const OPEN_ORDERS_OFFSET = 0;
 const OPEN_ORDERS_REFETCH_INTERVAL = 10_000;
+export const OPEN_ORDERS_FETCH_LIMIT = 20;
 const EMPTY_OPEN_ORDERS = {
   buyOrders: [],
   sellOrders: [],
@@ -23,12 +24,21 @@ const EMPTY_OPEN_ORDERS = {
 type UseOpenOrdersParams = {
   enabled?: boolean;
   limit?: number;
+  orderbookAddress?: string | null;
   rwaAddress?: string | null;
+};
+
+const getOpenOrdersLimit = (limit?: number) => {
+  if (limit === undefined) return OPEN_ORDERS_FETCH_LIMIT;
+  if (!Number.isFinite(limit) || limit < 0) return OPEN_ORDERS_FETCH_LIMIT;
+
+  return Math.min(Math.trunc(limit), OPEN_ORDERS_FETCH_LIMIT);
 };
 
 export function useOpenOrders({
   enabled = true,
   limit,
+  orderbookAddress,
   rwaAddress,
 }: UseOpenOrdersParams) {
   const { handleApolloError } = useApolloContext();
@@ -36,11 +46,12 @@ export function useOpenOrders({
 
   const queryVariables = useMemo<OpenOrdersQueryVariables>(
     () => ({
-      limit,
+      limit: getOpenOrdersLimit(limit),
+      orderbookAddress,
       rwaAddress,
       offset: OPEN_ORDERS_OFFSET,
     }),
-    [limit, rwaAddress]
+    [limit, orderbookAddress, rwaAddress]
   );
 
   const openOrdersData = useQueryWithRefetch<
@@ -50,7 +61,7 @@ export function useOpenOrders({
     ALL_OPEN_ORDERS_QUERY,
     {
       variables: queryVariables,
-      skip: !enabled || !rwaAddress,
+      skip: !enabled || !orderbookAddress || !rwaAddress,
     },
     {
       refetchInterval: OPEN_ORDERS_REFETCH_INTERVAL,

@@ -119,7 +119,6 @@ export const PopupContent: FC<PopupContentProps> = ({
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
-  const { openOrders } = useOpenOrders({ rwaAddress: estate.token_address });
   const {
     marketsArr,
     sortedMarketAddresses,
@@ -182,6 +181,11 @@ export const PopupContent: FC<PopupContentProps> = ({
   } = useOrderbookTokenMetadata(estate);
   const rawTickSize = orderbookStorages[slug]?.tickSize ?? 0;
   const orderbookConfig = pickOrderbookConfig[estate.token_address];
+  const orderbookAddress = orderbookConfig?.address ?? null;
+  const { openOrders } = useOpenOrders({
+    orderbookAddress,
+    rwaAddress: estate.token_address,
+  });
   const quoteCurrency = orderbookConfig?.currencies[0];
   const currencyKey = quoteCurrency?.currencyKey ?? "";
   const quoteTokenAddress = quoteCurrency?.token.address ?? "";
@@ -899,8 +903,10 @@ export const PopupContent: FC<PopupContentProps> = ({
           onPriceClick={
             isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
           }
+          orderbookAddress={orderbookAddress}
           quoteTokenDecimals={quoteTokenDecimals}
           quoteTokenSymbol={quoteAssetmetadata.symbol}
+          rawTickSize={rawTickSize || undefined}
           referencePrice={tokenPrice.toNumber()}
           rwaAddress={estate.token_address}
         />

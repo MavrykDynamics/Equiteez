@@ -21,7 +21,10 @@ import {
   getOrderBookPrecisionOptions,
 } from "~/routes/marketplace.$id/components/PriceSection/orderBook.consts";
 import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
-import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
+import {
+  OPEN_ORDERS_FETCH_LIMIT,
+  useOpenOrders,
+} from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
 import { Spinner } from "~/lib/atoms/Spinner";
 import {
   ClickableDropdownArea,
@@ -29,6 +32,10 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
+import {
+  getNormalizedPriceTickAtoms,
+  getRemainingQuoteValueAtoms,
+} from "~/lib/orderbook/orderBookDepth";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { isMarketOrderPrice } from "~/providers/Dexprovider/utils";
 
@@ -42,7 +49,6 @@ import styles from "./orderBookPopup.module.css";
 
 const DEFAULT_METRIC_FRACTION_DIGITS = 2;
 const MAX_METRIC_FRACTION_DIGITS = 4;
-const ORDER_BOOK_FETCH_LIMIT = 32;
 const DEFAULT_ROWS_PER_SIDE = 16;
 const ORDER_BOOK_SUMMARY_SAMPLE_SIZE = 10;
 const SINGLE_SIDE_ROWS = 32;
@@ -71,8 +77,10 @@ type OrderBookTableProps = {
   emptyMessage?: string;
   enabled?: boolean;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
+  orderbookAddress?: string | null;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
+  rawTickSize?: BigNumberJs.Value;
   referencePrice?: number;
   rwaAddress?: string | null;
 };
@@ -163,11 +171,11 @@ const getVisibleRows = (
   }
 
   if (displayMode === "sell") {
-    return side === "ask" ? rows.slice(-SINGLE_SIDE_ROWS) : [];
+    return side === "ask" ? rows.slice(0, SINGLE_SIDE_ROWS) : [];
   }
 
   return side === "ask"
-    ? rows.slice(-DEFAULT_ROWS_PER_SIDE)
+    ? rows.slice(0, DEFAULT_ROWS_PER_SIDE)
     : rows.slice(0, DEFAULT_ROWS_PER_SIDE);
 };
 
@@ -288,6 +296,7 @@ const areRowsEqual = (left: OrderBookRow, right: OrderBookRow) =>
   left.amount === right.amount &&
   left.depthPercentage === right.depthPercentage &&
   left.id === right.id &&
+  left.isMarketOrder === right.isMarketOrder &&
   left.price === right.price &&
   left.total === right.total;
 
@@ -409,17 +418,39 @@ const OrderBookRowsSection = memo(OrderBookRowsSectionComponent);
 
 OrderBookRowsSection.displayName = "OrderBookRowsSection";
 
-// Uses the contract's own escrow reference value rather than re-deriving
-// amount*price client-side, since market orders are stored at a sentinel
-// price and amount*price would produce a meaningless total for them.
+// Limit orders derive remaining value from unfulfilled amount and normalized
+// price. Market/sentinel orders fall back to the contract escrow reference.
 const getOpenOrderTotal = ({
+  baseTokenDecimals,
   order,
   quoteTokenDecimals,
+  rawTickSize,
+  side,
 }: {
+  baseTokenDecimals: number;
   order: OpenOrder;
   quoteTokenDecimals: number;
-}) =>
-  atomsToTokens(order.total_usd_value_of_rwa_token_amount, quoteTokenDecimals);
+  rawTickSize?: BigNumberJs.Value;
+  side: "buy" | "sell";
+}) => {
+  const orderBookSide = side === "buy" ? "bid" : "ask";
+  const isMarketOrder = isMarketOrderPrice(order, side);
+  const priceTickAtoms = getNormalizedPriceTickAtoms({
+    priceAtoms: order.price_per_rwa_token,
+    rawTickSize,
+    side: orderBookSide,
+  });
+
+  return atomsToTokens(
+    getRemainingQuoteValueAtoms({
+      baseTokenDecimals,
+      isMarketOrder,
+      order,
+      priceTickAtoms,
+    }),
+    quoteTokenDecimals
+  );
+};
 
 const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
   [...orders].sort((left, right) => {
@@ -441,12 +472,16 @@ const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
   });
 
 const getOrdersTotal = ({
+  baseTokenDecimals,
   orders,
   quoteTokenDecimals,
+  rawTickSize,
   side,
 }: {
+  baseTokenDecimals: number;
   orders: OpenOrder[];
   quoteTokenDecimals: number;
+  rawTickSize?: BigNumberJs.Value;
   side: "buy" | "sell";
 }) =>
   sortOrdersForSummary(
@@ -458,8 +493,11 @@ const getOrdersTotal = ({
       (total, order) =>
         total.plus(
           getOpenOrderTotal({
+            baseTokenDecimals,
             order,
             quoteTokenDecimals,
+            rawTickSize,
+            side,
           })
         ),
       new BigNumberJs(0)
@@ -472,22 +510,30 @@ const getSummaryPercentage = (value: number, total: number) => {
 };
 
 const getOrderBookFooterSummary = ({
+  baseTokenDecimals,
   buyOrders,
   quoteTokenDecimals,
+  rawTickSize,
   sellOrders,
 }: {
+  baseTokenDecimals: number;
   buyOrders: OpenOrder[];
   quoteTokenDecimals: number;
+  rawTickSize?: BigNumberJs.Value;
   sellOrders: OpenOrder[];
 }): OrderBookFooterSummary => {
   const buyTotal = getOrdersTotal({
+    baseTokenDecimals,
     orders: buyOrders,
     quoteTokenDecimals,
+    rawTickSize,
     side: "buy",
   }).toNumber();
   const sellTotal = getOrdersTotal({
+    baseTokenDecimals,
     orders: sellOrders,
     quoteTokenDecimals,
+    rawTickSize,
     side: "sell",
   }).toNumber();
   const combinedTotal = new BigNumberJs(buyTotal).plus(sellTotal).toNumber();
@@ -684,8 +730,10 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   emptyMessage = "No open orders available.",
   enabled = true,
   onPriceClick,
+  orderbookAddress,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
+  rawTickSize,
   referencePrice = 0,
   rwaAddress,
 }) => {
@@ -693,7 +741,8 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     useState<OrderBookDisplayMode>("both");
   const { openOrders, loading } = useOpenOrders({
     enabled,
-    limit: ORDER_BOOK_FETCH_LIMIT,
+    limit: OPEN_ORDERS_FETCH_LIMIT,
+    orderbookAddress,
     rwaAddress,
   });
 
@@ -752,9 +801,9 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
       sellOrders: openOrders.sellOrders,
       baseTokenDecimals,
       baseTokenSymbol,
-      priceGroupingPrecision: selectedPriceGrouping,
       quoteTokenDecimals,
       quoteTokenSymbol,
+      rawTickSize,
     });
   }, [
     baseTokenDecimals,
@@ -764,7 +813,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     openOrders.sellOrders,
     quoteTokenDecimals,
     quoteTokenSymbol,
-    selectedPriceGrouping,
+    rawTickSize,
   ]);
   const [renderData, setRenderData] = useState<OrderBookData>(nextData);
 
@@ -799,14 +848,18 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const footerSummary = useMemo(
     () =>
       getOrderBookFooterSummary({
+        baseTokenDecimals,
         buyOrders: openOrders.buyOrders,
         quoteTokenDecimals,
+        rawTickSize,
         sellOrders: openOrders.sellOrders,
       }),
     [
+      baseTokenDecimals,
       openOrders.buyOrders,
       openOrders.sellOrders,
       quoteTokenDecimals,
+      rawTickSize,
     ]
   );
   const spreadDisplayData = useMemo(
