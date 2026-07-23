@@ -22,6 +22,7 @@ import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { AnimatePresence, motion } from "framer-motion";
 import classNames from "clsx";
+import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 
 // types
 export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
@@ -50,15 +51,22 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
   shouldExpand,
 }) => {
-  const { validBaseTokens } = useMarketsContext();
+  const {
+    validBaseTokens,
+    pickers: { pickOrderbookContract },
+  } = useMarketsContext();
+  const { orderbookStorages } = useDexContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(BUY);
   const { baseTokenDecimals, quoteTokenDecimals } =
     useOrderbookTokenMetadata(estate);
+  const orderbookAddress = pickOrderbookContract[estate.token_address];
+  const rawTickSize = orderbookStorages[estate.slug]?.tickSize;
 
   const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
+    orderbookAddress,
     rwaAddress: estate.token_address,
   });
 
@@ -83,12 +91,14 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
         sellOrders: openOrders.sellOrders,
         baseTokenDecimals,
         quoteTokenDecimals,
+        rawTickSize,
       }),
     [
       openOrders.buyOrders,
       openOrders.sellOrders,
       baseTokenDecimals,
       quoteTokenDecimals,
+      rawTickSize,
     ]
   );
 

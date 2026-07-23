@@ -38,8 +38,8 @@ const makeOrder = (
 }) as OpenOrder;
 
 // Minimal row factory - getSpread only reads `price`. Asks are ordered so the
-// last element is the best (lowest) ask; bids so the first is the best (highest)
-// bid, matching how createOrderBookData feeds them in.
+// first element is the best (lowest) ask; bids so the first is the best
+// (highest) bid, matching how createOrderBookData feeds them in.
 const row = (
   price: number,
   overrides: Partial<OrderBookRow> = {}
@@ -55,7 +55,7 @@ const row = (
 
 describe("getSpread", () => {
   it("computes best ask, best bid and the spread value when both sides exist", () => {
-    const asks = [row(7), row(6), row(5)]; // best ask (last) = 5
+    const asks = [row(5), row(6), row(7)]; // best ask (first) = 5
     const bids = [row(4), row(3), row(2)]; // best bid (first) = 4
 
     expect(getSpread(asks, bids)).toEqual({
@@ -69,7 +69,7 @@ describe("getSpread", () => {
   // The QA screenshot: asks present (5..7), no bids -> quote the best ask, and
   // the spread value collapses to 0 rather than a bogus number.
   it("quotes the best ask and zero spread when there are no bids", () => {
-    const asks = [row(7), row(6), row(5)];
+    const asks = [row(5), row(6), row(7)];
 
     expect(getSpread(asks, [])).toEqual({
       bestAsk: 5,
@@ -101,8 +101,8 @@ describe("getSpread", () => {
 
   it("ignores market rows when computing best prices and spread", () => {
     const asks = [
-      row(7),
       row(5),
+      row(7),
       row(0, { isMarketOrder: true }),
     ];
     const bids = [
