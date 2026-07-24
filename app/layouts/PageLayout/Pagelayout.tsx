@@ -12,7 +12,7 @@ import { Banner } from "./Banner/Banner";
 
 import bannerContent from "app/mocks/banner.json";
 import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
-import { RFooter } from "~/layouts/RFooter";
+import { RFooter } from "~/layouts/PageLayout/RFooter";
 
 type PageLayoutProps = {
   bg?: string;

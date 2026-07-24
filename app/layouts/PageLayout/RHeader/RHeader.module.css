@@ -1,4 +1,4 @@
-@import "../../styles/breakpoints.css";
+@import "../../../styles/breakpoints.css";
 
 .header {
   --r-header-divider-border: 1px solid var(--surface-divider-white-bg, #e6e6e6);

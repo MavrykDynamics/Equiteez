@@ -12,7 +12,7 @@ import {
 } from "~/consts/links.const";
 import { RLogo } from "~/lib/atoms/RLogo";
 
-import mavrykLogoSrc from "app/icons/maven-logo.svg";
+import mavrykLogoSrc from "~/icons/maven-logo.svg";
 
 import styles from "./RFooter.module.css";
 

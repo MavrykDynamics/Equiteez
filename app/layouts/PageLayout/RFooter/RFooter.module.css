@@ -1,4 +1,4 @@
-@import "../../styles/breakpoints.css";
+@import "../../../styles/breakpoints.css";
 
 .footer {
   background: var(--r-color-neutral-white);
