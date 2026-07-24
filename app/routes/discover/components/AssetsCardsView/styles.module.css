@@ -2,9 +2,6 @@
 
 .cardsView {
   width: 100%;
-  overflow: hidden;
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-md);
 }
 
 .cardsGrid {
@@ -27,7 +24,41 @@
   background: var(--r-color-neutral-white);
   border-right: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: 0;
   transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+/* Four-column grid perimeter. Borders are owned by cards, never the wrapper. */
+.primaryAssetCard:nth-child(-n + 4),
+.secondaryAssetCard:nth-child(-n + 4) {
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.primaryAssetCard:nth-child(4n + 1),
+.secondaryAssetCard:nth-child(4n + 1) {
+  border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.primaryAssetCard:first-child,
+.secondaryAssetCard:first-child {
+  border-top-left-radius: var(--r-radius-md);
+}
+
+.primaryAssetCard:nth-child(4),
+.secondaryAssetCard:nth-child(4),
+.primaryAssetCard:last-child:nth-child(-n + 4),
+.secondaryAssetCard:last-child:nth-child(-n + 4) {
+  border-top-right-radius: var(--r-radius-md);
+}
+
+.primaryAssetCard:last-child,
+.secondaryAssetCard:last-child {
+  border-bottom-right-radius: var(--r-radius-md);
+}
+
+.primaryAssetCard:nth-child(4n + 1):nth-last-child(-n + 4),
+.secondaryAssetCard:nth-child(4n + 1):nth-last-child(-n + 4) {
+  border-bottom-left-radius: var(--r-radius-md);
 }
 
 .primaryAssetCard:hover,
@@ -164,18 +195,119 @@
 }
 
 @media (--media-laptop) {
+  .primaryAssetCard:nth-child(n):nth-child(n),
+  .secondaryAssetCard:nth-child(n):nth-child(n) {
+    border-top: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .primaryAssetCard:nth-child(-n + 3),
+  .secondaryAssetCard:nth-child(-n + 3) {
+    border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .primaryAssetCard:nth-child(3n + 1),
+  .secondaryAssetCard:nth-child(3n + 1) {
+    border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .primaryAssetCard:first-child,
+  .secondaryAssetCard:first-child {
+    border-top-left-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:nth-child(3),
+  .secondaryAssetCard:nth-child(3),
+  .primaryAssetCard:last-child:nth-child(-n + 3),
+  .secondaryAssetCard:last-child:nth-child(-n + 3) {
+    border-top-right-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:last-child,
+  .secondaryAssetCard:last-child {
+    border-bottom-right-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:nth-child(3n + 1):nth-last-child(-n + 3),
+  .secondaryAssetCard:nth-child(3n + 1):nth-last-child(-n + 3) {
+    border-bottom-left-radius: var(--r-radius-md);
+  }
+
   .cardsGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (--media-tablet-max) {
+  .primaryAssetCard:nth-child(n):nth-child(n),
+  .secondaryAssetCard:nth-child(n):nth-child(n) {
+    border-top: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .primaryAssetCard:nth-child(-n + 2),
+  .secondaryAssetCard:nth-child(-n + 2) {
+    border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .primaryAssetCard:nth-child(2n + 1),
+  .secondaryAssetCard:nth-child(2n + 1) {
+    border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .primaryAssetCard:first-child,
+  .secondaryAssetCard:first-child {
+    border-top-left-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:nth-child(2),
+  .secondaryAssetCard:nth-child(2),
+  .primaryAssetCard:last-child:nth-child(-n + 2),
+  .secondaryAssetCard:last-child:nth-child(-n + 2) {
+    border-top-right-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:last-child,
+  .secondaryAssetCard:last-child {
+    border-bottom-right-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:nth-child(2n + 1):nth-last-child(-n + 2),
+  .secondaryAssetCard:nth-child(2n + 1):nth-last-child(-n + 2) {
+    border-bottom-left-radius: var(--r-radius-md);
+  }
+
   .cardsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (--media-phone-max) {
+  .primaryAssetCard:nth-child(n):nth-child(n),
+  .secondaryAssetCard:nth-child(n):nth-child(n) {
+    border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+    border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+    border-radius: 0;
+  }
+
+  .primaryAssetCard:first-child,
+  .secondaryAssetCard:first-child {
+    border-top-left-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:first-child:last-child,
+  .secondaryAssetCard:first-child:last-child {
+    border-top-right-radius: var(--r-radius-md);
+  }
+
+  .primaryAssetCard:last-child,
+  .secondaryAssetCard:last-child {
+    border-bottom-right-radius: var(--r-radius-md);
+    border-bottom-left-radius: var(--r-radius-md);
+  }
+
   .cardsGrid {
     grid-template-columns: 1fr;
   }
