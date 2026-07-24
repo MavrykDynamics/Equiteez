@@ -1,26 +1,51 @@
-@import "../../styles/breakpoints.css";
-
-.dropdown .accountIcon {
-  display: none;
+.dropdown {
+  min-width: 164px;
 }
-@media (--media-tablet-max) {
-  .hashShortView {
-    display: none;
-  }
-  .dropdown svg {
-    display: none;
-  }
-  .dropdown .accountIcon {
-    display: block;
-  }
-  .dropdown {
-    border: none;
-    padding: 0 4px;
-  }
-  .dropdown:hover {
-    background: transparent;
-  }
-  .identIcon {
-    display: none;
-  }
+
+.trigger {
+  gap: var(--r-space-2);
+  justify-content: flex-start;
+  padding-right: var(--r-space-2);
+  min-height: 38px;
+}
+.connectWalletBtn {
+  padding: 9px 14px 9px var(--r-space-4);
+  min-height: auto;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.address {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.identIcon {
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.menu {
+  min-width: 203px;
+}
+
+.profileLink {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: var(--r-space-2) var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  text-decoration: none;
+  border-radius: var(--r-radius-sm);
+}
+
+.profileLink:hover {
+  background: var(--r-color-neutral-50);
+}
+
+.profileLink:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
 }

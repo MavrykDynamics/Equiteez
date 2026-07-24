@@ -94,6 +94,8 @@ export function RDropdownFaceContent({
 }: RDropdownFaceContentProps) {
   const { disabled, menuId, opened, toggle } = useRDropdownContext();
   const content = children ?? placeholder;
+  const isTextContent =
+    typeof content === "string" || typeof content === "number";
 
   return (
     <button
@@ -106,9 +108,16 @@ export function RDropdownFaceContent({
       onClick={toggle}
       type="button"
     >
-      <RText color={children ? "neutral-black" : "neutral-500"} size="body-sm">
-        {content}
-      </RText>
+      {isTextContent ? (
+        <RText
+          color={children ? "neutral-black" : "neutral-500"}
+          size="body-sm"
+        >
+          {content}
+        </RText>
+      ) : (
+        content
+      )}
       <RIcon
         name={opened ? "arrow-short-up" : "arrow-short-down"}
         size="medium"
