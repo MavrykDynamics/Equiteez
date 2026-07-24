@@ -23,18 +23,31 @@ export function ExploreAssets() {
   const filteredAssets = useMemo(() => {
     const normalizedSearch = filters.search.trim().toLowerCase();
 
-    return assets.filter((asset) => {
-      const matchesFilter =
-        filters.filter === ALL_ASSETS_FILTER_VALUE ||
-        asset.profile.asset_type === filters.filter;
-      const matchesSearch =
-        !normalizedSearch ||
-        asset.address.toLowerCase().includes(normalizedSearch) ||
-        asset.metadata.symbol.toLowerCase().includes(normalizedSearch) ||
-        asset.metadata.name.toLowerCase().includes(normalizedSearch);
+    return assets
+      .filter((asset) => {
+        const matchesFilter =
+          filters.filter === ALL_ASSETS_FILTER_VALUE ||
+          asset.profile.asset_type === filters.filter;
+        const matchesSearch =
+          !normalizedSearch ||
+          asset.address.toLowerCase().includes(normalizedSearch) ||
+          asset.metadata.symbol.toLowerCase().includes(normalizedSearch) ||
+          asset.metadata.name.toLowerCase().includes(normalizedSearch);
 
-      return matchesFilter && matchesSearch;
-    });
+        return matchesFilter && matchesSearch;
+      })
+      .sort((leftAsset, rightAsset) => {
+        const leftIsPrimaryIssuance =
+          leftAsset.profile.lifecycle === "primary_issuance";
+        const rightIsPrimaryIssuance =
+          rightAsset.profile.lifecycle === "primary_issuance";
+
+        if (leftIsPrimaryIssuance === rightIsPrimaryIssuance) {
+          return 0;
+        }
+
+        return leftIsPrimaryIssuance ? -1 : 1;
+      });
   }, [assets, filters.filter, filters.search]);
 
   return (
