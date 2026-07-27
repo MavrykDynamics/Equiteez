@@ -47,7 +47,7 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
         </RText>
         <div className={styles.priceChange}>
           {priceChange.amount && priceChange.percentage ? (
-            <>
+            <span className={styles.priceChangeIcon}>
               <RIcon
                 className={
                   isNegative ? styles.negativeChange : styles.positiveChange
@@ -66,7 +66,7 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
                 {" ("}
                 <Money tooltip={false}>{priceChange.percentage}</Money>%)
               </RText>
-            </>
+            </span>
           ) : (
             <RText color="neutral-600" size="body-s">
               --

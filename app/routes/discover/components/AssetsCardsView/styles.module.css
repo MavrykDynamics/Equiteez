@@ -171,6 +171,10 @@
   gap: var(--r-space-1);
   align-items: center;
 }
+.priceChangeIcon {
+  display: flex;
+  align-items: center;
+}
 .arrowIcon {
   color: var(--r-color-neutral-400);
 }
