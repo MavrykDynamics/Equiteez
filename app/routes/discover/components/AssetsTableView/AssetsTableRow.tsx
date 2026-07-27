@@ -6,12 +6,24 @@ import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 type AssetsTableRowProps = {
   asset: AssetType;
 };
 
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
+  const { prices } = useAssetsContext();
+
+  const assetPrices = prices[asset.address] ?? {};
+  const points = assetPrices.series_1d?.points || [];
+
+  const priceChange = {
+    amount: assetPrices.change_24h?.delta_abs ?? 0,
+    percentage: assetPrices.change_24h?.change_pct ?? 0,
+  };
+  const isNegative = priceChange?.percentage < 0;
+
   return (
     <Link className={styles.row} role="row" to="/">
       <div className={styles.cell} role="cell">
@@ -33,13 +45,44 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          $<Money>{asset.stats?.price.usd ?? 0}</Money>
+          $
+          <Money>
+            {assetPrices.usd ??
+              assetPrices.price ??
+              asset.stats?.price.usd ??
+              asset.finance.value_per_token}
+          </Money>
         </RText>
       </div>
       <div className={styles.cell} role="cell">
-        <RText color="neutral-600" size="body-sm">
-          --
-        </RText>
+        <div className={styles.priceChange}>
+          {priceChange.amount && priceChange.percentage ? (
+            <span className={styles.priceChangeIcon}>
+              <RIcon
+                className={
+                  isNegative ? styles.negativeChange : styles.positiveChange
+                }
+                name={isNegative ? "trending-down" : "trending-up"}
+                size="small"
+              />
+              <RText
+                className={
+                  isNegative ? styles.negativeChange : styles.positiveChange
+                }
+                size="body-s"
+              >
+                {"$"}
+                <Money tooltip={false}>{priceChange.amount}</Money>
+                {" ("}
+                <Money tooltip={false}>{priceChange.percentage}</Money>%)
+              </RText>
+            </span>
+          ) : (
+            <RText color="neutral-600" size="body-s">
+              --
+            </RText>
+          )}
+        </div>
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
