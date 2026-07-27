@@ -7,6 +7,7 @@ import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { AssetPriceChart } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
 
 type AssetsTableRowProps = {
   asset: AssetType;
@@ -98,7 +99,17 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
         aria-label="24 hour chart placeholder"
         className={`${styles.cell} ${styles.chartCell}`}
         role="cell"
-      />
+      >
+        {asset.profile.lifecycle === "primary_issuance" ? (
+          ""
+        ) : (
+          <AssetPriceChart
+            className={styles.secondaryChart}
+            points={points}
+            tone={isNegative ? "negative" : "positive"}
+          />
+        )}
+      </div>
       <div className={`${styles.cell} ${styles.actionCell}`} role="cell">
         <RText color="neutral-400" size="body-sm">
           <RIcon name="arrow-long-up-right" />
