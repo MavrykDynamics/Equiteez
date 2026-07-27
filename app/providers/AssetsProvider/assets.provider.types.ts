@@ -13,7 +13,8 @@ export type AssetTypeOption = {
 
 export type AssetsProviderContextType = {
   assets: AssetType[];
-  prices: PriceAssetType[];
+  prices: Record<string, PriceAssetType>;
   assetTypes: Record<string, AssetTypeOption>;
   isLoading: boolean;
+  isPricesLoading: boolean;
 };

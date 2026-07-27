@@ -11,16 +11,18 @@ import type {
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { PriceAssetType } from "~/lib/apis/rwa/prices/prices.types";
 import { getAssetTypeLabelsFromAssets } from "~/providers/AssetsProvider/helpers/formatAssetTypeLabel";
+import { mapPricesByTokenAddress } from "~/providers/AssetsProvider/helpers/mapPricesByTokenAddress";
 
 const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 
 export function AssetsProvider({ children }: AssetsProviderProps) {
   const [assets, setAssets] = useState<AssetType[]>([]);
-  const [prices, setPrices] = useState<PriceAssetType[]>([]);
+  const [prices, setPrices] = useState<Record<string, PriceAssetType>>({});
   const [assetTypes, setAssetTypes] = useState<Record<string, AssetTypeOption>>(
     {}
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isPricesLoading, setIsPricesLoading] = useState(true);
 
   const assetsQuery = useQuery({
     queryKey: ["rwa-assets"],
@@ -51,7 +53,7 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
       return;
     }
 
-    setPrices(pricesQuery.data.assets);
+    setPrices(mapPricesByTokenAddress(pricesQuery.data.assets));
   }, [pricesQuery.data]);
 
   useEffect(() => {
@@ -60,14 +62,21 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
     );
   }, [assetsQuery.isFetching, assetsQuery.isLoading, assetsQuery.isPending]);
 
+  useEffect(() => {
+    setIsPricesLoading(
+      pricesQuery.isLoading || pricesQuery.isFetching || pricesQuery.isPending
+    );
+  }, [pricesQuery.isFetching, pricesQuery.isLoading, pricesQuery.isPending]);
+
   const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
       assets,
       prices,
       assetTypes,
       isLoading,
+      isPricesLoading,
     }),
-    [assets, prices, assetTypes, isLoading]
+    [assets, prices, assetTypes, isLoading, isPricesLoading]
   );
 
   return (
