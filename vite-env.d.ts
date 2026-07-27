@@ -21,6 +21,7 @@ declare namespace NodeJS {
     readonly RPC_NODE_URL: string;
     readonly BCD_API: string;
     readonly RWA_API: string;
+    readonly RWA_SERVICES_API: string;
     readonly BCD_NETWORK_TYPE: "sandboxnet" | "mainnet";
     readonly MAVRYK_WALLET_API_URL: string;
     readonly MBRWA_API: string;
