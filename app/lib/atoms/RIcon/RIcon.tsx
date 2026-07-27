@@ -131,14 +131,15 @@ const rIconPaths: Record<RIconName, ReactNode> = {
   ),
   "trending-down": (
     <>
-      <path d="m4 8 6 6 4-4 6 6" />
-      <path d="M20 10v6h-6" />
+      <path
+        d="M3.33329 4L6.66663 9.53674e-07L-4.11351e-05 6.09274e-07L3.33329 4Z"
+        fill="#EF4444"
+      />
     </>
   ),
   "trending-up": (
     <>
-      <path d="m4 16 6-6 4 4 6-6" />
-      <path d="M14 8h6v6" />
+      <path d="M3.33333 0L0 4L6.66667 4L3.33333 0Z" fill="#22A55B" />
     </>
   ),
   web: (

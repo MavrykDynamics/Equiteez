@@ -2,7 +2,6 @@ import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 
 import { PrimaryAssetCard } from "./PrimaryAssetCard";
 import { SecondaryAssetCard } from "./SecondaryAssetCard";
-import { MOCK_ASSET_PRICE_CHART_POINTS } from "./assetsCardsView.const";
 import styles from "./styles.module.css";
 
 type AssetsCardsViewProps = {
@@ -17,11 +16,7 @@ export function AssetsCardsView({ assets }: AssetsCardsViewProps) {
           asset.profile.lifecycle === "primary_issuance" ? (
             <PrimaryAssetCard asset={asset} key={asset.address} />
           ) : (
-            <SecondaryAssetCard
-              asset={asset}
-              key={asset.address}
-              points={MOCK_ASSET_PRICE_CHART_POINTS}
-            />
+            <SecondaryAssetCard asset={asset} key={asset.address} />
           )
         )}
       </div>

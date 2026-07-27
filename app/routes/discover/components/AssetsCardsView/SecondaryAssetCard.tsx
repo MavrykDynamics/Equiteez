@@ -5,36 +5,32 @@ import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import styles from "./styles.module.css";
-import { AssetPriceChart, type AssetPriceChartPoint } from "../AssetPriceChart/AssetPriceChart";
+import { AssetPriceChart } from "../AssetPriceChart/AssetPriceChart";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
-type AssetPriceChange = {
-  amount: number;
-  percentage: number;
-};
+export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
+  const { prices } = useAssetsContext();
 
-type SecondaryAssetCardProps = {
-  asset: AssetType;
-  priceChange?: AssetPriceChange;
-  points?: AssetPriceChartPoint[];
-  trend?: "positive" | "negative";
-};
+  const assetPrices = prices[asset.address] ?? {};
+  const points = assetPrices.series_1d?.points || [];
 
-export function SecondaryAssetCard({
-  asset,
-  priceChange,
-  points = [],
-  trend,
-}: SecondaryAssetCardProps) {
-  const isNegative =
-    trend === "negative" || (!trend && (priceChange?.percentage ?? 0) < 0);
+  const priceChange = {
+    amount: assetPrices.change_24h?.delta_abs ?? 0,
+    percentage: assetPrices.change_24h?.change_pct ?? 0,
+  };
+  const isNegative = priceChange?.percentage < 0;
 
   return (
     <Link className={styles.secondaryAssetCard} to="/">
       <div className={styles.cardHeader}>
         <AssetBadge asset={asset} />
-        <RIcon aria-hidden="true" className={styles.arrowIcon} name="arrow-long-up-right" />
+        <RIcon
+          aria-hidden="true"
+          className={styles.arrowIcon}
+          name="arrow-long-up-right"
+        />
       </div>
 
       <AssetIdentity asset={asset} />
@@ -43,11 +39,14 @@ export function SecondaryAssetCard({
         <RText className={styles.price} weight="medium">
           $
           <Money fiat tooltip={false}>
-            {asset.stats?.price.usd ?? asset.finance.value_per_token}
+            {assetPrices.usd ??
+              assetPrices.price ??
+              asset.stats?.price.usd ??
+              asset.finance.value_per_token}
           </Money>
         </RText>
         <div className={styles.priceChange}>
-          {priceChange ? (
+          {priceChange.amount && priceChange.percentage ? (
             <>
               <RIcon
                 className={
