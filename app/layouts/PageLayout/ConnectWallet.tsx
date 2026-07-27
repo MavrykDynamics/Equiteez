@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useCallback, useState } from "react";
 import { Button } from "~/lib/atoms/Button";
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import {
@@ -9,16 +10,48 @@ import {
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
 import IdentIcon from "~/lib/organisms/IdenIcon";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 import { Link } from "@remix-run/react";
 import { ROUTES } from "~/consts/routes";
 import styles from "./ConnectWallet.module.css";
-import classNames from "clsx";
 import { Icon } from "~/lib/atoms/Icon";
+import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 
 export const ConnectWallet = () => {
   const { connect, userAddress, signOut, isLoading, changeUser } =
     useUserContext();
+  const { dapp } = useWalletContext();
+  const { bug, success, warning } = useToasterContext();
+  const [isSecurityProbeSending, setIsSecurityProbeSending] = useState(false);
+
+  const handleSecurityProbeRequest = useCallback(async () => {
+    if (!dapp || !userAddress) {
+      warning(
+        "Security probe unavailable",
+        "Connect a wallet before sending the invalid security probe."
+      );
+      return;
+    }
+
+    setIsSecurityProbeSending(true);
+
+    try {
+      await dapp.requestRejectedSecurityProbe(userAddress);
+      bug(
+        "The wallet accepted a source-spoofed operation request. Treat this as a failed security check.",
+        "Security probe not blocked"
+      );
+    } catch (error) {
+      console.info("Security probe rejected by wallet extension:", error);
+      success(
+        "Security probe blocked",
+        "The wallet rejected the invalid source-spoofed operation request."
+      );
+    } finally {
+      setIsSecurityProbeSending(false);
+    }
+  }, [bug, dapp, success, userAddress, warning]);
 
   return (
     <CustomSuspense loading={isLoading}>
@@ -39,12 +72,12 @@ export const ConnectWallet = () => {
                   <IdentIcon
                     type="bottts"
                     size={32}
-                    className={classNames(styles.identIcon, "mr-2")}
+                    className={clsx(styles.identIcon, "mr-2")}
                     hash={userAddress}
                   />
                   <Icon icon="account" className={styles.accountIcon} />
                   <div
-                    className={classNames(
+                    className={clsx(
                       styles.hashShortView,
                       "text-caption-regular text-content font-semibold"
                     )}
@@ -66,12 +99,24 @@ export const ConnectWallet = () => {
                 Profile dashboard
               </Link>
               <button
+                type="button"
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                 onClick={changeUser}
               >
                 Change account
               </button>
               <button
+                type="button"
+                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity disabled:opacity-50"
+                disabled={isSecurityProbeSending}
+                onClick={handleSecurityProbeRequest}
+              >
+                {isSecurityProbeSending
+                  ? "Sending probe..."
+                  : "Security reject test"}
+              </button>
+              <button
+                type="button"
                 className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
                 onClick={signOut}
               >

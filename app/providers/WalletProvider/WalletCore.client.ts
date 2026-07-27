@@ -1,10 +1,14 @@
 import { BeaconWallet } from "@mavrykdynamics/taquito-beacon-wallet";
 import {
-  AccountInfo,
   BeaconEvent,
-  NetworkType,
+  MavrykOperationType,
 } from "@mavrykdynamics/beacon-dapp";
 import { MavrykToolkit } from "@mavrykdynamics/taquito";
+import type {
+  AccountInfo,
+  NetworkType,
+  PartialMavrykOperation,
+} from "@mavrykdynamics/beacon-dapp";
 import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-beacon-wallet";
 
 // consts
@@ -25,6 +29,8 @@ const DAPP_METADATA = {
   name: "Equiteez",
   preferredNetwork: WALLET_NETWORK,
 };
+const SECURITY_PROBE_FORGED_SOURCE_ADDRESS =
+  "mv1WbZRUmFnpDSjoSfJT5dkvip8SE2NehuNC";
 
 const getRpcNode = (): RPCNodeType => {
   const rpcNode =
@@ -87,6 +93,25 @@ export function dappClient() {
     }
   }
 
+  async function requestRejectedSecurityProbe(destinationAddress: string) {
+    try {
+      const client = getDAppClient();
+      const operationDetails: PartialMavrykOperation[] = [
+        {
+          kind: MavrykOperationType.TRANSACTION,
+          source: SECURITY_PROBE_FORGED_SOURCE_ADDRESS,
+          destination: destinationAddress,
+          amount: "0",
+        },
+      ];
+
+      await client.requestOperation({ operationDetails });
+    } catch (error) {
+      console.log("security probe request error:", error);
+      throw error;
+    }
+  }
+
   function tezos() {
     const wallet = getDAppClientWallet();
     const Tezos = new MavrykToolkit(getRpcNode());
@@ -112,6 +137,7 @@ export function dappClient() {
     loadWallet,
     getDAppClient,
     connectAccount,
+    requestRejectedSecurityProbe,
     tezos,
     disconnectWallet,
   };
