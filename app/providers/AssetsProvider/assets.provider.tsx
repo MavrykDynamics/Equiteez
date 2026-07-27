@@ -2,18 +2,21 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchAssets } from "~/lib/apis/rwa/assets/assets";
+import { fetchPrices } from "~/lib/apis/rwa/prices/prices";
 import type {
   AssetTypeOption,
   AssetsProviderContextType,
   AssetsProviderProps,
 } from "~/providers/AssetsProvider/assets.provider.types";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { PriceAssetType } from "~/lib/apis/rwa/prices/prices.types";
 import { getAssetTypeLabelsFromAssets } from "~/providers/AssetsProvider/helpers/formatAssetTypeLabel";
 
 const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 
 export function AssetsProvider({ children }: AssetsProviderProps) {
   const [assets, setAssets] = useState<AssetType[]>([]);
+  const [prices, setPrices] = useState<PriceAssetType[]>([]);
   const [assetTypes, setAssetTypes] = useState<Record<string, AssetTypeOption>>(
     {}
   );
@@ -22,6 +25,13 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
   const assetsQuery = useQuery({
     queryKey: ["rwa-assets"],
     queryFn: fetchAssets,
+  });
+
+  const pricesQuery = useQuery({
+    queryKey: ["rwa-prices"],
+    queryFn: fetchPrices,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: true,
   });
 
   useEffect(() => {
@@ -37,6 +47,14 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
   }, [assetsQuery.data]);
 
   useEffect(() => {
+    if (!pricesQuery.data) {
+      return;
+    }
+
+    setPrices(pricesQuery.data.assets);
+  }, [pricesQuery.data]);
+
+  useEffect(() => {
     setIsLoading(
       assetsQuery.isLoading || assetsQuery.isFetching || assetsQuery.isPending
     );
@@ -45,10 +63,11 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
   const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
       assets,
+      prices,
       assetTypes,
       isLoading,
     }),
-    [assets, assetTypes, isLoading]
+    [assets, prices, assetTypes, isLoading]
   );
 
   return (

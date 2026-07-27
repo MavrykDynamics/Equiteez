@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { PriceAssetType } from "~/lib/apis/rwa/prices/prices.types";
 
 export type AssetsProviderProps = {
   children: ReactNode;
@@ -12,6 +13,7 @@ export type AssetTypeOption = {
 
 export type AssetsProviderContextType = {
   assets: AssetType[];
+  prices: PriceAssetType[];
   assetTypes: Record<string, AssetTypeOption>;
   isLoading: boolean;
 };
