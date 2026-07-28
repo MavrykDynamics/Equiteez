@@ -24,6 +24,8 @@ type FetchPriceSeriesParams = {
   interval?: string;
   currency?: string;
   limit?: number;
+  from?: string;
+  to?: string;
 };
 
 export const fetchPriceSeries = async ({
@@ -31,12 +33,17 @@ export const fetchPriceSeries = async ({
   interval = "1h",
   currency = "usd",
   limit = 1000,
+  from,
+  to,
 }: FetchPriceSeriesParams): Promise<AssetPriceSeriesType> => {
   const query = new URLSearchParams({
     interval,
     in: currency,
     limit: String(limit),
   });
+
+  if (from) query.set("from", from);
+  if (to) query.set("to", to);
 
   const { data } = await api(
     `${rwaPricesApiUrl}/${symbol}-usdt/series?${query.toString()}`,

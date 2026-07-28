@@ -14,13 +14,13 @@ type AssetDetailsProps = {
   asset: AssetType;
 };
 
-type ChartInterval = "15m" | "1h" | "4h" | "1d";
+type ChartRange = "1h" | "1d" | "1w" | "1m";
 
-const CHART_INTERVALS: Array<{ label: string; value: ChartInterval }> = [
-  { label: "15M", value: "15m" },
+const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
   { label: "1H", value: "1h" },
-  { label: "4H", value: "4h" },
   { label: "1D", value: "1d" },
+  { label: "1W", value: "1w" },
+  { label: "1M", value: "1m" },
 ];
 
 const Y_AXIS_TICKS_COUNT = 6;
@@ -69,8 +69,32 @@ function formatAxisPrice(value: number) {
   }).format(value);
 }
 
+function getChartRequestParams(range: ChartRange) {
+  const to = new Date();
+  const from = new Date(to);
+
+  switch (range) {
+    case "1h":
+      from.setUTCHours(from.getUTCHours() - 1);
+      return { from: from.toISOString(), interval: "1m", to: to.toISOString() };
+    case "1d":
+      from.setUTCDate(from.getUTCDate() - 1);
+      return {
+        from: from.toISOString(),
+        interval: "15m",
+        to: to.toISOString(),
+      };
+    case "1w":
+      from.setUTCDate(from.getUTCDate() - 7);
+      return { from: from.toISOString(), interval: "1h", to: to.toISOString() };
+    case "1m":
+      from.setUTCMonth(from.getUTCMonth() - 1);
+      return { from: from.toISOString(), interval: "1h", to: to.toISOString() };
+  }
+}
+
 export function PriceChart({ asset }: AssetDetailsProps) {
-  const [interval, setInterval] = useState<ChartInterval>("1h");
+  const [range, setRange] = useState<ChartRange>("1h");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,8 +106,10 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     setError(null);
     setPoints([]);
 
+    const chartRequestParams = getChartRequestParams(range);
+
     void fetchPriceSeries({
-      interval,
+      ...chartRequestParams,
       symbol: asset.metadata.symbol,
     })
       .then((series) => {
@@ -99,7 +125,7 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     return () => {
       isCurrentRequest = false;
     };
-  }, [asset.metadata.symbol, interval]);
+  }, [asset.metadata.symbol, range]);
 
   const yAxisLabels = useMemo(() => getYAxisLabels(points), [points]);
   const xAxisLabels = useMemo(() => getXAxisLabels(points), [points]);
@@ -112,13 +138,13 @@ export function PriceChart({ asset }: AssetDetailsProps) {
 
   return (
     <section className={styles.priceChart} aria-label="Price chart">
-      <div className={styles.chartControls} role="tablist" aria-label="Price interval">
-        {CHART_INTERVALS.map(({ label, value }) => (
+      <div className={styles.chartControls} role="tablist" aria-label="Price range">
+        {CHART_RANGES.map(({ label, value }) => (
           <button
-            aria-selected={interval === value}
+            aria-selected={range === value}
             className={styles.intervalButton}
             key={value}
-            onClick={() => setInterval(value)}
+            onClick={() => setRange(value)}
             role="tab"
             type="button"
           >
