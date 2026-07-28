@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { Spinner } from "~/lib/atoms/Spinner";
 import {
   AssetPriceChart,
+  type AssetPriceChartHover,
   type AssetPriceChartPoint,
 } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
 
@@ -69,6 +70,20 @@ function formatAxisPrice(value: number) {
   }).format(value);
 }
 
+function formatTooltipDate(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
+function formatTooltipPrice(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 4,
+    minimumFractionDigits: 4,
+  }).format(value);
+}
+
 function getChartRequestParams(range: ChartRange) {
   const to = new Date();
   const from = new Date(to);
@@ -98,6 +113,8 @@ export function PriceChart({ asset }: AssetDetailsProps) {
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredPoint, setHoveredPoint] =
+    useState<AssetPriceChartHover | null>(null);
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -105,6 +122,7 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     setIsLoading(true);
     setError(null);
     setPoints([]);
+    setHoveredPoint(null);
 
     const chartRequestParams = getChartRequestParams(range);
 
@@ -135,6 +153,10 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     !firstPoint || !lastPoint || getPrice(lastPoint) >= getPrice(firstPoint)
       ? "positive"
       : "negative";
+  const handleChartHover = useCallback(
+    (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
+    []
+  );
 
   return (
     <section className={styles.priceChart} aria-label="Price chart">
@@ -167,11 +189,31 @@ export function PriceChart({ asset }: AssetDetailsProps) {
         ) : (
           <>
             <div className={styles.chartWithYAxis}>
-              <AssetPriceChart
-                className={styles.chartCanvas}
-                points={points}
-                tone={tone}
-              />
+              <div className={styles.chartCanvas}>
+                <AssetPriceChart
+                  className={styles.chart}
+                  onHover={handleChartHover}
+                  points={points}
+                  tone={tone}
+                />
+                {hoveredPoint ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className={styles.chartCrosshair}
+                      style={{ left: hoveredPoint.x }}
+                    />
+                    <div
+                      className={styles.chartTooltip}
+                      style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
+                      role="status"
+                    >
+                      <strong>${formatTooltipPrice(hoveredPoint.value)}</strong>
+                      <span>{formatTooltipDate(hoveredPoint.time)}</span>
+                    </div>
+                  </>
+                ) : null}
+              </div>
               <div className={styles.yAxis} aria-hidden="true">
                 {yAxisLabels.map((value, index) => (
                   <span key={`${value}-${index}`}>{formatAxisPrice(value)}</span>

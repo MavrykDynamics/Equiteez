@@ -9,8 +9,16 @@ export type AssetPriceChartPoint = {
   usd: number;
 };
 
+export type AssetPriceChartHover = {
+  time: Date;
+  value: number;
+  x: number;
+  y: number;
+};
+
 type AssetPriceChartProps = {
   className?: string;
+  onHover?: (hover: AssetPriceChartHover | null) => void;
   points: AssetPriceChartPoint[];
   tone: "positive" | "negative";
 };
@@ -29,6 +37,7 @@ function getChartData(points: AssetPriceChartPoint[]) {
 
 export function AssetPriceChart({
   className,
+  onHover,
   points,
   tone,
 }: AssetPriceChartProps) {
@@ -90,7 +99,33 @@ export function AssetPriceChart({
         series.setData(getChartData(points));
         chart.timeScale().fitContent();
 
-        cleanup = () => chart.remove();
+        chart.subscribeCrosshairMove((params) => {
+          const chartPoint = params.point;
+          const seriesPoint = params.seriesData.get(series);
+
+          if (
+            !chartPoint ||
+            typeof params.time !== "number" ||
+            !seriesPoint ||
+            typeof seriesPoint !== "object" ||
+            !("value" in seriesPoint) ||
+            typeof seriesPoint.value !== "number"
+          ) {
+            onHover?.(null);
+            return;
+          }
+
+          onHover?.({
+            time: new Date(params.time * 1000),
+            value: seriesPoint.value,
+            x: chartPoint.x,
+            y: chartPoint.y,
+          });
+        });
+
+        cleanup = () => {
+          chart.remove();
+        };
       }
     );
 
@@ -98,7 +133,7 @@ export function AssetPriceChart({
       isUnmounted = true;
       cleanup();
     };
-  }, [points, tone]);
+  }, [onHover, points, tone]);
 
   return (
     <div className={`${styles.chart} ${className ?? ""}`} ref={containerRef} />
