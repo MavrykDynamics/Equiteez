@@ -1,0 +1,9 @@
+.contentBlock {
+  width: 100%;
+  display: flex;
+  gap: var(--r-space-5);
+  margin-bottom: var(--r-space-5);
+}
+.buySellContainer {
+  min-width: 428px;
+}

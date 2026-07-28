@@ -6,6 +6,7 @@ import { Container } from "~/lib/atoms/Container/Container";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetTabs } from "~/routes/trade.$address/components/AssetTabs/AssetTabs";
 import { ChartBlock } from "~/routes/trade.$address/components/ChartBlock/ChartBlock";
+import styles from "./styles.module.css";
 
 export default function TradePage() {
   const { address } = useParams();
@@ -20,8 +21,9 @@ export default function TradePage() {
     <PageLayout includeContainer={false}>
       <Container>
         <AssetDetails asset={asset} />
-        <div>
+        <div className={styles.contentBlock}>
           <ChartBlock />
+          <div className={styles.buySellContainer}></div>
         </div>
         <AssetTabs />
       </Container>

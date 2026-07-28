@@ -2,6 +2,7 @@
   padding: var(--r-space-4);
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--r-space-3);
   border-radius: var(--r-radius-md);
