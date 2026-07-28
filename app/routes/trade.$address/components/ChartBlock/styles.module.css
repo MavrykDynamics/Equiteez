@@ -7,11 +7,21 @@
   border-radius: var(--r-radius-md);
 }
 .orderbookWrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  height: 29px;
   min-width: 0;
+  overflow: hidden;
+  border-radius: var(--r-radius-xs);
+  background: linear-gradient(
+    to right,
+    rgb(34 165 91 / 25%) 0 var(--buy-percentage),
+    rgb(239 68 68 / 25%) var(--buy-percentage) 100%
+  );
+  font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
   line-height: var(--r-line-height-body-sm);
   letter-spacing: var(--r-letter-spacing-body);
@@ -19,6 +29,8 @@
 }
 
 .side {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--r-space-2);

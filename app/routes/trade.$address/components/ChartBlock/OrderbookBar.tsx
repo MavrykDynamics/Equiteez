@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import styles from "./styles.module.css";
 
 type OrderbookBarProps = {
@@ -5,24 +7,27 @@ type OrderbookBarProps = {
   sellPercentage: number;
 };
 
-const formatPercentage = (value: number) => {
-  const percentage = Number.isFinite(value)
-    ? Math.min(Math.max(value, 0), 100)
-    : 0;
+const normalizePercentage = (value: number) =>
+  Number.isFinite(value) ? Math.min(Math.max(value, 0), 100) : 0;
 
-  return `${percentage}%`;
-};
+const formatPercentage = (value: number) => `${normalizePercentage(value)}%`;
 
 export function OrderbookBar({
   buyPercentage,
   sellPercentage,
 }: OrderbookBarProps) {
-  const buyLabel = formatPercentage(buyPercentage);
+  const normalizedBuyPercentage = normalizePercentage(buyPercentage);
+  const buyLabel = formatPercentage(normalizedBuyPercentage);
   const sellLabel = formatPercentage(sellPercentage);
 
   return (
     <div
       className={styles.orderbookWrapper}
+      style={
+        {
+          "--buy-percentage": `${normalizedBuyPercentage}%`,
+        } as CSSProperties
+      }
       aria-label={`Order book: ${buyLabel} buy orders and ${sellLabel} sell orders`}
     >
       <div className={styles.side}>
