@@ -11,6 +11,20 @@ const PriceSeriesPointSchema = z.object({
   usd: z.number(),
 });
 
+const PrimaryIssuanceSchema = z.object({
+  launch_id: z.number(),
+  name: z.string(),
+  status: z.string(),
+  active: z.boolean(),
+  price: z.number(),
+  price_as_of: z.string(),
+  total_bought: z.string(),
+  max_amount_cap: z.string(),
+  progress_percent: z.number(),
+  sale_start: z.string(),
+  sale_end: z.string(),
+});
+
 export const PriceSeriesSchema = z.object({
   interval: z.string(),
   points: z.array(PriceSeriesPointSchema),
@@ -30,6 +44,7 @@ export const PriceAssetSchema = z.object({
   native_quote: z.string(),
   price: z.number().nullable(),
   price_as_of: z.string().nullable(),
+  primary_issuance: PrimaryIssuanceSchema.optional(),
   quote: z.string(),
   series_1d: PriceSeriesSchema,
   symbol: z.string(),
