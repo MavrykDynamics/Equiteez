@@ -11,7 +11,15 @@ const PriceSeriesPointSchema = z.object({
   usd: z.number(),
 });
 
-const PriceSeriesSchema = z.object({
+export const PriceSeriesSchema = z.object({
+  interval: z.string(),
+  points: z.array(PriceSeriesPointSchema),
+});
+
+export const AssetPriceSeriesSchema = z.object({
+  symbol: z.string(),
+  currency: z.string(),
+  kind: z.literal("series"),
   interval: z.string(),
   points: z.array(PriceSeriesPointSchema),
 });
