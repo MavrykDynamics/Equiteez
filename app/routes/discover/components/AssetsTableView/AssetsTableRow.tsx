@@ -1,6 +1,6 @@
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { Link } from "@remix-run/react";
+import { generatePath, Link } from "@remix-run/react";
 
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
@@ -8,6 +8,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetPriceChart } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
+import { ROUTES } from "~/consts";
 
 type AssetsTableRowProps = {
   asset: AssetType;
@@ -26,7 +27,11 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
   const isNegative = priceChange?.percentage < 0;
 
   return (
-    <Link className={styles.row} role="row" to="/">
+    <Link
+      className={styles.row}
+      role="row"
+      to={generatePath(ROUTES.trade, { address: asset.address })}
+    >
       <div className={styles.cell} role="cell">
         <div className={styles.assetContent}>
           <RText className={styles.assetSymbol} size="body-sm" weight="medium">

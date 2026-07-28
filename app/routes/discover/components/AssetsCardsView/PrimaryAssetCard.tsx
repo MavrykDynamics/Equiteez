@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { generatePath, Link } from "@remix-run/react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
@@ -8,6 +8,7 @@ import { AssetSaleProgress } from "./AssetSaleProgress";
 import styles from "./styles.module.css";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
+import { ROUTES } from "~/consts";
 
 type PrimaryAssetCardProps = {
   asset: AssetType;
@@ -15,7 +16,10 @@ type PrimaryAssetCardProps = {
 
 export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
   return (
-    <Link className={styles.primaryAssetCard} to="/">
+    <Link
+      className={styles.primaryAssetCard}
+      to={generatePath(ROUTES.trade, { address: asset.address })}
+    >
       <div className={styles.cardHeader}>
         <AssetBadge asset={asset} />
 

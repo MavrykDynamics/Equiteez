@@ -14,4 +14,7 @@ export const ROUTES = {
   home: "/",
 
   admin: "/admin",
+
+  discover: "/discover",
+  trade: "/trade/:address",
 };
