@@ -7,6 +7,107 @@
   gap: var(--r-space-3);
   border-radius: var(--r-radius-md);
 }
+
+.priceChart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+.chartControls {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: var(--r-radius-pill);
+  background-color: var(--r-color-neutral-white);
+}
+
+.intervalButton {
+  min-width: 44px;
+  padding: var(--r-space-2) var(--r-space-4);
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  background-color: transparent;
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-xs);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-xs);
+  cursor: pointer;
+  transition: background-color var(--r-transition-duration-fast);
+}
+
+.intervalButton[aria-selected="true"] {
+  background-color: var(--r-color-neutral-100);
+}
+
+.intervalButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.chartFrame {
+  min-height: 434px;
+}
+
+.chartWithYAxis {
+  display: flex;
+  align-items: stretch;
+  gap: var(--r-space-3);
+  height: 395px;
+}
+
+.chartCanvas {
+  flex: 1;
+  min-width: 0;
+  height: 395px;
+}
+
+.yAxis {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 31px;
+  color: var(--r-color-neutral-600);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-xs);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-xs);
+  text-align: end;
+}
+
+.xAxis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--r-space-2);
+  margin-right: 43px;
+  padding: var(--r-space-2) var(--r-space-2) 0 0;
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  color: var(--r-color-neutral-600);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-xs);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-xs);
+  text-align: center;
+}
+
+.chartState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 395px;
+  margin: 0;
+  color: var(--r-color-neutral-600);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
 .orderbookWrapper {
   position: relative;
   display: flex;

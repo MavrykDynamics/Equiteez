@@ -22,7 +22,7 @@ export default function TradePage() {
       <Container>
         <AssetDetails asset={asset} />
         <div className={styles.contentBlock}>
-          <ChartBlock />
+          <ChartBlock asset={asset} />
           <div className={styles.buySellContainer}></div>
         </div>
         <AssetTabs />
