@@ -32,7 +32,7 @@ export function RHeading({
       className={clsx(
         styles.heading,
         styles[size],
-        styles[`weight${weight}`],
+        styles[weight],
         styles[color],
         className
       )}

@@ -25,7 +25,7 @@ export default function TradePage() {
           <ChartBlock asset={asset} />
           <div className={styles.buySellContainer}></div>
         </div>
-        <AssetTabs />
+        <AssetTabs asset={asset} />
       </Container>
     </PageLayout>
   );
