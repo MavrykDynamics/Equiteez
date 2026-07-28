@@ -1,8 +1,10 @@
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 import styles from "./styles.module.css";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 type AssetSaleProgressProps = {
   asset: AssetType;
@@ -15,17 +17,14 @@ function getNumericValue(value: string) {
 }
 
 export function AssetSaleProgress({ asset }: AssetSaleProgressProps) {
-  const totalTokens = getNumericValue(
-    asset.finance.max_supply || asset.total_supply
-  );
-  const soldTokens = asset.contracts.reduce(
-    (total, contract) => total + getNumericValue(contract.tokens_sold),
-    0
-  );
+  const { prices } = useAssetsContext();
+  const primaryIssuance = prices[asset.address]?.primary_issuance;
+  const totalTokens = getNumericValue(primaryIssuance?.max_amount_cap ?? "0");
+  const soldTokens = getNumericValue(primaryIssuance?.total_bought ?? "0");
   const tokensLeft = Math.max(totalTokens - soldTokens, 0);
-  const soldPercentage = totalTokens
-    ? Math.min((soldTokens / totalTokens) * 100, 100)
-    : 0;
+  const soldPercentage = Math.min(primaryIssuance?.progress_percent ?? 0, 100);
+  const soldPercentageLabel =
+    soldPercentage > 0 && soldPercentage < 1 ? "<1" : soldPercentage.toFixed(0);
   const isSoldOut = totalTokens > 0 && tokensLeft === 0;
 
   return (
@@ -36,12 +35,12 @@ export function AssetSaleProgress({ asset }: AssetSaleProgressProps) {
         </RText>
         <RText size="body-s" weight="medium">
           <Money fiat tooltip={false}>
-            {tokensLeft}
+            {atomsToTokens(tokensLeft, asset.metadata.decimals)}
           </Money>
         </RText>
       </div>
       <div
-        aria-label={`${soldPercentage.toFixed(0)}% sold`}
+        aria-label={soldPercentageLabel}
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={soldPercentage}
@@ -56,10 +55,13 @@ export function AssetSaleProgress({ asset }: AssetSaleProgressProps) {
       </div>
       <div className={styles.saleProgressFooter}>
         <RText color="neutral-600" size="body-s">
-          <Money tooltip={false}>{soldPercentage}</Money>% sold
+          {soldPercentageLabel}% sold
         </RText>
         <RText color="neutral-600" size="body-s">
-          <Money tooltip={false}>{totalTokens}</Money> total
+          <Money tooltip={false} fiat>
+            {atomsToTokens(totalTokens, asset.metadata.decimals)}
+          </Money>{" "}
+          total
         </RText>
       </div>
     </div>
