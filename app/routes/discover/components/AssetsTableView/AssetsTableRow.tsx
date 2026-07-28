@@ -9,6 +9,7 @@ import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetPriceChart } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
 import { ROUTES } from "~/consts";
+import { AssetSaleProgress } from "~/routes/discover/components/AssetsCardsView/AssetSaleProgress";
 
 type AssetsTableRowProps = {
   asset: AssetType;
@@ -106,7 +107,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
         role="cell"
       >
         {asset.profile.lifecycle === "primary_issuance" ? (
-          ""
+          <AssetSaleProgress asset={asset} isSecondaryView />
         ) : (
           <AssetPriceChart
             className={styles.secondaryChart}

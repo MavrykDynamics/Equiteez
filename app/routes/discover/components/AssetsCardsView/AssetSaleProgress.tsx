@@ -8,6 +8,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 
 type AssetSaleProgressProps = {
   asset: AssetType;
+  isSecondaryView: boolean;
 };
 
 function getNumericValue(value: string) {
@@ -16,7 +17,10 @@ function getNumericValue(value: string) {
   return Number.isFinite(numericValue) ? numericValue : 0;
 }
 
-export function AssetSaleProgress({ asset }: AssetSaleProgressProps) {
+export function AssetSaleProgress({
+  asset,
+  isSecondaryView = false,
+}: AssetSaleProgressProps) {
   const { prices } = useAssetsContext();
   const primaryIssuance = prices[asset.address]?.primary_issuance;
   const totalTokens = getNumericValue(primaryIssuance?.max_amount_cap ?? "0");
@@ -29,16 +33,18 @@ export function AssetSaleProgress({ asset }: AssetSaleProgressProps) {
 
   return (
     <div className={styles.saleProgress}>
-      <div className={styles.saleProgressHeader}>
-        <RText color="neutral-600" size="body-s">
-          Tokens Left
-        </RText>
-        <RText size="body-s" weight="medium">
-          <Money fiat tooltip={false}>
-            {atomsToTokens(tokensLeft, asset.metadata.decimals)}
-          </Money>
-        </RText>
-      </div>
+      {isSecondaryView ? null : (
+        <div className={styles.saleProgressHeader}>
+          <RText color="neutral-600" size="body-s">
+            Tokens Left
+          </RText>
+          <RText size="body-s" weight="medium">
+            <Money fiat tooltip={false}>
+              {atomsToTokens(tokensLeft, asset.metadata.decimals)}
+            </Money>
+          </RText>
+        </div>
+      )}
       <div
         aria-label={soldPercentageLabel}
         aria-valuemax={100}

@@ -88,6 +88,8 @@
 }
 
 .chartCell {
+  display: flex;
+  align-items: center;
   padding: var(--r-space-2) var(--r-space-3);
 }
 
@@ -112,12 +114,9 @@
   color: var(--r-color-neutral-400);
 }
 .secondaryChart {
-  width: calc(100% + (var(--r-space-5) * 2) + var(--r-border-width-sm));
   height: 38px;
   margin-top: 0;
-  margin-right: calc((var(--r-space-5) + var(--r-border-width-sm)) * -1);
   margin-bottom: 0;
-  margin-left: calc(var(--r-space-5) * -1);
   overflow: hidden;
 }
 .positiveChange {
