@@ -119,7 +119,7 @@ export function AssetPriceChart({
             time: new Date(params.time * 1000),
             value: seriesPoint.value,
             x: chartPoint.x,
-            y: chartPoint.y,
+            y: series.priceToCoordinate(seriesPoint.value) ?? chartPoint.y,
           });
         });
 

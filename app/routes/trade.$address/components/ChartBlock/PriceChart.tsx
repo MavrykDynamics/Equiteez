@@ -203,12 +203,32 @@ export function PriceChart({ asset }: AssetDetailsProps) {
                       className={styles.chartCrosshair}
                       style={{ left: hoveredPoint.x }}
                     />
+                    <span
+                      aria-hidden="true"
+                      className={`${styles.chartPoint} ${
+                        tone === "positive"
+                          ? styles.positiveChartPoint
+                          : styles.negativeChartPoint
+                      }`}
+                      style={{
+                        left: hoveredPoint.x,
+                        top: hoveredPoint.y,
+                      }}
+                    />
                     <div
                       className={styles.chartTooltip}
                       style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
                       role="status"
                     >
-                      <strong>${formatTooltipPrice(hoveredPoint.value)}</strong>
+                      <strong
+                        className={
+                          tone === "positive"
+                            ? styles.positiveTooltipValue
+                            : styles.negativeTooltipValue
+                        }
+                      >
+                        ${formatTooltipPrice(hoveredPoint.value)}
+                      </strong>
                       <span>{formatTooltipDate(hoveredPoint.time)}</span>
                     </div>
                   </>

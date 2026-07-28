@@ -101,13 +101,40 @@
   pointer-events: none;
 }
 
+.chartPoint {
+  position: absolute;
+  z-index: 2;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--r-color-neutral-white);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.positiveChartPoint {
+  background-color: var(--r-color-green-500);
+}
+
+.negativeChartPoint {
+  background-color: var(--r-color-red-500);
+}
+
 .chartTooltip strong {
   width: 100%;
-  color: var(--r-color-green-500);
   font-size: var(--r-font-size-body-s);
   font-weight: var(--r-font-weight-medium);
   line-height: var(--r-line-height-body-s);
   text-align: center;
+}
+
+.positiveTooltipValue {
+  color: var(--r-color-green-500);
+}
+
+.negativeTooltipValue {
+  color: var(--r-color-red-500);
 }
 
 .yAxis {
