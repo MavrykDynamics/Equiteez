@@ -8,7 +8,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 
 type AssetSaleProgressProps = {
   asset: AssetType;
-  isSecondaryView: boolean;
+  isSecondaryView?: boolean;
 };
 
 function getNumericValue(value: string) {
@@ -64,7 +64,7 @@ export function AssetSaleProgress({
           {soldPercentageLabel}% sold
         </RText>
         <RText color="neutral-600" size="body-s">
-          <Money tooltip={false} fiat>
+          <Money tooltip={false}>
             {atomsToTokens(totalTokens, asset.metadata.decimals)}
           </Money>{" "}
           total

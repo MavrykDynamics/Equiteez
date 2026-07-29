@@ -9,12 +9,15 @@ import styles from "./styles.module.css";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
 import { ROUTES } from "~/consts";
+import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 
 type PrimaryAssetCardProps = {
   asset: AssetType;
 };
 
 export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
+  const { price } = useAssetPrice(asset);
+
   return (
     <Link
       className={styles.primaryAssetCard}
@@ -36,7 +39,7 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
         <RText className={styles.price} weight="medium">
           $
           <Money fiat tooltip={false}>
-            {asset.finance.value_per_token}
+            {price}
           </Money>
         </RText>
         <div className={styles.priceDescription}>
@@ -54,12 +57,13 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
         <AssetSaleProgress asset={asset} />
       </div>
 
+      {/*TODO remove mock data*/}
       <div className={styles.projectedYield}>
         <RText color="neutral-600" size="body-s">
           Projected Yield
         </RText>
         <RText size="body-s" weight="medium">
-          <Money tooltip={false}>{asset.apy}</Money>%
+          <Money tooltip={false}>4.78</Money>%
         </RText>
       </div>
     </Link>

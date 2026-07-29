@@ -10,23 +10,16 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetPriceChart } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
 import { ROUTES } from "~/consts";
 import { AssetSaleProgress } from "~/routes/discover/components/AssetsCardsView/AssetSaleProgress";
+import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
+import { atomsToTokens } from "~/lib/utils/formaters";
 
 type AssetsTableRowProps = {
   asset: AssetType;
 };
 
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
-  const { prices } = useAssetsContext();
-
-  const assetPrices = prices[asset.address] ?? {};
-  const points = assetPrices.series_1d?.points || [];
-
-  const priceChange = {
-    amount: assetPrices.change_24h?.delta_abs ?? 0,
-    percentage: assetPrices.change_24h?.change_pct ?? 0,
-  };
-  const isNegative = priceChange?.percentage < 0;
-
+  const { assetPrices, priceChange, isNegative, price, points } = useAssetPrice(asset);
+  
   return (
     <Link
       className={styles.row}
@@ -52,13 +45,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          $
-          <Money>
-            {assetPrices.usd ??
-              assetPrices.price ??
-              asset.stats?.price.usd ??
-              asset.finance.value_per_token}
-          </Money>
+          $<Money fiat>{price}</Money>
         </RText>
       </div>
       <div className={styles.cell} role="cell">
@@ -79,9 +66,14 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
                 size="body-s"
               >
                 {"$"}
-                <Money tooltip={false}>{priceChange.amount}</Money>
+                <Money tooltip={false} fiat>
+                  {priceChange.amount}
+                </Money>
                 {" ("}
-                <Money tooltip={false}>{priceChange.percentage}</Money>%)
+                <Money tooltip={false} fiat>
+                  {priceChange.percentage}
+                </Money>
+                %)
               </RText>
             </span>
           ) : (
@@ -91,14 +83,23 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
           )}
         </div>
       </div>
+      {/*TODO remove mock data*/}
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          <Money>{asset.apy}</Money>%
+          <Money>4.78</Money>%
         </RText>
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          $<Money>{asset.stats?.market_cap.usd ?? 0}</Money>
+          $
+          <Money>
+            {(atomsToTokens(
+              assetPrices.primary_issuance?.max_amount_cap ?? 0,
+              asset.metadata.decimals
+            ) ||
+              asset.stats?.market_cap.usd) ??
+              0}
+          </Money>
         </RText>
       </div>
       <div

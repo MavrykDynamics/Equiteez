@@ -1,0 +1,44 @@
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-8);
+}
+
+.details section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--r-space-8);
+  row-gap: var(--r-space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-3);
+  min-width: 0;
+}
+
+.iconWrap {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: var(--r-radius-sm);
+  background-color: var(--r-surface-accent-green-subtle);
+  color: var(--r-color-accent-green-500);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}

@@ -8,21 +8,11 @@ import styles from "./styles.module.css";
 import { AssetPriceChart } from "../AssetPriceChart/AssetPriceChart";
 import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
 import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { ROUTES } from "~/consts";
+import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 
 export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
-  const { prices } = useAssetsContext();
-
-  const assetPrices = prices[asset.address] ?? {};
-  const points = assetPrices.series_1d?.points || [];
-
-  const priceChange = {
-    amount: assetPrices.change_24h?.delta_abs ?? 0,
-    percentage: assetPrices.change_24h?.change_pct ?? 0,
-  };
-  const isNegative = priceChange?.percentage < 0;
-
+  const { price, priceChange, isNegative, points } = useAssetPrice(asset);
   return (
     <Link
       className={styles.secondaryAssetCard}
@@ -43,10 +33,7 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
         <RText className={styles.price} weight="medium">
           $
           <Money fiat tooltip={false}>
-            {assetPrices.usd ??
-              assetPrices.price ??
-              asset.stats?.price.usd ??
-              asset.finance.value_per_token}
+            {price}
           </Money>
         </RText>
         <div className={styles.priceChange}>
@@ -66,9 +53,14 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
                 size="body-s"
               >
                 {"$"}
-                <Money tooltip={false}>{priceChange.amount}</Money>
+                <Money tooltip={false} fiat>
+                  {priceChange.amount}
+                </Money>
                 {" ("}
-                <Money tooltip={false}>{priceChange.percentage}</Money>%)
+                <Money tooltip={false} fiat>
+                  {priceChange.percentage}
+                </Money>
+                %)
               </RText>
             </span>
           ) : (
@@ -88,12 +80,13 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
         tone={isNegative ? "negative" : "positive"}
       />
 
+      {/*TODO remove mock data*/}
       <div className={styles.projectedYield}>
         <RText color="neutral-600" size="body-s">
           Net yield
         </RText>
         <RText size="body-s" weight="medium">
-          <Money tooltip={false}>{asset.apy}</Money>%
+          <Money tooltip={false}>4.78</Money>%
         </RText>
       </div>
     </Link>

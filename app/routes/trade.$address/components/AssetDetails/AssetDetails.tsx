@@ -14,6 +14,8 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 import styles from "./styles.module.css";
 import { ROUTES } from "~/consts";
+import { atomsToTokens } from "~/lib/utils/formaters";
+import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 
 type AssetDetailsProps = {
   asset: AssetType;
@@ -21,15 +23,15 @@ type AssetDetailsProps = {
 
 export function AssetDetails({ asset }: AssetDetailsProps) {
   const navigate = useNavigate();
-  const { assets, assetTypes, prices } = useAssetsContext();
-
-  const assetPrices = prices[asset.address] ?? {};
-
-  const priceChange = {
-    amount: assetPrices.change_24h?.delta_abs ?? 0,
-    percentage: assetPrices.change_24h?.change_pct ?? 0,
-  };
-  const isNegative = priceChange?.percentage < 0;
+  const { assets, assetTypes } = useAssetsContext();
+  const {
+    price,
+    assetPrices,
+    priceChange,
+    highPrice24h,
+    lowPrice24H,
+    isNegative,
+  } = useAssetPrice(asset);
 
   const handleAssetSelect = (address: string) => {
     if (address !== asset.address) {
@@ -72,7 +74,6 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
           </RDropdownBodyContent>
         </RCustomDropdown>
       </div>
-
       <DetailItem
         label="Asset class"
         value={
@@ -86,10 +87,7 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
           <>
             $
             <Money fiat tooltip={false}>
-              {assetPrices.usd ??
-                assetPrices.price ??
-                asset.stats?.price.usd ??
-                asset.finance.value_per_token}
+              {price}
             </Money>
           </>
         }
@@ -97,24 +95,27 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
       <DetailItem
         label="24h Change"
         value={
-          <RText
-            size="body-sm"
-            weight="medium"
-            color={isNegative ? "red-500" : "green-500"}
-          >
-            {isNegative ? "-" : "+"}
-            <Money>{priceChange.percentage ?? 0}</Money>%
-          </RText>
+          priceChange.percentage ? (
+            <RText
+              size="body-sm"
+              weight="medium"
+              color={isNegative ? "red-500" : "green-500"}
+            >
+              {isNegative ? "-" : "+"}
+              <Money fiat>{priceChange.percentage ?? 0}</Money>%
+            </RText>
+          ) : (
+            "--"
+          )
         }
       />
-
       <DetailItem
         label="24h High"
         value={
           <>
             $
             <Money fiat tooltip={false}>
-              {asset.finance.value_per_token}
+              {highPrice24h}
             </Money>
           </>
         }
@@ -125,30 +126,32 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
           <>
             $
             <Money fiat tooltip={false}>
-              {asset.finance.value_per_token}
+              {lowPrice24H}
             </Money>
           </>
         }
       />
+      {/*TODO remove mock data*/}
       <DetailItem
         label="24h Volume"
         value={
           <>
-            $
-            <Money fiat tooltip={false}>
-              {asset.finance.value_per_token}
-            </Money>
+            ${/*<Money fiat tooltip={false}>*/}
+            {/*  {126.4K}*/}
+            {/*</Money>*/}
+            126.4K
           </>
         }
       />
+      {/*TODO remove mock data*/}
       <DetailItem
         label="Net Yield"
         value={
           <>
-            $
             <Money fiat tooltip={false}>
-              {asset.finance.value_per_token}
+              4.78
             </Money>
+            %
           </>
         }
       />
@@ -156,7 +159,15 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
         label="Market Cap"
         value={
           <>
-            <Money tooltip={false}>{asset.apy}</Money>%
+            $
+            <Money shortened tooltip={false}>
+              {(atomsToTokens(
+                assetPrices.primary_issuance?.max_amount_cap ?? 0,
+                asset.metadata.decimals
+              ) ||
+                asset.stats?.market_cap.usd) ??
+                0}
+            </Money>
           </>
         }
       />
