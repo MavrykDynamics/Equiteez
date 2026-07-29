@@ -12,6 +12,7 @@ import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { PriceAssetType } from "~/lib/apis/rwa/prices/prices.types";
 import { getAssetTypeLabelsFromAssets } from "~/providers/AssetsProvider/helpers/formatAssetTypeLabel";
 import { mapPricesByTokenAddress } from "~/providers/AssetsProvider/helpers/mapPricesByTokenAddress";
+import { metadata } from "framer-motion/m";
 
 const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 
@@ -41,7 +42,13 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
       return;
     }
 
-    const nextAssets = assetsQuery.data.items;
+    const nextAssets = assetsQuery.data.items.map((item) => ({
+      ...item,
+      metadata: {
+        ...item.metadata,
+        name: item.metadata.name.replace("RWA", "").replace("Token", ""),
+      },
+    }));
     const nextAssetTypes = getAssetTypeLabelsFromAssets(nextAssets);
 
     setAssets(nextAssets);
