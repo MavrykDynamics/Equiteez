@@ -1,0 +1,59 @@
+.details {
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-6);
+  padding: var(--r-space-3) 0;
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+.row:last-child {
+  border-bottom: none;
+}
+
+.value {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+  text-align: right;
+}
+
+.address {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-2);
+  max-width: 100%;
+  padding: var(--r-space-1) var(--r-space-3);
+  border: 0;
+  max-height: 29px;
+  border-radius: var(--r-radius-pill);
+  background-color: var(--r-color-neutral-50);
+  color: var(--r-color-neutral-black);
+  cursor: pointer;
+}
+
+.address:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.copyIcon {
+  flex: 0 0 auto;
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+}
+
+.audit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+}
+
+.checkIcon {
+  width: 14px;
+  height: 14px;
+  color: var(--r-color-green-600);
+}

@@ -3,6 +3,7 @@ import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
 import { useMemo, useState } from "react";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { AssetOverviewTab } from "~/routes/trade.$address/components/AssetTabs/AssetOverviewTab/AssetOverviewTab";
+import { BlockchainTab } from "~/routes/trade.$address/components/AssetTabs/BlockchainTab/BlockchainTab";
 import { DetailsTab } from "~/routes/trade.$address/components/AssetTabs/DetailsTab/DetailsTab";
 const orders_tabs = [
   {
@@ -43,7 +44,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
       asset_overview: <AssetOverviewTab asset={asset} />,
       details: <DetailsTab />,
       ROI_calculator: <div>ROI_calculator</div>,
-      blockchain: <div>blockchain</div>,
+      blockchain: <BlockchainTab asset={asset} />,
     }),
     [asset]
   );
