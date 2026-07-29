@@ -33,10 +33,12 @@
 .label,
 .value {
   display: block;
+  text-wrap: nowrap;
 }
 
 .assetDropdown {
   width: 100%;
+  padding-left: var(--r-space-2);
 }
 
 .assetDropdownTrigger {
