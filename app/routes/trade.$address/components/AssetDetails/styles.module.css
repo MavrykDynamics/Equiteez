@@ -3,7 +3,7 @@
 .details {
   margin: var(--r-space-10) 0 var(--r-space-5) 0;
   display: grid;
-  grid-template-columns: 160px repeat(8, minmax(0, 1fr));
+  grid-template-columns: 186px repeat(8, minmax(0, 1fr));
   overflow: visible;
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-md);
@@ -19,7 +19,6 @@
 }
 .assetDropdownWrapper {
   border-right: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  padding-right: var(--r-space-4);
 }
 
 .detailItem {
@@ -34,39 +33,6 @@
 .value {
   display: block;
   text-wrap: nowrap;
-}
-
-.assetDropdown {
-  width: 100%;
-  padding-left: var(--r-space-2);
-}
-
-.assetDropdownTrigger {
-  min-height: auto;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-}
-
-.assetDropdownTrigger:hover:not(:disabled) {
-  border: 0;
-}
-
-.assetDropdownMenu {
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.assetDropdownItem {
-  min-height: var(--r-size-control-medium);
-}
-
-.assetIdentity {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: flex-start;
 }
 
 @media (--media-tablet-min) {

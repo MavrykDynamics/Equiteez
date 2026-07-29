@@ -1,19 +1,12 @@
-import { generatePath, useNavigate } from "@remix-run/react";
 import type { ReactNode } from "react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import {
-  RCustomDropdown,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-  RDropdownFaceContent,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
+import { AssetDropdown } from "./AssetDropdown";
 import styles from "./styles.module.css";
-import { ROUTES } from "~/consts";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 
@@ -22,8 +15,7 @@ type AssetDetailsProps = {
 };
 
 export function AssetDetails({ asset }: AssetDetailsProps) {
-  const navigate = useNavigate();
-  const { assets, assetTypes } = useAssetsContext();
+  const { assetTypes } = useAssetsContext();
   const {
     price,
     assetPrices,
@@ -33,46 +25,10 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
     isNegative,
   } = useAssetPrice(asset);
 
-  const handleAssetSelect = (address: string) => {
-    if (address !== asset.address) {
-      navigate(generatePath(ROUTES.trade, { address }));
-    }
-  };
-
   return (
     <section aria-label="Asset details" className={styles.details}>
       <div className={styles.assetDropdownWrapper}>
-        <RCustomDropdown className={styles.assetDropdown}>
-          <RDropdownFaceContent className={styles.assetDropdownTrigger}>
-            <span className={styles.assetIdentity}>
-              <RText size="body-sm" weight="medium">
-                {asset.metadata.name}
-              </RText>
-              <RText color="neutral-600" size="body-s">
-                {asset.metadata.symbol}
-              </RText>
-            </span>
-          </RDropdownFaceContent>
-          <RDropdownBodyContent className={styles.assetDropdownMenu}>
-            {assets.map((item) => (
-              <RDropdownBodyContentItem
-                className={styles.assetDropdownItem}
-                isSelected={item.address === asset.address}
-                key={item.address}
-                onClick={() => handleAssetSelect(item.address)}
-              >
-                <span className={styles.assetIdentity}>
-                  <RText size="body-sm" weight="medium">
-                    {item.metadata.name}
-                  </RText>
-                  <RText color="neutral-600" size="body-s">
-                    {item.metadata.symbol}
-                  </RText>
-                </span>
-              </RDropdownBodyContentItem>
-            ))}
-          </RDropdownBodyContent>
-        </RCustomDropdown>
+        <AssetDropdown asset={asset} />
       </div>
       <DetailItem
         label="Asset class"
