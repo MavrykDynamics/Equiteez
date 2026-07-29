@@ -423,12 +423,53 @@ const SliderControl: FC<{
 }> = ({ formatLabel, label, max, min, onChange, step, value }) => {
   const progress = getSliderProgress(value, min, max);
   const sliderStyle = { "--slider-progress": `${progress}%` } as CSSProperties;
+  const [inputValue, setInputValue] = useState(() => formatLabel(value));
+  const [isEditingValue, setIsEditingValue] = useState(false);
+
+  useEffect(() => {
+    if (!isEditingValue) {
+      setInputValue(formatLabel(value));
+    }
+  }, [formatLabel, isEditingValue, value]);
+
+  const handleValueCommit = () => {
+    const parsedValue = Number(inputValue.replace(/[^\d.]/g, ""));
+
+    if (Number.isFinite(parsedValue)) {
+      onChange(clampValue(parsedValue, min, max));
+    }
+
+    setIsEditingValue(false);
+  };
 
   return (
     <div className={styles.sliderControl}>
       <div className={styles.sliderHeader}>
         <RText size="body-sm">{label}</RText>
-        <output className={styles.sliderValue}>{formatLabel(value)}</output>
+        <input
+          aria-label={label}
+          className={styles.sliderValue}
+          inputMode="decimal"
+          onBlur={handleValueCommit}
+          onChange={(event) => setInputValue(event.target.value)}
+          onFocus={() => {
+            setIsEditingValue(true);
+            setInputValue(String(value));
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.currentTarget.blur();
+            }
+
+            if (event.key === "Escape") {
+              setInputValue(formatLabel(value));
+              setIsEditingValue(false);
+              event.currentTarget.blur();
+            }
+          }}
+          type="text"
+          value={inputValue}
+        />
       </div>
 
       <input
