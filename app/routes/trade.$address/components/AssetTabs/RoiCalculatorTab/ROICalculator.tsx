@@ -39,6 +39,7 @@ const moneyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+// TODO remove mock data. Need real ROICalculatorData
 export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
   const { IS_WEB } = useAppContext();
   const {
