@@ -22,8 +22,8 @@ export function useAssetPrice(asset: AssetType) {
     asset.stats?.price.usd ??
     asset.finance.value_per_token;
 
-  const highPrice24h = pointValues.length ? Math.max(...pointValues) : 0;
-  const lowPrice24H = pointValues.length ? Math.min(...pointValues) : 0;
+  const highPrice24h = pointValues.length ? Math.max(...pointValues) : price;
+  const lowPrice24H = pointValues.length ? Math.min(...pointValues) : price;
   const isNegative = priceChange?.percentage < 0;
 
   return {
