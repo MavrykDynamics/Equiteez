@@ -5,6 +5,7 @@ import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { AssetOverviewTab } from "~/routes/trade.$address/components/AssetTabs/AssetOverviewTab/AssetOverviewTab";
 import { BlockchainTab } from "~/routes/trade.$address/components/AssetTabs/BlockchainTab/BlockchainTab";
 import { DetailsTab } from "~/routes/trade.$address/components/AssetTabs/DetailsTab/DetailsTab";
+import { ROICalculator } from "~/routes/trade.$address/components/AssetTabs/RoiCalculatorTab/ROICalculator";
 const orders_tabs = [
   {
     id: "open_orders",
@@ -43,7 +44,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
       order_history: <div>order_history</div>,
       asset_overview: <AssetOverviewTab asset={asset} />,
       details: <DetailsTab />,
-      ROI_calculator: <div>ROI_calculator</div>,
+      ROI_calculator: <ROICalculator />,
       blockchain: <BlockchainTab asset={asset} />,
     }),
     [asset]
@@ -69,7 +70,9 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
           tabs={tabs}
         />
       </div>
-      <div className={styles.content}>{content[activeTab] ?? <div>No active tab</div>}</div>
+      <div className={styles.content}>
+        {content[activeTab] ?? <div>No active tab</div>}
+      </div>
     </div>
   );
 }
