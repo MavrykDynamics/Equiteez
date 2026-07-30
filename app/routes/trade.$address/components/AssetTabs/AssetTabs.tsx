@@ -8,6 +8,7 @@ import { AssetOverviewTab } from "~/routes/trade.$address/components/AssetTabs/A
 import { BlockchainTab } from "~/routes/trade.$address/components/AssetTabs/BlockchainTab/BlockchainTab";
 import { DetailsTab } from "~/routes/trade.$address/components/AssetTabs/DetailsTab/DetailsTab";
 import { ROICalculator } from "~/routes/trade.$address/components/AssetTabs/RoiCalculatorTab/ROICalculator";
+import { OpenOrdersTab } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersTab";
 
 type AssetTabId =
   | "open_orders"
@@ -47,11 +48,11 @@ const tabs: RTabSwitcherItem[] = [
 ];
 
 export function AssetTabs({ asset }: { asset: AssetType }) {
-  const [activeTab, setActiveTab] = useState<AssetTabId>("asset_overview");
+  const [activeTab, setActiveTab] = useState<AssetTabId>("open_orders");
 
   const content = useMemo(
     (): Record<AssetTabId, ReactNode> => ({
-      open_orders: <div>open_orders</div>,
+      open_orders: <OpenOrdersTab asset={asset} />,
       order_history: <div>order_history</div>,
       asset_overview: <AssetOverviewTab asset={asset} />,
       details: <DetailsTab />,
