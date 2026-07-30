@@ -57,7 +57,7 @@ export const ConnectWallet = () => {
           variant="secondary"
         >
           <RText size="body-s" weight="medium">
-            Connect wallet
+            Connect Wallet
           </RText>
         </RButton>
       )}
