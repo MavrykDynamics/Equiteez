@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 // consts
 import { DEFAULT_USER, DEFAULT_USER_TZKT_TOKENS } from "./helpers/user.consts";
@@ -18,6 +24,8 @@ import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
 import { USER_KYC_STATUS_QUERY } from "./queries/user.query";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { AUTH_EXPIRED_EVENT } from "~/providers/AuthProvider/helpers/auth.events";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -74,6 +82,22 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
     setTzktSocket,
   });
+  const { logout, login, isAuthenticated, isAuthLoading } = useAuthContext();
+
+  const switchAccount = useCallback(async () => {
+    await changeUser();
+    await login();
+  }, [changeUser, login]);
+
+  const connectAndLogin = useCallback(async () => {
+    await connect();
+    await login();
+  }, [connect, login]);
+
+  const disconnectAndLogout = useCallback(async () => {
+    await signOut();
+    await logout();
+  }, [logout, signOut]);
 
   // Listening for active account changes with beacon
   useEffect(() => {
@@ -135,6 +159,27 @@ export const UserProvider = ({ children }: Props) => {
     }
   }, [account?.address, refetch]);
 
+  useEffect(() => {
+    if (!IS_WEB) return;
+
+    const onAuthExpired = () => {
+      void signOut();
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+    };
+  }, [IS_WEB, signOut]);
+
+  useEffect(() => {
+    if (!IS_WEB || isAuthLoading || isAuthenticated) return;
+    if (!account?.address) return;
+
+    void signOut();
+  }, [IS_WEB, account?.address, isAuthenticated, isAuthLoading, signOut]);
+
   const providerValue = useMemo(() => {
     const isLoading =
       isUserLoading || tzktBalancesLoading || isUserStatusLoading;
@@ -148,9 +193,9 @@ export const UserProvider = ({ children }: Props) => {
           : {}),
       },
       isLoading,
-      connect,
-      signOut,
-      changeUser,
+      connect: connectAndLogin,
+      signOut: disconnectAndLogout,
+      changeUser: switchAccount,
     };
   }, [
     isUserLoading,
@@ -159,9 +204,9 @@ export const UserProvider = ({ children }: Props) => {
     userCtxState,
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
-    connect,
-    signOut,
-    changeUser,
+    connectAndLogin,
+    disconnectAndLogout,
+    switchAccount,
   ]);
 
   return (

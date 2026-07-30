@@ -20,6 +20,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
+import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
@@ -139,29 +140,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <ApolloProvider>
                   <DipdupProvider>
                     <WalletProvider>
-                      <ConfigProvider>
-                        <CurrencyProvider
-                          fiatToTezos={fiatToTezos}
-                          usdToToken={usdToToken}
-                        >
-                          <TokensProvider
-                            initialTokens={tokens}
-                            initialTokensMetadata={tokensMetadata}
+                      <AuthProvider>
+                        <ConfigProvider>
+                          <CurrencyProvider
+                            fiatToTezos={fiatToTezos}
+                            usdToToken={usdToToken}
                           >
-                            <AssetsProvider>
-                              <MarketsProvider>
-                                <DexProvider>
-                                  <UserProvider>
-                                    <AppGlobalLoader>
-                                      <PopupProvider>{children}</PopupProvider>
-                                    </AppGlobalLoader>
-                                  </UserProvider>
-                                </DexProvider>
-                              </MarketsProvider>
-                            </AssetsProvider>
-                          </TokensProvider>
-                        </CurrencyProvider>
-                      </ConfigProvider>
+                            <TokensProvider
+                              initialTokens={tokens}
+                              initialTokensMetadata={tokensMetadata}
+                            >
+                              <AssetsProvider>
+                                <MarketsProvider>
+                                  <DexProvider>
+                                    <UserProvider>
+                                      <AppGlobalLoader>
+                                        <PopupProvider>{children}</PopupProvider>
+                                      </AppGlobalLoader>
+                                    </UserProvider>
+                                  </DexProvider>
+                                </MarketsProvider>
+                              </AssetsProvider>
+                            </TokensProvider>
+                          </CurrencyProvider>
+                        </ConfigProvider>
+                      </AuthProvider>
                     </WalletProvider>
                   </DipdupProvider>
                 </ApolloProvider>
