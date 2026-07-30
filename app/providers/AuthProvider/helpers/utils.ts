@@ -41,6 +41,7 @@ export async function signAuthChallenge(challenge: string) {
   const result = await wallet.client.requestSignPayload({
     payload,
     sourceAddress: acc.address,
+    // @ts-expect-error
     signingType: "micheline",
   });
 

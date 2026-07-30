@@ -111,32 +111,37 @@ export const AuthProvider = ({ children }: Props) => {
     []
   );
 
-  const verifyAuthSignature = useCallback(async (payload: AuthVerifyRequest) => {
-    const nonce = payload.nonce ?? (await getLastNonceFromStorage()) ?? undefined;
+  const verifyAuthSignature = useCallback(
+    async (payload: AuthVerifyRequest) => {
+      const nonce =
+        payload.nonce ?? (await getLastNonceFromStorage()) ?? undefined;
 
-    const { data } = await rwaApi.post<AuthVerifyResponse>("/auth/verify", {
-      walletAddress: payload.walletAddress,
-      publicKey: payload.publicKey,
-      nonce,
-      signature: payload.signature,
-      format: payload.format ?? "micheline_string",
-      walletProvider: payload.walletProvider ?? "mavryk_extension",
-      deviceInfo: payload.deviceInfo,
-    });
+      const { data } = await rwaApi.post<AuthVerifyResponse>("/auth/verify", {
+        walletAddress: payload.walletAddress,
+        publicKey: payload.publicKey,
+        nonce,
+        signature: payload.signature,
+        format: payload.format ?? "micheline_string",
+        walletProvider: payload.walletProvider ?? "mavryk_extension",
+        deviceInfo: payload.deviceInfo,
+      });
 
-    const parsed = AuthVerifyResponseSchema.parse(data);
+      const parsed = AuthVerifyResponseSchema.parse(data);
 
-    await setAuthTokensToStorage({
-      accessToken: parsed.accessToken,
-      refreshToken: parsed.refreshToken,
-    });
-    emitAuthSyncEvent(AUTH_TOKENS_UPDATED_EVENT);
+      await setAuthTokensToStorage({
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken,
+      });
+      emitAuthSyncEvent(AUTH_TOKENS_UPDATED_EVENT);
 
-    return parsed;
-  }, []);
+      return parsed;
+    },
+    []
+  );
 
   const logout = useCallback(async (params: AuthRefreshRequest = {}) => {
-    const { refreshToken: storedRefreshToken } = await getAuthTokensFromStorage();
+    const { refreshToken: storedRefreshToken } =
+      await getAuthTokensFromStorage();
     const refreshToken = params.refreshToken ?? storedRefreshToken;
 
     try {
@@ -170,8 +175,10 @@ export const AuthProvider = ({ children }: Props) => {
           nonce,
           signature: signedChallenge.signature,
           publicKey: signedChallenge.publicKey,
+          // @ts-expect-error
           format: signedChallenge.format,
           walletAddress: activeAccount.address,
+          // @ts-expect-error
           walletProvider: signedChallenge.walletProvider,
         });
         setIsAuthenticated(true);
@@ -198,7 +205,9 @@ export const AuthProvider = ({ children }: Props) => {
   );
 
   return (
-    <authContext.Provider value={providerValue}>{children}</authContext.Provider>
+    <authContext.Provider value={providerValue}>
+      {children}
+    </authContext.Provider>
   );
 };
 
