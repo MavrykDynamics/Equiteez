@@ -19,10 +19,13 @@ export function utf8ToHex(message: string) {
 
 export function buildMichelineStringPayloadHex(message: string) {
   const messageHex = utf8ToHex(message);
-  const messageHexBytesLength = messageHex.length / 2;
-  const lengthHex = toPaddedHex(messageHexBytesLength, 8);
+  const lengthHex = toPaddedHex(messageHex.length / 2, 8);
 
   return `${MICHELINE_PREFIX}${MICHELINE_STRING_TAG}${lengthHex}${messageHex}`;
+}
+
+export function buildAuthPayloadHex(challengeText: string) {
+  return buildMichelineStringPayloadHex(utf8ToHex(challengeText));
 }
 
 export async function signAuthChallenge(challenge: string) {
@@ -33,7 +36,8 @@ export async function signAuthChallenge(challenge: string) {
     throw new Error("No active account");
   }
 
-  const payload = buildMichelineStringPayloadHex(challenge);
+  const payload = buildAuthPayloadHex(challenge);
+ 
   const result = await wallet.client.requestSignPayload({
     payload,
     sourceAddress: acc.address,
