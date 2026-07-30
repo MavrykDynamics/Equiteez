@@ -2,6 +2,8 @@ import { dappClient } from "~/providers/WalletProvider/WalletCore.client";
 
 const MICHELINE_PREFIX = "05";
 const MICHELINE_STRING_TAG = "01";
+const AUTH_SIGNATURE_FORMAT = "micheline_string";
+const AUTH_WALLET_PROVIDER = "mavryk_extension";
 
 function bytesToHex(bytes: Uint8Array) {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -38,5 +40,10 @@ export async function signAuthChallenge(challenge: string) {
     signingType: "micheline",
   });
 
-  return `${acc.publicKey}:${result.signature}`;
+  return {
+    publicKey: acc.publicKey,
+    signature: result.signature,
+    format: AUTH_SIGNATURE_FORMAT,
+    walletProvider: AUTH_WALLET_PROVIDER,
+  };
 }

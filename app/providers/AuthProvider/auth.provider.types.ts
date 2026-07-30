@@ -20,9 +20,12 @@ export type AuthChallengeRequest = {
 
 export type AuthVerifyRequest = {
   deviceInfo?: Record<string, unknown>;
+  format?: "micheline_string";
   nonce?: string;
   signature: string;
+  publicKey: string;
   walletAddress: string;
+  walletProvider?: "mavryk_extension";
 };
 
 export type AuthRefreshRequest = {

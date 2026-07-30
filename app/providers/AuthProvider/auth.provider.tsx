@@ -116,8 +116,11 @@ export const AuthProvider = ({ children }: Props) => {
 
     const { data } = await rwaApi.post<AuthVerifyResponse>("/auth/verify", {
       walletAddress: payload.walletAddress,
+      publicKey: payload.publicKey,
       nonce,
       signature: payload.signature,
+      format: payload.format ?? "micheline_string",
+      walletProvider: payload.walletProvider ?? "mavryk_extension",
       deviceInfo: payload.deviceInfo,
     });
 
@@ -161,12 +164,15 @@ export const AuthProvider = ({ children }: Props) => {
         const { nonce, challenge } = await requestAuthChallenge({
           walletAddress: activeAccount.address,
         });
-        const signature = await signAuthChallenge(challenge);
+        const signedChallenge = await signAuthChallenge(challenge);
 
         await verifyAuthSignature({
           nonce,
-          signature,
+          signature: signedChallenge.signature,
+          publicKey: signedChallenge.publicKey,
+          format: signedChallenge.format,
           walletAddress: activeAccount.address,
+          walletProvider: signedChallenge.walletProvider,
         });
         setIsAuthenticated(true);
         return;
