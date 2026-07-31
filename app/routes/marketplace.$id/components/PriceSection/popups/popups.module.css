@@ -7,49 +7,13 @@
   min-width: 100%;
 }
 
-.popupLayout {
-  align-items: stretch;
-  display: flex;
-  flex: 1;
-  gap: 0;
-  height: 100%;
-  min-height: 0;
+.orderBookPopup {
+  max-width: 407px;
+}
+
+.orderBookPopupContent {
   overflow: hidden;
-  position: relative;
-}
-
-.popupLayoutWithOrderBook {
-  gap: 32px;
-}
-
-.popupMain {
-  align-self: stretch;
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-}
-
-.popupContent {
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .popupContent.popupContentWithOrderBook {
-    padding-left: 0;
-  }
-}
-
-.popupWide {
-  max-width: 1008px;
-}
-
-.hideContinueButtonMobile {
+  padding-top: 64px;
 }
 
 @media (--media-tablet-min) {
@@ -61,16 +25,7 @@
     background: var(--color-sand-200);
   }
 
-  .popupLayout {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .popupWide {
+  .orderBookPopup {
     max-width: 100%;
-  }
-
-  .hideContinueButtonMobile {
-    display: none;
   }
 }

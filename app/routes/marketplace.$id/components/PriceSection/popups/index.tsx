@@ -4,7 +4,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -73,12 +72,13 @@ import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import {
   ORDER_BOOK_TOGGLE_LABELS,
-  OrderBookPopup,
   OrderBookToggleButton,
 } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
+import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
@@ -94,7 +94,7 @@ const isCurrentPopupMarket = (
   market.token_address === currentMarket.token_address ||
   getMarketIdentifier(market) === getMarketIdentifier(currentMarket);
 
-type PopupContentProps = {
+type BuySellContentProps = {
   estate: SecondaryEstate;
   isOrderBookOpen: boolean;
   onSuccessfulTransaction?: () => void;
@@ -104,7 +104,7 @@ type PopupContentProps = {
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 };
 
-export const PopupContent: FC<PopupContentProps> = ({
+export const BuySellContent: FC<BuySellContentProps> = ({
   estate,
   isOrderBookOpen,
   onSuccessfulTransaction,
@@ -821,8 +821,6 @@ export const PopupContent: FC<PopupContentProps> = ({
     },
     [marketType]
   );
-  const popupMainRef = useRef<HTMLDivElement>(null);
-  const [popupMainHeight, setPopupMainHeight] = useState<number>();
 
   const HeadlinePreviewSection = () => (
     <div className="flex items-center gap-3 font-medium">
@@ -849,227 +847,193 @@ export const PopupContent: FC<PopupContentProps> = ({
   );
 
   const shouldRenderOrderBook = isSecondaryEstate && activetabId !== CONFIRM;
-  const hasOpenOrderBook = shouldRenderOrderBook && isOrderBookOpen;
-  const continueButtonClassName = isOrderBookOpen
-    ? styles.hideContinueButtonMobile
-    : undefined;
 
   useEffect(() => {
-    onOrderBookVisibilityChange?.(hasOpenOrderBook);
-  }, [hasOpenOrderBook, onOrderBookVisibilityChange]);
-
-  useLayoutEffect(() => {
-    const popupMainElement = popupMainRef.current;
-
-    if (!popupMainElement || typeof ResizeObserver === "undefined") {
-      return undefined;
-    }
-
-    const updatePopupMainHeight = () => {
-      setPopupMainHeight(popupMainElement.getBoundingClientRect().height);
-    };
-
-    updatePopupMainHeight();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updatePopupMainHeight();
-    });
-
-    resizeObserver.observe(popupMainElement);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [shouldRenderOrderBook]);
+    onOrderBookVisibilityChange?.(shouldRenderOrderBook && isOrderBookOpen);
+  }, [isOrderBookOpen, onOrderBookVisibilityChange, shouldRenderOrderBook]);
 
   return (
-    <div
-      className={clsx(styles.popupLayout, {
-        [styles.popupLayoutWithOrderBook]: hasOpenOrderBook,
-      })}
-    >
+    <>
       {shouldRenderOrderBook && (
-        <OrderBookPopup
-          baseTokenDecimals={baseTokenDecimals}
-          baseTokenSymbol={selectedAssetMetadata.symbol}
-          desktopHeight={popupMainHeight}
-          enabled={isSecondaryEstate}
+        <PopupWithIcon
           isOpen={isOrderBookOpen}
-          onClose={closeOrderBook}
-          onPriceClick={
-            isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
-          }
-          quoteTokenDecimals={quoteTokenDecimals}
-          quoteTokenSymbol={quoteAssetmetadata.symbol}
-          referencePrice={tokenPrice.toNumber()}
-          rwaAddress={estate.token_address}
-        />
+          onRequestClose={closeOrderBook}
+          contentClassName={styles.orderBookPopupContent}
+          contentPosition="right"
+          className={clsx("bg-white", styles.orderBookPopup)}
+        >
+          <OrderBookTable
+            baseTokenDecimals={baseTokenDecimals}
+            baseTokenSymbol={selectedAssetMetadata.symbol}
+            enabled={isSecondaryEstate}
+            onPriceClick={
+              isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
+            }
+            quoteTokenDecimals={quoteTokenDecimals}
+            quoteTokenSymbol={quoteAssetmetadata.symbol}
+            referencePrice={tokenPrice.toNumber()}
+            rwaAddress={estate.token_address}
+          />
+        </PopupWithIcon>
       )}
 
-      <div
-        ref={popupMainRef}
-        className={clsx("flex-1 flex flex-col min-w-0", styles.popupMain)}
-      >
-        <div className="flex flex-col text-content flex-1 min-h-0 relative min-w-0 bg-white">
-          <div className="flex items-center">
-            {activetabId === CONFIRM ? (
-              <div
-                role="presentation"
-                onClick={() => setAvtiveTabId(prevTabId)}
-                className="flex items-center cursor-pointer"
-              >
-                <button>
-                  <ArrowLeftIcon className="size-6 mr-2" />
-                </button>
-                <span className="text-card-headline text-sand-900">
-                  Checkout
-                </span>
-              </div>
-            ) : (
-              <div className="flex flex-col w-full">
-                <HeadlinePreviewSection />
-                {!isSecondaryEstate && (
-                  <div className="mt-4 w-full">
-                    <h4 className="text-content text-body mb-3 font-semibold">
-                      Shares
-                    </h4>
-                    <ProgresBar
-                      tokensCount={
-                        estate.assetDetails.priceDetails.tokensAvailable
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <Divider className="my-6" />
+      <div className="flex flex-col text-content flex-1 min-h-0 relative min-w-0 bg-white">
+        <div className="flex items-center">
+          {activetabId === CONFIRM ? (
+            <div
+              role="presentation"
+              onClick={() => setAvtiveTabId(prevTabId)}
+              className="flex items-center cursor-pointer"
+            >
+              <button>
+                <ArrowLeftIcon className="size-6 mr-2" />
+              </button>
+              <span className="text-card-headline text-sand-900">
+                Checkout
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col w-full">
+              <HeadlinePreviewSection />
+              {!isSecondaryEstate && (
+                <div className="mt-4 w-full">
+                  <h4 className="text-content text-body mb-3 font-semibold">
+                    Shares
+                  </h4>
+                  <ProgresBar
+                    tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <Divider className="my-6" />
 
-          {activetabId !== CONFIRM && isSecondaryEstate && (
-            <>
-              <div className="mb-3">
-                <OrderBookToggleButton
-                  isOpen={isOrderBookOpen}
-                  labels={ORDER_BOOK_TOGGLE_LABELS}
-                  onClick={toggleOrderBook}
-                />
-              </div>
-              <div className="mb-[8px]">
+        {activetabId !== CONFIRM && isSecondaryEstate && (
+          <>
+            <div className="mb-3">
+              <OrderBookToggleButton
+                isOpen={isOrderBookOpen}
+                labels={ORDER_BOOK_TOGGLE_LABELS}
+                onClick={toggleOrderBook}
+              />
+            </div>
+            <div className="mb-[8px]">
+              <TabSwitcherV2
+                className={styles.tabsWrapper}
+                tabs={marketTabs}
+                tabClassName={styles.tab}
+                activeTabId={marketType}
+              />
+            </div>
+            <div>
+              <div className="mb-3 text-base">
                 <TabSwitcherV2
                   className={styles.tabsWrapper}
-                  tabs={marketTabs}
+                  // @ts-expect-error // OrderType is string
+                  tabs={tabs}
                   tabClassName={styles.tab}
-                  activeTabId={marketType}
+                  activeTabId={activetabId}
                 />
               </div>
-              <div>
-                <div className="mb-3 text-base">
-                  <TabSwitcherV2
-                    className={styles.tabsWrapper}
-                    // @ts-expect-error // OrderType is string
-                    tabs={tabs}
-                    tabClassName={styles.tab}
-                    activeTabId={activetabId}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+            </div>
+          </>
+        )}
 
-          {activetabId === CONFIRM && (
-            <div className="bg-gray-50 rounded-2xl p-4 mb-8">
-              <div className="flex items-center gap-3 font-medium">
-                <div className="w-[124px] h-[93px] rounded-lg overflow-hidden">
-                  <img
-                    src={estate.assetDetails.previewImage}
-                    alt={estate.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col gap-1 items-start flex-1">
-                  <div className="flex justify-between items-start gap-6 text-card-headline text-sand-900 w-full">
-                    <h3>{estate.name}</h3>
-                    <h3 className="flex items-center gap-1 text-right">
-                      {orderType === BUY ? (
-                        <Money
-                          smallFractionFont={false}
-                          cryptoDecimals={selectedAssetMetadata.decimals}
-                        >
-                          {isMarketTypeMarket
-                            ? marketBuyDisplayAmount
-                            : (amountB ?? 0)}
-                        </Money>
-                      ) : (
-                        amountB?.toNumber()
-                      )}{" "}
-                      {estate.symbol}
-                    </h3>
-                  </div>
-                  <div className="flex justify-between w-full">
-                    <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
-                      {estate.assetDetails.propertyDetails.propertyType}
-                    </span>
-                    <div className="text-body text-sand-900">
-                      $
-                      <Money smallFractionFont={false}>
-                        {!isMarketTypeMarket
-                          ? (total ?? 0)
-                          : orderType === BUY
-                            ? (amountB ?? 0)
-                            : (total ?? 0)}
+        {activetabId === CONFIRM && (
+          <div className="bg-gray-50 rounded-2xl p-4 mb-8">
+            <div className="flex items-center gap-3 font-medium">
+              <div className="w-[124px] h-[93px] rounded-lg overflow-hidden">
+                <img
+                  src={estate.assetDetails.previewImage}
+                  alt={estate.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col gap-1 items-start flex-1">
+                <div className="flex justify-between items-start gap-6 text-card-headline text-sand-900 w-full">
+                  <h3>{estate.name}</h3>
+                  <h3 className="flex items-center gap-1 text-right">
+                    {orderType === BUY ? (
+                      <Money
+                        smallFractionFont={false}
+                        cryptoDecimals={selectedAssetMetadata.decimals}
+                      >
+                        {isMarketTypeMarket
+                          ? marketBuyDisplayAmount
+                          : (amountB ?? 0)}
                       </Money>
-                    </div>
+                    ) : (
+                      amountB?.toNumber()
+                    )}{" "}
+                    {estate.symbol}
+                  </h3>
+                </div>
+                <div className="flex justify-between w-full">
+                  <span className="px-2 py-[2px] rounded-[4px] text-body-xs text-sand-800 bg-[#F6AFAFBF] text-center">
+                    {estate.assetDetails.propertyDetails.propertyType}
+                  </span>
+                  <div className="text-body text-sand-900">
+                    $
+                    <Money smallFractionFont={false}>
+                      {!isMarketTypeMarket
+                        ? (total ?? 0)
+                        : orderType === BUY
+                          ? (amountB ?? 0)
+                          : (total ?? 0)}
+                    </Money>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {(activetabId === BUY || activetabId === SELL) &&
-            (marketType === "market" ? (
-              <BuySellScreen
-                estate={estate}
-                toggleScreen={() => setAvtiveTabId(CONFIRM)}
-                actionType={activetabId}
-                continueButtonClassName={continueButtonClassName}
-                amount={amountB}
-                setAmount={setAmountB}
-                total={total}
-                tokenPrice={tokenPrice}
-                networkFee={networkFee}
-                validationMessage={orderValidationMessage}
-              />
-            ) : (
-              <BuySellLimitScreen
-                rawTickSize={rawTickSize}
-                limitPrice={limitPrice}
-                marketTokenPrice={tokenPrice}
-                setLimitPrice={setLimitPrice}
-                estate={estate}
-                toggleScreen={() => setAvtiveTabId(CONFIRM)}
-                actionType={activetabId}
-                continueButtonClassName={continueButtonClassName}
-                amount={amountB}
-                setAmount={setAmountB}
-                total={total}
-                networkFee={networkFee}
-                validationMessage={orderValidationMessage}
-              />
-            ))}
-
-          {/* {activetabId === OTC && <OTCPopupContent estate={estate} />} */}
-          {activetabId === CONFIRM && (
-            <BuySellConfirmationScreen
-              actionType={orderType === BUY ? BUY : SELL}
-              actionCb={buySellActionCb}
-              status={status}
+        {(activetabId === BUY || activetabId === SELL) &&
+          (marketType === "market" ? (
+            <BuySellScreen
+              estate={estate}
+              toggleScreen={() => setAvtiveTabId(CONFIRM)}
+              actionType={activetabId}
+              amount={amountB}
+              setAmount={setAmountB}
+              total={total}
+              tokenPrice={tokenPrice}
+              networkFee={networkFee}
+              validationMessage={orderValidationMessage}
             />
-          )}
-        </div>
+          ) : (
+            <BuySellLimitScreen
+              rawTickSize={rawTickSize}
+              limitPrice={limitPrice}
+              marketTokenPrice={tokenPrice}
+              setLimitPrice={setLimitPrice}
+              estate={estate}
+              toggleScreen={() => setAvtiveTabId(CONFIRM)}
+              actionType={activetabId}
+              amount={amountB}
+              setAmount={setAmountB}
+              total={total}
+              networkFee={networkFee}
+              validationMessage={orderValidationMessage}
+            />
+          ))}
+
+        {/* {activetabId === OTC && <OTCPopupContent estate={estate} />} */}
+        {activetabId === CONFIRM && (
+          <BuySellConfirmationScreen
+            actionType={orderType === BUY ? BUY : SELL}
+            actionCb={buySellActionCb}
+            status={status}
+          />
+        )}
       </div>
-    </div>
+    </>
   );
 };
+
+export const PopupContent = BuySellContent;
 
 // export const OTCPopupContent: FC<{ estate: SecondaryEstate }> = ({
 //   estate,

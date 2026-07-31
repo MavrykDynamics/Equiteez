@@ -5,6 +5,7 @@ import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { Container } from "~/lib/atoms/Container/Container";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetTabs } from "~/routes/trade.$address/components/AssetTabs/AssetTabs";
+import { BuySellPanel } from "~/routes/trade.$address/components/BuySellPanel/BuySellPanel";
 import { ChartBlock } from "~/routes/trade.$address/components/ChartBlock/ChartBlock";
 import styles from "./styles.module.css";
 
@@ -23,7 +24,9 @@ export default function TradePage() {
         <AssetDetails asset={asset} />
         <div className={styles.contentBlock}>
           <ChartBlock asset={asset} />
-          <div className={styles.buySellContainer}></div>
+          <div className={styles.buySellContainer}>
+            <BuySellPanel asset={asset} />
+          </div>
         </div>
         <AssetTabs asset={asset} />
       </Container>
