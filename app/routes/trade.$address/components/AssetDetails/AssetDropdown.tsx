@@ -123,7 +123,7 @@ function AssetOption({ asset, isSelected, onSelect }: AssetOptionProps) {
           </RText>
           {priceChange.percentage ? (
             <RText color={isNegative ? "red-500" : "green-600"} size="body-s">
-              {isNegative ? "-" : "+"}
+              {isNegative ? "" : "+"}
               <Money fiat tooltip={false}>
                 {priceChange.percentage}
               </Money>
