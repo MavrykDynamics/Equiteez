@@ -117,7 +117,9 @@ Current icon names:
 - `lock`
 - `lock-open`
 - `radio`
+- `refund`
 - `search`
+- `trash`
 - `trending-down`
 - `trending-up`
 - `web`
@@ -257,6 +259,13 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/organisms/RCustomDropdown/RCustomDropdown.module.css`
 - Reusability notes: Compose `RCustomDropdown`, `RDropdownFaceContent`, `RDropdownBodyContent`, and `RDropdownBodyContentItem`. The menu closes on selection, outside interaction, or Escape.
 - Related tokens: `RText`, `RIcon`, `--r-size-control-medium`, `--r-space-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
+
+## ROrderStatusBadge
+
+- Purpose: Route-local redesign badge that maps order-history statuses to the Figma `FILLED`, `OPEN`, and canceled visual states.
+- Location: `app/routes/trade.$address/components/AssetTabs/OrderHistoryTab/ROrderStatusBadge.tsx`
+- Reusability notes: Use for order-history status rendering. `fulfilled` is displayed as `FILLED`, `pending` as `OPEN`, and all other API values keep their original text with the canceled visual treatment.
+- Related tokens: `--r-color-green-*`, `--r-color-yellow-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-3`, `--r-radius-pill`
 
 ## RFeatureCard
 

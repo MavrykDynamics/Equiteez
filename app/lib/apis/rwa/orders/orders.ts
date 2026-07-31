@@ -35,12 +35,8 @@ export const fetchWalletOrderHistory = async ({
   walletAddress,
   tokenAddress,
 }: WalletOrdersParams): Promise<OrderHistoryResponseType> => {
-  const query = new URLSearchParams({
-    token_address: tokenAddress,
-  });
-
   const { data } = await rwaApi.get(
-    `/wallets/${walletAddress}/orders?${query.toString()}`
+    `/wallets/${walletAddress}/transactions?token_address=${tokenAddress}&types=limit_sell&types=limit_buy&types=market_buy&types=market_sell`
   );
 
   return OrderHistorySchema.parse(data);
