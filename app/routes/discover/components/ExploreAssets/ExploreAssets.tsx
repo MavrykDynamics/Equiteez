@@ -13,6 +13,7 @@ import type { AssetsFilterState } from "~/routes/discover/components/AssetsFilte
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { DepositFunds } from "~/routes/discover/components/DepositFunds/DepositFunds";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();
@@ -56,14 +57,7 @@ export function ExploreAssets() {
         <RHeading size="h5" weight="medium">
           Explore Assets
         </RHeading>
-        <RButton className={styles.depositButton} variant="secondary">
-          <RText size="body-sm" weight="medium">
-            Deposit Funds
-          </RText>
-          <RText size="body-s">
-          <RIcon name="arrow-long-up-right" />
-          </RText>
-        </RButton>
+        <DepositFunds />
       </div>
 
       <AssetsFilters
