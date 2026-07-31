@@ -115,7 +115,7 @@ export const PopupContent: FC<PopupContentProps> = ({
 }) => {
   const { slug } = estate;
   const { dapp } = useWalletContext();
-  const { orderbookStorages } = useDexContext();
+  const { isOrderbookStoragesLoading, orderbookStorages } = useDexContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
@@ -505,6 +505,10 @@ export const PopupContent: FC<PopupContentProps> = ({
     }
 
     if (new BigNumber(rawTickSize).lte(0)) {
+      if (isOrderbookStoragesLoading) {
+        return "Orderbook market data is still loading.";
+      }
+
       return "Selected market is missing tick-size configuration.";
     }
 
@@ -512,6 +516,7 @@ export const PopupContent: FC<PopupContentProps> = ({
   }, [
     baseTokenDecimals,
     currencyKey,
+    isOrderbookStoragesLoading,
     orderbookConfig?.address,
     quoteTokenDecimals,
     quoteTokenAddress,

@@ -225,14 +225,15 @@ Open-order display also treats market orders specially:
 
 ## Tick-Size Handling
 
-The frontend reads each orderbook's tick size from the contract `getConfig()`
-view through `getOrderbookTickSizes`.
+The frontend reads each orderbook's tick size from the REST orderbook payload
+when available. The contract `getConfig()` view through `getOrderbookTickSizes`
+is retained as a fallback for payloads that do not include a tick size.
 
 Current behavior:
 
 - Tick size must be finite and greater than `0`, otherwise the read throws.
-- `DexProvider` waits until tick sizes are available before attaching REST
-  orderbook storage data for a market.
+- `DexProvider` attaches REST orderbook storage as soon as each market has a
+  valid REST tick size or contract-view fallback tick size.
 - Stored orderbook data includes `tickSize`, `lowestSellPrice`,
   `highestBuyPrice`, buy/sell fees, token addresses, and the orderbook address.
 - The active marketplace limit-order form validates user-entered limit prices

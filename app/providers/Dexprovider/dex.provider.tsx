@@ -14,6 +14,7 @@ import {
   getOrderbookTokenPairs,
   OrderBookPriceData,
   getOrderbookStorages,
+  resolveOrderbookTickSize,
 } from "./utils/storage";
 import { getOrderbookTickSizes } from "./utils/orderbookConfig";
 import type { OrderbookTickSizesByAddress } from "./utils/orderbookConfig";
@@ -21,6 +22,7 @@ import { unknownToError } from "~/errors/error";
 import { useApiQuery } from "~/hooks/useApiQuery";
 import { fetchOrderbooks } from "~/lib/apis/mbrwa/orderbooks";
 import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
+import type { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
 
@@ -53,6 +55,8 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
   const [orderbookTickSizes, setOrderbookTickSizes] =
     useState<OrderbookTickSizesByAddress>({});
+  const [isOrderbookTickSizesLoading, setIsOrderbookTickSizesLoading] =
+    useState(false);
 
   const orderbookTokenPair = useMemo(
     () => getOrderbookTokenPairs(config.orderbook),
@@ -60,12 +64,6 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   );
 
   const handleOrderbookData = useCallback((data: OrderbooksList) => {
-    const hasTickSizes = Array.from(config.orderbook.values()).every(
-      ({ address }) => orderbookTickSizes[address]
-    );
-
-    if (!hasTickSizes) return;
-
     const orderbookStorages = getOrderbookStorages(
       data,
       config.orderbook,
@@ -91,14 +89,35 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   }, [error, warning]);
 
   useEffect(() => {
-    if (!config.orderbook.size) {
+    if (!config.orderbook.size || !orderbookData) {
       setOrderbookTickSizes({});
+      setIsOrderbookTickSizesLoading(false);
+      return;
+    }
+
+    const fallbackOrderbookConfig = orderbookData.reduce<
+      Map<string, OrderbookConfigType>
+    >((acc, item) => {
+      if (resolveOrderbookTickSize(item, {}) !== undefined) return acc;
+
+      const storageConfig = config.orderbook.get(item.address);
+
+      if (storageConfig) acc.set(item.address, storageConfig);
+
+      return acc;
+    }, new Map());
+
+    if (!fallbackOrderbookConfig.size) {
+      setOrderbookTickSizes({});
+      setIsOrderbookTickSizesLoading(false);
       return;
     }
 
     let cancelled = false;
 
-    getOrderbookTickSizes(config.orderbook)
+    setIsOrderbookTickSizesLoading(true);
+
+    getOrderbookTickSizes(fallbackOrderbookConfig)
       .then((tickSizes) => {
         if (!cancelled) setOrderbookTickSizes(tickSizes);
       })
@@ -108,12 +127,15 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
         setOrderbookTickSizes({});
         const err = unknownToError(error);
         warning("Error on get orderbook tick sizes", err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setIsOrderbookTickSizesLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [config.orderbook, warning]);
+  }, [config.orderbook, orderbookData, warning]);
 
   useEffect(() => {
     if (!orderbookData) return;
@@ -121,12 +143,29 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
     handleOrderbookData(orderbookData);
   }, [handleOrderbookData, orderbookData]);
 
+  const isOrderbookStoragesLoading = useMemo(() => {
+    if (!config.orderbook.size || error) return false;
+    if (!orderbookData) return true;
+    if (!isOrderbookTickSizesLoading) return false;
+
+    return orderbookData.some(
+      (item) => resolveOrderbookTickSize(item, orderbookTickSizes) === undefined
+    );
+  }, [
+    config.orderbook.size,
+    error,
+    isOrderbookTickSizesLoading,
+    orderbookData,
+    orderbookTickSizes,
+  ]);
+
   const memoizedDexCtx: DexProviderCtxType = useMemo(
     () => ({
+      isOrderbookStoragesLoading,
       orderbookStorages,
       orderbookTokenPair,
     }),
-    [orderbookTokenPair, orderbookStorages]
+    [isOrderbookStoragesLoading, orderbookTokenPair, orderbookStorages]
   );
 
   return (
