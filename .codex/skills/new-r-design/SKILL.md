@@ -117,7 +117,9 @@ Current icon names:
 - `lock`
 - `lock-open`
 - `radio`
+- `refund`
 - `search`
+- `trash`
 - `trending-down`
 - `trending-up`
 - `web`
