@@ -8,7 +8,7 @@ export function OpenOrdersLoadingState() {
     <section className={styles.state} aria-busy="true" aria-live="polite">
       <RIcon className={styles.loadingIcon} name="loading" />
       <RText color="neutral-600" size="body-sm">
-        Loading open orders…
+        Loading orders…
       </RText>
     </section>
   );

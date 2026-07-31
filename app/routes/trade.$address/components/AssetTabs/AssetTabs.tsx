@@ -9,6 +9,7 @@ import { BlockchainTab } from "~/routes/trade.$address/components/AssetTabs/Bloc
 import { DetailsTab } from "~/routes/trade.$address/components/AssetTabs/DetailsTab/DetailsTab";
 import { ROICalculator } from "~/routes/trade.$address/components/AssetTabs/RoiCalculatorTab/ROICalculator";
 import { OpenOrdersTab } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersTab";
+import { OrderHistoryTab } from "~/routes/trade.$address/components/AssetTabs/OrderHistoryTab/OrderHistoryTab";
 
 type AssetTabId =
   | "open_orders"
@@ -53,7 +54,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
   const content = useMemo(
     (): Record<AssetTabId, ReactNode> => ({
       open_orders: <OpenOrdersTab asset={asset} />,
-      order_history: <div>order_history</div>,
+      order_history: <OrderHistoryTab asset={asset} />,
       asset_overview: <AssetOverviewTab asset={asset} />,
       details: <DetailsTab />,
       ROI_calculator: <ROICalculator />,
