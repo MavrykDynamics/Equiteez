@@ -1,7 +1,7 @@
 import { OrderBookPriceData } from "./utils";
 
 export type DexProviderCtxType = {
-  isOrderbookStoragesLoading: boolean;
+  isLoading: boolean;
   orderbookTokenPair: StringRecord<string>;
   orderbookStorages: StringRecord<OrderBookPriceData>;
 };

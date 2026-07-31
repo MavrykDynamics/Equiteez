@@ -234,6 +234,8 @@ Current behavior:
 - Tick size must be finite and greater than `0`, otherwise the read throws.
 - `DexProvider` attaches REST orderbook storage as soon as each market has a
   valid REST tick size or contract-view fallback tick size.
+- `AppGlobalLoader` waits for `DexProvider` orderbook readiness before routed
+  pages render, so order placement cannot start against fallback `0` values.
 - Stored orderbook data includes `tickSize`, `lowestSellPrice`,
   `highestBuyPrice`, buy/sell fees, token addresses, and the orderbook address.
 - The active marketplace limit-order form validates user-entered limit prices

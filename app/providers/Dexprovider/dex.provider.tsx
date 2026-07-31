@@ -1,7 +1,6 @@
 import {
   createContext,
   FC,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -21,7 +20,6 @@ import type { OrderbookTickSizesByAddress } from "./utils/orderbookConfig";
 import { unknownToError } from "~/errors/error";
 import { useApiQuery } from "~/hooks/useApiQuery";
 import { fetchOrderbooks } from "~/lib/apis/mbrwa/orderbooks";
-import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
 import type { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
 
 const dexContext = createContext<DexProviderCtxType>(undefined!);
@@ -49,31 +47,15 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
   const { warning } = useToasterContext();
   const { config } = useMarketsContext();
 
-  // Contains price info as well
-  const [orderbookStorages, setOrderbookStorages] = useState(
-    () => new Proxy({}, priceProxyHandler)
-  );
   const [orderbookTickSizes, setOrderbookTickSizes] =
     useState<OrderbookTickSizesByAddress>({});
-  const [isOrderbookTickSizesLoading, setIsOrderbookTickSizesLoading] =
+  const [hasOrderbookTickSizeLoadError, setHasOrderbookTickSizeLoadError] =
     useState(false);
 
   const orderbookTokenPair = useMemo(
     () => getOrderbookTokenPairs(config.orderbook),
     [config.orderbook]
   );
-
-  const handleOrderbookData = useCallback((data: OrderbooksList) => {
-    const orderbookStorages = getOrderbookStorages(
-      data,
-      config.orderbook,
-      orderbookTickSizes
-    );
-
-    setOrderbookStorages(
-      new Proxy({ ...orderbookStorages }, priceProxyHandler)
-    );
-  }, [config.orderbook, orderbookTickSizes]);
 
   const { data: orderbookData, error } = useApiQuery({
     fetchFn: fetchOrderbooks,
@@ -88,34 +70,33 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
     }
   }, [error, warning]);
 
+  const fallbackOrderbookConfig = useMemo(() => {
+    if (!orderbookData) return new Map<string, OrderbookConfigType>();
+
+    return orderbookData.reduce<Map<string, OrderbookConfigType>>(
+      (acc, item) => {
+        if (resolveOrderbookTickSize(item, {}) !== undefined) return acc;
+
+        const storageConfig = config.orderbook.get(item.address);
+
+        if (storageConfig) acc.set(item.address, storageConfig);
+
+        return acc;
+      },
+      new Map()
+    );
+  }, [config.orderbook, orderbookData]);
+
   useEffect(() => {
-    if (!config.orderbook.size || !orderbookData) {
-      setOrderbookTickSizes({});
-      setIsOrderbookTickSizesLoading(false);
-      return;
-    }
-
-    const fallbackOrderbookConfig = orderbookData.reduce<
-      Map<string, OrderbookConfigType>
-    >((acc, item) => {
-      if (resolveOrderbookTickSize(item, {}) !== undefined) return acc;
-
-      const storageConfig = config.orderbook.get(item.address);
-
-      if (storageConfig) acc.set(item.address, storageConfig);
-
-      return acc;
-    }, new Map());
-
     if (!fallbackOrderbookConfig.size) {
       setOrderbookTickSizes({});
-      setIsOrderbookTickSizesLoading(false);
+      setHasOrderbookTickSizeLoadError(false);
       return;
     }
 
     let cancelled = false;
 
-    setIsOrderbookTickSizesLoading(true);
+    setHasOrderbookTickSizeLoadError(false);
 
     getOrderbookTickSizes(fallbackOrderbookConfig)
       .then((tickSizes) => {
@@ -125,47 +106,52 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
         if (cancelled) return;
 
         setOrderbookTickSizes({});
+        setHasOrderbookTickSizeLoadError(true);
         const err = unknownToError(error);
         warning("Error on get orderbook tick sizes", err.message);
-      })
-      .finally(() => {
-        if (!cancelled) setIsOrderbookTickSizesLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [config.orderbook, orderbookData, warning]);
+  }, [fallbackOrderbookConfig, warning]);
 
-  useEffect(() => {
-    if (!orderbookData) return;
+  const hasUnresolvedFallbackTickSizes = useMemo(
+    () =>
+      Array.from(fallbackOrderbookConfig.keys()).some(
+        (address) => !orderbookTickSizes[address]
+      ),
+    [fallbackOrderbookConfig, orderbookTickSizes]
+  );
 
-    handleOrderbookData(orderbookData);
-  }, [handleOrderbookData, orderbookData]);
-
-  const isOrderbookStoragesLoading = useMemo(() => {
+  const isLoading = useMemo(() => {
     if (!config.orderbook.size || error) return false;
     if (!orderbookData) return true;
-    if (!isOrderbookTickSizesLoading) return false;
 
-    return orderbookData.some(
-      (item) => resolveOrderbookTickSize(item, orderbookTickSizes) === undefined
-    );
+    return hasUnresolvedFallbackTickSizes && !hasOrderbookTickSizeLoadError;
   }, [
     config.orderbook.size,
     error,
-    isOrderbookTickSizesLoading,
+    hasOrderbookTickSizeLoadError,
+    hasUnresolvedFallbackTickSizes,
     orderbookData,
-    orderbookTickSizes,
   ]);
+
+  const orderbookStorages = useMemo<StringRecord<OrderBookPriceData>>(() => {
+    const storages = orderbookData
+      ? getOrderbookStorages(orderbookData, config.orderbook, orderbookTickSizes)
+      : {};
+
+    return new Proxy({ ...storages }, priceProxyHandler);
+  }, [config.orderbook, orderbookData, orderbookTickSizes]);
 
   const memoizedDexCtx: DexProviderCtxType = useMemo(
     () => ({
-      isOrderbookStoragesLoading,
+      isLoading,
       orderbookStorages,
       orderbookTokenPair,
     }),
-    [isOrderbookStoragesLoading, orderbookTokenPair, orderbookStorages]
+    [isLoading, orderbookTokenPair, orderbookStorages]
   );
 
   return (
