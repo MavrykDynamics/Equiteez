@@ -10,6 +10,8 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { OpenOrdersConnectWalletState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersConnectWalletState";
 import { OpenOrdersEmptyState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersEmptyState";
 import { OpenOrdersLoadingState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersLoadingState";
+
+import { ROrderStatusBadge } from "./ROrderStatusBadge";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import {
@@ -147,7 +149,7 @@ export function OrderHistoryTab({ asset }: OrdersHistoryTabProps) {
                   </RText>
                 </td>
                 <td data-label="Status">
-                  <RText size="body-sm">{order.status}</RText>
+                  <ROrderStatusBadge status={order.status} />
                 </td>
                 <td data-label="Total">
                   <RText size="body-sm">
