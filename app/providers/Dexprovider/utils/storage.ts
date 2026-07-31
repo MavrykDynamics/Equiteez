@@ -3,6 +3,9 @@ import { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
 import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
 import type { OrderbookTickSizesByAddress } from "./orderbookConfig";
 
+type OrderbookItem = OrderbooksList[number];
+type TickSizeValue = number | null | undefined;
+
 export type OrderBookPriceData = {
   lowestSellPrice: number;
   highestBuyPrice: number;
@@ -21,6 +24,21 @@ export type OrderBookPriceData = {
   baseTokenDecimals?: number;
   rwaTokenAddress: string;
   orderbookAddress: string;
+};
+
+const isPositiveTickSize = (tickSize: TickSizeValue): tickSize is number =>
+  typeof tickSize === "number" && Number.isFinite(tickSize) && tickSize > 0;
+
+export const resolveOrderbookTickSize = (
+  item: OrderbookItem,
+  tickSizesByAddress: OrderbookTickSizesByAddress
+) => {
+  if (isPositiveTickSize(item.tickSize)) return item.tickSize;
+  if (isPositiveTickSize(item.tick_size)) return item.tick_size;
+
+  const fallbackTickSize = tickSizesByAddress[item.address];
+
+  return isPositiveTickSize(fallbackTickSize) ? fallbackTickSize : undefined;
 };
 
 export const getOrderbookStorages = (
@@ -48,7 +66,7 @@ export const getOrderbookStorages = (
         rwaTokenAddress,
         storageConfig?.rwaTokenId ?? 0
       );
-      const tickSize = tickSizesByAddress[item.address];
+      const tickSize = resolveOrderbookTickSize(item, tickSizesByAddress);
 
       if (!tickSize) return acc;
 
