@@ -14,6 +14,17 @@ const CurrencyAmountSchema = z.object({
   aed: z.number(),
 });
 
+const QuotePriceSchema = z.object({
+  value: z.number(),
+  currency: z.string(),
+});
+
+const AssetHighlightsChangeSchema = z.object({
+  pct: z.number(),
+  abs: z.number(),
+  currency: z.string(),
+});
+
 const TokenMetadataSchema = z.object({
   icon: z.string().optional(),
   name: z.string(),
@@ -71,11 +82,12 @@ const AssetAthSchema = z.object({
 const AssetStatsSchema = z.object({
   symbol: z.string(),
   price: CurrencyAmountSchema,
+  volume_24h: CurrencyAmountSchema.optional(),
   market_cap: CurrencyAmountSchema,
   fdv: CurrencyAmountSchema,
   total_supply: z.string(),
   circulating_supply: z.string(),
-  ath: AssetAthSchema,
+  ath: AssetAthSchema.optional(),
   avg_hold_time_days: z.number(),
   updated_at: z.number(),
 });
@@ -92,6 +104,7 @@ export const AssetSchema = z.object({
   profile: AssetProfileSchema,
   finance: AssetFinanceSchema,
   contracts: z.array(AssetContractSchema),
+  created_at: z.string().optional(),
   updated_at: z.string(),
   stats: AssetStatsSchema.optional(),
   launch_status: z.string().optional(),
@@ -100,4 +113,24 @@ export const AssetSchema = z.object({
 
 export const AssetsSchema = z.object({
   items: z.array(AssetSchema),
+});
+
+export const AssetHighlightSchema = z.object({
+  address: z.string(),
+  symbol: z.string(),
+  name: z.string(),
+  icon: z.string().optional(),
+  market_type: z.string(),
+  price: CurrencyAmountSchema,
+  quote_price: QuotePriceSchema,
+  change_24h: AssetHighlightsChangeSchema.nullable(),
+  volume_24h: CurrencyAmountSchema.optional(),
+  listed_at: z.string(),
+});
+
+export const AssetsHighlightsSchema = z.object({
+  as_of: z.string(),
+  top_gainers: z.array(AssetHighlightSchema),
+  trending: z.array(AssetHighlightSchema),
+  newly_added: z.array(AssetHighlightSchema),
 });
