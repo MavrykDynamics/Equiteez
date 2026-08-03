@@ -1,5 +1,4 @@
 import type { MetaFunction } from "@remix-run/node";
-import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { WalletSidebar } from "./components/WalletSidebar/WalletSidebar";
 import styles from "./route.module.css";
 import { Outlet } from "@remix-run/react";
@@ -8,6 +7,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { LoginPopup } from "~/routes/wallet/components/LoginPopup/LoginPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { UserAssetsProvider } from "~/providers/UserAssets/userAssets.provider";
+import { Container } from "~/lib/atoms/Container/Container";
 
 export const meta: MetaFunction = () => {
   return [
@@ -31,7 +31,7 @@ export default function Wallet() {
   }, [userAddress]);
 
   return (
-    <PageLayout>
+    <Container>
       <div className="mt-[24px] mb-[100px] max-w-[1240px] w-full m-auto relative">
         <div className={styles.container}>
           <WalletSidebar mbgBalance={0} />
@@ -50,6 +50,6 @@ export default function Wallet() {
           }}
         />
       </div>
-    </PageLayout>
+    </Container>
   );
 }
