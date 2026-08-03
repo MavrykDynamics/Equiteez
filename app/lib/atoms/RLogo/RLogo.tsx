@@ -43,20 +43,11 @@ export function RLogo({
   );
 
   if (!isLink) {
-    return (
-      <div className={logoClassName} style={{ maxWidth: "135px" }}>
-        {content}
-      </div>
-    );
+    return <div className={logoClassName}>{content}</div>;
   }
 
   return (
-    <Link
-      aria-label="Equiteez home"
-      className={logoClassName}
-      style={{ maxWidth: "135px" }}
-      to="/"
-    >
+    <Link aria-label="Equiteez home" className={logoClassName} to="/">
       {content}
     </Link>
   );
