@@ -27,6 +27,7 @@
 
 .logo {
   align-items: flex-start;
+  max-width: 135px;
 }
 
 .description,
