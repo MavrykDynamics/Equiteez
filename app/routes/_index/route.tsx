@@ -1,7 +1,4 @@
 import type { MetaFunction } from "@remix-run/node";
-
-import PageLayout from "app/layouts/PageLayout/Pagelayout";
-
 // components
 import { BannerSection } from "./components/BannerSection/BannerSection";
 import { Spacer } from "~/lib/atoms/Spacer";
@@ -47,7 +44,7 @@ export default function Index() {
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
 
   return (
-    <PageLayout includeContainer={false}>
+    <>
       <Container className="block md:hidden mt-[16px]">
         <MobileFilters />
       </Container>
@@ -73,6 +70,6 @@ export default function Index() {
         <FAQSection data={homeFAQ} />
         <Spacer className="h-[100px]" />
       </Container>
-    </PageLayout>
+    </>
   );
 }

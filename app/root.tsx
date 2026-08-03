@@ -47,6 +47,7 @@ import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
+import PageLayout from "~/layouts/PageLayout/Pagelayout";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -155,7 +156,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                   <DexProvider>
                                     <UserProvider>
                                       <AppGlobalLoader>
-                                        <PopupProvider>{children}</PopupProvider>
+                                        <PopupProvider>
+                                          <PageLayout includeContainer={false}>
+                                            {children}
+                                          </PageLayout>
+                                        </PopupProvider>
                                       </AppGlobalLoader>
                                     </UserProvider>
                                   </DexProvider>
