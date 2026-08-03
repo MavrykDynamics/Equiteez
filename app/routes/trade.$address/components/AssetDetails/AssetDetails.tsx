@@ -87,15 +87,14 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
           </>
         }
       />
-      {/*TODO remove mock data*/}
       <DetailItem
         label="24h Volume"
         value={
           <>
-            ${/*<Money fiat tooltip={false}>*/}
-            {/*  {126.4K}*/}
-            {/*</Money>*/}
-            126.4K
+            $
+            <Money fiat tooltip={false}>
+              {asset.stats?.volume_24h?.usd ?? 0}
+            </Money>
           </>
         }
       />
