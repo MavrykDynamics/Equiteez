@@ -21,11 +21,11 @@ export default function TradePage() {
     <PageLayout includeContainer={false}>
       <Container>
         <AssetDetails asset={asset} />
-        {/*<div className={styles.contentBlock}>*/}
-        {/*  /!*<ChartBlock asset={asset} />*!/*/}
-        {/*  <div className={styles.buySellContainer}></div>*/}
-        {/*</div>*/}
-        {/*<AssetTabs asset={asset} />*/}
+        <div className={styles.contentBlock}>
+          <ChartBlock asset={asset} />
+          <div className={styles.buySellContainer}></div>
+        </div>
+        <AssetTabs asset={asset} />
       </Container>
     </PageLayout>
   );
