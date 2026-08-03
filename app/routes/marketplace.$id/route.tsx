@@ -8,8 +8,6 @@ import {
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
 import LikeIcon from "app/icons/like.svg?react";
 import ShareIcon from "app/icons/share.svg?react";
-
-import PageLayout from "app/layouts/PageLayout/Pagelayout";
 import { useMarketByParamIdentifier } from "./hooks/use-market-by-identifier";
 import { LinkWithIcon } from "~/lib/atoms/LinkWithIcon";
 import { FC, useMemo, useState } from "react";
@@ -77,7 +75,7 @@ export default function PropertyDetails() {
   if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
-    <PageLayout includeContainer={false} className={styles.mainWrapper}>
+    <>
       <Container>
         <div className={styles.backLinkWrapper}>
           <LinkWithIcon
@@ -183,7 +181,7 @@ export default function PropertyDetails() {
         <FAQSection data={homeFAQ} />
         <Spacer className="xl:h-[200px] h-[104px] md:h-[100px]" />
       </Container>
-    </PageLayout>
+    </>
   );
 }
 

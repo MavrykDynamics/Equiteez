@@ -1,7 +1,6 @@
 import { useParams } from "@remix-run/react";
 
 import { AssetDetails } from "./components/AssetDetails/AssetDetails";
-import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { Container } from "~/lib/atoms/Container/Container";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetTabs } from "~/routes/trade.$address/components/AssetTabs/AssetTabs";
@@ -18,7 +17,6 @@ export default function TradePage() {
   }
 
   return (
-    <PageLayout includeContainer={false}>
       <Container>
         <AssetDetails asset={asset} />
         <div className={styles.contentBlock}>
@@ -27,6 +25,5 @@ export default function TradePage() {
         </div>
         <AssetTabs asset={asset} />
       </Container>
-    </PageLayout>
   );
 }

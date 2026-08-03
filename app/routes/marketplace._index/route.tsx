@@ -1,7 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import { generatePath, Link } from "@remix-run/react";
 import { Spacer } from "~/lib/atoms/Spacer";
-import PageLayout from "~/layouts/PageLayout/Pagelayout";
+import { Container } from "~/lib/atoms/Container/Container";
 import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { Filters } from "./components/Filters/Filters";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
@@ -30,9 +30,9 @@ export const meta: MetaFunction = () => {
 
 export default function Properties() {
   return (
-    <PageLayout>
-      <PropertiesContent />
-    </PageLayout>
+    <Container>
+    <PropertiesContent />
+    </Container>
   );
 }
 
