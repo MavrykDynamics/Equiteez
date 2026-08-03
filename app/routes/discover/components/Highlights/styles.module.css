@@ -36,3 +36,57 @@
   justify-content: end;
   align-items: end;
 }
+
+.cardSkeleton {
+  border: 1px solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+  padding: var(--r-space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 80px;
+}
+
+.skeletonTitle,
+.skeletonSubtitle,
+.skeletonValue,
+.skeletonChange {
+  border-radius: var(--r-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--r-color-neutral-100) 0%,
+    var(--r-color-neutral-50) 50%,
+    var(--r-color-neutral-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: highlightsShimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonTitle {
+  width: 140px;
+  height: 18px;
+}
+
+.skeletonSubtitle {
+  width: 84px;
+  height: 14px;
+}
+
+.skeletonValue {
+  width: 78px;
+  height: 18px;
+}
+
+.skeletonChange {
+  width: 56px;
+  height: 14px;
+}
+
+@keyframes highlightsShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
