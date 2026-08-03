@@ -71,11 +71,12 @@ const AssetAthSchema = z.object({
 const AssetStatsSchema = z.object({
   symbol: z.string(),
   price: CurrencyAmountSchema,
+  volume_24h: CurrencyAmountSchema.optional(),
   market_cap: CurrencyAmountSchema,
   fdv: CurrencyAmountSchema,
   total_supply: z.string(),
   circulating_supply: z.string(),
-  ath: AssetAthSchema,
+  ath: AssetAthSchema.optional(),
   avg_hold_time_days: z.number(),
   updated_at: z.number(),
 });
@@ -92,6 +93,7 @@ export const AssetSchema = z.object({
   profile: AssetProfileSchema,
   finance: AssetFinanceSchema,
   contracts: z.array(AssetContractSchema),
+  created_at: z.string().optional(),
   updated_at: z.string(),
   stats: AssetStatsSchema.optional(),
   launch_status: z.string().optional(),
