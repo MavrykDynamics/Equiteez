@@ -9,10 +9,7 @@ import {
   orderbookProcessRefund,
 } from "~/contracts/orderbook.contract";
 import { formatDate } from "~/lib/utils/date";
-import {
-  STATUS_ERROR,
-  STATUS_SUCCESS,
-} from "~/lib/ui/use-status-flag";
+import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
 import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
 import Money from "~/lib/atoms/Money";
 
@@ -55,10 +52,10 @@ export function OrderItem({
   const contractActionArgs = useMemo(
     () => ({
       orderbookContractAddress: order.orderbook_address,
-      orderId: order.id,
+      orderId: order.order_id,
       orderType: getContractOrderType(order.side),
     }),
-    [order.id, order.orderbook_address, order.side]
+    [order.order_id, order.orderbook_address, order.side]
   );
 
   const { invokeAction: invokeCancelOrder, status: cancelStatus } =
