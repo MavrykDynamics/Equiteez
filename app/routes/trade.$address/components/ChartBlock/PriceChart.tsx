@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
@@ -115,6 +122,9 @@ export function PriceChart({ asset }: AssetDetailsProps) {
   const [error, setError] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] =
     useState<AssetPriceChartHover | null>(null);
+  const chartCanvasRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -157,6 +167,61 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
     []
   );
+  const tooltipPosition = useMemo(() => {
+    if (!hoveredPoint || !chartCanvasRef.current) {
+      return null;
+    }
+
+    const canvasWidth = chartCanvasRef.current.clientWidth;
+    const canvasHeight = chartCanvasRef.current.clientHeight;
+    const tooltipWidth = tooltipSize.width;
+    const tooltipHeight = tooltipSize.height;
+    const verticalOffset = 12;
+    const edgePadding = 8;
+
+    let left = hoveredPoint.x - tooltipWidth / 2;
+
+    left = Math.max(
+      edgePadding,
+      Math.min(left, canvasWidth - tooltipWidth - edgePadding)
+    );
+
+    let top = hoveredPoint.y - tooltipHeight - verticalOffset;
+
+    if (top < edgePadding) {
+      top = hoveredPoint.y + verticalOffset;
+    }
+
+    top = Math.max(
+      edgePadding,
+      Math.min(top, canvasHeight - tooltipHeight - edgePadding)
+    );
+
+    return { left, top };
+  }, [hoveredPoint, tooltipSize.height, tooltipSize.width]);
+
+  useLayoutEffect(() => {
+    if (!hoveredPoint || !tooltipRef.current) {
+      return;
+    }
+
+    const nextWidth = tooltipRef.current.offsetWidth;
+    const nextHeight = tooltipRef.current.offsetHeight;
+
+    setTooltipSize((currentSize) => {
+      if (
+        currentSize.width === nextWidth &&
+        currentSize.height === nextHeight
+      ) {
+        return currentSize;
+      }
+
+      return {
+        width: nextWidth,
+        height: nextHeight,
+      };
+    });
+  }, [hoveredPoint]);
 
   return (
     <section className={styles.priceChart} aria-label="Price chart">
@@ -189,7 +254,7 @@ export function PriceChart({ asset }: AssetDetailsProps) {
         ) : (
           <>
             <div className={styles.chartWithYAxis}>
-              <div className={styles.chartCanvas}>
+              <div className={styles.chartCanvas} ref={chartCanvasRef}>
                 <AssetPriceChart
                   className={styles.chart}
                   onHover={handleChartHover}
@@ -217,7 +282,8 @@ export function PriceChart({ asset }: AssetDetailsProps) {
                     />
                     <div
                       className={styles.chartTooltip}
-                      style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
+                      ref={tooltipRef}
+                      style={tooltipPosition ?? undefined}
                       role="status"
                     >
                       <strong
