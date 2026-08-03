@@ -1,50 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
-import { fetchWalletOpenOrders } from "~/lib/apis/rwa/orders/orders";
+import { fetchWalletOrderHistory } from "~/lib/apis/rwa/orders/orders";
 import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { formatDate } from "~/lib/utils/date";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
-import { OpenOrdersConnectWalletState } from "./OpenOrdersConnectWalletState";
-import { OpenOrdersEmptyState } from "./OpenOrdersEmptyState";
-import { OpenOrdersLoadingState } from "./OpenOrdersLoadingState";
+import { OpenOrdersConnectWalletState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersConnectWalletState";
+import { OpenOrdersEmptyState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersEmptyState";
+import { OpenOrdersLoadingState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersLoadingState";
+
+import { ROrderStatusBadge } from "./ROrderStatusBadge";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
+import {
+  formatOrderDate,
+  getOrderDetails,
+} from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersTab";
 
-type OpenOrdersTabProps = {
+type OrdersHistoryTabProps = {
   asset: AssetType;
 };
 
-export function getOrderDetails(side: string) {
-  const [orderType = "", orderSide = ""] = side.toLowerCase().split("_");
-  const normalizedSide = orderSide || orderType;
-  const normalizedType = orderSide ? orderType : "limit";
-
-  return {
-    side: normalizedSide
-      ? `${normalizedSide[0].toUpperCase()}${normalizedSide.slice(1)}`
-      : "NA",
-    type: `${normalizedType[0].toUpperCase()}${normalizedType.slice(1)} Order`,
-  };
-}
-
-export function formatOrderDate(date: string) {
-  return formatDate(date, true).replace(/^0/, "");
-}
-
-export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
+export function OrderHistoryTab({ asset }: OrdersHistoryTabProps) {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
   const canFetchOrders = isAuthenticated && Boolean(userAddress);
 
-  const openOrdersQuery = useQuery({
-    queryKey: ["fetchWalletOpenOrders", userAddress, asset.address],
+  const ordersHistoryQuery = useQuery({
+    queryKey: ["fetchWalletOrdersHistory", userAddress, asset.address],
     queryFn: () =>
-      fetchWalletOpenOrders({
+      fetchWalletOrderHistory({
         walletAddress: userAddress ?? "",
         tokenAddress: asset.address,
       }),
@@ -52,19 +39,24 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
     retry: false,
   });
 
-  if (openOrdersQuery.isLoading) {
+  if (ordersHistoryQuery.isLoading) {
     return <OpenOrdersLoadingState />;
   }
 
   if (!canFetchOrders) {
-    return <OpenOrdersConnectWalletState />;
+    return (
+      <OpenOrdersConnectWalletState
+        title="No Order History"
+        description="Connect your wallet to view your past orders."
+      />
+    );
   }
 
-  if (openOrdersQuery.isError) {
+  if (ordersHistoryQuery.isError) {
     return (
       <section className={styles.state} aria-live="polite">
         <RText size="body-m" weight="medium">
-          Unable to load open orders
+          Unable to load orders history
         </RText>
         <RText
           className={styles.stateDescription}
@@ -75,7 +67,7 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
         </RText>
         <RButton
           onClick={() => {
-            void openOrdersQuery.refetch();
+            void ordersHistoryQuery.refetch();
           }}
           size="small"
           tone="black"
@@ -87,10 +79,15 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
     );
   }
 
-  const orders = openOrdersQuery.data?.items ?? [];
+  const orders = ordersHistoryQuery.data?.items ?? [];
 
   if (!orders.length) {
-    return <OpenOrdersEmptyState />;
+    return (
+      <OpenOrdersEmptyState
+        title="No Orders History"
+        description="Your buy and sell orders for this asset will appear here."
+      />
+    );
   }
 
   return (
@@ -98,7 +95,7 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
       <table className={styles.table}>
         <colgroup>
           <col className={styles.assetColumn} />
-          <col span={9} />
+          <col span={7} />
         </colgroup>
         <thead>
           <tr>
@@ -108,25 +105,19 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
             <th scope="col">SIDE</th>
             <th scope="col">PRICE</th>
             <th scope="col">AMOUNT</th>
-            <th scope="col">FILLED</th>
-            <th scope="col">EXPIRES</th>
+            <th scope="col">STATUS</th>
             <th scope="col">TOTAL</th>
-            <th aria-label="Order actions" scope="col" />
           </tr>
         </thead>
         <tbody>
           {orders.map((order) => {
-            const orderDetails = getOrderDetails(order.side);
-            const actionIcon = order.can_cancel ? "trash" : "refund";
-            const actionLabel = order.can_cancel
-              ? `Cancel ${asset.metadata.symbol} order`
-              : `Request refund for ${asset.metadata.symbol} order`;
+            const orderDetails = getOrderDetails(order.type);
 
             return (
               <tr key={order.id} className={styles.tableRow}>
                 <td data-label="Asset">
                   <RText size="body-sm">
-                    {formatOrderDate(order.created_at)}
+                    {formatOrderDate(order.datetime)}
                   </RText>
                 </td>
                 <td data-label="Pair">
@@ -157,27 +148,13 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
                     <Money fiat>{order.amount}</Money>
                   </RText>
                 </td>
-                {/*TODO remove mock data*/}
-                <td data-label="Filled">
-                  <RText size="body-sm">NA</RText>
-                </td>
-                {/*TODO remove mock data*/}
-                <td data-label="Expires">
-                  <RText size="body-sm">NA</RText>
+                <td data-label="Status">
+                  <ROrderStatusBadge status={order.status} />
                 </td>
                 <td data-label="Total">
                   <RText size="body-sm">
                     <Money fiat>{order.quote_token.total}</Money> USDT
                   </RText>
-                </td>
-                <td className={styles.actions} data-label="Actions">
-                  <button
-                    aria-label={actionLabel}
-                    className={styles.actionsButton}
-                    type="button"
-                  >
-                    <RIcon name={actionIcon} size="medium" />
-                  </button>
                 </td>
               </tr>
             );

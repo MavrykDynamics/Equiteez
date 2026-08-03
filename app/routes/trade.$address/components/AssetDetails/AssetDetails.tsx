@@ -57,7 +57,7 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
               weight="medium"
               color={isNegative ? "red-500" : "green-500"}
             >
-              {isNegative ? "-" : "+"}
+              {isNegative ? "" : "+"}
               <Money fiat>{priceChange.percentage ?? 0}</Money>%
             </RText>
           ) : (
