@@ -1,8 +1,16 @@
+import { FC, useState } from "react";
+
+import clsx from "clsx";
+
+import ChevronDownIcon from "app/icons/chevron-down.svg?react";
+// eslint-disable-next-line import/no-named-as-default
 import type BigNumber from "bignumber.js";
-import { FC } from "react";
 import Money from "~/lib/atoms/Money";
 
+import styles from "./styles.module.css";
+
 type FeesCardProps = {
+  className?: string;
   // Kept optional for backwards compatibility with callers; the grand total is
   // shown separately as "Order Total", so this card only surfaces the fees.
   totalAmount?: BigNumber | number;
@@ -10,32 +18,54 @@ type FeesCardProps = {
   networkfee: BigNumber | number;
 };
 
-export const FeesCard: FC<FeesCardProps> = ({ txnFees, networkfee }) => {
+export const FeesCard: FC<FeesCardProps> = ({
+  className,
+  totalAmount = 0,
+  txnFees,
+  networkfee,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <section className="bg-gray-50 rounded-2xl flex flex-col gap-[8px] p-4 text-sm">
-      <p className="text-sand-600 font-semibold">Fees</p>
+    <section className={clsx(styles.card, className)}>
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        className={styles.summaryButton}
+        onClick={() => setIsOpen((currentIsOpen) => !currentIsOpen)}
+      >
+        <span>Order Summary</span>
+        <span className={styles.summaryValue}>
+          <span className={styles.summaryAmount}>
+            $<Money fiat tooltip={false}>{totalAmount}</Money>
+          </span>
+          <ChevronDownIcon className={styles.arrowIcon} />
+        </span>
+      </button>
 
-      <div className="flex flex-col gap-[4px]">
-        <div className="flex items-center justify-between">
-          <p className="text-sand-600">Platform Fees</p>
-          <div className="text-sand-900 font-semibold">
-            {txnFees === undefined ? (
-              "On fill"
-            ) : (
-              <>
-                $<Money tooltip={false}>{txnFees}</Money>
-              </>
-            )}
+      {isOpen && (
+        <div className={styles.details}>
+          <div className={styles.detailRow}>
+            <p>Platform Fees</p>
+            <div className={styles.detailValue}>
+              {txnFees === undefined ? (
+                "On fill"
+              ) : (
+                <>
+                  $<Money fiat tooltip={false}>{txnFees}</Money>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.detailRow}>
+            <p>Network Fee</p>
+            <div className={styles.detailValue}>
+              <Money tooltip={false}>{networkfee}</Money> MVRK
+            </div>
           </div>
         </div>
-
-        <div className="flex items-center justify-between">
-          <p className="text-sand-600">Network Fee</p>
-          <div className="text-sand-900 font-semibold">
-            <Money tooltip={false}>{networkfee}</Money> MVRK
-          </div>
-        </div>
-      </div>
+      )}
     </section>
   );
 };

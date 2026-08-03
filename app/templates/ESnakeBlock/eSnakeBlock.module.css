@@ -35,3 +35,17 @@
   line-height: 150%;
   letter-spacing: -0.011px;
 }
+
+.neutralProgress::after {
+  background-color: var(--r-color-neutral-black);
+}
+
+.neutralPoint {
+  background-color: var(--r-color-neutral-white);
+  border: 2px solid var(--r-color-neutral-300);
+}
+
+.neutralPointSelected {
+  background-color: var(--r-color-neutral-black);
+  border: 2px solid var(--r-color-neutral-black);
+}

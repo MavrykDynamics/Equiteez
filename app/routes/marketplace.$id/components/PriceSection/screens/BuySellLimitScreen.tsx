@@ -1,5 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import clsx from "clsx";
+
 import { Button } from "~/lib/atoms/Button";
 
 import * as gtag from "app/utils/gtags.client";
@@ -21,7 +23,6 @@ import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
-import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
 import {
@@ -31,6 +32,8 @@ import {
   isPriceAlignedToTickSize,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+
+import styles from "./BuySellForm.module.css";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -64,7 +67,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   marketTokenPrice,
   validationMessage,
 }) => {
-  const { token_address, slug, assetDetails } = estate;
+  const { token_address, slug } = estate;
 
   const {
     baseTokenMetadata: selectedAssetMetadata,
@@ -266,101 +269,109 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     limitPrice,
   ]);
 
+  const inputClassNames = {
+    amountInputClassName: styles.amountInput,
+    amountInputContainerClassName: styles.amountInputContainer,
+    assetViewClassName: styles.assetPill,
+    balanceClassName: styles.balanceText,
+    balanceLabel: "Bal.",
+    bodyClassName: styles.balanceBody,
+    bottomLeftClassName: styles.bottomValue,
+    bottomRightClassName: styles.bottomValue,
+    className: styles.balanceInput,
+    footerClassName: styles.balanceFooter,
+    headerClassName: styles.balanceHeader,
+    sectionClassName: styles.balanceCard,
+    showBalanceIcon: false,
+  };
+
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 ">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <BalanceInputWithTotal
-              ref={ref1}
-              onNext={() => ref2.current?.focus()}
-              amountInputDisabled={false}
-              {...input1Props}
-              balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata.decimals}
-              cryptoDecimals={stableCoinMetadata.decimals}
-            />
+    <div className={styles.form}>
+      <div className={styles.content}>
+        <div className={styles.fieldStack}>
+          <BalanceInputWithTotal
+            ref={ref1}
+            onNext={() => ref2.current?.focus()}
+            amountInputDisabled={false}
+            {...input1Props}
+            balanceTotal={balanceTotal}
+            decimals={selectedAssetMetadata.decimals}
+            cryptoDecimals={stableCoinMetadata.decimals}
+            {...inputClassNames}
+          />
+
+          <BalanceInputWithTotal
+            ref={ref2}
+            onNext={() => ref3.current?.focus()}
+            onPrev={() => ref1.current?.focus()}
+            amountInputDisabled={false}
+            {...input2Props}
+            balanceTotal={balanceTotal}
+            decimals={selectedAssetMetadata.decimals}
+            cryptoDecimals={stableCoinMetadata.decimals}
+            {...inputClassNames}
+          />
+
+          {/* ------------------------------------------------------------------------------------------- */}
+          <div className={styles.fieldStack}>
+            <div className={styles.snakeWrapper}>
+              <ESnakeblock
+                selectedOption={selectedPercentage}
+                setSelectedOption={setSelectedPercentage}
+                variant="neutral"
+              />
+            </div>
 
             <BalanceInputWithTotal
-              ref={ref2}
-              onNext={() => ref3.current?.focus()}
-              onPrev={() => ref1.current?.focus()}
-              amountInputDisabled={false}
-              {...input2Props}
-              balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata.decimals}
-              cryptoDecimals={stableCoinMetadata.decimals}
-            />
-
-            {/* ------------------------------------------------------------------------------------------- */}
-            <div>
-              <div className="my-3">
-                <ESnakeblock
-                  selectedOption={selectedPercentage}
-                  setSelectedOption={setSelectedPercentage}
-                />
-              </div>
-
-              <BalanceInputWithTotal
-                ref={ref3}
-                onPrev={() => ref2.current?.focus()}
-                amountInputDisabled
-                amount={balanceTotal}
-                additionalTopRightBlock=" "
-                label={
-                  <div className="flex items-center gap-[4px] text-xs text-sand-600">
-                    Order Total
-                  </div>
-                }
-                additionalBottomLeftBlock={
-                  <div className="flex items-center gap-2 text-xs text-sand-600">
-                    <span>
-                      Market{" "}
-                      <span className="font-semibold underline">
-                        $<Money>{marketTokenPrice}</Money>
-                      </span>
+              ref={ref3}
+              onPrev={() => ref2.current?.focus()}
+              amountInputDisabled
+              amount={balanceTotal}
+              additionalTopRightBlock=" "
+              label={
+                <div className="flex items-center gap-[4px] text-xs text-sand-600">
+                  Order Total
+                </div>
+              }
+              additionalBottomLeftBlock={
+                <div className="flex items-center gap-2 text-xs text-sand-600">
+                  <span>
+                    Market{" "}
+                    <span className="font-semibold underline">
+                      $<Money>{marketTokenPrice}</Money>
                     </span>
-                    {marketPriceDifference && (
-                      <span
-                        className={`font-semibold ${priceDifferenceTextColorClassName}`}
-                      >
-                        Diff {priceDifferencePrefix}$
-                        <Money>{marketPriceDifference.abs()}</Money>
-                      </span>
-                    )}
-                  </div>
-                }
-                selectedAssetSlug={quoteTokenSlug}
-                selectedAssetMetadata={stableCoinMetadata}
-                balanceTotal={balanceTotal}
-                decimals={selectedAssetMetadata.decimals}
-                cryptoDecimals={stableCoinMetadata.decimals}
-                cryptoValue={balanceTotal?.toNumber() || 0}
-              />
-            </div>
-
-            <FeesCard
-              txnFees={txnFee}
-              totalAmount={finalTotalValue}
-              networkfee={networkFee}
+                  </span>
+                  {marketPriceDifference && (
+                    <span
+                      className={`font-semibold ${priceDifferenceTextColorClassName}`}
+                    >
+                      Diff {priceDifferencePrefix}$
+                      <Money>{marketPriceDifference.abs()}</Money>
+                    </span>
+                  )}
+                </div>
+              }
+              selectedAssetSlug={quoteTokenSlug}
+              selectedAssetMetadata={stableCoinMetadata}
+              balanceTotal={balanceTotal}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
+              cryptoValue={balanceTotal?.toNumber() || 0}
+              {...inputClassNames}
             />
-
-            <div className="mt-3">
-              <ProjectionCard
-                apy={assetDetails.APY}
-                monthkyReturns={assetDetails.financials.expectedIncome.income}
-                yearlyReturns={
-                  assetDetails.financials.expectedIncome.incomePerTokenYearly
-                }
-                gradient={isBuyAction ? "blue" : "orange"}
-              />
-            </div>
           </div>
+
+          <FeesCard
+            className={styles.summaryCard}
+            txnFees={txnFee}
+            totalAmount={finalTotalValue}
+            networkfee={networkFee}
+          />
         </div>
       </div>
 
       {!isKyced && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert
             type="warning"
             header="Verify with Mavryk Pro to Trade"
@@ -374,7 +385,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       )}
 
       {validationMessage && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert type="error" header="Order Cannot Be Submitted" expandable>
             {validationMessage}
           </Alert>
@@ -382,13 +393,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       )}
 
       <Button
-        className={
-          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
-        }
+        className={clsx(styles.submitButton, continueButtonClassName)}
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
+        size="custom"
+        textVariant="caption"
+        variant="custom"
       >
-        Continue
+        {isBuyAction ? "Buy" : "Sell"}
       </Button>
     </div>
   );

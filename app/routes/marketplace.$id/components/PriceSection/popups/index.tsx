@@ -18,6 +18,7 @@ import { TabType } from "~/lib/atoms/Tab";
 
 // icons
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
+import ChevronDownIcon from "app/icons/chevron-down.svg?react";
 
 //consts & types
 import {
@@ -70,10 +71,7 @@ import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-import {
-  ORDER_BOOK_TOGGLE_LABELS,
-  OrderBookToggleButton,
-} from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import { OrderBookToggleButton } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -82,6 +80,10 @@ import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
+const BUY_SELL_ORDER_BOOK_TOGGLE_LABELS = {
+  hide: "Order Book",
+  show: "Order Book",
+};
 
 const getMarketIdentifier = (market: EstateType) =>
   market.assetDetails.blockchain[0]?.identifier;
@@ -847,6 +849,8 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   );
 
   const shouldRenderOrderBook = isSecondaryEstate && activetabId !== CONFIRM;
+  const shouldRenderEntryControls = shouldRenderOrderBook;
+  const shouldRenderHeader = activetabId === CONFIRM || !isSecondaryEstate;
 
   useEffect(() => {
     onOrderBookVisibilityChange?.(shouldRenderOrderBook && isOrderBookOpen);
@@ -877,68 +881,80 @@ export const BuySellContent: FC<BuySellContentProps> = ({
         </PopupWithIcon>
       )}
 
-      <div className="flex flex-col text-content flex-1 min-h-0 relative min-w-0 bg-white">
-        <div className="flex items-center">
-          {activetabId === CONFIRM ? (
-            <div
-              role="presentation"
-              onClick={() => setAvtiveTabId(prevTabId)}
-              className="flex items-center cursor-pointer"
-            >
-              <button>
-                <ArrowLeftIcon className="size-6 mr-2" />
-              </button>
-              <span className="text-card-headline text-sand-900">
-                Checkout
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col w-full">
-              <HeadlinePreviewSection />
-              {!isSecondaryEstate && (
-                <div className="mt-4 w-full">
-                  <h4 className="text-content text-body mb-3 font-semibold">
-                    Shares
-                  </h4>
-                  <ProgresBar
-                    tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <Divider className="my-6" />
+      <div className={styles.buySellRoot}>
+        {shouldRenderHeader && (
+          <div className="flex items-center">
+            {activetabId === CONFIRM ? (
+              <div
+                role="presentation"
+                onClick={() => setAvtiveTabId(prevTabId)}
+                className="flex items-center cursor-pointer"
+              >
+                <button>
+                  <ArrowLeftIcon className="size-6 mr-2" />
+                </button>
+                <span className="text-card-headline text-sand-900">
+                  Checkout
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col w-full">
+                <HeadlinePreviewSection />
+                {!isSecondaryEstate && (
+                  <div className="mt-4 w-full">
+                    <h4 className="text-content text-body mb-3 font-semibold">
+                      Shares
+                    </h4>
+                    <ProgresBar
+                      tokensCount={
+                        estate.assetDetails.priceDetails.tokensAvailable
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        {shouldRenderHeader && <Divider className="my-6" />}
 
-        {activetabId !== CONFIRM && isSecondaryEstate && (
-          <>
-            <div className="mb-3">
+        {shouldRenderEntryControls && (
+          <div className={styles.tradeControls}>
+            <div className={styles.orderBookToggleWrap}>
               <OrderBookToggleButton
+                className={styles.orderBookToggle}
                 isOpen={isOrderBookOpen}
-                labels={ORDER_BOOK_TOGGLE_LABELS}
+                labels={BUY_SELL_ORDER_BOOK_TOGGLE_LABELS}
                 onClick={toggleOrderBook}
               />
             </div>
-            <div className="mb-[8px]">
-              <TabSwitcherV2
-                className={styles.tabsWrapper}
-                tabs={marketTabs}
-                tabClassName={styles.tab}
-                activeTabId={marketType}
-              />
-            </div>
-            <div>
-              <div className="mb-3 text-base">
-                <TabSwitcherV2
-                  className={styles.tabsWrapper}
-                  // @ts-expect-error // OrderType is string
-                  tabs={tabs}
-                  tabClassName={styles.tab}
-                  activeTabId={activetabId}
-                />
-              </div>
-            </div>
-          </>
+
+            <label className={styles.marketSelectWrapper}>
+              <span className={styles.visuallyHidden}>Order mode</span>
+              <select
+                aria-label="Order mode"
+                className={styles.marketSelect}
+                onChange={(event) => handlaMarketChange(event.target.value)}
+                value={marketType}
+              >
+                {marketTabs.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className={styles.marketSelectIcon} />
+            </label>
+
+            <TabSwitcherV2
+              activeClassName={styles.sideTabActive}
+              activeTabId={activetabId}
+              className={styles.sideTabs}
+              // @ts-expect-error // OrderType is string
+              tabs={tabs}
+              tabClassName={styles.sideTab}
+            />
+          </div>
         )}
 
         {activetabId === CONFIRM && (
