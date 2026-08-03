@@ -111,6 +111,8 @@ Current icon names:
 - `arrow-round`
 - `burger-menu`
 - `check`
+- `close`
+- `copy`
 - `grid`
 - `list`
 - `loading`
@@ -266,6 +268,13 @@ Each reusable `R*` component folder should normally contain:
 - Location: `app/routes/trade.$address/components/AssetTabs/OrderHistoryTab/ROrderStatusBadge.tsx`
 - Reusability notes: Use for order-history status rendering. `fulfilled` is displayed as `FILLED`, `pending` as `OPEN`, and all other API values keep their original text with the canceled visual treatment.
 - Related tokens: `--r-color-green-*`, `--r-color-yellow-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-3`, `--r-radius-pill`
+
+## RDepositFundsModal
+
+- Purpose: Route-local redesign modal for mock USDT deposits through the Ethereum bridge or directly to a Mavryk address.
+- Location: `app/routes/discover/components/DepositFunds/RDepositFundsModal.tsx`
+- Reusability notes: Controlled with `isOpen` and `onClose`; both tabs use local mock values until deposit APIs and wallet flows are connected.
+- Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
 
 ## RFeatureCard
 

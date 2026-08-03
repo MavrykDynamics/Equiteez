@@ -10,7 +10,6 @@
   min-width: 1000px;
   border-collapse: collapse;
   table-layout: fixed;
-  font-family: var(--r-font-body);
   color: var(--r-color-neutral-black);
 }
 
