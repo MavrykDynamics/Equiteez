@@ -2,7 +2,10 @@ export const rwaApiUrl = new URL(process.env.RWA_API ?? "").href;
 export const rwaPricesApiUrl = new URL(process.env.RWA_SERVICES_API ?? "").href;
 
 export { rwaApi } from "~/lib/apis/rwa/client";
-export { fetchAssets } from "~/lib/apis/rwa/assets/assets";
+export {
+  fetchAssets,
+  fetchAssetsHighlights,
+} from "~/lib/apis/rwa/assets/assets";
 export {
   fetchWalletOpenOrders,
   fetchWalletOrderHistory,
