@@ -1,15 +1,18 @@
 import styles from "./styles.module.css";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
-import { useMemo } from "react";
 import { HighlightCard } from "~/routes/discover/components/Highlights/HighlightCard";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAssetsHighlights } from "~/lib/apis/rwa";
 
 export function Highlights() {
-  const { assets } = useAssetsContext();
+  const { data } = useQuery({
+    queryKey: ["rwa-assets-highlights"],
+    queryFn: fetchAssetsHighlights,
+  });
 
-  const topGainers = useMemo(() => assets.slice(0, 3), [assets]);
-  const trending = useMemo(() => assets.slice(0, 3), [assets]);
-  const newlyAdded = useMemo(() => assets.slice(0, 3), [assets]);
+  const topGainers = data?.top_gainers ?? [];
+  const trending = data?.trending ?? [];
+  const newlyAdded = data?.newly_added ?? [];
 
   return (
     <div className={styles.wrapper}>

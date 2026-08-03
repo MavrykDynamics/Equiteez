@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  AssetHighlightSchema,
   AssetSchema,
   AssetsHighlightsSchema,
   AssetsSchema,
@@ -7,4 +8,7 @@ import {
 
 export type AssetType = z.infer<typeof AssetSchema>;
 export type AssetsResponseType = z.infer<typeof AssetsSchema>;
-export type AssetsHighlightsResponseType = z.infer<typeof AssetsHighlightsSchema>;
+export type AssetsHighlightsResponseType = z.infer<
+  typeof AssetsHighlightsSchema
+>;
+export type AssetHighlightType = z.infer<typeof AssetHighlightSchema>;

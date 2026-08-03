@@ -115,7 +115,7 @@ export const AssetsSchema = z.object({
   items: z.array(AssetSchema),
 });
 
-const AssetHighlightSchema = z.object({
+export const AssetHighlightSchema = z.object({
   address: z.string(),
   symbol: z.string(),
   name: z.string(),
