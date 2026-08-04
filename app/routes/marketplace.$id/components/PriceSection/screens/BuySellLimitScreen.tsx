@@ -7,13 +7,7 @@ import { Button } from "~/lib/atoms/Button";
 import * as gtag from "app/utils/gtags.client";
 
 // icons
-import {
-  BUY,
-  BuyScreenState,
-  CONFIRM,
-  SellScreenState,
-  OrderType,
-} from "../consts";
+import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
@@ -32,14 +26,20 @@ import {
   isPriceAlignedToTickSize,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
 
 import styles from "./BuySellForm.module.css";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
+  actionCb: () => void;
   continueButtonClassName?: string;
-  toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
@@ -49,13 +49,14 @@ type BuySellLimitScreenProps = {
   limitPrice: BigNumber | undefined;
   rawTickSize: number;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  status: StatusFlag;
   validationMessage?: string;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   estate,
-  toggleScreen,
   actionType,
+  actionCb,
   continueButtonClassName,
   amount,
   total,
@@ -65,6 +66,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setLimitPrice,
   marketTokenPrice,
+  status,
   validationMessage,
 }) => {
   const { token_address, slug } = estate;
@@ -146,14 +148,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen(CONFIRM);
+    actionCb();
 
     gtag.event({
-      action: "limit_buy_base_token",
-      category: "Limit Buy base token",
-      label: "Limit Buy base token",
+      action: isBuyAction ? "limit_buy_base_token" : "limit_sell_base_token",
+      category: isBuyAction ? "Limit Buy base token" : "Limit Sell base token",
+      label: isBuyAction ? "Limit Buy base token" : "Limit Sell base token",
     });
-  }, [toggleScreen]);
+  }, [actionCb, isBuyAction]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
@@ -216,6 +218,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     };
   }, [networkFee, total]);
 
+  const isLoading =
+    status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
     hasBalanceError ||
     hasLimitPriceTickError ||
@@ -226,6 +230,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !limitPrice.isFinite() ||
     limitPrice.lte(0) ||
     !isKyced ||
+    isLoading ||
     Boolean(validationMessage);
   const priceDifferencePrefix = marketPriceDifference?.gt(0)
     ? "+"
@@ -396,11 +401,12 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         className={clsx(styles.submitButton, continueButtonClassName)}
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
+        isLoading={isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {isBuyAction ? "Buy" : "Sell"}
+        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );

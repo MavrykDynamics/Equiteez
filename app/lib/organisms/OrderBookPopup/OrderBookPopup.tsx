@@ -4,8 +4,7 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 
 import CloseIcon from "app/icons/cross.svg?react";
-import EyeClosedBoldIcon from "app/icons/eye-closed-bold.svg?react";
-import EyeOpenBoldIcon from "app/icons/eye-open-bold.svg?react";
+import MenuListIcon from "app/icons/menu-list.svg?react";
 
 import { OrderBookTable } from "./OrderBookTable";
 import type { OrderBookToggleLabels } from "./orderBook.types";
@@ -76,8 +75,6 @@ export const OrderBookToggleButton: FC<OrderBookToggleButtonProps> = ({
   labels,
   onClick,
 }) => {
-  const Icon = isOpen ? EyeClosedBoldIcon : EyeOpenBoldIcon;
-
   return (
     <button
       type="button"
@@ -85,7 +82,7 @@ export const OrderBookToggleButton: FC<OrderBookToggleButtonProps> = ({
       className={clsx(styles.toggleButton, className)}
       onClick={onClick}
     >
-      <Icon className={styles.toggleIcon} />
+      <MenuListIcon className={styles.toggleIcon} />
       <span className={styles.toggleLabel}>
         {isOpen ? labels.hide : labels.show}
       </span>

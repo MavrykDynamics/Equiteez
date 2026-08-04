@@ -6,13 +6,7 @@ import { Button } from "~/lib/atoms/Button";
 import * as gtag from "app/utils/gtags.client";
 
 // icons
-import {
-  BUY,
-  BuyScreenState,
-  CONFIRM,
-  SellScreenState,
-  OrderType,
-} from "../consts";
+import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
@@ -26,34 +20,42 @@ import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
 
 import styles from "./BuySellForm.module.css";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
+  actionCb: () => void;
   continueButtonClassName?: string;
-  toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   networkFee: BigNumber;
   tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  status: StatusFlag;
   hasQuoteError?: boolean;
   validationMessage?: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
   estate,
-  toggleScreen,
   actionType,
+  actionCb,
   continueButtonClassName,
   amount,
   total,
   networkFee,
   tokenPrice,
   setAmount,
+  status,
   hasQuoteError = false,
   validationMessage,
 }) => {
@@ -105,14 +107,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       : false;
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen(CONFIRM);
+    actionCb();
 
     gtag.event({
-      action: "buy_base_token",
-      category: "Buy base token",
-      label: "Buy base token",
+      action: isBuyAction ? "buy_base_token" : "sell_base_token",
+      category: isBuyAction ? "Buy base token" : "Sell base token",
+      label: isBuyAction ? "Buy base token" : "Sell base token",
     });
-  }, [toggleScreen]);
+  }, [actionCb, isBuyAction]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
@@ -183,8 +185,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
   const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
+  const isLoading =
+    status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
-    hasTotalError || hasInvalidAmount || hasInvalidMarketPrice || !isKyced;
+    hasTotalError ||
+    hasInvalidAmount ||
+    hasInvalidMarketPrice ||
+    !isKyced ||
+    isLoading;
   const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);
 
   useEffect(() => {
@@ -328,11 +336,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         className={clsx(styles.submitButton, continueButtonClassName)}
         onClick={handleContinueClick}
         disabled={isContinueDisabled}
+        isLoading={isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {isBuyAction ? "Buy" : "Sell"}
+        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );
