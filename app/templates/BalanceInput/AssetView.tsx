@@ -8,9 +8,11 @@ import classNames from "clsx";
 export function AssetView({
   selectedAssetSlug,
   isSmallView,
+  className,
 }: {
   selectedAssetSlug: string;
   isSmallView?: boolean;
+  className?: string;
 }) {
   const { tokensMetadata } = useTokensContext();
   const metadata = tokensMetadata[selectedAssetSlug];
@@ -18,7 +20,8 @@ export function AssetView({
     <div
       className={classNames(
         styles.assetWrapper,
-        isSmallView && styles.assetWrapperSmall
+        isSmallView && styles.assetWrapperSmall,
+        className
       )}
     >
       <AssetIcon

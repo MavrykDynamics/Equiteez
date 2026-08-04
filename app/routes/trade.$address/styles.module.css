@@ -1,9 +1,32 @@
+@import "../../styles/breakpoints.css";
+
 .contentBlock {
   width: 100%;
   display: flex;
   gap: var(--r-space-5);
   margin-bottom: var(--r-space-5);
+  align-items: stretch;
 }
+
 .buySellContainer {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 428px;
+  flex-direction: column;
   min-width: 428px;
+  padding: var(--r-space-4);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+  background-color: var(--r-color-neutral-white);
+}
+
+@media (--media-tablet-max) {
+  .contentBlock {
+    flex-direction: column;
+  }
+
+  .buySellContainer {
+    width: 100%;
+    min-width: 0;
+  }
 }

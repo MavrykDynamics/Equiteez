@@ -20,6 +20,7 @@ import styles from "./styles.module.css";
 
 type AssetDetailsProps = {
   asset: AssetType;
+  orderBookControl?: ReactNode;
 };
 
 type ChartRange = "1h" | "1d" | "1w" | "1m";
@@ -47,8 +48,9 @@ function getYAxisLabels(points: AssetPriceChartPoint[]) {
   const max = Math.max(...prices);
   const step = (max - min) / (Y_AXIS_TICKS_COUNT - 1);
 
-  return Array.from({ length: Y_AXIS_TICKS_COUNT }, (_, index) =>
-    max - step * index
+  return Array.from(
+    { length: Y_AXIS_TICKS_COUNT },
+    (_, index) => max - step * index
   );
 }
 
@@ -115,13 +117,14 @@ function getChartRequestParams(range: ChartRange) {
   }
 }
 
-export function PriceChart({ asset }: AssetDetailsProps) {
+export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
   const [range, setRange] = useState<ChartRange>("1h");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hoveredPoint, setHoveredPoint] =
-    useState<AssetPriceChartHover | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
+    null
+  );
   const chartCanvasRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
@@ -225,24 +228,38 @@ export function PriceChart({ asset }: AssetDetailsProps) {
 
   return (
     <section className={styles.priceChart} aria-label="Price chart">
-      <div className={styles.chartControls} role="tablist" aria-label="Price range">
-        {CHART_RANGES.map(({ label, value }) => (
-          <button
-            aria-selected={range === value}
-            className={styles.intervalButton}
-            key={value}
-            onClick={() => setRange(value)}
-            role="tab"
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
+      <div className={styles.chartHeader}>
+        <div
+          className={styles.chartControls}
+          role="tablist"
+          aria-label="Price range"
+        >
+          {CHART_RANGES.map(({ label, value }) => (
+            <button
+              aria-selected={range === value}
+              className={styles.intervalButton}
+              key={value}
+              onClick={() => setRange(value)}
+              role="tab"
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {orderBookControl ? (
+          <div className={styles.chartHeaderAction}>{orderBookControl}</div>
+        ) : null}
       </div>
 
       <div className={styles.chartFrame}>
         {isLoading ? (
-          <div className={styles.chartState} role="status" aria-label="Loading price chart">
+          <div
+            className={styles.chartState}
+            role="status"
+            aria-label="Loading price chart"
+          >
             <Spinner size={32} />
           </div>
         ) : error ? (
@@ -302,7 +319,9 @@ export function PriceChart({ asset }: AssetDetailsProps) {
               </div>
               <div className={styles.yAxis} aria-hidden="true">
                 {yAxisLabels.map((value, index) => (
-                  <span key={`${value}-${index}`}>{formatAxisPrice(value)}</span>
+                  <span key={`${value}-${index}`}>
+                    {formatAxisPrice(value)}
+                  </span>
                 ))}
               </div>
             </div>

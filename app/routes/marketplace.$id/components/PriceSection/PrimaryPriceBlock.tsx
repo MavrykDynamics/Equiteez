@@ -5,11 +5,9 @@ import { Table } from "~/lib/atoms/Table/Table";
 import styles from "./priceSection.module.css";
 import clsx from "clsx";
 import { Button } from "~/lib/atoms/Button";
-import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
-import { FC, useCallback, useState } from "react";
+import { FC } from "react";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { PrimaryEstate } from "~/providers/MarketsProvider/market.types";
-import { PopupContent } from "./popups";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 
@@ -18,16 +16,7 @@ type PrimaryPriceBlockProps = {
 };
 
 export const PrimaryPriceBlock: FC<PrimaryPriceBlockProps> = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const { activeMarket, isActiveMarketLoading } = useMarketsContext();
-
-  const handleRequestClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const handleOpen = useCallback(() => {
-    setIsOpen(true);
-  }, []);
 
   if (isActiveMarketLoading || !activeMarket) return <Spinner size={56} />;
   const estate = activeMarket as PrimaryEstate;
@@ -78,19 +67,10 @@ export const PrimaryPriceBlock: FC<PrimaryPriceBlockProps> = () => {
         <ProgresBar
           tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
         />
-        <Button disabled className="mt-[16px]" onClick={handleOpen}>
+        <Button disabled className="mt-[16px]">
           Coming Soon
         </Button>
       </Table>
-
-      <PopupWithIcon
-        isOpen={isOpen}
-        onRequestClose={handleRequestClose}
-        contentPosition={"right"}
-      >
-        {/*  @ts-expect-error /TODO update or replce popup when primary estate data will be availble (no data for now) */}
-        <PopupContent estate={estate} onSuccessfulTransaction={handleRequestClose} orderType={"buy"} />
-      </PopupWithIcon>
     </section>
   );
 };

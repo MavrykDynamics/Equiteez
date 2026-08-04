@@ -1,16 +1,12 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import clsx from "clsx";
+
 import { Button } from "~/lib/atoms/Button";
 
 import * as gtag from "app/utils/gtags.client";
 
 // icons
-import {
-  BUY,
-  BuyScreenState,
-  CONFIRM,
-  SellScreenState,
-  OrderType,
-} from "../consts";
+import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
@@ -20,41 +16,50 @@ import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
-import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
+
+import styles from "./BuySellForm.module.css";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
+  actionCb: () => void;
   continueButtonClassName?: string;
-  toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   networkFee: BigNumber;
   tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  status: StatusFlag;
   hasQuoteError?: boolean;
   validationMessage?: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
   estate,
-  toggleScreen,
   actionType,
+  actionCb,
   continueButtonClassName,
   amount,
   total,
   networkFee,
   tokenPrice,
   setAmount,
+  status,
   hasQuoteError = false,
   validationMessage,
 }) => {
-  const { token_address, slug, assetDetails } = estate;
+  const { token_address, slug } = estate;
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
@@ -102,14 +107,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       : false;
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen(CONFIRM);
+    actionCb();
 
     gtag.event({
-      action: "buy_base_token",
-      category: "Buy base token",
-      label: "Buy base token",
+      action: isBuyAction ? "buy_base_token" : "sell_base_token",
+      category: isBuyAction ? "Buy base token" : "Sell base token",
+      label: isBuyAction ? "Buy base token" : "Sell base token",
     });
-  }, [toggleScreen]);
+  }, [actionCb, isBuyAction]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
@@ -180,8 +185,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
   const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
+  const isLoading =
+    status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
-    hasTotalError || hasInvalidAmount || hasInvalidMarketPrice || !isKyced;
+    hasTotalError ||
+    hasInvalidAmount ||
+    hasInvalidMarketPrice ||
+    !isKyced ||
+    isLoading;
   const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);
 
   useEffect(() => {
@@ -203,93 +214,94 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     };
   }, [amount, isBuyAction, networkFee, total]);
 
+  const inputClassNames = {
+    amountInputClassName: styles.amountInput,
+    amountInputContainerClassName: styles.amountInputContainer,
+    assetViewClassName: styles.assetPill,
+    balanceClassName: styles.balanceText,
+    balanceLabel: "Bal.",
+    bodyClassName: styles.balanceBody,
+    bottomLeftClassName: styles.bottomValue,
+    bottomRightClassName: styles.bottomValue,
+    className: styles.balanceInput,
+    footerClassName: styles.balanceFooter,
+    headerClassName: styles.balanceHeader,
+    sectionClassName: styles.balanceCard,
+    showBalanceIcon: false,
+  };
+
+  const pricePerShare = (
+    <span className={styles.bottomNote}>
+      $<Money>{tokenPrice}</Money> per share
+    </span>
+  );
+
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 ">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <BalanceInputWithTotal
-              ref={ref1}
-              onNext={() => ref2.current?.focus()}
-              onChange={(data) => setAmount(data)}
-              amountInputDisabled={false}
-              errorCaption={
-                hasTotalError
-                  ? "The amount entered exceeds your available balance."
-                  : undefined
-              }
-              {...input1Props}
-              label="Sell"
-              balanceTotal={balanceTotal}
-              decimals={stableCoinMetadata.decimals}
-              cryptoValue={
-                new BigNumber(isBuyAction ? usdBalance : tokenBalance)
-              }
-              additionalBottomLeftBlock={
-                isBuyAction ? undefined : (
-                  <div className="text-xs text-sand-600">
-                    Market $<Money>{tokenPrice}</Money>
-                  </div>
-                )
-              }
-              cryptoDecimals={
-                isBuyAction
-                  ? stableCoinMetadata.decimals
-                  : selectedAssetMetadata.decimals
-              }
-            />
+    <div className={styles.form}>
+      <div className={styles.content}>
+        <div className={styles.fieldStack}>
+          <BalanceInputWithTotal
+            ref={ref1}
+            onNext={() => ref2.current?.focus()}
+            onChange={(data) => setAmount(data)}
+            amountInputDisabled={false}
+            errorCaption={
+              hasTotalError
+                ? "The amount entered exceeds your available balance."
+                : undefined
+            }
+            {...input1Props}
+            balanceTotal={balanceTotal}
+            decimals={stableCoinMetadata.decimals}
+            cryptoValue={new BigNumber(isBuyAction ? usdBalance : tokenBalance)}
+            additionalBottomRightBlock={isBuyAction ? undefined : pricePerShare}
+            cryptoDecimals={
+              isBuyAction
+                ? stableCoinMetadata.decimals
+                : selectedAssetMetadata.decimals
+            }
+            {...inputClassNames}
+            label={isBuyAction ? "Pay with" : "Sell"}
+          />
 
-            <BalanceInputWithTotal
-              ref={ref2}
-              onPrev={() => ref1.current?.focus()}
-              onChange={handleOutputChange}
-              amountInputDisabled={false}
-              additionalBottomLeftBlock={
-                isBuyAction ? (
-                  <div className="text-xs text-sand-600">
-                    Price $<Money>{tokenPrice}</Money>
-                  </div>
-                ) : undefined
-              }
-              {...input2Props}
-              label="Buy"
-              balanceTotal={balanceTotal}
-              decimals={stableCoinMetadata.decimals}
-              cryptoValue={
-                new BigNumber(isBuyAction ? tokenBalance : usdBalance)
-              }
-              cryptoDecimals={
-                !isBuyAction
-                  ? stableCoinMetadata.decimals
-                  : selectedAssetMetadata.decimals
-              }
-            />
+          <BalanceInputWithTotal
+            ref={ref2}
+            onPrev={() => ref1.current?.focus()}
+            onChange={handleOutputChange}
+            amountInputDisabled={false}
+            additionalBottomRightBlock={isBuyAction ? pricePerShare : undefined}
+            {...input2Props}
+            label="Receive"
+            balanceTotal={balanceTotal}
+            decimals={stableCoinMetadata.decimals}
+            cryptoValue={new BigNumber(isBuyAction ? tokenBalance : usdBalance)}
+            cryptoDecimals={
+              !isBuyAction
+                ? stableCoinMetadata.decimals
+                : selectedAssetMetadata.decimals
+            }
+            {...inputClassNames}
+          />
 
+          <div className={styles.snakeWrapper}>
             <ESnakeblock
               selectedOption={selectedPercentage}
               setSelectedOption={setSelectedPercentage}
-            />
-
-            <FeesCard
-              txnFees={txnFee}
-              totalAmount={finalTotalValue}
-              networkfee={networkFee}
-            />
-
-            <ProjectionCard
-              apy={assetDetails.APY}
-              monthkyReturns={assetDetails.financials.expectedIncome.income}
-              yearlyReturns={
-                assetDetails.financials.expectedIncome.incomePerTokenYearly
-              }
-              gradient={isBuyAction ? "blue" : "orange"}
+              variant="neutral"
             />
           </div>
+
+          <FeesCard
+            className={styles.summaryCard}
+            txnFees={txnFee}
+            totalAmount={finalTotalValue}
+            networkfee={networkFee}
+          />
         </div>
       </div>
 
       {!isKyced && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert
             type="warning"
             header="Verify with Mavryk Pro to Trade"
@@ -303,7 +315,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
 
       {hasQuoteError && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert type="error" header="Low Quote Detected" expandable>
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
@@ -313,7 +325,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
 
       {validationMessage && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert type="error" header="Order Cannot Be Submitted" expandable>
             {validationMessage}
           </Alert>
@@ -321,13 +333,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
 
       <Button
-        className={
-          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
-        }
+        className={clsx(styles.submitButton, continueButtonClassName)}
         onClick={handleContinueClick}
         disabled={isContinueDisabled}
+        isLoading={isLoading}
+        size="custom"
+        textVariant="caption"
+        variant="custom"
       >
-        Continue
+        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );

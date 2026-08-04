@@ -16,6 +16,21 @@
   min-width: 0;
 }
 
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+  width: 100%;
+}
+
+.chartHeaderAction {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
 .chartControls {
   display: flex;
   align-items: center;
@@ -46,6 +61,34 @@
 .intervalButton:focus-visible {
   outline: none;
   box-shadow: var(--r-focus-ring);
+}
+
+.orderBookToggle {
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-pill);
+  color: var(--r-color-neutral-black);
+  min-height: var(--r-size-control-medium);
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+.orderBookToggle:hover {
+  border-color: var(--r-color-neutral-200);
+}
+
+.orderBookToggle :global(svg) {
+  color: currentColor;
+  height: 16px;
+  width: 16px;
+}
+
+.orderBookToggle :global(span) {
+  color: currentColor;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-sm);
 }
 
 .chartFrame {
@@ -240,4 +283,11 @@
 
 .sellBadge {
   background-color: rgb(239 68 68 / 10%);
+}
+
+@media (--media-tablet-max) {
+  .chartHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
