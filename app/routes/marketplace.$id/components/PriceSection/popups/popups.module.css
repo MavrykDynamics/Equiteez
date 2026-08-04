@@ -73,7 +73,7 @@
   width: 100% !important;
 }
 
-.sideTab {
+.tradeControls .sideTab {
   background: var(--r-color-neutral-white) !important;
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
@@ -83,11 +83,11 @@
   width: 100%;
 }
 
-.sideTab:hover {
+.tradeControls .sideTab:hover {
   border-color: var(--r-color-neutral-200);
 }
 
-.sideTab p {
+.tradeControls .sideTab p {
   color: var(--r-color-neutral-black) !important;
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
@@ -95,12 +95,12 @@
   line-height: var(--r-line-height-body-sm);
 }
 
-.sideTabActive {
+.tradeControls .sideTabActive {
   background: var(--r-color-neutral-black) !important;
   border-color: var(--r-color-neutral-black);
 }
 
-.sideTabActive p {
+.tradeControls .sideTabActive p {
   color: var(--r-color-neutral-white) !important;
 }
 
