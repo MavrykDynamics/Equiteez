@@ -482,6 +482,7 @@ html {
 }
 
 body {
+  scrollbar-gutter: stable;
   font-family: Poppins, system-ui, sans-serif;
   box-sizing: border-box;
   overflow-x: hidden;

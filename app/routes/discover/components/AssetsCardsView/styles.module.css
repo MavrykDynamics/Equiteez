@@ -187,7 +187,7 @@
   color: var(--r-color-red-500);
 }
 
-.secondaryChart {
+.secondaryAssetCard .secondaryChart {
   width: calc(100% + (var(--r-space-5) * 2) + var(--r-border-width-sm));
   height: 72px;
   margin-top: 0;

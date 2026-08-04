@@ -14,6 +14,10 @@ const statusDetailsByValue: Record<string, OrderStatusBadgeDetails> = {
     label: "FILLED",
     variant: "filled",
   },
+  canceled: {
+    label: "CANCELED",
+    variant: "canceled",
+  },
   pending: {
     label: "OPEN",
     variant: "open",

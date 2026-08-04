@@ -8,6 +8,7 @@ const QuoteTokenSchema = z.object({
 
 export const OpenOrderItemSchema = z.object({
   id: z.string(),
+  order_id: z.string(),
   operation_hash: z.string(),
   side: z.string(),
   token_address: z.string(),

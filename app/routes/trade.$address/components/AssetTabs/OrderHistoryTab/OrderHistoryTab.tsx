@@ -14,10 +14,7 @@ import { OpenOrdersLoadingState } from "~/routes/trade.$address/components/Asset
 import { ROrderStatusBadge } from "./ROrderStatusBadge";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
-import {
-  formatOrderDate,
-  getOrderDetails,
-} from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersTab";
+import { formatOrderDate, getOrderDetails } from "../OpenOrdersTab/OrderItem";
 
 type OrdersHistoryTabProps = {
   asset: AssetType;

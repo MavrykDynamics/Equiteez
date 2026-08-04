@@ -1,8 +1,9 @@
 import {
-  type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -47,8 +48,9 @@ function getYAxisLabels(points: AssetPriceChartPoint[]) {
   const max = Math.max(...prices);
   const step = (max - min) / (Y_AXIS_TICKS_COUNT - 1);
 
-  return Array.from({ length: Y_AXIS_TICKS_COUNT }, (_, index) =>
-    max - step * index
+  return Array.from(
+    { length: Y_AXIS_TICKS_COUNT },
+    (_, index) => max - step * index
   );
 }
 
@@ -120,8 +122,12 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hoveredPoint, setHoveredPoint] =
-    useState<AssetPriceChartHover | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
+    null
+  );
+  const chartCanvasRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -164,6 +170,61 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
     (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
     []
   );
+  const tooltipPosition = useMemo(() => {
+    if (!hoveredPoint || !chartCanvasRef.current) {
+      return null;
+    }
+
+    const canvasWidth = chartCanvasRef.current.clientWidth;
+    const canvasHeight = chartCanvasRef.current.clientHeight;
+    const tooltipWidth = tooltipSize.width;
+    const tooltipHeight = tooltipSize.height;
+    const verticalOffset = 12;
+    const edgePadding = 8;
+
+    let left = hoveredPoint.x - tooltipWidth / 2;
+
+    left = Math.max(
+      edgePadding,
+      Math.min(left, canvasWidth - tooltipWidth - edgePadding)
+    );
+
+    let top = hoveredPoint.y - tooltipHeight - verticalOffset;
+
+    if (top < edgePadding) {
+      top = hoveredPoint.y + verticalOffset;
+    }
+
+    top = Math.max(
+      edgePadding,
+      Math.min(top, canvasHeight - tooltipHeight - edgePadding)
+    );
+
+    return { left, top };
+  }, [hoveredPoint, tooltipSize.height, tooltipSize.width]);
+
+  useLayoutEffect(() => {
+    if (!hoveredPoint || !tooltipRef.current) {
+      return;
+    }
+
+    const nextWidth = tooltipRef.current.offsetWidth;
+    const nextHeight = tooltipRef.current.offsetHeight;
+
+    setTooltipSize((currentSize) => {
+      if (
+        currentSize.width === nextWidth &&
+        currentSize.height === nextHeight
+      ) {
+        return currentSize;
+      }
+
+      return {
+        width: nextWidth,
+        height: nextHeight,
+      };
+    });
+  }, [hoveredPoint]);
 
   return (
     <section className={styles.priceChart} aria-label="Price chart">
@@ -194,7 +255,11 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
 
       <div className={styles.chartFrame}>
         {isLoading ? (
-          <div className={styles.chartState} role="status" aria-label="Loading price chart">
+          <div
+            className={styles.chartState}
+            role="status"
+            aria-label="Loading price chart"
+          >
             <Spinner size={32} />
           </div>
         ) : error ? (
@@ -206,7 +271,7 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
         ) : (
           <>
             <div className={styles.chartWithYAxis}>
-              <div className={styles.chartCanvas}>
+              <div className={styles.chartCanvas} ref={chartCanvasRef}>
                 <AssetPriceChart
                   className={styles.chart}
                   onHover={handleChartHover}
@@ -234,7 +299,8 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
                     />
                     <div
                       className={styles.chartTooltip}
-                      style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
+                      ref={tooltipRef}
+                      style={tooltipPosition ?? undefined}
                       role="status"
                     >
                       <strong
@@ -253,7 +319,9 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
               </div>
               <div className={styles.yAxis} aria-hidden="true">
                 {yAxisLabels.map((value, index) => (
-                  <span key={`${value}-${index}`}>{formatAxisPrice(value)}</span>
+                  <span key={`${value}-${index}`}>
+                    {formatAxisPrice(value)}
+                  </span>
                 ))}
               </div>
             </div>
