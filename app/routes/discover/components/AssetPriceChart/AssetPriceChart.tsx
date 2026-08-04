@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { UTCTimestamp } from "lightweight-charts";
 
 import styles from "./AssetPriceChart.module.css";
@@ -20,6 +20,8 @@ type AssetPriceChartProps = {
   className?: string;
   onHover?: (hover: AssetPriceChartHover | null) => void;
   points: AssetPriceChartPoint[];
+  priceDecimals?: number;
+  showPriceScale?: boolean;
   tone: "positive" | "negative";
 };
 
@@ -39,9 +41,12 @@ export function AssetPriceChart({
   className,
   onHover,
   points,
+  priceDecimals = 2,
+  showPriceScale = false,
   tone,
 }: AssetPriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartData = useMemo(() => getChartData(points), [points]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -75,10 +80,29 @@ export function AssetPriceChart({
           layout: {
             attributionLogo: false,
             background: { color: "transparent", type: ColorType.Solid },
-            textColor: "transparent",
+            textColor:
+              computedStyles.getPropertyValue("--r-color-neutral-600").trim() ||
+              "#757575",
           },
           leftPriceScale: { visible: false },
-          rightPriceScale: { visible: false },
+          localization: {
+            priceFormatter: (value: number) =>
+              new Intl.NumberFormat("en-US", {
+                maximumFractionDigits: priceDecimals,
+                minimumFractionDigits: priceDecimals,
+              }).format(value),
+          },
+          rightPriceScale: {
+            autoScale: true,
+            borderVisible: false,
+            entireTextOnly: true,
+            minimumWidth: 64,
+            scaleMargins: {
+              bottom: 0.04,
+              top: 0.04,
+            },
+            visible: showPriceScale,
+          },
           timeScale: {
             borderVisible: false,
             timeVisible: false,
@@ -92,11 +116,16 @@ export function AssetPriceChart({
           lastValueVisible: false,
           lineColor,
           lineWidth: 2,
+          priceFormat: {
+            minMove: 1 / 10 ** priceDecimals,
+            precision: priceDecimals,
+            type: "price",
+          },
           priceLineVisible: false,
           topColor: areaTopColor,
         });
 
-        series.setData(getChartData(points));
+        series.setData(chartData);
         chart.timeScale().fitContent();
 
         chart.subscribeCrosshairMove((params) => {
@@ -133,7 +162,7 @@ export function AssetPriceChart({
       isUnmounted = true;
       cleanup();
     };
-  }, [onHover, points, tone]);
+  }, [chartData, onHover, priceDecimals, showPriceScale, tone]);
 
   return (
     <div className={`${styles.chart} ${className ?? ""}`} ref={containerRef} />

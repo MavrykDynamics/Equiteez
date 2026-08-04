@@ -31,25 +31,11 @@ const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
   { label: "1M", value: "1m" },
 ];
 
-const Y_AXIS_TICKS_COUNT = 6;
 const X_AXIS_TICKS_COUNT = 6;
+const PRICE_DECIMALS = 4;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
-}
-
-function getYAxisLabels(points: AssetPriceChartPoint[]) {
-  const prices = points.map(getPrice).filter(Number.isFinite);
-
-  if (prices.length === 0) return [];
-
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  const step = (max - min) / (Y_AXIS_TICKS_COUNT - 1);
-
-  return Array.from({ length: Y_AXIS_TICKS_COUNT }, (_, index) =>
-    max - step * index
-  );
 }
 
 function getXAxisLabels(points: AssetPriceChartPoint[]) {
@@ -70,13 +56,6 @@ function getXAxisLabels(points: AssetPriceChartPoint[]) {
   });
 }
 
-function formatAxisPrice(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
 function formatTooltipDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
@@ -86,8 +65,8 @@ function formatTooltipDate(date: Date) {
 
 function formatTooltipPrice(value: number) {
   return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 4,
-    minimumFractionDigits: 4,
+    maximumFractionDigits: PRICE_DECIMALS,
+    minimumFractionDigits: PRICE_DECIMALS,
   }).format(value);
 }
 
@@ -155,7 +134,6 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     };
   }, [asset.metadata.symbol, range]);
 
-  const yAxisLabels = useMemo(() => getYAxisLabels(points), [points]);
   const xAxisLabels = useMemo(() => getXAxisLabels(points), [points]);
   const lastPoint = points.at(-1);
   const firstPoint = points[0];
@@ -253,58 +231,53 @@ export function PriceChart({ asset }: AssetDetailsProps) {
           <p className={styles.chartState}>No price data available.</p>
         ) : (
           <>
-            <div className={styles.chartWithYAxis}>
-              <div className={styles.chartCanvas} ref={chartCanvasRef}>
-                <AssetPriceChart
-                  className={styles.chart}
-                  onHover={handleChartHover}
-                  points={points}
-                  tone={tone}
-                />
-                {hoveredPoint ? (
-                  <>
-                    <span
-                      aria-hidden="true"
-                      className={styles.chartCrosshair}
-                      style={{ left: hoveredPoint.x }}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className={`${styles.chartPoint} ${
+            <div className={styles.chartCanvas} ref={chartCanvasRef}>
+              <AssetPriceChart
+                className={styles.chart}
+                onHover={handleChartHover}
+                points={points}
+                priceDecimals={PRICE_DECIMALS}
+                showPriceScale
+                tone={tone}
+              />
+              {hoveredPoint ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className={styles.chartCrosshair}
+                    style={{ left: hoveredPoint.x }}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`${styles.chartPoint} ${
+                      tone === "positive"
+                        ? styles.positiveChartPoint
+                        : styles.negativeChartPoint
+                    }`}
+                    style={{
+                      left: hoveredPoint.x,
+                      top: hoveredPoint.y,
+                    }}
+                  />
+                  <div
+                    className={styles.chartTooltip}
+                    ref={tooltipRef}
+                    style={tooltipPosition ?? undefined}
+                    role="status"
+                  >
+                    <strong
+                      className={
                         tone === "positive"
-                          ? styles.positiveChartPoint
-                          : styles.negativeChartPoint
-                      }`}
-                      style={{
-                        left: hoveredPoint.x,
-                        top: hoveredPoint.y,
-                      }}
-                    />
-                    <div
-                      className={styles.chartTooltip}
-                      ref={tooltipRef}
-                      style={tooltipPosition ?? undefined}
-                      role="status"
+                          ? styles.positiveTooltipValue
+                          : styles.negativeTooltipValue
+                      }
                     >
-                      <strong
-                        className={
-                          tone === "positive"
-                            ? styles.positiveTooltipValue
-                            : styles.negativeTooltipValue
-                        }
-                      >
-                        ${formatTooltipPrice(hoveredPoint.value)}
-                      </strong>
-                      <span>{formatTooltipDate(hoveredPoint.time)}</span>
-                    </div>
-                  </>
-                ) : null}
-              </div>
-              <div className={styles.yAxis} aria-hidden="true">
-                {yAxisLabels.map((value, index) => (
-                  <span key={`${value}-${index}`}>{formatAxisPrice(value)}</span>
-                ))}
-              </div>
+                      ${formatTooltipPrice(hoveredPoint.value)}
+                    </strong>
+                    <span>{formatTooltipDate(hoveredPoint.time)}</span>
+                  </div>
+                </>
+              ) : null}
             </div>
             <div className={styles.xAxis} aria-hidden="true">
               {xAxisLabels.map((label, index) => (
