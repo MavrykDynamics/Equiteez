@@ -40,10 +40,7 @@ import { isDefined } from "~/lib/utils";
 import { ProgresBar } from "../PrimaryPriceBlock";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
-import {
-  MAX_ORDERBOOK_DEPTH_LIMIT,
-  useOrderbookDepth,
-} from "~/lib/apis/rwa";
+import { MAX_ORDERBOOK_DEPTH_LIMIT, useOrderbookDepth } from "~/lib/apis/rwa";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
@@ -115,15 +112,16 @@ export const BuySellContent: FC<BuySellContentProps> = ({
 }) => {
   const { slug } = estate;
   const { dapp } = useWalletContext();
-  const { orderbookStorages } = useDexContext();
+  const { isLoading: isDexLoading, orderbookStorages } = useDexContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
-  const { orderbookDepth } = useOrderbookDepth({
-    enabled: isSecondaryEstate,
-    limit: MAX_ORDERBOOK_DEPTH_LIMIT,
-    tokenAddress: estate.token_address,
-  });
+  const { loading: isOrderbookDepthLoading, orderbookDepth } =
+    useOrderbookDepth({
+      enabled: isSecondaryEstate,
+      limit: MAX_ORDERBOOK_DEPTH_LIMIT,
+      tokenAddress: estate.token_address,
+    });
   const {
     marketsArr,
     sortedMarketAddresses,
@@ -210,10 +208,8 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   // Display price may fall back to the opposite side for a generic current
   // quote, but placement prices below are strict side-specific values.
   const displayTokenPrice = useMemo(() => {
-    const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOrderbookDepth(
-      orderbookDepth,
-      quoteTokenDecimals
-    );
+    const { lowestSellPrice, highestBuyPrice } =
+      getBestPricesFromOrderbookDepth(orderbookDepth, quoteTokenDecimals);
 
     return resolveMarketPrice(
       orderType === BUY,
@@ -221,11 +217,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       highestBuyPrice,
       quoteTokenDecimals
     );
-  }, [
-    orderType,
-    orderbookDepth,
-    quoteTokenDecimals,
-  ]);
+  }, [orderType, orderbookDepth, quoteTokenDecimals]);
   const marketBuyTokenPrice = useMemo(
     () =>
       bestLimitAskAtoms
@@ -308,6 +300,9 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     () => marketTabs.find((tab) => tab.id === marketType),
     [marketTabs, marketType]
   );
+  const isOrderDataLoading =
+    isSecondaryEstate &&
+    (isDexLoading || (isMarketTypeMarket && isOrderbookDepthLoading));
 
   useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
@@ -618,11 +613,12 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     quoteTokenDecimals,
   ]);
 
-  const orderValidationMessage =
-    marketConfigValidationMessage ||
-    liquidityValidationMessage ||
-    minOrderValidationMessage ||
-    marketBuyBudgetValidationMessage;
+  const orderValidationMessage = isOrderDataLoading
+    ? undefined
+    : marketConfigValidationMessage ||
+      liquidityValidationMessage ||
+      minOrderValidationMessage ||
+      marketBuyBudgetValidationMessage;
 
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
@@ -630,6 +626,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       !mavrykToolkit ||
       !total ||
       total.lte(0) ||
+      isOrderDataLoading ||
       hasLimitPriceTickError ||
       orderValidationMessage
     ) {
@@ -679,6 +676,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     };
   }, [
     hasLimitPriceTickError,
+    isOrderDataLoading,
     isMarketTypeMarket,
     limitBuyProps,
     limitSellProps,
@@ -936,7 +934,6 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               tabs={tabs}
               tabClassName={styles.sideTab}
             />
-
           </div>
         )}
 
@@ -952,6 +949,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               tokenPrice={tokenPrice}
               networkFee={networkFee}
               status={status}
+              isOrderDataLoading={isOrderDataLoading}
               validationMessage={orderValidationMessage}
             />
           ) : (
@@ -968,6 +966,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               total={total}
               networkFee={networkFee}
               status={status}
+              isOrderDataLoading={isOrderDataLoading}
               validationMessage={orderValidationMessage}
             />
           ))}

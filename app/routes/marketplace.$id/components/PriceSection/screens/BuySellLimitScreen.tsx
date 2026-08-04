@@ -50,6 +50,7 @@ type BuySellLimitScreenProps = {
   rawTickSize: number;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   status: StatusFlag;
+  isOrderDataLoading?: boolean;
   validationMessage?: string;
 };
 
@@ -67,6 +68,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setLimitPrice,
   marketTokenPrice,
   status,
+  isOrderDataLoading = false,
   validationMessage,
 }) => {
   const { token_address, slug } = estate;
@@ -218,8 +220,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     };
   }, [networkFee, total]);
 
-  const isLoading =
-    status === STATUS_PENDING || status === STATUS_CONFIRMING;
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
     hasBalanceError ||
     hasLimitPriceTickError ||
@@ -229,6 +230,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !limitPrice ||
     !limitPrice.isFinite() ||
     limitPrice.lte(0) ||
+    isOrderDataLoading ||
     !isKyced ||
     isLoading ||
     Boolean(validationMessage);
