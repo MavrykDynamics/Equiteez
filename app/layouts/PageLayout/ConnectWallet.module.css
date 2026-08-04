@@ -6,12 +6,12 @@
   gap: var(--r-space-2);
   justify-content: flex-start;
   padding-right: var(--r-space-2);
-  min-height: 38px;
+  min-height: 38px !important;
 }
 .connectWalletBtn {
-  padding: 9px 14px 9px var(--r-space-4);
-  min-height: auto;
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  padding: 9px 14px 9px var(--r-space-4) !important;
+  min-height: auto !important;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100) !important;
 }
 
 .address {
