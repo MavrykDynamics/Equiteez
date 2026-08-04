@@ -59,23 +59,26 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
     [config.orderbook]
   );
 
-  const handleOrderbookData = useCallback((data: OrderbooksList) => {
-    const hasTickSizes = Array.from(config.orderbook.values()).every(
-      ({ address }) => orderbookTickSizes[address]
-    );
+  const handleOrderbookData = useCallback(
+    (data: OrderbooksList) => {
+      const hasTickSizes = Array.from(config.orderbook.values()).every(
+        ({ address }) => orderbookTickSizes[address]
+      );
 
-    if (!hasTickSizes) return;
+      if (!hasTickSizes) return;
 
-    const orderbookStorages = getOrderbookStorages(
-      data,
-      config.orderbook,
-      orderbookTickSizes
-    );
+      const orderbookStorages = getOrderbookStorages(
+        data,
+        config.orderbook,
+        orderbookTickSizes
+      );
 
-    setOrderbookStorages(
-      new Proxy({ ...orderbookStorages }, priceProxyHandler)
-    );
-  }, [config.orderbook, orderbookTickSizes]);
+      setOrderbookStorages(
+        new Proxy({ ...orderbookStorages }, priceProxyHandler)
+      );
+    },
+    [config.orderbook, orderbookTickSizes]
+  );
 
   const { data: orderbookData, error } = useApiQuery({
     fetchFn: fetchOrderbooks,
