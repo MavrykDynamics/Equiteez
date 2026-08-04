@@ -150,6 +150,17 @@ type PriceOrder = {
   order_type?: number;
 };
 
+type OrderbookDepthPriceLevel = {
+  price: BigNumber.Value;
+};
+
+type OrderbookDepthPriceSource = {
+  asks?: OrderbookDepthPriceLevel[];
+  best_ask?: BigNumber.Value | null;
+  best_bid?: BigNumber.Value | null;
+  bids?: OrderbookDepthPriceLevel[];
+};
+
 const MARKET_BUY_ORDER_TYPE = 2;
 const MARKET_SELL_ORDER_TYPE = 3;
 
@@ -200,6 +211,67 @@ export function getBestLimitBid(buyOrders: PriceOrder[]): BigNumber | null {
   const realBuyPrices = toRealLimitPrices(buyOrders, "buy");
 
   return realBuyPrices.length ? BigNumber.max(...realBuyPrices) : null;
+}
+
+const toPositiveFiniteDepthPrice = (
+  price: BigNumber.Value | null | undefined
+): BigNumber | null => {
+  const value = new BigNumber(price ?? 0);
+
+  return isPositiveFinitePrice(value) ? value : null;
+};
+
+const toRealDepthPrices = (
+  levels: OrderbookDepthPriceLevel[] | undefined
+): BigNumber[] =>
+  (levels ?? [])
+    .map((level) => toPositiveFiniteDepthPrice(level.price))
+    .filter((price): price is BigNumber => Boolean(price));
+
+const getBestAskFromOrderbookDepth = (
+  orderbookDepth: OrderbookDepthPriceSource | null | undefined
+): BigNumber | null => {
+  const explicitBestAsk = toPositiveFiniteDepthPrice(orderbookDepth?.best_ask);
+
+  if (explicitBestAsk) return explicitBestAsk;
+
+  const askPrices = toRealDepthPrices(orderbookDepth?.asks);
+
+  return askPrices.length ? BigNumber.min(...askPrices) : null;
+};
+
+const getBestBidFromOrderbookDepth = (
+  orderbookDepth: OrderbookDepthPriceSource | null | undefined
+): BigNumber | null => {
+  const explicitBestBid = toPositiveFiniteDepthPrice(orderbookDepth?.best_bid);
+
+  if (explicitBestBid) return explicitBestBid;
+
+  const bidPrices = toRealDepthPrices(orderbookDepth?.bids);
+
+  return bidPrices.length ? BigNumber.max(...bidPrices) : null;
+};
+
+export function getBestLimitAskFromOrderbookDepth(
+  orderbookDepth: OrderbookDepthPriceSource | null | undefined,
+  quoteTokenDecimals: number
+): BigNumber | null {
+  const bestAsk = getBestAskFromOrderbookDepth(orderbookDepth);
+
+  return bestAsk
+    ? priceToAtoms(bestAsk, quoteTokenDecimals, BigNumber.ROUND_DOWN)
+    : null;
+}
+
+export function getBestLimitBidFromOrderbookDepth(
+  orderbookDepth: OrderbookDepthPriceSource | null | undefined,
+  quoteTokenDecimals: number
+): BigNumber | null {
+  const bestBid = getBestBidFromOrderbookDepth(orderbookDepth);
+
+  return bestBid
+    ? priceToAtoms(bestBid, quoteTokenDecimals, BigNumber.ROUND_DOWN)
+    : null;
 }
 
 export function getMarketBuyReferencePrice(
@@ -289,6 +361,24 @@ export function getBestPricesFromOpenOrders(
   };
 }
 
+export function getBestPricesFromOrderbookDepth(
+  orderbookDepth: OrderbookDepthPriceSource | null | undefined,
+  quoteTokenDecimals: number
+): { lowestSellPrice: number; highestBuyPrice: number } {
+  return {
+    highestBuyPrice:
+      getBestLimitBidFromOrderbookDepth(
+        orderbookDepth,
+        quoteTokenDecimals
+      )?.toNumber() ?? 0,
+    lowestSellPrice:
+      getBestLimitAskFromOrderbookDepth(
+        orderbookDepth,
+        quoteTokenDecimals
+      )?.toNumber() ?? 0,
+  };
+}
+
 export function getCurrentPriceFromOpenOrders({
   buyOrders,
   sellOrders,
@@ -301,6 +391,26 @@ export function getCurrentPriceFromOpenOrders({
   const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOpenOrders(
     buyOrders,
     sellOrders
+  );
+
+  return resolveMarketPrice(
+    true,
+    lowestSellPrice,
+    highestBuyPrice,
+    quoteTokenDecimals
+  );
+}
+
+export function getCurrentPriceFromOrderbookDepth({
+  orderbookDepth,
+  quoteTokenDecimals,
+}: {
+  orderbookDepth: OrderbookDepthPriceSource | null | undefined;
+  quoteTokenDecimals: number;
+}): BigNumber {
+  const { lowestSellPrice, highestBuyPrice } = getBestPricesFromOrderbookDepth(
+    orderbookDepth,
+    quoteTokenDecimals
   );
 
   return resolveMarketPrice(

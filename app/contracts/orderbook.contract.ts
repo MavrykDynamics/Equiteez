@@ -101,6 +101,7 @@ const buildOrderPayload = ({
 const validateOrderRules = ({
   rwaTokenAmount,
   pricePerRwaToken,
+  isMarketOrder,
   baseTokenDecimals,
   tickSizeAtoms,
   minRwaTokenAmount,
@@ -109,6 +110,7 @@ const validateOrderRules = ({
   OrderbookBuyParams,
   | "rwaTokenAmount"
   | "pricePerRwaToken"
+  | "isMarketOrder"
   | "baseTokenDecimals"
   | "tickSizeAtoms"
   | "minRwaTokenAmount"
@@ -117,7 +119,7 @@ const validateOrderRules = ({
   const amountAtoms = new BigNumber(rwaTokenAmount);
   const priceAtoms = new BigNumber(pricePerRwaToken);
 
-  if (tickSizeAtoms !== undefined) {
+  if (!isMarketOrder && tickSizeAtoms !== undefined) {
     const tickSize = new BigNumber(tickSizeAtoms);
 
     if (
@@ -186,6 +188,7 @@ export async function orderbookBuyBatch({
     validateOrderRules({
       rwaTokenAmount,
       pricePerRwaToken,
+      isMarketOrder,
       baseTokenDecimals,
       tickSizeAtoms,
       minRwaTokenAmount,
@@ -274,6 +277,7 @@ export async function orderbookSellBatch({
     validateOrderRules({
       rwaTokenAmount,
       pricePerRwaToken,
+      isMarketOrder,
       baseTokenDecimals,
       tickSizeAtoms,
       minRwaTokenAmount,

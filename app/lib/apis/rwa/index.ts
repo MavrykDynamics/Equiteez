@@ -10,4 +10,12 @@ export {
   fetchWalletOpenOrders,
   fetchWalletOrderHistory,
 } from "~/lib/apis/rwa/orders/orders";
+export {
+  DEFAULT_ORDERBOOK_DEPTH_LIMIT,
+  MAX_ORDERBOOK_DEPTH_LIMIT,
+  ORDERBOOK_DEPTH_REFETCH_INTERVAL,
+  fetchOrderbookDepth,
+  orderbookDepthQueryKeys,
+} from "~/lib/apis/rwa/orderbookDepth/orderbookDepth";
+export { useOrderbookDepth } from "~/lib/apis/rwa/orderbookDepth/useOrderbookDepth";
 export { fetchPrices, fetchPriceSeries } from "~/lib/apis/rwa/prices/prices";

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "app/lib/utils";
 import React, { FC, forwardRef, useCallback, useState } from "react";
@@ -19,7 +20,19 @@ type BalanceInputProps = {
   additionalTopRightBlock?: React.ReactNode;
   additionalBottomRightBlock?: React.ReactNode;
   additionalBottomLeftBlock?: React.ReactNode;
+  amountInputClassName?: string;
+  amountInputContainerClassName?: string;
+  amountInputStyle?: React.CSSProperties;
+  assetViewClassName?: string;
+  bodyClassName?: string;
+  bottomLeftClassName?: string;
+  bottomRightClassName?: string;
+  className?: string;
   errorCaption?: string;
+  footerClassName?: string;
+  headerClassName?: string;
+  isAssetViewSmall?: boolean;
+  sectionClassName?: string;
   selectedAssetMetadata?: AssetMetadataBase;
   onNext?: () => void;
   onPrev?: () => void;
@@ -35,7 +48,19 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
       additionalTopRightBlock,
       additionalBottomLeftBlock,
       additionalBottomRightBlock,
+      amountInputClassName,
+      amountInputContainerClassName,
+      amountInputStyle,
+      assetViewClassName,
+      bodyClassName,
+      bottomLeftClassName,
+      bottomRightClassName,
+      className,
       errorCaption,
+      footerClassName,
+      headerClassName,
+      isAssetViewSmall,
+      sectionClassName,
       selectedAssetSlug,
       selectedAssetMetadata,
       onNext,
@@ -83,7 +108,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
     };
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className={clsx("flex flex-col gap-2", className)}>
         <section
           className={clsx(
             "transition duration-250 linear",
@@ -93,17 +118,32 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
             errorCaption && "border-red-500",
             !errorCaption &&
               !isFocused &&
-              "border-transparent hover:border-dark-green-50"
+              "border-transparent hover:border-dark-green-50",
+            sectionClassName
           )}
         >
-          <div className="flex justify-between items-center">
+          <div
+            className={clsx(
+              "flex justify-between items-center",
+              headerClassName
+            )}
+          >
             <div className="text-left text-xs text-sand-600 leading-[18px]">
               {label}
             </div>
             {additionalTopRightBlock}
           </div>
-          <div className="flex justify-between overflow-y-hidden">
-            <AssetView selectedAssetSlug={selectedAssetSlug} />
+          <div
+            className={clsx(
+              "flex justify-between overflow-y-hidden",
+              bodyClassName
+            )}
+          >
+            <AssetView
+              className={assetViewClassName}
+              isSmallView={isAssetViewSmall}
+              selectedAssetSlug={selectedAssetSlug}
+            />
             <AssetField
               ref={inputRef}
               onFocus={onFocus}
@@ -113,10 +153,19 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
                 ?.toFixed(selectedAssetMetadata?.decimals ?? 6)
                 .toString()}
               className={clsx(
-                "text-asset-input text-right text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden"
+                "text-asset-input text-right text-sand-900 border-none bg-opacity-0 pl-0 focus:shadow-none overflow-y-hidden",
+                amountInputClassName
               )}
-              containerClassName="overflow-y-hidden"
-              style={{ padding: 0, borderRadius: 0, height: 32 }}
+              containerClassName={clsx(
+                "overflow-y-hidden",
+                amountInputContainerClassName
+              )}
+              style={{
+                padding: 0,
+                borderRadius: 0,
+                height: 32,
+                ...amountInputStyle,
+              }}
               placeholder={toLocalFormat(0, { decimalPlaces: 2 })}
               min={0}
               max={9999999999999}
@@ -125,10 +174,19 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               onChange={handleAmountChange}
             />
           </div>
-          <div className="flex justify-between items-center">
-            <div>{additionalBottomLeftBlock}</div>
+          <div
+            className={clsx(
+              "flex justify-between items-center",
+              footerClassName
+            )}
+          >
+            <div className={bottomLeftClassName}>
+              {additionalBottomLeftBlock}
+            </div>
 
-            <div>{additionalBottomRightBlock}</div>
+            <div className={bottomRightClassName}>
+              {additionalBottomRightBlock}
+            </div>
           </div>
         </section>
         {errorCaption && (
@@ -173,16 +231,22 @@ export const BalanceInputWithTotal = forwardRef<
   HTMLInputElement,
   BalanceInputProps &
     BalanceTotalBlockProps & {
+      balanceClassName?: string;
+      balanceLabel?: string;
       cryptoValue: number | BigNumber;
       cryptoDecimals?: number;
+      showBalanceIcon?: boolean;
     }
 >((props, inputRef) => {
   const {
     balanceTotal,
     decimals,
     selectedAssetMetadata,
+    balanceClassName,
+    balanceLabel,
     cryptoValue,
     cryptoDecimals,
+    showBalanceIcon = true,
     additionalBottomLeftBlock,
     additionalTopRightBlock,
     additionalBottomRightBlock,
@@ -197,8 +261,16 @@ export const BalanceInputWithTotal = forwardRef<
         selectedAssetMetadata={selectedAssetMetadata}
         additionalTopRightBlock={
           additionalTopRightBlock || (
-            <div className="text-xs text-sand-600 flex items-center gap-[4px] font-semibold">
-              <Icon icon="wallet-secondary" className="size-4" />
+            <div
+              className={clsx(
+                "text-xs text-sand-600 flex items-center gap-[4px] font-semibold",
+                balanceClassName
+              )}
+            >
+              {showBalanceIcon && (
+                <Icon icon="wallet-secondary" className="size-4" />
+              )}
+              {balanceLabel && <span>{balanceLabel}</span>}
               <CryptoBalance
                 value={new BigNumber(cryptoValue)}
                 cryptoDecimals={cryptoDecimals}

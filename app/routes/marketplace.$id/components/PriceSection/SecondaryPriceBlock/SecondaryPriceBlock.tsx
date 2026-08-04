@@ -1,30 +1,32 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useMemo } from "react";
+import { generatePath, useNavigate } from "@remix-run/react";
 
 // components
 import { Button } from "~/lib/atoms/Button";
 import { Divider } from "~/lib/atoms/Divider";
 import { Table } from "~/lib/atoms/Table/Table";
-import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import styles from "./../priceSection.module.css";
-import popupStyles from "../popups/popups.module.css";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
-import { BUY, CONFIRM, OTC, SELL } from "../consts";
-import { PopupContent } from "../popups";
-import { getCurrentPriceFromOpenOrders } from "~/providers/Dexprovider/utils";
+import { BUY, SELL } from "../consts";
+import { getCurrentPriceFromOrderbookDepth } from "~/providers/Dexprovider/utils";
 import Money from "~/lib/atoms/Money";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
-import { getTotalOrderBookLiquidity } from "../orderBook.consts";
+import {
+  MAX_ORDERBOOK_DEPTH_LIMIT,
+  useOrderbookDepth,
+} from "~/lib/apis/rwa";
+import { getTotalOrderBookDepthLiquidity } from "../orderBook.consts";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { AnimatePresence, motion } from "framer-motion";
 import classNames from "clsx";
+import { ROUTES } from "~/consts/routes";
 
 // types
-export type OrderType = typeof BUY | typeof SELL | typeof OTC | typeof CONFIRM;
+type TradeSide = typeof BUY | typeof SELL;
 
 type SecondaryPriceBlockProps = {
   activeEstate: SecondaryEstate;
@@ -36,77 +38,46 @@ const expandVariants = {
   collapsed: { height: 0, opacity: 0 },
 };
 
-const MOBILE_ORDER_BOOK_BREAKPOINT = "(max-width: 820px)";
-
-const getDefaultOrderBookOpenState = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return !window.matchMedia(MOBILE_ORDER_BOOK_BREAKPOINT).matches;
-};
-
 export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
   activeEstate: estate,
   shouldExpand,
 }) => {
+  const navigate = useNavigate();
   const { validBaseTokens } = useMarketsContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
-  const [hasVisibleOrderBook, setHasVisibleOrderBook] = useState(false);
-  const [orderType, setOrderType] = useState<OrderType>(BUY);
-  const { baseTokenDecimals, quoteTokenDecimals } =
-    useOrderbookTokenMetadata(estate);
+  const { quoteTokenDecimals } = useOrderbookTokenMetadata(estate);
 
-  const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
-    rwaAddress: estate.token_address,
+  const { orderbookDepth, loading: isLiquidityLoading } = useOrderbookDepth({
+    limit: MAX_ORDERBOOK_DEPTH_LIMIT,
+    tokenAddress: estate.token_address,
   });
 
-  // Current Price from the LIVE order book (best ask, falling back to best
-  // bid), not the 30s-stale REST snapshot — so it can't show $0 while the book
-  // clearly has orders.
+  // Current price from the live orderbook depth: best ask, falling back to best
+  // bid, so one-sided books still get a usable quote.
   const currentPrice = useMemo(
     () =>
-      getCurrentPriceFromOpenOrders({
-        buyOrders: openOrders.buyOrders,
-        sellOrders: openOrders.sellOrders,
+      getCurrentPriceFromOrderbookDepth({
+        orderbookDepth,
         quoteTokenDecimals,
       }),
-    [openOrders.buyOrders, openOrders.sellOrders, quoteTokenDecimals]
+    [orderbookDepth, quoteTokenDecimals]
   );
 
-  // Total liquidity = USD value of every resting bid + ask in the book.
+  // Total liquidity = quote value of every fetched resting bid + ask level.
   const totalLiquidityInUSD = useMemo(
-    () =>
-      getTotalOrderBookLiquidity({
-        buyOrders: openOrders.buyOrders,
-        sellOrders: openOrders.sellOrders,
-        baseTokenDecimals,
-        quoteTokenDecimals,
-      }),
-    [
-      openOrders.buyOrders,
-      openOrders.sellOrders,
-      baseTokenDecimals,
-      quoteTokenDecimals,
-    ]
+    () => getTotalOrderBookDepthLiquidity(orderbookDepth),
+    [orderbookDepth]
   );
 
-  const handleRequestClose = useCallback(() => {
-    setIsOpen(false);
-    setIsOrderBookOpen(false);
-    setHasVisibleOrderBook(false);
-    setOrderType(BUY);
-  }, []);
-
-  const handleOpen = useCallback((orderType: OrderType) => {
-    const shouldOpenOrderBook = getDefaultOrderBookOpenState();
-
-    setOrderType(orderType);
-    setIsOrderBookOpen(shouldOpenOrderBook);
-    setHasVisibleOrderBook(shouldOpenOrderBook);
-    setIsOpen(true);
-  }, []);
+  const handleTradeOpen = useCallback(
+    (side: TradeSide) => {
+      navigate(
+        `${generatePath(ROUTES.trade, {
+          address: estate.token_address,
+        })}?side=${side}`
+      );
+    },
+    [estate.token_address, navigate]
+  );
 
   const expandedContent = (
     <>
@@ -170,11 +141,11 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
               </Button>
             ) : (
               <div className="grid gap-3 grid-cols-2 ">
-                <Button onClick={handleOpen.bind(null, BUY)}>Buy</Button>
+                <Button onClick={handleTradeOpen.bind(null, BUY)}>Buy</Button>
                 <Button
                   variant="red"
                   className="text-white"
-                  onClick={handleOpen.bind(null, SELL)}
+                  onClick={handleTradeOpen.bind(null, SELL)}
                 >
                   Sell
                 </Button>
@@ -205,14 +176,14 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
                 <>
                   <Button
                     className="w-[105px]"
-                    onClick={handleOpen.bind(null, BUY)}
+                    onClick={handleTradeOpen.bind(null, BUY)}
                   >
                     Buy
                   </Button>
                   <Button
                     variant="red"
                     className="text-white w-[105px]"
-                    onClick={handleOpen.bind(null, SELL)}
+                    onClick={handleTradeOpen.bind(null, SELL)}
                   >
                     Sell
                   </Button>
@@ -236,30 +207,6 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
           </AnimatePresence>
         </div>
       </div>
-
-      <PopupWithIcon
-        isOpen={isOpen}
-        onRequestClose={handleRequestClose}
-        contentClassName={classNames(
-          popupStyles.popupContent,
-          hasVisibleOrderBook && popupStyles.popupContentWithOrderBook
-        )}
-        contentPosition={"right"}
-        className={classNames(
-          "bg-white",
-          hasVisibleOrderBook && popupStyles.popupWide
-        )}
-      >
-        <PopupContent
-          estate={estate}
-          isOrderBookOpen={isOrderBookOpen}
-          onSuccessfulTransaction={handleRequestClose}
-          onOrderBookVisibilityChange={setHasVisibleOrderBook}
-          orderType={orderType}
-          setIsOrderBookOpen={setIsOrderBookOpen}
-          setOrderType={setOrderType}
-        />
-      </PopupWithIcon>
     </section>
   );
 };
