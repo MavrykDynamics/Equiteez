@@ -42,6 +42,7 @@ type BuySellScreenProps = {
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   status: StatusFlag;
   hasQuoteError?: boolean;
+  isOrderDataLoading?: boolean;
   validationMessage?: string;
 };
 
@@ -57,6 +58,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   setAmount,
   status,
   hasQuoteError = false,
+  isOrderDataLoading = false,
   validationMessage,
 }) => {
   const { token_address, slug } = estate;
@@ -185,12 +187,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
   const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
-  const isLoading =
-    status === STATUS_PENDING || status === STATUS_CONFIRMING;
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
     hasTotalError ||
     hasInvalidAmount ||
     hasInvalidMarketPrice ||
+    isOrderDataLoading ||
     !isKyced ||
     isLoading;
   const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);

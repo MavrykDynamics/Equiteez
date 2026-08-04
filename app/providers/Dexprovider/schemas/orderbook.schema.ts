@@ -7,6 +7,8 @@ const OrderbookItemSchema = z.object({
   highest_buy_price: z.number(),
   sell_order_fee: z.number(),
   buy_order_fee: z.number(),
+  tickSize: z.number().optional().nullable(),
+  tick_size: z.number().optional().nullable(),
   min_buy_order_amount: z.number().optional().nullable(),
   min_buy_order_value: z.number().optional().nullable(),
   min_sell_order_amount: z.number().optional().nullable(),

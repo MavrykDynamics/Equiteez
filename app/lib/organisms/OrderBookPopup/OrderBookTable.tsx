@@ -16,12 +16,13 @@ import SellOnlyIcon from "app/icons/sell-only-icon.svg?react";
 
 import {
   createDefaultOrderBookData,
-  createOrderBookData,
+  createOrderBookDataFromDepth,
   DEFAULT_ORDER_BOOK_GROUPING_PRECISION,
-  getOrderBookPrecisionOptions,
+  getOrderbookDepthSummaryQuoteTotals,
+  getOrderBookPrecisionOptionsFromDepth,
 } from "~/routes/marketplace.$id/components/PriceSection/orderBook.consts";
-import type { OpenOrder } from "~/lib/apis/mbrwa/openOrders/openOrders.schema";
-import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
+import type { OrderbookDepthResponseType } from "~/lib/apis/rwa/orderbookDepth/orderbookDepth.types";
+import { useOrderbookDepth } from "~/lib/apis/rwa/orderbookDepth/useOrderbookDepth";
 import { Spinner } from "~/lib/atoms/Spinner";
 import {
   ClickableDropdownArea,
@@ -29,8 +30,6 @@ import {
   DropdownBodyContent,
   DropdownFaceContent,
 } from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import { atomsToTokens } from "~/lib/utils/formaters";
-import { isMarketOrderPrice } from "~/providers/Dexprovider/utils";
 
 import { OrderRow } from "./OrderRow";
 import type {
@@ -115,6 +114,14 @@ type OrderBookFooterSummary = {
 
 const hasOrderBookRows = (data: OrderBookData) =>
   data.asks.length > 0 || data.bids.length > 0;
+
+const hasOrderbookDepthRows = (
+  orderbookDepth: OrderbookDepthResponseType | null
+): orderbookDepth is OrderbookDepthResponseType =>
+  Boolean(
+    orderbookDepth &&
+      (orderbookDepth.asks.length > 0 || orderbookDepth.bids.length > 0)
+  );
 
 const getFractionDigits = (
   value: number,
@@ -409,62 +416,6 @@ const OrderBookRowsSection = memo(OrderBookRowsSectionComponent);
 
 OrderBookRowsSection.displayName = "OrderBookRowsSection";
 
-// Uses the contract's own escrow reference value rather than re-deriving
-// amount*price client-side, since market orders are stored at a sentinel
-// price and amount*price would produce a meaningless total for them.
-const getOpenOrderTotal = ({
-  order,
-  quoteTokenDecimals,
-}: {
-  order: OpenOrder;
-  quoteTokenDecimals: number;
-}) =>
-  atomsToTokens(order.total_usd_value_of_rwa_token_amount, quoteTokenDecimals);
-
-const sortOrdersForSummary = (orders: OpenOrder[], side: "buy" | "sell") =>
-  [...orders].sort((left, right) => {
-    const priceDifference = new BigNumberJs(left.price_per_rwa_token).minus(
-      right.price_per_rwa_token
-    );
-
-    if (!priceDifference.isZero()) {
-      if (priceDifference.isPositive()) {
-        return side === "buy" ? -1 : 1;
-      }
-
-      return side === "buy" ? 1 : -1;
-    }
-
-    return (
-      Date.parse(right.created_at || "") - Date.parse(left.created_at || "")
-    );
-  });
-
-const getOrdersTotal = ({
-  orders,
-  quoteTokenDecimals,
-  side,
-}: {
-  orders: OpenOrder[];
-  quoteTokenDecimals: number;
-  side: "buy" | "sell";
-}) =>
-  sortOrdersForSummary(
-    orders.filter((order) => !isMarketOrderPrice(order, side)),
-    side
-  )
-    .slice(0, ORDER_BOOK_SUMMARY_SAMPLE_SIZE)
-    .reduce(
-      (total, order) =>
-        total.plus(
-          getOpenOrderTotal({
-            order,
-            quoteTokenDecimals,
-          })
-        ),
-      new BigNumberJs(0)
-    );
-
 const getSummaryPercentage = (value: number, total: number) => {
   if (total === 0) return 0;
 
@@ -472,24 +423,17 @@ const getSummaryPercentage = (value: number, total: number) => {
 };
 
 const getOrderBookFooterSummary = ({
-  buyOrders,
-  quoteTokenDecimals,
-  sellOrders,
+  orderbookDepth,
 }: {
-  buyOrders: OpenOrder[];
-  quoteTokenDecimals: number;
-  sellOrders: OpenOrder[];
+  orderbookDepth: OrderbookDepthResponseType | null;
 }): OrderBookFooterSummary => {
-  const buyTotal = getOrdersTotal({
-    orders: buyOrders,
-    quoteTokenDecimals,
-    side: "buy",
-  }).toNumber();
-  const sellTotal = getOrdersTotal({
-    orders: sellOrders,
-    quoteTokenDecimals,
-    side: "sell",
-  }).toNumber();
+  const { buyTotal: buyTotalValue, sellTotal: sellTotalValue } =
+    getOrderbookDepthSummaryQuoteTotals({
+      orderbookDepth,
+      sampleSize: ORDER_BOOK_SUMMARY_SAMPLE_SIZE,
+    });
+  const buyTotal = buyTotalValue.toNumber();
+  const sellTotal = sellTotalValue.toNumber();
   const combinedTotal = new BigNumberJs(buyTotal).plus(sellTotal).toNumber();
   const difference = new BigNumberJs(buyTotal)
     .minus(sellTotal)
@@ -679,7 +623,6 @@ const OrderBookTableHeader = memo(OrderBookTableHeaderComponent);
 OrderBookTableHeader.displayName = "OrderBookTableHeader";
 
 export const OrderBookTable: FC<OrderBookTableProps> = ({
-  baseTokenDecimals,
   baseTokenSymbol,
   emptyMessage = "No open orders available.",
   enabled = true,
@@ -691,10 +634,10 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
 }) => {
   const [selectedDisplayMode, setSelectedDisplayMode] =
     useState<OrderBookDisplayMode>("both");
-  const { openOrders, loading } = useOpenOrders({
+  const { orderbookDepth, loading } = useOrderbookDepth({
     enabled,
     limit: ORDER_BOOK_FETCH_LIMIT,
-    rwaAddress,
+    tokenAddress: rwaAddress,
   });
 
   const defaultData = useMemo(
@@ -706,16 +649,15 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     [baseTokenSymbol, quoteTokenSymbol]
   );
   const nextPriceGroupingOptions = useMemo(() => {
-    const options = getOrderBookPrecisionOptions({
-      buyOrders: openOrders.buyOrders,
-      sellOrders: openOrders.sellOrders,
+    const options = getOrderBookPrecisionOptionsFromDepth({
+      orderbookDepth,
       quoteTokenDecimals,
     });
 
     return options.length > 0
       ? options
       : [DEFAULT_ORDER_BOOK_GROUPING_PRECISION];
-  }, [openOrders.buyOrders, openOrders.sellOrders, quoteTokenDecimals]);
+  }, [orderbookDepth, quoteTokenDecimals]);
   const [priceGroupingOptions, setPriceGroupingOptions] = useState<number[]>(
     nextPriceGroupingOptions
   );
@@ -740,29 +682,20 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   }, [priceGroupingOptions]);
 
   const nextData = useMemo(() => {
-    if (
-      openOrders.buyOrders.length === 0 &&
-      openOrders.sellOrders.length === 0
-    ) {
+    if (!hasOrderbookDepthRows(orderbookDepth)) {
       return defaultData;
     }
 
-    return createOrderBookData({
-      buyOrders: openOrders.buyOrders,
-      sellOrders: openOrders.sellOrders,
-      baseTokenDecimals,
+    return createOrderBookDataFromDepth({
       baseTokenSymbol,
+      orderbookDepth,
       priceGroupingPrecision: selectedPriceGrouping,
-      quoteTokenDecimals,
       quoteTokenSymbol,
     });
   }, [
-    baseTokenDecimals,
     baseTokenSymbol,
     defaultData,
-    openOrders.buyOrders,
-    openOrders.sellOrders,
-    quoteTokenDecimals,
+    orderbookDepth,
     quoteTokenSymbol,
     selectedPriceGrouping,
   ]);
@@ -799,15 +732,9 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const footerSummary = useMemo(
     () =>
       getOrderBookFooterSummary({
-        buyOrders: openOrders.buyOrders,
-        quoteTokenDecimals,
-        sellOrders: openOrders.sellOrders,
+        orderbookDepth,
       }),
-    [
-      openOrders.buyOrders,
-      openOrders.sellOrders,
-      quoteTokenDecimals,
-    ]
+    [orderbookDepth]
   );
   const spreadDisplayData = useMemo(
     () => getSpreadDisplayData(renderData.spread, selectedDisplayMode),

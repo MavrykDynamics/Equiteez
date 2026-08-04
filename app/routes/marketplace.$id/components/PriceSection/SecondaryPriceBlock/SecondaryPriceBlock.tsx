@@ -11,11 +11,14 @@ import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 //consts & types
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import { BUY, SELL } from "../consts";
-import { getCurrentPriceFromOpenOrders } from "~/providers/Dexprovider/utils";
+import { getCurrentPriceFromOrderbookDepth } from "~/providers/Dexprovider/utils";
 import Money from "~/lib/atoms/Money";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
-import { useOpenOrders } from "~/lib/apis/mbrwa/openOrders/useOpenOrders";
-import { getTotalOrderBookLiquidity } from "../orderBook.consts";
+import {
+  MAX_ORDERBOOK_DEPTH_LIMIT,
+  useOrderbookDepth,
+} from "~/lib/apis/rwa";
+import { getTotalOrderBookDepthLiquidity } from "../orderBook.consts";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { AnimatePresence, motion } from "framer-motion";
@@ -41,41 +44,28 @@ export const SecondaryPriceBlock: FC<SecondaryPriceBlockProps> = ({
 }) => {
   const navigate = useNavigate();
   const { validBaseTokens } = useMarketsContext();
-  const { baseTokenDecimals, quoteTokenDecimals } =
-    useOrderbookTokenMetadata(estate);
+  const { quoteTokenDecimals } = useOrderbookTokenMetadata(estate);
 
-  const { openOrders, loading: isLiquidityLoading } = useOpenOrders({
-    rwaAddress: estate.token_address,
+  const { orderbookDepth, loading: isLiquidityLoading } = useOrderbookDepth({
+    limit: MAX_ORDERBOOK_DEPTH_LIMIT,
+    tokenAddress: estate.token_address,
   });
 
-  // Current Price from the LIVE order book (best ask, falling back to best
-  // bid), not the 30s-stale REST snapshot — so it can't show $0 while the book
-  // clearly has orders.
+  // Current price from the live orderbook depth: best ask, falling back to best
+  // bid, so one-sided books still get a usable quote.
   const currentPrice = useMemo(
     () =>
-      getCurrentPriceFromOpenOrders({
-        buyOrders: openOrders.buyOrders,
-        sellOrders: openOrders.sellOrders,
+      getCurrentPriceFromOrderbookDepth({
+        orderbookDepth,
         quoteTokenDecimals,
       }),
-    [openOrders.buyOrders, openOrders.sellOrders, quoteTokenDecimals]
+    [orderbookDepth, quoteTokenDecimals]
   );
 
-  // Total liquidity = USD value of every resting bid + ask in the book.
+  // Total liquidity = quote value of every fetched resting bid + ask level.
   const totalLiquidityInUSD = useMemo(
-    () =>
-      getTotalOrderBookLiquidity({
-        buyOrders: openOrders.buyOrders,
-        sellOrders: openOrders.sellOrders,
-        baseTokenDecimals,
-        quoteTokenDecimals,
-      }),
-    [
-      openOrders.buyOrders,
-      openOrders.sellOrders,
-      baseTokenDecimals,
-      quoteTokenDecimals,
-    ]
+    () => getTotalOrderBookDepthLiquidity(orderbookDepth),
+    [orderbookDepth]
   );
 
   const handleTradeOpen = useCallback(

@@ -4,14 +4,22 @@ import { Spinner } from "~/lib/atoms/Spinner/Spinner";
 import { useTokensContext } from "./TokensProvider/tokens.provider";
 import { useMarketsContext } from "./MarketsProvider/markets.provider";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { useDexContext } from "./Dexprovider/dex.provider";
 
 export const AppGlobalLoader: FC<PropsWithChildren> = ({ children }) => {
   const { isLoading } = useWalletContext();
   const { isLoading: isMarketLoading } = useMarketsContext();
   const { isLoading: isTokensMetaLoading } = useTokensContext();
   const { isLoading: isAssetsLoading } = useAssetsContext();
+  const { isLoading: isDexLoading } = useDexContext();
 
-  if (isLoading || isTokensMetaLoading || isMarketLoading || isAssetsLoading)
+  if (
+    isLoading ||
+    isTokensMetaLoading ||
+    isMarketLoading ||
+    isAssetsLoading ||
+    isDexLoading
+  )
     return (
       <div className="h-screen w-full flex items-center justify-center bg-mvrk-dark">
         <Spinner size={56} />
