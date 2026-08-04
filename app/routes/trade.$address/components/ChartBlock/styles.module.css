@@ -3,6 +3,7 @@
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   display: flex;
   flex: 1;
+  height: min-content;
   flex-direction: column;
   gap: var(--r-space-3);
   border-radius: var(--r-radius-md);
@@ -63,7 +64,7 @@
   box-shadow: var(--r-focus-ring);
 }
 
-.orderBookToggle {
+.wrapper .orderBookToggle {
   background: var(--r-color-neutral-white);
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
@@ -73,17 +74,17 @@
   white-space: nowrap;
 }
 
-.orderBookToggle:hover {
+.wrapper .orderBookToggle:hover {
   border-color: var(--r-color-neutral-200);
 }
 
-.orderBookToggle :global(svg) {
+.wrapper .orderBookToggle :global(svg) {
   color: currentColor;
   height: 16px;
   width: 16px;
 }
 
-.orderBookToggle :global(span) {
+.wrapper .orderBookToggle :global(span) {
   color: currentColor;
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
