@@ -1,5 +1,5 @@
 // icons
-import { FC } from "react";
+import { ChangeEvent, FC, FormEvent } from "react";
 
 import styles from "./eSnakeBlock.module.css";
 import clsx from "clsx";
@@ -29,6 +29,11 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
 }) => {
   const handleOptionClick = (option: number) => {
     if (!disabled) setSelectedOption(option);
+  };
+  const handleSliderChange = (
+    event: ChangeEvent<HTMLInputElement> | FormEvent<HTMLInputElement>
+  ) => {
+    if (!disabled) setSelectedOption(Number(event.currentTarget.value));
   };
   const sizeClassnameValue = sizeClassname[size];
 
@@ -97,6 +102,19 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
             )}
           />
         </div>
+
+        <input
+          aria-label="Percentage amount"
+          className={styles.rangeInput}
+          disabled={disabled}
+          max={100}
+          min={0}
+          onChange={handleSliderChange}
+          onInput={handleSliderChange}
+          step={1}
+          type="range"
+          value={selectedOption}
+        />
       </div>
 
       <div className="flex w-full justify-between">

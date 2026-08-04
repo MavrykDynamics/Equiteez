@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "@remix-run/react";
 
 import { AssetDetails } from "./components/AssetDetails/AssetDetails";
@@ -13,6 +14,7 @@ export default function TradePage() {
   const { address } = useParams();
   const { assets } = useAssetsContext();
   const asset = assets.find((item) => item.address === address);
+  const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
 
   if (!asset) {
     return <div>Asset not found</div>;
@@ -23,9 +25,17 @@ export default function TradePage() {
       <Container>
         <AssetDetails asset={asset} />
         <div className={styles.contentBlock}>
-          <ChartBlock asset={asset} />
+          <ChartBlock
+            asset={asset}
+            isOrderBookOpen={isOrderBookOpen}
+            onOrderBookToggle={() => setIsOrderBookOpen((isOpen) => !isOpen)}
+          />
           <div className={styles.buySellContainer}>
-            <BuySellPanel asset={asset} />
+            <BuySellPanel
+              asset={asset}
+              isOrderBookOpen={isOrderBookOpen}
+              setIsOrderBookOpen={setIsOrderBookOpen}
+            />
           </div>
         </div>
         <AssetTabs asset={asset} />

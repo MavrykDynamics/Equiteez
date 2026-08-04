@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "@remix-run/react";
 
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -20,6 +20,8 @@ import styles from "./styles.module.css";
 
 type BuySellPanelProps = {
   asset: AssetType;
+  isOrderBookOpen: boolean;
+  setIsOrderBookOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 const getOrderTypeFromSearchParam = (side: string | null): OrderType =>
@@ -34,7 +36,11 @@ const isMatchingTradeMarket = (market: EstateType, asset: AssetType) =>
 const isSecondaryEstate = (market: EstateType): market is SecondaryEstate =>
   market.assetDetails.type === SECONDARY_MARKET;
 
-export function BuySellPanel({ asset }: BuySellPanelProps) {
+export function BuySellPanel({
+  asset,
+  isOrderBookOpen,
+  setIsOrderBookOpen,
+}: BuySellPanelProps) {
   const [searchParams] = useSearchParams();
   const {
     isLoading,
@@ -42,7 +48,6 @@ export function BuySellPanel({ asset }: BuySellPanelProps) {
     updateActiveMarketState,
   } = useMarketsContext();
   const sideSearchParam = searchParams.get("side");
-  const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>(() =>
     getOrderTypeFromSearchParam(sideSearchParam)
   );

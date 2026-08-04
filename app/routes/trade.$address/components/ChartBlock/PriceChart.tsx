@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
@@ -13,6 +19,7 @@ import styles from "./styles.module.css";
 
 type AssetDetailsProps = {
   asset: AssetType;
+  orderBookControl?: ReactNode;
 };
 
 type ChartRange = "1h" | "1d" | "1w" | "1m";
@@ -108,7 +115,7 @@ function getChartRequestParams(range: ChartRange) {
   }
 }
 
-export function PriceChart({ asset }: AssetDetailsProps) {
+export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
   const [range, setRange] = useState<ChartRange>("1h");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,19 +167,29 @@ export function PriceChart({ asset }: AssetDetailsProps) {
 
   return (
     <section className={styles.priceChart} aria-label="Price chart">
-      <div className={styles.chartControls} role="tablist" aria-label="Price range">
-        {CHART_RANGES.map(({ label, value }) => (
-          <button
-            aria-selected={range === value}
-            className={styles.intervalButton}
-            key={value}
-            onClick={() => setRange(value)}
-            role="tab"
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
+      <div className={styles.chartHeader}>
+        <div
+          className={styles.chartControls}
+          role="tablist"
+          aria-label="Price range"
+        >
+          {CHART_RANGES.map(({ label, value }) => (
+            <button
+              aria-selected={range === value}
+              className={styles.intervalButton}
+              key={value}
+              onClick={() => setRange(value)}
+              role="tab"
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {orderBookControl ? (
+          <div className={styles.chartHeaderAction}>{orderBookControl}</div>
+        ) : null}
       </div>
 
       <div className={styles.chartFrame}>

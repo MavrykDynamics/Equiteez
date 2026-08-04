@@ -18,7 +18,6 @@ import { TabType } from "~/lib/atoms/Tab";
 
 // icons
 import ArrowLeftIcon from "app/icons/arrow-left.svg?react";
-import ChevronDownIcon from "app/icons/chevron-down.svg?react";
 
 //consts & types
 import {
@@ -27,6 +26,12 @@ import {
 } from "~/providers/MarketsProvider/market.types";
 import { BUY, CONFIRM, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
+import {
+  RCustomDropdown,
+  RDropdownBodyContent,
+  RDropdownBodyContentItem,
+  RDropdownFaceContent,
+} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 
 import {
   ContractActionPopupProps,
@@ -71,7 +76,6 @@ import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-import { OrderBookToggleButton } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -80,10 +84,7 @@ import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
-const BUY_SELL_ORDER_BOOK_TOGGLE_LABELS = {
-  hide: "Order Book",
-  show: "Order Book",
-};
+type MarketOrderMode = "market" | "limit";
 
 const getMarketIdentifier = (market: EstateType) =>
   market.assetDetails.blockchain[0]?.identifier;
@@ -130,7 +131,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   } = useMarketsContext();
 
   // MArket Type
-  const [marketType, setMarkettype] = useState("market");
+  const [marketType, setMarkettype] = useState<MarketOrderMode>("market");
   const isMarketTypeMarket = marketType === "market";
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
@@ -285,27 +286,31 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     [handleTabClick]
   );
 
-  const handlaMarketChange = useCallback(
-    (type: string) => {
+  const handleMarketChange = useCallback(
+    (type: MarketOrderMode) => {
       setMarkettype(type);
     },
     [setMarkettype]
   );
 
-  const marketTabs: TabType[] = useMemo(
+  const marketTabs: TabType<MarketOrderMode>[] = useMemo(
     () => [
       {
         id: "market",
         label: "Market",
-        handleClick: handlaMarketChange,
+        handleClick: handleMarketChange,
       },
       {
         id: "limit",
         label: "Limit",
-        handleClick: handlaMarketChange,
+        handleClick: handleMarketChange,
       },
     ],
-    [handlaMarketChange]
+    [handleMarketChange]
+  );
+  const selectedMarketTab = useMemo(
+    () => marketTabs.find((tab) => tab.id === marketType),
+    [marketTabs, marketType]
   );
 
   useEffect(() => {
@@ -731,11 +736,21 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     };
   }, [orderType, activeMarket?.symbol]);
 
+  const handleSuccessfulTransaction = useCallback(() => {
+    setAvtiveTabId(orderType);
+    setAmountB(undefined);
+    setTotal(undefined);
+    setLimitPrice(undefined);
+    setNetworkFee(ZERO);
+    setIsOrderBookOpen(false);
+    onSuccessfulTransaction?.();
+  }, [onSuccessfulTransaction, orderType, setIsOrderBookOpen]);
+
   const contractActionOptions = useMemo(
     () => ({
-      onSuccess: onSuccessfulTransaction,
+      onSuccess: handleSuccessfulTransaction,
     }),
-    [onSuccessfulTransaction]
+    [handleSuccessfulTransaction]
   );
 
   const { invokeAction: handleMarketBuy, status: buyStatus } =
@@ -801,10 +816,6 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       ),
     [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
   );
-
-  const toggleOrderBook = useCallback(() => {
-    setIsOrderBookOpen((prev) => !prev);
-  }, [setIsOrderBookOpen]);
 
   const closeOrderBook = useCallback(() => {
     setIsOrderBookOpen(false);
@@ -920,31 +931,28 @@ export const BuySellContent: FC<BuySellContentProps> = ({
 
         {shouldRenderEntryControls && (
           <div className={styles.tradeControls}>
-            <div className={styles.orderBookToggleWrap}>
-              <OrderBookToggleButton
-                className={styles.orderBookToggle}
-                isOpen={isOrderBookOpen}
-                labels={BUY_SELL_ORDER_BOOK_TOGGLE_LABELS}
-                onClick={toggleOrderBook}
-              />
-            </div>
-
-            <label className={styles.marketSelectWrapper}>
-              <span className={styles.visuallyHidden}>Order mode</span>
-              <select
+            <RCustomDropdown className={styles.marketDropdown}>
+              <RDropdownFaceContent
                 aria-label="Order mode"
-                className={styles.marketSelect}
-                onChange={(event) => handlaMarketChange(event.target.value)}
-                value={marketType}
+                className={styles.marketDropdownTrigger}
+              >
+                {selectedMarketTab?.label ?? "Market"}
+              </RDropdownFaceContent>
+              <RDropdownBodyContent
+                align="left"
+                className={styles.marketDropdownMenu}
               >
                 {marketTabs.map((tab) => (
-                  <option key={tab.id} value={tab.id}>
+                  <RDropdownBodyContentItem
+                    isSelected={tab.id === marketType}
+                    key={tab.id}
+                    onClick={() => handleMarketChange(tab.id)}
+                  >
                     {tab.label}
-                  </option>
+                  </RDropdownBodyContentItem>
                 ))}
-              </select>
-              <ChevronDownIcon className={styles.marketSelectIcon} />
-            </label>
+              </RDropdownBodyContent>
+            </RCustomDropdown>
 
             <TabSwitcherV2
               activeClassName={styles.sideTabActive}
@@ -954,6 +962,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               tabs={tabs}
               tabClassName={styles.sideTab}
             />
+
           </div>
         )}
 
