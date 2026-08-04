@@ -32,7 +32,7 @@ const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
 ];
 
 const X_AXIS_TICKS_COUNT = 6;
-const PRICE_DECIMALS = 4;
+const PRICE_DECIMALS = 2;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
@@ -65,8 +65,8 @@ function formatTooltipDate(date: Date) {
 
 function formatTooltipPrice(value: number) {
   return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: PRICE_DECIMALS,
-    minimumFractionDigits: PRICE_DECIMALS,
+    maximumFractionDigits: 4,
+    minimumFractionDigits: 4,
   }).format(value);
 }
 
