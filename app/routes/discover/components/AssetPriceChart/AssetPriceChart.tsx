@@ -61,6 +61,10 @@ export function AssetPriceChart({
         if (isUnmounted) return;
 
         const computedStyles = window.getComputedStyle(container);
+        const axisFontSize =
+          Number.parseFloat(
+            computedStyles.getPropertyValue("--r-font-size-body-xs")
+          ) || 12;
         const lineColor = computedStyles
           .getPropertyValue(
             tone === "positive" ? "--r-color-green-500" : "--r-color-red-500"
@@ -80,6 +84,7 @@ export function AssetPriceChart({
           layout: {
             attributionLogo: false,
             background: { color: "transparent", type: ColorType.Solid },
+            fontSize: axisFontSize,
             textColor:
               computedStyles.getPropertyValue("--r-color-neutral-600").trim() ||
               "#757575",
