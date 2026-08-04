@@ -22,6 +22,7 @@ type AssetPriceChartProps = {
   points: AssetPriceChartPoint[];
   priceDecimals?: number;
   showPriceScale?: boolean;
+  showTimeScale?: boolean;
   tone: "positive" | "negative";
 };
 
@@ -43,6 +44,7 @@ export function AssetPriceChart({
   points,
   priceDecimals = 2,
   showPriceScale = false,
+  showTimeScale = false,
   tone,
 }: AssetPriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,6 +73,12 @@ export function AssetPriceChart({
           )
           .trim();
         const areaTopColor = tone === "positive" ? "#22A55B40" : "#C0453C40";
+        const axisColor =
+          computedStyles.getPropertyValue("--r-color-neutral-600").trim() ||
+          "#757575";
+        const axisBorderColor =
+          computedStyles.getPropertyValue("--r-color-neutral-100").trim() ||
+          "#e9e9e9";
         const chart = createChart(container, {
           autoSize: true,
           crosshair: { mode: CrosshairMode.Hidden },
@@ -85,9 +93,7 @@ export function AssetPriceChart({
             attributionLogo: false,
             background: { color: "transparent", type: ColorType.Solid },
             fontSize: axisFontSize,
-            textColor:
-              computedStyles.getPropertyValue("--r-color-neutral-600").trim() ||
-              "#757575",
+            textColor: axisColor,
           },
           leftPriceScale: { visible: false },
           localization: {
@@ -109,9 +115,11 @@ export function AssetPriceChart({
             visible: showPriceScale,
           },
           timeScale: {
-            borderVisible: false,
+            borderColor: axisBorderColor,
+            borderVisible: showTimeScale,
             timeVisible: false,
-            visible: false,
+            ticksVisible: showTimeScale,
+            visible: showTimeScale,
           },
           width: container.clientWidth,
         });
@@ -167,7 +175,7 @@ export function AssetPriceChart({
       isUnmounted = true;
       cleanup();
     };
-  }, [chartData, onHover, priceDecimals, showPriceScale, tone]);
+  }, [chartData, onHover, priceDecimals, showPriceScale, showTimeScale, tone]);
 
   return (
     <div className={`${styles.chart} ${className ?? ""}`} ref={containerRef} />

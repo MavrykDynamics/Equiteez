@@ -31,29 +31,10 @@ const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
   { label: "1M", value: "1m" },
 ];
 
-const X_AXIS_TICKS_COUNT = 6;
 const PRICE_DECIMALS = 2;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
-}
-
-function getXAxisLabels(points: AssetPriceChartPoint[]) {
-  if (points.length === 0) return [];
-
-  return Array.from({ length: X_AXIS_TICKS_COUNT }, (_, index) => {
-    const pointIndex = Math.round(
-      (index * (points.length - 1)) / (X_AXIS_TICKS_COUNT - 1)
-    );
-    const date = new Date(points[pointIndex].t);
-
-    return Number.isNaN(date.getTime())
-      ? ""
-      : new Intl.DateTimeFormat("en-US", {
-          day: "numeric",
-          month: index === 0 || date.getDate() <= 2 ? "short" : undefined,
-        }).format(date);
-  });
 }
 
 function formatTooltipDate(date: Date) {
@@ -134,7 +115,6 @@ export function PriceChart({ asset }: AssetDetailsProps) {
     };
   }, [asset.metadata.symbol, range]);
 
-  const xAxisLabels = useMemo(() => getXAxisLabels(points), [points]);
   const lastPoint = points.at(-1);
   const firstPoint = points[0];
   const tone =
@@ -238,6 +218,7 @@ export function PriceChart({ asset }: AssetDetailsProps) {
                 points={points}
                 priceDecimals={PRICE_DECIMALS}
                 showPriceScale
+                showTimeScale
                 tone={tone}
               />
               {hoveredPoint ? (
@@ -278,11 +259,6 @@ export function PriceChart({ asset }: AssetDetailsProps) {
                   </div>
                 </>
               ) : null}
-            </div>
-            <div className={styles.xAxis} aria-hidden="true">
-              {xAxisLabels.map((label, index) => (
-                <span key={`${label}-${index}`}>{label}</span>
-              ))}
             </div>
           </>
         )}
