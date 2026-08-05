@@ -1,4 +1,4 @@
-import { NavLink } from "@remix-run/react";
+import { generatePath, NavLink } from "@remix-run/react";
 
 import { ConnectWallet } from "~/layouts/PageLayout/ConnectWallet";
 import { RLogo } from "~/lib/atoms/RLogo";
@@ -8,16 +8,20 @@ import { Container } from "~/lib/atoms/Container/Container";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RButton } from "~/lib/atoms/RButton";
-
-const navigationItems = [
-  { label: "Discover", to: "/discover" },
-  { label: "Trade", to: "/exchange" },
-  { isDisabled: true, label: "Stake", to: "/" },
-  { isDisabled: true, label: "Borrow", to: "/" },
-];
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { ROUTES } from "~/consts";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
 export function RHeader() {
+  const { assets } = useAssetsContext();
+  const navigationItems = [
+    { label: "Discover", to: ROUTES.discover },
+    {
+      label: "Trade",
+      to: generatePath(ROUTES.trade, { address: assets[0].address }),
+    },
+    { label: "Portfolio", to: ROUTES.portfolio },
+  ];
   return (
     <header className={styles.header}>
       <Container className={styles.inner}>
