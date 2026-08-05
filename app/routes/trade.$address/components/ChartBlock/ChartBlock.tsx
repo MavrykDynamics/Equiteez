@@ -5,6 +5,12 @@ import { OrderbookBar } from "~/routes/trade.$address/components/ChartBlock/Orde
 import { PriceChart } from "~/routes/trade.$address/components/ChartBlock/PriceChart";
 
 import styles from "./styles.module.css";
+import { useOrderbookDepth } from "~/lib/apis/rwa";
+import {
+  getOrderBookFooterSummary,
+  ORDER_BOOK_FETCH_LIMIT,
+} from "~/lib/organisms/OrderBookPopup/OrderBookTable";
+import { useMemo } from "react";
 
 type ChartBlockProps = {
   asset: AssetType;
@@ -22,6 +28,17 @@ export function ChartBlock({
   isOrderBookOpen,
   onOrderBookToggle,
 }: ChartBlockProps) {
+  const { orderbookDepth } = useOrderbookDepth({
+    limit: ORDER_BOOK_FETCH_LIMIT,
+    tokenAddress: asset.address,
+  });
+  const footerSummary = useMemo(
+    () =>
+      getOrderBookFooterSummary({
+        orderbookDepth,
+      }),
+    [orderbookDepth]
+  );
   return (
     <div className={styles.wrapper}>
       <PriceChart
@@ -35,7 +52,12 @@ export function ChartBlock({
           />
         }
       />
-      <OrderbookBar buyPercentage={64} sellPercentage={36} />
+      {asset.profile.lifecycle === "secondary_market" && (
+        <OrderbookBar
+          buyPercentage={footerSummary.buyPercentage}
+          sellPercentage={footerSummary.sellPercentage}
+        />
+      )}
     </div>
   );
 }

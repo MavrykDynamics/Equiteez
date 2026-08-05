@@ -41,7 +41,7 @@ import styles from "./orderBookPopup.module.css";
 
 const DEFAULT_METRIC_FRACTION_DIGITS = 2;
 const MAX_METRIC_FRACTION_DIGITS = 4;
-const ORDER_BOOK_FETCH_LIMIT = 32;
+export const ORDER_BOOK_FETCH_LIMIT = 32;
 const DEFAULT_ROWS_PER_SIDE = 16;
 const ORDER_BOOK_SUMMARY_SAMPLE_SIZE = 10;
 const SINGLE_SIDE_ROWS = 32;
@@ -422,7 +422,7 @@ const getSummaryPercentage = (value: number, total: number) => {
   return Number(new BigNumberJs(value).div(total).times(100).toFixed(2));
 };
 
-const getOrderBookFooterSummary = ({
+export const getOrderBookFooterSummary = ({
   orderbookDepth,
 }: {
   orderbookDepth: OrderbookDepthResponseType | null;
