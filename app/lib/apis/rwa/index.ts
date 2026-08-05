@@ -10,6 +10,7 @@ export {
   fetchWalletOpenOrders,
   fetchWalletOrderHistory,
 } from "~/lib/apis/rwa/orders/orders";
+export { fetchWallet } from "~/lib/apis/rwa/wallet/wallet";
 export {
   DEFAULT_ORDERBOOK_DEPTH_LIMIT,
   MAX_ORDERBOOK_DEPTH_LIMIT,
