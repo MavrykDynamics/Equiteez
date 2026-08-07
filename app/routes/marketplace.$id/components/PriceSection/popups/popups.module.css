@@ -46,7 +46,7 @@
   align-items: center;
   display: grid;
   gap: var(--r-space-2);
-  grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-columns: 119px minmax(0, 1fr);
   margin-bottom: var(--r-space-4);
   position: relative;
 }
@@ -56,7 +56,17 @@
 }
 
 .marketDropdownTrigger {
-  min-height: var(--r-size-control-medium);
+  height: 40px;
+  min-height: 40px;
+  padding: 0 var(--r-space-3) 0 var(--r-space-4);
+}
+
+.marketDropdownTrigger :global(span) {
+  flex: 0 0 59px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .marketDropdownMenu {
@@ -75,16 +85,12 @@
 
 .tradeControls .sideTab {
   background: var(--r-color-neutral-white) !important;
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border: 0;
   border-radius: var(--r-radius-pill);
-  height: var(--r-size-control-medium);
+  height: 37px;
   min-width: 0;
-  padding: 0 16px;
+  padding: var(--r-space-2) var(--r-space-4);
   width: 100%;
-}
-
-.tradeControls .sideTab:hover {
-  border-color: var(--r-color-neutral-200);
 }
 
 .tradeControls .sideTab p {
@@ -93,11 +99,11 @@
   font-size: var(--r-font-size-body-sm);
   font-weight: var(--r-font-weight-regular);
   line-height: var(--r-line-height-body-sm);
+  white-space: nowrap;
 }
 
 .tradeControls .sideTabActive {
   background: var(--r-color-neutral-black) !important;
-  border-color: var(--r-color-neutral-black);
 }
 
 .tradeControls .sideTabActive p {

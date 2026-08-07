@@ -69,8 +69,10 @@
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
   color: var(--r-color-neutral-black);
-  min-height: var(--r-size-control-medium);
-  padding: 8px 16px;
+  gap: var(--r-space-1);
+  height: 38px;
+  min-height: 38px;
+  padding: 0 16px 0 14px;
   white-space: nowrap;
 }
 
@@ -87,9 +89,9 @@
 .wrapper .orderBookToggle :global(span) {
   color: currentColor;
   font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-sm);
-  font-weight: var(--r-font-weight-regular);
-  line-height: var(--r-line-height-body-sm);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-s);
 }
 
 .chartWithYAxis {
