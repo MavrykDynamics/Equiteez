@@ -32,6 +32,10 @@ import {
   STATUS_PENDING,
   type StatusFlag,
 } from "~/lib/ui/use-status-flag";
+import {
+  OrderExpiryBlock,
+  type OrderExpiryPeriodId,
+} from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 import styles from "./BuySellForm.module.css";
 
@@ -44,7 +48,9 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   rawTickSize: number;
@@ -62,9 +68,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   amount,
   total,
   networkFee,
+  orderExpiryPeriodId,
   limitPrice,
   rawTickSize,
   setAmount,
+  setOrderExpiryPeriodId,
   setLimitPrice,
   marketTokenPrice,
   status,
@@ -367,6 +375,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               {...inputClassNames}
             />
           </div>
+
+          <OrderExpiryBlock
+            selectedPeriodId={orderExpiryPeriodId}
+            setSelectedPeriodId={setOrderExpiryPeriodId}
+          />
 
           <FeesCard
             className={styles.summaryCard}

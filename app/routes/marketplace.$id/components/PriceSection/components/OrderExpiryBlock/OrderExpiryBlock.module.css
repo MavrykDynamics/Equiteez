@@ -1,0 +1,61 @@
+.root {
+  align-items: stretch;
+  display: flex;
+  gap: var(--r-space-2);
+  flex-direction: column;
+  width: 100%;
+}
+
+.header {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.checkboxLabel {
+  align-items: center;
+  color: var(--r-color-neutral-black);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-regular);
+  gap: var(--r-space-2);
+  line-height: var(--r-line-height-body-sm);
+  min-width: 0;
+}
+
+.checkboxLabel span {
+  overflow-wrap: anywhere;
+}
+
+.infoIcon {
+  color: var(--r-color-neutral-400);
+  flex-shrink: 0;
+  height: 16px;
+  width: 16px;
+}
+
+.dropdown {
+  width: 100%;
+}
+
+.dropdownTrigger {
+  background: var(--r-color-neutral-white);
+  border-radius: var(--r-radius-sm);
+  min-height: 44px;
+  padding: 0 var(--r-space-3);
+}
+
+.dropdownMenu {
+  margin-top: var(--r-space-2);
+  min-width: 100%;
+  padding: var(--r-space-1);
+  z-index: 30;
+}
+
+.dropdownOption {
+  min-height: 40px;
+  padding: var(--r-space-2) var(--r-space-3);
+}
