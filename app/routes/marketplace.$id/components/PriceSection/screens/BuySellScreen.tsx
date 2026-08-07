@@ -215,14 +215,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     }
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
-  const { finalTotalValue, txnFee } = useMemo(() => {
-    const orderValue = (isBuyAction ? amount : total) ?? ZERO;
-
-    return {
-      finalTotalValue: orderValue.plus(networkFee) || ZERO,
-      txnFee: undefined,
-    };
-  }, [amount, isBuyAction, networkFee, total]);
+  const orderSummaryAmount = useMemo(
+    () => (isBuyAction ? amount : total) ?? ZERO,
+    [amount, isBuyAction, total]
+  );
 
   const inputClassNames = {
     amountInputClassName: styles.amountInput,
@@ -308,9 +304,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
           <FeesCard
             className={styles.summaryCard}
-            txnFees={txnFee}
-            totalAmount={finalTotalValue}
-            networkfee={networkFee}
+            networkFee={networkFee}
+            pricePerShare={tokenPrice}
+            totalAmount={orderSummaryAmount}
           />
         </div>
       </div>

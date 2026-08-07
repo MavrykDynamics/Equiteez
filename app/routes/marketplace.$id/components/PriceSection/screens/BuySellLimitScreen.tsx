@@ -221,12 +221,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const balanceTotal = total;
 
-  const { finalTotalValue, txnFee } = useMemo(() => {
-    return {
-      finalTotalValue: total?.plus(networkFee) || ZERO,
-      txnFee: undefined,
-    };
-  }, [networkFee, total]);
+  const orderSummaryAmount = useMemo(() => total ?? ZERO, [total]);
 
   const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
@@ -383,9 +378,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
           <FeesCard
             className={styles.summaryCard}
-            txnFees={txnFee}
-            totalAmount={finalTotalValue}
-            networkfee={networkFee}
+            networkFee={networkFee}
+            pricePerShare={limitPrice}
+            totalAmount={orderSummaryAmount}
           />
         </div>
       </div>
