@@ -12,12 +12,47 @@ import {
 import styles from "./OrderExpiryBlock.module.css";
 
 const SECONDS_IN_DAY = 24 * 60 * 60;
+const SECONDS_IN_MINUTE = 60;
 
 export const ORDER_EXPIRY_OPTIONS = [
-  { id: "1d", label: "1 day", seconds: SECONDS_IN_DAY },
-  { id: "7d", label: "7 days", seconds: 7 * SECONDS_IN_DAY },
-  { id: "30d", label: "30 days", seconds: 30 * SECONDS_IN_DAY },
-  { id: "90d", label: "90 days", seconds: 90 * SECONDS_IN_DAY },
+  { id: "1m", isTesting: true, label: "1 min", seconds: SECONDS_IN_MINUTE },
+  {
+    id: "2m",
+    isTesting: true,
+    label: "2 min",
+    seconds: 2 * SECONDS_IN_MINUTE,
+  },
+  {
+    id: "5m",
+    isTesting: true,
+    label: "5 min",
+    seconds: 5 * SECONDS_IN_MINUTE,
+  },
+  {
+    id: "10m",
+    isTesting: true,
+    label: "10 min",
+    seconds: 10 * SECONDS_IN_MINUTE,
+  },
+  { id: "1d", isTesting: false, label: "1 day", seconds: SECONDS_IN_DAY },
+  {
+    id: "7d",
+    isTesting: false,
+    label: "7 days",
+    seconds: 7 * SECONDS_IN_DAY,
+  },
+  {
+    id: "30d",
+    isTesting: false,
+    label: "30 days",
+    seconds: 30 * SECONDS_IN_DAY,
+  },
+  {
+    id: "90d",
+    isTesting: false,
+    label: "90 days",
+    seconds: 90 * SECONDS_IN_DAY,
+  },
 ] as const;
 
 export type OrderExpiryPeriodId = (typeof ORDER_EXPIRY_OPTIONS)[number]["id"];
@@ -90,7 +125,12 @@ export const OrderExpiryBlock: FC<OrderExpiryBlockProps> = ({
         <RDropdownBodyContent align="right" className={styles.dropdownMenu}>
           {ORDER_EXPIRY_OPTIONS.map((option) => (
             <RDropdownBodyContentItem
-              className={styles.dropdownOption}
+              className={[
+                styles.dropdownOption,
+                option.isTesting ? styles.testingDropdownOption : undefined,
+              ]
+                .filter(Boolean)
+                .join(" ")}
               isSelected={option.id === selectedPeriodId}
               key={option.id}
               onClick={() => setSelectedPeriodId(option.id)}

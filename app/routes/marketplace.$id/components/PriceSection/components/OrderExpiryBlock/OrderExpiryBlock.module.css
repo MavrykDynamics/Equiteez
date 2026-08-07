@@ -59,3 +59,7 @@
   min-height: 40px;
   padding: var(--r-space-2) var(--r-space-3);
 }
+
+.testingDropdownOption {
+  color: var(--color-purple-500);
+}
