@@ -25,3 +25,8 @@
   background: color-mix(in srgb, var(--r-color-neutral-100) 75%, transparent);
   color: var(--r-color-neutral-700);
 }
+
+.expired {
+  background: rgba(245, 143, 143, 0.25);
+  color: var(--r-color-red-700);
+}

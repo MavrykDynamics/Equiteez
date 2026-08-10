@@ -31,6 +31,7 @@ export function ChartBlock({
   const { orderbookDepth } = useOrderbookDepth({
     limit: ORDER_BOOK_FETCH_LIMIT,
     tokenAddress: asset.address,
+    refetchInterval: 10_000,
   });
   const footerSummary = useMemo(
     () =>
