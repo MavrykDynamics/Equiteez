@@ -23,11 +23,16 @@ export const OrderbookDepthLevelSchema = z.object({
   total_quote: numericSchema,
 });
 
+const OrderbookDepthLevelsSchema = z
+  .array(OrderbookDepthLevelSchema)
+  .nullable()
+  .transform((levels) => levels ?? []);
+
 export const OrderbookDepthSchema = z.object({
-  asks: z.array(OrderbookDepthLevelSchema),
+  asks: OrderbookDepthLevelsSchema,
   best_ask: optionalNumericSchema,
   best_bid: optionalNumericSchema,
-  bids: z.array(OrderbookDepthLevelSchema),
+  bids: OrderbookDepthLevelsSchema,
   generated_at: z.string(),
   orderbook_address: z.string(),
   quote_token: QuoteTokenSchema,

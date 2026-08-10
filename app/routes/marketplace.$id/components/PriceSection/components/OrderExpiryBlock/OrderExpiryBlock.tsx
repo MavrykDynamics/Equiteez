@@ -12,6 +12,7 @@ import {
 import styles from "./OrderExpiryBlock.module.css";
 
 const SECONDS_IN_DAY = 24 * 60 * 60;
+const SECONDS_IN_HOUR = 60 * 60;
 const SECONDS_IN_MINUTE = 60;
 
 export const ORDER_EXPIRY_OPTIONS = [
@@ -33,6 +34,24 @@ export const ORDER_EXPIRY_OPTIONS = [
     isTesting: true,
     label: "10 min",
     seconds: 10 * SECONDS_IN_MINUTE,
+  },
+  {
+    id: "1h",
+    isTesting: false,
+    label: "1 hour",
+    seconds: SECONDS_IN_HOUR,
+  },
+  {
+    id: "4h",
+    isTesting: false,
+    label: "4 hours",
+    seconds: 4 * SECONDS_IN_HOUR,
+  },
+  {
+    id: "12h",
+    isTesting: false,
+    label: "12 hours",
+    seconds: 12 * SECONDS_IN_HOUR,
   },
   { id: "1d", isTesting: false, label: "1 day", seconds: SECONDS_IN_DAY },
   {
