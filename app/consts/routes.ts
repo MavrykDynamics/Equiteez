@@ -14,4 +14,6 @@ export const ROUTES = {
   discover: "/discover",
   trade: "/trade/:address",
   portfolio: "/portfolio",
+  portfolioDividends: "/portfolio/dividends",
+  portfolioActivity: "/portfolio/activity",
 };
