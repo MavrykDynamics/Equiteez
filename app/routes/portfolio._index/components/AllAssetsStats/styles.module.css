@@ -35,7 +35,6 @@
 
 .search:focus-within {
   border-color: var(--r-color-neutral-400);
-  box-shadow: var(--r-focus-ring);
 }
 
 .search input {
