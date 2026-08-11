@@ -1,90 +1,156 @@
-import { useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import {
+  AssetPriceChart,
+  type AssetPriceChartHover,
+} from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
 
+import {
+  getMockPortfolioChartPoints,
+  MOCK_PORTFOLIO_CHARTS,
+  PORTFOLIO_CHART_PERIODS,
+  type PortfolioChartPeriod,
+} from "./PortfolioValueChart.const";
 import styles from "./styles.module.css";
+import Money from "~/lib/atoms/Money";
 
-const periodOptions = ["1d", "1w", "1m", "6m", "1y"] as const;
-
-const portfolioHistory = [
-  149_336, 150_448, 149_784, 151_922, 151_334, 153_104, 152_672, 154_188,
-  153_908, 155_233, 154_772, 156_406, 155_616, 157_168, 156_904, 158_484,
-  157_942, 159_836, 159_246, 160_978, 160_364, 162_552, 161_908, 163_690,
-  163_104, 165_438, 164_822, 166_970, 166_318, 168_724, 167_896, 170_282,
-  169_528, 172_508,
-];
+function formatTooltipDate(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
 
 export function PortfolioValueChart() {
-  const [activePeriod, setActivePeriod] = useState<(typeof periodOptions)[number]>(
-    "1d"
+  const [period, setPeriod] = useState<PortfolioChartPeriod>("7d");
+  const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
+    null
   );
+  const chartCanvasRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
-  const chartPath = useMemo(() => {
-    const minimum = Math.min(...portfolioHistory);
-    const maximum = Math.max(...portfolioHistory);
-    const range = maximum - minimum;
+  const chartConfig = MOCK_PORTFOLIO_CHARTS[period];
+  const points = useMemo(() => getMockPortfolioChartPoints(period), [period]);
+  const handleChartHover = useCallback(
+    (point: AssetPriceChartHover | null) => setHoveredPoint(point),
+    []
+  );
+  const tooltipPosition = useMemo(() => {
+    if (!hoveredPoint || !chartCanvasRef.current) return null;
 
-    return portfolioHistory
-      .map((value, index) => {
-        const x = (index / (portfolioHistory.length - 1)) * 100;
-        const y = 100 - ((value - minimum) / range) * 86 - 7;
+    const canvas = chartCanvasRef.current;
+    const edgePadding = 8;
+    const verticalOffset = 12;
+    let left = hoveredPoint.x - tooltipSize.width / 2;
+    let top = hoveredPoint.y - tooltipSize.height - verticalOffset;
 
-        return `${index === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
-      })
-      .join(" ");
-  }, []);
+    left = Math.max(
+      edgePadding,
+      Math.min(left, canvas.clientWidth - tooltipSize.width - edgePadding)
+    );
+
+    if (top < edgePadding) top = hoveredPoint.y + verticalOffset;
+
+    top = Math.max(
+      edgePadding,
+      Math.min(top, canvas.clientHeight - tooltipSize.height - edgePadding)
+    );
+
+    return { left, top };
+  }, [hoveredPoint, tooltipSize.height, tooltipSize.width]);
+
+  useLayoutEffect(() => {
+    if (!hoveredPoint || !tooltipRef.current) return;
+
+    const { offsetHeight: height, offsetWidth: width } = tooltipRef.current;
+
+    setTooltipSize((current) =>
+      current.height === height && current.width === width
+        ? current
+        : { height, width }
+    );
+  }, [hoveredPoint]);
+
+  function handlePeriodChange(nextPeriod: PortfolioChartPeriod) {
+    setPeriod(nextPeriod);
+    setHoveredPoint(null);
+  }
 
   return (
-    <div className={styles.chartSection}>
+    <section className={styles.chartSection} aria-label="Portfolio value chart">
       <div className={styles.header}>
         <div
           aria-label="Portfolio chart range"
           className={styles.periodTabs}
           role="tablist"
         >
-          {periodOptions.map((period) => (
+          {PORTFOLIO_CHART_PERIODS.map(({ label, value }) => (
             <button
-              aria-selected={activePeriod === period}
-              className={activePeriod === period ? styles.activePeriod : styles.period}
-              key={period}
-              onClick={() => setActivePeriod(period)}
+              aria-selected={period === value}
+              className={period === value ? styles.activePeriod : styles.period}
+              key={value}
+              onClick={() => handlePeriodChange(value)}
               role="tab"
               type="button"
             >
-              <RText
-                color={activePeriod === period ? "neutral-white" : "neutral-black"}
-                size="body-sm"
-              >
-                {period}
-              </RText>
+              <RText size="body-s">{label}</RText>
             </button>
           ))}
         </div>
         <div className={styles.change}>
-          <span aria-hidden="true" className={styles.positiveMarker} />
-          <RText color="green-500" size="body-sm" weight="medium">
-            $5,897.91 (+2.4%)
+          <RIcon name="trending-up" size="small" className={styles.changeIcon} />
+          <RText color="green-500" size="body-sm">
+            <Money fiat tooltip={false}>
+              {chartConfig.change}
+            </Money>{" "}
+            (+
+            {chartConfig.changePercentage}%)
           </RText>
         </div>
       </div>
-      <div className={styles.chart}>
-        <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <path
-            className={styles.line}
-            d={chartPath}
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
-        <div className={styles.tooltip}>
-          <RText size="body-s" weight="medium">
-            $155,233.00
-          </RText>
-          <RText color="neutral-700" size="body-xs">
-            Jul 15
-          </RText>
-        </div>
-        <span aria-hidden="true" className={styles.point} />
+      <div className={styles.chartCanvas} ref={chartCanvasRef}>
+        <AssetPriceChart
+          className={styles.chart}
+          onHover={handleChartHover}
+          points={points}
+          priceDecimals={2}
+          showPriceScale={false}
+          showTimeScale={false}
+          tone="positive"
+        />
+        {hoveredPoint ? (
+          <>
+            <span
+              aria-hidden="true"
+              className={styles.chartCrosshair}
+              style={{ left: hoveredPoint.x }}
+            />
+            <span
+              aria-hidden="true"
+              className={styles.point}
+              style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
+            />
+            <div
+              className={styles.tooltip}
+              ref={tooltipRef}
+              role="status"
+              style={tooltipPosition ?? undefined}
+            >
+              <RText size="body-s" weight="medium">
+                <Money fiat tooltip={false}>
+                  {hoveredPoint.value}
+                </Money>
+              </RText>
+              <RText color="neutral-700" size="body-xs">
+                {formatTooltipDate(hoveredPoint.time)}
+              </RText>
+            </div>
+          </>
+        ) : null}
       </div>
-    </div>
+    </section>
   );
 }
