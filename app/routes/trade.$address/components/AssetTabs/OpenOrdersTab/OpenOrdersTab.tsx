@@ -30,6 +30,7 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
         tokenAddress: asset.address,
       }),
     enabled: canFetchOrders,
+    refetchInterval: 7000,
     retry: false,
   });
 

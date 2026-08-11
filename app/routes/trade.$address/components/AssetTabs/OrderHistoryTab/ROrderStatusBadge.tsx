@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 import styles from "./ROrderStatusBadge.module.css";
 
-type OrderStatusBadgeVariant = "canceled" | "filled" | "open";
+type OrderStatusBadgeVariant = "canceled" | "filled" | "open" | "expired";
 
 type OrderStatusBadgeDetails = {
   label: string;
@@ -18,6 +18,10 @@ const statusDetailsByValue: Record<string, OrderStatusBadgeDetails> = {
     label: "CANCELED",
     variant: "canceled",
   },
+  expired: {
+    label: "EXPIRED",
+    variant: "expired",
+  },
   pending: {
     label: "OPEN",
     variant: "open",
@@ -27,7 +31,7 @@ const statusDetailsByValue: Record<string, OrderStatusBadgeDetails> = {
 function getOrderStatusBadgeDetails(status: string): OrderStatusBadgeDetails {
   return (
     statusDetailsByValue[status.trim().toLowerCase()] ?? {
-      label: status,
+      label: status.toUpperCase(),
       variant: "canceled",
     }
   );
