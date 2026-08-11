@@ -25,7 +25,7 @@ const chartColors = [
   "#9f4800",
 ];
 
-const separatorDegrees = 1;
+const separatorDegrees = 2;
 const minimumSliceDegrees = 4;
 
 type ChartAsset = Pick<PortfolioAsset, "id" | "symbol" | "value"> & {
@@ -99,8 +99,10 @@ export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
         }}
       >
         <div className={styles.donutCenter}>
-          <RHeading size="h6" weight="medium">
-            <Money fiat tooltip={false}>
+          <div className={styles.donutCenterBg} />
+          <RHeading size="h6" weight="medium" className={styles.donutCenterText}>
+            $
+            <Money fiat tooltip={false} shortened>
               {totalValue}
             </Money>
           </RHeading>
