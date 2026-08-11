@@ -52,7 +52,7 @@ export function PortfolioGeneralStats() {
               <Money fiat tooltip={false}>
                 {pnl24h}
               </Money>{" "}
-              (
+              ({isPositivePnl ? "+" : "-"}
               <Money fiat tooltip={false}>
                 {pnl24hPercentage}
               </Money>
