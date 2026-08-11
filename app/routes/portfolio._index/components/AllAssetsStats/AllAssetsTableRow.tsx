@@ -3,6 +3,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import type { PortfolioAsset } from "~/routes/portfolio._index/components/AllAssetsStats/types";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
+import { RIcon } from "~/lib/atoms/RIcon";
 
 type AllAssetsTableRowProps = {
   asset: PortfolioAsset;
@@ -66,7 +67,14 @@ export function AllAssetsTableRow({ asset }: AllAssetsTableRowProps) {
           </Money>
         </RText>
         <RText color={isPositiveChange ? "green-500" : "red-500"} size="body-s">
-          {isPositiveChange ? "▲" : "▼"}{" "}
+          <RIcon
+            className={
+              isPositiveChange ? styles.positiveChange : styles.negativeChange
+            }
+            name={isPositiveChange ? "trending-up" : "trending-down"}
+            size="small"
+          />
+          {isPositiveChange ? "+" : "-"}
           <Money fiat tooltip={false}>
             {asset.changePercentage}
           </Money>

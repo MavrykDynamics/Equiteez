@@ -95,6 +95,13 @@
   align-items: center;
   gap: 2px;
 }
+.positiveChange {
+  color: var(--r-color-green-500);
+}
+
+.negativeChange {
+  color: var(--r-color-red-500);
+}
 
 .assetIdentity {
   display: flex;
