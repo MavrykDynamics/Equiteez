@@ -3,6 +3,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 
 import type { PortfolioAsset } from "~/routes/portfolio._index/components/AllAssetsStats/types";
 import styles from "./styles.module.css";
+import Money from "~/lib/atoms/Money";
 
 type AllAssetsChartProps = {
   assets: PortfolioAsset[];
@@ -22,50 +23,66 @@ const chartColors = [
   "#9f4800",
 ];
 
-function formatCurrency(value: number, digits = 2) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    maximumFractionDigits: digits,
-    minimumFractionDigits: digits,
-    style: "currency",
-  }).format(value);
-}
+const separatorDegrees = 1;
+const minimumSliceDegrees = 4;
 
-function formatCompactCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    maximumFractionDigits: 1,
-    notation: "compact",
-    style: "currency",
-  }).format(value);
-}
+type ChartAsset = Pick<PortfolioAsset, "id" | "symbol" | "value">;
 
 export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
-  const chartAssets = assets.slice(0, 10);
+  const orderedAssets = [...assets]
+    .filter((asset) => Number.isFinite(asset.value) && asset.value > 0)
+    .sort((firstAsset, secondAsset) => secondAsset.value - firstAsset.value);
+  const primaryAssets = orderedAssets.slice(0, 9);
+  const otherValue = orderedAssets
+    .slice(9)
+    .reduce((sum, asset) => sum + asset.value, 0);
+  const chartAssets: ChartAsset[] = otherValue
+    ? [
+        ...primaryAssets,
+        {
+          id: "portfolio-other",
+          symbol: "Other",
+          value: otherValue,
+        },
+      ]
+    : primaryAssets;
   const chartTotal =
     chartAssets.reduce((sum, asset) => sum + asset.value, 0) || 1;
+  const distributableDegrees = Math.max(
+    0,
+    360 - chartAssets.length * minimumSliceDegrees
+  );
+  let currentAngle = 0;
   const conicGradient = chartAssets
-    .reduce<string[]>((stops, asset, index) => {
-      const previousStop = stops.length
-        ? Number.parseFloat(stops[stops.length - 1].split(" ").at(-1) ?? "0")
-        : 0;
-      const nextStop = previousStop + (asset.value / chartTotal) * 100;
-      const color = chartColors[index % chartColors.length];
+    .map((asset, index) => {
+      const nextAngle =
+        currentAngle +
+        minimumSliceDegrees +
+        (asset.value / chartTotal) * distributableDegrees;
+      const colorEnd = Math.max(currentAngle, nextAngle - separatorDegrees);
+      const color = chartColors[index];
+      const stop = `${color} ${currentAngle}deg ${colorEnd}deg, var(--r-color-neutral-white) ${colorEnd}deg ${nextAngle}deg`;
 
-      stops.push(`${color} ${previousStop}% ${nextStop}%`);
-      return stops;
-    }, [])
+      currentAngle = nextAngle;
+      return stop;
+    })
     .join(", ");
 
   return (
     <aside className={styles.chartPanel} aria-label="Portfolio allocation">
       <div
         className={styles.donut}
-        style={{ background: `conic-gradient(${conicGradient})` }}
+        style={{
+          background: conicGradient
+            ? `conic-gradient(${conicGradient})`
+            : "var(--r-color-neutral-100)",
+        }}
       >
         <div className={styles.donutCenter}>
           <RHeading size="h6" weight="medium">
-            {formatCompactCurrency(totalValue)}
+            <Money fiat tooltip={false}>
+              {totalValue}
+            </Money>
           </RHeading>
         </div>
       </div>
@@ -76,7 +93,7 @@ export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
               aria-hidden="true"
               className={styles.legendColor}
               style={{
-                backgroundColor: chartColors[index % chartColors.length],
+                backgroundColor: chartColors[index],
               }}
             />
             <RText
@@ -84,14 +101,19 @@ export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
               size="body-sm"
               weight="medium"
             >
-              {((asset.value / chartTotal) * 100).toFixed(1)}%
+              <Money fiat tooltip={false}>
+                {(asset.value / chartTotal) * 100}
+              </Money>
+              %
             </RText>
             <span>
               <RText className={styles.blockText} size="body-s">
-                {asset.symbol}
+                {asset.symbol.toUpperCase()}
               </RText>
               <RText color="neutral-700" size="body-s">
-                {formatCurrency(asset.value)}
+                <Money fiat tooltip={false}>
+                  {asset.value}
+                </Money>
               </RText>
             </span>
           </div>

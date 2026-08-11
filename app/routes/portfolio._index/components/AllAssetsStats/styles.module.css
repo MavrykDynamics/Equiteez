@@ -179,9 +179,18 @@
   width: 116px;
   height: 116px;
   place-items: center;
-  border: 20px solid var(--r-color-neutral-white);
   border-radius: 50%;
   background: var(--r-color-neutral-white);
+  position: relative;
+}
+.donutCenter:after {
+  content: "";
+  position: absolute;
+  width: 175px;
+  height: 175px;
+  background: rgba(255, 255, 255, 0.50);
+  border-radius: 50%;
+  z-index: 0;
 }
 
 .legend {
