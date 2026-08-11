@@ -188,7 +188,7 @@
   position: absolute;
   width: 175px;
   height: 175px;
-  background: rgba(255, 255, 255, 0.50);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   z-index: 0;
 }
@@ -201,11 +201,26 @@
 }
 
 .legendItem {
+  position: relative;
   display: grid;
-  grid-template-columns: 16px 49px minmax(0, 1fr);
+  grid-template-columns: 16px 59px minmax(0, 1fr);
   min-height: 36px;
   align-items: center;
   column-gap: var(--r-space-3);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.legendItem:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.otherLegendItem {
 }
 
 .legendColor {
@@ -216,6 +231,33 @@
 
 .legendPercentage {
   white-space: nowrap;
+}
+
+.otherTooltip {
+  position: absolute;
+  z-index: 2;
+  top: 40%;
+  left: calc(50% + var(--r-space-2));
+  box-sizing: border-box;
+  width: 127px;
+  padding: var(--r-space-3);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-color-neutral-white);
+  box-shadow: 0 7px 25.781px rgba(0, 0, 0, 0.08);
+  transform: translateY(-50%);
+}
+
+.otherTooltipList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+.otherTooltipRow {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
 }
 
 @media (--media-tablet-max) {
@@ -238,6 +280,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-content: start;
     margin-top: 0;
+  }
+
+  .otherTooltip {
+    right: 0;
+    left: auto;
   }
 }
 
@@ -269,5 +316,12 @@
 
   .legend {
     grid-template-columns: 1fr;
+  }
+
+  .otherTooltip {
+    top: calc(100% + var(--r-space-2));
+    right: auto;
+    left: 0;
+    transform: none;
   }
 }
