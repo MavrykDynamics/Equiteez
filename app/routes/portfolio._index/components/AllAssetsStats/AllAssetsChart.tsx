@@ -33,7 +33,7 @@ type ChartAsset = Pick<PortfolioAsset, "id" | "symbol" | "value"> & {
 };
 
 export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
-  const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(true);
+  const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
   const orderedAssets = [...assets]
     .filter((asset) => Number.isFinite(asset.value) && asset.value > 0)
     .sort((firstAsset, secondAsset) => secondAsset.value - firstAsset.value);
@@ -157,7 +157,7 @@ export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
                         </Money>
                         %
                       </RText>
-                      <div>
+                      <div className={styles.otherTooltipRowContent}>
                         <RText className={styles.blockText} size="body-xs">
                           {member.symbol.toUpperCase()}
                         </RText>

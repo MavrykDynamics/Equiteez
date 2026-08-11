@@ -287,6 +287,10 @@
     left: auto;
   }
 }
+.otherTooltipRowContent {
+  display: flex;
+  flex-direction: column;
+}
 
 @media (--media-phone-max) {
   .stats {
