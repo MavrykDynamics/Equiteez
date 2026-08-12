@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const QuoteTokenSchema = z.object({
   address: z.string(),
-  price_per_token: z.number(),
-  total: z.number(),
+  price_per_token: z.number().nullable(),
+  total: z.number().nullable(),
 });
 
 export const OpenOrderItemSchema = z.object({
@@ -16,8 +16,8 @@ export const OpenOrderItemSchema = z.object({
   amount: z.number(),
   quote_token: QuoteTokenSchema,
   currency: z.string(),
-  price_per_token: z.number(),
-  total: z.number(),
+  price_per_token: z.number().nullable(),
+  total: z.number().nullable(),
   created_at: z.string(),
   can_cancel: z.boolean(),
 });
@@ -39,8 +39,8 @@ export const OrderHistoryItemSchema = z.object({
   amount: z.number(),
   quote_token: QuoteTokenSchema,
   currency: z.string(),
-  price_per_token: z.number(),
-  total: z.number(),
+  price_per_token: z.number().nullable(),
+  total: z.number().nullable(),
 });
 
 export const OrderHistorySchema = z.object({

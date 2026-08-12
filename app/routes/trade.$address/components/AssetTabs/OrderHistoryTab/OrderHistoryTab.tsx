@@ -14,7 +14,11 @@ import { OpenOrdersLoadingState } from "~/routes/trade.$address/components/Asset
 import { ROrderStatusBadge } from "./ROrderStatusBadge";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
-import { formatOrderDate, getOrderDetails } from "../OpenOrdersTab/OrderItem";
+import {
+  formatOrderDate,
+  getOrderDetails,
+  renderNullableFiatValue,
+} from "../OpenOrdersTab/OrderItem";
 
 type OrdersHistoryTabProps = {
   asset: AssetType;
@@ -137,7 +141,7 @@ export function OrderHistoryTab({ asset }: OrdersHistoryTabProps) {
                 </td>
                 <td data-label="Price">
                   <RText size="body-sm">
-                    <Money fiat>{order.quote_token.price_per_token}</Money>
+                    {renderNullableFiatValue(order.quote_token.price_per_token)}
                   </RText>
                 </td>
                 <td data-label="Amount">
@@ -150,7 +154,7 @@ export function OrderHistoryTab({ asset }: OrdersHistoryTabProps) {
                 </td>
                 <td data-label="Total">
                   <RText size="body-sm">
-                    <Money fiat>{order.quote_token.total}</Money> USDT
+                    {renderNullableFiatValue(order.quote_token.total, "USDT")}
                   </RText>
                 </td>
               </tr>
