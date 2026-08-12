@@ -1,8 +1,8 @@
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RIcon } from "~/lib/atoms/RIcon";
 
-import type { PortfolioAsset } from "~/routes/portfolio._index/components/AllAssetsStats/types";
-import { AllAssetsTableRow } from "./AllAssetsTableRow";
+import type { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";
+import { AssetsTableRow } from "./AssetsTableRow";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
@@ -21,7 +21,7 @@ const tableHeaders = [
   "Profit",
 ];
 
-export function AllAssetsTable({
+export function AssetsTable({
   assets,
   onSearchChange,
   search,
@@ -61,7 +61,7 @@ export function AllAssetsTable({
           </thead>
           <tbody>
             {assets.map((asset) => (
-              <AllAssetsTableRow asset={asset} key={asset.id} />
+              <AssetsTableRow asset={asset} key={asset.id} />
             ))}
           </tbody>
         </table>

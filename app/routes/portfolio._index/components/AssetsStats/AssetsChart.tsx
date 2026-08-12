@@ -3,7 +3,7 @@ import { useState } from "react";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
-import type { PortfolioAsset } from "~/routes/portfolio._index/components/AllAssetsStats/types";
+import type { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 
@@ -32,7 +32,7 @@ type ChartAsset = Pick<PortfolioAsset, "id" | "symbol" | "value"> & {
   members?: PortfolioAsset[];
 };
 
-export function AllAssetsChart({ assets, totalValue }: AllAssetsChartProps) {
+export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
   const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
   const orderedAssets = [...assets]
     .filter((asset) => Number.isFinite(asset.value) && asset.value > 0)

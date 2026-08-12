@@ -1,7 +1,7 @@
 import styles from "./styles.module.css";
 import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
 import { PortfolioGeneralStats } from "~/routes/portfolio._index/components/PortfolioGeneralStats/PortfolioGeneralStats";
-import { AllAssetsStats } from "~/routes/portfolio._index/components/AllAssetsStats/AllAssetsStats";
+import { AssetsStats } from "~/routes/portfolio._index/components/AssetsStats/AssetsStats";
 import { ROUTES } from "~/consts";
 
 export default function PortfolioOverview() {
@@ -10,7 +10,7 @@ export default function PortfolioOverview() {
       <WelcomeBlock activeTab={ROUTES.portfolio} userName="Josh" />
       <div className={styles.content}>
         <PortfolioGeneralStats />
-        <AllAssetsStats />
+        <AssetsStats />
       </div>
     </div>
   );

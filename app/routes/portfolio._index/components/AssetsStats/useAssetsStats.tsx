@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
-import { PortfolioAsset } from "~/routes/portfolio._index/components/AllAssetsStats/types";
+import { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";
 import {
   WalletRwaAssetType,
   WalletTokenType,
@@ -58,7 +58,7 @@ function getRwaAssets(
   });
 }
 
-export function useAllAssetsStats() {
+export function useAssetsStats() {
   const { assets } = useAssetsContext();
   const { wallet } = usePortfolioContext();
 

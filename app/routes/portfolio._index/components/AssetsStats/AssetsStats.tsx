@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 
-import { AllAssetsChart } from "./AllAssetsChart";
-import { AllAssetsTable } from "./AllAssetsTable";
+import { AssetsChart } from "./AssetsChart";
+import { AssetsTable } from "./AssetsTable";
 import styles from "./styles.module.css";
-import { useAllAssetsStats } from "~/routes/portfolio._index/components/AllAssetsStats/useAllAssetsStats";
+import { useAssetsStats } from "~/routes/portfolio._index/components/AssetsStats/useAssetsStats";
 
-export function AllAssetsStats() {
+export function AssetsStats() {
   const { wallet } = usePortfolioContext();
   const [search, setSearch] = useState("");
   
-const { portfolioAssets } = useAllAssetsStats(); 
+const { portfolioAssets } = useAssetsStats();
 
   const filteredAssets = portfolioAssets.filter((asset) => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -26,12 +26,12 @@ const { portfolioAssets } = useAllAssetsStats();
 
   return (
     <section className={styles.stats} aria-label="Portfolio assets">
-      <AllAssetsTable
+      <AssetsTable
         assets={filteredAssets}
         onSearchChange={setSearch}
         search={search}
       />
-      <AllAssetsChart assets={portfolioAssets} totalValue={totalValue} />
+      <AssetsChart assets={portfolioAssets} totalValue={totalValue} />
     </section>
   );
 }

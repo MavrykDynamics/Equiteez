@@ -1,6 +1,6 @@
 import { RText } from "~/lib/atoms/RTypography/RText";
 
-import type { PortfolioAsset } from "~/routes/portfolio._index/components/AllAssetsStats/types";
+import type { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -9,7 +9,7 @@ type AllAssetsTableRowProps = {
   asset: PortfolioAsset;
 };
 
-export function AllAssetsTableRow({ asset }: AllAssetsTableRowProps) {
+export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
   const isPositiveChange = asset.changePercentage >= 0;
   const isPositiveProfit = (asset.profit ?? 0) >= 0;
 
