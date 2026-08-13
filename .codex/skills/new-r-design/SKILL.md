@@ -262,6 +262,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Compose `RCustomDropdown`, `RDropdownFaceContent`, `RDropdownBodyContent`, and `RDropdownBodyContentItem`. The menu closes on selection, outside interaction, or Escape.
 - Related tokens: `RText`, `RIcon`, `--r-size-control-medium`, `--r-space-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
+## Portfolio activity tab placeholders
+
+- Purpose: Route-local placeholders for the Open Orders, Transaction History, and Deposits activity tables while their data and table UI are pending.
+- Location: `app/routes/portfolio.activity/components/ROpenOrdersTab.tsx`, `RTransactionHistoryTab.tsx`, and `RDepositsTab.tsx`
+- Reusability notes: Keep these components route-local; replace their label-only content with the corresponding table implementation when activity data is connected.
+- Related tokens: `RText`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`
+
 ## ROrderStatusBadge
 
 - Purpose: Route-local redesign badge that maps order-history statuses to the Figma `FILLED`, `OPEN`, and canceled visual states.
