@@ -9,6 +9,7 @@ export const GENERATED_STATIC_SITEMAP_PATHS = [
   "/exchange",
   "/marketplace",
   "/portfolio",
+  "/portfolio/activity",
   "/portfolio/dividends",
   "/properties",
 ] as const;
