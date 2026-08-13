@@ -99,14 +99,21 @@ export function OpenOrdersTab() {
               TOTAL
             </RText>
           </div>
-          <div aria-label="Order actions" className={styles.headerCell} role="columnheader" />
+          <div
+            aria-label="Order actions"
+            className={styles.headerCell}
+            role="columnheader"
+          />
         </div>
 
         <div role="rowgroup">
           {orders.map((order) => (
             <OpenOrdersTableRow
-              assetSymbol={assetSymbolsByAddress.get(order.token_address) ?? order.currency}
+              assetSymbol={
+                assetSymbolsByAddress.get(order.token_address) ?? order.currency
+              }
               key={order.id}
+              onAfterAction={openOrdersQuery.refetch}
               order={order}
             />
           ))}
