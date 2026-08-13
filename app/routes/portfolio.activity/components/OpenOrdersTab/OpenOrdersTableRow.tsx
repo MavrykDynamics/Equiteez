@@ -1,6 +1,3 @@
-import BuyIcon from "app/icons/wallet/buy.svg?react";
-import SellIcon from "app/icons/wallet/sell.svg?react";
-
 import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -68,11 +65,7 @@ export function OpenOrdersTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <span className={isBuyOrder ? styles.buy : styles.sell}>
-            {isBuyOrder ? (
-              <BuyIcon aria-hidden className={styles.typeIcon} />
-            ) : (
-              <SellIcon aria-hidden className={styles.typeIcon} />
-            )}
+            {isBuyOrder ? "+" : "-"}
             <RText className={styles.typeLabel} size="body-sm">
               {orderDetails.type.replace(" Order", "")} {orderDetails.side}
             </RText>
