@@ -15,7 +15,7 @@ type WalletOpenOrdersParams = {
 
 type WalletOrdersParams = {
   walletAddress: string;
-  tokenAddress: string;
+  tokenAddress?: string;
 };
 
 export const fetchWalletOpenOrders = async ({
@@ -42,8 +42,18 @@ export const fetchWalletOrderHistory = async ({
   walletAddress,
   tokenAddress,
 }: WalletOrdersParams): Promise<OrderHistoryResponseType> => {
+  const query = new URLSearchParams();
+
+  if (tokenAddress) {
+    query.set("token_address", tokenAddress);
+  }
+
+  ["limit_sell", "limit_buy", "market_buy", "market_sell"].forEach((type) =>
+    query.append("types", type)
+  );
+
   const { data } = await rwaApi.get(
-    `/wallets/${walletAddress}/transactions?token_address=${tokenAddress}&types=limit_sell&types=limit_buy&types=market_buy&types=market_sell`
+    `/wallets/${walletAddress}/transactions?${query.toString()}`
   );
 
   return OrderHistorySchema.parse(data);

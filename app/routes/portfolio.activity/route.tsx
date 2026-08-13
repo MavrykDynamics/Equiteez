@@ -12,7 +12,7 @@ import {
 } from "~/lib/organisms/RTabSwitcher";
 import { DepositsTab } from "~/routes/portfolio.activity/components/DepositsTab";
 import { OpenOrdersTab } from "~/routes/portfolio.activity/components/OpenOrdersTab/OpenOrdersTab";
-import { TransactionHistoryTab } from "~/routes/portfolio.activity/components/TransactionHistoryTab";
+import { TransactionHistoryTab } from "~/routes/portfolio.activity/components/TransactionHistoryTab/TransactionHistoryTab";
 
 type ActivityTabId = "open-orders" | "transaction-history" | "deposits";
 

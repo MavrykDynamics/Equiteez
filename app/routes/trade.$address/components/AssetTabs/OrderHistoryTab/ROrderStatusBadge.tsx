@@ -14,6 +14,10 @@ const statusDetailsByValue: Record<string, OrderStatusBadgeDetails> = {
     label: "FILLED",
     variant: "filled",
   },
+  confirmed: {
+    label: "CONFIRMED",
+    variant: "filled",
+  },
   canceled: {
     label: "CANCELED",
     variant: "canceled",
