@@ -1,0 +1,58 @@
+import styles from "./styles.module.css";
+import { RText } from "~/lib/atoms/RTypography/RText";
+import Money from "~/lib/atoms/Money";
+import { RHeading } from "~/lib/atoms/RTypography/RHeading";
+import { ROUTES } from "~/consts";
+import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
+
+export default function PortfolioActivity() {
+  const onChainActivity = 86;
+  const openOrders = 15;
+  const transfers = 11;
+
+  return (
+    <div className={styles.wrapper}>
+      <WelcomeBlock activeTab={ROUTES.portfolioActivity} userName="Josh" />
+
+      <div className={styles.content}>
+        <div className={styles.statsWrapper}>
+          <div className={styles.statsItem}>
+            <RText color="neutral-700" size="body-s" weight="medium">
+              On-chain Activity
+            </RText>
+            <RHeading color="neutral-black" size="h4" weight="medium">
+              <Money tooltip={false}>{onChainActivity}</Money>
+            </RHeading>
+            <RText color="neutral-700" size="body-s">
+              Events recorded across portfolio
+            </RText>
+          </div>
+
+          <div className={styles.statsItem}>
+            <RText color="neutral-700" size="body-s" weight="medium">
+              Open Orders
+            </RText>
+            <RHeading color="neutral-black" size="h4" weight="medium">
+              <Money tooltip={false}>{openOrders}</Money>
+            </RHeading>
+            <RText color="neutral-700" size="body-s">
+              Resting on the book
+            </RText>
+          </div>
+
+          <div className={styles.statsItem}>
+            <RText color="neutral-700" size="body-s" weight="medium">
+              Transfers
+            </RText>
+            <RHeading color="neutral-black" size="h4" weight="medium">
+              <Money tooltip={false}>{transfers}</Money>
+            </RHeading>
+            <RText color="neutral-700" size="body-s">
+              Deposits & withdrawals
+            </RText>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

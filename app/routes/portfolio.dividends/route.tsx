@@ -9,7 +9,7 @@ import { Distribution } from "~/routes/portfolio.dividends/components/Distributi
 import { distributionMock } from "~/routes/portfolio.dividends/components/Distribution/Distribution.constants";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
-export default function PortfolioOverview() {
+export default function PortfolioDividends() {
   const { assets } = useAssetsContext();
   const distributionData = assets
     .slice(0, distributionMock.length)
