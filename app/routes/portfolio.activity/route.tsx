@@ -10,9 +10,9 @@ import {
   RTabSwitcher,
   type RTabSwitcherItem,
 } from "~/lib/organisms/RTabSwitcher";
-import { RDepositsTab } from "~/routes/portfolio.activity/components/RDepositsTab";
-import { ROpenOrdersTab } from "~/routes/portfolio.activity/components/ROpenOrdersTab";
-import { RTransactionHistoryTab } from "~/routes/portfolio.activity/components/RTransactionHistoryTab";
+import { DepositsTab } from "~/routes/portfolio.activity/components/DepositsTab";
+import { OpenOrdersTab } from "~/routes/portfolio.activity/components/OpenOrdersTab/OpenOrdersTab";
+import { TransactionHistoryTab } from "~/routes/portfolio.activity/components/TransactionHistoryTab";
 
 type ActivityTabId = "open-orders" | "transaction-history" | "deposits";
 
@@ -41,11 +41,11 @@ export default function PortfolioActivity() {
   const renderActiveTab = () => {
     switch (activeTabId) {
       case "transaction-history":
-        return <RTransactionHistoryTab />;
+        return <TransactionHistoryTab />;
       case "deposits":
-        return <RDepositsTab />;
+        return <DepositsTab />;
       default:
-        return <ROpenOrdersTab />;
+        return <OpenOrdersTab />;
     }
   };
 

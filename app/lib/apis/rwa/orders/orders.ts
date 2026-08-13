@@ -8,6 +8,11 @@ import {
   OrderHistoryResponseType,
 } from "~/lib/apis/rwa/orders/orders.types";
 
+type WalletOpenOrdersParams = {
+  walletAddress: string;
+  tokenAddress?: string;
+};
+
 type WalletOrdersParams = {
   walletAddress: string;
   tokenAddress: string;
@@ -16,10 +21,12 @@ type WalletOrdersParams = {
 export const fetchWalletOpenOrders = async ({
   walletAddress,
   tokenAddress,
-}: WalletOrdersParams): Promise<OpenOrdersResponseType> => {
-  const query = new URLSearchParams({
-    token_address: tokenAddress,
-  });
+}: WalletOpenOrdersParams): Promise<OpenOrdersResponseType> => {
+  const query = new URLSearchParams();
+
+  if (tokenAddress) {
+    query.set("token_address", tokenAddress);
+  }
 
   const queryString = query.toString();
   const url = `/wallets/${walletAddress}/orders${
