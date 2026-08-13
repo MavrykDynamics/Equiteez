@@ -14,11 +14,16 @@ export const OpenOrderItemSchema = z.object({
   token_address: z.string(),
   orderbook_address: z.string(),
   amount: z.number(),
+  filled_amount: z.number(),
+  remaining_amount: z.number(),
+  filled_percent: z.number(),
   quote_token: QuoteTokenSchema,
   currency: z.string(),
   price_per_token: z.number(),
   total: z.number(),
   created_at: z.string(),
+  expires_at: z.string().nullable(),
+  expires_in_seconds: z.number().int().nullable(),
   can_cancel: z.boolean(),
 });
 
