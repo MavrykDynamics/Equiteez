@@ -3,13 +3,13 @@ import { useState } from "react";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
-import type { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";
+import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 
 type AllAssetsChartProps = {
-  assets: PortfolioAsset[];
-  totalValue: number;
+  assets: WalletPortfolioAssetType[];
+  portfolioTotal: number;
 };
 
 const chartColors = [
@@ -28,46 +28,56 @@ const chartColors = [
 const separatorDegrees = 2;
 const minimumSliceDegrees = 4;
 
-type ChartAsset = Pick<PortfolioAsset, "id" | "symbol" | "value"> & {
-  members?: PortfolioAsset[];
+type ChartAsset = Pick<
+  WalletPortfolioAssetType,
+  "token_address" | "symbol" | "share_pct" | "balance"
+> & {
+  members?: WalletPortfolioAssetType[];
 };
 
-export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
+export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
   const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
   const orderedAssets = [...assets]
-    .filter((asset) => Number.isFinite(asset.value) && asset.value > 0)
-    .sort((firstAsset, secondAsset) => secondAsset.value - firstAsset.value);
-  const portfolioTotal = orderedAssets.reduce(
-    (sum, asset) => sum + asset.value,
-    0
-  );
+    .filter(
+      (asset) => Number.isFinite(asset.share_pct) && Number.isFinite(asset.balance)
+    )
+    .filter((asset) => asset.share_pct > 0 && asset.balance > 0)
+    .sort((firstAsset, secondAsset) => secondAsset.share_pct - firstAsset.share_pct);
   const otherMembers =
     orderedAssets.length > 9
       ? orderedAssets.slice(9)
-      : orderedAssets.filter((asset) => asset.value / portfolioTotal < 0.01);
-  const otherMemberIds = new Set(otherMembers.map((asset) => asset.id));
-  const primaryAssets = orderedAssets.filter(
-    (asset) => !otherMemberIds.has(asset.id)
+      : orderedAssets.filter((asset) => asset.share_pct < 1);
+  const otherMemberIds = new Set(
+    otherMembers.map((asset) => asset.token_address)
   );
-  const otherValue = otherMembers.reduce((sum, asset) => sum + asset.value, 0);
+  const primaryAssets = orderedAssets.filter(
+    (asset) => !otherMemberIds.has(asset.token_address)
+  );
+  const otherSharePct = otherMembers.reduce(
+    (sum, asset) => sum + asset.share_pct,
+    0
+  );
+  const otherBalance = otherMembers.reduce(
+    (sum, asset) => sum + asset.balance,
+    0
+  );
   const chartAssets: ChartAsset[] = [
     ...primaryAssets.map((item) => ({
       ...item,
       symbol: item.symbol.toUpperCase(),
     })),
-    ...(otherValue
+    ...(otherSharePct > 0
       ? [
           {
-            id: "portfolio-other",
+            balance: otherBalance,
+            share_pct: otherSharePct,
+            token_address: "portfolio-other",
             members: otherMembers,
             symbol: "Other",
-            value: otherValue,
           },
         ]
       : []),
   ];
-  const chartTotal =
-    chartAssets.reduce((sum, asset) => sum + asset.value, 0) || 1;
   const distributableDegrees = Math.max(
     0,
     360 - chartAssets.length * minimumSliceDegrees
@@ -78,7 +88,7 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
       const nextAngle =
         currentAngle +
         minimumSliceDegrees +
-        (asset.value / chartTotal) * distributableDegrees;
+        (asset.share_pct / 100) * distributableDegrees;
       const colorEnd = Math.max(currentAngle, nextAngle - separatorDegrees);
       const color = chartColors[index];
       const stop = `${color} ${currentAngle}deg ${colorEnd}deg, var(--r-color-neutral-white) ${colorEnd}deg ${nextAngle}deg`;
@@ -103,7 +113,7 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
           <RHeading size="h6" weight="medium" className={styles.donutCenterText}>
             $
             <Money fiat tooltip={false} shortened>
-              {totalValue}
+              {portfolioTotal}
             </Money>
           </RHeading>
         </div>
@@ -116,7 +126,7 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
                 ? `${styles.legendItem} ${styles.otherLegendItem}`
                 : styles.legendItem
             }
-            key={asset.id}
+            key={asset.token_address}
             onMouseEnter={() => asset.members && setIsOtherDetailsVisible(true)}
             onMouseLeave={() => setIsOtherDetailsVisible(false)}
           >
@@ -133,7 +143,7 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
               weight="medium"
             >
               <Money fiat tooltip={false}>
-                {(asset.value / chartTotal) * 100}
+                {asset.share_pct}
               </Money>
               %
             </RText>
@@ -144,7 +154,7 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
               <RText color="neutral-700" size="body-s">
                 $
                 <Money fiat tooltip={false}>
-                  {asset.value}
+                  {asset.balance}
                 </Money>
               </RText>
             </span>
@@ -152,10 +162,13 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
               <div className={styles.otherTooltip} role="tooltip">
                 <div className={styles.otherTooltipList}>
                   {asset.members.map((member) => (
-                    <div className={styles.otherTooltipRow} key={member.id}>
+                    <div
+                      className={styles.otherTooltipRow}
+                      key={member.token_address}
+                    >
                       <RText size="body-s" weight="medium">
                         <Money fiat tooltip={false}>
-                          {(member.value / chartTotal) * 100}
+                          {member.share_pct}
                         </Money>
                         %
                       </RText>
@@ -166,7 +179,7 @@ export function AssetsChart({ assets, totalValue }: AllAssetsChartProps) {
                         <RText color="neutral-700" size="body-xs">
                           $
                           <Money fiat tooltip={false}>
-                            {member.value}
+                            {member.balance}
                           </Money>
                         </RText>
                       </div>

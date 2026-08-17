@@ -5,14 +5,14 @@ import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.type
 
 type AssetsStatsProps = {
   assets: WalletPortfolioAssetType[];
-  totalValue: number;
+  portfolioTotal: number;
 };
 
-export function AssetsStats({ assets, totalValue }: AssetsStatsProps) {
+export function AssetsStats({ assets, portfolioTotal }: AssetsStatsProps) {
   return (
     <section className={styles.stats} aria-label="Portfolio assets">
       <AssetsTable assets={assets} />
-      <AssetsChart assets={assets} totalValue={totalValue} />
+      <AssetsChart assets={assets} portfolioTotal={portfolioTotal} />
     </section>
   );
 }

@@ -64,7 +64,7 @@ export default function PortfolioOverview() {
         <PortfolioGeneralStats stats={portfolioStats} />
         <AssetsStats
           assets={portfolioQuery.data?.assets ?? []}
-          totalValue={portfolioStats.totalValue}
+          portfolioTotal={portfolioStats.totalValue}
         />
       </div>
     </div>
