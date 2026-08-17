@@ -1,4 +1,3 @@
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RIcon } from "~/lib/atoms/RIcon";
 
 import type { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";

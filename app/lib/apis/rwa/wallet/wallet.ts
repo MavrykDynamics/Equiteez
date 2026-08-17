@@ -1,6 +1,12 @@
 import { rwaApi } from "~/lib/apis/rwa/client";
-import { WalletSchema } from "~/lib/apis/rwa/wallet/wallet.schema";
-import { WalletResponseType } from "~/lib/apis/rwa/wallet/wallet.types";
+import {
+  WalletPortfolioSchema,
+  WalletSchema,
+} from "~/lib/apis/rwa/wallet/wallet.schema";
+import {
+  WalletPortfolioResponseType,
+  WalletResponseType,
+} from "~/lib/apis/rwa/wallet/wallet.types";
 
 type FetchWalletParams = {
   walletAddress: string;
@@ -12,4 +18,12 @@ export const fetchWallet = async ({
   const { data } = await rwaApi.get(`/wallets/${walletAddress}`);
 
   return WalletSchema.parse(data);
+};
+
+export const fetchWalletPortfolio = async ({
+  walletAddress,
+}: FetchWalletParams): Promise<WalletPortfolioResponseType> => {
+  const { data } = await rwaApi.get(`/wallets/${walletAddress}/portfolio`);
+
+  return WalletPortfolioSchema.parse(data);
 };

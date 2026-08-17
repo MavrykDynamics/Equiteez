@@ -1,28 +1,32 @@
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 
 import { PortfolioMetric } from "./PortfolioMetric";
 import { PortfolioValueChart } from "./PortfolioValueChart";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 
-export function PortfolioGeneralStats() {
-  const { wallet } = usePortfolioContext();
+type PortfolioGeneralStatsProps = {
+  stats: {
+    dividendsEarned: number;
+    estNetYieldPct: number;
+    pnl24h: number;
+    pnl24hPercentage: number;
+    totalGrowth: number;
+    totalValue: number;
+  };
+};
 
-  const portfolioValue = wallet?.account_value ?? 0;
-  const pnl24h = wallet?.pnl_24h ?? 0;
-  const pnl24hPercentage =
-    portfolioValue > 0 && pnl24h > 0
-      ? (pnl24h / (portfolioValue - pnl24h)) * 100
-      : 0;
-
+export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
+  const {
+    dividendsEarned,
+    estNetYieldPct,
+    pnl24h,
+    pnl24hPercentage,
+    totalGrowth,
+    totalValue,
+  } = stats;
   const isPositivePnl = pnl24h >= 0;
-
-  // TODO remove mock data
-  const totalGrowth = 3;
-  const dividendsEarned = 6_853;
-  const netYield = 7.83;
 
   return (
     <section className={styles.stats} aria-label="Portfolio summary">
@@ -34,7 +38,7 @@ export function PortfolioGeneralStats() {
           <RHeading className={styles.portfolioValue} size="h3" weight="medium">
             $
             <Money fiat tooltip={false}>
-              {wallet?.account_value ?? 0}
+              {totalValue}
             </Money>
           </RHeading>
           <div className={styles.dailyChange}>
@@ -103,7 +107,7 @@ export function PortfolioGeneralStats() {
           value={
             <>
               <Money fiat tooltip={false}>
-                {netYield}
+                {estNetYieldPct}
               </Money>
               %
             </>

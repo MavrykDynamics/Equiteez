@@ -28,3 +28,26 @@ export const WalletSchema = z.object({
   pnl_7d: z.number().nullable(),
   pnl_30d: z.number().nullable(),
 });
+
+export const WalletPortfolioAssetSchema = z.object({
+  token_address: z.string(),
+  symbol: z.string(),
+  name: z.string(),
+  category: z.string(),
+  balance: z.number(),
+  value: z.number(),
+  share_pct: z.number(),
+  price: z.number(),
+  avg_price: z.number().nullable(),
+  profit: z.number().nullable(),
+  profit_pct: z.number().nullable(),
+  yield_pct: z.number().nullable(),
+  price_change_30d_pct: z.number().nullable(),
+});
+
+export const WalletPortfolioSchema = z.object({
+  currency: z.string(),
+  total_value: z.number(),
+  est_net_yield_pct: z.number().nullable(),
+  assets: z.array(WalletPortfolioAssetSchema),
+});
