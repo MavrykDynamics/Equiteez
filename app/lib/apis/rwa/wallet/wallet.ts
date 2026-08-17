@@ -1,15 +1,23 @@
 import { rwaApi } from "~/lib/apis/rwa/client";
 import {
+  WalletPortfolioHistorySchema,
   WalletPortfolioSchema,
   WalletSchema,
 } from "~/lib/apis/rwa/wallet/wallet.schema";
 import {
+  WalletPortfolioHistoryResponseType,
   WalletPortfolioResponseType,
   WalletResponseType,
 } from "~/lib/apis/rwa/wallet/wallet.types";
 
 type FetchWalletParams = {
   walletAddress: string;
+};
+
+type FetchWalletPortfolioHistoryParams = {
+  walletAddress: string;
+  currency?: string;
+  range?: string;
 };
 
 export const fetchWallet = async ({
@@ -26,4 +34,20 @@ export const fetchWalletPortfolio = async ({
   const { data } = await rwaApi.get(`/wallets/${walletAddress}/portfolio`);
 
   return WalletPortfolioSchema.parse(data);
+};
+
+export const fetchWalletPortfolioHistory = async ({
+  walletAddress,
+  currency = "usd",
+  range = "1d",
+}: FetchWalletPortfolioHistoryParams): Promise<WalletPortfolioHistoryResponseType> => {
+  const query = new URLSearchParams({
+    currency,
+    range,
+  });
+  const { data } = await rwaApi.get(
+    `/wallets/${walletAddress}/portfolio/history?${query.toString()}`
+  );
+
+  return WalletPortfolioHistorySchema.parse(data);
 };

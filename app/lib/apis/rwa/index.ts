@@ -13,6 +13,7 @@ export {
 export {
   fetchWallet,
   fetchWalletPortfolio,
+  fetchWalletPortfolioHistory,
 } from "~/lib/apis/rwa/wallet/wallet";
 export {
   DEFAULT_ORDERBOOK_DEPTH_LIMIT,

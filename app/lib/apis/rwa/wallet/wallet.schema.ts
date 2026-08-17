@@ -51,3 +51,16 @@ export const WalletPortfolioSchema = z.object({
   est_net_yield_pct: z.number().nullable(),
   assets: z.array(WalletPortfolioAssetSchema),
 });
+
+export const WalletPortfolioHistoryPointSchema = z.object({
+  t: z.string(),
+  value: z.number(),
+});
+
+export const WalletPortfolioHistorySchema = z.object({
+  range: z.string(),
+  currency: z.string(),
+  points: z.array(WalletPortfolioHistoryPointSchema),
+  change_abs: z.number(),
+  change_pct: z.number(),
+});
