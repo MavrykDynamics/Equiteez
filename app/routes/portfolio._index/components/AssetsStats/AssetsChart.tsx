@@ -7,6 +7,14 @@ import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.type
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 
+const DONUT_SIZE = 263;
+const DONUT_CENTER_SIZE = 116;
+const DONUT_OUTER_RADIUS = DONUT_SIZE / 2;
+const DONUT_INNER_RADIUS = DONUT_CENTER_SIZE / 2;
+const DONUT_STROKE_WIDTH = DONUT_OUTER_RADIUS - DONUT_INNER_RADIUS;
+const DONUT_RADIUS =
+  DONUT_INNER_RADIUS + DONUT_STROKE_WIDTH / 2;
+
 type AllAssetsChartProps = {
   assets: WalletPortfolioAssetType[];
   portfolioTotal: number;
@@ -34,6 +42,46 @@ type ChartAsset = Pick<
 > & {
   members?: WalletPortfolioAssetType[];
 };
+
+function getPolarPoint(
+  centerX: number,
+  centerY: number,
+  radius: number,
+  angleInDegrees: number
+) {
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180;
+
+  return {
+    x: centerX + radius * Math.cos(angleInRadians),
+    y: centerY + radius * Math.sin(angleInRadians),
+  };
+}
+
+function describeArcPath(
+  centerX: number,
+  centerY: number,
+  radius: number,
+  startAngle: number,
+  endAngle: number
+) {
+  const start = getPolarPoint(centerX, centerY, radius, startAngle);
+  const end = getPolarPoint(centerX, centerY, radius, endAngle);
+  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+
+  return [
+    "M",
+    start.x,
+    start.y,
+    "A",
+    radius,
+    radius,
+    0,
+    largeArcFlag,
+    1,
+    end.x,
+    end.y,
+  ].join(" ");
+}
 
 export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
   const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
@@ -83,31 +131,56 @@ export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
     360 - chartAssets.length * minimumSliceDegrees
   );
   let currentAngle = 0;
-  const conicGradient = chartAssets
-    .map((asset, index) => {
-      const nextAngle =
-        currentAngle +
-        minimumSliceDegrees +
-        (asset.share_pct / 100) * distributableDegrees;
-      const colorEnd = Math.max(currentAngle, nextAngle - separatorDegrees);
-      const color = chartColors[index];
-      const stop = `${color} ${currentAngle}deg ${colorEnd}deg, var(--r-color-neutral-white) ${colorEnd}deg ${nextAngle}deg`;
+  const chartSlices = chartAssets.map((asset, index) => {
+    const nextAngle =
+      currentAngle +
+      minimumSliceDegrees +
+      (asset.share_pct / 100) * distributableDegrees;
+    const endAngle = Math.max(currentAngle, nextAngle - separatorDegrees);
+    const slice = {
+      color: chartColors[index],
+      endAngle,
+      startAngle: currentAngle,
+      token_address: asset.token_address,
+    };
 
-      currentAngle = nextAngle;
-      return stop;
-    })
-    .join(", ");
+    currentAngle = nextAngle;
+    return slice;
+  });
 
   return (
     <aside className={styles.chartPanel} aria-label="Portfolio allocation">
-      <div
-        className={styles.donut}
-        style={{
-          background: conicGradient
-            ? `conic-gradient(${conicGradient})`
-            : "var(--r-color-neutral-100)",
-        }}
-      >
+      <div className={styles.donut}>
+        <svg
+          aria-hidden="true"
+          className={styles.donutSvg}
+          viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
+        >
+          <circle
+            cx={DONUT_SIZE / 2}
+            cy={DONUT_SIZE / 2}
+            r={DONUT_RADIUS}
+            className={styles.donutTrack}
+            strokeWidth={DONUT_STROKE_WIDTH}
+          />
+          {chartSlices.map((slice) =>
+            slice.endAngle > slice.startAngle ? (
+              <path
+                key={slice.token_address}
+                d={describeArcPath(
+                  DONUT_SIZE / 2,
+                  DONUT_SIZE / 2,
+                  DONUT_RADIUS,
+                  slice.startAngle,
+                  slice.endAngle
+                )}
+                fill="none"
+                stroke={slice.color}
+                strokeWidth={DONUT_STROKE_WIDTH}
+              />
+            ) : null
+          )}
+        </svg>
         <div className={styles.donutCenter}>
           <div className={styles.donutCenterBg} />
           <RHeading size="h6" weight="medium" className={styles.donutCenterText}>

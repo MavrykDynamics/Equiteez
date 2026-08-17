@@ -177,11 +177,25 @@
 }
 
 .donut {
+  position: relative;
   display: grid;
   width: 263px;
   height: 263px;
   place-items: center;
   border-radius: 50%;
+}
+
+.donutSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.donutTrack {
+  fill: none;
+  stroke: var(--r-color-neutral-100);
 }
 
 .donutCenter {
