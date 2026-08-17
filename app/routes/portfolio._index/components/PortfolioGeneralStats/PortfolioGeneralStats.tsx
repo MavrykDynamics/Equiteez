@@ -56,7 +56,7 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
               <Money fiat tooltip={false}>
                 {pnl24h}
               </Money>{" "}
-              ({isPositivePnl ? "+" : "-"}
+              ({isPositivePnl ? "+" : ""}
               <Money fiat tooltip={false}>
                 {pnl24hPercentage}
               </Money>
@@ -77,15 +77,15 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
           label="Total Growth"
           value={
             <RHeading
-              color={totalGrowth >= 0 ? "green-500" : "red-500"}
+              // color={totalGrowth >= 0 ? "green-500" : "red-500"}
               size="h4"
               weight="medium"
             >
-              {totalGrowth >= 0 ? "+" : "-"}
-              <Money fiat tooltip={false}>
-                {totalGrowth}
-              </Money>
-              %
+              {/*{totalGrowth >= 0 ? "+" : "-"}*/}
+              {/*<Money fiat tooltip={false}>*/}
+              {/*  {totalGrowth}*/}
+              {/*</Money>*/}
+              {/*%*/}--
             </RHeading>
           }
         />
@@ -94,10 +94,11 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
           label="Dividends Earned"
           value={
             <>
-              $
-              <Money fiat tooltip={false}>
-                {dividendsEarned}
-              </Money>
+              {/*$*/}
+              {/*<Money fiat tooltip={false}>*/}
+              {/*  {dividendsEarned}*/}
+              {/*</Money>*/}
+              --
             </>
           }
         />

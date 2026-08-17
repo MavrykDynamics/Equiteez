@@ -27,12 +27,13 @@ export default function PortfolioOverview() {
 
   const portfolioStats = useMemo(
     () => ({
+      // TODO remove mock data
       dividendsEarned: 6_853,
+      // TODO remove mock data
       totalGrowth: 3,
       estNetYieldPct: portfolioQuery.data?.est_net_yield_pct ?? 0,
       pnl24h: wallet?.pnl_24h ?? 0,
       pnl24hPercentage: wallet?.pnl_percentage ?? 0,
-
       totalValue:
         portfolioQuery.data?.total_value ?? wallet?.account_value ?? 0,
     }),
@@ -61,7 +62,10 @@ export default function PortfolioOverview() {
       <WelcomeBlock activeTab={ROUTES.portfolio} userName="Josh" />
       <div className={styles.content}>
         <PortfolioGeneralStats stats={portfolioStats} />
-        <AssetsStats />
+        <AssetsStats
+          assets={portfolioQuery.data?.assets ?? []}
+          totalValue={portfolioStats.totalValue}
+        />
       </div>
     </div>
   );

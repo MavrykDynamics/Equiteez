@@ -68,6 +68,9 @@
   text-align: left;
   vertical-align: middle;
 }
+.table tr:last-child td {
+  border-bottom: none;
+}
 
 .table th {
   height: 39px;

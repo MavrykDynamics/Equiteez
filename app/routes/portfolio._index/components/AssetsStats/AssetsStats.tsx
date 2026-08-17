@@ -1,37 +1,18 @@
-import { useState } from "react";
-import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
-
 import { AssetsChart } from "./AssetsChart";
 import { AssetsTable } from "./AssetsTable";
 import styles from "./styles.module.css";
-import { useAssetsStats } from "~/routes/portfolio._index/components/AssetsStats/useAssetsStats";
+import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 
-export function AssetsStats() {
-  const { wallet } = usePortfolioContext();
-  const [search, setSearch] = useState("");
-  
-const { portfolioAssets } = useAssetsStats();
+type AssetsStatsProps = {
+  assets: WalletPortfolioAssetType[];
+  totalValue: number;
+};
 
-  const filteredAssets = portfolioAssets.filter((asset) => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return (
-      !normalizedSearch ||
-      asset.name.toLowerCase().includes(normalizedSearch) ||
-      asset.symbol.toLowerCase().includes(normalizedSearch)
-    );
-  });
-
-  const totalValue = wallet?.account_value ?? 0;
-
+export function AssetsStats({ assets, totalValue }: AssetsStatsProps) {
   return (
     <section className={styles.stats} aria-label="Portfolio assets">
-      <AssetsTable
-        assets={filteredAssets}
-        onSearchChange={setSearch}
-        search={search}
-      />
-      <AssetsChart assets={portfolioAssets} totalValue={totalValue} />
+      <AssetsTable assets={assets} />
+      <AssetsChart assets={assets} totalValue={totalValue} />
     </section>
   );
 }

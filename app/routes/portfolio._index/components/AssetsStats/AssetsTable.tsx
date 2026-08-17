@@ -1,14 +1,13 @@
+import { useMemo, useState } from "react";
 import { RIcon } from "~/lib/atoms/RIcon";
 
-import type { PortfolioAsset } from "~/routes/portfolio._index/components/AssetsStats/types";
+import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import { AssetsTableRow } from "./AssetsTableRow";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 type AllAssetsTableProps = {
-  assets: PortfolioAsset[];
-  onSearchChange: (value: string) => void;
-  search: string;
+  assets: WalletPortfolioAssetType[];
 };
 
 const tableHeaders = [
@@ -20,11 +19,20 @@ const tableHeaders = [
   "Profit",
 ];
 
-export function AssetsTable({
-  assets,
-  onSearchChange,
-  search,
-}: AllAssetsTableProps) {
+export function AssetsTable({ assets }: AllAssetsTableProps) {
+  const [search, setSearch] = useState("");
+  const filteredAssets = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return assets.filter((asset) => {
+      return (
+        !normalizedSearch ||
+        asset.name.toLowerCase().includes(normalizedSearch) ||
+        asset.symbol.toLowerCase().includes(normalizedSearch)
+      );
+    });
+  }, [assets, search]);
+
   return (
     <div className={styles.tableSection}>
       <div className={styles.tableToolbar}>
@@ -35,7 +43,7 @@ export function AssetsTable({
           <RIcon name="search" size="small" />
           <input
             aria-label="Search asset"
-            onChange={(event) => onSearchChange(event.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search Asset"
             type="search"
             value={search}
@@ -59,8 +67,8 @@ export function AssetsTable({
             </tr>
           </thead>
           <tbody>
-            {assets.map((asset) => (
-              <AssetsTableRow asset={asset} key={asset.id} />
+            {filteredAssets.map((asset) => (
+              <AssetsTableRow asset={asset} key={asset.token_address} />
             ))}
           </tbody>
         </table>
