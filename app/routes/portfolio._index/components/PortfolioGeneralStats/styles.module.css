@@ -70,8 +70,12 @@
 .value {
   margin-top: 1px;
 }
-.changeIcon {
+.changeIconPositive {
   color: var(--r-color-green-500);
+}
+
+.changeIconNegative {
+  color: var(--r-color-red-500);
 }
 
 .chartSection {
@@ -143,6 +147,20 @@
   position: relative;
   height: 127px;
   overflow: hidden;
+}
+
+.chartLoader {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+
+.chartEmpty {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
 }
 
 .chartCrosshair {

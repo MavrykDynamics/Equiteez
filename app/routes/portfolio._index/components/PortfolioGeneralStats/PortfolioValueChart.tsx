@@ -1,20 +1,33 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { fetchWalletPortfolioHistory } from "~/lib/apis/rwa";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { Spinner } from "~/lib/atoms/Spinner";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 import {
   AssetPriceChart,
+  type AssetPriceChartPoint,
   type AssetPriceChartHover,
 } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
 
-import {
-  getMockPortfolioChartPoints,
-  MOCK_PORTFOLIO_CHARTS,
-  PORTFOLIO_CHART_PERIODS,
-  type PortfolioChartPeriod,
-} from "./PortfolioValueChart.const";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
+
+type PortfolioChartPeriod = "1d" | "7d" | "30d" | "all" | "ytd";
+
+const PORTFOLIO_CHART_PERIODS: Array<{
+  label: string;
+  value: PortfolioChartPeriod;
+}> = [
+  { label: "1D", value: "1d" },
+  { label: "7D", value: "7d" },
+  { label: "30D", value: "30d" },
+  { label: "YTD", value: "ytd" },
+  { label: "ALL", value: "all" },
+];
 
 function formatTooltipDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -24,6 +37,8 @@ function formatTooltipDate(date: Date) {
 }
 
 export function PortfolioValueChart() {
+  const { isAuthenticated } = useAuthContext();
+  const { userAddress } = useUserContext();
   const [period, setPeriod] = useState<PortfolioChartPeriod>("7d");
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
     null
@@ -32,8 +47,29 @@ export function PortfolioValueChart() {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
-  const chartConfig = MOCK_PORTFOLIO_CHARTS[period];
-  const points = useMemo(() => getMockPortfolioChartPoints(period), [period]);
+  const portfolioHistoryQuery = useQuery({
+    queryKey: ["rwa-wallet-portfolio-history", userAddress, period],
+    queryFn: () =>
+      fetchWalletPortfolioHistory({
+        walletAddress: userAddress || "",
+        range: period,
+      }),
+    enabled: isAuthenticated && Boolean(userAddress),
+  });
+
+  const points = useMemo<AssetPriceChartPoint[]>(
+    () =>
+      (portfolioHistoryQuery.data?.points ?? []).map((point) => ({
+        p: point.value,
+        t: point.t,
+        usd: point.value,
+      })),
+    [portfolioHistoryQuery.data?.points]
+  );
+  const changeAbs = portfolioHistoryQuery.data?.change_abs ?? 0;
+  const changePct = portfolioHistoryQuery.data?.change_pct ?? 0;
+  const hasChartData = points.length > 0;
+  const isPositiveChange = changeAbs >= 0;
   const handleChartHover = useCallback(
     (point: AssetPriceChartHover | null) => setHoveredPoint(point),
     []
@@ -101,27 +137,50 @@ export function PortfolioValueChart() {
           ))}
         </div>
         <div className={styles.change}>
-          <RIcon name="trending-up" size="small" className={styles.changeIcon} />
-          <RText color="green-500" size="body-sm">
+          <RIcon
+            name={isPositiveChange ? "trending-up" : "trending-down"}
+            size="small"
+            className={
+              isPositiveChange ? styles.changeIconPositive : styles.changeIconNegative
+            }
+          />
+          <RText
+            color={isPositiveChange ? "green-500" : "red-500"}
+            size="body-sm"
+          >
             <Money fiat tooltip={false}>
-              {chartConfig.change}
+              {changeAbs}
             </Money>{" "}
-            (+
-            {chartConfig.changePercentage}%)
+            ({isPositiveChange ? "+" : "-"}
+            {Math.abs(changePct)}%)
           </RText>
         </div>
       </div>
       <div className={styles.chartCanvas} ref={chartCanvasRef}>
-        <AssetPriceChart
-          className={styles.chart}
-          onHover={handleChartHover}
-          points={points}
-          priceDecimals={2}
-          showPriceScale={false}
-          showTimeScale={false}
-          tone="positive"
-        />
-        {hoveredPoint ? (
+        {portfolioHistoryQuery.isLoading ||
+        portfolioHistoryQuery.isFetching ||
+        portfolioHistoryQuery.isPending ? (
+          <div className={styles.chartLoader} role="status" aria-label="Loading chart">
+            <Spinner size={32} />
+          </div>
+        ) : !hasChartData ? (
+          <div className={styles.chartEmpty} role="status">
+            <RText color="neutral-700" size="body-sm">
+              No chart data available
+            </RText>
+          </div>
+        ) : (
+          <AssetPriceChart
+            className={styles.chart}
+            onHover={handleChartHover}
+            points={points}
+            priceDecimals={2}
+            showPriceScale={false}
+            showTimeScale={false}
+            tone={isPositiveChange ? "positive" : "negative"}
+          />
+        )}
+        {hasChartData && hoveredPoint ? (
           <>
             <span
               aria-hidden="true"

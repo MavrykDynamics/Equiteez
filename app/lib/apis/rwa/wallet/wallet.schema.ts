@@ -61,6 +61,6 @@ export const WalletPortfolioHistorySchema = z.object({
   range: z.string(),
   currency: z.string(),
   points: z.array(WalletPortfolioHistoryPointSchema),
-  change_abs: z.number(),
-  change_pct: z.number(),
+  change_abs: z.number().nullable(),
+  change_pct: z.number().nullable(),
 });
