@@ -39,7 +39,7 @@
 }
 
 .row:hover {
-  background: color-mix(in srgb, var(--r-color-yellow-100) 8%, transparent);
+  background: var(--r-color-neutral-50);
 }
 
 .row:last-child .cell {

@@ -1,0 +1,91 @@
+.operationHash {
+  display: inline-flex;
+  min-width: 0;
+  gap: 2px;
+  align-items: center;
+}
+.operationHashText {
+  display: inline-flex;
+  gap: var(--r-space-1);
+  align-items: center;
+  padding: 0 2px 0 4px;
+  border-radius: 4px;
+}
+.operationHashText:hover {
+  background: var(--r-color-neutral-100);
+}
+
+.hashText {
+  min-width: 0;
+  color: var(--r-color-neutral-black);
+  white-space: nowrap;
+}
+
+.full .hashText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.full {
+  max-width: 100%;
+}
+
+.actionLink,
+.action {
+  display: inline-grid;
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+  padding: 0;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--r-color-neutral-500);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--r-transition-duration-fast) ease;
+}
+.actionLink {
+  padding: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+.actionLink:hover {
+  background: var(--r-color-neutral-100);
+}
+
+.operationHashText:hover .action,
+.actionLink:hover,
+.action:hover,
+.action:focus-visible {
+  color: var(--r-color-neutral-black);
+}
+
+.actionLink:focus-visible,
+.action:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+:global(.tippy-box[data-theme~="operation-hash"]) {
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border-radius: var(--r-radius-sm);
+  box-shadow: 0 7px 25.781px rgb(0 0 0 / 8%);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+}
+
+:global(.tippy-box[data-theme~="operation-hash"] .tippy-content) {
+  padding: var(--r-space-2) var(--r-space-3);
+}
+
+:global(
+    .tippy-box[data-theme~="operation-hash"][data-placement^="top"]
+      > .tippy-arrow::before
+  ) {
+  border-top-color: var(--r-color-neutral-white);
+}
