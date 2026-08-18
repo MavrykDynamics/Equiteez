@@ -78,9 +78,9 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
   const handleSort = (key: SortKey) => {
     setSort((currentSort) => ({
       direction:
-        currentSort?.key === key && currentSort.direction === "ascending"
-          ? "descending"
-          : "ascending",
+        currentSort?.key === key && currentSort.direction === "descending"
+          ? "ascending"
+          : "descending",
       key,
     }));
   };
