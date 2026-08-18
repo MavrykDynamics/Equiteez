@@ -6,15 +6,14 @@ import SellIcon from "app/icons/wallet/sell.svg?react";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { NEXUS_LINK } from "~/consts";
 import {
   formatOrderDate,
   getOrderDetails,
 } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OrderItem";
 import { ROrderStatusBadge } from "~/routes/trade.$address/components/AssetTabs/OrderHistoryTab/ROrderStatusBadge";
 
+import { OperationHash } from "./OperationHash";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
 import styles from "./styles.module.css";
 
@@ -22,10 +21,6 @@ type TransactionHistoryTableRowProps = {
   asset?: AssetType;
   transaction: OrderHistoryItemType;
 };
-
-function getShortHash(hash: string) {
-  return `${hash.slice(0, 7)}...${hash.slice(-3)}`;
-}
 
 export function TransactionHistoryTableRow({
   asset,
@@ -42,16 +37,10 @@ export function TransactionHistoryTableRow({
   const assetImage = asset?.metadata.icon ?? asset?.profile.image_url;
   const interaction = `${assetSymbol}/USDT`;
 
-  const handleCopyHash = () => {
-    void navigator.clipboard?.writeText(transaction.operation_hash);
-  };
-
   return (
     <>
-      <div
-        className={styles.row}
-        onClick={() => setIsDetailsOpen(true)}
-      >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- Pointer-only transaction row is a product requirement. */}
+      <div className={styles.row} onClick={() => setIsDetailsOpen(true)}>
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
             <RText size="body-sm" weight="medium">
@@ -108,32 +97,7 @@ export function TransactionHistoryTableRow({
           <RText size="body-sm">{interaction}</RText>
         </div>
         <div className={styles.cell} role="cell">
-          <div className={styles.hash}>
-            <RText size="body-sm">
-              {getShortHash(transaction.operation_hash)}
-            </RText>
-            <button
-              aria-label="Copy transaction hash"
-              className={styles.hashButton}
-              onClick={(event) => {
-                event.stopPropagation();
-                handleCopyHash();
-              }}
-              type="button"
-            >
-              <RIcon name="copy" size="small" />
-            </button>
-            <a
-              aria-label="View transaction in explorer"
-              className={styles.hashButton}
-              href={`${NEXUS_LINK}/explorer/operation/${transaction.operation_hash}`}
-              onClick={(event) => event.stopPropagation()}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <RIcon name="arrow-long-up-right" size="small" />
-            </a>
-          </div>
+          <OperationHash operationHash={transaction.operation_hash} />
         </div>
         <div className={styles.cell} role="cell">
           <ROrderStatusBadge status={transaction.status} />

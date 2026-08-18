@@ -27,8 +27,7 @@
   padding: var(--r-space-3) var(--r-space-4) var(--r-space-2);
 }
 
-.closeButton,
-.iconButton {
+.closeButton {
   display: inline-grid;
   padding: 0;
   place-items: center;
@@ -67,7 +66,6 @@
 
 .detail,
 .assetValue,
-.transactionId,
 .buy,
 .sell {
   display: flex;
@@ -89,7 +87,6 @@
 }
 
 .assetValue,
-.transactionId,
 .buy,
 .sell {
   gap: var(--r-space-1);
@@ -124,29 +121,11 @@
   height: var(--r-size-icon-small);
 }
 
-.transactionId {
-  justify-content: flex-end;
-}
-
-.hash {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.iconButton {
-  width: var(--r-size-icon-small);
-  height: var(--r-size-icon-small);
-  flex: 0 0 auto;
-}
-
-.closeButton:hover,
-.iconButton:hover {
+.closeButton:hover {
   color: var(--r-color-neutral-600);
 }
 
-.closeButton:focus-visible,
-.iconButton:focus-visible {
+.closeButton:focus-visible {
   outline: none;
   box-shadow: var(--r-focus-ring);
 }
@@ -174,9 +153,5 @@
 
   .detail {
     gap: var(--r-space-2);
-  }
-
-  .transactionId {
-    max-width: 64vw;
   }
 }

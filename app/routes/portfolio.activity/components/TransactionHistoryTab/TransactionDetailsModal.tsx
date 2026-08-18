@@ -10,7 +10,6 @@ import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { NEXUS_LINK } from "~/consts";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   formatOrderDate,
@@ -18,6 +17,7 @@ import {
 } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OrderItem";
 import { ROrderStatusBadge } from "~/routes/trade.$address/components/AssetTabs/OrderHistoryTab/ROrderStatusBadge";
 
+import { OperationHash } from "./OperationHash";
 import styles from "./TransactionDetailsModal.module.css";
 
 type TransactionDetailsModalProps = {
@@ -37,10 +37,6 @@ export function TransactionDetailsModal({
   const assetSymbol = asset?.metadata.symbol ?? transaction.currency;
   const assetImage = asset?.metadata.icon ?? asset?.profile.image_url;
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
-
-  const handleCopyHash = () => {
-    void navigator.clipboard?.writeText(transaction.operation_hash);
-  };
 
   return (
     <CustomPopup
@@ -101,26 +97,9 @@ export function TransactionDetailsModal({
           </Detail>
           <Detail label="Network Commission">—</Detail>
           <Detail label="TxID">
-            <span className={styles.transactionId}>
-              <span className={styles.hash}>{transaction.operation_hash}</span>
-              <button
-                aria-label="Copy transaction hash"
-                className={styles.iconButton}
-                onClick={handleCopyHash}
-                type="button"
-              >
-                <RIcon name="copy" size="small" />
-              </button>
-              <a
-                aria-label="View transaction in explorer"
-                className={styles.iconButton}
-                href={`${NEXUS_LINK}/explorer/operation/${transaction.operation_hash}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <RIcon name="arrow-long-up-right" size="small" />
-              </a>
-            </span>
+            <OperationHash
+              operationHash={transaction.operation_hash}
+            />
           </Detail>
         </dl>
 

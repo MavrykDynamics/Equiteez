@@ -38,7 +38,7 @@
 }
 
 .row:hover {
-  background: color-mix(in srgb, var(--r-color-yellow-100) 8%, transparent);
+  background: var(--r-color-neutral-50);
 }
 
 .row:focus-visible {
@@ -88,8 +88,7 @@
 }
 
 .buy,
-.sell,
-.hash {
+.sell {
   display: inline-flex;
   gap: var(--r-space-1);
   align-items: center;
@@ -110,24 +109,6 @@
 
 .typeLabel {
   color: currentColor;
-}
-
-.hashButton {
-  display: inline-flex;
-  padding: 0;
-  color: var(--r-color-neutral-500);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-.hashButton:hover {
-  color: var(--r-color-neutral-black);
-}
-
-.hashButton:focus-visible {
-  outline: none;
-  box-shadow: var(--r-focus-ring);
 }
 
 .state {
