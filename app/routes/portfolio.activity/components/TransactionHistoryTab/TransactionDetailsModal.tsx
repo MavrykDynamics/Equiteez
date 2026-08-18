@@ -71,11 +71,7 @@ export function TransactionDetailsModal({
           <Detail label="Source">Spot Wallet</Detail>
           <Detail label="Action">
             <span className={isBuyOrder ? styles.buy : styles.sell}>
-              {isBuyOrder ? (
-                <BuyIcon aria-hidden className={styles.actionIcon} />
-              ) : (
-                <SellIcon aria-hidden className={styles.actionIcon} />
-              )}
+              {isBuyOrder ? "+" : "-"}
               {orderDetails.side}
             </span>
           </Detail>
@@ -97,9 +93,7 @@ export function TransactionDetailsModal({
           </Detail>
           <Detail label="Network Commission">—</Detail>
           <Detail label="TxID">
-            <OperationHash
-              operationHash={transaction.operation_hash}
-            />
+            <OperationHash operationHash={transaction.operation_hash} />
           </Detail>
         </dl>
 

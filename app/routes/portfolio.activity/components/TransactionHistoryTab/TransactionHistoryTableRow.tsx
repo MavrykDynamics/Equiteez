@@ -70,11 +70,7 @@ export function TransactionHistoryTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <span className={isBuyOrder ? styles.buy : styles.sell}>
-            {isBuyOrder ? (
-              <BuyIcon aria-hidden className={styles.typeIcon} />
-            ) : (
-              <SellIcon aria-hidden className={styles.typeIcon} />
-            )}
+            {isBuyOrder ? "+" : "-"}
             <RText className={styles.typeLabel} size="body-sm">
               {orderDetails.side}
             </RText>
