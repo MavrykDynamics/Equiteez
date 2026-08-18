@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RSortableTableHeader } from "~/lib/molecules/RSortableTableHeader";
+import {
+  getNextSortState,
+  TableHeader,
+  type SortState,
+} from "~/lib/molecules/RSortableTableHeader";
 
 import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import { AssetsTableRow } from "./AssetsTableRow";
@@ -11,15 +15,14 @@ type AllAssetsTableProps = {
   assets: WalletPortfolioAssetType[];
 };
 
-type SortDirection = "ascending" | "descending";
 type SortKey = "value" | "price" | "yield_pct" | "profit";
 
-type TableHeader = {
+type HeaderConfig = {
   label: string;
   sortKey?: SortKey;
 };
 
-const tableHeaders: TableHeader[] = [
+const tableHeaders: HeaderConfig[] = [
   { label: "Asset" },
   { label: "Amount", sortKey: "value" },
   { label: "Avg Price" },
@@ -31,7 +34,7 @@ const tableHeaders: TableHeader[] = [
 function compareNullableNumbers(
   firstValue: number | null,
   secondValue: number | null,
-  direction: SortDirection
+  direction: NonNullable<SortState<SortKey>>["direction"]
 ) {
   if (firstValue === null) {
     return secondValue === null ? 0 : 1;
@@ -48,10 +51,7 @@ function compareNullableNumbers(
 
 export function AssetsTable({ assets }: AllAssetsTableProps) {
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<{
-    direction: SortDirection;
-    key: SortKey;
-  } | null>(null);
+  const [sort, setSort] = useState<SortState<SortKey>>(null);
   const filteredAssets = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -76,13 +76,7 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
   }, [assets, search, sort]);
 
   const handleSort = (key: SortKey) => {
-    setSort((currentSort) => ({
-      direction:
-        currentSort?.key === key && currentSort.direction === "descending"
-          ? "ascending"
-          : "descending",
-      key,
-    }));
+    setSort((currentSort) => getNextSortState(currentSort, key));
   };
 
   return (
@@ -106,22 +100,21 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
         <table className={styles.table}>
           <thead>
             <tr>
-              {tableHeaders.map((header) =>
-                header.sortKey ? (
-                  <RSortableTableHeader
+              {tableHeaders.map((header) => (
+                <th key={header.label} scope="col">
+                  <TableHeader
                     direction={
-                      sort?.key === header.sortKey ? sort.direction : undefined
+                      sort?.key === header.sortKey ? sort?.direction : undefined
                     }
-                    key={header.label}
                     label={header.label}
-                    onSort={() => handleSort(header.sortKey!)}
+                    onSort={
+                      header.sortKey
+                        ? () => handleSort(header.sortKey ?? "value")
+                        : undefined
+                    }
                   />
-                ) : (
-                  <th key={header.label} scope="col">
-                    <span className={styles.headerContent}>{header.label}</span>
-                  </th>
-                )
-              )}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>

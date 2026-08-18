@@ -1,1 +1,6 @@
-export { RSortableTableHeader } from "./RSortableTableHeader";
+export {
+  getNextSortState,
+  TableHeader,
+  type SortDirection,
+  type SortState,
+} from "./RSortableTableHeader";

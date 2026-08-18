@@ -1,25 +1,92 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 
 import { fetchWalletOpenOrders } from "~/lib/apis/rwa/orders/orders";
-import { RText } from "~/lib/atoms/RTypography/RText";
+import { Spinner } from "~/lib/atoms/Spinner";
+import {
+  getNextSortState,
+  TableHeader,
+  type SortState,
+} from "~/lib/molecules/RSortableTableHeader";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import { OpenOrdersTableRow } from "./OpenOrdersTableRow";
 import styles from "./styles.module.css";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
-export function OpenOrdersTab() {
+type OpenOrdersTabProps = {
+  searchValue: string;
+};
+
+type ServerSortKey = "date" | "price" | "amount";
+type HeaderConfig = {
+  label: string;
+  sortKey?: ServerSortKey;
+};
+
+const SEARCH_START_LENGTH = 3;
+const headers: HeaderConfig[] = [
+  { label: "DATE", sortKey: "date" },
+  { label: "PAIR" },
+  { label: "TYPE" },
+  { label: "PRICE", sortKey: "price" },
+  { label: "AMOUNT", sortKey: "amount" },
+  { label: "FILLED" },
+  { label: "EXPIRES" },
+  { label: "TOTAL" },
+  { label: "" },
+];
+
+export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
   const { assets } = useAssetsContext();
   const { userAddress } = useUserContext();
+  const [sort, setSort] = useState<SortState<ServerSortKey>>({
+    direction: "descending",
+    key: "date",
+  });
+
+  const normalizedSearch = useMemo(() => {
+    const term = searchValue.trim().toLowerCase();
+
+    if (term.length < SEARCH_START_LENGTH) return "";
+
+    return term;
+  }, [searchValue]);
+
+  const [searchValueDebounced] = useDebounce(normalizedSearch, 300);
+
+  const serverSort = useMemo(() => {
+    if (!sort) {
+      return "";
+    }
+
+    const direction = sort.direction === "descending" ? "desc" : "asc";
+
+    return `${sort.key}_${direction}`;
+  }, [sort]);
+
   const openOrdersQuery = useQuery({
-    queryKey: ["fetchWalletOpenOrders", userAddress],
-    queryFn: () => fetchWalletOpenOrders({ walletAddress: userAddress ?? "" }),
+    queryKey: [
+      "fetchWalletOpenOrders",
+      userAddress,
+      searchValueDebounced,
+      serverSort,
+    ],
+    queryFn: () =>
+      fetchWalletOpenOrders({
+        search: searchValueDebounced || undefined,
+        sort: serverSort || undefined,
+        walletAddress: userAddress ?? "",
+      }),
     enabled: Boolean(userAddress),
+    placeholderData: (previousData) => previousData,
     refetchInterval: 7000,
     retry: false,
   });
 
-  if (openOrdersQuery.isLoading) {
+  if (openOrdersQuery.isLoading && !openOrdersQuery.data) {
     return (
       <div className={styles.state} aria-live="polite">
         <RText color="neutral-600" size="body-sm">
@@ -55,55 +122,38 @@ export function OpenOrdersTab() {
     assets.map((asset) => [asset.address, asset.metadata.symbol])
   );
 
+  const handleSort = (key: ServerSortKey) => {
+    setSort((currentSort) => getNextSortState(currentSort, key));
+  };
+
   return (
     <div className={styles.viewport}>
+      {openOrdersQuery.isFetching && (
+        <div className={styles.loadingOverlay} role="status" aria-live="polite">
+          <Spinner size={32} />
+        </div>
+      )}
       <div className={styles.table} role="table">
         <div className={styles.headerRow} role="row">
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              DATE
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              PAIR
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              TYPE
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              PRICE
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              AMOUNT
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              FILLED
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              EXPIRES
-            </RText>
-          </div>
-          <div className={styles.headerCell} role="columnheader">
-            <RText color="neutral-600" size="body-xs" weight="medium">
-              TOTAL
-            </RText>
-          </div>
-          <div
-            aria-label="Order actions"
-            className={styles.headerCell}
-            role="columnheader"
-          />
+          {headers.map((header, index) => (
+            <div
+              key={`${header.label}-${index}`}
+              className={styles.headerCell}
+              role="columnheader"
+            >
+              <TableHeader
+                direction={
+                  sort?.key === header.sortKey ? sort?.direction : undefined
+                }
+                label={header.label}
+                onSort={
+                  header.sortKey
+                    ? () => handleSort(header.sortKey ?? "amount")
+                    : undefined
+                }
+              />
+            </div>
+          ))}
         </div>
 
         <div role="rowgroup">

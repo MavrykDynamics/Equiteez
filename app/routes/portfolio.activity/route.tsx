@@ -25,6 +25,7 @@ export default function PortfolioActivity() {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
   const [activeTabId, setActiveTabId] = useState<ActivityTabId>("open-orders");
+  const [searchValue, setSearchValue] = useState("");
   const activitySummaryQuery = useQuery({
     queryKey: ["rwa-wallet-activity-summary", userAddress],
     queryFn: () =>
@@ -37,7 +38,7 @@ export default function PortfolioActivity() {
   const activityTabs = useMemo<RTabSwitcherItem[]>(
     () => [
       {
-        count: activitySummaryQuery.data?.open_orders,
+        count: activitySummaryQuery.data?.open_orders ?? undefined,
         id: "open-orders",
         label: "Open Orders",
       },
@@ -64,7 +65,7 @@ export default function PortfolioActivity() {
       case "deposits":
         return <DepositsTab />;
       default:
-        return <OpenOrdersTab />;
+        return <OpenOrdersTab searchValue={searchValue} />;
     }
   };
 
@@ -142,7 +143,9 @@ export default function PortfolioActivity() {
                 className={styles.search}
                 icon="search"
                 iconSize="small"
+                onChange={(event) => setSearchValue(event.target.value)}
                 placeholder="Search Asset"
+                value={searchValue}
               />
             </div>
           </div>
