@@ -10,6 +10,7 @@
   align-items: center;
   padding: 0 2px 0 4px;
   border-radius: 4px;
+  cursor: pointer;
 }
 .operationHashText:hover {
   background: var(--r-color-neutral-100);
