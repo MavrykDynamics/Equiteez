@@ -19,7 +19,7 @@ export function PortfolioMetric({
       <RText color="neutral-700" size="body-s" weight="medium">
         {label}
       </RText>
-      <RHeading className={styles.value} size="h4" weight="medium">
+      <RHeading as="div" className={styles.value} size="h4" weight="medium">
         {value}
       </RHeading>
       <RText color="neutral-700" size="body-s">

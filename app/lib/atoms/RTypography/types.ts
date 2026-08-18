@@ -67,6 +67,7 @@ export type RTypographyWeight = "regular" | "medium";
 export type RTextSize = "body-l" | "body-m" | "body-sm" | "body-s" | "body-xs";
 
 export type RHeadingSize = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "h7";
+export type RHeadingTag = "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
 export type RTextProps = Omit<HTMLAttributes<HTMLSpanElement>, "color"> & {
   children: ReactNode;
@@ -76,9 +77,10 @@ export type RTextProps = Omit<HTMLAttributes<HTMLSpanElement>, "color"> & {
 };
 
 export type RHeadingProps = Omit<
-  HTMLAttributes<HTMLHeadingElement>,
+  HTMLAttributes<HTMLHeadingElement | HTMLDivElement>,
   "color"
 > & {
+  as?: RHeadingTag;
   children: ReactNode;
   size?: RHeadingSize;
   weight?: RTypographyWeight;
