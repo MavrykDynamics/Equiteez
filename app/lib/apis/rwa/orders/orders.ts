@@ -17,6 +17,8 @@ type WalletOpenOrdersParams = {
 
 type WalletOrdersParams = {
   walletAddress: string;
+  search?: string;
+  sort?: string;
   tokenAddress?: string;
 };
 
@@ -52,9 +54,19 @@ export const fetchWalletOpenOrders = async ({
 
 export const fetchWalletOrderHistory = async ({
   walletAddress,
+  search,
+  sort,
   tokenAddress,
 }: WalletOrdersParams): Promise<OrderHistoryResponseType> => {
   const query = new URLSearchParams();
+
+  if (search) {
+    query.set("search", search);
+  }
+
+  if (sort) {
+    query.set("sort", sort);
+  }
 
   if (tokenAddress) {
     query.set("token_address", tokenAddress);

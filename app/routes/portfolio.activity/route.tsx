@@ -61,7 +61,7 @@ export default function PortfolioActivity() {
   const renderActiveTab = () => {
     switch (activeTabId) {
       case "transaction-history":
-        return <TransactionHistoryTab />;
+        return <TransactionHistoryTab searchValue={searchValue} />;
       case "deposits":
         return <DepositsTab />;
       default:
