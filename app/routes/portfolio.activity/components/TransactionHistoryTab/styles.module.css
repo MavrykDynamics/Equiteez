@@ -12,10 +12,9 @@
 .headerRow,
 .row {
   display: grid;
-  grid-template-columns: 136px minmax(172px, 1.35fr) 116px minmax(146px, 1fr) minmax(
-      150px,
-      1fr
-    ) minmax(160px, 1.2fr) 132px;
+  grid-template-columns:
+    136px minmax(172px, 1.35fr) 116px minmax(146px, 1fr) minmax(150px, 1fr)
+    minmax(160px, 1.2fr) 132px;
 }
 
 .headerCell,
@@ -34,11 +33,17 @@
 
 .row {
   min-height: 61px;
+  cursor: pointer;
   transition: background-color var(--r-transition-duration-fast) ease;
 }
 
 .row:hover {
   background: color-mix(in srgb, var(--r-color-yellow-100) 8%, transparent);
+}
+
+.row:focus-visible {
+  outline: none;
+  box-shadow: inset var(--r-focus-ring);
 }
 
 .row:last-child .cell {
