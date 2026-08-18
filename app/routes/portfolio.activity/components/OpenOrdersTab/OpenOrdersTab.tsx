@@ -13,35 +13,19 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import { OpenOrdersTableRow } from "./OpenOrdersTableRow";
+import {
+  headers,
+  SEARCH_START_LENGTH,
+  type OpenOrdersTabProps,
+  type ServerSortKey,
+} from "./OpenOrdersTab.types";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
-
-type OpenOrdersTabProps = {
-  searchValue: string;
-};
-
-type ServerSortKey = "date" | "price" | "amount";
-type HeaderConfig = {
-  label: string;
-  sortKey?: ServerSortKey;
-};
-
-const SEARCH_START_LENGTH = 3;
-const headers: HeaderConfig[] = [
-  { label: "DATE", sortKey: "date" },
-  { label: "PAIR" },
-  { label: "TYPE" },
-  { label: "PRICE", sortKey: "price" },
-  { label: "AMOUNT", sortKey: "amount" },
-  { label: "FILLED" },
-  { label: "EXPIRES" },
-  { label: "TOTAL" },
-  { label: "" },
-];
 
 export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
   const { assets } = useAssetsContext();
   const { userAddress } = useUserContext();
+
   const [sort, setSort] = useState<SortState<ServerSortKey>>({
     direction: "descending",
     key: "date",
