@@ -160,15 +160,15 @@ export function MonthlyIncome({ data }: MonthlyIncomeProps) {
         });
         chart.timeScale().fitContent();
 
-        chart.subscribeCrosshairMove((params) => {
-          if (typeof params.time !== "number" || !params.point) {
-            setHover(null);
-            return;
-          }
-
-          const point = chartPoints.find((item) => item.time === params.time);
-          setHover(point ? { point, x: params.point.x } : null);
-        });
+        // chart.subscribeCrosshairMove((params) => {
+        //   if (typeof params.time !== "number" || !params.point) {
+        //     setHover(null);
+        //     return;
+        //   }
+        //
+        //   const point = chartPoints.find((item) => item.time === params.time);
+        //   setHover(point ? { point, x: params.point.x } : null);
+        // });
 
         cleanup = () => chart.remove();
       }
