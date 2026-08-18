@@ -121,6 +121,7 @@ Current icon names:
 - `radio`
 - `refund`
 - `search`
+- `sort`
 - `trash`
 - `trending-down`
 - `trending-up`
@@ -203,7 +204,7 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Typed inline SVG icon atom for the redesign icon system.
 - Location: `app/lib/atoms/RIcon/RIcon.tsx`
 - Styles: `app/lib/atoms/RIcon/RIcon.module.css`
-- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons.
+- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons. The `sort` icon supports `sortDirection="ascending" | "descending"` to make only the active arrow black.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
 
 ## RInput
@@ -314,6 +315,13 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/molecules/RMetricCard/RMetricCard.module.css`
 - Reusability notes: Use for compact two-line metric summaries before recreating route-specific stat cards.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-color-neutral-*`, `--r-space-*`
+
+## RSortableTableHeader
+
+- Purpose: Shared sortable table-header molecule with the two-direction `RIcon` sort indicator.
+- Location: `app/lib/molecules/RSortableTableHeader/RSortableTableHeader.tsx`
+- Reusability notes: Use for sortable column headers. Pass a column `label`, the active `direction`, and `onSort`; the component owns the semantic `<th>`, button and `aria-sort` state.
+- Related tokens: `RIcon`, `--r-color-neutral-*`, `--r-focus-ring`, `--r-size-icon-small`
 
 ## RHeader
 

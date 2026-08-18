@@ -98,6 +98,7 @@
   align-items: center;
   gap: 2px;
 }
+
 .positiveChange {
   color: var(--r-color-green-500);
 }
