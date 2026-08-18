@@ -64,3 +64,9 @@ export const WalletPortfolioHistorySchema = z.object({
   change_abs: z.number().nullable(),
   change_pct: z.number().nullable(),
 });
+
+export const WalletActivitySummarySchema = z.object({
+  onchain_events: z.number().nullable(),
+  open_orders: z.number().nullable(),
+  transfers: z.number().nullable(),
+});

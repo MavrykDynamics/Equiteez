@@ -1,10 +1,12 @@
 import { rwaApi } from "~/lib/apis/rwa/client";
 import {
+  WalletActivitySummarySchema,
   WalletPortfolioHistorySchema,
   WalletPortfolioSchema,
   WalletSchema,
 } from "~/lib/apis/rwa/wallet/wallet.schema";
 import {
+  WalletActivitySummaryResponseType,
   WalletPortfolioHistoryResponseType,
   WalletPortfolioResponseType,
   WalletResponseType,
@@ -50,4 +52,12 @@ export const fetchWalletPortfolioHistory = async ({
   );
 
   return WalletPortfolioHistorySchema.parse(data);
+};
+
+export const fetchWalletActivitySummary = async ({
+  walletAddress,
+}: FetchWalletParams): Promise<WalletActivitySummaryResponseType> => {
+  const { data } = await rwaApi.get(`/wallets/${walletAddress}/activity/summary`);
+
+  return WalletActivitySummarySchema.parse(data);
 };
