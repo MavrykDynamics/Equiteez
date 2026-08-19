@@ -10,7 +10,6 @@ import {
   type SortState,
 } from "~/lib/molecules/RSortableTableHeader";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import { DepositsTableRow } from "./DepositsTableRow";

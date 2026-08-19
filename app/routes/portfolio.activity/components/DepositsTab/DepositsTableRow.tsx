@@ -1,4 +1,3 @@
-import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { TransferHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import { toTokenSlug } from "~/lib/assets";
 import Money from "~/lib/atoms/Money";
@@ -25,6 +24,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const assetSymbol = metadata.symbol;
   const assetName = metadata.name;
   const isDeposit = deposit.type === "deposit";
+  const hasTotalValue = deposit.total !== null;
 
   return (
     <div className={styles.row} role="row">
@@ -85,10 +85,16 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
       <div className={styles.cell} role="cell">
         <div className={styles.amount}>
           <RText size="body-sm" weight="medium">
-            $
-            <Money fiat tooltip={false}>
-              {deposit.total}
-            </Money>
+            {hasTotalValue ? (
+              <>
+                $
+                <Money fiat tooltip={false}>
+                  {deposit.total}
+                </Money>
+              </>
+            ) : (
+              "—"
+            )}
           </RText>
           <RText color="neutral-600" size="body-s">
             <Money tooltip={false}>{deposit.amount}</Money> {assetSymbol}

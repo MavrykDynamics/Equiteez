@@ -58,7 +58,9 @@ export const OrderHistorySchema = z.object({
 });
 
 export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
+  price_per_token: z.number().nullable(),
   status: z.string().optional(),
+  total: z.number().nullable(),
 });
 
 export const TransferHistorySchema = z.object({
