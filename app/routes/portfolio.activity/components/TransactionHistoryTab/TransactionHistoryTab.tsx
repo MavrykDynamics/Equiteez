@@ -25,7 +25,6 @@ import styles from "./styles.module.css";
 export function TransactionHistoryTab({
   searchValue,
 }: TransactionHistoryTabProps) {
-  const { assets } = useAssetsContext();
   const { userAddress } = useUserContext();
   const [sort, setSort] = useState<SortState<ServerSortKey>>({
     direction: "descending",
@@ -102,9 +101,6 @@ export function TransactionHistoryTab({
     );
   }
 
-  const assetsByAddress = new Map(
-    assets.map((asset) => [asset.address, asset])
-  );
   const handleSort = (key: ServerSortKey) => {
     setSort((currentSort) => getNextSortState(currentSort, key));
   };
@@ -142,7 +138,6 @@ export function TransactionHistoryTab({
         <div role="rowgroup">
           {transactions.map((transaction) => (
             <TransactionHistoryTableRow
-              asset={assetsByAddress.get(transaction.token_address)}
               key={transaction.id}
               transaction={transaction}
             />

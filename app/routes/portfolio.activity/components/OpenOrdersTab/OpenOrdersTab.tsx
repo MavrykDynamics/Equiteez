@@ -23,7 +23,6 @@ import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
-  const { assets } = useAssetsContext();
   const { userAddress } = useUserContext();
 
   const [sort, setSort] = useState<SortState<ServerSortKey>>({
@@ -102,10 +101,6 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
     );
   }
 
-  const assetSymbolsByAddress = new Map(
-    assets.map((asset) => [asset.address, asset.metadata.symbol])
-  );
-
   const handleSort = (key: ServerSortKey) => {
     setSort((currentSort) => getNextSortState(currentSort, key));
   };
@@ -143,9 +138,6 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
         <div role="rowgroup">
           {orders.map((order) => (
             <OpenOrdersTableRow
-              assetSymbol={
-                assetSymbolsByAddress.get(order.token_address) ?? order.currency
-              }
               key={order.id}
               onAfterAction={openOrdersQuery.refetch}
               order={order}

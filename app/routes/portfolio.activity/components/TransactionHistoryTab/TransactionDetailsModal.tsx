@@ -1,9 +1,4 @@
 import type { ReactNode } from "react";
-
-import BuyIcon from "app/icons/wallet/buy.svg?react";
-import SellIcon from "app/icons/wallet/sell.svg?react";
-
-import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
@@ -21,23 +16,24 @@ import { OperationHash } from "./OperationHash";
 import styles from "./TransactionDetailsModal.module.css";
 import { toTokenSlug } from "~/lib/assets";
 import { AssetIcon } from "~/templates/AssetIcon";
+import { useAssetMetadata } from "~/lib/metadata";
 
 type TransactionDetailsModalProps = {
-  asset?: AssetType;
   isOpen: boolean;
   onClose: () => void;
   transaction: OrderHistoryItemType;
 };
 
 export function TransactionDetailsModal({
-  asset,
   isOpen,
   onClose,
   transaction,
 }: TransactionDetailsModalProps) {
   const orderDetails = getOrderDetails(transaction.type);
-  const assetSymbol = asset?.metadata.symbol ?? transaction.currency;
-  const assetImage = asset?.metadata.icon ?? asset?.profile.image_url;
+  const assetSlug = toTokenSlug(transaction.token_address);
+  const metadata = useAssetMetadata(assetSlug);
+
+  const assetSymbol = metadata.symbol;
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
 
   return (
@@ -80,8 +76,8 @@ export function TransactionDetailsModal({
           <Detail label="Assets">
             <span className={styles.assetValue}>
               <AssetIcon
-                size={24}
-                assetSlug={toTokenSlug(asset?.address ?? "")}
+                size={30}
+                assetSlug={assetSlug}
                 className={styles.assetIcon}
               />
               {assetSymbol}

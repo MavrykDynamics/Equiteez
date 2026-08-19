@@ -1,9 +1,4 @@
 import { useState } from "react";
-
-import BuyIcon from "app/icons/wallet/buy.svg?react";
-import SellIcon from "app/icons/wallet/sell.svg?react";
-
-import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -18,24 +13,27 @@ import { TransactionDetailsModal } from "./TransactionDetailsModal";
 import styles from "./styles.module.css";
 import { toTokenSlug } from "~/lib/assets";
 import { AssetIcon } from "~/templates/AssetIcon";
+import { useAssetMetadata } from "~/lib/metadata";
 
 type TransactionHistoryTableRowProps = {
-  asset?: AssetType;
   transaction: OrderHistoryItemType;
 };
 
 export function TransactionHistoryTableRow({
-  asset,
   transaction,
 }: TransactionHistoryTableRowProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formattedDate, formattedTime = ""] = formatOrderDate(
     transaction.datetime
   ).split(", ");
+
+  const assetSlug = toTokenSlug(transaction.token_address);
+  const metadata = useAssetMetadata(assetSlug);
+
+  const assetSymbol = metadata.symbol;
+  const assetName = metadata.name;
   const orderDetails = getOrderDetails(transaction.type);
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
-  const assetSymbol = asset?.metadata.symbol ?? transaction.currency;
-  const assetName = asset?.metadata.name ?? "Unknown asset";
   const interaction = `${assetSymbol}/USDT`;
 
   return (
@@ -55,8 +53,8 @@ export function TransactionHistoryTableRow({
         <div className={styles.cell} role="cell">
           <div className={styles.asset}>
             <AssetIcon
-              size={24}
-              assetSlug={toTokenSlug(asset?.address ?? "")}
+              size={30}
+              assetSlug={assetSlug}
               className={styles.assetIcon}
             />
             <div className={styles.assetIdentity}>
@@ -101,7 +99,6 @@ export function TransactionHistoryTableRow({
         </div>
       </div>
       <TransactionDetailsModal
-        asset={asset}
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         transaction={transaction}

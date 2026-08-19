@@ -11,15 +11,15 @@ import {
 import { FilledProgress } from "./FilledProgress";
 import styles from "./styles.module.css";
 import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
+import { toTokenSlug } from "~/lib/assets";
+import { useAssetMetadata } from "~/lib/metadata";
 
 type OpenOrdersTableRowProps = {
-  assetSymbol: string;
   onAfterAction: () => Promise<unknown>;
   order: OpenOrderItemType;
 };
 
 export function OpenOrdersTableRow({
-  assetSymbol,
   onAfterAction,
   order,
 }: OpenOrdersTableRowProps) {
@@ -35,6 +35,11 @@ export function OpenOrdersTableRow({
       : hoursUntilExpiry < 1
         ? "in <1 hour"
         : `in ${hoursUntilExpiry} hours`;
+
+  const assetSlug = toTokenSlug(order.token_address);
+  const metadata = useAssetMetadata(assetSlug);
+  const assetSymbol = metadata.symbol;
+
   const {
     actionIcon,
     actionLabel,
