@@ -277,6 +277,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for order-history status rendering. `fulfilled` is displayed as `FILLED`, `pending` as `OPEN`, and all other API values keep their original text with the canceled visual treatment.
 - Related tokens: `--r-color-green-*`, `--r-color-yellow-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-3`, `--r-radius-pill`
 
+## RTransferTypeIcon
+
+- Purpose: Route-local deposit and withdrawal direction icon for portfolio activity transfer rows and details.
+- Location: `app/routes/portfolio.activity/components/DepositsTab/RTransferTypeIcon.tsx`
+- Reusability notes: Use with transfer history items; it renders the Figma-approved 16px arrow through `currentColor`, so the parent supplies the green or red semantic tone.
+- Related tokens: `--r-size-icon-small`, `--r-color-green-500`, `--r-color-red-500`
+
 ## RDepositFundsModal
 
 - Purpose: Route-local redesign modal for mock USDT deposits through the Ethereum bridge or directly to a Mavryk address.
