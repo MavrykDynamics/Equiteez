@@ -48,7 +48,7 @@ export default function PortfolioActivity() {
       },
       {
         id: "deposits",
-        label: "Deposits",
+        label: "Deposits & Withdrawals",
       },
     ],
     [activitySummaryQuery.data?.open_orders]
@@ -63,7 +63,7 @@ export default function PortfolioActivity() {
       case "transaction-history":
         return <TransactionHistoryTab searchValue={searchValue} />;
       case "deposits":
-        return <DepositsTab />;
+        return <DepositsTab searchValue={searchValue} />;
       default:
         return <OpenOrdersTab searchValue={searchValue} />;
     }

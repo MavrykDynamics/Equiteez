@@ -2,10 +2,13 @@ import { rwaApi } from "~/lib/apis/rwa/client";
 import {
   OpenOrdersSchema,
   OrderHistorySchema,
+  TransferHistorySchema,
 } from "~/lib/apis/rwa/orders/orders.schema";
 import {
   OpenOrdersResponseType,
   OrderHistoryResponseType,
+  TransferHistoryResponseType,
+  WalletTransferHistoryParams,
 } from "~/lib/apis/rwa/orders/orders.types";
 
 type WalletOpenOrdersParams = {
@@ -81,4 +84,33 @@ export const fetchWalletOrderHistory = async ({
   );
 
   return OrderHistorySchema.parse(data);
+};
+
+export const fetchWalletTransferHistory = async ({
+  walletAddress,
+  search,
+  sort,
+  tokenAddress,
+}: WalletTransferHistoryParams): Promise<TransferHistoryResponseType> => {
+  const query = new URLSearchParams();
+
+  if (search) {
+    query.set("search", search);
+  }
+
+  if (sort) {
+    query.set("sort", sort);
+  }
+
+  if (tokenAddress) {
+    query.set("token_address", tokenAddress);
+  }
+
+  ["deposit", "withdrawal"].forEach((type) => query.append("types", type));
+
+  const { data } = await rwaApi.get(
+    `/wallets/${walletAddress}/transactions?${query.toString()}`
+  );
+
+  return TransferHistorySchema.parse(data);
 };

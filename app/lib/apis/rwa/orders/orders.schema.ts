@@ -6,6 +6,18 @@ const QuoteTokenSchema = z.object({
   total: z.number(),
 });
 
+const HistoryItemBaseSchema = z.object({
+  id: z.string(),
+  datetime: z.string(),
+  type: z.string(),
+  token_address: z.string(),
+  operation_hash: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  price_per_token: z.number(),
+  total: z.number(),
+});
+
 export const OpenOrderItemSchema = z.object({
   id: z.string(),
   order_id: z.string(),
@@ -33,23 +45,24 @@ export const OpenOrdersSchema = z.object({
   has_more: z.boolean(),
 });
 
-export const OrderHistoryItemSchema = z.object({
-  id: z.string(),
-  datetime: z.string(),
-  type: z.string(),
+export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
   status: z.string(),
-  token_address: z.string(),
-  operation_hash: z.string(),
   orderbook_address: z.string(),
-  amount: z.number(),
   quote_token: QuoteTokenSchema,
-  currency: z.string(),
-  price_per_token: z.number(),
-  total: z.number(),
 });
 
 export const OrderHistorySchema = z.object({
   items: z.array(OrderHistoryItemSchema),
+  next_cursor: z.string().nullable().optional(),
+  has_more: z.boolean(),
+});
+
+export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
+  status: z.string().optional(),
+});
+
+export const TransferHistorySchema = z.object({
+  items: z.array(TransferHistoryItemSchema),
   next_cursor: z.string().nullable().optional(),
   has_more: z.boolean(),
 });
