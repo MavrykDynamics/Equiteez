@@ -108,12 +108,12 @@ export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
               <RText className={styles.blockText} size="body-s">
                 {asset.symbol}
               </RText>
-              <RText color="neutral-700" size="body-s">
-                $
-                <Money fiat tooltip={false}>
-                  {asset.balance}
-                </Money>
-              </RText>
+              {/*<RText color="neutral-700" size="body-s">*/}
+              {/*  $*/}
+              {/*  <Money fiat tooltip={false}>*/}
+              {/*    {asset.balance}*/}
+              {/*  </Money>*/}
+              {/*</RText>*/}
             </span>
             {asset.members && isOtherDetailsVisible ? (
               <div className={styles.otherTooltip} role="tooltip">

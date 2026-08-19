@@ -235,7 +235,7 @@
   grid-template-columns: 16px 59px minmax(0, 1fr);
   min-height: 36px;
   align-items: center;
-  column-gap: var(--r-space-3);
+  column-gap: var(--r-space-2);
   padding: 0;
   border: 0;
   background: transparent;
