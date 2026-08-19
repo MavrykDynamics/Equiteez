@@ -19,7 +19,10 @@ type ChartAsset = Pick<
   members?: WalletPortfolioAssetType[];
 };
 
+type AssetsChartView = "wallet" | "asset-class";
+
 export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
+  const [chartView, setChartView] = useState<AssetsChartView>("wallet");
   const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
   const orderedAssets = [...assets]
     .filter(
@@ -71,6 +74,24 @@ export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
 
   return (
     <aside className={styles.chartPanel} aria-label="Portfolio allocation">
+      <div className={styles.chartSwitcher}>
+        <RText size="body-s">By Wallet</RText>
+        <button
+          aria-checked={chartView === "asset-class"}
+          aria-label="Group portfolio allocation by asset class"
+          className={styles.chartViewToggle}
+          onClick={() =>
+            setChartView((view) =>
+              view === "wallet" ? "asset-class" : "wallet"
+            )
+          }
+          role="switch"
+          type="button"
+        >
+          <span aria-hidden="true" className={styles.chartViewToggleThumb} />
+        </button>
+        <RText size="body-s">By Asset Class</RText>
+      </div>
       <AssetsDonutChart
         chartAssets={donutChartAssets}
         portfolioTotal={portfolioTotal}

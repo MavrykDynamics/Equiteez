@@ -177,6 +177,52 @@
   border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
+.chartSwitcher {
+  display: inline-flex;
+  height: 18px;
+  align-items: center;
+  gap: var(--r-space-2);
+  margin-bottom: var(--r-space-6);
+}
+
+.chartViewToggle {
+  display: flex;
+  width: 34px;
+  height: 18px;
+  flex: 0 0 34px;
+  align-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  background: var(--r-color-neutral-200);
+  cursor: pointer;
+  transition:
+    background-color var(--r-transition-duration-fast) ease,
+    box-shadow var(--r-transition-duration-fast) ease;
+}
+
+.chartViewToggle[aria-checked="true"] {
+  background: var(--r-color-primary);
+}
+
+.chartViewToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.chartViewToggleThumb {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--r-color-neutral-white);
+  transition: transform var(--r-transition-duration-fast) ease;
+}
+
+.chartViewToggle[aria-checked="true"] .chartViewToggleThumb {
+  transform: translateX(16px);
+}
+
 .donut {
   position: relative;
   display: grid;
@@ -302,6 +348,11 @@
     padding-left: 0;
     border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
     border-left: 0;
+  }
+
+  .chartSwitcher {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
   }
 
   .legend {
