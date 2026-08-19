@@ -21,21 +21,16 @@ export function PortfolioProvider({ children }: PortfolioProviderProps) {
       fetchWallet({
         walletAddress: userAddress || "",
       }),
+    retry: false,
     enabled: isAuthenticated && Boolean(userAddress),
   });
 
   const contextValue = useMemo<PortfolioContextType>(
     () => ({
       wallet: walletQuery.data,
-      isLoading:
-        walletQuery.isLoading || walletQuery.isFetching || walletQuery.isPending,
+      isLoading: walletQuery.isLoading,
     }),
-    [
-      walletQuery.data,
-      walletQuery.isFetching,
-      walletQuery.isLoading,
-      walletQuery.isPending,
-    ]
+    [walletQuery.data, walletQuery.isLoading]
   );
 
   return (
@@ -49,7 +44,9 @@ export function usePortfolioContext() {
   const context = useContext(portfolioContext);
 
   if (!context) {
-    throw new Error("usePortfolioContext must be used within PortfolioProvider");
+    throw new Error(
+      "usePortfolioContext must be used within PortfolioProvider"
+    );
   }
 
   return context;
