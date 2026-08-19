@@ -1,41 +1,18 @@
 import { useMemo, useState } from "react";
-
-import { RIcon } from "~/lib/atoms/RIcon/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./styles.module.css";
 import { DistributionProps } from "~/routes/portfolio.dividends/components/Distribution/Distribution.types";
+import { TableHeader } from "~/lib/molecules/RSortableTableHeader";
+import { OperationHash } from "~/routes/portfolio.activity/components/TransactionHistoryTab/OperationHash";
 
 const dateFormatter = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",
   year: "numeric",
 });
-
-function Header({
-  children,
-  sortable = false,
-}: {
-  children: string;
-  sortable?: boolean;
-}) {
-  return (
-    <div className={styles.headerCell}>
-      <RText color="neutral-700" size="body-xs" weight="medium">
-        {children}
-      </RText>
-      {sortable && (
-        <RIcon
-          className={styles.sortIcon}
-          name="arrow-long-down"
-          size="small"
-        />
-      )}
-    </div>
-  );
-}
 
 export function Distribution({ data }: DistributionProps) {
   const [search, setSearch] = useState("");
@@ -71,14 +48,30 @@ export function Distribution({ data }: DistributionProps) {
       <div className={styles.tableScroll}>
         <div className={styles.table} role="table">
           <div className={styles.tableRow} role="row">
-            <Header sortable>DATE</Header>
-            <Header>ASSET</Header>
-            <Header sortable>LAST PAID</Header>
-            <Header>CADENCE</Header>
-            <Header sortable>YIELD</Header>
-            <Header>TX HASH</Header>
-            <Header sortable>PAYMENTS</Header>
-            <Header sortable>LIFETIME TOTAL</Header>
+            <div className={styles.headerCell}>
+              <TableHeader label="DATE" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="ASSET" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="LAST PAID" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="CADENCE" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="YIELD" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="TX HASH" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="PAYMENTS" />
+            </div>
+            <div className={styles.headerCell}>
+              <TableHeader label="LIFETIME TOTAL" />
+            </div>
           </div>
 
           {filteredData.map((item) => (
@@ -101,7 +94,11 @@ export function Distribution({ data }: DistributionProps) {
                   <RText size="body-sm" weight="medium">
                     {item.assetSymbol}
                   </RText>
-                  <RText color="neutral-700" size="body-s" className={styles.assetName}>
+                  <RText
+                    color="neutral-700"
+                    size="body-s"
+                    className={styles.assetName}
+                  >
                     {item.assetName}
                   </RText>
                 </div>
@@ -132,17 +129,7 @@ export function Distribution({ data }: DistributionProps) {
                 </RText>
               </div>
               <div className={styles.transactionCell} role="cell">
-                <RText size="body-sm">{item.transactionHash}</RText>
-                <RIcon
-                  className={styles.transactionIcon}
-                  name="copy"
-                  size="small"
-                />
-                <RIcon
-                  className={styles.transactionIcon}
-                  name="arrow-long-up-right"
-                  size="small"
-                />
+                <OperationHash operationHash={item.transactionHash} />
               </div>
               <div className={styles.cell} role="cell">
                 <RText size="body-sm">
