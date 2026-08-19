@@ -19,6 +19,8 @@ import { ROrderStatusBadge } from "~/routes/trade.$address/components/AssetTabs/
 
 import { OperationHash } from "./OperationHash";
 import styles from "./TransactionDetailsModal.module.css";
+import { toTokenSlug } from "~/lib/assets";
+import { AssetIcon } from "~/templates/AssetIcon";
 
 type TransactionDetailsModalProps = {
   asset?: AssetType;
@@ -77,11 +79,11 @@ export function TransactionDetailsModal({
           </Detail>
           <Detail label="Assets">
             <span className={styles.assetValue}>
-              {assetImage ? (
-                <img alt="" className={styles.assetIcon} src={assetImage} />
-              ) : (
-                <span aria-hidden className={styles.assetIconFallback} />
-              )}
+              <AssetIcon
+                size={24}
+                assetSlug={toTokenSlug(asset?.address ?? "")}
+                className={styles.assetIcon}
+              />
               {assetSymbol}
             </span>
           </Detail>

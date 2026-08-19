@@ -4,6 +4,8 @@ import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.type
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { AssetIcon } from "~/templates/AssetIcon";
+import { toTokenSlug } from "~/lib/assets";
 
 type AllAssetsTableRowProps = {
   asset: WalletPortfolioAssetType;
@@ -17,9 +19,11 @@ export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
     <tr>
       <td>
         <div className={styles.assetIdentity}>
-          <span aria-hidden="true" className={styles.tokenIcon}>
-            {asset.symbol.slice(0, 1).toUpperCase()}
-          </span>
+          <AssetIcon
+            size={24}
+            assetSlug={toTokenSlug(asset.token_address)}
+            className={styles.tokenIcon}
+          />
           <span>
             <RText className={styles.blockText} size="body-sm" weight="medium">
               {asset.symbol.toUpperCase()}

@@ -16,6 +16,8 @@ import { ROrderStatusBadge } from "~/routes/trade.$address/components/AssetTabs/
 import { OperationHash } from "./OperationHash";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
 import styles from "./styles.module.css";
+import { toTokenSlug } from "~/lib/assets";
+import { AssetIcon } from "~/templates/AssetIcon";
 
 type TransactionHistoryTableRowProps = {
   asset?: AssetType;
@@ -34,7 +36,6 @@ export function TransactionHistoryTableRow({
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
   const assetSymbol = asset?.metadata.symbol ?? transaction.currency;
   const assetName = asset?.metadata.name ?? "Unknown asset";
-  const assetImage = asset?.metadata.icon ?? asset?.profile.image_url;
   const interaction = `${assetSymbol}/USDT`;
 
   return (
@@ -53,11 +54,11 @@ export function TransactionHistoryTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <div className={styles.asset}>
-            {assetImage ? (
-              <img alt="" className={styles.assetIcon} src={assetImage} />
-            ) : (
-              <span aria-hidden className={styles.assetIconFallback} />
-            )}
+            <AssetIcon
+              size={24}
+              assetSlug={toTokenSlug(asset?.address ?? "")}
+              className={styles.assetIcon}
+            />
             <div className={styles.assetIdentity}>
               <RText size="body-sm" weight="medium">
                 {assetSymbol}
