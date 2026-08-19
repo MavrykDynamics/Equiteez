@@ -87,7 +87,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
                 <>
                   $
                   <Money fiat tooltip={false}>
-                    {deposit.total}
+                    {deposit.total ?? 0}
                   </Money>
                 </>
               ) : (
