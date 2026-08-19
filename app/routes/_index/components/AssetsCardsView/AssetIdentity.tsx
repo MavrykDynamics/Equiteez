@@ -1,4 +1,4 @@
-import styles from "~/routes/discover/components/AssetsCardsView/styles.module.css";
+import styles from "~/routes/_index/components/AssetsCardsView/styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 

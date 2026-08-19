@@ -1,5 +1,5 @@
 import styles from "./styles.module.css";
-import { HighlightCard } from "~/routes/discover/components/Highlights/HighlightCard";
+import { HighlightCard } from "~/routes/_index/components/Highlights/HighlightCard";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAssetsHighlights } from "~/lib/apis/rwa";

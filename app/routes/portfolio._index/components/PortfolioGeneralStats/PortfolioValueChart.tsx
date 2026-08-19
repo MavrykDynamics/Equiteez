@@ -11,7 +11,7 @@ import {
   AssetPriceChart,
   type AssetPriceChartPoint,
   type AssetPriceChartHover,
-} from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
+} from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";

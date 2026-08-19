@@ -11,7 +11,6 @@ export const ROUTES = {
   admin: "/admin",
 
   home: "/",
-  discover: "/discover",
   trade: "/trade/:address",
   portfolio: "/portfolio",
   portfolioDividends: "/portfolio/dividends",

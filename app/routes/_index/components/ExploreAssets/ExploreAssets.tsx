@@ -2,18 +2,18 @@ import styles from "./styles.module.css";
 import { useMemo, useState } from "react";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { AssetsFilters } from "~/routes/discover/components/AssetsFilters/AssetsFilters";
-import { AssetsTableView } from "~/routes/discover/components/AssetsTableView/AssetsTableView";
-import { AssetsCardsView } from "~/routes/discover/components/AssetsCardsView/AssetsCardsView";
+import { AssetsFilters } from "~/routes/_index/components/AssetsFilters/AssetsFilters";
+import { AssetsTableView } from "~/routes/_index/components/AssetsTableView/AssetsTableView";
+import { AssetsCardsView } from "~/routes/_index/components/AssetsCardsView/AssetsCardsView";
 import {
   ALL_ASSETS_FILTER_VALUE,
   INITIAL_ASSETS_FILTER_STATE,
-} from "~/routes/discover/components/AssetsFilters/assetsFilters.const";
-import type { AssetsFilterState } from "~/routes/discover/components/AssetsFilters/assetsFilters.types";
+} from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
+import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { DepositFunds } from "~/routes/discover/components/DepositFunds/DepositFunds";
+import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();

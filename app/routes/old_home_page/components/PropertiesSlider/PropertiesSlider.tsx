@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import { ApiErrorBox } from "~/lib/organisms/ApiErrorBox/ApiErrorBox";
 import styles from "./PropertiesSlider.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
-import { AssetEmblaSlide } from "~/routes/_index/components/PropertiesSlider/components/AssetEmblaSlide";
+import { AssetEmblaSlide } from "~/routes/old_home_page/components/PropertiesSlider/components/AssetEmblaSlide";
 import classNames from "clsx";
 import { useOrderbookCurrentPrices } from "~/lib/apis/mbrwa/openOrders/useOrderbookCurrentPrices";
 

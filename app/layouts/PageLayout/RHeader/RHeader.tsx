@@ -15,7 +15,7 @@ import { ROUTES } from "~/consts";
 export function RHeader() {
   const { assets } = useAssetsContext();
   const navigationItems = [
-    { label: "Discover", to: ROUTES.discover },
+    { label: "Discover", to: ROUTES.home },
     {
       label: "Trade",
       to: generatePath(ROUTES.trade, { address: assets[0].address }),

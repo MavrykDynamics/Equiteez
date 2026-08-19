@@ -5,11 +5,11 @@ import { generatePath, Link } from "@remix-run/react";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
+import { AssetBadge } from "~/routes/_index/components/AssetBadge/AssetBadge";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
-import { AssetPriceChart } from "~/routes/discover/components/AssetPriceChart/AssetPriceChart";
+import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 import { ROUTES } from "~/consts";
-import { AssetSaleProgress } from "~/routes/discover/components/AssetsCardsView/AssetSaleProgress";
+import { AssetSaleProgress } from "~/routes/_index/components/AssetsCardsView/AssetSaleProgress";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import { atomsToTokens } from "~/lib/utils/formaters";
 

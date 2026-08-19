@@ -6,8 +6,8 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { AssetSaleProgress } from "./AssetSaleProgress";
 import styles from "./styles.module.css";
-import { AssetBadge } from "~/routes/discover/components/AssetBadge/AssetBadge";
-import { AssetIdentity } from "~/routes/discover/components/AssetsCardsView/AssetIdentity";
+import { AssetBadge } from "~/routes/_index/components/AssetBadge/AssetBadge";
+import { AssetIdentity } from "~/routes/_index/components/AssetsCardsView/AssetIdentity";
 import { ROUTES } from "~/consts";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 
