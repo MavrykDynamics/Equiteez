@@ -139,19 +139,13 @@
 
 .paginationFooter {
   display: flex;
-  min-height: 32px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--r-space-4);
 }
 
 @media (--media-tablet-max) {
   .table {
     min-width: 1000px;
-  }
-
-  .paginationFooter {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

@@ -13,6 +13,8 @@ import {
 
 type WalletOpenOrdersParams = {
   walletAddress: string;
+  page?: number;
+  perPage?: number;
   search?: string;
   sort?: string;
   tokenAddress?: string;
@@ -29,11 +31,21 @@ type WalletOrdersParams = {
 
 export const fetchWalletOpenOrders = async ({
   walletAddress,
+  page,
+  perPage,
   search,
   sort,
   tokenAddress,
 }: WalletOpenOrdersParams): Promise<OpenOrdersResponseType> => {
   const query = new URLSearchParams();
+
+  if (page) {
+    query.set("page", String(page));
+  }
+
+  if (perPage) {
+    query.set("per_page", String(perPage));
+  }
 
   if (search) {
     query.set("search", search);

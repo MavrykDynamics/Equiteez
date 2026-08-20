@@ -1,15 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
 import { fetchWalletOpenOrders } from "~/lib/apis/rwa/orders/orders";
 import { Spinner } from "~/lib/atoms/Spinner";
+import { RPagination } from "~/lib/molecules/RPagination";
 import {
   getNextSortState,
   TableHeader,
   type SortState,
 } from "~/lib/molecules/RSortableTableHeader";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import { OpenOrdersTableRow } from "./OpenOrdersTableRow";
@@ -22,6 +22,8 @@ import {
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
+const OPEN_ORDERS_PER_PAGE = 10;
+
 export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
   const { userAddress } = useUserContext();
 
@@ -29,6 +31,7 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
     direction: "descending",
     key: "date",
   });
+  const [page, setPage] = useState(1);
 
   const normalizedSearch = useMemo(() => {
     const term = searchValue.trim().toLowerCase();
@@ -39,6 +42,10 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
   }, [searchValue]);
 
   const [searchValueDebounced] = useDebounce(normalizedSearch, 300);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchValueDebounced]);
 
   const serverSort = useMemo(() => {
     if (!sort) {
@@ -56,9 +63,12 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
       userAddress,
       searchValueDebounced,
       serverSort,
+      page,
     ],
     queryFn: () =>
       fetchWalletOpenOrders({
+        page,
+        perPage: OPEN_ORDERS_PER_PAGE,
         search: searchValueDebounced || undefined,
         sort: serverSort || undefined,
         walletAddress: userAddress ?? "",
@@ -68,6 +78,14 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
     refetchInterval: 7000,
     retry: false,
   });
+
+  useEffect(() => {
+    const totalPages = openOrdersQuery.data?.total_pages ?? 0;
+
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [openOrdersQuery.data?.total_pages, page]);
 
   if (openOrdersQuery.isLoading && !openOrdersQuery.data) {
     return (
@@ -103,48 +121,68 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
 
   const handleSort = (key: ServerSortKey) => {
     setSort((currentSort) => getNextSortState(currentSort, key));
+    setPage(1);
   };
 
-  return (
-    <div className={styles.viewport}>
-      {openOrdersQuery.isFetching && (
-        <div className={styles.loadingOverlay} role="status" aria-live="polite">
-          <Spinner size={32} />
-        </div>
-      )}
-      <div className={styles.table} role="table">
-        <div className={styles.headerRow} role="row">
-          {headers.map((header, index) => (
-            <div
-              key={`${header.label}-${index}`}
-              className={styles.headerCell}
-              role="columnheader"
-            >
-              <TableHeader
-                direction={
-                  sort?.key === header.sortKey ? sort?.direction : undefined
-                }
-                label={header.label}
-                onSort={
-                  header.sortKey
-                    ? () => handleSort(header.sortKey ?? "amount")
-                    : undefined
-                }
-              />
-            </div>
-          ))}
-        </div>
+  const { total, total_pages: totalPages = 0 } = openOrdersQuery.data ?? {};
 
-        <div role="rowgroup">
-          {orders.map((order) => (
-            <OpenOrdersTableRow
-              key={order.id}
-              onAfterAction={openOrdersQuery.refetch}
-              order={order}
-            />
-          ))}
+  return (
+    <div className={styles.content}>
+      <div className={styles.viewport}>
+        {openOrdersQuery.isFetching && (
+          <div
+            className={styles.loadingOverlay}
+            role="status"
+            aria-live="polite"
+          >
+            <Spinner size={32} />
+          </div>
+        )}
+        <div className={styles.table} role="table">
+          <div className={styles.headerRow} role="row">
+            {headers.map((header, index) => (
+              <div
+                key={`${header.label}-${index}`}
+                className={styles.headerCell}
+                role="columnheader"
+              >
+                <TableHeader
+                  direction={
+                    sort?.key === header.sortKey ? sort?.direction : undefined
+                  }
+                  label={header.label}
+                  onSort={
+                    header.sortKey
+                      ? () => handleSort(header.sortKey ?? "amount")
+                      : undefined
+                  }
+                />
+              </div>
+            ))}
+          </div>
+
+          <div role="rowgroup">
+            {orders.map((order) => (
+              <OpenOrdersTableRow
+                key={order.id}
+                onAfterAction={openOrdersQuery.refetch}
+                order={order}
+              />
+            ))}
+          </div>
         </div>
       </div>
+      {total && totalPages > 0 ? (
+        <div className={styles.paginationFooter}>
+          <RPagination
+            ariaLabel="Open orders pagination"
+            currentPage={page}
+            isLoading={openOrdersQuery.isFetching}
+            onPageChange={setPage}
+            totalPages={totalPages}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

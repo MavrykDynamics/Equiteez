@@ -1,5 +1,11 @@
 @import "../../../../styles/breakpoints.css";
 
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
 .viewport {
   position: relative;
   width: 100%;
@@ -24,10 +30,9 @@
 .headerRow,
 .row {
   display: grid;
-  grid-template-columns: 136px minmax(116px, 1fr) 159px minmax(116px, 1fr) minmax(
-      132px,
-      1fr
-    ) 160px 136px minmax(128px, 1fr) 56px;
+  grid-template-columns:
+    136px minmax(116px, 1fr) 159px minmax(116px, 1fr) minmax(132px, 1fr)
+    160px 136px minmax(128px, 1fr) 56px;
 }
 
 .headerRow > th,
@@ -153,6 +158,13 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+.paginationFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--r-space-4);
 }
 
 @media (--media-tablet-max) {
