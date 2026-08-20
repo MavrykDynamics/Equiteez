@@ -70,6 +70,14 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
     retry: false,
   });
 
+  useEffect(() => {
+    const totalPages = depositsQuery.data?.total_pages ?? 0;
+
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, depositsQuery.data?.total_pages]);
+
   if (depositsQuery.isLoading && !depositsQuery.data) {
     return (
       <div className={styles.state} aria-live="polite">
@@ -107,10 +115,7 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
     setPage(1);
   };
 
-  const {
-    total,
-    total_pages: totalPages = 0,
-  } = depositsQuery.data ?? {};
+  const { total, total_pages: totalPages = 0 } = depositsQuery.data ?? {};
 
   return (
     <div className={styles.content}>
