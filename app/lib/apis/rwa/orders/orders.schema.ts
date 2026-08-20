@@ -18,6 +18,14 @@ const HistoryItemBaseSchema = z.object({
   total: z.number(),
 });
 
+const PaginationSchema = z.object({
+  page: z.number(),
+  per_page: z.number(),
+  total: z.number(),
+  total_pages: z.number(),
+  truncated: z.boolean(),
+});
+
 export const OpenOrderItemSchema = z.object({
   id: z.string(),
   order_id: z.string(),
@@ -39,10 +47,8 @@ export const OpenOrderItemSchema = z.object({
   can_cancel: z.boolean(),
 });
 
-export const OpenOrdersSchema = z.object({
+export const OpenOrdersSchema = PaginationSchema.extend({
   items: z.array(OpenOrderItemSchema),
-  next_cursor: z.string().nullable().optional(),
-  has_more: z.boolean(),
 });
 
 export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
@@ -51,10 +57,8 @@ export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
   quote_token: QuoteTokenSchema,
 });
 
-export const OrderHistorySchema = z.object({
+export const OrderHistorySchema = PaginationSchema.extend({
   items: z.array(OrderHistoryItemSchema),
-  next_cursor: z.string().nullable().optional(),
-  has_more: z.boolean(),
 });
 
 export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
@@ -63,8 +67,6 @@ export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
   total: z.number().nullable(),
 });
 
-export const TransferHistorySchema = z.object({
+export const TransferHistorySchema = PaginationSchema.extend({
   items: z.array(TransferHistoryItemSchema),
-  next_cursor: z.string().nullable().optional(),
-  has_more: z.boolean(),
 });
