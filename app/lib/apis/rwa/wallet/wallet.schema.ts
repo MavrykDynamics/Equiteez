@@ -34,6 +34,7 @@ export const WalletPortfolioAssetSchema = z.object({
   symbol: z.string(),
   name: z.string(),
   category: z.string(),
+  asset_class: z.string().nullable(),
   balance: z.number(),
   value: z.number(),
   share_pct: z.number(),
