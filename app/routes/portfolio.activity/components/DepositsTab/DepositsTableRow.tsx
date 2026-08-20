@@ -26,8 +26,8 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const assetSlug = toTokenSlug(deposit.token_address);
   const metadata = useAssetMetadata(assetSlug);
 
-  const assetSymbol = metadata.symbol;
-  const assetName = metadata.name;
+  const assetSymbol = metadata?.symbol ?? "-";
+  const assetName = metadata?.name ?? 'Unknown token';
   const isDeposit = deposit.type === "deposit";
   const hasTotalValue = deposit.total !== null;
 

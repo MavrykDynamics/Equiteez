@@ -88,11 +88,21 @@ export const fetchWalletOrderHistory = async ({
 
 export const fetchWalletTransferHistory = async ({
   walletAddress,
+  page,
+  perPage,
   search,
   sort,
   tokenAddress,
 }: WalletTransferHistoryParams): Promise<TransferHistoryResponseType> => {
   const query = new URLSearchParams();
+
+  if (page) {
+    query.set("page", String(page));
+  }
+
+  if (perPage) {
+    query.set("per_page", String(perPage));
+  }
 
   if (search) {
     query.set("search", search);

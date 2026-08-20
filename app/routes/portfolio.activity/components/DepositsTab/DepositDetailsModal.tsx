@@ -29,7 +29,7 @@ export function DepositDetailsModal({
 }: DepositDetailsModalProps) {
   const assetSlug = toTokenSlug(deposit.token_address);
   const metadata = useAssetMetadata(assetSlug);
-  const assetSymbol = metadata.symbol || "-";
+  const assetSymbol = metadata?.symbol || "-";
   const isDeposit = deposit.type === "deposit";
 
   return (

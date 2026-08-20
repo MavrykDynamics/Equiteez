@@ -17,6 +17,8 @@ export type TransferHistoryResponseType = z.infer<typeof TransferHistorySchema>;
 
 export type WalletTransferHistoryParams = {
   walletAddress: string;
+  page?: number;
+  perPage?: number;
   search?: string;
   sort?: string;
   tokenAddress?: string;
