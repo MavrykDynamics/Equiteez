@@ -141,6 +141,7 @@
 
 .blockText {
   display: block;
+  text-transform: capitalize;
 }
 
 .pagination {
