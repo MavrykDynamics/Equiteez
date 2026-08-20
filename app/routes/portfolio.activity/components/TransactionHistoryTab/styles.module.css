@@ -1,5 +1,11 @@
 @import "../../../../styles/breakpoints.css";
 
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
 .viewport {
   position: relative;
   width: 100%;
@@ -131,8 +137,21 @@
   text-align: center;
 }
 
+.paginationFooter {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
 @media (--media-tablet-max) {
   .table {
     min-width: 1000px;
+  }
+
+  .paginationFooter {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

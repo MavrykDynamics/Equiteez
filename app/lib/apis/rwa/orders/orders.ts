@@ -20,6 +20,8 @@ type WalletOpenOrdersParams = {
 
 type WalletOrdersParams = {
   walletAddress: string;
+  page?: number;
+  perPage?: number;
   search?: string;
   sort?: string;
   tokenAddress?: string;
@@ -57,11 +59,21 @@ export const fetchWalletOpenOrders = async ({
 
 export const fetchWalletOrderHistory = async ({
   walletAddress,
+  page,
+  perPage,
   search,
   sort,
   tokenAddress,
 }: WalletOrdersParams): Promise<OrderHistoryResponseType> => {
   const query = new URLSearchParams();
+
+  if (page) {
+    query.set("page", String(page));
+  }
+
+  if (perPage) {
+    query.set("per_page", String(perPage));
+  }
 
   if (search) {
     query.set("search", search);
