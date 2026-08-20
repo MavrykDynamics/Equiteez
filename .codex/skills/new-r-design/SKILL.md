@@ -323,6 +323,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for compact two-line metric summaries before recreating route-specific stat cards.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-color-neutral-*`, `--r-space-*`
 
+## RPagination
+
+- Purpose: Controlled API pagination molecule with page-number navigation, ellipses, and loading-aware previous/next controls.
+- Location: `app/lib/molecules/RPagination/RPagination.tsx`
+- Reusability notes: Pass one-based `currentPage`, API `totalPages`, and `onPageChange`; set `isLoading` while an API page request is in flight.
+- Related tokens: `RIcon`, `RText`, `--r-space-1`, `--r-color-neutral-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`
+
 ## RSortableTableHeader
 
 - Purpose: Shared sortable table-header molecule with the two-direction `RIcon` sort indicator.
