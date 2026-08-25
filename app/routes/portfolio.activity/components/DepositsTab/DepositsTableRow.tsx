@@ -12,6 +12,7 @@ import { DepositDetailsModal } from "./DepositDetailsModal";
 import { RTransferTypeIcon } from "./RTransferTypeIcon";
 import styles from "./styles.module.css";
 import { useAssetMetadata } from "~/lib/metadata";
+import classNames from "clsx";
 
 type DepositsTableRowProps = {
   deposit: TransferHistoryItemType;
@@ -108,10 +109,14 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
           </div>
         </div>
         <div className={styles.cell} role="cell">
-          <RText size="body-sm">Mavryk Bridge</RText>
-        </div>
-        <div className={styles.cell} role="cell">
           <OperationHash operationHash={deposit.operation_hash} />
+        </div>
+        <div className={classNames(styles.cell, styles.cellChain)} role="cell">
+          <RText size="body-sm">
+            {deposit.chain_from === deposit.chain_to
+              ? deposit.chain_from
+              : `${deposit.chain_from} - ${deposit.chain_to}`}
+          </RText>
         </div>
         <div className={styles.cell} role="cell">
           <span className={styles.statusBadge}>

@@ -67,8 +67,8 @@ export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
   total: z.number().nullable(),
   chain_from: z.string(),
   chain_to: z.string(),
-  from: z.string(),
-  to: z.string(),
+  from: z.string().optional(),
+  to: z.string().optional(),
 });
 
 export const TransferHistorySchema = PaginationSchema.extend({

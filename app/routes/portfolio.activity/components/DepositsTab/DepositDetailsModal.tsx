@@ -67,7 +67,7 @@ export function DepositDetailsModal({
           <Detail label="Date">
             {formatOrderDate(deposit.datetime) || "-"}
           </Detail>
-          <Detail label="Source">-</Detail>
+          <Detail label="Source">{deposit.chain_from.toUpperCase()}</Detail>
           <Detail label="Action">
             <span
               className={isDeposit ? styles.depositType : styles.withdrawalType}
@@ -104,7 +104,7 @@ export function DepositDetailsModal({
           </Detail>
           <Detail label="Network Commission">-</Detail>
           <Detail label="Sender">
-            <OperationHash operationHash={deposit.from} />
+            {deposit.from ? <OperationHash operationHash={deposit.from} /> : "-"}
           </Detail>
           <Detail label="TxID">
             <OperationHash operationHash={deposit.operation_hash} />
