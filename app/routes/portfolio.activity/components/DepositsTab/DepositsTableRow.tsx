@@ -17,6 +17,14 @@ type DepositsTableRowProps = {
   deposit: TransferHistoryItemType;
 };
 
+export function getTypeLabel(row: TransferHistoryItemType): string {
+  if (row.type === "deposit" && row.chain_from && row.chain_from !== "mavryk")
+    return "Bridge In";
+  if (row.type === "withdrawal" && row.chain_to && row.chain_to !== "mavryk")
+    return "Bridge Out";
+  return row.type === "deposit" ? "Deposit" : "Withdraw";
+}
+
 export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formattedDate, formattedTime = ""] = formatOrderDate(
@@ -27,7 +35,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const metadata = useAssetMetadata(assetSlug);
 
   const assetSymbol = metadata?.symbol ?? "-";
-  const assetName = metadata?.name ?? 'Unknown token';
+  const assetName = metadata?.name ?? "Unknown token";
   const isDeposit = deposit.type === "deposit";
   const hasTotalValue = deposit.total !== null;
 
@@ -76,7 +84,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
               type={deposit.type}
             />
             <RText className={styles.typeLabel} size="body-sm">
-              {isDeposit ? "Deposit" : "Withdrawal"}
+              {getTypeLabel(deposit)}
             </RText>
           </span>
         </div>

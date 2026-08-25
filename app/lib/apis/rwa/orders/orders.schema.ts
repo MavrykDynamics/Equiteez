@@ -65,6 +65,10 @@ export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
   price_per_token: z.number().nullable(),
   status: z.string().optional(),
   total: z.number().nullable(),
+  chain_from: z.string(),
+  chain_to: z.string(),
+  from: z.string(),
+  to: z.string(),
 });
 
 export const TransferHistorySchema = PaginationSchema.extend({
