@@ -6,6 +6,7 @@ import { useOpenOrderAction } from "~/hooks/useOpenOrderAction";
 import {
   formatOrderDate,
   getOrderDetails,
+  renderNullableFiatValue,
 } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OrderItem";
 
 import { FilledProgress } from "./FilledProgress";
@@ -78,8 +79,7 @@ export function OpenOrdersTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <RText size="body-sm">
-            <Money tooltip={false}>{order.quote_token.price_per_token}</Money>{" "}
-            USDT
+            {renderNullableFiatValue(order.quote_token.price_per_token, "USDT")}
           </RText>
         </div>
         <div className={styles.cell} role="cell">
@@ -95,7 +95,7 @@ export function OpenOrdersTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <RText size="body-sm">
-            <Money tooltip={false}>{order.quote_token.total}</Money> USDT
+            {renderNullableFiatValue(order.quote_token.total, "USDT")}
           </RText>
         </div>
         <div className={`${styles.cell} ${styles.actionCell}`} role="cell">
