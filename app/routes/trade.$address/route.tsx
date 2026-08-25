@@ -20,23 +20,26 @@ export default function TradePage() {
   }
 
   return (
-      <Container>
-        <AssetDetails asset={asset} />
-        <div className={styles.contentBlock}>
+    <Container>
+      <AssetDetails asset={asset} />
+      <div className={styles.contentBlock}>
+        <div className={styles.mainContent}>
           <ChartBlock
             asset={asset}
             isOrderBookOpen={isOrderBookOpen}
             onOrderBookToggle={() => setIsOrderBookOpen((isOpen) => !isOpen)}
           />
-          <div className={styles.buySellContainer}>
-            <BuySellPanel
-              asset={asset}
-              isOrderBookOpen={isOrderBookOpen}
-              setIsOrderBookOpen={setIsOrderBookOpen}
-            />
-          </div>
+          <AssetTabs asset={asset} />
         </div>
-        <AssetTabs asset={asset} />
-      </Container>
+
+        <div className={styles.buySellContainer}>
+          <BuySellPanel
+            asset={asset}
+            isOrderBookOpen={isOrderBookOpen}
+            setIsOrderBookOpen={setIsOrderBookOpen}
+          />
+        </div>
+      </div>
+    </Container>
   );
 }
