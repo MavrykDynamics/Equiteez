@@ -16,7 +16,7 @@ export const headers: HeaderConfig[] = [
   { label: "ASSET" },
   { label: "TYPE" },
   { label: "AMOUNT", sortKey: "amount" },
-  { label: "INTERACTION" },
   { label: "TX HASH" },
+  { label: "CHAIN" },
   { label: "STATUS" },
 ];

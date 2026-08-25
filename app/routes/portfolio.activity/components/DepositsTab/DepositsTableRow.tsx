@@ -12,10 +12,19 @@ import { DepositDetailsModal } from "./DepositDetailsModal";
 import { RTransferTypeIcon } from "./RTransferTypeIcon";
 import styles from "./styles.module.css";
 import { useAssetMetadata } from "~/lib/metadata";
+import classNames from "clsx";
 
 type DepositsTableRowProps = {
   deposit: TransferHistoryItemType;
 };
+
+export function getTypeLabel(row: TransferHistoryItemType): string {
+  if (row.type === "deposit" && row.chain_from && row.chain_from !== "mavryk")
+    return "Bridge In";
+  if (row.type === "withdrawal" && row.chain_to && row.chain_to !== "mavryk")
+    return "Bridge Out";
+  return row.type === "deposit" ? "Deposit" : "Withdraw";
+}
 
 export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -27,7 +36,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const metadata = useAssetMetadata(assetSlug);
 
   const assetSymbol = metadata?.symbol ?? "-";
-  const assetName = metadata?.name ?? 'Unknown token';
+  const assetName = metadata?.name ?? "Unknown token";
   const isDeposit = deposit.type === "deposit";
   const hasTotalValue = deposit.total !== null;
 
@@ -76,7 +85,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
               type={deposit.type}
             />
             <RText className={styles.typeLabel} size="body-sm">
-              {isDeposit ? "Deposit" : "Withdrawal"}
+              {getTypeLabel(deposit)}
             </RText>
           </span>
         </div>
@@ -100,10 +109,14 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
           </div>
         </div>
         <div className={styles.cell} role="cell">
-          <RText size="body-sm">Mavryk Bridge</RText>
-        </div>
-        <div className={styles.cell} role="cell">
           <OperationHash operationHash={deposit.operation_hash} />
+        </div>
+        <div className={classNames(styles.cell, styles.cellChain)} role="cell">
+          <RText size="body-sm">
+            {deposit.chain_from === deposit.chain_to
+              ? deposit.chain_from
+              : `${deposit.chain_from} - ${deposit.chain_to}`}
+          </RText>
         </div>
         <div className={styles.cell} role="cell">
           <span className={styles.statusBadge}>

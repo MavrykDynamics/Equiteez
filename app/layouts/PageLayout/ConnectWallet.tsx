@@ -37,8 +37,8 @@ export const ConnectWallet = () => {
           </RDropdownFaceContent>
 
           <RDropdownBodyContent align="right" className={styles.menu}>
-            <Link className={styles.profileLink} to={ROUTES.wallet}>
-              Profile dashboard
+            <Link className={styles.profileLink} to={ROUTES.portfolio}>
+              Portfolio
             </Link>
             <RDropdownBodyContentItem onClick={changeUser}>
               Change account

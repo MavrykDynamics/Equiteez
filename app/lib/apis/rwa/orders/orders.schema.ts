@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const QuoteTokenSchema = z.object({
   address: z.string(),
-  price_per_token: z.number(),
-  total: z.number(),
+  price_per_token: z.number().nullable(),
+  total: z.number().nullable(),
 });
 
 const HistoryItemBaseSchema = z.object({
@@ -39,8 +39,8 @@ export const OpenOrderItemSchema = z.object({
   filled_percent: z.number(),
   quote_token: QuoteTokenSchema,
   currency: z.string(),
-  price_per_token: z.number(),
-  total: z.number(),
+  price_per_token: z.number().nullable(),
+  total: z.number().nullable(),
   created_at: z.string(),
   expires_at: z.string().nullable(),
   expires_in_seconds: z.number().int().nullable(),
@@ -65,6 +65,10 @@ export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
   price_per_token: z.number().nullable(),
   status: z.string().optional(),
   total: z.number().nullable(),
+  chain_from: z.string(),
+  chain_to: z.string(),
+  from: z.string().optional(),
+  to: z.string().optional(),
 });
 
 export const TransferHistorySchema = PaginationSchema.extend({

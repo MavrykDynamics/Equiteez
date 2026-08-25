@@ -18,11 +18,24 @@ function getShortHash(hash: string) {
   return `${hash.slice(0, 7)}...${hash.slice(-3)}`;
 }
 
+function getNexusEntityPath(operationHash: string) {
+  if (operationHash.startsWith("KT")) {
+    return "contract";
+  }
+
+  if (operationHash.startsWith("mv")) {
+    return "account";
+  }
+
+  return "operation";
+}
+
 export function OperationHash({
   className,
   display = "short",
   operationHash,
 }: OperationHashProps) {
+  const nexusEntityPath = getNexusEntityPath(operationHash);
   const copyTooltipRef = useTippy<HTMLDivElement>(
     useMemo(
       () => ({
@@ -79,7 +92,7 @@ export function OperationHash({
       <a
         aria-label="View transaction in Nexus"
         className={styles.actionLink}
-        href={`${NEXUS_LINK}/explorer/operation/${operationHash}`}
+        href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
         onClick={handleActionClick}
         ref={nexusTooltipRef}
         rel="noreferrer"

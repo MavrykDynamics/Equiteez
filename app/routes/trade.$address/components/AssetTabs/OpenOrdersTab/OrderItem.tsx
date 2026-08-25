@@ -14,6 +14,19 @@ type OrderItemProps = {
   order: OpenOrderItemType;
 };
 
+export function renderNullableFiatValue(value: number | null, suffix?: string) {
+  if (value === null) {
+    return "—";
+  }
+
+  return (
+    <>
+      <Money fiat>{value}</Money>
+      {suffix ? ` ${suffix}` : ""}
+    </>
+  );
+}
+
 export function getOrderDetails(side: string) {
   const [orderType = "", orderSide = ""] = side.toLowerCase().split("_");
   const normalizedSide = orderSide || orderType;
@@ -75,7 +88,7 @@ export function OrderItem({
         </td>
         <td data-label="Price">
           <RText size="body-sm">
-            <Money fiat>{order.quote_token.price_per_token}</Money>
+            {renderNullableFiatValue(order.quote_token.price_per_token)}
           </RText>
         </td>
         <td data-label="Amount">
@@ -93,7 +106,7 @@ export function OrderItem({
         </td>
         <td data-label="Total">
           <RText size="body-sm">
-            <Money fiat>{order.quote_token.total}</Money> USDT
+            {renderNullableFiatValue(order.quote_token.total, "USDT")}
           </RText>
         </td>
         <td className={styles.actions} data-label="Actions">

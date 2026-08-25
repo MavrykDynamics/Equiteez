@@ -41,31 +41,39 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
               {totalValue}
             </Money>
           </RHeading>
-          <div className={styles.dailyChange}>
-            <span
-              aria-hidden="true"
-              className={
-                isPositivePnl ? styles.positiveMarker : styles.negativeMarker
-              }
-            />
-            <RText
-              color={isPositivePnl ? "green-500" : "red-500"}
-              size="body-sm"
-            >
-              $
-              <Money fiat tooltip={false}>
-                {pnl24h}
-              </Money>{" "}
-              ({isPositivePnl ? "+" : ""}
-              <Money fiat tooltip={false}>
-                {pnl24hPercentage}
-              </Money>
-              % )
-            </RText>
-            <RText color="neutral-700" size="body-sm">
-              24h
-            </RText>
-          </div>
+          {pnl24h ? (
+            <div className={styles.dailyChange}>
+              <span
+                aria-hidden="true"
+                className={
+                  isPositivePnl ? styles.positiveMarker : styles.negativeMarker
+                }
+              />
+              <RText
+                color={isPositivePnl ? "green-500" : "red-500"}
+                size="body-sm"
+              >
+                $
+                <Money fiat tooltip={false}>
+                  {pnl24h}
+                </Money>{" "}
+                ({isPositivePnl ? "+" : ""}
+                <Money fiat tooltip={false}>
+                  {pnl24hPercentage}
+                </Money>
+                % )
+              </RText>
+              <RText color="neutral-700" size="body-sm">
+                24h
+              </RText>
+            </div>
+          ) : (
+            <div className={styles.dailyChange}>
+              <RText color="neutral-700" size="body-sm">
+                --
+              </RText>
+            </div>
+          )}
         </div>
 
         <PortfolioValueChart />

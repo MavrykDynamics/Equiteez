@@ -111,6 +111,7 @@ export const TokensProvider: FC<TokensProviderProps> = ({
       const nextTokensMetadata = {
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
+        [toTokenSlug(MVRK_CONTRACT_ADDRESS, 0)]: MVRK_METADATA,
         [STABLECOIN_ASSET_SLUG]: STABLECOIN_METADATA,
         ...MOCKED_ASSET_ADDRESSES.reduce<StringRecord<TokenMetadata>>(
           (acc, address) => {
