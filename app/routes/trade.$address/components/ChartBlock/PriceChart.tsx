@@ -38,10 +38,6 @@ const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
 ];
 
 const PRICE_DECIMALS = 2;
-const CHART_AREA_BOTTOM_COLORS = {
-  negative: "rgb(227 159 159 / 15%)",
-  positive: "rgb(164 192 186 / 15%)",
-} as const;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
@@ -90,8 +86,8 @@ export function PriceChart({
   onToneChange,
   orderBookControl,
 }: AssetDetailsProps) {
-  const { isNegative, price, priceChange } = useAssetPrice(asset);
-  const [range, setRange] = useState<ChartRange>("1h");
+  const { price } = useAssetPrice(asset);
+  const [range, setRange] = useState<ChartRange>("1d");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,8 +133,14 @@ export function PriceChart({
     !firstPoint || !lastPoint || getPrice(lastPoint) >= getPrice(firstPoint)
       ? "positive"
       : "negative";
-  const priceTone = isNegative ? "negative" : "positive";
-  const priceChangePrefix = isNegative ? "-" : "+";
+  const priceTone = tone;
+  const priceChangeAmount =
+    firstPoint && lastPoint ? getPrice(lastPoint) - getPrice(firstPoint) : 0;
+  const priceChangePercentage =
+    firstPoint && getPrice(firstPoint) !== 0
+      ? (priceChangeAmount / getPrice(firstPoint)) * 100
+      : 0;
+  const priceChangePrefix = priceChangeAmount < 0 ? "-" : "+";
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -229,11 +231,11 @@ export function PriceChart({
             />
             $
             <Money fiat tooltip={false}>
-              {Math.abs(priceChange.amount)}
+              {Math.abs(priceChangeAmount)}
             </Money>{" "}
             ({priceChangePrefix}
             <Money fiat tooltip={false}>
-              {Math.abs(priceChange.percentage)}
+              {Math.abs(priceChangePercentage)}
             </Money>
             %)
           </span>
