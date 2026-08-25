@@ -1,7 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
 .details {
-  margin: var(--r-space-10) 0 var(--r-space-5) 0;
+  margin: 0 0 var(--r-space-3) 0;
   display: grid;
   grid-template-columns: 186px repeat(8, minmax(0, 1fr));
   overflow: visible;

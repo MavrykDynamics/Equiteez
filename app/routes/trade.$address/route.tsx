@@ -21,9 +21,9 @@ export default function TradePage() {
 
   return (
     <Container>
-      <AssetDetails asset={asset} />
       <div className={styles.contentBlock}>
         <div className={styles.mainContent}>
+          <AssetDetails asset={asset} />
           <ChartBlock
             asset={asset}
             isOrderBookOpen={isOrderBookOpen}
