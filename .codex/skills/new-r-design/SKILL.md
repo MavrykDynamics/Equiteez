@@ -113,6 +113,7 @@ Current icon names:
 - `check`
 - `close`
 - `copy`
+- `heart`
 - `grid`
 - `list`
 - `loading`
@@ -126,7 +127,7 @@ Current icon names:
 - `trash`
 - `trending-down`
 - `trending-up`
-- `download`
+- `upload`
 - `web`
 
 Icon rules:

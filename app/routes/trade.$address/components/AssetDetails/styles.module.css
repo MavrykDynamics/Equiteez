@@ -52,18 +52,21 @@
 }
 
 .iconButton {
-  display: grid;
+  display: flex;
   width: 34px;
   height: 34px;
   padding: var(--r-space-2);
-  place-items: center;
+  align-items: center;
+  justify-content: center;
   color: var(--r-color-neutral-black);
   background: var(--r-color-neutral-white);
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
   cursor: pointer;
 }
-
+.iconButton svg {
+  stroke-width: 1px;
+}
 .iconButton:focus-visible {
   outline: none;
   box-shadow: var(--r-focus-ring);

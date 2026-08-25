@@ -24,11 +24,19 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
         </div>
       </div>
       <div className={styles.actions}>
-        <button aria-label="Add to favourites" className={styles.iconButton} type="button">
-          <RIcon name="star" size="small" />
+        <button
+          aria-label="Add to favourites"
+          className={styles.iconButton}
+          type="button"
+        >
+          <RIcon name="heart" />
         </button>
-        <button aria-label="Download asset data" className={styles.iconButton} type="button">
-          <RIcon name="download" size="small" />
+        <button
+          aria-label="Upload asset data"
+          className={styles.iconButton}
+          type="button"
+        >
+          <RIcon name="upload" />
         </button>
       </div>
     </section>

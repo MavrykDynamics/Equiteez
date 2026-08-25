@@ -92,7 +92,7 @@ function AssetIdentity({ asset }: { asset: AssetType }) {
       <AssetIcon asset={asset} />
       <span className={styles.assetLabels}>
         <RText className={styles.assetName} size="body-l" weight="medium">
-        {asset.metadata.name}
+          {asset.metadata.name}
         </RText>
         <RText className={styles.assetSymbol} color="neutral-700" size="body-m">
           {asset.metadata.symbol}
@@ -134,6 +134,7 @@ function AssetOption({ asset, isSelected, onSelect }: AssetOptionProps) {
         <div className={styles.assetPriceWrapper}>
           <span className={styles.assetPrice}>
             <RText size="body-sm" weight="medium">
+              $
               <Money fiat tooltip={false}>
                 {price}
               </Money>

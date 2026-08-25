@@ -145,7 +145,12 @@
 
 .optionStar {
   flex: 0 0 var(--r-size-icon-small);
-  color: var(--r-color-neutral-black);
+  color: var(--r-color-neutral-100);
+}
+
+.optionStar path {
+  fill: currentColor;
+  stroke: none;
 }
 
 .emptyState {
