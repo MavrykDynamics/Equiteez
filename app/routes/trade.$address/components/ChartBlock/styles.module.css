@@ -5,8 +5,15 @@
   height: min-content;
   flex-direction: column;
   gap: var(--r-space-2);
-  background: rgba(164, 192, 186, 0.15);
   border-radius: var(--r-radius-md);
+}
+
+.positiveWrapper {
+  background: rgb(164 192 186 / 15%);
+}
+
+.negativeWrapper {
+  background: rgb(227 159 159 / 15%);
 }
 
 .priceChart {

@@ -10,7 +10,6 @@ import {
 
 import { fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
-import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
@@ -22,11 +21,11 @@ import {
 
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
-import { RText } from "~/lib/atoms/RTypography/RText";
 
 type AssetDetailsProps = {
   asset: AssetType;
   orderBookControl?: ReactNode;
+  onToneChange?: (tone: "positive" | "negative") => void;
 };
 
 type ChartRange = "1h" | "1d" | "1w" | "1m";
@@ -39,6 +38,10 @@ const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
 ];
 
 const PRICE_DECIMALS = 2;
+const CHART_AREA_BOTTOM_COLORS = {
+  negative: "rgb(227 159 159 / 15%)",
+  positive: "rgb(164 192 186 / 15%)",
+} as const;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
@@ -82,7 +85,11 @@ function getChartRequestParams(range: ChartRange) {
   }
 }
 
-export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
+export function PriceChart({
+  asset,
+  onToneChange,
+  orderBookControl,
+}: AssetDetailsProps) {
   const { isNegative, price, priceChange } = useAssetPrice(asset);
   const [range, setRange] = useState<ChartRange>("1h");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
@@ -132,6 +139,11 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
       : "negative";
   const priceTone = isNegative ? "negative" : "positive";
   const priceChangePrefix = isNegative ? "-" : "+";
+
+  useEffect(() => {
+    onToneChange?.(tone);
+  }, [onToneChange, tone]);
+
   const handleChartHover = useCallback(
     (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
     []

@@ -124,7 +124,7 @@ export function AssetPriceChart({
           width: container.clientWidth,
         });
         const series = chart.addSeries(AreaSeries, {
-          bottomColor: "#FFFFFF",
+          bottomColor: "#FFFFFF00",
           crosshairMarkerVisible: false,
           lastValueVisible: false,
           lineColor,

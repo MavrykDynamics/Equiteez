@@ -1,5 +1,8 @@
+import { useState } from "react";
+
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { OrderBookToggleButton } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import clsx from "clsx";
 
 import { PriceChart } from "~/routes/trade.$address/components/ChartBlock/PriceChart";
 
@@ -21,10 +24,22 @@ export function ChartBlock({
   isOrderBookOpen,
   onOrderBookToggle,
 }: ChartBlockProps) {
+  const [chartTone, setChartTone] = useState<"positive" | "negative">(
+    "positive"
+  );
+
   return (
-    <div className={styles.wrapper}>
+    <div
+      className={clsx(
+        styles.wrapper,
+        chartTone === "negative"
+          ? styles.negativeWrapper
+          : styles.positiveWrapper
+      )}
+    >
       <PriceChart
         asset={asset}
+        onToneChange={setChartTone}
         orderBookControl={
           <OrderBookToggleButton
             className={styles.orderBookToggle}
