@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ROUTES } from "~/consts";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RInput } from "~/lib/atoms/RInput/RInput";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
   RCustomDropdown,
@@ -88,12 +89,27 @@ export function AssetDropdown({ asset }: AssetDropdownProps) {
 function AssetIdentity({ asset }: { asset: AssetType }) {
   return (
     <span className={styles.assetIdentity}>
-      <RText size="body-sm" weight="medium">
+      <AssetIcon asset={asset} />
+      <span className={styles.assetLabels}>
+        <RText className={styles.assetName} size="body-l" weight="medium">
         {asset.metadata.name}
-      </RText>
-      <RText color="neutral-600" size="body-s">
-        {asset.metadata.symbol}/USDT
-      </RText>
+        </RText>
+        <RText className={styles.assetSymbol} color="neutral-700" size="body-m">
+          {asset.metadata.symbol}
+        </RText>
+      </span>
+    </span>
+  );
+}
+
+function AssetIcon({ asset }: { asset: AssetType }) {
+  const src = asset.profile.image_url;
+
+  return src ? (
+    <img alt="" className={styles.assetIcon} src={src} />
+  ) : (
+    <span aria-hidden="true" className={styles.assetIconFallback}>
+      {asset.metadata.symbol.slice(0, 1)}
     </span>
   );
 }
@@ -115,26 +131,29 @@ function AssetOption({ asset, isSelected, onSelect }: AssetOptionProps) {
     >
       <span className={styles.optionContent}>
         <AssetIdentity asset={asset} />
-        <span className={styles.assetPrice}>
-          <RText size="body-sm" weight="medium">
-            <Money fiat tooltip={false}>
-              {price}
-            </Money>
-          </RText>
-          {priceChange.percentage ? (
-            <RText color={isNegative ? "red-500" : "green-600"} size="body-s">
-              {isNegative ? "" : "+"}
+        <div className={styles.assetPriceWrapper}>
+          <span className={styles.assetPrice}>
+            <RText size="body-sm" weight="medium">
               <Money fiat tooltip={false}>
-                {priceChange.percentage}
+                {price}
               </Money>
-              %
             </RText>
-          ) : (
-            <RText color="neutral-500" size="body-s">
-              --
-            </RText>
-          )}
-        </span>
+            {priceChange.percentage ? (
+              <RText color={isNegative ? "red-500" : "green-600"} size="body-s">
+                {isNegative ? "" : "+"}
+                <Money fiat tooltip={false}>
+                  {priceChange.percentage}
+                </Money>
+                %
+              </RText>
+            ) : (
+              <RText color="neutral-500" size="body-s">
+                --
+              </RText>
+            )}
+          </span>
+          <RIcon className={styles.optionStar} name="star" size="small" />
+        </div>
       </span>
     </RDropdownBodyContentItem>
   );

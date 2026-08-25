@@ -122,9 +122,11 @@ Current icon names:
 - `refund`
 - `search`
 - `sort`
+- `star`
 - `trash`
 - `trending-down`
 - `trending-up`
+- `download`
 - `web`
 
 Icon rules:
