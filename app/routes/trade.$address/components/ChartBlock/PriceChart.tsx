@@ -1,5 +1,5 @@
 import {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -10,7 +10,10 @@ import {
 
 import { fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import { RButton } from "~/lib/atoms/RButton";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { Spinner } from "~/lib/atoms/Spinner";
+import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import {
   AssetPriceChart,
   type AssetPriceChartHover,
@@ -18,6 +21,8 @@ import {
 } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 
 import styles from "./styles.module.css";
+import Money from "~/lib/atoms/Money";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 type AssetDetailsProps = {
   asset: AssetType;
@@ -78,6 +83,7 @@ function getChartRequestParams(range: ChartRange) {
 }
 
 export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
+  const { isNegative, price, priceChange } = useAssetPrice(asset);
   const [range, setRange] = useState<ChartRange>("1h");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,6 +130,8 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
     !firstPoint || !lastPoint || getPrice(lastPoint) >= getPrice(firstPoint)
       ? "positive"
       : "negative";
+  const priceTone = isNegative ? "negative" : "positive";
+  const priceChangePrefix = isNegative ? "-" : "+";
   const handleChartHover = useCallback(
     (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
     []
@@ -187,28 +195,61 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
   return (
     <section className={styles.priceChart} aria-label="Price chart">
       <div className={styles.chartHeader}>
-        <div
-          className={styles.chartControls}
-          role="tablist"
-          aria-label="Price range"
-        >
-          {CHART_RANGES.map(({ label, value }) => (
-            <button
-              aria-selected={range === value}
-              className={styles.intervalButton}
-              key={value}
-              onClick={() => setRange(value)}
-              role="tab"
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
+        <div className={styles.priceSummary}>
+          <span className={styles.currentPrice}>
+            $
+            <Money fiat tooltip={false}>
+              {price}
+            </Money>
+          </span>
+          <span
+            className={
+              priceTone === "positive"
+                ? styles.positivePriceChange
+                : styles.negativePriceChange
+            }
+          >
+            <RIcon
+              aria-hidden="true"
+              className={styles.priceChangeIcon}
+              name={priceTone === "positive" ? "trending-up" : "trending-down"}
+              size="medium"
+            />
+            $
+            <Money fiat tooltip={false}>
+              {Math.abs(priceChange.amount)}
+            </Money>{" "}
+            ({priceChangePrefix}
+            <Money fiat tooltip={false}>
+              {Math.abs(priceChange.percentage)}
+            </Money>
+            %)
+          </span>
         </div>
+        <div className={styles.chartHeaderActions}>
+          <div
+            className={styles.chartControls}
+            role="tablist"
+            aria-label="Price range"
+          >
+            {CHART_RANGES.map(({ label, value }) => (
+              <button
+                aria-selected={range === value}
+                className={styles.intervalButton}
+                key={value}
+                onClick={() => setRange(value)}
+                role="tab"
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-        {orderBookControl ? (
-          <div className={styles.chartHeaderAction}>{orderBookControl}</div>
-        ) : null}
+          {orderBookControl ? (
+            <div className={styles.chartHeaderAction}>{orderBookControl}</div>
+          ) : null}
+        </div>
       </div>
 
       <div className={styles.chartFrame}>
@@ -279,6 +320,19 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
             </div>
           </>
         )}
+      </div>
+      <div className={styles.depthChartAction}>
+        <button
+          aria-selected
+          className={styles.toggleButton}
+          role="tab"
+          type="button"
+        >
+          <RIcon name="arrow-long-down" />
+          <span className={styles.toggleLabel}>
+            View Depth Chart
+          </span>
+        </button>
       </div>
     </section>
   );

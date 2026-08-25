@@ -1,11 +1,11 @@
 .wrapper {
   padding: var(--r-space-4);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   display: flex;
   flex: 1;
   height: min-content;
   flex-direction: column;
-  gap: var(--r-space-3);
+  gap: var(--r-space-2);
+  background: rgba(164, 192, 186, 0.15);
   border-radius: var(--r-radius-md);
 }
 
@@ -25,6 +25,56 @@
   width: 100%;
 }
 
+.priceSummary,
+.chartHeaderActions,
+.positivePriceChange,
+.negativePriceChange,
+.depthChartAction {
+  display: flex;
+  align-items: center;
+}
+
+.priceSummary {
+  gap: var(--r-space-2);
+}
+
+.currentPrice {
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-heading-h4);
+  font-weight: var(--r-font-weight-medium);
+  letter-spacing: 0.32px;
+  line-height: var(--r-line-height-heading-h4);
+  white-space: nowrap;
+}
+
+.chartHeaderActions {
+  min-width: 0;
+  gap: 3px;
+}
+
+.positivePriceChange,
+.negativePriceChange {
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  white-space: nowrap;
+}
+
+.positivePriceChange {
+  color: var(--r-color-green-500);
+}
+
+.negativePriceChange {
+  color: var(--r-color-red-500);
+}
+
+.priceChangeIcon {
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+}
+
 .chartHeaderAction {
   display: flex;
   align-items: center;
@@ -37,7 +87,6 @@
   align-items: center;
   width: fit-content;
   border-radius: var(--r-radius-pill);
-  background-color: var(--r-color-neutral-white);
 }
 
 .intervalButton {
@@ -56,7 +105,8 @@
 }
 
 .intervalButton[aria-selected="true"] {
-  background-color: var(--r-color-neutral-100);
+  background-color: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
 .intervalButton:focus-visible {
@@ -69,8 +119,8 @@
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
   color: var(--r-color-neutral-black);
-  min-height: var(--r-size-control-medium);
-  padding: 8px 16px;
+  min-height: 38px;
+  padding: 10px 16px 10px 14px;
   white-space: nowrap;
 }
 
@@ -84,12 +134,47 @@
   width: 16px;
 }
 
+.wrapper .toggleButton {
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-pill);
+  color: var(--r-color-neutral-black);
+  min-height: 38px;
+  padding: 10px 16px 10px 14px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-1);
+}
+
+.wrapper .toggleButton:hover {
+  border-color: var(--r-color-neutral-200);
+}
+
+.wrapper .toggleButton :global(svg) {
+  color: currentColor;
+  height: 16px;
+  width: 16px;
+}
+.toggleLabel {
+  color: currentColor;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-s);
+}
+
+.toggleIcon {
+  height: 16px;
+  width: 16px;
+}
+
 .wrapper .orderBookToggle :global(span) {
   color: currentColor;
   font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-sm);
-  font-weight: var(--r-font-weight-regular);
-  line-height: var(--r-line-height-body-sm);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-s);
 }
 
 .chartWithYAxis {
@@ -97,6 +182,15 @@
   align-items: stretch;
   gap: var(--r-space-3);
   height: 395px;
+}
+
+.depthChartAction {
+  justify-content: flex-end;
+}
+
+.depthChartAction :global(button) {
+  min-height: 38px;
+  padding: 10px 16px 10px 14px;
 }
 
 .chartCanvas {
