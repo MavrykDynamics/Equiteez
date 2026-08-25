@@ -101,7 +101,9 @@ export function OpenOrdersTab({ asset }: OpenOrdersTabProps) {
             <OrderItem
               key={order.id}
               assetSymbol={asset.metadata.symbol}
-              onAfterAction={openOrdersQuery.refetch}
+              onAfterAction={async () => {
+                await openOrdersQuery.refetch();
+              }}
               order={order}
             />
           ))}
