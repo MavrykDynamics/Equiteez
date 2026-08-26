@@ -8,8 +8,9 @@ import {
   useState,
 } from "react";
 
-import { fetchPriceSeries } from "~/lib/apis/rwa";
+import { fetchPriceChange, fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { AssetPriceChangeType } from "~/lib/apis/rwa/prices/prices.types";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
@@ -41,6 +42,19 @@ const PRICE_DECIMALS = 2;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
+}
+
+function getPeriodByRange(range: ChartRange): "1h" | "24h" | "7d" | "30d" {
+  switch (range) {
+    case "1h":
+      return "1h";
+    case "1d":
+      return "24h";
+    case "1w":
+      return "7d";
+    case "1m":
+      return "30d";
+  }
 }
 
 function formatTooltipDate(date: Date) {
@@ -89,6 +103,8 @@ export function PriceChart({
   const { price } = useAssetPrice(asset);
   const [range, setRange] = useState<ChartRange>("1d");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
+  const [priceChangeData, setPriceChangeData] =
+    useState<AssetPriceChangeType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
@@ -104,16 +120,30 @@ export function PriceChart({
     setIsLoading(true);
     setError(null);
     setPoints([]);
+    setPriceChangeData(null);
     setHoveredPoint(null);
 
     const chartRequestParams = getChartRequestParams(range);
+    const changePeriod = getPeriodByRange(range);
 
-    void fetchPriceSeries({
-      ...chartRequestParams,
-      symbol: asset.metadata.symbol,
-    })
-      .then((series) => {
-        if (isCurrentRequest) setPoints(series.points);
+    void Promise.all([
+      fetchPriceSeries({
+        ...chartRequestParams,
+        symbol: asset.metadata.symbol,
+      }),
+      fetchPriceChange({
+        currencies: ["usd"],
+        periods: [changePeriod],
+        symbol: asset.metadata.symbol,
+      }),
+    ])
+      .then(([series, priceChange]) => {
+        if (!isCurrentRequest) {
+          return;
+        }
+
+        setPoints(series.points);
+        setPriceChangeData(priceChange);
       })
       .catch(() => {
         if (isCurrentRequest) setError("Unable to load price data.");
@@ -129,17 +159,19 @@ export function PriceChart({
 
   const lastPoint = points.at(-1);
   const firstPoint = points[0];
-  const tone =
-    !firstPoint || !lastPoint || getPrice(lastPoint) >= getPrice(firstPoint)
-      ? "positive"
-      : "negative";
-  const priceTone = tone;
-  const priceChangeAmount =
+  const changePeriodData = priceChangeData?.periods[getPeriodByRange(range)];
+  const fallbackPriceChangeAmount =
     firstPoint && lastPoint ? getPrice(lastPoint) - getPrice(firstPoint) : 0;
-  const priceChangePercentage =
+  const fallbackPriceChangePercentage =
     firstPoint && getPrice(firstPoint) !== 0
-      ? (priceChangeAmount / getPrice(firstPoint)) * 100
+      ? (fallbackPriceChangeAmount / getPrice(firstPoint)) * 100
       : 0;
+  const priceChangeAmount =
+    changePeriodData?.delta_abs ?? fallbackPriceChangeAmount;
+  const priceChangePercentage =
+    changePeriodData?.change_pct ?? fallbackPriceChangePercentage;
+  const tone = priceChangeAmount < 0 ? "negative" : "positive";
+  const priceTone = tone;
   const priceChangePrefix = priceChangeAmount < 0 ? "-" : "+";
 
   useEffect(() => {

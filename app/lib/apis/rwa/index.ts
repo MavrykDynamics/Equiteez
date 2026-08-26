@@ -25,4 +25,8 @@ export {
   orderbookDepthQueryKeys,
 } from "~/lib/apis/rwa/orderbookDepth/orderbookDepth";
 export { useOrderbookDepth } from "~/lib/apis/rwa/orderbookDepth/useOrderbookDepth";
-export { fetchPrices, fetchPriceSeries } from "~/lib/apis/rwa/prices/prices";
+export {
+  fetchPriceChange,
+  fetchPriceSeries,
+  fetchPrices,
+} from "~/lib/apis/rwa/prices/prices";
