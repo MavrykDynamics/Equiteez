@@ -235,6 +235,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for repeated redesign card surfaces before creating route-specific card shells. Use `shape="mock"` with `shadow="soft"` or `shadow="strong"` for Figma-exported mock images whose bitmap assets should not include shadows.
 - Related tokens: `--r-radius-md`, `--r-border-width-sm`, `--r-color-neutral-*`, `--r-color-accent-green-*`
 
+## RImageAssetsView
+
+- Purpose: Route-local Figma image-card view for the Explore Assets `image` mode, with local 12-item pagination.
+- Location: `app/routes/_index/components/RImageAssetsView/`
+- Reusability notes: Keep this view within Explore Assets until another route requires the same image-card layout. It reuses `AssetBadge`, `AssetIdentity`, `AssetSaleProgress`, `AssetPriceChart`, and the `ASSET_IMAGE_URLS_BY_ADDRESS` mock mapping.
+- Related tokens: `RIcon`, `RText`, `RPagination`, `--r-color-neutral-*`, `--r-color-accent-green-*`, `--r-space-*`, `--r-radius-md`
+
 ## RChip
 
 - Purpose: Small redesign pill atom for compact labels and metric chips.

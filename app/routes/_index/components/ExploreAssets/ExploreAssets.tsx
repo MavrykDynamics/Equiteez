@@ -5,14 +5,13 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { AssetsFilters } from "~/routes/_index/components/AssetsFilters/AssetsFilters";
 import { AssetsTableView } from "~/routes/_index/components/AssetsTableView/AssetsTableView";
 import { AssetsCardsView } from "~/routes/_index/components/AssetsCardsView/AssetsCardsView";
+import { ImageAssetsView } from "~/routes/_index/components/ImageAssetsView/ImageAssetsView";
 import {
   ALL_ASSETS_FILTER_VALUE,
   INITIAL_ASSETS_FILTER_STATE,
 } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
 import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
 
 export function ExploreAssets() {
@@ -70,7 +69,9 @@ export function ExploreAssets() {
         }
       />
       {filteredAssets.length ? (
-        filters.viewType === "grid" ? (
+        filters.viewType === "image" ? (
+          <ImageAssetsView assets={filteredAssets} />
+        ) : filters.viewType === "grid" ? (
           <AssetsCardsView assets={filteredAssets} />
         ) : (
           <AssetsTableView assets={filteredAssets} />
