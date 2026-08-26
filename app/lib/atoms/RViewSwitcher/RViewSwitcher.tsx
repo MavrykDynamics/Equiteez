@@ -5,7 +5,7 @@ import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 
 import styles from "./RViewSwitcher.module.css";
 
-export type RViewMode = "grid" | "list";
+export type RViewMode = "image" | "grid" | "list";
 
 export type RViewSwitcherProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -17,11 +17,12 @@ export type RViewSwitcherProps = Omit<
 };
 
 const iconByView: Record<RViewMode, RIconName> = {
+  image: "image",
   grid: "grid",
   list: "list",
 };
 
-const viewModes: RViewMode[] = ["grid", "list"];
+const viewModes: RViewMode[] = ["image", "grid", "list"];
 
 export function RViewSwitcher({
   ariaLabel = "View mode",

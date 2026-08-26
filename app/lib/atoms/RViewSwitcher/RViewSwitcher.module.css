@@ -31,6 +31,9 @@
 .option:disabled {
   cursor: not-allowed;
 }
+.option svg {
+  stroke-width: 1px;
+}
 
 .selected {
   color: var(--r-color-neutral-black);

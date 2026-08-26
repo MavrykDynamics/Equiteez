@@ -115,6 +115,7 @@ Current icon names:
 - `copy`
 - `heart`
 - `grid`
+- `image`
 - `list`
 - `loading`
 - `lock`
@@ -220,10 +221,10 @@ Each reusable `R*` component folder should normally contain:
 
 ## RViewSwitcher
 
-- Purpose: Compact, controlled grid/list view selector.
+- Purpose: Compact, controlled image/grid/list view selector.
 - Location: `app/lib/atoms/RViewSwitcher/RViewSwitcher.tsx`
 - Styles: `app/lib/atoms/RViewSwitcher/RViewSwitcher.module.css`
-- Reusability notes: Use `value` and `onChange` to switch between `grid` and `list` layouts. Renders the shared `grid` and `list` `RIcon` glyphs.
+- Reusability notes: Use `value` and `onChange` to switch between `image`, `grid`, and `list` layouts. Renders the matching shared `RIcon` glyphs.
 - Related tokens: `RIcon`, `--r-space-1`, `--r-radius-xs`, `--r-radius-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
 ## RCard
