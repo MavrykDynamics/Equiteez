@@ -6,12 +6,13 @@ import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { AssetBadge } from "~/routes/_index/components/AssetBadge/AssetBadge";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 import { ROUTES } from "~/consts";
 import { AssetSaleProgress } from "~/routes/_index/components/AssetsCardsView/AssetSaleProgress";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import { atomsToTokens } from "~/lib/utils/formaters";
+import { AssetIcon } from "~/templates/AssetIcon";
+import { toTokenSlug } from "~/lib/assets";
 
 type AssetsTableRowProps = {
   asset: AssetType;
@@ -19,25 +20,29 @@ type AssetsTableRowProps = {
 
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
   const { assetPrices, priceChange, isNegative, price, points } = useAssetPrice(asset);
-  
+  const assetSlug = toTokenSlug(asset.address);
+
   return (
     <Link
       className={styles.row}
       role="row"
       to={generatePath(ROUTES.trade, { address: asset.address })}
     >
-      <div className={styles.cell} role="cell">
-        <div className={styles.assetContent}>
-          <RText className={styles.assetSymbol} size="body-sm" weight="medium">
-            {asset.metadata.symbol || "--"}
-          </RText>
-          <RText
-            className={styles.assetName}
-            color="neutral-600"
-            size="body-sm"
-          >
-            {asset.metadata.name || "--"}
-          </RText>
+      <div className={styles.cellAssetName} role="cell">
+        <div className={styles.asset}>
+          <AssetIcon
+            size={30}
+            assetSlug={assetSlug}
+            className={styles.assetIcon}
+          />
+          <div className={styles.assetIdentity}>
+            <RText size="body-sm" weight="medium">
+              {asset.metadata.symbol}
+            </RText>
+            <RText className={styles.assetIdentityName} color="neutral-600" size="body-s">
+              {asset.metadata.name}
+            </RText>
+          </div>
         </div>
       </div>
       <div className={styles.cell} role="cell">
