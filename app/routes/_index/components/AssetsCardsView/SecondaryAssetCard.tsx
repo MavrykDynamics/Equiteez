@@ -54,11 +54,12 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
               >
                 {"$"}
                 <Money tooltip={false} fiat>
-                  {priceChange.amount}
+                  {Math.abs(priceChange.amount)}
                 </Money>
                 {" ("}
+                {isNegative ? "-" : "+"}
                 <Money tooltip={false} fiat>
-                  {priceChange.percentage}
+                  {Math.abs(priceChange.percentage)}
                 </Money>
                 %)
               </RText>
