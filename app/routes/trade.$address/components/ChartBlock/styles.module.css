@@ -61,7 +61,8 @@
 }
 
 .positivePriceChange,
-.negativePriceChange {
+.negativePriceChange,
+.neutralPriceChange {
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
   font-weight: var(--r-font-weight-medium);
@@ -75,6 +76,10 @@
 
 .negativePriceChange {
   color: var(--r-color-red-500);
+}
+
+.neutralPriceChange {
+  color: var(--r-color-neutral-600);
 }
 
 .priceChangeIcon {
@@ -206,6 +211,16 @@
   min-width: 0;
   height: 395px;
   overflow: hidden;
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
 }
 
 .chart {

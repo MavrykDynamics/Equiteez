@@ -30,6 +30,12 @@ type AssetDetailsProps = {
 };
 
 type ChartRange = "1h" | "1d" | "1w" | "1m";
+type Tone = "positive" | "negative";
+type PriceChangeView = {
+  amount: number | null;
+  percentage: number | null;
+  tone: Tone;
+};
 
 const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
   { label: "1H", value: "1h" },
@@ -95,6 +101,74 @@ function getChartRequestParams(range: ChartRange) {
   }
 }
 
+function getFallbackPriceChange(points: AssetPriceChartPoint[]): PriceChangeView {
+  const firstPoint = points[0];
+  const lastPoint = points.at(-1);
+
+  if (!firstPoint || !lastPoint) {
+    return {
+      amount: null,
+      percentage: null,
+      tone: "positive",
+    };
+  }
+
+  const amount =
+    getPrice(lastPoint) - getPrice(firstPoint);
+  const percentage =
+    getPrice(firstPoint) !== 0 ? (amount / getPrice(firstPoint)) * 100 : null;
+
+  return {
+    amount,
+    percentage,
+    tone: amount < 0 ? "negative" : "positive",
+  };
+}
+
+function getServerPriceChange(
+  priceChangeData: AssetPriceChangeType,
+  range: ChartRange
+): PriceChangeView | null {
+  const periodData = priceChangeData.periods[getPeriodByRange(range)];
+
+  if (!periodData) {
+    return null;
+  }
+
+  if (periodData.delta_abs === null || periodData.change_pct === null) {
+    return {
+      amount: null,
+      percentage: null,
+      tone: "positive",
+    };
+  }
+
+  return {
+    amount: periodData.delta_abs,
+    percentage: periodData.change_pct,
+    tone: periodData.delta_abs < 0 ? "negative" : "positive",
+  };
+}
+
+function formatPriceChange(view: PriceChangeView) {
+  if (view.amount === null || view.percentage === null) {
+    return {
+      className: styles.neutralPriceChange,
+      iconName: null,
+      text: "--",
+    };
+  }
+
+  return {
+    className:
+      view.tone === "positive"
+        ? styles.positivePriceChange
+        : styles.negativePriceChange,
+    iconName: view.tone === "positive" ? "trending-up" : "trending-down",
+    text: null,
+  };
+}
+
 export function PriceChart({
   asset,
   onToneChange,
@@ -103,8 +177,11 @@ export function PriceChart({
   const { price } = useAssetPrice(asset);
   const [range, setRange] = useState<ChartRange>("1d");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
-  const [priceChangeData, setPriceChangeData] =
-    useState<AssetPriceChangeType | null>(null);
+  const [priceChangeView, setPriceChangeView] = useState<PriceChangeView>({
+    amount: 0,
+    percentage: 0,
+    tone: "positive",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
@@ -115,12 +192,19 @@ export function PriceChart({
   const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
   useEffect(() => {
+    setPoints([]);
+    setPriceChangeView({
+      amount: null,
+      percentage: null,
+      tone: "positive",
+    });
+  }, [asset.address]);
+
+  useEffect(() => {
     let isCurrentRequest = true;
 
     setIsLoading(true);
     setError(null);
-    setPoints([]);
-    setPriceChangeData(null);
     setHoveredPoint(null);
 
     const chartRequestParams = getChartRequestParams(range);
@@ -142,8 +226,12 @@ export function PriceChart({
           return;
         }
 
+        const nextPriceChangeView =
+          getServerPriceChange(priceChange, range) ??
+          getFallbackPriceChange(series.points);
+
         setPoints(series.points);
-        setPriceChangeData(priceChange);
+        setPriceChangeView(nextPriceChangeView);
       })
       .catch(() => {
         if (isCurrentRequest) setError("Unable to load price data.");
@@ -157,22 +245,10 @@ export function PriceChart({
     };
   }, [asset.metadata.symbol, range]);
 
-  const lastPoint = points.at(-1);
-  const firstPoint = points[0];
-  const changePeriodData = priceChangeData?.periods[getPeriodByRange(range)];
-  const fallbackPriceChangeAmount =
-    firstPoint && lastPoint ? getPrice(lastPoint) - getPrice(firstPoint) : 0;
-  const fallbackPriceChangePercentage =
-    firstPoint && getPrice(firstPoint) !== 0
-      ? (fallbackPriceChangeAmount / getPrice(firstPoint)) * 100
-      : 0;
-  const priceChangeAmount =
-    changePeriodData?.delta_abs ?? fallbackPriceChangeAmount;
-  const priceChangePercentage =
-    changePeriodData?.change_pct ?? fallbackPriceChangePercentage;
-  const tone = priceChangeAmount < 0 ? "negative" : "positive";
-  const priceTone = tone;
-  const priceChangePrefix = priceChangeAmount < 0 ? "-" : "+";
+  const tone = priceChangeView.tone;
+  const priceChangeDisplay = formatPriceChange(priceChangeView);
+  const priceChangePrefix =
+    priceChangeView.amount !== null && priceChangeView.amount < 0 ? "-" : "+";
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -249,27 +325,30 @@ export function PriceChart({
             </Money>
           </span>
           <span
-            className={
-              priceTone === "positive"
-                ? styles.positivePriceChange
-                : styles.negativePriceChange
-            }
+            className={priceChangeDisplay.className}
           >
-            <RIcon
-              aria-hidden="true"
-              className={styles.priceChangeIcon}
-              name={priceTone === "positive" ? "trending-up" : "trending-down"}
-              size="medium"
-            />
-            $
-            <Money fiat tooltip={false}>
-              {Math.abs(priceChangeAmount)}
-            </Money>{" "}
-            ({priceChangePrefix}
-            <Money fiat tooltip={false}>
-              {Math.abs(priceChangePercentage)}
-            </Money>
-            %)
+            {priceChangeDisplay.text ? (
+              priceChangeDisplay.text
+            ) : (
+              <>
+                <RIcon
+                  aria-hidden="true"
+                  className={styles.priceChangeIcon}
+                  //@ts-expect-error
+                  name={priceChangeDisplay.iconName ?? "trending-up"}
+                  size="medium"
+                />
+                $
+                <Money fiat tooltip={false}>
+                  {Math.abs(priceChangeView.amount ?? 0)}
+                </Money>{" "}
+                ({priceChangePrefix}
+                <Money fiat tooltip={false}>
+                  {Math.abs(priceChangeView.percentage ?? 0)}
+                </Money>
+                %)
+              </>
+            )}
           </span>
         </div>
         <div className={styles.chartHeaderActions}>
@@ -299,7 +378,7 @@ export function PriceChart({
       </div>
 
       <div className={styles.chartFrame}>
-        {isLoading ? (
+        {isLoading && !points.length ? (
           <div
             className={styles.chartState}
             role="status"
@@ -316,6 +395,15 @@ export function PriceChart({
         ) : (
           <>
             <div className={styles.chartCanvas} ref={chartCanvasRef}>
+              {isLoading ? (
+                <div
+                  className={styles.loadingOverlay}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <Spinner size={32} />
+                </div>
+              ) : null}
               <AssetPriceChart
                 className={styles.chart}
                 onHover={handleChartHover}
