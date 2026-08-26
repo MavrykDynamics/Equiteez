@@ -1,109 +1,102 @@
-import type { ReactNode } from "react";
-
-import CopyIcon from "~/icons/copy.svg?react";
-import { CopyButton } from "~/lib/atoms/CopyButton";
-import { RIcon } from "~/lib/atoms/RIcon/RIcon";
+import { RButton } from "~/lib/atoms/RButton";
+import { RIcon } from "~/lib/atoms/RIcon";
+import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 
 import styles from "./BlockchainTab.module.css";
-import Money from "~/lib/atoms/Money";
 
-const blockchainDetailsMock = {
-  network: "Mavryk", // TODO remove mock data
-  tokenStandard: "MRC-30 (Fungible)", // TODO remove mock data
-  settlement: "Instant · Non-Custodial", // TODO remove mock data
-  audit: "Verified", // TODO remove mock data
-};
-
-const formatTotalSupply = (totalSupply: string) => {
-  const value = Number(totalSupply);
-
-  return Number.isFinite(value)
-    ? value.toLocaleString("en-US", { maximumFractionDigits: 20 })
-    : totalSupply;
-};
-
-const shortenAddress = (address: string) =>
-  address.length > 14
-    ? `${address.slice(0, 6)}...${address.slice(-5)}`
-    : address;
-
-type BlockchainDetailRowProps = {
+type BlockchainDetail = {
+  isLink?: boolean;
   label: string;
-  value: ReactNode;
+  value: string;
 };
 
-function BlockchainDetailRow({ label, value }: BlockchainDetailRowProps) {
+const blockchainDetails: BlockchainDetail[] = [
+  { isLink: true, label: "Token Contract", value: "KT11PDIIV...1tbo" },
+  { label: "Token Standard", value: "MRC-30" },
+  { label: "Token Supply", value: "496,767" },
+  { label: "Holders", value: "2,091" },
+  { label: "Asset Issuer", value: "Equiteez Issuance Ltd" },
+  { isLink: true, label: "Issuer Address", value: "mv1Qk...8fRt" },
+  { isLink: true, label: "Whitelist Registry", value: "KT1WHT...a91c" },
+  {
+    isLink: true,
+    label: "Distribution Contract",
+    value: "KT1DIS...6b2e",
+  },
+  { label: "Price Oracle", value: "Maven Finance" },
+  { label: "Chain", value: "Mavryk Mainnet" },
+];
+
+function BlockchainDetailList() {
   return (
-    <div className={styles.row}>
-      <RText color="neutral-600" size="body-sm">
-        {label}
-      </RText>
-      <div className={styles.value}>{value}</div>
-    </div>
+    <dl className={styles.detailList}>
+      {blockchainDetails.map(({ isLink, label, value }) => (
+        <div className={styles.detail} key={label}>
+          <dt>
+            <RText color="neutral-700" size="body-sm">
+              {label}
+            </RText>
+          </dt>
+          <dd>
+            <RText
+              className={isLink ? styles.linkValue : undefined}
+              color="neutral-black"
+              size="body-sm"
+            >
+              {value}
+            </RText>
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
 export function BlockchainTab({ asset }: { asset: AssetType }) {
-  const shortAddress = shortenAddress(asset.address);
-
   return (
-    <section aria-label="Blockchain details" className={styles.details}>
-      <BlockchainDetailRow
-        label="Network"
-        value={
-          <RText size="body-sm" weight="medium">
-            {blockchainDetailsMock.network}
+    <div className={styles.wrapper}>
+      <section className={styles.network} aria-labelledby="network-heading">
+        <RHeading id="network-heading" size="h7" weight="medium">
+          Mavryk Network
+        </RHeading>
+        <BlockchainDetailList />
+      </section>
+
+      <div aria-hidden="true" className={styles.divider} />
+
+      <section className={styles.utility} aria-labelledby="utility-heading">
+        <div className={styles.utilityContent}>
+          <RHeading id="utility-heading" size="h7" weight="medium">
+            Use It Elsewhere
+          </RHeading>
+          <RText color="neutral-700" size="body-sm">
+            The token is a standard Mavryk asset. Bridge it, swap it, or post it
+            as collateral.
           </RText>
-        }
-      />
-      <BlockchainDetailRow
-        label="Token Standard"
-        value={
-          <RText size="body-sm">{blockchainDetailsMock.tokenStandard}</RText>
-        }
-      />
-      <BlockchainDetailRow
-        label="Token Symbol"
-        value={<RText size="body-sm">{asset.metadata.symbol}</RText>}
-      />
-      <BlockchainDetailRow
-        label="Total Supply"
-        value={
-          <RText size="body-sm">
-            <Money>{asset.total_supply}</Money> {asset.metadata.symbol}
-          </RText>
-        }
-      />
-      <BlockchainDetailRow
-        label="Contract Address"
-        value={
-          <CopyButton
-            className={styles.address}
-            text={asset.address}
-            type="block"
+        </div>
+
+        <div className={styles.actions}>
+          <RButton
+            className={styles.action}
+            iconRight={<RIcon aria-hidden name="arrow-long-up-right" />}
+            size="medium"
+            tone="black"
           >
-            <RText size="body-sm">{shortAddress}</RText>
-            <CopyIcon aria-hidden="true" className={styles.copyIcon} />
-          </CopyButton>
-        }
-      />
-      <BlockchainDetailRow
-        label="Settlement"
-        value={<RText size="body-sm">{blockchainDetailsMock.settlement}</RText>}
-      />
-      <BlockchainDetailRow
-        label="Audit"
-        value={
-          <span className={styles.audit}>
-            <RIcon className={styles.checkIcon} name="check" size="small" />
-            <RText color="green-600" size="body-sm">
-              {blockchainDetailsMock.audit}
-            </RText>
-          </span>
-        }
-      />
-    </section>
+            Open mDEX
+          </RButton>
+          <RButton
+            className={styles.action}
+            iconRight={<RIcon aria-hidden name="arrow-long-up-right" />}
+            size="medium"
+            tone="black"
+            variant="secondary"
+          >
+            Open mBridge
+          </RButton>
+        </div>
+      </section>
+    </div>
   );
 }
