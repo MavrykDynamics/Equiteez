@@ -2,7 +2,7 @@ import { RIcon } from "~/lib/atoms/RIcon/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
-import styles from "./DetailsTab.module.css";
+import styles from "./OfferingTab.module.css";
 
 type DetailGroup = {
   title: string;
@@ -33,7 +33,7 @@ const detailGroups: DetailGroup[] = [
   },
 ];
 
-export function DetailsTab() {
+export function OfferingTab() {
   return (
     <div className={styles.details}>
       {detailGroups.map((group) => (

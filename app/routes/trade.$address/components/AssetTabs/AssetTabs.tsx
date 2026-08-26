@@ -6,7 +6,7 @@ import type { RTabSwitcherItem } from "~/lib/organisms/RTabSwitcher/RTabSwitcher
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { AssetOverviewTab } from "~/routes/trade.$address/components/AssetTabs/AssetOverviewTab/AssetOverviewTab";
 import { BlockchainTab } from "~/routes/trade.$address/components/AssetTabs/BlockchainTab/BlockchainTab";
-import { DetailsTab } from "~/routes/trade.$address/components/AssetTabs/DetailsTab/DetailsTab";
+import { OfferingTab } from "~/routes/trade.$address/components/AssetTabs/OfferingTab/OfferingTab";
 import { ROICalculator } from "~/routes/trade.$address/components/AssetTabs/RoiCalculatorTab/ROICalculator";
 import { OpenOrdersTab } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersTab";
 import { OrderHistoryTab } from "~/routes/trade.$address/components/AssetTabs/OrderHistoryTab/OrderHistoryTab";
@@ -15,7 +15,7 @@ type AssetTabId =
   | "open_orders"
   | "order_history"
   | "asset_overview"
-  | "details"
+  | "offering"
   | "ROI_calculator"
   | "blockchain";
 
@@ -35,13 +35,14 @@ const tabs: RTabSwitcherItem[] = [
     label: "Asset Overview",
   },
   {
-    id: "details",
-    label: "Details",
-  },
-  {
     id: "ROI_calculator",
     label: "ROI Calculator",
   },
+  {
+    id: "offering",
+    label: "Offering",
+  },
+
   {
     id: "blockchain",
     label: "Blockchain",
@@ -49,14 +50,14 @@ const tabs: RTabSwitcherItem[] = [
 ];
 
 export function AssetTabs({ asset }: { asset: AssetType }) {
-  const [activeTab, setActiveTab] = useState<AssetTabId>("open_orders");
+  const [activeTab, setActiveTab] = useState<AssetTabId>("asset_overview");
 
   const content = useMemo(
     (): Record<AssetTabId, ReactNode> => ({
       open_orders: <OpenOrdersTab asset={asset} />,
       order_history: <OrderHistoryTab asset={asset} />,
       asset_overview: <AssetOverviewTab asset={asset} />,
-      details: <DetailsTab />,
+      offering: <OfferingTab />,
       ROI_calculator: <ROICalculator />,
       blockchain: <BlockchainTab asset={asset} />,
     }),
@@ -67,20 +68,20 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
       <div className={styles.tabSwitcher}>
         <RTabSwitcher
           activeTabId={activeTab}
-          ariaLabel="Order Tabs"
-          onChange={(id: string) => {
-            setActiveTab(id as AssetTabId);
-          }}
-          tabs={orders_tabs}
-        />
-        <span className={styles.divider} />
-        <RTabSwitcher
-          activeTabId={activeTab}
           ariaLabel="Asset Tabs"
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
           tabs={tabs}
+        />
+        <span className={styles.divider} />
+        <RTabSwitcher
+          activeTabId={activeTab}
+          ariaLabel="Order Tabs"
+          onChange={(id: string) => {
+            setActiveTab(id as AssetTabId);
+          }}
+          tabs={orders_tabs}
         />
       </div>
       <div className={styles.content}>
