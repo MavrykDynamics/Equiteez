@@ -62,7 +62,7 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
         <RText color="neutral-600" size="body-s">
           Projected Yield
         </RText>
-        <RText size="body-s" weight="medium">
+        <RText size="body-s" weight="medium" color="accent-green-500">
           <Money tooltip={false}>4.78</Money>%
         </RText>
       </div>
