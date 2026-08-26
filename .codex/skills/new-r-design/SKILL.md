@@ -121,6 +121,7 @@ Current icon names:
 - `radio`
 - `refund`
 - `search`
+- `sort`
 - `trash`
 - `trending-down`
 - `trending-up`
@@ -203,7 +204,7 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Typed inline SVG icon atom for the redesign icon system.
 - Location: `app/lib/atoms/RIcon/RIcon.tsx`
 - Styles: `app/lib/atoms/RIcon/RIcon.module.css`
-- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons.
+- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons. The `sort` icon supports `sortDirection="ascending" | "descending"` to make only the active arrow black.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
 
 ## RInput
@@ -262,12 +263,26 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Compose `RCustomDropdown`, `RDropdownFaceContent`, `RDropdownBodyContent`, and `RDropdownBodyContentItem`. The menu closes on selection, outside interaction, or Escape.
 - Related tokens: `RText`, `RIcon`, `--r-size-control-medium`, `--r-space-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
+## Portfolio activity tab placeholders
+
+- Purpose: Route-local placeholders for the Open Orders, Transaction History, and Deposits activity tables while their data and table UI are pending.
+- Location: `app/routes/portfolio.activity/components/ROpenOrdersTab.tsx`, `RTransactionHistoryTab.tsx`, and `RDepositsTab.tsx`
+- Reusability notes: Keep these components route-local; replace their label-only content with the corresponding table implementation when activity data is connected.
+- Related tokens: `RText`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`
+
 ## ROrderStatusBadge
 
 - Purpose: Route-local redesign badge that maps order-history statuses to the Figma `FILLED`, `OPEN`, and canceled visual states.
 - Location: `app/routes/trade.$address/components/AssetTabs/OrderHistoryTab/ROrderStatusBadge.tsx`
 - Reusability notes: Use for order-history status rendering. `fulfilled` is displayed as `FILLED`, `pending` as `OPEN`, and all other API values keep their original text with the canceled visual treatment.
 - Related tokens: `--r-color-green-*`, `--r-color-yellow-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-3`, `--r-radius-pill`
+
+## RTransferTypeIcon
+
+- Purpose: Route-local deposit and withdrawal direction icon for portfolio activity transfer rows and details.
+- Location: `app/routes/portfolio.activity/components/DepositsTab/RTransferTypeIcon.tsx`
+- Reusability notes: Use with transfer history items; it renders the Figma-approved 16px arrow through `currentColor`, so the parent supplies the green or red semantic tone.
+- Related tokens: `--r-size-icon-small`, `--r-color-green-500`, `--r-color-red-500`
 
 ## RDepositFundsModal
 
@@ -307,6 +322,20 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/molecules/RMetricCard/RMetricCard.module.css`
 - Reusability notes: Use for compact two-line metric summaries before recreating route-specific stat cards.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-color-neutral-*`, `--r-space-*`
+
+## RPagination
+
+- Purpose: Controlled API pagination molecule with page-number navigation, ellipses, and loading-aware previous/next controls.
+- Location: `app/lib/molecules/RPagination/RPagination.tsx`
+- Reusability notes: Pass one-based `currentPage`, API `totalPages`, and `onPageChange`; set `isLoading` while an API page request is in flight.
+- Related tokens: `RIcon`, `RText`, `--r-space-1`, `--r-color-neutral-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`
+
+## RSortableTableHeader
+
+- Purpose: Shared sortable table-header molecule with the two-direction `RIcon` sort indicator.
+- Location: `app/lib/molecules/RSortableTableHeader/RSortableTableHeader.tsx`
+- Reusability notes: Use for sortable column headers. Pass a column `label`, the active `direction`, and `onSort`; the component owns the semantic `<th>`, button and `aria-sort` state.
+- Related tokens: `RIcon`, `--r-color-neutral-*`, `--r-focus-ring`, `--r-size-icon-small`
 
 ## RHeader
 

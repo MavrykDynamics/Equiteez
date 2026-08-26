@@ -1,4 +1,4 @@
-export const stablecoinContract = "KT19bKTs9qsoBrspRNwsHn46YarEWuj3Vjc6";
+export const stablecoinContract = "KT1VAymHKvx9oreDRqN22rf2huuYiV5ofe34";
 
 // TODO remove this after deeds api update
 // tokens

@@ -1,0 +1,139 @@
+.monthlyIncome {
+  overflow: hidden;
+  padding: var(--r-space-6);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+  background: var(--r-color-neutral-white);
+}
+
+.title {
+  display: block;
+  margin-bottom: var(--r-space-6);
+}
+
+.chartArea {
+  position: relative;
+  height: 182px;
+}
+
+.chart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bars,
+.monthLabels {
+  display: grid;
+  grid-template-columns: repeat(var(--monthly-income-points), minmax(0, 1fr));
+}
+
+.bars {
+  position: absolute;
+  inset: 0;
+  align-items: end;
+  column-gap: var(--r-space-6);
+  pointer-events: none;
+}
+
+.barColumn,
+.barGroup {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.barColumn {
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.barGroup {
+  gap: var(--r-space-1);
+}
+
+.valueLabel {
+  white-space: nowrap;
+}
+
+.bar {
+  width: 64px;
+  max-width: 100%;
+  border-radius: var(--r-radius-sm) var(--r-radius-sm) var(--r-radius-xs)
+    var(--r-radius-xs);
+  background: linear-gradient(
+    180deg,
+    #54b983 0%,
+    var(--r-color-accent-green-500) 100%
+  );
+}
+
+.monthLabels {
+  margin-top: var(--r-space-4);
+  column-gap: var(--r-space-6);
+}
+
+.monthLabel {
+  justify-self: center;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  width: 240px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: var(--r-space-3);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-color-neutral-white);
+  box-shadow: 0 25.781px 51.563px -12.891px rgb(0 0 0 / 15%);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.tooltipSummary,
+.assetList {
+  display: flex;
+  flex-direction: column;
+}
+
+.tooltipSummary {
+  gap: 2px;
+}
+
+.tooltipDivider {
+  height: var(--r-border-width-sm);
+  margin: var(--r-space-2) 0;
+  background: var(--r-color-neutral-100);
+}
+
+.assetList {
+  gap: var(--r-space-1);
+}
+
+.asset {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-2);
+}
+
+@media (max-width: 800px) {
+  .monthlyIncome {
+    overflow-x: auto;
+  }
+
+  .title,
+  .chartArea,
+  .monthLabels {
+    min-width: 912px;
+  }
+}
+
+@media (max-width: 480px) {
+  .monthlyIncome {
+    padding: var(--r-space-4);
+  }
+}

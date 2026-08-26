@@ -21,7 +21,7 @@ import { FAQSection } from "~/templates/FAQSection";
 import styles from "./propertyId.module.css";
 
 // mocked faq data
-import { homeFAQ } from "../_index/index.const";
+import { homeFAQ } from "~/routes/old_home_page/index.const";
 import { PriceSection } from "./components/PriceSection/PriceSection";
 import PropertyTabs from "./components/PropertyTabs/PropertyTabs";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
