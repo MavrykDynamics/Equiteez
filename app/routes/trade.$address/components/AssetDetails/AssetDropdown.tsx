@@ -6,6 +6,7 @@ import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RInput } from "~/lib/atoms/RInput/RInput";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { buildTokenImagesStack } from "~/lib/images-uri";
 import {
   RCustomDropdown,
   RDropdownBodyContent,
@@ -103,7 +104,12 @@ function AssetIdentity({ asset }: { asset: AssetType }) {
 }
 
 function AssetIcon({ asset }: { asset: AssetType }) {
-  const src = asset.profile.image_url;
+  const imageUrl = asset.profile.image_url;
+  const [normalizedImageUrl] = buildTokenImagesStack(imageUrl, {
+    useMediaHost: true,
+  });
+
+  const src = normalizedImageUrl || imageUrl;
 
   return src ? (
     <img alt="" className={styles.assetIcon} src={src} />

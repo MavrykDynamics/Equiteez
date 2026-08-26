@@ -79,7 +79,7 @@
 }
 
 .assetIdentity {
-  align-items: flex-start;
+  align-items: center;
   gap: var(--r-space-3);
 }
 
