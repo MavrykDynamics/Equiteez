@@ -24,7 +24,10 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 
 const OPEN_ORDERS_PER_PAGE = 10;
 
-export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
+export function OpenOrdersTab({
+  searchValue = "",
+  tokenAddress,
+}: OpenOrdersTabProps) {
   const { userAddress } = useUserContext();
 
   const [sort, setSort] = useState<SortState<ServerSortKey>>({
@@ -64,6 +67,7 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
       searchValueDebounced,
       serverSort,
       page,
+      tokenAddress,
     ],
     queryFn: () =>
       fetchWalletOpenOrders({
@@ -71,11 +75,12 @@ export function OpenOrdersTab({ searchValue }: OpenOrdersTabProps) {
         perPage: OPEN_ORDERS_PER_PAGE,
         search: searchValueDebounced || undefined,
         sort: serverSort || undefined,
+        tokenAddress,
         walletAddress: userAddress ?? "",
       }),
     enabled: Boolean(userAddress),
     placeholderData: (previousData) => previousData,
-    refetchInterval: 7000,
+    // refetchInterval: 7000,
     retry: false,
   });
 

@@ -1,5 +1,6 @@
 export type OpenOrdersTabProps = {
-  searchValue: string;
+  searchValue?: string;
+  tokenAddress?: string;
 };
 
 export type ServerSortKey = "date" | "price" | "amount";
