@@ -18,6 +18,7 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 import styles from "./AssetDropdown.module.css";
 import Money from "~/lib/atoms/Money";
+import { ASSET_IMAGE_URLS_BY_ADDRESS } from "~/mocks/asset-image-urls.mock";
 
 type AssetDropdownProps = {
   asset: AssetType;
@@ -104,19 +105,27 @@ function AssetIdentity({ asset }: { asset: AssetType }) {
 }
 
 function AssetIcon({ asset }: { asset: AssetType }) {
-  const imageUrl = asset.profile.image_url;
-  const [normalizedImageUrl] = buildTokenImagesStack(imageUrl, {
-    useMediaHost: true,
-  });
+  // const imageUrl = asset.profile.image_url;
+  // const [normalizedImageUrl] = buildTokenImagesStack(imageUrl, {
+  //   useMediaHost: true,
+  // });
+  //
+  // const src = normalizedImageUrl || imageUrl;
+  //
+  // return src ? (
+  //   <img alt="" className={styles.assetIcon} src={src} />
+  // ) : (
+  //   <span aria-hidden="true" className={styles.assetIconFallback}>
+  //     {asset.metadata.symbol.slice(0, 1)}
+  //   </span>
+  // );
 
-  const src = normalizedImageUrl || imageUrl;
-
-  return src ? (
-    <img alt="" className={styles.assetIcon} src={src} />
-  ) : (
-    <span aria-hidden="true" className={styles.assetIconFallback}>
-      {asset.metadata.symbol.slice(0, 1)}
-    </span>
+  return (
+    <img
+      alt={asset.metadata.name}
+      className={styles.assetIcon}
+      src={ASSET_IMAGE_URLS_BY_ADDRESS[asset.address]}
+    />
   );
 }
 
