@@ -1,5 +1,5 @@
 .wrapper {
-  padding: var(--r-space-11) 0;
+  padding: var(--r-space-8) 0 var(--r-space-18) 0;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
