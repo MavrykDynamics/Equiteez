@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 import { ROUTES } from "~/consts";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
-import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
@@ -23,14 +22,10 @@ const revealedImageAssetAddresses = new Set<string>();
 
 type RImageAssetCardProps = {
   asset: AssetType;
-  revealDelay?: number;
 };
 
-export function ImageAssetCard({
-  asset,
-  revealDelay = 0,
-}: RImageAssetCardProps) {
-  const cardRef = useRef<HTMLAnchorElement>(null);
+export function ImageAssetCard({ asset }: RImageAssetCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const wasPreviouslyRevealed = useRef(
     revealedImageAssetAddresses.has(asset.address)
   );
@@ -53,15 +48,9 @@ export function ImageAssetCard({
   }, [asset.address, isCardInView]);
 
   return (
-    <Reveal
-      className={styles.card}
-      delay={revealDelay}
-      isDisabled={wasPreviouslyRevealed.current}
-      preset="fade"
-    >
+    <div className={styles.card} ref={cardRef}>
       <Link
         className={styles.cardLink}
-        ref={cardRef}
         to={generatePath(ROUTES.trade, { address: asset.address })}
       >
         <div className={styles.media}>
@@ -136,6 +125,6 @@ export function ImageAssetCard({
           </div>
         </div>
       </Link>
-    </Reveal>
+    </div>
   );
 }
