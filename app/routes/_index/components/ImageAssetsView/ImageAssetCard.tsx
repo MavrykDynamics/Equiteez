@@ -57,7 +57,7 @@ export function ImageAssetCard({
       className={styles.card}
       delay={revealDelay}
       isDisabled={wasPreviouslyRevealed.current}
-      preset="rise"
+      preset="fade"
     >
       <Link
         className={styles.cardLink}
