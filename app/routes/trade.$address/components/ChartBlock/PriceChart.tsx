@@ -22,6 +22,7 @@ import {
 
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
 
 type AssetDetailsProps = {
   asset: AssetType;
@@ -101,7 +102,9 @@ function getChartRequestParams(range: ChartRange) {
   }
 }
 
-function getFallbackPriceChange(points: AssetPriceChartPoint[]): PriceChangeView {
+function getFallbackPriceChange(
+  points: AssetPriceChartPoint[]
+): PriceChangeView {
   const firstPoint = points[0];
   const lastPoint = points.at(-1);
 
@@ -113,8 +116,7 @@ function getFallbackPriceChange(points: AssetPriceChartPoint[]): PriceChangeView
     };
   }
 
-  const amount =
-    getPrice(lastPoint) - getPrice(firstPoint);
+  const amount = getPrice(lastPoint) - getPrice(firstPoint);
   const percentage =
     getPrice(firstPoint) !== 0 ? (amount / getPrice(firstPoint)) * 100 : null;
 
@@ -324,32 +326,12 @@ export function PriceChart({
               {price}
             </Money>
           </span>
-          <span
-            className={priceChangeDisplay.className}
-          >
-            {priceChangeDisplay.text ? (
-              priceChangeDisplay.text
-            ) : (
-              <>
-                <RIcon
-                  aria-hidden="true"
-                  className={styles.priceChangeIcon}
-                  //@ts-expect-error
-                  name={priceChangeDisplay.iconName ?? "trending-up"}
-                  size="medium"
-                />
-                $
-                <Money fiat tooltip={false}>
-                  {Math.abs(priceChangeView.amount ?? 0)}
-                </Money>{" "}
-                ({priceChangePrefix}
-                <Money fiat tooltip={false}>
-                  {Math.abs(priceChangeView.percentage ?? 0)}
-                </Money>
-                %)
-              </>
-            )}
-          </span>
+          <RPriceChange
+            amount={priceChangeView.amount}
+            percentage={priceChangeView.percentage}
+            showPeriodLabel={false}
+            size="body-sm"
+          />
         </div>
         <div className={styles.chartHeaderActions}>
           <div
@@ -463,9 +445,7 @@ export function PriceChart({
           type="button"
         >
           <RIcon name="arrow-long-down" />
-          <span className={styles.toggleLabel}>
-            View Depth Chart
-          </span>
+          <span className={styles.toggleLabel}>View Depth Chart</span>
         </button>
       </div>
     </section>

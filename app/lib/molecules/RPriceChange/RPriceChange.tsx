@@ -5,6 +5,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./RPriceChange.module.css";
+import { RTextSize } from "~/lib/atoms/RTypography/types";
 
 export type RPriceChangeProps = {
   amount?: number | null;
@@ -12,6 +13,7 @@ export type RPriceChangeProps = {
   periodLabel?: string;
   percentage?: number | null;
   showPeriodLabel?: boolean;
+  size?: RTextSize;
 };
 
 export function RPriceChange({
@@ -20,6 +22,7 @@ export function RPriceChange({
   periodLabel = "24h",
   percentage,
   showPeriodLabel = false,
+  size = "body-s",
 }: RPriceChangeProps) {
   const hasChangeData = !!amount;
   const isNegative = (percentage ?? 0) < 0;
@@ -33,7 +36,7 @@ export function RPriceChange({
             name={isNegative ? "trending-down" : "trending-up"}
             size="small"
           />
-          <RText className={changeClassName} size="body-s">
+          <RText className={changeClassName} size={size}>
             $
             <Money tooltip={false} fiat>
               {Math.abs(amount)}
@@ -46,12 +49,12 @@ export function RPriceChange({
           </RText>
         </span>
       ) : (
-        <RText color="neutral-600" size="body-s">
+        <RText color="neutral-600" size={size}>
           --
         </RText>
       )}
       {showPeriodLabel ? (
-        <RText color="neutral-600" size="body-s">
+        <RText color="neutral-600" size={size}>
           {periodLabel}
         </RText>
       ) : null}
