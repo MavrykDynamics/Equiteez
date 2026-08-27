@@ -173,8 +173,8 @@
 }
 
 .secondaryChart {
-  height: 72px;
-  overflow: hidden;
+  height: 72px !important;
+  overflow: hidden !important;
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
