@@ -106,7 +106,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
               </div>
             ) : (
               <AssetPriceChart
-                animateOnReveal={false}
+                animateOnReveal={!wasPreviouslyRevealed.current}
                 className={styles.secondaryChart}
                 isRevealed={isCardInView}
                 points={points}
