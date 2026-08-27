@@ -57,11 +57,12 @@ export function AssetPriceChart({
   const chartData = useMemo(() => getChartData(points), [points]);
   const shouldAnimateOnReveal = animateOnReveal && !shouldReduceMotion;
   const isChartRevealed = isRevealed ?? !shouldAnimateOnReveal;
+  const shouldRenderChart = !shouldAnimateOnReveal || isChartRevealed;
 
   useEffect(() => {
     const container = containerRef.current;
 
-    if (!container) return;
+    if (!container || !shouldRenderChart) return;
 
     let isUnmounted = false;
     let cleanup: () => void = () => {};
@@ -183,7 +184,15 @@ export function AssetPriceChart({
       isUnmounted = true;
       cleanup();
     };
-  }, [chartData, onHover, priceDecimals, showPriceScale, showTimeScale, tone]);
+  }, [
+    chartData,
+    onHover,
+    priceDecimals,
+    shouldRenderChart,
+    showPriceScale,
+    showTimeScale,
+    tone,
+  ]);
 
   return (
     <motion.div
