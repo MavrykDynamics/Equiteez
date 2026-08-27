@@ -1,4 +1,10 @@
-import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSearchParams } from "@remix-run/react";
 
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -42,11 +48,8 @@ export function BuySellPanel({
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
   const [searchParams] = useSearchParams();
-  const {
-    isLoading,
-    marketsArr,
-    updateActiveMarketState,
-  } = useMarketsContext();
+  const { isLoading, marketsArr, updateActiveMarketState } =
+    useMarketsContext();
   const sideSearchParam = searchParams.get("side");
   const [orderType, setOrderType] = useState<OrderType>(() =>
     getOrderTypeFromSearchParam(sideSearchParam)

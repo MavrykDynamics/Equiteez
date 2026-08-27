@@ -26,6 +26,10 @@ import {
   STATUS_PENDING,
   type StatusFlag,
 } from "~/lib/ui/use-status-flag";
+import {
+  OrderExpiryBlock,
+  type OrderExpiryPeriodId,
+} from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 import styles from "./BuySellForm.module.css";
 
@@ -38,7 +42,9 @@ type BuySellScreenProps = {
   total: BigNumber | undefined;
   networkFee: BigNumber;
   tokenPrice: BigNumber;
+  orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   status: StatusFlag;
   hasQuoteError?: boolean;
@@ -55,7 +61,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   total,
   networkFee,
   tokenPrice,
+  orderExpiryPeriodId,
   setAmount,
+  setOrderExpiryPeriodId,
   status,
   hasQuoteError = false,
   isOrderDataLoading = false,
@@ -207,14 +215,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     }
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
-  const { finalTotalValue, txnFee } = useMemo(() => {
-    const orderValue = (isBuyAction ? amount : total) ?? ZERO;
-
-    return {
-      finalTotalValue: orderValue.plus(networkFee) || ZERO,
-      txnFee: undefined,
-    };
-  }, [amount, isBuyAction, networkFee, total]);
+  const orderSummaryAmount = useMemo(
+    () => (isBuyAction ? amount : total) ?? ZERO,
+    [amount, isBuyAction, total]
+  );
 
   const inputClassNames = {
     amountInputClassName: styles.amountInput,
@@ -293,11 +297,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             />
           </div>
 
+          <OrderExpiryBlock
+            selectedPeriodId={orderExpiryPeriodId}
+            setSelectedPeriodId={setOrderExpiryPeriodId}
+          />
+
           <FeesCard
             className={styles.summaryCard}
-            txnFees={txnFee}
-            totalAmount={finalTotalValue}
-            networkfee={networkFee}
+            networkFee={networkFee}
+            pricePerShare={tokenPrice}
+            totalAmount={orderSummaryAmount}
           />
         </div>
       </div>

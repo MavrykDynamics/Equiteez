@@ -15,6 +15,7 @@ import {
   getCurrentPriceFromOrderbookDepth,
 } from "~/providers/Dexprovider/utils";
 import type { EstateType } from "~/providers/MarketsProvider/market.types";
+import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 
 const ORDERBOOK_CURRENT_PRICE_DEPTH_LIMIT = 1;
 
@@ -28,13 +29,19 @@ export function useOrderbookCurrentPrices({
   enabled = true,
 }: UseOrderbookCurrentPricesParams) {
   const { warning } = useToasterContext();
+  const { validBaseTokens } = useMarketsContext();
+
+  const assetsWithOrderbook = useMemo(
+    () => assets.filter((asset) => validBaseTokens[asset.token_address]),
+    [assets, validBaseTokens]
+  );
 
   const rwaAddresses = useMemo(
     () =>
-      Array.from(new Set(assets.map((asset) => asset.token_address))).filter(
-        Boolean
-      ),
-    [assets]
+      Array.from(
+        new Set(assetsWithOrderbook.map((asset) => asset.token_address))
+      ).filter(Boolean),
+    [assetsWithOrderbook]
   );
 
   const depthQueries = useQueries({
@@ -89,7 +96,8 @@ export function useOrderbookCurrentPrices({
         const currentPrice = getCurrentPriceFromOrderbookDepth({
           orderbookDepth,
           quoteTokenDecimals:
-            orderbookDepth?.quote_token.decimals ?? DEFAULT_QUOTE_TOKEN_DECIMALS,
+            orderbookDepth?.quote_token.decimals ??
+            DEFAULT_QUOTE_TOKEN_DECIMALS,
         });
 
         acc[asset.slug] = currentPrice.gt(0)

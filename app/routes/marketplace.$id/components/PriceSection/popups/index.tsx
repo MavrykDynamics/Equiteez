@@ -75,6 +75,10 @@ import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
+import {
+  getOrderExpiryTimestamp,
+  type OrderExpiryPeriodId,
+} from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
@@ -132,6 +136,9 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   // MArket Type
   const [marketType, setMarkettype] = useState<MarketOrderMode>("market");
   const isMarketTypeMarket = marketType === "market";
+
+  const [orderExpiryPeriodId, setOrderExpiryPeriodId] =
+    useState<OrderExpiryPeriodId | null>(null);
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
 
@@ -366,15 +373,26 @@ export const BuySellContent: FC<BuySellContentProps> = ({
         : ZERO,
     [amountB, baseTokenDecimals]
   );
+  const orderExpiry = useMemo(
+    () =>
+      orderExpiryPeriodId ? getOrderExpiryTimestamp(orderExpiryPeriodId) : null,
+    [orderExpiryPeriodId]
+  );
   const commonOrderProps = useMemo(
     () => ({
       orderbookContractAddress: orderbookConfig?.address ?? "",
       currency: currencyKey,
-      orderExpiry: null,
+      orderExpiry,
       baseTokenDecimals,
       tickSizeAtoms: rawTickSize || undefined,
     }),
-    [baseTokenDecimals, currencyKey, orderbookConfig?.address, rawTickSize]
+    [
+      baseTokenDecimals,
+      currencyKey,
+      orderExpiry,
+      orderbookConfig?.address,
+      rawTickSize,
+    ]
   );
 
   // Orderbook limit buy | sell with custom user price
@@ -728,6 +746,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     setAmountB(undefined);
     setTotal(undefined);
     setLimitPrice(undefined);
+    setOrderExpiryPeriodId(null);
     setNetworkFee(ZERO);
     setIsOrderBookOpen(false);
     onSuccessfulTransaction?.();
@@ -945,6 +964,8 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}
+              orderExpiryPeriodId={orderExpiryPeriodId}
+              setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               tokenPrice={tokenPrice}
               networkFee={networkFee}
@@ -963,6 +984,8 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}
+              orderExpiryPeriodId={orderExpiryPeriodId}
+              setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               networkFee={networkFee}
               status={status}

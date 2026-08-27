@@ -576,25 +576,32 @@
 
 .toggleButton {
   align-items: center;
-  background: #f2f2f2;
-  border-radius: 32px;
-  color: var(--color-sand-900);
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-pill);
+  color: var(--r-color-neutral-black);
   display: inline-flex;
   gap: 4px;
-  min-height: 32px;
-  padding: 4px 12px;
+  height: 38px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px 0 14px;
 }
 
 .toggleIcon {
+  flex-shrink: 0;
   height: 16px;
   width: 16px;
 }
 
 .toggleLabel {
-  font-size: 14px;
+  color: currentColor;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
   font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-s);
+  white-space: nowrap;
 }
 
 .mobileCloseButton {
