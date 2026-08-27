@@ -1,4 +1,4 @@
-import { useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { generatePath, Link } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 
@@ -29,6 +29,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
   const wasPreviouslyRevealed = useRef(
     revealedImageAssetAddresses.has(asset.address)
   );
+  const shouldReduceMotion = useReducedMotion();
   const isCardInView = useInView(cardRef, {
     amount: 0.35,
     margin: "0px 0px -12% 0px",
@@ -38,6 +39,8 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
   const isPrimaryIssuance = asset.profile.lifecycle === "primary_issuance";
   const imageUrl =
     ASSET_IMAGE_URLS_BY_ADDRESS[asset.address] ?? fallbackImageUrl;
+  const shouldAnimateChartReveal =
+    !wasPreviouslyRevealed.current && !shouldReduceMotion;
 
   useEffect(() => {
     if (wasPreviouslyRevealed.current || !isCardInView) {
@@ -105,13 +108,42 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
                 <AssetSaleProgress asset={asset} />
               </div>
             ) : (
-              <AssetPriceChart
-                animateOnReveal={!wasPreviouslyRevealed.current}
-                className={styles.secondaryChart}
-                isRevealed={isCardInView}
-                points={points}
-                tone={isNegative ? "negative" : "positive"}
-              />
+              <motion.div
+                animate={
+                  shouldAnimateChartReveal
+                    ? isCardInView
+                      ? {
+                          clipPath: "inset(0% 0% 0% 0%)",
+                          opacity: 1,
+                        }
+                      : {
+                          clipPath: "inset(0% 100% 0% 0%)",
+                          opacity: 0.85,
+                        }
+                    : undefined
+                }
+                initial={
+                  shouldAnimateChartReveal
+                    ? {
+                        clipPath: "inset(0% 100% 0% 0%)",
+                        opacity: 0.85,
+                      }
+                    : false
+                }
+                transition={{
+                  delay: 0.14,
+                  duration: 1.05,
+                  ease: [0.2, 0.8, 0.2, 1],
+                }}
+              >
+                <AssetPriceChart
+                  animateOnReveal={!wasPreviouslyRevealed.current}
+                  className={styles.secondaryChart}
+                  isRevealed={isCardInView}
+                  points={points}
+                  tone={isNegative ? "negative" : "positive"}
+                />
+              </motion.div>
             )}
 
             <div className={styles.yieldRow}>

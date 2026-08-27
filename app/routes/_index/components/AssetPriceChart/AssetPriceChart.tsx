@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
 import type { UTCTimestamp } from "lightweight-charts";
 
@@ -193,37 +193,9 @@ export function AssetPriceChart({
     tone,
   ]);
 
-  return (
-    <motion.div
-      animate={
-        shouldAnimateOnReveal
-          ? isChartRevealed
-            ? {
-                clipPath: "inset(0% 0% 0% 0%)",
-                opacity: 1,
-              }
-            : {
-                clipPath: "inset(0% 100% 0% 0%)",
-                opacity: 0.85,
-              }
-          : undefined
-      }
-      className={`${styles.chartReveal} ${className ?? ""}`}
-      initial={
-        shouldAnimateOnReveal
-          ? {
-              clipPath: "inset(0% 100% 0% 0%)",
-              opacity: 0.85,
-            }
-          : false
-      }
-      transition={{
-        delay: 0.14,
-        duration: 1.05,
-        ease: [0.2, 0.8, 0.2, 1],
-      }}
-    >
-      <div className={styles.chart} ref={containerRef} />
-    </motion.div>
-  );
+  const chartClassName = className
+    ? `${styles.chartReveal} ${className}`
+    : styles.chartReveal;
+
+  return <div className={chartClassName} ref={containerRef} />;
 }
