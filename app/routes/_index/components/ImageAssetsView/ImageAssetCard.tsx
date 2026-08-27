@@ -1,6 +1,6 @@
 import { useInView } from "framer-motion";
 import { generatePath, Link } from "@remix-run/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { ROUTES } from "~/consts";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
@@ -18,6 +18,7 @@ import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/Asse
 import styles from "./ImageAssetsView.module.css";
 
 const fallbackImageUrl = Object.values(ASSET_IMAGE_URLS_BY_ADDRESS)[0];
+const revealedImageAssetAddresses = new Set<string>();
 
 type RImageAssetCardProps = {
   asset: AssetType;
@@ -29,6 +30,9 @@ export function ImageAssetCard({
   revealDelay = 0,
 }: RImageAssetCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
+  const wasPreviouslyRevealed = useRef(
+    revealedImageAssetAddresses.has(asset.address)
+  );
   const isCardInView = useInView(cardRef, {
     amount: 0.35,
     margin: "0px 0px -12% 0px",
@@ -39,8 +43,21 @@ export function ImageAssetCard({
   const imageUrl =
     ASSET_IMAGE_URLS_BY_ADDRESS[asset.address] ?? fallbackImageUrl;
 
+  useEffect(() => {
+    if (wasPreviouslyRevealed.current || !isCardInView) {
+      return;
+    }
+
+    revealedImageAssetAddresses.add(asset.address);
+  }, [asset.address, isCardInView]);
+
   return (
-    <Reveal className={styles.card} delay={revealDelay} preset="rise">
+    <Reveal
+      className={styles.card}
+      delay={revealDelay}
+      isDisabled={wasPreviouslyRevealed.current}
+      preset="rise"
+    >
       <Link
         className={styles.cardLink}
         ref={cardRef}
@@ -122,7 +139,7 @@ export function ImageAssetCard({
               </div>
             ) : (
               <AssetPriceChart
-                animateOnReveal
+                animateOnReveal={!wasPreviouslyRevealed.current}
                 className={styles.secondaryChart}
                 isRevealed={isCardInView}
                 points={points}
