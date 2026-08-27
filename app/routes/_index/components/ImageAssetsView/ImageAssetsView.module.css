@@ -34,6 +34,15 @@
     box-shadow var(--r-transition-duration-fast) ease;
 }
 
+.cardLink {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
 .card:nth-child(-n + 4) {
   border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }

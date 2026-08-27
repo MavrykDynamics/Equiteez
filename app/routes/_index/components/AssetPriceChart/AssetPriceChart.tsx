@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
 import type { UTCTimestamp } from "lightweight-charts";
 
@@ -17,7 +18,9 @@ export type AssetPriceChartHover = {
 };
 
 type AssetPriceChartProps = {
+  animateOnReveal?: boolean;
   className?: string;
+  isRevealed?: boolean;
   onHover?: (hover: AssetPriceChartHover | null) => void;
   points: AssetPriceChartPoint[];
   priceDecimals?: number;
@@ -39,7 +42,9 @@ function getChartData(points: AssetPriceChartPoint[]) {
 }
 
 export function AssetPriceChart({
+  animateOnReveal = false,
   className,
+  isRevealed,
   onHover,
   points,
   priceDecimals = 2,
@@ -48,7 +53,10 @@ export function AssetPriceChart({
   tone,
 }: AssetPriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
   const chartData = useMemo(() => getChartData(points), [points]);
+  const shouldAnimateOnReveal = animateOnReveal && !shouldReduceMotion;
+  const isChartRevealed = isRevealed ?? !shouldAnimateOnReveal;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -178,6 +186,36 @@ export function AssetPriceChart({
   }, [chartData, onHover, priceDecimals, showPriceScale, showTimeScale, tone]);
 
   return (
-    <div className={`${styles.chart} ${className ?? ""}`} ref={containerRef} />
+    <motion.div
+      animate={
+        shouldAnimateOnReveal
+          ? isChartRevealed
+            ? {
+                clipPath: "inset(0% 0% 0% 0%)",
+                opacity: 1,
+              }
+            : {
+                clipPath: "inset(0% 100% 0% 0%)",
+                opacity: 0.85,
+              }
+          : undefined
+      }
+      className={`${styles.chartReveal} ${className ?? ""}`}
+      initial={
+        shouldAnimateOnReveal
+          ? {
+              clipPath: "inset(0% 100% 0% 0%)",
+              opacity: 0.85,
+            }
+          : false
+      }
+      transition={{
+        delay: 0.14,
+        duration: 1.05,
+        ease: [0.2, 0.8, 0.2, 1],
+      }}
+    >
+      <div className={styles.chart} ref={containerRef} />
+    </motion.div>
   );
 }

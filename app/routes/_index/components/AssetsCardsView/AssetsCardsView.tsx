@@ -12,13 +12,13 @@ export function AssetsCardsView({ assets }: AssetsCardsViewProps) {
   return (
     <div className={styles.cardsView}>
       <div className={styles.cardsGrid}>
-        {assets.map((asset) =>
-          asset.profile.lifecycle === "primary_issuance" ? (
-            <PrimaryAssetCard asset={asset} key={asset.address} />
-          ) : (
-            <SecondaryAssetCard asset={asset} key={asset.address} />
-          )
-        )}
+        {assets.map((asset) => {
+          if (asset.profile.lifecycle === "primary_issuance") {
+            return <PrimaryAssetCard asset={asset} key={asset.address} />;
+          }
+
+          return <SecondaryAssetCard asset={asset} key={asset.address} />;
+        })}
       </div>
     </div>
   );
