@@ -75,20 +75,22 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
         </div>
       </div>
 
-      <AssetPriceChart
-        className={styles.secondaryChart}
-        points={points}
-        tone={isNegative ? "negative" : "positive"}
-      />
+      <div>
+        <AssetPriceChart
+          className={styles.secondaryChart}
+          points={points}
+          tone={isNegative ? "negative" : "positive"}
+        />
 
-      {/*TODO remove mock data*/}
-      <div className={styles.projectedYield}>
-        <RText color="neutral-600" size="body-s">
-          Net yield
-        </RText>
-        <RText size="body-s" weight="medium" color="accent-green-500">
-          <Money tooltip={false}>4.78</Money>%
-        </RText>
+        {/*TODO remove mock data*/}
+        <div className={styles.projectedYield}>
+          <RText color="neutral-600" size="body-s">
+            Net yield
+          </RText>
+          <RText size="body-s" weight="medium" color="accent-green-500">
+            <Money tooltip={false}>4.78</Money>%
+          </RText>
+        </div>
       </div>
     </Link>
   );
