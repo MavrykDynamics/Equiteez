@@ -97,7 +97,6 @@ export function AssetPriceChart({
           },
           handleScroll: false,
           handleScale: false,
-          height: container.clientHeight,
           layout: {
             attributionLogo: false,
             background: { color: "transparent", type: ColorType.Solid },
