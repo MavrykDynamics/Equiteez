@@ -334,6 +334,14 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for compact two-line metric summaries before recreating route-specific stat cards.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-color-neutral-*`, `--r-space-*`
 
+## RPriceChange
+
+- Purpose: Shared redesign price-change molecule for signed fiat delta and percentage, with an optional trailing period label such as `24h`.
+- Location: `app/lib/molecules/RPriceChange/RPriceChange.tsx`
+- Styles: `app/lib/molecules/RPriceChange/RPriceChange.module.css`
+- Reusability notes: Use for asset price-change readouts in cards, tables, and compact market surfaces. Supports empty-state fallback, positive/negative icon coloring, and optional period label rendering through `showPeriodLabel`.
+- Related tokens: `RIcon`, `RText`, `Money`, `--r-space-1`, `--r-color-green-500`, `--r-color-red-500`, `--r-color-neutral-600`
+
 ## RPagination
 
 - Purpose: Controlled API pagination molecule with page-number navigation, ellipses, and loading-aware previous/next controls.

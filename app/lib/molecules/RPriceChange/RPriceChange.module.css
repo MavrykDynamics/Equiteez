@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  gap: var(--r-space-1);
+  align-items: center;
+}
+
+.change {
+  display: flex;
+  align-items: center;
+}
+
+.positive {
+  color: var(--r-color-green-500);
+}
+
+.negative {
+  color: var(--r-color-red-500);
+}

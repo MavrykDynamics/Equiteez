@@ -8,6 +8,7 @@ import Money from "~/lib/atoms/Money";
 import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { ASSET_IMAGE_URLS_BY_ADDRESS } from "~/mocks/asset-image-urls.mock";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import { AssetBadge } from "~/routes/_index/components/AssetBadge/AssetBadge";
@@ -99,35 +100,12 @@ export function ImageAssetCard({
                   </RText>
                 </div>
               ) : (
-                <div className={styles.priceChange}>
-                  <RIcon
-                    aria-hidden="true"
-                    className={
-                      isNegative ? styles.negativeChange : styles.positiveChange
-                    }
-                    name={isNegative ? "trending-down" : "trending-up"}
-                    size="small"
-                  />
-                  <RText
-                    className={
-                      isNegative ? styles.negativeChange : styles.positiveChange
-                    }
-                    size="body-s"
-                  >
-                    $
-                    <Money fiat tooltip={false}>
-                      {Math.abs(priceChange.amount)}
-                    </Money>{" "}
-                    ({isNegative ? "-" : "+"}
-                    <Money fiat tooltip={false}>
-                      {Math.abs(priceChange.percentage)}
-                    </Money>
-                    %)
-                  </RText>
-                  <RText color="neutral-600" size="body-s">
-                    24h
-                  </RText>
-                </div>
+                <RPriceChange
+                  amount={priceChange.amount}
+                  className={styles.priceChange}
+                  percentage={priceChange.percentage}
+                  showPeriodLabel
+                />
               )}
             </div>
           </div>
