@@ -233,6 +233,7 @@ export function PriceChart({
   }, [asset.metadata.symbol, range]);
 
   const tone = priceChangeView.tone;
+  const canShowDepthChart = asset.profile.lifecycle !== "primary_issuance";
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -419,23 +420,29 @@ export function PriceChart({
           </>
         )}
       </div>
-      <div className={styles.depthChartAction}>
-        <button
-          aria-expanded={isDepthChartVisible}
-          className={styles.toggleButton}
-          onClick={() => setIsDepthChartVisible((isVisible) => !isVisible)}
-          type="button"
-        >
-          <RIcon
-            name={isDepthChartVisible ? "arrow-long-up" : "arrow-long-down"}
-            size="small"
-          />
-          <span className={styles.toggleLabel}>
-            {isDepthChartVisible ? "Hide Depth Chart" : "View Depth Chart"}
-          </span>
-        </button>
-      </div>
-      {isDepthChartVisible ? <RMarketDepthChart asset={asset} /> : null}
+      {canShowDepthChart ? (
+        <>
+          <div className={styles.depthChartAction}>
+            <button
+              aria-expanded={isDepthChartVisible}
+              className={styles.toggleButton}
+              onClick={() => setIsDepthChartVisible((isVisible) => !isVisible)}
+              type="button"
+            >
+              <RIcon
+                name={
+                  isDepthChartVisible ? "arrow-long-up" : "arrow-long-down"
+                }
+                size="small"
+              />
+              <span className={styles.toggleLabel}>
+                {isDepthChartVisible ? "Hide Depth Chart" : "View Depth Chart"}
+              </span>
+            </button>
+          </div>
+          {isDepthChartVisible ? <RMarketDepthChart asset={asset} /> : null}
+        </>
+      ) : null}
     </section>
   );
 }
