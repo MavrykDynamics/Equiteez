@@ -108,6 +108,17 @@
   border-color: var(--r-color-neutral-black);
   outline: none;
 }
+.inputError,
+.inputError:hover,
+.input.inputError:focus,
+.amountInputRow.inputError,
+.amountInputRow.inputError:hover,
+.amountInputRow.inputError:focus-within {
+  border-color: var(--r-color-red-500);
+}
+.errorText {
+  color: var(--r-color-red-700);
+}
 .eligibilityNotice,
 .processingNotice {
   display: flex;
@@ -241,10 +252,35 @@
 .summary {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-2);
+  gap: 10px;
   padding: var(--r-space-4);
   background: var(--r-color-neutral-50);
   border-radius: var(--r-radius-sm);
+}
+.summaryTrigger,
+.summaryTriggerValue {
+  display: flex;
+  gap: var(--r-space-2);
+  align-items: center;
+}
+.summaryTrigger {
+  width: 100%;
+  padding: 0;
+  justify-content: space-between;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.summaryTrigger:focus-visible {
+  outline: var(--r-border-width-sm) solid var(--r-color-neutral-black);
+  outline-offset: 2px;
+  border-radius: var(--r-radius-xs);
+}
+.summaryDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .summaryRow,
 .summaryTotal {

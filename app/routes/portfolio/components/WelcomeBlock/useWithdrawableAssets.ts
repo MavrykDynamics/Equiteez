@@ -4,6 +4,7 @@ import BigNumber from "bignumber.js";
 import { toTokenSlug } from "~/lib/assets";
 import type { TokenMetadata } from "~/lib/metadata";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
+import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
@@ -16,6 +17,7 @@ export type WithdrawableAsset = {
 
 export function useWithdrawableAssets() {
   const { wallet, isLoading: isWalletLoading } = usePortfolioContext();
+  const { usdToTokenRates } = useCurrencyContext();
   const { isLoading: isTokensLoading, tokensMetadata } = useTokensContext();
   const { isLoading: isUserLoading, userTokensBalances } = useUserContext();
 
@@ -37,6 +39,15 @@ export function useWithdrawableAssets() {
         const availableBalance = portfolioAsset
           ? new BigNumber(portfolioAsset.available_balance)
           : onChainBalance;
+        const portfolioPrice = portfolioAsset
+          ? new BigNumber(portfolioAsset.price_per_token)
+          : null;
+        const currencyPrice = new BigNumber(usdToTokenRates[tokenSlug] ?? 0);
+        const usdPrice = portfolioPrice?.isFinite() && portfolioPrice.gt(0)
+          ? portfolioPrice
+          : currencyPrice.isFinite() && currencyPrice.gt(0)
+            ? currencyPrice
+            : null;
 
         if (!availableBalance.isFinite() || availableBalance.lte(0)) {
           return result;
@@ -44,11 +55,7 @@ export function useWithdrawableAssets() {
 
         result.push({
           availableBalance,
-          availableBalanceUsd: portfolioAsset
-            ? new BigNumber(portfolioAsset.price_per_token).times(
-                availableBalance
-              )
-            : null,
+          availableBalanceUsd: usdPrice?.times(availableBalance) ?? null,
           metadata,
           tokenSlug,
         });
@@ -61,7 +68,7 @@ export function useWithdrawableAssets() {
 
         return rightValue.comparedTo(leftValue);
       });
-  }, [tokensMetadata, userTokensBalances, wallet?.rwa_assets]);
+  }, [tokensMetadata, usdToTokenRates, userTokensBalances, wallet?.rwa_assets]);
 
   return {
     assets,
