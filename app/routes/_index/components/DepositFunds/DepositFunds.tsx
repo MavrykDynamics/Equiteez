@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import styles from "./styles.module.css";
 import { RButton } from "~/lib/atoms/RButton";
-import { RText } from "~/lib/atoms/RTypography/RText";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RDepositFundsModal } from "./RDepositFundsModal";
 
@@ -13,15 +12,12 @@ export function DepositFunds() {
     <div className={styles.wrapper}>
       <RButton
         className={styles.depositButton}
+        iconLeft={<RIcon aria-hidden="true" name="arrow-long-down" />}
         onClick={() => setIsDepositModalOpen(true)}
-        variant="secondary"
+        size="medium"
+        tone="black"
       >
-        <RText size="body-sm" weight="medium">
-          Deposit Funds
-        </RText>
-        <RText size="body-s">
-          <RIcon name="arrow-long-up-right" />
-        </RText>
+        Deposit
       </RButton>
       <RDepositFundsModal
         isOpen={isDepositModalOpen}

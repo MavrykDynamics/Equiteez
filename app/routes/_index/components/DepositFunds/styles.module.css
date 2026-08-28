@@ -1,3 +1,4 @@
 .wrapper .depositButton {
-    padding: var(--r-space-3) var(--r-space-4) var(--r-space-3) var(--r-space-6);
+  padding: var(--r-space-3) var(--r-space-6) var(--r-space-3)
+    var(--r-space-4);
 }
