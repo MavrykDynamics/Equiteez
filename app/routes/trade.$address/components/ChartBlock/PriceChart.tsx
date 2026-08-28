@@ -179,6 +179,7 @@ export function PriceChart({
 
   useEffect(() => {
     setPoints([]);
+    setIsDepthChartVisible(false);
     setPriceChangeView({
       amount: null,
       percentage: null,

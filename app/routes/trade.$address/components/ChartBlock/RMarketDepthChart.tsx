@@ -40,11 +40,18 @@ const CHART_TOP = 12;
 const CHART_BASELINE = 157;
 const Y_TICK_COUNT = 5;
 const X_TICK_COUNT = 6;
+const SCALE_STEP = 0.5;
 
 const formatNumber = (value: number, maximumFractionDigits = 2) =>
   new Intl.NumberFormat("en-US", {
     maximumFractionDigits,
     minimumFractionDigits: 0,
+  }).format(value);
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
   }).format(value);
 
 const getCumulativeDepth = (
@@ -154,7 +161,7 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
       left: CHART_LEFT,
       maxPrice: midPrice + largestDistance * 1.08,
       maxVolume,
-      minPrice: Math.max(0, midPrice - largestDistance * 1.08),
+      minPrice: midPrice - largestDistance * 1.08,
       plotHeight: CHART_BASELINE - CHART_TOP,
       plotWidth: CHART_WIDTH - CHART_LEFT - CHART_RIGHT,
       top: CHART_TOP,
@@ -179,7 +186,11 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
     ((price - geometry.minPrice) / (geometry.maxPrice - geometry.minPrice)) *
       geometry.plotWidth;
   const yForVolume = (volume: number) =>
-    geometry.baselineY - (volume / geometry.maxVolume) * geometry.plotHeight;
+    Math.max(
+      geometry.top,
+      geometry.baselineY -
+        (volume / geometry.maxVolume) * geometry.plotHeight
+    );
   const bidPath = createStepPath(bids, xForPrice, yForVolume);
   const askPath = createStepPath(asks, xForPrice, yForVolume);
   const bidAreaPath = bidPath
@@ -195,6 +206,10 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
   const yTicks = Array.from({ length: Y_TICK_COUNT + 1 }, (_, index) =>
     (geometry.maxVolume * (Y_TICK_COUNT - index)) / Y_TICK_COUNT
   );
+  const hoveredX = hoveredPoint
+    ? Math.max(60, Math.min(CHART_WIDTH - 60, xForPrice(hoveredPoint.price)))
+    : 0;
+  const hoveredY = hoveredPoint ? yForVolume(hoveredPoint.volume) : 0;
 
   return (
     <section aria-label="Market depth chart" className={styles.chart}>
@@ -203,8 +218,12 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
           <button
             aria-label="Decrease chart scale"
             className={styles.scaleButton}
-            disabled={scale <= 0.5}
-            onClick={() => setScale((currentScale) => Math.max(0.5, currentScale - 0.25))}
+            disabled={scale <= SCALE_STEP}
+            onClick={() =>
+              setScale((currentScale) =>
+                Math.max(SCALE_STEP, currentScale - SCALE_STEP)
+              )
+            }
             type="button"
           >
             −
@@ -216,7 +235,9 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
           <button
             aria-label="Increase chart scale"
             className={styles.scaleButton}
-            onClick={() => setScale((currentScale) => Math.min(3, currentScale + 0.25))}
+            onClick={() =>
+              setScale((currentScale) => Math.min(3, currentScale + SCALE_STEP))
+            }
             type="button"
           >
             +
@@ -224,15 +245,30 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
         </div>
         {hoveredPoint ? (
           <div
-            className={styles.tooltip}
+            className={`${styles.tooltip} ${
+              hoveredY < geometry.top + 50 ? styles.tooltipBelow : ""
+            }`}
             style={{
-              left: `${(xForPrice(hoveredPoint.price) / CHART_WIDTH) * 100}%`,
-              top: `${(yForVolume(hoveredPoint.volume) / CHART_HEIGHT) * 100}%`,
+              left: `${(hoveredX / CHART_WIDTH) * 100}%`,
+              top: `${(hoveredY / CHART_HEIGHT) * 100}%`,
             }}
           >
-            <strong>{`${formatNumber(hoveredPoint.price, 4)} ${quoteSymbol}`}</strong>
-            <span>{`${formatNumber(hoveredPoint.amount, 4)} ${asset.metadata.symbol}`}</span>
-            <span>{`${formatNumber(hoveredPoint.total, 2)} ${quoteSymbol}`}</span>
+            <strong>{`$${formatCurrency(hoveredPoint.price)}`}</strong>
+            <div className={styles.tooltipDetails}>
+              <span className={styles.tooltipColumn}>
+                <span>
+                  {hoveredPoint.side === "bid"
+                    ? "Can be sold"
+                    : "Can be bought"}
+                </span>
+                <span>{`${formatCurrency(hoveredPoint.amount)} ${asset.metadata.symbol}`}</span>
+              </span>
+              <span aria-hidden="true" className={styles.tooltipDivider} />
+              <span className={styles.tooltipColumn}>
+                <span>For a total of</span>
+                <span>{`$${formatCurrency(hoveredPoint.total)}`}</span>
+              </span>
+            </div>
           </div>
         ) : null}
         <svg
@@ -254,7 +290,12 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
               null
             );
 
-            setHoveredPoint(nearestPoint);
+            setHoveredPoint((currentPoint) =>
+              currentPoint?.price === nearestPoint?.price &&
+              currentPoint?.side === nearestPoint?.side
+                ? currentPoint
+                : nearestPoint
+            );
           }}
           preserveAspectRatio="none"
           role="img"
@@ -284,6 +325,27 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
           {askAreaPath ? <path d={askAreaPath} fill={`url(#${gradientId}-ask)`} /> : null}
           {bidPath ? <path className={styles.bidLine} d={bidPath} /> : null}
           {askPath ? <path className={styles.askLine} d={askPath} /> : null}
+          {hoveredPoint ? (
+            <>
+              <line
+                className={styles.crosshair}
+                x1={xForPrice(hoveredPoint.price)}
+                x2={xForPrice(hoveredPoint.price)}
+                y1={geometry.top}
+                y2={geometry.baselineY}
+              />
+              <circle
+                className={
+                  hoveredPoint.side === "bid"
+                    ? styles.bidPoint
+                    : styles.askPoint
+                }
+                cx={xForPrice(hoveredPoint.price)}
+                cy={yForVolume(hoveredPoint.volume)}
+                r="5"
+              />
+            </>
+          ) : null}
           <line
             className={styles.midLine}
             x1={xForPrice(midPrice)}
