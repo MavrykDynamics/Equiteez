@@ -78,14 +78,6 @@ const getCumulativeDepth = (
     .sort((left, right) => left.price - right.price);
 };
 
-const getRoundedMax = (value: number) => {
-  if (value <= 0) return 1;
-
-  const magnitude = 10 ** Math.floor(Math.log10(value));
-
-  return Math.ceil(value / magnitude / Y_TICK_COUNT) * magnitude * Y_TICK_COUNT;
-};
-
 const getMidPrice = (
   bestBid: number,
   bestAsk: number,
@@ -153,7 +145,7 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
       Math.max(...prices) - midPrice,
       midPrice * 0.01
     );
-    const maxVolume = getRoundedMax(Math.max(...volumes) / scale);
+    const maxVolume = Math.max(1, Math.max(...volumes) / scale);
 
     return {
       baselineY: CHART_BASELINE,
@@ -219,11 +211,7 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
             aria-label="Decrease chart scale"
             className={styles.scaleButton}
             disabled={scale <= SCALE_STEP}
-            onClick={() =>
-              setScale((currentScale) =>
-                Math.max(SCALE_STEP, currentScale - SCALE_STEP)
-              )
-            }
+            onClick={() => setScale((value) => Math.max(SCALE_STEP, value - SCALE_STEP))}
             type="button"
           >
             −
@@ -235,9 +223,7 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
           <button
             aria-label="Increase chart scale"
             className={styles.scaleButton}
-            onClick={() =>
-              setScale((currentScale) => Math.min(3, currentScale + SCALE_STEP))
-            }
+            onClick={() => setScale((value) => Math.min(3, value + SCALE_STEP))}
             type="button"
           >
             +
@@ -321,10 +307,12 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
               </text>
             </g>
           ))}
-          {bidAreaPath ? <path d={bidAreaPath} fill={`url(#${gradientId}-bid)`} /> : null}
-          {askAreaPath ? <path d={askAreaPath} fill={`url(#${gradientId}-ask)`} /> : null}
-          {bidPath ? <path className={styles.bidLine} d={bidPath} /> : null}
-          {askPath ? <path className={styles.askLine} d={askPath} /> : null}
+          <g>
+            {bidAreaPath ? <path d={bidAreaPath} fill={`url(#${gradientId}-bid)`} /> : null}
+            {askAreaPath ? <path d={askAreaPath} fill={`url(#${gradientId}-ask)`} /> : null}
+            {bidPath ? <path className={styles.bidLine} d={bidPath} /> : null}
+            {askPath ? <path className={styles.askLine} d={askPath} /> : null}
+          </g>
           {hoveredPoint ? (
             <>
               <line
