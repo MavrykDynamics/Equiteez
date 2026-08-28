@@ -1,10 +1,10 @@
-import assetImage01 from "~/assets/redesign/asset-images/RAssetImage01.png";
-import assetImage02 from "~/assets/redesign/asset-images/RAssetImage02.png";
-import assetImage03 from "~/assets/redesign/asset-images/RAssetImage03.png";
-import assetImage04 from "~/assets/redesign/asset-images/RAssetImage04.png";
-import assetImage05 from "~/assets/redesign/asset-images/RAssetImage05.png";
-import assetImage06 from "~/assets/redesign/asset-images/RAssetImage06.png";
-import assetImage07 from "~/assets/redesign/asset-images/RAssetImage07.png";
+import assetImage01 from "~/assets/redesign/asset-images-optimized/RAssetImage01.jpg";
+import assetImage02 from "~/assets/redesign/asset-images-optimized/RAssetImage02.jpg";
+import assetImage03 from "~/assets/redesign/asset-images-optimized/RAssetImage03.jpg";
+import assetImage04 from "~/assets/redesign/asset-images-optimized/RAssetImage04.jpg";
+import assetImage05 from "~/assets/redesign/asset-images-optimized/RAssetImage05.jpg";
+import assetImage06 from "~/assets/redesign/asset-images-optimized/RAssetImage06.jpg";
+import assetImage07 from "~/assets/redesign/asset-images-optimized/RAssetImage07.jpg";
 
 export const ASSET_IMAGE_URLS_BY_ADDRESS: Record<string, string> = {
   KT1XLUiaPpivxi2e4U1wEctQ7DKDkdz9GQgK: assetImage01,

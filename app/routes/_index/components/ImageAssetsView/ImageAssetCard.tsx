@@ -66,7 +66,14 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
         to={generatePath(ROUTES.trade, { address: asset.address })}
       >
         <div className={styles.media}>
-          <img alt="" className={styles.image} src={imageUrl} />
+          <img
+            alt=""
+            className={styles.image}
+            decoding="async"
+            fetchPriority="low"
+            loading="lazy"
+            src={imageUrl}
+          />
           <div aria-hidden="true" className={styles.imageOverlay} />
           <div className={styles.cardHeader}>
             <div className={styles.assetBadgeWrapper}>
