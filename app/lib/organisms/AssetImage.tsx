@@ -3,6 +3,7 @@ import React, { FC, useMemo } from 'react';
 import { buildTokenImagesStack } from '~/lib/images-uri';
 import { ImageStacked, ImageStackedProps } from '~/lib/molecules/ImageStacked';
 import { ASSET_IMAGE_URLS_BY_ADDRESS } from '~/mocks/asset-image-urls.mock';
+import UsdtToken from '~/assets/redesign/deposit/UsdtToken.png';
 import { AssetMetadataBase } from '../types/metadata';
 
 export interface AssetImageProps
@@ -47,6 +48,10 @@ export const AssetImage: FC<AssetImageProps> = ({
 
     if (temporaryMockImage) {
       return [temporaryMockImage];
+    }
+
+    if (metadata?.symbol === 'USDT') {
+      return [UsdtToken];
     }
 
     return buildTokenImagesStack(metadata?.thumbnailUri);
