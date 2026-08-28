@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { ROUTES } from "~/consts";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
-import { Reveal } from "~/lib/atoms/Reveal";
+import { revealVariants } from "~/lib/animations/animations";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
@@ -17,7 +17,6 @@ import { AssetSaleProgress } from "~/routes/_index/components/AssetsCardsView/As
 import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 
 import styles from "./ImageAssetsView.module.css";
-import { revealVariants } from "~/lib/animations/animations";
 
 const fallbackImageUrl = Object.values(ASSET_IMAGE_URLS_BY_ADDRESS)[0];
 const revealedImageAssetAddresses = new Set<string>();
@@ -43,6 +42,8 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
     ASSET_IMAGE_URLS_BY_ADDRESS[asset.address] ?? fallbackImageUrl;
   const shouldAnimateChartReveal =
     !wasPreviouslyRevealed.current && !shouldReduceMotion;
+  const cardAnimationState =
+    wasPreviouslyRevealed.current || isCardInView ? "visible" : "hidden";
 
   useEffect(() => {
     if (wasPreviouslyRevealed.current || !isCardInView) {
@@ -54,7 +55,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
 
   return (
     <motion.div
-      animate={isCardInView ? "visible" : "hidden"}
+      animate={cardAnimationState}
       className={styles.card}
       custom={0.1}
       initial={shouldAnimateChartReveal ? "hidden" : "visible"}
