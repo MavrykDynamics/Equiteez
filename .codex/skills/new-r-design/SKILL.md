@@ -309,6 +309,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Controlled with `isOpen` and `onClose`; both tabs use local mock values until deposit APIs and wallet flows are connected.
 - Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
 
+## RWithdrawFundsModal
+
+- Purpose: Route-local redesign withdrawal modal with recipient, asset, amount, summary, and confirmed transfer state.
+- Location: `app/routes/portfolio/components/WelcomeBlock/RWithdrawFundsModal.tsx`
+- Reusability notes: Controlled with `isOpen` and `onClose`; it draws available assets from the portfolio/on-chain providers and sends a Beacon wallet transfer. Recipient KYC eligibility is intentionally not checked at this time.
+- Related tokens: `CustomPopup`, `RButton`, `RCustomDropdown`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
+
 ## RFeatureCard
 
 - Purpose: Shared redesign icon-card organism for feature, framework, and advantage cards.
