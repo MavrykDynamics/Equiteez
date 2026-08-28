@@ -24,6 +24,8 @@ import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
 
+import { RMarketDepthChart } from "./RMarketDepthChart";
+
 type AssetDetailsProps = {
   asset: AssetType;
   orderBookControl?: ReactNode;
@@ -152,25 +154,6 @@ function getServerPriceChange(
   };
 }
 
-function formatPriceChange(view: PriceChangeView) {
-  if (view.amount === null || view.percentage === null) {
-    return {
-      className: styles.neutralPriceChange,
-      iconName: null,
-      text: "--",
-    };
-  }
-
-  return {
-    className:
-      view.tone === "positive"
-        ? styles.positivePriceChange
-        : styles.negativePriceChange,
-    iconName: view.tone === "positive" ? "trending-up" : "trending-down",
-    text: null,
-  };
-}
-
 export function PriceChart({
   asset,
   onToneChange,
@@ -185,6 +168,7 @@ export function PriceChart({
     tone: "positive",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isDepthChartVisible, setIsDepthChartVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
     null
@@ -248,9 +232,6 @@ export function PriceChart({
   }, [asset.metadata.symbol, range]);
 
   const tone = priceChangeView.tone;
-  const priceChangeDisplay = formatPriceChange(priceChangeView);
-  const priceChangePrefix =
-    priceChangeView.amount !== null && priceChangeView.amount < 0 ? "-" : "+";
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -439,15 +420,21 @@ export function PriceChart({
       </div>
       <div className={styles.depthChartAction}>
         <button
-          aria-selected
+          aria-expanded={isDepthChartVisible}
           className={styles.toggleButton}
-          role="tab"
+          onClick={() => setIsDepthChartVisible((isVisible) => !isVisible)}
           type="button"
         >
-          <RIcon name="arrow-long-down" />
-          <span className={styles.toggleLabel}>View Depth Chart</span>
+          <RIcon
+            name={isDepthChartVisible ? "arrow-long-up" : "arrow-long-down"}
+            size="small"
+          />
+          <span className={styles.toggleLabel}>
+            {isDepthChartVisible ? "Hide Depth Chart" : "View Depth Chart"}
+          </span>
         </button>
       </div>
+      {isDepthChartVisible ? <RMarketDepthChart asset={asset} /> : null}
     </section>
   );
 }
