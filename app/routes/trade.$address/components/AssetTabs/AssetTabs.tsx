@@ -57,7 +57,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
       open_orders: <OpenOrdersTab asset={asset} />,
       order_history: <OrderHistoryTab asset={asset} />,
       asset_overview: <AssetOverviewTab asset={asset} />,
-      offering: <OfferingTab />,
+      offering: <OfferingTab asset={asset} />,
       ROI_calculator: <ROICalculator />,
       blockchain: <BlockchainTab asset={asset} />,
     }),
