@@ -86,7 +86,7 @@ export const toTransferParams = async (
   if (isMavSlug(asset)) {
     return {
       to: toPkh,
-      amount: tokensToAtoms(amount, assetMetadata.decimals).toNumber(),
+      amount: amount,
       source: fromPkh,
     };
   }

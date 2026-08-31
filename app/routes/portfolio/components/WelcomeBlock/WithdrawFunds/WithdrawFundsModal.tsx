@@ -9,7 +9,6 @@ import {
   toTransferParams,
 } from "~/lib/utils/helpers";
 import Money from "~/lib/atoms/Money";
-import { AssetImage } from "~/lib/organisms/AssetImage";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -30,6 +29,8 @@ import { Field } from "./Field";
 import { SuccessStep } from "./SuccessStep";
 import { WithdrawalSummary } from "./WithdrawalSummary";
 import { useWithdrawableAssets } from "./useWithdrawableAssets";
+import { MVRK_ASSET_SLUG, MVRK_CONTRACT_ADDRESS } from "~/lib/metadata";
+import { AssetIcon } from "~/templates/AssetIcon";
 
 type WithdrawStep = "form" | "success";
 
@@ -112,9 +113,13 @@ export function WithdrawFundsModal({
 
     try {
       const tezos = dapp.tezos();
+      const tokenSlug =
+        selectedAsset.metadata.address === MVRK_CONTRACT_ADDRESS
+          ? MVRK_ASSET_SLUG
+          : selectedAsset.tokenSlug;
       const transferParams = await toTransferParams(
         tezos,
-        selectedAsset.tokenSlug,
+        tokenSlug,
         selectedAsset.metadata,
         userAddress,
         recipientAddress.trim(),
@@ -254,7 +259,7 @@ export function WithdrawFundsModal({
                   <RDropdownFaceContent className={styles.assetTrigger}>
                     {selectedAsset ? (
                       <span className={styles.assetFace}>
-                        <AssetImage
+                        <AssetIcon
                           assetSlug={selectedAsset.tokenSlug}
                           className={styles.assetFaceImage}
                           metadata={selectedAsset.metadata}
@@ -278,10 +283,9 @@ export function WithdrawFundsModal({
                         key={asset.tokenSlug}
                         onClick={() => setSelectedAssetSlug(asset.tokenSlug)}
                       >
-                        <AssetImage
+                        <AssetIcon
                           assetSlug={asset.tokenSlug}
                           className={styles.assetOptionImage}
-                          metadata={asset.metadata}
                           size={32}
                         />
                         <span className={styles.assetOptionContent}>

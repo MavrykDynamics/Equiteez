@@ -2,16 +2,19 @@ import { TokenMetadata, TokenStandardsEnum } from "./types";
 import { stablecoinContract } from "~/consts/contracts";
 import { toTokenSlug } from "~/lib/assets";
 import { Asset, FA2Token } from "~/lib/assets/types";
+import mvrkSvg from "app/icons/mvrkToken.svg";
 
 export const MVRK_CONTRACT_ADDRESS = "mv2ZZZZZZZZZZZZZZZZZZZZZZZZZZZDXMF2d";
 export const MVRK_ASSET_SLUG = "mav";
+
+const mvrkUri = `data:image/svg+xml;utf8,${encodeURIComponent(mvrkSvg)}`;
 
 export const MVRK_METADATA: TokenMetadata = {
   decimals: 6,
   symbol: "MVRK",
   name: "Mavryk",
   standard: TokenStandardsEnum.Mav,
-  thumbnailUri: "ipfs://QmbHaFX2gyFEzdwp54vqtf7McL74BvT7r4pw6UVyfEdKhu",
+  thumbnailUri: mvrkUri,
   address: MVRK_CONTRACT_ADDRESS,
   id: "0",
 };
