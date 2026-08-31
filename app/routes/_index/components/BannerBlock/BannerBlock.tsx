@@ -55,7 +55,7 @@ const bannerSlides: BannerSlide[] = [
 ];
 
 export function BannerBlock() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedSlide, setSelectedSlide] = useState(0);
 
   const handleSelect = useCallback(() => {
@@ -115,7 +115,11 @@ export function BannerBlock() {
                     >
                       {slide.title}
                     </RHeading>
-                    <RText className={styles.description} color="neutral-white" size="body-s">
+                    <RText
+                      className={styles.description}
+                      color="neutral-white"
+                      size="body-s"
+                    >
                       {slide.description}
                     </RText>
                   </div>
@@ -141,7 +145,11 @@ export function BannerBlock() {
         </div>
       </div>
 
-      <div aria-label="Banner slides" className={styles.pagination} role="tablist">
+      <div
+        aria-label="Banner slides"
+        className={styles.pagination}
+        role="tablist"
+      >
         {bannerSlides.map((slide, index) => (
           <button
             aria-label={`Show ${slide.title}`}

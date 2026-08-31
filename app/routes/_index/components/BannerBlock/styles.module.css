@@ -14,6 +14,7 @@
 
 .slideContainer {
   display: flex;
+  gap: 20px;
   touch-action: pan-y pinch-zoom;
 }
 
