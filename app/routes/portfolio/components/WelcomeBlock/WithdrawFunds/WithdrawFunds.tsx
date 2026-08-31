@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RWithdrawFundsModal } from "./RWithdrawFundsModal";
 
+import { WithdrawFundsModal } from "./WithdrawFundsModal";
 import styles from "./WithdrawFunds.module.css";
 
 export function WithdrawFunds() {
@@ -22,7 +22,7 @@ export function WithdrawFunds() {
       >
         Withdraw
       </RButton>
-      <RWithdrawFundsModal
+      <WithdrawFundsModal
         isOpen={isWithdrawModalOpen}
         onClose={() => setIsWithdrawModalOpen(false)}
       />

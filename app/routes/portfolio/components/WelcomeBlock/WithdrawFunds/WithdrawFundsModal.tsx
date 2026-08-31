@@ -25,23 +25,23 @@ import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.pro
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
-import styles from "./RWithdrawFundsModal.module.css";
-import {
-  type WithdrawableAsset,
-  useWithdrawableAssets,
-} from "./useWithdrawableAssets";
+import styles from "./WithdrawFundsModal.module.css";
+import { Field } from "./Field";
+import { SuccessStep } from "./SuccessStep";
+import { WithdrawalSummary } from "./WithdrawalSummary";
+import { useWithdrawableAssets } from "./useWithdrawableAssets";
 
 type WithdrawStep = "form" | "success";
 
-type RWithdrawFundsModalProps = {
+type WithdrawFundsModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export function RWithdrawFundsModal({
+export function WithdrawFundsModal({
   isOpen,
   onClose,
-}: RWithdrawFundsModalProps) {
+}: WithdrawFundsModalProps) {
   const queryClient = useQueryClient();
   const { bug } = useToasterContext();
   const { userAddress } = usePortfolioContext();
@@ -284,9 +284,23 @@ export function RWithdrawFundsModal({
                           metadata={asset.metadata}
                           size={32}
                         />
-                        <span className={styles.assetOptionLabel}>
-                          <strong>{asset.metadata.symbol}</strong>
-                          <span>{asset.metadata.name}</span>
+                        <span className={styles.assetOptionContent}>
+                          <span className={styles.assetOptionLabel}>
+                            <strong>{asset.metadata.symbol}</strong>
+                            <span>{asset.metadata.name}</span>
+                          </span>
+                          <span className={styles.assetOptionValue}>
+                            {asset.priceUsd ? (
+                              <>
+                                $<Money fiat tooltip={false}>{asset.priceUsd}</Money>
+                                <span className={styles.assetOptionValueSuffix}>
+                                  / token
+                                </span>
+                              </>
+                            ) : (
+                              "Price unavailable"
+                            )}
+                          </span>
                         </span>
                       </RDropdownBodyContentItem>
                     ))}
@@ -381,169 +395,5 @@ export function RWithdrawFundsModal({
         />
       )}
     </CustomPopup>
-  );
-}
-
-function Field({
-  children,
-  className,
-  label,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  label: string;
-}) {
-  return (
-    <label className={[styles.field, className].filter(Boolean).join(" ")}>
-      <RText size="body-sm">{label}</RText>
-      {children}
-    </label>
-  );
-}
-
-function WithdrawalSummary({
-  amount,
-  asset,
-  isOpen,
-  onToggle,
-}: {
-  amount: string;
-  asset?: WithdrawableAsset;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  const requestedAmount = new BigNumber(amount);
-  const displayAmount = requestedAmount.isFinite()
-    ? requestedAmount
-    : new BigNumber(0);
-  const tokenAmount = (
-    <>
-      <Money tooltip={false}>{displayAmount}</Money>{" "}
-      {asset?.metadata.symbol ?? ""}
-    </>
-  );
-
-  return (
-    <section aria-label="Withdrawal summary" className={styles.summary}>
-      <button
-        aria-controls="withdrawal-summary-details"
-        aria-expanded={isOpen}
-        className={styles.summaryTrigger}
-        onClick={onToggle}
-        type="button"
-      >
-        <RText size="body-sm" weight="medium">
-          Summary
-        </RText>
-        <span className={styles.summaryTriggerValue}>
-          <RText size="body-sm" weight="medium">
-            {tokenAmount}
-          </RText>
-          <RIcon
-            aria-hidden="true"
-            name={isOpen ? "arrow-short-up" : "arrow-short-down"}
-            size="small"
-          />
-        </span>
-      </button>
-      {isOpen ? (
-        <div className={styles.summaryDetails} id="withdrawal-summary-details">
-          <SummaryRow label="Withdraw Amount" value={tokenAmount} />
-          <SummaryRow label="Network Fee" value="~ $0.01" />
-          <SummaryRow isTotal label="Total" value={tokenAmount} />
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-function SummaryRow({
-  isTotal = false,
-  label,
-  value,
-}: {
-  isTotal?: boolean;
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className={isTotal ? styles.summaryTotal : styles.summaryRow}>
-      <RText size="body-sm" weight={isTotal ? "medium" : "regular"}>
-        {label}
-      </RText>
-      <RText size="body-sm" weight="medium">
-        {value}
-      </RText>
-    </div>
-  );
-}
-
-function formatTransactionHash(hash: string) {
-  const prefixLength = 10;
-  const suffixLength = 4;
-
-  if (hash.length <= prefixLength + suffixLength) return hash;
-
-  return `${hash.slice(0, prefixLength)}...${hash.slice(-suffixLength)}`;
-}
-
-function SuccessStep({
-  amount,
-  asset,
-  onClose,
-  onCopy,
-  transactionHash,
-}: {
-  amount: string;
-  asset: string;
-  onClose: () => void;
-  onCopy: () => void;
-  transactionHash: string;
-}) {
-  return (
-    <div className={styles.statusContent}>
-      <div className={styles.successIcon}>
-        <RIcon aria-hidden="true" name="check" size="medium" />
-      </div>
-      <div className={styles.successHeader}>
-        <RHeading className={styles.title} size="h6" weight="medium">
-          Withdraw Confirmed
-        </RHeading>
-        <RText
-          className={styles.description}
-          color="neutral-700"
-          size="body-sm"
-        >
-          Your funds have been successfully transferred.
-          <br />
-          <strong>
-            {amount} {asset}
-          </strong>{" "}
-          is now available in your wallet and ready to use.
-        </RText>
-      </div>
-      <div className={styles.transactionPill}>
-        <span className={styles.confirmed}>
-          <span className={styles.confirmedDot} />
-          Confirmed on-chain
-        </span>
-        <span className={styles.transactionDivider} />
-        <span className={styles.transaction}>
-          Txn{" "}
-          <button
-            aria-label="Copy transaction hash"
-            onClick={onCopy}
-            type="button"
-          >
-            {formatTransactionHash(transactionHash)}
-            <RIcon aria-hidden="true" name="copy" size="small" />
-          </button>
-        </span>
-      </div>
-      <div className={styles.successDivider} />
-      <RButton className={styles.submitButton} onClick={onClose} tone="black">
-        OK
-      </RButton>
-    </div>
   );
 }
