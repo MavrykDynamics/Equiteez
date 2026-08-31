@@ -32,19 +32,13 @@ export function WithdrawalSummary({
       ? asset.priceUsd.times(displayAmount)
       : null;
   const totalUsd = amountUsd ? amountUsd.plus(NETWORK_FEE_USD) : null;
-  const tokenAmount = (
-    <>
-      <Money tooltip={false}>{displayAmount}</Money>{" "}
-      {asset?.metadata.symbol ?? ""}
-    </>
-  );
   const amountUsdValue = amountUsd ? (
-    <>
+    <span>
       $
       <Money fiat tooltip={false}>
         {amountUsd}
       </Money>
-    </>
+    </span>
   ) : (
     "Price unavailable"
   );
@@ -57,12 +51,12 @@ export function WithdrawalSummary({
     </span>
   );
   const totalUsdValue = totalUsd ? (
-    <>
+    <span>
       $
       <Money fiat tooltip={false}>
         {totalUsd}
       </Money>
-    </>
+    </span>
   ) : (
     feeUsdValue
   );
@@ -76,15 +70,13 @@ export function WithdrawalSummary({
         onClick={onToggle}
         type="button"
       >
-        <RText size="body-sm" weight="medium">
+        <RText size="body-sm">
           Summary
         </RText>
         <span className={styles.summaryTriggerValue}>
-          <span className={styles.summaryTriggerAmounts}>
-            <RText color="neutral-700" size="body-xs">
-              {totalUsdValue}
-            </RText>
-          </span>
+          <RText size="body-sm" weight="medium">
+            {totalUsdValue}
+          </RText>
           <RIcon
             aria-hidden="true"
             name={isOpen ? "arrow-short-up" : "arrow-short-down"}
@@ -93,14 +85,12 @@ export function WithdrawalSummary({
         </span>
       </button>
       {isOpen ? (
-        <div className={styles.summaryDetails} id="withdrawal-summary-details">
-          <SummaryRow
-            label="Withdraw Amount"
-            value={
-              <span className={styles.summaryUsdValue}>{amountUsdValue}</span>
-            }
-          />
-          <SummaryRow label="Network Fee" value={feeUsdValue} />
+        <div className={styles.summaryExpanded} id="withdrawal-summary-details">
+          <div className={styles.summaryDetails}>
+            <SummaryRow label="Withdraw Amount" value={amountUsdValue} />
+            <SummaryRow label="Network Fee" value={<span>~ {feeUsdValue}</span>} />
+          </div>
+          <div aria-hidden="true" className={styles.summaryDivider} />
           <SummaryRow isTotal label="Total" value={totalUsdValue} />
         </div>
       ) : null}
@@ -119,10 +109,16 @@ function SummaryRow({
 }) {
   return (
     <div className={isTotal ? styles.summaryTotal : styles.summaryRow}>
-      <RText size="body-sm" weight={isTotal ? "medium" : "regular"}>
+      <RText
+        color={isTotal ? "neutral-black" : "neutral-700"}
+        size={isTotal ? "body-sm" : "body-s"}
+      >
         {label}
       </RText>
-      <RText size="body-sm" weight="medium">
+      <RText
+        size={isTotal ? "body-sm" : "body-s"}
+        weight={isTotal ? "medium" : "regular"}
+      >
         {value}
       </RText>
     </div>
