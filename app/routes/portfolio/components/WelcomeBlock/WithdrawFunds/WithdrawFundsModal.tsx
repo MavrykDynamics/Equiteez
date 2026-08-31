@@ -289,18 +289,6 @@ export function WithdrawFundsModal({
                             <strong>{asset.metadata.symbol}</strong>
                             <span>{asset.metadata.name}</span>
                           </span>
-                          <span className={styles.assetOptionValue}>
-                            {asset.priceUsd ? (
-                              <>
-                                $<Money fiat tooltip={false}>{asset.priceUsd}</Money>
-                                <span className={styles.assetOptionValueSuffix}>
-                                  / token
-                                </span>
-                              </>
-                            ) : (
-                              "Price unavailable"
-                            )}
-                          </span>
                         </span>
                       </RDropdownBodyContentItem>
                     ))}

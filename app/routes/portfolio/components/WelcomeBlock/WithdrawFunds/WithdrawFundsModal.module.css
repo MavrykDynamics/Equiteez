@@ -291,10 +291,14 @@
 .summary {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   padding: var(--r-space-4);
   background: var(--r-color-neutral-50);
   border-radius: var(--r-radius-sm);
+  transition: gap var(--r-motion-duration-base) var(--r-motion-ease-premium);
+}
+.summary[data-open="true"] {
+  gap: 10px;
 }
 .summaryTrigger,
 .summaryTriggerValue {
@@ -304,6 +308,13 @@
 }
 .summaryTriggerValue {
   min-width: 0;
+}
+.summaryTriggerValue svg {
+  transition: transform var(--r-motion-duration-base)
+    var(--r-motion-ease-premium);
+}
+.summary[data-open="true"] .summaryTriggerValue svg {
+  transform: rotate(180deg);
 }
 .summaryTrigger {
   width: 100%;
@@ -325,7 +336,33 @@
   gap: var(--r-space-1);
 }
 .summaryExpanded {
-  display: contents;
+  display: grid;
+  grid-template-rows: 0fr;
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--r-motion-duration-base)
+      var(--r-motion-ease-premium),
+    opacity var(--r-motion-duration-fast) ease,
+    visibility 0s linear var(--r-motion-duration-base);
+}
+.summary[data-open="true"] .summaryExpanded {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
+  transition:
+    grid-template-rows var(--r-motion-duration-base)
+      var(--r-motion-ease-premium),
+    opacity var(--r-motion-duration-fast) ease,
+    visibility 0s;
+}
+.summaryExpandedContent {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
 }
 .summaryDivider {
   width: 100%;
@@ -346,6 +383,13 @@
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
+}
+@media (prefers-reduced-motion: reduce) {
+  .summary,
+  .summaryTriggerValue svg,
+  .summaryExpanded {
+    transition: none;
+  }
 }
 .submitButton,
 .closeAction {

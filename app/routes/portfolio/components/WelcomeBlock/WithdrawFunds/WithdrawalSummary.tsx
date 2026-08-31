@@ -62,7 +62,11 @@ export function WithdrawalSummary({
   );
 
   return (
-    <section aria-label="Withdrawal summary" className={styles.summary}>
+    <section
+      aria-label="Withdrawal summary"
+      className={styles.summary}
+      data-open={isOpen}
+    >
       <button
         aria-controls="withdrawal-summary-details"
         aria-expanded={isOpen}
@@ -70,30 +74,31 @@ export function WithdrawalSummary({
         onClick={onToggle}
         type="button"
       >
-        <RText size="body-sm">
-          Summary
-        </RText>
+        <RText size="body-sm">Summary</RText>
         <span className={styles.summaryTriggerValue}>
           <RText size="body-sm" weight="medium">
             {totalUsdValue}
           </RText>
-          <RIcon
-            aria-hidden="true"
-            name={isOpen ? "arrow-short-up" : "arrow-short-down"}
-            size="small"
-          />
+          <RIcon aria-hidden="true" name="arrow-short-down" size="small" />
         </span>
       </button>
-      {isOpen ? (
-        <div className={styles.summaryExpanded} id="withdrawal-summary-details">
+      <div
+        aria-hidden={!isOpen}
+        className={styles.summaryExpanded}
+        id="withdrawal-summary-details"
+      >
+        <div className={styles.summaryExpandedContent}>
           <div className={styles.summaryDetails}>
             <SummaryRow label="Withdraw Amount" value={amountUsdValue} />
-            <SummaryRow label="Network Fee" value={<span>~ {feeUsdValue}</span>} />
+            <SummaryRow
+              label="Network Fee"
+              value={<span>~ {feeUsdValue}</span>}
+            />
           </div>
           <div aria-hidden="true" className={styles.summaryDivider} />
           <SummaryRow isTotal label="Total" value={totalUsdValue} />
         </div>
-      ) : null}
+      </div>
     </section>
   );
 }
