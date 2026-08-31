@@ -59,7 +59,7 @@ export function HighlightCard(props: { asset: AssetHighlightType }) {
             <RText
               className={styles.priceChange}
               size="body-s"
-              color="neutral-600"
+              color="neutral-700"
             >
               --
             </RText>

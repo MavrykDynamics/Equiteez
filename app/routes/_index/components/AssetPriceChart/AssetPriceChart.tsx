@@ -83,7 +83,7 @@ export function AssetPriceChart({
           .trim();
         const areaTopColor = tone === "positive" ? "#22A55B40" : "#C0453C40";
         const axisColor =
-          computedStyles.getPropertyValue("--r-color-neutral-600").trim() ||
+          computedStyles.getPropertyValue("--r-color-neutral-700").trim() ||
           "#757575";
         const axisBorderColor =
           computedStyles.getPropertyValue("--r-color-neutral-100").trim() ||

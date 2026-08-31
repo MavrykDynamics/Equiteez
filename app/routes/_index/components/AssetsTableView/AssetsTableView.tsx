@@ -32,7 +32,7 @@ export function AssetsTableView({ assets }: AssetsTableViewProps) {
                 role="columnheader"
               >
                 {column ? (
-                  <RText color="neutral-600" size="body-xs">
+                  <RText color="neutral-700" size="body-xs">
                     {column}
                   </RText>
                 ) : null}

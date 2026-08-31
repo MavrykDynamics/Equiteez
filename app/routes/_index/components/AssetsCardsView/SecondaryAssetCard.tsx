@@ -54,7 +54,7 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
 
         {/*TODO remove mock data*/}
         <div className={styles.projectedYield}>
-          <RText color="neutral-600" size="body-s">
+          <RText color="neutral-700" size="body-s">
             Net yield
           </RText>
           <RText size="body-s" weight="medium" color="accent-green-500">

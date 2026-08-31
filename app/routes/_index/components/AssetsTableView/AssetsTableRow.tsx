@@ -40,7 +40,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
             <RText size="body-sm" weight="medium">
               {asset.metadata.symbol}
             </RText>
-            <RText className={styles.assetIdentityName} color="neutral-600" size="body-s">
+            <RText className={styles.assetIdentityName} color="neutral-700" size="body-s">
               {asset.metadata.name}
             </RText>
           </div>

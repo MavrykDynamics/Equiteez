@@ -86,7 +86,7 @@ export function ExploreAssets() {
       ) : (
         <Reveal delay={0.1} preset="fade">
           <div className={styles.emptyState}>
-            <RText size="body-sm" color="neutral-600">
+            <RText size="body-sm" color="neutral-700">
               No Results Found
             </RText>
           </div>

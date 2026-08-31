@@ -100,11 +100,11 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
               </RText>
               {isPrimaryIssuance ? (
                 <div className={styles.listingPriceMeta}>
-                  <RText color="neutral-600" size="body-s">
+                  <RText color="neutral-700" size="body-s">
                     Listing Price
                   </RText>
                   <span aria-hidden="true" className={styles.separator} />
-                  <RText color="neutral-600" size="body-s">
+                  <RText color="neutral-700" size="body-s">
                     Fixed
                   </RText>
                 </div>
@@ -164,7 +164,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
             )}
 
             <div className={styles.yieldRow}>
-              <RText color="neutral-600" size="body-s">
+              <RText color="neutral-700" size="body-s">
                 {isPrimaryIssuance ? "Projected Yield" : "Net yield"}
               </RText>
               <RText color="accent-green-500" size="body-s" weight="medium">

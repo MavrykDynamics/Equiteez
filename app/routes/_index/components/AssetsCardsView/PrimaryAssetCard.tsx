@@ -43,11 +43,11 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
           </Money>
         </RText>
         <div className={styles.priceDescription}>
-          <RText color="neutral-600" size="body-s">
+          <RText color="neutral-700" size="body-s">
             Listing Price
           </RText>
           <span aria-hidden="true" className={styles.separator} />
-          <RText color="neutral-600" size="body-s">
+          <RText color="neutral-700" size="body-s">
             Fixed
           </RText>
         </div>
@@ -60,7 +60,7 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
 
         {/*TODO remove mock data*/}
         <div className={styles.projectedYield}>
-          <RText color="neutral-600" size="body-s">
+          <RText color="neutral-700" size="body-s">
             Projected Yield
           </RText>
           <RText size="body-s" weight="medium" color="accent-green-500">
