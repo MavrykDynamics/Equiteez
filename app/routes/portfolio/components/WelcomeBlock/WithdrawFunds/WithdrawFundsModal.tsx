@@ -146,9 +146,6 @@ export function WithdrawFundsModal({
         queryClient.invalidateQueries({
           queryKey: ["rwa-wallet-portfolio", userAddress],
         }),
-        queryClient.invalidateQueries({
-          queryKey: [userAddress, "fetchUserAssets"],
-        }),
       ]);
       setStep("success");
     } catch (error) {
