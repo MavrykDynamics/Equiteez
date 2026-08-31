@@ -18,7 +18,7 @@ export function RHeader() {
     { label: "Discover", to: ROUTES.home },
     {
       label: "Trade",
-      to: generatePath(ROUTES.trade, { address: assets[0].address }),
+      to: generatePath(ROUTES.trade, { address: assets[0]?.address ?? "" }),
     },
     { label: "Portfolio", to: ROUTES.portfolio },
   ];
