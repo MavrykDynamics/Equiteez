@@ -136,13 +136,15 @@ export function PortfolioValueChart() {
           ))}
         </div>
 
-        <div className={isPositiveChange ? styles.change : styles.changeRed}>
-          <RPriceChange
-            amount={portfolioHistoryQuery.data?.change_abs ?? 0}
-            percentage={portfolioHistoryQuery.data?.change_pct ?? 0}
-            showPeriodLabel={false}
-          />
-        </div>
+        {portfolioHistoryQuery.data?.change_abs ? (
+          <div className={isPositiveChange ? styles.change : styles.changeRed}>
+            <RPriceChange
+              amount={portfolioHistoryQuery.data?.change_abs ?? 0}
+              percentage={portfolioHistoryQuery.data?.change_pct ?? 0}
+              showPeriodLabel={false}
+            />
+          </div>
+        ) : null}
       </div>
       <div className={styles.chartCanvas} ref={chartCanvasRef}>
         {portfolioHistoryQuery.isLoading ||
