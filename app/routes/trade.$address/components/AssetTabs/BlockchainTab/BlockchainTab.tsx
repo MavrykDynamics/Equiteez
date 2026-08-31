@@ -5,31 +5,43 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 
 import styles from "./BlockchainTab.module.css";
+import { useMemo } from "react";
+import Money from "~/lib/atoms/Money";
+import HashShortView from "~/lib/atoms/HashShortView";
 
 type BlockchainDetail = {
   isLink?: boolean;
   label: string;
-  value: string;
+  value: React.ReactNode;
 };
 
-const blockchainDetails: BlockchainDetail[] = [
-  { isLink: true, label: "Token Contract", value: "KT11PDIIV...1tbo" },
-  { label: "Token Standard", value: "MRC-30" },
-  { label: "Token Supply", value: "496,767" },
-  { label: "Holders", value: "2,091" },
-  { label: "Asset Issuer", value: "Equiteez Issuance Ltd" },
-  { isLink: true, label: "Issuer Address", value: "mv1Qk...8fRt" },
-  { isLink: true, label: "Whitelist Registry", value: "KT1WHT...a91c" },
-  {
-    isLink: true,
-    label: "Distribution Contract",
-    value: "KT1DIS...6b2e",
-  },
-  { label: "Price Oracle", value: "Maven Finance" },
-  { label: "Chain", value: "Mavryk Mainnet" },
-];
+function BlockchainDetailList({ asset }: { asset: AssetType }) {
+  const blockchainDetails: BlockchainDetail[] = useMemo(
+    () => [
+      {
+        isLink: true,
+        label: "Token Contract",
+        value: <HashShortView hash={asset.address} />,
+      },
+      { label: "Token Standard", value: "RWA" },
+      {
+        label: "Token Supply",
+        value: <Money>{asset.finance.max_supply}</Money>,
+      },
+      { label: "Holders", value: "-" },
+      { label: "Asset Issuer", value: "Equiteez Issuance Ltd" },
+      { label: "Issuer Address", value: "-" },
+      { label: "Whitelist Registry", value: "-" },
+      {
+        label: "Distribution Contract",
+        value: "-",
+      },
+      { label: "Price Oracle", value: "-" },
+      { label: "Chain", value: "Mavryk Basenet" },
+    ],
+    [asset]
+  );
 
-function BlockchainDetailList() {
   return (
     <dl className={styles.detailList}>
       {blockchainDetails.map(({ isLink, label, value }) => (
@@ -61,7 +73,7 @@ export function BlockchainTab({ asset }: { asset: AssetType }) {
         <RHeading id="network-heading" size="h7" weight="medium">
           Mavryk Network
         </RHeading>
-        <BlockchainDetailList />
+        <BlockchainDetailList asset={asset} />
       </section>
 
       <div aria-hidden="true" className={styles.divider} />
