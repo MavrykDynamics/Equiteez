@@ -259,7 +259,6 @@ export function WithdrawFundsModal({
                         <AssetIcon
                           assetSlug={selectedAsset.tokenSlug}
                           className={styles.assetFaceImage}
-                          metadata={selectedAsset.metadata}
                           size={24}
                         />
                         <span className={styles.assetValue}>
