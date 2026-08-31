@@ -124,6 +124,8 @@ function AssetIcon({ asset }: { asset: AssetType }) {
     <img
       alt={asset.metadata.name}
       className={styles.assetIcon}
+      decoding="async"
+      loading="lazy"
       src={ASSET_IMAGE_URLS_BY_ADDRESS[asset.address]}
     />
   );

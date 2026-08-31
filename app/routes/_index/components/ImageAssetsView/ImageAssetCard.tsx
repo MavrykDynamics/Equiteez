@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { ROUTES } from "~/consts";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
+import { revealVariants } from "~/lib/animations/animations";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
@@ -32,7 +33,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
   const shouldReduceMotion = useReducedMotion();
   const isCardInView = useInView(cardRef, {
     amount: 0.35,
-    margin: "0px 0px -12% 0px",
+    margin: "0px 0px -20% 0px",
     once: true,
   });
   const { isNegative, points, price, priceChange } = useAssetPrice(asset);
@@ -41,6 +42,8 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
     ASSET_IMAGE_URLS_BY_ADDRESS[asset.address] ?? fallbackImageUrl;
   const shouldAnimateChartReveal =
     !wasPreviouslyRevealed.current && !shouldReduceMotion;
+  const cardAnimationState =
+    wasPreviouslyRevealed.current || isCardInView ? "visible" : "hidden";
 
   useEffect(() => {
     if (wasPreviouslyRevealed.current || !isCardInView) {
@@ -51,13 +54,27 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
   }, [asset.address, isCardInView]);
 
   return (
-    <div className={styles.card} ref={cardRef}>
+    <motion.div
+      animate={cardAnimationState}
+      className={styles.card}
+      custom={0.1}
+      initial={shouldAnimateChartReveal ? "hidden" : "visible"}
+      ref={cardRef}
+      variants={revealVariants.fade}
+    >
       <Link
         className={styles.cardLink}
         to={generatePath(ROUTES.trade, { address: asset.address })}
       >
         <div className={styles.media}>
-          <img alt="" className={styles.image} src={imageUrl} />
+          <img
+            alt=""
+            className={styles.image}
+            decoding="async"
+            fetchPriority="low"
+            loading="lazy"
+            src={imageUrl}
+          />
           <div aria-hidden="true" className={styles.imageOverlay} />
           <div className={styles.cardHeader}>
             <div className={styles.assetBadgeWrapper}>
@@ -157,6 +174,6 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
           </div>
         </div>
       </Link>
-    </div>
+    </motion.div>
   );
 }

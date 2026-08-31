@@ -86,7 +86,7 @@ export const toTransferParams = async (
   if (isMavSlug(asset)) {
     return {
       to: toPkh,
-      amount: amount as any,
+      amount: tokensToAtoms(amount, assetMetadata.decimals).toNumber(),
       source: fromPkh,
     };
   }
@@ -105,8 +105,8 @@ export const toTransferParams = async (
         txs: [
           {
             to_: toPkh,
-            token_id: 0,
-            amount: amount,
+            token_id: asset.id,
+            amount: pennyAmount,
           },
         ],
       },

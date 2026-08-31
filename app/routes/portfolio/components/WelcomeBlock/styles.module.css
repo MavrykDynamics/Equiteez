@@ -10,3 +10,9 @@
   align-items: center;
   width: 100%;
 }
+
+.actions {
+  display: flex;
+  gap: var(--r-space-3);
+  align-items: center;
+}

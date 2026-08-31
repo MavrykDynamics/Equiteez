@@ -4,7 +4,8 @@ import { ROUTES } from "~/consts";
 import { useNavigate } from "@remix-run/react";
 import styles from "./styles.module.css";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RButton } from "~/lib/atoms/RButton";
+import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
+import { WithdrawFunds } from "./WithdrawFunds";
 
 export function WelcomeBlock({
   activeTab,
@@ -36,9 +37,10 @@ export function WelcomeBlock({
     <div className={styles.wrapper}>
       <div className={styles.welcome}>
         <RHeading weight="medium" size="h5">Welcome, {userName}</RHeading>
-        <RButton size="small" variant="primary" tone="black">
-          Deposit
-        </RButton>
+        <div className={styles.actions}>
+          <DepositFunds />
+          <WithdrawFunds />
+        </div>
       </div>
       <RTabSwitcher
         activeTabId={activeTab}
