@@ -1,5 +1,5 @@
 import { api } from "~/lib/utils/api";
-import { rwaApiUrl } from "~/lib/apis/rwa";
+import { rwaApiUrl } from "~/lib/apis/rwa/config";
 import {
   AssetsHighlightsSchema,
   AssetsSchema,
