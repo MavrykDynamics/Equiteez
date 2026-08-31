@@ -21,8 +21,8 @@ import {
   RDropdownFaceContent,
 } from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
-import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 import styles from "./RWithdrawFundsModal.module.css";
@@ -44,7 +44,7 @@ export function RWithdrawFundsModal({
 }: RWithdrawFundsModalProps) {
   const queryClient = useQueryClient();
   const { bug } = useToasterContext();
-  const { userAddress } = useUserContext();
+  const { userAddress } = usePortfolioContext();
   const { dapp } = useWalletContext();
   const { assets, isLoading: isAssetsLoading } = useWithdrawableAssets();
   const [step, setStep] = useState<WithdrawStep>("form");
@@ -131,7 +131,6 @@ export function RWithdrawFundsModal({
             .send()
         : await tezos.wallet.transfer(transferParams).send();
 
-      console.log(operation, "operation");
       setTransactionHash(operation.opHash);
       await operation.confirmation();
 
@@ -450,7 +449,7 @@ function WithdrawalSummary({
       {isOpen ? (
         <div className={styles.summaryDetails} id="withdrawal-summary-details">
           <SummaryRow label="Withdraw Amount" value={tokenAmount} />
-          <SummaryRow label="Network Fee" value="Shown in wallet" />
+          <SummaryRow label="Network Fee" value="~ $0.01" />
           <SummaryRow isTotal label="Total" value={tokenAmount} />
         </div>
       ) : null}

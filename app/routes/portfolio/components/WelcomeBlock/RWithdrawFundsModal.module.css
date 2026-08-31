@@ -199,6 +199,8 @@
   gap: 10px;
   display: flex;
   flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
 }
 .assetOptionImage {
   display: block;
@@ -208,10 +210,19 @@
   overflow: hidden;
   border-radius: 50%;
 }
+.assetOptionContent {
+  display: flex;
+  gap: var(--r-space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  width: 100%;
+}
 .assetOptionLabel {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-s);
   line-height: var(--r-line-height-body-s);
@@ -220,6 +231,24 @@
   font-size: var(--r-font-size-body-sm);
   line-height: var(--r-line-height-body-sm);
   font-weight: var(--r-font-weight-medium);
+}
+.assetOptionLabel span {
+  overflow: hidden;
+  color: var(--r-color-neutral-700);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.assetOptionValue {
+  flex: none;
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  text-align: right;
+  white-space: nowrap;
+}
+.assetOptionValueSuffix {
+  color: var(--r-color-neutral-500);
 }
 .amountLabel {
   position: absolute;
