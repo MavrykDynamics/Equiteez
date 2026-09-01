@@ -340,6 +340,7 @@ export function PriceChart({
             percentage={priceChangeView.percentage}
             showPeriodLabel={false}
             size="body-sm"
+            iconSize="medium"
           />
         </div>
         <div className={styles.chartHeaderActions}>
