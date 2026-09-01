@@ -191,14 +191,14 @@ export function WithdrawFundsModal({
       setTransactionHash(operation.opHash);
       await operation.confirmation();
 
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet", userAddress],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet-portfolio", userAddress],
-        }),
-      ]);
+      // await Promise.all([
+      //   queryClient.invalidateQueries({
+      //     queryKey: ["rwa-wallet", userAddress],
+      //   }),
+      //   queryClient.invalidateQueries({
+      //     queryKey: ["rwa-wallet-portfolio", userAddress],
+      //   }),
+      // ]);
       setStep("success");
     } catch (error) {
       if (error instanceof Error && error.message === "Declined") {
