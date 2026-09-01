@@ -31,7 +31,7 @@
 }
 
 .buySellRoot {
-  background: var(--r-color-neutral-white);
+  background: transparent;
   color: var(--r-color-neutral-black);
   display: flex;
   flex: 1;
@@ -56,6 +56,8 @@
 }
 
 .marketDropdownTrigger {
+  border: 0;
+  border-radius: var(--r-radius-pill);
   height: 40px;
   min-height: 40px;
   padding: 0 var(--r-space-3) 0 var(--r-space-4);
@@ -85,7 +87,7 @@
 
 .tradeControls .sideTab {
   background: var(--r-color-neutral-white) !important;
-  border: 1px solid var(--surface-divider-white-bg, #E6E6E6);
+  border: 0;
   border-radius: var(--r-radius-pill);
   box-sizing: border-box;
   height: 37px;

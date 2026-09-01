@@ -408,7 +408,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       )}
 
       <Button
-        className={clsx(styles.submitButton, continueButtonClassName)}
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
         isLoading={isLoading}

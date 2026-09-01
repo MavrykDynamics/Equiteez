@@ -26,9 +26,9 @@
   position: sticky;
   top: var(--r-space-5);
   padding: var(--r-space-4);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border: 0;
   border-radius: var(--r-radius-md);
-  background-color: var(--r-color-neutral-white);
+  background-color: var(--r-color-neutral-50);
 }
 
 @media (--media-tablet-max) {

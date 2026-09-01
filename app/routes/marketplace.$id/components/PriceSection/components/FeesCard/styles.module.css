@@ -1,5 +1,5 @@
 .card {
-  background: var(--r-color-neutral-50);
+  background: var(--r-color-neutral-white);
   border-radius: 12px;
   color: var(--r-color-neutral-black);
   display: flex;
@@ -70,7 +70,7 @@
   color: var(--r-color-neutral-700);
   display: flex;
   font-size: var(--r-font-size-body-s);
-  font-weight: var(--r-font-weight-medium);
+  font-weight: var(--r-font-weight-regular);
   justify-content: space-between;
   min-height: var(--r-line-height-body-sm);
   line-height: var(--r-line-height-body-s);
@@ -78,7 +78,7 @@
 
 .detailValue {
   color: var(--r-color-neutral-black);
-  font-weight: var(--r-font-weight-medium);
+  font-weight: var(--r-font-weight-regular);
 }
 
 .divider {

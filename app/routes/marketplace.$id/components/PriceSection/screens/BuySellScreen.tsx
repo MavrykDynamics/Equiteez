@@ -344,7 +344,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
 
       <Button
-        className={clsx(styles.submitButton, continueButtonClassName)}
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
         onClick={handleContinueClick}
         disabled={isContinueDisabled}
         isLoading={isLoading}

@@ -9,7 +9,8 @@
 .header {
   align-items: center;
   display: flex;
-  gap: 6px;
+  gap: var(--r-space-1);
+  min-height: var(--r-size-icon-medium);
   min-width: 0;
 }
 
@@ -43,12 +44,14 @@
 
 .dropdownTrigger {
   background: var(--r-color-neutral-white);
+  border: 0;
   border-radius: var(--r-radius-sm);
-  min-height: 44px;
-  padding: 0 var(--r-space-3);
+  min-height: 41px;
+  padding: 10px var(--r-space-3);
 }
 
 .dropdownMenu {
+  box-shadow: 0 7px 25.781px -12.891px rgba(0, 0, 0, 0.08);
   margin-top: var(--r-space-2);
   min-width: 100%;
   padding: var(--r-space-1);
@@ -56,7 +59,7 @@
 }
 
 .dropdownOption {
-  min-height: 40px;
+  min-height: 37px;
   padding: var(--r-space-2) var(--r-space-3);
 }
 
