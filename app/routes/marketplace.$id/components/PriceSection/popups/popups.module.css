@@ -8,12 +8,18 @@
 }
 
 .orderBookPopup {
-  max-width: 407px;
+  max-width: 453px;
 }
 
 .orderBookPopupContent {
   overflow: hidden;
-  padding-top: 64px;
+  padding: 44px 24px 24px;
+}
+
+.orderBookPopupContent > div:first-child {
+  position: absolute;
+  right: 16px;
+  top: 12px;
 }
 
 @media (--media-tablet-min) {
