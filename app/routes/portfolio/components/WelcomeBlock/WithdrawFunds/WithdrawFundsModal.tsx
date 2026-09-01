@@ -263,20 +263,49 @@ export function WithdrawFundsModal({
               </div>
             </Field>
             <Field label="To">
-              <input
-                aria-describedby={
-                  recipientError ? "withdraw-recipient-error" : undefined
-                }
-                aria-invalid={recipientError}
-                className={[styles.input, recipientError && styles.inputError]
+              <div
+                className={[
+                  styles.recipientInput,
+                  recipientError && styles.inputError,
+                ]
                   .filter(Boolean)
                   .join(" ")}
-                onBlur={() => setIsRecipientTouched(true)}
-                onChange={(event) => setRecipientAddress(event.target.value)}
-                placeholder="Enter Address"
-                type="text"
-                value={recipientAddress}
-              />
+              >
+                <input
+                  aria-describedby={
+                    recipientError ? "withdraw-recipient-error" : undefined
+                  }
+                  aria-invalid={recipientError}
+                  className={styles.input}
+                  onBlur={() => setIsRecipientTouched(true)}
+                  onChange={(event) => setRecipientAddress(event.target.value)}
+                  placeholder="Enter Address"
+                  type="text"
+                  value={recipientAddress}
+                />
+                {isRecipientKyced !== null ? (
+                  <div className={styles.recipientBadges}>
+                    {(["KYC", "RWA"] as const).map((label) => (
+                      <span
+                        className={[
+                          styles.recipientBadge,
+                          isRecipientKyced
+                            ? styles.recipientBadgeEligible
+                            : styles.recipientBadgeIneligible,
+                        ].join(" ")}
+                        key={label}
+                      >
+                        {label}
+                        <RIcon
+                          aria-hidden="true"
+                          name={isRecipientKyced ? "check" : "close"}
+                          size="small"
+                        />
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               {recipientError ? (
                 <RText
                   className={styles.errorText}
