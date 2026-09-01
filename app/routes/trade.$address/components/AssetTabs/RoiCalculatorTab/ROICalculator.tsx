@@ -189,6 +189,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
     };
   }, [growth, investment, selectedPeriod.years, yieldRate]);
 
+  // @ts-ignore
   const chartOptions = useMemo<ApexOptions>(
     () => ({
       chart: {
