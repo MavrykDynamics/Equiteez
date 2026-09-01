@@ -20,10 +20,10 @@ const DEFAULT_INVESTMENT = 48_000;
 const DEFAULT_GROWTH = 6;
 const DEFAULT_YIELD = 8;
 const YEAR_OPTIONS = [
-  { id: "1d", label: "1D", years: 1 },
   { id: "1y", label: "1Y", years: 1 },
   { id: "2y", label: "2Y", years: 2 },
   { id: "3y", label: "3Y", years: 3 },
+  { id: "5y", label: "5Y", years: 5 },
 ] as const;
 
 const SERIES_COLORS = [
@@ -326,7 +326,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
                   type="button"
                 >
                   <RText
-                    color={isActive ? "neutral-white" : "neutral-900"}
+                    color={isActive ? "neutral-white" : "neutral-black"}
                     size="body-s"
                   >
                     {option.label}
@@ -398,11 +398,11 @@ const MetricCard: FC<{
 }> = ({ label, tone, value }) => {
   return (
     <div className={styles.metricCard}>
-      <RText color="neutral-600" size="body-s">
+      <RText color="neutral-700" size="body-xs">
         {label}
       </RText>
       <RText
-        color={tone === "positive" ? "green-600" : "neutral-black"}
+        color={tone === "positive" ? "green-500" : "neutral-black"}
         size="body-l"
         weight="medium"
       >
@@ -484,10 +484,10 @@ const SliderControl: FC<{
       />
 
       <div className={styles.sliderBounds}>
-        <RText color="neutral-900" size="body-s">
+        <RText color="neutral-black" size="body-s">
           {formatSliderBound(min, label)}
         </RText>
-        <RText color="neutral-900" size="body-s">
+        <RText color="neutral-black" size="body-s">
           {formatSliderBound(max, label)}
         </RText>
       </div>
