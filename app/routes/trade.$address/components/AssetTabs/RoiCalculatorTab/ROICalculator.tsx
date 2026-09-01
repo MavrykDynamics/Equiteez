@@ -27,7 +27,7 @@ const YEAR_OPTIONS = [
 ] as const;
 
 const SERIES_COLORS = [
-  "var(--r-color-accent-green-600)",
+  "var(--r-color-accent-green-500)",
   "var(--r-color-green-500)",
   "var(--r-color-orange-500)",
 ];
@@ -256,7 +256,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
         labels: {
           formatter: (value) => formatAxisValue(value),
           style: {
-            colors: ["var(--r-color-neutral-500)"],
+            colors: "var(--r-color-neutral-500)",
             fontSize: "12px",
           },
         },
