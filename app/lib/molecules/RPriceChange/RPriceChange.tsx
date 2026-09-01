@@ -49,12 +49,12 @@ export function RPriceChange({
           </RText>
         </span>
       ) : (
-        <RText color="neutral-600" size={size}>
+        <RText color="neutral-700" size={size}>
           --
         </RText>
       )}
       {showPeriodLabel ? (
-        <RText color="neutral-600" size={size}>
+        <RText color="neutral-700" size={size}>
           {periodLabel}
         </RText>
       ) : null}
