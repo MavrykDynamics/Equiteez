@@ -79,6 +79,8 @@ import {
   getOrderExpiryTimestamp,
   type OrderExpiryPeriodId,
 } from "../components/OrderExpiryBlock/OrderExpiryBlock";
+import { TradeConfirmationPopup } from "../components/TradeConfirmationPopup";
+import * as gtag from "app/utils/gtags.client";
 
 export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
@@ -139,6 +141,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
 
   const [orderExpiryPeriodId, setOrderExpiryPeriodId] =
     useState<OrderExpiryPeriodId | null>(null);
+  const [isTradeConfirmationOpen, setIsTradeConfirmationOpen] = useState(false);
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
 
@@ -811,6 +814,40 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     orderType,
   ]);
 
+  const handleOpenTradeConfirmation = useCallback(() => {
+    setIsTradeConfirmationOpen(true);
+  }, []);
+
+  const handleCloseTradeConfirmation = useCallback(() => {
+    setIsTradeConfirmationOpen(false);
+  }, []);
+
+  const handleConfirmedBuySellAction = useCallback(() => {
+    buySellActionCb();
+
+    const isBuyAction = orderType === BUY;
+    const actionName = isMarketTypeMarket
+      ? isBuyAction
+        ? "buy_base_token"
+        : "sell_base_token"
+      : isBuyAction
+        ? "limit_buy_base_token"
+        : "limit_sell_base_token";
+    const eventLabel = isMarketTypeMarket
+      ? isBuyAction
+        ? "Buy base token"
+        : "Sell base token"
+      : isBuyAction
+        ? "Limit Buy base token"
+        : "Limit Sell base token";
+
+    gtag.event({
+      action: actionName,
+      category: eventLabel,
+      label: eventLabel,
+    });
+  }, [buySellActionCb, isMarketTypeMarket, orderType]);
+
   // status of the operation
   const status = useMemo(
     () =>
@@ -897,6 +934,11 @@ export const BuySellContent: FC<BuySellContentProps> = ({
           />
         </PopupWithIcon>
       )}
+      <TradeConfirmationPopup
+        isOpen={isTradeConfirmationOpen}
+        onCancel={handleCloseTradeConfirmation}
+        onContinue={handleConfirmedBuySellAction}
+      />
 
       <div className={styles.buySellRoot}>
         {shouldRenderHeader && (
@@ -960,7 +1002,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
           (marketType === "market" ? (
             <BuySellScreen
               estate={estate}
-              actionCb={buySellActionCb}
+              actionCb={handleOpenTradeConfirmation}
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}
@@ -980,7 +1022,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               marketTokenPrice={tokenPrice}
               setLimitPrice={setLimitPrice}
               estate={estate}
-              actionCb={buySellActionCb}
+              actionCb={handleOpenTradeConfirmation}
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}

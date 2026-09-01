@@ -3,8 +3,6 @@ import clsx from "clsx";
 
 import { Button } from "~/lib/atoms/Button";
 
-import * as gtag from "app/utils/gtags.client";
-
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -118,13 +116,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const handleContinueClick = useCallback(() => {
     actionCb();
-
-    gtag.event({
-      action: isBuyAction ? "buy_base_token" : "sell_base_token",
-      category: isBuyAction ? "Buy base token" : "Sell base token",
-      label: isBuyAction ? "Buy base token" : "Sell base token",
-    });
-  }, [actionCb, isBuyAction]);
+  }, [actionCb]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {

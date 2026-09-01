@@ -4,8 +4,6 @@ import clsx from "clsx";
 
 import { Button } from "~/lib/atoms/Button";
 
-import * as gtag from "app/utils/gtags.client";
-
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -159,13 +157,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const handleContinueClick = useCallback(() => {
     actionCb();
-
-    gtag.event({
-      action: isBuyAction ? "limit_buy_base_token" : "limit_sell_base_token",
-      category: isBuyAction ? "Limit Buy base token" : "Limit Sell base token",
-      label: isBuyAction ? "Limit Buy base token" : "Limit Sell base token",
-    });
-  }, [actionCb, isBuyAction]);
+  }, [actionCb]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
