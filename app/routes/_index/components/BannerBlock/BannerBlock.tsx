@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 
-import RealAssetsBannerImage from "~/assets/redesign/banner/RBannerRealAssets.png";
-import TheCoveBannerImage from "~/assets/redesign/banner/RBannerTheCove.png";
+import RealAssetsBannerImage from "~/assets/redesign/banner-optimized/RBannerRealAssets.jpg";
+import TheCoveBannerImage from "~/assets/redesign/banner-optimized/RBannerTheCove.jpg";
 import { RButton } from "~/lib/atoms/RButton";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -55,7 +55,7 @@ const bannerSlides: BannerSlide[] = [
 ];
 
 export function BannerBlock() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedSlide, setSelectedSlide] = useState(0);
 
   const handleSelect = useCallback(() => {
@@ -81,9 +81,16 @@ export function BannerBlock() {
     <section aria-label="Featured opportunities" className={styles.banner}>
       <div className={styles.viewport} ref={emblaRef}>
         <div className={styles.slideContainer}>
-          {bannerSlides.map((slide) => (
+          {bannerSlides.map((slide, index) => (
             <article className={styles.slide} key={slide.title}>
-              <img alt={slide.alt} className={styles.image} src={slide.image} />
+              <img
+                alt={slide.alt}
+                className={styles.image}
+                decoding="async"
+                fetchPriority={index === 0 ? "high" : "low"}
+                loading={index === 0 ? "eager" : "lazy"}
+                src={slide.image}
+              />
               <div className={styles.overlay} />
 
               <div className={styles.content}>
@@ -108,7 +115,11 @@ export function BannerBlock() {
                     >
                       {slide.title}
                     </RHeading>
-                    <RText className={styles.description} color="neutral-white" size="body-s">
+                    <RText
+                      className={styles.description}
+                      color="neutral-white"
+                      size="body-s"
+                    >
                       {slide.description}
                     </RText>
                   </div>
@@ -134,7 +145,11 @@ export function BannerBlock() {
         </div>
       </div>
 
-      <div aria-label="Banner slides" className={styles.pagination} role="tablist">
+      <div
+        aria-label="Banner slides"
+        className={styles.pagination}
+        role="tablist"
+      >
         {bannerSlides.map((slide, index) => (
           <button
             aria-label={`Show ${slide.title}`}

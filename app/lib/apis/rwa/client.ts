@@ -1,5 +1,5 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
-import { rwaApiUrl } from "~/lib/apis/rwa";
+import { rwaApiUrl } from "~/lib/apis/rwa/config";
 import { getAuthTokensFromStorage } from "~/providers/AuthProvider/helpers/storage";
 import { AuthService } from "~/providers/AuthProvider/helpers/auth.service";
 

@@ -20,6 +20,10 @@
   gap: var(--r-space-3);
 }
 
+.cardReveal {
+  width: 100%;
+}
+
 .cardWrapper {
   display: flex;
   gap: var(--r-space-3);

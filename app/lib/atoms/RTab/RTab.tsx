@@ -51,7 +51,7 @@ export function RTab({
       {count !== undefined ? (
         <span className={styles.count}>
           <RText
-            color={isSelected ? "neutral-200" : "neutral-600"}
+            color={isSelected ? "neutral-200" : "neutral-700"}
             size="body-s"
           >
             {count}

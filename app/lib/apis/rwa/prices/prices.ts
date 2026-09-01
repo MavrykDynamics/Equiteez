@@ -1,5 +1,5 @@
 import { api } from "~/lib/utils/api";
-import { rwaPricesApiUrl } from "~/lib/apis/rwa";
+import { rwaPricesApiUrl } from "~/lib/apis/rwa/config";
 import {
   AssetPriceChangeSchema,
   AssetPriceSeriesSchema,

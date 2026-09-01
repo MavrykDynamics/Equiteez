@@ -3,6 +3,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./OfferingTab.module.css";
 import infoIcon from "./ROfferingInfoIcon.svg";
+import { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 
 type OfferingDetail = {
   label: string;
@@ -48,7 +49,7 @@ function DetailList({ details }: { details: OfferingDetail[] }) {
   );
 }
 
-export function OfferingTab() {
+export function OfferingTab(asset: AssetType) {
   return (
     <div className={styles.wrapper}>
       <section className={styles.section} aria-labelledby="offering-heading">

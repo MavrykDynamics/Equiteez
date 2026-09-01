@@ -3,6 +3,7 @@ import { HighlightCard } from "~/routes/_index/components/Highlights/HighlightCa
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAssetsHighlights } from "~/lib/apis/rwa";
+import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 
 export function Highlights() {
   const { data, isLoading } = useQuery({
@@ -36,8 +37,15 @@ export function Highlights() {
         <div className={styles.sectionList}>
           {isLoading
             ? renderSkeletonCards()
-            : topGainers.map((asset) => (
-                <HighlightCard asset={asset} key={asset.address} />
+            : topGainers.map((asset, index) => (
+                <Reveal
+                  className={styles.cardReveal}
+                  delay={Math.min(0.04 * (index + 1), 0.2)}
+                  key={asset.address}
+                  preset="rise"
+                >
+                  <HighlightCard asset={asset} />
+                </Reveal>
               ))}
         </div>
       </div>
@@ -47,8 +55,15 @@ export function Highlights() {
         <div className={styles.sectionList}>
           {isLoading
             ? renderSkeletonCards()
-            : trending.map((asset) => (
-                <HighlightCard asset={asset} key={asset.address} />
+            : trending.map((asset, index) => (
+                <Reveal
+                  className={styles.cardReveal}
+                  delay={Math.min(0.04 * (index + 1), 0.2)}
+                  key={asset.address}
+                  preset="rise"
+                >
+                  <HighlightCard asset={asset} />
+                </Reveal>
               ))}
         </div>
       </div>
@@ -58,8 +73,15 @@ export function Highlights() {
         <div className={styles.sectionList}>
           {isLoading
             ? renderSkeletonCards()
-            : newlyAdded.map((asset) => (
-                <HighlightCard asset={asset} key={asset.address} />
+            : newlyAdded.map((asset, index) => (
+                <Reveal
+                  className={styles.cardReveal}
+                  delay={Math.min(0.04 * (index + 1), 0.2)}
+                  key={asset.address}
+                  preset="rise"
+                >
+                  <HighlightCard asset={asset} />
+                </Reveal>
               ))}
         </div>
       </div>

@@ -23,7 +23,14 @@ export function HighlightCard(props: { asset: AssetHighlightType }) {
       to={generatePath(ROUTES.trade, { address: asset.address })}
       className={styles.cardWrapper}
     >
-      <img alt="" className={styles.cardImage} src={imageUrl} />
+      <img
+        alt=""
+        className={styles.cardImage}
+        decoding="async"
+        fetchPriority="low"
+        loading="lazy"
+        src={imageUrl}
+      />
 
       <div className={styles.cardContent}>
         <div className={styles.cardBlock}>
@@ -52,7 +59,7 @@ export function HighlightCard(props: { asset: AssetHighlightType }) {
             <RText
               className={styles.priceChange}
               size="body-s"
-              color="neutral-600"
+              color="neutral-700"
             >
               --
             </RText>

@@ -5,6 +5,7 @@ import { generatePath, Link } from "@remix-run/react";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { AssetBadge } from "~/routes/_index/components/AssetBadge/AssetBadge";
 import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 import { ROUTES } from "~/consts";
@@ -39,7 +40,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
             <RText size="body-sm" weight="medium">
               {asset.metadata.symbol}
             </RText>
-            <RText className={styles.assetIdentityName} color="neutral-600" size="body-s">
+            <RText className={styles.assetIdentityName} color="neutral-700" size="body-s">
               {asset.metadata.name}
             </RText>
           </div>
@@ -54,40 +55,11 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
         </RText>
       </div>
       <div className={styles.cell} role="cell">
-        <div className={styles.priceChange}>
-          {priceChange.amount && priceChange.percentage ? (
-            <span className={styles.priceChangeIcon}>
-              <RIcon
-                className={
-                  isNegative ? styles.negativeChange : styles.positiveChange
-                }
-                name={isNegative ? "trending-down" : "trending-up"}
-                size="small"
-              />
-              <RText
-                className={
-                  isNegative ? styles.negativeChange : styles.positiveChange
-                }
-                size="body-s"
-              >
-                {"$"}
-                <Money tooltip={false} fiat>
-                  {Math.abs(priceChange.amount)}
-                </Money>
-                {" ("}
-                {isNegative ? "-" : "+"}
-                <Money tooltip={false} fiat>
-                  {Math.abs(priceChange.percentage)}
-                </Money>
-                %)
-              </RText>
-            </span>
-          ) : (
-            <RText color="neutral-600" size="body-s">
-              --
-            </RText>
-          )}
-        </div>
+        <RPriceChange
+          amount={priceChange.amount}
+          className={styles.priceChange}
+          percentage={priceChange.percentage}
+        />
       </div>
       {/*TODO remove mock data*/}
       <div className={styles.cell} role="cell">

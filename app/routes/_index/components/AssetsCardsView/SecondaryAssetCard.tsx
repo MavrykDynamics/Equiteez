@@ -2,6 +2,7 @@ import { generatePath, Link } from "@remix-run/react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import styles from "./styles.module.css";
@@ -36,59 +37,30 @@ export function SecondaryAssetCard({ asset }: { asset: AssetType }) {
             {price}
           </Money>
         </RText>
-        <div className={styles.priceChange}>
-          {priceChange.amount && priceChange.percentage ? (
-            <span className={styles.priceChangeIcon}>
-              <RIcon
-                className={
-                  isNegative ? styles.negativeChange : styles.positiveChange
-                }
-                name={isNegative ? "trending-down" : "trending-up"}
-                size="small"
-              />
-              <RText
-                className={
-                  isNegative ? styles.negativeChange : styles.positiveChange
-                }
-                size="body-s"
-              >
-                {"$"}
-                <Money tooltip={false} fiat>
-                  {Math.abs(priceChange.amount)}
-                </Money>
-                {" ("}
-                {isNegative ? "-" : "+"}
-                <Money tooltip={false} fiat>
-                  {Math.abs(priceChange.percentage)}
-                </Money>
-                %)
-              </RText>
-            </span>
-          ) : (
-            <RText color="neutral-600" size="body-s">
-              --
-            </RText>
-          )}
-          <RText color="neutral-600" size="body-s">
-            24h
-          </RText>
-        </div>
+        <RPriceChange
+          amount={priceChange.amount}
+          className={styles.priceChange}
+          percentage={priceChange.percentage}
+          showPeriodLabel
+        />
       </div>
 
-      <AssetPriceChart
-        className={styles.secondaryChart}
-        points={points}
-        tone={isNegative ? "negative" : "positive"}
-      />
+      <div>
+        <AssetPriceChart
+          className={styles.secondaryChart}
+          points={points}
+          tone={isNegative ? "negative" : "positive"}
+        />
 
-      {/*TODO remove mock data*/}
-      <div className={styles.projectedYield}>
-        <RText color="neutral-600" size="body-s">
-          Net yield
-        </RText>
-        <RText size="body-s" weight="medium" color="accent-green-500">
-          <Money tooltip={false}>4.78</Money>%
-        </RText>
+        {/*TODO remove mock data*/}
+        <div className={styles.projectedYield}>
+          <RText color="neutral-700" size="body-s">
+            Net yield
+          </RText>
+          <RText size="body-s" weight="medium" color="accent-green-500">
+            <Money tooltip={false}>4.78</Money>%
+          </RText>
+        </div>
       </div>
     </Link>
   );

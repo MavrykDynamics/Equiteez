@@ -138,13 +138,7 @@
 }
 
 .priceChange {
-  display: flex;
-  gap: var(--r-space-1);
-  align-items: center;
-}
-.priceChangeIcon {
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
 }
 .arrowIcon {
   color: var(--r-color-neutral-400);
@@ -154,11 +148,4 @@
   margin-top: 0;
   margin-bottom: 0;
   overflow: hidden;
-}
-.positiveChange {
-  color: var(--r-color-green-500);
-}
-
-.negativeChange {
-  color: var(--r-color-red-500);
 }

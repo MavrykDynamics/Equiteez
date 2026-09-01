@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchWallet } from "~/lib/apis/rwa";
+import { fetchWallet, fetchWalletPortfolio } from "~/lib/apis/rwa";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import type {
@@ -24,13 +24,39 @@ export function PortfolioProvider({ children }: PortfolioProviderProps) {
     retry: false,
     enabled: isAuthenticated && Boolean(userAddress),
   });
+  const portfolioQuery = useQuery({
+    queryKey: ["rwa-wallet-portfolio", userAddress],
+    queryFn: () =>
+      fetchWalletPortfolio({
+        walletAddress: userAddress || "",
+      }),
+    enabled: isAuthenticated && Boolean(userAddress),
+  });
 
   const contextValue = useMemo<PortfolioContextType>(
     () => ({
+      userAddress,
+      portfolio: portfolioQuery.data,
       wallet: walletQuery.data,
-      isLoading: walletQuery.isLoading,
+      isLoading:
+        walletQuery.isLoading ||
+        walletQuery.isFetching ||
+        walletQuery.isPending ||
+        portfolioQuery.isLoading ||
+        portfolioQuery.isFetching ||
+        portfolioQuery.isPending,
     }),
-    [walletQuery.data, walletQuery.isLoading]
+    [
+      portfolioQuery.data,
+      portfolioQuery.isFetching,
+      portfolioQuery.isLoading,
+      portfolioQuery.isPending,
+      userAddress,
+      walletQuery.data,
+      walletQuery.isFetching,
+      walletQuery.isLoading,
+      walletQuery.isPending,
+    ]
   );
 
   return (

@@ -20,7 +20,7 @@ export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
       <td>
         <div className={styles.assetIdentity}>
           <AssetIcon
-            size={24}
+            size={30}
             assetSlug={toTokenSlug(asset.token_address)}
             className={styles.tokenIcon}
           />

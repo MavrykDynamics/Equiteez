@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 
+import { AssetGalleryModal } from "./AssetGalleryModal";
 import styles from "./AssetGallerySlider.module.css";
 
 type AssetGallerySliderProps = {
@@ -12,6 +13,7 @@ type AssetGallerySliderProps = {
 };
 
 export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
@@ -67,11 +69,18 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
           <div className={styles.container}>
             {images.map((image, index) => (
               <div className={styles.slide} key={image}>
-                <img
-                  alt={`${name}, view ${index + 1}`}
-                  loading={index < 3 ? "eager" : "lazy"}
-                  src={image}
-                />
+                <button
+                  aria-label={`Open ${name}, view ${index + 1} in gallery`}
+                  className={styles.imageButton}
+                  onClick={() => setIsGalleryOpen(true)}
+                  type="button"
+                >
+                  <img
+                    alt={`${name}, view ${index + 1}`}
+                    loading={index < 3 ? "eager" : "lazy"}
+                    src={image}
+                  />
+                </button>
               </div>
             ))}
           </div>
@@ -107,6 +116,13 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
           ))}
         </div>
       ) : null}
+
+      <AssetGalleryModal
+        images={images}
+        isOpen={isGalleryOpen}
+        name={name}
+        onClose={() => setIsGalleryOpen(false)}
+      />
     </section>
   );
 }

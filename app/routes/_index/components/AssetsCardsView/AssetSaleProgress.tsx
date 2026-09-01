@@ -35,7 +35,7 @@ export function AssetSaleProgress({
     <div className={styles.saleProgress}>
       {isSecondaryView ? null : (
         <div className={styles.saleProgressHeader}>
-          <RText color="neutral-600" size="body-s">
+          <RText color="neutral-700" size="body-s">
             Tokens Left
           </RText>
           <RText size="body-s" weight="medium">
@@ -60,10 +60,10 @@ export function AssetSaleProgress({
         />
       </div>
       <div className={styles.saleProgressFooter}>
-        <RText color="neutral-600" size="body-s">
+        <RText color="neutral-700" size="body-s">
           {soldPercentageLabel}% sold
         </RText>
-        <RText color="neutral-600" size="body-s">
+        <RText color="neutral-700" size="body-s">
           <Money tooltip={false}>
             {atomsToTokens(totalTokens, asset.metadata.decimals)}
           </Money>{" "}

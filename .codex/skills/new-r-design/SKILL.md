@@ -288,6 +288,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for order-history status rendering. `fulfilled` is displayed as `FILLED`, `pending` as `OPEN`, and all other API values keep their original text with the canceled visual treatment.
 - Related tokens: `--r-color-green-*`, `--r-color-yellow-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-3`, `--r-radius-pill`
 
+## RMarketDepthChart
+
+- Purpose: Route-local cumulative bid/ask liquidity visualization for the Trade page depth chart.
+- Location: `app/routes/trade.$address/components/ChartBlock/RMarketDepthChart.tsx`
+- Reusability notes: Use `useOrderbookDepth` for live aggregated orderbook levels. It displays cumulative bids in green and asks in red, with the mid-market price, scale controls, and hover details. Keep it route-local until the same depth chart is required outside Trade.
+- Related tokens: `--r-color-green-*`, `--r-color-red-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-*`, `--r-space-*`, `--r-focus-ring`
+
 ## RTransferTypeIcon
 
 - Purpose: Route-local deposit and withdrawal direction icon for portfolio activity transfer rows and details.
@@ -301,6 +308,13 @@ Each reusable `R*` component folder should normally contain:
 - Location: `app/routes/discover/components/DepositFunds/RDepositFundsModal.tsx`
 - Reusability notes: Controlled with `isOpen` and `onClose`; both tabs use local mock values until deposit APIs and wallet flows are connected.
 - Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
+
+## RWithdrawFundsModal
+
+- Purpose: Route-local redesign withdrawal modal with recipient, asset, amount, summary, and confirmed transfer state.
+- Location: `app/routes/portfolio/components/WelcomeBlock/RWithdrawFundsModal.tsx`
+- Reusability notes: Controlled with `isOpen` and `onClose`; it draws available assets from the portfolio/on-chain providers and sends a Beacon wallet transfer. Recipient KYC eligibility is intentionally not checked at this time.
+- Related tokens: `CustomPopup`, `RButton`, `RCustomDropdown`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
 
 ## RFeatureCard
 
@@ -333,6 +347,14 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/molecules/RMetricCard/RMetricCard.module.css`
 - Reusability notes: Use for compact two-line metric summaries before recreating route-specific stat cards.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-color-neutral-*`, `--r-space-*`
+
+## RPriceChange
+
+- Purpose: Shared redesign price-change molecule for signed fiat delta and percentage, with an optional trailing period label such as `24h`.
+- Location: `app/lib/molecules/RPriceChange/RPriceChange.tsx`
+- Styles: `app/lib/molecules/RPriceChange/RPriceChange.module.css`
+- Reusability notes: Use for asset price-change readouts in cards, tables, and compact market surfaces. Supports empty-state fallback, positive/negative icon coloring, and optional period label rendering through `showPeriodLabel`.
+- Related tokens: `RIcon`, `RText`, `Money`, `--r-space-1`, `--r-color-green-500`, `--r-color-red-500`, `--r-color-neutral-600`
 
 ## RPagination
 
