@@ -14,7 +14,7 @@ export const SEARCH_START_LENGTH = 3;
 
 export const headers: HeaderConfig[] = [
   { label: "DATE", sortKey: "date" },
-  { label: "PAIR" },
+  { label: "ASSET" },
   { label: "TYPE" },
   { label: "PRICE", sortKey: "price" },
   { label: "AMOUNT", sortKey: "amount" },

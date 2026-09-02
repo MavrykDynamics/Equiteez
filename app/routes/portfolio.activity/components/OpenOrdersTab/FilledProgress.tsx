@@ -24,7 +24,7 @@ export function FilledProgress({ order }: FilledProgressProps) {
             {order.filled_amount}
           </Money>
         </RText>
-        <RText color="neutral-600" size="body-s">
+        <RText color="neutral-700" size="body-s">
           / <Money fiat tooltip={false}>{order.amount}</Money>
         </RText>
       </div>
@@ -32,7 +32,7 @@ export function FilledProgress({ order }: FilledProgressProps) {
         <span className={styles.filledTrack}>
           <span className={styles.filledValue} style={filledProgressStyle} />
         </span>
-        <RText color="neutral-600" size="body-s">
+        <RText color="neutral-700" size="body-s">
           {filledPercent}%
         </RText>
       </div>

@@ -53,16 +53,16 @@ export function OpenOrdersTableRow({
       <div className={styles.row} role="row">
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
-            <RText size="body-sm" weight="medium">
+            <RText size="body-sm">
               {formattedDate}
             </RText>
-            <RText color="neutral-600" size="body-s">
+            <RText color="neutral-700" size="body-s">
               {formattedTime}
             </RText>
           </div>
         </div>
         <div className={styles.cell} role="cell">
-          <RText size="body-sm">{assetSymbol}/USDT</RText>
+          <RText size="body-sm">{assetSymbol}</RText>
         </div>
         <div className={styles.cell} role="cell">
           <span className={isBuyOrder ? styles.buy : styles.sell}>
@@ -74,12 +74,12 @@ export function OpenOrdersTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <RText size="body-sm">
-            {renderNullableFiatValue(order.quote_token.price_per_token, "USDT")}
+            {renderNullableFiatValue( order.price_per_token, "", "$",)}
           </RText>
         </div>
         <div className={styles.cell} role="cell">
-          <RText size="body-sm">
-            <Money tooltip={false}>{order.amount}</Money> {assetSymbol}
+          <RText size="body-sm" weight="medium">
+            <Money tooltip={false}>{order.amount}</Money>
           </RText>
         </div>
         <div className={styles.cell} role="cell">
