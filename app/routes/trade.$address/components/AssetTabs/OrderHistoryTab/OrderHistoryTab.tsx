@@ -88,7 +88,7 @@ function OrderHistoryTableRow({
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          ${renderNullableFiatValue(order.quote_token.price_per_token)}
+          ${renderNullableFiatValue(order.price_per_token)}
         </RText>
       </div>
       <div className={styles.cell} role="cell">
