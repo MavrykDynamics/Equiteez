@@ -192,14 +192,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         : undefined,
     };
 
-    return isBuyAction
-      ? { input1Props: priceProps, input2Props: amountProps }
-      : { input1Props: amountProps, input2Props: priceProps };
+    return { input1Props: priceProps, input2Props: amountProps };
   }, [
     amount,
     handleOutputChange,
     hasBalanceError,
-    isBuyAction,
     limitPrice,
     limitPriceTickErrorCaption,
     quoteTokenSlug,

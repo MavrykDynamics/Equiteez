@@ -1,4 +1,4 @@
-import { useId, useState, type FC } from "react";
+import { useEffect, useId, useState, type FC } from "react";
 
 import { Checkbox } from "~/lib/atoms/CheckBox";
 import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
@@ -104,10 +104,18 @@ export const OrderExpiryBlock: FC<OrderExpiryBlockProps> = ({
   setSelectedPeriodId,
 }) => {
   const checkboxId = useId();
-  const [isExpiryEnabled, setIsExpiryEnabled] = useState(true);
+  const [isExpiryEnabled, setIsExpiryEnabled] = useState(
+    () => selectedPeriodId !== null
+  );
   const selectedPeriod = ORDER_EXPIRY_OPTIONS.find(
     (option) => option.id === selectedPeriodId
   );
+
+  useEffect(() => {
+    if (selectedPeriodId === null) {
+      setIsExpiryEnabled(false);
+    }
+  }, [selectedPeriodId]);
 
   return (
     <section className={styles.root}>
@@ -133,32 +141,34 @@ export const OrderExpiryBlock: FC<OrderExpiryBlockProps> = ({
         />
       </div>
 
-      <RCustomDropdown className={styles.dropdown} disabled={!isExpiryEnabled}>
-        <RDropdownFaceContent
-          aria-label="Choose order expiry period"
-          className={styles.dropdownTrigger}
-          placeholder="Choose period"
-        >
-          {selectedPeriod?.label}
-        </RDropdownFaceContent>
-        <RDropdownBodyContent align="right" className={styles.dropdownMenu}>
-          {ORDER_EXPIRY_OPTIONS.map((option) => (
-            <RDropdownBodyContentItem
-              className={[
-                styles.dropdownOption,
-                option.isTesting ? styles.testingDropdownOption : undefined,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              isSelected={option.id === selectedPeriodId}
-              key={option.id}
-              onClick={() => setSelectedPeriodId(option.id)}
-            >
-              {option.label}
-            </RDropdownBodyContentItem>
-          ))}
-        </RDropdownBodyContent>
-      </RCustomDropdown>
+      {isExpiryEnabled && (
+        <RCustomDropdown className={styles.dropdown}>
+          <RDropdownFaceContent
+            aria-label="Choose order expiry period"
+            className={styles.dropdownTrigger}
+            placeholder="Choose period"
+          >
+            {selectedPeriod?.label}
+          </RDropdownFaceContent>
+          <RDropdownBodyContent align="right" className={styles.dropdownMenu}>
+            {ORDER_EXPIRY_OPTIONS.map((option) => (
+              <RDropdownBodyContentItem
+                className={[
+                  styles.dropdownOption,
+                  option.isTesting ? styles.testingDropdownOption : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                isSelected={option.id === selectedPeriodId}
+                key={option.id}
+                onClick={() => setSelectedPeriodId(option.id)}
+              >
+                {option.label}
+              </RDropdownBodyContentItem>
+            ))}
+          </RDropdownBodyContent>
+        </RCustomDropdown>
+      )}
     </section>
   );
 };

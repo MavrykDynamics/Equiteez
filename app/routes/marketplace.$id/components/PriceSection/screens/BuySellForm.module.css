@@ -90,6 +90,10 @@
   white-space: nowrap;
 }
 
+.rwaBottomNote {
+  color: var(--r-color-neutral-black);
+}
+
 .balanceCard:global(.border-red-500) {
   outline: var(--r-border-width-sm) solid var(--r-color-red-500);
   outline-offset: 0;
