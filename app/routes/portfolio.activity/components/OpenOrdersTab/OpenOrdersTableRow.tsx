@@ -18,12 +18,10 @@ import { toTokenSlug } from "~/lib/assets";
 import { useAssetMetadata } from "~/lib/metadata";
 
 type OpenOrdersTableRowProps = {
-  onAfterAction: () => Promise<unknown>;
   order: OpenOrderItemType;
 };
 
 export function OpenOrdersTableRow({
-  onAfterAction,
   order,
 }: OpenOrdersTableRowProps) {
   const [formattedDate, formattedTime = ""] = formatOrderDate(
@@ -47,7 +45,7 @@ export function OpenOrdersTableRow({
     popupDescription,
     popupSubmitLabel,
     popupTitle,
-  } = useOpenOrderAction({ assetSymbol, onAfterAction, order });
+  } = useOpenOrderAction({ assetSymbol, order });
 
   return (
     <>

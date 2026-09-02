@@ -170,7 +170,6 @@ export function OpenOrdersTab({
             {orders.map((order) => (
               <OpenOrdersTableRow
                 key={order.id}
-                onAfterAction={openOrdersQuery.refetch}
                 order={order}
               />
             ))}

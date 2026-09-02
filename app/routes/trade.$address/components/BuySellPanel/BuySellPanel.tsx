@@ -80,9 +80,7 @@ export function BuySellPanel({
   const handleSuccessfulTransaction = useCallback(() => {
     const shouldInvalidateAssetOrdersQuery = (queryKey: readonly unknown[]) =>
       queryKey[0] === "fetchWalletOpenOrders" ||
-      queryKey[0] === "fetchWalletOrderHistory"
-        ? queryKey.includes(asset.address)
-        : false;
+      queryKey[0] === "fetchWalletOrderHistory";
 
     void Promise.all([
       queryClient.invalidateQueries({
@@ -90,7 +88,7 @@ export function BuySellPanel({
           shouldInvalidateAssetOrdersQuery(query.queryKey),
       }),
     ]);
-  }, [asset.address, queryClient]);
+  }, [queryClient]);
 
   if (isLoading) {
     return (
