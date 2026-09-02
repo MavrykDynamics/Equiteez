@@ -42,10 +42,10 @@ export function TransactionHistoryTableRow({
       <div className={styles.row} onClick={() => setIsDetailsOpen(true)}>
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
-            <RText size="body-sm" weight="medium">
+            <RText size="body-sm">
               {formattedDate}
             </RText>
-            <RText color="neutral-600" size="body-s">
+            <RText color="neutral-700" size="body-s">
               {formattedTime}
             </RText>
           </div>
@@ -58,10 +58,10 @@ export function TransactionHistoryTableRow({
               className={styles.assetIcon}
             />
             <div className={styles.assetIdentity}>
-              <RText size="body-sm" weight="medium">
+              <RText size="body-sm">
                 {assetSymbol}
               </RText>
-              <RText color="neutral-600" size="body-s">
+              <RText color="neutral-700" size="body-s">
                 {assetName}
               </RText>
             </div>
@@ -83,7 +83,7 @@ export function TransactionHistoryTableRow({
                 {transaction.total}
               </Money>
             </RText>
-            <RText color="neutral-600" size="body-s">
+            <RText color="neutral-700" size="body-s">
               <Money tooltip={false}>{transaction.amount}</Money> {assetSymbol}
             </RText>
           </div>
