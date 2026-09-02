@@ -38,7 +38,7 @@ export default function PortfolioActivity() {
   const activityTabs = useMemo<RTabSwitcherItem[]>(
     () => [
       {
-        count: activitySummaryQuery.data?.open_orders ?? undefined,
+        count: activitySummaryQuery.data?.open_orders || undefined,
         id: "open-orders",
         label: "Open Orders",
       },

@@ -42,9 +42,9 @@ export function useOpenOrderAction({
     setIsPopupOpen(false);
     void queryClient.invalidateQueries({
       predicate: (query) =>
-        query.queryKey[0] === "fetchWalletOpenOrders"});
+        query.queryKey[0] === "fetchWalletOpenOrders" || query.queryKey[0] === "rwa-wallet-activity-summary"});
     void onAfterAction?.();
-  }, [onAfterAction, queryClient, userAddress]);
+  }, [onAfterAction, queryClient]);
 
   const { invokeAction: invokeCancelOrder, status: cancelStatus } =
     useContractAction(
