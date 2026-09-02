@@ -229,6 +229,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       per share
     </span>
   );
+  const marketUsdtBottomValue = amount ? (
+    <span className={styles.bottomNote}>
+      $<Money fiat>{balanceTotal ?? ZERO}</Money> per share
+    </span>
+  ) : undefined;
 
   return (
     <div className={styles.form}>
@@ -248,14 +253,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             balanceTotal={balanceTotal}
             decimals={stableCoinMetadata.decimals}
             cryptoValue={new BigNumber(isBuyAction ? usdBalance : tokenBalance)}
-            additionalBottomRightBlock={isBuyAction ? undefined : pricePerShare}
+            additionalBottomRightBlock={
+              isBuyAction ? marketUsdtBottomValue : pricePerShare
+            }
             cryptoDecimals={
               isBuyAction
                 ? stableCoinMetadata.decimals
                 : selectedAssetMetadata.decimals
             }
             {...inputClassNames}
-            label={isBuyAction ? "Pay with" : "Sell"}
+            label={"Pay with"}
           />
 
           <BalanceInputWithTotal
@@ -263,7 +270,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             onPrev={() => ref1.current?.focus()}
             onChange={handleOutputChange}
             amountInputDisabled={false}
-            additionalBottomRightBlock={isBuyAction ? pricePerShare : undefined}
+            additionalBottomRightBlock={
+              isBuyAction ? pricePerShare : marketUsdtBottomValue
+            }
             {...input2Props}
             label="Receive"
             balanceTotal={balanceTotal}

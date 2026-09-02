@@ -86,6 +86,11 @@
   gap: var(--r-space-1);
 }
 
+.bottomValue,
+.bottomValue * {
+  font-weight: var(--r-font-weight-regular);
+}
+
 .bottomNote {
   white-space: nowrap;
 }

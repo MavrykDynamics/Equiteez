@@ -16,7 +16,6 @@ import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ZERO } from "~/lib/utils/numbers";
-import Money from "~/lib/atoms/Money";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
@@ -72,7 +71,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setAmount,
   setOrderExpiryPeriodId,
   setLimitPrice,
-  marketTokenPrice,
   status,
   isOrderDataLoading = false,
   validationMessage,
@@ -118,10 +116,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
-  const marketPriceDifference = useMemo(
-    () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
-    [limitPrice, marketTokenPrice]
-  );
   const displayTickSize = useMemo(
     () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
     [rawTickSize, stableCoinMetadata.decimals]
@@ -226,17 +220,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !isKyced ||
     isLoading ||
     Boolean(validationMessage);
-  const priceDifferencePrefix = marketPriceDifference?.gt(0)
-    ? "+"
-    : marketPriceDifference?.lt(0)
-      ? "-"
-      : "";
-  const priceDifferenceTextColorClassName = marketPriceDifference?.gt(0)
-    ? "text-green-500"
-    : marketPriceDifference?.lt(0)
-      ? "text-red-500"
-      : "text-sand-600";
-
   useEffect(() => {
     if (selectedPercentage == null) return;
 
@@ -282,7 +265,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     headerClassName: styles.balanceHeader,
     sectionClassName: styles.balanceCard,
     showBalanceIcon: false,
+    shouldRenderFooter: false,
   };
+  const hiddenInputBlock = <span aria-hidden="true" />;
 
   return (
     <div className={styles.form}>
@@ -292,6 +277,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             ref={ref1}
             onNext={() => ref2.current?.focus()}
             amountInputDisabled={false}
+            additionalBottomRightBlock={hiddenInputBlock}
+            additionalTopRightBlock={hiddenInputBlock}
             {...input1Props}
             balanceTotal={balanceTotal}
             decimals={selectedAssetMetadata.decimals}
@@ -309,6 +296,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             decimals={selectedAssetMetadata.decimals}
             cryptoDecimals={stableCoinMetadata.decimals}
             {...inputClassNames}
+            balanceLabel=""
           />
 
           {/* ------------------------------------------------------------------------------------------- */}
@@ -326,37 +314,15 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onPrev={() => ref2.current?.focus()}
               amountInputDisabled
               amount={balanceTotal}
-              additionalTopRightBlock=" "
-              label={
-                <div className="flex items-center gap-[4px] text-xs text-sand-600">
-                  Order Total
-                </div>
-              }
-              additionalBottomLeftBlock={
-                <div className="flex items-center gap-2 text-xs text-sand-600">
-                  <span>
-                    Market{" "}
-                    <span className="font-semibold underline">
-                      $<Money>{marketTokenPrice}</Money>
-                    </span>
-                  </span>
-                  {marketPriceDifference && (
-                    <span
-                      className={`font-semibold ${priceDifferenceTextColorClassName}`}
-                    >
-                      Diff {priceDifferencePrefix}$
-                      <Money>{marketPriceDifference.abs()}</Money>
-                    </span>
-                  )}
-                </div>
-              }
+              label="Total"
               selectedAssetSlug={quoteTokenSlug}
               selectedAssetMetadata={stableCoinMetadata}
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
               cryptoDecimals={stableCoinMetadata.decimals}
-              cryptoValue={balanceTotal?.toNumber() || 0}
+              cryptoValue={usdBalance}
               {...inputClassNames}
+              shouldRenderFooter
             />
           </div>
 

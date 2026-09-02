@@ -51,6 +51,7 @@ const OrderRowComponent: FC<OrderRowProps> = ({
             styles.rowValue,
             styles.priceCell,
             styles.priceButton,
+            styles.priceValue,
             side === "ask" ? styles.askPrice : styles.bidPrice
           )}
           disabled={!onPriceClick}
@@ -63,6 +64,7 @@ const OrderRowComponent: FC<OrderRowProps> = ({
           className={clsx(
             styles.rowValue,
             styles.priceCell,
+            styles.priceValue,
             side === "ask" ? styles.askPrice : styles.bidPrice
           )}
         >
