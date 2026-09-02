@@ -125,7 +125,8 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
               "outline-none focus:outline-none",
               size === "regular" ? "text-[10px]  pt-1" : "text-sm pt-[10px]",
               option !== 0 && option !== 100 && "pl-[15px]",
-              styles.optionText
+              styles.optionText,
+              variant === "neutral" && styles.neutralOptionText
             )}
             onClick={() => handleOptionClick(option)}
           >

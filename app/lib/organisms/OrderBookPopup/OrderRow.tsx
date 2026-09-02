@@ -9,7 +9,9 @@ type OrderRowProps = {
   amountLabel: string;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
   priceLabel: string;
+  renderPriceAsButton?: boolean;
   row: OrderBookRow;
+  showDepthBar?: boolean;
   side: "ask" | "bid";
   totalLabel: string;
 };
@@ -18,7 +20,9 @@ const OrderRowComponent: FC<OrderRowProps> = ({
   amountLabel,
   onPriceClick,
   priceLabel,
+  renderPriceAsButton = true,
   row,
+  showDepthBar = true,
   side,
   totalLabel,
 }) => {
@@ -38,21 +42,33 @@ const OrderRowComponent: FC<OrderRowProps> = ({
         } as CSSProperties
       }
     >
-      <div className={styles.depthBar} />
-      <button
-        type="button"
-        aria-label={`Select price ${priceLabel}`}
-        className={clsx(
-          styles.rowValue,
-          styles.priceCell,
-          styles.priceButton,
-          side === "ask" ? styles.askPrice : styles.bidPrice
-        )}
-        disabled={!onPriceClick}
-        onClick={handlePriceClick}
-      >
-        {priceLabel}
-      </button>
+      {showDepthBar && <div className={styles.depthBar} />}
+      {renderPriceAsButton ? (
+        <button
+          type="button"
+          aria-label={`Select price ${priceLabel}`}
+          className={clsx(
+            styles.rowValue,
+            styles.priceCell,
+            styles.priceButton,
+            side === "ask" ? styles.askPrice : styles.bidPrice
+          )}
+          disabled={!onPriceClick}
+          onClick={handlePriceClick}
+        >
+          {priceLabel}
+        </button>
+      ) : (
+        <span
+          className={clsx(
+            styles.rowValue,
+            styles.priceCell,
+            side === "ask" ? styles.askPrice : styles.bidPrice
+          )}
+        >
+          {priceLabel}
+        </span>
+      )}
 
       <span className={clsx(styles.rowValue, styles.amountCell)}>
         {amountLabel}
@@ -73,6 +89,8 @@ export const OrderRow = memo(
     previousProps.side === nextProps.side &&
     previousProps.onPriceClick === nextProps.onPriceClick &&
     previousProps.priceLabel === nextProps.priceLabel &&
+    previousProps.renderPriceAsButton === nextProps.renderPriceAsButton &&
+    previousProps.showDepthBar === nextProps.showDepthBar &&
     previousProps.totalLabel === nextProps.totalLabel
 );
 
