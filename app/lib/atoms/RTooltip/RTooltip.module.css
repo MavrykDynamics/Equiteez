@@ -1,4 +1,6 @@
 :global(.tippy-box[data-theme~="r-tooltip"]) {
+  box-sizing: border-box;
+  max-width: 280px;
   color: var(--r-text-body-black);
   background: var(--r-color-neutral-white);
   border-radius: var(--r-radius-sm);
@@ -12,7 +14,7 @@
 
 :global(.tippy-box[data-theme~="r-tooltip"] .tippy-content) {
   padding: var(--r-space-2) var(--r-space-3);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 :global(.tippy-box[data-theme~="r-tooltip"] > .tippy-arrow) {
