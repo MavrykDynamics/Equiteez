@@ -51,7 +51,19 @@
 }
 
 .tableViewport {
+  position: relative;
+  min-height: 320px;
   overflow-x: auto;
+}
+
+.sectionLoader {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .table {
@@ -169,9 +181,17 @@
 }
 
 .chartPanel {
+  position: relative;
   min-width: 0;
   padding-left: var(--r-space-6);
   border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.chartSectionLoader {
+  display: flex;
+  min-height: 263px;
+  align-items: center;
+  justify-content: center;
 }
 
 .chartSwitcher {

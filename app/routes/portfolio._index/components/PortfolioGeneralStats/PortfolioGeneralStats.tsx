@@ -6,6 +6,7 @@ import { PortfolioValueChart } from "./PortfolioValueChart";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
+import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 
 type PortfolioGeneralStatsProps = {
   stats: {
@@ -29,6 +30,8 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
   } = stats;
   const isPositivePnl = pnl24h >= 0;
 
+  const { isLoading } = usePortfolioContext();
+
   return (
     <section className={styles.stats} aria-label="Portfolio summary">
       <div className={styles.portfolioValueSection}>
@@ -37,10 +40,16 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
             Total Portfolio Value
           </RText>
           <RHeading className={styles.portfolioValue} size="h3" weight="medium">
-            $
-            <Money fiat tooltip={false}>
-              {totalValue}
-            </Money>
+            {isLoading ? (
+              "--"
+            ) : (
+              <>
+                $
+                <Money fiat tooltip={false}>
+                  {totalValue}
+                </Money>
+              </>
+            )}
           </RHeading>
           <RPriceChange
             size="body-sm"
