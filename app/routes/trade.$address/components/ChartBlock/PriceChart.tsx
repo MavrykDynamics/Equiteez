@@ -66,13 +66,6 @@ function getPeriodByRange(range: ChartRange): "1h" | "24h" | "7d" | "30d" {
   }
 }
 
-function formatTooltipDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-  }).format(date);
-}
-
 function formatHourTick(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
@@ -82,13 +75,21 @@ function formatHourTick(date: Date) {
 }
 
 function formatDateTime(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
+  const parts = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
-    hour: "numeric",
-    hour12: false,
-    minute: "2-digit",
     month: "short",
-  }).format(date);
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const day = parts.find(({ type }) => type === "day")?.value;
+  const month = parts.find(({ type }) => type === "month")?.value;
+  const year = parts.find(({ type }) => type === "year")?.value;
+  const hour = parts.find(({ type }) => type === "hour")?.value;
+  const minute = parts.find(({ type }) => type === "minute")?.value;
+
+  return `${day} ${month} ${year}, ${hour}:${minute}`;
 }
 
 function formatTooltipPrice(value: number) {
@@ -265,10 +266,6 @@ export function PriceChart({
     () => (range === "1h" || range === "1d" ? formatHourTick : undefined),
     [range]
   );
-  const tooltipDateFormatter = useMemo(
-    () => (range === "1h" || range === "1d" ? formatDateTime : formatTooltipDate),
-    [range]
-  );
   const tooltipPosition = useMemo(() => {
     if (!hoveredPoint || !chartCanvasRef.current) {
       return null;
@@ -431,16 +428,10 @@ export function PriceChart({
                     style={tooltipPosition ?? undefined}
                     role="status"
                   >
-                    <strong
-                      className={
-                        tone === "positive"
-                          ? styles.positiveTooltipValue
-                          : styles.negativeTooltipValue
-                      }
-                    >
+                    <strong>
                       ${formatTooltipPrice(hoveredPoint.value)}
                     </strong>
-                    <span>{tooltipDateFormatter(hoveredPoint.time)}</span>
+                    <span>{formatDateTime(hoveredPoint.time)}</span>
                   </div>
                 </>
               ) : null}

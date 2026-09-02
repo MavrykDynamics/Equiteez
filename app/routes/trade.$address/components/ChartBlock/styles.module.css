@@ -281,18 +281,11 @@
 
 .chartTooltip strong {
   width: 100%;
+  color: var(--r-color-neutral-black);
   font-size: var(--r-font-size-body-s);
   font-weight: var(--r-font-weight-medium);
   line-height: var(--r-line-height-body-s);
   text-align: center;
-}
-
-.positiveTooltipValue {
-  color: var(--r-color-green-500);
-}
-
-.negativeTooltipValue {
-  color: var(--r-color-red-500);
 }
 
 .chartState {

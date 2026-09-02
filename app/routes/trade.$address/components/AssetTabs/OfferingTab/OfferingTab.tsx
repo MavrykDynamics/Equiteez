@@ -56,15 +56,19 @@ export function OfferingTab(asset: AssetType) {
         <RHeading id="offering-heading" size="h7" weight="medium">
           Offering
         </RHeading>
-        <DetailList details={offeringDetails} />
-        <div className={styles.detail}>
-          <RText color="neutral-700" size="body-sm">
-            Status
-          </RText>
-          <RText className={styles.status} size="body-s">
-            TRADING ON SECONDARY
-          </RText>
+        <div className={styles.content}>
+          <DetailList details={offeringDetails} />
+          <div className={styles.detail}>
+            <RText color="neutral-700" size="body-sm">
+              Status
+            </RText>
+            <RText className={styles.status} size="body-s">
+              TRADING ON SECONDARY
+            </RText>
+          </div>
         </div>
+        
+        
       </section>
 
       <div aria-hidden="true" className={styles.divider} />
