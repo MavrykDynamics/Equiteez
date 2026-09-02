@@ -199,9 +199,9 @@
 .groupingSelectIcon {
   color: var(--r-color-neutral-black);
   flex-shrink: 0;
-  height: 24px;
+  height: 12px;
   pointer-events: none;
-  width: 24px;
+  width: 12px;
 }
 
 .displayModeSwitcher {
