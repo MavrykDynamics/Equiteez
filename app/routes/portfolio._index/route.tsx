@@ -9,8 +9,7 @@ import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useMemo } from "react";
 
 export default function PortfolioOverview() {
-  const { isAuthenticated } = useAuthContext();
-  const { wallet, portfolio, isLoading } = usePortfolioContext();
+  const { wallet, portfolio } = usePortfolioContext();
 
   const portfolioStats = useMemo(
     () => ({
@@ -31,10 +30,6 @@ export default function PortfolioOverview() {
       wallet?.pnl_percentage,
     ]
   );
-
-  if (isLoading && isAuthenticated) {
-    return <FullScreenSpinner />;
-  }
 
   return (
     <div className={styles.wrapper}>
