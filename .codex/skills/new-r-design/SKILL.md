@@ -219,6 +219,14 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use native input props and pass an `RIconName` via `icon` for a leading decorative icon. Use `inputClassName` only for input-specific layout overrides.
 - Related tokens: `RIcon`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`, `--r-space-2`, `--r-space-3`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-*`
 
+## RTooltip
+
+- Purpose: Accessible hover- and focus-triggered tooltip matching the Equiteez 2.0 Figma tooltip pattern.
+- Location: `app/lib/atoms/RTooltip/RTooltip.tsx`
+- Styles: `app/lib/atoms/RTooltip/RTooltip.module.css`
+- Reusability notes: Use for redesigned contextual help and brief labels. It supports `content`, `placement`, and a trigger `className`; the default placement is above the trigger.
+- Related tokens: `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-2`, `--r-space-3`, `--r-radius-sm`, `--r-color-neutral-white`, `--r-shadow-tooltip`
+
 ## RViewSwitcher
 
 - Purpose: Compact, controlled image/grid/list view selector.

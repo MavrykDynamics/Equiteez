@@ -2,6 +2,7 @@ import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RTooltip } from "~/lib/atoms/RTooltip";
 import { useOpenOrderAction } from "~/hooks/useOpenOrderAction";
 import {
   formatOrderDate,
@@ -91,7 +92,9 @@ export function OpenOrdersTableRow({
         >
           <RText size="body-sm">{expiresLabel}</RText>
           {isExpired ? (
-            <img alt="" className={styles.expiredIcon} src={expiredIcon} />
+            <RTooltip content="Your order has expired. You can claim the remaining escrow with no cancellation fee.">
+              <img alt="" className={styles.expiredIcon} src={expiredIcon} />
+            </RTooltip>
           ) : null}
         </div>
         <div className={styles.cell} role="cell">
@@ -100,14 +103,16 @@ export function OpenOrdersTableRow({
           </RText>
         </div>
         <div className={`${styles.cell} ${styles.actionCell}`} role="cell">
-          <button
-            aria-label={actionLabel}
-            className={styles.actionIcon}
-            onClick={handleOpenPopup}
-            type="button"
-          >
-            <RIcon name={actionIcon} size="medium" />
-          </button>
+          <RTooltip content={actionIcon === "refund" ? "Claim remaining escrow" : "Cancel Order. A cancellation fee will apply"}>
+            <button
+              aria-label={actionLabel}
+              className={styles.actionIcon}
+              onClick={handleOpenPopup}
+              type="button"
+            >
+              <RIcon name={actionIcon} size="medium" />
+            </button>
+          </RTooltip>
         </div>
       </div>
 
