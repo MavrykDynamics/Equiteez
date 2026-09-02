@@ -71,7 +71,8 @@
 }
 .staticField,
 .input,
-.amountInputRow {
+.amountInputRow,
+.recipientInput {
   box-sizing: border-box;
   width: 100%;
   min-height: var(--r-size-control-medium);
@@ -93,16 +94,65 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.recipientInput {
+  display: flex;
+  gap: var(--r-space-1);
+  align-items: center;
+  padding: var(--r-space-3);
+}
+.recipientInput .input {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+.recipientInput .input:hover,
+.recipientInput .input:focus {
+  border: 0;
+}
+.recipientBadges {
+  display: flex;
+  gap: var(--r-space-1);
+  flex: none;
+  align-items: center;
+}
+.recipientBadge {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px var(--r-space-1) 2px var(--r-space-2);
+  border-radius: var(--r-radius-pill);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-xs);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-xs);
+  white-space: nowrap;
+}
+.recipientBadge svg {
+  width: 12px;
+  height: 12px;
+}
+.recipientBadgeEligible {
+  color: var(--r-color-green-700);
+  background: rgb(122 201 157 / 25%);
+}
+.recipientBadgeIneligible {
+  color: var(--r-color-red-700);
+  background: rgb(245 143 143 / 25%);
+}
 .input::placeholder {
   color: var(--r-color-neutral-500);
   opacity: 1;
 }
 .input:hover,
-.amountInputRow:hover {
+.amountInputRow:hover,
+.recipientInput:hover {
   border-color: var(--r-color-neutral-300);
 }
 .input:focus,
-.amountInputRow:focus-within {
+.amountInputRow:focus-within,
+.recipientInput:focus-within {
   border-color: var(--r-color-neutral-black);
   outline: none;
 }
@@ -111,7 +161,10 @@
 .input.inputError:focus,
 .amountInputRow.inputError,
 .amountInputRow.inputError:hover,
-.amountInputRow.inputError:focus-within {
+.amountInputRow.inputError:focus-within,
+.recipientInput.inputError,
+.recipientInput.inputError:hover,
+.recipientInput.inputError:focus-within {
   border-color: var(--r-color-red-500);
 }
 .errorText {

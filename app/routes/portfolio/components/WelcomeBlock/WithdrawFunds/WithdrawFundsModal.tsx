@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import BigNumber from "bignumber.js";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
+import { useQuery } from "@apollo/client/index";
 
 import {
   isKTAddress,
@@ -31,6 +33,8 @@ import { WithdrawalSummary } from "./WithdrawalSummary";
 import { useWithdrawableAssets } from "./useWithdrawableAssets";
 import { MVRK_ASSET_SLUG, MVRK_CONTRACT_ADDRESS } from "~/lib/metadata";
 import { AssetIcon } from "~/templates/AssetIcon";
+import { USER_KYC_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
+import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 
 type WithdrawStep = "form" | "success";
 
@@ -57,6 +61,9 @@ export function WithdrawFundsModal({
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [isRecipientTouched, setIsRecipientTouched] = useState(false);
   const [isAmountTouched, setIsAmountTouched] = useState(false);
+  const [isRecipientKyced, setIsRecipientKyced] = useState<boolean | null>(
+    null
+  );
 
   const selectedAsset = useMemo(
     () =>
@@ -64,10 +71,15 @@ export function WithdrawFundsModal({
       assets[0],
     [assets, selectedAssetSlug]
   );
+  const normalizedRecipientAddress = recipientAddress.trim();
+  const [debouncedRecipientAddress] = useDebounce(normalizedRecipientAddress, 400);
   const requestedAmount = new BigNumber(amount);
   const isRecipientValid =
-    recipientAddress.trim().length > 0 &&
-    isAddressValid(recipientAddress.trim());
+    normalizedRecipientAddress.length > 0 &&
+    isAddressValid(normalizedRecipientAddress);
+  const isDebouncedRecipientValid =
+    debouncedRecipientAddress.length > 0 &&
+    isAddressValid(debouncedRecipientAddress);
   const isAmountValid =
     requestedAmount.isFinite() &&
     requestedAmount.gt(0) &&
@@ -76,11 +88,45 @@ export function WithdrawFundsModal({
   const recipientError = isRecipientTouched && !isRecipientValid;
   const amountError = isAmountTouched && !isAmountValid;
 
+  const {
+    data: recipientKycData,
+    loading: isRecipientKycLoading,
+    error: recipientKycQueryError,
+  } = useQuery(USER_KYC_STATUS_QUERY, {
+    variables: { address: debouncedRecipientAddress },
+    skip: !isDebouncedRecipientValid,
+    fetchPolicy: "network-only",
+  });
+
   useEffect(() => {
     if (!selectedAssetSlug && assets[0]) {
       setSelectedAssetSlug(assets[0].tokenSlug);
     }
   }, [assets, selectedAssetSlug]);
+
+  useEffect(() => {
+    if (!isRecipientValid || normalizedRecipientAddress !== debouncedRecipientAddress) {
+      setIsRecipientKyced(null);
+      return;
+    }
+
+    if (recipientKycQueryError) {
+      setIsRecipientKyced(false);
+      return;
+    }
+
+    if (!recipientKycData) return;
+
+    setIsRecipientKyced(
+      getIsKycedForAddress(recipientKycData, debouncedRecipientAddress)
+    );
+  }, [
+    debouncedRecipientAddress,
+    isRecipientValid,
+    normalizedRecipientAddress,
+    recipientKycData,
+    recipientKycQueryError,
+  ]);
 
   const handleClose = () => {
     setStep("form");
@@ -90,6 +136,7 @@ export function WithdrawFundsModal({
     setIsSummaryOpen(false);
     setIsRecipientTouched(false);
     setIsAmountTouched(false);
+    setIsRecipientKyced(null);
     onClose();
   };
 
@@ -103,6 +150,11 @@ export function WithdrawFundsModal({
 
     if (!isRecipientValid) {
       bug("Enter a valid Mavryk wallet address.");
+      return;
+    }
+
+    if (isRecipientKyced !== true) {
+      bug("Recipient wallet must have completed KYC to receive RWA tokens.");
       return;
     }
 
@@ -122,7 +174,7 @@ export function WithdrawFundsModal({
         tokenSlug,
         selectedAsset.metadata,
         userAddress,
-        recipientAddress.trim(),
+        normalizedRecipientAddress,
         requestedAmount
       );
 
@@ -139,14 +191,14 @@ export function WithdrawFundsModal({
       setTransactionHash(operation.opHash);
       await operation.confirmation();
 
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet", userAddress],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet-portfolio", userAddress],
-        }),
-      ]);
+      // await Promise.all([
+      //   queryClient.invalidateQueries({
+      //     queryKey: ["rwa-wallet", userAddress],
+      //   }),
+      //   queryClient.invalidateQueries({
+      //     queryKey: ["rwa-wallet-portfolio", userAddress],
+      //   }),
+      // ]);
       setStep("success");
     } catch (error) {
       if (error instanceof Error && error.message === "Declined") {
@@ -211,20 +263,49 @@ export function WithdrawFundsModal({
               </div>
             </Field>
             <Field label="To">
-              <input
-                aria-describedby={
-                  recipientError ? "withdraw-recipient-error" : undefined
-                }
-                aria-invalid={recipientError}
-                className={[styles.input, recipientError && styles.inputError]
+              <div
+                className={[
+                  styles.recipientInput,
+                  recipientError && styles.inputError,
+                ]
                   .filter(Boolean)
                   .join(" ")}
-                onBlur={() => setIsRecipientTouched(true)}
-                onChange={(event) => setRecipientAddress(event.target.value)}
-                placeholder="Enter Address"
-                type="text"
-                value={recipientAddress}
-              />
+              >
+                <input
+                  aria-describedby={
+                    recipientError ? "withdraw-recipient-error" : undefined
+                  }
+                  aria-invalid={recipientError}
+                  className={styles.input}
+                  onBlur={() => setIsRecipientTouched(true)}
+                  onChange={(event) => setRecipientAddress(event.target.value)}
+                  placeholder="Enter Address"
+                  type="text"
+                  value={recipientAddress}
+                />
+                {isRecipientKyced !== null ? (
+                  <div className={styles.recipientBadges}>
+                    {(["KYC", "RWA"] as const).map((label) => (
+                      <span
+                        className={[
+                          styles.recipientBadge,
+                          isRecipientKyced
+                            ? styles.recipientBadgeEligible
+                            : styles.recipientBadgeIneligible,
+                        ].join(" ")}
+                        key={label}
+                      >
+                        {label}
+                        <RIcon
+                          aria-hidden="true"
+                          name={isRecipientKyced ? "check" : "close"}
+                          size="small"
+                        />
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               {recipientError ? (
                 <RText
                   className={styles.errorText}
@@ -364,7 +445,9 @@ export function WithdrawFundsModal({
               !selectedAsset ||
               isAssetsLoading ||
               !isRecipientValid ||
-              !isAmountValid
+              !isAmountValid ||
+              isRecipientKyced !== true ||
+              isRecipientKycLoading
             }
             isLoading={isSubmitting}
             tone="black"

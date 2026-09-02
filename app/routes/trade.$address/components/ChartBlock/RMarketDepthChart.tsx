@@ -1,4 +1,10 @@
-import { useId, useMemo, useState } from "react";
+import {
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderbookDepthLevelType } from "~/lib/apis/rwa/orderbookDepth/orderbookDepth.types";
@@ -115,6 +121,9 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
   });
   const [scale, setScale] = useState(1);
   const [hoveredPoint, setHoveredPoint] = useState<DepthPoint | null>(null);
+  const chartCanvasRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
   const gradientId = useId();
 
   const { asks, bids, midPrice, quoteSymbol } = useMemo(() => {
@@ -161,6 +170,83 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
     };
   }, [asks, bids, midPrice, scale]);
 
+  const tooltipPosition = useMemo(() => {
+    if (
+      !hoveredPoint ||
+      !chartCanvasRef.current ||
+      !geometry ||
+      !tooltipSize.width ||
+      !tooltipSize.height
+    ) {
+      return null;
+    }
+
+    const canvasWidth = chartCanvasRef.current.clientWidth;
+    const canvasHeight = chartCanvasRef.current.clientHeight;
+    const tooltipWidth = tooltipSize.width;
+    const tooltipHeight = tooltipSize.height;
+    const pointX =
+      ((geometry.left +
+        ((hoveredPoint.price - geometry.minPrice) /
+          (geometry.maxPrice - geometry.minPrice)) *
+          geometry.plotWidth) /
+        CHART_WIDTH) *
+      canvasWidth;
+    const pointY =
+      (Math.max(
+        geometry.top,
+        geometry.baselineY -
+          (hoveredPoint.volume / geometry.maxVolume) * geometry.plotHeight
+      ) /
+        CHART_HEIGHT) *
+      canvasHeight;
+    const verticalOffset = 12;
+    const edgePadding = 8;
+
+    let left = pointX - tooltipWidth / 2;
+
+    left = Math.max(
+      edgePadding,
+      Math.min(left, canvasWidth - tooltipWidth - edgePadding)
+    );
+
+    let top = pointY - tooltipHeight - verticalOffset;
+
+    if (top < edgePadding) {
+      top = pointY + verticalOffset;
+    }
+
+    top = Math.max(
+      edgePadding,
+      Math.min(top, canvasHeight - tooltipHeight - edgePadding)
+    );
+
+    return { left, top };
+  }, [geometry, hoveredPoint, tooltipSize.height, tooltipSize.width]);
+
+  useLayoutEffect(() => {
+    if (!hoveredPoint || !tooltipRef.current) {
+      return;
+    }
+
+    const nextWidth = tooltipRef.current.offsetWidth;
+    const nextHeight = tooltipRef.current.offsetHeight;
+
+    setTooltipSize((currentSize) => {
+      if (
+        currentSize.width === nextWidth &&
+        currentSize.height === nextHeight
+      ) {
+        return currentSize;
+      }
+
+      return {
+        width: nextWidth,
+        height: nextHeight,
+      };
+    });
+  }, [hoveredPoint]);
+
   if (loading && !orderbookDepth) {
     return (
       <div className={styles.state} role="status" aria-label="Loading market depth">
@@ -198,14 +284,10 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
   const yTicks = Array.from({ length: Y_TICK_COUNT + 1 }, (_, index) =>
     (geometry.maxVolume * (Y_TICK_COUNT - index)) / Y_TICK_COUNT
   );
-  const hoveredX = hoveredPoint
-    ? Math.max(60, Math.min(CHART_WIDTH - 60, xForPrice(hoveredPoint.price)))
-    : 0;
-  const hoveredY = hoveredPoint ? yForVolume(hoveredPoint.volume) : 0;
 
   return (
     <section aria-label="Market depth chart" className={styles.chart}>
-      <div className={styles.chartCanvas}>
+      <div className={styles.chartCanvas} ref={chartCanvasRef}>
         <div className={styles.midPrice}>
           <button
             aria-label="Decrease chart scale"
@@ -231,13 +313,9 @@ export function RMarketDepthChart({ asset }: RMarketDepthChartProps) {
         </div>
         {hoveredPoint ? (
           <div
-            className={`${styles.tooltip} ${
-              hoveredY < geometry.top + 50 ? styles.tooltipBelow : ""
-            }`}
-            style={{
-              left: `${(hoveredX / CHART_WIDTH) * 100}%`,
-              top: `${(hoveredY / CHART_HEIGHT) * 100}%`,
-            }}
+            className={styles.tooltip}
+            ref={tooltipRef}
+            style={tooltipPosition ?? undefined}
           >
             <strong>{`$${formatCurrency(hoveredPoint.price)}`}</strong>
             <div className={styles.tooltipDetails}>

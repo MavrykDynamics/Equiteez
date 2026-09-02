@@ -1,7 +1,7 @@
 import clsx from "clsx";
 
 import Money from "~/lib/atoms/Money";
-import { RIcon } from "~/lib/atoms/RIcon";
+import { RIcon, RIconSize } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./RPriceChange.module.css";
@@ -14,6 +14,7 @@ export type RPriceChangeProps = {
   percentage?: number | null;
   showPeriodLabel?: boolean;
   size?: RTextSize;
+  iconSize?: RIconSize;
 };
 
 export function RPriceChange({
@@ -22,7 +23,8 @@ export function RPriceChange({
   periodLabel = "24h",
   percentage,
   showPeriodLabel = false,
-  size = "body-s",
+  size = "body-s", 
+  iconSize = "small"
 }: RPriceChangeProps) {
   const hasChangeData = !!amount;
   const isNegative = (percentage ?? 0) < 0;
@@ -34,7 +36,8 @@ export function RPriceChange({
           <RIcon
             className={changeClassName}
             name={isNegative ? "trending-down" : "trending-up"}
-            size="small"
+            size={iconSize}
+            viewBox="0 0 24 20"
           />
           <RText className={changeClassName} size={size}>
             $
@@ -49,12 +52,12 @@ export function RPriceChange({
           </RText>
         </span>
       ) : (
-        <RText color="neutral-600" size={size}>
+        <RText color="neutral-700" size={size}>
           --
         </RText>
       )}
       {showPeriodLabel ? (
-        <RText color="neutral-600" size={size}>
+        <RText color="neutral-700" size={size}>
           {periodLabel}
         </RText>
       ) : null}

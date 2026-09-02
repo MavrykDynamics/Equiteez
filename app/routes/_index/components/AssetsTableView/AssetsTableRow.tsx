@@ -59,6 +59,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
           amount={priceChange.amount}
           className={styles.priceChange}
           percentage={priceChange.percentage}
+          size="body-sm"
         />
       </div>
       {/*TODO remove mock data*/}

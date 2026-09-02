@@ -73,6 +73,24 @@ function formatTooltipDate(date: Date) {
   }).format(date);
 }
 
+function formatHourTick(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    hour: "numeric",
+    hour12: false,
+    minute: "2-digit",
+    month: "short",
+  }).format(date);
+}
+
 function formatTooltipPrice(value: number) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 4,
@@ -243,6 +261,14 @@ export function PriceChart({
     (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
     []
   );
+  const timeTickFormatter = useMemo(
+    () => (range === "1h" || range === "1d" ? formatHourTick : undefined),
+    [range]
+  );
+  const tooltipDateFormatter = useMemo(
+    () => (range === "1h" || range === "1d" ? formatDateTime : formatTooltipDate),
+    [range]
+  );
   const tooltipPosition = useMemo(() => {
     if (!hoveredPoint || !chartCanvasRef.current) {
       return null;
@@ -314,6 +340,7 @@ export function PriceChart({
             percentage={priceChangeView.percentage}
             showPeriodLabel={false}
             size="body-sm"
+            iconSize="medium"
           />
         </div>
         <div className={styles.chartHeaderActions}>
@@ -376,6 +403,7 @@ export function PriceChart({
                 priceDecimals={PRICE_DECIMALS}
                 showPriceScale
                 showTimeScale
+                timeTickFormatter={timeTickFormatter}
                 tone={tone}
               />
               {hoveredPoint ? (
@@ -412,7 +440,7 @@ export function PriceChart({
                     >
                       ${formatTooltipPrice(hoveredPoint.value)}
                     </strong>
-                    <span>{formatTooltipDate(hoveredPoint.time)}</span>
+                    <span>{tooltipDateFormatter(hoveredPoint.time)}</span>
                   </div>
                 </>
               ) : null}

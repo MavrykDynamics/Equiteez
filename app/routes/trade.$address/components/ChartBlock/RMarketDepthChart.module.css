@@ -139,12 +139,7 @@
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-s);
   line-height: var(--r-line-height-body-s);
-  transform: translate(-50%, calc(-100% - var(--r-space-3)));
   white-space: nowrap;
-}
-
-.tooltipBelow {
-  transform: translate(-50%, var(--r-space-3));
 }
 
 .tooltip strong {

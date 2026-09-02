@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { useLocation } from "@remix-run/react";
 
 import { RIcon } from "~/lib/atoms/RIcon";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
@@ -13,6 +14,7 @@ type AssetGallerySliderProps = {
 };
 
 export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
+  const location = useLocation();
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -42,6 +44,10 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
       emblaApi.off("reInit", setScrollSnapCount);
     };
   }, [emblaApi]);
+
+  useEffect(() => {
+    setIsGalleryOpen(false);
+  }, [location.pathname]);
 
   const handleDotClick = useCallback(
     (index: number) => {

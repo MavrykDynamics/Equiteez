@@ -55,7 +55,7 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
         <RHeading size="h6" weight="medium">
           About {asset.metadata.name}
         </RHeading>
-        <RText color="neutral-600" size="body-sm">
+        <RText color="neutral-700" size="body-sm">
           {asset.profile.description}
         </RText>
       </div>
@@ -72,7 +72,7 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
                   <span aria-hidden="true" className={styles.iconWrap}>
                     <RIcon className={styles.icon} name="check" size="small" />
                   </span>
-                  <RText color="neutral-900" size="body-sm">
+                  <RText color="neutral-black" size="body-sm">
                     {item}
                   </RText>
                 </li>

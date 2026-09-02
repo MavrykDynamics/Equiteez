@@ -396,6 +396,13 @@ Each reusable `R*` component folder should normally contain:
 
 # Registry Update Protocol
 
+## RExpiredIcon
+
+- Purpose: Figma-exported 16px warning icon for expired open orders.
+- Location: `app/routes/portfolio.activity/components/OpenOrdersTab/RExpiredIcon.svg`
+- Reusability notes: Keep route-local until the same expired-order indicator is needed outside the portfolio activity table.
+- Related tokens: `--r-size-icon-small`
+
 When adding a new `R*` component:
 
 1. Check this registry for an existing reusable component.

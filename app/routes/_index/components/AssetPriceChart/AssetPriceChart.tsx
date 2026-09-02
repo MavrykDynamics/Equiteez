@@ -1,6 +1,6 @@
 import { useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
-import type { UTCTimestamp } from "lightweight-charts";
+import type { Time, UTCTimestamp } from "lightweight-charts";
 
 import styles from "./AssetPriceChart.module.css";
 
@@ -26,6 +26,7 @@ type AssetPriceChartProps = {
   priceDecimals?: number;
   showPriceScale?: boolean;
   showTimeScale?: boolean;
+  timeTickFormatter?: (date: Date) => string;
   tone: "positive" | "negative";
 };
 
@@ -50,6 +51,7 @@ export function AssetPriceChart({
   priceDecimals = 2,
   showPriceScale = false,
   showTimeScale = false,
+  timeTickFormatter,
   tone,
 }: AssetPriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -126,6 +128,9 @@ export function AssetPriceChart({
             borderColor: axisBorderColor,
             borderVisible: showTimeScale,
             timeVisible: false,
+            tickMarkFormatter: timeTickFormatter
+              ? (time: Time) => timeTickFormatter(new Date(Number(time) * 1000))
+              : undefined,
             ticksVisible: showTimeScale,
             visible: showTimeScale,
           },
@@ -190,6 +195,7 @@ export function AssetPriceChart({
     shouldRenderChart,
     showPriceScale,
     showTimeScale,
+    timeTickFormatter,
     tone,
   ]);
 
