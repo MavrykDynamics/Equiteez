@@ -407,34 +407,46 @@ html {
 }
 
 .tippy-box[data-theme~="equiteez"] {
-  background-color: #28ad80;
+  background-color: #fff;
   font-size: 12px;
   font-weight: 400;
-  color: #fff;
+  line-height: 18px;
+  color: #000;
+  padding: 8px 12px;
+}
+
+.tippy-box[data-theme~="order-expiry-tooltip"] {
+  max-width: min(389px, calc(100vw - 24px)) !important;
+  padding: 0;
+  width: min(389px, calc(100vw - 24px));
+}
+
+.tippy-box[data-theme~="order-expiry-tooltip"] > .tippy-content {
+  padding: 8px 12px;
 }
 
 /* Right placement tooltip arrow (arrow will be on left side of tooltip) */
 .tippy-box[data-theme~="equiteez"][data-placement^="right"]
   > .tippy-arrow::before {
-  border-right-color: #28ad80;
+  border-right-color: #fff;
 }
 
 /* Left placement tooltip arrow (arrow will be on right side of tooltip) */
 .tippy-box[data-theme~="equiteez"][data-placement^="left"]
   > .tippy-arrow::before {
-  border-left-color: #28ad80;
+  border-left-color: #fff;
 }
 
 /* Top placement tooltip arrow (arrow will be on bottom side of tooltip) */
 .tippy-box[data-theme~="equiteez"][data-placement^="top"]
   > .tippy-arrow::before {
-  border-top-color: #28ad80;
+  border-top-color: #fff;
 }
 
 /* Bottom placement tooltip arrow (arrow will be on top side of tooltip) */
 .tippy-box[data-theme~="equiteez"][data-placement^="bottom"]
   > .tippy-arrow::before {
-  border-bottom-color: #28ad80;
+  border-bottom-color: #fff;
 }
 
 /* Styles reset */

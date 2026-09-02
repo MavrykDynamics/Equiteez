@@ -430,6 +430,11 @@
   width: 100%;
 }
 
+.priceValue {
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
 .priceButton:not(:disabled):focus-visible,
 .priceButton:not(:disabled):hover {
   text-decoration: underline;

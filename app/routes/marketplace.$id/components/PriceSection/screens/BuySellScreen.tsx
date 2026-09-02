@@ -24,10 +24,6 @@ import {
   STATUS_PENDING,
   type StatusFlag,
 } from "~/lib/ui/use-status-flag";
-import {
-  OrderExpiryBlock,
-  type OrderExpiryPeriodId,
-} from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 import styles from "./BuySellForm.module.css";
 
@@ -40,9 +36,7 @@ type BuySellScreenProps = {
   total: BigNumber | undefined;
   networkFee: BigNumber;
   tokenPrice: BigNumber;
-  orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   status: StatusFlag;
   hasQuoteError?: boolean;
@@ -59,9 +53,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   total,
   networkFee,
   tokenPrice,
-  orderExpiryPeriodId,
   setAmount,
-  setOrderExpiryPeriodId,
   status,
   hasQuoteError = false,
   isOrderDataLoading = false,
@@ -229,10 +221,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   };
 
   const pricePerShare = (
-    <span className={styles.bottomNote}>
-      $<Money>{tokenPrice}</Money> per share
+    <span className={clsx(styles.bottomNote)}>
+      $
+      <span className={styles.rwaBottomNote}>
+        <Money>{tokenPrice}</Money>
+      </span>{" "}
+      per share
     </span>
   );
+  const marketUsdtBottomValue = amount ? (
+    <span className={styles.bottomNote}>
+      $<Money fiat>{balanceTotal ?? ZERO}</Money> per share
+    </span>
+  ) : undefined;
 
   return (
     <div className={styles.form}>
@@ -252,14 +253,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             balanceTotal={balanceTotal}
             decimals={stableCoinMetadata.decimals}
             cryptoValue={new BigNumber(isBuyAction ? usdBalance : tokenBalance)}
-            additionalBottomRightBlock={isBuyAction ? undefined : pricePerShare}
+            additionalBottomRightBlock={
+              isBuyAction ? marketUsdtBottomValue : pricePerShare
+            }
             cryptoDecimals={
               isBuyAction
                 ? stableCoinMetadata.decimals
                 : selectedAssetMetadata.decimals
             }
             {...inputClassNames}
-            label={isBuyAction ? "Pay with" : "Sell"}
+            label={"Pay with"}
           />
 
           <BalanceInputWithTotal
@@ -267,7 +270,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             onPrev={() => ref1.current?.focus()}
             onChange={handleOutputChange}
             amountInputDisabled={false}
-            additionalBottomRightBlock={isBuyAction ? pricePerShare : undefined}
+            additionalBottomRightBlock={
+              isBuyAction ? pricePerShare : marketUsdtBottomValue
+            }
             {...input2Props}
             label="Receive"
             balanceTotal={balanceTotal}
@@ -288,11 +293,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               variant="neutral"
             />
           </div>
-
-          <OrderExpiryBlock
-            selectedPeriodId={orderExpiryPeriodId}
-            setSelectedPeriodId={setOrderExpiryPeriodId}
-          />
 
           <FeesCard
             className={styles.summaryCard}

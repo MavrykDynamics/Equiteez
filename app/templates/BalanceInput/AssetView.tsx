@@ -1,4 +1,4 @@
-import { Text } from "~/lib/atoms/Typography/Text";
+import { RText } from "~/lib/atoms/RTypography/RText";
 import { getAssetSymbol } from "~/lib/metadata";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { AssetIcon } from "~/templates/AssetIcon";
@@ -34,9 +34,9 @@ export function AssetView({
             : "rounded-full overflow-hidden w-[24px] h-[24px]"
         }
       />
-      <Text size={isSmallView ? "tinyBody" : "smallBody"} weight="semibold">
+      <RText size="body-s">
         {getAssetSymbol(metadata)}
-      </Text>
+      </RText>
     </div>
   );
 }

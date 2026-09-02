@@ -86,8 +86,17 @@
   gap: var(--r-space-1);
 }
 
+.bottomValue,
+.bottomValue * {
+  font-weight: var(--r-font-weight-regular);
+}
+
 .bottomNote {
   white-space: nowrap;
+}
+
+.rwaBottomNote {
+  color: var(--r-color-neutral-black);
 }
 
 .balanceCard:global(.border-red-500) {
