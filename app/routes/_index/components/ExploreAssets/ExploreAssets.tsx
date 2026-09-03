@@ -12,14 +12,16 @@ import {
 } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
 import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
 import { Reveal } from "~/lib/atoms/Reveal/Reveal";
+import FiltersIcon from "app/icons/filters.svg?react";
+import { MobileAssetsFilters } from "~/routes/_index/components/MobileAssetsFilters/MobileAssetsFilters";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();
   const [filters, setFilters] = useState<AssetsFilterState>(
     INITIAL_ASSETS_FILTER_STATE
   );
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const filteredAssets = useMemo(() => {
     const normalizedSearch = filters.search.trim().toLowerCase();
@@ -58,11 +60,28 @@ export function ExploreAssets() {
           <RHeading size="h5" weight="medium">
             Explore Assets
           </RHeading>
+          <button
+            aria-label="Open filters"
+            className={styles.mobileFiltersButton}
+            onClick={() => {
+              if (filters.viewType === "list") {
+                setFilters((currentFilters) => ({
+                  ...currentFilters,
+                  viewType: "grid",
+                }));
+              }
+
+              setIsMobileFiltersOpen(true);
+            }}
+            type="button"
+          >
+            <FiltersIcon aria-hidden="true" height={24} width={24} />
+          </button>
           {/*<DepositFunds />*/}
         </div>
       </Reveal>
 
-      <Reveal delay={0.06} preset="rise">
+      <Reveal className={styles.desktopFilters} delay={0.06} preset="rise">
         <AssetsFilters
           filters={filters}
           onChange={(updates: Partial<AssetsFilterState>) =>
@@ -73,6 +92,17 @@ export function ExploreAssets() {
           }
         />
       </Reveal>
+      <MobileAssetsFilters
+        filters={filters}
+        isOpen={isMobileFiltersOpen}
+        onChange={(updates: Partial<AssetsFilterState>) =>
+          setFilters((currentFilters) => ({
+            ...currentFilters,
+            ...updates,
+          }))
+        }
+        onClose={() => setIsMobileFiltersOpen(false)}
+      />
       {filteredAssets.length ? (
         <Reveal delay={0.1} preset="rise">
           {filters.viewType === "image" ? (

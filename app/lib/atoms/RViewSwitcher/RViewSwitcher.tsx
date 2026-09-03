@@ -14,6 +14,7 @@ export type RViewSwitcherProps = Omit<
   ariaLabel?: string;
   onChange: (value: RViewMode) => void;
   value: RViewMode;
+  viewModes?: RViewMode[];
 };
 
 const iconByView: Record<RViewMode, RIconName> = {
@@ -22,7 +23,7 @@ const iconByView: Record<RViewMode, RIconName> = {
   list: "list",
 };
 
-const viewModes: RViewMode[] = ["image", "grid", "list"];
+const defaultViewModes: RViewMode[] = ["image", "grid", "list"];
 
 export function RViewSwitcher({
   ariaLabel = "View mode",
@@ -30,6 +31,7 @@ export function RViewSwitcher({
   disabled,
   onChange,
   value,
+  viewModes = defaultViewModes,
   ...props
 }: RViewSwitcherProps) {
   return (

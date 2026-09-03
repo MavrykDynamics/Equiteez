@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
   RCustomDropdown,
@@ -10,16 +12,22 @@ import type { AssetsSortOption } from "./assetsFilters.types";
 import styles from "./styles.module.css";
 
 type AssetsSortProps = {
+  className?: string;
   onChange: (value: string) => void;
   options: AssetsSortOption[];
   value: string;
 };
 
-export function AssetsSort({ onChange, options, value }: AssetsSortProps) {
+export function AssetsSort({
+  className,
+  onChange,
+  options,
+  value,
+}: AssetsSortProps) {
   const selectedOption = options.find((option) => option.value === value);
 
   return (
-    <div className={styles.sort}>
+    <div className={clsx(styles.sort, className)}>
       <RText className={styles.sortTitle} size="body-sm">
         Sort By
       </RText>

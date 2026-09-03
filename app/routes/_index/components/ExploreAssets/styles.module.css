@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -16,6 +18,42 @@
   justify-content: space-between;
 }
 
+.desktopFilters {
+  width: 100%;
+}
+
+.mobileFiltersButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--r-size-control-medium);
+  height: var(--r-size-control-medium);
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  cursor: pointer;
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color var(--r-transition-duration-fast) ease,
+    box-shadow var(--r-transition-duration-fast) ease;
+}
+
 .titleReveal {
   width: 100%;
+}
+
+.mobileFiltersButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+@media (--media-tablet) {
+  .desktopFilters {
+    display: none;
+  }
+
+  .mobileFiltersButton {
+    display: inline-flex;
+  }
 }
