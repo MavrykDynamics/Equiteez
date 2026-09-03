@@ -1,4 +1,4 @@
-import { generatePath, NavLink } from "@remix-run/react";
+import { NavLink } from "@remix-run/react";
 
 import { ConnectWallet } from "~/layouts/PageLayout/ConnectWallet";
 import { RLogo } from "~/lib/atoms/RLogo";
@@ -9,35 +9,28 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RButton } from "~/lib/atoms/RButton";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
-import { ROUTES } from "~/consts";
+import { getRHeaderNavigationItems } from "./navigationItems";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
 export function RHeader() {
   const { assets } = useAssetsContext();
-  const navigationItems = [
-    { label: "Discover", to: ROUTES.home },
-    {
-      label: "Trade",
-      to: generatePath(ROUTES.trade, { address: assets[0]?.address ?? "" }),
-    },
-    { label: "Portfolio", to: ROUTES.portfolio },
-  ];
+  const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
   return (
     <header className={styles.header}>
       <Container className={styles.inner}>
         <RLogo className={styles.logo} size="medium" tone="black" />
 
         <nav aria-label="Primary navigation" className={styles.navigation}>
-          {navigationItems.map(({ label, to }) => (
+          {navigationItems.map(({ desktopLabel, to }) => (
             <NavLink
               className={({ isActive }) =>
                 `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
               }
-              key={label}
+              key={desktopLabel}
               to={to}
             >
               <RText size="body-m" weight="medium">
-                {label}
+                {desktopLabel}
               </RText>
             </NavLink>
           ))}

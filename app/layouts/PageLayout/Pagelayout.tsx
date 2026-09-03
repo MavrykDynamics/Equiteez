@@ -5,6 +5,7 @@ import { Container } from "~/lib/atoms/Container/Container";
 import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 import { RFooter } from "~/layouts/PageLayout/RFooter";
 import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
+import { RMobileHeader } from "~/layouts/PageLayout/RHeader/RMobileHeader";
 import { MobileLayout } from "~/layouts/PageLayout/MobileLayout";
 
 import styles from "./Pagelayout.module.css";
@@ -50,6 +51,7 @@ const PageLayout: FC<PageLayoutProps> = ({
             children
           )}
           {includeFooter && <RFooter />}
+          <RMobileHeader />
         </div>
       </div>
     </FiltersProvider>

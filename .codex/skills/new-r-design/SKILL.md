@@ -235,6 +235,14 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use `value` and `onChange` to switch between `image`, `grid`, and `list` layouts. Renders the matching shared `RIcon` glyphs.
 - Related tokens: `RIcon`, `--r-space-1`, `--r-radius-xs`, `--r-radius-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
+## RMobileHeader
+
+- Purpose: Fixed mobile bottom navigation for the Equiteez 2.0 application shell.
+- Location: `app/layouts/PageLayout/RHeader/RMobileHeader.tsx`
+- Styles: `app/layouts/PageLayout/RHeader/RMobileHeader.module.css`
+- Reusability notes: Use inside the shared page layout alongside `RHeader`. It reuses the same navigation route source as the desktop header and is shown only on tablet/mobile breakpoints.
+- Related tokens: `--r-space-2`, `--r-space-3`, `--r-space-4`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
+
 ## RCard
 
 - Purpose: Shared redesign card surface atom with light, dark, and green tones plus reusable default and mock-image shapes.
