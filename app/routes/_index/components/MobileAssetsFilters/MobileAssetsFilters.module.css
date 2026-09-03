@@ -121,6 +121,17 @@
   justify-content: space-between;
 }
 
+.actions {
+  display: flex;
+  gap: var(--r-space-3);
+  margin-top: auto;
+  padding-top: var(--r-space-2);
+}
+
+.actionButton {
+  flex: 1;
+}
+
 .viewRow {
   display: flex;
   align-items: center;

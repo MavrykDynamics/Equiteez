@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { RButton } from "~/lib/atoms/RButton";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
@@ -8,6 +9,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { AssetsSort } from "~/routes/_index/components/AssetsFilters/AssetsSort";
 import {
   ALL_ASSETS_FILTER_VALUE,
+  INITIAL_ASSETS_FILTER_STATE,
   ASSET_SORT_OPTIONS,
 } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
@@ -116,6 +118,30 @@ export function MobileAssetsFilters({
             options={ASSET_SORT_OPTIONS}
             value={filters.sort}
           />
+        </div>
+
+        <div className={styles.actions}>
+          <RButton
+            className={styles.actionButton}
+            onClick={() => {
+              onChange(INITIAL_ASSETS_FILTER_STATE);
+              onClose();
+            }}
+            size="medium"
+            tone="black"
+            variant="secondary"
+          >
+            Reset All
+          </RButton>
+          <RButton
+            className={styles.actionButton}
+            onClick={onClose}
+            size="medium"
+            tone="black"
+            variant="primary"
+          >
+            Apply
+          </RButton>
         </div>
       </div>
     </CustomPopup>
