@@ -130,7 +130,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               headerClassName
             )}
           >
-            <div className="text-left text-xs text-sand-600 leading-[18px]">
+            <div className="text-left text-xs text-r-color-neutral-700 leading-[18px]">
               {label}
             </div>
             {additionalTopRightBlock}
@@ -267,7 +267,7 @@ export const BalanceInputWithTotal = forwardRef<
           additionalTopRightBlock || (
             <div
               className={clsx(
-                "text-xs text-sand-600 flex items-center gap-[4px] font-semibold",
+                "text-xs text-r-color-neutral-700 flex items-center gap-[4px] font-semibold",
                 balanceClassName
               )}
             >
@@ -286,7 +286,7 @@ export const BalanceInputWithTotal = forwardRef<
         additionalBottomLeftBlock={additionalBottomLeftBlock}
         additionalBottomRightBlock={
           additionalBottomRightBlock || (
-            <div className="text-xs text-sand-600 flex items-center justify-between font-semibold">
+            <div className="text-xs text-r-color-neutral-700 flex items-center justify-between font-semibold">
               <BalanceTotalBlock
                 balanceTotal={balanceTotal}
                 decimals={decimals}

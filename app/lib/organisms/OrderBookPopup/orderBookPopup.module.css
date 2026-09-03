@@ -251,7 +251,7 @@
 
 .state {
   align-items: center;
-  color: var(--color-sand-600);
+  color: var(--r-color-neutral-700);
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -277,7 +277,7 @@
   background: var(--color-grey-100);
   border: 1px dashed var(--color-grey-200);
   border-radius: 12px;
-  color: var(--color-sand-600);
+  color: var(--r-color-neutral-700);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -389,7 +389,7 @@
 }
 
 .amountInlineLabel {
-  color: var(--color-sand-600);
+  color: var(--r-color-neutral-700);
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
