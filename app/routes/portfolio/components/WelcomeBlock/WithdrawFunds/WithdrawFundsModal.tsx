@@ -66,9 +66,7 @@ export function WithdrawFundsModal({
   );
 
   const selectedAsset = useMemo(
-    () =>
-      assets.find((asset) => asset.tokenSlug === selectedAssetSlug) ??
-      assets[0],
+    () => assets.find((asset) => asset.tokenSlug === selectedAssetSlug),
     [assets, selectedAssetSlug]
   );
   const normalizedRecipientAddress = recipientAddress.trim();
@@ -97,12 +95,6 @@ export function WithdrawFundsModal({
     skip: !isDebouncedRecipientValid,
     fetchPolicy: "network-only",
   });
-
-  useEffect(() => {
-    if (!selectedAssetSlug && assets[0]) {
-      setSelectedAssetSlug(assets[0].tokenSlug);
-    }
-  }, [assets, selectedAssetSlug]);
 
   useEffect(() => {
     if (!isRecipientValid || normalizedRecipientAddress !== debouncedRecipientAddress) {
@@ -137,13 +129,21 @@ export function WithdrawFundsModal({
     setIsRecipientTouched(false);
     setIsAmountTouched(false);
     setIsRecipientKyced(null);
+    setSelectedAssetSlug(undefined);
     onClose();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    setIsRecipientTouched(true);
+    setIsAmountTouched(true);
+
     if (!selectedAsset || !userAddress || !dapp) {
+      if (!selectedAsset) {
+        return;
+      }
+
       bug("Wallet or token data is unavailable. Please try again.");
       return;
     }
@@ -356,7 +356,7 @@ export function WithdrawFundsModal({
                         </span>
                       </span>
                     ) : (
-                      <span className={styles.assetValue}>Select</span>
+                      <span className={styles.assetValueEmpty}>Select</span>
                     )}
                   </RDropdownFaceContent>
                   <RDropdownBodyContent className={styles.assetMenu}>
@@ -386,13 +386,15 @@ export function WithdrawFundsModal({
                 </RCustomDropdown>
               </Field>
               <Field className={styles.amountField} label="Amount">
-                <span className={styles.amountLabel}>
-                  Bal.{" "}
-                  <Money tooltip={false}>
-                    {selectedAsset?.availableBalance ?? 0}
-                  </Money>{" "}
-                  {selectedAsset?.metadata.symbol}
-                </span>
+                {selectedAsset ? (
+                  <span className={styles.amountLabel}>
+                    Bal.{" "}
+                    <Money tooltip={false}>
+                      {selectedAsset.availableBalance}
+                    </Money>{" "}
+                    {selectedAsset.metadata.symbol}
+                  </span>
+                ) : null}
                 <div
                   className={[
                     styles.amountInputRow,

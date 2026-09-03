@@ -223,10 +223,15 @@
   overflow: hidden;
   border-radius: 50%;
 }
+.assetValueEmpty,
 .assetValue {
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
   line-height: var(--r-line-height-body-sm);
+}
+.assetValueEmpty {
+  color: var(--r-color-neutral-500);
+
 }
 .assetMenu {
   z-index: 25;
