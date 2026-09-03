@@ -1,5 +1,5 @@
 import {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -8,9 +8,12 @@ import {
   useState,
 } from "react";
 
-import { fetchPriceSeries } from "~/lib/apis/rwa";
+import { fetchPriceChange, fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { AssetPriceChangeType } from "~/lib/apis/rwa/prices/prices.types";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { Spinner } from "~/lib/atoms/Spinner";
+import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import {
   AssetPriceChart,
   type AssetPriceChartHover,
@@ -18,13 +21,24 @@ import {
 } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
 
 import styles from "./styles.module.css";
+import Money from "~/lib/atoms/Money";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
+
+import { RMarketDepthChart } from "./RMarketDepthChart";
 
 type AssetDetailsProps = {
   asset: AssetType;
   orderBookControl?: ReactNode;
+  onToneChange?: (tone: "positive" | "negative") => void;
 };
 
 type ChartRange = "1h" | "1d" | "1w" | "1m";
+type Tone = "positive" | "negative";
+type PriceChangeView = {
+  amount: number | null;
+  percentage: number | null;
+  tone: Tone;
+};
 
 const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
   { label: "1H", value: "1h" },
@@ -39,11 +53,43 @@ function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
 }
 
-function formatTooltipDate(date: Date) {
+function getPeriodByRange(range: ChartRange): "1h" | "24h" | "7d" | "30d" {
+  switch (range) {
+    case "1h":
+      return "1h";
+    case "1d":
+      return "24h";
+    case "1w":
+      return "7d";
+    case "1m":
+      return "30d";
+  }
+}
+
+export function formatHourTick(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+export function formatDateTime(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
-  }).format(date);
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const day = parts.find(({ type }) => type === "day")?.value;
+  const month = parts.find(({ type }) => type === "month")?.value;
+  const year = parts.find(({ type }) => type === "year")?.value;
+  const hour = parts.find(({ type }) => type === "hour")?.value;
+  const minute = parts.find(({ type }) => type === "minute")?.value;
+
+  return `${day} ${month} ${year}, ${hour}:${minute}`;
 }
 
 function formatTooltipPrice(value: number) {
@@ -77,10 +123,71 @@ function getChartRequestParams(range: ChartRange) {
   }
 }
 
-export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
-  const [range, setRange] = useState<ChartRange>("1h");
+function getFallbackPriceChange(
+  points: AssetPriceChartPoint[]
+): PriceChangeView {
+  const firstPoint = points[0];
+  const lastPoint = points.at(-1);
+
+  if (!firstPoint || !lastPoint) {
+    return {
+      amount: null,
+      percentage: null,
+      tone: "positive",
+    };
+  }
+
+  const amount = getPrice(lastPoint) - getPrice(firstPoint);
+  const percentage =
+    getPrice(firstPoint) !== 0 ? (amount / getPrice(firstPoint)) * 100 : null;
+
+  return {
+    amount,
+    percentage,
+    tone: amount < 0 ? "negative" : "positive",
+  };
+}
+
+function getServerPriceChange(
+  priceChangeData: AssetPriceChangeType,
+  range: ChartRange
+): PriceChangeView | null {
+  const periodData = priceChangeData.periods[getPeriodByRange(range)];
+
+  if (!periodData) {
+    return null;
+  }
+
+  if (periodData.delta_abs === null || periodData.change_pct === null) {
+    return {
+      amount: null,
+      percentage: null,
+      tone: "positive",
+    };
+  }
+
+  return {
+    amount: periodData.delta_abs,
+    percentage: periodData.change_pct,
+    tone: periodData.delta_abs < 0 ? "negative" : "positive",
+  };
+}
+
+export function PriceChart({
+  asset,
+  onToneChange,
+  orderBookControl,
+}: AssetDetailsProps) {
+  const { price } = useAssetPrice(asset);
+  const [range, setRange] = useState<ChartRange>("1d");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
+  const [priceChangeView, setPriceChangeView] = useState<PriceChangeView>({
+    amount: 0,
+    percentage: 0,
+    tone: "positive",
+  });
   const [isLoading, setIsLoading] = useState(true);
+  const [isDepthChartVisible, setIsDepthChartVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
     null
@@ -90,21 +197,47 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
   const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
   useEffect(() => {
+    setPoints([]);
+    setIsDepthChartVisible(false);
+    setPriceChangeView({
+      amount: null,
+      percentage: null,
+      tone: "positive",
+    });
+  }, [asset.address]);
+
+  useEffect(() => {
     let isCurrentRequest = true;
 
     setIsLoading(true);
     setError(null);
-    setPoints([]);
     setHoveredPoint(null);
 
     const chartRequestParams = getChartRequestParams(range);
+    const changePeriod = getPeriodByRange(range);
 
-    void fetchPriceSeries({
-      ...chartRequestParams,
-      symbol: asset.metadata.symbol,
-    })
-      .then((series) => {
-        if (isCurrentRequest) setPoints(series.points);
+    void Promise.all([
+      fetchPriceSeries({
+        ...chartRequestParams,
+        symbol: asset.metadata.symbol,
+      }),
+      fetchPriceChange({
+        currencies: ["usd"],
+        periods: [changePeriod],
+        symbol: asset.metadata.symbol,
+      }),
+    ])
+      .then(([series, priceChange]) => {
+        if (!isCurrentRequest) {
+          return;
+        }
+
+        const nextPriceChangeView =
+          getServerPriceChange(priceChange, range) ??
+          getFallbackPriceChange(series.points);
+
+        setPoints(series.points);
+        setPriceChangeView(nextPriceChangeView);
       })
       .catch(() => {
         if (isCurrentRequest) setError("Unable to load price data.");
@@ -118,15 +251,20 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
     };
   }, [asset.metadata.symbol, range]);
 
-  const lastPoint = points.at(-1);
-  const firstPoint = points[0];
-  const tone =
-    !firstPoint || !lastPoint || getPrice(lastPoint) >= getPrice(firstPoint)
-      ? "positive"
-      : "negative";
+  const tone = priceChangeView.tone;
+  const canShowDepthChart = asset.profile.lifecycle !== "primary_issuance";
+
+  useEffect(() => {
+    onToneChange?.(tone);
+  }, [onToneChange, tone]);
+
   const handleChartHover = useCallback(
     (hover: AssetPriceChartHover | null) => setHoveredPoint(hover),
     []
+  );
+  const timeTickFormatter = useMemo(
+    () => (range === "1h" || range === "1d" ? formatHourTick : undefined),
+    [range]
   );
   const tooltipPosition = useMemo(() => {
     if (!hoveredPoint || !chartCanvasRef.current) {
@@ -187,32 +325,49 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
   return (
     <section className={styles.priceChart} aria-label="Price chart">
       <div className={styles.chartHeader}>
-        <div
-          className={styles.chartControls}
-          role="tablist"
-          aria-label="Price range"
-        >
-          {CHART_RANGES.map(({ label, value }) => (
-            <button
-              aria-selected={range === value}
-              className={styles.intervalButton}
-              key={value}
-              onClick={() => setRange(value)}
-              role="tab"
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
+        <div className={styles.priceSummary}>
+          <span className={styles.currentPrice}>
+            $
+            <Money fiat tooltip={false}>
+              {price}
+            </Money>
+          </span>
+          <RPriceChange
+            amount={priceChangeView.amount}
+            percentage={priceChangeView.percentage}
+            showPeriodLabel={false}
+            size="body-sm"
+            iconSize="medium"
+          />
         </div>
+        <div className={styles.chartHeaderActions}>
+          <div
+            className={styles.chartControls}
+            role="tablist"
+            aria-label="Price range"
+          >
+            {CHART_RANGES.map(({ label, value }) => (
+              <button
+                aria-selected={range === value}
+                className={styles.intervalButton}
+                key={value}
+                onClick={() => setRange(value)}
+                role="tab"
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-        {orderBookControl ? (
-          <div className={styles.chartHeaderAction}>{orderBookControl}</div>
-        ) : null}
+          {orderBookControl ? (
+            <div className={styles.chartHeaderAction}>{orderBookControl}</div>
+          ) : null}
+        </div>
       </div>
 
       <div className={styles.chartFrame}>
-        {isLoading ? (
+        {isLoading && !points.length ? (
           <div
             className={styles.chartState}
             role="status"
@@ -229,6 +384,15 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
         ) : (
           <>
             <div className={styles.chartCanvas} ref={chartCanvasRef}>
+              {isLoading ? (
+                <div
+                  className={styles.loadingOverlay}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <Spinner size={32} />
+                </div>
+              ) : null}
               <AssetPriceChart
                 className={styles.chart}
                 onHover={handleChartHover}
@@ -236,6 +400,7 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
                 priceDecimals={PRICE_DECIMALS}
                 showPriceScale
                 showTimeScale
+                timeTickFormatter={timeTickFormatter}
                 tone={tone}
               />
               {hoveredPoint ? (
@@ -263,16 +428,10 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
                     style={tooltipPosition ?? undefined}
                     role="status"
                   >
-                    <strong
-                      className={
-                        tone === "positive"
-                          ? styles.positiveTooltipValue
-                          : styles.negativeTooltipValue
-                      }
-                    >
+                    <strong>
                       ${formatTooltipPrice(hoveredPoint.value)}
                     </strong>
-                    <span>{formatTooltipDate(hoveredPoint.time)}</span>
+                    <span>{formatDateTime(hoveredPoint.time)}</span>
                   </div>
                 </>
               ) : null}
@@ -280,6 +439,29 @@ export function PriceChart({ asset, orderBookControl }: AssetDetailsProps) {
           </>
         )}
       </div>
+      {canShowDepthChart ? (
+        <>
+          <div className={styles.depthChartAction}>
+            <button
+              aria-expanded={isDepthChartVisible}
+              className={styles.toggleButton}
+              onClick={() => setIsDepthChartVisible((isVisible) => !isVisible)}
+              type="button"
+            >
+              <RIcon
+                name={
+                  isDepthChartVisible ? "arrow-long-up" : "arrow-long-down"
+                }
+                size="small"
+              />
+              <span className={styles.toggleLabel}>
+                {isDepthChartVisible ? "Hide Depth Chart" : "View Depth Chart"}
+              </span>
+            </button>
+          </div>
+          {isDepthChartVisible ? <RMarketDepthChart asset={asset} /> : null}
+        </>
+      ) : null}
     </section>
   );
 }

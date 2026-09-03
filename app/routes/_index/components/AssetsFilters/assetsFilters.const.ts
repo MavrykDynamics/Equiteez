@@ -13,5 +13,5 @@ export const INITIAL_ASSETS_FILTER_STATE: AssetsFilterState = {
   filter: ALL_ASSETS_FILTER_VALUE,
   search: "",
   sort: ASSET_SORT_OPTIONS[0].value,
-  viewType: "grid",
+  viewType: "image",
 };

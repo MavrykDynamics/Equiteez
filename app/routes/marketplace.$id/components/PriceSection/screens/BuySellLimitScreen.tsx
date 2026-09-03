@@ -4,8 +4,6 @@ import clsx from "clsx";
 
 import { Button } from "~/lib/atoms/Button";
 
-import * as gtag from "app/utils/gtags.client";
-
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -18,7 +16,6 @@ import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ZERO } from "~/lib/utils/numbers";
-import Money from "~/lib/atoms/Money";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
@@ -32,6 +29,10 @@ import {
   STATUS_PENDING,
   type StatusFlag,
 } from "~/lib/ui/use-status-flag";
+import {
+  OrderExpiryBlock,
+  type OrderExpiryPeriodId,
+} from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 import styles from "./BuySellForm.module.css";
 
@@ -44,7 +45,9 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   rawTickSize: number;
@@ -62,11 +65,12 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   amount,
   total,
   networkFee,
+  orderExpiryPeriodId,
   limitPrice,
   rawTickSize,
   setAmount,
+  setOrderExpiryPeriodId,
   setLimitPrice,
-  marketTokenPrice,
   status,
   isOrderDataLoading = false,
   validationMessage,
@@ -112,10 +116,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
-  const marketPriceDifference = useMemo(
-    () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
-    [limitPrice, marketTokenPrice]
-  );
   const displayTickSize = useMemo(
     () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
     [rawTickSize, stableCoinMetadata.decimals]
@@ -151,13 +151,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const handleContinueClick = useCallback(() => {
     actionCb();
-
-    gtag.event({
-      action: isBuyAction ? "limit_buy_base_token" : "limit_sell_base_token",
-      category: isBuyAction ? "Limit Buy base token" : "Limit Sell base token",
-      label: isBuyAction ? "Limit Buy base token" : "Limit Sell base token",
-    });
-  }, [actionCb, isBuyAction]);
+  }, [actionCb]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
@@ -192,14 +186,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         : undefined,
     };
 
-    return isBuyAction
-      ? { input1Props: priceProps, input2Props: amountProps }
-      : { input1Props: amountProps, input2Props: priceProps };
+    return { input1Props: priceProps, input2Props: amountProps };
   }, [
     amount,
     handleOutputChange,
     hasBalanceError,
-    isBuyAction,
     limitPrice,
     limitPriceTickErrorCaption,
     quoteTokenSlug,
@@ -213,12 +204,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const balanceTotal = total;
 
-  const { finalTotalValue, txnFee } = useMemo(() => {
-    return {
-      finalTotalValue: total?.plus(networkFee) || ZERO,
-      txnFee: undefined,
-    };
-  }, [networkFee, total]);
+  const orderSummaryAmount = useMemo(() => total ?? ZERO, [total]);
 
   const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
@@ -234,17 +220,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !isKyced ||
     isLoading ||
     Boolean(validationMessage);
-  const priceDifferencePrefix = marketPriceDifference?.gt(0)
-    ? "+"
-    : marketPriceDifference?.lt(0)
-      ? "-"
-      : "";
-  const priceDifferenceTextColorClassName = marketPriceDifference?.gt(0)
-    ? "text-green-500"
-    : marketPriceDifference?.lt(0)
-      ? "text-red-500"
-      : "text-sand-600";
-
   useEffect(() => {
     if (selectedPercentage == null) return;
 
@@ -290,7 +265,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     headerClassName: styles.balanceHeader,
     sectionClassName: styles.balanceCard,
     showBalanceIcon: false,
+    shouldRenderFooter: false,
   };
+  const hiddenInputBlock = <span aria-hidden="true" />;
 
   return (
     <div className={styles.form}>
@@ -300,6 +277,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             ref={ref1}
             onNext={() => ref2.current?.focus()}
             amountInputDisabled={false}
+            additionalBottomRightBlock={hiddenInputBlock}
+            additionalTopRightBlock={hiddenInputBlock}
             {...input1Props}
             balanceTotal={balanceTotal}
             decimals={selectedAssetMetadata.decimals}
@@ -317,6 +296,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             decimals={selectedAssetMetadata.decimals}
             cryptoDecimals={stableCoinMetadata.decimals}
             {...inputClassNames}
+            balanceLabel=""
           />
 
           {/* ------------------------------------------------------------------------------------------- */}
@@ -334,45 +314,28 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               onPrev={() => ref2.current?.focus()}
               amountInputDisabled
               amount={balanceTotal}
-              additionalTopRightBlock=" "
-              label={
-                <div className="flex items-center gap-[4px] text-xs text-sand-600">
-                  Order Total
-                </div>
-              }
-              additionalBottomLeftBlock={
-                <div className="flex items-center gap-2 text-xs text-sand-600">
-                  <span>
-                    Market{" "}
-                    <span className="font-semibold underline">
-                      $<Money>{marketTokenPrice}</Money>
-                    </span>
-                  </span>
-                  {marketPriceDifference && (
-                    <span
-                      className={`font-semibold ${priceDifferenceTextColorClassName}`}
-                    >
-                      Diff {priceDifferencePrefix}$
-                      <Money>{marketPriceDifference.abs()}</Money>
-                    </span>
-                  )}
-                </div>
-              }
+              label="Total"
               selectedAssetSlug={quoteTokenSlug}
               selectedAssetMetadata={stableCoinMetadata}
               balanceTotal={balanceTotal}
               decimals={selectedAssetMetadata.decimals}
               cryptoDecimals={stableCoinMetadata.decimals}
-              cryptoValue={balanceTotal?.toNumber() || 0}
+              cryptoValue={usdBalance}
               {...inputClassNames}
+              shouldRenderFooter
             />
           </div>
 
+          <OrderExpiryBlock
+            selectedPeriodId={orderExpiryPeriodId}
+            setSelectedPeriodId={setOrderExpiryPeriodId}
+          />
+
           <FeesCard
             className={styles.summaryCard}
-            txnFees={txnFee}
-            totalAmount={finalTotalValue}
-            networkfee={networkFee}
+            networkFee={networkFee}
+            pricePerShare={limitPrice}
+            totalAmount={orderSummaryAmount}
           />
         </div>
       </div>
@@ -400,7 +363,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       )}
 
       <Button
-        className={clsx(styles.submitButton, continueButtonClassName)}
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
         isLoading={isLoading}

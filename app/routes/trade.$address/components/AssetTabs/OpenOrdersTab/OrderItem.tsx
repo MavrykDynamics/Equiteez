@@ -14,13 +14,14 @@ type OrderItemProps = {
   order: OpenOrderItemType;
 };
 
-export function renderNullableFiatValue(value: number | null, suffix?: string) {
+export function renderNullableFiatValue(value: number | null, suffix?: string, prefix?: string) {
   if (value === null) {
     return "—";
   }
 
   return (
     <>
+      {prefix ? ` ${prefix}` : ""}
       <Money fiat>{value}</Money>
       {suffix ? ` ${suffix}` : ""}
     </>

@@ -2,6 +2,7 @@ import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RTooltip } from "~/lib/atoms/RTooltip";
 import { useOpenOrderAction } from "~/hooks/useOpenOrderAction";
 import {
   formatOrderDate,
@@ -10,18 +11,17 @@ import {
 } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OrderItem";
 
 import { FilledProgress } from "./FilledProgress";
+import expiredIcon from "./RExpiredIcon.svg";
 import styles from "./styles.module.css";
 import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
 import { toTokenSlug } from "~/lib/assets";
 import { useAssetMetadata } from "~/lib/metadata";
 
 type OpenOrdersTableRowProps = {
-  onAfterAction: () => Promise<unknown>;
   order: OpenOrderItemType;
 };
 
 export function OpenOrdersTableRow({
-  onAfterAction,
   order,
 }: OpenOrdersTableRowProps) {
   const [formattedDate, formattedTime = ""] = formatOrderDate(
@@ -29,13 +29,7 @@ export function OpenOrdersTableRow({
   ).split(", ");
   const orderDetails = getOrderDetails(order.side);
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
-  const hoursUntilExpiry = Math.ceil((order.expires_in_seconds ?? 0) / 3600);
-  const expiresLabel =
-    order.expires_in_seconds === null
-      ? "-"
-      : hoursUntilExpiry < 1
-        ? "in <1 hour"
-        : `in ${hoursUntilExpiry} hours`;
+  const { expiresLabel, isExpired } = getExpiresLabel(order.expires_at);
 
   const assetSlug = toTokenSlug(order.token_address);
   const metadata = useAssetMetadata(assetSlug);
@@ -51,23 +45,23 @@ export function OpenOrdersTableRow({
     popupDescription,
     popupSubmitLabel,
     popupTitle,
-  } = useOpenOrderAction({ assetSymbol, onAfterAction, order });
+  } = useOpenOrderAction({ assetSymbol, order });
 
   return (
     <>
       <div className={styles.row} role="row">
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
-            <RText size="body-sm" weight="medium">
+            <RText size="body-sm">
               {formattedDate}
             </RText>
-            <RText color="neutral-600" size="body-s">
+            <RText color="neutral-700" size="body-s">
               {formattedTime}
             </RText>
           </div>
         </div>
         <div className={styles.cell} role="cell">
-          <RText size="body-sm">{assetSymbol}/USDT</RText>
+          <RText size="body-sm">{assetSymbol}</RText>
         </div>
         <div className={styles.cell} role="cell">
           <span className={isBuyOrder ? styles.buy : styles.sell}>
@@ -79,19 +73,27 @@ export function OpenOrdersTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <RText size="body-sm">
-            {renderNullableFiatValue(order.quote_token.price_per_token, "USDT")}
+            {renderNullableFiatValue( order.price_per_token, "", "$",)}
           </RText>
         </div>
         <div className={styles.cell} role="cell">
-          <RText size="body-sm">
-            <Money tooltip={false}>{order.amount}</Money> {assetSymbol}
+          <RText size="body-sm" weight="medium">
+            <Money tooltip={false}>{order.amount}</Money>
           </RText>
         </div>
         <div className={styles.cell} role="cell">
           <FilledProgress order={order} />
         </div>
-        <div className={styles.cell} role="cell">
+        <div
+          className={`${styles.cell} ${isExpired ? styles.expiredCell : ""}`}
+          role="cell"
+        >
           <RText size="body-sm">{expiresLabel}</RText>
+          {isExpired ? (
+            <RTooltip content="Your order has expired. You can claim the remaining escrow with no cancellation fee.">
+              <img alt="" className={styles.expiredIcon} src={expiredIcon} />
+            </RTooltip>
+          ) : null}
         </div>
         <div className={styles.cell} role="cell">
           <RText size="body-sm">
@@ -99,14 +101,16 @@ export function OpenOrdersTableRow({
           </RText>
         </div>
         <div className={`${styles.cell} ${styles.actionCell}`} role="cell">
-          <button
-            aria-label={actionLabel}
-            className={styles.actionIcon}
-            onClick={handleOpenPopup}
-            type="button"
-          >
-            <RIcon name={actionIcon} size="medium" />
-          </button>
+          <RTooltip content={actionIcon === "refund" ? "Claim remaining escrow" : "Cancel Order. A cancellation fee will apply"}>
+            <button
+              aria-label={actionLabel}
+              className={styles.actionIcon}
+              onClick={handleOpenPopup}
+              type="button"
+            >
+              <RIcon name={actionIcon} size="medium" />
+            </button>
+          </RTooltip>
         </div>
       </div>
 
@@ -120,4 +124,35 @@ export function OpenOrdersTableRow({
       />
     </>
   );
+}
+
+function getExpiresLabel(expiresAt: string | null) {
+  if (!expiresAt) {
+    return { expiresLabel: "-", isExpired: false };
+  }
+
+  const millisecondsUntilExpiry = new Date(expiresAt).getTime() - Date.now();
+
+  if (Number.isNaN(millisecondsUntilExpiry)) {
+    return { expiresLabel: "-", isExpired: false };
+  }
+
+  if (millisecondsUntilExpiry <= 0) {
+    return { expiresLabel: "Expired", isExpired: true };
+  }
+
+  const millisecondsInHour = 60 * 60 * 1000;
+
+  if (millisecondsUntilExpiry < millisecondsInHour) {
+    return { expiresLabel: "in <1 hour", isExpired: false };
+  }
+
+  const hoursUntilExpiry = Math.ceil(millisecondsUntilExpiry / millisecondsInHour);
+
+  if (hoursUntilExpiry > 23) {
+    const daysUntilExpiry = Math.ceil(hoursUntilExpiry / 24);
+    return { expiresLabel: `in ${daysUntilExpiry} days`, isExpired: false };
+  }
+
+  return { expiresLabel: `in ${hoursUntilExpiry} hours`, isExpired: false };
 }

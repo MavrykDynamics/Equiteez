@@ -50,10 +50,8 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
       >
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
-            <RText size="body-sm" weight="medium">
-              {formattedDate}
-            </RText>
-            <RText color="neutral-600" size="body-s">
+            <RText size="body-sm">{formattedDate}</RText>
+            <RText color="neutral-700" size="body-s">
               {formattedTime}
             </RText>
           </div>
@@ -66,10 +64,8 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
               size={30}
             />
             <div className={styles.assetIdentity}>
-              <RText size="body-sm" weight="medium">
-                {assetSymbol}
-              </RText>
-              <RText color="neutral-600" size="body-s">
+              <RText size="body-sm">{assetSymbol}</RText>
+              <RText color="neutral-700" size="body-s">
                 {assetName}
               </RText>
             </div>
@@ -103,7 +99,7 @@ export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
                 "—"
               )}
             </RText>
-            <RText color="neutral-600" size="body-s">
+            <RText color="neutral-700" size="body-s">
               <Money tooltip={false}>{deposit.amount}</Money> {assetSymbol}
             </RText>
           </div>

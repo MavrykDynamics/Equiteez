@@ -178,7 +178,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
-          <RouteScrollReset />
+          {/*<RouteScrollReset />*/}
           <Scripts />
         </div>
       </body>

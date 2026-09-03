@@ -1,5 +1,6 @@
+import { useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
-import type { UTCTimestamp } from "lightweight-charts";
+import type { Time, UTCTimestamp } from "lightweight-charts";
 
 import styles from "./AssetPriceChart.module.css";
 
@@ -17,12 +18,15 @@ export type AssetPriceChartHover = {
 };
 
 type AssetPriceChartProps = {
+  animateOnReveal?: boolean;
   className?: string;
+  isRevealed?: boolean;
   onHover?: (hover: AssetPriceChartHover | null) => void;
   points: AssetPriceChartPoint[];
   priceDecimals?: number;
   showPriceScale?: boolean;
   showTimeScale?: boolean;
+  timeTickFormatter?: (date: Date) => string;
   tone: "positive" | "negative";
 };
 
@@ -39,21 +43,28 @@ function getChartData(points: AssetPriceChartPoint[]) {
 }
 
 export function AssetPriceChart({
+  animateOnReveal = false,
   className,
+  isRevealed,
   onHover,
   points,
   priceDecimals = 2,
   showPriceScale = false,
   showTimeScale = false,
+  timeTickFormatter,
   tone,
 }: AssetPriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
   const chartData = useMemo(() => getChartData(points), [points]);
+  const shouldAnimateOnReveal = animateOnReveal && !shouldReduceMotion;
+  const isChartRevealed = isRevealed ?? !shouldAnimateOnReveal;
+  const shouldRenderChart = !shouldAnimateOnReveal || isChartRevealed;
 
   useEffect(() => {
     const container = containerRef.current;
 
-    if (!container) return;
+    if (!container || !shouldRenderChart) return;
 
     let isUnmounted = false;
     let cleanup: () => void = () => {};
@@ -74,7 +85,7 @@ export function AssetPriceChart({
           .trim();
         const areaTopColor = tone === "positive" ? "#22A55B40" : "#C0453C40";
         const axisColor =
-          computedStyles.getPropertyValue("--r-color-neutral-600").trim() ||
+          computedStyles.getPropertyValue("--r-color-neutral-700").trim() ||
           "#757575";
         const axisBorderColor =
           computedStyles.getPropertyValue("--r-color-neutral-100").trim() ||
@@ -88,7 +99,6 @@ export function AssetPriceChart({
           },
           handleScroll: false,
           handleScale: false,
-          height: container.clientHeight,
           layout: {
             attributionLogo: false,
             background: { color: "transparent", type: ColorType.Solid },
@@ -118,13 +128,16 @@ export function AssetPriceChart({
             borderColor: axisBorderColor,
             borderVisible: showTimeScale,
             timeVisible: false,
+            tickMarkFormatter: timeTickFormatter
+              ? (time: Time) => timeTickFormatter(new Date(Number(time) * 1000))
+              : undefined,
             ticksVisible: showTimeScale,
             visible: showTimeScale,
           },
           width: container.clientWidth,
         });
         const series = chart.addSeries(AreaSeries, {
-          bottomColor: "#FFFFFF",
+          bottomColor: "#FFFFFF00",
           crosshairMarkerVisible: false,
           lastValueVisible: false,
           lineColor,
@@ -175,9 +188,20 @@ export function AssetPriceChart({
       isUnmounted = true;
       cleanup();
     };
-  }, [chartData, onHover, priceDecimals, showPriceScale, showTimeScale, tone]);
+  }, [
+    chartData,
+    onHover,
+    priceDecimals,
+    shouldRenderChart,
+    showPriceScale,
+    showTimeScale,
+    timeTickFormatter,
+    tone,
+  ]);
 
-  return (
-    <div className={`${styles.chart} ${className ?? ""}`} ref={containerRef} />
-  );
+  const chartClassName = className
+    ? `${styles.chartReveal} ${className}`
+    : styles.chartReveal;
+
+  return <div className={chartClassName} ref={containerRef} />;
 }

@@ -51,7 +51,19 @@
 }
 
 .tableViewport {
+  position: relative;
+  min-height: 320px;
   overflow-x: auto;
+}
+
+.sectionLoader {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .table {
@@ -116,16 +128,12 @@
 
 .assetIcon,
 .tokenIcon {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  object-fit: cover;
 }
 
 .tokenIcon {
-  display: grid;
-  place-items: center;
   background: var(--r-color-accent-green-500);
   color: var(--r-color-neutral-white);
   font-family: var(--r-font-body);
@@ -173,9 +181,17 @@
 }
 
 .chartPanel {
+  position: relative;
   min-width: 0;
   padding-left: var(--r-space-6);
   border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.chartSectionLoader {
+  display: flex;
+  min-height: 263px;
+  align-items: center;
+  justify-content: center;
 }
 
 .chartSwitcher {

@@ -1,16 +1,12 @@
+import { useState } from "react";
+
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { OrderBookToggleButton } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import clsx from "clsx";
 
-import { OrderbookBar } from "~/routes/trade.$address/components/ChartBlock/OrderbookBar";
 import { PriceChart } from "~/routes/trade.$address/components/ChartBlock/PriceChart";
 
 import styles from "./styles.module.css";
-import { useOrderbookDepth } from "~/lib/apis/rwa";
-import {
-  getOrderBookFooterSummary,
-  ORDER_BOOK_FETCH_LIMIT,
-} from "~/lib/organisms/OrderBookPopup/OrderBookTable";
-import { useMemo } from "react";
 
 type ChartBlockProps = {
   asset: AssetType;
@@ -28,22 +24,22 @@ export function ChartBlock({
   isOrderBookOpen,
   onOrderBookToggle,
 }: ChartBlockProps) {
-  const { orderbookDepth } = useOrderbookDepth({
-    limit: ORDER_BOOK_FETCH_LIMIT,
-    tokenAddress: asset.address,
-    refetchInterval: 10_000,
-  });
-  const footerSummary = useMemo(
-    () =>
-      getOrderBookFooterSummary({
-        orderbookDepth,
-      }),
-    [orderbookDepth]
+  const [chartTone, setChartTone] = useState<"positive" | "negative">(
+    "positive"
   );
+
   return (
-    <div className={styles.wrapper}>
+    <div
+      className={clsx(
+        styles.wrapper,
+        chartTone === "negative"
+          ? styles.negativeWrapper
+          : styles.positiveWrapper
+      )}
+    >
       <PriceChart
         asset={asset}
+        onToneChange={setChartTone}
         orderBookControl={
           <OrderBookToggleButton
             className={styles.orderBookToggle}
@@ -53,12 +49,6 @@ export function ChartBlock({
           />
         }
       />
-      {asset.profile.lifecycle === "secondary_market" && (
-        <OrderbookBar
-          buyPercentage={footerSummary.buyPercentage}
-          sellPercentage={footerSummary.sellPercentage}
-        />
-      )}
     </div>
   );
 }

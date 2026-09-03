@@ -3,8 +3,6 @@ import clsx from "clsx";
 
 import { Button } from "~/lib/atoms/Button";
 
-import * as gtag from "app/utils/gtags.client";
-
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -110,13 +108,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const handleContinueClick = useCallback(() => {
     actionCb();
-
-    gtag.event({
-      action: isBuyAction ? "buy_base_token" : "sell_base_token",
-      category: isBuyAction ? "Buy base token" : "Sell base token",
-      label: isBuyAction ? "Buy base token" : "Sell base token",
-    });
-  }, [actionCb, isBuyAction]);
+  }, [actionCb]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
@@ -207,14 +199,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     }
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
-  const { finalTotalValue, txnFee } = useMemo(() => {
-    const orderValue = (isBuyAction ? amount : total) ?? ZERO;
-
-    return {
-      finalTotalValue: orderValue.plus(networkFee) || ZERO,
-      txnFee: undefined,
-    };
-  }, [amount, isBuyAction, networkFee, total]);
+  const orderSummaryAmount = useMemo(
+    () => (isBuyAction ? amount : total) ?? ZERO,
+    [amount, isBuyAction, total]
+  );
 
   const inputClassNames = {
     amountInputClassName: styles.amountInput,
@@ -233,10 +221,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   };
 
   const pricePerShare = (
-    <span className={styles.bottomNote}>
-      $<Money>{tokenPrice}</Money> per share
+    <span className={clsx(styles.bottomNote)}>
+      $
+      <span className={styles.rwaBottomNote}>
+        <Money>{tokenPrice}</Money>
+      </span>{" "}
+      per share
     </span>
   );
+  const marketUsdtBottomValue = amount ? (
+    <span className={styles.bottomNote}>
+      $<Money fiat>{balanceTotal ?? ZERO}</Money> per share
+    </span>
+  ) : undefined;
 
   return (
     <div className={styles.form}>
@@ -256,14 +253,16 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             balanceTotal={balanceTotal}
             decimals={stableCoinMetadata.decimals}
             cryptoValue={new BigNumber(isBuyAction ? usdBalance : tokenBalance)}
-            additionalBottomRightBlock={isBuyAction ? undefined : pricePerShare}
+            additionalBottomRightBlock={
+              isBuyAction ? marketUsdtBottomValue : pricePerShare
+            }
             cryptoDecimals={
               isBuyAction
                 ? stableCoinMetadata.decimals
                 : selectedAssetMetadata.decimals
             }
             {...inputClassNames}
-            label={isBuyAction ? "Pay with" : "Sell"}
+            label={"Pay with"}
           />
 
           <BalanceInputWithTotal
@@ -271,7 +270,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             onPrev={() => ref1.current?.focus()}
             onChange={handleOutputChange}
             amountInputDisabled={false}
-            additionalBottomRightBlock={isBuyAction ? pricePerShare : undefined}
+            additionalBottomRightBlock={
+              isBuyAction ? pricePerShare : marketUsdtBottomValue
+            }
             {...input2Props}
             label="Receive"
             balanceTotal={balanceTotal}
@@ -295,9 +296,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
           <FeesCard
             className={styles.summaryCard}
-            txnFees={txnFee}
-            totalAmount={finalTotalValue}
-            networkfee={networkFee}
+            networkFee={networkFee}
+            pricePerShare={tokenPrice}
+            totalAmount={orderSummaryAmount}
           />
         </div>
       </div>
@@ -335,7 +336,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       )}
 
       <Button
-        className={clsx(styles.submitButton, continueButtonClassName)}
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
         onClick={handleContinueClick}
         disabled={isContinueDisabled}
         isLoading={isLoading}

@@ -1,10 +1,12 @@
 import { api } from "~/lib/utils/api";
-import { rwaPricesApiUrl } from "~/lib/apis/rwa";
+import { rwaPricesApiUrl } from "~/lib/apis/rwa/config";
 import {
+  AssetPriceChangeSchema,
   AssetPriceSeriesSchema,
   PricesSchema,
 } from "~/lib/apis/rwa/prices/prices.schema";
 import {
+  AssetPriceChangeType,
   AssetPriceSeriesType,
   PricesResponseType,
 } from "~/lib/apis/rwa/prices/prices.types";
@@ -49,6 +51,38 @@ export const fetchPriceSeries = async ({
     `${rwaPricesApiUrl}/${symbol}-usdt/series?${query.toString()}`,
     undefined,
     AssetPriceSeriesSchema
+  );
+
+  return data;
+};
+
+type PriceChangePeriod = "1h" | "24h" | "7d" | "30d";
+
+type FetchPriceChangeParams = {
+  symbol: string;
+  periods?: PriceChangePeriod[];
+  currencies?: string[];
+};
+
+export const fetchPriceChange = async ({
+  symbol,
+  periods = ["24h", "7d", "30d"],
+  currencies = ["usd"],
+}: FetchPriceChangeParams): Promise<AssetPriceChangeType> => {
+  const query = new URLSearchParams();
+
+  if (periods.length) {
+    query.set("periods", periods.join(","));
+  }
+
+  if (currencies.length) {
+    query.set("in", currencies.join(","));
+  }
+
+  const { data } = await api(
+    `${rwaPricesApiUrl}/${symbol}-usdt/change?${query.toString()}`,
+    undefined,
+    AssetPriceChangeSchema
   );
 
   return data;

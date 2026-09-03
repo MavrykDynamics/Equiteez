@@ -1,5 +1,4 @@
-export const rwaApiUrl = new URL(process.env.RWA_API ?? "").href;
-export const rwaPricesApiUrl = new URL(process.env.RWA_SERVICES_API ?? "").href;
+export { rwaApiUrl, rwaPricesApiUrl } from "~/lib/apis/rwa/config";
 
 export { rwaApi } from "~/lib/apis/rwa/client";
 export {
@@ -25,4 +24,8 @@ export {
   orderbookDepthQueryKeys,
 } from "~/lib/apis/rwa/orderbookDepth/orderbookDepth";
 export { useOrderbookDepth } from "~/lib/apis/rwa/orderbookDepth/useOrderbookDepth";
-export { fetchPrices, fetchPriceSeries } from "~/lib/apis/rwa/prices/prices";
+export {
+  fetchPriceChange,
+  fetchPriceSeries,
+  fetchPrices,
+} from "~/lib/apis/rwa/prices/prices";

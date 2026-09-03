@@ -151,6 +151,7 @@
   --r-radius-pill: 32px;
   --r-border-width-sm: 1px;
   --r-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.32);
+  --r-shadow-tooltip: 0 7px 25.781px rgba(0, 0, 0, 0.08);
   --r-transition-duration-fast: 160ms;
   --r-transition-duration-base: 300ms;
   --r-motion-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);

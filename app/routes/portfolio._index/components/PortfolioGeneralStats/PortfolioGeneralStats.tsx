@@ -5,6 +5,8 @@ import { PortfolioMetric } from "./PortfolioMetric";
 import { PortfolioValueChart } from "./PortfolioValueChart";
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
+import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 
 type PortfolioGeneralStatsProps = {
   stats: {
@@ -28,6 +30,8 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
   } = stats;
   const isPositivePnl = pnl24h >= 0;
 
+  const { isLoading } = usePortfolioContext();
+
   return (
     <section className={styles.stats} aria-label="Portfolio summary">
       <div className={styles.portfolioValueSection}>
@@ -36,44 +40,23 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
             Total Portfolio Value
           </RText>
           <RHeading className={styles.portfolioValue} size="h3" weight="medium">
-            $
-            <Money fiat tooltip={false}>
-              {totalValue}
-            </Money>
-          </RHeading>
-          {pnl24h ? (
-            <div className={styles.dailyChange}>
-              <span
-                aria-hidden="true"
-                className={
-                  isPositivePnl ? styles.positiveMarker : styles.negativeMarker
-                }
-              />
-              <RText
-                color={isPositivePnl ? "green-500" : "red-500"}
-                size="body-sm"
-              >
+            {isLoading ? (
+              "--"
+            ) : (
+              <>
                 $
                 <Money fiat tooltip={false}>
-                  {pnl24h}
-                </Money>{" "}
-                ({isPositivePnl ? "+" : ""}
-                <Money fiat tooltip={false}>
-                  {pnl24hPercentage}
+                  {totalValue}
                 </Money>
-                % )
-              </RText>
-              <RText color="neutral-700" size="body-sm">
-                24h
-              </RText>
-            </div>
-          ) : (
-            <div className={styles.dailyChange}>
-              <RText color="neutral-700" size="body-sm">
-                --
-              </RText>
-            </div>
-          )}
+              </>
+            )}
+          </RHeading>
+          <RPriceChange
+            size="body-sm"
+            showPeriodLabel={true}
+            amount={pnl24h}
+            percentage={pnl24hPercentage}
+          />
         </div>
 
         <PortfolioValueChart />

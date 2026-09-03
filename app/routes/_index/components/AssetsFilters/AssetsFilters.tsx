@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from "react";
+
 import styles from "./styles.module.css";
 import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
-import { RInput } from "~/lib/atoms/RInput/RInput";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RViewSwitcher } from "~/lib/atoms/RViewSwitcher/RViewSwitcher";
 import { AssetsSort } from "./AssetsSort";
 import {
@@ -17,6 +19,17 @@ type AssetsFiltersProps = {
 
 export function AssetsFilters({ filters, onChange }: AssetsFiltersProps) {
   const { assets, assetTypes } = useAssetsContext();
+  const [isSearchExpanded, setIsSearchExpanded] = useState(
+    Boolean(filters.search)
+  );
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isSearchExpanded) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchExpanded]);
+
   const assetTypeCounts = assets.reduce<Record<string, number>>(
     (counts, asset) => {
       const assetType = asset.profile.asset_type;
@@ -49,13 +62,43 @@ export function AssetsFilters({ filters, onChange }: AssetsFiltersProps) {
         tabs={filterTabs}
       />
       <div className={styles.rightBlock}>
-        <RInput
+        <div
           className={styles.search}
-          icon="search"
-          onChange={(event) => onChange({ search: event.target.value })}
-          placeholder="Search"
-          value={filters.search}
-        />
+          data-expanded={isSearchExpanded}
+        >
+          {isSearchExpanded ? (
+            <>
+              <RIcon aria-hidden="true" name="search" />
+              <input
+                aria-label="Search assets"
+                className={styles.searchInput}
+                onBlur={() => {
+                  if (!filters.search) {
+                    setIsSearchExpanded(false);
+                  }
+                }}
+                onChange={(event) => onChange({ search: event.target.value })}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" && !filters.search) {
+                    setIsSearchExpanded(false);
+                  }
+                }}
+                placeholder="Search"
+                ref={searchInputRef}
+                value={filters.search}
+              />
+            </>
+          ) : (
+            <button
+              aria-label="Open asset search"
+              className={styles.searchButton}
+              onClick={() => setIsSearchExpanded(true)}
+              type="button"
+            >
+              <RIcon aria-hidden="true" name="search" />
+            </button>
+          )}
+        </div>
         <AssetsSort
           onChange={(sort) => onChange({ sort })}
           options={ASSET_SORT_OPTIONS}

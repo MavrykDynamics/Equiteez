@@ -8,7 +8,7 @@ export function AssetIdentity({ asset }: { asset: AssetType }) {
       <RText size="body-m" weight="medium">
         {asset.metadata.symbol || "--"}
       </RText>
-      <RText className={styles.assetName} color="neutral-600" size="body-s">
+      <RText className={styles.assetName} color="neutral-700" size="body-s">
         {asset.metadata.name || "--"}
       </RText>
     </div>

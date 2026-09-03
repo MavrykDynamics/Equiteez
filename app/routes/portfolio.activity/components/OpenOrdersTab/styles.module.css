@@ -65,6 +65,19 @@
   border-bottom: 0;
 }
 
+.expiredCell {
+  gap: var(--r-space-1);
+  padding-top: var(--r-space-5);
+  padding-bottom: var(--r-space-5);
+}
+
+.expiredIcon {
+  display: block;
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+  flex: none;
+}
+
 .date {
   display: flex;
   flex-direction: column;

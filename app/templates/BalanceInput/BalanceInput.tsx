@@ -34,6 +34,7 @@ type BalanceInputProps = {
   isAssetViewSmall?: boolean;
   sectionClassName?: string;
   selectedAssetMetadata?: AssetMetadataBase;
+  shouldRenderFooter?: boolean;
   onNext?: () => void;
   onPrev?: () => void;
 };
@@ -63,6 +64,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
       sectionClassName,
       selectedAssetSlug,
       selectedAssetMetadata,
+      shouldRenderFooter = true,
       onNext,
       onPrev,
     },
@@ -128,7 +130,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               headerClassName
             )}
           >
-            <div className="text-left text-xs text-sand-600 leading-[18px]">
+            <div className="text-left text-xs text-r-color-neutral-700 leading-[18px]">
               {label}
             </div>
             {additionalTopRightBlock}
@@ -174,20 +176,22 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               onChange={handleAmountChange}
             />
           </div>
-          <div
-            className={clsx(
-              "flex justify-between items-center",
-              footerClassName
-            )}
-          >
-            <div className={bottomLeftClassName}>
-              {additionalBottomLeftBlock}
-            </div>
+          {shouldRenderFooter && (
+            <div
+              className={clsx(
+                "flex justify-between items-center",
+                footerClassName
+              )}
+            >
+              <div className={bottomLeftClassName}>
+                {additionalBottomLeftBlock}
+              </div>
 
-            <div className={bottomRightClassName}>
-              {additionalBottomRightBlock}
+              <div className={bottomRightClassName}>
+                {additionalBottomRightBlock}
+              </div>
             </div>
-          </div>
+          )}
         </section>
         {errorCaption && (
           <div className="text-red-500 text-body-xs">{errorCaption}</div>
@@ -263,7 +267,7 @@ export const BalanceInputWithTotal = forwardRef<
           additionalTopRightBlock || (
             <div
               className={clsx(
-                "text-xs text-sand-600 flex items-center gap-[4px] font-semibold",
+                "text-xs text-r-color-neutral-700 flex items-center gap-[4px] font-semibold",
                 balanceClassName
               )}
             >
@@ -282,7 +286,7 @@ export const BalanceInputWithTotal = forwardRef<
         additionalBottomLeftBlock={additionalBottomLeftBlock}
         additionalBottomRightBlock={
           additionalBottomRightBlock || (
-            <div className="text-xs text-sand-600 flex items-center justify-between font-semibold">
+            <div className="text-xs text-r-color-neutral-700 flex items-center justify-between font-semibold">
               <BalanceTotalBlock
                 balanceTotal={balanceTotal}
                 decimals={decimals}

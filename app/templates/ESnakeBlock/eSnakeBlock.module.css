@@ -55,12 +55,25 @@
   background-color: var(--r-color-neutral-black);
 }
 
+.neutralProgress::before {
+  background-color: var(--r-color-neutral-100);
+}
+
 .neutralPoint {
   background-color: var(--r-color-neutral-white);
-  border: 2px solid var(--r-color-neutral-300);
+  border: 2px solid var(--r-color-neutral-500);
 }
 
 .neutralPointSelected {
   background-color: var(--r-color-neutral-black);
   border: 2px solid var(--r-color-neutral-black);
+}
+
+.neutralOptionText {
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+  letter-spacing: var(--r-letter-spacing-body);
 }

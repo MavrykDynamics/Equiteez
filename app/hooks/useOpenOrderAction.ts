@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import type { RIconName } from "~/lib/atoms/RIcon";
@@ -8,6 +9,7 @@ import {
   orderbookProcessRefund,
 } from "~/contracts/orderbook.contract";
 import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 type UseOpenOrderActionOptions = {
   assetSymbol: string;
@@ -24,6 +26,8 @@ export function useOpenOrderAction({
   onAfterAction,
   order,
 }: UseOpenOrderActionOptions) {
+  const queryClient = useQueryClient();
+  const { userAddress } = useUserContext();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const contractActionArgs = useMemo(
     () => ({
@@ -36,8 +40,11 @@ export function useOpenOrderAction({
 
   const handleAfterAction = useCallback(() => {
     setIsPopupOpen(false);
+    void queryClient.invalidateQueries({
+      predicate: (query) =>
+        query.queryKey[0] === "fetchWalletOpenOrders" || query.queryKey[0] === "rwa-wallet-activity-summary"});
     void onAfterAction?.();
-  }, [onAfterAction]);
+  }, [onAfterAction, queryClient]);
 
   const { invokeAction: invokeCancelOrder, status: cancelStatus } =
     useContractAction(

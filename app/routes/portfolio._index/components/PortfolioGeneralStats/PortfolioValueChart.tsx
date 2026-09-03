@@ -2,7 +2,6 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchWalletPortfolioHistory } from "~/lib/apis/rwa";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
@@ -15,6 +14,7 @@ import {
 
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
+import { RPriceChange } from "~/lib/molecules/RPriceChange";
 
 type PortfolioChartPeriod = "1d" | "7d" | "30d" | "all" | "ytd";
 
@@ -67,7 +67,6 @@ export function PortfolioValueChart() {
     [portfolioHistoryQuery.data?.points]
   );
   const changeAbs = portfolioHistoryQuery.data?.change_abs ?? 0;
-  const changePct = portfolioHistoryQuery.data?.change_pct ?? 0;
   const hasChartData = points.length > 0;
   const isPositiveChange = changeAbs >= 0;
   const handleChartHover = useCallback(
@@ -136,31 +135,26 @@ export function PortfolioValueChart() {
             </button>
           ))}
         </div>
-        <div className={styles.change}>
-          <RIcon
-            name={isPositiveChange ? "trending-up" : "trending-down"}
-            size="small"
-            className={
-              isPositiveChange ? styles.changeIconPositive : styles.changeIconNegative
-            }
-          />
-          <RText
-            color={isPositiveChange ? "green-500" : "red-500"}
-            size="body-sm"
-          >
-            <Money fiat tooltip={false}>
-              {changeAbs}
-            </Money>{" "}
-            ({isPositiveChange ? "+" : "-"}
-            {Math.abs(changePct)}%)
-          </RText>
-        </div>
+
+        {portfolioHistoryQuery.data?.change_abs ? (
+          <div className={isPositiveChange ? styles.change : styles.changeRed}>
+            <RPriceChange
+              amount={portfolioHistoryQuery.data?.change_abs ?? 0}
+              percentage={portfolioHistoryQuery.data?.change_pct ?? 0}
+              showPeriodLabel={false}
+            />
+          </div>
+        ) : null}
       </div>
       <div className={styles.chartCanvas} ref={chartCanvasRef}>
         {portfolioHistoryQuery.isLoading ||
         portfolioHistoryQuery.isFetching ||
         portfolioHistoryQuery.isPending ? (
-          <div className={styles.chartLoader} role="status" aria-label="Loading chart">
+          <div
+            className={styles.chartLoader}
+            role="status"
+            aria-label="Loading chart"
+          >
             <Spinner size={32} />
           </div>
         ) : !hasChartData ? (
@@ -198,7 +192,12 @@ export function PortfolioValueChart() {
               role="status"
               style={tooltipPosition ?? undefined}
             >
-              <RText size="body-s" weight="medium">
+              <RText
+                color={isPositiveChange ? "green-500" : "red-500"}
+                size="body-s"
+                weight="medium"
+              >
+                $
                 <Money fiat tooltip={false}>
                   {hoveredPoint.value}
                 </Money>

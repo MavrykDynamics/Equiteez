@@ -167,24 +167,10 @@
 }
 
 .priceChange {
-  display: flex;
-  gap: var(--r-space-1);
-  align-items: center;
-}
-.priceChangeIcon {
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
 }
 .arrowIcon {
   color: var(--r-color-neutral-400);
-}
-
-.positiveChange {
-  color: var(--r-color-green-500);
-}
-
-.negativeChange {
-  color: var(--r-color-red-500);
 }
 
 .secondaryAssetCard .secondaryChart {

@@ -88,7 +88,7 @@ const AssetStatsSchema = z.object({
   total_supply: z.string(),
   circulating_supply: z.string(),
   ath: AssetAthSchema.optional(),
-  avg_hold_time_days: z.number(),
+  avg_hold_time_days: z.number().optional(),
   updated_at: z.number(),
 });
 

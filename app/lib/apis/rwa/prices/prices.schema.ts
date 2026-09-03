@@ -5,6 +5,13 @@ const PriceChangeSchema = z.object({
   change_pct: z.number().nullable(),
 });
 
+const PriceChangePeriodSchema = z.object({
+  from_ts: z.string(),
+  from: z.number().nullable(),
+  delta_abs: z.number().nullable(),
+  change_pct: z.number().nullable(),
+});
+
 const PriceSeriesPointSchema = z.object({
   p: z.number(),
   t: z.string(),
@@ -36,6 +43,22 @@ export const AssetPriceSeriesSchema = z.object({
   kind: z.literal("series"),
   interval: z.string(),
   points: z.array(PriceSeriesPointSchema),
+});
+
+export const AssetPriceChangeSchema = z.object({
+  symbol: z.string(),
+  native_quote: z.string(),
+  as_of: z.string(),
+  now: z.number(),
+  periods: z.object({
+    "1h": PriceChangePeriodSchema.optional(),
+    "24h": PriceChangePeriodSchema.optional(),
+    "7d": PriceChangePeriodSchema.optional(),
+    "30d": PriceChangePeriodSchema.optional(),
+  }),
+  usd: z.number().optional(),
+  eur: z.number().optional(),
+  aed: z.number().optional(),
 });
 
 export const PriceAssetSchema = z.object({

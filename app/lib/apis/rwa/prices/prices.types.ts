@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  AssetPriceChangeSchema,
   AssetPriceSeriesSchema,
   PriceAssetSchema,
   PricesSchema,
@@ -7,4 +8,5 @@ import {
 
 export type PriceAssetType = z.infer<typeof PriceAssetSchema>;
 export type AssetPriceSeriesType = z.infer<typeof AssetPriceSeriesSchema>;
+export type AssetPriceChangeType = z.infer<typeof AssetPriceChangeSchema>;
 export type PricesResponseType = z.infer<typeof PricesSchema>;

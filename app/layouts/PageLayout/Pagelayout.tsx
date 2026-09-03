@@ -5,6 +5,9 @@ import { Container } from "~/lib/atoms/Container/Container";
 import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 import { RFooter } from "~/layouts/PageLayout/RFooter";
 import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
+import { MobileLayout } from "~/layouts/PageLayout/MobileLayout";
+
+import styles from "./Pagelayout.module.css";
 
 type PageLayoutProps = {
   bg?: string;
@@ -28,10 +31,13 @@ const PageLayout: FC<PageLayoutProps> = ({
 }) => {
   return (
     <FiltersProvider>
-      <div className={clsx("min-h-screen flex flex-col")}>
+      <div className={styles.root}>
+        <MobileLayout />
+
         <div
           className={clsx(
             "relative flex flex-col flex-1 pb-[66px] md:pb-0",
+            styles.desktopLayout,
             className
           )}
         >

@@ -1,5 +1,13 @@
-import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSearchParams } from "@remix-run/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
@@ -41,12 +49,10 @@ export function BuySellPanel({
   isOrderBookOpen,
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const {
-    isLoading,
-    marketsArr,
-    updateActiveMarketState,
-  } = useMarketsContext();
+  const { isLoading, marketsArr, updateActiveMarketState } =
+    useMarketsContext();
   const sideSearchParam = searchParams.get("side");
   const [orderType, setOrderType] = useState<OrderType>(() =>
     getOrderTypeFromSearchParam(sideSearchParam)
@@ -71,6 +77,19 @@ export function BuySellPanel({
     }
   }, [estate?.slug, updateActiveMarketState]);
 
+  const handleSuccessfulTransaction = useCallback(() => {
+    const shouldInvalidateAssetOrdersQuery = (queryKey: readonly unknown[]) =>
+      queryKey[0] === "fetchWalletOpenOrders" ||
+      queryKey[0] === "fetchWalletOrderHistory";
+
+    void Promise.all([
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          shouldInvalidateAssetOrdersQuery(query.queryKey),
+      }),
+    ]);
+  }, [queryClient]);
+
   if (isLoading) {
     return (
       <div className={styles.state}>
@@ -87,6 +106,7 @@ export function BuySellPanel({
     <BuySellContent
       estate={estate}
       isOrderBookOpen={isOrderBookOpen}
+      onSuccessfulTransaction={handleSuccessfulTransaction}
       orderType={orderType}
       setIsOrderBookOpen={setIsOrderBookOpen}
       setOrderType={setOrderType}

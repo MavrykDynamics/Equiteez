@@ -18,7 +18,7 @@ export function RHeader() {
     { label: "Discover", to: ROUTES.home },
     {
       label: "Trade",
-      to: generatePath(ROUTES.trade, { address: assets[0].address }),
+      to: generatePath(ROUTES.trade, { address: assets[0]?.address ?? "" }),
     },
     { label: "Portfolio", to: ROUTES.portfolio },
   ];
@@ -44,14 +44,14 @@ export function RHeader() {
         </nav>
 
         <div className={styles.wallet}>
-          <RButton className={styles.depositButton} variant="secondary">
-            <RText size="body-s" weight="medium">
-              Deposit
-            </RText>
-            <RText size="body-xs">
-              <RIcon name="arrow-long-up-right" size="small" />
-            </RText>
-          </RButton>
+          {/*<RButton className={styles.depositButton} variant="secondary">*/}
+          {/*  <RText size="body-s" weight="medium">*/}
+          {/*    Deposit*/}
+          {/*  </RText>*/}
+          {/*  <RText size="body-xs">*/}
+          {/*    <RIcon name="arrow-long-up-right" size="small" />*/}
+          {/*  </RText>*/}
+          {/*</RButton>*/}
           <ConnectWallet />
         </div>
       </Container>

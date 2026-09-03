@@ -3,21 +3,32 @@
 .contentBlock {
   width: 100%;
   display: flex;
+  align-items: flex-start;
   gap: var(--r-space-5);
   margin-bottom: var(--r-space-5);
-  align-items: stretch;
+  padding-top: var(--r-space-10);
+}
+
+.mainContent {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .buySellContainer {
   box-sizing: border-box;
   display: flex;
-  flex: 0 0 428px;
   flex-direction: column;
+  flex: 0 0 428px;
+  width: 428px;
   min-width: 428px;
+  height: fit-content;
+  align-self: flex-start;
+  position: sticky;
+  top: var(--r-space-5);
   padding: var(--r-space-4);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border: 0;
   border-radius: var(--r-radius-md);
-  background-color: var(--r-color-neutral-white);
+  background-color: var(--r-color-neutral-50);
 }
 
 @media (--media-tablet-max) {
@@ -25,7 +36,13 @@
     flex-direction: column;
   }
 
+  .mainContent {
+    width: 100%;
+  }
+
   .buySellContainer {
+    position: static;
+    flex: none;
     width: 100%;
     min-width: 0;
   }

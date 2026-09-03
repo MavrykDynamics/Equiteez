@@ -5,15 +5,15 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { AssetsFilters } from "~/routes/_index/components/AssetsFilters/AssetsFilters";
 import { AssetsTableView } from "~/routes/_index/components/AssetsTableView/AssetsTableView";
 import { AssetsCardsView } from "~/routes/_index/components/AssetsCardsView/AssetsCardsView";
+import { ImageAssetsView } from "~/routes/_index/components/ImageAssetsView/ImageAssetsView";
 import {
   ALL_ASSETS_FILTER_VALUE,
   INITIAL_ASSETS_FILTER_STATE,
 } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
 import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
+import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();
@@ -53,34 +53,44 @@ export function ExploreAssets() {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.titleBlock}>
-        <RHeading size="h5" weight="medium">
-          Explore Assets
-        </RHeading>
-        <DepositFunds />
-      </div>
-
-      <AssetsFilters
-        filters={filters}
-        onChange={(updates: Partial<AssetsFilterState>) =>
-          setFilters((currentFilters) => ({
-            ...currentFilters,
-            ...updates,
-          }))
-        }
-      />
-      {filteredAssets.length ? (
-        filters.viewType === "grid" ? (
-          <AssetsCardsView assets={filteredAssets} />
-        ) : (
-          <AssetsTableView assets={filteredAssets} />
-        )
-      ) : (
-        <div className={styles.emptyState}>
-          <RText size="body-sm" color="neutral-600">
-            No Results Found
-          </RText>
+      <Reveal className={styles.titleReveal} preset="rise">
+        <div className={styles.titleBlock}>
+          <RHeading size="h5" weight="medium">
+            Explore Assets
+          </RHeading>
+          {/*<DepositFunds />*/}
         </div>
+      </Reveal>
+
+      <Reveal delay={0.06} preset="rise">
+        <AssetsFilters
+          filters={filters}
+          onChange={(updates: Partial<AssetsFilterState>) =>
+            setFilters((currentFilters) => ({
+              ...currentFilters,
+              ...updates,
+            }))
+          }
+        />
+      </Reveal>
+      {filteredAssets.length ? (
+        <Reveal delay={0.1} preset="rise">
+          {filters.viewType === "image" ? (
+            <ImageAssetsView assets={filteredAssets} />
+          ) : filters.viewType === "grid" ? (
+            <AssetsCardsView assets={filteredAssets} />
+          ) : (
+            <AssetsTableView assets={filteredAssets} />
+          )}
+        </Reveal>
+      ) : (
+        <Reveal delay={0.1} preset="fade">
+          <div className={styles.emptyState}>
+            <RText size="body-sm" color="neutral-700">
+              No Results Found
+            </RText>
+          </div>
+        </Reveal>
       )}
     </div>
   );
