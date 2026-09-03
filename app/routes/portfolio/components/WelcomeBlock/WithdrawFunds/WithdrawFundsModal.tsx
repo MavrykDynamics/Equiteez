@@ -327,7 +327,7 @@ export function WithdrawFundsModal({
             </Field>
 
             <div className={styles.eligibilityNotice}>
-              <RIcon aria-hidden="true" name="check" size="small" />
+              <RIcon aria-hidden="true" name="info" size="medium" />
               <RText
                 className={styles.noticeText}
                 color="neutral-700"
