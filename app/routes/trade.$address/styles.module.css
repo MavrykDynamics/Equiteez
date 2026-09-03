@@ -47,3 +47,13 @@
     min-width: 0;
   }
 }
+
+@media (--media-tablet) {
+  .contentBlock {
+    padding-top: 16px;
+  }
+
+  .buySellContainer {
+    display: none;
+  }
+}

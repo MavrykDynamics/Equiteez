@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .wrapper {
   padding: var(--r-space-5) 0 0 0;
   display: flex;
@@ -16,4 +18,21 @@
   background: var(--r-color-neutral-100);
   width: 1px;
   height: 44px;
+}
+
+@media (--media-tablet) {
+  .tabSwitcher {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: var(--r-space-4);
+    scrollbar-width: none;
+  }
+
+  .tabSwitcher::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabSwitcher > * {
+    flex-shrink: 0;
+  }
 }
