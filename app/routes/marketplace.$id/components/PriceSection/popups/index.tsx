@@ -378,8 +378,10 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   );
   const orderExpiry = useMemo(
     () =>
-      orderExpiryPeriodId ? getOrderExpiryTimestamp(orderExpiryPeriodId) : null,
-    [orderExpiryPeriodId]
+      !isMarketTypeMarket && orderExpiryPeriodId
+        ? getOrderExpiryTimestamp(orderExpiryPeriodId)
+        : null,
+    [isMarketTypeMarket, orderExpiryPeriodId]
   );
   const commonOrderProps = useMemo(
     () => ({
@@ -1006,8 +1008,6 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}
-              orderExpiryPeriodId={orderExpiryPeriodId}
-              setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               tokenPrice={tokenPrice}
               networkFee={networkFee}

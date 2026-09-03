@@ -34,6 +34,7 @@ type BalanceInputProps = {
   isAssetViewSmall?: boolean;
   sectionClassName?: string;
   selectedAssetMetadata?: AssetMetadataBase;
+  shouldRenderFooter?: boolean;
   onNext?: () => void;
   onPrev?: () => void;
 };
@@ -63,6 +64,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
       sectionClassName,
       selectedAssetSlug,
       selectedAssetMetadata,
+      shouldRenderFooter = true,
       onNext,
       onPrev,
     },
@@ -174,20 +176,22 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
               onChange={handleAmountChange}
             />
           </div>
-          <div
-            className={clsx(
-              "flex justify-between items-center",
-              footerClassName
-            )}
-          >
-            <div className={bottomLeftClassName}>
-              {additionalBottomLeftBlock}
-            </div>
+          {shouldRenderFooter && (
+            <div
+              className={clsx(
+                "flex justify-between items-center",
+                footerClassName
+              )}
+            >
+              <div className={bottomLeftClassName}>
+                {additionalBottomLeftBlock}
+              </div>
 
-            <div className={bottomRightClassName}>
-              {additionalBottomRightBlock}
+              <div className={bottomRightClassName}>
+                {additionalBottomRightBlock}
+              </div>
             </div>
-          </div>
+          )}
         </section>
         {errorCaption && (
           <div className="text-red-500 text-body-xs">{errorCaption}</div>
