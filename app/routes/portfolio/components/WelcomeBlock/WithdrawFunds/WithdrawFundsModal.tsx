@@ -70,7 +70,10 @@ export function WithdrawFundsModal({
     [assets, selectedAssetSlug]
   );
   const normalizedRecipientAddress = recipientAddress.trim();
-  const [debouncedRecipientAddress] = useDebounce(normalizedRecipientAddress, 400);
+  const [debouncedRecipientAddress] = useDebounce(
+    normalizedRecipientAddress,
+    400
+  );
   const requestedAmount = new BigNumber(amount);
   const isRecipientValid =
     normalizedRecipientAddress.length > 0 &&
@@ -97,7 +100,10 @@ export function WithdrawFundsModal({
   });
 
   useEffect(() => {
-    if (!isRecipientValid || normalizedRecipientAddress !== debouncedRecipientAddress) {
+    if (
+      !isRecipientValid ||
+      normalizedRecipientAddress !== debouncedRecipientAddress
+    ) {
       setIsRecipientKyced(null);
       return;
     }
@@ -416,16 +422,20 @@ export function WithdrawFundsModal({
                     type="text"
                     value={amount}
                   />
-                  <button
-                    className={styles.maxButton}
-                    disabled={!selectedAsset}
-                    onClick={() =>
-                      setAmount(selectedAsset?.availableBalance.toFixed() ?? "")
-                    }
-                    type="button"
-                  >
-                    Max
-                  </button>
+                  {selectedAsset && (
+                    <button
+                      className={styles.maxButton}
+                      disabled={!selectedAsset}
+                      onClick={() =>
+                        setAmount(
+                          selectedAsset?.availableBalance.toFixed() ?? ""
+                        )
+                      }
+                      type="button"
+                    >
+                      Max
+                    </button>
+                  )}
                 </div>
                 {amountError ? (
                   <RText
