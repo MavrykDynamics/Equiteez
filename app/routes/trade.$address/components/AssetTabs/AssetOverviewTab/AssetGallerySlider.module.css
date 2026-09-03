@@ -1,3 +1,5 @@
+@import "../../../../../styles/breakpoints.css";
+
 .slider {
   display: flex;
   flex-direction: column;
@@ -107,4 +109,10 @@
 
 .dot[aria-selected="true"] {
   background: var(--r-color-neutral-900);
+}
+
+@media (--media-tablet) {
+  .slide {
+    flex-basis: 100%;
+  }
 }
