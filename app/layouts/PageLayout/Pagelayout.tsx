@@ -32,7 +32,7 @@ const PageLayout: FC<PageLayoutProps> = ({
   return (
     <FiltersProvider>
       <div className={styles.root}>
-        <MobileLayout />
+        {/*<MobileLayout />*/}
 
         <div
           className={clsx(

@@ -160,3 +160,10 @@
     gap: var(--r-space-2);
   }
 }
+
+
+@media (--media-tablet) {
+  .bottom {
+    flex-direction: column;
+  }
+}
