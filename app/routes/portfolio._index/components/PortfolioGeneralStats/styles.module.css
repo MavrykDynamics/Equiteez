@@ -181,7 +181,6 @@
   z-index: 2;
   display: flex;
   box-sizing: border-box;
-  width: 97px;
   flex-direction: column;
   gap: 1px;
   padding: var(--r-space-1) var(--r-space-3);

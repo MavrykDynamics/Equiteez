@@ -66,7 +66,7 @@ function getPeriodByRange(range: ChartRange): "1h" | "24h" | "7d" | "30d" {
   }
 }
 
-function formatHourTick(date: Date) {
+export function formatHourTick(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -74,7 +74,7 @@ function formatHourTick(date: Date) {
   }).format(date);
 }
 
-function formatDateTime(date: Date) {
+export function formatDateTime(date: Date) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",

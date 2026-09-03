@@ -192,7 +192,12 @@ export function PortfolioValueChart() {
               role="status"
               style={tooltipPosition ?? undefined}
             >
-              <RText size="body-s" weight="medium">
+              <RText
+                color={isPositiveChange ? "green-500" : "red-500"}
+                size="body-s"
+                weight="medium"
+              >
+                $
                 <Money fiat tooltip={false}>
                   {hoveredPoint.value}
                 </Money>
