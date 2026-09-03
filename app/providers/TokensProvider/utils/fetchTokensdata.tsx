@@ -24,7 +24,7 @@ const withIndexerBypass = (url: string) => {
 export const fetchTokensData = async () => {
   try {
     const { data } = await api<RwaTokenType[]>(
-      withIndexerBypass(`${process.env.API_URL}/tokens`)
+      withIndexerBypass(`${process.env.API_URL}/tokens?limit=1000`)
     );
 
     const tokens: TokenType[] = data.map((t) => ({
