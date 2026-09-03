@@ -6,8 +6,8 @@ import type {
 } from "~/lib/apis/rwa/orderbookDepth/orderbookDepth.types";
 
 export const DEFAULT_ORDERBOOK_DEPTH_LIMIT = 50;
-export const MAX_ORDERBOOK_DEPTH_LIMIT = 200;
-export const ORDERBOOK_DEPTH_REFETCH_INTERVAL = 3_000;
+export const MAX_ORDERBOOK_DEPTH_LIMIT = 100;
+export const ORDERBOOK_DEPTH_REFETCH_INTERVAL = 10_000;
 
 const setOptionalQueryParam = (
   query: URLSearchParams,
