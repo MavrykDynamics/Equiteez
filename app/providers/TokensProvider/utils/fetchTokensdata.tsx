@@ -8,6 +8,8 @@ type RwaTokenType = {
   tokenId: string;
 };
 
+const TOKENS_METADATA_BATCH_SIZE = 100;
+
 const withIndexerBypass = (url: string) => {
   const bypassSecret = process.env.INDEXER_ALLOWLIST_BYPASS_SECRET;
 
@@ -19,6 +21,16 @@ const withIndexerBypass = (url: string) => {
   indexerUrl.searchParams.set("bypass", bypassSecret);
 
   return indexerUrl.toString();
+};
+
+const chunkContracts = (contracts: string[], chunkSize: number) => {
+  const chunks: string[][] = [];
+
+  for (let i = 0; i < contracts.length; i += chunkSize) {
+    chunks.push(contracts.slice(i, i + chunkSize));
+  }
+
+  return chunks;
 };
 
 export const fetchTokensData = async () => {
@@ -43,30 +55,42 @@ export const fetchTokensMetadata = async (
   tokens: TokenType[]
 ): Promise<StringRecord<TokenMetadata>> => {
   try {
-    const tokenContractsArr = tokens.map((t) => t.contract);
-    const queryBody = {
-      query: `query TokensMetadataQuery {
-        token_metadata(where: {contract: {_in: ${JSON.stringify(
-          tokenContractsArr
-        )}}}) {
-          contract
-          metadata
-        }
-      }`,
-      variables: null,
-      operationName: "TokensMetadataQuery",
-    };
+    const tokenContractsArr = [...new Set(tokens.map((t) => t.contract))];
+    const tokenContractChunks = chunkContracts(
+      tokenContractsArr,
+      TOKENS_METADATA_BATCH_SIZE
+    );
 
-    const { data: apiData } = await api<{
-      data: { token_metadata: { contract: string; metadata: TokenMetadata }[] };
-    }>(withIndexerBypass(process.env.TOKENS_METADATA_API), {
-      body: JSON.stringify(queryBody),
-      method: "POST",
-    });
+    const tokenMetadataResponses = await Promise.all(
+      tokenContractChunks.map(async (contractsChunk) => {
+        const queryBody = {
+          query: `query TokensMetadataQuery {
+            token_metadata(
+              where: {contract: {_in: ${JSON.stringify(contractsChunk)}}}
+              limit: ${contractsChunk.length}
+            ) {
+              contract
+              metadata
+            }
+          }`,
+          variables: null,
+          operationName: "TokensMetadataQuery",
+        };
 
-    const {
-      data: { token_metadata },
-    } = apiData;
+        const { data: apiData } = await api<{
+          data: {
+            token_metadata: { contract: string; metadata: TokenMetadata }[];
+          };
+        }>(withIndexerBypass(process.env.TOKENS_METADATA_API), {
+          body: JSON.stringify(queryBody),
+          method: "POST",
+        });
+
+        return apiData.data.token_metadata;
+      })
+    );
+
+    const token_metadata = tokenMetadataResponses.flat();
 
     const tokensRecord = tokens.reduce<StringRecord<TokenType>>(
       (acc, token) => {

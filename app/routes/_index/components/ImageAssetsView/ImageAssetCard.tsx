@@ -9,7 +9,6 @@ import { revealVariants } from "~/lib/animations/animations";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
-import { ASSET_IMAGE_URLS_BY_ADDRESS } from "~/mocks/asset-image-urls.mock";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import { AssetBadge } from "~/routes/_index/components/AssetBadge/AssetBadge";
 import { AssetIdentity } from "~/routes/_index/components/AssetsCardsView/AssetIdentity";
@@ -18,7 +17,6 @@ import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/Asse
 
 import styles from "./ImageAssetsView.module.css";
 
-const fallbackImageUrl = Object.values(ASSET_IMAGE_URLS_BY_ADDRESS)[0];
 const revealedImageAssetAddresses = new Set<string>();
 
 type RImageAssetCardProps = {
@@ -38,8 +36,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
   });
   const { isNegative, points, price, priceChange } = useAssetPrice(asset);
   const isPrimaryIssuance = asset.profile.lifecycle === "primary_issuance";
-  const imageUrl =
-    ASSET_IMAGE_URLS_BY_ADDRESS[asset.address] ?? fallbackImageUrl;
+  const imageUrl = asset.profile.image_url;
   const shouldAnimateChartReveal =
     !wasPreviouslyRevealed.current && !shouldReduceMotion;
   const cardAnimationState =
