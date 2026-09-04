@@ -59,6 +59,9 @@ export const fetchWalletOpenOrders = async ({
     query.set("token_address", tokenAddress);
   }
 
+  query.set("status" , "open,expired");
+  query.set("refund" , "none,claimable");
+
   const queryString = query.toString();
   const url = `/wallets/${walletAddress}/orders${
     queryString ? `?${queryString}` : ""
