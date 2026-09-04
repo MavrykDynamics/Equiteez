@@ -27,10 +27,13 @@ import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
-import { USER_KYC_STATUS_QUERY } from "./queries/user.query";
+import { USER_ACCOUNT_STATUS_QUERY } from "./queries/user.query";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { AUTH_EXPIRED_EVENT } from "~/providers/AuthProvider/helpers/auth.events";
-import { getIsKycedForAddress } from "./helpers/userStatus.helpers";
+import {
+  getHasOrdersForAddress,
+  getIsKycedForAddress,
+} from "./helpers/userStatus.helpers";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -145,6 +148,7 @@ export const UserProvider = ({ children }: Props) => {
         userAddress: accountAddress,
         isAdmin: ADMIN_ADDRESSES[accountAddress],
         isKyced: false,
+        hasOrders: false,
         userTokensBalances: {},
       };
     });
@@ -171,34 +175,46 @@ export const UserProvider = ({ children }: Props) => {
   ]);
 
   const {
-    data: userStatusData,
-    loading: isUserStatusLoading,
-    error: userStatusError,
-  } = useQuery(USER_KYC_STATUS_QUERY, {
+    data: userAccountStatusData,
+    loading: isUserAccountStatusLoading,
+    error: userAccountStatusError,
+  } = useQuery(USER_ACCOUNT_STATUS_QUERY, {
     variables: { address: accountAddress ?? "" },
     skip: !accountAddress,
     fetchPolicy: "network-only",
   });
 
   useEffect(() => {
-    if (userStatusError) console.log(userStatusError, "USER_KYC_STATUS_QUERY");
-  }, [userStatusError]);
+    if (userAccountStatusError)
+      console.log(userAccountStatusError, "USER_ACCOUNT_STATUS_QUERY");
+  }, [userAccountStatusError]);
 
   useEffect(() => {
-    if (!accountAddress || !userStatusData) return;
+    if (!accountAddress || !userAccountStatusData) return;
 
-    const isKyced = getIsKycedForAddress(userStatusData, accountAddress);
+    const isKyced = getIsKycedForAddress(
+      userAccountStatusData,
+      accountAddress
+    );
+    const hasOrders = getHasOrdersForAddress(
+      userAccountStatusData,
+      accountAddress
+    );
 
     setUserCtxState((prev) => {
-      if (prev.userAddress !== accountAddress || prev.isKyced === isKyced)
+      if (
+        prev.userAddress !== accountAddress ||
+        (prev.isKyced === isKyced && prev.hasOrders === hasOrders)
+      )
         return prev;
 
       return {
         ...prev,
         isKyced,
+        hasOrders,
       };
     });
-  }, [accountAddress, userStatusData]);
+  }, [accountAddress, userAccountStatusData]);
 
   useEffect(() => {
     if (!IS_WEB) return;
@@ -223,7 +239,7 @@ export const UserProvider = ({ children }: Props) => {
 
   const providerValue = useMemo(() => {
     const isLoading =
-      isUserLoading || tzktBalancesLoading || isUserStatusLoading;
+      isUserLoading || tzktBalancesLoading || isUserAccountStatusLoading;
 
     return {
       ...userCtxState,
@@ -241,7 +257,7 @@ export const UserProvider = ({ children }: Props) => {
   }, [
     isUserLoading,
     tzktBalancesLoading,
-    isUserStatusLoading,
+    isUserAccountStatusLoading,
     userCtxState,
     userTzktTokens.userAddress,
     userTzktTokens.tokens,

@@ -1,16 +1,29 @@
-type UserKycStatusData = {
-  kyc_member: Array<{
-    user?: {
-      address: string;
-    } | null;
-  }>;
+import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
+
+type UserAccountStatusData = Pick<UserAccountStatusQuery, "kyc_member">;
+
+const getUserForAddress = (
+  data: UserAccountStatusData | undefined,
+  address: string | null
+) => {
+  if (!data || !address) return undefined;
+
+  return data.kyc_member.find((member) => member.user?.address === address)
+    ?.user;
 };
 
 export const getIsKycedForAddress = (
-  data: UserKycStatusData | undefined,
+  data: UserAccountStatusData | undefined,
   address: string | null
 ): boolean => {
-  if (!data || !address) return false;
+  return Boolean(getUserForAddress(data, address));
+};
 
-  return data.kyc_member.some((member) => member.user?.address === address);
+export const getHasOrdersForAddress = (
+  data: UserAccountStatusData | undefined,
+  address: string | null
+): boolean => {
+  const user = getUserForAddress(data, address);
+
+  return (user?.orderbook_order_events?.length ?? 0) > 0;
 };

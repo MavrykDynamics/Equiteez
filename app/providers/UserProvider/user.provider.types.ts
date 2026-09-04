@@ -36,6 +36,7 @@ export type UserContext = UserContextStateType & {
 export type UserContextStateType = {
   userAddress: string | null;
   isKyced: boolean;
+  hasOrders: boolean;
   isAdmin: boolean;
 
   userTokensBalances: Record<TokenAddressType, BigNumber>;

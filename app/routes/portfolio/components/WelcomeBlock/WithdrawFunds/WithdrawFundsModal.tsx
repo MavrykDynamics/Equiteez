@@ -33,7 +33,7 @@ import { WithdrawalSummary } from "./WithdrawalSummary";
 import { useWithdrawableAssets } from "./useWithdrawableAssets";
 import { MVRK_ASSET_SLUG, MVRK_CONTRACT_ADDRESS } from "~/lib/metadata";
 import { AssetIcon } from "~/templates/AssetIcon";
-import { USER_KYC_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
+import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 
 type WithdrawStep = "form" | "success";
@@ -93,7 +93,7 @@ export function WithdrawFundsModal({
     data: recipientKycData,
     loading: isRecipientKycLoading,
     error: recipientKycQueryError,
-  } = useQuery(USER_KYC_STATUS_QUERY, {
+  } = useQuery(USER_ACCOUNT_STATUS_QUERY, {
     variables: { address: debouncedRecipientAddress },
     skip: !isDebouncedRecipientValid,
     fetchPolicy: "network-only",
