@@ -16,6 +16,8 @@ type BlockchainDetail = {
 };
 
 function BlockchainDetailList({ asset }: { asset: AssetType }) {
+  const tokenSupply = asset.finance.max_supply ?? asset.total_supply;
+
   const blockchainDetails: BlockchainDetail[] = useMemo(
     () => [
       {
@@ -26,7 +28,7 @@ function BlockchainDetailList({ asset }: { asset: AssetType }) {
       { label: "Token Standard", value: "RWA" },
       {
         label: "Token Supply",
-        value: <Money>{asset.finance.max_supply}</Money>,
+        value: <Money>{tokenSupply}</Money>,
       },
       { label: "Holders", value: "-" },
       { label: "Asset Issuer", value: "Equiteez Issuance Ltd" },
@@ -39,7 +41,7 @@ function BlockchainDetailList({ asset }: { asset: AssetType }) {
       { label: "Price Oracle", value: "-" },
       { label: "Chain", value: "Mavryk Basenet" },
     ],
-    [asset]
+    [asset, tokenSupply]
   );
 
   return (

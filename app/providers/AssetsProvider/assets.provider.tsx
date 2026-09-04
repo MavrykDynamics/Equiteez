@@ -12,7 +12,6 @@ import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { PriceAssetType } from "~/lib/apis/rwa/prices/prices.types";
 import { getAssetTypeLabelsFromAssets } from "~/providers/AssetsProvider/helpers/formatAssetTypeLabel";
 import { mapPricesByTokenAddress } from "~/providers/AssetsProvider/helpers/mapPricesByTokenAddress";
-import { metadata } from "framer-motion/m";
 
 const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 

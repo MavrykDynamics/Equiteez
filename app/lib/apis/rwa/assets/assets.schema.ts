@@ -58,7 +58,7 @@ const AssetProfileSchema = z.object({
 const AssetFinanceSchema = z.object({
   value_per_token: z.number(),
   total_dividends_distributed: z.string(),
-  max_supply: z.string(),
+  max_supply: z.string().optional(),
   mintable: z.boolean().optional(),
   decimals: z.number(),
 });
