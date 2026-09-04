@@ -1,17 +1,13 @@
 import { FC } from "react";
 
 import clsx from "clsx";
-
-import DocBg from "app/a11y/DocBg";
-
-// layout components
-import { Header } from "./Header/Header";
-import { Footer } from "./Footer/Footer";
 import { Container } from "~/lib/atoms/Container/Container";
-import { Banner } from "./Banner/Banner";
-
-import bannerContent from "app/mocks/banner.json";
 import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
+import { RFooter } from "~/layouts/PageLayout/RFooter";
+import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
+import { MobileLayout } from "~/layouts/PageLayout/MobileLayout";
+
+import styles from "./Pagelayout.module.css";
 
 type PageLayoutProps = {
   bg?: string;
@@ -29,24 +25,23 @@ type PageLayoutProps = {
  */
 const PageLayout: FC<PageLayoutProps> = ({
   children,
-  bg = "bg-background",
   includeContainer = true,
   includeFooter = true,
   className,
 }) => {
   return (
     <FiltersProvider>
-      <div className={clsx("min-h-screen flex flex-col")}>
-        <DocBg bgClassName={clsx(bg)} />
+      <div className={styles.root}>
+        <MobileLayout />
 
         <div
           className={clsx(
             "relative flex flex-col flex-1 pb-[66px] md:pb-0",
+            styles.desktopLayout,
             className
           )}
         >
-          <Header />
-          <Banner contantArr={bannerContent} />
+          <RHeader />
           {includeContainer ? (
             <div className="flex-1">
               <Container>{children}</Container>
@@ -54,7 +49,7 @@ const PageLayout: FC<PageLayoutProps> = ({
           ) : (
             children
           )}
-          {includeFooter && <Footer />}
+          {includeFooter && <RFooter />}
         </div>
       </div>
     </FiltersProvider>

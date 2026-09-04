@@ -7,12 +7,6 @@ export const onAfterOpen = () => {
 
   if (openPopupCount === 0) {
     document.body.classList.add("overflowYHidden");
-
-    const scrollBarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.marginRight =
-      scrollBarWidth > 0 ? `${scrollBarWidth}px` : "";
   }
 
   openPopupCount += 1;
@@ -30,5 +24,4 @@ export const onAfterClose = () => {
   }
 
   document.body.classList.remove("overflowYHidden");
-  document.body.style.marginRight = "";
 };

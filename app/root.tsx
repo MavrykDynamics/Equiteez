@@ -20,6 +20,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
+import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
@@ -45,6 +46,8 @@ import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
 import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
+import PageLayout from "~/layouts/PageLayout/Pagelayout";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -138,27 +141,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <ApolloProvider>
                   <DipdupProvider>
                     <WalletProvider>
-                      <ConfigProvider>
-                        <CurrencyProvider
-                          fiatToTezos={fiatToTezos}
-                          usdToToken={usdToToken}
-                        >
-                          <TokensProvider
-                            initialTokens={tokens}
-                            initialTokensMetadata={tokensMetadata}
+                      <AuthProvider>
+                        <ConfigProvider>
+                          <CurrencyProvider
+                            fiatToTezos={fiatToTezos}
+                            usdToToken={usdToToken}
                           >
-                            <MarketsProvider>
-                              <DexProvider>
-                                <UserProvider>
-                                  <AppGlobalLoader>
-                                    <PopupProvider>{children}</PopupProvider>
-                                  </AppGlobalLoader>
-                                </UserProvider>
-                              </DexProvider>
-                            </MarketsProvider>
-                          </TokensProvider>
-                        </CurrencyProvider>
-                      </ConfigProvider>
+                            <TokensProvider
+                              initialTokens={tokens}
+                              initialTokensMetadata={tokensMetadata}
+                            >
+                              <AssetsProvider>
+                                <MarketsProvider>
+                                  <DexProvider>
+                                    <UserProvider>
+                                      <AppGlobalLoader>
+                                        <PopupProvider>
+                                          <PageLayout includeContainer={false}>
+                                            {children}
+                                          </PageLayout>
+                                        </PopupProvider>
+                                      </AppGlobalLoader>
+                                    </UserProvider>
+                                  </DexProvider>
+                                </MarketsProvider>
+                              </AssetsProvider>
+                            </TokensProvider>
+                          </CurrencyProvider>
+                        </ConfigProvider>
+                      </AuthProvider>
                     </WalletProvider>
                   </DipdupProvider>
                 </ApolloProvider>
@@ -167,7 +178,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
-          <RouteScrollReset />
+          {/*<RouteScrollReset />*/}
           <Scripts />
         </div>
       </body>

@@ -58,6 +58,7 @@
     "graphql": "^16.9.0",
     "graphql-ws": "^5.16.0",
     "isbot": "^4.1.0",
+    "lightweight-charts": "^5.2.0",
     "lodash": "^4.17.21",
     "memoizee": "^0.4.15",
     "patch-package": "^8.0.0",

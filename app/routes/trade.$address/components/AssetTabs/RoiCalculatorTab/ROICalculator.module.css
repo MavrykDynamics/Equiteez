@@ -1,0 +1,183 @@
+.calculator {
+  display: grid;
+  grid-template-columns: minmax(280px, 352px) minmax(0, 1fr);
+  gap: var(--r-space-8);
+}
+
+.parameters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.periodControl,
+.controls,
+.results {
+  display: flex;
+  flex-direction: column;
+}
+
+.periodControl {
+  gap: var(--r-space-3);
+}
+
+.periods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 3px;
+  border-radius: var(--r-radius-pill);
+  background: var(--r-color-neutral-50);
+}
+
+.period,
+.periodActive {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  background: transparent;
+  cursor: pointer;
+}
+
+.periodActive {
+  background: var(--r-color-neutral-black);
+}
+
+.period:focus-visible,
+.periodActive:focus-visible,
+.rangeInput:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.controls {
+  gap: var(--r-space-6);
+}
+
+.sliderControl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+}
+
+.sliderHeader,
+.sliderBounds {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+}
+
+.sliderValue {
+  width: 76px;
+  padding: 7px var(--r-space-3);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-color-neutral-white);
+  color: var(--r-color-neutral-900);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+  text-align: center;
+}
+
+.sliderValue:focus-visible {
+  outline: none;
+  border-color: var(--r-color-neutral-300);
+}
+
+.rangeInput {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  margin: 0;
+  border-radius: var(--r-radius-pill);
+  background: linear-gradient(
+    to right,
+    var(--r-color-neutral-black) 0%,
+    var(--r-color-neutral-black) var(--slider-progress),
+    var(--r-color-neutral-100) var(--slider-progress),
+    var(--r-color-neutral-100) 100%
+  );
+  outline: none;
+}
+
+.rangeInput::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  appearance: none;
+  border: 2px solid var(--r-color-neutral-black);
+  border-radius: 50%;
+  background: var(--r-color-neutral-white);
+  cursor: pointer;
+}
+
+.rangeInput::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--r-color-neutral-black);
+  border-radius: 50%;
+  background: var(--r-color-neutral-white);
+  cursor: pointer;
+}
+
+.rangeInput::-moz-range-track {
+  height: 6px;
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  background: transparent;
+}
+
+.results {
+  gap: var(--r-space-6);
+  min-width: 0;
+}
+
+.metricCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--r-space-2);
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+  min-height: 65px;
+  padding: var(--r-space-2) var(--r-space-3);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+}
+
+.chart :global(.apexcharts-canvas) {
+  margin: 0 auto;
+}
+
+.chart :global(.apexcharts-legend) {
+  justify-content: flex-start !important;
+}
+
+.chart :global(.apexcharts-legend-series) {
+  display: inline-flex !important;
+  align-items: center;
+  gap: var(--r-space-1);
+  margin: 0 var(--r-space-4) 0 0 !important;
+}
+
+.chart :global(.apexcharts-legend-marker) {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px;
+  overflow: hidden;
+  border-radius: 50% !important;
+}
+
+.chart :global(.apexcharts-legend-text) {
+  color: var(--r-color-neutral-900) !important;
+  font-family: var(--r-font-body) !important;
+  font-size: var(--r-font-size-body-s) !important;
+  line-height: var(--r-line-height-body-s) !important;
+}

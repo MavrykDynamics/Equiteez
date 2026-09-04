@@ -4,8 +4,7 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 
 import CloseIcon from "app/icons/cross.svg?react";
-import EyeClosedBoldIcon from "app/icons/eye-closed-bold.svg?react";
-import EyeOpenBoldIcon from "app/icons/eye-open-bold.svg?react";
+import MenuListIcon from "app/icons/menu-list.svg?react";
 
 import { OrderBookTable } from "./OrderBookTable";
 import type { OrderBookToggleLabels } from "./orderBook.types";
@@ -34,10 +33,8 @@ type OrderBookPopupProps = {
   isOpen: boolean;
   onClose: () => void;
   onPriceClick?: (price: number, side: "ask" | "bid") => void;
-  orderbookAddress?: string | null;
   quoteTokenDecimals: number;
   quoteTokenSymbol?: string;
-  rawTickSize?: number;
   referencePrice?: number;
   rwaAddress?: string | null;
 };
@@ -78,8 +75,6 @@ export const OrderBookToggleButton: FC<OrderBookToggleButtonProps> = ({
   labels,
   onClick,
 }) => {
-  const Icon = isOpen ? EyeClosedBoldIcon : EyeOpenBoldIcon;
-
   return (
     <button
       type="button"
@@ -87,7 +82,7 @@ export const OrderBookToggleButton: FC<OrderBookToggleButtonProps> = ({
       className={clsx(styles.toggleButton, className)}
       onClick={onClick}
     >
-      <Icon className={styles.toggleIcon} />
+      <MenuListIcon className={styles.toggleIcon} />
       <span className={styles.toggleLabel}>
         {isOpen ? labels.hide : labels.show}
       </span>
@@ -105,10 +100,8 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
   isOpen,
   onClose,
   onPriceClick,
-  orderbookAddress,
   quoteTokenDecimals,
   quoteTokenSymbol,
-  rawTickSize,
   referencePrice,
   rwaAddress,
 }) => {
@@ -155,10 +148,8 @@ const OrderBookPopupComponent: FC<OrderBookPopupProps> = ({
           emptyMessage={emptyMessage}
           enabled={enabled}
           onPriceClick={onPriceClick}
-          orderbookAddress={orderbookAddress}
           quoteTokenDecimals={quoteTokenDecimals}
           quoteTokenSymbol={quoteTokenSymbol}
-          rawTickSize={rawTickSize}
           referencePrice={referencePrice}
           rwaAddress={rwaAddress}
         />

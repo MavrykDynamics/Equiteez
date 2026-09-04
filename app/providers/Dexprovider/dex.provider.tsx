@@ -139,10 +139,17 @@ export const DexProvider: FC<MarketProps> = ({ children }) => {
 
   const orderbookStorages = useMemo<StringRecord<OrderBookPriceData>>(() => {
     const storages = orderbookData
-      ? getOrderbookStorages(orderbookData, config.orderbook, orderbookTickSizes)
+      ? getOrderbookStorages(
+          orderbookData,
+          config.orderbook,
+          orderbookTickSizes
+        )
       : {};
 
-    return new Proxy({ ...storages }, priceProxyHandler);
+    return new Proxy<StringRecord<OrderBookPriceData>>(
+      { ...storages },
+      priceProxyHandler
+    );
   }, [config.orderbook, orderbookData, orderbookTickSizes]);
 
   const memoizedDexCtx: DexProviderCtxType = useMemo(

@@ -6,7 +6,7 @@ import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import { atomsToTokens } from "~/lib/utils/formaters";
 import styles from "./styles.module.css";
-import AssetsEmblaCarousel from "~/routes/_index/components/PropertiesSlider/AssetsEmblaCarousel";
+import AssetsEmblaCarousel from "~/routes/old_home_page/components/PropertiesSlider/AssetsEmblaCarousel";
 import useEmblaCarousel from "embla-carousel-react";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
 import { EmblaOptionsType } from "embla-carousel";

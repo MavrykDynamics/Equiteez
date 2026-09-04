@@ -5,27 +5,28 @@ import React, {
   useEffect,
   useMemo,
   useState,
-} from 'react';
+} from "react";
 
-import clsx from 'clsx';
+import clsx from "clsx";
 
-import OkIcon from 'app/icons/ok.svg?react';
+import OkIcon from "app/icons/ok.svg?react";
 import {
   blurHandler,
   checkedHandler,
   focusHandler,
-} from '../../ui/inputHandlers';
+} from "../../ui/inputHandlers";
 
 export interface CheckboxProps
   extends Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    | 'name'
-    | 'checked'
-    | 'className'
-    | 'onFocus'
-    | 'onBlur'
-    | 'onClick'
-    | 'disabled'
+    | "name"
+    | "id"
+    | "checked"
+    | "className"
+    | "onFocus"
+    | "onBlur"
+    | "onClick"
+    | "disabled"
   > {
   overrideClassNames?: string;
   errored?: boolean;
@@ -92,25 +93,25 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const classNameMemo = useMemo(
       () =>
         clsx(
-          'flex justify-center items-center flex-shrink-0 cursor-pointer',
-          'text-white border-2 overflow-hidden',
-          'transition ease-in-out duration-200 disable-outline-for-click',
-          localFocused && shouldFocus && 'shadow-outline',
+          "flex justify-center items-center flex-shrink-0 cursor-pointer",
+          "text-white border-2 overflow-hidden",
+          "transition ease-in-out duration-200 disable-outline-for-click",
+          localFocused && shouldFocus && "shadow-outline",
           (() => {
             switch (true) {
               case localChecked:
-                return 'border-dark-green-500';
+                return "border-dark-green-500";
               case localFocused:
-                return 'border-dark-green-400';
+                return "border-dark-green-400";
               case errored:
-                return 'border-error';
+                return "border-error";
               default:
-                return 'border-dark-gray-50';
+                return "border-dark-gray-50";
             }
           })(),
-          overrideClassNames || 'h-4 w-4 rounded'
+          overrideClassNames || "h-4 w-4 rounded"
         ),
-      [localChecked, localFocused, errored, overrideClassNames]
+      [localChecked, localFocused, errored, overrideClassNames, shouldFocus]
     );
 
     const Icon = IconFromProps ? IconFromProps : OkIcon;
@@ -120,7 +121,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         <input
           ref={ref}
           type="checkbox"
-          className={clsx('sr-only rounded', className)}
+          className={clsx("sr-only rounded", className)}
           checked={localChecked}
           onChange={handleChange}
           onFocus={handleFocus}
@@ -132,8 +133,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           className={clsx(
             iconClassName
               ? iconClassName
-              : 'size-4 stroke-[3px] stroke-dark-green-500 pointer-events-none',
-            localChecked ? 'block' : 'hidden'
+              : "size-4 stroke-[3px] stroke-dark-green-500 pointer-events-none",
+            localChecked ? "block" : "hidden"
           )}
         />
       </div>
@@ -141,4 +142,4 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   }
 );
 
-Checkbox.displayName = 'Checkbox';
+Checkbox.displayName = "Checkbox";

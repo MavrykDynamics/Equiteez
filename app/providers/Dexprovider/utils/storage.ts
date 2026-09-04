@@ -57,7 +57,8 @@ export const getOrderbookStorages = (
   return orderbooksList.reduce<Record<string, OrderBookPriceData>>(
     (acc, item) => {
       const rwaTokenAddress =
-        item.rwa_token?.address ?? rwaTokenAddressesByOrderbook.get(item.address);
+        item.rwa_token?.address ??
+        rwaTokenAddressesByOrderbook.get(item.address);
       const storageConfig = configByOrderbook.get(item.address);
 
       if (!rwaTokenAddress) return acc;

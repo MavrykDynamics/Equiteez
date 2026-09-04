@@ -8,8 +8,7 @@ The active UI path is:
 1. `SecondaryPriceBlock`
 2. `PopupContent`
 3. `BuySellScreen` for market orders or `BuySellLimitScreen` for limit orders
-4. `BuySellConfirmationScreen`
-5. `orderbookBuy` or `orderbookSell`
+4. `orderbookBuy` or `orderbookSell`
 
 The older `exchange.$id` buy/sell tab still has its order actions commented out
 and its submit button disabled as `Coming Soon`, so it is not the source of
@@ -86,11 +85,11 @@ book price of `0` returns `undefined` instead of producing `Infinity`.
 
 5. The balance guard checks quote-token spend against the user's quote-token
    balance.
-6. Continue requires a positive quote-token spend, a positive displayed market
+6. Buy requires a positive quote-token spend, a positive displayed market
    price, KYC, and no balance error.
 7. The platform fee is `2%` of the quote-token spend. The network fee is
    estimated from the same contract batch that will be submitted.
-8. On confirmation, the frontend calls `orderbookBuy` with:
+8. Pressing Buy calls `orderbookBuy` with:
    - `tokensAmount = quote spend / displayed market price`
    - `pricePerToken = displayed market price`
    - `isMarketOrder = true`
@@ -120,11 +119,11 @@ adjustments are handled by the contract.
 
 5. The balance guard checks base-token amount against the user's base-token
    balance.
-6. Continue requires a positive base-token amount, a positive displayed market
+6. Sell requires a positive base-token amount, a positive displayed market
    price, KYC, and no balance error.
 7. The platform fee is `2%` of the displayed proceeds. The network fee is
    estimated from the same contract batch that will be submitted.
-8. On confirmation, the frontend calls `orderbookSell` with:
+8. Pressing Sell calls `orderbookSell` with:
    - `tokensAmount = base token amount`
    - `pricePerToken = displayed market price`
    - `isMarketOrder = true`
@@ -159,13 +158,13 @@ handled by the contract.
 
 5. The balance guard checks the order total against the user's quote-token
    balance.
-6. The Continue button requires:
+6. The Buy button requires:
    - KYC enabled
    - positive amount
    - positive limit price
    - no balance error
    - limit price aligned to the contract tick size
-7. On confirmation, the frontend calls `orderbookBuy` with:
+7. Pressing Buy calls `orderbookBuy` with:
    - `tokensAmount = base token amount`
    - `pricePerToken = limit price`
    - `isMarketOrder = false`
@@ -186,13 +185,13 @@ handled by the contract.
    user's base-token balance.
 5. The balance guard checks the base-token amount against the user's base-token
    balance.
-6. The Continue button requires:
+6. The Sell button requires:
    - KYC enabled
    - positive amount
    - positive limit price
    - no balance error
    - limit price aligned to the contract tick size
-7. On confirmation, the frontend calls `orderbookSell` with:
+7. Pressing Sell calls `orderbookSell` with:
    - `tokensAmount = base token amount`
    - `pricePerToken = limit price`
    - `isMarketOrder = false`
@@ -246,7 +245,7 @@ Current behavior:
   display tick size = raw tick size / 10 ^ quoteTokenDecimals
   ```
 
-- Invalid tick-size prices show an input error, disable Continue, and skip
+- Invalid tick-size prices show an input error, disable the submit button, and skip
   network-fee estimation.
 - The orderbook grouping dropdown uses dynamic display precision from open-order
   prices, with a `0.01` fallback, not the contract tick size.

@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 // consts
 import {
@@ -21,8 +27,14 @@ import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
-import { USER_KYC_STATUS_QUERY } from "./queries/user.query";
-import { getIsKycedForAddress } from "./helpers/userStatus.helpers";
+import { USER_ACCOUNT_STATUS_QUERY } from "./queries/user.query";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { AUTH_EXPIRED_EVENT } from "~/providers/AuthProvider/helpers/auth.events";
+import {
+  getHasOrdersForAddress,
+  getIsKycedForAddress,
+} from "./helpers/userStatus.helpers";
+import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -80,6 +92,22 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
     setTzktSocket,
   });
+  const { logout, login, isAuthenticated, isAuthLoading } = useAuthContext();
+
+  const switchAccount = useCallback(async () => {
+    await changeUser();
+    await login();
+  }, [changeUser, login]);
+
+  const connectAndLogin = useCallback(async () => {
+    await connect();
+    await login();
+  }, [connect, login]);
+
+  const disconnectAndLogout = useCallback(async () => {
+    await signOut();
+    await logout();
+  }, [logout, signOut]);
 
   // Listening for active account changes with beacon
   useEffect(() => {
@@ -121,6 +149,7 @@ export const UserProvider = ({ children }: Props) => {
         userAddress: accountAddress,
         isAdmin: ADMIN_ADDRESSES[accountAddress],
         isKyced: false,
+        hasOrders: false,
         userTokensBalances: {},
       };
     });
@@ -147,38 +176,87 @@ export const UserProvider = ({ children }: Props) => {
   ]);
 
   const {
-    data: userStatusData,
-    loading: isUserStatusLoading,
-    error: userStatusError,
-  } = useQuery(USER_KYC_STATUS_QUERY, {
+    data: userAccountStatusData,
+    loading: isUserAccountStatusLoading,
+    error: userAccountStatusError,
+    refetch: refetchUserAccountStatusQuery,
+  } = useQuery(USER_ACCOUNT_STATUS_QUERY, {
     variables: { address: accountAddress ?? "" },
     skip: !accountAddress,
     fetchPolicy: "network-only",
   });
 
   useEffect(() => {
-    if (userStatusError) console.log(userStatusError, "USER_KYC_STATUS_QUERY");
-  }, [userStatusError]);
+    if (userAccountStatusError)
+      console.log(userAccountStatusError, "USER_ACCOUNT_STATUS_QUERY");
+  }, [userAccountStatusError]);
+
+  const updateUserAccountStatus = useCallback(
+    (data: UserAccountStatusQuery | undefined) => {
+      if (!accountAddress || !data) return;
+
+      const isKyced = getIsKycedForAddress(data, accountAddress);
+      const hasOrders = getHasOrdersForAddress(data, accountAddress);
+
+      setUserCtxState((prev) => {
+        if (
+          prev.userAddress !== accountAddress ||
+          (prev.isKyced === isKyced && prev.hasOrders === hasOrders)
+        )
+          return prev;
+
+        return {
+          ...prev,
+          isKyced,
+          hasOrders,
+        };
+      });
+    },
+    [accountAddress]
+  );
+
+  const refetchUserAccountStatus = useCallback(async () => {
+    if (!accountAddress) return;
+
+    const { data } = await refetchUserAccountStatusQuery({
+      address: accountAddress,
+    });
+
+    updateUserAccountStatus(data);
+  }, [
+    accountAddress,
+    refetchUserAccountStatusQuery,
+    updateUserAccountStatus,
+  ]);
 
   useEffect(() => {
-    if (!accountAddress || !userStatusData) return;
+    updateUserAccountStatus(userAccountStatusData);
+  }, [updateUserAccountStatus, userAccountStatusData]);
 
-    const isKyced = getIsKycedForAddress(userStatusData, accountAddress);
+  useEffect(() => {
+    if (!IS_WEB) return;
 
-    setUserCtxState((prev) => {
-      if (prev.userAddress !== accountAddress || prev.isKyced === isKyced)
-        return prev;
+    const onAuthExpired = () => {
+      void signOut();
+    };
 
-      return {
-        ...prev,
-        isKyced,
-      };
-    });
-  }, [accountAddress, userStatusData]);
+    window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+    };
+  }, [IS_WEB, signOut]);
+
+  useEffect(() => {
+    if (!IS_WEB || isAuthLoading || isAuthenticated) return;
+    if (!accountAddress) return;
+
+    void signOut();
+  }, [IS_WEB, accountAddress, isAuthenticated, isAuthLoading, signOut]);
 
   const providerValue = useMemo(() => {
     const isLoading =
-      isUserLoading || tzktBalancesLoading || isUserStatusLoading;
+      isUserLoading || tzktBalancesLoading || isUserAccountStatusLoading;
 
     return {
       ...userCtxState,
@@ -189,20 +267,22 @@ export const UserProvider = ({ children }: Props) => {
           : {}),
       },
       isLoading,
-      connect,
-      signOut,
-      changeUser,
+      connect: connectAndLogin,
+      refetchUserAccountStatus,
+      signOut: disconnectAndLogout,
+      changeUser: switchAccount,
     };
   }, [
     isUserLoading,
     tzktBalancesLoading,
-    isUserStatusLoading,
+    isUserAccountStatusLoading,
     userCtxState,
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
-    connect,
-    signOut,
-    changeUser,
+    connectAndLogin,
+    refetchUserAccountStatus,
+    disconnectAndLogout,
+    switchAccount,
   ]);
 
   return (
