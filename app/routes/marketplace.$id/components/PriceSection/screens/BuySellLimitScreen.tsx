@@ -1,17 +1,11 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import clsx from "clsx";
+
 import { Button } from "~/lib/atoms/Button";
 
-import * as gtag from "app/utils/gtags.client";
-
 // icons
-import {
-  BUY,
-  BuyScreenState,
-  CONFIRM,
-  SellScreenState,
-  OrderType,
-} from "../consts";
+import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
@@ -21,9 +15,7 @@ import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
-import { ProjectionCard } from "../components/ProjectionCard/ProjectionCard";
 import { ZERO } from "~/lib/utils/numbers";
-import Money from "~/lib/atoms/Money";
 import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
@@ -31,40 +23,59 @@ import {
   isPriceAlignedToTickSize,
 } from "~/providers/Dexprovider/utils";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
+import {
+  OrderExpiryBlock,
+  type OrderExpiryPeriodId,
+} from "../components/OrderExpiryBlock/OrderExpiryBlock";
+
+import styles from "./BuySellForm.module.css";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
+  actionCb: () => void;
   continueButtonClassName?: string;
-  toggleScreen: (id: BuyScreenState & SellScreenState) => void;
   amount: BigNumber | undefined;
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
   rawTickSize: number;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  status: StatusFlag;
+  isOrderDataLoading?: boolean;
   validationMessage?: string;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   estate,
-  toggleScreen,
   actionType,
+  actionCb,
   continueButtonClassName,
   amount,
   total,
   networkFee,
+  orderExpiryPeriodId,
   limitPrice,
   rawTickSize,
   setAmount,
+  setOrderExpiryPeriodId,
   setLimitPrice,
-  marketTokenPrice,
+  status,
+  isOrderDataLoading = false,
   validationMessage,
 }) => {
-  const { token_address, slug, assetDetails } = estate;
+  const { token_address, slug } = estate;
 
   const {
     baseTokenMetadata: selectedAssetMetadata,
@@ -105,10 +116,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
-  const marketPriceDifference = useMemo(
-    () => (limitPrice ? limitPrice.minus(marketTokenPrice) : undefined),
-    [limitPrice, marketTokenPrice]
-  );
   const displayTickSize = useMemo(
     () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
     [rawTickSize, stableCoinMetadata.decimals]
@@ -143,14 +150,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen(CONFIRM);
-
-    gtag.event({
-      action: "limit_buy_base_token",
-      category: "Limit Buy base token",
-      label: "Limit Buy base token",
-    });
-  }, [toggleScreen]);
+    actionCb();
+  }, [actionCb]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
@@ -185,14 +186,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         : undefined,
     };
 
-    return isBuyAction
-      ? { input1Props: priceProps, input2Props: amountProps }
-      : { input1Props: amountProps, input2Props: priceProps };
+    return { input1Props: priceProps, input2Props: amountProps };
   }, [
     amount,
     handleOutputChange,
     hasBalanceError,
-    isBuyAction,
     limitPrice,
     limitPriceTickErrorCaption,
     quoteTokenSlug,
@@ -206,13 +204,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const balanceTotal = total;
 
-  const { finalTotalValue, txnFee } = useMemo(() => {
-    return {
-      finalTotalValue: total?.plus(networkFee) || ZERO,
-      txnFee: undefined,
-    };
-  }, [networkFee, total]);
+  const orderSummaryAmount = useMemo(() => total ?? ZERO, [total]);
 
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
     hasBalanceError ||
     hasLimitPriceTickError ||
@@ -222,19 +216,10 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     !limitPrice ||
     !limitPrice.isFinite() ||
     limitPrice.lte(0) ||
+    isOrderDataLoading ||
     !isKyced ||
+    isLoading ||
     Boolean(validationMessage);
-  const priceDifferencePrefix = marketPriceDifference?.gt(0)
-    ? "+"
-    : marketPriceDifference?.lt(0)
-      ? "-"
-      : "";
-  const priceDifferenceTextColorClassName = marketPriceDifference?.gt(0)
-    ? "text-green-500"
-    : marketPriceDifference?.lt(0)
-      ? "text-red-500"
-      : "text-sand-600";
-
   useEffect(() => {
     if (selectedPercentage == null) return;
 
@@ -266,101 +251,97 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     limitPrice,
   ]);
 
+  const inputClassNames = {
+    amountInputClassName: styles.amountInput,
+    amountInputContainerClassName: styles.amountInputContainer,
+    assetViewClassName: styles.assetPill,
+    balanceClassName: styles.balanceText,
+    balanceLabel: "Bal.",
+    bodyClassName: styles.balanceBody,
+    bottomLeftClassName: styles.bottomValue,
+    bottomRightClassName: styles.bottomValue,
+    className: styles.balanceInput,
+    footerClassName: styles.balanceFooter,
+    headerClassName: styles.balanceHeader,
+    sectionClassName: styles.balanceCard,
+    showBalanceIcon: false,
+    shouldRenderFooter: false,
+  };
+  const hiddenInputBlock = <span aria-hidden="true" />;
+
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 ">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <BalanceInputWithTotal
-              ref={ref1}
-              onNext={() => ref2.current?.focus()}
-              amountInputDisabled={false}
-              {...input1Props}
-              balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata.decimals}
-              cryptoDecimals={stableCoinMetadata.decimals}
-            />
+    <div className={styles.form}>
+      <div className={styles.content}>
+        <div className={styles.fieldStack}>
+          <BalanceInputWithTotal
+            ref={ref1}
+            onNext={() => ref2.current?.focus()}
+            amountInputDisabled={false}
+            additionalBottomRightBlock={hiddenInputBlock}
+            additionalTopRightBlock={hiddenInputBlock}
+            {...input1Props}
+            balanceTotal={balanceTotal}
+            decimals={selectedAssetMetadata.decimals}
+            cryptoDecimals={stableCoinMetadata.decimals}
+            {...inputClassNames}
+          />
 
-            <BalanceInputWithTotal
-              ref={ref2}
-              onNext={() => ref3.current?.focus()}
-              onPrev={() => ref1.current?.focus()}
-              amountInputDisabled={false}
-              {...input2Props}
-              balanceTotal={balanceTotal}
-              decimals={selectedAssetMetadata.decimals}
-              cryptoDecimals={stableCoinMetadata.decimals}
-            />
+          <BalanceInputWithTotal
+            ref={ref2}
+            onNext={() => ref3.current?.focus()}
+            onPrev={() => ref1.current?.focus()}
+            amountInputDisabled={false}
+            {...input2Props}
+            balanceTotal={balanceTotal}
+            decimals={selectedAssetMetadata.decimals}
+            cryptoDecimals={stableCoinMetadata.decimals}
+            {...inputClassNames}
+            balanceLabel=""
+          />
 
-            {/* ------------------------------------------------------------------------------------------- */}
-            <div>
-              <div className="my-3">
-                <ESnakeblock
-                  selectedOption={selectedPercentage}
-                  setSelectedOption={setSelectedPercentage}
-                />
-              </div>
-
-              <BalanceInputWithTotal
-                ref={ref3}
-                onPrev={() => ref2.current?.focus()}
-                amountInputDisabled
-                amount={balanceTotal}
-                additionalTopRightBlock=" "
-                label={
-                  <div className="flex items-center gap-[4px] text-xs text-sand-600">
-                    Order Total
-                  </div>
-                }
-                additionalBottomLeftBlock={
-                  <div className="flex items-center gap-2 text-xs text-sand-600">
-                    <span>
-                      Market{" "}
-                      <span className="font-semibold underline">
-                        $<Money>{marketTokenPrice}</Money>
-                      </span>
-                    </span>
-                    {marketPriceDifference && (
-                      <span
-                        className={`font-semibold ${priceDifferenceTextColorClassName}`}
-                      >
-                        Diff {priceDifferencePrefix}$
-                        <Money>{marketPriceDifference.abs()}</Money>
-                      </span>
-                    )}
-                  </div>
-                }
-                selectedAssetSlug={quoteTokenSlug}
-                selectedAssetMetadata={stableCoinMetadata}
-                balanceTotal={balanceTotal}
-                decimals={selectedAssetMetadata.decimals}
-                cryptoDecimals={stableCoinMetadata.decimals}
-                cryptoValue={balanceTotal?.toNumber() || 0}
+          {/* ------------------------------------------------------------------------------------------- */}
+          <div className={styles.fieldStack}>
+            <div className={styles.snakeWrapper}>
+              <ESnakeblock
+                selectedOption={selectedPercentage}
+                setSelectedOption={setSelectedPercentage}
+                variant="neutral"
               />
             </div>
 
-            <FeesCard
-              txnFees={txnFee}
-              totalAmount={finalTotalValue}
-              networkfee={networkFee}
+            <BalanceInputWithTotal
+              ref={ref3}
+              onPrev={() => ref2.current?.focus()}
+              amountInputDisabled
+              amount={balanceTotal}
+              label="Total"
+              selectedAssetSlug={quoteTokenSlug}
+              selectedAssetMetadata={stableCoinMetadata}
+              balanceTotal={balanceTotal}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
+              cryptoValue={usdBalance}
+              {...inputClassNames}
+              shouldRenderFooter
             />
-
-            <div className="mt-3">
-              <ProjectionCard
-                apy={assetDetails.APY}
-                monthkyReturns={assetDetails.financials.expectedIncome.income}
-                yearlyReturns={
-                  assetDetails.financials.expectedIncome.incomePerTokenYearly
-                }
-                gradient={isBuyAction ? "blue" : "orange"}
-              />
-            </div>
           </div>
+
+          <OrderExpiryBlock
+            selectedPeriodId={orderExpiryPeriodId}
+            setSelectedPeriodId={setOrderExpiryPeriodId}
+          />
+
+          <FeesCard
+            className={styles.summaryCard}
+            networkFee={networkFee}
+            pricePerShare={limitPrice}
+            totalAmount={orderSummaryAmount}
+          />
         </div>
       </div>
 
       {!isKyced && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert
             type="warning"
             header="Verify with Mavryk Pro to Trade"
@@ -374,7 +355,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       )}
 
       {validationMessage && (
-        <div className="mt-8">
+        <div className={styles.alertBlock}>
           <Alert type="error" header="Order Cannot Be Submitted" expandable>
             {validationMessage}
           </Alert>
@@ -382,13 +363,19 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       )}
 
       <Button
-        className={
-          continueButtonClassName ? `mt-8 ${continueButtonClassName}` : "mt-8"
-        }
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
         onClick={handleContinueClick}
         disabled={isBtnDisabled}
+        isLoading={isLoading}
+        size="custom"
+        textVariant="caption"
+        variant="custom"
       >
-        Continue
+        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );

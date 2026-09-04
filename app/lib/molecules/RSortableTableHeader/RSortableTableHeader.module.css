@@ -1,0 +1,17 @@
+.button {
+  display: inline-flex;
+  padding: 0;
+  gap: 2px;
+  align-items: center;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  text-transform: inherit;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}

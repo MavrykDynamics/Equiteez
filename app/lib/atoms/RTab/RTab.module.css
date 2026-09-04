@@ -1,15 +1,13 @@
 .tab {
-  min-height: 37px;
   padding: var(--r-space-2) var(--r-space-4);
-  color: var(--r-color-neutral-700);
-  background: transparent;
-  border: 0;
+  display: inline-flex;
+  min-height: 37px;
+  align-items: flex-end;
+  gap: var(--r-space-2);
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
-  font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-sm);
-  font-weight: var(--r-font-weight-regular);
-  letter-spacing: var(--r-letter-spacing-body);
-  line-height: var(--r-line-height-body-sm);
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -33,10 +31,20 @@
 }
 
 .selected {
-  color: var(--r-color-neutral-black);
-  background: var(--r-color-neutral-white);
+  color: var(--r-color-neutral-white);
+  background: var(--r-color-neutral-black);
+  border-color: var(--r-color-neutral-black);
 }
 
 .selected:hover:not(:disabled) {
-  background: var(--r-color-neutral-white);
+  background: var(--r-color-neutral-900);
+  border-color: var(--r-color-neutral-900);
+}
+
+.count {
+  display: flex;
+  width: var(--r-size-icon-small);
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 0.5px;
 }

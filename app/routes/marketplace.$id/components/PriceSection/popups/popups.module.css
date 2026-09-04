@@ -7,49 +7,19 @@
   min-width: 100%;
 }
 
-.popupLayout {
-  align-items: stretch;
-  display: flex;
-  flex: 1;
-  gap: 0;
-  height: 100%;
-  min-height: 0;
+.orderBookPopup {
+  max-width: 453px;
+}
+
+.orderBookPopupContent {
   overflow: hidden;
-  position: relative;
+  padding: 44px 24px 24px;
 }
 
-.popupLayoutWithOrderBook {
-  gap: 32px;
-}
-
-.popupMain {
-  align-self: stretch;
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-}
-
-.popupContent {
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .popupContent.popupContentWithOrderBook {
-    padding-left: 0;
-  }
-}
-
-.popupWide {
-  max-width: 1008px;
-}
-
-.hideContinueButtonMobile {
+.orderBookPopupContent > div:first-child {
+  position: absolute;
+  right: 16px;
+  top: 12px;
 }
 
 @media (--media-tablet-min) {
@@ -61,16 +31,107 @@
     background: var(--color-sand-200);
   }
 
-  .popupLayout {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .popupWide {
+  .orderBookPopup {
     max-width: 100%;
   }
+}
 
-  .hideContinueButtonMobile {
-    display: none;
+.buySellRoot {
+  background: transparent;
+  color: var(--r-color-neutral-black);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-family: var(--r-font-body);
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.tradeControls {
+  align-items: center;
+  display: grid;
+  gap: var(--r-space-2);
+  grid-template-columns: 119px minmax(0, 1fr);
+  margin-bottom: var(--r-space-4);
+  position: relative;
+}
+
+.marketDropdown {
+  width: 100%;
+}
+
+.marketDropdownTrigger {
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  height: 40px;
+  min-height: 40px;
+  padding: 0 var(--r-space-3) 0 var(--r-space-4);
+}
+
+.marketDropdownTrigger :global(span) {
+  flex: 0 0 59px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marketDropdownMenu {
+  z-index: 30;
+}
+
+.sideTabs {
+  background: transparent !important;
+  display: grid;
+  gap: var(--r-space-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  padding: 0;
+  width: 100% !important;
+}
+
+.tradeControls .sideTab {
+  background: var(--r-color-neutral-white) !important;
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  box-sizing: border-box;
+  height: 37px;
+  min-width: 0;
+  padding: var(--r-space-2) var(--r-space-4);
+  width: 100%;
+}
+
+.tradeControls .sideTab p {
+  color: var(--r-color-neutral-black) !important;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-sm);
+  white-space: nowrap;
+}
+
+.tradeControls .sideTabActive {
+  background: var(--r-color-neutral-black) !important;
+  border-color: var(--r-color-neutral-black);
+}
+
+.tradeControls .sideTabActive p {
+  color: var(--r-color-neutral-white) !important;
+}
+
+.visuallyHidden {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (--media-tablet-max) {
+  .tradeControls {
+    grid-template-columns: 1fr;
   }
 }

@@ -6,10 +6,14 @@ import {
   deriveQuantityFromPercent,
   exceedsAvailableBalance,
   getBestLimitAsk,
+  getBestLimitAskFromOrderbookDepth,
   getBestLimitBid,
+  getBestLimitBidFromOrderbookDepth,
+  getBestPricesFromOrderbookDepth,
   getBestPricesFromOpenOrders,
   getBestBuyPrice,
   getBestSellPrice,
+  getCurrentPriceFromOrderbookDepth,
   getCurrentPriceFromOpenOrders,
   getMarketBuyReferencePrice,
   getMarketBuyTokenAmountAtoms,
@@ -240,6 +244,62 @@ describe("getBestPricesFromOpenOrders (live best ask/bid)", () => {
       lowestSellPrice: 0,
       highestBuyPrice: 0,
     });
+  });
+});
+
+describe("orderbook depth market price helpers", () => {
+  it("converts human best ask and bid prices to atom prices", () => {
+    const orderbookDepth = {
+      best_ask: 5.5,
+      best_bid: 4.25,
+    };
+
+    expect(
+      getBestLimitAskFromOrderbookDepth(orderbookDepth, DECIMALS)?.toFixed()
+    ).toBe("5500000");
+    expect(
+      getBestLimitBidFromOrderbookDepth(orderbookDepth, DECIMALS)?.toFixed()
+    ).toBe("4250000");
+    expect(getBestPricesFromOrderbookDepth(orderbookDepth, DECIMALS)).toEqual({
+      highestBuyPrice: 4_250_000,
+      lowestSellPrice: 5_500_000,
+    });
+  });
+
+  it("falls back to depth levels when explicit best prices are unavailable", () => {
+    const orderbookDepth = {
+      asks: [{ price: 7 }, { price: 5 }],
+      best_ask: 0,
+      best_bid: 0,
+      bids: [{ price: 3 }, { price: 4 }],
+    };
+
+    expect(getBestPricesFromOrderbookDepth(orderbookDepth, DECIMALS)).toEqual({
+      highestBuyPrice: 4_000_000,
+      lowestSellPrice: 5_000_000,
+    });
+  });
+
+  it("uses the depth best ask for the current price and falls back to best bid", () => {
+    expect(
+      getCurrentPriceFromOrderbookDepth({
+        orderbookDepth: {
+          best_ask: 5,
+          best_bid: 4,
+        },
+        quoteTokenDecimals: DECIMALS,
+      }).toNumber()
+    ).toBe(5);
+
+    expect(
+      getCurrentPriceFromOrderbookDepth({
+        orderbookDepth: {
+          best_ask: 0,
+          best_bid: 4,
+        },
+        quoteTokenDecimals: DECIMALS,
+      }).toNumber()
+    ).toBe(4);
   });
 });
 

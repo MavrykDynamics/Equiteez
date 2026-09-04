@@ -30,6 +30,7 @@ export const AssetIcon: FC<Props> = memo<Props>(
       >
         <AssetImage
           {...props}
+          assetSlug={props.assetSlug}
           metadata={metadata}
           loader={
             <AssetIconPlaceholder metadata={metadata} size={props.size} />

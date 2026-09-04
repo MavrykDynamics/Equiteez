@@ -31,12 +31,7 @@ const OPEN_ORDER_FIELDS = gql`
 export const ALL_OPEN_ORDERS_QUERY = gql`
   ${OPEN_ORDER_FIELDS}
 
-  query allOpenOrdersQuery(
-    $rwaAddress: String
-    $orderbookAddress: String
-    $offset: Int = 0
-    $limit: Int
-  ) {
+  query allOpenOrdersQuery($rwaAddress: String, $offset: Int = 0, $limit: Int) {
     buyOrders: orderbook_order(
       order_by: { price_per_rwa_token: desc, created_at: desc }
       where: {
@@ -45,10 +40,7 @@ export const ALL_OPEN_ORDERS_QUERY = gql`
         is_fulfilled: { _eq: false }
         is_refunded: { _eq: false }
         order_type: { _eq: 0 }
-        orderbook: {
-          address: { _eq: $orderbookAddress }
-          rwa_token: { address: { _eq: $rwaAddress } }
-        }
+        orderbook: { rwa_token: { address: { _eq: $rwaAddress } } }
       }
       offset: $offset
       limit: $limit
@@ -63,10 +55,7 @@ export const ALL_OPEN_ORDERS_QUERY = gql`
         is_fulfilled: { _eq: false }
         is_refunded: { _eq: false }
         order_type: { _eq: 1 }
-        orderbook: {
-          address: { _eq: $orderbookAddress }
-          rwa_token: { address: { _eq: $rwaAddress } }
-        }
+        orderbook: { rwa_token: { address: { _eq: $rwaAddress } } }
       }
       offset: $offset
       limit: $limit

@@ -227,7 +227,7 @@ export const FormField = forwardRef<FormFieldElement, FormFieldProps>(
 export const FORM_FIELD_CLASS_NAME = classNames(
   "appearance-none w-full border rounded-md bg-transparent",
   "transition ease-in-out duration-200",
-  "text-sand-600 text-base-plus"
+  "text-r-color-neutral-700 text-base-plus"
 );
 
 interface CleanableProps {

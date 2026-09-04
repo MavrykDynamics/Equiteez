@@ -15,14 +15,23 @@ export const isSvgDataUriInUtf8Encoding = (uri: string) =>
   uri.slice(0, SVG_DATA_URI_UTF8_PREFIX.length).toLowerCase() ===
   SVG_DATA_URI_UTF8_PREFIX;
 
-export const buildTokenImagesStack = (url?: string): string[] => {
+export const buildTokenImagesStack = (
+  url?: string,
+  options?: { useMediaHost?: boolean }
+): string[] => {
   if (!url) return [];
+
+  const useMediaHost = options?.useMediaHost ?? false;
 
   if (url.startsWith(IPFS_PROTOCOL) || url.startsWith("http")) {
     const uriInfo = getMediaUriInfo(url);
+    if (!uriInfo.ipfs && url.startsWith("http")) {
+      return [url];
+    }
+
     return [
-      buildIpfsMediaUriByInfo(uriInfo, "small"),
-      buildIpfsMediaUriByInfo(uriInfo, "medium"),
+      buildIpfsMediaUriByInfo(uriInfo, "small", useMediaHost),
+      buildIpfsMediaUriByInfo(uriInfo, "medium", useMediaHost),
     ].filter(isTruthy);
   }
 
@@ -55,11 +64,15 @@ interface IpfsUriInfo {
 }
 
 const getIpfsItemInfo = (uri: string): IpfsUriInfo | null => {
-  if (!uri.startsWith(IPFS_PROTOCOL)) {
+  const normalizedUri = uri.startsWith(`${IPFS_GATE}/`)
+    ? `${IPFS_PROTOCOL}${uri.slice(IPFS_GATE.length + 1)}`
+    : uri;
+
+  if (!normalizedUri.startsWith(IPFS_PROTOCOL)) {
     return null;
   }
 
-  const [path, search] = uri.slice(IPFS_PROTOCOL.length).split("?");
+  const [path, search] = normalizedUri.slice(IPFS_PROTOCOL.length).split("?");
   const id = path.split("/")[0];
 
   if (id === INVALID_IPFS_ID) {

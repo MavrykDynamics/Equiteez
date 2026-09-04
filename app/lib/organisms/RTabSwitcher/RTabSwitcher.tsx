@@ -5,6 +5,7 @@ import { RTab } from "~/lib/atoms/RTab";
 import styles from "./RTabSwitcher.module.css";
 
 export type RTabSwitcherItem = {
+  count?: number;
   id: string;
   label: string;
 };
@@ -32,6 +33,7 @@ export function RTabSwitcher({
     >
       {tabs.map((tab) => (
         <RTab
+          count={tab.count}
           id={tab.id}
           isSelected={tab.id === activeTabId}
           key={tab.id}

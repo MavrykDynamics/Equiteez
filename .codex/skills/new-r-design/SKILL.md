@@ -38,14 +38,17 @@ Use these token groups:
 - Blue: `--r-color-blue-900` through `--r-color-blue-100`
 - Green: `--r-color-green-900` through `--r-color-green-100`
 - Yellow: `--r-color-yellow-900` through `--r-color-yellow-100`
+- Orange: `--r-color-orange-500`
 - Red: `--r-color-red-900` through `--r-color-red-100`
 - Semantic primary: `--r-color-primary`
 - Typography: `--r-font-*`, `--r-font-size-*`, `--r-line-height-*`, `--r-letter-spacing-*`
 - Spacing: `--r-space-*`
 - Landing/shared layout spacing additions: `--r-space-10`, `--r-space-11`, `--r-space-12`, `--r-space-14`, `--r-space-16`, `--r-space-18`, `--r-space-25`
 - Icon sizes: `--r-size-icon-small`, `--r-size-icon-medium`
-- Radius, border, focus, transitions: `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
+- Control sizes: `--r-size-control-medium`
+- Radius, border, focus, transitions: `--r-radius-xs`, `--r-radius-sm`, `--r-radius-md`, `--r-radius-lg`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-transition-duration-fast`
 - Motion: `--r-motion-ease-premium`, `--r-motion-duration-fast`, `--r-motion-duration-base`, `--r-motion-duration-reveal`
+- Shared surfaces: `--r-surface-accent-green-subtle`
 
 Add new tokens only when they are shared by multiple redesign components or map directly to the Figma system.
 
@@ -108,12 +111,24 @@ Current icon names:
 - `arrow-round`
 - `burger-menu`
 - `check`
+- `close`
+- `copy`
+- `heart`
+- `grid`
+- `image`
+- `list`
 - `loading`
 - `lock`
 - `lock-open`
 - `radio`
+- `refund`
+- `search`
+- `sort`
+- `star`
+- `trash`
 - `trending-down`
 - `trending-up`
+- `upload`
 - `web`
 
 Icon rules:
@@ -181,13 +196,44 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for all redesign buttons before creating specialized button variants. Supports variants, tones, sizes, left/right icons, disabled, loading states, internal Remix links, and anchor links.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-surface-*button*`, `--r-text-*`, `--r-space-1`, `--r-transition-duration-fast`
 
+## RTypography
+
+- Purpose: Shared redesign typography atoms for Figma-aligned body text and headings.
+- Location: `app/lib/atoms/RTypography/RText.tsx` and `app/lib/atoms/RTypography/RHeading.tsx`
+- Reusability notes: Use `RText` with `body-l` through `body-xs`, and `RHeading` with `h1` through `h7`. Both support `400` and `500` weights plus the typed `--r-color-*` palette through their `color` prop.
+- Related tokens: `--r-font-heading`, `--r-font-body`, `--r-font-size-heading-*`, `--r-line-height-heading-*`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-font-weight-*`, `--r-color-*`
+
 ## RIcon
 
 - Purpose: Typed inline SVG icon atom for the redesign icon system.
 - Location: `app/lib/atoms/RIcon/RIcon.tsx`
 - Styles: `app/lib/atoms/RIcon/RIcon.module.css`
-- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons.
+- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons. The `sort` icon supports `sortDirection="ascending" | "descending"` to make only the active arrow black.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
+
+## RInput
+
+- Purpose: Redesign text-input atom with an optional leading `RIcon`.
+- Location: `app/lib/atoms/RInput/RInput.tsx`
+- Styles: `app/lib/atoms/RInput/RInput.module.css`
+- Reusability notes: Use native input props and pass an `RIconName` via `icon` for a leading decorative icon. Use `inputClassName` only for input-specific layout overrides.
+- Related tokens: `RIcon`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`, `--r-space-2`, `--r-space-3`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-*`
+
+## RTooltip
+
+- Purpose: Accessible hover- and focus-triggered tooltip matching the Equiteez 2.0 Figma tooltip pattern.
+- Location: `app/lib/atoms/RTooltip/RTooltip.tsx`
+- Styles: `app/lib/atoms/RTooltip/RTooltip.module.css`
+- Reusability notes: Use for redesigned contextual help and brief labels. It supports `content`, `placement`, and a trigger `className`; the default placement is above the trigger.
+- Related tokens: `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-2`, `--r-space-3`, `--r-radius-sm`, `--r-color-neutral-white`, `--r-shadow-tooltip`
+
+## RViewSwitcher
+
+- Purpose: Compact, controlled image/grid/list view selector.
+- Location: `app/lib/atoms/RViewSwitcher/RViewSwitcher.tsx`
+- Styles: `app/lib/atoms/RViewSwitcher/RViewSwitcher.module.css`
+- Reusability notes: Use `value` and `onChange` to switch between `image`, `grid`, and `list` layouts. Renders the matching shared `RIcon` glyphs.
+- Related tokens: `RIcon`, `--r-space-1`, `--r-radius-xs`, `--r-radius-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
 ## RCard
 
@@ -196,6 +242,13 @@ Each reusable `R*` component folder should normally contain:
 - Styles: `app/lib/atoms/RCard/RCard.module.css`
 - Reusability notes: Use for repeated redesign card surfaces before creating route-specific card shells. Use `shape="mock"` with `shadow="soft"` or `shadow="strong"` for Figma-exported mock images whose bitmap assets should not include shadows.
 - Related tokens: `--r-radius-md`, `--r-border-width-sm`, `--r-color-neutral-*`, `--r-color-accent-green-*`
+
+## RImageAssetsView
+
+- Purpose: Route-local Figma image-card view for the Explore Assets `image` mode, with local 12-item pagination.
+- Location: `app/routes/_index/components/RImageAssetsView/`
+- Reusability notes: Keep this view within Explore Assets until another route requires the same image-card layout. It reuses `AssetBadge`, `AssetIdentity`, `AssetSaleProgress`, `AssetPriceChart`, and the `ASSET_IMAGE_URLS_BY_ADDRESS` mock mapping.
+- Related tokens: `RIcon`, `RText`, `RPagination`, `--r-color-neutral-*`, `--r-color-accent-green-*`, `--r-space-*`, `--r-radius-md`
 
 ## RChip
 
@@ -210,16 +263,66 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Single redesign tab atom with selected, hover, focus, and disabled states.
 - Location: `app/lib/atoms/RTab/RTab.tsx`
 - Styles: `app/lib/atoms/RTab/RTab.module.css`
-- Reusability notes: Use inside redesign tablist controls such as `RTabSwitcher`.
-- Related tokens: `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`, `--r-radius-pill`, `--r-focus-ring`, `--r-color-neutral-*`
+- Reusability notes: Use inside redesign tablist controls such as `RTabSwitcher`. Supports the Figma-selected state and an optional numeric count; labels and counts use `RText`.
+- Related tokens: `RText`, `--r-space-*`, `--r-radius-pill`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
 
 ## RTabSwitcher
 
 - Purpose: Redesign tablist organism that groups `RTab` items for controlled tab switching.
 - Location: `app/lib/organisms/RTabSwitcher/RTabSwitcher.tsx`
 - Styles: `app/lib/organisms/RTabSwitcher/RTabSwitcher.module.css`
-- Reusability notes: Use for compact redesign tab switchers before creating page-specific switcher markup.
-- Related tokens: `RTab`, `--r-radius-pill`, `--r-color-neutral-100`
+- Reusability notes: Use for compact redesign tab switchers before creating page-specific switcher markup. Each item can expose an optional count and matches the separated pill-tab Figma pattern.
+- Related tokens: `RTab`, `RText`, `--r-space-2`, `--r-color-neutral-*`
+
+## RCustomDropdown
+
+- Purpose: Compositional redesign dropdown with context-managed state, trigger, menu, and selectable options.
+- Location: `app/lib/organisms/RCustomDropdown/RCustomDropdown.tsx`
+- Styles: `app/lib/organisms/RCustomDropdown/RCustomDropdown.module.css`
+- Reusability notes: Compose `RCustomDropdown`, `RDropdownFaceContent`, `RDropdownBodyContent`, and `RDropdownBodyContentItem`. The menu closes on selection, outside interaction, or Escape.
+- Related tokens: `RText`, `RIcon`, `--r-size-control-medium`, `--r-space-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`, `--r-color-neutral-*`
+
+## Portfolio activity tab placeholders
+
+- Purpose: Route-local placeholders for the Open Orders, Transaction History, and Deposits activity tables while their data and table UI are pending.
+- Location: `app/routes/portfolio.activity/components/ROpenOrdersTab.tsx`, `RTransactionHistoryTab.tsx`, and `RDepositsTab.tsx`
+- Reusability notes: Keep these components route-local; replace their label-only content with the corresponding table implementation when activity data is connected.
+- Related tokens: `RText`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`
+
+## ROrderStatusBadge
+
+- Purpose: Route-local redesign badge that maps order-history statuses to the Figma `FILLED`, `OPEN`, and canceled visual states.
+- Location: `app/routes/trade.$address/components/AssetTabs/OrderHistoryTab/ROrderStatusBadge.tsx`
+- Reusability notes: Use for order-history status rendering. `fulfilled` is displayed as `FILLED`, `pending` as `OPEN`, and all other API values keep their original text with the canceled visual treatment.
+- Related tokens: `--r-color-green-*`, `--r-color-yellow-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-s`, `--r-line-height-body-s`, `--r-space-3`, `--r-radius-pill`
+
+## RMarketDepthChart
+
+- Purpose: Route-local cumulative bid/ask liquidity visualization for the Trade page depth chart.
+- Location: `app/routes/trade.$address/components/ChartBlock/RMarketDepthChart.tsx`
+- Reusability notes: Use `useOrderbookDepth` for live aggregated orderbook levels. It displays cumulative bids in green and asks in red, with the mid-market price, scale controls, and hover details. Keep it route-local until the same depth chart is required outside Trade.
+- Related tokens: `--r-color-green-*`, `--r-color-red-*`, `--r-color-neutral-*`, `--r-font-body`, `--r-font-size-body-*`, `--r-space-*`, `--r-focus-ring`
+
+## RTransferTypeIcon
+
+- Purpose: Route-local deposit and withdrawal direction icon for portfolio activity transfer rows and details.
+- Location: `app/routes/portfolio.activity/components/DepositsTab/RTransferTypeIcon.tsx`
+- Reusability notes: Use with transfer history items; it renders the Figma-approved 16px arrow through `currentColor`, so the parent supplies the green or red semantic tone.
+- Related tokens: `--r-size-icon-small`, `--r-color-green-500`, `--r-color-red-500`
+
+## RDepositFundsModal
+
+- Purpose: Route-local redesign modal for mock USDT deposits through the Ethereum bridge or directly to a Mavryk address.
+- Location: `app/routes/discover/components/DepositFunds/RDepositFundsModal.tsx`
+- Reusability notes: Controlled with `isOpen` and `onClose`; both tabs use local mock values until deposit APIs and wallet flows are connected.
+- Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
+
+## RWithdrawFundsModal
+
+- Purpose: Route-local redesign withdrawal modal with recipient, asset, amount, summary, and confirmed transfer state.
+- Location: `app/routes/portfolio/components/WelcomeBlock/RWithdrawFundsModal.tsx`
+- Reusability notes: Controlled with `isOpen` and `onClose`; it draws available assets from the portfolio/on-chain providers and sends a Beacon wallet transfer. Recipient KYC eligibility is intentionally not checked at this time.
+- Related tokens: `CustomPopup`, `RButton`, `RCustomDropdown`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
 
 ## RFeatureCard
 
@@ -253,6 +356,28 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for compact two-line metric summaries before recreating route-specific stat cards.
 - Related tokens: `--r-font-body`, `--r-font-size-body-*`, `--r-line-height-body-*`, `--r-color-neutral-*`, `--r-space-*`
 
+## RPriceChange
+
+- Purpose: Shared redesign price-change molecule for signed fiat delta and percentage, with an optional trailing period label such as `24h`.
+- Location: `app/lib/molecules/RPriceChange/RPriceChange.tsx`
+- Styles: `app/lib/molecules/RPriceChange/RPriceChange.module.css`
+- Reusability notes: Use for asset price-change readouts in cards, tables, and compact market surfaces. Supports empty-state fallback, positive/negative icon coloring, and optional period label rendering through `showPeriodLabel`.
+- Related tokens: `RIcon`, `RText`, `Money`, `--r-space-1`, `--r-color-green-500`, `--r-color-red-500`, `--r-color-neutral-600`
+
+## RPagination
+
+- Purpose: Controlled API pagination molecule with page-number navigation, ellipses, and loading-aware previous/next controls.
+- Location: `app/lib/molecules/RPagination/RPagination.tsx`
+- Reusability notes: Pass one-based `currentPage`, API `totalPages`, and `onPageChange`; set `isLoading` while an API page request is in flight.
+- Related tokens: `RIcon`, `RText`, `--r-space-1`, `--r-color-neutral-*`, `--r-radius-sm`, `--r-border-width-sm`, `--r-focus-ring`
+
+## RSortableTableHeader
+
+- Purpose: Shared sortable table-header molecule with the two-direction `RIcon` sort indicator.
+- Location: `app/lib/molecules/RSortableTableHeader/RSortableTableHeader.tsx`
+- Reusability notes: Use for sortable column headers. Pass a column `label`, the active `direction`, and `onSort`; the component owns the semantic `<th>`, button and `aria-sort` state.
+- Related tokens: `RIcon`, `--r-color-neutral-*`, `--r-focus-ring`, `--r-size-icon-small`
+
 ## RHeader
 
 - Purpose: Shared fixed redesign header with landing and solutions variants, scrolled state, desktop navigation, and mobile-ready menu structure.
@@ -278,6 +403,13 @@ Each reusable `R*` component folder should normally contain:
 - Related tokens: `RSectionHeader`, `RButton`, `RIcon`, `Reveal`, `--r-space-*`
 
 # Registry Update Protocol
+
+## RExpiredIcon
+
+- Purpose: Figma-exported 16px warning icon for expired open orders.
+- Location: `app/routes/portfolio.activity/components/OpenOrdersTab/RExpiredIcon.svg`
+- Reusability notes: Keep route-local until the same expired-order indicator is needed outside the portfolio activity table.
+- Related tokens: `--r-size-icon-small`
 
 When adding a new `R*` component:
 

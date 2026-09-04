@@ -2,8 +2,8 @@ import styles from "./styles.module.css";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
-import { Text } from "~/lib/atoms/Typography/Text";
-import { Button } from "~/lib/atoms/Button";
+import { RButton } from "~/lib/atoms/RButton";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 export function CancelOrderPopup({
   description = "Are you sure you want to cancel your order?",
@@ -37,16 +37,23 @@ export function CancelOrderPopup({
       </button>
       <div className={styles.contentWrapper}>
         <div className="flex flex-col gap-[8px] justify-center items-center">
-          <Text weight="semibold">{title}</Text>
-          <Text size="smallBody">{description}</Text>
+          <RText size="body-l" weight="medium">
+            {title}
+          </RText>
+          <RText size="body-sm">{description}</RText>
         </div>
         <div className={styles.btnWrapper}>
-          <Button onClick={onSubmit} className="flex-1" variant="outline">
+          <RButton onClick={onSubmit} className="flex-1" tone="black">
             {submitLabel}
-          </Button>
-          <Button onClick={onClose} className="flex-1">
+          </RButton>
+          <RButton
+            onClick={onClose}
+            className="flex-1"
+            variant="secondary"
+            tone="black"
+          >
             Keep Order
-          </Button>
+          </RButton>
         </div>
       </div>
     </CustomPopup>

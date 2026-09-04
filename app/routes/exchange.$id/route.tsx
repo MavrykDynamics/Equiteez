@@ -50,7 +50,7 @@ export default function ExchangeDetails() {
   if (estateData === null) return <Navigate to={"/marketplace"} />;
 
   return (
-    <PageLayout includeContainer={false} includeFooter={false}>
+    <>
       <Container>
         <div className="flex w-full py-3 px-6">
           {/* Top Bar */}
@@ -166,6 +166,6 @@ export default function ExchangeDetails() {
         </div>
       </Container>
       <Spacer height={18} />
-    </PageLayout>
+    </>
   );
 }

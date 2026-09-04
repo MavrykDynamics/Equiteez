@@ -1,7 +1,5 @@
 .switcher {
   display: inline-flex;
+  gap: var(--r-space-2);
   align-items: center;
-  padding: var(--r-space-1);
-  background: var(--r-color-neutral-100);
-  border-radius: var(--r-radius-pill);
 }
