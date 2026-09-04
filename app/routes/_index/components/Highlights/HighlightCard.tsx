@@ -4,19 +4,18 @@ import { ROUTES } from "~/consts";
 import type { AssetHighlightType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { ASSET_IMAGE_URLS_BY_ADDRESS } from "~/mocks/asset-image-urls.mock";
-
 import styles from "./styles.module.css";
-
-const fallbackImageUrl = Object.values(ASSET_IMAGE_URLS_BY_ADDRESS)[0];
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 export function HighlightCard(props: { asset: AssetHighlightType }) {
   const { asset } = props;
+  const { assets } = useAssetsContext();
   const price = asset.price.usd;
   const priceChange = asset.change_24h?.pct;
   const isNegative = (priceChange ?? 0) < 0;
   const imageUrl =
-    ASSET_IMAGE_URLS_BY_ADDRESS[asset.address] ?? fallbackImageUrl;
+    assets.find((item) => item.address === asset.address)?.profile.image_url ??
+    "";
 
   return (
     <Link
