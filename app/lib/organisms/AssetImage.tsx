@@ -44,18 +44,8 @@ export const AssetImage: FC<AssetImageProps> = ({
   assetSlug,
 }) => {
   const sources = useMemo(() => {
-    const temporaryMockImage = getTemporaryMockAssetImage(assetSlug);
-
-    if (temporaryMockImage) {
-      return [temporaryMockImage];
-    }
-
-    if (metadata?.symbol === 'USDT') {
-      return [UsdtToken];
-    }
-
     return buildTokenImagesStack(metadata?.thumbnailUri);
-  }, [assetSlug, metadata]);
+  }, [metadata]);
 
   const styleMemo: React.CSSProperties = useMemo(
     () => ({
