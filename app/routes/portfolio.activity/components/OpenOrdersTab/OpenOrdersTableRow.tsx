@@ -21,15 +21,13 @@ type OpenOrdersTableRowProps = {
   order: OpenOrderItemType;
 };
 
-export function OpenOrdersTableRow({
-  order,
-}: OpenOrdersTableRowProps) {
+export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
   const [formattedDate, formattedTime = ""] = formatOrderDate(
     order.created_at
   ).split(", ");
   const orderDetails = getOrderDetails(order.side);
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
-  const { expiresLabel, isExpired } = getExpiresLabel(order.expires_at);
+  const { expiresLabel, isExpired } = getExpiresLabel(order.expires_at, order.status);
 
   const assetSlug = toTokenSlug(order.token_address);
   const metadata = useAssetMetadata(assetSlug);
@@ -52,9 +50,7 @@ export function OpenOrdersTableRow({
       <div className={styles.row} role="row">
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
-            <RText size="body-sm">
-              {formattedDate}
-            </RText>
+            <RText size="body-sm">{formattedDate}</RText>
             <RText color="neutral-700" size="body-s">
               {formattedTime}
             </RText>
@@ -73,7 +69,7 @@ export function OpenOrdersTableRow({
         </div>
         <div className={styles.cell} role="cell">
           <RText size="body-sm">
-            {renderNullableFiatValue( order.price_per_token, "", "$",)}
+            {renderNullableFiatValue(order.price_per_token, "", "$")}
           </RText>
         </div>
         <div className={styles.cell} role="cell">
@@ -101,7 +97,13 @@ export function OpenOrdersTableRow({
           </RText>
         </div>
         <div className={`${styles.cell} ${styles.actionCell}`} role="cell">
-          <RTooltip content={actionIcon === "refund" ? "Claim remaining escrow" : "Cancel Order. A cancellation fee will apply"}>
+          <RTooltip
+            content={
+              actionIcon === "refund"
+                ? "Claim remaining escrow"
+                : "Cancel Order. A cancellation fee will apply"
+            }
+          >
             <button
               aria-label={actionLabel}
               className={styles.actionIcon}
@@ -126,7 +128,11 @@ export function OpenOrdersTableRow({
   );
 }
 
-function getExpiresLabel(expiresAt: string | null) {
+function getExpiresLabel(expiresAt: string | null, status: string) {
+  if (status === "expired") {
+    return { expiresLabel: "Expired", isExpired: true };
+  }
+
   if (!expiresAt) {
     return { expiresLabel: "-", isExpired: false };
   }
@@ -137,17 +143,15 @@ function getExpiresLabel(expiresAt: string | null) {
     return { expiresLabel: "-", isExpired: false };
   }
 
-  if (millisecondsUntilExpiry <= 0) {
-    return { expiresLabel: "Expired", isExpired: true };
-  }
-
   const millisecondsInHour = 60 * 60 * 1000;
 
   if (millisecondsUntilExpiry < millisecondsInHour) {
     return { expiresLabel: "in <1 hour", isExpired: false };
   }
 
-  const hoursUntilExpiry = Math.ceil(millisecondsUntilExpiry / millisecondsInHour);
+  const hoursUntilExpiry = Math.ceil(
+    millisecondsUntilExpiry / millisecondsInHour
+  );
 
   if (hoursUntilExpiry > 23) {
     const daysUntilExpiry = Math.ceil(hoursUntilExpiry / 24);

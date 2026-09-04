@@ -50,6 +50,7 @@ export const OpenOrderItemSchema = z.object({
   currency: z.string(),
   price_per_token: z.number().nullable(),
   total: z.number().nullable(),
+  status: z.string(),
   created_at: z.string(),
   expires_at: z.string().nullable(),
   expires_in_seconds: z.number().int().nullable(),
