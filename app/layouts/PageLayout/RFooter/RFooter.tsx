@@ -37,7 +37,7 @@ const defaultFooterGroups: RFooterGroup[] = [
   {
     title: "Platform",
     links: [
-      { href: "/solutions", label: "Solutions" },
+      { href: "/", label: "Solutions" },
       {
         disabled: IS_EQUITEEZ_APP_LAUNCH_DISABLED,
         href: EQUITEEZ_APP_URL,
@@ -50,7 +50,7 @@ const defaultFooterGroups: RFooterGroup[] = [
   {
     title: "Company",
     links: [
-      { href: "/about", label: "About" },
+      { href: "/", label: "About" },
       {
         href: EQUITEEZ_CONTACT_PATH,
         label: "Contact",
