@@ -1,5 +1,4 @@
 import { FooterSecondary } from "~/layouts/PageLayout/Footer/FooterSecondary";
-import { Header } from "~/layouts/PageLayout/Header/Header";
 import MaintanceImg from "app/assets/error/maintance-bg.webp";
 
 export const MaintancePageTemp = () => {
@@ -7,7 +6,7 @@ export const MaintancePageTemp = () => {
     <>
       <div className="h-screen overflow-hidden  bg-mvrk font-aeonik text-mvrk-main gap-3 flex justify-between flex-col w-screen bg-sand-50">
         <div className="hidden md:block">
-          <Header />
+          <div />
         </div>
         <div className="flex flex-col items-center text-center z-10 justify-self-start transform">
           <div className="flex flex-col gap-5 items-center text-sand-900">

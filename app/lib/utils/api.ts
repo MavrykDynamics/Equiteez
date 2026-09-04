@@ -1,6 +1,9 @@
 /* eslint-disable no-useless-catch */
 import {
   z,
+  ZodError,
+} from 'zod';
+import type {
   ZodSchema,
   objectOutputType,
   ZodNumber,
@@ -18,9 +21,9 @@ export const api = async <T>(
   options: RequestInit = { method: 'GET' },
   schema: ZodSchema<T> = z.any()
 ): Promise<APIFetchReturnType<T>> => {
-  try {
-    const method = options?.method || 'GET';
+  const method = options?.method || 'GET';
 
+  try {
     const response = await fetch(url, { method, ...options });
     const data = await response.json();
     const parsedData = schema.parse(data);
@@ -30,7 +33,15 @@ export const api = async <T>(
       status: response.ok ? 'ok' : 'error',
       data: parsedData,
     };
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      console.error('API Zod schema validation failed:', {
+        url,
+        method,
+        issues: error.issues,
+      });
+    }
+
+    throw error;
   }
 };
