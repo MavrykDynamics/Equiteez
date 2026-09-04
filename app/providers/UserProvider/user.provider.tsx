@@ -34,6 +34,7 @@ import {
   getHasOrdersForAddress,
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
+import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -178,6 +179,7 @@ export const UserProvider = ({ children }: Props) => {
     data: userAccountStatusData,
     loading: isUserAccountStatusLoading,
     error: userAccountStatusError,
+    refetch: refetchUserAccountStatusQuery,
   } = useQuery(USER_ACCOUNT_STATUS_QUERY, {
     variables: { address: accountAddress ?? "" },
     skip: !accountAddress,
@@ -189,32 +191,47 @@ export const UserProvider = ({ children }: Props) => {
       console.log(userAccountStatusError, "USER_ACCOUNT_STATUS_QUERY");
   }, [userAccountStatusError]);
 
-  useEffect(() => {
-    if (!accountAddress || !userAccountStatusData) return;
+  const updateUserAccountStatus = useCallback(
+    (data: UserAccountStatusQuery | undefined) => {
+      if (!accountAddress || !data) return;
 
-    const isKyced = getIsKycedForAddress(
-      userAccountStatusData,
-      accountAddress
-    );
-    const hasOrders = getHasOrdersForAddress(
-      userAccountStatusData,
-      accountAddress
-    );
+      const isKyced = getIsKycedForAddress(data, accountAddress);
+      const hasOrders = getHasOrdersForAddress(data, accountAddress);
 
-    setUserCtxState((prev) => {
-      if (
-        prev.userAddress !== accountAddress ||
-        (prev.isKyced === isKyced && prev.hasOrders === hasOrders)
-      )
-        return prev;
+      setUserCtxState((prev) => {
+        if (
+          prev.userAddress !== accountAddress ||
+          (prev.isKyced === isKyced && prev.hasOrders === hasOrders)
+        )
+          return prev;
 
-      return {
-        ...prev,
-        isKyced,
-        hasOrders,
-      };
+        return {
+          ...prev,
+          isKyced,
+          hasOrders,
+        };
+      });
+    },
+    [accountAddress]
+  );
+
+  const refetchUserAccountStatus = useCallback(async () => {
+    if (!accountAddress) return;
+
+    const { data } = await refetchUserAccountStatusQuery({
+      address: accountAddress,
     });
-  }, [accountAddress, userAccountStatusData]);
+
+    updateUserAccountStatus(data);
+  }, [
+    accountAddress,
+    refetchUserAccountStatusQuery,
+    updateUserAccountStatus,
+  ]);
+
+  useEffect(() => {
+    updateUserAccountStatus(userAccountStatusData);
+  }, [updateUserAccountStatus, userAccountStatusData]);
 
   useEffect(() => {
     if (!IS_WEB) return;
@@ -251,6 +268,7 @@ export const UserProvider = ({ children }: Props) => {
       },
       isLoading,
       connect: connectAndLogin,
+      refetchUserAccountStatus,
       signOut: disconnectAndLogout,
       changeUser: switchAccount,
     };
@@ -262,6 +280,7 @@ export const UserProvider = ({ children }: Props) => {
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
     connectAndLogin,
+    refetchUserAccountStatus,
     disconnectAndLogout,
     switchAccount,
   ]);
