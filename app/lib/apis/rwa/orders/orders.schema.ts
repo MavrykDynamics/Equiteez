@@ -34,6 +34,15 @@ export const OpenOrderItemSchema = z.object({
   token_address: z.string(),
   orderbook_address: z.string(),
   amount: z.number(),
+  refund: z
+    .object({
+      status: z.string(),
+      token_address: z.string(),
+      amount: z.number(),
+      currency: z.string(),
+      value: z.number(),
+    })
+    .optional(),
   filled_amount: z.number(),
   remaining_amount: z.number(),
   filled_percent: z.number(),
@@ -49,6 +58,11 @@ export const OpenOrderItemSchema = z.object({
 
 export const OpenOrdersSchema = PaginationSchema.extend({
   items: z.array(OpenOrderItemSchema),
+  as_of: z.object({
+    level: z.number(),
+    timestamp: z.string(),
+    realtime: z.boolean(),
+  }),
 });
 
 export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
