@@ -1,4 +1,5 @@
 .wrapper .depositButton {
-  padding: var(--r-space-3) var(--r-space-6) var(--r-space-3)
-    var(--r-space-4);
+  padding: var(--r-space-3) var(--r-space-6) var(--r-space-3) var(--r-space-4);
+
+  max-height: 45px;
 }

@@ -55,7 +55,11 @@ export function RDepositFundsModal({
           <RHeading className={styles.title} size="h6" weight="medium">
             Deposit Funds
           </RHeading>
-          <div aria-label="Deposit method" className={styles.tabs} role="tablist">
+          <div
+            aria-label="Deposit method"
+            className={styles.tabs}
+            role="tablist"
+          >
             <button
               aria-selected={activeTab === "bridge"}
               className={styles.tab}
@@ -102,8 +106,12 @@ export function RDepositFundsModal({
                 1 USDT = 1 USDT
               </RText>
               <div className={styles.networkDetails}>
-                <RText color="neutral-600" size="body-s">Time: ≈2s</RText>
-                <RText color="neutral-600" size="body-s">Fee: 0.01 MVRK</RText>
+                <RText color="neutral-600" size="body-s">
+                  Time: ≈2s
+                </RText>
+                <RText color="neutral-600" size="body-s">
+                  Fee: 0.01 MVRK
+                </RText>
               </div>
             </div>
             <RButton className={styles.connectButton} tone="black">
@@ -112,13 +120,20 @@ export function RDepositFundsModal({
           </div>
         ) : (
           <div className={styles.receivePanel} role="tabpanel">
-            <RText className={styles.receiveDescription} color="neutral-600" size="body-sm">
+            <RText
+              className={styles.receiveDescription}
+              color="neutral-600"
+              size="body-sm"
+            >
               Send USDT from another Mavryk Wallet straight to this address. To
               move funds from Ethereum, use the Bridge tab.
             </RText>
             <div className={styles.addressBlock}>
               <div className={styles.qrCode}>
-                <img alt="Mock QR code for the Mavryk deposit address" src={DepositAddressQr} />
+                <img
+                  alt="Mock QR code for the Mavryk deposit address"
+                  src={DepositAddressQr}
+                />
               </div>
               <div className={styles.addressField}>
                 <RText size="body-sm">{mockMavrykAddress}</RText>
@@ -128,7 +143,7 @@ export function RDepositFundsModal({
                   onClick={handleCopyAddress}
                   type="button"
                 >
-                  <RIcon name="copy" size="small" />
+                  <RIcon name="copy" size="medium" />
                 </button>
               </div>
             </div>
@@ -167,7 +182,9 @@ function AmountField({
   return (
     <label className={styles.amountField}>
       <span className={styles.fieldHeader}>
-        <RText color="neutral-600" size="body-s">{label}</RText>
+        <RText color="neutral-600" size="body-s">
+          {label}
+        </RText>
         <span className={styles.fieldAction}>{topAction}</span>
       </span>
       <span className={styles.amountRow}>
@@ -187,8 +204,12 @@ function AmountField({
         />
       </span>
       <span className={styles.fieldFooter}>
-        <RText color="neutral-600" size="body-s">{balanceText}</RText>
-        <RText color="neutral-600" size="body-s">$0.00</RText>
+        <RText color="neutral-600" size="body-s">
+          {balanceText}
+        </RText>
+        <RText color="neutral-600" size="body-s">
+          $0.00
+        </RText>
       </span>
     </label>
   );

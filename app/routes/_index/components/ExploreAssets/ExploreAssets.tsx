@@ -58,7 +58,7 @@ export function ExploreAssets() {
           <RHeading size="h5" weight="medium">
             Explore Assets
           </RHeading>
-          {/*<DepositFunds />*/}
+          <DepositFunds />
         </div>
       </Reveal>
 
