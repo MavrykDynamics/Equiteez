@@ -11,6 +11,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./RDepositFundsModal.module.css";
+import { Icon } from "~/lib/atoms/Icon";
 
 type DepositTab = "bridge" | "receive";
 
@@ -124,8 +125,8 @@ export function RDepositFundsModal({
               size="body-sm"
             >
               Send USDT from another Mavryk Wallet straight to this address.
-               This is for assets already on Mavryk. To move funds from
-              Ethereum, use the Bridge tab.
+              This is for assets already on Mavryk. To move funds from Ethereum,
+              use the Bridge tab.
             </RText>
             <div className={styles.addressBlock}>
               <div className={styles.qrCode}>
@@ -153,6 +154,9 @@ export function RDepositFundsModal({
               </CopyButton>
             </div>
             <div className={styles.warning}>
+              <div className="flex items-start justify-center mt-1">
+                <Icon className="w-4 h-4" icon="warning" />
+              </div>
               <RText color="neutral-600" size="body-sm">
                 <strong>Send only Mavryk assets to this address.</strong>
                 <br />

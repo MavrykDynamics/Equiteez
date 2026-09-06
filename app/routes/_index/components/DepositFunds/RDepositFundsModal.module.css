@@ -257,6 +257,9 @@
   background: rgba(242, 209, 107, 0.2);
   border-radius: 12px;
   color: var(--r-color-neutral-700);
+
+  display: flex;
+  gap: var(--r-space-2);
 }
 
 .warning strong {
