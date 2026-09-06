@@ -1,12 +1,14 @@
 import { useState } from "react";
+import QRCode from "react-qr-code";
 
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
-import DepositAddressQr from "~/assets/redesign/deposit/DepositAddressQr.png";
+import { CopyButton } from "~/lib/atoms/CopyButton";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./RDepositFundsModal.module.css";
 
@@ -17,18 +19,14 @@ type RDepositFundsModalProps = {
   onClose: () => void;
 };
 
-const mockMavrykAddress = "mv1RtVe9xQm3nK7wZ2aBcD4eF5gH6jL8sPqd";
-
 export function RDepositFundsModal({
   isOpen,
   onClose,
 }: RDepositFundsModalProps) {
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState("");
-
-  const handleCopyAddress = () => {
-    void navigator.clipboard?.writeText(mockMavrykAddress);
-  };
+  const { userAddress } = useUserContext();
+  const mavrykAddress = userAddress ?? "";
 
   return (
     <CustomPopup
@@ -125,27 +123,34 @@ export function RDepositFundsModal({
               color="neutral-600"
               size="body-sm"
             >
-              Send USDT from another Mavryk Wallet straight to this address. To
-              move funds from Ethereum, use the Bridge tab.
+              Send USDT from another Mavryk Wallet straight to this address.
+               This is for assets already on Mavryk. To move funds from
+              Ethereum, use the Bridge tab.
             </RText>
             <div className={styles.addressBlock}>
               <div className={styles.qrCode}>
-                <img
-                  alt="Mock QR code for the Mavryk deposit address"
-                  src={DepositAddressQr}
+                <QRCode
+                  aria-label="QR code for the Mavryk deposit address"
+                  role="img"
+                  value={mavrykAddress}
+                  size={146}
                 />
               </div>
-              <div className={styles.addressField}>
-                <RText size="body-sm">{mockMavrykAddress}</RText>
-                <button
-                  aria-label="Copy Mavryk deposit address"
-                  className={styles.copyButton}
-                  onClick={handleCopyAddress}
-                  type="button"
-                >
-                  <RIcon name="copy" size="medium" />
-                </button>
-              </div>
+              <CopyButton
+                aria-label="Copy Mavryk deposit address"
+                className={styles.addressField}
+                mode="reverse"
+                text={mavrykAddress}
+                type="block"
+              >
+                <RText size="body-sm">{mavrykAddress}</RText>
+                <RIcon
+                  aria-hidden="true"
+                  className={styles.copyIcon}
+                  name="copy"
+                  size="medium"
+                />
+              </CopyButton>
             </div>
             <div className={styles.warning}>
               <RText color="neutral-600" size="body-sm">
