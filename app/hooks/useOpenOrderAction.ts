@@ -27,7 +27,6 @@ export function useOpenOrderAction({
   order,
 }: UseOpenOrderActionOptions) {
   const queryClient = useQueryClient();
-  const { userAddress } = useUserContext();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const contractActionArgs = useMemo(
     () => ({

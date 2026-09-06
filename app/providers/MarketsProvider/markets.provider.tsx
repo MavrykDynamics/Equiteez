@@ -182,31 +182,31 @@ export const MarketsProvider: FC<PropsWithChildren> = ({ children }) => {
     [config.orderbook]
   );
 
-  useEffect(() => {
-    if (!fallbackTokensData.tokens.length) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!fallbackTokensData.tokens.length) {
+  //     return;
+  //   }
+  //
+  //   upsertTokensData(
+  //     fallbackTokensData.tokens,
+  //     fallbackTokensData.tokensMetadata
+  //   );
+  // }, [fallbackTokensData, upsertTokensData]);
 
-    upsertTokensData(
-      fallbackTokensData.tokens,
-      fallbackTokensData.tokensMetadata
-    );
-  }, [fallbackTokensData, upsertTokensData]);
-
-  useEffect(() => {
-    if (!bootstrapCollection.tokens.length) {
-      return;
-    }
-
-    upsertTokensData(
-      bootstrapCollection.tokens,
-      bootstrapCollection.tokensMetadata
-    );
-  }, [
-    bootstrapCollection.tokens,
-    bootstrapCollection.tokensMetadata,
-    upsertTokensData,
-  ]);
+  // useEffect(() => {
+  //   if (!bootstrapCollection.tokens.length) {
+  //     return;
+  //   }
+  //
+  //   upsertTokensData(
+  //     bootstrapCollection.tokens,
+  //     bootstrapCollection.tokensMetadata
+  //   );
+  // }, [
+  //   bootstrapCollection.tokens,
+  //   bootstrapCollection.tokensMetadata,
+  //   upsertTokensData,
+  // ]);
 
   const isLoading = bootstrapQuery.isPending;
 

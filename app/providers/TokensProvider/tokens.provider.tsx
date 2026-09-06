@@ -97,35 +97,35 @@ export const TokensProvider: FC<TokensProviderProps> = ({
           contract: MVRK_CONTRACT_ADDRESS,
           id: MVRK_METADATA.id,
         })
-        .concat({
-          contract: STABLECOIN_METADATA.address,
-          id: STABLECOIN_METADATA.id,
-        })
-        .concat(
-          MOCKED_ASSET_ADDRESSES.map((address) => ({
-            contract: address,
-            id: "0",
-          }))
-        );
+        // .concat({
+        //   contract: STABLECOIN_METADATA.address,
+        //   id: STABLECOIN_METADATA.id,
+        // })
+        // .concat(
+        //   MOCKED_ASSET_ADDRESSES.map((address) => ({
+        //     contract: address,
+        //     id: "0",
+        //   }))
+        // );
 
       const nextTokensMetadata = {
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
         [toTokenSlug(MVRK_CONTRACT_ADDRESS, 0)]: MVRK_METADATA,
         [STABLECOIN_ASSET_SLUG]: STABLECOIN_METADATA,
-        ...MOCKED_ASSET_ADDRESSES.reduce<StringRecord<TokenMetadata>>(
-          (acc, address) => {
-            const slug = toTokenSlug(address);
-            const symbol =
-              MOCKED_ASSET_SYMBOLS[
-                address as keyof typeof MOCKED_ASSET_SYMBOLS
-              ] ?? "NMDT";
-
-            acc[slug] = getMockedMetadata(address, symbol);
-            return acc;
-          },
-          {}
-        ),
+        // ...MOCKED_ASSET_ADDRESSES.reduce<StringRecord<TokenMetadata>>(
+        //   (acc, address) => {
+        //     const slug = toTokenSlug(address);
+        //     const symbol =
+        //       MOCKED_ASSET_SYMBOLS[
+        //         address as keyof typeof MOCKED_ASSET_SYMBOLS
+        //       ] ?? "NMDT";
+        //
+        //     acc[slug] = getMockedMetadata(address, symbol);
+        //     return acc;
+        //   },
+        //   {}
+        // ),
       };
 
       setTokens((currentTokens) => mergeTokens(currentTokens, nextTokens));

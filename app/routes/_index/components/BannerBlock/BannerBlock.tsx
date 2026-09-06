@@ -30,7 +30,7 @@ const bannerSlides: BannerSlide[] = [
   {
     alt: "Modern home exterior for The Cove investment opportunity",
     buttonLabel: "Invest Now",
-    buttonTo: "/marketplace",
+    buttonTo: "/",
     description:
       "Single-family income generating property on the Upper East Side. Fractionalized into 12,500 shares.",
     image: TheCoveBannerImage,
@@ -45,7 +45,7 @@ const bannerSlides: BannerSlide[] = [
   {
     alt: "Dubai skyline representing tokenized real-world assets",
     buttonLabel: "Deposit Funds",
-    buttonTo: "/wallet",
+    buttonTo: "/",
     description:
       "Invest in tokenized real-world assets. Own fractional shares of premium properties and portfolios.",
     eyebrow: "Tokenized real world assets",
