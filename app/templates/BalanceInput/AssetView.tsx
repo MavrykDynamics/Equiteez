@@ -87,9 +87,7 @@ export function AssetView({
           </span>
         )}
       </span>
-      <RText size="body-s">
-        {getAssetSymbol(metadata)}
-      </RText>
+      <RText size="body-s">{getAssetSymbol(metadata)}</RText>
     </div>
   );
 }

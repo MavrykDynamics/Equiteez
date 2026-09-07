@@ -1,89 +1,98 @@
 .assetWrapper {
-    background: var(--color-neutral-light);
-    padding: 4px 10px 4px 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 8px;
+  background: var(--color-neutral-light);
+  padding: 4px 10px 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
 }
 .assetWrapperSmall {
-    gap: 4px;
-    padding: 0;
-    background: transparent;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+}
+
+.assetWrapper:has(> .assetIconWrapper > .secondaryAssetIconWrapper) {
+  column-gap: 8px;
+}
+
+.assetWrapper .assetIconWrapper:has(.secondaryAssetIconWrapper) {
+  /* Reserve the half of the 14px badge that extends beyond the icon. */
+  margin-right: 7px;
 }
 
 .header {
-    color: var(--r-color-neutral-700);
+  color: var(--r-color-neutral-700);
 }
 
 .label {
-    color: inherit;
-    font-size: var(--r-font-size-body-s);
-    line-height: var(--r-line-height-body-s);
-    text-align: left;
+  color: inherit;
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  text-align: left;
 }
 
 .balanceDisplay,
 .balanceTotal {
-    color: var(--r-color-neutral-700);
-    display: flex;
-    align-items: center;
-    font-size: var(--r-font-size-body-s);
-    line-height: var(--r-line-height-body-s);
-    font-weight: 600;
+  color: var(--r-color-neutral-700);
+  display: flex;
+  align-items: center;
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  font-weight: 600;
 }
 
 .balanceDisplay {
-    gap: var(--r-space-1);
+  gap: var(--r-space-1);
 }
 
 .balanceTotal {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 
 .assetIconWrapper {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .assetIconWrapperSmall {
-    width: 16px;
-    height: 16px;
-    flex-basis: 16px;
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
 }
 
 .assetImage {
-    width: 24px;
-    height: 24px;
-    display: block;
-    object-fit: cover;
-    border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  display: block;
+  object-fit: cover;
+  border-radius: 999px;
 }
 
 .assetImageSmall {
-    width: 16px;
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .secondaryAssetIconWrapper {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    z-index: 1;
-    width: 14px;
-    height: 14px;
-    transform: translate(50%, -50%);
+  position: absolute;
+  bottom: 0%;
+  right: 0;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  transform: translate(50%, 0%);
 }
 
 .secondaryAssetIcon {
-    width: 14px;
-    height: 14px;
-    display: block;
-    overflow: hidden;
-    border-radius: 999px;
+  width: 14px;
+  height: 14px;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
 }

@@ -2,6 +2,8 @@ import { BigNumber } from "bignumber.js";
 import type { ReactNode } from "react";
 
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
+import EthereumLogo from "~/icons/ethereum-logo.svg";
+import MavenIcon from "~/icons/maven-icon.svg";
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -100,6 +102,7 @@ function DepositAmountField({
   onChange,
   balance,
   assetIconSrc = UsdtToken,
+  secondaryAssetIconSrc,
   metadata = USDT_BRIDGE.destinationToken,
   assetSlug = USDT_BRIDGE_DESTINATION_SLUG,
 }: {
@@ -113,6 +116,7 @@ function DepositAmountField({
   onChange: (value?: BigNumber) => void;
   balance: BigNumber;
   assetIconSrc?: string | null;
+  secondaryAssetIconSrc?: string;
   metadata?: AssetMetadataBase;
   assetSlug?: string;
 }) {
@@ -124,6 +128,7 @@ function DepositAmountField({
       amount={amount}
       amountInputDisabled={amountInputDisabled}
       assetIconSrc={assetIconSrc ?? undefined}
+      secondaryAssetIconSrc={secondaryAssetIconSrc}
       balanceSuffix={balanceSuffix}
       balanceTotal={amount ?? ZERO}
       cryptoDecimals={metadata.decimals}
@@ -250,6 +255,7 @@ export function BridgeView({
           onChange={onDepositAmountChange}
           balance={tokenBalance ?? ZERO}
           assetIconSrc={UsdtToken}
+          secondaryAssetIconSrc={isConnected ? EthereumLogo : undefined}
           metadata={tokenMetadata}
           assetSlug={ETHEREUM_DEPOSIT_ASSET_SLUG}
         />
@@ -264,6 +270,7 @@ export function BridgeView({
           onChange={onDepositAmountChange}
           balance={usdtBalance}
           metadata={destinationMetadata}
+          secondaryAssetIconSrc={mavrykAddress ? MavenIcon : undefined}
         />
       </div>
       <div className={styles.exchangeDetails}>
