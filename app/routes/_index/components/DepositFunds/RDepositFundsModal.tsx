@@ -28,7 +28,7 @@ export function RDepositFundsModal({
 }: RDepositFundsModalProps) {
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
-  const { userAddress, userTokensBalances, connect, changeUser, isLoading } =
+  const { userAddress, userTokensBalances, connect, isLoading } =
     useUserContext();
   const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
@@ -38,6 +38,10 @@ export function RDepositFundsModal({
     tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
     USDT_BRIDGE.destinationToken;
   const handleClose = () => {
+    ethereumWallet.bridge.reset();
+    ethereumWallet.walletSelection.onClose();
+    setDepositAmount(undefined);
+    setActiveTab("bridge");
     onClose();
   };
 
@@ -109,7 +113,7 @@ export function RDepositFundsModal({
               ethereumWallet={ethereumWallet}
               destinationMetadata={destinationMetadata}
               isMavrykBusy={isLoading}
-              onConnectMavryk={userAddress ? changeUser : connect}
+              onConnectMavryk={connect}
               onDeposit={async () => {
                 if (depositAmount)
                   await ethereumWallet.bridge.submit(

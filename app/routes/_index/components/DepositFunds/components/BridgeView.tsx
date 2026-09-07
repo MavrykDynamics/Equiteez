@@ -56,7 +56,9 @@ function AddressButton({
 }) {
   const content = (
     <>
-      <span aria-hidden="true" className={styles.addressStatusDot} />
+      {address && (
+        <span aria-hidden="true" className={styles.addressStatusDot} />
+      )}
       <span className={styles.addressButtonText}>
         {address ? (
           <HashShortView
@@ -171,7 +173,7 @@ export function BridgeView({
     <AddressButton
       address={mavrykAddress}
       disabled={isBusy}
-      onClick={onConnectMavryk}
+      onClick={mavrykAddress ? undefined : onConnectMavryk}
     />
   );
   const unavailableBalance =
@@ -215,7 +217,11 @@ export function BridgeView({
     <div className={styles.bridgePanel} role="tabpanel">
       <div className={styles.amountFields}>
         <DepositAmountField
-          additionalTopRightBlock={<REthereumWalletDropdown />}
+          additionalTopRightBlock={
+            <REthereumWalletDropdown
+              triggerClassName={!isConnected ? styles.addressButton : undefined}
+            />
+          }
           additionalBottomLeftBlock={unavailableBalance}
           additionalBottomRightBlock={
             <span title="Fiat value unavailable">—</span>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import clsx from "clsx";
 
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -14,7 +15,11 @@ import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provid
 
 import styles from "./REthereumWalletDropdown.module.css";
 
-export function REthereumWalletDropdown() {
+export function REthereumWalletDropdown({
+  triggerClassName,
+}: {
+  triggerClassName?: string;
+}) {
   const {
     userAddress,
     isConnecting,
@@ -43,7 +48,7 @@ export function REthereumWalletDropdown() {
         aria-label={
           userAddress ? "Ethereum wallet options" : "Connect Ethereum wallet"
         }
-        className={styles.trigger}
+        className={clsx(styles.trigger, triggerClassName)}
       >
         {userAddress ? (
           <IdentIcon

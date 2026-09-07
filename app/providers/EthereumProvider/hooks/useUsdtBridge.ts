@@ -28,6 +28,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
   const { dapp } = useWalletContext();
   const [state, setState] = useState<UsdtBridgeState | null>(null);
   const stateRef = useRef<UsdtBridgeState | null>(null);
+  const runIdRef = useRef(0);
 
   const updateState = useCallback((next: UsdtBridgeState | null) => {
     stateRef.current = next;
@@ -41,6 +42,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
       pending?: UsdtBridgeProgress
     ) => {
       if (stateRef.current?.isBusy) return;
+      const runId = ++runIdRef.current;
       const next: UsdtBridgeState = {
         amount: amount.toFixed(),
         recipient,
@@ -55,7 +57,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
       updateState(next);
       const onProgress = (progress: UsdtBridgeProgress) => {
         next.progress = progress;
-        updateState({ ...next });
+        if (runId === runIdRef.current) updateState({ ...next });
       };
 
       try {
@@ -66,7 +68,12 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
 
         const account = next.sender;
         if (!account) throw new Error("Connect your Ethereum wallet.");
+        const assertCurrentRun = () => {
+          if (runId !== runIdRef.current)
+            throw new Error("The deposit flow was closed.");
+        };
         const assertWallets = async () => {
+          assertCurrentRun();
           const wallet = getAccount(config);
           if (
             !wallet.isConnected ||
@@ -81,6 +88,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
             wallet.connector.getAccounts(),
             dapp?.getDAppClient().getActiveAccount(),
           ]);
+          assertCurrentRun();
           if (chainId !== USDT_BRIDGE.chainId)
             throw new Error("Switch your Ethereum wallet to Sepolia.");
           if (accounts[0]?.toLowerCase() !== account.toLowerCase())
@@ -115,7 +123,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
               : "Unable to submit the USDT bridge request.";
       } finally {
         next.isBusy = false;
-        updateState({ ...next });
+        if (runId === runIdRef.current) updateState({ ...next });
         void refreshBalance();
       }
     },
@@ -141,8 +149,8 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
   }, [run]);
 
   const reset = useCallback(() => {
-    if (!stateRef.current?.isBusy && !stateRef.current?.isConfirmationUnknown)
-      updateState(null);
+    runIdRef.current += 1;
+    updateState(null);
   }, [updateState]);
 
   return { state, submit, checkConfirmation, reset };

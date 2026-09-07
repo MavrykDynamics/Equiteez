@@ -233,10 +233,6 @@ button.addressButton:focus-visible,
   outline: var(--r-focus-ring);
 }
 
-.addressButton[data-connected="false"] .addressStatusDot {
-  background: var(--r-color-neutral-400);
-}
-
 .walletNotice {
   display: flex;
   flex-wrap: wrap;
@@ -245,7 +241,7 @@ button.addressButton:focus-visible,
   gap: var(--r-space-3);
 }
 
-.addressButton {
+.depositInputHeader .addressButton {
   display: inline-flex;
   max-width: 62%;
   min-height: 26px;
@@ -424,7 +420,7 @@ button.addressButton:focus-visible,
 
 .statusIndicator[data-status="success"] {
   color: var(--r-color-neutral-white);
-  background: var(--r-color-green-500);
+  background: #7ac99d40;
 }
 
 .statusIndicator[data-status="error"] {
@@ -537,7 +533,7 @@ button.addressButton:focus-visible,
     min-height: 116px;
   }
 
-  .addressButton {
+  .depositInputHeader .addressButton {
     max-width: 58%;
     padding-right: var(--r-space-2);
     padding-left: var(--r-space-2);
@@ -569,4 +565,12 @@ button.addressButton:focus-visible,
   .statusState {
     padding-top: 9px;
   }
+}
+
+button.addressButton[aria-haspopup] {
+  max-width: 100%;
+}
+
+.depositInputHeader .addressButton > svg {
+  display: none;
 }

@@ -64,7 +64,7 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
     },
     {
       title: "Receive wUSDT on Mavryk",
-      status: "pending",
+      status: isLocked ? "loading" : "pending",
       description: isLocked
         ? "Request submitted. Waiting for arrival…"
         : "Waiting for the Ethereum lock",
@@ -201,19 +201,6 @@ export function BridgeStatusView({
                 : "Continue in your Ethereum wallet. You may need to confirm both an approval and a deposit transaction."}
         </RText>
       </div>
-      {state.progress?.hash && (
-        <RButton
-          as="a"
-          href={`https://sepolia.etherscan.io/tx/${state.progress.hash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          size="small"
-          tone="black"
-          variant="secondary"
-        >
-          View Ethereum Transaction
-        </RButton>
-      )}
       {state.isConfirmationUnknown && (
         <RButton
           className={styles.statusCloseButton}
@@ -225,14 +212,14 @@ export function BridgeStatusView({
           Check Confirmation
         </RButton>
       )}
-      {!state.isBusy && !state.isConfirmationUnknown && (
+      {!isLocked && !state.isBusy && !state.isConfirmationUnknown && (
         <RButton
           className={styles.statusCloseButton}
           onClick={onReset}
           size="medium"
           tone="black"
         >
-          {isLocked ? "Make Another Deposit" : "Back To Deposit"}
+          Back To Deposit
         </RButton>
       )}
       <RButton
@@ -242,8 +229,25 @@ export function BridgeStatusView({
         tone="black"
         variant="secondary"
       >
-        Close
+        Close And Continue Trading
       </RButton>
     </div>
   );
+}
+
+// Retained for future transaction-link UI; intentionally not rendered in the status view.
+export function BridgeTransactionLink({ state }: { state: UsdtBridgeState }) {
+  return state.progress?.hash ? (
+    <RButton
+      as="a"
+      href={`https://sepolia.etherscan.io/tx/${state.progress.hash}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      size="small"
+      tone="black"
+      variant="secondary"
+    >
+      View Ethereum Transaction
+    </RButton>
+  ) : null;
 }

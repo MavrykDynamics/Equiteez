@@ -317,7 +317,7 @@ Each reusable `R*` component folder should normally contain:
 
 - Purpose: Route-local redesign modal for Sepolia USDT → Basenet wUSDT deposits and receiving assets on Mavryk.
 - Location: `app/routes/_index/components/DepositFunds/RDepositFundsModal.tsx`
-- Reusability notes: Controlled with `isOpen` and `onClose`; the bridge, receive, and bridge-status views live under `app/routes/_index/components/DepositFunds/components/`. `EthereumProvider` owns source connection, network switching, exact balances, approvals and lock progress. Both wallets are required. The output shows the fixed pair's wUSDT estimate/balance. Ethereum confirmation is request submission, not Mavryk settlement; unknown receipts can be checked without resending. Status persists across modal closure within the current app session.
+- Reusability notes: Controlled with `isOpen` and `onClose`; the bridge, receive, and bridge-status views live under `app/routes/_index/components/DepositFunds/components/`. `EthereumProvider` owns source connection, network switching, exact balances, approvals and lock progress. Both wallets are required. The output shows the fixed pair's wUSDT estimate/balance. Ethereum confirmation is request submission, not Mavryk settlement; unknown receipts can be checked without resending. Closing the modal resets the amount, selected tab, and bridge progress/errors. Late callbacks from a closed flow cannot restore its state. Connected wallets remain available for a new deposit.
 - Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
 
 ## REthereumWalletDropdown
@@ -325,7 +325,7 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Shared Ethereum wallet dropdown and disconnect control, matching `PageLayout/ConnectWallet.tsx`.
 - Location: `app/lib/organisms/REthereumWalletDropdown/REthereumWalletDropdown.tsx`
 - Styles: `app/lib/organisms/REthereumWalletDropdown/REthereumWalletDropdown.module.css`
-- Reusability notes: Render beside the Ethereum wallet/amount field. Uses `RCustomDropdown` with `EthereumProvider` selection state; `connect()` opens it. Lists discovered wallets and WalletConnect, disables choices during connection, and displays an account identicon. Connection errors remain in the owning deposit view; WalletConnect retains its QR dialog.
+- Reusability notes: Render beside the Ethereum wallet/amount field. Uses `RCustomDropdown` with `EthereumProvider` selection state; `connect()` opens it. Lists discovered wallets and WalletConnect, disables choices during connection, and displays an account identicon. Connection errors remain in the owning deposit view; WalletConnect retains its QR dialog. Optional `triggerClassName` allows the deposit view to match the disconnected Mavryk wallet pill.
 - Related tokens: `RCustomDropdown`, `RIcon`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-pill`, `--r-focus-ring`
 
 ## RWithdrawFundsModal
