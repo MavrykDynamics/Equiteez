@@ -81,6 +81,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
+          className={styles.desktopTabs}
           tabs={orders_tabs}
         />
       </div>

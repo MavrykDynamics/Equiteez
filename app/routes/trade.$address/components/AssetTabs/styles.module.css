@@ -35,4 +35,10 @@
   .tabSwitcher > * {
     flex-shrink: 0;
   }
+  .tabSwitcher .desktopTabs {
+    display: none;
+  }
+  .divider {
+    display: none;
+  }
 }
