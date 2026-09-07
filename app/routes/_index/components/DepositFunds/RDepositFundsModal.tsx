@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import QRCode from "react-qr-code";
+// eslint-disable-next-line import/no-named-as-default
+import BigNumber from "bignumber.js";
 
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
 import { CopyButton } from "~/lib/atoms/CopyButton";
+import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import {
+  STABLECOIN_ASSET_SLUG,
+  STABLECOIN_METADATA,
+} from "~/lib/metadata";
+import { ZERO } from "~/lib/utils/numbers";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 
 import styles from "./RDepositFundsModal.module.css";
 import { Icon } from "~/lib/atoms/Icon";
@@ -25,9 +34,51 @@ export function RDepositFundsModal({
   onClose,
 }: RDepositFundsModalProps) {
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
-  const [depositAmount, setDepositAmount] = useState("");
-  const { userAddress } = useUserContext();
+  const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
+  const { userAddress, userTokensBalances } = useUserContext();
   const mavrykAddress = userAddress ?? "";
+  const usdtBalance = useMemo(
+    () =>
+      userTokensBalances[STABLECOIN_ASSET_SLUG] ??
+      userTokensBalances[STABLECOIN_METADATA.address] ??
+      ZERO,
+    [userTokensBalances]
+  );
+  const depositInputClassNames = {
+    amountInputClassName: styles.depositAmountInput,
+    amountInputContainerClassName: styles.depositAmountInputContainer,
+    assetViewClassName: styles.depositAssetPill,
+    balanceClassName: styles.depositBalanceText,
+    balanceLabel: "Bal.",
+    balancePlacement: "bottom-left" as const,
+    bodyClassName: styles.depositInputBody,
+    bottomLeftClassName: styles.depositFooterLeft,
+    bottomRightClassName: styles.depositFooterValue,
+    className: styles.depositInput,
+    footerClassName: styles.depositInputFooter,
+    headerClassName: styles.depositInputHeader,
+    sectionClassName: styles.depositInputCard,
+    selectedAssetMetadata: STABLECOIN_METADATA,
+    selectedAssetSlug: STABLECOIN_ASSET_SLUG,
+    showBalanceIcon: false,
+  };
+  const addressButton = (
+    <span className={styles.addressButton}>
+      <span aria-hidden="true" className={styles.addressStatusDot} />
+      <span className={styles.addressButtonText}>
+        {mavrykAddress ? (
+          <HashShortView
+            firstCharsCount={8}
+            hash={mavrykAddress}
+            lastCharsCount={3}
+            trimAfter={14}
+          />
+        ) : (
+          "Connect Wallet"
+        )}
+      </span>
+    </span>
+  );
 
   return (
     <CustomPopup
@@ -85,19 +136,41 @@ export function RDepositFundsModal({
         {activeTab === "bridge" ? (
           <div className={styles.bridgePanel} role="tabpanel">
             <div className={styles.amountFields}>
-              <AmountField
+              <BalanceInputWithTotal
+                additionalTopRightBlock={addressButton}
                 amount={depositAmount}
-                balanceText="Connect wallet to view balance"
+                amountInputDisabled={false}
+                assetIconSrc={UsdtToken}
+                balanceSuffix={
+                  <button
+                    aria-label="Use maximum USDT balance"
+                    className={styles.maxButton}
+                    onClick={() => setDepositAmount(usdtBalance)}
+                    type="button"
+                  >
+                    Max
+                  </button>
+                }
+                balanceTotal={depositAmount ?? ZERO}
+                cryptoDecimals={STABLECOIN_METADATA.decimals}
+                cryptoValue={usdtBalance}
+                decimals={STABLECOIN_METADATA.decimals}
                 label="Send from Ethereum"
                 onChange={setDepositAmount}
-                topAction="Connect Wallet"
+                {...depositInputClassNames}
               />
-              <AmountField
-                amount={depositAmount || "0.00"}
-                balanceText="Bal. 200.00 USDT"
+              <BalanceInputWithTotal
+                additionalTopRightBlock={addressButton}
+                amount={depositAmount}
+                amountInputDisabled
+                assetIconSrc={UsdtToken}
+                balanceTotal={depositAmount ?? ZERO}
+                cryptoDecimals={STABLECOIN_METADATA.decimals}
+                cryptoValue={usdtBalance}
+                decimals={STABLECOIN_METADATA.decimals}
                 label="Receive on MVRK"
-                readOnly
-                topAction="mv1xxxxxx...xxx"
+                onChange={setDepositAmount}
+                {...depositInputClassNames}
               />
             </div>
             <div className={styles.exchangeDetails}>
@@ -168,58 +241,5 @@ export function RDepositFundsModal({
         )}
       </div>
     </CustomPopup>
-  );
-}
-
-type AmountFieldProps = {
-  amount: string;
-  balanceText: string;
-  label: string;
-  onChange?: (value: string) => void;
-  readOnly?: boolean;
-  topAction: string;
-};
-
-function AmountField({
-  amount,
-  balanceText,
-  label,
-  onChange,
-  readOnly = false,
-  topAction,
-}: AmountFieldProps) {
-  return (
-    <label className={styles.amountField}>
-      <span className={styles.fieldHeader}>
-        <RText color="neutral-600" size="body-s">
-          {label}
-        </RText>
-        <span className={styles.fieldAction}>{topAction}</span>
-      </span>
-      <span className={styles.amountRow}>
-        <span className={styles.currency}>
-          <img alt="USDT" src={UsdtToken} />
-          <RText size="body-s">USDT</RText>
-        </span>
-        <input
-          aria-label={`${label} amount`}
-          className={styles.amountInput}
-          inputMode="decimal"
-          onChange={(event) => onChange?.(event.target.value)}
-          placeholder="0.00"
-          readOnly={readOnly}
-          type="text"
-          value={amount}
-        />
-      </span>
-      <span className={styles.fieldFooter}>
-        <RText color="neutral-600" size="body-s">
-          {balanceText}
-        </RText>
-        <RText color="neutral-600" size="body-s">
-          $0.00
-        </RText>
-      </span>
-    </label>
   );
 }

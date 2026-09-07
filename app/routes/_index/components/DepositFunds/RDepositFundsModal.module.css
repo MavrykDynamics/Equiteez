@@ -45,7 +45,8 @@
 .closeButton:focus-visible,
 .addressField:focus-visible,
 .tab:focus-visible,
-.amountInput:focus-visible {
+.depositAmountInput:focus-visible,
+.maxButton:focus-visible {
   outline: none;
 }
 
@@ -112,19 +113,6 @@
   gap: var(--r-space-3);
 }
 
-.amountField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-1);
-  padding: var(--r-space-4);
-  background: var(--r-color-neutral-white);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: 12px;
-}
-
-.fieldHeader,
-.amountRow,
-.fieldFooter,
 .exchangeDetails,
 .networkDetails {
   display: flex;
@@ -133,59 +121,131 @@
   gap: var(--r-space-3);
 }
 
-.fieldAction {
-  padding: var(--r-space-1) var(--r-space-3);
-  color: var(--r-color-neutral-black);
-  background: var(--r-color-neutral-white);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-pill);
-  font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-s);
-  font-weight: var(--r-font-weight-medium);
-  line-height: var(--r-line-height-body-s);
-  white-space: nowrap;
+.exchangeDetails {
+  flex-wrap: wrap;
 }
 
-.currency {
-  display: inline-flex;
+.depositInput {
+  gap: var(--r-space-2);
+}
+
+.depositInputCard {
+  min-height: 116px;
+  gap: var(--r-space-1);
+  padding: var(--r-space-4);
+  background: var(--r-color-neutral-white) !important;
+  border-color: var(--r-color-neutral-100) !important;
+  border-radius: 12px !important;
+}
+
+.depositInputHeader {
+  min-height: 26px;
+}
+
+.depositInputBody {
+  min-height: 32px;
   align-items: center;
+}
+
+.depositInputFooter {
+  min-height: var(--r-line-height-body-s);
+}
+
+.depositAssetPill {
+  flex-shrink: 0;
   gap: var(--r-space-2);
   padding: var(--r-space-1) 10px var(--r-space-1) 6px;
   background: var(--r-color-neutral-50);
   border-radius: var(--r-radius-pill);
 }
 
-.currency img {
-  width: 30px;
-  height: 24px;
-  object-fit: fill;
+.depositAmountInputContainer {
+  flex: 1;
+  min-width: 0;
 }
 
-.amountInput {
-  width: 148px;
-  padding: 0;
+.depositAmountInput {
   color: var(--r-color-neutral-black);
-  text-align: right;
-  background: transparent;
-  border: 0;
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-l);
   font-weight: var(--r-font-weight-medium);
   line-height: var(--r-line-height-body-l);
 }
 
-.amountInput::placeholder {
+.depositAmountInput::placeholder {
   color: var(--r-color-neutral-500);
   opacity: 1;
 }
 
-.amountInput:read-only {
-  color: var(--r-color-neutral-500);
+.depositAmountInput:disabled {
+  color: var(--r-color-neutral-black);
+  opacity: 1;
 }
 
-.fieldFooter,
-.exchangeDetails {
-  flex-wrap: wrap;
+.depositFooterLeft,
+.depositFooterValue,
+.depositBalanceText {
+  min-width: 0;
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+}
+
+.depositBalanceText,
+.depositBalanceText * {
+  font-weight: var(--r-font-weight-regular);
+}
+
+.depositFooterLeft {
+  overflow: hidden;
+}
+
+.depositFooterValue {
+  flex-shrink: 0;
+}
+
+.maxButton {
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: var(--r-font-weight-medium);
+  cursor: pointer;
+}
+
+.addressButton {
+  display: inline-flex;
+  max-width: 62%;
+  min-height: 26px;
+  align-items: center;
+  gap: var(--r-space-1);
+  padding: var(--r-space-1) var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  background: var(--r-surface-primary-white-button-default);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-pill);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+  white-space: nowrap;
+}
+
+.addressStatusDot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  background: var(--r-color-green-500);
+  border-radius: 50%;
+}
+
+.addressButtonText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .exchangeDetails {
@@ -291,8 +351,19 @@
     line-height: var(--r-line-height-body-s);
   }
 
-  .amountInput {
-    width: 112px;
+  .depositInputCard {
+    min-height: 116px;
+  }
+
+  .addressButton {
+    max-width: 58%;
+    padding-right: var(--r-space-2);
+    padding-left: var(--r-space-2);
+  }
+
+  .depositAssetPill {
+    gap: var(--r-space-1);
+    padding-right: var(--r-space-2);
   }
 
   .addressField {
