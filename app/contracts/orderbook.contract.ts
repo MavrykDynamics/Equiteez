@@ -235,6 +235,7 @@ export async function orderbookBuy(params: OrderbookBuyParams) {
     const batchArr = await orderbookBuyBatch(params);
 
     await sendContractBatchOperation(params.tezos, batchArr, {
+      onTransactionConfirmed: params.onTransactionConfirmed,
       onTransactionSubmitted: params.onTransactionSubmitted,
     });
   } catch (e: unknown) {
@@ -323,6 +324,7 @@ export async function orderbookSell(params: OrderbookSellParams) {
     const batchArr = await orderbookSellBatch(params);
 
     await sendContractBatchOperation(params.tezos, batchArr, {
+      onTransactionConfirmed: params.onTransactionConfirmed,
       onTransactionSubmitted: params.onTransactionSubmitted,
     });
   } catch (e: unknown) {
@@ -336,6 +338,7 @@ export async function orderbookCancelOrder({
   orderId,
   orderType,
   onTransactionSubmitted,
+  onTransactionConfirmed,
 }: OrderbookCancelOrderParams) {
   try {
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
@@ -349,7 +352,12 @@ export async function orderbookCancelOrder({
       ])
       .send();
     onTransactionSubmitted?.();
-    await rwaOrderbookOperation.confirmation();
+    const confirmation = await rwaOrderbookOperation.confirmation();
+    const level = confirmation?.block.header.level;
+
+    if (typeof level === "number") {
+      onTransactionConfirmed?.({ level });
+    }
   } catch (e: unknown) {
     throw e;
   }
@@ -361,6 +369,7 @@ export async function orderbookProcessRefund({
   orderId,
   orderType,
   onTransactionSubmitted,
+  onTransactionConfirmed,
 }: OrderbookProcessRefundParams) {
   try {
     assertAddress(orderbookContractAddress, "Orderbook contract address");
@@ -376,7 +385,12 @@ export async function orderbookProcessRefund({
       ])
       .send();
     onTransactionSubmitted?.();
-    await rwaOrderbookOperation.confirmation();
+    const confirmation = await rwaOrderbookOperation.confirmation();
+    const level = confirmation?.block.header.level;
+
+    if (typeof level === "number") {
+      onTransactionConfirmed?.({ level });
+    }
   } catch (e: unknown) {
     throw e;
   }

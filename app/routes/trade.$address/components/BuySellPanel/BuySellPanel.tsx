@@ -9,8 +9,10 @@ import {
 import { useSearchParams } from "@remix-run/react";
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import { invalidateWalletOpenOrdersQueries } from "~/lib/apis/rwa/feedRefetch";
 import {
   BUY,
   SELL,
@@ -51,7 +53,7 @@ export function BuySellPanel({
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
   const queryClient = useQueryClient();
-  const { hasOrders, refetchUserAccountStatus } = useUserContext();
+  const { hasOrders, refetchUserAccountStatus, userAddress } = useUserContext();
   const [searchParams] = useSearchParams();
   const { isLoading, marketsArr, updateActiveMarketState } =
     useMarketsContext();
@@ -79,25 +81,34 @@ export function BuySellPanel({
     }
   }, [estate?.slug, updateActiveMarketState]);
 
-  const handleSuccessfulTransaction = useCallback(() => {
-    const shouldInvalidateAssetOrdersQuery = (queryKey: readonly unknown[]) =>
-      queryKey[0] === "fetchWalletOpenOrders" ||
-      queryKey[0] === "fetchWalletOrderHistory";
+  const handleSuccessfulTransaction = useCallback(
+    (metadata: ContractActionSuccessMetadata) => {
+      const refetchUserAccountStatusAfterFirstOrder = hasOrders
+        ? Promise.resolve()
+        : refetchUserAccountStatus().catch((error) => {
+            console.log(error, "USER_ACCOUNT_STATUS_QUERY");
+          });
 
-    const refetchUserAccountStatusAfterFirstOrder = hasOrders
-      ? Promise.resolve()
-      : refetchUserAccountStatus().catch((error) => {
-          console.log(error, "USER_ACCOUNT_STATUS_QUERY");
-        });
-
-    void Promise.all([
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          shouldInvalidateAssetOrdersQuery(query.queryKey),
-      }),
-      refetchUserAccountStatusAfterFirstOrder,
-    ]);
-  }, [hasOrders, queryClient, refetchUserAccountStatus]);
+      void Promise.all([
+        invalidateWalletOpenOrdersQueries(queryClient, {
+          level: metadata.confirmation?.level,
+          tokenAddress: asset.address,
+          walletAddress: userAddress ?? "",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["fetchWalletOrderHistory"],
+        }),
+        refetchUserAccountStatusAfterFirstOrder,
+      ]);
+    },
+    [
+      asset.address,
+      hasOrders,
+      queryClient,
+      refetchUserAccountStatus,
+      userAddress,
+    ]
+  );
 
   if (isLoading) {
     return (

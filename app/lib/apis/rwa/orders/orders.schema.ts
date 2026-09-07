@@ -26,6 +26,18 @@ const PaginationSchema = z.object({
   truncated: z.boolean(),
 });
 
+const AsOfSchema = z
+  .object({
+    level: z.number(),
+    timestamp: z.string(),
+    realtime: z.boolean(),
+  })
+  .default({
+    level: 0,
+    timestamp: "",
+    realtime: false,
+  });
+
 export const OpenOrderItemSchema = z.object({
   id: z.string(),
   order_id: z.string(),
@@ -59,11 +71,7 @@ export const OpenOrderItemSchema = z.object({
 
 export const OpenOrdersSchema = PaginationSchema.extend({
   items: z.array(OpenOrderItemSchema),
-  as_of: z.object({
-    level: z.number(),
-    timestamp: z.string(),
-    realtime: z.boolean(),
-  }),
+  as_of: AsOfSchema,
 });
 
 export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({

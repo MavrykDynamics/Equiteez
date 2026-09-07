@@ -130,7 +130,12 @@ export async function sendContractBatchOperation(
   try {
     const batchOp = await mavryk.wallet.batch(batchArr).send();
     callbacks.onTransactionSubmitted?.();
-    await batchOp.confirmation();
+    const confirmation = await batchOp.confirmation();
+    const level = confirmation?.block.header.level;
+
+    if (typeof level === "number") {
+      callbacks.onTransactionConfirmed?.({ level });
+    }
   } catch (e) {
     console.error("Error during executing operation");
     throw e;

@@ -3,11 +3,13 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import type { RIconName } from "~/lib/atoms/RIcon";
+import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
 import {
   orderbookCancelOrder,
   orderbookProcessRefund,
 } from "~/contracts/orderbook.contract";
+import { invalidateWalletOpenOrdersQueries } from "~/lib/apis/rwa/feedRefetch";
 import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
@@ -27,6 +29,7 @@ export function useOpenOrderAction({
   order,
 }: UseOpenOrderActionOptions) {
   const queryClient = useQueryClient();
+  const { userAddress } = useUserContext();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const contractActionArgs = useMemo(
     () => ({
@@ -37,13 +40,23 @@ export function useOpenOrderAction({
     [order.order_id, order.orderbook_address, order.side]
   );
 
-  const handleAfterAction = useCallback(() => {
-    setIsPopupOpen(false);
-    void queryClient.invalidateQueries({
-      predicate: (query) =>
-        query.queryKey[0] === "fetchWalletOpenOrders" || query.queryKey[0] === "rwa-wallet-activity-summary"});
-    void onAfterAction?.();
-  }, [onAfterAction, queryClient]);
+  const handleAfterAction = useCallback(
+    (metadata: ContractActionSuccessMetadata) => {
+      setIsPopupOpen(false);
+      void Promise.all([
+        invalidateWalletOpenOrdersQueries(queryClient, {
+          level: metadata.confirmation?.level,
+          tokenAddress: order.token_address,
+          walletAddress: userAddress ?? "",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["rwa-wallet-activity-summary"],
+        }),
+      ]);
+      void onAfterAction?.();
+    },
+    [onAfterAction, order.token_address, queryClient, userAddress]
+  );
 
   const { invokeAction: invokeCancelOrder, status: cancelStatus } =
     useContractAction(

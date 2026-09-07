@@ -19,7 +19,11 @@ import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForcedUpdate";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
-import type { ContractActionLifecycleCallbacks } from "../actions.type";
+import type {
+  ContractActionConfirmation,
+  ContractActionLifecycleCallbacks,
+  ContractActionSuccessMetadata,
+} from "../actions.type";
 
 // Simplified version to handle operation calls
 
@@ -46,7 +50,7 @@ type ContractActionFn<G extends object> = (
 ) => Promise<void> | void;
 
 type ContractActionOptions = {
-  onSuccess?: () => void;
+  onSuccess?: (metadata: ContractActionSuccessMetadata) => void;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -88,6 +92,7 @@ export const useContractAction = <G extends object>(
   const { success, bug } = useToasterContext();
   const { onSuccess } = contractActionOptions;
   const hasSubmittedRef = useRef(false);
+  const confirmationRef = useRef<ContractActionConfirmation | null>(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -118,6 +123,7 @@ export const useContractAction = <G extends object>(
 
   const invokeAction = useCallback(async () => {
     hasSubmittedRef.current = false;
+    confirmationRef.current = null;
 
     try {
       const tezos = dapp?.tezos();
@@ -126,13 +132,21 @@ export const useContractAction = <G extends object>(
 
       dispatchIfMounted(STATUS_PENDING);
 
+      const lifecycleCallbacks =
+        args as Partial<ContractActionLifecycleCallbacks>;
+
       await actionFn({
         ...args,
         tezos,
         onTransactionSubmitted: () => {
+          lifecycleCallbacks.onTransactionSubmitted?.();
           hasSubmittedRef.current = true;
           dispatchIfMounted(STATUS_CONFIRMING);
           showTransactionPopup();
+        },
+        onTransactionConfirmed: (confirmation) => {
+          confirmationRef.current = confirmation;
+          lifecycleCallbacks.onTransactionConfirmed?.(confirmation);
         },
       });
 
@@ -149,7 +163,7 @@ export const useContractAction = <G extends object>(
         await hidePopup(popupKeys[popupDetails.key]);
       }
 
-      onSuccess?.();
+      onSuccess?.({ confirmation: confirmationRef.current });
       await sleep(2000);
 
       dispatchIfMounted(STATUS_IDLE);

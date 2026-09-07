@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
-import { fetchWalletOpenOrders } from "~/lib/apis/rwa/orders/orders";
+import {
+  fetchWalletOpenOrders,
+  walletOpenOrdersQueryKeys,
+} from "~/lib/apis/rwa/orders/orders";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RPagination } from "~/lib/molecules/RPagination";
 import {
@@ -65,14 +68,13 @@ export function OpenOrdersTab({
   }, [sort]);
 
   const openOrdersQuery = useQuery({
-    queryKey: [
-      "fetchWalletOpenOrders",
-      userAddress,
-      searchValueDebounced,
-      serverSort,
+    queryKey: walletOpenOrdersQueryKeys.list({
       page,
+      search: searchValueDebounced,
+      sort: serverSort,
       tokenAddress,
-    ],
+      walletAddress: userAddress ?? "",
+    }),
     queryFn: () =>
       fetchWalletOpenOrders({
         page,
