@@ -275,7 +275,7 @@ export function BridgeView({
       </div>
       <div className={styles.exchangeDetails}>
         <RText color="neutral-600" size="body-s">
-          Estimated: 1 USDT = 1 wUSDT
+          Rate: 1 USDT = 1 wUSDT
         </RText>
         <div className={styles.networkDetails}>
           <RText color="neutral-600" size="body-s">
@@ -283,9 +283,7 @@ export function BridgeView({
           </RText>
         </div>
       </div>
-      <RText color="neutral-600" size="body-s">
-        USDT arrives as wUSDT on Mavryk. Both wallets must be connected.
-      </RText>
+
       {depositAmount && (amountError || hasInsufficientBalance) && (
         <RText role="alert" color="red-500" size="body-s">
           {amountError ?? "Insufficient USDT balance."}

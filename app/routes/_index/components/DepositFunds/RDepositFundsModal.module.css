@@ -424,13 +424,13 @@ button.addressButton:focus-visible,
 }
 
 .statusIndicator[data-status="success"] {
-  color: var(--r-color-neutral-white);
+  color: var(--r-color-green-500);
   background: #7ac99d40;
 }
 
 .statusIndicator[data-status="error"] {
-  color: var(--r-color-neutral-white);
-  background: var(--r-color-red-300);
+  color: var(--r-color-red-500);
+  background: var(--r-color-red-100);
 }
 
 .statusIndicator[data-status="pending"] {

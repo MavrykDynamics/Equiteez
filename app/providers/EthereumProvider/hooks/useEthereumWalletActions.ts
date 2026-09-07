@@ -26,6 +26,7 @@ export function useEthereumWalletActions(
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isActionPending = useRef(false);
+  const actionIdRef = useRef(0);
 
   useEffect(() => {
     setError(null);
@@ -36,6 +37,7 @@ export function useEthereumWalletActions(
       if (isActionPending.current) return;
 
       isActionPending.current = true;
+      const actionId = ++actionIdRef.current;
       setIsConnecting(true);
       setError(null);
       let action = request.type;
@@ -61,12 +63,13 @@ export function useEthereumWalletActions(
           }
         }
 
-        setIsWalletModalOpen(false);
+        if (actionId === actionIdRef.current) setIsWalletModalOpen(false);
       } catch (error) {
-        setError(getEthereumErrorMessage(error, action));
+        if (actionId === actionIdRef.current)
+          setError(getEthereumErrorMessage(error, action));
       } finally {
         isActionPending.current = false;
-        setIsConnecting(false);
+        if (actionId === actionIdRef.current) setIsConnecting(false);
       }
     },
     [
@@ -82,7 +85,12 @@ export function useEthereumWalletActions(
     setError(null);
     setIsWalletModalOpen(true);
   }, []);
-  const handleClose = useCallback(() => setIsWalletModalOpen(false), []);
+  const handleClose = useCallback(() => {
+    actionIdRef.current += 1;
+    setIsWalletModalOpen(false);
+    setIsConnecting(false);
+    setError(null);
+  }, []);
   const handleConnectWallet = useCallback(
     (connector: Connector) =>
       handleWalletAction({ type: "connect", connector }),

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { BigNumber } from "bignumber.js";
 
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -37,11 +37,24 @@ export function RDepositFundsModal({
   const destinationMetadata =
     tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
     USDT_BRIDGE.destinationToken;
-  const handleClose = () => {
-    ethereumWallet.bridge.reset();
-    ethereumWallet.walletSelection.onClose();
+  const resetBridge = ethereumWallet.bridge.reset;
+  const closeWalletSelection = ethereumWallet.walletSelection.onClose;
+  const wasOpen = useRef(isOpen);
+  const resetModal = useCallback(() => {
+    resetBridge();
+    closeWalletSelection();
     setDepositAmount(undefined);
     setActiveTab("bridge");
+  }, [resetBridge, closeWalletSelection]);
+
+  useEffect(() => {
+    if (wasOpen.current && !isOpen) resetModal();
+    wasOpen.current = isOpen;
+  }, [isOpen, resetModal]);
+
+  const handleClose = () => {
+    resetModal();
+    wasOpen.current = false;
     onClose();
   };
 
