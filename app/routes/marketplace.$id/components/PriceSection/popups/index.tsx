@@ -70,6 +70,7 @@ import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
 import { Text } from "~/lib/atoms/Typography/Text";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 import clsx from "clsx";
 import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
@@ -118,6 +119,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
 }) => {
   const { slug } = estate;
   const { dapp } = useWalletContext();
+  const { hasOrders } = useUserContext();
   const { isLoading: isDexLoading, orderbookStorages } = useDexContext();
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
   const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
@@ -816,10 +818,6 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     orderType,
   ]);
 
-  const handleOpenTradeConfirmation = useCallback(() => {
-    setIsTradeConfirmationOpen(true);
-  }, []);
-
   const handleCloseTradeConfirmation = useCallback(() => {
     setIsTradeConfirmationOpen(false);
   }, []);
@@ -849,6 +847,15 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       label: eventLabel,
     });
   }, [buySellActionCb, isMarketTypeMarket, orderType]);
+
+  const handleBuySellAction = useCallback(() => {
+    if (hasOrders === true) {
+      handleConfirmedBuySellAction();
+      return;
+    }
+
+    setIsTradeConfirmationOpen(true);
+  }, [handleConfirmedBuySellAction, hasOrders]);
 
   // status of the operation
   const status = useMemo(
@@ -937,7 +944,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
         </PopupWithIcon>
       )}
       <TradeConfirmationPopup
-        isOpen={isTradeConfirmationOpen}
+        isOpen={!hasOrders && isTradeConfirmationOpen}
         onCancel={handleCloseTradeConfirmation}
         onContinue={handleConfirmedBuySellAction}
       />
@@ -1004,7 +1011,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
           (marketType === "market" ? (
             <BuySellScreen
               estate={estate}
-              actionCb={handleOpenTradeConfirmation}
+              actionCb={handleBuySellAction}
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}
@@ -1022,7 +1029,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               marketTokenPrice={tokenPrice}
               setLimitPrice={setLimitPrice}
               estate={estate}
-              actionCb={handleOpenTradeConfirmation}
+              actionCb={handleBuySellAction}
               actionType={activetabId}
               amount={amountB}
               setAmount={setAmountB}

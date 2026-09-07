@@ -8,6 +8,7 @@ export const DEFAULT_USER: UserContextStateType = {
   userTokensBalances: {},
   isAdmin: false,
   isKyced: false,
+  hasOrders: false,
 };
 
 export const DEFAULT_USER_TZKT_TOKENS: UserTzKtTokenBalances = {

@@ -53,6 +53,7 @@ const AssetProfileSchema = z.object({
   status: z.string(),
   lifecycle: z.string(),
   image_url: z.string().optional(),
+  gallery: z.array(z.object({ kind: z.string(), url: z.string() })),
 });
 
 const AssetFinanceSchema = z.object({

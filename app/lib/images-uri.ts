@@ -25,6 +25,10 @@ export const buildTokenImagesStack = (
 
   if (url.startsWith(IPFS_PROTOCOL) || url.startsWith("http")) {
     const uriInfo = getMediaUriInfo(url);
+    if (!uriInfo.ipfs && url.startsWith("http")) {
+      return [url];
+    }
+
     return [
       buildIpfsMediaUriByInfo(uriInfo, "small", useMediaHost),
       buildIpfsMediaUriByInfo(uriInfo, "medium", useMediaHost),

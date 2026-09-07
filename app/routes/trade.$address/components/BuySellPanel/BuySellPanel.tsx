@@ -23,6 +23,7 @@ import type {
   SecondaryEstate,
 } from "~/providers/MarketsProvider/market.types";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./styles.module.css";
 
@@ -50,6 +51,7 @@ export function BuySellPanel({
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
   const queryClient = useQueryClient();
+  const { hasOrders, refetchUserAccountStatus } = useUserContext();
   const [searchParams] = useSearchParams();
   const { isLoading, marketsArr, updateActiveMarketState } =
     useMarketsContext();
@@ -82,13 +84,20 @@ export function BuySellPanel({
       queryKey[0] === "fetchWalletOpenOrders" ||
       queryKey[0] === "fetchWalletOrderHistory";
 
+    const refetchUserAccountStatusAfterFirstOrder = hasOrders
+      ? Promise.resolve()
+      : refetchUserAccountStatus().catch((error) => {
+          console.log(error, "USER_ACCOUNT_STATUS_QUERY");
+        });
+
     void Promise.all([
       queryClient.invalidateQueries({
         predicate: (query) =>
           shouldInvalidateAssetOrdersQuery(query.queryKey),
       }),
+      refetchUserAccountStatusAfterFirstOrder,
     ]);
-  }, [queryClient]);
+  }, [hasOrders, queryClient, refetchUserAccountStatus]);
 
   if (isLoading) {
     return (

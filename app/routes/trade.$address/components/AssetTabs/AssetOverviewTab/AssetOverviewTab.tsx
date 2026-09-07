@@ -1,8 +1,6 @@
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import assetsMocked from "~/mocks/assets.mock.json";
-
 import { AssetGallerySlider } from "./AssetGallerySlider";
 import styles from "./styles.module.css";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -37,18 +35,12 @@ const detailGroups: DetailGroup[] = [
 ];
 
 export function AssetOverviewTab({ asset }: { asset: AssetType }) {
-  const mockAsset =
-    assetsMocked.find((item) => item.symbol === asset.metadata.symbol) ??
-    assetsMocked[0];
-  const images = [
-    mockAsset.assetDetails.previewImage,
-    ...mockAsset.assetDetails.assetImages,
-  ];
+  const images = asset.profile.gallery.map((item) => item.url);
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.galleryWrapper}>
-        <AssetGallerySlider images={images} name={mockAsset.name} />
+        <AssetGallerySlider images={images} name={asset.metadata.name} />
       </div>
 
       <div className={styles.content}>
