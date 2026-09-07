@@ -13,7 +13,10 @@ export default function DiscoverOverview() {
       <Reveal as="section" delay={0.08}>
         <Highlights />
       </Reveal>
-      <Reveal as="section" delay={0.12}>
+      <Reveal
+        as="section"
+        viewport={{ amount: 0.10, margin: "0px 0px 40% 0px", once: true }}
+      >
         <ExploreAssets />
       </Reveal>
     </Container>

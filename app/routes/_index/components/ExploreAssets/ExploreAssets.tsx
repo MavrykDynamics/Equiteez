@@ -104,15 +104,13 @@ export function ExploreAssets() {
         onClose={() => setIsMobileFiltersOpen(false)}
       />
       {filteredAssets.length ? (
-        <Reveal delay={0.1} preset="rise">
-          {filters.viewType === "image" ? (
-            <ImageAssetsView assets={filteredAssets} />
-          ) : filters.viewType === "grid" ? (
-            <AssetsCardsView assets={filteredAssets} />
-          ) : (
-            <AssetsTableView assets={filteredAssets} />
-          )}
-        </Reveal>
+        filters.viewType === "image" ? (
+          <ImageAssetsView assets={filteredAssets} />
+        ) : filters.viewType === "grid" ? (
+          <AssetsCardsView assets={filteredAssets} />
+        ) : (
+          <AssetsTableView assets={filteredAssets} />
+        )
       ) : (
         <Reveal delay={0.1} preset="fade">
           <div className={styles.emptyState}>
