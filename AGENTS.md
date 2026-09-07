@@ -54,7 +54,7 @@ Current pinned stack in `package.json`:
 - `app/contracts/`: blockchain contract methods used by the app and other contract-related logic.
 - `app/lib/`: stores, APIs, helpers, atomic-style shared components, formatters, avatar utilities, balance helpers, token metadata utilities, sitemap helpers, and similar shared app logic.
 - `app/providers/`: shared React contexts that wrap the app and provide access to app data; similar in purpose to Redux, but built with custom React Context logic.
-- `app/providers/EthereumProvider/`: Sepolia wallet state/actions and ERC1 deposit balance queries, separate from Mavryk authentication; uses Wagmi/Viem and the existing React Query provider.
+- `app/providers/EthereumProvider/`: Sepolia wallet state/actions, USDT balances, and USDT bridge transaction progress; separate from Mavryk authentication and uses Wagmi/Viem plus the existing React Query provider. The fixed pair is in `app/consts/usdtBridge.ts`; contract execution is in `app/contracts/usdtBridge.contract.ts`. Its Basenet wUSDT destination is distinct from the trading stablecoin.
 - `app/hooks/`: shared app-level hooks that are not owned by a single route or provider.
 - `app/consts/`, `app/errors/`, `app/utils/`, `app/generated/`: constants, error helpers, app-specific utilities, and generated files.
 - `app/styles/`: global stylesheets, shared breakpoints, and other app-wide styling assets.

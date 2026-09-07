@@ -1,17 +1,16 @@
-import type { BigNumber } from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import type { ReactNode } from "react";
 
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import {
-  STABLECOIN_ASSET_SLUG,
-  STABLECOIN_METADATA,
-  type AssetMetadataBase,
-} from "~/lib/metadata";
+import type { AssetMetadataBase } from "~/lib/metadata";
+import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
+import { getUsdtBridgeAmountError } from "~/contracts/usdtBridge.contract";
 import { ZERO } from "~/lib/utils/numbers";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
+import { REthereumWalletDropdown } from "~/lib/organisms/REthereumWalletDropdown";
 import { ETHEREUM_DEPOSIT_ASSET_SLUG } from "~/providers/EthereumProvider/ethereum.config";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 
@@ -21,7 +20,10 @@ type BridgeViewProps = {
   depositAmount: BigNumber | undefined;
   ethereumWallet: EthereumContext;
   mavrykAddress: string;
-  onDeposit: () => void;
+  destinationMetadata: AssetMetadataBase;
+  isMavrykBusy: boolean;
+  onConnectMavryk: () => Promise<void> | void;
+  onDeposit: () => Promise<void>;
   onDepositAmountChange: (value?: BigNumber) => void;
   usdtBalance: BigNumber;
 };
@@ -96,8 +98,8 @@ function DepositAmountField({
   onChange,
   balance,
   assetIconSrc = UsdtToken,
-  metadata = STABLECOIN_METADATA,
-  assetSlug = STABLECOIN_ASSET_SLUG,
+  metadata = USDT_BRIDGE.destinationToken,
+  assetSlug = USDT_BRIDGE_DESTINATION_SLUG,
 }: {
   additionalTopRightBlock: ReactNode;
   additionalBottomLeftBlock?: ReactNode;
@@ -138,12 +140,14 @@ export function BridgeView({
   depositAmount,
   ethereumWallet,
   mavrykAddress,
+  destinationMetadata,
+  isMavrykBusy,
+  onConnectMavryk,
   onDeposit,
   onDepositAmountChange,
   usdtBalance,
 }: BridgeViewProps) {
   const {
-    userAddress,
     isConnected,
     isConnecting,
     isReconnecting,
@@ -156,8 +160,20 @@ export function BridgeView({
     refreshBalance,
     error,
   } = ethereumWallet;
-  const addressButton = <AddressButton address={mavrykAddress} />;
-  const isBusy = isConnecting || isReconnecting;
+  const isBusy = isConnecting || isReconnecting || isMavrykBusy;
+  const amountError = getUsdtBridgeAmountError(depositAmount);
+  const hasInsufficientBalance =
+    depositAmount && tokenBalance && depositAmount.gt(tokenBalance);
+  const canDeposit =
+    !amountError && !hasInsufficientBalance && balanceStatus === "ready";
+  const receivedAmount = amountError ? undefined : depositAmount;
+  const addressButton = (
+    <AddressButton
+      address={mavrykAddress}
+      disabled={isBusy}
+      onClick={onConnectMavryk}
+    />
+  );
   const unavailableBalance =
     balanceStatus === "ready" ? undefined : (
       <span role="status">
@@ -183,25 +199,23 @@ export function BridgeView({
       </span>
     );
 
-  const handlePrimaryAction = () => {
+  const handlePrimaryAction = async () => {
     if (!isConnected) {
       connect();
       return;
     }
-    if (!isWrongNetwork && !isBusy) onDeposit();
+    if (!mavrykAddress) {
+      await onConnectMavryk();
+      return;
+    }
+    if (!isWrongNetwork && !isBusy && canDeposit) await onDeposit();
   };
 
   return (
     <div className={styles.bridgePanel} role="tabpanel">
       <div className={styles.amountFields}>
         <DepositAmountField
-          additionalTopRightBlock={
-            <AddressButton
-              address={userAddress ?? ""}
-              disabled={isBusy}
-              onClick={connect}
-            />
-          }
+          additionalTopRightBlock={<REthereumWalletDropdown />}
           additionalBottomLeftBlock={unavailableBalance}
           additionalBottomRightBlock={
             <span title="Fiat value unavailable">—</span>
@@ -213,41 +227,57 @@ export function BridgeView({
               aria-label={`Use maximum ${tokenMetadata.symbol} balance`}
               className={styles.maxButton}
               disabled={balanceStatus !== "ready" || isBusy}
-              onClick={() => onDepositAmountChange(tokenBalance)}
+              onClick={() =>
+                onDepositAmountChange(
+                  tokenBalance?.decimalPlaces(
+                    USDT_BRIDGE.destinationToken.decimals,
+                    BigNumber.ROUND_DOWN
+                  )
+                )
+              }
               type="button"
             >
               Max
             </button>
           }
-          label="Send from Ethereum"
+          label="Send from Ethereum · Sepolia"
           onChange={onDepositAmountChange}
           balance={tokenBalance ?? ZERO}
-          assetIconSrc={tokenMetadata.thumbnailUri ?? null}
+          assetIconSrc={UsdtToken}
           metadata={tokenMetadata}
           assetSlug={ETHEREUM_DEPOSIT_ASSET_SLUG}
         />
         <DepositAmountField
           additionalTopRightBlock={addressButton}
-          amount={depositAmount}
+          additionalBottomRightBlock={
+            <span title="Fiat value unavailable">—</span>
+          }
+          amount={receivedAmount}
           amountInputDisabled
-          label="Receive on MVRK"
+          label="Receive on Mavryk · Basenet"
           onChange={onDepositAmountChange}
           balance={usdtBalance}
+          metadata={destinationMetadata}
         />
       </div>
       <div className={styles.exchangeDetails}>
         <RText color="neutral-600" size="body-s">
-          1 USDT = 1 USDT
+          Estimated: 1 USDT = 1 wUSDT
         </RText>
         <div className={styles.networkDetails}>
           <RText color="neutral-600" size="body-s">
-            Time: ≈2s
-          </RText>
-          <RText color="neutral-600" size="body-s">
-            Fee: 0.01 MVRK
+            Gas confirmed in wallet
           </RText>
         </div>
       </div>
+      <RText color="neutral-600" size="body-s">
+        USDT arrives as wUSDT on Mavryk. Both wallets must be connected.
+      </RText>
+      {depositAmount && (amountError || hasInsufficientBalance) && (
+        <RText role="alert" color="red-500" size="body-s">
+          {amountError ?? "Insufficient USDT balance."}
+        </RText>
+      )}
       {isWrongNetwork && (
         <div className={styles.walletNotice}>
           <RText size="body-s">
@@ -271,12 +301,19 @@ export function BridgeView({
       )}
       <RButton
         className={styles.connectButton}
-        disabled={isWrongNetwork}
+        disabled={
+          isWrongNetwork ||
+          (isConnected && Boolean(mavrykAddress) && !canDeposit)
+        }
         isLoading={isBusy}
         onClick={handlePrimaryAction}
         tone="black"
       >
-        {isConnected ? "Deposit Funds" : "Connect Ethereum Wallet"}
+        {!isConnected
+          ? "Connect Ethereum Wallet"
+          : !mavrykAddress
+            ? "Connect Mavryk Wallet"
+            : "Deposit Funds"}
       </RButton>
     </div>
   );

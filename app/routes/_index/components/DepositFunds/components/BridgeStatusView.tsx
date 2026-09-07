@@ -1,4 +1,4 @@
-import type { BigNumber } from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import clsx from "clsx";
 
 import { RButton } from "~/lib/atoms/RButton";
@@ -6,7 +6,7 @@ import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { toLocalFormat } from "~/lib/formaters/formaters";
-import { ZERO } from "~/lib/utils/numbers";
+import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
 
 import styles from "../RDepositFundsModal.module.css";
 
@@ -20,34 +20,57 @@ export type BridgeStatusStep = {
 };
 
 type BridgeStatusViewProps = {
-  amount: BigNumber | undefined;
-  assetSymbol: string;
+  state: UsdtBridgeState;
   onClose: () => void;
-  steps?: BridgeStatusStep[];
+  onReset: () => void;
+  onCheckConfirmation: () => Promise<void>;
 };
 
-const defaultBridgeStatusSteps: BridgeStatusStep[] = [
-  {
-    description: "Waiting for confirmations (1/3)",
-    status: "loading",
-    title: "Lock on Ethereum",
-  },
-  {
-    description: "Waiting on the lock",
-    status: "pending",
-    title: "Validators Sign",
-  },
-  {
-    description: "Pending validator signatures",
-    status: "pending",
-    title: "Mint on Mavryk",
-  },
-  {
-    description: "Almost there",
-    status: "pending",
-    title: "Funds available",
-  },
-];
+function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
+  const { progress, error } = state;
+  const isLockStep = progress?.step === "lock";
+  const isLocked = isLockStep && progress.status === "confirmed";
+  const currentStatus = error
+    ? "error"
+    : progress?.status === "confirmed"
+      ? "success"
+      : "loading";
+  return [
+    {
+      title: "Approve USDT",
+      status: isLockStep ? "success" : currentStatus,
+      description: isLockStep
+        ? "USDT allowance ready"
+        : (error ??
+          (!progress
+            ? "Checking wallets and USDT balance"
+            : progress.status === "signature"
+              ? "Approve spending in your Ethereum wallet"
+              : progress.status === "confirmed"
+                ? "Approval confirmed"
+                : "Waiting for approval confirmation")),
+    },
+    {
+      title: "Lock on Ethereum",
+      status: isLockStep ? currentStatus : "pending",
+      description: !isLockStep
+        ? "Waiting for approval"
+        : (error ??
+          (isLocked
+            ? "Bridge request confirmed on Ethereum"
+            : progress.status === "signature"
+              ? "Confirm the deposit in your Ethereum wallet"
+              : "Waiting for Ethereum confirmation")),
+    },
+    {
+      title: "Receive wUSDT on Mavryk",
+      status: "pending",
+      description: isLocked
+        ? "Request submitted. Waiting for arrival…"
+        : "Waiting for the Ethereum lock",
+    },
+  ];
+}
 
 const statusIcons: Record<BridgeProcessStatus, RIconName> = {
   error: "cross",
@@ -60,12 +83,6 @@ const statusLabels: Record<BridgeProcessStatus, string> = {
   loading: "In progress",
   success: "Complete",
 };
-
-function formatBridgeAmount(amount: BigNumber | undefined) {
-  return toLocalFormat(amount ?? ZERO, {
-    decimalPlaces: 2,
-  });
-}
 
 function BridgeStatusIndicator({
   index,
@@ -135,18 +152,23 @@ function BridgeStatusListItem({
 }
 
 export function BridgeStatusView({
-  amount,
-  assetSymbol,
+  state,
   onClose,
-  steps = defaultBridgeStatusSteps,
+  onReset,
+  onCheckConfirmation,
 }: BridgeStatusViewProps) {
-  const formattedAmount = formatBridgeAmount(amount);
+  const formattedAmount = toLocalFormat(new BigNumber(state.amount), {
+    decimalPlaces: 6,
+  });
+  const steps = getBridgeStatusSteps(state);
+  const isLocked =
+    state.progress?.step === "lock" && state.progress.status === "confirmed";
 
   return (
     <div className={styles.statusContent}>
       <div className={styles.statusHeader}>
         <RHeading className={styles.statusAmount} size="h6" weight="medium">
-          {formattedAmount} {assetSymbol}
+          {formattedAmount} USDT
         </RHeading>
         <RText
           className={styles.statusDescription}
@@ -156,7 +178,7 @@ export function BridgeStatusView({
           Bridging from Ethereum to your Mavryk wallet
         </RText>
       </div>
-      <ol className={styles.statusList}>
+      <ol aria-live="polite" className={styles.statusList}>
         {steps.map((step, index) => (
           <BridgeStatusListItem
             index={index + 1}
@@ -170,10 +192,49 @@ export function BridgeStatusView({
           <RIcon aria-hidden="true" name="info" size="small" />
         </div>
         <RText className={styles.statusNoticeText} size="body-sm">
-          You can close this window. The bridge keeps running and the funds will
-          appear in your portfolio once process completes.
+          {isLocked
+            ? "Your Ethereum lock is confirmed. Delivery to your Mavryk wallet is pending; check your wUSDT balance for arrival."
+            : state.isConfirmationUnknown
+              ? "The transaction has been sent. Check its confirmation before starting another deposit."
+              : state.error
+                ? "The deposit has not completed. Review the message above before trying again."
+                : "Continue in your Ethereum wallet. You may need to confirm both an approval and a deposit transaction."}
         </RText>
       </div>
+      {state.progress?.hash && (
+        <RButton
+          as="a"
+          href={`https://sepolia.etherscan.io/tx/${state.progress.hash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          size="small"
+          tone="black"
+          variant="secondary"
+        >
+          View Ethereum Transaction
+        </RButton>
+      )}
+      {state.isConfirmationUnknown && (
+        <RButton
+          className={styles.statusCloseButton}
+          isLoading={state.isBusy}
+          onClick={onCheckConfirmation}
+          size="medium"
+          tone="black"
+        >
+          Check Confirmation
+        </RButton>
+      )}
+      {!state.isBusy && !state.isConfirmationUnknown && (
+        <RButton
+          className={styles.statusCloseButton}
+          onClick={onReset}
+          size="medium"
+          tone="black"
+        >
+          {isLocked ? "Make Another Deposit" : "Back To Deposit"}
+        </RButton>
+      )}
       <RButton
         className={styles.statusCloseButton}
         onClick={onClose}
@@ -181,7 +242,7 @@ export function BridgeStatusView({
         tone="black"
         variant="secondary"
       >
-        Close And Continue Trading
+        Close
       </RButton>
     </div>
   );

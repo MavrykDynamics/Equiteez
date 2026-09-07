@@ -140,6 +140,8 @@
 
 .depositInputHeader {
   min-height: 26px;
+  flex-wrap: wrap;
+  gap: var(--r-space-2);
 }
 
 .depositInputBody {

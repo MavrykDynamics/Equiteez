@@ -1,13 +1,14 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { BigNumber } from "bignumber.js";
 
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { STABLECOIN_ASSET_SLUG, STABLECOIN_METADATA } from "~/lib/metadata";
+import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
 import { ZERO } from "~/lib/utils/numbers";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
@@ -15,7 +16,6 @@ import { ReceiveView } from "./components/ReceiveView";
 import styles from "./RDepositFundsModal.module.css";
 
 type DepositTab = "bridge" | "receive";
-type DepositView = "deposit" | "bridgeStatus";
 
 type RDepositFundsModalProps = {
   isOpen: boolean;
@@ -27,20 +27,17 @@ export function RDepositFundsModal({
   onClose,
 }: RDepositFundsModalProps) {
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
-  const [activeView, setActiveView] = useState<DepositView>("deposit");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
-  const { userAddress, userTokensBalances } = useUserContext();
+  const { userAddress, userTokensBalances, connect, changeUser, isLoading } =
+    useUserContext();
+  const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
   const mavrykAddress = userAddress ?? "";
-  const usdtBalance = useMemo(
-    () =>
-      userTokensBalances[STABLECOIN_ASSET_SLUG] ??
-      userTokensBalances[STABLECOIN_METADATA.address] ??
-      ZERO,
-    [userTokensBalances]
-  );
+  const usdtBalance = userTokensBalances[USDT_BRIDGE_DESTINATION_SLUG] ?? ZERO;
+  const destinationMetadata =
+    tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
+    USDT_BRIDGE.destinationToken;
   const handleClose = () => {
-    setActiveView("deposit");
     onClose();
   };
 
@@ -64,10 +61,11 @@ export function RDepositFundsModal({
         </button>
       </div>
 
-      {activeView === "bridgeStatus" ? (
+      {ethereumWallet.bridge.state ? (
         <BridgeStatusView
-          amount={depositAmount}
-          assetSymbol={STABLECOIN_METADATA.symbol}
+          state={ethereumWallet.bridge.state}
+          onCheckConfirmation={ethereumWallet.bridge.checkConfirmation}
+          onReset={ethereumWallet.bridge.reset}
           onClose={handleClose}
         />
       ) : (
@@ -109,7 +107,16 @@ export function RDepositFundsModal({
               depositAmount={depositAmount}
               mavrykAddress={mavrykAddress}
               ethereumWallet={ethereumWallet}
-              onDeposit={() => setActiveView("bridgeStatus")}
+              destinationMetadata={destinationMetadata}
+              isMavrykBusy={isLoading}
+              onConnectMavryk={userAddress ? changeUser : connect}
+              onDeposit={async () => {
+                if (depositAmount)
+                  await ethereumWallet.bridge.submit(
+                    depositAmount,
+                    mavrykAddress
+                  );
+              }}
               onDepositAmountChange={setDepositAmount}
               usdtBalance={usdtBalance}
             />

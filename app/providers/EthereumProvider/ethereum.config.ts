@@ -7,7 +7,7 @@ import {
 import { sepolia } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
 
-import type { AssetMetadataBase } from "~/lib/metadata";
+import { USDT_BRIDGE } from "~/consts/usdtBridge";
 
 export const ETHEREUM_CHAIN = sepolia;
 export const ETHEREUM_RPC_URL =
@@ -17,13 +17,7 @@ export const WALLETCONNECT_PROJECT_ID =
   process.env.WALLETCONNECT_PROJECT_ID?.trim() ||
   "a41a5ab5fcd42d5ce23e73f62de5beed";
 
-// Sepolia test asset used by mavryk-bridge's ETH_ERC20_1 route.
-export const ETHEREUM_DEPOSIT_TOKEN = {
-  address: "0x0111C65C13b3Ee07662340692CBA957B29572F27",
-  name: "ERC1",
-  symbol: "ERC1",
-  decimals: 18,
-} as const satisfies AssetMetadataBase;
+export const ETHEREUM_DEPOSIT_TOKEN = USDT_BRIDGE.sourceToken;
 
 export const ETHEREUM_DEPOSIT_ASSET_SLUG = `eip155:${sepolia.id}:${ETHEREUM_DEPOSIT_TOKEN.address}`;
 

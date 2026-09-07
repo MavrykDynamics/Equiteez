@@ -7,12 +7,11 @@ import {
 } from "react";
 import { WagmiProvider, useAccount, useConnectors } from "wagmi";
 
-import { REthereumWalletModal } from "~/lib/organisms/REthereumWalletModal/REthereumWalletModal";
-
 import { createEthereumConfig, ETHEREUM_CHAIN } from "./ethereum.config";
 import type { EthereumContext } from "./ethereum.provider.types";
 import { useEthereumDepositAsset } from "./hooks/useEthereumDepositAsset";
 import { useEthereumWalletActions } from "./hooks/useEthereumWalletActions";
+import { useUsdtBridge } from "./hooks/useUsdtBridge";
 
 export const ethereumContext = createContext<EthereumContext | undefined>(
   undefined
@@ -53,6 +52,7 @@ function EthereumStateProvider({ children }: { children: ReactNode }) {
     isConnected,
     isWrongNetwork
   );
+  const bridge = useUsdtBridge(depositAsset.refreshBalance);
 
   const value = useMemo<EthereumContext>(
     () => ({
@@ -64,15 +64,23 @@ function EthereumStateProvider({ children }: { children: ReactNode }) {
       isWrongNetwork,
       error,
       ...depositAsset,
+      bridge,
       connect,
       signOut,
       switchNetwork,
+      walletSelection: {
+        connectors,
+        isOpen: isWalletModalOpen,
+        onClose: handleClose,
+        onConnect: handleConnectWallet,
+      },
     }),
     [
       address,
       chainId,
       connect,
       depositAsset,
+      bridge,
       error,
       isConnected,
       isConnecting,
@@ -80,22 +88,16 @@ function EthereumStateProvider({ children }: { children: ReactNode }) {
       isWrongNetwork,
       signOut,
       switchNetwork,
+      connectors,
+      isWalletModalOpen,
+      handleClose,
+      handleConnectWallet,
     ]
   );
 
   return (
     <ethereumContext.Provider value={value}>
       {children}
-      <REthereumWalletModal
-        connectors={connectors}
-        error={error}
-        isBusy={isConnecting || isReconnecting}
-        isOpen={isWalletModalOpen}
-        onClose={handleClose}
-        onConnect={handleConnectWallet}
-        onDisconnect={signOut}
-        userAddress={value.userAddress}
-      />
     </ethereumContext.Provider>
   );
 }
