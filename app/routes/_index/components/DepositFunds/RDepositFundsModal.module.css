@@ -216,6 +216,33 @@
   cursor: pointer;
 }
 
+.maxButton:disabled,
+.addressButton:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+button.addressButton {
+  cursor: pointer;
+}
+
+button.addressButton:focus-visible,
+.maxButton:focus-visible {
+  outline: var(--r-focus-ring);
+}
+
+.addressButton[data-connected="false"] .addressStatusDot {
+  background: var(--r-color-neutral-400);
+}
+
+.walletNotice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+}
+
 .addressButton {
   display: inline-flex;
   max-width: 62%;

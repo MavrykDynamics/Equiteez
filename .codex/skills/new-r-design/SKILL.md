@@ -315,10 +315,18 @@ Each reusable `R*` component folder should normally contain:
 
 ## RDepositFundsModal
 
-- Purpose: Route-local redesign modal for mock USDT deposits through the Ethereum bridge or directly to a Mavryk address.
+- Purpose: Route-local redesign modal with a live Sepolia ERC1 source wallet field and existing Mavryk receive/bridge-status views.
 - Location: `app/routes/_index/components/DepositFunds/RDepositFundsModal.tsx`
-- Reusability notes: Controlled with `isOpen` and `onClose`; the bridge, receive, and bridge-status views live under `app/routes/_index/components/DepositFunds/components/`. The bridge status view uses local mock process states until deposit APIs and wallet flows are connected.
+- Reusability notes: Controlled with `isOpen` and `onClose`; the bridge, receive, and bridge-status views live under `app/routes/_index/components/DepositFunds/components/`. `EthereumProvider` owns source wallet connection, network switching, metadata, and exact balances. The Mavryk receive field is unchanged; the deposit action only opens the placeholder status view.
 - Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
+
+## REthereumWalletModal
+
+- Purpose: Shared Ethereum wallet selector and disconnect control, styled for Equiteez 2.0.
+- Location: `app/lib/organisms/REthereumWalletModal/REthereumWalletModal.tsx`
+- Styles: `app/lib/organisms/REthereumWalletModal/REthereumWalletModal.module.css`
+- Reusability notes: Owned by `EthereumProvider`; consumers call `useEthereumContext().connect()`. Lists discovered installed wallets and WalletConnect, with pending/error states. Reuses `CustomPopup` and supports nested deposit/wallet/QR dialogs.
+- Related tokens: `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-md`, `--r-focus-ring`
 
 ## RWithdrawFundsModal
 

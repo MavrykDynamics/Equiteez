@@ -1,0 +1,43 @@
+.overlay {
+  z-index: 400;
+  padding: var(--r-space-4);
+}
+
+.modal {
+  display: flex;
+  width: min(440px, 100%);
+  max-height: calc(100dvh - var(--r-space-8));
+  flex-direction: column;
+  gap: var(--r-space-4);
+  padding: var(--r-space-6);
+  overflow: auto;
+  background: var(--r-color-neutral-white);
+  border-radius: var(--r-radius-md);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
+.wallets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+.closeButton {
+  display: grid;
+  flex-shrink: 0;
+  padding: var(--r-space-1);
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.closeButton:focus-visible {
+  outline: var(--r-focus-ring);
+}

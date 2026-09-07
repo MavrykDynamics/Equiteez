@@ -7,6 +7,7 @@ import { STABLECOIN_ASSET_SLUG, STABLECOIN_METADATA } from "~/lib/metadata";
 import { ZERO } from "~/lib/utils/numbers";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
 
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
@@ -29,6 +30,7 @@ export function RDepositFundsModal({
   const [activeView, setActiveView] = useState<DepositView>("deposit");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
   const { userAddress, userTokensBalances } = useUserContext();
+  const ethereumWallet = useEthereumContext();
   const mavrykAddress = userAddress ?? "";
   const usdtBalance = useMemo(
     () =>
@@ -106,7 +108,8 @@ export function RDepositFundsModal({
             <BridgeView
               depositAmount={depositAmount}
               mavrykAddress={mavrykAddress}
-              onConnectEthereumWallet={() => setActiveView("bridgeStatus")}
+              ethereumWallet={ethereumWallet}
+              onDeposit={() => setActiveView("bridgeStatus")}
               onDepositAmountChange={setDepositAmount}
               usdtBalance={usdtBalance}
             />
