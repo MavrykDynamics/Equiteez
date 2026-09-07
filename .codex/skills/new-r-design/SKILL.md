@@ -113,13 +113,16 @@ Current icon names:
 - `check`
 - `close`
 - `copy`
+- `cross`
 - `heart`
 - `grid`
+- `info`
 - `image`
 - `list`
 - `loading`
 - `lock`
 - `lock-open`
+- `ok`
 - `radio`
 - `refund`
 - `search`
@@ -208,7 +211,7 @@ Each reusable `R*` component folder should normally contain:
 - Purpose: Typed inline SVG icon atom for the redesign icon system.
 - Location: `app/lib/atoms/RIcon/RIcon.tsx`
 - Styles: `app/lib/atoms/RIcon/RIcon.module.css`
-- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons. The `sort` icon supports `sortDirection="ascending" | "descending"` to make only the active arrow black.
+- Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons. Bridge/deposit status indicators use `loading`, `ok`, and `cross`. The `sort` icon supports `sortDirection="ascending" | "descending"` to make only the active arrow black.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
 
 ## RInput
@@ -313,8 +316,8 @@ Each reusable `R*` component folder should normally contain:
 ## RDepositFundsModal
 
 - Purpose: Route-local redesign modal for mock USDT deposits through the Ethereum bridge or directly to a Mavryk address.
-- Location: `app/routes/discover/components/DepositFunds/RDepositFundsModal.tsx`
-- Reusability notes: Controlled with `isOpen` and `onClose`; both tabs use local mock values until deposit APIs and wallet flows are connected.
+- Location: `app/routes/_index/components/DepositFunds/RDepositFundsModal.tsx`
+- Reusability notes: Controlled with `isOpen` and `onClose`; the bridge, receive, and bridge-status views live under `app/routes/_index/components/DepositFunds/components/`. The bridge status view uses local mock process states until deposit APIs and wallet flows are connected.
 - Related tokens: `CustomPopup`, `RButton`, `RIcon`, `RHeading`, `RText`, `--r-color-*`, `--r-space-*`, `--r-radius-*`
 
 ## RWithdrawFundsModal
