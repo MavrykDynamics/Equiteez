@@ -63,10 +63,10 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
               : "Waiting for Ethereum confirmation")),
     },
     {
-      title: "Receive wUSDT on Mavryk",
-      status: isLocked ? "loading" : "pending",
+      title: "Bridge Request Submitted",
+      status: isLocked ? "success" : "pending",
       description: isLocked
-        ? "Request submitted. Waiting for arrival…"
+        ? "Bridge transaction confirmed"
         : "Waiting for the Ethereum lock",
     },
   ];

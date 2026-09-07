@@ -1,6 +1,8 @@
 import { useId, type ReactNode, type SVGProps } from "react";
 import clsx from "clsx";
 
+import LinkIcon from "~/icons/link.svg?react";
+
 import styles from "./RIcon.module.css";
 
 export type RIconName =
@@ -23,6 +25,7 @@ export type RIconName =
   | "grid"
   | "info"
   | "image"
+  | "link"
   | "list"
   | "loading"
   | "lock"
@@ -146,6 +149,7 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <circle cx="15" cy="9" r="1" />
     </>
   ),
+  link: null,
   list: (
     <>
       <path d="M5 17h14" />
@@ -250,9 +254,10 @@ export function RIcon({
   ...props
 }: RIconProps) {
   const titleId = useId();
+  const Icon = name === "link" ? LinkIcon : "svg";
 
   return (
-    <svg
+    <Icon
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       className={clsx(
@@ -275,6 +280,6 @@ export function RIcon({
     >
       {title ? <title id={titleId}>{title}</title> : null}
       {rIconPaths[name]}
-    </svg>
+    </Icon>
   );
 }
