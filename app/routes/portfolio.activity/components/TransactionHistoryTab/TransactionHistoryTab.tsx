@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
 import { fetchWalletOrderHistory } from "~/lib/apis/rwa/orders/orders";
+import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RPagination } from "~/lib/molecules/RPagination";
 import {
@@ -58,7 +58,7 @@ export function TransactionHistoryTab({
     return `${sort.key}_${direction}`;
   }, [sort]);
 
-  const transactionHistoryQuery = useQuery({
+  const transactionHistoryQuery = useFreshQuery({
     queryKey: [
       "fetchWalletOrderHistory",
       userAddress,

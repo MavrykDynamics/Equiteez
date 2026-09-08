@@ -108,9 +108,12 @@ export const fetchWalletOrderHistory = async ({
     query.append("types", type)
   );
 
-  const { data } = await rwaApi.get(
-    `/wallets/${walletAddress}/transactions?${query.toString()}`
-  );
+  const { data } = await requestFreshQuery({
+    api: rwaApi,
+    query,
+    queryKeyStart: "fetchWalletOrderHistory",
+    url: `/wallets/${walletAddress}/transactions`,
+  });
 
   return OrderHistorySchema.parse(data);
 };

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import { fetchWalletOrderHistory } from "~/lib/apis/rwa/orders/orders";
+import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -122,7 +122,7 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     return `${sort.key}_${sort.direction === "descending" ? "desc" : "asc"}`;
   }, [sort]);
 
-  const ordersHistoryQuery = useQuery({
+  const ordersHistoryQuery = useFreshQuery({
     queryKey: [
       "fetchWalletOrderHistory",
       userAddress,

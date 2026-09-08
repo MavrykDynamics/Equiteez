@@ -7,7 +7,6 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "@remix-run/react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -52,7 +51,6 @@ export function BuySellPanel({
   isOrderBookOpen,
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
-  const queryClient = useQueryClient();
   const invalidateFreshQueries = useFreshQueryInvalidation();
   const { hasOrders, refetchUserAccountStatus } = useUserContext();
   const [searchParams] = useSearchParams();
@@ -94,16 +92,13 @@ export function BuySellPanel({
         invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
         }),
-        queryClient.invalidateQueries({
-          queryKey: ["fetchWalletOrderHistory"],
-        }),
+        invalidateFreshQueries("fetchWalletOrderHistory"),
         refetchUserAccountStatusAfterFirstOrder,
       ]);
     },
     [
       hasOrders,
       invalidateFreshQueries,
-      queryClient,
       refetchUserAccountStatus,
     ]
   );
