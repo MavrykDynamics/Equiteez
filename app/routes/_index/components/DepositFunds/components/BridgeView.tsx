@@ -15,6 +15,7 @@ import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { REthereumWalletDropdown } from "~/lib/organisms/REthereumWalletDropdown";
 import { ETHEREUM_DEPOSIT_ASSET_SLUG } from "~/providers/EthereumProvider/ethereum.config";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
+import { useUsdtBridgeEstimate } from "~/providers/EthereumProvider/hooks/useUsdtBridgeEstimate";
 
 import styles from "../RDepositFundsModal.module.css";
 
@@ -174,6 +175,12 @@ export function BridgeView({
   const canDeposit =
     !amountError && !hasInsufficientBalance && balanceStatus === "ready";
   const receivedAmount = amountError ? undefined : depositAmount;
+  const estimate = useUsdtBridgeEstimate(
+    ethereumWallet.userAddress,
+    depositAmount,
+    mavrykAddress,
+    isConnected && !isWrongNetwork && Boolean(canDeposit)
+  );
   const addressButton = (
     <AddressButton
       address={mavrykAddress}
@@ -279,7 +286,28 @@ export function BridgeView({
         </RText>
         <div className={styles.networkDetails}>
           <RText color="neutral-600" size="body-s">
-            Gas confirmed in wallet
+            <span
+              className="flex gap-3 items-center"
+              title="Time estimates Ethereum confirmations only, assuming 1–3 blocks per transaction. Wallet signing and delivery to Mavryk take additional time. Fee estimates Sepolia network costs including required approvals; the final wallet fee may differ. Unavailable means the RPC could not provide a reliable estimate."
+            >
+              <span>
+                {" "}
+                Time:{" "}
+                {estimate.isLoading
+                  ? "Estimating…"
+                  : estimate.time
+                    ? `≈ ${estimate.time}`
+                    : "Unavailable"}{" "}
+              </span>
+              <span>
+                Fee:{" "}
+                {estimate.isLoading
+                  ? "Estimating…"
+                  : estimate.fee
+                    ? `${estimate.fee} ${estimate.symbol}`
+                    : "Unavailable"}
+              </span>
+            </span>
           </RText>
         </div>
       </div>
