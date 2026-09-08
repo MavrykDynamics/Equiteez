@@ -42,6 +42,10 @@ export const shouldConsumeFreshQuery = (
     return false;
   }
 
+  if (mark.level !== undefined && asOfLevel === undefined) {
+    return false;
+  }
+
   if (
     mark.level !== undefined &&
     asOfLevel !== undefined &&

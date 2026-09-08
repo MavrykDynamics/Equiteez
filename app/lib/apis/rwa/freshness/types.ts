@@ -2,6 +2,10 @@ import type {
   QueryKey,
   UseQueryOptions,
 } from "@tanstack/react-query";
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+} from "axios";
 
 export type FreshQueryKeyStartInput = string | QueryKey;
 
@@ -45,4 +49,18 @@ export type UseFreshQueryOptions<
 > = UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> & {
   freshnessQueryKeyStart?: FreshQueryKeyStartInput;
   freshnessRefetchInterval?: number;
+};
+
+export type FreshRequestMethod = "delete" | "get" | "patch" | "post" | "put";
+
+export type FreshRequestApi = Pick<AxiosInstance, FreshRequestMethod>;
+
+export type FreshRequestParams<TRequestData = unknown> = {
+  api: FreshRequestApi;
+  config?: AxiosRequestConfig;
+  data?: TRequestData;
+  method?: FreshRequestMethod;
+  query?: URLSearchParams;
+  queryKeyStart: FreshQueryKeyStartInput;
+  url: string;
 };

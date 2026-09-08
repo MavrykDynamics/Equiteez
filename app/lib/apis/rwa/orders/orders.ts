@@ -10,12 +10,7 @@ import {
   TransferHistoryResponseType,
   WalletTransferHistoryParams,
 } from "~/lib/apis/rwa/orders/orders.types";
-import {
-  completeFreshQuery,
-  getFreshQueryRequest,
-  hasRecordField,
-  parseCacheBypassState,
-} from "~/lib/apis/rwa/freshness";
+import { requestFreshQuery } from "~/lib/apis/rwa/freshness";
 
 type WalletOpenOrdersParams = {
   walletAddress: string;
@@ -44,9 +39,6 @@ export const fetchWalletOpenOrders = async ({
   tokenAddress,
 }: WalletOpenOrdersParams): Promise<OpenOrdersResponseType> => {
   const query = new URLSearchParams();
-  const freshQuery = getFreshQueryRequest("fetchWalletOpenOrders", {
-    enabled: !page || page === 1,
-  });
 
   if (page) {
     query.set("page", String(page));
@@ -71,25 +63,13 @@ export const fetchWalletOpenOrders = async ({
   query.set("status", "open,expired");
   query.set("refund", "none,claimable");
 
-  if (freshQuery.shouldRequestFresh) {
-    query.set("fresh", "1");
-  }
-
-  const queryString = query.toString();
-  const url = `/wallets/${walletAddress}/orders${
-    queryString ? `?${queryString}` : ""
-  }`;
-
-  const response = await rwaApi.get(url);
-  const hasResponseAsOf = hasRecordField(response.data, "as_of");
-  const parsedData = OpenOrdersSchema.parse(response.data);
-  const cacheBypass = parseCacheBypassState(response.headers["x-cache-bypass"]);
-
-  completeFreshQuery(freshQuery, {
-    asOfLevel: parsedData.as_of.level,
-    cacheBypass,
-    hasAsOf: hasResponseAsOf,
+  const response = await requestFreshQuery({
+    api: rwaApi,
+    query,
+    queryKeyStart: "fetchWalletOpenOrders",
+    url: `/wallets/${walletAddress}/orders`,
   });
+  const parsedData = OpenOrdersSchema.parse(response.data);
 
   return parsedData;
 };
