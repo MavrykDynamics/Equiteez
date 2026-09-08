@@ -12,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
-import { invalidateWalletOpenOrdersQueries } from "~/lib/apis/rwa/feedRefetch";
+import { useFreshQueryInvalidation } from "~/lib/apis/rwa/freshness";
 import {
   BUY,
   SELL,
@@ -53,7 +53,8 @@ export function BuySellPanel({
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
   const queryClient = useQueryClient();
-  const { hasOrders, refetchUserAccountStatus, userAddress } = useUserContext();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
+  const { hasOrders, refetchUserAccountStatus } = useUserContext();
   const [searchParams] = useSearchParams();
   const { isLoading, marketsArr, updateActiveMarketState } =
     useMarketsContext();
@@ -90,10 +91,8 @@ export function BuySellPanel({
           });
 
       void Promise.all([
-        invalidateWalletOpenOrdersQueries(queryClient, {
+        invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
-          tokenAddress: asset.address,
-          walletAddress: userAddress ?? "",
         }),
         queryClient.invalidateQueries({
           queryKey: ["fetchWalletOrderHistory"],
@@ -102,11 +101,10 @@ export function BuySellPanel({
       ]);
     },
     [
-      asset.address,
       hasOrders,
+      invalidateFreshQueries,
       queryClient,
       refetchUserAccountStatus,
-      userAddress,
     ]
   );
 

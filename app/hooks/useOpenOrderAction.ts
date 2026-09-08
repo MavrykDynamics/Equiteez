@@ -9,9 +9,8 @@ import {
   orderbookCancelOrder,
   orderbookProcessRefund,
 } from "~/contracts/orderbook.contract";
-import { invalidateWalletOpenOrdersQueries } from "~/lib/apis/rwa/feedRefetch";
+import { useFreshQueryInvalidation } from "~/lib/apis/rwa/freshness";
 import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
-import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 type UseOpenOrderActionOptions = {
   assetSymbol: string;
@@ -29,7 +28,7 @@ export function useOpenOrderAction({
   order,
 }: UseOpenOrderActionOptions) {
   const queryClient = useQueryClient();
-  const { userAddress } = useUserContext();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const contractActionArgs = useMemo(
     () => ({
@@ -44,10 +43,8 @@ export function useOpenOrderAction({
     (metadata: ContractActionSuccessMetadata) => {
       setIsPopupOpen(false);
       void Promise.all([
-        invalidateWalletOpenOrdersQueries(queryClient, {
+        invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
-          tokenAddress: order.token_address,
-          walletAddress: userAddress ?? "",
         }),
         queryClient.invalidateQueries({
           queryKey: ["rwa-wallet-activity-summary"],
@@ -55,7 +52,7 @@ export function useOpenOrderAction({
       ]);
       void onAfterAction?.();
     },
-    [onAfterAction, order.token_address, queryClient, userAddress]
+    [invalidateFreshQueries, onAfterAction, queryClient]
   );
 
   const { invokeAction: invokeCancelOrder, status: cancelStatus } =

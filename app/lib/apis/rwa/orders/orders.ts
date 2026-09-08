@@ -11,11 +11,11 @@ import {
   WalletTransferHistoryParams,
 } from "~/lib/apis/rwa/orders/orders.types";
 import {
-  consumeEventKnown,
-  type CacheBypassState,
-  peekEventKnown,
-  shouldConsumeEventKnown,
-} from "~/lib/apis/rwa/fresh";
+  completeFreshQuery,
+  getFreshQueryRequest,
+  hasRecordField,
+  parseCacheBypassState,
+} from "~/lib/apis/rwa/freshness";
 
 type WalletOpenOrdersParams = {
   walletAddress: string;
@@ -26,11 +26,6 @@ type WalletOpenOrdersParams = {
   tokenAddress?: string;
 };
 
-type WalletOpenOrdersQueryKeyParams = Pick<
-  WalletOpenOrdersParams,
-  "page" | "search" | "sort" | "tokenAddress" | "walletAddress"
->;
-
 type WalletOrdersParams = {
   walletAddress: string;
   page?: number;
@@ -39,54 +34,6 @@ type WalletOrdersParams = {
   sort?: string;
   tokenAddress?: string;
 };
-
-export const walletOpenOrdersQueryKeys = {
-  all: ["fetchWalletOpenOrders"] as const,
-  list: ({
-    page,
-    search,
-    sort,
-    tokenAddress,
-    walletAddress,
-  }: WalletOpenOrdersQueryKeyParams) =>
-    [
-      ...walletOpenOrdersQueryKeys.all,
-      walletAddress,
-      search ?? "",
-      sort ?? "",
-      page,
-      tokenAddress,
-    ] as const,
-};
-
-const parseCacheBypassState = (value: unknown): CacheBypassState => {
-  if (Array.isArray(value)) {
-    return parseCacheBypassState(value[0]);
-  }
-
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const normalizedValue = value.trim().toLowerCase();
-
-  if (
-    normalizedValue === "fresh" ||
-    normalizedValue === "limited" ||
-    normalizedValue === "stale-fallback" ||
-    normalizedValue === "unknown"
-  ) {
-    return normalizedValue;
-  }
-
-  return null;
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const hasAsOfMarker = (value: unknown) =>
-  isRecord(value) && isRecord(value.as_of);
 
 export const fetchWalletOpenOrders = async ({
   walletAddress,
@@ -97,8 +44,9 @@ export const fetchWalletOpenOrders = async ({
   tokenAddress,
 }: WalletOpenOrdersParams): Promise<OpenOrdersResponseType> => {
   const query = new URLSearchParams();
-  const freshnessMark = peekEventKnown({ tokenAddress, walletAddress });
-  const shouldRequestFresh = Boolean(freshnessMark) && (!page || page === 1);
+  const freshQuery = getFreshQueryRequest("fetchWalletOpenOrders", {
+    enabled: !page || page === 1,
+  });
 
   if (page) {
     query.set("page", String(page));
@@ -123,7 +71,7 @@ export const fetchWalletOpenOrders = async ({
   query.set("status", "open,expired");
   query.set("refund", "none,claimable");
 
-  if (shouldRequestFresh) {
+  if (freshQuery.shouldRequestFresh) {
     query.set("fresh", "1");
   }
 
@@ -133,20 +81,15 @@ export const fetchWalletOpenOrders = async ({
   }`;
 
   const response = await rwaApi.get(url);
-  const hasResponseAsOf = hasAsOfMarker(response.data);
+  const hasResponseAsOf = hasRecordField(response.data, "as_of");
   const parsedData = OpenOrdersSchema.parse(response.data);
   const cacheBypass = parseCacheBypassState(response.headers["x-cache-bypass"]);
 
-  if (
-    shouldRequestFresh &&
-    shouldConsumeEventKnown({
-      asOfLevel: hasResponseAsOf ? parsedData.as_of.level : undefined,
-      cacheBypass,
-      mark: freshnessMark,
-    })
-  ) {
-    consumeEventKnown(freshnessMark);
-  }
+  completeFreshQuery(freshQuery, {
+    asOfLevel: parsedData.as_of.level,
+    cacheBypass,
+    hasAsOf: hasResponseAsOf,
+  });
 
   return parsedData;
 };
