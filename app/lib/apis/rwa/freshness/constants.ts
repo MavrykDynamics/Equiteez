@@ -1,0 +1,2 @@
+export const FRESHNESS_MARK_TTL_MS = 15_000;
+export const FRESHNESS_REFETCH_INTERVAL_MS = 2_000;
