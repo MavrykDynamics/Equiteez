@@ -202,7 +202,8 @@
 }
 
 .depositBalanceText,
-.depositBalanceText * {
+.depositBalanceText *,
+.depositFooterValue * {
   font-weight: var(--r-font-weight-regular);
 }
 
@@ -459,7 +460,7 @@ button.addressButton:focus-visible,
   width: 100%;
 }
 
-.statusStepDescription {
+.statusStepDescription[data-status] {
   color: var(--r-color-neutral-700);
 }
 

@@ -86,7 +86,6 @@
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  flex-direction: column;
   gap: var(--r-space-4);
   width: 100%;
   padding-top: var(--r-space-6);
@@ -105,14 +104,5 @@
   .transactionDetails {
     padding-left: var(--r-space-4);
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  }
-
-  .actions {
-    flex-direction: row;
-  }
-
-  .actions > * {
-    flex: 1 0 auto;
-    width: auto;
   }
 }
