@@ -37,37 +37,30 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
       : "loading";
   return [
     {
-      title: "Approve USDT",
+      title: "Lock on Ethereum",
       status: isLockStep ? "success" : currentStatus,
       description: isLockStep
-        ? "USDT allowance ready"
+        ? "Confirmed"
         : (error ??
           (!progress
             ? "Checking wallets and USDT balance"
             : progress.status === "signature"
               ? "Approve spending in your Ethereum wallet"
               : progress.status === "confirmed"
-                ? "Approval confirmed"
-                : "Waiting for approval confirmation")),
+                ? "Confirmed"
+                : "Waiting for confirmations")),
     },
     {
-      title: "Lock on Ethereum",
+      title: "Validators Sign",
       status: isLockStep ? currentStatus : "pending",
       description: !isLockStep
-        ? "Waiting for approval"
-        : (error ??
-          (isLocked
-            ? "Bridge request confirmed on Ethereum"
-            : progress.status === "signature"
-              ? "Confirm the deposit in your Ethereum wallet"
-              : "Waiting for Ethereum confirmation")),
+        ? "Waiting on the lock"
+        : (error ?? (isLocked ? "Signed" : "Waiting on the lock")),
     },
     {
-      title: "Bridge Request Submitted",
+      title: "Mint on Mavryk",
       status: isLocked ? "success" : "pending",
-      description: isLocked
-        ? "Bridge transaction confirmed"
-        : "Waiting for the Ethereum lock",
+      description: isLocked ? "Minted" : "Pending validator signatures",
     },
   ];
 }

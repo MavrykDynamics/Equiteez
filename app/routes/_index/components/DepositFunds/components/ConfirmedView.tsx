@@ -2,28 +2,21 @@ import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { toLocalFormat } from "~/lib/formaters/formaters";
 import { HashChip } from "~/lib/molecules/HashChip";
 
 import styles from "./ConfirmedView.module.css";
 
 type ConfirmedViewProps = {
-  amount: string;
-  tokenSymbol: string;
   transactionHash: string;
   explorer?: { name: string; url: string };
   onClose: () => void;
 };
 
 export function ConfirmedView({
-  amount,
-  tokenSymbol,
   transactionHash,
   explorer,
   onClose,
 }: ConfirmedViewProps) {
-  const amountLabel = `${toLocalFormat(amount, {})} ${tokenSymbol}`;
-
   return (
     <div className={styles.content}>
       <div className={styles.successIcon}>
@@ -31,18 +24,19 @@ export function ConfirmedView({
       </div>
       <div className={styles.copy} role="status">
         <RHeading size="h6" weight="medium">
-          Transaction Confirmed
+          Transaction Submitted
         </RHeading>
         <RText color="neutral-700" size="body-sm">
-          Your transaction has been successfully submitted.
+          Your transaction has been submitted.
           <br />
-          <RText size="body-sm">{amountLabel}</RText> is awaiting arrival.
+          Your funds are being transferred to your wallet. You’ll be notified
+          once they’re available.
         </RText>
       </div>
       <div className={styles.transaction}>
         <RText className={styles.status} size="body-sm">
           <span className={styles.statusDot} aria-hidden="true" />
-          Submitted on-chain
+          Confirmed on-chain
         </RText>
         <div className={styles.transactionDetails}>
           <RText color="neutral-700" size="body-sm">
@@ -85,7 +79,7 @@ export function ConfirmedView({
           size="medium"
           tone="black"
         >
-          View Portfolio
+          View Details
         </RButton>
       </div>
     </div>

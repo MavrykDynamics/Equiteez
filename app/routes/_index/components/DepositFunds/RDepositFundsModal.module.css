@@ -430,7 +430,7 @@ button.addressButton:focus-visible,
 
 .statusIndicator[data-status="error"] {
   color: var(--r-color-red-500);
-  background: var(--r-color-red-100);
+  background: #f58f8f40;
 }
 
 .statusIndicator[data-status="pending"] {

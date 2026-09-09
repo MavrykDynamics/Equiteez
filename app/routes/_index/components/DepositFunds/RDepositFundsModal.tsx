@@ -100,8 +100,6 @@ export function RDepositFundsModal({
       ethereumWallet.bridge.state ? (
         <ConfirmedView
           transactionHash={transactionHash}
-          amount={ethereumWallet.bridge.state.amount}
-          tokenSymbol={USDT_BRIDGE.sourceToken.symbol}
           explorer={
             explorer
               ? {
