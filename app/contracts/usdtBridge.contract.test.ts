@@ -15,6 +15,7 @@ import {
 } from "./usdtBridge.contract";
 
 const actions = vi.hoisted(() => ({
+  getTransactionConfirmations: vi.fn(),
   readContract: vi.fn(),
   simulateContract: vi.fn(),
   writeContract: vi.fn(),
@@ -63,6 +64,7 @@ beforeEach(() => {
     async (_config: unknown, request: unknown) => ({ request, result: true })
   );
   actions.writeContract.mockResolvedValue(hash);
+  actions.getTransactionConfirmations.mockResolvedValue(3n);
   actions.waitForTransactionReceipt.mockResolvedValue({
     status: "success",
     transactionHash: hash,
@@ -145,6 +147,7 @@ describe("USDT approval and lock execution", () => {
       step: "lock",
       status: "confirmed",
       hash,
+      confirmations: 3,
     });
   });
 
@@ -222,6 +225,65 @@ describe("USDT approval and lock execution", () => {
 describe("receipt recovery", () => {
   const pending = { step: "lock", status: "confirming", hash } as const;
 
+  it.each(["approve", "lock"] as const)(
+    "tracks actual %s confirmations and completes only after three",
+    async (step) => {
+      actions.getTransactionConfirmations
+        .mockResolvedValueOnce(1n)
+        .mockResolvedValueOnce(2n)
+        .mockResolvedValueOnce(3n);
+      await confirmUsdtBridgeTransaction(
+        config,
+        { ...pending, step },
+        progress
+      );
+      expect(
+        progress.mock.calls.map(([value]) => [
+          value.status,
+          value.confirmations,
+        ])
+      ).toEqual([
+        ["confirming", 1],
+        ["confirming", 2],
+        ["confirming", 3],
+        ["confirmed", 3],
+      ]);
+      expect(
+        actions.waitForTransactionReceipt.mock.calls.map(
+          ([, options]) => options.confirmations
+        )
+      ).toEqual([1, 2, 3]);
+      expect(
+        actions.waitForTransactionReceipt.mock.calls.every(
+          ([, options]) => options.pollingInterval === 4_000
+        )
+      ).toBe(true);
+    }
+  );
+
+  it("caps an already-confirmed lock at the required count", async () => {
+    actions.getTransactionConfirmations.mockResolvedValueOnce(10n);
+    await confirmUsdtBridgeTransaction(config, pending, progress);
+    expect(actions.waitForTransactionReceipt).toHaveBeenCalledTimes(1);
+    expect(progress).toHaveBeenLastCalledWith({
+      ...pending,
+      status: "confirmed",
+      confirmations: 3,
+    });
+  });
+
+  it("keeps a failed confirmation-count lookup recoverable", async () => {
+    actions.getTransactionConfirmations.mockRejectedValueOnce(
+      new Error("RPC unavailable")
+    );
+    await expect(
+      confirmUsdtBridgeTransaction(config, pending, progress)
+    ).rejects.toBeInstanceOf(BridgeConfirmationError);
+    expect(progress).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: "confirmed" })
+    );
+  });
+
   it("retains an unknown confirmation for checking instead of resending", async () => {
     actions.waitForTransactionReceipt.mockRejectedValueOnce(
       new Error("RPC timeout")
@@ -234,6 +296,7 @@ describe("receipt recovery", () => {
     expect(progress).toHaveBeenLastCalledWith({
       ...pending,
       status: "confirmed",
+      confirmations: 3,
     });
   });
 

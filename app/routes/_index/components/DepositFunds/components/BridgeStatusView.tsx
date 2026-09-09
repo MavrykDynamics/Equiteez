@@ -1,6 +1,7 @@
 import { BigNumber } from "bignumber.js";
 import clsx from "clsx";
 
+import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -30,6 +31,7 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
   const { progress, error } = state;
   const isLockStep = progress?.step === "lock";
   const isLocked = isLockStep && progress.status === "confirmed";
+  const hasSubmittedLock = isLockStep && progress.status !== "signature";
   const currentStatus = error
     ? "error"
     : progress?.status === "confirmed"
@@ -48,19 +50,30 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
               ? "Approve spending in your Ethereum wallet"
               : progress.status === "confirmed"
                 ? "Confirmed"
-                : "Waiting for confirmations")),
+                : `Waiting for confirmations ${progress.confirmations ?? 0}/${USDT_BRIDGE.approvalConfirmations}`)),
     },
     {
       title: "Validators Sign",
-      status: isLockStep ? currentStatus : "pending",
-      description: !isLockStep
-        ? "Waiting on the lock"
-        : (error ?? (isLocked ? "Signed" : "Waiting on the lock")),
+      status: hasSubmittedLock
+        ? "success"
+        : isLockStep
+          ? currentStatus
+          : "pending",
+      description: hasSubmittedLock
+        ? "Signed"
+        : isLockStep
+          ? (error ?? "Waiting on the lock")
+          : "Waiting on the lock",
     },
     {
       title: "Mint on Mavryk",
-      status: isLocked ? "success" : "pending",
-      description: isLocked ? "Minted" : "Pending validator signatures",
+      status: hasSubmittedLock ? currentStatus : "pending",
+      description: hasSubmittedLock
+        ? (error ??
+          (isLocked
+            ? "Minted"
+            : `Waiting for confirmations (${progress.confirmations ?? 0}/${USDT_BRIDGE.lockConfirmations})`))
+        : "Pending validator signatures",
     },
   ];
 }

@@ -9,6 +9,7 @@ import {
 } from "viem";
 import type { Config } from "wagmi";
 import {
+  getTransactionConfirmations,
   readContract,
   simulateContract,
   waitForTransactionReceipt,
@@ -34,6 +35,7 @@ export const USDT_WRAP_ABI = [
 ] as const;
 
 export type UsdtBridgeProgress = {
+  confirmations?: number;
   step: "approve" | "lock";
   status: "signature" | "confirming" | "confirmed";
   hash?: Hash;
@@ -87,36 +89,68 @@ export async function confirmUsdtBridgeTransaction(
   if (!progress.hash) throw new Error("Missing bridge transaction hash.");
   let wasCancelled = false;
   let hash = progress.hash;
-  let receipt;
-  try {
-    receipt = await waitForTransactionReceipt(config, {
-      chainId: USDT_BRIDGE.chainId,
-      hash,
-      timeout: 120_000,
-      onReplaced: (replacement) => {
-        wasCancelled = replacement.reason !== "repriced";
-        hash = replacement.transactionReceipt.transactionHash;
-        onProgress({ ...progress, hash });
-      },
-    });
-  } catch {
+  const requiredConfirmations =
+    progress.step === "lock"
+      ? USDT_BRIDGE.lockConfirmations
+      : USDT_BRIDGE.approvalConfirmations;
+  const deadline = Date.now() + 120_000;
+  let confirmations = 0;
+  do {
+    let receipt;
+    try {
+      const timeout = deadline - Date.now();
+      if (timeout <= 0) throw new BridgeConfirmationError();
+      receipt = await waitForTransactionReceipt(config, {
+        chainId: USDT_BRIDGE.chainId,
+        hash,
+        confirmations: confirmations + 1,
+        pollingInterval: 4_000,
+        timeout,
+        onReplaced: (replacement) => {
+          wasCancelled = replacement.reason !== "repriced";
+          hash = replacement.transactionReceipt.transactionHash;
+          confirmations = 0;
+          onProgress({ ...progress, hash, confirmations });
+        },
+      });
+    } catch {
+      if (wasCancelled)
+        throw new Error(
+          "The transaction was replaced or cancelled in your wallet."
+        );
+      throw new BridgeConfirmationError();
+    }
     if (wasCancelled)
       throw new Error(
         "The transaction was replaced or cancelled in your wallet."
       );
-    throw new BridgeConfirmationError();
-  }
-  if (wasCancelled)
-    throw new Error(
-      "The transaction was replaced or cancelled in your wallet."
-    );
-  if (receipt.status !== "success")
-    throw new Error(
-      progress.step === "approve"
-        ? "USDT approval reverted."
-        : "The bridge lock transaction reverted."
-    );
-  onProgress({ ...progress, hash, status: "confirmed" });
+    if (receipt.status !== "success")
+      throw new Error(
+        progress.step === "approve"
+          ? "USDT approval reverted."
+          : "The bridge lock transaction reverted."
+      );
+    try {
+      const count = await getTransactionConfirmations(config, {
+        chainId: USDT_BRIDGE.chainId,
+        hash,
+      });
+      confirmations = Number(
+        count > BigInt(requiredConfirmations)
+          ? BigInt(requiredConfirmations)
+          : count
+      );
+    } catch {
+      throw new BridgeConfirmationError();
+    }
+    onProgress({ ...progress, hash, confirmations, status: "confirming" });
+  } while (confirmations < requiredConfirmations);
+  onProgress({
+    ...progress,
+    hash,
+    confirmations,
+    status: "confirmed",
+  });
 }
 
 export async function executeUsdtBridge({
