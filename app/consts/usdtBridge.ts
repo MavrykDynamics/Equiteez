@@ -4,7 +4,7 @@ import { TokenStandardsEnum } from "~/lib/metadata/types";
 // mavryk-bridge/app/config/bridge.ts: ETH_ERC20_1 -> MAV_WRAPPED_ERC20.
 // Live metadata identifies these as Mock USDT / wUSDT (the repo labels are stale).
 export const USDT_BRIDGE = {
-  approvalConfirmations: 3,
+  approvalConfirmations: 1,
   lockConfirmations: 3,
   chainId: 11155111,
   address: "0x476a30d098eD197c2b109abaBbf5135D49df0967",

@@ -225,9 +225,12 @@ describe("USDT approval and lock execution", () => {
 describe("receipt recovery", () => {
   const pending = { step: "lock", status: "confirming", hash } as const;
 
-  it.each(["approve", "lock"] as const)(
-    "tracks actual %s confirmations and completes only after three",
-    async (step) => {
+  it.each([
+    ["approve", 1],
+    ["lock", 3],
+  ] as const)(
+    "tracks %s until %i confirmations",
+    async (step, requiredConfirmations) => {
       actions.getTransactionConfirmations
         .mockResolvedValueOnce(1n)
         .mockResolvedValueOnce(2n)
@@ -242,17 +245,24 @@ describe("receipt recovery", () => {
           value.status,
           value.confirmations,
         ])
-      ).toEqual([
-        ["confirming", 1],
-        ["confirming", 2],
-        ["confirming", 3],
-        ["confirmed", 3],
-      ]);
+      ).toEqual(
+        requiredConfirmations === 1
+          ? [
+              ["confirming", 1],
+              ["confirmed", 1],
+            ]
+          : [
+              ["confirming", 1],
+              ["confirming", 2],
+              ["confirming", 3],
+              ["confirmed", 3],
+            ]
+      );
       expect(
         actions.waitForTransactionReceipt.mock.calls.map(
           ([, options]) => options.confirmations
         )
-      ).toEqual([1, 2, 3]);
+      ).toEqual(requiredConfirmations === 1 ? [1] : [1, 2, 3]);
       expect(
         actions.waitForTransactionReceipt.mock.calls.every(
           ([, options]) => options.pollingInterval === 4_000
