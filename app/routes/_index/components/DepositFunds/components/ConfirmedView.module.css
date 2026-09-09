@@ -92,7 +92,7 @@
   border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
-.actions > * {
+.actions button {
   width: 100%;
 }
 
