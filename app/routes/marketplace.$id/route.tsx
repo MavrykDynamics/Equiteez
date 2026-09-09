@@ -15,13 +15,10 @@ import { Gallery } from "./components/Gallery/Gallery";
 import { Divider } from "~/lib/atoms/Divider";
 import { Spacer } from "~/lib/atoms/Spacer";
 import { SimilarProperties } from "./components/SimilarProperties/SimilarProperties";
-import { FAQSection } from "~/templates/FAQSection";
-
 // styles
 import styles from "./propertyId.module.css";
 
 // mocked faq data
-import { homeFAQ } from "~/routes/old_home_page/index.const";
 import { PriceSection } from "./components/PriceSection/PriceSection";
 import PropertyTabs from "./components/PropertyTabs/PropertyTabs";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
@@ -178,7 +175,7 @@ export default function PropertyDetails() {
         <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
         <SimilarProperties activeMarket={estateData} />
         <Spacer className="xl:h-[100px] h-[64px] md:h-[64px]" />
-        <FAQSection data={homeFAQ} />
+        {/*<FAQSection data={homeFAQ} />*/}
         <Spacer className="xl:h-[200px] h-[104px] md:h-[100px]" />
       </Container>
     </>
