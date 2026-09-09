@@ -6,15 +6,18 @@ import { RLogo } from "~/lib/atoms/RLogo";
 import styles from "./RHeader.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { RButton } from "~/lib/atoms/RButton";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { getRHeaderNavigationItems } from "./navigationItems";
+import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
+import { useState } from "react";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
 export function RHeader() {
   const { assets } = useAssetsContext();
   const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+
   return (
     <header className={styles.header}>
       <Container className={styles.inner}>
@@ -37,16 +40,22 @@ export function RHeader() {
         </nav>
 
         <div className={styles.wallet}>
-          {/*<RButton className={styles.depositButton} variant="secondary">*/}
-          {/*  <RText size="body-s" weight="medium">*/}
-          {/*    Deposit*/}
-          {/*  </RText>*/}
-          {/*  <RText size="body-xs">*/}
-          {/*    <RIcon name="arrow-long-up-right" size="small" />*/}
-          {/*  </RText>*/}
-          {/*</RButton>*/}
+          <RButton
+            className={styles.depositButton}
+            size="medium"
+            tone="black"
+            onClick={() => setIsDepositModalOpen(true)}
+          >
+            Deposit
+          </RButton>
+
           <ConnectWallet />
         </div>
+
+        <RDepositFundsModal
+          isOpen={isDepositModalOpen}
+          onClose={() => setIsDepositModalOpen(false)}
+        />
       </Container>
     </header>
   );
