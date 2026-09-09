@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .wrapper {
   padding: var(--r-space-4);
   display: flex;
@@ -363,9 +365,9 @@
   background-color: rgb(239 68 68 / 10%);
 }
 
-@media (--media-tablet-max) {
+@media (--media-tablet) {
   .chartHeader {
+    flex-direction: column-reverse;
     align-items: flex-start;
-    flex-direction: column;
   }
 }
