@@ -53,7 +53,7 @@ export function ReceiveView({ mavrykAddress }: ReceiveViewProps) {
         <div className="flex items-start justify-center mt-1">
           <Icon className="w-4 h-4" icon="warning" />
         </div>
-        <RText color="neutral-600" size="body-sm">
+        <RText color="neutral-700" size="body-sm">
           <strong>Send only Mavryk assets to this address.</strong>
           <br />
           Sending assets straight from Ethereum or another chain to this address

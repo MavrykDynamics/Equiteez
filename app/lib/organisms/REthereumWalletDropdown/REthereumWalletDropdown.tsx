@@ -4,7 +4,6 @@ import clsx from "clsx";
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import IdentIcon from "~/lib/organisms/IdenIcon";
 import {
   RCustomDropdown,
   RDropdownBodyContent,
@@ -51,12 +50,7 @@ export function REthereumWalletDropdown({
         className={clsx(styles.trigger, triggerClassName)}
       >
         {userAddress ? (
-          <IdentIcon
-            className={styles.identIcon}
-            hash={userAddress}
-            size={20}
-            type="bottts"
-          />
+          <span aria-hidden="true" className={styles.statusDot} />
         ) : null}
         <RText className={styles.address} size="body-s">
           {isBusy ? (
@@ -64,8 +58,9 @@ export function REthereumWalletDropdown({
           ) : userAddress ? (
             <HashShortView
               hash={userAddress}
-              firstCharsCount={6}
-              lastCharsCount={4}
+              firstCharsCount={8}
+              lastCharsCount={3}
+              trimAfter={14}
             />
           ) : (
             "Connect Wallet"

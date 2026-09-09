@@ -265,11 +265,7 @@ button.addressButton:focus-visible,
 }
 
 .addressStatusDot {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 6px;
-  background: var(--r-color-green-500);
-  border-radius: 50%;
+  composes: statusDot from "../../../../lib/organisms/REthereumWalletDropdown/REthereumWalletDropdown.module.css";
 }
 
 .addressButtonText {
@@ -574,8 +570,4 @@ button.addressButton:focus-visible,
 
 button.addressButton[aria-haspopup] {
   max-width: 100%;
-}
-
-.depositInputHeader .addressButton > svg {
-  display: none;
 }

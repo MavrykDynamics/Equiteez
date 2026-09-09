@@ -1,12 +1,14 @@
 .dropdown {
   flex-shrink: 0;
   max-width: 62%;
+  max-height: 28px;
 }
 
-.trigger {
-  min-height: 32px;
+.dropdown .trigger {
+  min-height: 26px;
+  max-height: 28px;
   gap: var(--r-space-1);
-  padding: var(--r-space-1) var(--r-space-2);
+  padding: var(--r-space-1) var(--r-space-3);
 }
 
 .address {
@@ -16,9 +18,18 @@
   text-overflow: ellipsis;
 }
 
-.identIcon {
+.statusDot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  background: var(--r-color-green-500);
+  border-radius: 50%;
+}
+
+.dropdown .trigger > svg {
   flex-shrink: 0;
-  border-radius: var(--r-radius-pill);
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
 }
 
 .menu {

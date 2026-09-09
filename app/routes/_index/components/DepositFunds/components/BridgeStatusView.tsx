@@ -1,4 +1,3 @@
-import { BigNumber } from "bignumber.js";
 import clsx from "clsx";
 
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
@@ -6,7 +5,7 @@ import { RButton } from "~/lib/atoms/RButton";
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { toLocalFormat } from "~/lib/formaters/formaters";
+import Money from "~/lib/atoms/Money";
 import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
 
 import styles from "../RDepositFundsModal.module.css";
@@ -163,9 +162,6 @@ export function BridgeStatusView({
   onReset,
   onCheckConfirmation,
 }: BridgeStatusViewProps) {
-  const formattedAmount = toLocalFormat(new BigNumber(state.amount), {
-    decimalPlaces: 6,
-  });
   const steps = getBridgeStatusSteps(state);
   const isLocked =
     state.progress?.step === "lock" && state.progress.status === "confirmed";
@@ -174,7 +170,7 @@ export function BridgeStatusView({
     <div className={styles.statusContent}>
       <div className={styles.statusHeader}>
         <RHeading className={styles.statusAmount} size="h6" weight="medium">
-          {formattedAmount} USDT
+          <Money tooltip={false}>{state.amount}</Money> USDT
         </RHeading>
         <RText
           className={styles.statusDescription}
@@ -204,7 +200,7 @@ export function BridgeStatusView({
               ? "The transaction has been sent. Check its confirmation before starting another deposit."
               : state.error
                 ? "The deposit has not completed. Review the message above before trying again."
-                : "Continue in your Ethereum wallet. You may need to confirm both an approval and a deposit transaction."}
+                : "You can close this window. The bridge keeps running and the funds will appear in your portfolio once process completes."}
         </RText>
       </div>
       {state.isConfirmationUnknown && (
@@ -235,7 +231,7 @@ export function BridgeStatusView({
         tone="black"
         variant="secondary"
       >
-        Close And Continue Trading
+        Close And Continue Browsing
       </RButton>
     </div>
   );

@@ -95,7 +95,6 @@ function AddressButton({
 function DepositAmountField({
   additionalTopRightBlock,
   additionalBottomLeftBlock,
-  additionalBottomRightBlock,
   amount,
   amountInputDisabled,
   balanceSuffix,
@@ -109,7 +108,6 @@ function DepositAmountField({
 }: {
   additionalTopRightBlock: ReactNode;
   additionalBottomLeftBlock?: ReactNode;
-  additionalBottomRightBlock?: ReactNode;
   amount: BigNumber | undefined;
   amountInputDisabled: boolean;
   balanceSuffix?: ReactNode;
@@ -125,7 +123,6 @@ function DepositAmountField({
     <BalanceInputWithTotal
       additionalTopRightBlock={additionalTopRightBlock}
       additionalBottomLeftBlock={additionalBottomLeftBlock}
-      additionalBottomRightBlock={additionalBottomRightBlock}
       amount={amount}
       amountInputDisabled={amountInputDisabled}
       assetIconSrc={assetIconSrc ?? undefined}
@@ -230,14 +227,9 @@ export function BridgeView({
       <div className={styles.amountFields}>
         <DepositAmountField
           additionalTopRightBlock={
-            <REthereumWalletDropdown
-              triggerClassName={!isConnected ? styles.addressButton : undefined}
-            />
+            <REthereumWalletDropdown triggerClassName={styles.addressButton} />
           }
           additionalBottomLeftBlock={unavailableBalance}
-          additionalBottomRightBlock={
-            <span title="Fiat value unavailable">—</span>
-          }
           amount={depositAmount}
           amountInputDisabled={false}
           balanceSuffix={
@@ -268,9 +260,6 @@ export function BridgeView({
         />
         <DepositAmountField
           additionalTopRightBlock={addressButton}
-          additionalBottomRightBlock={
-            <span title="Fiat value unavailable">—</span>
-          }
           amount={receivedAmount}
           amountInputDisabled
           label="Receive on Mavryk · Basenet"
@@ -281,11 +270,11 @@ export function BridgeView({
         />
       </div>
       <div className={styles.exchangeDetails}>
-        <RText color="neutral-600" size="body-s">
-          Rate: 1 USDT = 1 wUSDT
+        <RText color="neutral-700" size="body-s">
+          1 USDT = 1 wUSDT
         </RText>
         <div className={styles.networkDetails}>
-          <RText color="neutral-600" size="body-s">
+          <RText color="neutral-700" size="body-s">
             <span
               className="flex gap-3 items-center"
               title="Time estimates Ethereum confirmations only, assuming 1–3 blocks per transaction. Wallet signing and delivery to Mavryk take additional time. Fee estimates Sepolia network costs including required approvals; the final wallet fee may differ. Unavailable means the RPC could not provide a reliable estimate."
