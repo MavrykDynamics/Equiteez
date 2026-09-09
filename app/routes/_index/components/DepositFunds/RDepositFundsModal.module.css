@@ -1,6 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
-.overlay {
+/* Outrank CustomPopup utilities regardless of production stylesheet order. */
+.overlay.overlay {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,7 +9,7 @@
   background: rgba(1, 1, 1, 0.6);
 }
 
-.modal {
+.modal.modal {
   width: min(588px, 100%);
   max-height: calc(100vh - var(--r-space-8));
   padding: 0;
@@ -282,7 +283,8 @@ button.addressButton:focus-visible,
   gap: var(--r-space-3);
 }
 
-.connectButton {
+/* Outrank RButton defaults without relying on CSS chunk order. */
+.bridgePanel .connectButton {
   width: 100%;
   padding: 12px 24px;
   font-size: 14px;
@@ -502,17 +504,17 @@ button.addressButton:focus-visible,
   color: var(--r-color-neutral-black);
 }
 
-.statusCloseButton {
+.statusContent .statusCloseButton {
   width: 100%;
 }
 
 @media (--media-phone) {
-  .overlay {
+  .overlay.overlay {
     align-items: flex-end;
     padding: 0;
   }
 
-  .modal {
+  .modal.modal {
     width: 100%;
     max-height: 100vh;
     border-radius: var(--r-radius-md) var(--r-radius-md) 0 0;
