@@ -12,7 +12,6 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { Alert } from "~/templates/Alert/Alert";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ZERO } from "~/lib/utils/numbers";
@@ -35,6 +34,7 @@ import {
 } from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 import styles from "./BuySellForm.module.css";
+import { RAlert } from "~/templates/Alert/RAlert";
 
 type BuySellLimitScreenProps = {
   estate: SecondaryEstate;
@@ -342,23 +342,19 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
       {!isKyced && (
         <div className={styles.alertBlock}>
-          <Alert
-            type="warning"
-            header="Verify with Mavryk Pro to Trade"
-            expandable
-          >
+          <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
-          </Alert>
+          </RAlert>
         </div>
       )}
 
       {validationMessage && (
         <div className={styles.alertBlock}>
-          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+          <RAlert type="error" header="Order Cannot Be Submitted">
             {validationMessage}
-          </Alert>
+          </RAlert>
         </div>
       )}
 
