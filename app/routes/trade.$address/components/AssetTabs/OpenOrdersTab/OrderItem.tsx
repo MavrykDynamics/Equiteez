@@ -3,7 +3,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { formatDate } from "~/lib/utils/date";
 import { useOpenOrderAction } from "~/hooks/useOpenOrderAction";
-import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
+import { CancelOrderPopup } from "~/lib/organisms/CancelOrderPopup/CancelOrderPopup";
 import Money from "~/lib/atoms/Money";
 
 import styles from "./styles.module.css";

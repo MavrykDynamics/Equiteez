@@ -3,7 +3,7 @@ import styles from "~/routes/wallet.orders/styles.module.css";
 import { AssetIcon } from "~/templates/AssetIcon";
 import { Text } from "~/lib/atoms/Typography/Text";
 import Money from "~/lib/atoms/Money";
-import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
+import { CancelOrderPopup } from "~/lib/organisms/CancelOrderPopup/CancelOrderPopup";
 import { useHandleOrder } from "~/routes/wallet.orders/components/OrderItem/useHandleOrder";
 
 export function WalletOrderItem({

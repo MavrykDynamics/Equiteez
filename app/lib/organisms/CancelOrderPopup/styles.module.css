@@ -1,19 +1,22 @@
-@import "../../../../styles/breakpoints.css";
+@import "../../../styles/breakpoints.css";
 
 .popupWrapper:focus-visible {
   border: none;
   outline: none;
   box-shadow: none;
 }
+
 .popupWrapper {
   padding: 0;
   width: 640px;
+
   @media (--media-phone-max) {
     height: 100%;
     border-radius: 0;
     position: relative;
   }
 }
+
 .contentWrapper {
   padding: 52px 44px;
   display: flex;
@@ -21,17 +24,20 @@
   align-items: center;
   flex-direction: column;
   gap: 24px;
+
   @media (--media-phone-max) {
-    padding: 52px 16px 120px 16px;
+    padding: 52px 16px 120px;
     gap: 32px;
     height: 100%;
   }
 }
+
 .btnWrapper {
   width: 100%;
   display: flex;
   max-width: 400px;
   gap: 12px;
+
   @media (--media-phone-max) {
     position: absolute;
     bottom: 24px;
@@ -39,11 +45,13 @@
     flex-direction: column;
   }
 }
+
 .btnWrapper button {
   @media (--media-phone-max) {
     padding: 13px 32px;
   }
 }
+
 .btnWrapper button span {
   @media (--media-phone-max) {
     font-size: var(--body-size);

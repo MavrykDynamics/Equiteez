@@ -6,7 +6,7 @@ import { AssetIcon } from "~/templates/AssetIcon";
 import { Text } from "~/lib/atoms/Typography/Text";
 import Money from "~/lib/atoms/Money";
 import { formatDate } from "~/lib/utils/date";
-import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
+import { CancelOrderPopup } from "~/lib/organisms/CancelOrderPopup/CancelOrderPopup";
 import { Link } from "@remix-run/react";
 import { MobileOrderPopup } from "~/routes/wallet.orders/components/MobileOrderPopup/MobileOrderPopup";
 

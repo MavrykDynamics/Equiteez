@@ -1,9 +1,20 @@
-import styles from "./styles.module.css";
-import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
-import CloseIcon from "app/icons/cross.svg?react";
 import classNames from "clsx";
+import CloseIcon from "app/icons/cross.svg?react";
+
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+
+import styles from "./styles.module.css";
+
+type CancelOrderPopupProps = {
+  description?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: () => Promise<void>;
+  submitLabel?: string;
+  title?: string;
+};
 
 export function CancelOrderPopup({
   description = "Are you sure you want to cancel your order?",
@@ -12,18 +23,11 @@ export function CancelOrderPopup({
   onSubmit,
   submitLabel = "Cancel Order",
   title = "Confirm Cancellation",
-}: {
-  description?: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: () => Promise<void>;
-  submitLabel?: string;
-  title?: string;
-}) {
+}: CancelOrderPopupProps) {
   return (
     <CustomPopup
       isOpen={isOpen}
-      contentPosition={"center"}
+      contentPosition="center"
       className={classNames(
         "max-h-screen px-11 py-14 z-100 relative",
         styles.popupWrapper
