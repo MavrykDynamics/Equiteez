@@ -23,7 +23,7 @@ import {
   DEFAULT_ORDER_BOOK_GROUPING_PRECISION,
   getOrderbookDepthSummaryQuoteTotals,
   getOrderBookPrecisionOptionsFromDepth,
-} from "~/routes/marketplace.$id/components/PriceSection/orderBook.consts";
+} from "~/lib/organisms/PriceSection/orderBook.consts";
 import type { OrderbookDepthResponseType } from "~/lib/apis/rwa/orderbookDepth/orderbookDepth.types";
 import { useOrderbookDepth } from "~/lib/apis/rwa/orderbookDepth/useOrderbookDepth";
 import { Spinner } from "~/lib/atoms/Spinner";

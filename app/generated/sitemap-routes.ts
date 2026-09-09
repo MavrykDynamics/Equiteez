@@ -5,7 +5,6 @@
 
 export const GENERATED_STATIC_SITEMAP_PATHS = [
   "/",
-  "/marketplace",
   "/portfolio",
   "/portfolio/activity",
   "/portfolio/dividends",

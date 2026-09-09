@@ -17,8 +17,8 @@ import {
   BUY,
   SELL,
   type OrderType,
-} from "~/routes/marketplace.$id/components/PriceSection/consts";
-import { BuySellContent } from "~/routes/marketplace.$id/components/PriceSection/popups";
+} from "~/lib/organisms/PriceSection/consts";
+import { BuySellContent } from "~/lib/organisms/PriceSection/popups";
 import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 import type {
   EstateType,

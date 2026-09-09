@@ -1,4 +1,4 @@
-@import "../../../../styles/breakpoints.css";
+@import "../../../styles/breakpoints.css";
 
 .progressBar {
   position: relative;
