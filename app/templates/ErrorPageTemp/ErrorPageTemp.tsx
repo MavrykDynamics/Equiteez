@@ -1,6 +1,5 @@
 import { ERROR_TYPE_FATAL, ERROR_TYPE_ROUTER } from "~/errors/error.const";
 import { InternalErrorType } from "~/errors/error.type";
-import { FooterSecondary } from "~/layouts/PageLayout/Footer/FooterSecondary";
 import { Button } from "~/lib/atoms/Button";
 import {
   errorDescDefaultText,
@@ -8,6 +7,7 @@ import {
 } from "~/providers/ToasterProvider/toaster.provider.const";
 
 import Error404Img from "app/assets/error/404.png";
+import { RFooterSecondary } from "~/layouts/PageLayout/RFooter/RFooterSecondary";
 
 type ErrorPageProps = {
   headerText?: string;
@@ -43,7 +43,7 @@ export const ErrorPageTemp = ({
           )}
         </div>
 
-        <FooterSecondary />
+        <RFooterSecondary />
       </div>
     </>
   );

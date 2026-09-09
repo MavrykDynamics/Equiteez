@@ -1,5 +1,5 @@
-import { FooterSecondary } from "~/layouts/PageLayout/Footer/FooterSecondary";
 import MaintanceImg from "app/assets/error/maintance-bg.webp";
+import { RFooterSecondary } from "~/layouts/PageLayout/RFooter/RFooterSecondary";
 
 export const MaintancePageTemp = () => {
   return (
@@ -18,7 +18,7 @@ export const MaintancePageTemp = () => {
         </div>
 
         <div className="relative z-20 w-full">
-          <FooterSecondary theme="light" />
+          <RFooterSecondary theme="light" />
         </div>
         <img
           src={MaintanceImg}

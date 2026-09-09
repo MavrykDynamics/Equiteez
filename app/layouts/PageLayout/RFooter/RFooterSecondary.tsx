@@ -6,7 +6,7 @@ type FooterSecondaryProps = {
   theme?: "dark" | "light";
 };
 
-export const FooterSecondary: FC<FooterSecondaryProps> = ({
+export const RFooterSecondary: FC<FooterSecondaryProps> = ({
   theme = "dark",
 }) => {
   const year = useMemo(() => new Date().getFullYear(), []);
