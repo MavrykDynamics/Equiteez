@@ -74,7 +74,8 @@
 
 @media (--media-tablet-max) {
   .details {
-    align-items: flex-start;
+    align-items: flex-end;
+    gap: var(--r-space-5);
   }
 
   .assetInfo {

@@ -1,3 +1,5 @@
+@import "../../styles/breakpoints.css";
+
 .authWrapper {
   display: flex;
   flex-direction: column;
@@ -6,4 +8,32 @@
   justify-content: center;
   width: 100%;
   height: calc(100vh - 335px);
+}
+
+.content {
+  display: none;
+}
+
+@media (--media-tablet) {
+  .authWrapper,
+  .desktopContent {
+    display: none;
+  }
+
+  .content {
+    display: flex;
+    min-height: calc(70vh);
+    align-items: center;
+    justify-content: center;
+    padding: var(--r-space-8) var(--r-space-5);
+  }
+
+  .message {
+    display: flex;
+    max-width: 340px;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--r-space-3);
+    text-align: center;
+  }
 }

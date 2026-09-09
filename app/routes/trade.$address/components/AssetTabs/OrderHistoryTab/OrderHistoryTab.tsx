@@ -26,12 +26,10 @@ import { OpenOrdersEmptyState } from "~/routes/trade.$address/components/AssetTa
 
 import { ROrderStatusBadge } from "./ROrderStatusBadge";
 import styles from "./styles.module.css";
-import buyIcon from "./ROrderHistoryBuyIcon.svg";
-import sellIcon from "./ROrderHistorySellIcon.svg";
 
 const ORDER_HISTORY_PER_PAGE = 10;
 
-type ServerSortKey = "amount" | "date" | "price";
+type ServerSortKey = "amount" | "date" | "total";
 
 type HeaderConfig = {
   label: string;
@@ -42,10 +40,10 @@ const headers: HeaderConfig[] = [
   { label: "DATE", sortKey: "date" },
   { label: "ASSET" },
   { label: "TYPE" },
-  { label: "PRICE", sortKey: "price" },
+  { label: "PRICE" },
   { label: "AMOUNT", sortKey: "amount" },
   { label: "STATUS" },
-  { label: "TOTAL" },
+  { label: "TOTAL", sortKey: "total" },
 ];
 
 type OrderHistoryTabProps = {

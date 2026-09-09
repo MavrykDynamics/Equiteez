@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .dropdown {
   width: auto;
 }
@@ -162,4 +164,26 @@
   display: flex;
   align-items: center;
   gap: var(--r-space-2);
+}
+
+@media (--media-tablet-max) {
+  .trigger {
+    width: calc(100vw - 64px) !important;
+    max-width: calc(100vw - 64px) !important;
+  }
+  .menu {
+    width: calc(100vw - 64px) !important;
+    max-width: calc(100vw - 64px) !important;
+  }
+}
+
+@media (--media-phone) {
+  .trigger {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+  .menu {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+  }
 }

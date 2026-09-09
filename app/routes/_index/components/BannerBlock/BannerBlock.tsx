@@ -30,7 +30,7 @@ const bannerSlides: BannerSlide[] = [
   {
     alt: "Modern home exterior for The Cove investment opportunity",
     buttonLabel: "Invest Now",
-    buttonTo: "/",
+    buttonTo: "/trade/KT1SYFeAjDsu7KXfN3VUgyuzfdMth16r8BQ2",
     description:
       "Single-family income generating property on the Upper East Side. Fractionalized into 12,500 shares.",
     image: TheCoveBannerImage,
@@ -39,8 +39,8 @@ const bannerSlides: BannerSlide[] = [
       { label: "Annual return", value: "8%" },
       { label: "Available", value: "1,234" },
     ],
-    tag: "REITS",
-    title: "The Cove",
+    tag: "Real Estate",
+    title: "The Queen",
   },
   {
     alt: "Dubai skyline representing tokenized real-world assets",

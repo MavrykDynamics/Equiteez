@@ -12,8 +12,8 @@ export const motionDurations = {
 export type MotionViewport = NonNullable<HTMLMotionProps<"div">["viewport"]>;
 
 export const revealViewport: MotionViewport = {
-  amount: 0.24,
-  margin: "0px 0px -12% 0px",
+  amount: 0.15,
+  margin: "0px 0px 0px 0px",
   once: true,
 };
 

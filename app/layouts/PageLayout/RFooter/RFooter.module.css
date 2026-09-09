@@ -26,7 +26,6 @@
 }
 
 .logo {
-  align-items: flex-start;
   max-width: 135px;
 }
 
@@ -158,5 +157,12 @@
 
   .bottom {
     gap: var(--r-space-2);
+  }
+}
+
+
+@media (--media-tablet) {
+  .bottom {
+    flex-direction: column;
   }
 }

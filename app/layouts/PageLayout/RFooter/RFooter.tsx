@@ -37,7 +37,12 @@ const defaultFooterGroups: RFooterGroup[] = [
   {
     title: "Platform",
     links: [
-      { href: "/", label: "Solutions" },
+      {
+        href: "https://equiteez.com/solutions",
+        label: "Solutions",
+        rel: EXTERNAL_LINK_REL,
+        target: NEW_TAB_TARGET,
+      },
       {
         disabled: IS_EQUITEEZ_APP_LAUNCH_DISABLED,
         href: EQUITEEZ_APP_URL,
@@ -50,7 +55,12 @@ const defaultFooterGroups: RFooterGroup[] = [
   {
     title: "Company",
     links: [
-      { href: "/", label: "About" },
+      {
+        href: "https://equiteez.com/about",
+        label: "About",
+        rel: EXTERNAL_LINK_REL,
+        target: NEW_TAB_TARGET,
+      },
       {
         href: EQUITEEZ_CONTACT_PATH,
         label: "Contact",

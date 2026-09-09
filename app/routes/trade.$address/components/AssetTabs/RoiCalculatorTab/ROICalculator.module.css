@@ -1,3 +1,5 @@
+@import "../../../../../styles/breakpoints.css";
+
 .calculator {
   display: grid;
   grid-template-columns: minmax(280px, 352px) minmax(0, 1fr);
@@ -180,4 +182,10 @@
   font-family: var(--r-font-body) !important;
   font-size: var(--r-font-size-body-s) !important;
   line-height: var(--r-line-height-body-s) !important;
+}
+
+@media (--media-tablet) {
+  .calculator {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

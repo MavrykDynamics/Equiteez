@@ -21,6 +21,8 @@ import {
 } from "./OpenOrdersTab.types";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { OpenOrdersConnectWalletState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersConnectWalletState";
 
 const OPEN_ORDERS_PER_PAGE = 10;
 
@@ -29,6 +31,8 @@ export function OpenOrdersTab({
   tokenAddress,
 }: OpenOrdersTabProps) {
   const { userAddress } = useUserContext();
+  const { isAuthenticated } = useAuthContext();
+  const canFetchOrders = isAuthenticated && Boolean(userAddress);
 
   const [sort, setSort] = useState<SortState<ServerSortKey>>({
     direction: "descending",
@@ -102,6 +106,15 @@ export function OpenOrdersTab({
     );
   }
 
+  if (!canFetchOrders) {
+    return (
+      <OpenOrdersConnectWalletState
+        title="No Open Orders"
+        description="Connect your wallet to view your open orders."
+      />
+    );
+  }
+
   if (openOrdersQuery.isError) {
     return (
       <div className={styles.state} aria-live="polite">
@@ -168,10 +181,7 @@ export function OpenOrdersTab({
 
           <div role="rowgroup">
             {orders.map((order) => (
-              <OpenOrdersTableRow
-                key={order.id}
-                order={order}
-              />
+              <OpenOrdersTableRow key={order.id} order={order} />
             ))}
           </div>
         </div>
