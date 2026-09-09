@@ -34,18 +34,4 @@ export const OpenOrderSchema = z.object({
   unfulfilled_amount: atomStringSchema,
 });
 
-export const OpenOrdersQuerySchema = z.object({
-  buyOrders: z.array(OpenOrderSchema),
-  sellOrders: z.array(OpenOrderSchema),
-});
-
 export type OpenOrder = z.infer<typeof OpenOrderSchema>;
-export type OpenOrdersQueryData = z.infer<typeof OpenOrdersQuerySchema>;
-export type OpenOrdersQueryVariables = {
-  rwaAddress?: string | null;
-  offset?: number;
-  limit?: number;
-};
-export type OpenOrdersByRwaAddressesQueryVariables = {
-  rwaAddresses: string[];
-};
