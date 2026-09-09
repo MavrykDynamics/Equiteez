@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useConfig } from "wagmi";
+import type { BigNumber } from "bignumber.js";
 
-import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
-import DepositAddressQr from "~/assets/redesign/deposit/DepositAddressQr.png";
-import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RText } from "~/lib/atoms/RTypography/RText";
+import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
+import { ZERO } from "~/lib/utils/numbers";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 
+import { BridgeStatusView } from "./components/BridgeStatusView";
+import { BridgeView } from "./components/BridgeView";
+import { ConfirmedView } from "./components/ConfirmedView";
+import { ReceiveView } from "./components/ReceiveView";
 import styles from "./RDepositFundsModal.module.css";
 
 type DepositTab = "bridge" | "receive";
@@ -17,17 +24,55 @@ type RDepositFundsModalProps = {
   onClose: () => void;
 };
 
-const mockMavrykAddress = "mv1RtVe9xQm3nK7wZ2aBcD4eF5gH6jL8sPqd";
-
 export function RDepositFundsModal({
   isOpen,
   onClose,
 }: RDepositFundsModalProps) {
+  const [confirmedHash, setConfirmedHash] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
-  const [depositAmount, setDepositAmount] = useState("");
+  const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
+  const { userAddress, userTokensBalances, connect, isLoading } =
+    useUserContext();
+  const { tokensMetadata } = useTokensContext();
+  const ethereumWallet = useEthereumContext();
+  const { chains } = useConfig();
+  const explorer = chains.find((chain) => chain.id === USDT_BRIDGE.chainId)
+    ?.blockExplorers?.default;
+  const mavrykAddress = userAddress ?? "";
+  const usdtBalance = userTokensBalances[USDT_BRIDGE_DESTINATION_SLUG] ?? ZERO;
+  const destinationMetadata =
+    tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
+    USDT_BRIDGE.destinationToken;
+  const progress = ethereumWallet.bridge.state?.progress;
+  const transactionHash =
+    progress?.step === "lock" && progress.status === "confirmed"
+      ? progress.hash
+      : undefined;
+  useEffect(() => {
+    if (!isOpen || !transactionHash) return;
+    const timer = setTimeout(() => setConfirmedHash(transactionHash), 3_500);
+    return () => clearTimeout(timer);
+  }, [transactionHash, isOpen]);
+  const resetBridge = ethereumWallet.bridge.reset;
+  const closeWalletSelection = ethereumWallet.walletSelection.onClose;
+  const wasOpen = useRef(isOpen);
+  const resetModal = useCallback(() => {
+    setConfirmedHash(null);
+    resetBridge();
+    closeWalletSelection();
+    setDepositAmount(undefined);
+    setActiveTab("bridge");
+  }, [resetBridge, closeWalletSelection]);
 
-  const handleCopyAddress = () => {
-    void navigator.clipboard?.writeText(mockMavrykAddress);
+  useEffect(() => {
+    if (wasOpen.current && !isOpen) resetModal();
+    wasOpen.current = isOpen;
+  }, [isOpen, resetModal]);
+
+  const handleClose = () => {
+    resetModal();
+    wasOpen.current = false;
+    onClose();
   };
 
   return (
@@ -36,181 +81,99 @@ export function RDepositFundsModal({
       contentLabel="Deposit funds"
       contentPosition="center"
       isOpen={isOpen}
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
       overlayClassName={styles.overlay}
     >
       <div className={styles.closeRow}>
         <button
           aria-label="Close deposit funds"
           className={styles.closeButton}
-          onClick={onClose}
+          onClick={handleClose}
           type="button"
         >
           <RIcon name="close" size="medium" />
         </button>
       </div>
 
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <RHeading className={styles.title} size="h6" weight="medium">
-            Deposit Funds
-          </RHeading>
-          <div
-            aria-label="Deposit method"
-            className={styles.tabs}
-            role="tablist"
-          >
-            <button
-              aria-selected={activeTab === "bridge"}
-              className={styles.tab}
-              data-active={activeTab === "bridge"}
-              onClick={() => setActiveTab("bridge")}
-              role="tab"
-              type="button"
-            >
-              Bridge From Ethereum
-            </button>
-            <button
-              aria-selected={activeTab === "receive"}
-              className={styles.tab}
-              data-active={activeTab === "receive"}
-              onClick={() => setActiveTab("receive")}
-              role="tab"
-              type="button"
-            >
-              Receive On Mavryk
-            </button>
-          </div>
-        </div>
-
-        {activeTab === "bridge" ? (
-          <div className={styles.bridgePanel} role="tabpanel">
-            <div className={styles.amountFields}>
-              <AmountField
-                amount={depositAmount}
-                balanceText="Connect wallet to view balance"
-                label="Send from Ethereum"
-                onChange={setDepositAmount}
-                topAction="Connect Wallet"
-              />
-              <AmountField
-                amount={depositAmount || "0.00"}
-                balanceText="Bal. 200.00 USDT"
-                label="Receive on MVRK"
-                readOnly
-                topAction="mv1xxxxxx...xxx"
-              />
-            </div>
-            <div className={styles.exchangeDetails}>
-              <RText color="neutral-600" size="body-s">
-                1 USDT = 1 USDT
-              </RText>
-              <div className={styles.networkDetails}>
-                <RText color="neutral-600" size="body-s">
-                  Time: ≈2s
-                </RText>
-                <RText color="neutral-600" size="body-s">
-                  Fee: 0.01 MVRK
-                </RText>
-              </div>
-            </div>
-            <RButton className={styles.connectButton} tone="black">
-              Connect Ethereum Wallet
-            </RButton>
-          </div>
-        ) : (
-          <div className={styles.receivePanel} role="tabpanel">
-            <RText
-              className={styles.receiveDescription}
-              color="neutral-600"
-              size="body-sm"
-            >
-              Send USDT from another Mavryk Wallet straight to this address. To
-              move funds from Ethereum, use the Bridge tab.
-            </RText>
-            <div className={styles.addressBlock}>
-              <div className={styles.qrCode}>
-                <img
-                  alt="Mock QR code for the Mavryk deposit address"
-                  src={DepositAddressQr}
-                />
-              </div>
-              <div className={styles.addressField}>
-                <RText size="body-sm">{mockMavrykAddress}</RText>
-                <button
-                  aria-label="Copy Mavryk deposit address"
-                  className={styles.copyButton}
-                  onClick={handleCopyAddress}
-                  type="button"
-                >
-                  <RIcon name="copy" size="medium" />
-                </button>
-              </div>
-            </div>
-            <div className={styles.warning}>
-              <RText color="neutral-600" size="body-sm">
-                <strong>Send only Mavryk assets to this address.</strong>
-                <br />
-                Sending assets straight from Ethereum or another chain to this
-                address will lose them. Use the bridge for anything on Ethereum.
-              </RText>
-            </div>
-          </div>
-        )}
-      </div>
-    </CustomPopup>
-  );
-}
-
-type AmountFieldProps = {
-  amount: string;
-  balanceText: string;
-  label: string;
-  onChange?: (value: string) => void;
-  readOnly?: boolean;
-  topAction: string;
-};
-
-function AmountField({
-  amount,
-  balanceText,
-  label,
-  onChange,
-  readOnly = false,
-  topAction,
-}: AmountFieldProps) {
-  return (
-    <label className={styles.amountField}>
-      <span className={styles.fieldHeader}>
-        <RText color="neutral-600" size="body-s">
-          {label}
-        </RText>
-        <span className={styles.fieldAction}>{topAction}</span>
-      </span>
-      <span className={styles.amountRow}>
-        <span className={styles.currency}>
-          <img alt="USDT" src={UsdtToken} />
-          <RText size="body-s">USDT</RText>
-        </span>
-        <input
-          aria-label={`${label} amount`}
-          className={styles.amountInput}
-          inputMode="decimal"
-          onChange={(event) => onChange?.(event.target.value)}
-          placeholder="0.00"
-          readOnly={readOnly}
-          type="text"
-          value={amount}
+      {transactionHash &&
+      confirmedHash === transactionHash &&
+      ethereumWallet.bridge.state ? (
+        <ConfirmedView
+          transactionHash={transactionHash}
+          explorer={
+            explorer
+              ? {
+                  name: explorer.name,
+                  url: `${explorer.url.replace(/\/$/, "")}/tx/${transactionHash}`,
+                }
+              : undefined
+          }
+          onClose={handleClose}
         />
-      </span>
-      <span className={styles.fieldFooter}>
-        <RText color="neutral-600" size="body-s">
-          {balanceText}
-        </RText>
-        <RText color="neutral-600" size="body-s">
-          $0.00
-        </RText>
-      </span>
-    </label>
+      ) : ethereumWallet.bridge.state ? (
+        <BridgeStatusView
+          state={ethereumWallet.bridge.state}
+          onCheckConfirmation={ethereumWallet.bridge.checkConfirmation}
+          onReset={ethereumWallet.bridge.reset}
+          onClose={handleClose}
+        />
+      ) : (
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <RHeading className={styles.title} size="h6" weight="medium">
+              Deposit Funds
+            </RHeading>
+            <div
+              aria-label="Deposit method"
+              className={styles.tabs}
+              role="tablist"
+            >
+              <button
+                aria-selected={activeTab === "bridge"}
+                className={styles.tab}
+                data-active={activeTab === "bridge"}
+                onClick={() => setActiveTab("bridge")}
+                role="tab"
+                type="button"
+              >
+                Bridge From Ethereum
+              </button>
+              <button
+                aria-selected={activeTab === "receive"}
+                className={styles.tab}
+                data-active={activeTab === "receive"}
+                onClick={() => setActiveTab("receive")}
+                role="tab"
+                type="button"
+              >
+                Receive On Mavryk
+              </button>
+            </div>
+          </div>
+
+          {activeTab === "bridge" ? (
+            <BridgeView
+              depositAmount={depositAmount}
+              mavrykAddress={mavrykAddress}
+              ethereumWallet={ethereumWallet}
+              destinationMetadata={destinationMetadata}
+              isMavrykBusy={isLoading}
+              onConnectMavryk={connect}
+              onDeposit={async () => {
+                if (depositAmount)
+                  await ethereumWallet.bridge.submit(
+                    depositAmount,
+                    mavrykAddress
+                  );
+              }}
+              onDepositAmountChange={setDepositAmount}
+              usdtBalance={usdtBalance}
+            />
+          ) : (
+            <ReceiveView mavrykAddress={mavrykAddress} />
+          )}
+        </div>
+      )}
+    </CustomPopup>
   );
 }

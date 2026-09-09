@@ -15,6 +15,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import FiltersIcon from "app/icons/filters.svg?react";
 import { MobileAssetsFilters } from "~/routes/_index/components/MobileAssetsFilters/MobileAssetsFilters";
+import { DepositFunds } from "../DepositFunds/DepositFunds";
 
 export function ExploreAssets() {
   const { assets } = useAssetsContext();
@@ -77,7 +78,7 @@ export function ExploreAssets() {
           >
             <FiltersIcon aria-hidden="true" height={24} width={24} />
           </button>
-          {/*<DepositFunds />*/}
+          <DepositFunds />
         </div>
       </Reveal>
 

@@ -1,0 +1,118 @@
+@import "../../../../../styles/breakpoints.css";
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-6);
+  padding: 0 var(--r-space-4) var(--r-space-8);
+}
+
+.successIcon {
+  display: grid;
+  place-items: center;
+  width: var(--r-space-12);
+  height: var(--r-space-12);
+  flex-shrink: 0;
+  border-radius: var(--r-radius-pill);
+  color: var(--r-color-green-500);
+  background: color-mix(in srgb, var(--r-color-green-100) 25%, transparent);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+  width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.transaction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--r-space-2) var(--r-space-4);
+  max-width: 100%;
+  padding: var(--r-space-2) var(--r-space-4);
+  border-radius: var(--r-radius-pill);
+  background: var(--r-color-neutral-50);
+}
+
+.status,
+.transactionDetails {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: var(--r-space-2);
+  height: var(--r-space-2);
+  border-radius: var(--r-radius-pill);
+  background: var(--r-color-green-500);
+}
+
+.hash,
+.explorerLink {
+  color: var(--r-color-accent-green-500);
+}
+
+.hash {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  cursor: pointer;
+}
+
+.explorerLink {
+  display: inline-flex;
+  margin-left: calc(-1 * var(--r-space-1));
+  color: var(--r-color-neutral-black);
+}
+
+.hash:focus-visible,
+.explorerLink:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex-direction: column;
+  gap: var(--r-space-4);
+  width: 100%;
+  padding-top: var(--r-space-6);
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media not all and (--media-phone-max) {
+  .content {
+    padding-inline: var(--r-space-11);
+  }
+
+  .transactionDetails {
+    padding-left: var(--r-space-4);
+    border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+
+  .actions > * {
+    flex: 1 0 auto;
+    width: auto;
+  }
+}
