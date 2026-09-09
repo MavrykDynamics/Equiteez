@@ -29,7 +29,7 @@ export function RHeader() {
               key={desktopLabel}
               to={to}
             >
-              <RText size="body-m" weight="medium">
+              <RText size="body-sm" weight="medium">
                 {desktopLabel}
               </RText>
             </NavLink>

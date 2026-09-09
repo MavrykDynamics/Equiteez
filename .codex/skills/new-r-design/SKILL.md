@@ -211,6 +211,13 @@ Each reusable `R*` component folder should normally contain:
 - Reusability notes: Use for common redesign icons and button icons. Extend the typed `RIconName` registry when adding shared icons. The `sort` icon supports `sortDirection="ascending" | "descending"` to make only the active arrow black.
 - Related tokens: `--r-size-icon-small`, `--r-size-icon-medium`
 
+## RAlert
+
+- Purpose: Non-expandable warning and error message template matching the Equiteez 2.0 alert pattern.
+- Location: `app/templates/Alert/RAlert.tsx`
+- Reusability notes: Use for concise contextual warnings or errors. It accepts a `header`, message `children`, and a `type` of `warning` or `error`; the warning state follows Figma and the error state retains the legacy error surface color.
+- Related tokens: `RIcon`, `--r-font-body`, `--r-font-size-body-sm`, `--r-line-height-body-sm`, `--r-space-1`, `--r-space-2`, `--r-space-3`, `--r-radius-12`, `--r-surface-warning`, `--r-surface-error`, `--r-color-neutral-*`
+
 ## RInput
 
 - Purpose: Redesign text-input atom with an optional leading `RIcon`.
