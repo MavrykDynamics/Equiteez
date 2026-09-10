@@ -84,6 +84,10 @@ export const consumeFreshQuery = (mark: PeekedFreshQueryMark | null) => {
   mark.keys.forEach((key) => freshQueryMarks.delete(key));
 };
 
+export const clearFreshQueries = () => {
+  freshQueryMarks.clear();
+};
+
 export const hasPendingFreshQuery = (queryKeyStart: FreshQueryKeyStartInput) =>
   Boolean(peekFreshQuery(queryKeyStart));
 
