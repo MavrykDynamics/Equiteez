@@ -36,7 +36,10 @@ export default function PortfolioOverview() {
       <WelcomeBlock activeTab={ROUTES.portfolio} userName="Josh" />
       <div className={styles.content}>
         <PortfolioGeneralStats stats={portfolioStats} />
-        <AssetsStats assets={portfolio?.assets ?? []} portfolioTotal={portfolioStats.totalValue} />
+        <AssetsStats
+          assets={portfolio?.assets ?? []}
+          portfolioTotal={portfolioStats.totalValue}
+        />
       </div>
     </div>
   );
