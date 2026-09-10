@@ -1,6 +1,5 @@
 import { assetsListSchema } from "~/providers/MarketsProvider/markets.schema";
 import { mbrwaApiUrl } from "~/lib/apis/mbrwa/index";
-import { AssetsListSchema } from "~/providers/UserAssets/userAssets.schema";
 import { z } from "zod";
 
 type FetchAssetsParams = {
@@ -13,7 +12,6 @@ type FetchAssetsParams = {
 };
 
 export type FetchAssetsResponse = z.infer<typeof assetsListSchema>;
-export type FetchUserAssetsResponse = z.infer<typeof AssetsListSchema>;
 
 const emptyFetchAssetsResponse: FetchAssetsResponse = {
   assets: [],
@@ -25,11 +23,7 @@ const noAssetsFoundErrorSchema = z.object({
   message: z.literal("No assets found"),
 });
 
-const appendValue = (
-  queryParts: string[],
-  key: string,
-  value: string
-) => {
+const appendValue = (queryParts: string[], key: string, value: string) => {
   queryParts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
 };
 
@@ -109,28 +103,10 @@ export const fetchAssets = async (
     }
 
     throw new Error(
-      getErrorMessage(responseData) ?? `Failed to fetch assets (${response.status})`
+      getErrorMessage(responseData) ??
+        `Failed to fetch assets (${response.status})`
     );
   }
 
   return assetsListSchema.parse(responseData);
-};
-
-export const fetchUserAssets = async (
-  userAddress: string
-): Promise<FetchUserAssetsResponse> => {
-  const response = await fetch(
-    mbrwaApiUrl.concat(`wallet/${userAddress}/assets`),
-    { method: "GET" }
-  );
-  const responseData: unknown = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      getErrorMessage(responseData) ??
-        `Failed to fetch user assets (${response.status})`
-    );
-  }
-
-  return AssetsListSchema.parse(responseData);
 };
