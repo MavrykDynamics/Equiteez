@@ -82,6 +82,7 @@ export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
 
 export const OrderHistorySchema = PaginationSchema.extend({
   items: z.array(OrderHistoryItemSchema),
+  as_of: AsOfSchema,
 });
 
 export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
@@ -96,4 +97,5 @@ export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
 
 export const TransferHistorySchema = PaginationSchema.extend({
   items: z.array(TransferHistoryItemSchema),
+  as_of: AsOfSchema,
 });

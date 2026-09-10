@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { useQuery } from "@apollo/client/index";
 
+import { invalidateFreshQueries } from "~/lib/apis/rwa/freshness";
 import {
   isKTAddress,
   isAddressValid,
@@ -41,6 +42,37 @@ type WithdrawStep = "form" | "success";
 type WithdrawFundsModalProps = {
   isOpen: boolean;
   onClose: () => void;
+};
+
+const getOperationHash = (operation: unknown) => {
+  if (!operation || typeof operation !== "object") return "";
+
+  if ("opHash" in operation && typeof operation.opHash === "string") {
+    return operation.opHash;
+  }
+
+  if ("hash" in operation && typeof operation.hash === "string") {
+    return operation.hash;
+  }
+
+  return "";
+};
+
+const getConfirmationLevel = (confirmation: unknown) => {
+  if (!confirmation || typeof confirmation !== "object") return undefined;
+  if (!("block" in confirmation)) return undefined;
+
+  const { block } = confirmation;
+  if (!block || typeof block !== "object" || !("header" in block)) {
+    return undefined;
+  }
+
+  const { header } = block;
+  if (!header || typeof header !== "object" || !("level" in header)) {
+    return undefined;
+  }
+
+  return typeof header.level === "number" ? header.level : undefined;
 };
 
 export function WithdrawFundsModal({
@@ -192,10 +224,15 @@ export function WithdrawFundsModal({
           ).methodsObject
             .transfer(transferParams)
             .send()
-        : await tezos.wallet.transfer(transferParams).send();
+        : await tezos.wallet
+            .transfer(
+              transferParams as Parameters<typeof tezos.wallet.transfer>[0]
+            )
+            .send();
 
-      setTransactionHash(operation.opHash);
-      await operation.confirmation();
+      setTransactionHash(getOperationHash(operation));
+      const confirmation = await operation.confirmation();
+      const level = getConfirmationLevel(confirmation);
 
       await Promise.all([
         queryClient.invalidateQueries({
@@ -207,11 +244,13 @@ export function WithdrawFundsModal({
         queryClient.invalidateQueries({
           queryKey: ["rwa-wallet-portfolio-history"],
         }),
-        queryClient.invalidateQueries({
-          queryKey: ["fetchWalletTransferHistory"],
+        invalidateFreshQueries(queryClient, {
+          level,
+          queryKeyStart: "fetchWalletTransferHistory",
         }),
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet-activity-summary"],
+        invalidateFreshQueries(queryClient, {
+          level,
+          queryKeyStart: "fetchWalletActivitySummary",
         }),
       ]);
       setStep("success");

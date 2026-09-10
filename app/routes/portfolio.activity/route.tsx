@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { fetchWalletActivitySummary } from "~/lib/apis/rwa";
+import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import Money from "~/lib/atoms/Money";
@@ -26,8 +26,8 @@ export default function PortfolioActivity() {
   const { userAddress } = useUserContext();
   const [activeTabId, setActiveTabId] = useState<ActivityTabId>("open-orders");
   const [searchValue, setSearchValue] = useState("");
-  const activitySummaryQuery = useQuery({
-    queryKey: ["rwa-wallet-activity-summary", userAddress],
+  const activitySummaryQuery = useFreshQuery({
+    queryKey: ["fetchWalletActivitySummary", userAddress],
     queryFn: () =>
       fetchWalletActivitySummary({
         walletAddress: userAddress || "",

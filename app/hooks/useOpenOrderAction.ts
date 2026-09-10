@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import type { RIconName } from "~/lib/atoms/RIcon";
@@ -27,7 +26,6 @@ export function useOpenOrderAction({
   onAfterAction,
   order,
 }: UseOpenOrderActionOptions) {
-  const queryClient = useQueryClient();
   const invalidateFreshQueries = useFreshQueryInvalidation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const contractActionArgs = useMemo(
@@ -46,13 +44,13 @@ export function useOpenOrderAction({
         invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
         }),
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet-activity-summary"],
+        invalidateFreshQueries("fetchWalletActivitySummary", {
+          level: metadata.confirmation?.level,
         }),
       ]);
       void onAfterAction?.();
     },
-    [invalidateFreshQueries, onAfterAction, queryClient]
+    [invalidateFreshQueries, onAfterAction]
   );
 
   const { invokeAction: invokeCancelOrder, status: cancelStatus } =

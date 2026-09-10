@@ -92,15 +92,13 @@ export function BuySellPanel({
         invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
         }),
-        invalidateFreshQueries("fetchWalletOrderHistory"),
+        invalidateFreshQueries("fetchWalletOrderHistory", {
+          level: metadata.confirmation?.level,
+        }),
         refetchUserAccountStatusAfterFirstOrder,
       ]);
     },
-    [
-      hasOrders,
-      invalidateFreshQueries,
-      refetchUserAccountStatus,
-    ]
+    [hasOrders, invalidateFreshQueries, refetchUserAccountStatus]
   );
 
   if (isLoading) {
