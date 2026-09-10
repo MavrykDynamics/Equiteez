@@ -66,8 +66,21 @@ export const WalletPortfolioHistorySchema = z.object({
   change_pct: z.number().nullable(),
 });
 
+const AsOfSchema = z
+  .object({
+    level: z.number(),
+    timestamp: z.string(),
+    realtime: z.boolean(),
+  })
+  .default({
+    level: 0,
+    timestamp: "",
+    realtime: false,
+  });
+
 export const WalletActivitySummarySchema = z.object({
   onchain_events: z.number().nullable(),
   open_orders: z.number().nullable(),
   transfers: z.number().nullable(),
+  as_of: AsOfSchema,
 });

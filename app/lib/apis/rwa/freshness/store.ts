@@ -84,23 +84,8 @@ export const consumeFreshQuery = (mark: PeekedFreshQueryMark | null) => {
   mark.keys.forEach((key) => freshQueryMarks.delete(key));
 };
 
-export const keepFreshQueryAlive = (mark: PeekedFreshQueryMark | null) => {
-  if (!mark) {
-    return;
-  }
-
-  const now = Date.now();
-
-  mark.keys.forEach((key) => {
-    const currentMark = freshQueryMarks.get(key);
-
-    if (currentMark) {
-      freshQueryMarks.set(key, {
-        ...currentMark,
-        createdAt: now,
-      });
-    }
-  });
+export const clearFreshQueries = () => {
+  freshQueryMarks.clear();
 };
 
 export const hasPendingFreshQuery = (queryKeyStart: FreshQueryKeyStartInput) =>
@@ -141,5 +126,5 @@ export const completeFreshQuery = (
     return;
   }
 
-  keepFreshQueryAlive(request.mark);
+  pruneExpiredFreshQueryMarks();
 };

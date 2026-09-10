@@ -31,23 +31,35 @@ const rDropdownContext = createContext<RDropdownContextValue | null>(null);
 export type RCustomDropdownProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   disabled?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 };
 
 export function RCustomDropdown({
   children,
   className,
   disabled = false,
+  isOpen,
+  onOpenChange,
   ...props
 }: RCustomDropdownProps) {
-  const [opened, setOpened] = useState(false);
+  const [internalOpened, setInternalOpened] = useState(false);
+  const opened = isOpen ?? internalOpened;
   const menuId = useId();
 
-  const close = useCallback(() => setOpened(false), []);
+  const setOpened = useCallback(
+    (nextOpened: boolean) => {
+      if (isOpen === undefined) setInternalOpened(nextOpened);
+      onOpenChange?.(nextOpened);
+    },
+    [isOpen, onOpenChange]
+  );
+  const close = useCallback(() => setOpened(false), [setOpened]);
   const toggle = useCallback(() => {
     if (!disabled) {
-      setOpened((isOpened) => !isOpened);
+      setOpened(!opened);
     }
-  }, [disabled]);
+  }, [disabled, opened, setOpened]);
 
   const contextValue = useMemo(
     () => ({ close, disabled, menuId, opened, toggle }),

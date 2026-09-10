@@ -1,6 +1,8 @@
 import { useId, type ReactNode, type SVGProps } from "react";
 import clsx from "clsx";
 
+import LinkIcon from "~/icons/link.svg?react";
+
 import styles from "./RIcon.module.css";
 
 export type RIconName =
@@ -18,14 +20,17 @@ export type RIconName =
   | "check"
   | "close"
   | "copy"
+  | "cross"
   | "heart"
   | "grid"
   | "info"
   | "image"
+  | "link"
   | "list"
   | "loading"
   | "lock"
   | "lock-open"
+  | "ok"
   | "radio"
   | "refund"
   | "search"
@@ -110,6 +115,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       transform="translate(5.5 5.5)"
     />
   ),
+  cross: (
+    <>
+      <path d="M5 5 19 19" strokeWidth={2} strokeMiterlimit={10} />
+      <path d="M5 19 19 5" strokeWidth={2} strokeMiterlimit={10} />
+    </>
+  ),
   heart: (
     <path
       d="M6.5 2.60283C5.16667-.526792.5-.193458.5 3.80656c0 4 6 7.33344 6 7.33344s6-3.33342 6-7.33344c0-4-4.66667-4.33335-6-1.20373Z"
@@ -126,12 +137,9 @@ const rIconPaths: Record<RIconName, ReactNode> = {
   ),
   info: (
     <>
-      <path
-        d="M6.5 4.13346V6.80013M6.5 12.5C3.18629 12.5 0.5 9.81371 0.5 6.5C0.5 3.18629 3.18629 0.5 6.5 0.5C9.81371 0.5 12.5 3.18629 12.5 6.5C12.5 9.81371 9.81371 12.5 6.5 12.5ZM6.5332 8.80013V8.8668L6.4668 8.86654V8.80013H6.5332Z"
-        stroke="#010101"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M11.25 11.25H12L12 16.5H12.75" />
+      <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
     </>
   ),
   image: (
@@ -141,6 +149,7 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <circle cx="15" cy="9" r="1" />
     </>
   ),
+  link: null,
   list: (
     <>
       <path d="M5 17h14" />
@@ -148,7 +157,9 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M5 7h14" />
     </>
   ),
-  loading: <path d="M12 3a9 9 0 1 0 9 9" />,
+  loading: (
+    <path d="M12 1C5.92487 1 1 5.92487 1 12C1 18.0751 5.92487 23 12 23C18.0751 23 23 18.0751 23 12C23 8.31954 21.1925 5.06125 18.4167 3.06442" />
+  ),
   lock: (
     <>
       <rect x="5" y="10" width="14" height="10" rx="2" />
@@ -161,6 +172,7 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M8 10V7a4 4 0 0 1 7.6-1.75" />
     </>
   ),
+  ok: <path d="m4 13 5 5L20 7" />,
   radio: (
     <>
       <circle cx="12" cy="12" r="7" />
@@ -242,9 +254,10 @@ export function RIcon({
   ...props
 }: RIconProps) {
   const titleId = useId();
+  const Icon = name === "link" ? LinkIcon : "svg";
 
   return (
-    <svg
+    <Icon
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       className={clsx(
@@ -267,6 +280,6 @@ export function RIcon({
     >
       {title ? <title id={titleId}>{title}</title> : null}
       {rIconPaths[name]}
-    </svg>
+    </Icon>
   );
 }

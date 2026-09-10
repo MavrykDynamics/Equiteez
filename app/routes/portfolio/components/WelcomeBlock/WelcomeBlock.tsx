@@ -36,9 +36,11 @@ export function WelcomeBlock({
   return (
     <div className={styles.wrapper}>
       <div className={styles.welcome}>
-        <RHeading weight="medium" size="h5">Welcome, {userName}</RHeading>
+        <RHeading weight="medium" size="h5">
+          Welcome, {userName}
+        </RHeading>
         <div className={styles.actions}>
-          {/*<DepositFunds />*/}
+          <DepositFunds />
           <WithdrawFunds />
         </div>
       </div>

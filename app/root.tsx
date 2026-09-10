@@ -20,6 +20,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
+import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
@@ -154,15 +155,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                               <AssetsProvider>
                                 <MarketsProvider>
                                   <DexProvider>
-                                    <UserProvider>
-                                      <AppGlobalLoader>
-                                        <PopupProvider>
-                                          <PageLayout includeContainer={false}>
-                                            {children}
-                                          </PageLayout>
-                                        </PopupProvider>
-                                      </AppGlobalLoader>
-                                    </UserProvider>
+                                    <EthereumProvider>
+                                      <UserProvider>
+                                        <AppGlobalLoader>
+                                          <PopupProvider>
+                                            <PageLayout includeContainer={false}>
+                                              {children}
+                                            </PageLayout>
+                                          </PopupProvider>
+                                        </AppGlobalLoader>
+                                      </UserProvider>
+                                    </EthereumProvider>
                                   </DexProvider>
                                 </MarketsProvider>
                               </AssetsProvider>
