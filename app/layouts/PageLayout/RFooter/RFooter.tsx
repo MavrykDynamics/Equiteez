@@ -43,13 +43,13 @@ const defaultFooterGroups: RFooterGroup[] = [
         rel: EXTERNAL_LINK_REL,
         target: NEW_TAB_TARGET,
       },
-      {
-        disabled: IS_EQUITEEZ_APP_LAUNCH_DISABLED,
-        href: EQUITEEZ_APP_URL,
-        label: "Launch App",
-        rel: EXTERNAL_LINK_REL,
-        target: NEW_TAB_TARGET,
-      },
+      // {
+      //   disabled: IS_EQUITEEZ_APP_LAUNCH_DISABLED,
+      //   href: EQUITEEZ_APP_URL,
+      //   label: "Launch App",
+      //   rel: EXTERNAL_LINK_REL,
+      //   target: NEW_TAB_TARGET,
+      // },
     ],
   },
   {

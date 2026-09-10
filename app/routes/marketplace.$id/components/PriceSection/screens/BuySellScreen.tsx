@@ -12,7 +12,6 @@ import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
 import { safeDivByPrice } from "~/providers/Dexprovider/utils";
-import { Alert } from "~/templates/Alert/Alert";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
@@ -26,6 +25,7 @@ import {
 } from "~/lib/ui/use-status-flag";
 
 import styles from "./BuySellForm.module.css";
+import { RAlert } from "~/templates/Alert/RAlert";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
@@ -305,33 +305,29 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {!isKyced && (
         <div className={styles.alertBlock}>
-          <Alert
-            type="warning"
-            header="Verify with Mavryk Pro to Trade"
-            expandable
-          >
+          <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
-          </Alert>
+          </RAlert>
         </div>
       )}
 
       {hasQuoteError && (
         <div className={styles.alertBlock}>
-          <Alert type="error" header="Low Quote Detected" expandable>
+          <RAlert type="error" header="Low Quote Detected">
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
             percentage in your settings to ensure a successful transaction.
-          </Alert>
+          </RAlert>
         </div>
       )}
 
       {validationMessage && (
         <div className={styles.alertBlock}>
-          <Alert type="error" header="Order Cannot Be Submitted" expandable>
+          <RAlert type="error" header="Order Cannot Be Submitted">
             {validationMessage}
-          </Alert>
+          </RAlert>
         </div>
       )}
 
