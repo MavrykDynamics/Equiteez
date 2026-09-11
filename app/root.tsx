@@ -44,8 +44,6 @@ import {
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { useEffect, useRef } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
-import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
-import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
@@ -140,41 +138,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <QueryClientProvider client={queryClient}>
               <AppProvider>
                 <ApolloProvider>
-                  <DipdupProvider>
-                    <WalletProvider>
-                      <AuthProvider>
-                        <ConfigProvider>
-                          <CurrencyProvider
-                            fiatToTezos={fiatToTezos}
-                            usdToToken={usdToToken}
-                          >
-                            <TokensProvider
-                              initialTokens={tokens}
-                              initialTokensMetadata={tokensMetadata}
-                            >
-                              <AssetsProvider>
-                                <MarketsProvider>
-                                  <DexProvider>
-                                    <EthereumProvider>
-                                      <UserProvider>
-                                        <AppGlobalLoader>
-                                          <PopupProvider>
-                                            <PageLayout includeContainer={false}>
-                                              {children}
-                                            </PageLayout>
-                                          </PopupProvider>
-                                        </AppGlobalLoader>
-                                      </UserProvider>
-                                    </EthereumProvider>
-                                  </DexProvider>
-                                </MarketsProvider>
-                              </AssetsProvider>
-                            </TokensProvider>
-                          </CurrencyProvider>
-                        </ConfigProvider>
-                      </AuthProvider>
-                    </WalletProvider>
-                  </DipdupProvider>
+                  <WalletProvider>
+                    <AuthProvider>
+                      <CurrencyProvider
+                        fiatToTezos={fiatToTezos}
+                        usdToToken={usdToToken}
+                      >
+                        <TokensProvider
+                          initialTokens={tokens}
+                          initialTokensMetadata={tokensMetadata}
+                        >
+                          <AssetsProvider>
+                            <MarketsProvider>
+                              <DexProvider>
+                                <EthereumProvider>
+                                  <UserProvider>
+                                    <AppGlobalLoader>
+                                      <PopupProvider>
+                                        <PageLayout includeContainer={false}>
+                                          {children}
+                                        </PageLayout>
+                                      </PopupProvider>
+                                    </AppGlobalLoader>
+                                  </UserProvider>
+                                </EthereumProvider>
+                              </DexProvider>
+                            </MarketsProvider>
+                          </AssetsProvider>
+                        </TokensProvider>
+                      </CurrencyProvider>
+                    </AuthProvider>
+                  </WalletProvider>
                 </ApolloProvider>
               </AppProvider>
             </QueryClientProvider>
