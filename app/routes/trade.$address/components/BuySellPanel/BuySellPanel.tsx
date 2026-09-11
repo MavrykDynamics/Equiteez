@@ -11,7 +11,10 @@ import { useSearchParams } from "@remix-run/react";
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
-import { useFreshQueryInvalidation } from "~/lib/apis/rwa/freshness";
+import {
+  FreshnessSource,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import {
   BUY,
   SELL,
@@ -91,9 +94,11 @@ export function BuySellPanel({
       void Promise.all([
         invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
         }),
         invalidateFreshQueries("fetchWalletOrderHistory", {
           level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
         }),
         refetchUserAccountStatusAfterFirstOrder,
       ]);

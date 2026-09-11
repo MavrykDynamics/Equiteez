@@ -8,7 +8,10 @@ import {
   orderbookCancelOrder,
   orderbookProcessRefund,
 } from "~/contracts/orderbook.contract";
-import { useFreshQueryInvalidation } from "~/lib/apis/rwa/freshness";
+import {
+  FreshnessSource,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
 
 type UseOpenOrderActionOptions = {
@@ -43,9 +46,11 @@ export function useOpenOrderAction({
       void Promise.all([
         invalidateFreshQueries("fetchWalletOpenOrders", {
           level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
         }),
         invalidateFreshQueries("fetchWalletActivitySummary", {
           level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
         }),
       ]);
       void onAfterAction?.();

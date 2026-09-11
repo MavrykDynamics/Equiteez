@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AsOfSchema } from "~/lib/apis/rwa/freshness/asOf.schema";
+
 export const WalletTokenSchema = z.object({
   total_balance: z.number(),
   total_value: z.number(),
@@ -65,18 +67,6 @@ export const WalletPortfolioHistorySchema = z.object({
   change_abs: z.number().nullable(),
   change_pct: z.number().nullable(),
 });
-
-const AsOfSchema = z
-  .object({
-    level: z.number(),
-    timestamp: z.string(),
-    realtime: z.boolean(),
-  })
-  .default({
-    level: 0,
-    timestamp: "",
-    realtime: false,
-  });
 
 export const WalletActivitySummarySchema = z.object({
   onchain_events: z.number().nullable(),

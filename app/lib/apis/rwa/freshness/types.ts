@@ -1,26 +1,37 @@
-import type {
-  QueryKey,
-  UseQueryOptions,
-} from "@tanstack/react-query";
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-} from "axios";
+import type { QueryKey, UseQueryOptions } from "@tanstack/react-query";
+import type { AxiosInstance, AxiosRequestConfig } from "axios";
+import type { FreshnessSource } from "~/lib/apis/rwa/freshness/constants";
 
 export type FreshQueryKeyStartInput = string | QueryKey;
 
+export type FreshnessAsOfSource = {
+  level: number;
+  timestamp: string;
+  realtime: boolean;
+};
+
+export type FreshnessAsOf = Partial<
+  Record<FreshnessSource, FreshnessAsOfSource>
+>;
+
 export type FreshQueryMarkInput = {
+  source: FreshnessSource;
   level?: number | null;
 };
 
-export type FreshQueryMark = {
+export type FreshQuerySourceMark = {
   createdAt: number;
   level?: number;
 };
 
+export type FreshQueryMark = {
+  [Source in FreshnessSource]?: FreshQuerySourceMark;
+};
+
 export type PeekedFreshQueryMark = {
-  keys: string[];
-  level?: number;
+  keysBySource: Partial<Record<FreshnessSource, string[]>>;
+  levels: Partial<Record<FreshnessSource, number>>;
+  sources: FreshnessSource[];
 };
 
 export type CacheBypassState =
@@ -36,9 +47,8 @@ export type FreshQueryRequest = {
 };
 
 export type CompleteFreshQueryParams = {
-  asOfLevel?: number;
+  asOfLevels: Partial<Record<FreshnessSource, number>>;
   cacheBypass: CacheBypassState;
-  hasAsOf: boolean;
 };
 
 export type UseFreshQueryOptions<
