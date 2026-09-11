@@ -11,4 +11,5 @@ export const AsOfSchema = z
     orderbook: AsOfSourceSchema.optional(),
     chain: AsOfSourceSchema.optional(),
   })
-  .strict();
+  .strict()
+  .default({});
