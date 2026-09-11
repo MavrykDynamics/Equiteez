@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AsOfSchema } from "~/lib/apis/rwa/freshness/asOf.schema";
+
 const QuoteTokenSchema = z.object({
   address: z.string(),
   price_per_token: z.number().nullable(),
@@ -59,11 +61,7 @@ export const OpenOrderItemSchema = z.object({
 
 export const OpenOrdersSchema = PaginationSchema.extend({
   items: z.array(OpenOrderItemSchema),
-  as_of: z.object({
-    level: z.number(),
-    timestamp: z.string(),
-    realtime: z.boolean(),
-  }),
+  as_of: AsOfSchema,
 });
 
 export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
@@ -74,6 +72,7 @@ export const OrderHistoryItemSchema = HistoryItemBaseSchema.extend({
 
 export const OrderHistorySchema = PaginationSchema.extend({
   items: z.array(OrderHistoryItemSchema),
+  as_of: AsOfSchema,
 });
 
 export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
@@ -88,4 +87,5 @@ export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
 
 export const TransferHistorySchema = PaginationSchema.extend({
   items: z.array(TransferHistoryItemSchema),
+  as_of: AsOfSchema,
 });

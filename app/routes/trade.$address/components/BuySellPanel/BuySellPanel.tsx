@@ -7,10 +7,14 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "@remix-run/react";
-import { useQueryClient } from "@tanstack/react-query";
 
+import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import {
+  FreshnessSource,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import {
   BUY,
   SELL,
@@ -50,7 +54,7 @@ export function BuySellPanel({
   isOrderBookOpen,
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
-  const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const { hasOrders, refetchUserAccountStatus } = useUserContext();
   const [searchParams] = useSearchParams();
   const { isLoading, marketsArr, updateActiveMarketState } =
@@ -79,25 +83,28 @@ export function BuySellPanel({
     }
   }, [estate?.slug, updateActiveMarketState]);
 
-  const handleSuccessfulTransaction = useCallback(() => {
-    const shouldInvalidateAssetOrdersQuery = (queryKey: readonly unknown[]) =>
-      queryKey[0] === "fetchWalletOpenOrders" ||
-      queryKey[0] === "fetchWalletOrderHistory";
+  const handleSuccessfulTransaction = useCallback(
+    (metadata: ContractActionSuccessMetadata) => {
+      const refetchUserAccountStatusAfterFirstOrder = hasOrders
+        ? Promise.resolve()
+        : refetchUserAccountStatus().catch((error) => {
+            console.log(error, "USER_ACCOUNT_STATUS_QUERY");
+          });
 
-    const refetchUserAccountStatusAfterFirstOrder = hasOrders
-      ? Promise.resolve()
-      : refetchUserAccountStatus().catch((error) => {
-          console.log(error, "USER_ACCOUNT_STATUS_QUERY");
-        });
-
-    void Promise.all([
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          shouldInvalidateAssetOrdersQuery(query.queryKey),
-      }),
-      refetchUserAccountStatusAfterFirstOrder,
-    ]);
-  }, [hasOrders, queryClient, refetchUserAccountStatus]);
+      void Promise.all([
+        invalidateFreshQueries("fetchWalletOpenOrders", {
+          level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
+        }),
+        invalidateFreshQueries("fetchWalletOrderHistory", {
+          level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
+        }),
+        refetchUserAccountStatusAfterFirstOrder,
+      ]);
+    },
+    [hasOrders, invalidateFreshQueries, refetchUserAccountStatus]
+  );
 
   if (isLoading) {
     return (

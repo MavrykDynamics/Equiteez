@@ -78,7 +78,9 @@ export function ExploreAssets() {
           >
             <FiltersIcon aria-hidden="true" height={24} width={24} />
           </button>
-          <DepositFunds />
+          <div className={styles.desktopDeposit}>
+            <DepositFunds />
+          </div>
         </div>
       </Reveal>
 

@@ -38,6 +38,7 @@ import {
   subscribeToAuthSyncEvents,
 } from "~/providers/AuthProvider/helpers/auth-sync.helpers";
 import { clearAuthSession } from "~/providers/AuthProvider/helpers/auth.service";
+import { clearFreshQueries } from "~/lib/apis/rwa/freshness";
 
 export const authContext = React.createContext<AuthContext>(undefined!);
 
@@ -140,6 +141,8 @@ export const AuthProvider = ({ children }: Props) => {
   );
 
   const logout = useCallback(async (params: AuthRefreshRequest = {}) => {
+    clearFreshQueries();
+
     const { refreshToken: storedRefreshToken } =
       await getAuthTokensFromStorage();
     const refreshToken = params.refreshToken ?? storedRefreshToken;
@@ -155,6 +158,7 @@ export const AuthProvider = ({ children }: Props) => {
   }, []);
 
   const login = useCallback(async () => {
+    clearFreshQueries();
     setIsAuthLoading(true);
 
     try {

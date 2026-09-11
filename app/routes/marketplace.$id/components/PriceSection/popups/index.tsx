@@ -34,6 +34,7 @@ import {
   ContractActionToastProps,
   useContractAction,
 } from "~/contracts/hooks/useContractAction";
+import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
@@ -101,7 +102,7 @@ const isCurrentPopupMarket = (
 type BuySellContentProps = {
   estate: SecondaryEstate;
   isOrderBookOpen: boolean;
-  onSuccessfulTransaction?: () => void;
+  onSuccessfulTransaction?: (metadata: ContractActionSuccessMetadata) => void;
   onOrderBookVisibilityChange?: (isVisible: boolean) => void;
   orderType: OrderType;
   setIsOrderBookOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -748,16 +749,19 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     };
   }, [orderType, activeMarket?.symbol]);
 
-  const handleSuccessfulTransaction = useCallback(() => {
-    setAvtiveTabId(orderType);
-    setAmountB(undefined);
-    setTotal(undefined);
-    setLimitPrice(undefined);
-    setOrderExpiryPeriodId(null);
-    setNetworkFee(ZERO);
-    setIsOrderBookOpen(false);
-    onSuccessfulTransaction?.();
-  }, [onSuccessfulTransaction, orderType, setIsOrderBookOpen]);
+  const handleSuccessfulTransaction = useCallback(
+    (metadata: ContractActionSuccessMetadata) => {
+      setAvtiveTabId(orderType);
+      setAmountB(undefined);
+      setTotal(undefined);
+      setLimitPrice(undefined);
+      setOrderExpiryPeriodId(null);
+      setNetworkFee(ZERO);
+      setIsOrderBookOpen(false);
+      onSuccessfulTransaction?.(metadata);
+    },
+    [onSuccessfulTransaction, orderType, setIsOrderBookOpen]
+  );
 
   const contractActionOptions = useMemo(
     () => ({
