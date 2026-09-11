@@ -250,7 +250,7 @@ export function BridgeView({
               Max
             </button>
           }
-          label="Send from Ethereum · Sepolia"
+          label="Send from Ethereum • Sepolia"
           onChange={onDepositAmountChange}
           balance={tokenBalance ?? ZERO}
           assetIconSrc={UsdtToken}
@@ -262,7 +262,7 @@ export function BridgeView({
           additionalTopRightBlock={addressButton}
           amount={receivedAmount}
           amountInputDisabled
-          label="Receive on Mavryk · Basenet"
+          label="Receive on Mavryk • Basenet"
           onChange={onDepositAmountChange}
           balance={usdtBalance}
           metadata={destinationMetadata}
