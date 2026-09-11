@@ -10,12 +10,12 @@ import {
   getFreshQueryRequest,
 } from "~/lib/apis/rwa/freshness/store";
 import type {
-  FreshnessSource,
   FreshRequestParams,
+  FreshnessSourceMap,
 } from "~/lib/apis/rwa/freshness/types";
 
 const getResponseAsOfLevels = (value: unknown) => {
-  const levels: Partial<Record<FreshnessSource, number>> = {};
+  const levels: FreshnessSourceMap<number> = {};
 
   if (!isRecord(value)) {
     return levels;

@@ -1,9 +1,9 @@
 import type { QueryKey } from "@tanstack/react-query";
 
+import type { FreshnessSource } from "~/lib/apis/rwa/freshness/constants";
 import type {
   CacheBypassState,
   FreshQueryKeyStartInput,
-  FreshnessSource,
   PeekedFreshQueryMark,
 } from "~/lib/apis/rwa/freshness/types";
 

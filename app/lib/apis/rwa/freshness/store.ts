@@ -1,6 +1,7 @@
 import {
   FRESHNESS_MARK_TTL_MS,
   FRESHNESS_SOURCES,
+  type FreshnessSource,
 } from "~/lib/apis/rwa/freshness/constants";
 import {
   getFreshQueryKeyStart,
@@ -12,7 +13,6 @@ import type {
   FreshQueryMark,
   FreshQueryMarkInput,
   FreshQueryRequest,
-  FreshnessSource,
   PeekedFreshQueryMark,
 } from "~/lib/apis/rwa/freshness/types";
 
