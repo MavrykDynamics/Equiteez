@@ -1,8 +1,8 @@
 import type { QueryKey } from "@tanstack/react-query";
 
+import type { FreshnessSource } from "~/lib/apis/rwa/freshness/constants";
 import type {
   CacheBypassState,
-  CompleteFreshQueryParams,
   FreshQueryKeyStartInput,
   PeekedFreshQueryMark,
 } from "~/lib/apis/rwa/freshness/types";
@@ -24,17 +24,31 @@ export const getFreshQueryKeyStart = (
     : "";
 };
 
-export const isFreshQueryMatch = (queryKey: QueryKey, queryKeyStart: string) => {
+export const isFreshQueryMatch = (
+  queryKey: QueryKey,
+  queryKeyStart: string
+) => {
   const queryStart = getFreshQueryKeyStart(queryKey);
 
   return Boolean(queryKeyStart && queryStart.startsWith(queryKeyStart));
 };
 
-export const shouldConsumeFreshQuery = (
+export const shouldConsumeFreshQuerySource = (
   mark: PeekedFreshQueryMark | null,
-  { asOfLevel, cacheBypass }: CompleteFreshQueryParams
+  source: FreshnessSource,
+  {
+    asOfLevel,
+    cacheBypass,
+  }: {
+    asOfLevel?: number;
+    cacheBypass: CacheBypassState;
+  }
 ) => {
   if (!mark) {
+    return false;
+  }
+
+  if (!mark.sources.includes(source)) {
     return false;
   }
 
@@ -42,14 +56,16 @@ export const shouldConsumeFreshQuery = (
     return false;
   }
 
-  if (mark.level !== undefined && asOfLevel === undefined) {
+  const markLevel = mark.levels[source];
+
+  if (markLevel !== undefined && asOfLevel === undefined) {
     return false;
   }
 
   if (
-    mark.level !== undefined &&
+    markLevel !== undefined &&
     asOfLevel !== undefined &&
-    asOfLevel < mark.level
+    asOfLevel < markLevel
   ) {
     return false;
   }

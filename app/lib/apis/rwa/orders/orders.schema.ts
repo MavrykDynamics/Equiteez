@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AsOfSchema } from "~/lib/apis/rwa/freshness/asOf.schema";
+
 const QuoteTokenSchema = z.object({
   address: z.string(),
   price_per_token: z.number().nullable(),
@@ -25,18 +27,6 @@ const PaginationSchema = z.object({
   total_pages: z.number(),
   truncated: z.boolean(),
 });
-
-const AsOfSchema = z
-  .object({
-    level: z.number(),
-    timestamp: z.string(),
-    realtime: z.boolean(),
-  })
-  .default({
-    level: 0,
-    timestamp: "",
-    realtime: false,
-  });
 
 export const OpenOrderItemSchema = z.object({
   id: z.string(),

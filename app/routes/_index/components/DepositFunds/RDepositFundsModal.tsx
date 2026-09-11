@@ -3,7 +3,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useConfig } from "wagmi";
 import type { BigNumber } from "bignumber.js";
 
-import { invalidateFreshQueries } from "~/lib/apis/rwa/freshness";
+import {
+  FreshnessSource,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
@@ -31,6 +34,7 @@ export function RDepositFundsModal({
   onClose,
 }: RDepositFundsModalProps) {
   const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const [confirmedHash, setConfirmedHash] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
@@ -74,14 +78,14 @@ export function RDepositFundsModal({
       queryClient.invalidateQueries({
         queryKey: ["rwa-wallet-portfolio-history"],
       }),
-      invalidateFreshQueries(queryClient, {
-        queryKeyStart: "fetchWalletTransferHistory",
+      invalidateFreshQueries("fetchWalletTransferHistory", {
+        source: FreshnessSource.Chain,
       }),
-      invalidateFreshQueries(queryClient, {
-        queryKeyStart: "fetchWalletActivitySummary",
+      invalidateFreshQueries("fetchWalletActivitySummary", {
+        source: FreshnessSource.Chain,
       }),
     ]);
-  }, [isOpen, queryClient, transactionHash]);
+  }, [invalidateFreshQueries, isOpen, queryClient, transactionHash]);
 
   useEffect(() => {
     if (!isOpen || !transactionHash) return;

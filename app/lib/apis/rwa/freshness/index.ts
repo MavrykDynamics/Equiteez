@@ -1,3 +1,4 @@
+export * from "~/lib/apis/rwa/freshness/asOf.schema";
 export * from "~/lib/apis/rwa/freshness/constants";
 export * from "~/lib/apis/rwa/freshness/helpers";
 export * from "~/lib/apis/rwa/freshness/hooks";

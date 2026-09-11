@@ -1,5 +1,6 @@
 import type { AxiosResponse } from "axios";
 
+import { FRESHNESS_SOURCES } from "~/lib/apis/rwa/freshness/constants";
 import {
   isRecord,
   parseCacheBypassState,
@@ -8,14 +9,33 @@ import {
   completeFreshQuery,
   getFreshQueryRequest,
 } from "~/lib/apis/rwa/freshness/store";
-import type { FreshRequestParams } from "~/lib/apis/rwa/freshness/types";
+import type {
+  FreshRequestParams,
+  FreshnessSourceMap,
+} from "~/lib/apis/rwa/freshness/types";
 
-const getResponseAsOfLevel = (value: unknown) => {
-  if (!isRecord(value) || !isRecord(value.as_of)) {
-    return undefined;
+const getResponseAsOfLevels = (value: unknown) => {
+  const levels: FreshnessSourceMap<number> = {};
+
+  if (!isRecord(value)) {
+    return levels;
   }
 
-  return typeof value.as_of.level === "number" ? value.as_of.level : undefined;
+  const asOf = value.as_of;
+
+  if (!isRecord(asOf)) {
+    return levels;
+  }
+
+  FRESHNESS_SOURCES.forEach((source) => {
+    const sourceAsOf = asOf[source];
+
+    if (isRecord(sourceAsOf) && typeof sourceAsOf.level === "number") {
+      levels[source] = sourceAsOf.level;
+    }
+  });
+
+  return levels;
 };
 
 const getRequestUrl = ({
@@ -62,12 +82,11 @@ export async function requestFreshQuery<TResponseData = unknown>({
     method === "get" || method === "delete"
       ? await api[method]<TResponseData>(requestUrl, config)
       : await api[method]<TResponseData>(requestUrl, data, config);
-  const asOfLevel = getResponseAsOfLevel(response.data);
+  const asOfLevels = getResponseAsOfLevels(response.data);
 
   completeFreshQuery(freshQuery, {
-    asOfLevel,
+    asOfLevels,
     cacheBypass: parseCacheBypassState(response.headers["x-cache-bypass"]),
-    hasAsOf: asOfLevel !== undefined,
   });
 
   return response;

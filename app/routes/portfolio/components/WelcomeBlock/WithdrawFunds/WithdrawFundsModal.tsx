@@ -4,7 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { useQuery } from "@apollo/client/index";
 
-import { invalidateFreshQueries } from "~/lib/apis/rwa/freshness";
+import {
+  FreshnessSource,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import {
   isKTAddress,
   isAddressValid,
@@ -80,6 +83,7 @@ export function WithdrawFundsModal({
   onClose,
 }: WithdrawFundsModalProps) {
   const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const { bug } = useToasterContext();
   const { userAddress } = usePortfolioContext();
   const { dapp } = useWalletContext();
@@ -244,13 +248,13 @@ export function WithdrawFundsModal({
         queryClient.invalidateQueries({
           queryKey: ["rwa-wallet-portfolio-history"],
         }),
-        invalidateFreshQueries(queryClient, {
+        invalidateFreshQueries("fetchWalletTransferHistory", {
           level,
-          queryKeyStart: "fetchWalletTransferHistory",
+          source: FreshnessSource.Chain,
         }),
-        invalidateFreshQueries(queryClient, {
+        invalidateFreshQueries("fetchWalletActivitySummary", {
           level,
-          queryKeyStart: "fetchWalletActivitySummary",
+          source: FreshnessSource.Chain,
         }),
       ]);
       setStep("success");

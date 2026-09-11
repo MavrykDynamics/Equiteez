@@ -1,7 +1,11 @@
-import { FRESHNESS_MARK_TTL_MS } from "~/lib/apis/rwa/freshness/constants";
+import {
+  FRESHNESS_MARK_TTL_MS,
+  FRESHNESS_SOURCES,
+  type FreshnessSource,
+} from "~/lib/apis/rwa/freshness/constants";
 import {
   getFreshQueryKeyStart,
-  shouldConsumeFreshQuery,
+  shouldConsumeFreshQuerySource,
 } from "~/lib/apis/rwa/freshness/helpers";
 import type {
   CompleteFreshQueryParams,
@@ -16,7 +20,15 @@ const freshQueryMarks = new Map<string, FreshQueryMark>();
 
 const pruneExpiredFreshQueryMarks = (now = Date.now()) => {
   freshQueryMarks.forEach((mark, key) => {
-    if (now - mark.createdAt > FRESHNESS_MARK_TTL_MS) {
+    FRESHNESS_SOURCES.forEach((source) => {
+      const sourceMark = mark[source];
+
+      if (sourceMark && now - sourceMark.createdAt > FRESHNESS_MARK_TTL_MS) {
+        delete mark[source];
+      }
+    });
+
+    if (!FRESHNESS_SOURCES.some((source) => mark[source])) {
       freshQueryMarks.delete(key);
     }
   });
@@ -45,19 +57,45 @@ export const peekFreshQuery = (
     return null;
   }
 
-  const levels = matchedMarks
-    .map(([, mark]) => mark.level)
-    .filter((level): level is number => typeof level === "number");
+  const keysBySource: PeekedFreshQueryMark["keysBySource"] = {};
+  const levels: PeekedFreshQueryMark["levels"] = {};
+
+  matchedMarks.forEach(([markQueryKeyStart, mark]) => {
+    FRESHNESS_SOURCES.forEach((source) => {
+      const sourceMark = mark[source];
+
+      if (!sourceMark) {
+        return;
+      }
+
+      keysBySource[source] = [
+        ...(keysBySource[source] ?? []),
+        markQueryKeyStart,
+      ];
+
+      if (typeof sourceMark.level === "number") {
+        levels[source] =
+          levels[source] === undefined
+            ? sourceMark.level
+            : Math.max(levels[source], sourceMark.level);
+      }
+    });
+  });
+
+  const sources = FRESHNESS_SOURCES.filter(
+    (source) => keysBySource[source]?.length
+  );
 
   return {
-    keys: matchedMarks.map(([markQueryKeyStart]) => markQueryKeyStart),
-    level: levels.length ? Math.max(...levels) : undefined,
+    keysBySource,
+    levels,
+    sources,
   };
 };
 
 export const markFreshQuery = (
   queryKeyStart: FreshQueryKeyStartInput,
-  mark: FreshQueryMarkInput = {}
+  mark: FreshQueryMarkInput
 ) => {
   const normalizedQueryKeyStart = getFreshQueryKeyStart(queryKeyStart);
 
@@ -70,18 +108,40 @@ export const markFreshQuery = (
       ? mark.level
       : undefined;
 
+  const existingMark = freshQueryMarks.get(normalizedQueryKeyStart) ?? {};
+
   freshQueryMarks.set(normalizedQueryKeyStart, {
-    createdAt: Date.now(),
-    level,
+    ...existingMark,
+    [mark.source]: {
+      createdAt: Date.now(),
+      level,
+    },
   });
 };
 
-export const consumeFreshQuery = (mark: PeekedFreshQueryMark | null) => {
+export const consumeFreshQuery = (
+  mark: PeekedFreshQueryMark | null,
+  sources: FreshnessSource[]
+) => {
   if (!mark) {
     return;
   }
 
-  mark.keys.forEach((key) => freshQueryMarks.delete(key));
+  sources.forEach((source) => {
+    mark.keysBySource[source]?.forEach((key) => {
+      const storedMark = freshQueryMarks.get(key);
+
+      if (!storedMark) {
+        return;
+      }
+
+      delete storedMark[source];
+
+      if (!FRESHNESS_SOURCES.some((storedSource) => storedMark[storedSource])) {
+        freshQueryMarks.delete(key);
+      }
+    });
+  });
 };
 
 export const clearFreshQueries = () => {
@@ -105,24 +165,24 @@ export const getFreshQueryRequest = (
 
 export const completeFreshQuery = (
   request: FreshQueryRequest,
-  { asOfLevel, cacheBypass, hasAsOf }: CompleteFreshQueryParams
+  { asOfLevels, cacheBypass }: CompleteFreshQueryParams
 ) => {
   const canValidateFreshness =
-    request.shouldRequestFresh ||
-    (request.mark?.level !== undefined && hasAsOf);
+    request.shouldRequestFresh || Boolean(request.mark);
 
   if (!canValidateFreshness) {
     return;
   }
 
-  if (
-    shouldConsumeFreshQuery(request.mark, {
-      asOfLevel: hasAsOf ? asOfLevel : undefined,
+  const consumedSources = (request.mark?.sources ?? []).filter((source) =>
+    shouldConsumeFreshQuerySource(request.mark, source, {
+      asOfLevel: asOfLevels[source],
       cacheBypass,
-      hasAsOf,
     })
-  ) {
-    consumeFreshQuery(request.mark);
+  );
+
+  if (consumedSources.length) {
+    consumeFreshQuery(request.mark, consumedSources);
     return;
   }
 

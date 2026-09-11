@@ -22,16 +22,17 @@ import type {
   UseFreshQueryOptions,
 } from "~/lib/apis/rwa/freshness/types";
 
-export const invalidateFreshQueries = (
+const invalidateFreshQueriesForClient = (
   queryClient: QueryClient,
   {
     level,
     queryKeyStart,
+    source,
   }: FreshQueryMarkInput & { queryKeyStart: FreshQueryKeyStartInput }
 ) => {
   const normalizedQueryKeyStart = getFreshQueryKeyStart(queryKeyStart);
 
-  markFreshQuery(normalizedQueryKeyStart, { level });
+  markFreshQuery(normalizedQueryKeyStart, { level, source });
 
   return queryClient.invalidateQueries(
     {
@@ -46,10 +47,11 @@ export const useFreshQueryInvalidation = () => {
   const queryClient = useQueryClient();
 
   return useCallback(
-    (queryKeyStart: FreshQueryKeyStartInput, mark?: FreshQueryMarkInput) =>
-      invalidateFreshQueries(queryClient, {
-        level: mark?.level,
+    (queryKeyStart: FreshQueryKeyStartInput, mark: FreshQueryMarkInput) =>
+      invalidateFreshQueriesForClient(queryClient, {
+        level: mark.level,
         queryKeyStart,
+        source: mark.source,
       }),
     [queryClient]
   );
