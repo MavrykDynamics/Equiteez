@@ -1,4 +1,5 @@
 import {
+  NotifierChannel,
   NotifierClientFrameType,
   NotifierCatalogEvent,
   NotifierConnectionStatus,
@@ -7,6 +8,7 @@ import {
   NotifierWalletEvent,
 } from "~/providers/NotificationsProvider/notifications.const";
 
+export type NotifierChannelType = NotifierChannel;
 export type NotifierConnectionStatusType = NotifierConnectionStatus;
 export type NotifierWalletEventType = NotifierWalletEvent;
 export type NotifierCatalogEventType = NotifierCatalogEvent;

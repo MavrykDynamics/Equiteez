@@ -18,6 +18,7 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import type {
   NotifierAuthFrame,
+  NotifierClientFrame,
   NotifierConnectionStatusType,
 } from "~/providers/NotificationsProvider/notifications.types";
 import {
@@ -32,6 +33,7 @@ import {
   isSocketDead,
   parseNotifierServerFrame,
 } from "~/providers/NotificationsProvider/hooks/useNotifierSocket/useNotifierSocket.helpers";
+import { SOCKET_OPEN } from "~/providers/NotificationsProvider/hooks/useNotifierSocket/useNotifierSocket.const";
 import type {
   ConnectOptions,
   UseNotifierSocketParams,
@@ -41,6 +43,8 @@ import type {
 export const useNotifierSocket = ({
   enabled,
   onEvent,
+  onConnected,
+  onSubscribed,
   onStatus,
   webSocketFactory,
 }: UseNotifierSocketParams): UseNotifierSocketResult => {
@@ -54,6 +58,8 @@ export const useNotifierSocket = ({
   const seenEventIdsRef = useRef<Set<string>>(new Set());
   const seenEventIdQueueRef = useRef<string[]>([]);
   const onEventRef = useRef(onEvent);
+  const onConnectedRef = useRef(onConnected);
+  const onSubscribedRef = useRef(onSubscribed);
   const onStatusRef = useRef(onStatus);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
@@ -69,8 +75,27 @@ export const useNotifierSocket = ({
   }, [onEvent]);
 
   useEffect(() => {
+    onConnectedRef.current = onConnected;
+  }, [onConnected]);
+
+  useEffect(() => {
+    onSubscribedRef.current = onSubscribed;
+  }, [onSubscribed]);
+
+  useEffect(() => {
     onStatusRef.current = onStatus;
   }, [onStatus]);
+
+  const sendFrame = useCallback((frame: NotifierClientFrame) => {
+    const socket = socketRef.current;
+
+    if (!socket || socket.readyState !== SOCKET_OPEN) {
+      return false;
+    }
+
+    socket.send(JSON.stringify(frame));
+    return true;
+  }, []);
 
   const updateStatus = useCallback(
     (nextStatus: NotifierConnectionStatusType) => {
@@ -228,6 +253,12 @@ export const useNotifierSocket = ({
               const confirmedWallet =
                 frame.wallet || getNotifierJwtWalletAddress(accessToken);
 
+              if (!confirmedWallet) {
+                console.warn("Notifier authenticated without wallet");
+                socket.close();
+                return;
+              }
+
               reconnectAttemptRef.current = 0;
               consecutiveGoingAwayRef.current = 0;
               triedUnauthorizedRefreshRef.current = false;
@@ -235,6 +266,7 @@ export const useNotifierSocket = ({
               walletRef.current = confirmedWallet;
               setWallet(confirmedWallet);
               updateStatus(NotifierConnectionStatus.Connected);
+              onConnectedRef.current?.(confirmedWallet);
               return;
             }
             case NotifierServerFrameType.Event: {
@@ -254,6 +286,8 @@ export const useNotifierSocket = ({
               });
               return;
             case NotifierServerFrameType.Subscribed:
+              onSubscribedRef.current?.(frame);
+              return;
             case NotifierServerFrameType.Pong:
               return;
             default:
@@ -454,6 +488,7 @@ export const useNotifierSocket = ({
   }, [enabled]);
 
   return {
+    sendFrame,
     status,
     wallet,
   };
