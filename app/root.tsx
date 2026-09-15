@@ -47,6 +47,8 @@ import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
+import { NotificationsProvider } from "~/providers/NotificationsProvider/NotificationsProvider";
+import { NotificationsListener } from "~/providers/NotificationsProvider/NotificationsListener";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -140,33 +142,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <ApolloProvider>
                   <WalletProvider>
                     <AuthProvider>
-                      <CurrencyProvider
-                        fiatToTezos={fiatToTezos}
-                        usdToToken={usdToToken}
-                      >
-                        <TokensProvider
-                          initialTokens={tokens}
-                          initialTokensMetadata={tokensMetadata}
+                      <NotificationsProvider>
+                        <NotificationsListener />
+                        <CurrencyProvider
+                          fiatToTezos={fiatToTezos}
+                          usdToToken={usdToToken}
                         >
-                          <AssetsProvider>
-                            <MarketsProvider>
-                              <DexProvider>
-                                <EthereumProvider>
-                                  <UserProvider>
-                                    <AppGlobalLoader>
-                                      <PopupProvider>
-                                        <PageLayout includeContainer={false}>
-                                          {children}
-                                        </PageLayout>
-                                      </PopupProvider>
-                                    </AppGlobalLoader>
-                                  </UserProvider>
-                                </EthereumProvider>
-                              </DexProvider>
-                            </MarketsProvider>
-                          </AssetsProvider>
-                        </TokensProvider>
-                      </CurrencyProvider>
+                          <TokensProvider
+                            initialTokens={tokens}
+                            initialTokensMetadata={tokensMetadata}
+                          >
+                            <AssetsProvider>
+                              <MarketsProvider>
+                                <DexProvider>
+                                  <EthereumProvider>
+                                    <UserProvider>
+                                      <AppGlobalLoader>
+                                        <PopupProvider>
+                                          <PageLayout includeContainer={false}>
+                                            {children}
+                                          </PageLayout>
+                                        </PopupProvider>
+                                      </AppGlobalLoader>
+                                    </UserProvider>
+                                  </EthereumProvider>
+                                </DexProvider>
+                              </MarketsProvider>
+                            </AssetsProvider>
+                          </TokensProvider>
+                        </CurrencyProvider>
+                      </NotificationsProvider>
                     </AuthProvider>
                   </WalletProvider>
                 </ApolloProvider>

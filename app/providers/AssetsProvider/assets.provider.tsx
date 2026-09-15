@@ -33,7 +33,7 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
     queryKey: ["rwa-prices"],
     queryFn: fetchPrices,
     refetchInterval: 60000,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
   });
 
   useEffect(() => {
