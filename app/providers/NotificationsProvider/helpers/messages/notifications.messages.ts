@@ -10,11 +10,12 @@ export type {
 } from "~/providers/NotificationsProvider/helpers/messages/notifications.message.types";
 
 export const getNotificationMessage = (
-  frame: NotifierEventFrame
+  frame: NotifierEventFrame,
+  wallet?: string
 ): NotifierToastMessage | null => {
   switch (frame.channel) {
     case NotifierChannel.Wallet:
-      return getWalletNotificationMessage(frame);
+      return getWalletNotificationMessage(frame, wallet);
     case NotifierChannel.Catalog:
       return getCatalogNotificationMessage(frame);
     default:

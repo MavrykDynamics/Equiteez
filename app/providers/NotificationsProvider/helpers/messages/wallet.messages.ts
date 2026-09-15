@@ -19,6 +19,15 @@ const getStringPayloadField = (
   return typeof value === "string" && value.trim() ? value : null;
 };
 
+const getBooleanPayloadField = (
+  payload: Record<string, unknown>,
+  field: string
+) => {
+  const value = payload[field];
+
+  return typeof value === "boolean" ? value : null;
+};
+
 const isOrderStatus = (value: string | null): value is OrderStatus =>
   value === "open" ||
   value === "partial" ||
@@ -82,12 +91,111 @@ const getOrderbookOrderUpdatedMessage = (
   return getOrderStatusToastMessage(status);
 };
 
-export const getWalletNotificationMessage = (
+const areAddressesEqual = (left: string | null, right?: string) =>
+  !!left && !!right && left.toLowerCase() === right.toLowerCase();
+
+const getTokenLedgerTransferMessage = (
+  frame: NotifierEventFrame,
+  wallet?: string
+): NotifierToastMessage => {
+  const payload = frame.payload ?? {};
+  const from = getStringPayloadField(payload, "from");
+  const to = getStringPayloadField(payload, "to");
+  const tokenSymbol = getStringPayloadField(payload, "token_symbol");
+
+  if (areAddressesEqual(to, wallet)) {
+    return {
+      tone: "success",
+      title: "Tokens received",
+      message: tokenSymbol
+        ? `${tokenSymbol} tokens were received in your wallet.`
+        : "Tokens were received in your wallet.",
+    };
+  }
+
+  if (areAddressesEqual(from, wallet)) {
+    return {
+      tone: "info",
+      title: "Tokens sent",
+      message: tokenSymbol
+        ? `${tokenSymbol} tokens were sent from your wallet.`
+        : "Tokens were sent from your wallet.",
+    };
+  }
+
+  return {
+    tone: "info",
+    title: "Token transfer",
+    message: "A token transfer related to your wallet was confirmed.",
+  };
+};
+
+const getLaunchpadPurchaseMessage = (
   frame: NotifierEventFrame
+): NotifierToastMessage => {
+  const launchName = getStringPayloadField(frame.payload ?? {}, "launch_name");
+
+  return {
+    tone: "success",
+    title: "Launchpad purchase confirmed",
+    message: launchName
+      ? `Your ${launchName} purchase was confirmed.`
+      : "Your launchpad purchase was confirmed.",
+  };
+};
+
+const getLaunchpadTokensDistributedMessage = (
+  frame: NotifierEventFrame
+): NotifierToastMessage => {
+  const tokenSymbol = getStringPayloadField(
+    frame.payload ?? {},
+    "token_symbol"
+  );
+
+  return {
+    tone: "success",
+    title: "Launchpad tokens distributed",
+    message: tokenSymbol
+      ? `${tokenSymbol} tokens were distributed to your wallet.`
+      : "Launchpad tokens were distributed to your wallet.",
+  };
+};
+
+const getKycSetMemberMessage = (
+  frame: NotifierEventFrame
+): NotifierToastMessage => {
+  const frozen = getBooleanPayloadField(frame.payload ?? {}, "frozen");
+
+  if (frozen === true) {
+    return {
+      tone: "warning",
+      title: "KYC status changed",
+      message: "Your KYC access is currently frozen.",
+    };
+  }
+
+  return {
+    tone: "info",
+    title: "KYC status updated",
+    message: "Your KYC status was updated.",
+  };
+};
+
+export const getWalletNotificationMessage = (
+  frame: NotifierEventFrame,
+  wallet?: string
 ): NotifierToastMessage | null => {
   switch (frame.event_type) {
     case NotifierWalletEvent.OrderbookOrderUpdated:
       return getOrderbookOrderUpdatedMessage(frame);
+    case NotifierWalletEvent.TokenLedgerTransfer:
+      return getTokenLedgerTransferMessage(frame, wallet);
+    case NotifierWalletEvent.LaunchpadPurchase:
+      return getLaunchpadPurchaseMessage(frame);
+    case NotifierWalletEvent.LaunchpadTokensDistributed:
+      return getLaunchpadTokensDistributedMessage(frame);
+    case NotifierWalletEvent.KycSetMember:
+      return getKycSetMemberMessage(frame);
     default:
       return null;
   }

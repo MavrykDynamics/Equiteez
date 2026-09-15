@@ -28,8 +28,8 @@ export const NotificationsListener = () => {
   const toaster = useToasterContext();
 
   const handleNotificationEvent = useCallback(
-    (frame: NotifierEventFrame) => {
-      const notification = getNotificationMessage(frame);
+    (frame: NotifierEventFrame, wallet: string) => {
+      const notification = getNotificationMessage(frame, wallet);
 
       if (!notification) {
         return;

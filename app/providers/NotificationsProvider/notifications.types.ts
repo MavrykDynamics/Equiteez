@@ -1,20 +1,27 @@
 import {
   NotifierChannel,
   NotifierClientFrameType,
+  NotifierAdminEvent,
   NotifierCatalogEvent,
   NotifierConnectionStatus,
   NotifierErrorCode,
+  NotifierLaunchEvent,
   NotifierServerFrameType,
   NotifierWalletEvent,
 } from "~/providers/NotificationsProvider/notifications.const";
 
-export type NotifierChannelType = NotifierChannel;
+export type NotifierLaunchChannel = `launch:${string}/${string}`;
+export type NotifierChannelType = NotifierChannel | NotifierLaunchChannel;
 export type NotifierConnectionStatusType = NotifierConnectionStatus;
 export type NotifierWalletEventType = NotifierWalletEvent;
+export type NotifierLaunchEventType = NotifierLaunchEvent;
 export type NotifierCatalogEventType = NotifierCatalogEvent;
+export type NotifierAdminEventType = NotifierAdminEvent;
 export type NotifierEventType =
   | NotifierWalletEventType
-  | NotifierCatalogEventType;
+  | NotifierLaunchEventType
+  | NotifierCatalogEventType
+  | NotifierAdminEventType;
 
 export type NotifierAuthFrame = {
   type: NotifierClientFrameType.Auth;

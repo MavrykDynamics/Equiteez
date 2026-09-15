@@ -39,10 +39,28 @@ export enum NotifierChannel {
 
 export enum NotifierWalletEvent {
   OrderbookOrderUpdated = "ORDERBOOK_ORDER_UPDATED",
+  TokenLedgerTransfer = "TOKEN_LEDGER_TRANSFER",
+  LaunchpadPurchase = "LAUNCHPAD_PURCHASE",
+  LaunchpadTokensDistributed = "LAUNCHPAD_TOKENS_DISTRIBUTED",
+  KycSetMember = "KYC_SET_MEMBER",
+}
+
+export enum NotifierLaunchEvent {
+  LaunchpadLaunchUpdated = "LAUNCHPAD_LAUNCH_UPDATED",
+  LaunchpadSaleStartingSoon = "LAUNCHPAD_SALE_STARTING_SOON",
+  LaunchpadSaleStarted = "LAUNCHPAD_SALE_STARTED",
 }
 
 export enum NotifierCatalogEvent {
   TokenContractCreated = "TOKEN_CONTRACT_CREATED",
+  OrderbookContractCreated = "ORDERBOOK_CONTRACT_CREATED",
+  LaunchpadContractCreated = "LAUNCHPAD_CONTRACT_CREATED",
+}
+
+export enum NotifierAdminEvent {
+  SuperAdminActionUpdated = "SUPER_ADMIN_ACTION_UPDATED",
+  KycContractCreated = "KYC_CONTRACT_CREATED",
+  SuperAdminCreated = "SUPER_ADMIN_CREATED",
 }
 
 export const NOTIFIER_CLOSE_NORMAL = 1000;
