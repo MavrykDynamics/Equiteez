@@ -18,6 +18,7 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { DepositsTab } from "~/routes/portfolio.activity/components/DepositsTab";
 import { OpenOrdersTab } from "~/routes/portfolio.activity/components/OpenOrdersTab/OpenOrdersTab";
 import { TransactionHistoryTab } from "~/routes/portfolio.activity/components/TransactionHistoryTab/TransactionHistoryTab";
+import { usePortfolioActivityNotifierInvalidation } from "~/routes/portfolio.activity/hooks/usePortfolioActivityNotifierInvalidation";
 
 type ActivityTabId = "open-orders" | "transaction-history" | "deposits";
 
@@ -34,6 +35,8 @@ export default function PortfolioActivity() {
       }),
     enabled: isAuthenticated && Boolean(userAddress),
   });
+
+  usePortfolioActivityNotifierInvalidation();
 
   const activityTabs = useMemo<RTabSwitcherItem[]>(
     () => [

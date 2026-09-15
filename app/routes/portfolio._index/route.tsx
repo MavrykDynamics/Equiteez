@@ -1,15 +1,16 @@
+import { useMemo } from "react";
+
 import styles from "./styles.module.css";
-import { FullScreenSpinner } from "~/lib/atoms/Spinner/Spinner";
 import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
 import { PortfolioGeneralStats } from "~/routes/portfolio._index/components/PortfolioGeneralStats/PortfolioGeneralStats";
 import { AssetsStats } from "~/routes/portfolio._index/components/AssetsStats/AssetsStats";
 import { ROUTES } from "~/consts";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
-import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
-import { useMemo } from "react";
+import { usePortfolioOverviewNotifierInvalidation } from "~/routes/portfolio._index/hooks/usePortfolioOverviewNotifierInvalidation";
 
 export default function PortfolioOverview() {
   const { wallet, portfolio } = usePortfolioContext();
+  usePortfolioOverviewNotifierInvalidation();
 
   const portfolioStats = useMemo(
     () => ({
