@@ -151,21 +151,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             initialTokensMetadata={tokensMetadata}
                           >
                             <AssetsProvider>
-                              <MarketsProvider>
-                                <DexProvider>
-                                  <EthereumProvider>
-                                    <UserProvider>
-                                      <AppGlobalLoader>
-                                        <PopupProvider>
-                                          <PageLayout includeContainer={false}>
-                                            {children}
-                                          </PageLayout>
-                                        </PopupProvider>
-                                      </AppGlobalLoader>
-                                    </UserProvider>
-                                  </EthereumProvider>
-                                </DexProvider>
-                              </MarketsProvider>
+                              <EthereumProvider>
+                                <UserProvider>
+                                  <AppGlobalLoader>
+                                    <PopupProvider>
+                                      <PageLayout includeContainer={false}>
+                                        {children}
+                                      </PageLayout>
+                                    </PopupProvider>
+                                  </AppGlobalLoader>
+                                </UserProvider>
+                              </EthereumProvider>
                             </AssetsProvider>
                           </TokensProvider>
                         </CurrencyProvider>
