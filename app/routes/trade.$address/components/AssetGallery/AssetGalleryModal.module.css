@@ -1,4 +1,4 @@
-@import "../../../../../styles/breakpoints.css";
+@import "../../../../styles/breakpoints.css";
 
 .overlay {
   display: block;
@@ -21,7 +21,9 @@
 
 .header {
   display: grid;
-  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(--r-size-icon-medium);
+  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(
+      --r-size-icon-medium
+    );
   gap: var(--r-space-4);
   align-items: center;
   padding: var(--r-space-10) var(--r-space-25) var(--r-space-6);
@@ -67,7 +69,7 @@
   object-fit: cover;
 }
 
-.image:nth-child(3n + 1) {
+.imageButton:nth-child(3n + 1) {
   grid-column: 1 / -1;
 }
 
@@ -89,7 +91,43 @@
     padding: 0 var(--r-space-4) var(--r-space-8);
   }
 
-  .image:nth-child(3n + 1) {
+  .imageButton:nth-child(3n + 1) {
     grid-column: auto;
   }
+}
+
+.imageButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.imageButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.singleImageModal {
+  display: flex;
+  flex-direction: column;
+}
+
+.singleImageContent {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--r-space-4) var(--r-space-5);
+}
+
+.fullSizeImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }

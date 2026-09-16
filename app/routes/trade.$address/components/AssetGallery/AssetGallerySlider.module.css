@@ -1,0 +1,95 @@
+.slider {
+  width: 100%;
+  min-width: 0;
+}
+
+.carouselRow {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: var(--r-radius-md);
+  background: lightgray;
+}
+
+.viewport {
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.container {
+  display: flex;
+  height: 100%;
+  touch-action: pan-y pinch-zoom;
+}
+
+.slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+.slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.imageButton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-md);
+}
+
+.imageButton:focus-visible {
+  outline: 2px solid var(--r-color-primary);
+  outline-offset: -2px;
+}
+
+.arrowButton {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 100%;
+  background: rgba(246, 246, 247, 0.75);
+  color: var(--r-color-neutral-900);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color var(--r-transition-duration-fast);
+}
+
+.previousButton {
+  left: var(--r-space-2);
+}
+
+.nextButton {
+  right: var(--r-space-2);
+}
+
+.arrowButton:hover:not(:disabled) {
+  color: var(--r-color-primary);
+}
+
+.arrowButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.arrowButton:disabled {
+  color: var(--r-color-neutral-300);
+  cursor: default;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "@remix-run/react";
 
+import { AssetGallerySlider } from "./components/AssetGallery/AssetGallerySlider";
 import { AssetDetails } from "./components/AssetDetails/AssetDetails";
 import { Container } from "~/lib/atoms/Container/Container";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
@@ -56,13 +57,20 @@ export default function TradePage() {
           <AssetTabs asset={asset} />
         </div>
 
-        <div className={styles.buySellContainer}>
-          <BuySellPanel
-            key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
-            asset={asset}
-            isOrderBookOpen={isOrderBookOpen}
-            setIsOrderBookOpen={setIsOrderBookOpen}
+        <div className={styles.tradeColumn}>
+          <AssetGallerySlider
+            key={asset.address}
+            images={asset.profile.gallery.map((item) => item.url)}
+            name={asset.metadata.name}
           />
+          <div className={styles.buySellContainer}>
+            <BuySellPanel
+              key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
+              asset={asset}
+              isOrderBookOpen={isOrderBookOpen}
+              setIsOrderBookOpen={setIsOrderBookOpen}
+            />
+          </div>
         </div>
       </div>
     </Container>
