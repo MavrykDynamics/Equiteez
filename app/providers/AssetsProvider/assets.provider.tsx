@@ -76,13 +76,14 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
 
   const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
+      assetError: assetsQuery.error,
       assets,
       prices,
       assetTypes,
       isLoading,
       isPricesLoading,
     }),
-    [assets, prices, assetTypes, isLoading, isPricesLoading]
+    [assets, prices, assetTypes, isLoading, isPricesLoading, assetsQuery.error]
   );
 
   return (

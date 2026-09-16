@@ -22,7 +22,6 @@ import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
 import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
-import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
 import { AppGlobalLoader } from "./providers/AppGlobalLoader";
@@ -43,7 +42,6 @@ import {
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { useEffect, useRef } from "react";
-import { DexProvider } from "./providers/Dexprovider/dex.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
@@ -149,21 +147,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           initialTokensMetadata={tokensMetadata}
                         >
                           <AssetsProvider>
-                            <MarketsProvider>
-                              <DexProvider>
-                                <EthereumProvider>
-                                  <UserProvider>
-                                    <AppGlobalLoader>
-                                      <PopupProvider>
-                                        <PageLayout includeContainer={false}>
-                                          {children}
-                                        </PageLayout>
-                                      </PopupProvider>
-                                    </AppGlobalLoader>
-                                  </UserProvider>
-                                </EthereumProvider>
-                              </DexProvider>
-                            </MarketsProvider>
+                            <EthereumProvider>
+                              <UserProvider>
+                                <AppGlobalLoader>
+                                  <PopupProvider>
+                                    <PageLayout includeContainer={false}>
+                                      {children}
+                                    </PageLayout>
+                                  </PopupProvider>
+                                </AppGlobalLoader>
+                              </UserProvider>
+                            </EthereumProvider>
                           </AssetsProvider>
                         </TokensProvider>
                       </CurrencyProvider>

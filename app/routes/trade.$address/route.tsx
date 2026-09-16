@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "@remix-run/react";
 
 import { AssetDetails } from "./components/AssetDetails/AssetDetails";
@@ -14,17 +14,23 @@ import { ROUTES } from "~/consts";
 
 export default function TradePage() {
   const { address } = useParams();
-  const { assets } = useAssetsContext();
+  const { assets, assetError } = useAssetsContext();
   const navigate = useNavigate();
 
   const asset = assets.find((item) => item.address === address);
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
 
+  useEffect(() => {
+    setIsOrderBookOpen(false);
+  }, [address]);
+
   if (!asset) {
     return (
       <Container className={styles.notFoundWrapper}>
         <RText size="body-l" weight="medium">
-          Asset not found
+          {assetError
+            ? "Unable to load assets. Please try again."
+            : "Asset not found"}
         </RText>
         <RButton
           onClick={() => navigate(ROUTES.home)}
@@ -52,6 +58,7 @@ export default function TradePage() {
 
         <div className={styles.buySellContainer}>
           <BuySellPanel
+            key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
             asset={asset}
             isOrderBookOpen={isOrderBookOpen}
             setIsOrderBookOpen={setIsOrderBookOpen}

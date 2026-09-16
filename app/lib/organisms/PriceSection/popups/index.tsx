@@ -9,17 +9,15 @@ import {
 
 //screens
 import { BuySellScreen } from "../screens/BuySellScreen";
-// import { OTCBuySellScreen } from "../screens/OTCBuySellScreen";
 
 // components
-import { Divider } from "~/lib/atoms/Divider";
 import { TabType } from "~/lib/atoms/Tab";
 
 //consts & types
-import {
-  EstateType,
-  SecondaryEstate,
-} from "~/providers/MarketsProvider/market.types";
+import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.types";
+import { matchesOrderbookDepth } from "~/lib/orderbook/orderbookConfig";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { BUY, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 import {
@@ -38,12 +36,9 @@ import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { isDefined } from "~/lib/utils";
-import { ProgresBar } from "../PrimaryPriceBlock";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
 import { MAX_ORDERBOOK_DEPTH_LIMIT, useOrderbookDepth } from "~/lib/apis/rwa";
-import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
-import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
 import {
   orderbookBuy,
@@ -66,15 +61,15 @@ import {
   getQuoteValueAtomsForOrder,
   isPriceAlignedToTickSize,
   resolveMarketPrice,
-} from "~/providers/Dexprovider/utils";
-import { EstateHeadlineTab } from "~/templates/EstateHeadlineTab";
-import { Text } from "~/lib/atoms/Typography/Text";
+} from "~/lib/orderbook";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import clsx from "clsx";
-import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
+import {
+  useOrderbookTokenMetadata,
+  type OrderbookTokenMetadata,
+} from "../hooks/useOrderbookTokenMetadata";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
 import {
@@ -84,23 +79,14 @@ import {
 import { TradeConfirmationPopup } from "../components/TradeConfirmationPopup";
 import * as gtag from "app/utils/gtags.client";
 
-export const SLIPPAGE_OPTIONS = [5, 10];
 const POPUP_RECOMMENDATIONS_LIMIT = 2;
 type MarketOrderMode = "market" | "limit";
 
-const getMarketIdentifier = (market: EstateType) =>
-  market.assetDetails.blockchain[0]?.identifier;
-
-const isCurrentPopupMarket = (
-  market: EstateType,
-  currentMarket: SecondaryEstate
-) =>
-  market.slug === currentMarket.slug ||
-  market.token_address === currentMarket.token_address ||
-  getMarketIdentifier(market) === getMarketIdentifier(currentMarket);
-
 type BuySellContentProps = {
-  estate: SecondaryEstate;
+  asset: AssetType;
+  orderbookConfig: OrderbookExecutionConfig;
+  configError?: string;
+  onRetryConfig: () => void;
   isOrderBookOpen: boolean;
   onSuccessfulTransaction?: (metadata: ContractActionSuccessMetadata) => void;
   onOrderBookVisibilityChange?: (isVisible: boolean) => void;
@@ -109,8 +95,30 @@ type BuySellContentProps = {
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 };
 
-export const BuySellContent: FC<BuySellContentProps> = ({
-  estate,
+export const BuySellContent: FC<BuySellContentProps> = (props) => {
+  const metadata = useOrderbookTokenMetadata(
+    props.asset,
+    props.orderbookConfig
+  );
+  if (!metadata.isMetadataLoaded) {
+    return (
+      <div role="status">
+        Trading unavailable: token metadata does not match the selected
+        orderbook.
+      </div>
+    );
+  }
+  return <BuySellForm {...props} metadata={metadata} />;
+};
+
+const BuySellForm: FC<
+  BuySellContentProps & { metadata: OrderbookTokenMetadata }
+> = ({
+  metadata,
+  asset,
+  orderbookConfig,
+  configError,
+  onRetryConfig,
   isOrderBookOpen,
   onSuccessfulTransaction,
   onOrderBookVisibilityChange,
@@ -118,26 +126,21 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   setIsOrderBookOpen,
   setOrderType,
 }) => {
-  const { slug } = estate;
+  const { assets, prices } = useAssetsContext();
   const { dapp } = useWalletContext();
   const { hasOrders } = useUserContext();
-  const { isLoading: isDexLoading, orderbookStorages } = useDexContext();
+
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
-  const isSecondaryEstate = estate.assetDetails.type === SECONDARY_MARKET;
 
-  const { loading: isOrderbookDepthLoading, orderbookDepth } =
-    useOrderbookDepth({
-      enabled: isSecondaryEstate,
-      limit: MAX_ORDERBOOK_DEPTH_LIMIT,
-      tokenAddress: estate.token_address,
-    });
   const {
-    marketsArr,
-    sortedMarketAddresses,
-    pickers: { pickOrderbookConfig },
-    activeMarket,
-  } = useMarketsContext();
-
+    error: depthError,
+    loading: isOrderbookDepthLoading,
+    orderbookDepth: fetchedDepth,
+  } = useOrderbookDepth({
+    enabled: true,
+    limit: MAX_ORDERBOOK_DEPTH_LIMIT,
+    tokenAddress: asset.address,
+  });
   // MArket Type
   const [marketType, setMarkettype] = useState<MarketOrderMode>("market");
   const isMarketTypeMarket = marketType === "market";
@@ -160,44 +163,24 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   // for limit market and handling input values
   const [limitPrice, setLimitPrice] = useState<BigNumber | undefined>();
 
-  // const finalLimitPrice = useMemo(() => {
-  //   if (slippagePercentage !== 0 && !isMarketTypeMarket) {
-  //     const multiplier = new BigNumber(1).minus(
-  //       new BigNumber(slippagePercentage).div(100)
-  //     );
-
-  //     if (activetabId === BUY) {
-  //       // uses amount
-  //       return amountB?.times(multiplier);
-  //     }
-  //     if (activetabId === SELL) {
-  //       // uses limit price
-  //       return limitPrice?.times(multiplier);
-  //     }
-  //   }
-
-  //   return limitPrice;
-  // }, [
-  //   activetabId,
-  //   amountB,
-  //   isMarketTypeMarket,
-  //   limitPrice,
-  //   slippagePercentage,
-  // ]);
-
   const {
+    baseTokenSlug: slug,
+    isMetadataLoaded,
     baseTokenDecimals,
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenDecimals,
     quoteTokenMetadata: quoteAssetmetadata,
-  } = useOrderbookTokenMetadata(estate);
-  const rawTickSize = orderbookStorages[slug]?.tickSize ?? 0;
-  const orderbookConfig = pickOrderbookConfig[estate.token_address];
-  const quoteCurrency = orderbookConfig?.currencies[0];
-  const currencyKey = quoteCurrency?.currencyKey ?? "";
-  const quoteTokenAddress = quoteCurrency?.token.address ?? "";
-  const quoteTokenId = quoteCurrency?.token.token_id ?? "";
-  const rwaTokenId = orderbookConfig?.rwaTokenId ?? "";
+  } = metadata;
+  const orderbookDepth = matchesOrderbookDepth(
+    fetchedDepth,
+    orderbookConfig,
+    quoteTokenDecimals
+  )
+    ? fetchedDepth
+    : null;
+  const rawTickSize = orderbookConfig.tickSize;
+  const { currencyKey, quoteTokenAddress, quoteTokenId, rwaTokenId } =
+    orderbookConfig;
   const hasLimitPriceTickError = useMemo(
     () =>
       !isMarketTypeMarket &&
@@ -277,12 +260,6 @@ export const BuySellContent: FC<BuySellContentProps> = ({
         label: "Sell",
         handleClick: handleTabClick,
       },
-      // {
-      //   id: OTC,
-      //   label: "OTC",
-      //   handleClick: handleTabClick,
-      //   disabled: true,
-      // },
     ],
     [handleTabClick]
   );
@@ -313,9 +290,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     () => marketTabs.find((tab) => tab.id === marketType),
     [marketTabs, marketType]
   );
-  const isOrderDataLoading =
-    isSecondaryEstate &&
-    (isDexLoading || (isMarketTypeMarket && isOrderbookDepthLoading));
+  const isOrderDataLoading = isMarketTypeMarket && isOrderbookDepthLoading;
 
   useEffect(() => {
     const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
@@ -330,13 +305,17 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   }, [
     amountB,
     activetabId,
-    estate.token_address,
+    asset.address,
     marketType,
     slug,
     tokenPrice,
     limitPrice,
     isMarketTypeMarket,
   ]);
+
+  useEffect(() => {
+    setAvtiveTabId(orderType);
+  }, [orderType]);
 
   // reset values when switching tabs
   useLayoutEffect(() => {
@@ -433,12 +412,12 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     return {
       ...restBuyprops,
       rwaTokenId,
-      rwaTokenAddress: estate.token_address,
+      rwaTokenAddress: asset.address,
       minRwaTokenAmount: orderbookConfig?.minSellOrderAmount,
       minQuoteValue: orderbookConfig?.minSellOrderValue,
     };
   }, [
-    estate.token_address,
+    asset.address,
     limitBuyProps,
     orderbookConfig?.minSellOrderAmount,
     orderbookConfig?.minSellOrderValue,
@@ -475,13 +454,13 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       minRwaTokenAmount: orderbookConfig?.minSellOrderAmount,
       minQuoteValue: orderbookConfig?.minSellOrderValue,
       rwaTokenId,
-      rwaTokenAddress: estate.token_address,
+      rwaTokenAddress: asset.address,
       isMarketOrder: true,
     };
   }, [
     bestLimitBidAtoms,
     commonOrderProps,
-    estate.token_address,
+    asset.address,
     marketSellAmountAtoms,
     orderbookConfig?.minSellOrderAmount,
     orderbookConfig?.minSellOrderValue,
@@ -489,6 +468,13 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   ]);
 
   const marketConfigValidationMessage = useMemo(() => {
+    if (configError) return configError;
+    if (fetchedDepth && !orderbookDepth)
+      return "Orderbook depth does not match the selected token pair.";
+    if (isMarketTypeMarket && depthError)
+      return "Orderbook depth is unavailable.";
+    if (!isMetadataLoaded)
+      return "Token metadata does not match the selected orderbook.";
     if (!orderbookConfig?.address) {
       return "Selected market is missing orderbook configuration.";
     }
@@ -523,6 +509,12 @@ export const BuySellContent: FC<BuySellContentProps> = ({
 
     return undefined;
   }, [
+    configError,
+    fetchedDepth,
+    orderbookDepth,
+    isMarketTypeMarket,
+    depthError,
+    isMetadataLoaded,
     baseTokenDecimals,
     currencyKey,
     orderbookConfig?.address,
@@ -716,38 +708,34 @@ export const BuySellContent: FC<BuySellContentProps> = ({
 
   // actual contract calls and their handlers ---------------
 
-  const popupRecommendedMarkets = useMemo(() => {
-    const visibleMarketSlugs = new Set(sortedMarketAddresses);
-
-    return marketsArr
-      .filter(
-        (market) =>
-          visibleMarketSlugs.has(market.slug) &&
-          !isCurrentPopupMarket(market, estate)
-      )
-      .slice(0, POPUP_RECOMMENDATIONS_LIMIT);
-  }, [estate, marketsArr, sortedMarketAddresses]);
+  const popupRecommendedMarkets = useMemo(
+    () =>
+      assets
+        .filter((item) => item.address !== asset.address)
+        .slice(0, POPUP_RECOMMENDATIONS_LIMIT),
+    [assets, asset.address]
+  );
 
   const memoizedPopupProps: ContractActionPopupProps | undefined = useMemo(
     () =>
       popupRecommendedMarkets.length
         ? {
             key: "inProgressRwaAd",
-            props: { rwas: popupRecommendedMarkets },
+            props: { rwas: popupRecommendedMarkets, prices },
           }
         : undefined,
-    [popupRecommendedMarkets]
+    [popupRecommendedMarkets, prices]
   );
 
   const memoizedToastProps: ContractActionToastProps = useMemo(() => {
     const action = orderType === BUY ? "bought" : "sold";
     return {
       success: {
-        title: `${activeMarket?.symbol} ${orderType === BUY ? "Buy" : "Sell"}`,
-        message: `Successfully ${action} ${activeMarket?.symbol}`,
+        title: `${asset.metadata.symbol} ${orderType === BUY ? "Buy" : "Sell"}`,
+        message: `Successfully ${action} ${asset.metadata.symbol}`,
       },
     };
-  }, [orderType, activeMarket?.symbol]);
+  }, [orderType, asset.metadata.symbol]);
 
   const handleSuccessfulTransaction = useCallback(
     (metadata: ContractActionSuccessMetadata) => {
@@ -827,6 +815,8 @@ export const BuySellContent: FC<BuySellContentProps> = ({
   }, []);
 
   const handleConfirmedBuySellAction = useCallback(() => {
+    if (isOrderDataLoading || orderValidationMessage || hasLimitPriceTickError)
+      return;
     buySellActionCb();
 
     const isBuyAction = orderType === BUY;
@@ -850,7 +840,14 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       category: eventLabel,
       label: eventLabel,
     });
-  }, [buySellActionCb, isMarketTypeMarket, orderType]);
+  }, [
+    buySellActionCb,
+    isMarketTypeMarket,
+    orderType,
+    isOrderDataLoading,
+    orderValidationMessage,
+    hasLimitPriceTickError,
+  ]);
 
   const handleBuySellAction = useCallback(() => {
     if (hasOrders === true) {
@@ -891,62 +888,32 @@ export const BuySellContent: FC<BuySellContentProps> = ({
     [marketType]
   );
 
-  const HeadlinePreviewSection = () => (
-    <div className="flex items-center gap-3 font-medium">
-      <div className="w-[76px] h-[57px] rounded-lg overflow-hidden">
-        <img
-          src={estate.assetDetails.previewImage}
-          alt={estate.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="flex flex-col gap-1 items-start">
-        <h3 className="text-card-headline text-sand-900">{estate.name}</h3>
-
-        <div className="flex items-center gap-[8px]">
-          <EstateHeadlineTab
-            isSecondaryEstate={estate.assetDetails.type === "Secondary Market"}
-          />
-          <Text size="smallBody" weight="semibold">
-            APY {estate.assetDetails.APY}%
-          </Text>
-        </div>
-      </div>
-    </div>
-  );
-
-  const shouldRenderOrderBook = isSecondaryEstate;
-  const shouldRenderEntryControls = shouldRenderOrderBook;
-  const shouldRenderHeader = !isSecondaryEstate;
-
   useEffect(() => {
-    onOrderBookVisibilityChange?.(shouldRenderOrderBook && isOrderBookOpen);
-  }, [isOrderBookOpen, onOrderBookVisibilityChange, shouldRenderOrderBook]);
+    onOrderBookVisibilityChange?.(isOrderBookOpen);
+  }, [isOrderBookOpen, onOrderBookVisibilityChange]);
 
   return (
     <>
-      {shouldRenderOrderBook && (
-        <PopupWithIcon
-          isOpen={isOrderBookOpen}
-          onRequestClose={closeOrderBook}
-          contentClassName={styles.orderBookPopupContent}
-          contentPosition="right"
-          className={clsx("bg-white", styles.orderBookPopup)}
-        >
-          <OrderBookTable
-            baseTokenDecimals={baseTokenDecimals}
-            baseTokenSymbol={selectedAssetMetadata.symbol}
-            enabled={isSecondaryEstate}
-            onPriceClick={
-              isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
-            }
-            quoteTokenDecimals={quoteTokenDecimals}
-            quoteTokenSymbol={quoteAssetmetadata.symbol}
-            referencePrice={tokenPrice.toNumber()}
-            rwaAddress={estate.token_address}
-          />
-        </PopupWithIcon>
-      )}
+      <PopupWithIcon
+        isOpen={isOrderBookOpen}
+        onRequestClose={closeOrderBook}
+        contentClassName={styles.orderBookPopupContent}
+        contentPosition="right"
+        className={clsx("bg-white", styles.orderBookPopup)}
+      >
+        <OrderBookTable
+          baseTokenDecimals={baseTokenDecimals}
+          baseTokenSymbol={selectedAssetMetadata.symbol}
+          enabled={true}
+          onPriceClick={
+            isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
+          }
+          quoteTokenDecimals={quoteTokenDecimals}
+          quoteTokenSymbol={quoteAssetmetadata.symbol}
+          referencePrice={tokenPrice.toNumber()}
+          rwaAddress={asset.address}
+        />
+      </PopupWithIcon>
       <TradeConfirmationPopup
         isOpen={!hasOrders && isTradeConfirmationOpen}
         onCancel={handleCloseTradeConfirmation}
@@ -954,67 +921,50 @@ export const BuySellContent: FC<BuySellContentProps> = ({
       />
 
       <div className={styles.buySellRoot}>
-        {shouldRenderHeader && (
-          <div className="flex items-center">
-            <div className="flex flex-col w-full">
-              <HeadlinePreviewSection />
-              {!isSecondaryEstate && (
-                <div className="mt-4 w-full">
-                  <h4 className="text-content text-body mb-3 font-semibold">
-                    Shares
-                  </h4>
-                  <ProgresBar
-                    tokensCount={
-                      estate.assetDetails.priceDetails.tokensAvailable
-                    }
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+        {configError && (
+          <button type="button" onClick={onRetryConfig}>
+            Retry configuration
+          </button>
         )}
-        {shouldRenderHeader && <Divider className="my-6" />}
+        <div className={styles.tradeControls}>
+          <RCustomDropdown className={styles.marketDropdown}>
+            <RDropdownFaceContent
+              aria-label="Order mode"
+              className={styles.marketDropdownTrigger}
+            >
+              {selectedMarketTab?.label ?? "Market"}
+            </RDropdownFaceContent>
+            <RDropdownBodyContent
+              align="left"
+              className={styles.marketDropdownMenu}
+            >
+              {marketTabs.map((tab) => (
+                <RDropdownBodyContentItem
+                  isSelected={tab.id === marketType}
+                  key={tab.id}
+                  onClick={() => handleMarketChange(tab.id)}
+                >
+                  {tab.label}
+                </RDropdownBodyContentItem>
+              ))}
+            </RDropdownBodyContent>
+          </RCustomDropdown>
 
-        {shouldRenderEntryControls && (
-          <div className={styles.tradeControls}>
-            <RCustomDropdown className={styles.marketDropdown}>
-              <RDropdownFaceContent
-                aria-label="Order mode"
-                className={styles.marketDropdownTrigger}
-              >
-                {selectedMarketTab?.label ?? "Market"}
-              </RDropdownFaceContent>
-              <RDropdownBodyContent
-                align="left"
-                className={styles.marketDropdownMenu}
-              >
-                {marketTabs.map((tab) => (
-                  <RDropdownBodyContentItem
-                    isSelected={tab.id === marketType}
-                    key={tab.id}
-                    onClick={() => handleMarketChange(tab.id)}
-                  >
-                    {tab.label}
-                  </RDropdownBodyContentItem>
-                ))}
-              </RDropdownBodyContent>
-            </RCustomDropdown>
-
-            <TabSwitcherV2
-              activeClassName={styles.sideTabActive}
-              activeTabId={activetabId}
-              className={styles.sideTabs}
-              // @ts-expect-error // OrderType is string
-              tabs={tabs}
-              tabClassName={styles.sideTab}
-            />
-          </div>
-        )}
+          <TabSwitcherV2
+            activeClassName={styles.sideTabActive}
+            activeTabId={activetabId}
+            className={styles.sideTabs}
+            // @ts-expect-error // OrderType is string
+            tabs={tabs}
+            tabClassName={styles.sideTab}
+          />
+        </div>
 
         {(activetabId === BUY || activetabId === SELL) &&
           (marketType === "market" ? (
             <BuySellScreen
-              estate={estate}
+              metadata={metadata}
+              tokenAddress={asset.address}
               actionCb={handleBuySellAction}
               actionType={activetabId}
               amount={amountB}
@@ -1032,7 +982,8 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               limitPrice={limitPrice}
               marketTokenPrice={tokenPrice}
               setLimitPrice={setLimitPrice}
-              estate={estate}
+              metadata={metadata}
+              tokenAddress={asset.address}
               actionCb={handleBuySellAction}
               actionType={activetabId}
               amount={amountB}
@@ -1046,11 +997,7 @@ export const BuySellContent: FC<BuySellContentProps> = ({
               validationMessage={orderValidationMessage}
             />
           ))}
-
-        {/* {activetabId === OTC && <OTCPopupContent estate={estate} />} */}
       </div>
     </>
   );
 };
-
-export const PopupContent = BuySellContent;

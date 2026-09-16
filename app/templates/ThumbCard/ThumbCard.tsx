@@ -19,7 +19,7 @@ type ThumbCardProps = {
 type ThumbCardSecondary = Omit<ThumbCardProps, "address"> & {
   description: string;
   progressBarPercentage?: number;
-  isSecondaryMarket: boolean;
+  isSecondaryMarket?: boolean;
   pricePerToken?: BigNumber;
   flags: string[];
 };
@@ -50,7 +50,9 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
         )}
       >
         <div className="flex items-center gap-2 flex-wrap">
-          <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
+          {isSecondaryMarket !== undefined && (
+            <EstateHeadlineTab isSecondaryEstate={isSecondaryMarket} />
+          )}
           {flags.slice(0, 1).map((flag) => (
             <AssetFlag key={flag} flagValue={flag} />
           ))}

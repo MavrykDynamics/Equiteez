@@ -1,81 +1,81 @@
-import { useMemo } from "react";
-
-import { stablecoinContract } from "~/consts/contracts";
-import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
+import { toTokenSlug } from "~/lib/assets";
 import {
   createFallbackTokenMetadata,
-  STABLECOIN_METADATA,
-  type TokenMetadata,
   useAssetMetadata,
+  type TokenMetadata,
 } from "~/lib/metadata";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { DEFAULT_QUOTE_TOKEN_DECIMALS } from "~/providers/Dexprovider/utils";
-import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.types";
 
-const UNKNOWN_TOKEN_SYMBOL = "???";
-
-const createBaseTokenFallbackMetadata = (
-  estate: SecondaryEstate
-): TokenMetadata =>
-  createFallbackTokenMetadata({
-    address: estate.token_address,
-    decimals: estate.decimals,
-    name: estate.name,
-    symbol: estate.symbol,
-    thumbnailUri: estate.icon || undefined,
-  });
-
-const createQuoteTokenFallbackMetadata = (
-  quoteTokenSlug: string
-): TokenMetadata => {
-  const [address, id = "0"] = fromAssetSlug(quoteTokenSlug);
-  const isStablecoin = address === stablecoinContract;
-
-  if (isStablecoin) {
-    return STABLECOIN_METADATA;
-  }
-
-  return createFallbackTokenMetadata({
-    address,
-    name: "Unknown Token",
-    id,
-    symbol: UNKNOWN_TOKEN_SYMBOL,
-    decimals: DEFAULT_QUOTE_TOKEN_DECIMALS,
-  });
-};
-
-export const useOrderbookTokenMetadata = (estate: SecondaryEstate) => {
-  const { orderbookTokenPair } = useDexContext();
-  const { slug } = estate;
-
-  const quoteTokenSlug =
-    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
-
-  const loadedBaseTokenMetadata = useAssetMetadata(slug);
-  const loadedQuoteTokenMetadata = useAssetMetadata(quoteTokenSlug);
-
-  const fallbackBaseTokenMetadata = useMemo(
-    () => createBaseTokenFallbackMetadata(estate),
-    [estate]
+function validateMetadata(
+  metadata: TokenMetadata,
+  address: string,
+  id: string,
+  decimals: number
+) {
+  return (
+    metadata.address === address &&
+    metadata.id === id &&
+    metadata.decimals === decimals &&
+    Number.isSafeInteger(decimals) &&
+    decimals >= 0
   );
-  const fallbackQuoteTokenMetadata = useMemo(
-    () => createQuoteTokenFallbackMetadata(quoteTokenSlug),
-    [quoteTokenSlug]
-  );
+}
 
+export const useOrderbookTokenMetadata = (
+  asset: AssetType,
+  config: OrderbookExecutionConfig
+) => {
+  const baseTokenSlug = toTokenSlug(config.baseTokenAddress, config.rwaTokenId);
+  const quoteTokenSlug = toTokenSlug(
+    config.quoteTokenAddress,
+    config.quoteTokenId
+  );
+  const loadedBase = useAssetMetadata(baseTokenSlug);
+  const loadedQuote = useAssetMetadata(quoteTokenSlug);
   const baseTokenMetadata =
-    loadedBaseTokenMetadata ?? fallbackBaseTokenMetadata;
+    loadedBase ??
+    createFallbackTokenMetadata({
+      address: config.baseTokenAddress,
+      id: config.rwaTokenId,
+      decimals: asset.metadata.decimals,
+      name: asset.metadata.name,
+      symbol: asset.metadata.symbol,
+      thumbnailUri: asset.metadata.icon,
+    });
   const quoteTokenMetadata =
-    loadedQuoteTokenMetadata ?? fallbackQuoteTokenMetadata;
-
+    loadedQuote ??
+    createFallbackTokenMetadata({
+      address: config.quoteTokenAddress,
+      id: config.quoteTokenId,
+      decimals: asset.orderbook!.quote_token.decimals,
+      name: asset.orderbook!.quote_token.symbol,
+      symbol: asset.orderbook!.quote_token.symbol,
+    });
+  const isMetadataLoaded =
+    validateMetadata(
+      baseTokenMetadata,
+      config.baseTokenAddress,
+      config.rwaTokenId,
+      asset.metadata.decimals
+    ) &&
+    validateMetadata(
+      quoteTokenMetadata,
+      config.quoteTokenAddress,
+      config.quoteTokenId,
+      asset.orderbook!.quote_token.decimals
+    );
   return {
-    baseTokenDecimals: baseTokenMetadata.decimals,
+    baseTokenSlug,
     baseTokenMetadata,
-    isMetadataLoaded: Boolean(
-      loadedBaseTokenMetadata && loadedQuoteTokenMetadata
-    ),
-    quoteTokenDecimals: quoteTokenMetadata.decimals,
     quoteTokenMetadata,
     quoteTokenSlug,
+    baseTokenDecimals: baseTokenMetadata.decimals,
+    quoteTokenDecimals: quoteTokenMetadata.decimals,
+    isMetadataLoaded,
   };
 };
+
+export type OrderbookTokenMetadata = ReturnType<
+  typeof useOrderbookTokenMetadata
+>;

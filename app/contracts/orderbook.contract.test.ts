@@ -100,3 +100,61 @@ describe("orderbook contract tick validation", () => {
     ).resolves.toHaveLength(3);
   });
 });
+
+// Verified MARS1/USDT identities from the catalog and selected GraphQL book.
+describe("selected-config transaction arguments", () => {
+  it.each([false, true])(
+    "preserves buy/sell entrypoint payloads (market=%s)",
+    async (isMarketOrder) => {
+      const tezos = createMockTezos();
+      const contract = await tezos.wallet.at(
+        "KT1Xku8NHSXradgodirQXxHLoVn4oESFPjes"
+      );
+      const payload = {
+        rwaTokenAmount: "1000000",
+        pricePerRwaToken: "100000",
+        currency: "USDT",
+        orderExpiry: null,
+        isMarketOrder,
+      };
+      await orderbookBuyBatch({
+        ...baseBuyParams,
+        ...payload,
+        tezos,
+        orderbookContractAddress: "KT1Xku8NHSXradgodirQXxHLoVn4oESFPjes",
+        quoteTokenAddress: "KT1VAymHKvx9oreDRqN22rf2huuYiV5ofe34",
+      });
+      expect(contract.methodsObject.placeBuyOrder).toHaveBeenCalledWith([
+        payload,
+      ]);
+      expect(contract.methodsObject.update_operators).toHaveBeenCalledWith([
+        {
+          add_operator: {
+            owner: "tz1sender",
+            operator: "KT1Xku8NHSXradgodirQXxHLoVn4oESFPjes",
+            token_id: "0",
+          },
+        },
+      ]);
+      await orderbookSellBatch({
+        ...baseSellParams,
+        ...payload,
+        tezos,
+        orderbookContractAddress: "KT1Xku8NHSXradgodirQXxHLoVn4oESFPjes",
+        rwaTokenAddress: "KT1XLUiaPpivxi2e4U1wEctQ7DKDkdz9GQgK",
+      });
+      expect(contract.methodsObject.placeSellOrder).toHaveBeenCalledWith([
+        payload,
+      ]);
+      expect(contract.methodsObject.update_operators).toHaveBeenCalledWith([
+        {
+          remove_operator: {
+            owner: "tz1sender",
+            operator: "KT1Xku8NHSXradgodirQXxHLoVn4oESFPjes",
+            token_id: "0",
+          },
+        },
+      ]);
+    }
+  );
+});

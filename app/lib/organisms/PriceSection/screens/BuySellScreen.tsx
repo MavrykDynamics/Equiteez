@@ -7,16 +7,16 @@ import { Button } from "~/lib/atoms/Button";
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { fromAssetSlug } from "~/lib/assets";
-import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
-import { safeDivByPrice } from "~/providers/Dexprovider/utils";
+import { safeDivByPrice } from "~/lib/orderbook";
 import { FeesCard } from "../components/FeesCard/FeesCard";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { ZERO } from "~/lib/utils/numbers";
 import Money from "~/lib/atoms/Money";
-import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import type { OrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import {
   getStatusLabel,
   STATUS_CONFIRMING,
@@ -28,7 +28,8 @@ import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
 type BuySellScreenProps = {
-  estate: SecondaryEstate;
+  metadata: OrderbookTokenMetadata;
+  tokenAddress: string;
   actionType: OrderType; // buy | sell
   actionCb: () => void;
   continueButtonClassName?: string;
@@ -45,7 +46,8 @@ type BuySellScreenProps = {
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
-  estate,
+  metadata,
+  tokenAddress: token_address,
   actionType,
   actionCb,
   continueButtonClassName,
@@ -59,12 +61,12 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   isOrderDataLoading = false,
   validationMessage,
 }) => {
-  const { token_address, slug } = estate;
+  const { baseTokenSlug: slug } = metadata;
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
     quoteTokenSlug,
-  } = useOrderbookTokenMetadata(estate);
+  } = metadata;
 
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
     null

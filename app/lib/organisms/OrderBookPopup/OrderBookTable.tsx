@@ -14,9 +14,9 @@ import BuyOnlyIcon from "app/icons/buy-only-icon.svg?react";
 import BuySellIcon from "app/icons/buy-sell-icon.svg?react";
 import SellOnlyIcon from "app/icons/sell-only-icon.svg?react";
 
-import { OrderTypes } from "~/lib/apis/mbrwa/user/userOrders/order.const";
-import type { OrderbookLastTradeEvent } from "~/lib/apis/mbrwa/orderbookLastTrades/orderbookLastTrades.schema";
-import { useOrderbookLastTrades } from "~/lib/apis/mbrwa/orderbookLastTrades/useOrderbookLastTrades";
+import { OrderTypes } from "~/lib/orderbook/order.const";
+import type { OrderbookLastTradeEvent } from "~/lib/apis/orderbookLastTrades/orderbookLastTrades.schema";
+import { useOrderbookLastTrades } from "~/lib/apis/orderbookLastTrades/useOrderbookLastTrades";
 import {
   createDefaultOrderBookData,
   createOrderBookDataFromDepth,
