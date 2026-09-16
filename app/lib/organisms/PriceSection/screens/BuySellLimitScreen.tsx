@@ -8,7 +8,7 @@ import { Button } from "~/lib/atoms/Button";
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { fromAssetSlug } from "~/lib/assets";
-import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
 import { BalanceInputWithTotal } from "~/templates/BalanceInput";
@@ -20,8 +20,8 @@ import {
   exceedsAvailableBalance,
   getDisplayTickSize,
   isPriceAlignedToTickSize,
-} from "~/providers/Dexprovider/utils";
-import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+} from "~/lib/orderbook";
+import type { OrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import {
   getStatusLabel,
   STATUS_CONFIRMING,
@@ -37,7 +37,8 @@ import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
 type BuySellLimitScreenProps = {
-  estate: SecondaryEstate;
+  metadata: OrderbookTokenMetadata;
+  tokenAddress: string;
   actionType: OrderType; // buy | sell
   actionCb: () => void;
   continueButtonClassName?: string;
@@ -50,7 +51,7 @@ type BuySellLimitScreenProps = {
   setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   limitPrice: BigNumber | undefined;
-  rawTickSize: number;
+  rawTickSize: BigNumber.Value;
   setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   status: StatusFlag;
   isOrderDataLoading?: boolean;
@@ -58,7 +59,8 @@ type BuySellLimitScreenProps = {
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
-  estate,
+  metadata,
+  tokenAddress: token_address,
   actionType,
   actionCb,
   continueButtonClassName,
@@ -75,13 +77,13 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   isOrderDataLoading = false,
   validationMessage,
 }) => {
-  const { token_address, slug } = estate;
+  const { baseTokenSlug: slug } = metadata;
 
   const {
     baseTokenMetadata: selectedAssetMetadata,
     quoteTokenMetadata: stableCoinMetadata,
     quoteTokenSlug,
-  } = useOrderbookTokenMetadata(estate);
+  } = metadata;
 
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);

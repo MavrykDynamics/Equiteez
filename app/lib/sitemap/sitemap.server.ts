@@ -1,5 +1,5 @@
 import { GENERATED_STATIC_SITEMAP_PATHS } from "~/generated/sitemap-routes";
-import { estateSlugs } from "~/providers/MarketsProvider/estateSlugs";
+import { estateSlugs } from "~/lib/sitemap/estateSlugs";
 
 const XML_ESCAPE_MAP: Record<string, string> = {
   '"': "&quot;",
