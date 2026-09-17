@@ -154,14 +154,7 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
               </motion.div>
             )}
 
-            <div className={styles.yieldRow}>
-              <RText color="neutral-700" size="body-s">
-                {isPrimaryIssuance ? "Projected Yield" : "Net yield"}
-              </RText>
-              <RText color="accent-green-500" size="body-s" weight="medium">
-                <Money tooltip={false}>4.78</Money>%
-              </RText>
-            </div>
+
           </div>
         </div>
       </Link>

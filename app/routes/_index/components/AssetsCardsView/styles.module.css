@@ -17,7 +17,7 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  padding: var(--r-space-5) var(--r-space-5) 5px;
+  padding: var(--r-space-5);
   overflow: hidden;
   color: inherit;
   text-decoration: none;
@@ -124,7 +124,6 @@
   display: flex;
   align-items: center;
   height: 72px;
-  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
 .saleProgress {
@@ -181,7 +180,6 @@
   margin-bottom: 0;
   margin-left: calc(var(--r-space-5) * -1);
   overflow: hidden;
-  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
 @media (--media-laptop) {

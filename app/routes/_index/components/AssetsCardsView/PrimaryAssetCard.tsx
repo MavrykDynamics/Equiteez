@@ -57,16 +57,6 @@ export function PrimaryAssetCard({ asset }: PrimaryAssetCardProps) {
         <div className={styles.saleProgressSection}>
           <AssetSaleProgress asset={asset} />
         </div>
-
-        {/*TODO remove mock data*/}
-        <div className={styles.projectedYield}>
-          <RText color="neutral-700" size="body-s">
-            Projected Yield
-          </RText>
-          <RText size="body-s" weight="medium" color="accent-green-500">
-            <Money tooltip={false}>4.78</Money>%
-          </RText>
-        </div>
       </div>
     </Link>
   );
