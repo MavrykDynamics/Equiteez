@@ -1,0 +1,53 @@
+@import "../../../styles/breakpoints.css";
+
+.navigation {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: none;
+  background: var(--r-color-neutral-white);
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  box-shadow: 0 -10px 30px rgba(1, 1, 1, 0.08);
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--r-space-2);
+  align-items: center;
+  min-height: 66px;
+  padding: var(--r-space-2) var(--r-space-4);
+}
+
+.navItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: var(--r-space-2) var(--r-space-3);
+  color: var(--r-color-neutral-700);
+  text-decoration: none;
+  border-radius: var(--r-radius-sm);
+  transition:
+    color var(--r-transition-duration-fast) ease,
+    background-color var(--r-transition-duration-fast) ease,
+    box-shadow var(--r-transition-duration-fast) ease;
+}
+
+.navItemActive {
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-50);
+}
+
+.navItem:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+@media (--media-tablet) {
+  .navigation {
+    display: block;
+  }
+}

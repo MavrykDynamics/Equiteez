@@ -1,0 +1,5 @@
+.switcher {
+  display: inline-flex;
+  gap: var(--r-space-2);
+  align-items: center;
+}

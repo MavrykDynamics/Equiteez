@@ -13,6 +13,10 @@ export type ActionSuccessReturnType = {
   operation: TransactionWalletOperation | BatchWalletOperation;
 };
 
+export type ContractActionLifecycleCallbacks = {
+  onTransactionSubmitted?: () => void;
+};
+
 // Stake | UnStake actions
 export type StakeActionType = typeof STAKE_ACTION | typeof UNSTAKE_ACTION;
 

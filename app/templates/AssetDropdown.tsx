@@ -32,11 +32,11 @@ export const AssetDropdown: FC<AssetDropdownProps> = ({
                 <div className="flex items-center gap-2">
                   <AssetIcon
                     key={selectedAssetSlug}
-                    size={32}
+                    size={24}
                     assetSlug={selectedAssetSlug}
-                    className="w-8 h-8"
+                    className="w-6 h-6"
                   />
-                  <span className="text-sand-900 text-body font-semibold">
+                  <span className="text-sand-900 text-body-xs font-semibold">
                     {metadata.symbol}
                   </span>
                 </div>

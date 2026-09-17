@@ -1,0 +1,187 @@
+@import "../../../../styles/breakpoints.css";
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.loadingOverlay {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 55%);
+  backdrop-filter: blur(1px);
+}
+
+.table {
+  min-width: 1180px;
+}
+
+.headerRow,
+.row {
+  display: grid;
+  grid-template-columns:
+    136px minmax(116px, 1fr) 159px minmax(116px, 1fr) minmax(132px, 1fr)
+    160px 136px minmax(128px, 1fr) 56px;
+}
+
+.headerRow > th,
+.headerCell,
+.cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  padding: 0 var(--r-space-3);
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  white-space: nowrap;
+}
+
+.headerRow > th,
+.headerCell {
+  height: 39px;
+  gap: var(--r-space-1);
+}
+
+.row {
+  height: 61px;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.row:hover {
+  background: var(--r-color-neutral-50);
+}
+
+.row:last-child .cell {
+  border-bottom: 0;
+}
+
+.expiredCell {
+  gap: var(--r-space-1);
+  padding-top: var(--r-space-5);
+  padding-bottom: var(--r-space-5);
+}
+
+.expiredIcon {
+  display: block;
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+  flex: none;
+}
+
+.date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.buy,
+.sell {
+  display: inline-flex;
+  gap: var(--r-space-1);
+  align-items: center;
+}
+
+.buy {
+  color: var(--r-color-green-500);
+}
+
+.sell {
+  color: var(--r-color-red-500);
+}
+
+.typeIcon {
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+}
+
+.typeLabel {
+  color: currentColor;
+}
+
+.filled {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+.filledAmounts,
+.filledProgress {
+  display: flex;
+  width: 100%;
+  gap: var(--r-space-1);
+  align-items: flex-end;
+}
+
+.filledProgress {
+  gap: var(--r-space-2);
+  align-items: center;
+}
+
+.filledTrack,
+.filledValue {
+  display: block;
+  height: 5px;
+  border-radius: var(--r-radius-pill);
+}
+
+.filledTrack {
+  min-width: 0;
+  flex: 1 0 0;
+  overflow: hidden;
+  background: var(--r-color-neutral-100);
+}
+
+.filledValue {
+  width: var(--filled-percent);
+  background: var(--r-color-accent-green-500);
+}
+
+.actionCell {
+  justify-content: center;
+}
+
+.actionIcon {
+  display: inline-flex;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--r-color-neutral-500);
+  cursor: pointer;
+}
+
+.actionIcon:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.state {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.paginationFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--r-space-4);
+}
+
+@media (--media-tablet-max) {
+  .table {
+    min-width: 1080px;
+  }
+}

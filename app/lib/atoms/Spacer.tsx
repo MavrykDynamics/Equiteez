@@ -6,7 +6,7 @@ type SpacerProps = {
   height?: number;
 };
 
-export const Spacer: FC<SpacerProps> = ({ height = 100, className }) => {
+export const Spacer: FC<SpacerProps> = ({ height, className }) => {
   return (
     <div style={{ height }} className={clsx(`bg-transparent`, className)} />
   );

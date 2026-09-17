@@ -5,8 +5,8 @@ import { TabSwitcher } from "~/lib/organisms/TabSwitcher";
 // icons
 import { Button } from "~/lib/atoms/Button";
 import { stablecoinContract } from "~/consts/contracts";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
+// import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+// import { buyBaseToken, sellBaseToken } from "~/contracts/dodo.contract";
 import {
   ADMIN,
   BUY_TAB,
@@ -17,32 +17,37 @@ import {
 } from "./consts";
 import { AdminScreen } from "./AdminScreen";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { useContractAction } from "~/contracts/hooks/useContractAction";
+// import { useContractAction } from "~/contracts/hooks/useContractAction";
 import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
 import { atomsToTokens, rwaToFixed } from "~/lib/utils/formaters";
 import clsx from "clsx";
 import { useCurrencyContext } from "~/providers/CurrencyProvider/currency.provider";
-import { toTokenSlug } from "~/lib/assets";
+import { fromAssetSlug, toTokenSlug } from "~/lib/assets";
 import BigNumber from "bignumber.js";
-import {
-  caclMinMaxQuoteBuying,
-  caclMinMaxQuoteSelling,
-} from "~/lib/utils/calcFns";
+// import {
+//   caclMinMaxQuoteBuying,
+//   caclMinMaxQuoteSelling,
+// } from "~/lib/utils/calcFns";
 import usePrevious from "~/lib/ui/hooks/usePrevious";
-import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
-import { rateToNumber } from "~/lib/utils/numbers";
+// import { orderbookBuy, orderbookSell } from "~/contracts/orderbook.contract";
+// import { rateToNumber } from "~/lib/utils/numbers";
 import { isDefined } from "~/lib/utils";
 import { AssetField } from "~/lib/organisms/AssetField";
 import { CryptoBalance } from "~/templates/Balance";
+// import {
+//   getStatusLabel,
+//   pickStatusFromMultiple,
+//   STATUS_PENDING,
+// } from "~/lib/ui/use-status-flag";
 import {
-  getStatusLabel,
-  pickStatusFromMultiple,
-  STATUS_PENDING,
-} from "~/lib/ui/use-status-flag";
-import { TokenMetadata, useAssetMetadata } from "~/lib/metadata";
+  createFallbackTokenMetadata,
+  STABLECOIN_METADATA,
+  useAssetMetadata,
+} from "~/lib/metadata";
 import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { calculateEstFee } from "~/providers/Dexprovider/utils";
+import { calculateEstFee, safeDivByPrice } from "~/providers/Dexprovider/utils";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+import { ZERO } from "~/lib/utils/numbers";
 
 type BuySellTabsProps = {
   symbol: string;
@@ -50,122 +55,122 @@ type BuySellTabsProps = {
   slug: string;
 };
 
-const useBuySellActions = (
-  price: BigNumber | undefined,
-  amount: BigNumber | undefined,
-  tokenAddress: string,
-  tokenPrice: BigNumber,
-  selectedAssetMetadata: TokenMetadata,
-  quoteAssetmetadata: TokenMetadata
-) => {
-  const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
-  const { tokensMetadata } = useTokensContext();
-  const { usdToTokenRates } = useCurrencyContext();
-  const {
-    pickers: {
-      pickDodoContractBasedOnToken,
-      pickOrderbookContract,
-      pickDodoContractQuoteToken,
-    },
-  } = useMarketsContext();
+// const useBuySellActions = (
+//   price: BigNumber | undefined,
+//   amount: BigNumber | undefined,
+//   tokenAddress: string,
+//   tokenPrice: BigNumber,
+//   selectedAssetMetadata: TokenMetadata,
+//   quoteAssetmetadata: TokenMetadata
+// ) => {
+//   const slug = useMemo(() => toTokenSlug(tokenAddress), [tokenAddress]);
+//   const { tokensMetadata } = useTokensContext();
+//   const { usdToTokenRates } = useCurrencyContext();
+//   const {
+//     pickers: {
+//       pickDodoContractBasedOnToken,
+//       pickOrderbookContract,
+//       pickDodoContractQuoteToken,
+//     },
+//   } = useMarketsContext();
 
-  const buyProps = useMemo(
-    () => ({
-      marketContractAddress: pickOrderbookContract[tokenAddress],
-      tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
-      pricePerToken: price?.toNumber(),
-      decimals: tokensMetadata[slug]?.decimals,
-    }),
-    [
-      tokenAddress,
-      amount,
-      usdToTokenRates,
-      slug,
-      price,
-      tokensMetadata,
-      pickOrderbookContract,
-    ]
-  );
+//   const buyProps = useMemo(
+//     () => ({
+//       marketContractAddress: pickOrderbookContract[tokenAddress],
+//       tokensAmount: amount?.div(rateToNumber(usdToTokenRates[slug])).toNumber(),
+//       pricePerToken: price?.toNumber(),
+//       decimals: tokensMetadata[slug]?.decimals,
+//     }),
+//     [
+//       tokenAddress,
+//       amount,
+//       usdToTokenRates,
+//       slug,
+//       price,
+//       tokensMetadata,
+//       pickOrderbookContract,
+//     ]
+//   );
 
-  const sellProps = useMemo(
-    () => ({
-      marketContractAddress: pickOrderbookContract[tokenAddress],
-      rwaTokenAddress: tokenAddress,
-      tokensAmount: amount?.toNumber(),
-      pricePerToken: price?.toNumber(),
-      decimals: tokensMetadata[slug]?.decimals,
-    }),
-    [amount, price, slug, tokenAddress, tokensMetadata, pickOrderbookContract]
-  );
+//   const sellProps = useMemo(
+//     () => ({
+//       marketContractAddress: pickOrderbookContract[tokenAddress],
+//       rwaTokenAddress: tokenAddress,
+//       tokensAmount: amount?.toNumber(),
+//       pricePerToken: price?.toNumber(),
+//       decimals: tokensMetadata[slug]?.decimals,
+//     }),
+//     [amount, price, slug, tokenAddress, tokensMetadata, pickOrderbookContract]
+//   );
 
-  const { invokeAction: handleLimitBuy, status: limitStatus1 } =
-    useContractAction(orderbookBuy, buyProps);
+//   const { invokeAction: handleLimitBuy, status: limitStatus1 } =
+//     useContractAction(orderbookBuy, buyProps);
 
-  const { invokeAction: handleLimitSell, status: limitStatus2 } =
-    useContractAction(orderbookSell, sellProps);
+//   const { invokeAction: handleLimitSell, status: limitStatus2 } =
+//     useContractAction(orderbookSell, sellProps);
 
-  const marketBuyProps = useMemo(
-    () => ({
-      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
-      quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
-      tokensAmount: amount?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteBuying(amount, "0"),
-      quoteDecimals: quoteAssetmetadata?.decimals,
-      decimals: selectedAssetMetadata?.decimals,
-    }),
-    [
-      pickDodoContractBasedOnToken,
-      tokenAddress,
-      pickDodoContractQuoteToken,
-      amount,
-      quoteAssetmetadata?.decimals,
-      selectedAssetMetadata?.decimals,
-    ]
-  );
+//   const marketBuyProps = useMemo(
+//     () => ({
+//       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+//       quoteTokenAddress: pickDodoContractQuoteToken[tokenAddress],
+//       tokensAmount: amount?.toNumber(),
+//       minMaxQuote: caclMinMaxQuoteBuying(amount, "0"),
+//       quoteDecimals: quoteAssetmetadata?.decimals,
+//       decimals: selectedAssetMetadata?.decimals,
+//     }),
+//     [
+//       pickDodoContractBasedOnToken,
+//       tokenAddress,
+//       pickDodoContractQuoteToken,
+//       amount,
+//       quoteAssetmetadata?.decimals,
+//       selectedAssetMetadata?.decimals,
+//     ]
+//   );
 
-  const marketSellProps = useMemo(
-    () => ({
-      dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
+//   const marketSellProps = useMemo(
+//     () => ({
+//       dodoContractAddress: pickDodoContractBasedOnToken[tokenAddress],
 
-      tokenAddress: tokenAddress,
-      tokensAmount: amount?.toNumber(),
-      minMaxQuote: caclMinMaxQuoteSelling(
-        tokenPrice.times(amount ?? 0),
-        "0" // TODO need task to add slippage on ui
-      ),
-      decimals: selectedAssetMetadata?.decimals,
-      quoteDecimals: quoteAssetmetadata?.decimals,
-    }),
-    [
-      tokenAddress,
-      amount,
-      tokenPrice,
-      selectedAssetMetadata?.decimals,
-      quoteAssetmetadata?.decimals,
-      pickDodoContractBasedOnToken,
-    ]
-  );
+//       tokenAddress: tokenAddress,
+//       tokensAmount: amount?.toNumber(),
+//       minMaxQuote: caclMinMaxQuoteSelling(
+//         tokenPrice.times(amount ?? 0),
+//         "0" // TODO need task to add slippage on ui
+//       ),
+//       decimals: selectedAssetMetadata?.decimals,
+//       quoteDecimals: quoteAssetmetadata?.decimals,
+//     }),
+//     [
+//       tokenAddress,
+//       amount,
+//       tokenPrice,
+//       selectedAssetMetadata?.decimals,
+//       quoteAssetmetadata?.decimals,
+//       pickDodoContractBasedOnToken,
+//     ]
+//   );
 
-  // MArket buy | sell
-  const { invokeAction: handleMarketBuy, status: marketStatus1 } =
-    useContractAction(buyBaseToken, marketBuyProps);
+//   // MArket buy | sell
+//   const { invokeAction: handleMarketBuy, status: marketStatus1 } =
+//     useContractAction(buyBaseToken, marketBuyProps);
 
-  const { invokeAction: handleMarketSell, status: marketStatus2 } =
-    useContractAction(sellBaseToken, marketSellProps);
+//   const { invokeAction: handleMarketSell, status: marketStatus2 } =
+//     useContractAction(sellBaseToken, marketSellProps);
 
-  return {
-    handleLimitSell,
-    handleLimitBuy,
-    status: pickStatusFromMultiple(
-      limitStatus1,
-      limitStatus2,
-      marketStatus1,
-      marketStatus2
-    ),
-    handleMarketBuy,
-    handleMarketSell,
-  };
-};
+//   return {
+//     handleLimitSell,
+//     handleLimitBuy,
+//     status: pickStatusFromMultiple(
+//       limitStatus1,
+//       limitStatus2,
+//       marketStatus1,
+//       marketStatus2
+//     ),
+//     handleMarketBuy,
+//     handleMarketSell,
+//   };
+// };
 
 // TODO refector this component to use logic line on secondary markey BUY | SELL
 // extract reusable components
@@ -176,19 +181,34 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
 }) => {
   const { isAdmin, userTokensBalances } = useUserContext();
   const { usdToTokenRates } = useCurrencyContext();
-  const { dodoMav, dodoTokenPair, dodoStorages } = useDexContext();
+  const { orderbookStorages, orderbookTokenPair } = useDexContext();
   const { validBaseTokens } = useMarketsContext();
   // metadata
-  const selectedAssetMetadata = useAssetMetadata(slug);
+  const loadedSelectedAssetMetadata = useAssetMetadata(slug);
+  const selectedAssetMetadata = useMemo(
+    () =>
+      loadedSelectedAssetMetadata ??
+      createFallbackTokenMetadata({
+        address: tokenAddress,
+        symbol,
+      }),
+    [loadedSelectedAssetMetadata, symbol, tokenAddress]
+  );
   // tabs state
   const [activetabId, setAvtiveTabId] = useState(BUY_TAB);
   const isBuyAction = activetabId === BUY_TAB;
   const tokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata?.decimals),
-    [dodoMav, slug, selectedAssetMetadata?.decimals]
+    () =>
+      atomsToTokens(
+        orderbookStorages[slug]?.lowestSellPrice,
+        selectedAssetMetadata?.decimals
+      ),
+    [orderbookStorages, slug, selectedAssetMetadata?.decimals]
   );
 
   const [activeItem, setActiveItem] = useState(LIMIT_TYPE);
+  // derived state (it's boolean value, so no need to memoize it)
+  const isLimitType = activeItem === LIMIT_TYPE;
 
   // inputs state
   const [price, setPrice] = useState<BigNumber | undefined>();
@@ -202,10 +222,10 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   const inputAmountRef = useRef<HTMLInputElement>(null);
   const inputPriceRef = useRef<HTMLInputElement>(null);
 
-  // TODO remove "?? toTokenSlug(stablecoinContract)" after API assets
-  const quoteAssetmetadata = useAssetMetadata(
-    dodoTokenPair[slug] ?? toTokenSlug(stablecoinContract)
-  );
+  const quoteTokenSlug =
+    orderbookTokenPair[slug] ?? toTokenSlug(stablecoinContract);
+  const loadedQuoteAssetMetadata = useAssetMetadata(quoteTokenSlug);
+  const quoteAssetmetadata = loadedQuoteAssetMetadata ?? STABLECOIN_METADATA;
 
   // derived
 
@@ -231,9 +251,17 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     inputPriceRef.current?.focus();
   };
 
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () => userTokensBalances[quoteTokenAddress]?.toNumber() || 0,
+    [userTokensBalances, quoteTokenAddress]
   );
 
   const tokenBalance = useMemo(
@@ -242,9 +270,15 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   );
 
   const maxBuy = useMemo(() => {
-    const amountToSpend = (100 * usdBalance) / 100;
-    return rwaToFixed(new BigNumber(amountToSpend).div(tokenPrice).toNumber());
-  }, [usdBalance, tokenPrice]);
+    // In limit mode size against the user's limit price; guard the empty-book /
+    // no-price case so we never divide by 0/undefined (Infinity).
+    const effectivePrice = isLimitType ? price : tokenPrice;
+    const affordable = safeDivByPrice(
+      new BigNumber(usdBalance),
+      effectivePrice ?? ZERO
+    );
+    return rwaToFixed((affordable ?? ZERO).toNumber());
+  }, [usdBalance, isLimitType, price, tokenPrice]);
 
   // extract logic into separate hook
   const hasTotalError = isBuyAction
@@ -268,9 +302,6 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   // );
 
   // const isBtnDisabled = true;
-
-  // derived state (it's boolean value, so no need to memoize it)
-  const isLimitType = activeItem === LIMIT_TYPE;
 
   useEffect(() => {
     if (selectedPercentage) {
@@ -304,30 +335,31 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     tokenPrice,
   ]);
 
-  // update total
+  // update total = amount × price (limit price or market price). Reset when
+  // either is missing so a stale total can't linger in limit mode.
   useEffect(() => {
-    if (amount && usdToTokenRates[slug] && price) {
+    if (amount && price) {
       setTotal(amount.multipliedBy(price));
-    } else if (!amount) {
+    } else {
       setTotal(undefined);
     }
-  }, [amount, isLimitType, price, slug, tokenAddress, usdToTokenRates]);
+  }, [amount, price]);
 
   // contract calls based on markt or limit
-  const {
-    handleLimitSell,
-    handleMarketBuy,
-    handleMarketSell,
-    handleLimitBuy,
-    status,
-  } = useBuySellActions(
-    price,
-    amount,
-    tokenAddress,
-    tokenPrice,
-    selectedAssetMetadata,
-    quoteAssetmetadata
-  );
+  // const {
+  //   handleLimitSell,
+  //   handleMarketBuy,
+  //   handleMarketSell,
+  //   handleLimitBuy,
+  //   // status,
+  // } = useBuySellActions(
+  //   price,
+  //   amount,
+  //   tokenAddress,
+  //   tokenPrice,
+  //   selectedAssetMetadata,
+  //   quoteAssetmetadata
+  // );
 
   const handleTabClick = useCallback((id: string) => {
     setAvtiveTabId(id);
@@ -337,24 +369,24 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
     setActiveItem(activeItem);
   }, []);
 
-  const pickBuySellAction = useMemo(
-    () =>
-      (() => {
-        if (isLimitType) {
-          return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
-        }
+  // const pickBuySellAction = useMemo(
+  //   () =>
+  //     (() => {
+  //       if (isLimitType) {
+  //         return activetabId === BUY_TAB ? handleLimitBuy : handleLimitSell;
+  //       }
 
-        return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
-      })(),
-    [
-      activetabId,
-      handleLimitBuy,
-      handleLimitSell,
-      handleMarketBuy,
-      handleMarketSell,
-      isLimitType,
-    ]
-  );
+  //       return activetabId === BUY_TAB ? handleMarketBuy : handleMarketSell;
+  //     })(),
+  //   [
+  //     activetabId,
+  //     handleLimitBuy,
+  //     handleLimitSell,
+  //     handleMarketBuy,
+  //     handleMarketSell,
+  //     isLimitType,
+  //   ]
+  // );
 
   // set fixed price for the market type
   useEffect(() => {
@@ -368,22 +400,30 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
   }, [isLimitType, slug, tokenAddress, tokenPrice, usdToTokenRates]);
 
   const estFee = useMemo(() => {
-    const {
-      config: { lpFee, maintainerFee },
-    } = dodoStorages[slug] ?? { config: { lpFee: 0, maintainerFee: 0 } };
+    const { buyOrderFee, sellOrderFee } = orderbookStorages[slug] ?? {
+      buyOrderFee: 0,
+      sellOrderFee: 0,
+    };
 
-    const tokensAmount = amount;
+    const tokensAmount = amount || ZERO;
+    const fee = isBuyAction ? buyOrderFee : sellOrderFee;
 
-    return calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      maintainerFee,
-      18,
-      "0",
-      isBuyAction
-    );
-  }, [amount, dodoStorages, isBuyAction, slug, tokenPrice]);
+    return calculateEstFee({
+      amount: tokensAmount,
+      price: isLimitType ? (price ?? ZERO) : tokenPrice,
+      fee,
+      tokenDecimals: quoteAssetmetadata.decimals,
+    });
+  }, [
+    amount,
+    isBuyAction,
+    isLimitType,
+    orderbookStorages,
+    price,
+    quoteAssetmetadata.decimals,
+    slug,
+    tokenPrice,
+  ]);
 
   // swaitch screens based on active tab
   const tabs: TabType[] = useMemo(
@@ -467,8 +507,8 @@ export const BuySellTabs: FC<BuySellTabsProps> = ({
                 <div className="text-caption-regular">
                   {isBuyAction ? (
                     <CryptoBalance
-                      value={userTokensBalances[stablecoinContract] || 0}
-                      cryptoDecimals={6}
+                      value={userTokensBalances[quoteTokenAddress] || 0}
+                      cryptoDecimals={quoteAssetmetadata.decimals ?? 6}
                     />
                   ) : (
                     <CryptoBalance

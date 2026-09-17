@@ -1,81 +1,65 @@
-import clsx from 'clsx';
-import { Button } from '~/lib/atoms/Button';
-import { HashShortView } from '~/lib/atoms/HashShortView';
+import { Link } from "@remix-run/react";
+
+import { ROUTES } from "~/consts/routes";
+import { RButton } from "~/lib/atoms/RButton";
+import { HashShortView } from "~/lib/atoms/HashShortView";
+import IdentIcon from "~/lib/organisms/IdenIcon";
 import {
-  ClickableDropdownArea,
-  CustomDropdown,
-  DropdownBodyContent,
-  DropdownFaceContent,
-} from '~/lib/organisms/CustomDropdown/CustomDropdown';
-import IdentIcon from '~/lib/organisms/IdenIcon';
-import { useUserContext } from '~/providers/UserProvider/user.provider';
-import { CustomSuspense } from '~/templates/CustomSuspense';
+  RCustomDropdown,
+  RDropdownBodyContent,
+  RDropdownBodyContentItem,
+  RDropdownFaceContent,
+} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { CustomSuspense } from "~/templates/CustomSuspense";
+
+import styles from "./ConnectWallet.module.css";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 export const ConnectWallet = () => {
-  const { connect, userAddress, signOut, isLoading, changeUser } =
+  const { changeUser, connect, isLoading, signOut, userAddress } =
     useUserContext();
 
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
-        <div className="flex items-center gap-x-2">
-          <CustomDropdown>
-            <ClickableDropdownArea>
-              <DropdownFaceContent
-                className={clsx(
-                  'py-[2px] border-2 border-dark-green-50 pl-2 pr-3 rounded-4xl ',
-                  'hover:bg-dark-green-opacity hover:border-dark-green-500',
-                  'focus:border-dark-green-500 focus:bg-transparent',
-                  'transition duration-250 ease-in-out'
-                )}
-              >
-                <div className="flex items-center">
-                  <IdentIcon
-                    type="bottts"
-                    size={32}
-                    className="mr-2"
-                    hash={userAddress}
-                  />
-                  <div className="text-caption-regular text-content">
-                    <HashShortView hash={userAddress} />
-                  </div>
-                </div>
-              </DropdownFaceContent>
-            </ClickableDropdownArea>
-            <DropdownBodyContent
-              position="right"
-              topMargin={16}
-              customWidth={203}
-            >
-              <button
-                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
-                onClick={changeUser}
-              >
-                Change account
-              </button>
-              <button
-                className="bg-background text-content text-body-xs py-3 px-4 text-left w-full hover:bg-dark-green-opacity"
-                onClick={signOut}
-              >
-                Sign Out
-              </button>
-            </DropdownBodyContent>
-          </CustomDropdown>
-        </div>
+        <RCustomDropdown className={styles.dropdown}>
+          <RDropdownFaceContent className={styles.trigger}>
+            <IdentIcon
+              className={styles.identIcon}
+              hash={userAddress}
+              size={24}
+              type="bottts"
+            />
+            <RText size="body-sm" className={styles.address}>
+              <HashShortView hash={userAddress} />
+            </RText>
+          </RDropdownFaceContent>
+
+          <RDropdownBodyContent align="right" className={styles.menu}>
+            <Link className={styles.profileLink} to={ROUTES.portfolio}>
+              Portfolio
+            </Link>
+            <RDropdownBodyContentItem onClick={changeUser}>
+              Change account
+            </RDropdownBodyContentItem>
+            <RDropdownBodyContentItem onClick={signOut}>
+              Sign out
+            </RDropdownBodyContentItem>
+          </RDropdownBodyContent>
+        </RCustomDropdown>
       ) : (
-        <div className="flex items-center gap-2">
-          <Button size="small-plus" className="px-8 py-[10px]" disabled>
-            <span className="text-body-xs leading-5  font-bold">Sign Up</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="outline"
-            className="px-8 py-[10px]"
-            onClick={connect}
-          >
-            <span className="text-body-xs leading-5 font-bold">Login</span>
-          </Button>
-        </div>
+        <RButton
+          onClick={connect}
+          className={styles.connectWalletBtn}
+          size="medium"
+          tone="black"
+          variant="secondary"
+        >
+          <RText size="body-s" weight="medium">
+            Connect Wallet
+          </RText>
+        </RButton>
       )}
     </CustomSuspense>
   );

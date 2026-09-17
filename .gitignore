@@ -16,3 +16,20 @@ stats.html
 build
 coverage
 .DS_Store
+/.claude/
+/.idea/
+
+# Ignore loose screenshots dropped in the repo root
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webp
+
+# ignore folders with docs
+revised
+
+# Local Codex configuration
+.codex/
+AGENTS.md
+**/AGENTS.md

@@ -42,21 +42,28 @@ export const normalizeUserTzktTokensBalances = ({
       acc,
       {
         balance,
-        token: {
-          contract: { address: tokenAddress },
-        },
+        token,
         account: { address },
       }
     ) => {
-      const token = getTokenDataByAddress({
-        tokenAddress: toTokenSlug(tokenAddress),
+      const tokenAddress = token.contract.address;
+      const tokenId = token.tokenId ?? token.id ?? 0;
+      const tokenSlug = toTokenSlug(tokenAddress, tokenId);
+      const tokenMetadata = getTokenDataByAddress({
+        tokenAddress: tokenSlug,
         tokensMetadata,
       });
 
-      if (!token || userAddress !== address) return acc;
-      const { decimals } = token;
+      if (!tokenMetadata || userAddress !== address) return acc;
+      const { decimals } = tokenMetadata;
+      const normalizedBalance = atomsToTokens(balance, decimals);
 
-      acc[tokenAddress] = atomsToTokens(balance, decimals);
+      acc[tokenSlug] = normalizedBalance;
+
+      if (new BigNumber(tokenId).isZero() || !acc[tokenAddress]) {
+        acc[tokenAddress] = normalizedBalance;
+      }
+
       return acc;
     },
     {}

@@ -1,0 +1,23 @@
+@import "../../styles/breakpoints.css";
+
+.container {
+  display: grid;
+  grid-template-columns: 224px 1fr;
+  gap: 16px;
+
+  @media (--media-tablet-max) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.walletTopBarWrapper {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+
+  @media (--media-tablet-max) {
+    flex-direction: column;
+    gap: 24px;
+    align-items: start;
+  }
+}

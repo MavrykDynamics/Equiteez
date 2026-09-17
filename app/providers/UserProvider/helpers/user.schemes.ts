@@ -3,6 +3,8 @@ import { z } from 'zod'
 export const userTzktTokenBalancesSchema = z.array(
   z.object({
     token: z.object({
+      id: z.union([z.string(), z.number()]).optional(),
+      tokenId: z.union([z.string(), z.number()]).optional(),
       contract: z.object({
         address: z.string(),
       }),

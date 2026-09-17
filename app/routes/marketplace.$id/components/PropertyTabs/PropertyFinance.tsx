@@ -43,12 +43,12 @@ export const PropertyFinanceTab = () => {
         <CustomExpander>
           <ClickableExpanderArea>
             <TableItem>
-              <ExpanderFaceContent>Monthly Costs</ExpanderFaceContent>
+              <ExpanderFaceContent><p>Monthly Costs</p></ExpanderFaceContent>
 
               <p className="flex">
                 -$
                 <Money>
-                  {propertyFinancials.monthlyCosts.costs.toString()}
+                  {Math.abs(propertyFinancials.monthlyCosts.costs).toString()}
                 </Money>
               </p>
             </TableItem>
@@ -61,7 +61,9 @@ export const PropertyFinanceTab = () => {
                 <p className="flex">
                   -$
                   <Money>
-                    {propertyFinancials.monthlyCosts.netReproperty.toString()}
+                    {Math.abs(
+                      propertyFinancials.monthlyCosts.netReproperty
+                    ).toString()}
                   </Money>
                 </p>
               </TableItem>
@@ -70,7 +72,9 @@ export const PropertyFinanceTab = () => {
                 <p className="flex">
                   -$
                   <Money>
-                    {propertyFinancials.monthlyCosts.platform.toString()}
+                    {Math.abs(
+                      propertyFinancials.monthlyCosts.platform
+                    ).toString()}
                   </Money>
                 </p>
               </TableItem>
@@ -79,7 +83,9 @@ export const PropertyFinanceTab = () => {
                 <p className="flex">
                   -$
                   <Money>
-                    {propertyFinancials.monthlyCosts.expenses.toString()}
+                    {Math.abs(
+                      propertyFinancials.monthlyCosts.expenses
+                    ).toString()}
                   </Money>
                 </p>
               </TableItem>
@@ -88,7 +94,7 @@ export const PropertyFinanceTab = () => {
                 <p className="flex">
                   -$
                   <Money>
-                    {propertyFinancials.monthlyCosts.taxes.toString()}
+                    {Math.abs(propertyFinancials.monthlyCosts.taxes).toString()}
                   </Money>
                 </p>
               </TableItem>
@@ -97,7 +103,9 @@ export const PropertyFinanceTab = () => {
                 <p className="flex">
                   -$
                   <Money>
-                    {propertyFinancials.monthlyCosts.insurance.toString()}
+                    {Math.abs(
+                      propertyFinancials.monthlyCosts.insurance
+                    ).toString()}
                   </Money>
                 </p>
               </TableItem>
@@ -109,7 +117,7 @@ export const PropertyFinanceTab = () => {
           </ExpanderBodyContent>
         </CustomExpander>
 
-        <TableItem customBorder="border-b border-active-tab">
+        <TableItem>
           <p>Net Rent / Month</p>
 
           <p className="flex">
@@ -133,7 +141,7 @@ export const PropertyFinanceTab = () => {
               textVariant="bold"
               customBorder="border-none"
             >
-              <ExpanderFaceContent>Total Investment</ExpanderFaceContent>
+              <ExpanderFaceContent><p>Total Investment</p></ExpanderFaceContent>
 
               <p className="flex">
                 $<Money>{propertyFinancials.totalInvestment.total}</Money>
@@ -166,10 +174,10 @@ export const PropertyFinanceTab = () => {
           </ExpanderBodyContent>
         </CustomExpander>
         <TableItem textVariant="bold" customPadding={8} isLast>
-          <div className="flex items-center gap-x-1">
+          <p className="flex items-center gap-x-1">
             Expected Income
             {/* <InfoTooltip content={"Expected Income "} /> */}
-          </div>
+          </p>
           <p>{expectedIncome.income}%</p>
         </TableItem>
       </Table>

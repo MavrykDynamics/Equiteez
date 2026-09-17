@@ -1,16 +1,20 @@
-import { PopupState } from './popup.provider.types';
+import { popupOperationInProgress } from "~/contracts/templates/operationPopupData";
+import { PopupState } from "./popup.provider.types";
 
 export const POPUP_KEYS = {
-  txOperation: 'txOperation',
+  inProgressRwaAd: "inProgressRwaAd",
 };
 
 export const DEFAULT_POPUPS_STATE: PopupState = {
-  txOperation: {
+  inProgressRwaAd: {
     show: false,
     props: {
-      icon: null,
       title: null,
       body: null,
     },
   },
+};
+
+export const txTemplates = {
+  inProgressRwaAd: popupOperationInProgress,
 };

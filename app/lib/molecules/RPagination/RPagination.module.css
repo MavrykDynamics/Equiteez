@@ -1,0 +1,64 @@
+.pagination {
+  display: inline-flex;
+  gap: var(--r-space-1);
+  align-items: center;
+}
+
+.pageButton,
+.navigationButton {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  cursor: pointer;
+  transition:
+    color var(--r-transition-duration-fast) ease,
+    border-color var(--r-transition-duration-fast) ease,
+    background-color var(--r-transition-duration-fast) ease,
+    box-shadow var(--r-transition-duration-fast) ease;
+}
+
+.navigationButton {
+  border-color: transparent;
+}
+
+.pageButton:hover:not(:disabled),
+.navigationButton:hover:not(:disabled) {
+  background: var(--r-color-neutral-50);
+}
+
+.pageButton:focus-visible,
+.navigationButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.pageButton:disabled,
+.navigationButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.currentPage,
+.currentPage:hover:not(:disabled) {
+  border-color: var(--r-color-neutral-black);
+  color: var(--r-color-neutral-white);
+  background: var(--r-color-neutral-black);
+}
+
+.currentPage > span {
+  color: inherit;
+}
+
+.ellipsis {
+  display: inline-grid;
+  width: 12px;
+  height: 32px;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+}

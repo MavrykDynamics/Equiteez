@@ -1,0 +1,13 @@
+.root {
+  min-height: 100vh;
+}
+
+.desktopLayout {
+  min-height: 100vh;
+}
+
+@media (max-width: 1000px) {
+  .desktopLayout {
+    display: none;
+  }
+}

@@ -27,6 +27,7 @@ import { UserProvider } from "../UserProvider/user.provider";
 import { WalletProvider } from "../WalletProvider/wallet.provider";
 import { AppProvider } from "../AppProvider/AppProvider";
 import { TokensProvider } from "../TokensProvider/tokens.provider";
+import { ApolloProvider } from "../ApolloProvider/apollo.provider";
 
 export const toasterContext = React.createContext<ToasterContextType>(
   undefined!
@@ -236,21 +237,23 @@ export default class ToasterProvider extends React.Component<Props, State> {
             this.props.children
           ) : (
             <AppProvider>
-              <TokensProvider initialTokens={[]} initialTokensMetadata={{}}>
-                <WalletProvider>
-                  <UserProvider>
-                    {this.state.context.maintance ? (
-                      <MaintancePageTemp />
-                    ) : (
-                      <ErrorPageTemp
-                        headerText={errorPageContent.header}
-                        descText={errorPageContent.desc}
-                        type={type}
-                      />
-                    )}
-                  </UserProvider>
-                </WalletProvider>
-              </TokensProvider>
+              <ApolloProvider>
+                <TokensProvider initialTokens={[]} initialTokensMetadata={{}}>
+                  <WalletProvider>
+                    <UserProvider>
+                      {this.state.context.maintance ? (
+                        <MaintancePageTemp />
+                      ) : (
+                        <ErrorPageTemp
+                          headerText={errorPageContent.header}
+                          descText={errorPageContent.desc}
+                          type={type}
+                        />
+                      )}
+                    </UserProvider>
+                  </WalletProvider>
+                </TokensProvider>
+              </ApolloProvider>
             </AppProvider>
           )}
         </toasterContext.Provider>

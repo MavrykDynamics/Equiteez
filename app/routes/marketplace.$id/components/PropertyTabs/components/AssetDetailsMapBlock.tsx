@@ -15,7 +15,8 @@ import { DistanceBlock } from "./DistanceBlock/DistanceBlock";
 
 // fake map data
 const containerStyle = {
-  width: "406px",
+  width: "100%",
+  maxWidth: "406px",
   height: "507px",
 };
 
@@ -95,7 +96,7 @@ export const AssetDetailsMapBlock: FC<{
   return (
     <section className="px-7 py-8 flex flex-col rounded-3xl shadow-card mt-8 bg-white border border-gray-100">
       <h3 className="text-content text-card-headline mb-6">Neighborhood</h3>
-      <div className="grid grid-cols-2 gap-x-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col">
           <p className="text-body mb-8">
             Lorem ipsum dolor sit amet consectetur. Odio et consectetur vitae

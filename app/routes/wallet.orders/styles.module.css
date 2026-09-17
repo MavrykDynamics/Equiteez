@@ -1,0 +1,74 @@
+@import "../../styles/breakpoints.css";
+
+.iconWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-sand-50);
+  color: var(--color-orange);
+}
+.orderItem,
+.orderRow {
+  width: 100%;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.5fr;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+.roundedWrapper {
+  padding: 24px 0;
+}
+.orderCancelBtn {
+  text-decoration: underline;
+  color: var(--color-sand-500);
+  font-size: var(--small-body-size);
+  font-weight: var(--extra-bold-weight);
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+  padding: 8px 0;
+
+  @media (--media-tablet-max) {
+    display: none;
+  }
+}
+
+.orderCancelBtn:hover {
+  color: var(--color-sand-800);
+}
+.orderItemSecondary {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.assetName {
+  text-decoration: underline;
+  color: var(--color-br-green-400);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 80px;
+  font-weight: 600;
+  font-size: 14px;
+  display: block;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.assetName:hover {
+  color: var(--color-br-green-500);
+}
+.desktopBlock {
+  display: block;
+  @media (--media-tablet-max) {
+    display: none;
+  }
+}
+.mobileBlock {
+  display: none;
+  @media (--media-tablet-max) {
+    display: block;
+  }
+}

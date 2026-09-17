@@ -1,9 +1,7 @@
 import { SECONDARY_MARKET } from "../market.const";
 import { EstateType } from "../market.types";
-
-export * from "./marketTokenNormalizer";
-export * from "./markets.utils";
 export * from "./marketPickers";
+export * from "./createMarketAssetsCollection";
 
 export function pickMarketByIdentifier(
   identifier: string | undefined,

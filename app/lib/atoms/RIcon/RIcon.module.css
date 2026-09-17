@@ -1,0 +1,36 @@
+.icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--r-icon-size);
+  height: var(--r-icon-size);
+  color: currentColor;
+  vertical-align: middle;
+}
+
+.small {
+  --r-icon-size: var(--r-size-icon-small);
+}
+
+.medium {
+  --r-icon-size: var(--r-size-icon-medium);
+}
+
+.spin {
+  animation: rIconSpin 1s linear infinite;
+  transform-origin: center;
+}
+
+.icon[data-sort-icon] path {
+  stroke: var(--r-color-neutral-500);
+}
+
+.icon[data-sort-direction="ascending"] path[data-sort-direction="ascending"],
+.icon[data-sort-direction="descending"] path[data-sort-direction="descending"] {
+  stroke: var(--r-color-neutral-black);
+}
+
+@keyframes rIconSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,18 +1,22 @@
-import { FC } from 'react';
-import { Tooltip, TooltipProps } from '~/lib/molecules/Tooltip';
-import InfoIcon from 'app/icons/info.svg?react';
+import clsx from "clsx";
+import { FC } from "react";
 
-type InfoTooltipProps = Pick<TooltipProps, 'content'> & {
+import InfoIcon from "app/icons/info.svg?react";
+import { Tooltip, TooltipProps } from "~/lib/molecules/Tooltip";
+
+type InfoTooltipProps = Pick<TooltipProps, "content" | "maxWidth" | "theme"> & {
   className?: string;
 };
 
 export const InfoTooltip: FC<InfoTooltipProps> = ({
   content,
-  className = 'w-4 h-4',
+  className = "w-4 h-4",
+  maxWidth,
+  theme,
 }) => {
   return (
-    <Tooltip content={content}>
-      <InfoIcon className={className} />
+    <Tooltip content={content} maxWidth={maxWidth} theme={theme}>
+      <InfoIcon className={clsx("text-[#021A12]", className)} />
     </Tooltip>
   );
 };

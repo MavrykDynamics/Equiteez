@@ -34,7 +34,7 @@ export const CustomLink: FC<LinkProps & { disabled?: boolean }> = ({
     [props, to]
   );
 
-  if (!to || disabled) return <div {...props}>{children}</div>;
+  if (!to || disabled) return <span {...props}>{children}</span>;
 
   return (
     <Link to={to} {...linkProps}>

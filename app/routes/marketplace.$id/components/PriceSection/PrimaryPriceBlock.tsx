@@ -5,24 +5,18 @@ import { Table } from "~/lib/atoms/Table/Table";
 import styles from "./priceSection.module.css";
 import clsx from "clsx";
 import { Button } from "~/lib/atoms/Button";
-import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
-import { FC, useCallback, useState } from "react";
+import { FC } from "react";
 import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
 import { PrimaryEstate } from "~/providers/MarketsProvider/market.types";
-import { PopupContent } from "./popups";
 import { Spinner } from "~/lib/atoms/Spinner";
+import { Text } from "~/lib/atoms/Typography/Text";
 
-export const PrimaryPriceBlock = () => {
-  const [isOpen, setIsOpen] = useState(false);
+type PrimaryPriceBlockProps = {
+  shouldExpand: boolean;
+};
+
+export const PrimaryPriceBlock: FC<PrimaryPriceBlockProps> = () => {
   const { activeMarket, isActiveMarketLoading } = useMarketsContext();
-
-  const handleRequestClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const handleOpen = useCallback(() => {
-    setIsOpen(true);
-  }, []);
 
   if (isActiveMarketLoading || !activeMarket) return <Spinner size={56} />;
   const estate = activeMarket as PrimaryEstate;
@@ -30,46 +24,53 @@ export const PrimaryPriceBlock = () => {
   return (
     <section className="self-start bg-white">
       <Table>
-        <div className="text-content text-card-headline flex justify-between mb-6">
-          <p>Starting Price</p>
-          <p>${estate.assetDetails.priceDetails.price}</p>
+        <div className="flex justify-between mb-[16px]">
+          <Text size="largeBody" weight="semibold">
+            Starting Price
+          </Text>
+          <Text size="largeBody" weight="semibold">
+            ${estate.assetDetails.priceDetails.price}
+          </Text>
         </div>
-        <div className="text-content text-body flex justify-between mb-4">
-          <div className="flex items-center gap-x-1">
+        <div className="text-content text-body flex justify-between mb-[8px]">
+          <Text className="flex items-center gap-x-1">
             Annual Return
             {/* <InfoTooltip content="Annual Return" className="w-6 h-6" /> */}
-          </div>
-          <p>{estate.assetDetails.priceDetails.projectedAnnualReturn}%</p>
+          </Text>
+          <Text weight="semibold">
+            {estate.assetDetails.priceDetails.projectedAnnualReturn}%
+          </Text>
         </div>
-        <div className="text-content text-body flex justify-between mb-4">
-          <div className="flex items-center gap-x-1">
+        <div className="text-content text-body flex justify-between mb-[8px]">
+          <Text className="flex items-center gap-x-1">
             Rental Yield
             {/* <InfoTooltip content="Rental Yield" className="w-6 h-6" /> */}
-          </div>
-          <p>{estate.assetDetails.priceDetails.projectedRentalYield}%</p>
+          </Text>
+          <Text weight="semibold">
+            {estate.assetDetails.priceDetails.projectedRentalYield}%
+          </Text>
         </div>
         <div className="text-content text-body flex justify-between">
-          <div className="flex items-center gap-x-1">Investors</div>
-          <p>{estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}</p>
+          <Text className="flex items-center gap-x-1">Investors</Text>
+          <Text weight="semibold">
+            {estate.assetDetails.offering.minInvestmentAmount.toFixed(0)}
+          </Text>
         </div>
-        <Divider className="my-4" />
-        <h4 className="text-content text-body mb-3 font-semibold">Shares</h4>
+        <Divider className="my-[8px]" />
+        <Text
+          weight="semibold"
+          size="largeBody"
+          className="mb-[12px] font-semibold"
+        >
+          Shares
+        </Text>
         <ProgresBar
           tokensCount={estate.assetDetails.priceDetails.tokensAvailable}
         />
-        <Button disabled className="mt-6" onClick={handleOpen}>
+        <Button disabled className="mt-[16px]">
           Coming Soon
         </Button>
       </Table>
-
-      <PopupWithIcon
-        isOpen={isOpen}
-        onRequestClose={handleRequestClose}
-        contentPosition={"right"}
-      >
-        {/*  @ts-expect-error /TODO update or replce popup when primary estate data will be availble (no data for now) */}
-        <PopupContent estate={estate} orderType={"buy"} />
-      </PopupWithIcon>
     </section>
   );
 };
@@ -79,8 +80,8 @@ export const ProgresBar: FC<{ tokensCount: number }> = ({ tokensCount }) => {
     <div className="flex flex-col">
       <div className={clsx(styles.progressBar, styles.progressPercentage)} />
       <div className="flex justify-between text-content text-body mt-1">
-        <p>{Math.floor(tokensCount / 10)}</p>
-        <p>{tokensCount}</p>
+        <Text size="smallBody">{Math.floor(tokensCount / 10)}</Text>
+        <Text size="smallBody">{tokensCount}</Text>
       </div>
     </div>
   );

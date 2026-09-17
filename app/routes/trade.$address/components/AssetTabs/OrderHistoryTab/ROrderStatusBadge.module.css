@@ -1,0 +1,32 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px var(--r-space-3);
+  border-radius: var(--r-radius-pill);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  letter-spacing: var(--r-letter-spacing-body);
+  line-height: var(--r-line-height-body-s);
+  white-space: nowrap;
+}
+
+.filled {
+  background: color-mix(in srgb, var(--r-color-green-100) 25%, transparent);
+  color: var(--r-color-green-700);
+}
+
+.open {
+  background: color-mix(in srgb, var(--r-color-yellow-100) 25%, transparent);
+  color: var(--r-color-yellow-700);
+}
+
+.canceled {
+  background: color-mix(in srgb, var(--r-color-neutral-100) 75%, transparent);
+  color: var(--r-color-neutral-700);
+}
+
+.expired {
+  background: rgba(245, 143, 143, 0.25);
+  color: var(--r-color-red-700);
+}

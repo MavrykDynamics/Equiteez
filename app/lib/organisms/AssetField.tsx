@@ -6,13 +6,13 @@ import React, {
   useEffect,
   useMemo,
   useState,
-} from 'react';
+} from "react";
 
-import BigNumber from 'bignumber.js';
-import { FormField } from '../molecules/FormField';
+import BigNumber from "bignumber.js";
+import { FormField } from "../molecules/FormField";
 
 interface AssetFieldProps
-  extends Omit<ComponentProps<typeof FormField>, 'onChange'> {
+  extends Omit<ComponentProps<typeof FormField>, "onChange"> {
   value?: number | string;
   min?: number;
   max?: number;
@@ -37,7 +37,7 @@ export const AssetField = forwardRef<HTMLInputElement, AssetFieldProps>(
     ref
   ) => {
     const valueStr = useMemo(
-      () => (value === undefined ? '' : new BigNumber(value).toFixed()),
+      () => (value === undefined ? "" : new BigNumber(value).toFixed()),
       [value]
     );
 
@@ -55,9 +55,9 @@ export const AssetField = forwardRef<HTMLInputElement, AssetFieldProps>(
         evt: React.ChangeEvent<HTMLInputElement> &
           React.ChangeEvent<HTMLTextAreaElement>
       ) => {
-        let val = evt.target.value.replace(/ /g, '').replace(/,/g, '.');
+        let val = evt.target.value.replace(/ /g, "").replace(/,/g, ".");
         let numVal = new BigNumber(val || 0);
-        const indexOfDot = val.indexOf('.');
+        const indexOfDot = val.indexOf(".");
         if (indexOfDot !== -1 && val.length - indexOfDot > assetDecimals + 1) {
           val = val.substring(0, indexOfDot + assetDecimals + 1);
           numVal = new BigNumber(val);
@@ -70,7 +70,7 @@ export const AssetField = forwardRef<HTMLInputElement, AssetFieldProps>(
         ) {
           setLocalValue(val);
           if (onChange) {
-            onChange(val !== '' ? numVal.toFixed() : undefined);
+            onChange(val !== "" ? numVal.toFixed() : undefined);
           }
         }
       },

@@ -1,26 +1,116 @@
-export function calculateDynamicRanges(arr: number[]) {
-  const range = arr.length < 4 ? arr.length - 1 : 4;
+import { EstateType } from "~/providers/MarketsProvider/market.types";
 
-  // Sort the array to ensure it is in ascending order
-  arr.sort((a, b) => a - b);
+export type FiltersProps = {
+  isHideTagFilter?: boolean;
+};
 
-  // Get the minimum and maximum values
-  const min = arr[0];
-  const max = arr[arr.length - 1];
+export type FilterItem = {
+  id: string;
+  label: string;
+  emptyText: string;
+  options: FilterOption[];
+};
 
-  // Calculate the step size for each range
-  const step = (max - min) / range;
+export type FilterOption = {
+  value: string;
+  label: string;
+  icon: string;
+  prevImage: string;
+  image: string;
+  prevIcon: string;
+};
 
-  // Create the ranges
-  const ranges: Record<string, { min: number; max: number }> = {};
-  for (let i = 0; i < range; i++) {
-    const start = min + i * step;
-    const end = i === 3 ? max : start + step;
-    ranges[`${start?.toFixed(2)}% - ${end?.toFixed(2)}%`] = {
-      min: start,
-      max: end,
-    };
+export type FiltersState = {
+  search: string;
+  tag: FilterOption[];
+  type: FilterOption[];
+  developer: FilterOption[];
+};
+
+export const EmptyState = {
+  search: "",
+  tag: [],
+  type: [],
+  developer: [],
+};
+
+export function getFiltersValues(filtersState: FiltersState) {
+  return {
+    tag: filtersState.tag.map((item) => item.value).filter((item) => item),
+    type: filtersState.type.map((item) => item.value).filter((item) => item),
+    developer: filtersState.developer
+      .map((item) => item.value)
+      .filter((item) => item),
+  };
+}
+
+export function filterByType(estates: EstateType[], values: string[]) {
+  if (!values.length) return estates;
+  return estates.filter((es) =>
+    values.includes(es.assetDetails?.propertyDetails?.propertyType)
+  );
+}
+
+export function filterByTag(estates: EstateType[], values: string[]) {
+  if (!values.length) return estates;
+  return estates.filter((es) =>
+    values.includes(es.assetDetails?.propertyDetails?.flag)
+  );
+}
+export function filterByDeveloper(estates: EstateType[], values: string[]) {
+  if (!values.length) return estates;
+  return estates.filter((es) =>
+    values.includes(es.assetDetails?.propertyDetails?.developer)
+  );
+}
+
+export function filterByName(estates: EstateType[], name: string) {
+  return estates.filter((es) =>
+    es.name.toLowerCase().includes(name.toLowerCase())
+  );
+}
+
+export const parseFiltersFromParams = (
+  params: URLSearchParams,
+  filtersData: FilterItem[]
+): FiltersState => {
+  const state: FiltersState = { ...EmptyState };
+
+  filtersData.forEach((filter) => {
+    const value = params.get(filter.id);
+    if (value) {
+      const valueList = value.split(",").filter(Boolean);
+
+      state[filter.id as keyof FiltersState] = filter.options.filter((opt) =>
+        valueList.includes(opt.value)
+      );
+    }
+  });
+
+  const search = params.get("search");
+  if (search) state.search = search;
+
+  return state;
+};
+
+export const buildQueryFromFilters = (
+  filters: FiltersState
+): URLSearchParams => {
+  const params = new URLSearchParams();
+
+  if (filters.search) {
+    params.set("search", filters.search);
   }
 
-  return ranges;
-}
+  ["type", "developer", "tag"].forEach((key) => {
+    const filterKey = key as keyof FiltersState;
+    const values = filters[filterKey]
+      ?.map((item) => item.value)
+      .filter(Boolean);
+    if (values?.length) {
+      params.set(key, values.join(","));
+    }
+  });
+
+  return params;
+};

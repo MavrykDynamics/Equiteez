@@ -1,0 +1,111 @@
+@import "../../../../styles/breakpoints.css";
+
+.assetContainer {
+  display: grid;
+  grid-template-columns: 1fr 368px;
+  gap: 24px;
+}
+
+.assetCardHeader {
+  color: var(--color-neutral-light);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 150%;
+  letter-spacing: 0.076px;
+}
+.tokenImg {
+  height: 85px;
+  z-index: 100;
+  display: block;
+}
+.mvrkTokenImgWrapper,
+.tokenImgWrapper {
+  position: relative;
+  z-index: 2;
+}
+.tokenImgWrapper:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  right: 13px;
+  bottom: 13px;
+  z-index: -1;
+  box-shadow: 0 0 90px 0 var(--color-yellow-500);
+  -webkit-box-shadow: 0 0 90px 0 var(--color-yellow-500);
+  -moz-box-shadow: 0 0 90px 0 var(--color-yellow-500);
+}
+.mvrkTokenImgWrapper:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  right: 13px;
+  bottom: 13px;
+  z-index: -1;
+  box-shadow: 0 0 90px 0 var(--color-purple-500);
+  -webkit-box-shadow: 0 0 90px 0 var(--color-purple-500);
+  -moz-box-shadow: 0 0 90px 0 var(--color-purple-500);
+}
+
+.tokenImgBg {
+  position: absolute;
+  content: " ";
+  inset: 0;
+  display: block;
+  backdrop-filter: blur(120px);
+  background: rgba(85, 149, 252, 0.9);
+  width: 86px;
+  height: 86px;
+}
+.divider {
+  height: auto;
+  width: 1px;
+  background-color: var(--color-light-blue-100);
+  @media (--media-tablet-max) {
+    display: none;
+  }
+}
+.buyBtn {
+  height: 40px;
+  width: 154px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  @media (--media-tablet-max) {
+    width: 100%;
+  }
+}
+.buyBtn span {
+  font-size: 14px;
+  line-height: 16px;
+}
+.link {
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+.link:hover span {
+  color: var(--color-br-green-700);
+}
+.link:active span {
+  color: var(--color-br-green-900);
+}
+.assetItemText {
+  display: block;
+  color: var(--color-br-green-400);
+  transition: all 0.2s ease;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.assetItemText:hover {
+  color: var(--color-br-green-500);
+}
+.walletAssetBlockWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

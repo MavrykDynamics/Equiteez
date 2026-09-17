@@ -9,7 +9,7 @@ import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-b
 
 // consts
 import {
-  atlasNetRpcnode,
+  basenetNetRpcnode,
   RPC_NODE,
   rpcNodeSchema,
   RPCNodeType,
@@ -19,16 +19,17 @@ import { getItemFromStorage } from "~/lib/utils/local-storage";
 // utils
 
 // Need to use as cuz NetworkType is enum and ts don't understand that all types are correct
-const WALLET_NETWORK = "atlasnet" as NetworkType;
+const WALLET_NETWORK = "basenet" as NetworkType;
 const DAPP_METADATA = {
   // name: process.env.REACT_APP_NAME,
-  name: "Maven",
+  name: "Equiteez",
   preferredNetwork: WALLET_NETWORK,
 };
 
 const getRpcNode = (): RPCNodeType => {
   const rpcNode =
-    getItemFromStorage<RPCNodeType>(RPC_NODE, rpcNodeSchema) ?? atlasNetRpcnode;
+    getItemFromStorage<RPCNodeType>(RPC_NODE, rpcNodeSchema) ??
+    basenetNetRpcnode;
   return rpcNode;
 };
 
@@ -52,22 +53,29 @@ export function dappClient() {
     return loadWallet();
   }
 
-  async function listenToActiveAccount(setAccount: (acc: AccountInfo) => void) {
+  async function listenToActiveAccount(
+    setAccount: (acc: AccountInfo | null) => void
+  ) {
     const client = getDAppClient();
 
-    client
+    await client
       .subscribeToEvent(BeaconEvent.ACTIVE_ACCOUNT_SET, (account) => {
         // An active account has been set, update the dApp UI
-        console.log(
-          `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
-          account.address
-        );
+        if (account?.address) {
+          console.log(
+            `${BeaconEvent.ACTIVE_ACCOUNT_SET} triggered: `,
+            account.address
+          );
+        }
 
         setAccount(account ?? null);
       })
       .catch((err) => {
         throw err;
       });
+
+    const activeAccount = await client.getActiveAccount();
+    setAccount(activeAccount ?? null);
   }
 
   async function connectAccount() {

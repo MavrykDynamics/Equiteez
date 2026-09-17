@@ -131,7 +131,7 @@ export const PropertyTradingHistoryTab = () => {
           <ExpandIcon className="w-6 h-6 text-content stroke-current cursor-pointer" />
         </div>
       </div>
-      <div className="my-4 flex items-center gap-x-[6px] text-body-xs text-content">
+      <div className="my-4 flex flex-wrap items-center gap-x-[6px] text-body-xs text-content">
         <span>FA</span>
         <Dot />
         <span>1D</span>

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { FC } from "react";
-
+import styles from "./styles.module.css";
 type TextVariant = "body" | "bold" | "body-xs" | "caption-regular";
 
 type TableItemProps = {
@@ -35,6 +35,7 @@ export const TableItem: FC<TableItemProps> = ({
         paddingBottom: isLast ? 0 : customPadding,
       }}
       className={clsx(
+        styles.tableItem,
         "flex items-center justify-between w-full text-content",
         lastSemiBold && "[&>*:nth-child(2)]:font-semibold",
         textVariants[textVariant],

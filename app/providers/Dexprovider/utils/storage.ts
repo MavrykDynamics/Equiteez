@@ -1,118 +1,123 @@
-import { api } from "~/lib/utils/api";
-import { DodoStorageType, dodoStorageTypeSchema } from "../dex.provider.types";
 import { toTokenSlug } from "~/lib/assets";
-import { getPMMTokenPrice } from "./price";
-import BigNumber from "bignumber.js";
-import { DexStorageQuery } from "~/utils/__generated__/graphql";
-import { EstateType } from "~/providers/MarketsProvider/market.types";
+import { OrderbookConfigType } from "~/providers/MarketsProvider/market.types";
+import { OrderbooksList } from "~/providers/Dexprovider/schemas/orderbook.schema";
+import type { OrderbookTickSizesByAddress } from "./orderbookConfig";
 
-export const getContractStorageInfo = async (address: string) => {
-  try {
-    const { data } = await api<DodoStorageType>(
-      `${process.env.API_URL}/contracts/${address}/storage`
-    );
+type OrderbookItem = OrderbooksList[number];
+type TickSizeValue = number | null | undefined;
 
-    const parsedData = dodoStorageTypeSchema.parse(data);
-    return parsedData;
-  } catch (e) {
-    console.log("Error while fetching storage data");
-    throw e;
+export type OrderBookPriceData = {
+  lowestSellPrice: number;
+  highestBuyPrice: number;
+  tickSize: number;
+  buyOrderFee: number;
+  sellOrderFee: number;
+  minBuyOrderAmount?: number;
+  minBuyOrderValue?: number;
+  minSellOrderAmount?: number;
+  minSellOrderValue?: number;
+  minExpiryTime?: number;
+  currencyKey?: string;
+  quoteTokenId?: string;
+  quoteTokenDecimals?: number;
+  baseTokenId?: string;
+  baseTokenDecimals?: number;
+  rwaTokenAddress: string;
+  orderbookAddress: string;
+};
+
+const isPositiveTickSize = (tickSize: TickSizeValue): tickSize is number =>
+  typeof tickSize === "number" && Number.isFinite(tickSize) && tickSize > 0;
+
+export const resolveOrderbookTickSize = (
+  item: OrderbookItem,
+  tickSizesByAddress: OrderbookTickSizesByAddress
+) => {
+  if (isPositiveTickSize(item.tickSize)) return item.tickSize;
+  if (isPositiveTickSize(item.tick_size)) return item.tick_size;
+
+  const fallbackTickSize = tickSizesByAddress[item.address];
+
+  return isPositiveTickSize(fallbackTickSize) ? fallbackTickSize : undefined;
+};
+
+export const getOrderbookStorages = (
+  orderbooksList: OrderbooksList,
+  storagesMap: Map<string, OrderbookConfigType>,
+  tickSizesByAddress: OrderbookTickSizesByAddress
+) => {
+  const rwaTokenAddressesByOrderbook = new Map<string, string>();
+  const configByOrderbook = new Map<string, OrderbookConfigType>();
+
+  for (const [, storage] of storagesMap) {
+    rwaTokenAddressesByOrderbook.set(storage.address, storage.rwaTokenAddress);
+    configByOrderbook.set(storage.address, storage);
   }
-};
 
-export const getDodoMavTokenStorages = (
-  queryData: DexStorageQuery
-): StringRecord<DodoStorageType> => {
-  const { dodo_mav } = queryData;
+  return orderbooksList.reduce<Record<string, OrderBookPriceData>>(
+    (acc, item) => {
+      const rwaTokenAddress =
+        item.rwa_token?.address ??
+        rwaTokenAddressesByOrderbook.get(item.address);
+      const storageConfig = configByOrderbook.get(item.address);
 
-  return dodo_mav.reduce<StringRecord<DodoStorageType>>((acc, storage) => {
-    const slug = toTokenSlug(
-      storage?.base_token?.address,
-      storage?.base_token?.token_id
-    );
+      if (!rwaTokenAddress) return acc;
 
-    if (!slug) return acc;
-
-    const parsedData = {
-      config: {
-        lpFee: storage.lp_fee.toString(),
-        feeDecimals: storage.fee_decimals.toString(),
-        priceModel: storage.price_model,
-        maintainerFee: storage.maintainer_fee,
-        appraisalPrice: undefined,
-        fixedPricePercent: storage.fixed_price_percent?.toString(),
-        orderbookPricePercent: undefined,
-      },
-      rStatus: storage.r_status.toString(),
-      baseToken: {
-        tokenId: storage.base_token.token_id.toString(),
-        tokenContractAddress: storage.base_token.address,
-      },
-      guidePrice: storage.guide_price.toString(),
-      quoteToken: {
-        tokenId: storage.quote_token.token_id.toString(),
-        tokenContractAddress: storage.quote_token.address,
-      },
-      superAdmin: storage.address,
-      baseBalance: storage.base_balance.toString(),
-      baseLpToken: {
-        tokenId: storage.base_lp_token.token_id.toString(),
-        tokenContractAddress: storage.base_lp_token.address,
-      },
-      quoteBalance: storage.quote_balance.toString(),
-      quoteLpToken: {
-        tokenId: storage.quote_lp_token.token_id.toString(),
-        tokenContractAddress: storage.quote_lp_token.address,
-      },
-      slippageFactor: storage.slippage_factor.toString(),
-      baseBalanceLimit: storage.base_balance_limit.toString(),
-      quoteBalanceLimit: storage.quote_balance_limit.toString(),
-      targetBaseTokenAmount: storage.target_base_token_amount.toString(),
-      targetQuoteTokenAmount: storage.target_quote_token_amount.toString(),
-    };
-
-    const result = dodoStorageTypeSchema.safeParse(parsedData);
-    if (result.success) {
-      acc[slug] = result.data;
-    } else {
-      console.error("Validation failed for", slug, result.error.format());
-    }
-
-    return acc;
-  }, {});
-};
-
-export const getDodoMavTokenPrices = (
-  storages: DodoStorageType[],
-  markets: Map<string, EstateType>
-) => {
-  return storages.reduce<StringRecord<BigNumber>>((acc, storage) => {
-    const slug = toTokenSlug(
-      storage?.baseToken?.tokenContractAddress,
-      storage?.baseToken?.tokenId
-    );
-
-    if (slug && storage) {
-      const decimals = markets.get(slug)?.decimals;
-      const price = getPMMTokenPrice(storage, decimals);
-      acc[slug] = price;
-    }
-    return acc;
-  }, {});
-};
-
-export const getDodoMavTokenPairs = (
-  storagesRecord: StringRecord<DodoStorageType>
-) => {
-  return Object.entries(storagesRecord).reduce<StringRecord<string>>(
-    (acc, [key, storage]) => {
-      acc[key] = toTokenSlug(
-        storage.quoteToken.tokenContractAddress,
-        storage.quoteToken.tokenId
+      const tokenSlug = toTokenSlug(
+        rwaTokenAddress,
+        storageConfig?.rwaTokenId ?? 0
       );
+      const tickSize = resolveOrderbookTickSize(item, tickSizesByAddress);
+
+      if (!tickSize) return acc;
+
+      const quoteCurrency = storageConfig?.currencies[0];
+
+      acc[tokenSlug] = {
+        lowestSellPrice: item.lowest_sell_price,
+        highestBuyPrice: item.highest_buy_price,
+        tickSize,
+        buyOrderFee: item.buy_order_fee ?? storageConfig?.buyOrderFee,
+        sellOrderFee: item.sell_order_fee ?? storageConfig?.sellOrderFee,
+        minBuyOrderAmount:
+          item.min_buy_order_amount ?? storageConfig?.minBuyOrderAmount,
+        minBuyOrderValue:
+          item.min_buy_order_value ?? storageConfig?.minBuyOrderValue,
+        minSellOrderAmount:
+          item.min_sell_order_amount ?? storageConfig?.minSellOrderAmount,
+        minSellOrderValue:
+          item.min_sell_order_value ?? storageConfig?.minSellOrderValue,
+        minExpiryTime: item.min_expiry_time ?? storageConfig?.minExpiryTime,
+        currencyKey: quoteCurrency?.currencyKey,
+        quoteTokenId: quoteCurrency?.token.token_id,
+        quoteTokenDecimals:
+          item.quote_token?.decimals ?? quoteCurrency?.token.decimals,
+        baseTokenId: storageConfig?.rwaTokenId,
+        baseTokenDecimals:
+          item.rwa_token?.decimals ?? storageConfig?.rwaTokenDecimals,
+        rwaTokenAddress,
+        orderbookAddress: item.address,
+      };
 
       return acc;
     },
     {}
   );
+};
+
+export const getOrderbookTokenPairs = (
+  storagesMap: Map<string, OrderbookConfigType>
+): StringRecord<string> => {
+  const result: StringRecord<string> = {};
+
+  for (const [, storage] of storagesMap) {
+    const quoteToken = storage.currencies[0]?.token;
+
+    if (!quoteToken) continue;
+
+    result[toTokenSlug(storage.rwaTokenAddress, storage.rwaTokenId)] =
+      toTokenSlug(quoteToken.address, quoteToken.token_id);
+  }
+
+  return result;
 };

@@ -5,6 +5,7 @@ import useCopyToClipboard from '~/lib/ui/useCopyToClipboard';
 import useTippy from '~/lib/ui/useTippy';
 
 export type CopyButtonProps = HTMLAttributes<HTMLButtonElement> & {
+  mode?: 'default' | 'reverse';
   rounded?: 'sm' | 'base';
   text: string;
   small?: boolean;
@@ -14,6 +15,7 @@ export type CopyButtonProps = HTMLAttributes<HTMLButtonElement> & {
 export const CopyButton: FC<CopyButtonProps> = ({
   children,
   text,
+  mode = 'default',
   small = false,
   className,
   type = 'button',
@@ -28,11 +30,12 @@ export const CopyButton: FC<CopyButtonProps> = ({
       hideOnClick: false,
       content: copied ? 'Copied!' : 'Copy',
       animation: 'shift-away-subtle',
+      theme: mode === 'reverse' ? 'equiteez reverse' : 'equiteez',
       onHidden() {
         setCopied(false);
       },
     }),
-    [copied, setCopied]
+    [copied, mode, setCopied]
   );
 
   const buttonRef = useTippy<HTMLButtonElement>(tippyProps);

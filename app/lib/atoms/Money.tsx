@@ -176,7 +176,7 @@ const MoneyWithoutFormat: FC<MoneyWithoutFormatProps> = ({
   return (
     <FullAmountTippy
       enabled={tooltip}
-      fullAmount={bn}
+      fullAmount={result}
       className={className}
       showAmountTooltip
     >
@@ -196,25 +196,25 @@ interface MoneyWithFormatProps extends MoneyAnyFormatPropsBase {
 
 const MoneyWithFormat: FC<MoneyWithFormatProps> = ({
   tooltip,
-  bn,
+  // bn,
   className,
   result,
   indexOfDecimal,
-  isFiat,
+  // isFiat,
   smallFractionFont,
 }) => {
-  const fullAmount = useMemo(() => {
-    if (!isFiat) return bn;
+  // const fullAmount = useMemo(() => {
+  //   if (!isFiat) return bn;
 
-    const { amount } = formatAmount(bn);
+  //   const { amount } = formatAmount(bn);
 
-    return new BigNumber(amount.toFixed(2));
-  }, [bn.toString(), isFiat]);
+  //   return new BigNumber(amount.toFixed(2));
+  // }, [bn.toString(), isFiat]);
 
   return (
     <FullAmountTippy
       enabled={tooltip}
-      fullAmount={fullAmount}
+      fullAmount={result}
       className={className}
     >
       {result.slice(0, indexOfDecimal + 1)}
@@ -226,7 +226,7 @@ const MoneyWithFormat: FC<MoneyWithFormatProps> = ({
 };
 
 interface FullAmountTippyProps extends HTMLAttributes<HTMLSpanElement> {
-  fullAmount: BigNumber;
+  fullAmount: BigNumber | string;
   showAmountTooltip?: boolean;
   enabled?: boolean;
 }
@@ -238,7 +238,11 @@ const FullAmountTippy: FC<FullAmountTippyProps> = ({
   enabled = true,
   ...rest
 }) => {
-  const fullAmountStr = useMemo(() => toLocalFixed(fullAmount), [fullAmount]);
+  const fullAmountStr = useMemo(
+    () =>
+      typeof fullAmount === "string" ? fullAmount : toLocalFixed(fullAmount),
+    [fullAmount]
+  );
 
   const { fieldRef, copy, copied, setCopied } = useCopyToClipboard();
 

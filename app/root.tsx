@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   useRouteError,
 } from "@remix-run/react";
 import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
@@ -19,6 +20,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
+import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
+import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
@@ -28,7 +31,6 @@ import {
   fetchTokensData,
   fetchTokensMetadata,
 } from "./providers/TokensProvider/utils/fetchTokensdata";
-import { fetchUsdToTokenRates } from "./lib/mavryk/endpoints/get-exchange-rates";
 import { useDataFromLoader } from "./hooks/useDataFromLoader";
 import ToasterProvider from "./providers/ToasterProvider/toaster.provider";
 import { ApolloProvider } from "./providers/ApolloProvider/apollo.provider";
@@ -40,17 +42,31 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { DexProvider } from "./providers/Dexprovider/dex.provider";
-import { MobileView } from "./providers/MobileView/MobileView";
 import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
+import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
+import PageLayout from "~/layouts/PageLayout/Pagelayout";
 
 export const links: LinksFunction = () => [
+  { rel: "manifest", href: "/manifest.webmanifest" },
+  { rel: "icon", href: "/favicon.ico" },
+  { rel: "apple-touch-icon", href: "/logo-96.png" },
   { rel: "preload", as: "style", href: stylesheet },
   { rel: "stylesheet", href: stylesheet },
   { rel: "preload", as: "style", href: marqueeStylesheet },
   { rel: "stylesheet", href: marqueeStylesheet },
 ];
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+    },
+  },
+});
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userAgent = request.headers.get("user-agent") || "";
@@ -82,7 +98,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     tokensMetadata = {},
     fiatToTezos = {},
     usdToToken = {},
-    isMobile = false,
+    // isMobile = false,
   } = useDataFromLoader<typeof loader>() ?? {};
 
   useEffect(() => {
@@ -121,38 +137,51 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ToasterProvider
             maintance={process.env.REACT_APP_MAINTANCE_MODE === "on"}
           >
-            <AppProvider>
-              <MobileView isMobile={isMobile}>
+            <QueryClientProvider client={queryClient}>
+              <AppProvider>
                 <ApolloProvider>
                   <DipdupProvider>
                     <WalletProvider>
-                      <CurrencyProvider
-                        fiatToTezos={fiatToTezos}
-                        usdToToken={usdToToken}
-                      >
-                        <TokensProvider
-                          initialTokens={tokens}
-                          initialTokensMetadata={tokensMetadata}
-                        >
-                          <MarketsProvider>
-                            <DexProvider>
-                              <UserProvider>
-                                <AppGlobalLoader>
-                                  <PopupProvider>{children}</PopupProvider>
-                                </AppGlobalLoader>
-                              </UserProvider>
-                            </DexProvider>
-                          </MarketsProvider>
-                        </TokensProvider>
-                      </CurrencyProvider>
+                      <AuthProvider>
+                        <ConfigProvider>
+                          <CurrencyProvider
+                            fiatToTezos={fiatToTezos}
+                            usdToToken={usdToToken}
+                          >
+                            <TokensProvider
+                              initialTokens={tokens}
+                              initialTokensMetadata={tokensMetadata}
+                            >
+                              <AssetsProvider>
+                                <MarketsProvider>
+                                  <DexProvider>
+                                    <EthereumProvider>
+                                      <UserProvider>
+                                        <AppGlobalLoader>
+                                          <PopupProvider>
+                                            <PageLayout includeContainer={false}>
+                                              {children}
+                                            </PageLayout>
+                                          </PopupProvider>
+                                        </AppGlobalLoader>
+                                      </UserProvider>
+                                    </EthereumProvider>
+                                  </DexProvider>
+                                </MarketsProvider>
+                              </AssetsProvider>
+                            </TokensProvider>
+                          </CurrencyProvider>
+                        </ConfigProvider>
+                      </AuthProvider>
                     </WalletProvider>
                   </DipdupProvider>
                 </ApolloProvider>
-              </MobileView>
-            </AppProvider>
+              </AppProvider>
+            </QueryClientProvider>
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
+          {/*<RouteScrollReset />*/}
           <Scripts />
         </div>
       </body>
@@ -166,6 +195,33 @@ export default function App() {
       <Outlet />
     </>
   );
+}
+
+function RouteScrollReset() {
+  const location = useLocation();
+  const isInitialRender = useRef(true);
+  const previousPathname = useRef(location.pathname);
+
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    if (previousPathname.current === location.pathname) {
+      return;
+    }
+
+    previousPathname.current = location.pathname;
+
+    if (location.hash) {
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.hash, location.pathname]);
+
+  return null;
 }
 
 /** catch server errors ************************** */

@@ -4,6 +4,9 @@
 /// <reference types="react" />
 /// <reference types="react-dom" />
 
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
+
 declare type ImportedSVGComponent = React.FunctionComponent<
   React.SVGProps<SVGSVGElement> & { title?: string }
 >;
@@ -17,8 +20,11 @@ declare namespace NodeJS {
     readonly API_URL: string;
     readonly RPC_NODE_URL: string;
     readonly BCD_API: string;
+    readonly RWA_API: string;
+    readonly RWA_SERVICES_API: string;
     readonly BCD_NETWORK_TYPE: "sandboxnet" | "mainnet";
     readonly MAVRYK_WALLET_API_URL: string;
+    readonly MBRWA_API: string;
 
     readonly TOKENS_METADATA_API: string;
   }

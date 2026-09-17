@@ -1,0 +1,1 @@
+export { TradeConfirmationPopup } from "./TradeConfirmationPopup";

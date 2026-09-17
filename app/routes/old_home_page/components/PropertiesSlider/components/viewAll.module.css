@@ -1,0 +1,19 @@
+@import "../../../../../styles/breakpoints.css";
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px 12px 32px;
+  color: var(--color-neutral-light);
+  background: transparent;
+  border: 2px solid var(--color-neutral-light);
+}
+@media (--media-tablet-max) {
+  .button {
+    text-decoration: underline;
+    color: var(--color-br-green-500);
+    border: none;
+    padding: 0;
+  }
+}

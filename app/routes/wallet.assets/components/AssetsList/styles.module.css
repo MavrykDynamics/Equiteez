@@ -1,0 +1,19 @@
+@import "../../../../styles/breakpoints.css";
+
+.wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px
+}
+
+@media (--media-tablet-min) {
+  .wrapper {
+    grid-template-columns: 1fr 1fr ;
+  }
+}
+
+@media (--media-phone) {
+  .wrapper {
+    grid-template-columns: 1fr;
+  }
+}

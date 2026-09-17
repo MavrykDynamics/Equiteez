@@ -38,7 +38,7 @@ export const TOASTER_SUBSCRIPTION_ERROR = "TOASTER_SUBSCRIPTION_ERROR";
 
 // Error page default texts
 
-export const errorHeaderDefaultText = "This page is outside the universe";
+export const errorHeaderDefaultText = "Oops! Something went wrong";
 export const errorDescDefaultText = (
   <>
     The page you are trying to access doesn’t exist or has been moved.
@@ -47,8 +47,7 @@ export const errorDescDefaultText = (
 );
 
 // with error in toaster context
-export const errorHeaderDefaultTextWhenError =
-  "Your spaceship has encountered a bug";
+export const errorHeaderDefaultTextWhenError = "Oops! Something went wrong";
 export const errorDescDefaultTextWhenError = (
   <>
     A significant error has been encountered, please take a look at our{" "}

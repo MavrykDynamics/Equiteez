@@ -1,13 +1,13 @@
-import { FC, ReactElement, ReactNode, useMemo } from 'react';
+import { FC, ReactElement, ReactNode, useMemo } from "react";
 
-import BigNumber from 'bignumber.js';
+import BigNumber from "bignumber.js";
 
-import Money from 'app/lib/atoms/Money';
+import Money from "app/lib/atoms/Money";
 // import {
 //   useAssetFiatCurrencyPrice,
 //   useFiatCurrency,
 // } from 'app/lib/fiat-currency';
-import { isDefined } from '../utils';
+import { isDefined } from "../utils";
 
 interface OutputProps {
   balance: ReactNode;
@@ -39,10 +39,10 @@ const InFiat: FC<InFiatProps> = ({
 }) => {
   const price = 1;
   // const { selectedFiatCurrency } = useFiatCurrency();
-  const walletNetwork = { type: 'atlasnet' };
+  const walletNetwork = { type: "basenet" };
 
   if (mainnet === undefined) {
-    mainnet = walletNetwork.type === 'main';
+    mainnet = walletNetwork.type === "main";
   }
 
   const roundedInFiat = useMemo(() => {
@@ -71,7 +71,7 @@ const InFiat: FC<InFiatProps> = ({
       </Money>
     ),
     // symbol: selectedFiatCurrency.symbol,
-    symbol: '$',
+    symbol: "$",
   });
 };
 

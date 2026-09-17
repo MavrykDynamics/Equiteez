@@ -35,9 +35,9 @@ export default {
           },
         ],
         "asset-input": [
-          "2rem", // 32px
+          "1.25rem", // 32px
           {
-            lineHeight: "2.25rem", // 36px
+            lineHeight: "1.75rem", // 36px
             fontWeight: "600",
           },
         ],
@@ -252,9 +252,27 @@ export default {
           progress: "#50B2FA",
         };
 
+        const redesignColors = {
+          "r-color-neutral": {
+            black: "var(--r-color-neutral-black)",
+            900: "var(--r-color-neutral-900)",
+            800: "var(--r-color-neutral-800)",
+            700: "var(--r-color-neutral-700)",
+            600: "var(--r-color-neutral-600)",
+            500: "var(--r-color-neutral-500)",
+            400: "var(--r-color-neutral-400)",
+            300: "var(--r-color-neutral-300)",
+            200: "var(--r-color-neutral-200)",
+            100: "var(--r-color-neutral-100)",
+            50: "var(--r-color-neutral-50)",
+            white: "var(--r-color-neutral-white)",
+          },
+        };
+
         return {
           ...baseColors,
           ...brandColors,
+          ...redesignColors,
         };
       })(),
       spacing: {
@@ -265,6 +283,9 @@ export default {
       },
       borderRadius: {
         "4xl": "2rem",
+      },
+      ringWidth: {
+        DEFAULT: "0",
       },
       boxShadow: {
         card: "0.5px 0.5px 0px 0px rgba(0, 0, 0, 0.03), 1px 2px 15px 0px rgba(0, 0, 0, 0.05);",

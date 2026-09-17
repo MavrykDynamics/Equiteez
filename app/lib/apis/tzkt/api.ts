@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HubConnectionBuilder } from '@microsoft/signalr';
-import axios, { AxiosError } from 'axios';
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import axios, { AxiosError } from "axios";
 
-import { toTokenSlug } from 'app/lib/assets';
-import { MavrykChainId } from 'app/lib/mavryk/types';
-import { delay } from 'app/lib/utils';
+import { toTokenSlug } from "app/lib/assets";
+import { MavrykChainId } from "app/lib/mavryk/types";
+import { delay } from "app/lib/utils";
 
 import {
   TzktOperation,
@@ -17,14 +17,13 @@ import {
   TzktRelatedContract,
   TzktAccount,
   TzktHubConnection,
-} from './types';
-import { calcTzktAccountSpendableTezBalance } from './utils';
+} from "./types";
+import { calcTzktAccountSpendableTezBalance } from "./utils";
 
 const TZKT_API_BASE_URLS = {
-  [MavrykChainId.Mainnet]: 'https://api.mavryk.network/mainnet/v1',
-  [MavrykChainId.Atlas]: 'https://atlasnet.api.mavryk.network/v1',
-  [MavrykChainId.Basenet]: 'https://api.mavryk.network/basenet/v1',
-  [MavrykChainId.Weekly]: 'https://api.mavryk.network/weeklynet/v1',
+  [MavrykChainId.Mainnet]: "https://api.mavryk.network/mainnet/v1",
+  [MavrykChainId.Basenet]: "https://basenet.api.mavryk.network/v1",
+  [MavrykChainId.Weekly]: "https://api.mavryk.network/weeklynet/v1",
 };
 
 export type TzktApiChainId = keyof typeof TZKT_API_BASE_URLS;
@@ -76,18 +75,18 @@ async function fetchGet<R>(
 type GetOperationsBaseParams = {
   limit?: number;
   offset?: number;
-  entrypoint?: 'transfer' | 'mintOrBurn';
+  entrypoint?: "transfer" | "mintOrBurn";
   lastId?: number;
 } & {
-  [key in `timestamp.${'lt' | 'ge'}`]?: string;
+  [key in `timestamp.${"lt" | "ge"}`]?: string;
 } & {
-  [key in `level.${'lt' | 'ge'}`]?: number;
+  [key in `level.${"lt" | "ge"}`]?: number;
 } & {
-  [key in `target${'' | '.ne'}`]?: string;
+  [key in `target${"" | ".ne"}`]?: string;
 } & {
-  [key in `sender${'' | '.ne'}`]?: string;
+  [key in `sender${"" | ".ne"}`]?: string;
 } & {
-  [key in `initiator${'' | '.ne'}`]?: string;
+  [key in `initiator${"" | ".ne"}`]?: string;
 };
 
 export const fetchGetAccountOperations = (
@@ -97,12 +96,12 @@ export const fetchGetAccountOperations = (
     type?: TzktOperationType | TzktOperationType[];
     sort?: 0 | 1;
     quote?: TzktQuoteCurrency[];
-    'parameter.null'?: boolean;
+    "parameter.null"?: boolean;
   }
 ) =>
   fetchGet<TzktOperation[]>(chainId, `/accounts/${accountAddress}/operations`, {
     ...params,
-    type: Array.isArray(params.type) ? params.type.join(',') : params.type,
+    type: Array.isArray(params.type) ? params.type.join(",") : params.type,
   });
 
 export const fetchGetOperationsByHash = (
@@ -114,13 +113,13 @@ export const fetchGetOperationsByHash = (
 ) => fetchGet<TzktOperation[]>(chainId, `/operations/${hash}`, params);
 
 type GetOperationsTransactionsParams = GetOperationsBaseParams & {
-  [key in `anyof.sender.target${'' | '.initiator'}`]?: string;
+  [key in `anyof.sender.target${"" | ".initiator"}`]?: string;
 } & {
-  [key in `amount${'' | '.ne'}`]?: string;
+  [key in `amount${"" | ".ne"}`]?: string;
 } & {
-  [key in `parameter.${'to' | 'in' | '[*].in' | '[*].txs.[*].to_'}`]?: string;
+  [key in `parameter.${"to" | "in" | "[*].in" | "[*].txs.[*].to_"}`]?: string;
 } & {
-  [key in `sort${'' | '.desc'}`]?: 'id' | 'level';
+  [key in `sort${"" | ".desc"}`]?: "id" | "level";
 };
 
 export const fetchGetOperationsTransactions = (
@@ -149,8 +148,8 @@ export const getDelegatorRewards = (
       }),
       {}
     ),
-    ...(sort ? { [`sort.${sort}`]: 'cycle' } : {}),
-    quote: quote?.join(','),
+    ...(sort ? { [`sort.${sort}`]: "cycle" } : {}),
+    quote: quote?.join(","),
     ...restParams,
   });
 
@@ -194,17 +193,17 @@ const fetchTzktAccountAssetsPage = (
   offset?: number,
   fungible: boolean | null = null
 ) =>
-  fetchGet<TzktAccountAsset[]>(chainId, '/tokens/balances', {
+  fetchGet<TzktAccountAsset[]>(chainId, "/tokens/balances", {
     account,
     limit: TZKT_MAX_QUERY_ITEMS_LIMIT,
     offset,
-    'balance.gt': 0,
+    "balance.gt": 0,
     ...(fungible === null
-      ? { 'token.metadata.null': true }
+      ? { "token.metadata.null": true }
       : {
-          'token.metadata.artifactUri.null': fungible,
+          "token.metadata.artifactUri.null": fungible,
         }),
-    'sort.desc': 'balance',
+    "sort.desc": "balance",
   });
 
 export const fetchGasTokenBalance = (account: string, chainId: string) => {
@@ -279,11 +278,11 @@ const fetchAssetsBalancesFromTzktOnce = (
   chainId: TzktApiChainId,
   offset = 0
 ) =>
-  fetchGet<AssetBalance[]>(chainId, '/tokens/balances', {
+  fetchGet<AssetBalance[]>(chainId, "/tokens/balances", {
     account,
     limit: TZKT_MAX_QUERY_ITEMS_LIMIT,
     offset,
-    'select.values': 'token.contract.address,token.tokenId,balance',
+    "select.values": "token.contract.address,token.tokenId,balance",
   });
 
 export const getAccountStatsFromTzkt = async (

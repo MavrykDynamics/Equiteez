@@ -1,13 +1,15 @@
-import { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import styles from "./faqSection.module.css";
 import clsx from "clsx";
 
 import ArrowDown from "app/icons/chevron-down.svg?react";
 import { useAppContext } from "~/providers/AppProvider/AppProvider";
+import { Heading } from "~/lib/atoms/Typography/Heading";
+import { Text } from "~/lib/atoms/Typography/Text";
 // import { isVisibleInViewport } from '~/lib/utils/element-in-view';
 
 export type FaqType = {
-  data: { title: string; description: string | JSX.Element }[];
+  data: { title: string; description: string | React.JSX.Element }[];
 };
 
 export const FAQSection: FC<FaqType> = ({ data }) => {
@@ -55,13 +57,17 @@ export const FAQSection: FC<FaqType> = ({ data }) => {
   }, []);
 
   return (
-    <section className="px-11 flex gap-x-[90px]">
-      <div className="max-w-[506px] min-w-[506px]">
-        <h2 className="text-content text-section-headline">
-          Answers to our most frequently asked questions
-        </h2>
+    <section className="flex gap-x-[90px] gap-y-6 relative flex-col xl:flex-row">
+      <div className="xl:max-w-[506px] max-w-full">
+        <Heading
+          level="3"
+          className="xl:text-start text-center mx-auto xl:mx-0"
+        >
+          Answers To Our Most <br />
+          Frequently Asked Questions
+        </Heading>
       </div>
-      <div className="flex flex-col flex-1 ">
+      <div className="flex flex-col flex-1">
         {data.map((item, idx) => (
           <Question
             key={item.title}
@@ -94,7 +100,7 @@ const Question: FC<QuestionType> = ({
   return (
     <div
       role="presentation"
-      className="text-content text-card-headline py-8 border-b border-divider flex-1 cursor-pointer"
+      className={styles.questionWrapper}
       id={`faq-${idx + 1}`}
       onClick={() => handleClick(idx + 1)}
     >
@@ -106,10 +112,12 @@ const Question: FC<QuestionType> = ({
         data-active-article={`faq-${idx + 1}`}
       >
         <button className="flex items-center justify-between w-full capitalize text-left">
-          <div className={styles.faqSubHeader}>{item.title}</div>
+          <Text size="largeBody" weight="semibold">
+            {item.title}
+          </Text>
           <ArrowDown
             className={clsx(
-              "w-6 h-6 text-content stroke-current",
+              "w-6 h-6 min-w-6",
               activeArticleIdx === idx + 1 && "rotate-180"
             )}
           />
@@ -124,12 +132,11 @@ const Question: FC<QuestionType> = ({
               : "0",
         }}
         className={clsx(
-          "text-content text-body",
           styles.answercont,
           activeArticleIdx === idx + 1 && "mt-[27px]"
         )}
       >
-        {item.description}
+        <Text size="smallBody">{item.description}</Text>
       </div>
     </div>
   );

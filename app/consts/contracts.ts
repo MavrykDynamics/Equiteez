@@ -1,11 +1,8 @@
-export const stablecoinContract = "KT1D7ZQBhwxkMgZThqctYtMXigFvJRZL4eSy";
+export const stablecoinContract = "KT1VAymHKvx9oreDRqN22rf2huuYiV5ofe34";
 
+// TODO remove this after deeds api update
 // tokens
-export const OCEAN_TOKEN_ADDRESS = "KT1P6hE9g2sPeTCqcHDX2Sk4zdaF2aGAGCrZ";
-export const MARS1_TOKEN_ADDRESS = "KT1M3U8zRf3AwaerkTXCThcffUqWpie3UMoj";
-export const QUEEN_TOKEN_ADDRESS = "KT1PgkWg76a3EqkVyt2aTaR91Y3dSQrm3sWG";
-export const NTBM_TOKEN_ADDRESS = "KT1HrjerqExE8MfrHBMgbcJVsmTY7HjDzHJu";
-
-// MAIN KYC CONTRACT! // TODO get from API, for now api returns old kyc contract
-export const KYC_CONTRACT = "KT1TYqkzAYKDrCmPo7Be1vZtC7kdUoNfKyZa";
-export const ADMIN_ADDRESS = "KT1JkmXcgKQ3oNpLhjDD4WgvgMfyccUZwsws";
+export const OCEAN_TOKEN_ADDRESS = "KT1WyJZEfkM623Q4SugEaBCcFQReHYJ22avD";
+export const MARS1_TOKEN_ADDRESS = "KT1XLUiaPpivxi2e4U1wEctQ7DKDkdz9GQgK";
+export const QUEEN_TOKEN_ADDRESS = "KT1SYFeAjDsu7KXfN3VUgyuzfdMth16r8BQ2";
+export const NTBM_TOKEN_ADDRESS = "KT1Xd6Q4Gkvdt9avjisJr9cyN8M8aj111ayL";

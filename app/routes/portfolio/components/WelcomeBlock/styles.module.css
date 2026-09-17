@@ -1,0 +1,18 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: var(--r-space-10) 0 var(--r-space-5) 0;
+    gap: var(--r-space-4);
+}
+.welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: var(--r-space-3);
+  align-items: center;
+}

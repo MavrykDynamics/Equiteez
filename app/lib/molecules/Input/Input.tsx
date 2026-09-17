@@ -1,7 +1,7 @@
-import clsx from 'clsx';
-import { FC, forwardRef } from 'react';
+import clsx from "clsx";
+import { FC, forwardRef } from "react";
 
-import styles from './input.module.css';
+import styles from "./input.module.css";
 
 type InputProps = {
   handleValue?: (v: number | string) => void;
@@ -12,15 +12,15 @@ type InputProps = {
   valueText?: string;
   min?: number;
   className?: string;
-  labelVariant?: 'default' | 'opacity';
+  labelVariant?: "default" | "opacity";
   disabled?: boolean;
   errorCaption?: string;
   errorCaptionCalassname?: string;
 } & React.HTMLAttributes<HTMLInputElement>;
 
 const labelVariants = {
-  opacity: 'text-content-secondary opacity-50',
-  default: 'text-content',
+  opacity: "text-content-secondary opacity-50",
+  default: "text-content",
 };
 
 export const InputNumber: FC<InputProps> = ({
@@ -30,9 +30,9 @@ export const InputNumber: FC<InputProps> = ({
   name,
   valueText,
   placeholder,
-  className = 'text-body-xs',
+  className = "text-body-xs",
   errorCaption,
-  labelVariant = 'default',
+  labelVariant = "default",
   min = 1,
   disabled = false,
   errorCaptionCalassname,
@@ -43,7 +43,7 @@ export const InputNumber: FC<InputProps> = ({
       {label && (
         <label
           htmlFor={name}
-          className={clsx(labelVariants[labelVariant], 'text-body-xs')}
+          className={clsx(labelVariants[labelVariant], "text-body-xs")}
         >
           {label}
         </label>
@@ -51,10 +51,10 @@ export const InputNumber: FC<InputProps> = ({
 
       <div
         className={clsx(
-          'w-full flex justify-between  py-3 px-4 gap-1 mt-2 relative',
+          "w-full flex justify-between  py-3 px-4 gap-1 mt-2 relative",
           disabled
-            ? 'bg-gray-100 border-gray-300 text-dark-green-100 rounded-lg'
-            : 'eq-input',
+            ? "bg-gray-100 border-gray-300 text-dark-green-100 rounded-lg"
+            : "eq-input",
           className
         )}
       >
@@ -67,7 +67,7 @@ export const InputNumber: FC<InputProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             className={clsx(
-              'w-full bg-transparent focus:outline-none text-left'
+              "w-full bg-transparent focus:outline-none text-left"
             )}
             {...rest}
           ></input>
@@ -77,7 +77,7 @@ export const InputNumber: FC<InputProps> = ({
         {errorCaption && (
           <span
             className={clsx(
-              'text-body-xs text-error',
+              "text-body-xs text-error",
               styles.errorCaprion,
               errorCaptionCalassname
             )}
@@ -97,7 +97,10 @@ export type InputTextProps = {
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
-  ({ errorCaption, disabled, focused, hasIcon, onChange, ...rest }, ref) => {
+  (
+    { errorCaption, disabled, focused, hasIcon, onChange, className, ...rest },
+    ref
+  ) => {
     return (
       <div className="relative">
         <input
@@ -107,20 +110,21 @@ export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
           type="text"
           className={clsx(
             styles.textInput,
-            'flex items-center',
-            'transition duration-300 ease-in-out',
-            'relative py-3  w-full',
-            hasIcon ? 'pl-10 pr-4' : 'px-4',
-            'text-body-xs text-content',
+            "flex items-center",
+            "transition duration-300 ease-in-out",
+            "relative py-3  w-full",
+            hasIcon ? "pl-10 pr-4" : "px-4",
+            "text-body-xs text-content",
             disabled && styles.disabled,
             errorCaption && styles.error,
-            focused && styles.focused
+            focused && styles.focused,
+            className
           )}
         />
 
         {errorCaption && (
           <span
-            className={clsx('text-body-xs text-error', styles.errorCaprion)}
+            className={clsx("text-body-xs text-error", styles.errorCaprion)}
           >
             {errorCaption}
           </span>
@@ -130,4 +134,4 @@ export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
   }
 );
 
-InputText.displayName = 'InputText';
+InputText.displayName = "InputText";

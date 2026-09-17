@@ -1,28 +1,43 @@
 // icons
-import DotFill from "~/icons/dot-fill.svg?react";
-import DotEmpty from "~/icons/dot-empty.svg?react";
-import EQLogo from "~/icons/eq-small-logo.svg?react";
-import { FC } from "react";
+import { ChangeEvent, FC, FormEvent } from "react";
 
 import styles from "./eSnakeBlock.module.css";
 import clsx from "clsx";
+import EquiteezLogo from "~/icons/equiteezLogo.svg?react";
 
 const options = [0, 25, 50, 75, 100];
 
 type ESnakeblockProps = {
-  selectedOption: number;
+  selectedOption: number | null;
   setSelectedOption: (option: number) => void;
   disabled?: boolean;
+  size?: "regular" | "large";
+  variant?: "brand" | "neutral";
+};
+
+const sizeClassname = {
+  regular: "size-4",
+  large: "size-6",
 };
 
 export const ESnakeblock: FC<ESnakeblockProps> = ({
-  selectedOption = 0,
+  selectedOption: originalSelectedOption = null,
   setSelectedOption,
   disabled = false,
+  size = "regular",
+  variant = "brand",
 }) => {
   const handleOptionClick = (option: number) => {
     if (!disabled) setSelectedOption(option);
   };
+  const handleSliderChange = (
+    event: ChangeEvent<HTMLInputElement> | FormEvent<HTMLInputElement>
+  ) => {
+    if (!disabled) setSelectedOption(Number(event.currentTarget.value));
+  };
+  const sizeClassnameValue = sizeClassname[size];
+
+  const selectedOption = originalSelectedOption ?? 0;
 
   return (
     <div
@@ -31,7 +46,12 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
         disabled && "opacity-50 pointer-events-none"
       )}
     >
-      <div className="flex w-full h-4 relative">
+      <div
+        className={clsx(
+          "flex w-full h-4 relative",
+          size === "large" ? "h-6" : "h-4"
+        )}
+      >
         <div
           style={{ zIndex: 5 }}
           className={clsx(
@@ -39,21 +59,30 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
             "transition 0.3s linear"
           )}
         >
-          {options.map((option, idx) => (
+          {options.map((option) => (
             <span
               role="presentation"
               key={option}
-              className="cursor-pointer"
+              className="cursor-pointer relative flex items-center"
               onClick={() => handleOptionClick(option)}
             >
-              {option === selectedOption ? (
-                <EQLogo className="size-4 text-dark-green-500 stroke-current" />
-              ) : options.length - 1 === idx ? (
-                <DotFill className="size-4 fill-dark-green-200" />
-              ) : selectedOption > option ? (
-                <div className="size-4 bg-transparent"></div>
-              ) : (
-                <DotEmpty className="size-4 text-dark-green-200 stroke-current" />
+              <div
+                className={clsx(
+                  "rounded-full overflow-hidden transition-background 150ms linear",
+                  variant === "neutral"
+                    ? selectedOption >= option
+                      ? styles.neutralPointSelected
+                      : styles.neutralPoint
+                    : selectedOption >= option
+                      ? "bg-[#ED6C18]"
+                      : "bg-[#F2F2F2]",
+                  sizeClassnameValue
+                )}
+              />
+              {variant === "brand" && selectedOption === option && (
+                <span className="absolute">
+                  <EquiteezLogo />
+                </span>
               )}
             </span>
           ))}
@@ -66,9 +95,26 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           className="absolute w-full h-full flex items-center z-1"
         >
           <div
-            className={clsx(styles.progressBar, styles.progressPercentage)}
+            className={clsx(
+              styles.progressBar,
+              styles.progressPercentage,
+              variant === "neutral" && styles.neutralProgress
+            )}
           />
         </div>
+
+        <input
+          aria-label="Percentage amount"
+          className={styles.rangeInput}
+          disabled={disabled}
+          max={100}
+          min={0}
+          onChange={handleSliderChange}
+          onInput={handleSliderChange}
+          step={1}
+          type="range"
+          value={selectedOption}
+        />
       </div>
 
       <div className="flex w-full justify-between">
@@ -76,8 +122,11 @@ export const ESnakeblock: FC<ESnakeblockProps> = ({
           <button
             key={option}
             className={clsx(
-              "eq-slider outline-none focus:outline-none pt-1",
-              option !== 0 && option !== 100 && "pl-[15px]"
+              "outline-none focus:outline-none",
+              size === "regular" ? "text-[10px]  pt-1" : "text-sm pt-[10px]",
+              option !== 0 && option !== 100 && "pl-[15px]",
+              styles.optionText,
+              variant === "neutral" && styles.neutralOptionText
             )}
             onClick={() => handleOptionClick(option)}
           >

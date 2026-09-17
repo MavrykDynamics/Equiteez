@@ -1,131 +1,119 @@
-import { FC, useCallback, useMemo, useState } from "react";
-import { Button } from "~/lib/atoms/Button";
-import {
-  ClickableDropdownArea,
-  CustomDropdown,
-  DropdownBodyContent,
-  DropdownFaceContent,
-} from "~/lib/organisms/CustomDropdown/CustomDropdown";
-import {
-  ClickableExpanderArea,
-  CustomExpander,
-  ExpanderBodyContent,
-  ExpanderFaceContent,
-} from "~/lib/organisms/CustomExpander/CustomExpander";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import clsx from "clsx";
 
-import * as gtag from "app/utils/gtags.client";
+import { Button } from "~/lib/atoms/Button";
 
 // icons
-import CheckIcon from "app/icons/ok.svg?react";
-import {
-  BUY,
-  BuyScreenState,
-  CONFIRM,
-  SellScreenState,
-  OrderType,
-  SELL,
-} from "../consts";
-import Money from "~/lib/atoms/Money";
+import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { stablecoinContract } from "~/consts/contracts";
+import { fromAssetSlug } from "~/lib/assets";
 import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
-import { BalanceInput } from "~/templates/BalanceInput";
-import { toTokenSlug } from "~/lib/assets";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { CryptoBalance } from "~/templates/Balance";
-import { spippageOptions } from "../popups";
-import { WarningBlock } from "~/lib/molecules/WarningBlock";
-import { useDexContext } from "~/providers/Dexprovider/dex.provider";
-import { useAssetMetadata } from "~/lib/metadata";
+import { BalanceInputWithTotal } from "~/templates/BalanceInput";
+import { safeDivByPrice } from "~/providers/Dexprovider/utils";
+import { FeesCard } from "../components/FeesCard/FeesCard";
+import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import { ZERO } from "~/lib/utils/numbers";
+import Money from "~/lib/atoms/Money";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
 import {
-  calculateEstFee,
-  calculateMinReceived,
-  detectQuoteTokenLimit,
-  getTokenAmountFromLiquidity,
-} from "~/providers/Dexprovider/utils";
-import { Alert } from "~/templates/Alert/Alert";
-import { MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT } from "./buySell.consts";
-import { atomsToTokens, downgradeDecimals } from "~/lib/utils/formaters";
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
+
+import styles from "./BuySellForm.module.css";
+import { RAlert } from "~/templates/Alert/RAlert";
 
 type BuySellScreenProps = {
   estate: SecondaryEstate;
   actionType: OrderType; // buy | sell
-  toggleScreen: (id: BuyScreenState & SellScreenState) => void;
+  actionCb: () => void;
+  continueButtonClassName?: string;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
+  networkFee: BigNumber;
+  tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  slippagePercentage: string;
-  setSlippagePercentage: React.Dispatch<React.SetStateAction<string>>;
+  status: StatusFlag;
   hasQuoteError?: boolean;
+  isOrderDataLoading?: boolean;
+  validationMessage?: string;
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
   estate,
-  toggleScreen,
   actionType,
+  actionCb,
+  continueButtonClassName,
   amount,
   total,
+  networkFee,
+  tokenPrice,
   setAmount,
-  slippagePercentage,
-  setSlippagePercentage,
+  status,
   hasQuoteError = false,
+  isOrderDataLoading = false,
+  validationMessage,
 }) => {
-  const { symbol, token_address, slug } = estate;
-  const { dodoTokenPair, dodoMav, dodoStorages } = useDexContext();
-  const { tokensMetadata } = useTokensContext();
+  const { token_address, slug } = estate;
+  const {
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenMetadata: stableCoinMetadata,
+    quoteTokenSlug,
+  } = useOrderbookTokenMetadata(estate);
 
-  // TODO check for token prices if the are empty
-  const { userTokensBalances, isKyced } = useUserContext();
-
-  const stableCoinMetadata = useAssetMetadata(dodoTokenPair[slug]);
-  const selectedAssetMetadata = useAssetMetadata(slug);
-
-  const tokenPrice = useMemo(
-    () => atomsToTokens(dodoMav[slug], selectedAssetMetadata.decimals),
-    [dodoMav, slug, selectedAssetMetadata.decimals]
+  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
+    null
   );
 
-  const baseTokenAmount = useMemo(
-    () => getTokenAmountFromLiquidity(dodoStorages[slug], tokenPrice),
-    [dodoStorages, slug, tokenPrice]
+  const { userTokensBalances, isKyced } = useUserContext();
+
+  // input refs
+  const ref1 = useRef<HTMLInputElement>(null);
+  const ref2 = useRef<HTMLInputElement>(null);
+
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
   );
 
   const usdBalance = useMemo(
-    () => userTokensBalances[stablecoinContract]?.toNumber() || 0,
-    [userTokensBalances]
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
   );
 
   const tokenBalance = useMemo(
-    () => userTokensBalances[token_address]?.toNumber() || 0,
-    [userTokensBalances, token_address]
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
   );
 
   const isBuyAction = actionType === BUY;
   const hasTotalError = isBuyAction
     ? amount
-      ? amount.toNumber() > usdBalance
+      ? amount.gt(usdBalance)
       : false
     : amount
-      ? amount?.toNumber() > tokenBalance
+      ? amount.gt(tokenBalance)
       : false;
 
   const handleContinueClick = useCallback(() => {
-    toggleScreen(CONFIRM);
-
-    gtag.event({
-      action: "buy_base_token",
-      category: "Buy base token",
-      label: "Buy base token",
-    });
-  }, [toggleScreen]);
+    actionCb();
+  }, [actionCb]);
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
       if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
-      else setAmount(val?.div(tokenPrice) ?? new BigNumber(0));
+      else setAmount(safeDivByPrice(val, tokenPrice) ?? new BigNumber(0));
     },
     [isBuyAction, setAmount, tokenPrice]
   );
@@ -135,20 +123,18 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       isBuyAction
         ? {
             amount,
-            selectedAssetSlug: dodoTokenPair[slug],
+            selectedAssetSlug: quoteTokenSlug,
             selectedAssetMetadata: stableCoinMetadata,
-            label: "You Pay",
           }
         : {
             amount,
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
-            label: "You Sell",
           },
     [
       amount,
-      dodoTokenPair,
       isBuyAction,
+      quoteTokenSlug,
       selectedAssetMetadata,
       slug,
       stableCoinMetadata,
@@ -159,19 +145,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount: amount?.div(tokenPrice) || undefined,
+            amount: safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }
         : {
-            amount: amount?.times(tokenPrice) || undefined,
-            selectedAssetSlug: dodoTokenPair[slug],
+            amount: amount?.times(tokenPrice) || undefined, // SELL: Token -> USDT
+            selectedAssetSlug: quoteTokenSlug,
             selectedAssetMetadata: stableCoinMetadata,
           },
     [
       amount,
-      dodoTokenPair,
       isBuyAction,
+      quoteTokenSlug,
       selectedAssetMetadata,
       slug,
       stableCoinMetadata,
@@ -191,351 +177,175 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     [amount, input1Props.amount, input2Props.amount, isBuyAction]
   );
 
-  const minReceived = useMemo(() => {
-    if (!total) return 0;
-    const tokensAmount = !isBuyAction ? input1Props.amount : input2Props.amount;
+  const hasInvalidMarketPrice = !tokenPrice.isFinite() || tokenPrice.lte(0);
+  const hasInvalidAmount = !amount || !amount.isFinite() || amount.lte(0);
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
+  const isBtnDisabled =
+    hasTotalError ||
+    hasInvalidAmount ||
+    hasInvalidMarketPrice ||
+    isOrderDataLoading ||
+    !isKyced ||
+    isLoading;
+  const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);
 
-    if (!tokensAmount) return "0";
+  useEffect(() => {
+    if (selectedPercentage != null) {
+      const percentage = new BigNumber(selectedPercentage);
+      const newAmount = new BigNumber(isBuyAction ? usdBalance : tokenBalance)
+        .multipliedBy(percentage)
+        .dividedBy(100);
+      setAmount(newAmount);
+    }
+  }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-    return calculateMinReceived(
-      tokensAmount,
-      tokenPrice,
-      slippagePercentage,
-      decimals,
-      isBuyAction
-    );
-  }, [
-    total,
-    isBuyAction,
-    input1Props.amount,
-    input2Props.amount,
-    selectedAssetMetadata.decimals,
-    stableCoinMetadata.decimals,
-    tokenPrice,
-    slippagePercentage,
-  ]);
-
-  const estFee = useMemo(() => {
-    const {
-      config: { lpFee, maintainerFee, feeDecimals },
-    } = dodoStorages[slug];
-
-    const tokensAmount = isBuyAction ? input2Props.amount : input1Props.amount;
-
-    const result = calculateEstFee(
-      tokensAmount,
-      tokenPrice,
-      lpFee,
-      maintainerFee,
-      Number(feeDecimals),
-      slippagePercentage,
-      isBuyAction
-    );
-
-    const decimals = isBuyAction
-      ? selectedAssetMetadata.decimals
-      : stableCoinMetadata.decimals;
-
-    return downgradeDecimals(result, decimals);
-  }, [
-    dodoStorages,
-    input1Props.amount,
-    input2Props.amount,
-    isBuyAction,
-    selectedAssetMetadata.decimals,
-    slippagePercentage,
-    slug,
-    stableCoinMetadata.decimals,
-    tokenPrice,
-  ]);
-
-  const symbolToShow = isBuyAction
-    ? symbol
-    : tokensMetadata[toTokenSlug(stablecoinContract)]?.symbol;
-
-  const hasQuoteTokenLimitWarning = useMemo(
-    () =>
-      detectQuoteTokenLimit(
-        dodoStorages[slug],
-        amount,
-        isBuyAction ? BUY : SELL
-      ),
-    [dodoStorages, slug, amount, isBuyAction]
+  const orderSummaryAmount = useMemo(
+    () => (isBuyAction ? amount : total) ?? ZERO,
+    [amount, isBuyAction, total]
   );
 
-  const isBtnDisabled =
-    hasTotalError || !amount || slippagePercentage.length <= 0 || !isKyced;
+  const inputClassNames = {
+    amountInputClassName: styles.amountInput,
+    amountInputContainerClassName: styles.amountInputContainer,
+    assetViewClassName: styles.assetPill,
+    balanceClassName: styles.balanceText,
+    balanceLabel: "Bal.",
+    bodyClassName: styles.balanceBody,
+    bottomLeftClassName: styles.bottomValue,
+    bottomRightClassName: styles.bottomValue,
+    className: styles.balanceInput,
+    footerClassName: styles.balanceFooter,
+    headerClassName: styles.balanceHeader,
+    sectionClassName: styles.balanceCard,
+    showBalanceIcon: false,
+  };
+
+  const pricePerShare = (
+    <span className={clsx(styles.bottomNote)}>
+      $
+      <span className={styles.rwaBottomNote}>
+        <Money>{tokenPrice}</Money>
+      </span>{" "}
+      per share
+    </span>
+  );
+  const marketUsdtBottomValue = amount ? (
+    <span className={styles.bottomNote}>
+      $<Money fiat>{balanceTotal ?? ZERO}</Money> per share
+    </span>
+  ) : undefined;
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 ">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <BalanceInput
-              onChange={(data) => setAmount(data)}
-              amountInputDisabled={false}
-              errorCaption={
-                hasTotalError
-                  ? "The amount entered exceeds your available balance."
-                  : undefined
-              }
-              {...input1Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
+    <div className={styles.form}>
+      <div className={styles.content}>
+        <div className={styles.fieldStack}>
+          <BalanceInputWithTotal
+            ref={ref1}
+            onNext={() => ref2.current?.focus()}
+            onChange={(data) => setAmount(data)}
+            amountInputDisabled={false}
+            errorCaption={
+              hasTotalError
+                ? "The amount entered exceeds your available balance."
+                : undefined
+            }
+            {...input1Props}
+            balanceTotal={balanceTotal}
+            decimals={stableCoinMetadata.decimals}
+            cryptoValue={new BigNumber(isBuyAction ? usdBalance : tokenBalance)}
+            additionalBottomRightBlock={
+              isBuyAction ? marketUsdtBottomValue : pricePerShare
+            }
+            cryptoDecimals={
+              isBuyAction
+                ? stableCoinMetadata.decimals
+                : selectedAssetMetadata.decimals
+            }
+            {...inputClassNames}
+            label={"Pay with"}
+          />
 
-                <div className="text-body-xs font-semibold">
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={
-                      new BigNumber(isBuyAction ? usdBalance : tokenBalance)
-                    }
-                    cryptoDecimals={
-                      isBuyAction
-                        ? stableCoinMetadata?.decimals
-                        : selectedAssetMetadata?.decimals
-                    }
-                  />
-                </div>
-              </div>
-            </BalanceInput>
+          <BalanceInputWithTotal
+            ref={ref2}
+            onPrev={() => ref1.current?.focus()}
+            onChange={handleOutputChange}
+            amountInputDisabled={false}
+            additionalBottomRightBlock={
+              isBuyAction ? pricePerShare : marketUsdtBottomValue
+            }
+            {...input2Props}
+            label="Receive"
+            balanceTotal={balanceTotal}
+            decimals={stableCoinMetadata.decimals}
+            cryptoValue={new BigNumber(isBuyAction ? tokenBalance : usdBalance)}
+            cryptoDecimals={
+              !isBuyAction
+                ? stableCoinMetadata.decimals
+                : selectedAssetMetadata.decimals
+            }
+            {...inputClassNames}
+          />
 
-            <BalanceInput
-              onChange={handleOutputChange}
-              amountInputDisabled={false}
-              label="You Receive"
-              {...input2Props}
-            >
-              <div className="text-body-xs text-sand-600 flex items-center justify-between font-semibold">
-                <BalanceTotalBlock
-                  balanceTotal={balanceTotal}
-                  decimals={stableCoinMetadata?.decimals}
-                />
-                <div className='className="text-body-xs font-semibold"'>
-                  Balance:&nbsp;
-                  <CryptoBalance
-                    value={
-                      new BigNumber(isBuyAction ? tokenBalance : usdBalance)
-                    }
-                    cryptoDecimals={
-                      !isBuyAction
-                        ? stableCoinMetadata?.decimals
-                        : selectedAssetMetadata?.decimals
-                    }
-                  />
-                </div>
-              </div>
-            </BalanceInput>
-
-            {Number(slippagePercentage) <= 0 && (
-              <WarningBlock>
-                Slippage is {slippagePercentage || "0"}%
-              </WarningBlock>
-            )}
-
-            <div className="p-4 bg-gray-50 rounded-2xl flex flex-col">
-              <CustomExpander>
-                <ClickableExpanderArea>
-                  <ExpanderFaceContent>
-                    <div className="text-body-xs font-semibold text-content flex items-center w-full">
-                      1 {symbol} =&nbsp;
-                      <div>
-                        <span className="-mr-[1px]">$</span>
-                        <Money fiat>{tokenPrice || "0"}</Money>
-                      </div>
-                    </div>
-                  </ExpanderFaceContent>
-                </ClickableExpanderArea>
-                <ExpanderBodyContent>
-                  <div className="mt-4 flex flex-col">
-                    <div className="mt-2 text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">
-                        Min Received
-                        {/* <InfoTooltip content="Min Received" /> */}
-                      </div>
-                      <div>
-                        <Money smallFractionFont={false} shortened>
-                          {minReceived}
-                        </Money>
-                        &nbsp;{symbolToShow}
-                      </div>
-                    </div>
-                    <div className="mt-2 text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">
-                        Slippage
-                        {/* <InfoTooltip content="Slippage" /> */}
-                      </div>
-                      <SlippageDropdown
-                        slippagePercentage={slippagePercentage}
-                        setSlippagePercentage={setSlippagePercentage}
-                      />
-                    </div>
-                    <div className="mt-[10px] text-body-xs flex justify-between">
-                      <div className="flex items-center gap-2">
-                        Est. Fee
-                        {/* <InfoTooltip content="Est fee" /> */}
-                      </div>
-                      <div>
-                        {estFee}
-                        &nbsp;{symbolToShow}
-                      </div>
-                    </div>
-                  </div>
-                </ExpanderBodyContent>
-              </CustomExpander>
-            </div>
+          <div className={styles.snakeWrapper}>
+            <ESnakeblock
+              selectedOption={selectedPercentage}
+              setSelectedOption={setSelectedPercentage}
+              variant="neutral"
+            />
           </div>
+
+          <FeesCard
+            className={styles.summaryCard}
+            networkFee={networkFee}
+            pricePerShare={tokenPrice}
+            totalAmount={orderSummaryAmount}
+          />
         </div>
       </div>
 
       {!isKyced && (
-        <div className="mt-8">
-          <Alert type="warning" header="Verify with Mavryk Pro to Trade">
+        <div className={styles.alertBlock}>
+          <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
             security and regulatory compliance. Upgrade to Mavryk Pro inside
             your Mavryk Wallet.
-          </Alert>
-        </div>
-      )}
-      {baseTokenAmount.lt(MIN_BASE_TOKEN_AMOUNT_TO_SHOW_ALERT) && (
-        <div className="mt-8">
-          <Alert type="warning" header="Low Liquidity Detected!">
-            The liquidity for {symbol} is critically low. Transactions may
-            experience high slippage or failure.
-          </Alert>
-        </div>
-      )}
-
-      {hasQuoteTokenLimitWarning && (
-        <div className="mt-8">
-          <Alert type="warning" header="Pool Balance Limit Reached">
-            Your trade will exceed the pool limit, which may cause slippage or
-            failure. Please adjust the amount and try again.
-          </Alert>
+          </RAlert>
         </div>
       )}
 
       {hasQuoteError && (
-        <div className="mt-8">
-          <Alert type="error" header="Low Quote Detected">
+        <div className={styles.alertBlock}>
+          <RAlert type="error" header="Low Quote Detected">
             The current quote is too low to complete the operation. This may
             happen due to price fluctuations. Please adjust the slippage
             percentage in your settings to ensure a successful transaction.
-          </Alert>
+          </RAlert>
+        </div>
+      )}
+
+      {validationMessage && (
+        <div className={styles.alertBlock}>
+          <RAlert type="error" header="Order Cannot Be Submitted">
+            {validationMessage}
+          </RAlert>
         </div>
       )}
 
       <Button
-        className="mt-8"
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
         onClick={handleContinueClick}
-        disabled={isBtnDisabled}
+        disabled={isContinueDisabled}
+        isLoading={isLoading}
+        size="custom"
+        textVariant="caption"
+        variant="custom"
       >
-        Continue
+        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
-  );
-};
-
-type SlippageDropdownProps = {
-  slippagePercentage: string;
-  setSlippagePercentage: (val: string) => void;
-};
-
-const SlippageDropdown: FC<SlippageDropdownProps> = ({
-  slippagePercentage,
-  setSlippagePercentage,
-}) => {
-  const [selectedOption, setSelectedOption] = useState(spippageOptions[0]);
-
-  const isCustom = selectedOption === "custom";
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-      .replace(/[^0-9.]/g, "")
-      .replace(/(\..*?)\..*/g, "$1")
-      .replace(/(\d+\.\d?).*/g, "$1");
-
-    // min max +- 100
-    const parsedValue = parseFloat(value);
-    if (parsedValue && parsedValue > 100) {
-      return;
-    }
-
-    setSlippagePercentage(value);
-  };
-
-  return (
-    <CustomDropdown>
-      <ClickableDropdownArea>
-        <div className="px-2 py-1 border border-dark-green-100 rounded-lg bg-white">
-          <DropdownFaceContent gap={1}>
-            <div className="max-w-10 text-nowrap w-fit">
-              <input
-                type="text"
-                value={isCustom ? slippagePercentage : selectedOption}
-                onChange={handleInputChange}
-                name={"slippage"}
-                className="w-8 text-right"
-                disabled={!isCustom}
-              />
-              %
-            </div>
-          </DropdownFaceContent>
-        </div>
-        {slippagePercentage.length === 0 && (
-          <span className="text-error">Required</span>
-        )}
-        <DropdownBodyContent customWidth={113} position="right" topMargin={12}>
-          <div className="flex flex-col">
-            {spippageOptions.map((option) => (
-              <button
-                key={option}
-                className="py-3 px-4 bg-white flex items-center justify-between hover:bg-dark-green-100 capitalize"
-                onClick={() => {
-                  setSelectedOption(option);
-                  if (option !== "custom") {
-                    setSlippagePercentage(option);
-                  }
-                }}
-              >
-                {option.concat(option !== "custom" ? "%" : "")}
-                {option === selectedOption && (
-                  <CheckIcon className="size-4 stroke-dark-green-500" />
-                )}
-              </button>
-            ))}
-          </div>
-        </DropdownBodyContent>
-      </ClickableDropdownArea>
-    </CustomDropdown>
-  );
-};
-
-type BalanceTotalBlockProps = {
-  balanceTotal: BigNumber | undefined;
-  decimals: number | undefined;
-};
-const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
-  balanceTotal,
-  decimals,
-}) => {
-  return (
-    <>
-      {" "}
-      {!balanceTotal || balanceTotal?.isZero() ? (
-        "--"
-      ) : (
-        <div className="flex items-center">
-          <span>$</span>
-          <CryptoBalance value={balanceTotal} cryptoDecimals={decimals} />
-        </div>
-      )}
-    </>
   );
 };

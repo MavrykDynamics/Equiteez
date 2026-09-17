@@ -7,31 +7,55 @@ import {
   Wallet,
 } from "@mavrykdynamics/taquito";
 
-import { getContractErrorMessage } from "./walletError.helper";
-import { checkWhetherWalletAbortError, WalletOperationError } from "../error";
 import {
+  estimateBatchOperation,
+  getContractErrorMessage,
+} from "./walletError.helper";
+import { checkWhetherWalletAbortError, WalletOperationError } from "../error";
+import type {
   ActionErrorReturnType,
   ActionSuccessReturnType,
+  ContractActionLifecycleCallbacks,
 } from "~/contracts/actions.type";
+import { EstimatedBatchCall, WalletErrorPayload } from "../error.type";
+import { BatchOperationKindType } from "~/contracts/types";
 
 type EstimationResultParams = {
   callback?: () => void;
   params?: Partial<SendParams>;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const getWalletErrorPayload = (rawError: unknown) => {
+  if (!isRecord(rawError) || !Array.isArray(rawError.data)) return undefined;
+
+  const errorData = rawError.data[1];
+
+  if (!isRecord(errorData) || !isRecord(errorData.with)) return undefined;
+
+  const stringPayload = errorData.with.string;
+  const intPayload = errorData.with.int;
+
+  if (typeof stringPayload === "string") return stringPayload;
+  if (typeof intPayload === "string" || typeof intPayload === "number") {
+    return String(intPayload);
+  }
+
+  return undefined;
+};
+
 // WHile estimation logic is comented, use this function to hanlde tezos wallet errors
 function handleErrorWhenEstimationLogicIsDisabled(e: unknown) {
-  const rawError: any = e;
+  const withPayload = getWalletErrorPayload(e);
 
-  if (checkWhetherWalletAbortError(rawError))
+  if (checkWhetherWalletAbortError(e))
     return {
       actionSuccess: false,
       error: new WalletOperationError("Operation is aborted"),
     };
-  else if (rawError.data[1]?.with?.string || rawError.data[1]?.with?.int) {
-    const _with = rawError.data[1]?.with;
-    const withPayload = _with?.string ? _with.string : _with?.int;
-
+  else if (withPayload) {
     return {
       actionSuccess: false,
       error: getContractErrorMessage(new Error(withPayload), true),
@@ -62,23 +86,53 @@ export async function getEstimationResult(
   }
 }
 
+type EstimationResultSuccess = {
+  actionSuccess: true;
+  data: EstimatedBatchCall;
+  error: null;
+};
+
+type EstimationResultError = {
+  actionSuccess: false;
+  data: null;
+  error: WalletErrorPayload | string;
+};
+
+type EstimationResult = EstimationResultSuccess | EstimationResultError;
+
 export async function getEstimationBatchResult(
-  tezos: MavrykToolkit,
-  batchArr: (TransferParams & { kind: OpKind.TRANSACTION })[],
-  cb?: () => void
+  mavryk: MavrykToolkit,
+  batchArr: (TransferParams & { kind: OpKind.TRANSACTION })[]
+): Promise<EstimationResult> {
+  const estimateBatchOp = await estimateBatchOperation(mavryk, batchArr);
+
+  if (estimateBatchOp.error) {
+    return {
+      actionSuccess: false,
+      error: estimateBatchOp.error,
+      data: null,
+    };
+  }
+
+  return {
+    actionSuccess: true,
+    data: estimateBatchOp,
+    error: null,
+  };
+}
+
+// Call the actual contract batch operation
+export async function sendContractBatchOperation(
+  mavryk: MavrykToolkit,
+  batchArr: BatchOperationKindType,
+  callbacks: ContractActionLifecycleCallbacks = {}
 ) {
-  // const estimateBatchOp = await estimateBatchOperation(batchArr)
-
-  // if (estimateBatchOp.error) {
-  //   return { actionSuccess: false, error: estimateBatchOp.error }
-  // }
   try {
-    const operation = await tezos.wallet.batch(batchArr).send();
-
-    cb?.();
-
-    return { actionSuccess: true, operation };
+    const batchOp = await mavryk.wallet.batch(batchArr).send();
+    callbacks.onTransactionSubmitted?.();
+    await batchOp.confirmation();
   } catch (e) {
-    return handleErrorWhenEstimationLogicIsDisabled(e);
+    console.error("Error during executing operation");
+    throw e;
   }
 }

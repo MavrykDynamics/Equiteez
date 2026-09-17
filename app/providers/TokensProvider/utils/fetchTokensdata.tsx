@@ -8,9 +8,36 @@ type RwaTokenType = {
   tokenId: string;
 };
 
+const TOKENS_METADATA_BATCH_SIZE = 100;
+
+const withIndexerBypass = (url: string) => {
+  const bypassSecret = process.env.INDEXER_ALLOWLIST_BYPASS_SECRET;
+
+  if (!bypassSecret) {
+    return url;
+  }
+
+  const indexerUrl = new URL(url);
+  indexerUrl.searchParams.set("bypass", bypassSecret);
+
+  return indexerUrl.toString();
+};
+
+const chunkContracts = (contracts: string[], chunkSize: number) => {
+  const chunks: string[][] = [];
+
+  for (let i = 0; i < contracts.length; i += chunkSize) {
+    chunks.push(contracts.slice(i, i + chunkSize));
+  }
+
+  return chunks;
+};
+
 export const fetchTokensData = async () => {
   try {
-    const { data } = await api<RwaTokenType[]>(`${process.env.API_URL}/tokens`);
+    const { data } = await api<RwaTokenType[]>(
+      withIndexerBypass(`${process.env.API_URL}/tokens?limit=1000`)
+    );
 
     const tokens: TokenType[] = data.map((t) => ({
       contract: t.contract.address,
@@ -19,8 +46,8 @@ export const fetchTokensData = async () => {
 
     return tokens.filter((t) => !TOKENS_SCAM_RECORD[t.contract]);
   } catch (e) {
-    console.log(e);
-    throw new Error("Error while fetching tokens");
+    console.error(e), "Error while fetching tokens";
+    return [];
   }
 };
 
@@ -28,30 +55,42 @@ export const fetchTokensMetadata = async (
   tokens: TokenType[]
 ): Promise<StringRecord<TokenMetadata>> => {
   try {
-    const tokenContractsArr = tokens.map((t) => t.contract);
-    const queryBody = {
-      query: `query TokensMetadataQuery {
-        token_metadata(where: {contract: {_in: ${JSON.stringify(
-          tokenContractsArr
-        )}}}) {
-          contract
-          metadata
-        }
-      }`,
-      variables: null,
-      operationName: "TokensMetadataQuery",
-    };
+    const tokenContractsArr = [...new Set(tokens.map((t) => t.contract))];
+    const tokenContractChunks = chunkContracts(
+      tokenContractsArr,
+      TOKENS_METADATA_BATCH_SIZE
+    );
 
-    const { data: apiData } = await api<{
-      data: { token_metadata: { contract: string; metadata: TokenMetadata }[] };
-    }>(process.env.TOKENS_METADATA_API, {
-      body: JSON.stringify(queryBody),
-      method: "POST",
-    });
+    const tokenMetadataResponses = await Promise.all(
+      tokenContractChunks.map(async (contractsChunk) => {
+        const queryBody = {
+          query: `query TokensMetadataQuery {
+            token_metadata(
+              where: {contract: {_in: ${JSON.stringify(contractsChunk)}}}
+              limit: ${contractsChunk.length}
+            ) {
+              contract
+              metadata
+            }
+          }`,
+          variables: null,
+          operationName: "TokensMetadataQuery",
+        };
 
-    const {
-      data: { token_metadata },
-    } = apiData;
+        const { data: apiData } = await api<{
+          data: {
+            token_metadata: { contract: string; metadata: TokenMetadata }[];
+          };
+        }>(withIndexerBypass(process.env.TOKENS_METADATA_API), {
+          body: JSON.stringify(queryBody),
+          method: "POST",
+        });
+
+        return apiData.data.token_metadata;
+      })
+    );
+
+    const token_metadata = tokenMetadataResponses.flat();
 
     const tokensRecord = tokens.reduce<StringRecord<TokenType>>(
       (acc, token) => {
@@ -64,9 +103,19 @@ export const fetchTokensMetadata = async (
 
     const parsedData = token_metadata.reduce<StringRecord<TokenMetadata>>(
       (acc, meta) => {
-        acc[meta.contract.concat(`_${tokensRecord[meta.contract].id}`)] = {
+        const token = tokensRecord[meta.contract];
+
+        if (!token) {
+          return acc;
+        }
+
+        const decimals = Number(meta.metadata?.decimals);
+
+        acc[meta.contract.concat(`_${token.id}`)] = {
           ...meta.metadata,
-          decimals: Number(meta.metadata?.decimals) ?? undefined,
+          address: meta.contract,
+          id: token.id,
+          decimals: Number.isFinite(decimals) ? decimals : 0,
         };
         return acc;
       },
@@ -75,7 +124,7 @@ export const fetchTokensMetadata = async (
 
     return parsedData;
   } catch (e) {
-    console.log(e);
-    throw new Error("Error while fetching tokens metadata");
+    console.error(e, "Error while fetching tokens metadata");
+    return {};
   }
 };

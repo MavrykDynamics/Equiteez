@@ -1,0 +1,378 @@
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import clsx from "clsx";
+
+import { Button } from "~/lib/atoms/Button";
+
+// icons
+import { BUY, OrderType } from "../consts";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { fromAssetSlug } from "~/lib/assets";
+import { SecondaryEstate } from "~/providers/MarketsProvider/market.types";
+// eslint-disable-next-line import/no-named-as-default
+import BigNumber from "bignumber.js";
+import { BalanceInputWithTotal } from "~/templates/BalanceInput";
+import { ESnakeblock } from "~/templates/ESnakeBlock/ESnakeblock";
+import { FeesCard } from "../components/FeesCard/FeesCard";
+import { ZERO } from "~/lib/utils/numbers";
+import {
+  deriveQuantityFromPercent,
+  exceedsAvailableBalance,
+  getDisplayTickSize,
+  isPriceAlignedToTickSize,
+} from "~/providers/Dexprovider/utils";
+import { useOrderbookTokenMetadata } from "../hooks/useOrderbookTokenMetadata";
+import {
+  getStatusLabel,
+  STATUS_CONFIRMING,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
+import {
+  OrderExpiryBlock,
+  type OrderExpiryPeriodId,
+} from "../components/OrderExpiryBlock/OrderExpiryBlock";
+
+import styles from "./BuySellForm.module.css";
+import { RAlert } from "~/templates/Alert/RAlert";
+
+type BuySellLimitScreenProps = {
+  estate: SecondaryEstate;
+  actionType: OrderType; // buy | sell
+  actionCb: () => void;
+  continueButtonClassName?: string;
+  amount: BigNumber | undefined;
+  marketTokenPrice: BigNumber;
+  total: BigNumber | undefined;
+  networkFee: BigNumber;
+  orderExpiryPeriodId: OrderExpiryPeriodId | null;
+  setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
+  setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  limitPrice: BigNumber | undefined;
+  rawTickSize: number;
+  setLimitPrice: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  status: StatusFlag;
+  isOrderDataLoading?: boolean;
+  validationMessage?: string;
+};
+
+export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
+  estate,
+  actionType,
+  actionCb,
+  continueButtonClassName,
+  amount,
+  total,
+  networkFee,
+  orderExpiryPeriodId,
+  limitPrice,
+  rawTickSize,
+  setAmount,
+  setOrderExpiryPeriodId,
+  setLimitPrice,
+  status,
+  isOrderDataLoading = false,
+  validationMessage,
+}) => {
+  const { token_address, slug } = estate;
+
+  const {
+    baseTokenMetadata: selectedAssetMetadata,
+    quoteTokenMetadata: stableCoinMetadata,
+    quoteTokenSlug,
+  } = useOrderbookTokenMetadata(estate);
+
+  // input refs
+  const ref1 = useRef<HTMLInputElement>(null);
+  const ref2 = useRef<HTMLInputElement>(null);
+  const ref3 = useRef<HTMLInputElement>(null);
+
+  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
+    null
+  );
+
+  const { userTokensBalances, isKyced } = useUserContext();
+
+  // Read the balance of the orderbook's actual quote token, not a hardcoded
+  // stablecoin — otherwise markets quoting a different USDT report a $0 balance
+  // and the Continue button is wrongly disabled.
+  const quoteTokenAddress = useMemo(
+    () => fromAssetSlug(quoteTokenSlug)[0],
+    [quoteTokenSlug]
+  );
+
+  const usdBalance = useMemo(
+    () =>
+      userTokensBalances[quoteTokenSlug] ??
+      userTokensBalances[quoteTokenAddress] ??
+      ZERO,
+    [quoteTokenAddress, quoteTokenSlug, userTokensBalances]
+  );
+
+  const tokenBalance = useMemo(
+    () => userTokensBalances[slug] ?? userTokensBalances[token_address] ?? ZERO,
+    [slug, token_address, userTokensBalances]
+  );
+
+  const isBuyAction = actionType === BUY;
+  const displayTickSize = useMemo(
+    () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
+    [rawTickSize, stableCoinMetadata.decimals]
+  );
+  const hasLimitPriceTickError = useMemo(
+    () =>
+      !isPriceAlignedToTickSize({
+        price: limitPrice,
+        rawTickSize,
+        quoteTokenDecimals: stableCoinMetadata.decimals,
+      }),
+    [limitPrice, rawTickSize, stableCoinMetadata.decimals]
+  );
+  const limitPriceTickErrorCaption =
+    hasLimitPriceTickError && displayTickSize.gt(0)
+      ? `Limit price must be a multiple of ${displayTickSize.toFixed()} ${stableCoinMetadata.symbol}.`
+      : undefined;
+
+  // Side-aware balance guard: BUY overspends when total (amount × limit price)
+  // exceeds the quote balance; SELL oversells when amount exceeds the token
+  // balance. Drives both the input caption and the Continue button.
+  const hasBalanceError = useMemo(
+    () =>
+      exceedsAvailableBalance({
+        isBuyAction,
+        total,
+        amount,
+        usdBalance,
+        tokenBalance,
+      }),
+    [isBuyAction, total, amount, usdBalance, tokenBalance]
+  );
+
+  const handleContinueClick = useCallback(() => {
+    actionCb();
+  }, [actionCb]);
+
+  const handleOutputChange = useCallback(
+    (val: BigNumber | undefined) => {
+      setAmount(val);
+    },
+    [setAmount]
+  );
+
+  const { input1Props, input2Props } = useMemo(() => {
+    // The limit price (per token, in the quote token) field.
+    const priceProps = {
+      amount: limitPrice,
+      selectedAssetSlug: quoteTokenSlug,
+      selectedAssetMetadata: stableCoinMetadata,
+      onChange: setLimitPrice,
+      cryptoValue: usdBalance,
+      label: "Limit Price",
+      errorCaption: limitPriceTickErrorCaption,
+    };
+
+    // The order-quantity (base token) field. The balance error lives here since
+    // it's what the user adjusts to fix an over-budget buy or over-holding sell.
+    const amountProps = {
+      amount: amount,
+      selectedAssetSlug: slug,
+      selectedAssetMetadata: selectedAssetMetadata,
+      onChange: handleOutputChange,
+      cryptoValue: tokenBalance,
+      label: "Amount",
+      errorCaption: hasBalanceError
+        ? "The amount entered exceeds your available balance."
+        : undefined,
+    };
+
+    return { input1Props: priceProps, input2Props: amountProps };
+  }, [
+    amount,
+    handleOutputChange,
+    hasBalanceError,
+    limitPrice,
+    limitPriceTickErrorCaption,
+    quoteTokenSlug,
+    selectedAssetMetadata,
+    setLimitPrice,
+    slug,
+    stableCoinMetadata,
+    tokenBalance,
+    usdBalance,
+  ]);
+
+  const balanceTotal = total;
+
+  const orderSummaryAmount = useMemo(() => total ?? ZERO, [total]);
+
+  const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
+  const isBtnDisabled =
+    hasBalanceError ||
+    hasLimitPriceTickError ||
+    !amount ||
+    !amount.isFinite() ||
+    amount.lte(0) ||
+    !limitPrice ||
+    !limitPrice.isFinite() ||
+    limitPrice.lte(0) ||
+    isOrderDataLoading ||
+    !isKyced ||
+    isLoading ||
+    Boolean(validationMessage);
+  useEffect(() => {
+    if (selectedPercentage == null) return;
+
+    if (isBuyAction) {
+      // Spend a % of the quote balance at the current limit price -> token qty.
+      setAmount(
+        limitPrice
+          ? deriveQuantityFromPercent(
+              usdBalance,
+              selectedPercentage,
+              limitPrice
+            )
+          : undefined
+      );
+    } else {
+      // Sell a % of the token holdings.
+      setAmount(
+        new BigNumber(tokenBalance)
+          .multipliedBy(selectedPercentage)
+          .dividedBy(100)
+      );
+    }
+  }, [
+    isBuyAction,
+    selectedPercentage,
+    setAmount,
+    tokenBalance,
+    usdBalance,
+    limitPrice,
+  ]);
+
+  const inputClassNames = {
+    amountInputClassName: styles.amountInput,
+    amountInputContainerClassName: styles.amountInputContainer,
+    assetViewClassName: styles.assetPill,
+    balanceClassName: styles.balanceText,
+    balanceLabel: "Bal.",
+    bodyClassName: styles.balanceBody,
+    bottomLeftClassName: styles.bottomValue,
+    bottomRightClassName: styles.bottomValue,
+    className: styles.balanceInput,
+    footerClassName: styles.balanceFooter,
+    headerClassName: styles.balanceHeader,
+    sectionClassName: styles.balanceCard,
+    showBalanceIcon: false,
+    shouldRenderFooter: false,
+  };
+  const hiddenInputBlock = <span aria-hidden="true" />;
+
+  return (
+    <div className={styles.form}>
+      <div className={styles.content}>
+        <div className={styles.fieldStack}>
+          <BalanceInputWithTotal
+            ref={ref1}
+            onNext={() => ref2.current?.focus()}
+            amountInputDisabled={false}
+            additionalBottomRightBlock={hiddenInputBlock}
+            additionalTopRightBlock={hiddenInputBlock}
+            {...input1Props}
+            balanceTotal={balanceTotal}
+            decimals={selectedAssetMetadata.decimals}
+            cryptoDecimals={stableCoinMetadata.decimals}
+            {...inputClassNames}
+          />
+
+          <BalanceInputWithTotal
+            ref={ref2}
+            onNext={() => ref3.current?.focus()}
+            onPrev={() => ref1.current?.focus()}
+            amountInputDisabled={false}
+            {...input2Props}
+            balanceTotal={balanceTotal}
+            decimals={selectedAssetMetadata.decimals}
+            cryptoDecimals={stableCoinMetadata.decimals}
+            {...inputClassNames}
+            balanceLabel=""
+          />
+
+          {/* ------------------------------------------------------------------------------------------- */}
+          <div className={styles.fieldStack}>
+            <div className={styles.snakeWrapper}>
+              <ESnakeblock
+                selectedOption={selectedPercentage}
+                setSelectedOption={setSelectedPercentage}
+                variant="neutral"
+              />
+            </div>
+
+            <BalanceInputWithTotal
+              ref={ref3}
+              onPrev={() => ref2.current?.focus()}
+              amountInputDisabled
+              amount={balanceTotal}
+              label="Total"
+              selectedAssetSlug={quoteTokenSlug}
+              selectedAssetMetadata={stableCoinMetadata}
+              balanceTotal={balanceTotal}
+              decimals={selectedAssetMetadata.decimals}
+              cryptoDecimals={stableCoinMetadata.decimals}
+              cryptoValue={usdBalance}
+              {...inputClassNames}
+              shouldRenderFooter
+            />
+          </div>
+
+          <OrderExpiryBlock
+            selectedPeriodId={orderExpiryPeriodId}
+            setSelectedPeriodId={setOrderExpiryPeriodId}
+          />
+
+          <FeesCard
+            className={styles.summaryCard}
+            networkFee={networkFee}
+            pricePerShare={limitPrice}
+            totalAmount={orderSummaryAmount}
+          />
+        </div>
+      </div>
+
+      {!isKyced && (
+        <div className={styles.alertBlock}>
+          <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
+            Trading on Equiteez requires the Mavryk Pro wallet for enhanced
+            security and regulatory compliance. Upgrade to Mavryk Pro inside
+            your Mavryk Wallet.
+          </RAlert>
+        </div>
+      )}
+
+      {validationMessage && (
+        <div className={styles.alertBlock}>
+          <RAlert type="error" header="Order Cannot Be Submitted">
+            {validationMessage}
+          </RAlert>
+        </div>
+      )}
+
+      <Button
+        className={clsx(
+          styles.submitButton,
+          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          continueButtonClassName
+        )}
+        onClick={handleContinueClick}
+        disabled={isBtnDisabled}
+        isLoading={isLoading}
+        size="custom"
+        textVariant="caption"
+        variant="custom"
+      >
+        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+      </Button>
+    </div>
+  );
+};

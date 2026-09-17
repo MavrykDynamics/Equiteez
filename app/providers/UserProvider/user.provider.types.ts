@@ -29,6 +29,7 @@ export type UserContext = UserContextStateType & {
 
   // actions
   connect: () => void;
+  refetchUserAccountStatus: () => Promise<void>;
   signOut: () => void;
   changeUser: () => void;
 };
@@ -36,6 +37,7 @@ export type UserContext = UserContextStateType & {
 export type UserContextStateType = {
   userAddress: string | null;
   isKyced: boolean;
+  hasOrders: boolean;
   isAdmin: boolean;
 
   userTokensBalances: Record<TokenAddressType, BigNumber>;

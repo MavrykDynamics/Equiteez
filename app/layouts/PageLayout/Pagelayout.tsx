@@ -1,21 +1,20 @@
 import { FC } from "react";
 
 import clsx from "clsx";
+import { Container } from "~/lib/atoms/Container/Container";
+import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
+import { RFooter } from "~/layouts/PageLayout/RFooter";
+import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
+import { RMobileHeader } from "~/layouts/PageLayout/RHeader/RMobileHeader";
+import { MobileLayout } from "~/layouts/PageLayout/MobileLayout";
 
-import DocBg from "app/a11y/DocBg";
-
-// layout components
-import { Header } from "./Header/Header";
-import { Footer } from "./Footer/Footer";
-import { Container } from "~/lib/atoms/Container";
-import { Banner } from "./Banner/Banner";
-
-import bannerContent from "app/mocks/banner.json";
+import styles from "./Pagelayout.module.css";
 
 type PageLayoutProps = {
   bg?: string;
   includeContainer?: boolean;
   includeFooter?: boolean;
+  className?: string;
 } & PropsWithChildren;
 
 /**
@@ -27,27 +26,35 @@ type PageLayoutProps = {
  */
 const PageLayout: FC<PageLayoutProps> = ({
   children,
-  bg = "bg-background",
   includeContainer = true,
   includeFooter = true,
+  className,
 }) => {
   return (
-    <div className={clsx("min-h-screen flex flex-col")}>
-      <DocBg bgClassName={clsx(bg)} />
+    <FiltersProvider>
+      <div className={styles.root}>
+        <MobileLayout />
 
-      <div className={clsx("relative flex flex-col flex-1")}>
-        <Header />
-        <Banner contantArr={bannerContent} />
-        {includeContainer ? (
-          <div className="flex-1">
-            <Container>{children}</Container>
-          </div>
-        ) : (
-          children
-        )}
-        {includeFooter && <Footer />}
+        <div
+          className={clsx(
+            "relative flex flex-col flex-1 pb-[66px] md:pb-0",
+            styles.desktopLayout,
+            className
+          )}
+        >
+          <RHeader />
+          {includeContainer ? (
+            <div className="flex-1">
+              <Container>{children}</Container>
+            </div>
+          ) : (
+            children
+          )}
+          {includeFooter && <RFooter />}
+          {/*<RMobileHeader />*/}
+        </div>
       </div>
-    </div>
+    </FiltersProvider>
   );
 };
 

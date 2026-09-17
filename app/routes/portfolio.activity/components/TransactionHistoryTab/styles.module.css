@@ -1,0 +1,151 @@
+@import "../../../../styles/breakpoints.css";
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.loadingOverlay {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 55%);
+  backdrop-filter: blur(1px);
+}
+
+.table {
+  min-width: 1100px;
+}
+
+.headerRow,
+.row {
+  display: grid;
+  grid-template-columns:
+    136px minmax(172px, 1.35fr) 116px minmax(146px, 1fr) minmax(150px, 1fr)
+    minmax(160px, 1.2fr) 132px;
+}
+
+.headerCell,
+.cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  padding: 0 var(--r-space-3);
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  white-space: nowrap;
+}
+
+.headerCell {
+  height: 39px;
+}
+
+.row {
+  min-height: 61px;
+  cursor: pointer;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.row:hover {
+  background: var(--r-color-neutral-50);
+}
+
+.row:focus-visible {
+  outline: none;
+  box-shadow: inset var(--r-focus-ring);
+}
+
+.row:last-child .cell {
+  border-bottom: 0;
+}
+
+.date,
+.amount,
+.assetIdentity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.asset {
+  display: flex;
+  min-width: 0;
+  gap: var(--r-space-2);
+  align-items: center;
+}
+
+.assetIcon,
+.assetIconFallback {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.assetIcon {
+  object-fit: cover;
+}
+
+.assetIconFallback {
+  background: var(--r-color-neutral-100);
+}
+
+.assetIdentity > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buy,
+.sell {
+  display: inline-flex;
+  gap: var(--r-space-1);
+  align-items: center;
+}
+
+.buy {
+  color: var(--r-color-green-500);
+}
+
+.sell {
+  color: var(--r-color-red-500);
+}
+
+.typeIcon {
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+}
+
+.typeLabel {
+  color: currentColor;
+}
+
+.state {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.paginationFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--r-space-4);
+}
+
+@media (--media-tablet-max) {
+  .table {
+    min-width: 1000px;
+  }
+}
