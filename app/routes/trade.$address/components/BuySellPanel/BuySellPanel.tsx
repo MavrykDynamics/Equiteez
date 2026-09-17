@@ -24,6 +24,7 @@ import styles from "./styles.module.css";
 type BuySellPanelProps = {
   asset: AssetType;
   isOrderBookOpen: boolean;
+  orderBookContainer?: HTMLElement | null;
   setIsOrderBookOpen: Dispatch<SetStateAction<boolean>>;
 };
 
@@ -33,6 +34,7 @@ const getOrderTypeFromSearchParam = (side: string | null): OrderType =>
 export function BuySellPanel({
   asset,
   isOrderBookOpen,
+  orderBookContainer,
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
   const invalidateFreshQueries = useFreshQueryInvalidation();
@@ -105,6 +107,7 @@ export function BuySellPanel({
         void retry().catch(console.error);
       }}
       isOrderBookOpen={isOrderBookOpen}
+      orderBookContainer={orderBookContainer}
       onSuccessfulTransaction={handleSuccessfulTransaction}
       orderType={orderType}
       setIsOrderBookOpen={setIsOrderBookOpen}

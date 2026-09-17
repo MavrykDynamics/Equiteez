@@ -45,6 +45,25 @@
   background-color: var(--r-color-neutral-50);
 }
 
+.tradeColumnContent {
+  display: contents;
+}
+
+.orderBookContainer {
+  display: none;
+  height: 503px;
+  width: 100%;
+}
+
+.orderBookContainer:not(:empty) {
+  display: block;
+}
+
+/* Keep the gallery and form mounted, including their current input state. */
+.tradeColumn:has(> .orderBookContainer:not(:empty)) .tradeColumnContent {
+  display: none;
+}
+
 @media (--media-tablet-max) {
   .contentBlock {
     flex-direction: column;

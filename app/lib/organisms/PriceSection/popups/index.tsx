@@ -4,8 +4,10 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 
 //screens
 import { BuySellScreen } from "../screens/BuySellScreen";
@@ -72,6 +74,7 @@ import {
 } from "../hooks/useOrderbookTokenMetadata";
 import { PopupWithIcon } from "~/templates/PopupWIthIcon/PopupWithIcon";
 import { OrderBookTable } from "~/lib/organisms/OrderBookPopup/OrderBookTable";
+import { RIcon } from "~/lib/atoms/RIcon/RIcon";
 import {
   getOrderExpiryTimestamp,
   type OrderExpiryPeriodId,
@@ -88,6 +91,7 @@ type BuySellContentProps = {
   configError?: string;
   onRetryConfig: () => void;
   isOrderBookOpen: boolean;
+  orderBookContainer?: HTMLElement | null;
   onSuccessfulTransaction?: (metadata: ContractActionSuccessMetadata) => void;
   onOrderBookVisibilityChange?: (isVisible: boolean) => void;
   orderType: OrderType;
@@ -120,6 +124,7 @@ const BuySellForm: FC<
   configError,
   onRetryConfig,
   isOrderBookOpen,
+  orderBookContainer,
   onSuccessfulTransaction,
   onOrderBookVisibilityChange,
   orderType,
@@ -874,6 +879,32 @@ const BuySellForm: FC<
     setIsOrderBookOpen(false);
   }, [setIsOrderBookOpen]);
 
+  const orderBookCloseButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOrderBookOpen || !orderBookContainer) return;
+
+    const previousFocus = document.activeElement;
+    orderBookCloseButtonRef.current?.focus({ preventScroll: true });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeOrderBook();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      if (
+        previousFocus instanceof HTMLElement &&
+        previousFocus.isConnected &&
+        (orderBookContainer.contains(document.activeElement) ||
+          document.activeElement === document.body)
+      ) {
+        previousFocus.focus({ preventScroll: true });
+      }
+    };
+  }, [closeOrderBook, isOrderBookOpen, orderBookContainer]);
+
   const handleOrderBookPriceSelect = useCallback(
     (price: number) => {
       if (marketType !== "limit" || !Number.isFinite(price) || price <= 0)
@@ -892,28 +923,52 @@ const BuySellForm: FC<
     onOrderBookVisibilityChange?.(isOrderBookOpen);
   }, [isOrderBookOpen, onOrderBookVisibilityChange]);
 
+  const orderBookTable = (
+    <OrderBookTable
+      baseTokenDecimals={baseTokenDecimals}
+      baseTokenSymbol={selectedAssetMetadata.symbol}
+      enabled={true}
+      onPriceClick={isMarketTypeMarket ? undefined : handleOrderBookPriceSelect}
+      quoteTokenDecimals={quoteTokenDecimals}
+      quoteTokenSymbol={quoteAssetmetadata.symbol}
+      referencePrice={tokenPrice.toNumber()}
+      rwaAddress={asset.address}
+    />
+  );
+
   return (
     <>
-      <PopupWithIcon
-        isOpen={isOrderBookOpen}
-        onRequestClose={closeOrderBook}
-        contentClassName={styles.orderBookPopupContent}
-        contentPosition="right"
-        className={clsx("bg-white", styles.orderBookPopup)}
-      >
-        <OrderBookTable
-          baseTokenDecimals={baseTokenDecimals}
-          baseTokenSymbol={selectedAssetMetadata.symbol}
-          enabled={true}
-          onPriceClick={
-            isMarketTypeMarket ? undefined : handleOrderBookPriceSelect
-          }
-          quoteTokenDecimals={quoteTokenDecimals}
-          quoteTokenSymbol={quoteAssetmetadata.symbol}
-          referencePrice={tokenPrice.toNumber()}
-          rwaAddress={asset.address}
-        />
-      </PopupWithIcon>
+      {orderBookContainer ? (
+        isOrderBookOpen &&
+        createPortal(
+          <section
+            aria-label="Order Book and Last Trades"
+            className={styles.inlineOrderBookPanel}
+          >
+            <button
+              ref={orderBookCloseButtonRef}
+              type="button"
+              aria-label="Hide Order Book"
+              className={styles.orderBookCloseButton}
+              onClick={closeOrderBook}
+            >
+              <RIcon name="close" size="small" />
+            </button>
+            {orderBookTable}
+          </section>,
+          orderBookContainer
+        )
+      ) : (
+        <PopupWithIcon
+          isOpen={isOrderBookOpen}
+          onRequestClose={closeOrderBook}
+          contentClassName={styles.orderBookPopupContent}
+          contentPosition="right"
+          className={clsx("bg-white", styles.orderBookPopup)}
+        >
+          {orderBookTable}
+        </PopupWithIcon>
+      )}
       <TradeConfirmationPopup
         isOpen={!hasOrders && isTradeConfirmationOpen}
         onCancel={handleCloseTradeConfirmation}
