@@ -65,7 +65,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
       {/*TODO remove mock data*/}
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          <Money>4.78</Money>%
+          <Money>{asset.apy}</Money>%
         </RText>
       </div>
       <div className={styles.cell} role="cell">
