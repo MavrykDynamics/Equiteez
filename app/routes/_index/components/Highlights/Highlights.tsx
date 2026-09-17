@@ -21,7 +21,9 @@ function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
     slidesToScroll: 1,
   });
 
-  const cards = isLoading ? Array.from({ length: 3 }) : assets;
+  const cards: Array<AssetHighlightType | null> = isLoading
+    ? Array.from({ length: 3 }, () => null)
+    : assets;
 
   return (
     <section className={styles.mobileSection}>
@@ -31,7 +33,7 @@ function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
           {cards.map((asset, index) => (
             <div
               className={styles.mobileSlide}
-              key={isLoading ? `${title}-${index}` : asset.address}
+              key={asset?.address ?? `${title}-${index}`}
             >
               {isLoading ? (
                 <div className={styles.cardSkeleton} aria-hidden="true">
@@ -44,9 +46,9 @@ function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
                     <div className={styles.skeletonChange} />
                   </div>
                 </div>
-              ) : (
+              ) : asset ? (
                 <HighlightCard asset={asset} />
-              )}
+              ) : null}
             </div>
           ))}
         </div>

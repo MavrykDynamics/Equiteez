@@ -1,12 +1,9 @@
 import { useMemo } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RIcon } from "~/lib/atoms/RIcon";
-import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
 import { RViewSwitcher } from "~/lib/atoms/RViewSwitcher/RViewSwitcher";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
-import { AssetsSort } from "~/routes/_index/components/AssetsFilters/AssetsSort";
+import { RText } from "~/lib/atoms/RTypography/RText";
 import {
   ALL_ASSETS_FILTER_VALUE,
   INITIAL_ASSETS_FILTER_STATE,
@@ -66,59 +63,83 @@ export function MobileAssetsFilters({
       onRequestClose={onClose}
       overlayClassName={styles.overlay}
     >
-      <div className={styles.header}>
-        <RHeading size="h6" weight="medium">
-          Filters
-        </RHeading>
-        <button
-          aria-label="Close filters"
-          className={styles.closeButton}
-          onClick={onClose}
-          type="button"
-        >
-          <RIcon aria-hidden="true" name="close" size="medium" />
-        </button>
-      </div>
-
       <div className={styles.body}>
-        <div className={styles.row}>
-        <div className={styles.search}>
-          <RIcon aria-hidden="true" name="search" />
-          <input
-            aria-label="Search assets"
-            className={styles.searchInput}
-            onChange={(event) => onChange({ search: event.target.value })}
-            placeholder="Search"
-            value={filters.search}
-          />
-        </div>
-        <RViewSwitcher
-          onChange={(viewType) => onChange({ viewType })}
-          value={filters.viewType}
-          viewModes={["image", "grid"]}
-        />
-        </div>
-
-        <div className={styles.tabsSection}>
-          <div className={styles.tabsScroller}>
-            <RTabSwitcher
-              activeTabId={filters.filter}
-              ariaLabel="Asset types"
-              className={styles.tabs}
-              onChange={(filter) => onChange({ filter })}
-              tabs={filterTabs}
-            />
+        <section className={styles.section}>
+          <RText
+            className={styles.sectionTitle}
+            size="body-sm"
+            color="neutral-700"
+          >
+            Filter
+          </RText>
+          <div
+            className={styles.options}
+            role="tablist"
+            aria-label="Asset types"
+          >
+            {filterTabs.map((tab) => (
+              <button
+                aria-selected={filters.filter === tab.id}
+                className={styles.option}
+                data-selected={filters.filter === tab.id}
+                key={tab.id}
+                onClick={() => onChange({ filter: tab.id })}
+                role="tab"
+                type="button"
+              >
+                <RText size="body-sm">{tab.label}</RText>
+                <RText size="body-s" color="neutral-700">
+                  {tab.count}
+                </RText>
+              </button>
+            ))}
           </div>
-        </div>
+        </section>
 
-        <div className={styles.row}>
-          <AssetsSort
-            className={styles.sort}
-            onChange={(sort) => onChange({ sort })}
-            options={ASSET_SORT_OPTIONS}
-            value={filters.sort}
+        <section className={styles.section}>
+          <RText
+            className={styles.sectionTitle}
+            size="body-sm"
+            color="neutral-700"
+          >
+            Sort
+          </RText>
+          <div
+            className={styles.options}
+            role="tablist"
+            aria-label="Asset sorting"
+          >
+            {ASSET_SORT_OPTIONS.map((option) => (
+              <button
+                aria-selected={filters.sort === option.value}
+                className={styles.option}
+                data-selected={filters.sort === option.value}
+                key={option.value}
+                onClick={() => onChange({ sort: option.value })}
+                role="tab"
+                type="button"
+              >
+                <RText size="body-sm">{option.label}</RText>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <RText
+            className={styles.sectionTitle}
+            size="body-sm"
+            color="neutral-700"
+          >
+            View
+          </RText>
+          <RViewSwitcher
+            className={styles.viewSwitcher}
+            onChange={(viewType) => onChange({ viewType })}
+            value={filters.viewType}
+            viewModes={["image", "grid"]}
           />
-        </div>
+        </section>
 
         <div className={styles.actions}>
           <RButton
@@ -131,7 +152,7 @@ export function MobileAssetsFilters({
             tone="black"
             variant="secondary"
           >
-            Reset All
+            Cancel
           </RButton>
           <RButton
             className={styles.actionButton}
@@ -140,7 +161,7 @@ export function MobileAssetsFilters({
             tone="black"
             variant="primary"
           >
-            Apply
+            Confirm
           </RButton>
         </div>
       </div>
