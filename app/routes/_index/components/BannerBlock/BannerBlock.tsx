@@ -87,7 +87,6 @@ export function BannerBlock() {
                 alt={slide.alt}
                 className={styles.image}
                 decoding="async"
-                fetchPriority={index === 0 ? "high" : "low"}
                 loading={index === 0 ? "eager" : "lazy"}
                 src={slide.image}
               />

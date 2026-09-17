@@ -63,7 +63,6 @@ export function ImageAssetCard({ asset }: RImageAssetCardProps) {
             alt=""
             className={styles.image}
             decoding="async"
-            fetchPriority="low"
             loading="lazy"
             src={imageUrl}
           />
