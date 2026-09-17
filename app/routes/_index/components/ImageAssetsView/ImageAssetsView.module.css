@@ -22,7 +22,7 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  height: 304px;
+  /*height: 304px;*/
   overflow: hidden;
   color: inherit;
   text-decoration: none;
@@ -82,7 +82,7 @@
 .media {
   position: relative;
   flex: 1 1 0;
-  min-height: 96px;
+  min-height: 94px;
   overflow: hidden;
 }
 
@@ -169,6 +169,11 @@
   border-radius: var(--r-radius-pill);
   display: flex;
   height: fit-content;
+}
+.assetBadgeList {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-1);
 }
 
 .secondaryChart {
