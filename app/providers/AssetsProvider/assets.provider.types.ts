@@ -15,6 +15,7 @@ export type AssetsProviderContextType = {
   assets: AssetType[];
   prices: Record<string, PriceAssetType>;
   assetTypes: Record<string, AssetTypeOption>;
+  assetError: Error | null;
   isLoading: boolean;
   isPricesLoading: boolean;
 };

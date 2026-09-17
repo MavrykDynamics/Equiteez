@@ -1,4 +1,5 @@
 import { rwaApi } from "~/lib/apis/rwa/client";
+import { requestFreshQuery } from "~/lib/apis/rwa/freshness";
 import {
   WalletActivitySummarySchema,
   WalletPortfolioHistorySchema,
@@ -57,7 +58,11 @@ export const fetchWalletPortfolioHistory = async ({
 export const fetchWalletActivitySummary = async ({
   walletAddress,
 }: FetchWalletParams): Promise<WalletActivitySummaryResponseType> => {
-  const { data } = await rwaApi.get(`/wallets/${walletAddress}/activity/summary`);
+  const { data } = await requestFreshQuery({
+    api: rwaApi,
+    queryKeyStart: "fetchWalletActivitySummary",
+    url: `/wallets/${walletAddress}/activity/summary`,
+  });
 
   return WalletActivitySummarySchema.parse(data);
 };

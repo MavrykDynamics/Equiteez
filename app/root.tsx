@@ -22,7 +22,6 @@ import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
 import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
-import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
 import { AppGlobalLoader } from "./providers/AppGlobalLoader";
@@ -43,12 +42,11 @@ import {
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
 import { useEffect, useRef } from "react";
-import { DexProvider } from "./providers/Dexprovider/dex.provider";
-import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
-import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
+import { NotificationsProvider } from "~/providers/NotificationsProvider/NotificationsProvider";
+import { NotificationsListener } from "~/providers/NotificationsProvider/NotificationsListener";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -140,41 +138,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <QueryClientProvider client={queryClient}>
               <AppProvider>
                 <ApolloProvider>
-                  <DipdupProvider>
-                    <WalletProvider>
-                      <AuthProvider>
-                        <ConfigProvider>
-                          <CurrencyProvider
-                            fiatToTezos={fiatToTezos}
-                            usdToToken={usdToToken}
+                  <WalletProvider>
+                    <AuthProvider>
+                      <NotificationsProvider>
+                        <NotificationsListener />
+                        <CurrencyProvider
+                          fiatToTezos={fiatToTezos}
+                          usdToToken={usdToToken}
+                        >
+                          <TokensProvider
+                            initialTokens={tokens}
+                            initialTokensMetadata={tokensMetadata}
                           >
-                            <TokensProvider
-                              initialTokens={tokens}
-                              initialTokensMetadata={tokensMetadata}
-                            >
-                              <AssetsProvider>
-                                <MarketsProvider>
-                                  <DexProvider>
-                                    <EthereumProvider>
-                                      <UserProvider>
-                                        <AppGlobalLoader>
-                                          <PopupProvider>
-                                            <PageLayout includeContainer={false}>
-                                              {children}
-                                            </PageLayout>
-                                          </PopupProvider>
-                                        </AppGlobalLoader>
-                                      </UserProvider>
-                                    </EthereumProvider>
-                                  </DexProvider>
-                                </MarketsProvider>
-                              </AssetsProvider>
-                            </TokensProvider>
-                          </CurrencyProvider>
-                        </ConfigProvider>
-                      </AuthProvider>
-                    </WalletProvider>
-                  </DipdupProvider>
+                            <AssetsProvider>
+                              <EthereumProvider>
+                                <UserProvider>
+                                  <AppGlobalLoader>
+                                    <PopupProvider>
+                                      <PageLayout includeContainer={false}>
+                                        {children}
+                                      </PageLayout>
+                                    </PopupProvider>
+                                  </AppGlobalLoader>
+                                </UserProvider>
+                              </EthereumProvider>
+                            </AssetsProvider>
+                          </TokensProvider>
+                        </CurrencyProvider>
+                      </NotificationsProvider>
+                    </AuthProvider>
+                  </WalletProvider>
                 </ApolloProvider>
               </AppProvider>
             </QueryClientProvider>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { fetchWalletActivitySummary } from "~/lib/apis/rwa";
+import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import Money from "~/lib/atoms/Money";
@@ -18,6 +18,7 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { DepositsTab } from "~/routes/portfolio.activity/components/DepositsTab";
 import { OpenOrdersTab } from "~/routes/portfolio.activity/components/OpenOrdersTab/OpenOrdersTab";
 import { TransactionHistoryTab } from "~/routes/portfolio.activity/components/TransactionHistoryTab/TransactionHistoryTab";
+import { usePortfolioActivityNotifierInvalidation } from "~/routes/portfolio.activity/hooks/usePortfolioActivityNotifierInvalidation";
 
 type ActivityTabId = "open-orders" | "transaction-history" | "deposits";
 
@@ -26,14 +27,16 @@ export default function PortfolioActivity() {
   const { userAddress } = useUserContext();
   const [activeTabId, setActiveTabId] = useState<ActivityTabId>("open-orders");
   const [searchValue, setSearchValue] = useState("");
-  const activitySummaryQuery = useQuery({
-    queryKey: ["rwa-wallet-activity-summary", userAddress],
+  const activitySummaryQuery = useFreshQuery({
+    queryKey: ["fetchWalletActivitySummary", userAddress],
     queryFn: () =>
       fetchWalletActivitySummary({
         walletAddress: userAddress || "",
       }),
     enabled: isAuthenticated && Boolean(userAddress),
   });
+
+  usePortfolioActivityNotifierInvalidation();
 
   const activityTabs = useMemo<RTabSwitcherItem[]>(
     () => [

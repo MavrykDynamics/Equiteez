@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import { fetchWalletOrderHistory } from "~/lib/apis/rwa/orders/orders";
+import {
+  FreshnessSource,
+  useFreshQuery,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { Spinner } from "~/lib/atoms/Spinner";
@@ -15,6 +19,11 @@ import {
   type SortState,
 } from "~/lib/molecules/RSortableTableHeader";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import {
+  NotifierChannel,
+  NotifierWalletEvent,
+} from "~/providers/NotificationsProvider/notifications.const";
+import { useNotifierEvent } from "~/providers/NotificationsProvider/hooks/useNotifierEvent";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import {
   formatOrderDate,
@@ -109,6 +118,7 @@ function OrderHistoryTableRow({
 export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const canFetchOrders = isAuthenticated && Boolean(userAddress);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortState<ServerSortKey>>({
@@ -122,7 +132,7 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     return `${sort.key}_${sort.direction === "descending" ? "desc" : "asc"}`;
   }, [sort]);
 
-  const ordersHistoryQuery = useQuery({
+  const ordersHistoryQuery = useFreshQuery({
     queryKey: [
       "fetchWalletOrderHistory",
       userAddress,
@@ -142,6 +152,18 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     placeholderData: (previousData) => previousData,
     retry: false,
   });
+
+  const handleOrderbookOrderUpdated = useCallback(() => {
+    void invalidateFreshQueries("fetchWalletOrderHistory", {
+      source: FreshnessSource.Orderbook,
+    });
+  }, [invalidateFreshQueries]);
+
+  useNotifierEvent(
+    NotifierChannel.Wallet,
+    NotifierWalletEvent.OrderbookOrderUpdated,
+    handleOrderbookOrderUpdated
+  );
 
   useEffect(() => {
     const totalPages = ordersHistoryQuery.data?.total_pages ?? 0;

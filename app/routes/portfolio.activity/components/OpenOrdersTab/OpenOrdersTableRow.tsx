@@ -13,7 +13,7 @@ import {
 import { FilledProgress } from "./FilledProgress";
 import expiredIcon from "./RExpiredIcon.svg";
 import styles from "./styles.module.css";
-import { CancelOrderPopup } from "~/routes/wallet.orders/components/CancelOrderPopup/CancelOrderPopup";
+import { CancelOrderPopup } from "~/lib/organisms/CancelOrderPopup/CancelOrderPopup";
 import { toTokenSlug } from "~/lib/assets";
 import { useAssetMetadata } from "~/lib/metadata";
 

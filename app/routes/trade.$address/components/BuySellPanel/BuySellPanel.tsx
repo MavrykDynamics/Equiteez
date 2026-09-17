@@ -3,26 +3,20 @@ import {
   type Dispatch,
   type SetStateAction,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import { useSearchParams } from "@remix-run/react";
-import { useQueryClient } from "@tanstack/react-query";
 
+import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import {
-  BUY,
-  SELL,
-  type OrderType,
-} from "~/routes/marketplace.$id/components/PriceSection/consts";
-import { BuySellContent } from "~/routes/marketplace.$id/components/PriceSection/popups";
-import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
-import type {
-  EstateType,
-  SecondaryEstate,
-} from "~/providers/MarketsProvider/market.types";
-import { useMarketsContext } from "~/providers/MarketsProvider/markets.provider";
+  FreshnessSource,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
+import { BUY, SELL, type OrderType } from "~/lib/organisms/PriceSection/consts";
+import { BuySellContent } from "~/lib/organisms/PriceSection/popups";
+import { useOrderbookConfig } from "~/hooks/useOrderbookConfig";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./styles.module.css";
@@ -36,70 +30,48 @@ type BuySellPanelProps = {
 const getOrderTypeFromSearchParam = (side: string | null): OrderType =>
   side === SELL ? SELL : BUY;
 
-const isMatchingTradeMarket = (market: EstateType, asset: AssetType) =>
-  market.token_address === asset.address ||
-  market.assetDetails.blockchain.some(
-    (blockchain) => blockchain.identifier === asset.address
-  );
-
-const isSecondaryEstate = (market: EstateType): market is SecondaryEstate =>
-  market.assetDetails.type === SECONDARY_MARKET;
-
 export function BuySellPanel({
   asset,
   isOrderBookOpen,
   setIsOrderBookOpen,
 }: BuySellPanelProps) {
-  const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const { hasOrders, refetchUserAccountStatus } = useUserContext();
   const [searchParams] = useSearchParams();
-  const { isLoading, marketsArr, updateActiveMarketState } =
-    useMarketsContext();
+  const { status, config, error, retry } = useOrderbookConfig(asset);
   const sideSearchParam = searchParams.get("side");
   const [orderType, setOrderType] = useState<OrderType>(() =>
     getOrderTypeFromSearchParam(sideSearchParam)
-  );
-
-  const estate = useMemo(
-    () =>
-      marketsArr.find(
-        (market): market is SecondaryEstate =>
-          isMatchingTradeMarket(market, asset) && isSecondaryEstate(market)
-      ),
-    [asset, marketsArr]
   );
 
   useEffect(() => {
     setOrderType(getOrderTypeFromSearchParam(sideSearchParam));
   }, [sideSearchParam]);
 
-  useEffect(() => {
-    if (estate?.slug) {
-      updateActiveMarketState(estate.slug);
-    }
-  }, [estate?.slug, updateActiveMarketState]);
+  const handleSuccessfulTransaction = useCallback(
+    (metadata: ContractActionSuccessMetadata) => {
+      const refetchUserAccountStatusAfterFirstOrder = hasOrders
+        ? Promise.resolve()
+        : refetchUserAccountStatus().catch((error) => {
+            console.log(error, "USER_ACCOUNT_STATUS_QUERY");
+          });
 
-  const handleSuccessfulTransaction = useCallback(() => {
-    const shouldInvalidateAssetOrdersQuery = (queryKey: readonly unknown[]) =>
-      queryKey[0] === "fetchWalletOpenOrders" ||
-      queryKey[0] === "fetchWalletOrderHistory";
+      void Promise.all([
+        invalidateFreshQueries("fetchWalletOpenOrders", {
+          level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
+        }),
+        invalidateFreshQueries("fetchWalletOrderHistory", {
+          level: metadata.confirmation?.level,
+          source: FreshnessSource.Orderbook,
+        }),
+        refetchUserAccountStatusAfterFirstOrder,
+      ]);
+    },
+    [hasOrders, invalidateFreshQueries, refetchUserAccountStatus]
+  );
 
-    const refetchUserAccountStatusAfterFirstOrder = hasOrders
-      ? Promise.resolve()
-      : refetchUserAccountStatus().catch((error) => {
-          console.log(error, "USER_ACCOUNT_STATUS_QUERY");
-        });
-
-    void Promise.all([
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          shouldInvalidateAssetOrdersQuery(query.queryKey),
-      }),
-      refetchUserAccountStatusAfterFirstOrder,
-    ]);
-  }, [hasOrders, queryClient, refetchUserAccountStatus]);
-
-  if (isLoading) {
+  if (status === "loading") {
     return (
       <div className={styles.state}>
         <Spinner size={56} />
@@ -107,13 +79,31 @@ export function BuySellPanel({
     );
   }
 
-  if (!estate) {
-    return <div className={styles.state}>Trading unavailable</div>;
+  if (!config) {
+    return (
+      <div className={styles.state}>
+        Trading unavailable: {error?.message}
+        <button
+          type="button"
+          onClick={() => {
+            void retry().catch(console.error);
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
     <BuySellContent
-      estate={estate}
+      key={`${asset.address}:${config.address}:${config.rwaTokenId}:${config.quoteTokenAddress}:${config.quoteTokenId}`}
+      asset={asset}
+      orderbookConfig={config}
+      configError={error?.message}
+      onRetryConfig={() => {
+        void retry().catch(console.error);
+      }}
       isOrderBookOpen={isOrderBookOpen}
       onSuccessfulTransaction={handleSuccessfulTransaction}
       orderType={orderType}

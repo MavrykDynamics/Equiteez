@@ -10,6 +10,7 @@ import {
   TransferHistoryResponseType,
   WalletTransferHistoryParams,
 } from "~/lib/apis/rwa/orders/orders.types";
+import { requestFreshQuery } from "~/lib/apis/rwa/freshness";
 
 type WalletOpenOrdersParams = {
   walletAddress: string;
@@ -59,17 +60,18 @@ export const fetchWalletOpenOrders = async ({
     query.set("token_address", tokenAddress);
   }
 
-  query.set("status" , "open,expired");
-  query.set("refund" , "none,claimable");
+  query.set("status", "open,expired");
+  query.set("refund", "none,claimable");
 
-  const queryString = query.toString();
-  const url = `/wallets/${walletAddress}/orders${
-    queryString ? `?${queryString}` : ""
-  }`;
+  const response = await requestFreshQuery({
+    api: rwaApi,
+    query,
+    queryKeyStart: "fetchWalletOpenOrders",
+    url: `/wallets/${walletAddress}/orders`,
+  });
+  const parsedData = OpenOrdersSchema.parse(response.data);
 
-  const { data } = await rwaApi.get(url);
-
-  return OpenOrdersSchema.parse(data);
+  return parsedData;
 };
 
 export const fetchWalletOrderHistory = async ({
@@ -106,9 +108,12 @@ export const fetchWalletOrderHistory = async ({
     query.append("types", type)
   );
 
-  const { data } = await rwaApi.get(
-    `/wallets/${walletAddress}/transactions?${query.toString()}`
-  );
+  const { data } = await requestFreshQuery({
+    api: rwaApi,
+    query,
+    queryKeyStart: "fetchWalletOrderHistory",
+    url: `/wallets/${walletAddress}/transactions`,
+  });
 
   return OrderHistorySchema.parse(data);
 };
@@ -145,9 +150,12 @@ export const fetchWalletTransferHistory = async ({
 
   ["deposit", "withdrawal"].forEach((type) => query.append("types", type));
 
-  const { data } = await rwaApi.get(
-    `/wallets/${walletAddress}/transactions?${query.toString()}`
-  );
+  const { data } = await requestFreshQuery({
+    api: rwaApi,
+    query,
+    queryKeyStart: "fetchWalletTransferHistory",
+    url: `/wallets/${walletAddress}/transactions`,
+  });
 
   return TransferHistorySchema.parse(data);
 };

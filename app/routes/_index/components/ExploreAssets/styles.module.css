@@ -56,4 +56,7 @@
   .mobileFiltersButton {
     display: inline-flex;
   }
+  .desktopDeposit {
+    display: none;
+  }
 }

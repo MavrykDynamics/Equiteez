@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AsOfSchema } from "~/lib/apis/rwa/freshness/asOf.schema";
+
 export const WalletTokenSchema = z.object({
   total_balance: z.number(),
   total_value: z.number(),
@@ -70,4 +72,5 @@ export const WalletActivitySummarySchema = z.object({
   onchain_events: z.number().nullable(),
   open_orders: z.number().nullable(),
   transfers: z.number().nullable(),
+  as_of: AsOfSchema,
 });

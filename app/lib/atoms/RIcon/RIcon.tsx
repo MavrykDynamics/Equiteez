@@ -137,9 +137,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
   ),
   info: (
     <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M11.25 11.25H12L12 16.5H12.75" />
-      <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
+      <path
+        d="M6.5 4.13346V6.80013M6.5 12.5C3.18629 12.5 0.5 9.81371 0.5 6.5C0.5 3.18629 3.18629 0.5 6.5 0.5C9.81371 0.5 12.5 3.18629 12.5 6.5C12.5 9.81371 9.81371 12.5 6.5 12.5ZM6.5332 8.80013V8.8668L6.4668 8.86654V8.80013H6.5332Z"
+        stroke="#010101"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
     </>
   ),
   image: (
