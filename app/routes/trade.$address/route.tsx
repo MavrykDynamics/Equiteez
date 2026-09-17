@@ -58,23 +58,20 @@ export default function TradePage() {
   }
 
   return (
-    <Container>
+    <Container className={styles.tradeContainer}>
       <div className={styles.contentBlock}>
         <div className={styles.mainContent}>
           <AssetDetails asset={asset} />
           <ChartBlock
             asset={asset}
             isOrderBookOpen={isOrderBookOpen}
+            orderBookContainerRef={setOrderBookContainer}
             onOrderBookToggle={() => setIsOrderBookOpen((isOpen) => !isOpen)}
           />
           <AssetTabs asset={asset} />
         </div>
 
         <div className={styles.tradeColumn}>
-          <div
-            ref={setOrderBookContainer}
-            className={styles.orderBookContainer}
-          />
           <div className={styles.tradeColumnContent}>
             <AssetGallerySlider
               key={asset.address}

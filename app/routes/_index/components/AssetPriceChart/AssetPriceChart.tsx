@@ -30,7 +30,7 @@ type AssetPriceChartProps = {
   tone: "positive" | "negative";
 };
 
-function getChartData(points: AssetPriceChartPoint[]) {
+export function getChartData(points: AssetPriceChartPoint[]) {
   return points
     .map((point) => ({
       time: Math.floor(new Date(point.t).getTime() / 1000) as UTCTimestamp,

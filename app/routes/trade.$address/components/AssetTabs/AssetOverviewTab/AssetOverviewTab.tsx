@@ -3,6 +3,8 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import styles from "./styles.module.css";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { RWhyInvest } from "./RWhyInvest";
+import { RAssetLocation } from "./RAssetLocation";
 
 type DetailGroup = {
   title: string;
@@ -45,6 +47,8 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
         </RText>
       </div>
 
+      <RWhyInvest asset={asset} />
+
       <div className={styles.details}>
         {detailGroups.map((group) => (
           <section aria-labelledby={`${group.title}-heading`} key={group.title}>
@@ -66,6 +70,7 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
           </section>
         ))}
       </div>
+      <RAssetLocation />
     </div>
   );
 }

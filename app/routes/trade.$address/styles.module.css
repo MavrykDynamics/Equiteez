@@ -1,5 +1,11 @@
 @import "../../styles/breakpoints.css";
 
+@media not all and (--media-tablet-max) {
+  .tradeContainer.tradeContainer {
+    padding-inline: var(--r-space-11);
+  }
+}
+
 .contentBlock {
   width: 100%;
   display: flex;
@@ -47,21 +53,6 @@
 
 .tradeColumnContent {
   display: contents;
-}
-
-.orderBookContainer {
-  display: none;
-  height: 503px;
-  width: 100%;
-}
-
-.orderBookContainer:not(:empty) {
-  display: block;
-}
-
-/* Keep the gallery and form mounted, including their current input state. */
-.tradeColumn:has(> .orderBookContainer:not(:empty)) .tradeColumnContent {
-  display: none;
 }
 
 @media (--media-tablet-max) {

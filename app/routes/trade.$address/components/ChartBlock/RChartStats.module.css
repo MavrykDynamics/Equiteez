@@ -1,0 +1,52 @@
+.panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  row-gap: var(--r-space-4);
+  margin-block: var(--r-space-3);
+  padding: var(--r-space-3) var(--r-space-4);
+  border-radius: var(--r-radius-md);
+  background: var(--r-color-neutral-50);
+}
+
+.metric {
+  min-height: 0;
+  padding: 0 var(--r-space-3);
+  border-radius: 0;
+  background: transparent;
+  border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.metric:nth-child(3n + 1) {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.metric dl {
+  gap: 0;
+}
+
+.metric dt {
+  color: var(--r-color-neutral-700);
+  font-size: var(--r-font-size-body-xs);
+  line-height: var(--r-line-height-body-xs);
+  white-space: normal;
+}
+
+.metric dd {
+  color: var(--r-color-neutral-black);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+@container (min-width: 720px) {
+  .panel {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .metric:nth-child(n + 2) {
+    padding-left: var(--r-space-6);
+    border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+}

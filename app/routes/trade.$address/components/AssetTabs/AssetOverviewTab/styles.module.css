@@ -1,3 +1,5 @@
+@import "../../../../../styles/breakpoints.css";
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -53,3 +55,91 @@
   height: 16px;
 }
 
+.investColumns,
+.investItems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.investItems {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.investItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-1);
+}
+
+.investItem::before {
+  content: "";
+  flex: 0 0 var(--r-space-6);
+  height: var(--r-space-6);
+  background: radial-gradient(
+    circle,
+    var(--r-color-accent-green-500) 3px,
+    transparent 3px
+  );
+}
+
+.investCopy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  min-width: 0;
+}
+
+.location {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.map {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 453px;
+  overflow: hidden;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+  background-color: var(--r-color-neutral-white);
+  background-image: linear-gradient(
+      to right,
+      transparent calc(100% - 2px),
+      #e8eaed 0
+    ),
+    linear-gradient(to bottom, transparent calc(100% - 2px), #e8eaed 0);
+  background-size: calc(100% / 3) calc(100% / 3);
+}
+
+.mapMarker {
+  display: grid;
+  width: 74px;
+  height: 74px;
+  place-items: center;
+  border: 2px solid
+    color-mix(in srgb, var(--r-color-accent-green-500) 30%, transparent);
+  border-radius: 50%;
+}
+
+.mapPin {
+  display: grid;
+  width: var(--r-space-11);
+  height: var(--r-space-11);
+  place-items: center;
+  border-radius: 50%;
+  background: var(--r-color-accent-green-500);
+  color: var(--r-color-neutral-white);
+}
+
+@media not all and (--media-phone-max) {
+  .investColumns {
+    flex-direction: row;
+  }
+}

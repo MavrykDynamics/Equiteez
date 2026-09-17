@@ -1,20 +1,57 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
-  padding: var(--r-space-4);
+  container-type: inline-size;
   display: flex;
   flex: 1;
   height: min-content;
   flex-direction: column;
+}
+
+.chartContent {
+  display: flex;
+  flex-direction: column;
   gap: var(--r-space-2);
+  padding: var(--r-space-4);
+  margin-bottom: var(--r-space-3);
   border-radius: var(--r-radius-md);
 }
 
-.positiveWrapper {
+.positiveWrapper .chartContent {
   background: rgb(164 192 186 / 15%);
 }
 
-.negativeWrapper {
+.orderBookContainer {
+  display: none;
+}
+
+@media not all and (--media-tablet-max) {
+  .chartContent:has(> .orderBookContainer:not(:empty)) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--r-space-4);
+  }
+
+  .orderBookContainer:not(:empty) {
+    display: block;
+    flex: 0 0 325px;
+    height: 503px;
+  }
+
+  .chartContent:has(> .orderBookContainer:not(:empty)) .priceChart {
+    flex: 1;
+  }
+
+  .chartContent:has(> .orderBookContainer:not(:empty)) .chartHeader {
+    flex-wrap: wrap;
+  }
+
+  .chartContent:has(> .orderBookContainer:not(:empty)) .orderBookToggle {
+    display: none;
+  }
+}
+
+.negativeWrapper .chartContent {
   background: rgb(227 159 159 / 15%);
 }
 
