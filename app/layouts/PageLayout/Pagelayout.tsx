@@ -31,7 +31,7 @@ const PageLayout: FC<PageLayoutProps> = ({
 }) => {
   return (
     <div className={styles.root}>
-      <MobileLayout />
+      {/*<MobileLayout />*/}
 
       <div
         className={clsx(

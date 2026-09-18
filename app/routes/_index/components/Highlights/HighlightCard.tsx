@@ -26,7 +26,6 @@ export function HighlightCard(props: { asset: AssetHighlightType }) {
         alt=""
         className={styles.cardImage}
         decoding="async"
-        fetchPriority="low"
         loading="lazy"
         src={imageUrl}
       />
