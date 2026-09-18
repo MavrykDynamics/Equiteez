@@ -162,6 +162,7 @@ const BuySellForm: FC<
 
   // network fee estimation state --------------------------------------------
   const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
+  const [gasFee, setGasFee] = useState<BigNumber>(ZERO);
 
   // --------------------------------------------
 
@@ -658,6 +659,7 @@ const BuySellForm: FC<
       orderValidationMessage
     ) {
       setNetworkFee(ZERO);
+      setGasFee(ZERO);
       return;
     }
 
@@ -684,16 +686,18 @@ const BuySellForm: FC<
         if (cancelled) return;
 
         if (res.actionSuccess) {
-          // Full on-chain cost of the transaction (network fee + storage burn),
-          // not just the suggested fee.
-          const { totalCost } = res.data;
-
-          const networkFeeTez = new BigNumber(totalCost).dividedBy(MILLION);
-
-          setNetworkFee(networkFeeTez);
+          const { totalCost, totalGasFeeMutez } = res.data;
+          // Preserve the full on-chain estimate while displaying gas separately.
+          setNetworkFee(
+            new BigNumber(totalCost).minus(totalGasFeeMutez).dividedBy(MILLION)
+          );
+          setGasFee(new BigNumber(totalGasFeeMutez).dividedBy(MILLION));
         }
       } catch (e) {
-        if (!cancelled) setNetworkFee(ZERO);
+        if (!cancelled) {
+          setNetworkFee(ZERO);
+          setGasFee(ZERO);
+        }
       }
     }, 400);
 
@@ -754,6 +758,7 @@ const BuySellForm: FC<
       setLimitPrice(undefined);
       setOrderExpiryPeriodId(null);
       setNetworkFee(ZERO);
+      setGasFee(ZERO);
       setIsOrderBookOpen(false);
       onSuccessfulTransaction?.(metadata);
     },
@@ -1031,6 +1036,7 @@ const BuySellForm: FC<
               total={total}
               tokenPrice={tokenPrice}
               networkFee={networkFee}
+              gasFee={gasFee}
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}
@@ -1053,6 +1059,7 @@ const BuySellForm: FC<
               setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               networkFee={networkFee}
+              gasFee={gasFee}
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}

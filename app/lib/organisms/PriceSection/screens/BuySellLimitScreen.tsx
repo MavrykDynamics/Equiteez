@@ -46,6 +46,7 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  gasFee?: BigNumber.Value;
   apy: number;
   orderbookFee?: BigNumber.Value;
   orderExpiryPeriodId: OrderExpiryPeriodId | null;
@@ -69,6 +70,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   amount,
   total,
   networkFee,
+  gasFee,
   apy,
   orderbookFee,
   orderExpiryPeriodId,
@@ -340,6 +342,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             networkFee={networkFee}
+            gasFee={gasFee}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
             totalAmount={orderSummaryAmount}

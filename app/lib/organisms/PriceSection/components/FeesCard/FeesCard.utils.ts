@@ -1,11 +1,12 @@
 import { BigNumber } from "bignumber.js";
 
-import { ZERO } from "~/lib/utils/numbers";
+import { MILLION, ZERO } from "~/lib/utils/numbers";
 
 const DEFAULT_NETWORK_FEE_USD_RATE = 1;
 
 type CalculateOrderSummaryValuesParams = {
   networkFee?: BigNumber.Value;
+  gasFee?: BigNumber.Value;
   orderbookFee?: BigNumber.Value;
   networkFeeUsdRate?: BigNumber.Value;
   orderValue?: BigNumber.Value;
@@ -24,6 +25,7 @@ const toFinitePositiveOrZero = (value?: BigNumber.Value) => {
 
 export const calculateOrderSummaryValues = ({
   networkFee,
+  gasFee,
   orderbookFee,
   networkFeeUsdRate,
   orderValue,
@@ -35,15 +37,19 @@ export const calculateOrderSummaryValues = ({
     ? normalizedNetworkFeeUsdRate
     : new BigNumber(DEFAULT_NETWORK_FEE_USD_RATE);
   const networkFeeUsd = normalizedNetworkFee.times(effectiveNetworkFeeUsdRate);
-  // Asset orderbook fees are supplied in MVRK, like the network estimate.
-  const orderbookFeeUsd = toFinitePositiveOrZero(orderbookFee).times(
+  // Asset orderbook fees are MVRK atoms; the network estimate is already in MVRK.
+  const orderbookFeeUsd = toFinitePositiveOrZero(orderbookFee)
+    .dividedBy(MILLION)
+    .times(effectiveNetworkFeeUsdRate);
+  const gasFeeUsd = toFinitePositiveOrZero(gasFee).times(
     effectiveNetworkFeeUsdRate
   );
-  const platformFeeUsd = networkFeeUsd.plus(orderbookFeeUsd);
+  const platformFeeUsd = networkFeeUsd.plus(gasFeeUsd).plus(orderbookFeeUsd);
   const normalizedOrderValue = toFinitePositiveOrZero(orderValue);
 
   return {
     networkFeeUsd,
+    gasFeeUsd,
     orderbookFeeUsd,
     platformFeeUsd,
     pricePerShare: toFinitePositiveOrZero(pricePerShare),

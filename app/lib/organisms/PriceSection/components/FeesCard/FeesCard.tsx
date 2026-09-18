@@ -16,6 +16,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 type FeesCardProps = {
   className?: string;
   networkFee: BigNumber.Value;
+  gasFee?: BigNumber.Value;
   orderbookFee?: BigNumber.Value;
   pricePerShare?: BigNumber.Value;
   totalAmount?: BigNumber.Value;
@@ -25,6 +26,7 @@ type FeesCardProps = {
 export const FeesCard: FC<FeesCardProps> = ({
   className,
   networkFee,
+  gasFee,
   orderbookFee,
   pricePerShare,
   totalAmount = 0,
@@ -35,6 +37,7 @@ export const FeesCard: FC<FeesCardProps> = ({
   const mvrkUsdRate = usdToTokenRates[MVRK_ASSET_SLUG];
   const {
     networkFeeUsd,
+    gasFeeUsd,
     orderbookFeeUsd,
     platformFeeUsd,
     pricePerShare: displayPricePerShare,
@@ -43,12 +46,13 @@ export const FeesCard: FC<FeesCardProps> = ({
     () =>
       calculateOrderSummaryValues({
         networkFee,
+        gasFee,
         orderbookFee,
         networkFeeUsdRate: mvrkUsdRate,
         orderValue: totalAmount,
         pricePerShare,
       }),
-    [mvrkUsdRate, networkFee, orderbookFee, pricePerShare, totalAmount]
+    [mvrkUsdRate, networkFee, gasFee, orderbookFee, pricePerShare, totalAmount]
   );
 
   const annualIncome = new BigNumber(totalAmount)
@@ -61,10 +65,13 @@ export const FeesCard: FC<FeesCardProps> = ({
         {
           label: "Orderbook Fee",
           value:
-            orderbookFee === undefined ? "-" : `$${orderbookFeeUsd.toFixed(2)}`,
+            orderbookFee === undefined ? "-" : `$${orderbookFeeUsd.toFixed(6)}`,
         },
-        { label: "Network Fee", value: `$${networkFeeUsd.toFixed(2)}` },
-        { label: "Gas Fee", value: "-" },
+        { label: "Network Fee", value: `$${networkFeeUsd.toFixed(6)}` },
+        {
+          label: "Gas Fee",
+          value: gasFee === undefined ? "-" : `$${gasFeeUsd.toFixed(6)}`,
+        },
       ].map(({ label, value }) => (
         <div className={styles.feeTooltipRow} key={label}>
           <span>{label}</span>
@@ -125,10 +132,7 @@ export const FeesCard: FC<FeesCardProps> = ({
                   />
                 </div>
                 <span className={styles.detailValue}>
-                  ~ $
-                  <Money fiat tooltip={false}>
-                    {platformFeeUsd}
-                  </Money>
+                  ~ ${platformFeeUsd.toFixed(6)}
                 </span>
               </div>
               {annualYield !== undefined && (

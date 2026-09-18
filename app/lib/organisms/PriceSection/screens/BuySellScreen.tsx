@@ -36,6 +36,7 @@ type BuySellScreenProps = {
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  gasFee?: BigNumber.Value;
   apy: number;
   orderbookFee?: BigNumber.Value;
   tokenPrice: BigNumber;
@@ -56,6 +57,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   amount,
   total,
   networkFee,
+  gasFee,
   apy,
   orderbookFee,
   tokenPrice,
@@ -303,6 +305,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             networkFee={networkFee}
+            gasFee={gasFee}
             orderbookFee={orderbookFee}
             pricePerShare={tokenPrice}
             totalAmount={orderSummaryAmount}
