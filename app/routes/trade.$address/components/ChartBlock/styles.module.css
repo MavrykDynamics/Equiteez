@@ -1,27 +1,66 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
-  padding: var(--r-space-4);
+  --chart-height: 466px;
+
+  container-type: inline-size;
   display: flex;
   flex: 1;
   height: min-content;
   flex-direction: column;
+}
+
+.chartContent {
+  display: flex;
+  flex-direction: column;
   gap: var(--r-space-2);
+  padding: var(--r-space-4);
+  margin-bottom: var(--r-space-3);
   border-radius: var(--r-radius-md);
 }
 
-.positiveWrapper {
+.positiveWrapper .chartContent {
   background: rgb(164 192 186 / 15%);
 }
 
-.negativeWrapper {
+.orderBookContainer {
+  display: none;
+}
+
+@media not all and (--media-tablet-max) {
+  .chartContent:has(> .orderBookContainer:not(:empty)) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--r-space-4);
+  }
+
+  .orderBookContainer:not(:empty) {
+    display: block;
+    flex: 0 0 325px;
+    height: 503px;
+  }
+
+  .chartContent:has(> .orderBookContainer:not(:empty)) .priceChart {
+    flex: 1;
+  }
+
+  .chartContent:has(> .orderBookContainer:not(:empty)) .chartHeader {
+    flex-wrap: wrap;
+  }
+
+  .chartContent:has(> .orderBookContainer:not(:empty)) .orderBookToggle {
+    display: none;
+  }
+}
+
+.negativeWrapper .chartContent {
   background: rgb(227 159 159 / 15%);
 }
 
 .priceChart {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-3);
+  gap: var(--r-space-2);
   width: 100%;
   min-width: 0;
 }
@@ -213,7 +252,7 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  height: 395px;
+  height: var(--chart-height);
   overflow: hidden;
 }
 
@@ -229,6 +268,20 @@
 
 .chart {
   height: 100%;
+}
+
+/* Keep application table sizing out of the canvas-based chart layout. */
+.chart :global(table) {
+  table-layout: auto;
+  min-width: 0;
+  border-spacing: 0;
+}
+
+.chart :global(td) {
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
 }
 
 .chartTooltip {
@@ -295,7 +348,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-height: 395px;
+  min-height: var(--chart-height);
   margin: 0;
   color: var(--r-color-neutral-600);
   font-family: var(--r-font-body);

@@ -11,11 +11,11 @@ import {
 import { fetchPriceChange, fetchPriceSeries } from "~/lib/apis/rwa";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { AssetPriceChangeType } from "~/lib/apis/rwa/prices/prices.types";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import {
   AssetPriceChart,
+  getChartData,
   type AssetPriceChartHover,
   type AssetPriceChartPoint,
 } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
@@ -24,11 +24,12 @@ import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
 
-import { RMarketDepthChart } from "./RMarketDepthChart";
+import { RChartStats } from "./RChartStats";
 
 type AssetDetailsProps = {
   asset: AssetType;
   orderBookControl?: ReactNode;
+  orderBookContent?: ReactNode;
   onToneChange?: (tone: "positive" | "negative") => void;
 };
 
@@ -177,6 +178,7 @@ export function PriceChart({
   asset,
   onToneChange,
   orderBookControl,
+  orderBookContent,
 }: AssetDetailsProps) {
   const { price } = useAssetPrice(asset);
   const [range, setRange] = useState<ChartRange>("1d");
@@ -187,7 +189,6 @@ export function PriceChart({
     tone: "positive",
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isDepthChartVisible, setIsDepthChartVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
     null
@@ -198,7 +199,6 @@ export function PriceChart({
 
   useEffect(() => {
     setPoints([]);
-    setIsDepthChartVisible(false);
     setPriceChangeView({
       amount: null,
       percentage: null,
@@ -252,7 +252,10 @@ export function PriceChart({
   }, [asset.metadata.symbol, range]);
 
   const tone = priceChangeView.tone;
-  const canShowDepthChart = asset.profile.lifecycle !== "primary_issuance";
+  const rangePrices = useMemo(
+    () => getChartData(points).map(({ value }) => value),
+    [points]
+  );
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -323,145 +326,135 @@ export function PriceChart({
   }, [hoveredPoint]);
 
   return (
-    <section className={styles.priceChart} aria-label="Price chart">
-      <div className={styles.chartHeader}>
-        <div className={styles.priceSummary}>
-          <span className={styles.currentPrice}>
-            $
-            <Money fiat tooltip={false}>
-              {price}
-            </Money>
-          </span>
-          <RPriceChange
-            amount={priceChangeView.amount}
-            percentage={priceChangeView.percentage}
-            showPeriodLabel={false}
-            size="body-sm"
-            iconSize="medium"
-          />
-        </div>
-        <div className={styles.chartHeaderActions}>
-          <div
-            className={styles.chartControls}
-            role="tablist"
-            aria-label="Price range"
-          >
-            {CHART_RANGES.map(({ label, value }) => (
-              <button
-                aria-selected={range === value}
-                className={styles.intervalButton}
-                key={value}
-                onClick={() => setRange(value)}
-                role="tab"
-                type="button"
+    <>
+      <div className={styles.chartContent}>
+        <section className={styles.priceChart} aria-label="Price chart">
+          <div className={styles.chartHeader}>
+            <div className={styles.priceSummary}>
+              <span className={styles.currentPrice}>
+                $
+                <Money fiat tooltip={false}>
+                  {price}
+                </Money>
+              </span>
+              <RPriceChange
+                amount={priceChangeView.amount}
+                percentage={priceChangeView.percentage}
+                showPeriodLabel={false}
+                size="body-sm"
+                iconSize="medium"
+              />
+            </div>
+            <div className={styles.chartHeaderActions}>
+              <div
+                className={styles.chartControls}
+                role="tablist"
+                aria-label="Price range"
               >
-                {label}
-              </button>
-            ))}
-          </div>
+                {CHART_RANGES.map(({ label, value }) => (
+                  <button
+                    aria-selected={range === value}
+                    className={styles.intervalButton}
+                    key={value}
+                    onClick={() => setRange(value)}
+                    role="tab"
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
 
-          {orderBookControl ? (
-            <div className={styles.chartHeaderAction}>{orderBookControl}</div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className={styles.chartFrame}>
-        {isLoading && !points.length ? (
-          <div
-            className={styles.chartState}
-            role="status"
-            aria-label="Loading price chart"
-          >
-            <Spinner size={32} />
-          </div>
-        ) : error ? (
-          <p className={styles.chartState} role="alert">
-            {error}
-          </p>
-        ) : points.length < 2 ? (
-          <p className={styles.chartState}>No price data available.</p>
-        ) : (
-          <>
-            <div className={styles.chartCanvas} ref={chartCanvasRef}>
-              {isLoading ? (
-                <div
-                  className={styles.loadingOverlay}
-                  role="status"
-                  aria-live="polite"
-                >
-                  <Spinner size={32} />
+              {orderBookControl ? (
+                <div className={styles.chartHeaderAction}>
+                  {orderBookControl}
                 </div>
               ) : null}
-              <AssetPriceChart
-                className={styles.chart}
-                onHover={handleChartHover}
-                points={points}
-                priceDecimals={PRICE_DECIMALS}
-                showPriceScale
-                showTimeScale
-                timeTickFormatter={timeTickFormatter}
-                tone={tone}
-              />
-              {hoveredPoint ? (
-                <>
-                  <span
-                    aria-hidden="true"
-                    className={styles.chartCrosshair}
-                    style={{ left: hoveredPoint.x }}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className={`${styles.chartPoint} ${
-                      tone === "positive"
-                        ? styles.positiveChartPoint
-                        : styles.negativeChartPoint
-                    }`}
-                    style={{
-                      left: hoveredPoint.x,
-                      top: hoveredPoint.y,
-                    }}
-                  />
-                  <div
-                    className={styles.chartTooltip}
-                    ref={tooltipRef}
-                    style={tooltipPosition ?? undefined}
-                    role="status"
-                  >
-                    <strong>
-                      ${formatTooltipPrice(hoveredPoint.value)}
-                    </strong>
-                    <span>{formatDateTime(hoveredPoint.time)}</span>
-                  </div>
-                </>
-              ) : null}
             </div>
-          </>
-        )}
-      </div>
-      {canShowDepthChart ? (
-        <>
-          <div className={styles.depthChartAction}>
-            <button
-              aria-expanded={isDepthChartVisible}
-              className={styles.toggleButton}
-              onClick={() => setIsDepthChartVisible((isVisible) => !isVisible)}
-              type="button"
-            >
-              <RIcon
-                name={
-                  isDepthChartVisible ? "arrow-long-up" : "arrow-long-down"
-                }
-                size="small"
-              />
-              <span className={styles.toggleLabel}>
-                {isDepthChartVisible ? "Hide Depth Chart" : "View Depth Chart"}
-              </span>
-            </button>
           </div>
-          {isDepthChartVisible ? <RMarketDepthChart asset={asset} /> : null}
-        </>
-      ) : null}
-    </section>
+
+          <div className={styles.chartFrame}>
+            {isLoading && !points.length ? (
+              <div
+                className={styles.chartState}
+                role="status"
+                aria-label="Loading price chart"
+              >
+                <Spinner size={32} />
+              </div>
+            ) : error ? (
+              <p className={styles.chartState} role="alert">
+                {error}
+              </p>
+            ) : points.length < 2 ? (
+              <p className={styles.chartState}>No price data available.</p>
+            ) : (
+              <>
+                <div className={styles.chartCanvas} ref={chartCanvasRef}>
+                  {isLoading ? (
+                    <div
+                      className={styles.loadingOverlay}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <Spinner size={32} />
+                    </div>
+                  ) : null}
+                  <AssetPriceChart
+                    className={styles.chart}
+                    onHover={handleChartHover}
+                    points={points}
+                    priceDecimals={PRICE_DECIMALS}
+                    showPriceScale
+                    showTimeScale
+                    timeTickFormatter={timeTickFormatter}
+                    tone={tone}
+                  />
+                  {hoveredPoint ? (
+                    <>
+                      <span
+                        aria-hidden="true"
+                        className={styles.chartCrosshair}
+                        style={{ left: hoveredPoint.x }}
+                      />
+                      <span
+                        aria-hidden="true"
+                        className={`${styles.chartPoint} ${
+                          tone === "positive"
+                            ? styles.positiveChartPoint
+                            : styles.negativeChartPoint
+                        }`}
+                        style={{
+                          left: hoveredPoint.x,
+                          top: hoveredPoint.y,
+                        }}
+                      />
+                      <div
+                        className={styles.chartTooltip}
+                        ref={tooltipRef}
+                        style={tooltipPosition ?? undefined}
+                        role="status"
+                      >
+                        <strong>
+                          ${formatTooltipPrice(hoveredPoint.value)}
+                        </strong>
+                        <span>{formatDateTime(hoveredPoint.time)}</span>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+        {orderBookContent}
+      </div>
+      <RChartStats
+        prices={rangePrices}
+        amount={priceChangeView.amount}
+        percentage={priceChangeView.percentage}
+        isUnavailable={isLoading || !!error}
+      />
+    </>
   );
 }

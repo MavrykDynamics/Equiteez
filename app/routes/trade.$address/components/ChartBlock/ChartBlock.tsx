@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Ref } from "react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { OrderBookToggleButton } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
@@ -12,6 +12,7 @@ type ChartBlockProps = {
   asset: AssetType;
   isOrderBookOpen: boolean;
   onOrderBookToggle: () => void;
+  orderBookContainerRef: Ref<HTMLDivElement>;
 };
 
 const CHART_ORDER_BOOK_TOGGLE_LABELS = {
@@ -23,6 +24,7 @@ export function ChartBlock({
   asset,
   isOrderBookOpen,
   onOrderBookToggle,
+  orderBookContainerRef,
 }: ChartBlockProps) {
   const [chartTone, setChartTone] = useState<"positive" | "negative">(
     "positive"
@@ -40,6 +42,12 @@ export function ChartBlock({
       <PriceChart
         asset={asset}
         onToneChange={setChartTone}
+        orderBookContent={
+          <div
+            ref={orderBookContainerRef}
+            className={styles.orderBookContainer}
+          />
+        }
         orderBookControl={
           <OrderBookToggleButton
             className={styles.orderBookToggle}

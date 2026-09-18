@@ -1,11 +1,11 @@
 .card {
+  --summary-transition-duration: 200ms;
   background: var(--r-color-neutral-white);
   border-radius: 12px;
   color: var(--r-color-neutral-black);
   display: flex;
   flex-direction: column;
   font-family: var(--r-font-body);
-  gap: 10px;
   padding: var(--r-space-4);
 }
 
@@ -49,12 +49,11 @@
 }
 
 .arrowIcon {
-  color: var(--r-color-neutral-black);
-  height: 16px;
-  transition: transform var(--r-transition-duration-fast) ease;
-  width: 16px;
+  flex-shrink: 0;
+  transition: transform var(--summary-transition-duration) ease;
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
 }
-
 .summaryButton[aria-expanded="true"] .arrowIcon {
   transform: rotate(180deg);
 }
@@ -99,4 +98,37 @@
 
 .totalValue {
   font-weight: var(--r-font-weight-medium);
+}
+
+.summaryPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--summary-transition-duration) ease,
+    visibility 0s var(--summary-transition-duration);
+}
+
+.summaryPanelOpen {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.summaryContent {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.summaryContentInner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    --summary-transition-duration: 0ms;
+  }
 }

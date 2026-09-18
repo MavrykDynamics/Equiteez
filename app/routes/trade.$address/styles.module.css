@@ -1,5 +1,11 @@
 @import "../../styles/breakpoints.css";
 
+@media not all and (--media-tablet-max) {
+  .tradeContainer.tradeContainer {
+    padding-inline: var(--r-space-11);
+  }
+}
+
 .contentBlock {
   width: 100%;
   display: flex;
@@ -21,8 +27,7 @@
   min-width: 0;
 }
 
-.buySellContainer {
-  box-sizing: border-box;
+.tradeColumn {
   display: flex;
   flex-direction: column;
   flex: 0 0 428px;
@@ -32,10 +37,22 @@
   align-self: flex-start;
   position: sticky;
   top: var(--r-space-5);
+  gap: var(--r-space-5);
+}
+
+.buySellContainer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   padding: var(--r-space-4);
   border: 0;
   border-radius: var(--r-radius-md);
   background-color: var(--r-color-neutral-50);
+}
+
+.tradeColumnContent {
+  display: contents;
 }
 
 @media (--media-tablet-max) {
@@ -47,7 +64,7 @@
     width: 100%;
   }
 
-  .buySellContainer {
+  .tradeColumn {
     position: static;
     flex: none;
     width: 100%;

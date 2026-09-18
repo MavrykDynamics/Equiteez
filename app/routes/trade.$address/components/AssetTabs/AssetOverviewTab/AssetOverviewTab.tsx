@@ -1,9 +1,10 @@
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { AssetGallerySlider } from "./AssetGallerySlider";
 import styles from "./styles.module.css";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { RWhyInvest } from "./RWhyInvest";
+import { RAssetLocation } from "./RAssetLocation";
 
 type DetailGroup = {
   title: string;
@@ -35,14 +36,8 @@ const detailGroups: DetailGroup[] = [
 ];
 
 export function AssetOverviewTab({ asset }: { asset: AssetType }) {
-  const images = asset.profile.gallery.map((item) => item.url);
-
   return (
     <div className={styles.wrapper}>
-      <div className={styles.galleryWrapper}>
-        <AssetGallerySlider images={images} name={asset.metadata.name} />
-      </div>
-
       <div className={styles.content}>
         <RHeading size="h6" weight="medium">
           About {asset.metadata.name}
@@ -51,6 +46,8 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
           {asset.profile.description}
         </RText>
       </div>
+
+      <RWhyInvest asset={asset} />
 
       <div className={styles.details}>
         {detailGroups.map((group) => (
@@ -73,6 +70,7 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
           </section>
         ))}
       </div>
+      <RAssetLocation />
     </div>
   );
 }

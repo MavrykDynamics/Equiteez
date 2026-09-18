@@ -1,7 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
-  padding: var(--r-space-5) 0 0 0;
+  padding: 0; /* The chart statistics panel supplies the 12px spacing above tabs. */
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);

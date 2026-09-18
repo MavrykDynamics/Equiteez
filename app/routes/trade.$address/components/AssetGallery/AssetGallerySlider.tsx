@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useLocation } from "@remix-run/react";
 
@@ -22,48 +22,23 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
     slidesToScroll: 1,
   });
   const {
-    activeIndex,
     nextBtnDisabled,
     onNextButtonClick,
     onPrevButtonClick,
     prevBtnDisabled,
   } = usePrevNextButtons(emblaApi);
-  const [snapCount, setSnapCount] = useState(1);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const setScrollSnapCount = () => {
-      setSnapCount(emblaApi.scrollSnapList().length);
-    };
-
-    setScrollSnapCount();
-    emblaApi.on("reInit", setScrollSnapCount);
-
-    return () => {
-      emblaApi.off("reInit", setScrollSnapCount);
-    };
-  }, [emblaApi]);
-
   useEffect(() => {
     setIsGalleryOpen(false);
   }, [location.pathname]);
 
-  const handleDotClick = useCallback(
-    (index: number) => {
-      emblaApi?.scrollTo(index);
-    },
-    [emblaApi]
-  );
-
-  const hasMultiplePages = snapCount > 1;
+  if (images.length === 0) return null;
 
   return (
     <section aria-label={`${name} gallery`} className={styles.slider}>
       <div className={styles.carouselRow}>
         <button
           aria-label="Previous gallery items"
-          className={styles.arrowButton}
+          className={`${styles.arrowButton} ${styles.previousButton}`}
           disabled={prevBtnDisabled}
           onClick={onPrevButtonClick}
           type="button"
@@ -94,7 +69,7 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
 
         <button
           aria-label="Next gallery items"
-          className={styles.arrowButton}
+          className={`${styles.arrowButton} ${styles.nextButton}`}
           disabled={nextBtnDisabled}
           onClick={onNextButtonClick}
           type="button"
@@ -102,26 +77,6 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
           <RIcon name="arrow-short-right" size="medium" />
         </button>
       </div>
-
-      {hasMultiplePages ? (
-        <div
-          className={styles.dots}
-          aria-label="Gallery pagination"
-          role="tablist"
-        >
-          {Array.from({ length: snapCount }, (_, index) => (
-            <button
-              aria-label={`Show gallery items ${index + 1}`}
-              aria-selected={activeIndex === index}
-              className={styles.dot}
-              key={index}
-              onClick={() => handleDotClick(index)}
-              role="tab"
-              type="button"
-            />
-          ))}
-        </div>
-      ) : null}
 
       <AssetGalleryModal
         images={images}
