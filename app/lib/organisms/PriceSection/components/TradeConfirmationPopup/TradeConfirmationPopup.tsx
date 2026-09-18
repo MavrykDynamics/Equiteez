@@ -73,15 +73,18 @@ export function TradeConfirmationPopup({
 
           <div className={styles.agreements}>
             <RText className={styles.agreementText} size="body-sm">
-              Lorem ipsum dolor sit amet consectetur. Scelerisque habitant diam
-              vitae eleifend et in ridiculus hac.
+              Tokenized Real World Assets (RWAs) are digital tokens backed by
+              physical or financial assets. Their value can go up or down, and
+              returns are not guaranteed. Please invest only what you can afford
+              to hold long term.
             </RText>
             <RText className={styles.agreementText} size="body-sm">
-              Lorem ipsum dolor sit amet consectetur. Eget mauris nibh at
-              habitasse ornare aliquet. Diam eu lectus fermentum nunc commodo in
-              sed magna tellus. Mauris tincidunt faucibus gravida blandit
-              feugiat etiam posuere. Sapien convallis volutpat et pellentesque
-              dolor tellus.
+              By continuing, you confirm that you have completed identity
+              verification (KYC), that the information you provided is accurate,
+              and that you have read and agree to our Terms of Service, Risk
+              Disclosure, and Token Purchase Agreement. Your tokens will be
+              delivered to your connected wallet, and you are solely responsible
+              for keeping your wallet credentials and recovery phrase secure.
             </RText>
             <label className={styles.checkboxRow}>
               <span className={styles.checkboxControl}>
