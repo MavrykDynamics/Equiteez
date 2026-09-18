@@ -4,6 +4,24 @@ import { describe, expect, it } from "vitest";
 import { calculateOrderSummaryValues } from "./FeesCard.utils";
 
 describe("calculateOrderSummaryValues", () => {
+  it.each([200, 100])(
+    "converts a %s MVRK orderbook fee and adds it once to the summary",
+    (orderbookFee) => {
+      const result = calculateOrderSummaryValues({
+        networkFee: "0.01",
+        orderbookFee,
+        networkFeeUsdRate: "0.5",
+        orderValue: "2500",
+      });
+
+      expect(result.orderbookFeeUsd.toNumber()).toBe(orderbookFee * 0.5);
+      expect(result.platformFeeUsd.toNumber()).toBe(orderbookFee * 0.5 + 0.005);
+      expect(result.totalValue.toNumber()).toBe(
+        2500 + orderbookFee * 0.5 + 0.005
+      );
+    }
+  );
+
   it("adds the USD network fee to the order value", () => {
     const result = calculateOrderSummaryValues({
       networkFee: new BigNumber("0.01"),

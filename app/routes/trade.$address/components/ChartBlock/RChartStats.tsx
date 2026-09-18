@@ -1,66 +1,50 @@
+import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RMetricCard } from "~/lib/molecules/RMetricCard/RMetricCard";
 
 import styles from "./RChartStats.module.css";
 
 type RChartStatsProps = {
-  prices: number[];
-  amount: number | null;
-  percentage: number | null;
-  isUnavailable: boolean;
+  asset: Pick<
+    AssetType,
+    "apy" | "finance" | "total_supply" | "holders_count" | "profile"
+  >;
 };
 
-export function RChartStats({
-  prices,
-  amount,
-  percentage,
-  isUnavailable,
-}: RChartStatsProps) {
-  const hasPrices = !isUnavailable && prices.length > 0;
+export function RChartStats({ asset }: RChartStatsProps) {
   const metrics = [
-    { label: "Opening price", value: prices[0] },
-    { label: "Latest price", value: prices.at(-1) },
+    { label: "Annual yield (APY)", value: `${asset.apy.toFixed(2)}%` },
     {
-      label: "Period high",
-      value: prices.reduce((high, price) => Math.max(high, price), -Infinity),
+      label: "Value per token",
+      value: (
+        <>
+          $
+          <Money fiat tooltip={false}>
+            {asset.finance.value_per_token}
+          </Money>
+        </>
+      ),
     },
     {
-      label: "Period low",
-      value: prices.reduce((low, price) => Math.min(low, price), Infinity),
+      label: "Total supply",
+      value: <Money tooltip={false}>{asset.total_supply}</Money>,
     },
-    { label: "Price change", value: amount, isChange: true },
     {
-      label: "Percentage change",
-      value: percentage,
-      isChange: true,
-      isPercentage: true,
+      label: "Holders",
+      value: <Money tooltip={false}>{asset.holders_count}</Money>,
     },
+    { label: "Asset type", value: asset.profile.asset_type || "—" },
+    { label: "Asset status", value: asset.profile.status || "—" },
   ];
 
   return (
-    <section
-      className={styles.panel}
-      aria-label="Selected range price statistics"
-    >
-      {metrics.map(({ label, value, isChange, isPercentage }) => (
+    <section className={styles.panel} aria-label="Asset statistics">
+      {metrics.map(({ label, value }) => (
         <RMetricCard
           className={styles.metric}
           key={label}
           label={label}
-          value={
-            hasPrices && value != null && Number.isFinite(value) ? (
-              <>
-                {value < 0 ? "−" : isChange && value > 0 ? "+" : ""}
-                {isPercentage ? "" : "$"}
-                <Money fiat tooltip={false}>
-                  {Math.abs(value)}
-                </Money>
-                {isPercentage ? "%" : ""}
-              </>
-            ) : (
-              "—"
-            )
-          }
+          value={value}
         />
       ))}
     </section>

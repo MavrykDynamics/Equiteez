@@ -155,6 +155,10 @@ const BuySellForm: FC<
   const [isTradeConfirmationOpen, setIsTradeConfirmationOpen] = useState(false);
 
   const [activetabId, setAvtiveTabId] = useState<OrderType>(orderType);
+  const orderbookFee =
+    activetabId === BUY
+      ? asset.orderbook?.buy_order_fee
+      : asset.orderbook?.sell_order_fee;
 
   // network fee estimation state --------------------------------------------
   const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
@@ -1027,6 +1031,8 @@ const BuySellForm: FC<
               total={total}
               tokenPrice={tokenPrice}
               networkFee={networkFee}
+              apy={asset.apy}
+              orderbookFee={orderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading}
               validationMessage={orderValidationMessage}
@@ -1047,6 +1053,8 @@ const BuySellForm: FC<
               setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               networkFee={networkFee}
+              apy={asset.apy}
+              orderbookFee={orderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading}
               validationMessage={orderValidationMessage}

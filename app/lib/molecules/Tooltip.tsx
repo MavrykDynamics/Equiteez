@@ -1,31 +1,34 @@
-import { FC, type PropsWithChildren, useMemo } from 'react';
+import { FC, type PropsWithChildren, useMemo } from "react";
 
-import useTippy, { type UseTippyOptions } from '~/lib/ui/useTippy';
+import useTippy, { type UseTippyOptions } from "~/lib/ui/useTippy";
 /**
  * use this component only inside other "div" tags to avoit console errors
  */
 export type TooltipProps = {
   content: string;
-  maxWidth?: UseTippyOptions['maxWidth'];
+  allowHTML?: boolean;
+  maxWidth?: UseTippyOptions["maxWidth"];
   theme?: string;
 } & PropsWithChildren;
 
 export const Tooltip: FC<TooltipProps> = ({
   children,
   content,
+  allowHTML = false,
   maxWidth,
   theme,
 }) => {
   const tippyProps = useMemo(
     () => ({
-      trigger: 'mouseenter',
+      trigger: "mouseenter",
       hideOnClick: false,
       content,
-      animation: 'shift-away-subtle',
+      allowHTML,
+      animation: "shift-away-subtle",
       maxWidth,
-      theme: theme ? `equiteez ${theme}` : 'equiteez',
+      theme: theme ? `equiteez ${theme}` : "equiteez",
     }),
-    [content, maxWidth, theme]
+    [content, allowHTML, maxWidth, theme]
   );
 
   const divRef = useTippy<HTMLDivElement>(tippyProps);

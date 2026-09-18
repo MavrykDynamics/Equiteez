@@ -46,6 +46,8 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  apy: number;
+  orderbookFee?: BigNumber.Value;
   orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setOrderExpiryPeriodId: (periodId: OrderExpiryPeriodId | null) => void;
@@ -67,6 +69,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   amount,
   total,
   networkFee,
+  apy,
+  orderbookFee,
   orderExpiryPeriodId,
   limitPrice,
   rawTickSize,
@@ -336,8 +340,10 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             networkFee={networkFee}
+            orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
             totalAmount={orderSummaryAmount}
+            annualYield={actionType === BUY ? apy : undefined}
           />
         </div>
       </div>

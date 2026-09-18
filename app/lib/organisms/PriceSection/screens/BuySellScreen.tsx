@@ -36,6 +36,8 @@ type BuySellScreenProps = {
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   networkFee: BigNumber;
+  apy: number;
+  orderbookFee?: BigNumber.Value;
   tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   setTotal?: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
@@ -54,6 +56,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   amount,
   total,
   networkFee,
+  apy,
+  orderbookFee,
   tokenPrice,
   setAmount,
   status,
@@ -299,8 +303,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             networkFee={networkFee}
+            orderbookFee={orderbookFee}
             pricePerShare={tokenPrice}
             totalAmount={orderSummaryAmount}
+            annualYield={actionType === BUY ? apy : undefined}
           />
         </div>
       </div>
