@@ -1,6 +1,8 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
+  --chart-height: 466px;
+
   container-type: inline-size;
   display: flex;
   flex: 1;
@@ -58,7 +60,7 @@
 .priceChart {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-3);
+  gap: var(--r-space-2);
   width: 100%;
   min-width: 0;
 }
@@ -250,7 +252,7 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  height: 395px;
+  height: var(--chart-height);
   overflow: hidden;
 }
 
@@ -266,6 +268,20 @@
 
 .chart {
   height: 100%;
+}
+
+/* Keep application table sizing out of the canvas-based chart layout. */
+.chart :global(table) {
+  table-layout: auto;
+  min-width: 0;
+  border-spacing: 0;
+}
+
+.chart :global(td) {
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
 }
 
 .chartTooltip {
@@ -332,7 +348,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-height: 395px;
+  min-height: var(--chart-height);
   margin: 0;
   color: var(--r-color-neutral-600);
   font-family: var(--r-font-body);
