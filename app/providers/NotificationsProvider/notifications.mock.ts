@@ -2,21 +2,63 @@ import type { UserNotification } from "~/providers/NotificationsProvider/notific
 
 export const MOCK_USER_NOTIFICATIONS: UserNotification[] = [
   {
-    title: "Deposit completed",
-    description: "Your deposit of 1,000 USDT is now available in your wallet.",
-    date: "2026-09-21T10:30:00.000Z",
+    title: "Order Placed",
+    description: "Order placed",
+    date: "X ago",
     isRead: false,
   },
   {
-    title: "Order filled",
-    description: "Your buy order for The Cove has been filled.",
-    date: "2026-09-20T14:45:00.000Z",
+    title: "Order Filled",
+    description: "Order filled",
+    date: "X ago",
     isRead: false,
   },
   {
-    title: "Portfolio update",
-    description: "Your portfolio valuation has been updated.",
-    date: "2026-09-19T09:15:00.000Z",
+    title: "Sales Open",
+    description: "Sales open",
+    date: "X ago",
+    isRead: false,
+  },
+  {
+    title: "Trade TYR",
+    description: "Trade TYR",
+    date: "X ago",
+    isRead: true,
+  },
+  {
+    title: "Sales Open",
+    description: "Sales open",
+    date: "X ago",
+    isRead: true,
+  },
+  {
+    title: "Trade TYR",
+    description: "Trade TYR",
+    date: "X ago",
+    isRead: true,
+  },
+  {
+    title: "Sales Open",
+    description: "Sales open",
+    date: "X ago",
+    isRead: true,
+  },
+  {
+    title: "Trade TYR",
+    description: "Trade TYR",
+    date: "X ago",
+    isRead: true,
+  },
+  {
+    title: "Sales Open",
+    description: "Sales open",
+    date: "X ago",
+    isRead: true,
+  },
+  {
+    title: "Trade TYR",
+    description: "Trade TYR",
+    date: "X ago",
     isRead: true,
   },
 ];
