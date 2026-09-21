@@ -15,7 +15,6 @@ import { Spinner } from "~/lib/atoms/Spinner";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
 import {
   AssetPriceChart,
-  getChartData,
   type AssetPriceChartHover,
   type AssetPriceChartPoint,
 } from "~/routes/_index/components/AssetPriceChart/AssetPriceChart";
@@ -252,10 +251,6 @@ export function PriceChart({
   }, [asset.metadata.symbol, range]);
 
   const tone = priceChangeView.tone;
-  const rangePrices = useMemo(
-    () => getChartData(points).map(({ value }) => value),
-    [points]
-  );
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -449,12 +444,7 @@ export function PriceChart({
         </section>
         {orderBookContent}
       </div>
-      <RChartStats
-        prices={rangePrices}
-        amount={priceChangeView.amount}
-        percentage={priceChangeView.percentage}
-        isUnavailable={isLoading || !!error}
-      />
+      <RChartStats asset={asset} />
     </>
   );
 }

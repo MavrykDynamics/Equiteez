@@ -132,3 +132,41 @@
     --summary-transition-duration: 0ms;
   }
 }
+
+.annualIncome {
+  color: var(--r-color-green-500);
+  font-weight: var(--r-font-weight-regular);
+}
+
+.feeLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-1);
+}
+
+.feeInfoIcon {
+  width: var(--r-size-icon-small);
+  height: var(--r-size-icon-small);
+}
+
+.feeTooltip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-style: normal;
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+}
+
+.feeTooltipRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
+.feeTooltipValue {
+  color: var(--r-color-neutral-black);
+}

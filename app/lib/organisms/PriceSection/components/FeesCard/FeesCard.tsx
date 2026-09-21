@@ -1,8 +1,10 @@
 import { FC, useMemo, useState } from "react";
 
 import clsx from "clsx";
+import { renderToStaticMarkup } from "react-dom/server";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
-import type { BigNumber } from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import Money from "~/lib/atoms/Money";
 import { useUsdToTokenRates } from "~/lib/fiat-currency";
 import { MVRK_ASSET_SLUG } from "~/lib/metadata";
@@ -14,32 +16,69 @@ import { RIcon } from "~/lib/atoms/RIcon";
 type FeesCardProps = {
   className?: string;
   networkFee: BigNumber.Value;
+  gasFee?: BigNumber.Value;
+  orderbookFee?: BigNumber.Value;
   pricePerShare?: BigNumber.Value;
   totalAmount?: BigNumber.Value;
+  annualYield?: number;
 };
 
 export const FeesCard: FC<FeesCardProps> = ({
   className,
   networkFee,
+  gasFee,
+  orderbookFee,
   pricePerShare,
   totalAmount = 0,
+  annualYield,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const usdToTokenRates = useUsdToTokenRates();
   const mvrkUsdRate = usdToTokenRates[MVRK_ASSET_SLUG];
   const {
     networkFeeUsd,
+    gasFeeUsd,
+    orderbookFeeUsd,
+    platformFeeUsd,
     pricePerShare: displayPricePerShare,
     totalValue,
   } = useMemo(
     () =>
       calculateOrderSummaryValues({
         networkFee,
+        gasFee,
+        orderbookFee,
         networkFeeUsdRate: mvrkUsdRate,
         orderValue: totalAmount,
         pricePerShare,
       }),
-    [mvrkUsdRate, networkFee, pricePerShare, totalAmount]
+    [mvrkUsdRate, networkFee, gasFee, orderbookFee, pricePerShare, totalAmount]
+  );
+
+  const annualIncome = new BigNumber(totalAmount)
+    .times(annualYield ?? 0)
+    .dividedBy(100);
+
+  const feeTooltip = renderToStaticMarkup(
+    <div className={styles.feeTooltip}>
+      {[
+        {
+          label: "Orderbook Fee",
+          value:
+            orderbookFee === undefined ? "-" : `$${orderbookFeeUsd.toFixed(6)}`,
+        },
+        { label: "Network Fee", value: `$${networkFeeUsd.toFixed(6)}` },
+        {
+          label: "Gas Fee",
+          value: gasFee === undefined ? "-" : `$${gasFeeUsd.toFixed(6)}`,
+        },
+      ].map(({ label, value }) => (
+        <div className={styles.feeTooltipRow} key={label}>
+          <span>{label}</span>
+          <span className={styles.feeTooltipValue}>{value}</span>
+        </div>
+      ))}
+    </div>
   );
 
   return (
@@ -74,7 +113,7 @@ export const FeesCard: FC<FeesCardProps> = ({
           <div className={styles.summaryContentInner}>
             <div className={styles.details}>
               <div className={styles.detailRow}>
-                <span>Price per share</span>
+                <span>Est. price per share</span>
                 <span className={styles.detailValue}>
                   $
                   <Money fiat tooltip={false}>
@@ -84,14 +123,28 @@ export const FeesCard: FC<FeesCardProps> = ({
               </div>
 
               <div className={styles.detailRow}>
-                <span>Network Fee</span>
+                <div className={styles.feeLabel}>
+                  <span>Platform Fee</span>
+                  <InfoTooltip
+                    content={feeTooltip}
+                    allowHTML
+                    className={styles.feeInfoIcon}
+                  />
+                </div>
                 <span className={styles.detailValue}>
-                  ~ $
-                  <Money fiat tooltip={false}>
-                    {networkFeeUsd}
-                  </Money>
+                  ~ ${platformFeeUsd.toFixed(6)}
                 </span>
               </div>
+              {annualYield !== undefined && (
+                <div className={styles.detailRow}>
+                  <span>Est. Annual Income</span>
+                  <span className={styles.annualIncome}>
+                    {annualIncome.isFinite()
+                      ? `$${annualIncome.toFixed(2)}/y`
+                      : "-"}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className={styles.divider} />
