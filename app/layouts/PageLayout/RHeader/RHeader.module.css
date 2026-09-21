@@ -37,32 +37,19 @@
 }
 
 .notificationsButton {
-  position: relative;
   display: grid;
-  width: 36px;
-  height: 36px;
-  padding: 0;
+  width: 32px;
+  height: 32px;
+  padding: var(--r-space-1);
   place-items: center;
-  color: var(--r-color-neutral-black);
   cursor: pointer;
-  background: var(--r-color-neutral-white);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-md);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-pill);
 }
 
 .notificationsButton:hover {
-  background: var(--r-color-neutral-50);
-}
-
-.notificationsBadge {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 6px;
-  height: 6px;
-  background: var(--r-color-neutral-black);
-  border: 1px solid var(--r-color-neutral-white);
-  border-radius: 50%;
+  background: var(--r-color-neutral-100);
 }
 
 .wallet .depositButton {
