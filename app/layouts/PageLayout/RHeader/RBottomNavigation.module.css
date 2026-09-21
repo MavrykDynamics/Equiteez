@@ -7,38 +7,41 @@
   left: 0;
   z-index: 40;
   display: none;
-  background: var(--r-color-neutral-white);
+  height: 62px;
+  background: rgba(255, 255, 255, 0.9);
   border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  box-shadow: 0 -10px 30px rgba(1, 1, 1, 0.08);
+  backdrop-filter: blur(10px);
 }
 
 .inner {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--r-space-2);
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  min-height: 66px;
-  padding: var(--r-space-2) var(--r-space-4);
+  max-width: 390px;
+  height: 100%;
+  margin-inline: auto;
+  padding-inline: 27px;
 }
 
 .navItem {
-  display: inline-flex;
+  display: flex;
+  flex: 0 0 75px;
+  flex-direction: column;
+  gap: var(--r-space-1);
   align-items: center;
   justify-content: center;
-  min-height: 42px;
-  padding: var(--r-space-2) var(--r-space-3);
-  color: var(--r-color-neutral-700);
+  color: var(--r-color-neutral-500);
   text-decoration: none;
-  border-radius: var(--r-radius-sm);
   transition:
     color var(--r-transition-duration-fast) ease,
-    background-color var(--r-transition-duration-fast) ease,
     box-shadow var(--r-transition-duration-fast) ease;
 }
 
 .navItemActive {
   color: var(--r-color-neutral-black);
-  background: var(--r-color-neutral-50);
+}
+.navItemActive svg path {
+  stroke-color: var(--r-color-neutral-black) !important;
 }
 
 .navItem:focus-visible {

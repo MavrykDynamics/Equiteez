@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "@remix-run/react";
 
-import { Container } from "~/lib/atoms/Container/Container";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
@@ -8,18 +8,18 @@ import {
   getRHeaderNavigationItems,
   isRHeaderNavigationItemActive,
 } from "./navigationItems";
-import styles from "./RMobileHeader.module.css";
+import styles from "./RBottomNavigation.module.css";
 
-export function RMobileHeader() {
+export function RBottomNavigation() {
   const { assets } = useAssetsContext();
   const { pathname } = useLocation();
   const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
 
   return (
     <nav aria-label="Mobile navigation" className={styles.navigation}>
-      <Container className={styles.inner}>
+      <div className={styles.inner}>
         {navigationItems.map((navigationItem) => {
-          const { mobileLabel, to } = navigationItem;
+          const { mobileIcon, mobileLabel, to } = navigationItem;
 
           return (
             <NavLink
@@ -37,13 +37,29 @@ export function RMobileHeader() {
               key={mobileLabel}
               to={to}
             >
-              <RText size="body-s" weight="medium">
-                {mobileLabel}
-              </RText>
+              {({ isActive }) => {
+                const itemIsActive = isRHeaderNavigationItemActive(
+                  navigationItem,
+                  pathname,
+                  isActive
+                );
+
+                return (
+                  <>
+                    <RIcon aria-hidden="true" name={mobileIcon} size="medium" />
+                    <RText
+                      color={itemIsActive ? "neutral-black" : "neutral-500"}
+                      size="body-xs"
+                    >
+                      {mobileLabel}
+                    </RText>
+                  </>
+                );
+              }}
             </NavLink>
           );
         })}
-      </Container>
+      </div>
     </nav>
   );
 }

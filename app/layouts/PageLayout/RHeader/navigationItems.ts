@@ -1,12 +1,14 @@
 import { generatePath } from "@remix-run/react";
 
 import { ROUTES } from "~/consts";
+import type { RIconName } from "~/lib/atoms/RIcon";
 
 const TRADE_PATH_PREFIX = ROUTES.trade.split("/:")[0];
 
 export type RHeaderNavigationItem = {
   desktopLabel: string;
   mobileLabel: string;
+  mobileIcon: RIconName;
   to: string;
   activePathPrefix?: string;
 };
@@ -17,18 +19,21 @@ export function getRHeaderNavigationItems(
   return [
     {
       desktopLabel: "Discover",
-      mobileLabel: "Home",
+      mobileLabel: "Discover",
+      mobileIcon: "nav-discovery",
       to: ROUTES.home,
     },
     {
       desktopLabel: "Trade",
       mobileLabel: "Trade",
+      mobileIcon: "nav-trade",
       to: generatePath(ROUTES.trade, { address: tradeAddress ?? "" }),
       activePathPrefix: TRADE_PATH_PREFIX,
     },
     {
       desktopLabel: "Portfolio",
-      mobileLabel: "Profile",
+      mobileLabel: "Portfolio",
+      mobileIcon: "nav-portfolio",
       to: ROUTES.portfolio,
     },
   ];
