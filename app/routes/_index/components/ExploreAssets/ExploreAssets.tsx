@@ -87,13 +87,6 @@ export function ExploreAssets() {
               aria-label="Open filters"
               className={styles.mobileFiltersButton}
               onClick={() => {
-                if (filters.viewType === "list") {
-                  setFilters((currentFilters) => ({
-                    ...currentFilters,
-                    viewType: "grid",
-                  }));
-                }
-
                 setIsMobileFiltersOpen(true);
               }}
               type="button"
