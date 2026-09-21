@@ -4,6 +4,7 @@ import React, {
   useContext,
   useMemo,
   useRef,
+  useState,
 } from "react";
 
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
@@ -18,8 +19,10 @@ import type {
   NotifierSubscribeFrame,
   NotifierSubscribedFrame,
   NotifierUnsubscribeFrame,
+  UserNotification,
 } from "~/providers/NotificationsProvider/notifications.types";
 import { useNotifierSocket } from "~/providers/NotificationsProvider/hooks/useNotifierSocket";
+import { MOCK_USER_NOTIFICATIONS } from "~/providers/NotificationsProvider/notifications.mock";
 import type {
   NotifierChannelHandler,
   NotificationsContextType,
@@ -54,6 +57,7 @@ export const NotificationsProvider = ({
   children: React.ReactNode;
 }) => {
   const { isAuthenticated } = useAuthContext();
+  const [notifications] = useState<UserNotification[]>(MOCK_USER_NOTIFICATIONS);
   const channelHandlersRef = useRef<Map<string, Set<NotifierChannelHandler>>>(
     new Map()
   );
@@ -211,6 +215,11 @@ export const NotificationsProvider = ({
     onSubscribed: handleSubscribed,
   });
 
+  const unreadNotificationsCount = useMemo(
+    () => notifications.filter((notification) => !notification.isRead).length,
+    [notifications]
+  );
+
   sendSubscribeFrameRef.current = (channels: string[]) => {
     if (!channels.length) {
       return false;
@@ -239,18 +248,22 @@ export const NotificationsProvider = ({
 
   const contextValue = useMemo<NotificationsContextType>(
     () => ({
+      notifications,
       registerChannelHandler,
       status: socket.status,
       subscribe,
       unsubscribe,
+      unreadNotificationsCount,
       wallet: socket.wallet,
     }),
     [
+      notifications,
       registerChannelHandler,
       socket.status,
       socket.wallet,
       subscribe,
       unsubscribe,
+      unreadNotificationsCount,
     ]
   );
 

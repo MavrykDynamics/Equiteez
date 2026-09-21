@@ -17,6 +17,7 @@ export type RIconName =
   | "arrow-long-up-right"
   | "arrow-round"
   | "burger-menu"
+  | "bell"
   | "check"
   | "close"
   | "copy"
@@ -103,6 +104,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M4 7h16" />
       <path d="M4 12h16" />
       <path d="M4 17h16" />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+      <path d="M10 21h4" />
     </>
   ),
   check: <path d="m7 12 3 3 7-7" />,

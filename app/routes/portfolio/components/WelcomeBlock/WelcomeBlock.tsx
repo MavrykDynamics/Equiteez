@@ -30,6 +30,10 @@ export function WelcomeBlock({
         id: ROUTES.portfolioActivity,
         label: "Activity",
       },
+      {
+        id: ROUTES.portfolioNotifications,
+        label: "Notifications",
+      },
     ],
     []
   );

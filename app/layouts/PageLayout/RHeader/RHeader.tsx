@@ -12,13 +12,18 @@ import { getRHeaderNavigationItems } from "./navigationItems";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 import { useState } from "react";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import { RIcon } from "~/lib/atoms/RIcon";
+import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
+import { NotificationsPanel } from "./NotificationsPanel";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
 export function RHeader() {
   const { assets } = useAssetsContext();
   const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const isMobileViewport = useIsMobileViewport();
+  const { unreadNotificationsCount } = useNotificationsContext();
 
   return (
     <header className={styles.header}>
@@ -56,6 +61,26 @@ export function RHeader() {
           </RButton>
 
           <ConnectWallet />
+
+          <div className={styles.notifications}>
+            <button
+              aria-expanded={isNotificationsOpen}
+              aria-haspopup="dialog"
+              aria-label={`Notifications${unreadNotificationsCount ? `, ${unreadNotificationsCount} unread` : ""}`}
+              className={styles.notificationsButton}
+              onClick={() => setIsNotificationsOpen((isOpen) => !isOpen)}
+              type="button"
+            >
+              <RIcon name="bell" size="medium" />
+              {unreadNotificationsCount ? (
+                <span className={styles.notificationsBadge} />
+              ) : null}
+            </button>
+            <NotificationsPanel
+              isOpen={isNotificationsOpen}
+              onClose={() => setIsNotificationsOpen(false)}
+            />
+          </div>
         </div>
 
         <RDepositFundsModal

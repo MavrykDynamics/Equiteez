@@ -13,6 +13,14 @@ import {
 export type NotifierLaunchChannel = `launch:${string}/${string}`;
 export type NotifierChannelType = NotifierChannel | NotifierLaunchChannel;
 export type NotifierConnectionStatusType = NotifierConnectionStatus;
+
+/** A notification shown in the user's notification centre. */
+export type UserNotification = {
+  title: string;
+  description: string;
+  date: string;
+  isRead: boolean;
+};
 export type NotifierWalletEventType = NotifierWalletEvent;
 export type NotifierLaunchEventType = NotifierLaunchEvent;
 export type NotifierCatalogEventType = NotifierCatalogEvent;
