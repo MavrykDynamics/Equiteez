@@ -41,6 +41,9 @@ export type RIconName =
   | "trending-down"
   | "trending-up"
   | "upload"
+  | "nav-discovery"
+  | "nav-portfolio"
+  | "nav-trade"
   | "web";
 
 export type RIconSize = "small" | "medium";
@@ -147,8 +150,8 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path
         d="M6.5 4.13346V6.80013M6.5 12.5C3.18629 12.5 0.5 9.81371 0.5 6.5C0.5 3.18629 3.18629 0.5 6.5 0.5C9.81371 0.5 12.5 3.18629 12.5 6.5C12.5 9.81371 9.81371 12.5 6.5 12.5ZM6.5332 8.80013V8.8668L6.4668 8.86654V8.80013H6.5332Z"
         stroke="#010101"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </>
   ),
@@ -251,6 +254,42 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M4 12h16" />
       <path d="M12 4a12 12 0 0 1 0 16" />
       <path d="M12 4a12 12 0 0 0 0 16" />
+    </>
+  ),
+  "nav-trade": (
+    <>
+      <path
+        d="M16 19L19 16L16 13M19 16H5M8 5L5 8L8 11M5 8H19"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  ),
+  "nav-portfolio": (
+    <>
+      <path
+        d="M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12M12 3C16.9706 3 21 7.02944 21 12M18 18.5L12 12V3M21 12H12"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  ),
+  "nav-discovery": (
+    <>
+      <path
+        d="M3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10.5 10.5L16 8L13.5 13.5L8 16L10.5 10.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </>
   ),
 };

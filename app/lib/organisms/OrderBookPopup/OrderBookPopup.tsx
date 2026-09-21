@@ -49,7 +49,7 @@ type OrderBookToggleButtonProps = {
 const getIsMobileViewport = () =>
   typeof window !== "undefined" && window.innerWidth <= MOBILE_BREAKPOINT;
 
-const useIsMobileViewport = () => {
+export const useIsMobileViewport = () => {
   const [isMobileViewport, setIsMobileViewport] = useState(getIsMobileViewport);
 
   useEffect(() => {

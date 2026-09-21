@@ -12,6 +12,7 @@ import {
 } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
 import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import FiltersIcon from "app/icons/filters.svg?react";
 import { MobileAssetsFilters } from "~/routes/_index/components/MobileAssetsFilters/MobileAssetsFilters";
@@ -57,31 +58,43 @@ export function ExploreAssets() {
   return (
     <div className={styles.wrapper}>
       <Reveal className={styles.titleReveal} preset="rise">
-        <div className={styles.titleBlock}>
-          <RHeading size="h5" weight="medium">
-            Explore Assets
-          </RHeading>
-          <button
-            aria-label="Open filters"
-            className={styles.mobileFiltersButton}
-            onClick={() => {
-              if (filters.viewType === "list") {
-                setFilters((currentFilters) => ({
-                  ...currentFilters,
-                  viewType: "grid",
-                }));
-              }
-
-              setIsMobileFiltersOpen(true);
-            }}
-            type="button"
-          >
-            <FiltersIcon aria-hidden="true" height={24} width={24} />
-          </button>
-          <div className={styles.desktopDeposit}>
-            <DepositFunds />
+        <>
+          <div className={styles.titleBlock}>
+            <RHeading className={styles.title} size="h5" weight="medium">
+              Explore Assets
+            </RHeading>
+            <div className={styles.desktopDeposit}>
+              <DepositFunds />
+            </div>
           </div>
-        </div>
+          <div className={styles.mobileSearchRow}>
+            <div className={styles.mobileSearch}>
+              <RIcon aria-hidden="true" name="search" size="small" />
+              <input
+                aria-label="Search assets"
+                className={styles.mobileSearchInput}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    search: event.target.value,
+                  }))
+                }
+                placeholder="Search"
+                value={filters.search}
+              />
+            </div>
+            <button
+              aria-label="Open filters"
+              className={styles.mobileFiltersButton}
+              onClick={() => {
+                setIsMobileFiltersOpen(true);
+              }}
+              type="button"
+            >
+              <FiltersIcon aria-hidden="true" height={16} width={16} />
+            </button>
+          </div>
+        </>
       </Reveal>
 
       <Reveal className={styles.desktopFilters} delay={0.06} preset="rise">

@@ -1,13 +1,14 @@
 .root {
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .desktopLayout {
   min-height: 100vh;
 }
 
-@media (max-width: 1000px) {
-  .desktopLayout {
-    display: none;
-  }
-}
+/*@media (max-width: 1000px) {*/
+/*  .desktopLayout {*/
+/*    display: none;*/
+/*  }*/
+/*}*/
