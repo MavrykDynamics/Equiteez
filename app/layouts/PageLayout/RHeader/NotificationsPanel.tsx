@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import clsx from "clsx";
+import { Link } from "@remix-run/react";
 
+import { ROUTES } from "~/consts";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 
@@ -51,30 +53,37 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
   return (
     <section aria-label="Notifications" className={styles.panel} role="dialog">
       <div className={styles.header}>
-        <RText size="body-m" weight="medium">
+        <RText size="body-sm" weight="medium">
           Notifications
         </RText>
+        <Link className={styles.viewAll} onClick={onClose} to={ROUTES.portfolioNotifications}>
+          <RText color="neutral-700" size="body-s">
+            View All
+          </RText>
+        </Link>
       </div>
 
       <div className={styles.list}>
         {notifications.length ? (
-          notifications.map((notification) => (
+          notifications.slice(0, 5).map((notification, index) => (
             <div
               className={clsx(styles.notification, !notification.isRead && styles.unread)}
-              key={`${notification.date}-${notification.title}`}
+              key={`${notification.date}-${notification.title}-${index}`}
             >
               <span className={styles.notificationContent}>
-                <RText size="body-sm" weight="medium">
-                  {notification.title}
-                </RText>
-                <RText className={styles.description} color="neutral-700" size="body-s">
+                <span className={styles.titleLine}>
+                  <RText size="body-sm" weight="medium">
+                    {notification.title}
+                  </RText>
+                  {!notification.isRead ? <span aria-label="Unread" className={styles.unreadIndicator} /> : null}
+                </span>
+                <RText className={styles.description} color="neutral-500" size="body-sm">
                   {notification.description}
                 </RText>
-                <RText className={styles.date} color="neutral-700" size="body-s">
-                  {formatNotificationDate(notification.date)}
-                </RText>
               </span>
-              {!notification.isRead ? <span aria-label="Unread" className={styles.unreadIndicator} /> : null}
+              <RText className={styles.date} color="neutral-500" size="body-sm">
+                {formatNotificationDate(notification.date)}
+              </RText>
             </div>
           ))
         ) : (

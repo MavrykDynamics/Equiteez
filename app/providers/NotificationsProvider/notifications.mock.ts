@@ -26,8 +26,8 @@ export const MOCK_USER_NOTIFICATIONS: UserNotification[] = [
     isRead: true,
   },
   {
-    title: "Sales Open",
-    description: "Sales open",
+    title: "Trade TYR",
+    description: "Trade TYR",
     date: "X ago",
     isRead: true,
   },
