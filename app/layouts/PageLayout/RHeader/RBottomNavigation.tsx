@@ -13,7 +13,16 @@ import styles from "./RBottomNavigation.module.css";
 export function RBottomNavigation() {
   const { assets } = useAssetsContext();
   const { pathname } = useLocation();
-  const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
+  const navigationItems = getRHeaderNavigationItems(assets[0]?.address).sort(
+    (firstItem, secondItem) => {
+      const mobileNavigationOrder = ["Trade", "Discover", "Portfolio"];
+
+      return (
+        mobileNavigationOrder.indexOf(firstItem.mobileLabel) -
+        mobileNavigationOrder.indexOf(secondItem.mobileLabel)
+      );
+    }
+  );
 
   return (
     <nav aria-label="Mobile navigation" className={styles.navigation}>
