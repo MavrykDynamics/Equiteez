@@ -58,7 +58,7 @@ const bannerSlides: BannerSlide[] = [
 export function BannerBlock() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
-    loop: true,
+    loop: false,
     slidesToScroll: 1,
   });
   const [selectedSlide, setSelectedSlide] = useState(0);
