@@ -37,7 +37,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
             className={styles.assetIcon}
           />
           <div className={styles.assetIdentity}>
-            <RText size="body-sm" weight="medium">
+            <RText size="body-sm">
               {asset.metadata.symbol}
             </RText>
             <RText className={styles.assetIdentityName} color="neutral-700" size="body-s">
@@ -62,7 +62,6 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
           size="body-sm"
         />
       </div>
-      {/*TODO remove mock data*/}
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
           <Money>{asset.apy}</Money>%
