@@ -49,7 +49,7 @@ const PageLayout: FC<PageLayoutProps> = ({
           children
         )}
         {includeFooter && <RFooter />}
-        {/*<RMobileHeader />*/}
+        <RMobileHeader />
       </div>
     </div>
   );

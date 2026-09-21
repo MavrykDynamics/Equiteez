@@ -41,8 +41,22 @@
   line-height: 150%;
 }
 
+@media (--media-tablet-max) {
+  .inner {
+    padding: var(--r-space-2) var(--r-space-8);
+  }
+}
+
 @media (--media-tablet) {
-  .header {
+  .navigation {
     display: none;
+  }
+  .wallet {
+    display: none;
+  }
+}
+@media (--media-phone) {
+  .inner {
+    padding: var(--r-space-2) var(--r-space-4);
   }
 }

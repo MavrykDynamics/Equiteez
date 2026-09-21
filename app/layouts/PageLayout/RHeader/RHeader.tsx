@@ -11,17 +11,23 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { getRHeaderNavigationItems } from "./navigationItems";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 import { useState } from "react";
+import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
 export function RHeader() {
   const { assets } = useAssetsContext();
   const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const isMobileViewport = useIsMobileViewport();
 
   return (
     <header className={styles.header}>
       <Container className={styles.inner}>
-        <RLogo className={styles.logo} size="medium" tone="black" />
+        <RLogo
+          className={styles.logo}
+          size={isMobileViewport ? "compact" : "medium"}
+          tone="black"
+        />
 
         <nav aria-label="Primary navigation" className={styles.navigation}>
           {navigationItems.map(({ desktopLabel, to }) => (

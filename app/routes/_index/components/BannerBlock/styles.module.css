@@ -168,7 +168,7 @@
   }
   .banner {
     gap: var(--r-space-5);
-    padding-top: var(--r-space-8);
+    padding-top: var(--r-space-4);
   }
 
   .viewport {
