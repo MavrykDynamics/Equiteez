@@ -137,7 +137,7 @@ export function MobileAssetsFilters({
             className={styles.viewSwitcher}
             onChange={(viewType) => onChange({ viewType })}
             value={filters.viewType}
-            viewModes={["image", "grid"]}
+            viewModes={["image", "grid", "list"]}
           />
         </section>
 

@@ -37,6 +37,9 @@
   outline: none;
   box-shadow: var(--r-focus-ring);
 }
+.row:last-child .cellAssetName {
+  border-bottom: none;
+}
 
 .cellAssetName,
 .headerCell,

@@ -132,14 +132,7 @@ export function ExploreAssets() {
         ) : filters.viewType === "grid" ? (
           <AssetsCardsView assets={filteredAssets} />
         ) : (
-          <>
-            <div className={styles.tableView}>
-              <AssetsTableView assets={filteredAssets} />
-            </div>
-            <div className={styles.mobileCardsView}>
-              <AssetsCardsView assets={filteredAssets} />
-            </div>
-          </>
+          <AssetsTableView assets={filteredAssets} />
         )
       ) : (
         <Reveal delay={0.1} preset="fade">
