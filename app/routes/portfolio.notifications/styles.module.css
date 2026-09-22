@@ -19,7 +19,8 @@
 }
 
 .list {
-  overflow: hidden;
+  max-height: 720px;
+  overflow-y: auto;
 }
 
 .notification {
@@ -72,5 +73,11 @@
 .empty {
   display: grid;
   min-height: 220px;
+  place-items: center;
+}
+
+.loadMore {
+  display: grid;
+  min-height: 48px;
   place-items: center;
 }

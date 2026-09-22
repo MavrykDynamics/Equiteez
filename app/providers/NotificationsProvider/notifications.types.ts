@@ -16,10 +16,13 @@ export type NotifierConnectionStatusType = NotifierConnectionStatus;
 
 /** A notification shown in the user's notification centre. */
 export type UserNotification = {
+  id: string;
   title: string;
   description: string;
   date: string;
+  createdAt: string;
   isRead: boolean;
+  kind: string;
 };
 export type NotifierWalletEventType = NotifierWalletEvent;
 export type NotifierLaunchEventType = NotifierLaunchEvent;

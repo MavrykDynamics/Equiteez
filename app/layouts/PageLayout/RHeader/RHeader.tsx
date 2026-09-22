@@ -13,6 +13,7 @@ import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDep
 import { useState } from "react";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 import BellIcon from "app/icons/notification-bell.svg?react";
 import { NotificationsPanel } from "./NotificationsPanel";
 
@@ -24,6 +25,9 @@ export function RHeader() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const isMobileViewport = useIsMobileViewport();
   const { isAuthenticated } = useAuthContext();
+  const { isNotificationsEnabled } = useNotificationsContext();
+  const shouldShowNotifications =
+    isAuthenticated && isNotificationsEnabled;
 
   return (
     <header className={styles.header}>
@@ -62,7 +66,7 @@ export function RHeader() {
 
           <ConnectWallet />
 
-          {isAuthenticated ? (
+          {shouldShowNotifications ? (
             <div className={styles.notifications}>
               <button
                 aria-expanded={isNotificationsOpen}

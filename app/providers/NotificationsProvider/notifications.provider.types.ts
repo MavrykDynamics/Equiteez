@@ -12,6 +12,9 @@ export type NotifierChannelHandler = (
 
 export type NotificationsContextType = {
   notifications: UserNotification[];
+  isNotificationsEnabled: boolean;
+  isNotificationsLoading: boolean;
+  refetchNotifications: () => Promise<void>;
   unreadNotificationsCount: number;
   registerChannelHandler: (
     channel: NotifierChannelType,

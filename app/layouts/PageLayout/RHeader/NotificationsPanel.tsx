@@ -29,7 +29,7 @@ export function formatNotificationDate(date: string) {
 }
 
 export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
-  const { notifications } = useNotificationsContext();
+  const { isNotificationsLoading, notifications } = useNotificationsContext();
 
   useEffect(() => {
     if (!isOpen) {
@@ -64,11 +64,17 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
       </div>
 
       <div className={styles.list}>
-        {notifications.length ? (
+        {isNotificationsLoading ? (
+          <div className={styles.empty}>
+            <RText color="neutral-700" size="body-sm">
+              Loading notifications...
+            </RText>
+          </div>
+        ) : notifications.length ? (
           notifications.slice(0, 5).map((notification, index) => (
             <div
               className={clsx(styles.notification, !notification.isRead && styles.unread)}
-              key={`${notification.date}-${notification.title}-${index}`}
+              key={notification.id}
             >
               <span className={styles.notificationContent}>
                 <span className={styles.titleLine}>
