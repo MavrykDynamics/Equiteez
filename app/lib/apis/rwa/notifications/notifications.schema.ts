@@ -10,7 +10,7 @@ export const NotificationItemSchema = z.object({
   occurred_at: z.string(),
   created_at: z.string(),
   read_at: z.string().nullable(),
-  superseded_at: z.string().nullable(),
+  superseded_at: z.string().nullable().optional(),
 });
 
 export const NotificationsSchema = z.object({
