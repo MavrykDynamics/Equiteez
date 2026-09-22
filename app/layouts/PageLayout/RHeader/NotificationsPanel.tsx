@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { Link } from "@remix-run/react";
 
@@ -30,6 +30,7 @@ export function formatNotificationDate(date: string) {
 
 export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
   const { isNotificationsLoading, notifications } = useNotificationsContext();
+  const panelRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -46,12 +47,37 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node) || panelRef.current?.contains(target)) {
+        return;
+      }
+
+      onClose();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <section aria-label="Notifications" className={styles.panel} role="dialog">
+    <section
+      aria-label="Notifications"
+      className={styles.panel}
+      ref={panelRef}
+      role="dialog"
+    >
       <div className={styles.header}>
         <RText size="body-sm" weight="medium">
           Notifications

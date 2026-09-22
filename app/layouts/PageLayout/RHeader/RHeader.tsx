@@ -25,9 +25,10 @@ export function RHeader() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const isMobileViewport = useIsMobileViewport();
   const { isAuthenticated } = useAuthContext();
-  const { isNotificationsEnabled } = useNotificationsContext();
+  const { isNotificationsEnabled, unreadNotificationsCount } = useNotificationsContext();
   const shouldShowNotifications =
     isAuthenticated && isNotificationsEnabled;
+  const hasUnreadNotifications = unreadNotificationsCount > 0;
 
   return (
     <header className={styles.header}>
@@ -76,7 +77,13 @@ export function RHeader() {
                 onClick={() => setIsNotificationsOpen((isOpen) => !isOpen)}
                 type="button"
               >
-                <BellIcon />
+                <BellIcon
+                  className={
+                    hasUnreadNotifications
+                      ? undefined
+                      : styles.notificationsIconRead
+                  }
+                />
               </button>
               <NotificationsPanel
                 isOpen={isNotificationsOpen}

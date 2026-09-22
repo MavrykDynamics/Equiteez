@@ -52,6 +52,10 @@
   background: var(--r-color-neutral-100);
 }
 
+.notificationsIconRead circle[fill="#EAB308"] {
+  display: none;
+}
+
 .wallet .depositButton {
   padding: 9px 16px;
   min-height: auto;
