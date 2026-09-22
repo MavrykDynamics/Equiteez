@@ -1,15 +1,91 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import clsx from "clsx";
 
 import { ROUTES } from "~/consts";
+import { fetchWalletNotifications } from "~/lib/apis/rwa";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
-import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 import { formatNotificationDate } from "~/layouts/PageLayout/RHeader/NotificationsPanel";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { NotifierChannel } from "~/providers/NotificationsProvider/notifications.const";
+import { useNotifierChannel } from "~/providers/NotificationsProvider/hooks/useNotifierChannel";
+import { mapNotificationItemToUserNotification } from "~/providers/NotificationsProvider/helpers/notifications.helpers";
 
 import styles from "./styles.module.css";
 
+const NOTIFICATIONS_PAGE_SIZE = 10;
+
+const isNotificationsNotFoundError = (error: unknown) =>
+  isAxiosError(error) && error.response?.status === 404;
+
 export default function PortfolioNotifications() {
-  const { notifications } = useNotificationsContext();
+  const { isAuthenticated } = useAuthContext();
+  const { userAddress } = useUserContext();
+  const [listRevision, setListRevision] = useState(0);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const notificationsQuery = useInfiniteQuery({
+    queryKey: ["walletNotificationsPage", userAddress, listRevision],
+    queryFn: ({ pageParam }) =>
+      fetchWalletNotifications({
+        cursor: pageParam,
+        limit: NOTIFICATIONS_PAGE_SIZE,
+        walletAddress: userAddress ?? "",
+      }),
+    enabled: isAuthenticated && Boolean(userAddress),
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
+    initialPageParam: undefined as string | undefined,
+    retry: false,
+  });
+
+  const resetNotificationsList = useCallback(() => {
+    listRef.current?.scrollTo({ top: 0 });
+    setListRevision((revision) => revision + 1);
+  }, []);
+
+  useNotifierChannel(NotifierChannel.Wallet, resetNotificationsList);
+
+  const {
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = notificationsQuery;
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+
+    if (!target || !hasNextPage || isFetchingNextPage) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void fetchNextPage();
+        }
+      },
+      { root: listRef.current, rootMargin: "120px" }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const notifications = useMemo(
+    () =>
+      notificationsQuery.data?.pages.flatMap((page) =>
+        page.items.map(mapNotificationItemToUserNotification)
+      ) ?? [],
+    [notificationsQuery.data?.pages]
+  );
+  const isDisabled = isNotificationsNotFoundError(notificationsQuery.error);
 
   return (
     <div className={styles.wrapper}>
@@ -25,15 +101,33 @@ export default function PortfolioNotifications() {
           </RText>
         </div>
 
-        <div className={styles.list}>
-          {notifications.length ? (
+        <div className={styles.list} ref={listRef}>
+          {notificationsQuery.isLoading ? (
+            <div className={styles.empty}>
+              <RText color="neutral-700" size="body-m">
+                Loading notifications...
+              </RText>
+            </div>
+          ) : isDisabled ? (
+            <div className={styles.empty}>
+              <RText color="neutral-700" size="body-m">
+                No notifications yet
+              </RText>
+            </div>
+          ) : notificationsQuery.isError ? (
+            <div className={styles.empty}>
+              <RText color="neutral-700" size="body-m">
+                Unable to load notifications.
+              </RText>
+            </div>
+          ) : notifications.length ? (
             notifications.map((notification, index) => (
               <div
                 className={clsx(
                   styles.notification,
                   !notification.isRead && styles.unread
                 )}
-                key={`${notification.date}-${notification.title}-${index}`}
+                key={notification.id || `${notification.date}-${notification.title}-${index}`}
               >
                 <span className={styles.notificationContent}>
                   <span className={styles.titleLine}>
@@ -65,6 +159,15 @@ export default function PortfolioNotifications() {
               </RText>
             </div>
           )}
+          {notificationsQuery.hasNextPage ? (
+            <div className={styles.loadMore} ref={loadMoreRef}>
+              <RText color="neutral-500" size="body-sm">
+                {notificationsQuery.isFetchingNextPage
+                  ? "Loading more..."
+                  : "Scroll for more"}
+              </RText>
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

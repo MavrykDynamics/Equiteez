@@ -71,7 +71,7 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
             </RText>
           </div>
         ) : notifications.length ? (
-          notifications.slice(0, 5).map((notification, index) => (
+          notifications.map((notification) => (
             <div
               className={clsx(styles.notification, !notification.isRead && styles.unread)}
               key={notification.id}

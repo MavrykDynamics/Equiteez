@@ -4,10 +4,16 @@ import React, {
   useContext,
   useMemo,
   useRef,
-  useState,
 } from "react";
+import { isAxiosError } from "axios";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import {
+  fetchWalletNotifications,
+  fetchWalletNotificationsSummary,
+} from "~/lib/apis/rwa";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 import {
   MAX_NOTIFIER_SUBSCRIPTIONS,
   NotifierChannel,
@@ -19,10 +25,9 @@ import type {
   NotifierSubscribeFrame,
   NotifierSubscribedFrame,
   NotifierUnsubscribeFrame,
-  UserNotification,
 } from "~/providers/NotificationsProvider/notifications.types";
 import { useNotifierSocket } from "~/providers/NotificationsProvider/hooks/useNotifierSocket";
-import { MOCK_USER_NOTIFICATIONS } from "~/providers/NotificationsProvider/notifications.mock";
+import { mapNotificationItemToUserNotification } from "~/providers/NotificationsProvider/helpers/notifications.helpers";
 import type {
   NotifierChannelHandler,
   NotificationsContextType,
@@ -30,6 +35,13 @@ import type {
 
 export const notificationsContext =
   createContext<NotificationsContextType | null>(null);
+
+const NOTIFICATIONS_PREVIEW_LIMIT = 5;
+const NOTIFICATIONS_QUERY_KEY = "rwa-wallet-notifications";
+const NOTIFICATIONS_SUMMARY_QUERY_KEY = "rwa-wallet-notifications-summary";
+
+const isNotificationsNotFoundError = (error: unknown) =>
+  isAxiosError(error) && error.response?.status === 404;
 
 const isImplicitChannel = (channel: NotifierChannelType) =>
   channel === NotifierChannel.Wallet;
@@ -57,7 +69,8 @@ export const NotificationsProvider = ({
   children: React.ReactNode;
 }) => {
   const { isAuthenticated } = useAuthContext();
-  const [notifications] = useState<UserNotification[]>(MOCK_USER_NOTIFICATIONS);
+  const { userAddress } = useUserContext();
+  const queryClient = useQueryClient();
   const channelHandlersRef = useRef<Map<string, Set<NotifierChannelHandler>>>(
     new Map()
   );
@@ -84,6 +97,42 @@ export const NotificationsProvider = ({
   const sendUnsubscribeFrameRef = useRef<
     ((channels: string[]) => boolean) | null
   >(null);
+
+  const notificationsSummaryQuery = useQuery({
+    queryKey: [NOTIFICATIONS_SUMMARY_QUERY_KEY, userAddress],
+    queryFn: () =>
+      fetchWalletNotificationsSummary({
+        walletAddress: userAddress ?? "",
+      }),
+    enabled: isAuthenticated && Boolean(userAddress),
+    retry: false,
+  });
+
+  const notificationsPreviewQuery = useQuery({
+    queryKey: [
+      NOTIFICATIONS_QUERY_KEY,
+      userAddress,
+      NOTIFICATIONS_PREVIEW_LIMIT,
+    ],
+    queryFn: () =>
+      fetchWalletNotifications({
+        limit: NOTIFICATIONS_PREVIEW_LIMIT,
+        walletAddress: userAddress ?? "",
+      }),
+    enabled: isAuthenticated && Boolean(userAddress),
+    retry: false,
+  });
+
+  const refetchNotifications = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: [NOTIFICATIONS_SUMMARY_QUERY_KEY],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: [NOTIFICATIONS_QUERY_KEY],
+      }),
+    ]);
+  }, [queryClient]);
 
   const subscribe = useCallback((channel: NotifierChannelType) => {
     const currentRefCount = channelRefCountsRef.current.get(channel) ?? 0;
@@ -215,10 +264,21 @@ export const NotificationsProvider = ({
     onSubscribed: handleSubscribed,
   });
 
-  const unreadNotificationsCount = useMemo(
-    () => notifications.filter((notification) => !notification.isRead).length,
-    [notifications]
+  const notifications = useMemo(
+    () =>
+      (notificationsPreviewQuery.data?.items ?? []).map(
+        mapNotificationItemToUserNotification
+      ),
+    [notificationsPreviewQuery.data?.items]
   );
+
+  const isNotificationsEnabled =
+    !isNotificationsNotFoundError(notificationsSummaryQuery.error) &&
+    !isNotificationsNotFoundError(notificationsPreviewQuery.error);
+  const isNotificationsLoading =
+    notificationsSummaryQuery.isLoading || notificationsPreviewQuery.isLoading;
+  const unreadNotificationsCount =
+    notificationsSummaryQuery.data?.unread_count ?? 0;
 
   sendSubscribeFrameRef.current = (channels: string[]) => {
     if (!channels.length) {
@@ -249,6 +309,9 @@ export const NotificationsProvider = ({
   const contextValue = useMemo<NotificationsContextType>(
     () => ({
       notifications,
+      isNotificationsEnabled,
+      isNotificationsLoading,
+      refetchNotifications,
       registerChannelHandler,
       status: socket.status,
       subscribe,
@@ -257,7 +320,10 @@ export const NotificationsProvider = ({
       wallet: socket.wallet,
     }),
     [
+      isNotificationsEnabled,
+      isNotificationsLoading,
       notifications,
+      refetchNotifications,
       registerChannelHandler,
       socket.status,
       socket.wallet,

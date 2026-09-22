@@ -5,7 +5,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLocation,
   useRouteError,
 } from "@remix-run/react";
 import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
@@ -41,12 +40,14 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
 import { NotificationsProvider } from "~/providers/NotificationsProvider/NotificationsProvider";
 import { NotificationsListener } from "~/providers/NotificationsProvider/NotificationsListener";
+import { NotificationsDataNotifierListener } from "~/providers/NotificationsProvider/NotificationsDataNotifierListener";
+import { UserAccountStatusNotifierListener } from "~/providers/UserProvider/UserAccountStatusNotifierListener";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -140,19 +141,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <ApolloProvider>
                   <WalletProvider>
                     <AuthProvider>
-                      <NotificationsProvider>
-                        <NotificationsListener />
-                        <CurrencyProvider
-                          fiatToTezos={fiatToTezos}
-                          usdToToken={usdToToken}
+                      <CurrencyProvider
+                        fiatToTezos={fiatToTezos}
+                        usdToToken={usdToToken}
+                      >
+                        <TokensProvider
+                          initialTokens={tokens}
+                          initialTokensMetadata={tokensMetadata}
                         >
-                          <TokensProvider
-                            initialTokens={tokens}
-                            initialTokensMetadata={tokensMetadata}
-                          >
-                            <AssetsProvider>
-                              <EthereumProvider>
-                                <UserProvider>
+                          <AssetsProvider>
+                            <EthereumProvider>
+                              <UserProvider>
+                                <NotificationsProvider>
+                                  <NotificationsListener />
+                                  <NotificationsDataNotifierListener />
+                                  <UserAccountStatusNotifierListener />
                                   <AppGlobalLoader>
                                     <PopupProvider>
                                       <PageLayout includeContainer={false}>
@@ -160,12 +163,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                       </PageLayout>
                                     </PopupProvider>
                                   </AppGlobalLoader>
-                                </UserProvider>
-                              </EthereumProvider>
-                            </AssetsProvider>
-                          </TokensProvider>
-                        </CurrencyProvider>
-                      </NotificationsProvider>
+                                </NotificationsProvider>
+                              </UserProvider>
+                            </EthereumProvider>
+                          </AssetsProvider>
+                        </TokensProvider>
+                      </CurrencyProvider>
                     </AuthProvider>
                   </WalletProvider>
                 </ApolloProvider>
@@ -174,7 +177,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
-          {/*<RouteScrollReset />*/}
           <Scripts />
         </div>
       </body>
@@ -188,33 +190,6 @@ export default function App() {
       <Outlet />
     </>
   );
-}
-
-function RouteScrollReset() {
-  const location = useLocation();
-  const isInitialRender = useRef(true);
-  const previousPathname = useRef(location.pathname);
-
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
-    }
-
-    if (previousPathname.current === location.pathname) {
-      return;
-    }
-
-    previousPathname.current = location.pathname;
-
-    if (location.hash) {
-      return;
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [location.hash, location.pathname]);
-
-  return null;
 }
 
 /** catch server errors ************************** */
