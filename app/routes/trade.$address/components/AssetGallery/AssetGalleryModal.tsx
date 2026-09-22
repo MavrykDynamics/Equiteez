@@ -81,54 +81,68 @@ export function AssetGalleryModal({
         onRequestClose={() => setSelectedIndex(null)}
         overlayClassName={styles.overlay}
       >
-        {renderHeader(() => setSelectedIndex(null), "Back to full gallery")}
+        <header className={styles.singleImageHeader}>
+          <button
+            aria-label="Back to full gallery"
+            className={styles.closeButton}
+            onClick={() => setSelectedIndex(null)}
+            type="button"
+          >
+            <RIcon aria-hidden="true" name="close" size="medium" />
+          </button>
+        </header>
         {selectedIndex !== null ? (
           <div className={styles.singleImageContent}>
-            {images.length > 1 ? (
-              <button
-                aria-label="Previous image"
-                className={`${sliderStyles.arrowButton} ${sliderStyles.previousButton}`}
-                disabled={selectedIndex === 0}
-                onClick={() =>
-                  setSelectedIndex((index) =>
-                    index === null ? null : Math.max(0, index - 1)
-                  )
-                }
-                type="button"
-              >
-                <RIcon
-                  aria-hidden="true"
-                  name="arrow-short-left"
-                  size="medium"
-                />
-              </button>
-            ) : null}
-            <img
-              alt={`${name}, view ${selectedIndex + 1}`}
-              className={styles.fullSizeImage}
-              src={images[selectedIndex]}
-            />
-            {images.length > 1 ? (
-              <button
-                aria-label="Next image"
-                className={`${sliderStyles.arrowButton} ${sliderStyles.nextButton}`}
-                disabled={selectedIndex === images.length - 1}
-                onClick={() =>
-                  setSelectedIndex((index) =>
-                    index === null
-                      ? null
-                      : Math.min(images.length - 1, index + 1)
-                  )
-                }
-                type="button"
-              >
-                <RIcon
-                  aria-hidden="true"
-                  name="arrow-short-right"
-                  size="medium"
-                />
-              </button>
-            ) : null}
+            <RText color="neutral-white" size="body-sm">
+              {selectedIndex + 1} / {images.length}
+            </RText>
+            <div className={styles.singleImageRow}>
+              {images.length > 1 ? (
+                <button
+                  aria-label="Previous image"
+                  className={`${sliderStyles.arrowButton} ${sliderStyles.previousButton} ${styles.fullSizeArrow}`}
+                  disabled={selectedIndex === 0}
+                  onClick={() =>
+                    setSelectedIndex((index) =>
+                      index === null ? null : Math.max(0, index - 1)
+                    )
+                  }
+                  type="button"
+                >
+                  <RIcon
+                    aria-hidden="true"
+                    name="arrow-short-left"
+                    size="medium"
+                  />
+                </button>
+              ) : null}
+              <img
+                alt={`${name}, view ${selectedIndex + 1}`}
+                className={styles.fullSizeImage}
+                src={images[selectedIndex]}
+              />
+              {images.length > 1 ? (
+                <button
+                  aria-label="Next image"
+                  className={`${sliderStyles.arrowButton} ${sliderStyles.nextButton} ${styles.fullSizeArrow}`}
+                  disabled={selectedIndex === images.length - 1}
+                  onClick={() =>
+                    setSelectedIndex((index) =>
+                      index === null
+                        ? null
+                        : Math.min(images.length - 1, index + 1)
+                    )
+                  }
+                  type="button"
+                >
+                  <RIcon
+                    aria-hidden="true"
+                    name="arrow-short-right"
+                    size="medium"
+                  />
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </CustomPopup>
