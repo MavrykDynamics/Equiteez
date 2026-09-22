@@ -42,3 +42,22 @@
     display: none;
   }
 }
+
+@media (--media-phone-max) {
+  .wrapper {
+    width: 100%;
+    padding-top: 52px;
+    margin-bottom: var(--r-space-11);
+  }
+
+  .tabSwitcher {
+    overflow: visible;
+    padding-bottom: var(--r-space-6);
+  }
+
+  .tabSwitcher .assetTabs {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    max-width: 100%;
+  }
+}

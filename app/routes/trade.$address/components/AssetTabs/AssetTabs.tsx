@@ -69,6 +69,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
         <RTabSwitcher
           activeTabId={activeTab}
           ariaLabel="Asset Tabs"
+          className={styles.assetTabs}
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
