@@ -17,8 +17,6 @@ import { AssetIcon } from "~/templates/AssetIcon";
 
 import styles from "./styles.module.css";
 
-const PAGE_SIZE = 12;
-
 function MobileAssetRow({ asset }: { asset: WalletPortfolioAssetType }) {
   return (
     <div className={styles.assetRow}>
@@ -55,19 +53,10 @@ function MobileAssetRow({ asset }: { asset: WalletPortfolioAssetType }) {
 }
 
 export function MobilePortfolio() {
-  const { userAddress } = useUserContext();
-  const [address, setAddress] = useState(userAddress ?? "");
-  const [activeAddress, setActiveAddress] = useState(userAddress ?? "");
+  const [address, setAddress] = useState("");
+  const [activeAddress, setActiveAddress] = useState("");
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [isAmountDescending, setIsAmountDescending] = useState(true);
-
-  useEffect(() => {
-    if (!userAddress || address) return;
-
-    setAddress(userAddress);
-    setActiveAddress(userAddress);
-  }, [address, userAddress]);
 
   const walletQuery = useQuery({
     queryKey: ["rwa-wallet", activeAddress],
@@ -87,7 +76,9 @@ export function MobilePortfolio() {
     walletQuery.isFetching ||
     portfolioQuery.isLoading ||
     portfolioQuery.isFetching;
-  const hasPortfolio = Boolean(activeAddress);
+  const hasPortfolio = Boolean(
+    activeAddress && walletQuery.data && portfolioQuery.data
+  );
   const assets = portfolioQuery.data?.assets;
   const filteredAssets = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -111,12 +102,10 @@ export function MobilePortfolio() {
     if (!nextAddress) return;
 
     setActiveAddress(nextAddress);
-    setPage(1);
   }
 
   function handleAssetSearch(value: string) {
     setSearch(value);
-    setPage(1);
   }
 
   return (

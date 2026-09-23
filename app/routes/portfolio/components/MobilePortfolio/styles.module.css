@@ -4,10 +4,11 @@
   .page {
     display: flex;
     width: 100%;
+    min-height: 90vh;
     box-sizing: border-box;
     flex-direction: column;
     gap: var(--r-space-4);
-    margin: var(--r-space-4) auto;
+    margin: var(--r-space-4) auto var(--r-space-10) auto;
   }
 
   .walletSearch {
