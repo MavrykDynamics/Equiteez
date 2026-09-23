@@ -16,9 +16,12 @@ export type ROICalculatorData = {
   initialInvestment?: number;
 };
 
-const DEFAULT_INVESTMENT = 48_000;
-const DEFAULT_GROWTH = 6;
-const DEFAULT_YIELD = 8;
+// TODO: Replace these Figma mock values with the selected asset's RWA details
+// once the source fields and units for Capital Growth and Net Yield are confirmed.
+// Do not substitute APY for Net Yield without confirming its meaning.
+const DEFAULT_INVESTMENT = 20_000;
+const DEFAULT_GROWTH = 5;
+const DEFAULT_YIELD = 9.1;
 const YEAR_OPTIONS = [
   { id: "1y", label: "1Y", years: 1 },
   { id: "2y", label: "2Y", years: 2 },
@@ -39,7 +42,6 @@ const moneyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-// TODO remove mock data. Need real ROICalculatorData
 export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
   const { IS_WEB } = useAppContext();
   const {
@@ -74,7 +76,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
   const growthMax = useMemo(
     () =>
       Math.max(
-        8,
+        15,
         roundUpToStep(
           getPositiveNumber(data?.annualGrowth, DEFAULT_GROWTH) + 2,
           1
@@ -85,7 +87,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
   const yieldMax = useMemo(
     () =>
       Math.max(
-        8,
+        20,
         roundUpToStep(
           getPositiveNumber(data?.annualRentalYield, DEFAULT_YIELD) + 2,
           1
@@ -182,9 +184,9 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
       categories,
       maxValue,
       series: [
-        { name: "Investment", data: investmentSeries },
-        { name: "Growth", data: growthSeries },
-        { name: "Yield", data: yieldSeries },
+        { name: "Invested", data: investmentSeries },
+        { name: "Capital Growth", data: growthSeries },
+        { name: "Income Paid", data: yieldSeries },
       ],
     };
   }, [growth, investment, selectedPeriod.years, yieldRate]);
@@ -283,22 +285,20 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
     chartData.series[1].data[selectedYearIndex] +
     chartData.series[2].data[selectedYearIndex];
   const yieldPercentage = investment ? (totalReturn / investment) * 100 : 0;
-  const monthlyIncome =
-    chartData.series[2].data[selectedYearIndex] / (selectedPeriod.years * 12);
 
   const metricCards = [
     {
-      label: "Total Return",
-      value: formatCompactCurrency(totalReturn),
+      label: "Total Value",
+      value: formatCompactCurrency(investment + totalReturn),
     },
     {
-      label: "Yield",
-      value: `+${formatPercent(yieldPercentage)}`,
+      label: "Profit",
+      value: `+${formatCompactCurrency(totalReturn)}`,
       tone: "positive",
     },
     {
-      label: "Monthly",
-      value: formatCurrency(monthlyIncome),
+      label: "Profit %",
+      value: `+${formatPercent(yieldPercentage)}`,
     },
   ] satisfies ReadonlyArray<{
     label: string;
@@ -350,7 +350,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
           />
           <SliderControl
             formatLabel={formatPercent}
-            label="Annual Growth"
+            label="Capital Growth"
             max={growthMax}
             min={1}
             onChange={setGrowth}
@@ -359,7 +359,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
           />
           <SliderControl
             formatLabel={formatPercent}
-            label="Annual Rental Yield"
+            label="Net Yield"
             max={yieldMax}
             min={1}
             onChange={setYieldRate}

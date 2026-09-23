@@ -1,6 +1,7 @@
 .root {
   min-height: 100vh;
-  overflow-x: hidden;
+  /* Clip horizontal overflow without creating a scroll container for sticky children. */
+  overflow-x: clip;
 }
 
 .desktopLayout {
