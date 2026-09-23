@@ -183,10 +183,13 @@
     display: flex;
     min-width: 0;
     flex-direction: column;
+    overflow: hidden;
   }
 
-  .assetName p,
-  .assetAmount p {
+  .assetSymbol,
+  .assetTitle,
+  .assetAmount > span {
+    display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

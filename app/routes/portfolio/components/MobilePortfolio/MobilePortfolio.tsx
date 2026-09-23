@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchWallet, fetchWalletPortfolio } from "~/lib/apis/rwa";
@@ -11,7 +11,6 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { toTokenSlug } from "~/lib/assets";
-import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { PortfolioValueChart } from "~/routes/portfolio._index/components/PortfolioGeneralStats/PortfolioValueChart";
 import { AssetIcon } from "~/templates/AssetIcon";
 
@@ -27,10 +26,15 @@ function MobileAssetRow({ asset }: { asset: WalletPortfolioAssetType }) {
           size={30}
         />
         <span className={styles.assetName}>
-          <RText size="body-sm" weight="medium">
+          <RText className={styles.assetSymbol} size="body-sm" weight="medium">
             {asset.symbol.toUpperCase()}
           </RText>
-          <RText color="neutral-700" size="body-s">
+          <RText
+            className={styles.assetTitle}
+            color="neutral-700"
+            size="body-s"
+            title={asset.name}
+          >
             {asset.name}
           </RText>
         </span>
