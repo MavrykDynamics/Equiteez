@@ -104,8 +104,10 @@
   .apyBadge,
   .typeBadge {
     padding: var(--r-space-1) var(--r-space-3);
-    font-size: var(--r-font-size-body-xs);
-    line-height: 14px;
+    font-size: var(--r-font-size-body-s);
+    font-style: normal;
+    font-weight: var(--r-font-weight-regular);
+    line-height: var(--r-line-height-body-s);
   }
 
   .actions {
