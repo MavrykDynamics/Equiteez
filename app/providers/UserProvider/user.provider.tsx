@@ -35,11 +35,6 @@ import {
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
 import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
-import {
-  NotifierChannel,
-  NotifierWalletEvent,
-} from "~/providers/NotificationsProvider/notifications.const";
-import { useNotifierEvent } from "~/providers/NotificationsProvider/hooks/useNotifierEvent";
 
 export const userContext = React.createContext<UserContext>(undefined!);
 
@@ -229,12 +224,6 @@ export const UserProvider = ({ children }: Props) => {
 
     updateUserAccountStatus(data);
   }, [accountAddress, refetchUserAccountStatusQuery, updateUserAccountStatus]);
-
-  useNotifierEvent(
-    NotifierChannel.Wallet,
-    NotifierWalletEvent.KycSetMember,
-    refetchUserAccountStatus
-  );
 
   useEffect(() => {
     updateUserAccountStatus(userAccountStatusData);

@@ -2,6 +2,7 @@ import type {
   NotifierChannelType,
   NotifierConnectionStatusType,
   NotifierEventFrame,
+  UserNotification,
 } from "~/providers/NotificationsProvider/notifications.types";
 
 export type NotifierChannelHandler = (
@@ -10,6 +11,12 @@ export type NotifierChannelHandler = (
 ) => void;
 
 export type NotificationsContextType = {
+  notifications: UserNotification[];
+  isNotificationsEnabled: boolean;
+  isNotificationsLoading: boolean;
+  readAllNotification: (before: string) => Promise<void>;
+  refetchNotifications: () => Promise<void>;
+  unreadNotificationsCount: number;
   registerChannelHandler: (
     channel: NotifierChannelType,
     handler: NotifierChannelHandler

@@ -8,4 +8,5 @@ export const ROUTES = {
   portfolio: "/portfolio",
   portfolioDividends: "/portfolio/dividends",
   portfolioActivity: "/portfolio/activity",
+  portfolioNotifications: "/portfolio/notifications",
 };
