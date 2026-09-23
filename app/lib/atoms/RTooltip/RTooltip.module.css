@@ -1,4 +1,4 @@
-:global(.tippy-box[data-theme~="r-tooltip"]) {
+:global(body .tippy-box[data-theme~="r-tooltip"]) {
   box-sizing: border-box;
   max-width: 280px;
   color: var(--r-text-body-black);
@@ -12,42 +12,66 @@
   line-height: var(--r-line-height-body-s);
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"] .tippy-content) {
+:global(body .tippy-box[data-theme~="r-tooltip"] .tippy-content) {
   padding: var(--r-space-2) var(--r-space-3);
   white-space: normal;
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"] > .tippy-arrow) {
+:global(body .tippy-box[data-theme~="r-tooltip"] > .tippy-arrow) {
   width: 22px;
   height: 12px;
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"] > .tippy-arrow::before) {
+:global(body .tippy-box[data-theme~="r-tooltip"] > .tippy-arrow::before) {
   border-color: transparent;
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"][data-placement^="top"] > .tippy-arrow::before) {
+:global(
+    body
+      .tippy-box[data-theme~="r-tooltip"][data-placement^="top"]
+      > .tippy-arrow::before
+  ) {
   border-width: 12px 11px 0;
   border-top-color: var(--r-color-neutral-white);
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"][data-placement^="bottom"] > .tippy-arrow::before) {
+:global(
+    body
+      .tippy-box[data-theme~="r-tooltip"][data-placement^="bottom"]
+      > .tippy-arrow::before
+  ) {
   border-width: 0 11px 12px;
   border-bottom-color: var(--r-color-neutral-white);
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"][data-placement^="left"] > .tippy-arrow::before) {
+:global(
+    body
+      .tippy-box[data-theme~="r-tooltip"][data-placement^="left"]
+      > .tippy-arrow::before
+  ) {
   border-width: 11px 0 11px 12px;
   border-left-color: var(--r-color-neutral-white);
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"][data-placement^="right"] > .tippy-arrow::before) {
+:global(
+    body
+      .tippy-box[data-theme~="r-tooltip"][data-placement^="right"]
+      > .tippy-arrow::before
+  ) {
   border-width: 11px 12px 11px 0;
   border-right-color: var(--r-color-neutral-white);
 }
 
-:global(.tippy-box[data-theme~="r-tooltip"][data-placement^="left"] > .tippy-arrow),
-:global(.tippy-box[data-theme~="r-tooltip"][data-placement^="right"] > .tippy-arrow) {
+:global(
+    body
+      .tippy-box[data-theme~="r-tooltip"][data-placement^="left"]
+      > .tippy-arrow
+  ),
+:global(
+    body
+      .tippy-box[data-theme~="r-tooltip"][data-placement^="right"]
+      > .tippy-arrow
+  ) {
   width: 12px;
   height: 22px;
 }
