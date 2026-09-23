@@ -86,6 +86,11 @@
   gap: var(--r-space-2);
 }
 
+.priceLabelGroup {
+  display: flex;
+  flex-direction: column;
+}
+
 .currentPrice {
   color: var(--r-color-neutral-black);
   font-family: var(--r-font-body);
@@ -422,5 +427,31 @@
   .chartHeader {
     flex-direction: column-reverse;
     align-items: flex-start;
+  }
+}
+
+@media (--media-phone-max) {
+  .wrapper {
+    --chart-height: 328px;
+    width: 100%;
+  }
+
+  .chartContent {
+    padding: var(--r-space-4) var(--r-space-3);
+    margin-bottom: var(--r-space-1);
+  }
+
+  .chartHeader {
+    flex-direction: column;
+    gap: var(--r-space-2);
+  }
+
+  .currentPrice {
+    font-size: var(--r-font-size-heading-h5);
+    line-height: var(--r-line-height-heading-h5);
+  }
+
+  .chartHeaderAction {
+    display: none;
   }
 }

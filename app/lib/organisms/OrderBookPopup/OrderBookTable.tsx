@@ -980,6 +980,18 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     () => getSpreadDisplayData(renderData.spread, selectedDisplayMode),
     [renderData.spread, selectedDisplayMode]
   );
+  const midPrice =
+    renderData.spread.bestAsk > 0 && renderData.spread.bestBid > 0
+      ? new BigNumberJs(renderData.spread.bestAsk)
+          .plus(renderData.spread.bestBid)
+          .div(2)
+      : null;
+  const spreadPercentage = midPrice
+    ? new BigNumberJs(renderData.spread.value)
+        .div(midPrice)
+        .times(100)
+        .toFixed(2)
+    : null;
   const amountFractionDigits = useMemo(
     () => getColumnFractionDigits(visibleRows.map((row) => row.amount)),
     [visibleRows]
@@ -1157,47 +1169,73 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
                   />
                 )}
 
-                <div className={styles.spreadRow}>
-                  <span
-                    className={clsx(
-                      styles.spreadPrice,
-                      spreadDisplayData.side === "ask"
-                        ? styles.askPrice
-                        : styles.bidPrice
-                    )}
-                  >
-                    {spreadDisplayData.price > 0
-                      ? formatters.price.format(spreadDisplayData.price)
-                      : "--"}
-                  </span>
-
-                  <span className={styles.spreadMeta}>
-                    {shouldShowReferencePrice ? (
-                      <SpreadDirectionIcon
-                        direction={spreadDirection}
-                        side={spreadDisplayData.side}
-                      />
-                    ) : (
-                      <span className={styles.spreadLabel}>
-                        {spreadDisplayData.label}
+                {selectedDisplayMode === "both" ? (
+                  <div className={clsx(styles.spreadRow, styles.spreadRowBoth)}>
+                    <span className={styles.midBlock}>
+                      <span className={styles.spreadText}>MID</span>
+                      <span
+                        className={clsx(styles.spreadText, styles.midPrice)}
+                      >
+                        {midPrice
+                          ? formatters.price.format(midPrice.toNumber())
+                          : "--"}
                       </span>
-                    )}
-                  </span>
-
-                  <span
-                    className={clsx(
-                      shouldShowReferencePrice
-                        ? styles.spreadReference
-                        : styles.spreadValue
-                    )}
-                  >
-                    {shouldShowReferencePrice
-                      ? referencePriceLabel
-                      : spreadDisplayData.value !== null
-                        ? formatters.price.format(spreadDisplayData.value)
+                    </span>
+                    <span className={styles.spreadText}>
+                      Spread{" "}
+                      {midPrice
+                        ? formatters.price.format(renderData.spread.value)
+                        : "--"}{" "}
+                      (
+                      {spreadPercentage !== null
+                        ? `${spreadPercentage}%`
                         : "--"}
-                  </span>
-                </div>
+                      )
+                    </span>
+                  </div>
+                ) : (
+                  <div className={styles.spreadRow}>
+                    <span
+                      className={clsx(
+                        styles.spreadPrice,
+                        spreadDisplayData.side === "ask"
+                          ? styles.askPrice
+                          : styles.bidPrice
+                      )}
+                    >
+                      {spreadDisplayData.price > 0
+                        ? formatters.price.format(spreadDisplayData.price)
+                        : "--"}
+                    </span>
+
+                    <span className={styles.spreadMeta}>
+                      {shouldShowReferencePrice ? (
+                        <SpreadDirectionIcon
+                          direction={spreadDirection}
+                          side={spreadDisplayData.side}
+                        />
+                      ) : (
+                        <span className={styles.spreadLabel}>
+                          {spreadDisplayData.label}
+                        </span>
+                      )}
+                    </span>
+
+                    <span
+                      className={clsx(
+                        shouldShowReferencePrice
+                          ? styles.spreadReference
+                          : styles.spreadValue
+                      )}
+                    >
+                      {shouldShowReferencePrice
+                        ? referencePriceLabel
+                        : spreadDisplayData.value !== null
+                          ? formatters.price.format(spreadDisplayData.value)
+                          : "--"}
+                    </span>
+                  </div>
+                )}
 
                 {selectedDisplayMode !== "sell" && (
                   <OrderBookRowsSection

@@ -187,3 +187,49 @@
     max-width: calc(100vw - 32px) !important;
   }
 }
+
+@media (--media-phone-max) {
+  .dropdown {
+    width: calc(100% - 84px);
+    min-width: 0;
+  }
+
+  .trigger {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 36px;
+    padding: 0;
+    gap: var(--r-space-2);
+  }
+
+  .trigger > span,
+  .trigger .assetLabels {
+    min-width: 0;
+  }
+
+  .trigger .assetIcon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+
+  .trigger .assetName {
+    font-size: var(--r-font-size-body-m);
+    line-height: var(--r-line-height-body-m);
+  }
+
+  .trigger .assetSymbol {
+    font-size: var(--r-font-size-body-sm);
+    line-height: var(--r-line-height-body-sm);
+  }
+
+  .trigger svg {
+    flex-shrink: 0;
+  }
+
+  .menu {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0;
+  }
+}

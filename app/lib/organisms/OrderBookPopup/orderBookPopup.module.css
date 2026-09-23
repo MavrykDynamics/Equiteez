@@ -481,12 +481,40 @@
 
 .spreadRow {
   align-items: center;
-  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   display: flex;
   gap: 4px;
   min-height: 26px;
   padding: var(--r-space-1) 0;
   box-sizing: border-box;
+}
+
+.spreadRowBoth {
+  justify-content: space-between;
+}
+
+.midBlock {
+  align-items: center;
+  display: flex;
+  gap: var(--r-space-1);
+  min-width: 0;
+}
+
+.spreadText {
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-style: normal;
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.midPrice {
+  color: var(--r-color-neutral-black);
+  font-weight: var(--r-font-weight-medium);
 }
 
 .spreadPrice {

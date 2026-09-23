@@ -81,3 +81,29 @@
     display: none;
   }
 }
+
+@media (--media-phone-max) {
+  .tradeContainer.tradeContainer {
+    padding-inline: var(--r-space-4);
+  }
+
+  .contentBlock {
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .mainContent,
+  .tradeColumn {
+    display: contents;
+  }
+
+  .mainContent > :first-child {
+    order: -2;
+    width: 100%;
+  }
+
+  .tradeColumnContent > :first-child {
+    order: -1;
+    margin-bottom: var(--r-space-3);
+  }
+}

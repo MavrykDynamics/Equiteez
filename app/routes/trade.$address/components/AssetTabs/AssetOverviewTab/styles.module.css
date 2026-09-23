@@ -143,3 +143,42 @@
     flex-direction: row;
   }
 }
+
+@media (--media-phone-max) {
+  .wrapper {
+    gap: var(--r-space-8);
+  }
+
+  .wrapper h6 {
+    font-size: var(--r-font-size-body-m);
+    line-height: var(--r-line-height-body-m);
+  }
+
+  .items {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--r-space-3);
+  }
+
+  /* Follow the design's column-first reading order on phones. */
+  .item:nth-child(1) {
+    grid-row: 1;
+  }
+  .item:nth-child(4) {
+    grid-row: 2;
+  }
+  .item:nth-child(2) {
+    grid-row: 3;
+  }
+  .item:nth-child(5) {
+    grid-row: 4;
+  }
+  .item:nth-child(3) {
+    grid-row: 5;
+  }
+
+  .map {
+    height: 268px;
+    background-size: 50% calc(100% / 3);
+    background-position: center top;
+  }
+}

@@ -22,6 +22,7 @@ import {
 import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
+import { RText } from "~/lib/atoms/RTypography/RText";
 
 import { RChartStats } from "./RChartStats";
 
@@ -326,12 +327,21 @@ export function PriceChart({
         <section className={styles.priceChart} aria-label="Price chart">
           <div className={styles.chartHeader}>
             <div className={styles.priceSummary}>
-              <span className={styles.currentPrice}>
-                $
-                <Money fiat tooltip={false}>
-                  {price}
-                </Money>
-              </span>
+              <div className={styles.priceLabelGroup}>
+                <span className={styles.currentPrice}>
+                  $
+                  <Money fiat tooltip={false}>
+                    {price}
+                  </Money>
+                </span>
+                <RText size="body-xs">
+                  Price
+                  <RText size="body-xs" color="neutral-500">
+                    {" "}
+                    / Market Cap
+                  </RText>
+                </RText>
+              </div>
               <RPriceChange
                 amount={priceChangeView.amount}
                 percentage={priceChangeView.percentage}
