@@ -15,6 +15,7 @@ import clsx from "clsx";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useOutsideClick } from "~/lib/ui/use-click-outside";
+import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 
 import styles from "./RCustomDropdown.module.css";
 
@@ -23,6 +24,7 @@ type RDropdownContextValue = {
   disabled: boolean;
   menuId: string;
   opened: boolean;
+  presentation: "dropdown" | "sheet";
   toggle: () => void;
 };
 
@@ -33,6 +35,7 @@ export type RCustomDropdownProps = HTMLAttributes<HTMLDivElement> & {
   disabled?: boolean;
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  presentation?: "dropdown" | "sheet";
 };
 
 export function RCustomDropdown({
@@ -41,6 +44,7 @@ export function RCustomDropdown({
   disabled = false,
   isOpen,
   onOpenChange,
+  presentation = "dropdown",
   ...props
 }: RCustomDropdownProps) {
   const [internalOpened, setInternalOpened] = useState(false);
@@ -62,10 +66,10 @@ export function RCustomDropdown({
   }, [disabled, opened, setOpened]);
 
   const contextValue = useMemo(
-    () => ({ close, disabled, menuId, opened, toggle }),
-    [close, disabled, menuId, opened, toggle]
+    () => ({ close, disabled, menuId, opened, presentation, toggle }),
+    [close, disabled, menuId, opened, presentation, toggle]
   );
-  const ref = useOutsideClick(close, !opened);
+  const ref = useOutsideClick(close, !opened || presentation === "sheet");
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -104,7 +108,8 @@ export function RDropdownFaceContent({
   placeholder,
   ...props
 }: RDropdownFaceContentProps) {
-  const { disabled, menuId, opened, toggle } = useRDropdownContext();
+  const { disabled, menuId, opened, presentation, toggle } =
+    useRDropdownContext();
   const content = children ?? placeholder;
   const isTextContent =
     typeof content === "string" || typeof content === "number";
@@ -112,9 +117,9 @@ export function RDropdownFaceContent({
   return (
     <button
       {...props}
-      aria-controls={menuId}
+      aria-controls={presentation === "sheet" ? `${menuId}-sheet` : menuId}
       aria-expanded={opened}
-      aria-haspopup="listbox"
+      aria-haspopup={presentation === "sheet" ? "dialog" : "listbox"}
       className={clsx(styles.trigger, opened && styles.triggerOpen, className)}
       disabled={disabled}
       onClick={toggle}
@@ -141,21 +146,24 @@ export function RDropdownFaceContent({
 export type RDropdownBodyContentProps = HTMLAttributes<HTMLDivElement> & {
   align?: "left" | "right";
   children: ReactNode;
+  sheetClassName?: string;
 };
 
 export function RDropdownBodyContent({
   align = "left",
   children,
   className,
+  sheetClassName,
   ...props
 }: RDropdownBodyContentProps) {
-  const { disabled, menuId, opened } = useRDropdownContext();
+  const { close, disabled, menuId, opened, presentation } =
+    useRDropdownContext();
 
-  if (!opened || disabled) {
+  if (disabled || (!opened && presentation === "dropdown")) {
     return null;
   }
 
-  return (
+  const content = (
     <div
       {...props}
       className={clsx(
@@ -168,6 +176,21 @@ export function RDropdownBodyContent({
     >
       {children}
     </div>
+  );
+
+  return presentation === "sheet" ? (
+    <CustomPopup
+      className={sheetClassName}
+      contentLabel={props["aria-label"] ?? "Select an option"}
+      contentPosition="bottom"
+      id={`${menuId}-sheet`}
+      isOpen={opened}
+      onRequestClose={close}
+    >
+      {content}
+    </CustomPopup>
+  ) : (
+    content
   );
 }
 

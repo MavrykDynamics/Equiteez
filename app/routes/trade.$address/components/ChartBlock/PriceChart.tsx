@@ -25,6 +25,10 @@ import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import { RChartStats } from "./RChartStats";
+import {
+  PHONE_MAX_WIDTH,
+  useWindowDimensions,
+} from "~/hooks/useWindowDimensions";
 
 type AssetDetailsProps = {
   asset: AssetType;
@@ -181,6 +185,8 @@ export function PriceChart({
   orderBookContent,
 }: AssetDetailsProps) {
   const { price } = useAssetPrice(asset);
+  const { width } = useWindowDimensions();
+  const isMobile = width > 0 && width <= PHONE_MAX_WIDTH;
   const [range, setRange] = useState<ChartRange>("1d");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [priceChangeView, setPriceChangeView] = useState<PriceChangeView>({
@@ -334,7 +340,7 @@ export function PriceChart({
                     {price}
                   </Money>
                 </span>
-                <RText size="body-xs">
+                <RText className={styles.priceLabel} size="body-xs">
                   Price
                   <RText size="body-xs" color="neutral-500">
                     {" "}
@@ -343,6 +349,7 @@ export function PriceChart({
                 </RText>
               </div>
               <RPriceChange
+                className={styles.priceChange}
                 amount={priceChangeView.amount}
                 percentage={priceChangeView.percentage}
                 showPeriodLabel={false}
@@ -410,6 +417,7 @@ export function PriceChart({
                     onHover={handleChartHover}
                     points={points}
                     priceDecimals={PRICE_DECIMALS}
+                    priceScaleMinimumWidth={isMobile ? 0 : undefined}
                     showPriceScale
                     showTimeScale
                     timeTickFormatter={timeTickFormatter}

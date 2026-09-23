@@ -1,7 +1,11 @@
 import { generatePath, useNavigate } from "@remix-run/react";
-import { useMemo, useState } from "react";
+import { type CSSProperties, useMemo, useState } from "react";
 
 import { ROUTES } from "~/consts";
+import {
+  PHONE_MAX_WIDTH,
+  useWindowDimensions,
+} from "~/hooks/useWindowDimensions";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RInput } from "~/lib/atoms/RInput/RInput";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -26,6 +30,8 @@ export function AssetDropdown({ asset }: AssetDropdownProps) {
   const navigate = useNavigate();
   const { assets } = useAssetsContext();
   const [query, setQuery] = useState("");
+  const { width } = useWindowDimensions();
+  const isMobile = width > 0 && width <= PHONE_MAX_WIDTH;
 
   const matchingAssets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -48,39 +54,49 @@ export function AssetDropdown({ asset }: AssetDropdownProps) {
   };
 
   return (
-    <RCustomDropdown className={styles.dropdown}>
+    <RCustomDropdown
+      className={styles.dropdown}
+      presentation={isMobile ? "sheet" : "dropdown"}
+    >
       <RDropdownFaceContent className={styles.trigger}>
         <AssetIdentity asset={asset} />
       </RDropdownFaceContent>
 
-      <RDropdownBodyContent className={styles.menu}>
+      <RDropdownBodyContent
+        aria-label="Select an asset"
+        className={styles.menu}
+        sheetClassName={styles.sheet}
+        style={{ "--asset-count": assets.length } as CSSProperties}
+      >
         <RInput
           aria-label="Search assets"
           className={styles.search}
           icon="search"
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search ticker, name"
+          placeholder={isMobile ? "Search" : "Search ticker, name"}
           value={query}
         />
 
-        {matchingAssets.length ? (
-          <div className={styles.options}>
-            {matchingAssets.map((item) => (
-              <AssetOption
-                asset={item}
-                isSelected={item.address === asset.address}
-                key={item.address}
-                onSelect={handleAssetSelect}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className={styles.emptyState}>
-            <RText color="neutral-600" size="body-sm">
-              No Results Found
-            </RText>
-          </div>
-        )}
+        <div className={styles.results}>
+          {matchingAssets.length ? (
+            <div className={styles.options}>
+              {matchingAssets.map((item) => (
+                <AssetOption
+                  asset={item}
+                  isSelected={item.address === asset.address}
+                  key={item.address}
+                  onSelect={handleAssetSelect}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <RText color="neutral-600" size="body-sm">
+                No Results Found
+              </RText>
+            </div>
+          )}
+        </div>
       </RDropdownBodyContent>
     </RCustomDropdown>
   );

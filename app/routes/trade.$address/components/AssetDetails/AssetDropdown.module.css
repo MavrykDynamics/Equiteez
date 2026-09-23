@@ -25,6 +25,8 @@
 }
 
 .menu {
+  --asset-option-height: 64px;
+  --asset-search-height: 48px;
   width: 304px;
   min-width: 304px;
   max-height: 520px;
@@ -42,7 +44,7 @@
 }
 
 .search {
-  min-height: 48px;
+  min-height: var(--asset-search-height);
   padding: var(--r-space-3);
 }
 
@@ -53,7 +55,7 @@
 }
 
 .option {
-  min-height: 64px;
+  min-height: var(--asset-option-height);
   width: 100%;
   padding: var(--r-space-2);
 }
@@ -189,6 +191,14 @@
 }
 
 @media (--media-phone-max) {
+  .sheet.sheet {
+    width: 100%;
+    max-height: 443px;
+    overflow: hidden;
+    padding: var(--r-space-4) var(--r-space-4) var(--r-space-6);
+    border-radius: var(--r-radius-sm) var(--r-radius-sm) 0 0;
+  }
+
   .dropdown {
     width: calc(100% - 84px);
     min-width: 0;
@@ -228,8 +238,36 @@
   }
 
   .menu {
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
+    display: flex;
+    flex-direction: column;
+    position: static;
+    width: 100% !important;
+    max-width: 100% !important;
     min-width: 0;
+    height: calc(
+      var(--asset-search-height) + max(1, var(--asset-count)) *
+        var(--asset-option-height) + var(--r-space-2)
+    );
+    max-height: calc(min(443px, 85dvh) - var(--r-space-4) - var(--r-space-6));
+    margin-top: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .search {
+    flex-shrink: 0;
+  }
+
+  .results {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .results::-webkit-scrollbar {
+    display: none;
   }
 }
