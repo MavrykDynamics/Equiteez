@@ -13,6 +13,7 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { NotifierChannel } from "~/providers/NotificationsProvider/notifications.const";
 import { useNotifierChannel } from "~/providers/NotificationsProvider/hooks/useNotifierChannel";
 import { mapNotificationItemToUserNotification } from "~/providers/NotificationsProvider/helpers/notifications.helpers";
+import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 
 import styles from "./styles.module.css";
 
@@ -24,7 +25,10 @@ const isNotificationsNotFoundError = (error: unknown) =>
 export default function PortfolioNotifications() {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
+  const { readAllNotification, unreadNotificationsCount } =
+    useNotificationsContext();
   const [listRevision, setListRevision] = useState(0);
+  const readAllBeforeRef = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,7 +57,12 @@ export default function PortfolioNotifications() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = notificationsQuery;
+
+  useEffect(() => {
+    readAllBeforeRef.current = null;
+  }, [userAddress]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -86,6 +95,37 @@ export default function PortfolioNotifications() {
     [notificationsQuery.data?.pages]
   );
   const isDisabled = isNotificationsNotFoundError(notificationsQuery.error);
+
+  useEffect(() => {
+    const before = notifications[0]?.createdAt;
+
+    if (
+      !notificationsQuery.isSuccess ||
+      !before ||
+      unreadNotificationsCount <= 0 ||
+      readAllBeforeRef.current === before
+    ) {
+      return;
+    }
+
+    readAllBeforeRef.current = before;
+
+    void (async () => {
+      try {
+        await readAllNotification(before);
+        await refetch();
+      } catch (error) {
+        readAllBeforeRef.current = null;
+        console.error("Unable to mark notifications as read", error);
+      }
+    })();
+  }, [
+    notifications,
+    notificationsQuery.isSuccess,
+    readAllNotification,
+    refetch,
+    unreadNotificationsCount,
+  ]);
 
   return (
     <div className={styles.wrapper}>

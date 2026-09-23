@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchWalletNotifications,
   fetchWalletNotificationsSummary,
+  readWalletNotifications,
 } from "~/lib/apis/rwa";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -133,6 +134,21 @@ export const NotificationsProvider = ({
       }),
     ]);
   }, [queryClient]);
+
+  const readAllNotification = useCallback(
+    async (before: string) => {
+      if (!isAuthenticated || !userAddress) {
+        return;
+      }
+
+      await readWalletNotifications({
+        before,
+        walletAddress: userAddress,
+      });
+      await refetchNotifications();
+    },
+    [isAuthenticated, refetchNotifications, userAddress]
+  );
 
   const subscribe = useCallback((channel: NotifierChannelType) => {
     const currentRefCount = channelRefCountsRef.current.get(channel) ?? 0;
@@ -311,6 +327,7 @@ export const NotificationsProvider = ({
       notifications,
       isNotificationsEnabled,
       isNotificationsLoading,
+      readAllNotification,
       refetchNotifications,
       registerChannelHandler,
       status: socket.status,
@@ -323,6 +340,7 @@ export const NotificationsProvider = ({
       isNotificationsEnabled,
       isNotificationsLoading,
       notifications,
+      readAllNotification,
       refetchNotifications,
       registerChannelHandler,
       socket.status,
