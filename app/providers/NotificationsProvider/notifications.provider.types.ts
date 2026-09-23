@@ -8,7 +8,7 @@ import type {
 export type NotifierChannelHandler = (
   frame: NotifierEventFrame,
   wallet: string
-) => void;
+) => void | Promise<void>;
 
 export type NotificationsContextType = {
   notifications: UserNotification[];

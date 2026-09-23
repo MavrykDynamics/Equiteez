@@ -272,7 +272,12 @@ export const useNotifierSocket = ({
             case NotifierServerFrameType.Event: {
               const confirmedWallet = walletRef.current;
 
-              if (!confirmedWallet || !rememberEventId(frame.event_id)) {
+              if (
+                !confirmedWallet ||
+                !rememberEventId(
+                  JSON.stringify([confirmedWallet, frame.event_id])
+                )
+              ) {
                 return;
               }
 

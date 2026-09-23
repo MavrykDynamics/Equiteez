@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useConfig } from "wagmi";
 import type { BigNumber } from "bignumber.js";
 
-import {
-  FreshnessSource,
-  useFreshQueryInvalidation,
-} from "~/lib/apis/rwa/freshness";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
@@ -33,9 +28,6 @@ export function RDepositFundsModal({
   isOpen,
   onClose,
 }: RDepositFundsModalProps) {
-  const queryClient = useQueryClient();
-  const invalidateFreshQueries = useFreshQueryInvalidation();
-  const [confirmedHash, setConfirmedHash] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
   const { userAddress, userTokensBalances, connect, isLoading } =
@@ -51,53 +43,12 @@ export function RDepositFundsModal({
     tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
     USDT_BRIDGE.destinationToken;
   const progress = ethereumWallet.bridge.state?.progress;
-  const invalidatedTransactionHashRef = useRef<string | null>(null);
-  const transactionHash =
-    progress?.step === "lock" && progress.status === "confirmed"
-      ? progress.hash
-      : undefined;
+  const transactionHash = progress?.step === "lock" ? progress.hash : undefined;
 
-  useEffect(() => {
-    if (
-      !isOpen ||
-      !transactionHash ||
-      invalidatedTransactionHashRef.current === transactionHash
-    ) {
-      return;
-    }
-
-    invalidatedTransactionHashRef.current = transactionHash;
-
-    void Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: ["rwa-wallet"],
-      }),
-      queryClient.invalidateQueries({
-        queryKey: ["rwa-wallet-portfolio"],
-      }),
-      queryClient.invalidateQueries({
-        queryKey: ["rwa-wallet-portfolio-history"],
-      }),
-      invalidateFreshQueries("fetchWalletTransferHistory", {
-        source: FreshnessSource.Chain,
-      }),
-      invalidateFreshQueries("fetchWalletActivitySummary", {
-        source: FreshnessSource.Chain,
-      }),
-    ]);
-  }, [invalidateFreshQueries, isOpen, queryClient, transactionHash]);
-
-  useEffect(() => {
-    if (!isOpen || !transactionHash) return;
-    const timer = setTimeout(() => setConfirmedHash(transactionHash), 3_500);
-    return () => clearTimeout(timer);
-  }, [transactionHash, isOpen]);
   const resetBridge = ethereumWallet.bridge.reset;
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
   const wasOpen = useRef(isOpen);
   const resetModal = useCallback(() => {
-    invalidatedTransactionHashRef.current = null;
-    setConfirmedHash(null);
     resetBridge();
     closeWalletSelection();
     setDepositAmount(undefined);
@@ -135,9 +86,7 @@ export function RDepositFundsModal({
         </button>
       </div>
 
-      {transactionHash &&
-      confirmedHash === transactionHash &&
-      ethereumWallet.bridge.state ? (
+      {transactionHash && ethereumWallet.bridge.state ? (
         <ConfirmedView
           transactionHash={transactionHash}
           explorer={

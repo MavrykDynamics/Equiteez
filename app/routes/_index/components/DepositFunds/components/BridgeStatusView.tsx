@@ -30,18 +30,19 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
   const { progress, error } = state;
   const isLockStep = progress?.step === "lock";
   const isLocked = isLockStep && progress.status === "confirmed";
-  const hasSubmittedLock = isLockStep && progress.status !== "signature";
-  const currentStatus = error
-    ? "error"
-    : progress?.status === "confirmed"
-      ? "success"
-      : "loading";
+  const currentStatus = state.isConfirmationUnknown
+    ? "pending"
+    : error
+      ? "error"
+      : progress?.status === "confirmed"
+        ? "success"
+        : "loading";
   return [
     {
-      title: "Lock on Ethereum",
+      title: "Approve USDT",
       status: isLockStep ? "success" : currentStatus,
       description: isLockStep
-        ? "Confirmed"
+        ? "Spending approved"
         : (error ??
           (!progress
             ? "Checking wallets and USDT balance"
@@ -52,27 +53,21 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
                 : `Waiting for confirmations ${progress.confirmations ?? 0}/${USDT_BRIDGE.approvalConfirmations}`)),
     },
     {
-      title: "Validators Sign",
-      status: hasSubmittedLock
-        ? "success"
-        : isLockStep
-          ? currentStatus
-          : "pending",
-      description: hasSubmittedLock
-        ? "Signed"
-        : isLockStep
-          ? (error ?? "Waiting on the lock")
-          : "Waiting on the lock",
-    },
-    {
-      title: "Mint on Mavryk",
-      status: hasSubmittedLock ? currentStatus : "pending",
-      description: hasSubmittedLock
+      title: "Lock on Ethereum",
+      status: isLockStep ? currentStatus : "pending",
+      description: isLockStep
         ? (error ??
           (isLocked
-            ? "Minted"
-            : `Waiting for confirmations (${progress.confirmations ?? 0}/${USDT_BRIDGE.lockConfirmations})`))
-        : "Pending validator signatures",
+            ? "Confirmed on Ethereum"
+            : progress.status === "signature"
+              ? "Confirm the lock in your Ethereum wallet"
+              : `Waiting for confirmations ${progress.confirmations ?? 0}/${USDT_BRIDGE.lockConfirmations}`))
+        : "Waiting for approval",
+    },
+    {
+      title: "Receive on Mavryk",
+      status: "pending",
+      description: "Destination settlement is not yet verified",
     },
   ];
 }
@@ -200,7 +195,7 @@ export function BridgeStatusView({
               ? "The transaction has been sent. Check its confirmation before starting another deposit."
               : state.error
                 ? "The deposit has not completed. Review the message above before trying again."
-                : "You can close this window. The bridge keeps running and the funds will appear in your portfolio once process completes."}
+                : "You can close this window. Broadcast transaction hashes are retained for recovery. Destination settlement is not yet verified."}
         </RText>
       </div>
       {state.isConfirmationUnknown && (

@@ -4,6 +4,8 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { HashChip } from "~/lib/molecules/HashChip";
 
+import { useTransactionWidget } from "~/providers/TransactionsProvider/TransactionWidgetProvider";
+
 import styles from "./ConfirmedView.module.css";
 
 type ConfirmedViewProps = {
@@ -17,6 +19,7 @@ export function ConfirmedView({
   explorer,
   onClose,
 }: ConfirmedViewProps) {
+  const { storageError, reconciliationError } = useTransactionWidget();
   return (
     <div className={styles.content}>
       <div className={styles.successIcon}>
@@ -29,14 +32,14 @@ export function ConfirmedView({
         <RText color="neutral-700" size="body-sm">
           Your transaction has been submitted.
           <br />
-          Your funds are being transferred to your wallet. You’ll be notified
-          once they’re available.
+          You can close this window while tracking continues. Delivery to your
+          Mavryk wallet has not yet been verified.
         </RText>
       </div>
       <div className={styles.transaction}>
         <RText className={styles.status} size="body-sm">
           <span className={styles.statusDot} aria-hidden="true" />
-          Confirmed on-chain
+          Submitted on Ethereum
         </RText>
         <div className={styles.transactionDetails}>
           <RText color="neutral-700" size="body-sm">
@@ -63,6 +66,12 @@ export function ConfirmedView({
           )}
         </div>
       </div>
+      {(storageError || reconciliationError) && (
+        <RText size="body-sm" role="status">
+          {storageError ??
+            "Delivery status is unavailable. Your submitted transaction remains tracked."}
+        </RText>
+      )}
       <div className={styles.actions}>
         <RButton
           onClick={onClose}
