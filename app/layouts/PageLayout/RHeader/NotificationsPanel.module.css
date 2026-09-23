@@ -43,6 +43,10 @@
   background: var(--r-color-neutral-white);
   border: 0;
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  transition: all 0.2s ease;
+}
+.notification:hover {
+  background: var(--r-color-neutral-100);
 }
 
 .notificationContent {

@@ -6,6 +6,7 @@ import styles from "./styles.module.css";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
 import { WithdrawFunds } from "./WithdrawFunds";
+import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 
 export function WelcomeBlock({
   activeTab,
@@ -15,6 +16,7 @@ export function WelcomeBlock({
   userName: string;
 }) {
   const navigate = useNavigate();
+  const { unreadNotificationsCount } = useNotificationsContext();
 
   const tabs = useMemo(
     () => [
@@ -33,10 +35,12 @@ export function WelcomeBlock({
       {
         id: ROUTES.portfolioNotifications,
         label: "Notifications",
+        count: unreadNotificationsCount || undefined,
       },
     ],
-    []
+    [unreadNotificationsCount]
   );
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.welcome}>

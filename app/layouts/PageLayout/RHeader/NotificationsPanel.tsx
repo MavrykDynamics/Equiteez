@@ -28,7 +28,10 @@ export function formatNotificationDate(date: string) {
   }).format(parsedDate);
 }
 
-export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
+export function NotificationsPanel({
+  isOpen,
+  onClose,
+}: NotificationsPanelProps) {
   const { isNotificationsLoading, notifications } = useNotificationsContext();
   const panelRef = useRef<HTMLElement | null>(null);
 
@@ -82,7 +85,11 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
         <RText size="body-sm" weight="medium">
           Notifications
         </RText>
-        <Link className={styles.viewAll} onClick={onClose} to={ROUTES.portfolioNotifications}>
+        <Link
+          className={styles.viewAll}
+          onClick={onClose}
+          to={ROUTES.portfolioNotifications}
+        >
           <RText color="neutral-700" size="body-s">
             View All
           </RText>
@@ -98,25 +105,39 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
           </div>
         ) : notifications.length ? (
           notifications.map((notification) => (
-            <div
-              className={clsx(styles.notification, !notification.isRead && styles.unread)}
+            <Link
+              className={clsx(
+                styles.notification,
+                !notification.isRead && styles.unread
+              )}
               key={notification.id}
+              onClick={onClose}
+              to={ROUTES.portfolioNotifications}
             >
               <span className={styles.notificationContent}>
                 <span className={styles.titleLine}>
                   <RText size="body-sm" weight="medium">
                     {notification.title}
                   </RText>
-                  {!notification.isRead ? <span aria-label="Unread" className={styles.unreadIndicator} /> : null}
+                  {!notification.isRead ? (
+                    <span
+                      aria-label="Unread"
+                      className={styles.unreadIndicator}
+                    />
+                  ) : null}
                 </span>
-                <RText className={styles.description} color="neutral-500" size="body-sm">
+                <RText
+                  className={styles.description}
+                  color="neutral-500"
+                  size="body-sm"
+                >
                   {notification.description}
                 </RText>
               </span>
               <RText className={styles.date} color="neutral-500" size="body-sm">
                 {formatNotificationDate(notification.date)}
               </RText>
-            </div>
+            </Link>
           ))
         ) : (
           <div className={styles.empty}>

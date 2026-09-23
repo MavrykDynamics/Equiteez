@@ -15,6 +15,7 @@ import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPop
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 import BellIcon from "app/icons/notification-bell.svg?react";
+import BellIconEmpty from "app/icons/notification-bell-empty.svg?react";
 import { NotificationsPanel } from "./NotificationsPanel";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
@@ -25,9 +26,9 @@ export function RHeader() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const isMobileViewport = useIsMobileViewport();
   const { isAuthenticated } = useAuthContext();
-  const { isNotificationsEnabled, unreadNotificationsCount } = useNotificationsContext();
-  const shouldShowNotifications =
-    isAuthenticated && isNotificationsEnabled;
+  const { isNotificationsEnabled, unreadNotificationsCount } =
+    useNotificationsContext();
+  const shouldShowNotifications = isAuthenticated && isNotificationsEnabled;
   const hasUnreadNotifications = unreadNotificationsCount > 0;
 
   return (
@@ -77,13 +78,7 @@ export function RHeader() {
                 onClick={() => setIsNotificationsOpen((isOpen) => !isOpen)}
                 type="button"
               >
-                <BellIcon
-                  className={
-                    hasUnreadNotifications
-                      ? undefined
-                      : styles.notificationsIconRead
-                  }
-                />
+                {hasUnreadNotifications ? <BellIcon /> : <BellIconEmpty />}
               </button>
               <NotificationsPanel
                 isOpen={isNotificationsOpen}
