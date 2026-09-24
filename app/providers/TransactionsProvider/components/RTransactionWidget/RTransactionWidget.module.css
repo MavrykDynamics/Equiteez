@@ -36,9 +36,20 @@
 }
 
 .address {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--r-color-neutral-black);
+  font: inherit;
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.address:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
 }
 
 .steps {
@@ -64,11 +75,17 @@
 .step {
   position: relative;
   display: flex;
-  flex: 0 0 var(--r-space-6);
+  flex: 0 1 var(--r-space-6);
+  min-width: 0;
+  height: 50px;
+  box-sizing: border-box;
   flex-direction: column;
   align-items: center;
   gap: var(--r-space-1);
   padding-top: 2px;
+  transition:
+    flex-basis var(--r-motion-duration-base) var(--r-motion-ease-premium),
+    padding-top var(--r-motion-duration-base) var(--r-motion-ease-premium);
 }
 
 .step[data-current] {
@@ -87,6 +104,11 @@
   font-size: var(--r-font-size-body-s);
   line-height: var(--r-line-height-body-s);
   background: var(--r-color-neutral-50);
+  transition:
+    width var(--r-motion-duration-base) var(--r-motion-ease-premium),
+    height var(--r-motion-duration-base) var(--r-motion-ease-premium),
+    color var(--r-motion-duration-base),
+    background-color var(--r-motion-duration-base);
 }
 
 .indicator[data-status="loading"] {
@@ -119,6 +141,7 @@
 }
 
 .indicator[data-status="warning"] {
+  color: var(--r-color-yellow-500);
   background: var(--r-surface-warning);
 }
 
@@ -133,7 +156,18 @@
 }
 
 .stepLabel {
+  position: absolute;
+  top: 32px;
+  width: 103px;
   text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--r-motion-duration-fast) var(--r-motion-ease-premium);
+}
+
+.step[data-current] .stepLabel {
+  opacity: 1;
 }
 
 .message {
@@ -150,6 +184,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .step,
+  .indicator,
+  .stepLabel {
+    transition: none;
+  }
+
   .statusIcon {
     animation: none;
   }

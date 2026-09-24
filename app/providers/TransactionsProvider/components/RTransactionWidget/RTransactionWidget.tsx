@@ -1,4 +1,8 @@
+import type { ComponentProps } from "react";
 import clsx from "clsx";
+
+import Money from "~/lib/atoms/Money";
+import { HashChip } from "~/lib/molecules/HashChip";
 
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -18,10 +22,10 @@ export type RTransactionWidgetState =
   | { status: "error" | "warning"; title?: string; description: string };
 
 export type RTransactionWidgetProps = {
-  /** Display-formatted amount, without the token symbol. */
-  amount: string;
+  /** Raw USD value; Money applies fiat formatting. */
+  amount: ComponentProps<typeof Money>["children"];
   symbol?: string;
-  /** Display-formatted destination address. */
+  /** Full destination address, shortened and copied by HashChip. */
   recipient: string;
   state: RTransactionWidgetState;
   className?: string;
@@ -33,10 +37,10 @@ const messageIcons: Record<"success" | "error" | "warning", RIconName> = {
   warning: "info",
 };
 
-/** Presentation only: callers select the state and format transaction values. */
+/** Presentation only: callers supply the state, raw amount, and full address. */
 export function RTransactionWidget({
   amount,
-  symbol = "USDT",
+  symbol = "USD",
   recipient,
   state,
   className,
@@ -49,15 +53,23 @@ export function RTransactionWidget({
     >
       <div className={styles.header}>
         <RText className={styles.amount} size="body-sm" weight="medium">
-          {amount} {symbol}
+          <Money fiat tooltip={false}>
+            {amount}
+          </Money>{" "}
+          {symbol}
         </RText>
         <RText className={styles.recipient} size="body-s">
           <RText color="neutral-700" size="body-s">
             To:
           </RText>
-          <span className={styles.address} title={recipient}>
-            {recipient}
-          </span>
+          <HashChip
+            aria-label={`Copy recipient address ${recipient}`}
+            className={styles.address}
+            firstCharsCount={9}
+            lastCharsCount={3}
+            hash={recipient}
+            type="link"
+          />
         </RText>
       </div>
       <div role="status" aria-live="polite" aria-atomic="true">
@@ -95,15 +107,13 @@ export function RTransactionWidget({
                       />
                     )}
                   </span>
-                  {isCurrent && (
-                    <RText
-                      className={styles.stepLabel}
-                      size="body-s"
-                      aria-hidden="true"
-                    >
-                      {label}
-                    </RText>
-                  )}
+                  <RText
+                    className={styles.stepLabel}
+                    size="body-s"
+                    aria-hidden="true"
+                  >
+                    {label}
+                  </RText>
                 </li>
               );
             })}
@@ -115,6 +125,8 @@ export function RTransactionWidget({
                 className={styles.statusIcon}
                 name={messageIcons[state.status]}
                 size="small"
+                viewBox={state.status === "warning" ? "0 0 13 13" : "0 0 24 24"}
+                strokeWidth={state.status === "warning" ? 1 : 1.5}
               />
             </span>
             <div className={styles.messageCopy}>

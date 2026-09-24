@@ -63,8 +63,8 @@ export function RTransactionWidgetPreview() {
           ))}
         </div>
         <RTransactionWidget
-          amount="1,000.00"
-          recipient="mv1xxxxxx...xxx"
+          amount={1000}
+          recipient="mv1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
           state={variants[selectedIndex].state}
         />
       </Container>
