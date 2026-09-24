@@ -12,6 +12,13 @@ type NotificationTextTemplate = {
   _comment?: string;
 };
 
+type NotificationTextSource = {
+  kind: string;
+  payload: Record<string, unknown>;
+  occurred_at?: string;
+  [field: string]: unknown;
+};
+
 const NOTIFICATION_TEXT_TEMPLATES = notificationTextTemplates as Record<
   string,
   NotificationTextTemplate
@@ -132,7 +139,7 @@ const getPayloadNumber = (
   return undefined;
 };
 
-const getNotificationDescription = (notification: NotificationItemType) =>
+const getNotificationDescription = (notification: NotificationTextSource) =>
   notification.kind.split("_").join(" ");
 
 const formatTemplateValue = (
@@ -170,7 +177,7 @@ const formatTemplateValue = (
 };
 
 const getNotificationVariableValue = (
-  notification: NotificationItemType,
+  notification: NotificationTextSource,
   variableName: string
 ) => {
   if (variableName === "order_type_past_tense") {
@@ -189,15 +196,14 @@ const getNotificationVariableValue = (
     );
   }
 
-  const notificationValue =
-    notification[variableName as keyof NotificationItemType];
+  const notificationValue = notification[variableName];
 
   return typeof notificationValue === "string" ? notificationValue : undefined;
 };
 
 export const fillNotificationTextTemplate = (
   template: string,
-  notification: NotificationItemType
+  notification: NotificationTextSource
 ) => {
   const missingVariables: string[] = [];
   const text = template.replace(
@@ -218,11 +224,14 @@ export const fillNotificationTextTemplate = (
   return missingVariables.length ? null : text;
 };
 
-const getNotificationText = (notification: NotificationItemType) => {
+export const resolveNotificationText = (
+  notification: NotificationTextSource
+) => {
   const template = NOTIFICATION_TEXT_TEMPLATES[notification.kind];
 
   if (!template) {
     return {
+      tone: "info" as const,
       title: notification.kind,
       description:
         getNotificationDescription(notification) || notification.kind,
@@ -235,6 +244,7 @@ const getNotificationText = (notification: NotificationItemType) => {
     fillNotificationTextTemplate(template.description, notification);
 
   return {
+    tone: template.tone,
     title: title || notification.kind.split("_").join(" "),
     description:
       description ||
@@ -246,7 +256,7 @@ const getNotificationText = (notification: NotificationItemType) => {
 export const mapNotificationItemToUserNotification = (
   notification: NotificationItemType
 ): UserNotification => {
-  const text = getNotificationText(notification);
+  const text = resolveNotificationText(notification);
 
   return {
     id: notification.id,

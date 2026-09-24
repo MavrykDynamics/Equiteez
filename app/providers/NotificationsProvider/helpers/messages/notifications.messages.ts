@@ -13,8 +13,7 @@ export type {
 const isLaunchChannel = (channel: string) => channel.startsWith("launch:");
 
 export const getNotificationMessage = (
-  frame: NotifierEventFrame,
-  wallet?: string
+  frame: NotifierEventFrame
 ): NotifierToastMessage | null => {
   if (isLaunchChannel(frame.channel)) {
     return getLaunchNotificationMessage(frame);
@@ -22,7 +21,7 @@ export const getNotificationMessage = (
 
   switch (frame.channel) {
     case NotifierChannel.Wallet:
-      return getWalletNotificationMessage(frame, wallet);
+      return getWalletNotificationMessage(frame);
     case NotifierChannel.Catalog:
       return getCatalogNotificationMessage(frame);
     default:

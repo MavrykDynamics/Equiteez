@@ -63,12 +63,8 @@ export enum NotifierAdminEvent {
   SuperAdminCreated = "SUPER_ADMIN_CREATED",
 }
 
-export const NOTIFIER_CLOSE_NORMAL = 1000;
 export const NOTIFIER_CLOSE_GOING_AWAY = 1001;
-export const NOTIFIER_CLOSE_MESSAGE_TOO_BIG = 1009;
-export const NOTIFIER_CLOSE_INTERNAL_ERROR = 1011;
 export const NOTIFIER_CLOSE_UNAUTHORIZED = 4001;
-export const NOTIFIER_CLOSE_SLOW_CONSUMER = 4002;
 export const NOTIFIER_CLOSE_BAD_FRAME = 4003;
 
 export const RECONNECT_BASE_DELAY_MS = 1000;
