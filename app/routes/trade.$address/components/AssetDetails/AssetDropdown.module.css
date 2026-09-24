@@ -197,6 +197,14 @@
     overflow: hidden;
     padding: var(--r-space-4) var(--r-space-4) var(--r-space-6);
     border-radius: var(--r-radius-sm) var(--r-radius-sm) 0 0;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sheet.sheet:focus,
+  .sheet.sheet:focus-visible {
+    outline: none;
+    box-shadow: none;
   }
 
   .dropdown {
