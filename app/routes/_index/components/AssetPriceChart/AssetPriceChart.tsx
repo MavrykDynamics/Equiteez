@@ -24,6 +24,7 @@ type AssetPriceChartProps = {
   onHover?: (hover: AssetPriceChartHover | null) => void;
   points: AssetPriceChartPoint[];
   priceDecimals?: number;
+  priceScaleMinimumWidth?: number;
   showPriceScale?: boolean;
   showTimeScale?: boolean;
   timeTickFormatter?: (date: Date) => string;
@@ -49,6 +50,7 @@ export function AssetPriceChart({
   onHover,
   points,
   priceDecimals = 2,
+  priceScaleMinimumWidth = 64,
   showPriceScale = false,
   showTimeScale = false,
   timeTickFormatter,
@@ -117,7 +119,7 @@ export function AssetPriceChart({
             autoScale: true,
             borderVisible: false,
             entireTextOnly: true,
-            minimumWidth: 64,
+            minimumWidth: priceScaleMinimumWidth,
             scaleMargins: {
               bottom: 0.04,
               top: 0.04,
@@ -192,6 +194,7 @@ export function AssetPriceChart({
     chartData,
     onHover,
     priceDecimals,
+    priceScaleMinimumWidth,
     shouldRenderChart,
     showPriceScale,
     showTimeScale,

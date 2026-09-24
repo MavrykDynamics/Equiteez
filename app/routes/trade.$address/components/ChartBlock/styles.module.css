@@ -431,6 +431,27 @@
 }
 
 @media (--media-phone-max) {
+  /* Remove 16px of axis padding without resizing the label canvases. */
+  .chartCanvas .chart {
+    width: calc(100% + var(--r-space-4));
+  }
+
+  .chart :global(table) {
+    width: calc(100% - var(--r-space-4)) !important;
+  }
+
+  .chart :global(tr > td:last-child > div) {
+    margin-inline: calc(-1 * var(--r-space-2));
+  }
+
+  .priceLabel {
+    display: none;
+  }
+
+  .priceChange span {
+    font-weight: var(--r-font-weight-medium);
+  }
+
   .wrapper {
     --chart-height: 328px;
     width: 100%;
