@@ -80,6 +80,17 @@ it("presentation cannot leak across account/network sessions or logout and retur
   };
   const returned = renderWidget();
   expect(returned.dismissed.size).toBe(0);
-  expect(returned.isOpen).toBe(false);
+  expect(returned.isOpen).toBe(true);
   expect(returned.transactions).toHaveLength(1);
+});
+
+it("history reopen is explicit and refresh delegates without changing canonical data", () => {
+  const widget = renderWidget();
+  widget.dismiss("operation-1");
+  expect(renderWidget().visibleModels).toHaveLength(0);
+  renderWidget().showDeposits();
+  expect(renderWidget().visibleModels).toHaveLength(1);
+  renderWidget().refresh();
+  expect(mocks.context.refresh).toHaveBeenCalledOnce();
+  expect(store.getSnapshot().transactions.size).toBe(1);
 });

@@ -6,7 +6,7 @@ import { RFooter } from "~/layouts/PageLayout/RFooter";
 import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
 import { RBottomNavigation } from "~/layouts/PageLayout/RHeader/RBottomNavigation";
 
-import { RTransactionWidgetPreview } from "~/providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidgetPreview";
+import { RTransactionWidgetHost } from "~/providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidgetHost";
 
 import styles from "./Pagelayout.module.css";
 
@@ -40,8 +40,7 @@ const PageLayout: FC<PageLayoutProps> = ({
         )}
       >
         <RHeader />
-        {/* TODO REMOVE: temporary widget state controls. */}
-        <RTransactionWidgetPreview />
+        <RTransactionWidgetHost />
         {includeContainer ? (
           <div className="flex-1">
             <Container>{children}</Container>

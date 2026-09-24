@@ -22,8 +22,9 @@ export type RTransactionWidgetState =
   | { status: "error" | "warning"; title?: string; description: string };
 
 export type RTransactionWidgetProps = {
-  /** Raw USD value; Money applies fiat formatting. */
-  amount: ComponentProps<typeof Money>["children"];
+  /** Raw value; null means unavailable. Fiat formatting remains the default. */
+  amount: ComponentProps<typeof Money>["children"] | null;
+  amountMode?: "fiat" | "token";
   symbol?: string;
   /** Full destination address, shortened and copied by HashChip. */
   recipient: string;
@@ -41,6 +42,7 @@ const messageIcons: Record<"success" | "error" | "warning", RIconName> = {
 export function RTransactionWidget({
   amount,
   symbol = "USD",
+  amountMode = "fiat",
   recipient,
   state,
   className,
@@ -53,10 +55,20 @@ export function RTransactionWidget({
     >
       <div className={styles.header}>
         <RText className={styles.amount} size="body-sm" weight="medium">
-          <Money fiat tooltip={false}>
-            {amount}
-          </Money>{" "}
-          {symbol}
+          {amount === null ? (
+            "Amount unavailable"
+          ) : (
+            <>
+              {amountMode === "token" ? (
+                amount.toString()
+              ) : (
+                <Money fiat tooltip={false}>
+                  {amount}
+                </Money>
+              )}{" "}
+              {symbol}
+            </>
+          )}
         </RText>
         <RText className={styles.recipient} size="body-s">
           <RText color="neutral-700" size="body-s">

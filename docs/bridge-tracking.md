@@ -2,7 +2,7 @@
 
 ## Contract and scope
 
-The API contract source is [`../doc-not.md`](../doc-not.md). This implementation covers Ethereum → Mavryk deposits, including backend-discovered returning MAV-origin tokens. It does not implement withdrawals or a visible transaction widget.
+The previously referenced API contract source, `../doc-not.md`, is absent from this checkout; signer emission details remain unverified. This implementation covers Ethereum → Mavryk deposits, including backend-discovered returning MAV-origin tokens. It includes the production deposit widget; withdrawals are not implemented.
 
 `BRIDGE_DEPOSIT_UPDATED` arrives on the authenticated `wallet` channel. Its signer payload is **only an invalidation signal**. A signer's `COMPLETED` is not destination settlement. The adapter uses the existing validated envelope and does not interpret undocumented payload fields.
 
@@ -33,7 +33,7 @@ The normalized URL must equal `RWA_API`, and the pair and source bridge must mat
 
 `useUsdtBridge` publishes progress directly from the contract execution callback. It assigns a local operation ID and captures the first lock hash, later replacement hashes, amount, sender, and lock-observed time. Saving happens synchronously in that callback, before any widget effect. Local source progress/errors and backend settlement are separate fields. Modal dismissal/reset does not delete or stop broadcast tracking. The modal switches to submitted copy as soon as a lock hash is available; it no longer invalidates destination balances merely because the source lock confirmed.
 
-`TransactionWidgetProvider` owns only open/dismissed presentation state. `useTransactionWidget()` exposes normalized transactions (including local progress and validated backend details), per-record verification, `lastCheckedAt`, `storageError`, `reconciliationError`, `refresh`, `dismiss`, and `setIsOpen`. Dismissal hides nothing from the canonical map or reconciliation. Presentation is reset by account/network session identity, including logout and login to the same wallet.
+`TransactionWidgetProvider` derives widget models from canonical records and owns only session-scoped discovery, ordering, open/dismissed presentation state. `useTransactionWidget()` exposes normalized transactions (including local progress and validated backend details), per-record verification, `lastCheckedAt`, `storageError`, `reconciliationError`, `refresh`, `dismiss`, and `setIsOpen`. Dismissal hides nothing from the canonical map or reconciliation. Presentation is reset by account/network session identity, including logout and login to the same wallet.
 
 Only a refetched `executed` row produces an arrival toast. Historical terminal rows discovered at login do not toast; observed or locally retained transactions completed during a disconnect do. Terminal announcement markers persist to suppress repeats. Newly observed execution invalidates the existing wallet/feed/portfolio/activity/notification queries for that account without requesting chain-based cache bypass.
 
@@ -64,3 +64,29 @@ Local progress uses a monotonic local sequence. Backend rows use `updated_at` on
 ## Validation
 
 Focused Vitest suites exercise state merging, duplicates/out-of-order updates, equal-timestamp conflicts, source replacements, early discovery, concurrent deposits, dismissal/navigation presentation, reload without resubmission, reconnect/foreground gaps, scoped cleanup/late results, malformed data, storage errors, and synchronous/asynchronous notifier listener isolation. Tests use deterministic storage/transport and hook harnesses; they are not a live signer deployment or browser end-to-end verification.
+
+## Production deposit widget
+
+`PageLayout` renders `RTransactionWidgetHost` below the header, replacing the manual preview. The host consumes only `TransactionWidgetProvider`: it adds no listeners, fetch effects, timers, toasts, balance invalidations, or signing actions. The providers remain above routes and loading gates. The deposit modal and execution flow are unchanged.
+
+| Evidence | Display |
+| --- | --- |
+| Approval/signature only, no source lock hash or backend row | No card |
+| Fresh local lock confirmation in progress | Step 1, Lock on Ethereum |
+| Verified `confirming` | Step 1, Lock on Ethereum |
+| Verified `signing` | Step 2, Validators Sign |
+| Verified `executed` | Success |
+| Verified `stalled` | Deposit delayed warning; may recover |
+| Source confirmed without backend verification, restored/stale/unknown records, or source execution errors | Verification warning |
+
+Verified backend state wins over local errors. Supplemental storage/reconciliation messages do not turn verified success into failure. Steps 3/4 and terminal failure have no supported evidence and are never selected by the mapper. Socket payloads remain invalidation signals only.
+
+Amounts use backend decimal strings, then raw quantities with known decimals (BigNumber), then matching local source amounts. Missing amounts display “Amount unavailable”; unresolved symbols display “Token amount”. The configured source token is identified by its address; arbitrary API `token` strings are not treated as tickers. Production token quantities render exact decimal text without fiat formatting or Number conversion because the existing Money component can round token quantities. Legacy widget fiat props remain supported.
+
+Active, delayed and retained pending deposits open automatically in first-observed order. Completion stays visible until dismissal. Initially discovered executed history (including restored executed history awaiting verification) does not auto-open. “Show deposits” explicitly reopens retained history and dismissed cards; “Hide deposits” collapses the host. Dismissal never removes tracking. Repeated snapshots do not reopen dismissed cards; a newly discovered active deposit may open the host. Exact backend hash/log identity carries dismissal and ordering into an adopted local operation; different logs remain separate. Session changes reset all presentation, including logout/login to the same account.
+
+### Widget verification
+
+Mapper tests cover all four backend statuses across all five verification states, source confirmation versus settlement, unknown/token/raw amounts and exact precision. Presentation tests cover history suppression, active completion, dismissal, identity adoption, route/session changes and explicit history/refresh. Integration tests drive the real reconciler/store through external discovery, duplicate snapshots, multiple logs, HTTP failure, recovery and replacement adoption. Existing store/reconciler tests cover persistence, missing deployment binding, malformed responses, stale/conflicting rows, polling bounds and late-response cleanup. The original provider tests retain their mocked-state/server-render harness. Additional jsdom suites mount the real providers, event hook, host and socket hook under Strict Mode: they exercise one persistent listener, event-ID deduplication per wallet, obsolete sockets, route/loading remounts, dismissal, history, logout/login, wallet changes, late results/publications, hidden/foreground recovery, unavailable storage, refresh, and settlement side-effect ownership. jsdom is a development-only test dependency; it does not verify visual layout. Live signer delivery and mobile/desktop browser layout still require a configured browser environment.
+
+Validation for this integration: 69 focused tests pass across 10 suites; targeted ESLint and production build pass. Full typecheck remains blocked by existing errors in assets/utils, SecretCover, IdenIcon, useMemoWithCompare, AssetTabs, codegen and the generated server-build typing used by functions/[[path]].ts; no changed-file errors remain. Browser visual/keyboard verification was attempted but no browser was available to the UI tool. Live signer/backend delivery was not tested. AGENTS.md and the local redesign skill/registry were updated, but those paths are git-ignored in this checkout.
