@@ -13,6 +13,14 @@
   max-height: none;
   padding: var(--r-space-4);
   border-radius: var(--r-radius-md) var(--r-radius-md) 0 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.popup:focus,
+.popup:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .body {
