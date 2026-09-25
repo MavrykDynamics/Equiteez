@@ -58,6 +58,10 @@
     box-shadow: var(--r-focus-ring);
   }
 
+  .amountHeader {
+    color: var(--r-color-neutral-700);
+  }
+
   .portfolioCard,
   .assetsCard {
     overflow: hidden;
@@ -112,7 +116,7 @@
   }
 
   .assetSearch {
-    height: 36px;
+    height: 42px;
     padding: 0 var(--r-space-3);
   }
 
