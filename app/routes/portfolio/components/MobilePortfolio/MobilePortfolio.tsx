@@ -26,7 +26,7 @@ function MobileAssetRow({ asset }: { asset: WalletPortfolioAssetType }) {
           size={30}
         />
         <span className={styles.assetName}>
-          <RText className={styles.assetSymbol} size="body-sm" weight="medium">
+          <RText className={styles.assetSymbol} size="body-sm">
             {asset.symbol.toUpperCase()}
           </RText>
           <RText
@@ -118,7 +118,7 @@ export function MobilePortfolio() {
         className={styles.walletSearch}
         aria-label="Wallet portfolio lookup"
       >
-        <RText color="neutral-500" size="body-sm">
+        <RText color="neutral-700" size="body-sm">
           Enter a wallet address to view statistics and activity.
         </RText>
         <div className={styles.addressControls}>
@@ -191,7 +191,7 @@ export function MobilePortfolio() {
                 </RText>
                 <RHeading
                   className={styles.growthValue}
-                  size="h4"
+                  size="h5"
                   weight="medium"
                 >
                   {/*+*/}
@@ -209,7 +209,7 @@ export function MobilePortfolio() {
                 <RText color="neutral-700" size="body-s" weight="medium">
                   Dividends Earned
                 </RText>
-                <RHeading size="h4" weight="medium">
+                <RHeading size="h5" weight="medium">
                   {/*$*/}
                   {/*<Money fiat tooltip={false}>*/}
                   {/*  6_853*/}
@@ -226,7 +226,7 @@ export function MobilePortfolio() {
                 </RText>
                 <RHeading
                   className={styles.yieldValue}
-                  size="h4"
+                  size="h5"
                   weight="medium"
                   color="accent-green-500"
                 >
@@ -258,7 +258,7 @@ export function MobilePortfolio() {
             />
             <div className={styles.table}>
               <div className={styles.tableHeader}>
-                <RText size="body-xs" weight="medium">
+                <RText color="neutral-700" size="body-xs" weight="medium">
                   Asset
                 </RText>
                 <button
@@ -267,7 +267,7 @@ export function MobilePortfolio() {
                   onClick={() => setIsAmountDescending((value) => !value)}
                   type="button"
                 >
-                  <RText size="body-xs" weight="medium">
+                  <RText color="neutral-700" size="body-xs" weight="medium">
                     Amount
                   </RText>
                   <RIcon

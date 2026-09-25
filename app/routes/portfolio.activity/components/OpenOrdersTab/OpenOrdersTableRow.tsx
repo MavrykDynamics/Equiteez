@@ -16,6 +16,7 @@ import styles from "./styles.module.css";
 import { CancelOrderPopup } from "~/lib/organisms/CancelOrderPopup/CancelOrderPopup";
 import { toTokenSlug } from "~/lib/assets";
 import { useAssetMetadata } from "~/lib/metadata";
+import classNames from "clsx";
 
 type OpenOrdersTableRowProps = {
   order: OpenOrderItemType;
@@ -47,7 +48,7 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
 
   return (
     <>
-      <div className={styles.row} role="row">
+      <div className={classNames(styles.row, isExpired && styles.rowExpired)} role="row">
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
             <RText size="body-sm">{formattedDate}</RText>
