@@ -75,7 +75,7 @@ describe("USDT bridge amount and deployed call", () => {
   it("encodes the deployed selector, exact 18-decimal amount, and UTF-8 Mavryk recipient", () => {
     const call = buildUsdtWrapCall(amount, ` ${recipient} `);
     expect(call.address).toBe("0x476a30d098eD197c2b109abaBbf5135D49df0967");
-    expect(call.args[0]).toBe("0x0111c65c13b3ee07662340692cba957b29572f27");
+    expect(call.args[0]).toBe("0xada0b668c6598559c5c816a8b633efe714c5b5f3");
     expect(call.args[1]).toBe(rawAmount);
     expect(hexToString(call.args[2])).toBe(recipient);
     expect(encodeFunctionData(call).slice(0, 10)).toBe("0xeb093ee8");
