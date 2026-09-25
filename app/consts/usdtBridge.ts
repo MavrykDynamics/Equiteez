@@ -2,7 +2,7 @@ import type { AssetMetadataBase, TokenMetadata } from "~/lib/metadata/types";
 import { TokenStandardsEnum } from "~/lib/metadata/types";
 
 // mavryk-bridge/app/config/bridge.ts: ETH_ERC20_1 -> MAV_WRAPPED_ERC20.
-// Live metadata identifies these as Mock USDT / wUSDT (the repo labels are stale).
+// Redeployed Mock USDT / wUSDT pair from the bridge configuration.
 export const USDT_BRIDGE = {
   approvalConfirmations: 1,
   lockConfirmations: 3,
@@ -10,13 +10,13 @@ export const USDT_BRIDGE = {
   address: "0x476a30d098eD197c2b109abaBbf5135D49df0967",
   destinationNetwork: "basenet",
   sourceToken: {
-    address: "0x0111C65C13b3Ee07662340692CBA957B29572F27",
+    address: "0xADA0b668C6598559c5C816A8b633EfE714c5b5F3",
     name: "Mock USDT",
     symbol: "USDT",
     decimals: 18,
   } as const satisfies AssetMetadataBase,
   destinationToken: {
-    address: "KT1J8yjtFGY6fiqjSNLpUjDnX2bj2HsUizAi",
+    address: "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
     id: "0",
     name: "Tether USDT",
     symbol: "wUSDT",
