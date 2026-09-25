@@ -73,6 +73,7 @@ export type NotifierEventFrame = {
   type: NotifierServerFrameType.Event;
   event_id: string;
   event_type: NotifierEventType | string;
+  kind?: string | null;
   occurred_at: string;
   channel: string;
   payload?: Record<string, unknown>;

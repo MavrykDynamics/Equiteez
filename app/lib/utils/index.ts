@@ -40,3 +40,6 @@ export function withSortedFromMap<K, V>(map: Map<K, V>, sortedKeys: K[]): V[] {
 
   return sortedValues;
 }
+
+export { getTrimmedHash, renderTrimmedHash } from "~/lib/utils/hash";
+export type { TrimHashOptions } from "~/lib/utils/hash";

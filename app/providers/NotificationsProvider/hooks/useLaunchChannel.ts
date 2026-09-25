@@ -54,7 +54,7 @@ export const useLaunchChannel = (
 
   const handleLaunchEvent = useCallback(
     (frame: NotifierEventFrame, wallet: string) => {
-      const notification = getNotificationMessage(frame, wallet);
+      const notification = getNotificationMessage(frame);
 
       if (notification) {
         showNotificationToast(toaster, notification);

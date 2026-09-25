@@ -1,0 +1,119 @@
+{
+  "order_placed": {
+    "tone": "info",
+    "title": "{order_type} Order placed",
+    "description": "Limit {order_type} for {rwa_token_amount} {token_symbol} at {price_per_rwa_token} {quote_token_symbol}. {total_usd_value_of_rwa_token_amount} {quote_token_symbol} held in escrow. Order #{order_id}."
+  },
+  "order_partially_filled": {
+    "tone": "info",
+    "title": "{order_type} Order partially filled",
+    "description": "{fulfilled_amount} of {rwa_token_amount} {token_symbol} filled at {price_per_rwa_token} {quote_token_symbol}. {unfulfilled_amount} still open. Order #{order_id}."
+  },
+  "order_filled": {
+    "tone": "success",
+    "title": "{order_type} Order fully filled",
+    "description": "{order_type_past_tense} {rwa_token_amount} {token_symbol} at avg. {quote_token_symbol} {price_per_rwa_token}. Total {total_paid_out} {quote_token_symbol}. Settled onchain. Order #{order_id}."
+  },
+  "order_canceled": {
+    "tone": "info",
+    "title": "{order_type} Order canceled",
+    "description": "Your {order_type} order for {rwa_token_amount} {token_symbol} was canceled. {refunded_amount} {quote_token_symbol} released from escrow to your wallet. Order #{order_id}."
+  },
+  "order_closed": {
+    "tone": "info",
+    "title": "Order closed, funds claimable",
+    "description": "",
+    "_comment": "No full description in Notification Text - Equiteez.docx. PDF copy hint: Order closed, funds claimable."
+  },
+  "order_expired": {
+    "tone": "info",
+    "title": "Order expired",
+    "description": "Your order for {rwa_token_amount} {token_symbol} expired. {fulfilled_amount} of {rwa_token_amount} filled. {refunded_amount} {quote_token_symbol} released from escrow to your wallet. Order #{order_id}."
+  },
+  "order_refunded": {
+    "tone": "success",
+    "title": "Order funds refunded",
+    "description": "{refunded_amount} {quote_token_symbol} from order #{order_id} has been returned to your available balance."
+  },
+  "tokens_received": {
+    "tone": "success",
+    "title": "Deposit Received",
+    "description": "{amount} {token_symbol} received from {from}. Available in your wallet now."
+  },
+  "tokens_sent": {
+    "tone": "info",
+    "title": "Tokens sent",
+    "description": "{amount} {token_symbol} sent to {to}. Transaction {operation_hash}. Didn't make this transfer? Contact Equiteez support immediately."
+  },
+  "tokens_minted": {
+    "tone": "success",
+    "title": "Tokens credited (mint)",
+    "description": "{amount} {token_symbol} credited to your wallet. Transaction {operation_hash}."
+  },
+  "tokens_burned": {
+    "tone": "info",
+    "title": "Tokens debited (burn)",
+    "description": "{amount} {token_symbol} debited from your wallet. Transaction {operation_hash}. Questions? Contact Equiteez support."
+  },
+  "launch_purchase": {
+    "tone": "success",
+    "title": "Launchpad purchase confirmed (self)",
+    "description": "You purchased {amount} {token_symbol} in the {launch_name} offering at {price} {quote_token_symbol}. Total {total} {quote_token_symbol}. Tokens will be delivered on {distribution_date}."
+  },
+  "launch_purchase_recorded": {
+    "tone": "info",
+    "title": "Launchpad purchase recorded (by admin)",
+    "description": "Equiteez recorded a purchase of {amount} {token_symbol} in the {launch_name} offering on your behalf. Total {total} {quote_token_symbol}. Ref. {reference}. Didn't expect this? Contact support."
+  },
+  "launch_tokens_distributed": {
+    "tone": "success",
+    "title": "Launch tokens distributed",
+    "description": "{amount} {token_symbol} from the {launch_name} offering have been delivered to your wallet. Transaction {operation_hash}."
+  },
+  "kyc_frozen": {
+    "tone": "warning",
+    "title": "Account restricted",
+    "description": "Trading and transfers are temporarily restricted on your account as of {occurred_at}. Your holdings are unchanged and remain in your wallet. Contact support to resolve this."
+  },
+  "kyc_unfrozen": {
+    "tone": "success",
+    "title": "Account unrestricted",
+    "description": "Your account is fully active again. Trading and transfers are available as of {occurred_at}."
+  },
+  "kyc_updated": {
+    "tone": "info",
+    "title": "KYC status updated",
+    "description": "",
+    "_comment": "No full description in Notification Text."
+  },
+  "relay_failed": {
+    "tone": "warning",
+    "title": "Gasless action failed, re-sign",
+    "description": "",
+    "_comment": "No full description in Notification Text."
+  },
+  "relay_rejected": {
+    "tone": "warning",
+    "title": "Gasless action failed, re-sign",
+    "description": "",
+    "_comment": "No full description in Notification Text."
+  },
+  "bridge_deposit_completed": {
+    "tone": "success",
+    "title": "Bridge deposit completed",
+    "description": "",
+    "_comment": "No full description in Notification Text."
+  },
+  "bridge_deposit_stalled": {
+    "tone": "warning",
+    "title": "Bridge deposit stalled",
+    "description": "",
+    "_comment": "No full description in Notification Text."
+  },
+  "bridge_withdrawal_failed": {
+    "tone": "warning",
+    "title": "Bridge withdrawal failed",
+    "description": "",
+    "_comment": "No full description in Notification Text."
+  }
+}
