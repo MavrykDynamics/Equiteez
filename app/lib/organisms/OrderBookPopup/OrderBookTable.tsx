@@ -122,8 +122,6 @@ type LastTradesRowsSectionProps = {
   rows: LastTradeRow[];
 };
 
-type SpreadDirection = "up" | "down";
-
 type OrderBookFooterSummary = {
   buyDisplayPercentage: number;
   buyPercentage: number;
@@ -393,48 +391,6 @@ const toLastTradeRows = (
     });
 };
 
-const getSpreadLabel = (spread: OrderBookData["spread"]) => {
-  if (spread.bestAsk > 0 && spread.bestBid > 0) return "Spread";
-  if (spread.bestAsk > 0) return "Best Ask";
-  if (spread.bestBid > 0) return "Best Bid";
-
-  return "Spread";
-};
-
-const getSpreadDisplayData = (
-  spread: OrderBookData["spread"],
-  displayMode: OrderBookDisplayMode
-) => {
-  if (displayMode === "buy") {
-    return {
-      label: "Best Bid",
-      price: spread.bestBid,
-      side: "bid" as const,
-      value: null,
-    };
-  }
-
-  if (displayMode === "sell") {
-    return {
-      label: "Best Ask",
-      price: spread.bestAsk,
-      side: "ask" as const,
-      value: null,
-    };
-  }
-
-  return {
-    label: getSpreadLabel(spread),
-    price: spread.price,
-    side: spread.bestAsk > 0 ? ("ask" as const) : ("bid" as const),
-    value: spread.bestAsk > 0 && spread.bestBid > 0 ? spread.value : null,
-  };
-};
-
-const getSpreadDirection = (
-  displayMode: OrderBookDisplayMode
-): SpreadDirection => (displayMode === "sell" ? "up" : "down");
-
 const formatQuoteTokenValue = ({
   formatter,
   quoteTokenSymbol,
@@ -702,30 +658,6 @@ const OrderBookDisplayModeIcon: FC<{
   return <Icon className={styles.displayModeIcon} aria-hidden="true" />;
 };
 
-const SpreadDirectionIcon: FC<{
-  direction: SpreadDirection;
-  side: "ask" | "bid";
-}> = ({ direction, side }) => (
-  <svg
-    viewBox="0 0 16 16"
-    aria-hidden="true"
-    className={clsx(
-      styles.spreadDirectionIcon,
-      direction === "up" && styles.spreadDirectionIconUp,
-      side === "ask" ? styles.askPrice : styles.bidPrice
-    )}
-  >
-    <path
-      d="M8 1.5v13M8 14.5l4-4M8 14.5l-4-4"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.75"
-    />
-  </svg>
-);
-
 const OrderBookTableHeaderComponent: FC<OrderBookTableHeaderProps> = ({
   onDisplayModeChange,
   onGroupingChange,
@@ -850,7 +782,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   onPriceClick,
   quoteTokenDecimals,
   quoteTokenSymbol = "USDT",
-  referencePrice = 0,
   rwaAddress,
 }) => {
   const [selectedTableView, setSelectedTableView] =
@@ -976,10 +907,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
       }),
     [orderbookDepth]
   );
-  const spreadDisplayData = useMemo(
-    () => getSpreadDisplayData(renderData.spread, selectedDisplayMode),
-    [renderData.spread, selectedDisplayMode]
-  );
   const midPrice =
     renderData.spread.bestAsk > 0 && renderData.spread.bestBid > 0
       ? new BigNumberJs(renderData.spread.bestAsk)
@@ -1027,11 +954,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
     }),
     [lastTradeAmountFractionDigits, lastTradePriceFractionDigits]
   );
-  const shouldShowReferencePrice = referencePrice > 0;
-  const spreadDirection = useMemo(
-    () => getSpreadDirection(selectedDisplayMode),
-    [selectedDisplayMode]
-  );
   const footerSummaryFractionDigits = useMemo(
     () =>
       getColumnFractionDigits([
@@ -1044,22 +966,6 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const footerSummaryFormatter = useMemo(
     () => createNumberFormatter(footerSummaryFractionDigits),
     [footerSummaryFractionDigits]
-  );
-  const referencePriceLabel = useMemo(
-    () =>
-      shouldShowReferencePrice
-        ? formatQuoteTokenValue({
-            formatter: formatters.price,
-            quoteTokenSymbol,
-            value: referencePrice,
-          })
-        : null,
-    [
-      formatters.price,
-      quoteTokenSymbol,
-      referencePrice,
-      shouldShowReferencePrice,
-    ]
   );
   const buyTotalLabel = useMemo(
     () =>
@@ -1108,6 +1014,25 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   }, []);
   const hasRows = hasOrderBookRows(renderData);
   const hasLastTrades = lastTradeRows.length > 0;
+  const midRow = (
+    <div className={clsx(styles.spreadRow, styles.spreadRowBoth)}>
+      <span className={styles.midBlock}>
+        <span className={styles.spreadText}>MID</span>
+        <span className={clsx(styles.spreadText, styles.midPrice)}>
+          {midPrice ? formatters.price.format(midPrice.toNumber()) : "--"}
+        </span>
+      </span>
+      <span className={styles.spreadText}>
+        Spread{" "}
+        {midPrice
+          ? formatters.price.format(renderData.spread.value)
+          : "--"}{" "}
+        (
+        {spreadPercentage !== null ? `${spreadPercentage}%` : "--"}
+        )
+      </span>
+    </div>
+  );
 
   return (
     <div className={styles.table}>
@@ -1159,6 +1084,8 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
               </div>
 
               <div className={styles.tableViewport}>
+                {selectedDisplayMode !== "both" && midRow}
+
                 {selectedDisplayMode !== "buy" && (
                   <OrderBookRowsSection
                     emptyLabel="No asks"
@@ -1169,73 +1096,7 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
                   />
                 )}
 
-                {selectedDisplayMode === "both" ? (
-                  <div className={clsx(styles.spreadRow, styles.spreadRowBoth)}>
-                    <span className={styles.midBlock}>
-                      <span className={styles.spreadText}>MID</span>
-                      <span
-                        className={clsx(styles.spreadText, styles.midPrice)}
-                      >
-                        {midPrice
-                          ? formatters.price.format(midPrice.toNumber())
-                          : "--"}
-                      </span>
-                    </span>
-                    <span className={styles.spreadText}>
-                      Spread{" "}
-                      {midPrice
-                        ? formatters.price.format(renderData.spread.value)
-                        : "--"}{" "}
-                      (
-                      {spreadPercentage !== null
-                        ? `${spreadPercentage}%`
-                        : "--"}
-                      )
-                    </span>
-                  </div>
-                ) : (
-                  <div className={styles.spreadRow}>
-                    <span
-                      className={clsx(
-                        styles.spreadPrice,
-                        spreadDisplayData.side === "ask"
-                          ? styles.askPrice
-                          : styles.bidPrice
-                      )}
-                    >
-                      {spreadDisplayData.price > 0
-                        ? formatters.price.format(spreadDisplayData.price)
-                        : "--"}
-                    </span>
-
-                    <span className={styles.spreadMeta}>
-                      {shouldShowReferencePrice ? (
-                        <SpreadDirectionIcon
-                          direction={spreadDirection}
-                          side={spreadDisplayData.side}
-                        />
-                      ) : (
-                        <span className={styles.spreadLabel}>
-                          {spreadDisplayData.label}
-                        </span>
-                      )}
-                    </span>
-
-                    <span
-                      className={clsx(
-                        shouldShowReferencePrice
-                          ? styles.spreadReference
-                          : styles.spreadValue
-                      )}
-                    >
-                      {shouldShowReferencePrice
-                        ? referencePriceLabel
-                        : spreadDisplayData.value !== null
-                          ? formatters.price.format(spreadDisplayData.value)
-                          : "--"}
-                    </span>
-                  </div>
-                )}
+                {selectedDisplayMode === "both" && midRow}
 
                 {selectedDisplayMode !== "sell" && (
                   <OrderBookRowsSection
