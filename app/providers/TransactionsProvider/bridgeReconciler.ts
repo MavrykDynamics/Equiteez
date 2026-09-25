@@ -25,7 +25,6 @@ export class BridgeReconciler {
   constructor(
     private store: BridgeTransactions,
     private fetchDeposits: FetchDeposits,
-    private isBound: boolean,
     private onSettlement: (records: BridgeSettlementUpdate[]) => void,
     private isCurrent: () => boolean = () => true
   ) {}
@@ -49,16 +48,6 @@ export class BridgeReconciler {
   }
   refresh = () => {
     if (!this.active || !this.isCurrent()) return;
-    if (!this.isBound) {
-      if (import.meta.env.DEV)
-        console.debug(
-          "[bridge] Deposit refresh skipped: missing or mismatched deployment binding"
-        );
-      this.store.markStale(
-        "Backend settlement is unverified: the API deployment has no matching bridge network binding."
-      );
-      return;
-    }
     this.remaining = BRIDGE_POLL_LIMIT;
     this.revision++;
     clearTimeout(this.timer);

@@ -5,8 +5,6 @@ import {
   withBridgeProgress,
 } from "./bridgeTransactions";
 import { bridgeDepositsSchema } from "~/lib/apis/rwa/bridge/bridge.schema";
-import { hasBridgeDeploymentBinding } from "~/lib/apis/rwa/bridge/bridge.config";
-import { USDT_BRIDGE } from "~/consts/usdtBridge";
 
 import {
   hash,
@@ -216,37 +214,6 @@ describe("canonical bridge transactions", () => {
         }).success
       ).toBe(false);
   });
-});
-
-it("requires an explicit binding to the exact API deployment and bridge pair", () => {
-  const binding = {
-    apiUrl: "https://api.example/api/v1/",
-    sourceChainId: USDT_BRIDGE.chainId,
-    destinationNetwork: USDT_BRIDGE.destinationNetwork,
-    sourceBridge: USDT_BRIDGE.address,
-  };
-  expect(hasBridgeDeploymentBinding(undefined, binding.apiUrl)).toBe(false);
-  expect(
-    hasBridgeDeploymentBinding(JSON.stringify(binding), binding.apiUrl)
-  ).toBe(true);
-  expect(
-    hasBridgeDeploymentBinding(
-      JSON.stringify(binding),
-      "https://other.example/api/v1/"
-    )
-  ).toBe(false);
-  expect(
-    hasBridgeDeploymentBinding(
-      JSON.stringify({ ...binding, sourceChainId: 1 }),
-      binding.apiUrl
-    )
-  ).toBe(false);
-  expect(
-    hasBridgeDeploymentBinding(
-      JSON.stringify({ ...binding, destinationNetwork: "mainnet" }),
-      binding.apiUrl
-    )
-  ).toBe(false);
 });
 
 it("preserves a broadcast added by another tab after this store restored", () => {

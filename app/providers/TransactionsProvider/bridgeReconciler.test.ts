@@ -24,18 +24,6 @@ const flush = async () => {
   await Promise.resolve();
 };
 
-it("keeps local recovery active without making unbound API requests", async () => {
-  store.update(localRecord());
-  const fetch = vi.fn();
-  const tracker = new BridgeReconciler(store, fetch, false, vi.fn());
-  tracker.start();
-  await flush();
-  expect(fetch).not.toHaveBeenCalled();
-  expect(store.getSnapshot().reconciliationError).toContain("binding");
-  expect(store.getSnapshot().transactions.size).toBe(1);
-  tracker.stop();
-});
-
 it("rejects an in-flight snapshot invalidated by an early event and coalesces refetches", async () => {
   let resolve!: (rows: BridgeDeposit[]) => void;
   const fetch = vi
@@ -49,7 +37,7 @@ it("rejects an in-flight snapshot invalidated by an early event and coalesces re
     .mockResolvedValue([deposit({ status: "executed" })]);
   store.update(localRecord());
   const onSettlement = vi.fn();
-  const tracker = new BridgeReconciler(store, fetch, true, onSettlement);
+  const tracker = new BridgeReconciler(store, fetch, onSettlement);
   tracker.setConnected(true);
   tracker.start();
   tracker.refresh();
@@ -72,7 +60,7 @@ it("reconciles a reconnect gap and uses cold reads only without the socket", asy
     .fn()
     .mockResolvedValueOnce([deposit()])
     .mockResolvedValue([deposit({ status: "executed" })]);
-  const tracker = new BridgeReconciler(store, fetch, true, vi.fn());
+  const tracker = new BridgeReconciler(store, fetch, vi.fn());
   tracker.start();
   await flush();
   expect(fetch.mock.calls[0][2]).toBe(true);
@@ -98,7 +86,6 @@ it("aborts old account work and rejects late fetch results even when transport i
   const tracker = new BridgeReconciler(
     store,
     fetch,
-    true,
     settlement,
     () => isCurrent
   );
@@ -124,7 +111,7 @@ it("rejects old generations across stop/start and resumes foreground recovery", 
         })
     )
     .mockResolvedValue([deposit({ status: "signing" })]);
-  const tracker = new BridgeReconciler(store, fetch, true, vi.fn());
+  const tracker = new BridgeReconciler(store, fetch, vi.fn());
   tracker.start();
   tracker.stop();
   tracker.start();
@@ -141,7 +128,7 @@ it("rejects old generations across stop/start and resumes foreground recovery", 
 it("bounds polling, retains unknown status on transport failures and restarts on recovery", async () => {
   store.update(localRecord());
   const fetch = vi.fn().mockRejectedValue(new Error("503"));
-  const tracker = new BridgeReconciler(store, fetch, true, vi.fn());
+  const tracker = new BridgeReconciler(store, fetch, vi.fn());
   tracker.start();
   await flush();
   await vi.advanceTimersByTimeAsync(BRIDGE_POLL_INTERVAL * BRIDGE_POLL_LIMIT);
@@ -162,7 +149,7 @@ it("stops periodic work for stalled rows but keeps event-triggered reconciliatio
     .fn()
     .mockResolvedValueOnce([deposit({ status: "stalled" })])
     .mockResolvedValue([deposit({ status: "executed" })]);
-  const tracker = new BridgeReconciler(store, fetch, true, vi.fn());
+  const tracker = new BridgeReconciler(store, fetch, vi.fn());
   tracker.start();
   await flush();
   expect(vi.getTimerCount()).toBe(0);

@@ -75,7 +75,7 @@ export function RTransactionWidgetHost() {
     storageError,
     reconciliationError,
   } = useTransactionWidget();
-  if (!models.length && !storageError && !reconciliationError) return null;
+  if (!models.length) return null;
   return (
     <section aria-label="Bridge deposits" className={styles.panel}>
       <Container className={styles.content}>

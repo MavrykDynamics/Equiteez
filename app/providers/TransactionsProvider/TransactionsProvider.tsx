@@ -21,7 +21,6 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
-import { hasBridgeDeploymentBinding } from "~/lib/apis/rwa/bridge/bridge.config";
 import { BridgeReconciler } from "./bridgeReconciler";
 import {
   BridgeTransactions,
@@ -113,10 +112,6 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         ? new BridgeReconciler(
             store,
             fetchBridgeDeposits,
-            hasBridgeDeploymentBinding(
-              process.env.RWA_BRIDGE_DEPLOYMENT,
-              process.env.RWA_API
-            ),
             (records) => settlementHandler.current(records),
             () => currentStore.current === store
           )

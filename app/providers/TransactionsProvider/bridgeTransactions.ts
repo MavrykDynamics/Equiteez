@@ -257,7 +257,7 @@ export class BridgeTransactions {
     let hasConflict = false;
     for (const input of rows) {
       const row = bridgeDepositSchema.parse(input);
-      // Families filter supported direction only. Deployment binding supplies network identity.
+      // The configured wallet API owns settlement; filter the supported direction.
       if (row.chain_from !== "ethereum" || row.chain_to !== "mavryk") continue;
       const id = getBridgeDepositId(row);
       const candidates = [...transactions.values()].filter((record) =>

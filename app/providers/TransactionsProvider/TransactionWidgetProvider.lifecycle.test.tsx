@@ -50,9 +50,6 @@ vi.mock("@tanstack/react-query", () => ({
 vi.mock("~/lib/apis/rwa/bridge/bridge", () => ({
   fetchBridgeDeposits: (...args: unknown[]) => mocks.fetch(...args),
 }));
-vi.mock("~/lib/apis/rwa/bridge/bridge.config", () => ({
-  hasBridgeDeploymentBinding: () => true,
-}));
 vi.mock("~/lib/atoms/RIcon", () => ({ RIcon: () => null }));
 vi.mock("~/lib/molecules/HashChip", () => ({
   HashChip: ({ hash }: { hash: string }) => createElement("button", null, hash),
@@ -266,4 +263,33 @@ it("stops hidden polling, recovers in foreground and retains storage uncertainty
   mocks.fetch.mockResolvedValue([deposit({ status: "executed" })]);
   await act(async () => document.dispatchEvent(new Event("visibilitychange")));
   expect(element.textContent).toContain("Successfully transferred");
+});
+
+it("tracks local deposits without deployment binding and shows only API-backed cards", async () => {
+  vi.stubEnv("RWA_BRIDGE_DEPLOYMENT", "");
+  try {
+    await render();
+    expect(mocks.fetch).toHaveBeenCalled();
+    expect(element.textContent).toBe("");
+    await act(async () => transactions.publish(localRecord()));
+    expect(transactions.transactions.size).toBe(1);
+    expect(element.textContent).toBe("");
+
+    mocks.fetch.mockRejectedValueOnce(new Error("Status unavailable"));
+    await event("unavailable");
+    expect(transactions.reconciliationError).toContain("unavailable");
+    expect(element.textContent).toBe("");
+
+    mocks.fetch.mockResolvedValue([deposit({ status: "executed" })]);
+    await event("arrived");
+    expect(transactions.transactions.size).toBe(1);
+    expect(transactions.transactions.get("operation-1")?.settlement).toBe("executed");
+    expect(element.textContent).toContain("Successfully transferred");
+    expect(element.textContent).not.toContain("unverified");
+    expect(mocks.success).toHaveBeenCalledOnce();
+    await event("duplicate-arrival");
+    expect(mocks.success).toHaveBeenCalledOnce();
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });

@@ -29,7 +29,7 @@ it("external invalidations reconcile cards in place, preserve dismissal and reco
   }));
   const fetch = vi.fn().mockResolvedValue([]);
   const settlement = vi.fn();
-  const reconciler = new BridgeReconciler(store, fetch, true, settlement);
+  const reconciler = new BridgeReconciler(store, fetch, settlement);
   let presentation = createWidgetPresentation(store);
   const read = () => {
     const models = [...store.getSnapshot().transactions.values()].flatMap(
@@ -134,15 +134,7 @@ it("distinguishes a healthy source handoff from unavailable, restored and exhaus
     )!.state;
   const fetch = vi.fn().mockResolvedValue([]);
   const settlement = vi.fn();
-  const unbound = new BridgeReconciler(store, fetch, false, settlement);
-  unbound.start();
-  expect(read()).toMatchObject({
-    status: "warning",
-    title: "Bridge status unavailable",
-  });
-  expect(fetch).not.toHaveBeenCalled();
-  unbound.stop();
-  const tracker = new BridgeReconciler(store, fetch, true, settlement);
+  const tracker = new BridgeReconciler(store, fetch, settlement);
   tracker.start();
   await flush();
   expect(read()).toMatchObject({

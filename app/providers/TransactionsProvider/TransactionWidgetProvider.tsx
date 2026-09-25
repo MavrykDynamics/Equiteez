@@ -27,11 +27,24 @@ function useWidgetState() {
   const models = useMemo(
     () =>
       records.flatMap((record) => {
+        // Local wallet progress alone does not establish a backend deposit.
+        if (!record.backend) return [];
         const model = toTransactionWidget(record, {
           reconciliationError,
           lastCheckedAt,
         });
-        return model ? [model] : [];
+        if (!model) return [];
+        // A local deposit may first appear after it has already executed.
+        // It is still the user's active operation, not discovered history.
+        return [
+          {
+            ...model,
+            isHistorical:
+              model.isHistorical &&
+              (record.operationId.startsWith("deposit:") ||
+                record.verification === "unverified"),
+          },
+        ];
       }),
     [records, reconciliationError, lastCheckedAt]
   );

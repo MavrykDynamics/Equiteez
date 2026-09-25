@@ -15,15 +15,9 @@ A backend deposit is identified by `evm_tx_hash` plus `log_index`; the local joi
 - `executed`: verified destination arrival, permanently protected from regression.
 - `stalled`: warning, no periodic polling; socket, reconnect, foreground, and manual refresh can still advance it to `executed`.
 
-## Required deployment binding
+## API configuration
 
-The API's chain-family slugs do not identify networks. Operators must explicitly assert the network pair and bridge served by the exact API deployment before reconciliation is enabled. Configure this public build-time environment variable using the actual `RWA_API` URL:
-
-```dotenv
-RWA_BRIDGE_DEPLOYMENT='{"apiUrl":"https://YOUR_API/api/v1/","sourceChainId":11155111,"destinationNetwork":"basenet","sourceBridge":"0x476a30d098eD197c2b109abaBbf5135D49df0967"}'
-```
-
-The normalized URL must equal `RWA_API`, and the pair and source bridge must match `USDT_BRIDGE`. There is no default binding. Missing/invalid/mismatched configuration disables backend requests, exposes a reconciliation error, and leaves local broadcast tracking and persistence active. This is an operator assertion, not a backend capability or cryptographic attestation. Do not configure it without verifying the deployment.
+Tracking uses the existing authenticated `RWA_API` client. No separate `RWA_BRIDGE_DEPLOYMENT` assertion is required. The configured API owns wallet-scoped deposit settlement; source hashes and backend log indices join its validated rows to local operations. Deploy the frontend against the API for its bridge network.
 
 ## Ownership and lifecycle
 
@@ -53,7 +47,7 @@ Local progress uses a monotonic local sequence. Backend rows use `updated_at` on
 
 ## Verified limitations and missing contracts
 
-- The guide has no full socket payload schema, per-signatory sequence, replay cursor/endpoint, globally stable deposit ID independent of log re-inclusion, or monotonic snapshot revision. Events therefore only invalidate; ambiguous/equal-timestamp lifecycle changes remain uncertain. An operator/backend contract is still required to establish actual deployment network isolation.
+- The guide has no full socket payload schema, per-signatory sequence, replay cursor/endpoint, globally stable deposit ID independent of log re-inclusion, or monotonic snapshot revision. Events therefore only invalidate; ambiguous/equal-timestamp lifecycle changes remain uncertain. The frontend must use the API for its configured bridge network.
 - Only the documented fields consumed by tracking are validated. `failed_signatories` element structure and complete signer payload types are unspecified and are not interpreted. Unknown amount/token metadata is never guessed.
 - The available ABI contains only `wrapToken`; the guide names `ERC20WrapAsked` but does not supply its verified event signature/indexed fields. Receipt log decoding is not invented. The log index is adopted from the backend list instead.
 - The installed Wagmi/Viem receipt-wait action has no abort parameter. An already-started source receipt wait may finish within its existing two-minute bound after account change; its publications and UI results are rejected. Backend requests/timers are abortable. No new signing action is allowed for a closed/stale flow.
@@ -72,13 +66,13 @@ Focused Vitest suites exercise state merging, duplicates/out-of-order updates, e
 | Evidence | Display |
 | --- | --- |
 | Approval/signature only, no source lock hash or backend row | No card |
-| Fresh local lock confirmation in progress | Step 1, Lock on Ethereum |
+| Local lock progress without a backend row | No card |
 | Verified `confirming` | Step 1, Waiting for the bridge; API confirmation target or explicit unknown; usually 3–5 minutes |
 | Verified `signing` | Step 2, Validators Sign, with `n/N` or `n/?` |
 | Verified `executed` | Success |
 | Verified `stalled` | Deposit delayed warning; may recover |
-| Fresh local source confirmed, no backend row, successful list check and no reconciliation error | Neutral waiting message, explicitly unverified settlement; no spinner or validator claim |
-| No successful list check, unavailable binding/transport, paused checks, restored/stale/unknown records, or source execution errors | Unavailable/unverified warning |
+| Local source confirmed without a backend row | No card; tracking continues |
+| Retained backend row with unavailable transport, paused checks, or restored/stale state | Unavailable/unverified warning |
 
 Verified backend state wins over local errors. Supplemental storage/reconciliation messages do not turn verified success into failure. Steps 3/4 and terminal failure have no supported evidence and are never selected by the mapper. Socket payloads remain invalidation signals only.
 
@@ -88,18 +82,16 @@ Active, delayed and retained pending deposits open automatically in first-observ
 
 ### Widget verification
 
-Mapper tests cover all four backend statuses across all five verification states, source confirmation versus settlement, unknown/token/raw amounts and exact precision. Presentation tests cover history suppression, active completion, dismissal, identity adoption, route/session changes and explicit history/refresh. Integration tests drive the real reconciler/store through external discovery, duplicate snapshots, multiple logs, HTTP failure, recovery and replacement adoption. Existing store/reconciler tests cover persistence, missing deployment binding, malformed responses, stale/conflicting rows, polling bounds and late-response cleanup. The original provider tests retain their mocked-state/server-render harness. Additional jsdom suites mount the real providers, event hook, host and socket hook under Strict Mode: they exercise one persistent listener, event-ID deduplication per wallet, obsolete sockets, route/loading remounts, dismissal, history, logout/login, wallet changes, late results/publications, hidden/foreground recovery, unavailable storage, refresh, and settlement side-effect ownership. jsdom is a development-only test dependency; it does not verify visual layout. Live signer delivery and mobile/desktop browser layout still require a configured browser environment.
+Mapper tests cover all four backend statuses across all five verification states, source confirmation versus settlement, unknown/token/raw amounts and exact precision. Presentation tests cover history suppression, active completion, dismissal, identity adoption, route/session changes and explicit history/refresh. Integration tests drive the real reconciler/store through external discovery, duplicate snapshots, multiple logs, HTTP failure, recovery and replacement adoption. Existing store/reconciler tests cover persistence, malformed responses, stale/conflicting rows, polling bounds and late-response cleanup. The original provider tests retain their mocked-state/server-render harness. Additional jsdom suites mount the real providers, event hook, host and socket hook under Strict Mode: they exercise one persistent listener, event-ID deduplication per wallet, obsolete sockets, route/loading remounts, dismissal, history, logout/login, wallet changes, late results/publications, hidden/foreground recovery, unavailable storage, refresh, and settlement side-effect ownership. jsdom is a development-only test dependency; it does not verify visual layout. Live signer delivery and mobile/desktop browser layout still require a configured browser environment.
 
 Validation after the widget fixes: 76 focused tests pass across 10 suites; targeted ESLint and production build pass. Full typecheck remains blocked by existing errors in assets/utils, SecretCover, IdenIcon, useMemoWithCompare, AssetTabs, codegen and the generated server-build typing used by functions/[[path]].ts; no changed-file errors remain. Browser visual/keyboard verification was attempted again but no browser was available to the UI tool. The first build attempt was blocked by the sandbox’s local socket restriction; the permitted retry completed successfully. Live signer/backend delivery was not tested. The local redesign skill/registry were updated, but those paths are git-ignored in this checkout. No provider ownership or project structure changed, so AGENTS.md required no further change.
 
-## Widget fixes and deployment verification (2026-09-25)
+## Tracking fix (2026-09-25)
 
-The binding remains **unconfigured**. Local inspection found no nonempty `RWA_BRIDGE_DEPLOYMENT` in `.env`, `.dev.vars`, `wrangler.toml`, or the current shell. `RWA_API` is present, but this checkout contains no signer deployment manifest or attestation associating that URL with the required network pair and bridge. The current `USDT_BRIDGE` source/destination token addresses also differ from the pinned pair in `notific.md`; the source bridge address and network pair agree. No token configuration, modal, or execution behavior was changed.
+Removed the additional deployment-binding gate that prevented all status requests when `RWA_BRIDGE_DEPLOYMENT` was absent. The authenticated event still triggers a validated deposits-list fetch: individual signer `COMPLETED` frames never directly mark a deposit successful.
 
-Before enabling reconciliation, the deployment operator must verify the exact API URL against its deployed signer configuration (`dipdup.contracts.yml` or equivalent), Sepolia chain ID, Basenet destination, source bridge, and active token registrations. Then supply the binding above to the frontend build environment and rebuild/restart. An authenticated list response or a connected socket with family slugs alone does not prove deployment identity. No binding was inferred and no live requests or signer delivery were verified here.
+Production widget models require a backend deposit row. Local execution progress and tracking errors alone do not render the host. A local operation whose first API row is already `executed` opens its success card; separately discovered executed history remains available through “Show deposits”. `NotificationsPanel` renders the notification inbox, while `RTransactionWidgetHost` owns deposit cards below the page header.
 
-`failed_signatories` still lacks a documented element schema, so individual signer failure details are not interpreted. The supported `reason` is shown for stalled deposits without changing aggregate status or inventing a deadline. Source receipt log decoding likewise remains blocked by the absent verified event ABI. Steps 3/4 are never fabricated.
+Validation: 73 focused tests and targeted ESLint pass. Full typecheck reports existing errors outside the changed files.
 
-### Development diagnostics
-
-In development builds, the browser console logs `[bridge]` when the account-scoped listener receives a deposit event, when deployment binding blocks a refresh, and when a current validated deposit response is accepted for reconciliation. Responses include a table of status, update time, signer count, nullable threshold and confirmation target. Enable Debug/Verbose console output for the event messages. Raw payloads, wallet addresses, hashes, amounts and credentials are not logged. These diagnostics do not change event interpretation or settlement; production builds omit them.
+Regression coverage includes missing deployment configuration, local-only and unavailable empty states, event-driven hash matching, first-observed execution, and duplicate settlement notification suppression. Live signer delivery is not covered by these deterministic tests.
