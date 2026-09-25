@@ -53,7 +53,7 @@ describe("authoritative display", () => {
   it("distinguishes source progress, source confirmation, and settlement", () => {
     expect(
       model({ progress: { step: "lock", status: "confirming" } }).state
-    ).toEqual({ status: "progress", step: 1 });
+    ).toMatchObject({ status: "progress", step: 1 });
     expect(
       model({ progress: { step: "lock", status: "confirmed" } }).state.status
     ).toBe("warning");
@@ -98,7 +98,7 @@ describe("authoritative display", () => {
     ).toBe("123456789012.34567890123456789");
     expect(
       model({ backend: deposit({ amount_raw: "123", decimals: null }) }).amount
-    ).toBeNull();
+    ).toBe("123");
     expect(model().amount).toBeNull();
   });
   it("uses matching local source metadata without labeling quantities as USD", () => {
@@ -175,4 +175,68 @@ describe("session presentation", () => {
     expect(state.discovered.get("local")?.order).toBe(0);
     expect(state.isOpen).toBe(false);
   });
+});
+
+it("shows authoritative counts and targets without guessing missing values", () => {
+  for (const threshold of [null, 3]) {
+    expect(
+      model({
+        verification: "verified",
+        backend: deposit({
+          status: "signing",
+          signer_count: 1,
+          signatory_threshold: threshold,
+        }),
+      }).state
+    ).toMatchObject({ description: `Validators sign 1/${threshold ?? "?"}.` });
+  }
+  expect(
+    model({ verification: "verified", backend: deposit() }).state
+  ).toMatchObject({
+    title: "Waiting for the bridge",
+    description: expect.stringContaining("12 source confirmations"),
+  });
+  expect(
+    model({
+      verification: "verified",
+      backend: deposit({ required_confirmations: null }),
+    }).state
+  ).toMatchObject({
+    description: expect.stringContaining("target unavailable"),
+  });
+  expect(
+    model({
+      progress: { step: "lock", status: "confirming", confirmations: 2 },
+    }).state
+  ).toMatchObject({ description: expect.stringContaining("2/3") });
+});
+it("shows raw amounts without scaling or borrowing metadata for returning tokens", () => {
+  const raw = "9999999999999999999999999999999999999";
+  expect(
+    model({
+      sourceToken: USDT_BRIDGE.sourceToken,
+      backend: deposit({
+        amount: null,
+        decimals: null,
+        amount_raw: raw,
+        token_evm: "",
+      }),
+    })
+  ).toMatchObject({ amount: raw, symbol: "raw units" });
+  expect(
+    model({
+      sourceToken: USDT_BRIDGE.sourceToken,
+      backend: deposit({ token_evm: "" }),
+    })
+  ).toMatchObject({ amount: null, symbol: "Token amount" });
+});
+it("links to the authoritative hash or latest local replacement on the configured source explorer", () => {
+  const replacement = `0x${"b".repeat(64)}`;
+  expect(
+    model({ sourceHashes: [localRecord().sourceHashes[0], replacement] })
+      .sourceExplorerUrl
+  ).toBe(`https://sepolia.etherscan.io/tx/${replacement}`);
+  expect(model({ backend: deposit() }).sourceExplorerUrl).toBe(
+    `https://sepolia.etherscan.io/tx/${deposit().evm_tx_hash}`
+  );
 });

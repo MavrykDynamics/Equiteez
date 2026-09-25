@@ -247,3 +247,9 @@ npm run test:run -- app/providers/TransactionsProvider app/lib/apis/rwa/bridge a
 Additionally executed the existing modules in an ephemeral Vite SSR loader with synthetic fixtures to reproduce the binding gate, mapper transitions and equal-timestamp metadata conflict. A sandbox WebSocket-listen warning occurred while the loader initialized; module execution completed and returned the results above. No authenticated network requests or transactions were made. `docs/endpoint.png` describes the assets endpoint, not bridge-event evidence.
 
 Only this report, `widget.md`, was created. Application code, tests, configuration, modal behavior and existing documentation were not modified.
+
+## Implementation follow-up (2026-09-25)
+
+Independent fixes now allow equal-timestamp read metadata recovery, distinguish healthy waiting from unavailable/unverified tracking, and display counts, nullable targets, source links and exact unscaled raw units. Listener, invalidation, settlement-effect ownership, modal and execution behavior are unchanged. See `docs/bridge-tracking.md` for the current contract and verification limits.
+
+The binding remains absent and blocked on deployment evidence. Contrary to the earlier address comparison, current source/destination token addresses differ from `notific.md`; only the source bridge and network pair agree. Do not configure the API binding from this report alone.

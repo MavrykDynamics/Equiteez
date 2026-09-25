@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
+import type { NotifierEventFrame } from "~/providers/NotificationsProvider/notifications.types";
 import { useNotifierEvent } from "~/providers/NotificationsProvider/hooks/useNotifierEvent";
 import {
   NotifierChannel,
@@ -155,13 +156,23 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     );
   }, [account, reconciler, status, wallet]);
   const handleBridgeEvent = useCallback(
-    (_frame: unknown, authenticatedWallet: string) => {
+    (frame: NotifierEventFrame, authenticatedWallet: string) => {
       if (
         account &&
         authenticatedWallet === account &&
         currentStore.current === store
-      )
+      ) {
+        if (import.meta.env.DEV) {
+          console.debug(
+            "[bridge] Deposit event received; refreshing authoritative status",
+            {
+              event_type: frame.event_type,
+              occurred_at: frame.occurred_at,
+            }
+          );
+        }
         reconciler?.refresh();
+      }
     },
     [account, reconciler, store]
   );

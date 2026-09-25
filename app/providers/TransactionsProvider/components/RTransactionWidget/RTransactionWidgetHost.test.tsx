@@ -88,3 +88,41 @@ it("retains status announcements and legacy fiat props", () => {
   expect(html).toContain('aria-current="step"');
   expect(html).toContain("USD");
 });
+
+it("renders bridge targets, unknown signer thresholds, raw units and source links through the host", () => {
+  const models = [
+    toTransactionWidget({
+      ...localRecord(),
+      verification: "verified",
+      backend: deposit({ amount_raw: "12345678901234567890", decimals: null }),
+    })!,
+    toTransactionWidget({
+      ...localRecord("signing"),
+      verification: "verified",
+      backend: deposit({ status: "signing", signer_count: 1 }),
+    })!,
+    toTransactionWidget(
+      {
+        ...localRecord("waiting"),
+        progress: { step: "lock", status: "confirmed" },
+      },
+      { lastCheckedAt: 1 }
+    )!,
+  ];
+  mocks.context = {
+    ...mocks.context,
+    models,
+    visibleModels: models,
+    isOpen: true,
+  };
+  const html = renderToStaticMarkup(createElement(RTransactionWidgetHost));
+  expect(html).toContain("12 source confirmations");
+  expect(html).toContain("Validators sign 1/?");
+  expect(html).toContain("12345678901234567890 raw units");
+  expect(html).toContain(
+    `href="https://sepolia.etherscan.io/tx/${deposit().evm_tx_hash}"`
+  );
+  expect(html).toContain('rel="noopener noreferrer"');
+  expect(html).toContain('data-status="waiting"');
+  expect(html).not.toContain("Successfully transferred");
+});

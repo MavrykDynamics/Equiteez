@@ -22,6 +22,7 @@ const DepositCard = memo(function DepositCard({
   amount,
   symbol,
   recipient,
+  sourceExplorerUrl,
   status,
   step,
   title,
@@ -30,7 +31,7 @@ const DepositCard = memo(function DepositCard({
 }: CardProps) {
   const state =
     status === "progress"
-      ? ({ status, step: step ?? 1 } as const)
+      ? ({ status, step: step ?? 1, title, description } as const)
       : status === "success"
         ? ({ status, description } as const)
         : {
@@ -45,6 +46,7 @@ const DepositCard = memo(function DepositCard({
         amountMode="token"
         symbol={symbol}
         recipient={recipient}
+        sourceExplorerUrl={sourceExplorerUrl}
         state={state}
       />
       <RButton
@@ -118,23 +120,25 @@ export function RTransactionWidgetHost() {
         {isOpen && (
           <div className={styles.cards}>
             {visibleModels.map(
-              ({ operationId, amount, symbol, recipient, state }) => (
+              ({
+                operationId,
+                amount,
+                symbol,
+                recipient,
+                state,
+                sourceExplorerUrl,
+              }) => (
                 <DepositCard
                   key={operationId}
                   operationId={operationId}
                   amount={amount}
                   symbol={symbol}
                   recipient={recipient}
+                  sourceExplorerUrl={sourceExplorerUrl}
                   status={state.status}
                   step={state.status === "progress" ? state.step : undefined}
-                  title={
-                    state.status === "warning" || state.status === "error"
-                      ? state.title
-                      : undefined
-                  }
-                  description={
-                    state.status !== "progress" ? state.description : undefined
-                  }
+                  title={state.status !== "success" ? state.title : undefined}
+                  description={state.description}
                   dismiss={dismiss}
                 />
               )

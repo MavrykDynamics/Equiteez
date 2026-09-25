@@ -50,6 +50,10 @@ export class BridgeReconciler {
   refresh = () => {
     if (!this.active || !this.isCurrent()) return;
     if (!this.isBound) {
+      if (import.meta.env.DEV)
+        console.debug(
+          "[bridge] Deposit refresh skipped: missing or mismatched deployment binding"
+        );
       this.store.markStale(
         "Backend settlement is unverified: the API deployment has no matching bridge network binding."
       );
@@ -83,6 +87,20 @@ export class BridgeReconciler {
         !this.connected
       );
       if (!current() || revision !== this.revision) return;
+      if (import.meta.env.DEV) {
+        console.debug("[bridge] Authoritative deposit response", {
+          count: rows.length,
+        });
+        console.table(
+          rows.map((row) => ({
+            status: row.status,
+            updated_at: row.updated_at,
+            signer_count: row.signer_count,
+            signatory_threshold: row.signatory_threshold,
+            required_confirmations: row.required_confirmations,
+          }))
+        );
+      }
       const records = this.store.reconcile(rows);
       if (records.length) this.onSettlement(records);
     } catch {

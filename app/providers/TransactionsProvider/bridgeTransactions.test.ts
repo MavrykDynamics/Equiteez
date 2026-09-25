@@ -272,3 +272,56 @@ it("accepts authoritative execution even if the last signer transition predates 
     "executed"
   );
 });
+
+it("recovers equal-timestamp read metadata repeatedly and after reload without settlement effects", () => {
+  store.update(localRecord());
+  store.reconcile([deposit({ status: "signing" })]);
+  store.markStale("Temporary read failure");
+  const recovered = deposit({
+    status: "signing",
+    signatory_threshold: 2,
+    required_confirmations: null,
+    amount: "1.234",
+    decimals: 3,
+    token: "wrapped-token",
+  });
+  for (let i = 0; i < 2; i++) {
+    expect(store.reconcile([recovered])).toEqual([]);
+    expect(store.getSnapshot().transactions.get("operation-1")).toMatchObject({
+      verification: "verified",
+      backend: recovered,
+    });
+    expect(store.getSnapshot().reconciliationError).toBeNull();
+  }
+  const restored = new BridgeTransactions("wallet-a", bridgeNetwork, storage);
+  restored.restore();
+  expect(restored.reconcile([recovered])).toEqual([]);
+  expect(
+    restored.getSnapshot().transactions.get("operation-1")?.verification
+  ).toBe("verified");
+});
+it("still rejects equal-time lifecycle/identity conflicts and older metadata", () => {
+  const original = deposit({ status: "signing" });
+  store.update(localRecord());
+  store.reconcile([original]);
+  for (const conflict of [
+    { status: "confirming" as const },
+    { signer_count: 1 },
+    { log_index: 4 },
+    { amount_raw: "99" },
+    { token_evm: `0x${"2".repeat(40)}` },
+    { signatory_threshold: 2, updated_at: "2026-09-23T11:00:00Z" },
+  ]) {
+    store.reconcile([{ ...original, ...conflict }]);
+    expect(store.getSnapshot().transactions.get("operation-1")).toMatchObject({
+      verification: "stale",
+      backend: original,
+    });
+  }
+  store.reconcile([deposit({ status: "executed" })]);
+  store.reconcile([deposit({ status: "signing", signatory_threshold: 2 })]);
+  expect(store.getSnapshot().transactions.get("operation-1")).toMatchObject({
+    settlement: "executed",
+    verification: "verified",
+  });
+});

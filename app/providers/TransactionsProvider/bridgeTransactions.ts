@@ -66,6 +66,18 @@ export type TransactionSnapshot = {
 };
 type StorageAccess = () => Pick<Storage, "getItem" | "setItem">;
 
+/** Exclude only metadata resolved at read time, preserving lifecycle/identity conflicts. */
+function getTransitionSnapshot(row: BridgeDeposit) {
+  return JSON.stringify({
+    ...row,
+    signatory_threshold: undefined,
+    required_confirmations: undefined,
+    amount: undefined,
+    decimals: undefined,
+    token: undefined,
+  });
+}
+
 /** One account/network session; execution and settlement have separate writers. */
 export class BridgeTransactions {
   private snapshot: TransactionSnapshot = {
@@ -272,7 +284,9 @@ export class BridgeTransactions {
         previous?.backend &&
         Date.parse(row.updated_at) ===
           Date.parse(previous.backend.updated_at) &&
-        JSON.stringify(row) !== JSON.stringify(previous.backend);
+        // updated_at dates signer transitions, not registry/storage reads.
+        // Only these read-time metadata fields may change without a transition.
+        getTransitionSnapshot(row) !== getTransitionSnapshot(previous.backend);
       const regressesSuccess =
         previous?.settlement === "executed" && row.status !== "executed";
       if (

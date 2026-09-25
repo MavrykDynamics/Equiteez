@@ -77,7 +77,7 @@
   display: flex;
   flex: 0 1 var(--r-space-6);
   min-width: 0;
-  height: 50px;
+  min-height: 64px;
   box-sizing: border-box;
   flex-direction: column;
   align-items: center;
@@ -160,7 +160,7 @@
   top: 32px;
   width: 103px;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--r-motion-duration-fast) var(--r-motion-ease-premium);
@@ -193,4 +193,21 @@
   .statusIcon {
     animation: none;
   }
+}
+
+.details {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-top: var(--r-space-2);
+}
+
+.explorer {
+  color: inherit;
+  font-size: var(--r-font-size-body-s);
+  text-decoration: underline;
+}
+
+.explorer:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
 }

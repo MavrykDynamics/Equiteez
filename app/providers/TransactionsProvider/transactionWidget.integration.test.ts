@@ -52,7 +52,7 @@ it("external invalidations reconcile cards in place, preserve dismissal and reco
   await flush();
   const first = read();
   expect(first).toHaveLength(2);
-  expect(first[0].state).toEqual({ status: "progress", step: 2 });
+  expect(first[0].state).toMatchObject({ status: "progress", step: 2 });
   expect(presentation.isOpen).toBe(true);
   presentation = {
     ...presentation,
@@ -116,4 +116,69 @@ it("canonical replacement adoption migrates dismissal from backend to local oper
   expect(adopted.operationId).toBe("operation-1");
   expect(state.dismissed.has(adopted.operationId)).toBe(true);
   expect(state.isOpen).toBe(false);
+});
+
+it("distinguishes a healthy source handoff from unavailable, restored and exhausted tracking", async () => {
+  vi.useFakeTimers();
+  const store = new BridgeTransactions("wallet-a", bridgeNetwork, () => ({
+    getItem: () => null,
+    setItem: () => {},
+  }));
+  store.update(
+    withBridgeProgress(localRecord(), { step: "lock", status: "confirmed" })
+  );
+  const read = () =>
+    toTransactionWidget(
+      store.getSnapshot().transactions.get("operation-1")!,
+      store.getSnapshot()
+    )!.state;
+  const fetch = vi.fn().mockResolvedValue([]);
+  const settlement = vi.fn();
+  const unbound = new BridgeReconciler(store, fetch, false, settlement);
+  unbound.start();
+  expect(read()).toMatchObject({
+    status: "warning",
+    title: "Bridge status unavailable",
+  });
+  expect(fetch).not.toHaveBeenCalled();
+  unbound.stop();
+  const tracker = new BridgeReconciler(store, fetch, true, settlement);
+  tracker.start();
+  await flush();
+  expect(read()).toMatchObject({
+    status: "waiting",
+    description: expect.stringContaining("not yet verified"),
+  });
+  expect(settlement).not.toHaveBeenCalled();
+  fetch.mockRejectedValue(new Error("unavailable"));
+  tracker.refresh();
+  await flush();
+  expect(read().status).toBe("warning");
+  fetch.mockResolvedValue([]);
+  tracker.refresh();
+  await flush();
+  expect(read().status).toBe("waiting");
+  store.markStale("Automatic status checks paused.");
+  expect(read().status).toBe("warning");
+  const record = store.getSnapshot().transactions.get("operation-1")!;
+  expect(
+    toTransactionWidget(
+      { ...record, verification: "unverified" },
+      { lastCheckedAt: Date.now() }
+    )!.state.status
+  ).toBe("warning");
+  fetch.mockResolvedValue([deposit()]);
+  tracker.refresh();
+  await flush();
+  expect(read()).toMatchObject({
+    status: "progress",
+    title: "Waiting for the bridge",
+  });
+  fetch.mockResolvedValue([deposit({ status: "executed" })]);
+  tracker.refresh();
+  await flush();
+  expect(read().status).toBe("success");
+  expect(settlement).toHaveBeenCalledTimes(1);
+  tracker.stop();
+  expect(vi.getTimerCount()).toBe(0);
 });

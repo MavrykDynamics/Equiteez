@@ -157,6 +157,10 @@ it("keeps one listener across Strict Mode, external cards, updates, dismissal an
   expect(
     element.querySelectorAll('[aria-label="Bridge transaction"]')
   ).toHaveLength(2);
+  // The frame says COMPLETED, but the authoritative rows are still in flight.
+  expect(element.textContent).not.toContain("Successfully transferred");
+  expect(mocks.success).not.toHaveBeenCalled();
+  expect(mocks.invalidateQueries).not.toHaveBeenCalled();
   const firstCard = element.querySelector('[aria-label="Bridge transaction"]');
   await event("distinct-event-same-deposit");
   expect(element.querySelector('[aria-label="Bridge transaction"]')).toBe(

@@ -42,8 +42,14 @@ export function RDepositFundsModal({
   const destinationMetadata =
     tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
     USDT_BRIDGE.destinationToken;
-  const progress = ethereumWallet.bridge.state?.progress;
-  const transactionHash = progress?.step === "lock" ? progress.hash : undefined;
+  const bridgeState = ethereumWallet.bridge.state;
+  const progress = bridgeState?.progress;
+  const transactionHash =
+    progress?.step === "lock" &&
+    !bridgeState?.error &&
+    !bridgeState?.isConfirmationUnknown
+      ? progress.hash
+      : undefined;
 
   const resetBridge = ethereumWallet.bridge.reset;
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;

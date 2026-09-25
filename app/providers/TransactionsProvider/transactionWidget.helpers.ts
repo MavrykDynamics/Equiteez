@@ -1,4 +1,5 @@
 import { BigNumber } from "bignumber.js";
+import { sepolia } from "wagmi/chains";
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { getBridgeDepositId } from "~/lib/apis/rwa/bridge/bridge.schema";
 import type { BridgeTransaction } from "./bridgeTransactions";
@@ -10,19 +11,37 @@ export type TransactionWidgetModel = {
   amount: string | null;
   symbol: string;
   recipient: string;
+  sourceExplorerUrl?: string;
   state: RTransactionWidgetState;
   isHistorical: boolean;
 };
 
-function getState(record: BridgeTransaction): RTransactionWidgetState {
+type TrackingContext = {
+  reconciliationError?: string | null;
+  lastCheckedAt?: number | null;
+};
+
+function getState(
+  record: BridgeTransaction,
+  context: TrackingContext
+): RTransactionWidgetState {
   if (record.verification === "verified" && record.backend) {
     switch (record.backend.status) {
       case "executed":
         return { status: "success" };
       case "confirming":
-        return { status: "progress", step: 1 };
+        return {
+          status: "progress",
+          step: 1,
+          title: "Waiting for the bridge",
+          description: `Source finality usually takes 3–5 minutes.${record.backend.required_confirmations === null ? " Confirmation target unavailable." : ` Bridge target: ${record.backend.required_confirmations} source confirmations.`}`,
+        };
       case "signing":
-        return { status: "progress", step: 2 };
+        return {
+          status: "progress",
+          step: 2,
+          description: `Validators sign ${record.backend.signer_count}/${record.backend.signatory_threshold ?? "?"}.`,
+        };
       case "stalled":
         return {
           status: "warning",
@@ -43,12 +62,36 @@ function getState(record: BridgeTransaction): RTransactionWidgetState {
     record.progress?.step === "lock" &&
     record.progress.status === "confirming"
   ) {
-    return { status: "progress", step: 1 };
+    return {
+      status: "progress",
+      step: 1,
+      description: `Source lock confirmations: ${record.progress.confirmations ?? "?"}/${USDT_BRIDGE.lockConfirmations}. Bridge finality is a separate wait.`,
+    };
+  }
+  if (
+    record.verification === "local" &&
+    !record.backend &&
+    !record.executionError &&
+    !context.reconciliationError &&
+    context.lastCheckedAt != null &&
+    record.progress?.step === "lock" &&
+    record.progress.status === "confirmed"
+  ) {
+    return {
+      status: "waiting",
+      title: "Waiting for the bridge",
+      description:
+        "Source transaction confirmed. Waiting for the deposit to appear in bridge status; settlement is not yet verified. Usually 3–5 minutes.",
+    };
   }
   return {
     status: "warning",
+    title: context.reconciliationError
+      ? "Bridge status unavailable"
+      : "Bridge status unverified",
     description:
       record.executionError ||
+      context.reconciliationError ||
       (record.progress?.step === "lock" &&
       record.progress.status === "confirmed"
         ? "Source transaction confirmed. Bridge settlement has not yet been verified."
@@ -57,34 +100,46 @@ function getState(record: BridgeTransaction): RTransactionWidgetState {
 }
 
 export function toTransactionWidget(
-  record: BridgeTransaction
+  record: BridgeTransaction,
+  context: TrackingContext = {}
 ): TransactionWidgetModel | null {
   if (!record.backend && !record.sourceHashes.length) return null;
   const backend = record.backend;
   const sourceAddress = record.sourceToken?.address.toLowerCase();
   const backendAddress = backend?.token_evm?.toLowerCase();
   const matchesLocal = Boolean(
-    sourceAddress && (!backendAddress || backendAddress === sourceAddress)
+    sourceAddress && (!backend || backendAddress === sourceAddress)
   );
-  const tokenAddress = backendAddress ?? sourceAddress;
-  const symbol =
-    tokenAddress === USDT_BRIDGE.sourceToken.address.toLowerCase()
+  const tokenAddress = backend ? backendAddress : sourceAddress;
+  const isRawAmount =
+    backend?.amount == null &&
+    backend?.amount_raw !== undefined &&
+    backend.decimals == null;
+  const symbol = isRawAmount
+    ? "raw units"
+    : tokenAddress === USDT_BRIDGE.sourceToken.address.toLowerCase()
       ? USDT_BRIDGE.sourceToken.symbol
       : "Token amount";
   const amount =
     backend?.amount ??
     (backend?.amount_raw !== undefined && backend.decimals != null
       ? new BigNumber(backend.amount_raw).shiftedBy(-backend.decimals).toFixed()
-      : matchesLocal
-        ? (record.amount ?? null)
-        : null);
+      : backend?.amount_raw !== undefined
+        ? backend.amount_raw
+        : matchesLocal
+          ? (record.amount ?? null)
+          : null);
   return {
     operationId: record.operationId,
     backendId: backend ? getBridgeDepositId(backend) : undefined,
     amount,
     symbol,
     recipient: record.account,
-    state: getState(record),
+    sourceExplorerUrl:
+      USDT_BRIDGE.chainId === sepolia.id
+        ? `${sepolia.blockExplorers.default.url}/tx/${backend?.evm_tx_hash ?? record.sourceHashes.at(-1)}`
+        : undefined,
+    state: getState(record, context),
     isHistorical: record.settlement === "executed",
   };
 }

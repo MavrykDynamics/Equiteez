@@ -27,10 +27,13 @@ function useWidgetState() {
   const models = useMemo(
     () =>
       records.flatMap((record) => {
-        const model = toTransactionWidget(record);
+        const model = toTransactionWidget(record, {
+          reconciliationError,
+          lastCheckedAt,
+        });
         return model ? [model] : [];
       }),
-    [records]
+    [records, reconciliationError, lastCheckedAt]
   );
   const [presentation, setPresentation] = useState(
     createWidgetPresentation(session)

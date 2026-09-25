@@ -17,9 +17,18 @@ const stepLabels = [
 ] as const;
 
 export type RTransactionWidgetState =
-  | { status: "progress"; step: 1 | 2 | 3 | 4 }
+  | {
+      status: "progress";
+      step: 1 | 2 | 3 | 4;
+      title?: string;
+      description?: string;
+    }
   | { status: "success"; description?: string }
-  | { status: "error" | "warning"; title?: string; description: string };
+  | {
+      status: "error" | "warning" | "waiting";
+      title?: string;
+      description: string;
+    };
 
 export type RTransactionWidgetProps = {
   /** Raw value; null means unavailable. Fiat formatting remains the default. */
@@ -29,13 +38,18 @@ export type RTransactionWidgetProps = {
   /** Full destination address, shortened and copied by HashChip. */
   recipient: string;
   state: RTransactionWidgetState;
+  sourceExplorerUrl?: string;
   className?: string;
 };
 
-const messageIcons: Record<"success" | "error" | "warning", RIconName> = {
+const messageIcons: Record<
+  "success" | "error" | "warning" | "waiting",
+  RIconName
+> = {
   success: "ok",
   error: "cross",
   warning: "info",
+  waiting: "info",
 };
 
 /** Presentation only: callers supply the state, raw amount, and full address. */
@@ -46,6 +60,7 @@ export function RTransactionWidget({
   recipient,
   state,
   className,
+  sourceExplorerUrl,
 }: RTransactionWidgetProps) {
   return (
     <section
@@ -87,9 +102,12 @@ export function RTransactionWidget({
       <div role="status" aria-live="polite" aria-atomic="true">
         {state.status === "progress" ? (
           <ol className={styles.steps} aria-label="Bridge progress">
-            {stepLabels.map((label, index) => {
+            {stepLabels.map((defaultLabel, index) => {
               const step = index + 1;
               const isCurrent = step === state.step;
+              const label = isCurrent
+                ? (state.title ?? defaultLabel)
+                : defaultLabel;
               const status = isCurrent
                 ? "loading"
                 : step < state.step
@@ -137,8 +155,12 @@ export function RTransactionWidget({
                 className={styles.statusIcon}
                 name={messageIcons[state.status]}
                 size="small"
-                viewBox={state.status === "warning" ? "0 0 13 13" : "0 0 24 24"}
-                strokeWidth={state.status === "warning" ? 1 : 1.5}
+                viewBox={
+                  messageIcons[state.status] === "info"
+                    ? "0 0 13 13"
+                    : "0 0 24 24"
+                }
+                strokeWidth={messageIcons[state.status] === "info" ? 1 : 1.5}
               />
             </span>
             <div className={styles.messageCopy}>
@@ -157,7 +179,22 @@ export function RTransactionWidget({
             </div>
           </div>
         )}
+        {state.status === "progress" && state.description && (
+          <RText className={styles.details} color="neutral-700" size="body-s">
+            {state.description}
+          </RText>
+        )}
       </div>
+      {sourceExplorerUrl && (
+        <a
+          className={styles.explorer}
+          href={sourceExplorerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View source transaction
+        </a>
+      )}
     </section>
   );
 }
