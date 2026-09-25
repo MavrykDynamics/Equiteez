@@ -22,8 +22,7 @@
   "order_closed": {
     "tone": "info",
     "title": "Order closed, funds claimable",
-    "description": "",
-    "_comment": "No full description in Notification Text - Equiteez.docx. PDF copy hint: Order closed, funds claimable."
+    "description": "Order Closed"
   },
   "order_expired": {
     "tone": "info",
