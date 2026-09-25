@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchWallet, fetchWalletPortfolio } from "~/lib/apis/rwa";
-import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
+import { fetchPublicWalletPortfolio } from "~/lib/apis/rwa";
+import type { PublicWalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
@@ -16,7 +16,7 @@ import { AssetIcon } from "~/templates/AssetIcon";
 
 import styles from "./styles.module.css";
 
-function MobileAssetRow({ asset }: { asset: WalletPortfolioAssetType }) {
+function MobileAssetRow({ asset }: { asset: PublicWalletPortfolioAssetType }) {
   return (
     <div className={styles.assetRow}>
       <div className={styles.assetIdentity}>
@@ -62,27 +62,15 @@ export function MobilePortfolio() {
   const [search, setSearch] = useState("");
   const [isAmountDescending, setIsAmountDescending] = useState(true);
 
-  const walletQuery = useQuery({
-    queryKey: ["rwa-wallet", activeAddress],
-    queryFn: () => fetchWallet({ walletAddress: activeAddress }),
-    retry: false,
-    enabled: Boolean(activeAddress),
-  });
   const portfolioQuery = useQuery({
-    queryKey: ["rwa-wallet-portfolio", activeAddress],
-    queryFn: () => fetchWalletPortfolio({ walletAddress: activeAddress }),
+    queryKey: ["rwa-public-wallet-portfolio", activeAddress],
+    queryFn: () => fetchPublicWalletPortfolio({ walletAddress: activeAddress }),
     retry: false,
     enabled: Boolean(activeAddress),
   });
 
-  const isLoading =
-    walletQuery.isLoading ||
-    walletQuery.isFetching ||
-    portfolioQuery.isLoading ||
-    portfolioQuery.isFetching;
-  const hasPortfolio = Boolean(
-    activeAddress && walletQuery.data && portfolioQuery.data
-  );
+  const isLoading = portfolioQuery.isLoading || portfolioQuery.isFetching;
+  const hasPortfolio = Boolean(activeAddress && portfolioQuery.data);
   const assets = portfolioQuery.data?.assets;
   const filteredAssets = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -165,16 +153,14 @@ export function MobilePortfolio() {
                   <>
                     $
                     <Money fiat tooltip={false}>
-                      {portfolioQuery.data?.total_value ??
-                        walletQuery.data?.account_value ??
-                        0}
+                      {portfolioQuery.data?.total_value ?? 0}
                     </Money>
                   </>
                 )}
               </RHeading>
               <RPriceChange
-                amount={walletQuery.data?.pnl_24h}
-                percentage={walletQuery.data?.pnl_percentage}
+                amount={portfolioQuery.data?.change_24h_abs}
+                percentage={portfolioQuery.data?.change_24h_pct}
                 showPeriodLabel={true}
                 size="body-s"
               />
@@ -302,7 +288,7 @@ export function MobilePortfolio() {
         </>
       ) : null}
 
-      {walletQuery.isError || portfolioQuery.isError ? (
+      {portfolioQuery.isError ? (
         <RText className={styles.error} color="red-500" size="body-sm">
           Unable to load this wallet. Check the address and try again.
         </RText>

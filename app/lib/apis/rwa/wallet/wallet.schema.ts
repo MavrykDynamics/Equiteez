@@ -55,6 +55,25 @@ export const WalletPortfolioSchema = z.object({
   assets: z.array(WalletPortfolioAssetSchema),
 });
 
+export const PublicWalletPortfolioAssetSchema = z.object({
+  token_address: z.string(),
+  symbol: z.string(),
+  name: z.string(),
+  icon: z.string().nullable(),
+  balance: z.number(),
+  value: z.number(),
+  price: z.number(),
+});
+
+export const PublicWalletPortfolioSchema = z.object({
+  currency: z.string(),
+  total_value: z.number(),
+  change_24h_abs: z.number().nullable(),
+  change_24h_pct: z.number().nullable(),
+  est_net_yield_pct: z.number().nullable(),
+  assets: z.array(PublicWalletPortfolioAssetSchema),
+});
+
 export const WalletPortfolioHistoryPointSchema = z.object({
   t: z.string(),
   value: z.number(),

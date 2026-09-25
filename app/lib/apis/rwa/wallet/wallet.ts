@@ -1,12 +1,14 @@
 import { rwaApi } from "~/lib/apis/rwa/client";
 import { requestFreshQuery } from "~/lib/apis/rwa/freshness";
 import {
+  PublicWalletPortfolioSchema,
   WalletActivitySummarySchema,
   WalletPortfolioHistorySchema,
   WalletPortfolioSchema,
   WalletSchema,
 } from "~/lib/apis/rwa/wallet/wallet.schema";
 import {
+  PublicWalletPortfolioResponseType,
   WalletActivitySummaryResponseType,
   WalletPortfolioHistoryResponseType,
   WalletPortfolioResponseType,
@@ -37,6 +39,16 @@ export const fetchWalletPortfolio = async ({
   const { data } = await rwaApi.get(`/wallets/${walletAddress}/portfolio`);
 
   return WalletPortfolioSchema.parse(data);
+};
+
+export const fetchPublicWalletPortfolio = async ({
+  walletAddress,
+}: FetchWalletParams): Promise<PublicWalletPortfolioResponseType> => {
+  const { data } = await rwaApi.get(
+    `/public/wallets/${walletAddress}/portfolio`
+  );
+
+  return PublicWalletPortfolioSchema.parse(data);
 };
 
 export const fetchWalletPortfolioHistory = async ({

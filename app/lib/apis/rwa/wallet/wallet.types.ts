@@ -1,5 +1,7 @@
 import { z } from "zod";
 import {
+  PublicWalletPortfolioAssetSchema,
+  PublicWalletPortfolioSchema,
   WalletActivitySummarySchema,
   WalletPortfolioAssetSchema,
   WalletPortfolioHistoryPointSchema,
@@ -18,6 +20,12 @@ export type WalletPortfolioAssetType = z.infer<
 >;
 export type WalletPortfolioResponseType = z.infer<
   typeof WalletPortfolioSchema
+>;
+export type PublicWalletPortfolioAssetType = z.infer<
+  typeof PublicWalletPortfolioAssetSchema
+>;
+export type PublicWalletPortfolioResponseType = z.infer<
+  typeof PublicWalletPortfolioSchema
 >;
 export type WalletPortfolioHistoryPointType = z.infer<
   typeof WalletPortfolioHistoryPointSchema

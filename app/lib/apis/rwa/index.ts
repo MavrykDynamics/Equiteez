@@ -17,6 +17,7 @@ export {
 } from "~/lib/apis/rwa/notifications/notifications";
 export {
   fetchWalletActivitySummary,
+  fetchPublicWalletPortfolio,
   fetchWallet,
   fetchWalletPortfolio,
   fetchWalletPortfolioHistory,
