@@ -18,6 +18,7 @@ export {
 export {
   fetchWalletActivitySummary,
   fetchPublicWalletPortfolio,
+  fetchPublicWalletPortfolioHistory,
   fetchWallet,
   fetchWalletPortfolio,
   fetchWalletPortfolioHistory,

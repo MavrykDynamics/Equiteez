@@ -51,6 +51,22 @@ export const fetchPublicWalletPortfolio = async ({
   return PublicWalletPortfolioSchema.parse(data);
 };
 
+export const fetchPublicWalletPortfolioHistory = async ({
+  walletAddress,
+  currency = "usd",
+  range = "1d",
+}: FetchWalletPortfolioHistoryParams): Promise<WalletPortfolioHistoryResponseType> => {
+  const query = new URLSearchParams({
+    currency,
+    range,
+  });
+  const { data } = await rwaApi.get(
+    `/public/wallets/${walletAddress}/portfolio/history?${query.toString()}`
+  );
+
+  return WalletPortfolioHistorySchema.parse(data);
+};
+
 export const fetchWalletPortfolioHistory = async ({
   walletAddress,
   currency = "usd",

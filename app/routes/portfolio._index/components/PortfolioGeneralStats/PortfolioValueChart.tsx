@@ -2,7 +2,10 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
-import { fetchWalletPortfolioHistory } from "~/lib/apis/rwa";
+import {
+  fetchPublicWalletPortfolioHistory,
+  fetchWalletPortfolioHistory,
+} from "~/lib/apis/rwa";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
@@ -63,12 +66,23 @@ export function PortfolioValueChart({
   const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
   const portfolioHistoryQuery = useQuery({
-    queryKey: ["rwa-wallet-portfolio-history", address, period],
-    queryFn: () =>
-      fetchWalletPortfolioHistory({
+    queryKey: [
+      allowUnauthenticated
+        ? "rwa-public-wallet-portfolio-history"
+        : "rwa-wallet-portfolio-history",
+      address,
+      period,
+    ],
+    queryFn: () => {
+      const fetchPortfolioHistory = allowUnauthenticated
+        ? fetchPublicWalletPortfolioHistory
+        : fetchWalletPortfolioHistory;
+
+      return fetchPortfolioHistory({
         walletAddress: address || "",
         range: period,
-      }),
+      });
+    },
     enabled: (allowUnauthenticated || isAuthenticated) && Boolean(address),
   });
 
