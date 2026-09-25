@@ -8,6 +8,11 @@ import {
   type BridgeDeposit,
 } from "~/lib/apis/rwa/bridge/bridge.schema";
 
+import {
+  bridgeDepositEventSchema,
+  getBridgeEventId,
+} from "./bridgeDepositEvent";
+
 const progressSchema = z.object({
   step: z.enum(["approve", "lock"]),
   status: z.enum(["signature", "confirming", "confirmed"]),
@@ -46,6 +51,7 @@ const recordSchema = z.object({
   ]),
   verification: z.enum(["local", "unverified", "unknown", "verified", "stale"]),
   backend: bridgeDepositSchema.optional(),
+  signerEvents: z.array(bridgeDepositEventSchema).optional(),
   announcedStatus: z.enum(["executed", "stalled"]).optional(),
 });
 export type BridgeTransaction = z.infer<typeof recordSchema>;
@@ -127,6 +133,7 @@ export class BridgeTransactions {
           transactions.set(record.operationId, {
             ...record,
             verification: "unverified",
+            signerEvents: undefined,
           });
       }
       this.snapshot = { ...this.snapshot, transactions };
@@ -169,6 +176,7 @@ export class BridgeTransactions {
             transactions.set(record.operationId, {
               ...record,
               verification: "unverified",
+              signerEvents: undefined,
             });
         }
       }
@@ -209,11 +217,12 @@ export class BridgeTransactions {
             .includes(hash.toLowerCase())
         )
     );
-    const backendRecord = previous?.backend
-      ? previous
-      : discovered.length === 1
-        ? discovered[0]
-        : undefined;
+    const backendRecord =
+      previous?.backend || previous?.signerEvents?.length
+        ? previous
+        : discovered.length === 1
+          ? discovered[0]
+          : undefined;
     if (backendRecord && backendRecord.operationId !== record.operationId)
       transactions.delete(backendRecord.operationId);
     transactions.set(record.operationId, {
@@ -226,6 +235,7 @@ export class BridgeTransactions {
         ),
       ],
       backend: backendRecord?.backend,
+      signerEvents: backendRecord?.signerEvents,
       settlement: backendRecord?.settlement ?? "unknown",
       verification: backendRecord?.verification ?? record.verification,
       announcedStatus: backendRecord?.announcedStatus,
@@ -233,6 +243,57 @@ export class BridgeTransactions {
     this.snapshot = { ...this.snapshot, transactions };
     this.persist(); // Synchronous: before React effects or modal dismissal.
     this.emit();
+  }
+  observeEvent(payload: unknown) {
+    const parsed = bridgeDepositEventSchema.safeParse(payload);
+    if (!parsed.success || parsed.data.mavryk_address !== this.account)
+      return false;
+    this.restore();
+    const event = parsed.data;
+    const id = getBridgeEventId(event);
+    const transactions = new Map(this.snapshot.transactions);
+    const candidates = [...transactions.values()].filter((record) =>
+      record.sourceHashes.includes(event.initial_tx_hash)
+    );
+    const previous =
+      candidates.find((record) =>
+        record.backend
+          ? getBridgeDepositId(record.backend) === id
+          : record.signerEvents?.some((item) => getBridgeEventId(item) === id)
+      ) ??
+      (candidates.length === 1 &&
+      !candidates[0].backend &&
+      !candidates[0].signerEvents?.length
+        ? candidates[0]
+        : undefined);
+    const oldEvent = previous?.signerEvents
+      ?.slice()
+      .reverse()
+      .find((item) => item.signatory === event.signatory);
+    const statuses = ["PENDING", "PROCESSING", "COMPLETED"] as const;
+    if (
+      oldEvent &&
+      (statuses.indexOf(event.status) <= statuses.indexOf(oldEvent.status) ||
+        Date.parse(oldEvent.updated_at) > Date.parse(event.updated_at))
+    )
+      return true;
+    const record: BridgeTransaction = {
+      ...previous,
+      operationId: previous?.operationId ?? `deposit:${id}`,
+      account: this.account,
+      network: this.network,
+      sequence: previous?.sequence ?? 0,
+      sourceHashes: previous?.sourceHashes ?? [event.initial_tx_hash],
+      settlement: previous?.settlement ?? "unknown",
+      verification: previous?.verification ?? "unknown",
+      // Keep distinct transitions: each signer/status advances the widget once.
+      signerEvents: [...(previous?.signerEvents ?? []), event],
+    };
+    transactions.set(record.operationId, record);
+    this.snapshot = { ...this.snapshot, transactions };
+    this.persist();
+    this.emit();
+    return true;
   }
   markStale(message: string) {
     this.snapshot = {
@@ -263,8 +324,10 @@ export class BridgeTransactions {
       const candidates = [...transactions.values()].filter((record) =>
         record.sourceHashes.includes(row.evm_tx_hash)
       );
-      const exact = candidates.find(
-        (record) => record.backend && getBridgeDepositId(record.backend) === id
+      const exact = candidates.find((record) =>
+        record.backend
+          ? getBridgeDepositId(record.backend) === id
+          : record.signerEvents?.some((event) => getBridgeEventId(event) === id)
       );
       // Only adopt a changed log index when the hash is unambiguous in both snapshots.
       const sameHashRows = rows.filter(

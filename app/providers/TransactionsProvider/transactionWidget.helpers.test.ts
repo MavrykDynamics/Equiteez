@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
-import { deposit, localRecord } from "./bridgeTransactions.fixtures";
+import {
+  deposit,
+  localRecord,
+  signerEventSequence,
+} from "./bridgeTransactions.fixtures";
+import { bridgeDepositEventSchema } from "./bridgeDepositEvent";
 import type { BridgeTransaction } from "./bridgeTransactions";
 import {
   createWidgetPresentation,
@@ -10,6 +15,41 @@ import {
 
 const model = (overrides: Partial<BridgeTransaction> = {}) =>
   toTransactionWidget({ ...localRecord(), ...overrides })!;
+
+it("keeps event progress, success and amounts independent of newer backend rows and errors", () => {
+  const events = signerEventSequence.map((event) =>
+    bridgeDepositEventSchema.parse(event)
+  );
+  for (const status of [
+    "confirming",
+    "signing",
+    "executed",
+    "stalled",
+  ] as const) {
+    const record = {
+      ...localRecord(),
+      signerEvents: events.slice(0, 4),
+      backend: deposit({
+        status,
+        updated_at: "2026-09-26T00:00:00Z",
+        amount: "99",
+      }),
+      settlement: status,
+      verification: "stale" as const,
+    };
+    expect(
+      toTransactionWidget(record, { reconciliationError: "API unavailable" })
+    ).toMatchObject({
+      amount: "1.5",
+      symbol: "USDT",
+      state: { status: "progress", step: 4 },
+      isHistorical: false,
+    });
+    expect(
+      toTransactionWidget({ ...record, signerEvents: events })?.state
+    ).toEqual({ status: "success" });
+  }
+});
 describe("authoritative display", () => {
   it("omits approval-only attempts", () => {
     expect(

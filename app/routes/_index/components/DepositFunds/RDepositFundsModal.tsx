@@ -10,6 +10,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
 
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
@@ -34,6 +35,7 @@ export function RDepositFundsModal({
     useUserContext();
   const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
+  const { transactions } = useTransactionsContext();
   const { chains } = useConfig();
   const explorer = chains.find((chain) => chain.id === USDT_BRIDGE.chainId)
     ?.blockExplorers?.default;
@@ -44,6 +46,15 @@ export function RDepositFundsModal({
     USDT_BRIDGE.destinationToken;
   const bridgeState = ethereumWallet.bridge.state;
   const progress = bridgeState?.progress;
+  const lockHash =
+    progress?.step === "lock" ? progress.hash?.toLowerCase() : undefined;
+  const hasDepositEvent = Boolean(
+    lockHash &&
+      [...transactions.values()].some(
+        (record) =>
+          record.sourceHashes.includes(lockHash) && record.signerEvents?.length
+      )
+  );
   const transactionHash =
     progress?.step === "lock" &&
     !bridgeState?.error &&
@@ -66,11 +77,17 @@ export function RDepositFundsModal({
     wasOpen.current = isOpen;
   }, [isOpen, resetModal]);
 
+  useEffect(() => {
+    if (isOpen && hasDepositEvent) onClose();
+  }, [isOpen, hasDepositEvent, onClose]);
+
   const handleClose = () => {
     resetModal();
     wasOpen.current = false;
     onClose();
   };
+
+  if (hasDepositEvent) return null;
 
   return (
     <CustomPopup

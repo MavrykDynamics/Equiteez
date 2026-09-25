@@ -157,19 +157,10 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         authenticatedWallet === account &&
         currentStore.current === store
       ) {
-        if (import.meta.env.DEV) {
-          console.debug(
-            "[bridge] Deposit event received; refreshing authoritative status",
-            {
-              event_type: frame.event_type,
-              occurred_at: frame.occurred_at,
-            }
-          );
-        }
-        reconciler?.refresh();
+        store?.observeEvent(frame.payload);
       }
     },
-    [account, reconciler, store]
+    [account, store]
   );
   // Exactly one adapter, active for the entire authenticated session.
   useNotifierEvent(

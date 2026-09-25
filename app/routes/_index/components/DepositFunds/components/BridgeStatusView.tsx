@@ -67,7 +67,7 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
     {
       title: "Receive on Mavryk",
       status: "pending",
-      description: "Destination settlement is not yet verified",
+      description: "Waiting for bridge updates",
     },
   ];
 }
@@ -195,7 +195,7 @@ export function BridgeStatusView({
               ? "The transaction has been sent. Check its confirmation before starting another deposit."
               : state.error
                 ? "The deposit has not completed. Review the message above before trying again."
-                : "You can close this window. Broadcast transaction hashes are retained for recovery. Destination settlement is not yet verified."}
+                : "You can close this window while tracking continues."}
         </RText>
       </div>
       {state.isConfirmationUnknown && (

@@ -115,7 +115,7 @@ export function RTransactionWidget({
                   : "pending";
               return (
                 <li
-                  key={label}
+                  key={defaultLabel}
                   className={styles.step}
                   data-current={isCurrent || undefined}
                   aria-current={isCurrent ? "step" : undefined}

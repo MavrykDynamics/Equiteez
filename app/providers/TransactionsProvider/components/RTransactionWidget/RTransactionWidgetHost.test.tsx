@@ -34,7 +34,7 @@ beforeEach(() => {
 it("renders no preview or empty panel", () => {
   expect(renderToStaticMarkup(createElement(RTransactionWidgetHost))).toBe("");
 });
-it("renders concurrent cards, exact non-fiat quantities, recovery text and accessible actions without effects", () => {
+it("renders concurrent cards, exact non-fiat quantities without surrounding controls or recovery text without effects", () => {
   const models = [
     toTransactionWidget({
       ...localRecord(),
@@ -70,9 +70,16 @@ it("renders concurrent cards, exact non-fiat quantities, recovery text and acces
   expect(html).toContain("Deposit delayed");
   expect(html).toContain("&lt;script&gt;");
   expect(html).not.toContain("<script>");
-  expect(html).toContain("Refresh status");
-  expect(html).toContain("Show deposits (2)");
-  expect(html).toContain("Dismiss deposit operation-1");
+  for (const copy of [
+    "Refresh status",
+    "Show deposits",
+    "Hide deposits",
+    "Dismiss",
+    "Cancel",
+    "Recovery storage unavailable",
+  ])
+    expect(html).not.toContain(copy);
+  expect(html).not.toContain('role="tablist"');
   expect(mocks.context.refresh).not.toHaveBeenCalled();
   expect(mocks.context.dismiss).not.toHaveBeenCalled();
 });

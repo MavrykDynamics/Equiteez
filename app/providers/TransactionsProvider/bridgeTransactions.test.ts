@@ -11,6 +11,7 @@ import {
   replacementHash,
   localRecord,
   deposit,
+  signerEventSequence,
 } from "./bridgeTransactions.fixtures";
 
 let memory: Map<string, string>;
@@ -291,4 +292,60 @@ it("still rejects equal-time lifecycle/identity conflicts and older metadata", (
     settlement: "executed",
     verification: "verified",
   });
+});
+
+it("keeps separate event log identities and joins each API row without duplicating deposits", () => {
+  const first = signerEventSequence[0];
+  store.observeEvent(first);
+  store.observeEvent({ ...first, initial_log_index: 33 });
+  store.observeEvent({ ...first, initial_tx_hash: replacementHash });
+  expect(store.getSnapshot().transactions.size).toBe(3);
+  store.reconcile([
+    deposit({ log_index: 32 }),
+    deposit({ log_index: 33 }),
+    deposit({ evm_tx_hash: replacementHash, log_index: 32 }),
+  ]);
+  expect(store.getSnapshot().transactions.size).toBe(3);
+  expect(
+    [...store.getSnapshot().transactions.values()].every(
+      (record) => record.backend && record.signerEvents?.length === 1
+    )
+  ).toBe(true);
+});
+
+it("does not replay saved signer progress as fresh event evidence after reload", () => {
+  store.observeEvent(signerEventSequence[0]);
+  const restored = new BridgeTransactions("wallet-a", bridgeNetwork, storage);
+  restored.restore();
+  const record = [...restored.getSnapshot().transactions.values()][0];
+  expect(record.signerEvents).toBeUndefined();
+  expect(record.verification).toBe("unverified");
+  expect(record.sourceHashes).toEqual([hash]);
+});
+
+it("deduplicates signer/status transitions and rejects regressions without dropping distinct signers", () => {
+  const first = signerEventSequence[0];
+  store.observeEvent(first);
+  const snapshot = store.getSnapshot();
+  store.observeEvent({ ...first, updated_at: "2026-09-26T00:00:00Z" });
+  expect(store.getSnapshot()).toBe(snapshot);
+  store.observeEvent({
+    ...signerEventSequence[1],
+    updated_at: first.updated_at,
+  });
+  store.observeEvent(signerEventSequence[2]);
+  const progressing = store.getSnapshot();
+  store.observeEvent({
+    ...signerEventSequence[1],
+    updated_at: "2026-09-26T00:00:00Z",
+  });
+  store.observeEvent({
+    ...signerEventSequence[4],
+    updated_at: "2026-09-24T00:00:00Z",
+  });
+  expect(store.getSnapshot()).toBe(progressing);
+  for (const event of signerEventSequence.slice(3)) store.observeEvent(event);
+  const record = [...store.getSnapshot().transactions.values()][0];
+  expect(record.signerEvents).toHaveLength(6);
+  expect(store.getSnapshot().transactions.size).toBe(1);
 });

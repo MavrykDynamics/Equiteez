@@ -20,6 +20,7 @@ import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
 import { TransactionsProvider } from "./providers/TransactionsProvider/TransactionsProvider";
+import { RTransactionWidgetHost } from "./providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidgetHost";
 import { TransactionWidgetProvider } from "./providers/TransactionsProvider/TransactionWidgetProvider";
 import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
@@ -156,6 +157,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 <TransactionsProvider>
                                   <EthereumProvider>
                                     <TransactionWidgetProvider>
+                                      <RTransactionWidgetHost />
                                       <AppGlobalLoader>
                                         <PopupProvider>
                                           <PageLayout includeContainer={false}>

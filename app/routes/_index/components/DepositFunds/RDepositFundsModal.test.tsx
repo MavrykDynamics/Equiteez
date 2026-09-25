@@ -1,14 +1,25 @@
-import type { ReactNode } from "react";
+// @vitest-environment jsdom
+import { act, useState, type ReactNode } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { beforeEach, expect, it, vi } from "vitest";
 
 import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
+import { type BridgeTransaction } from "~/providers/TransactionsProvider/bridgeTransactions";
+import {
+  localRecord,
+  signerEventSequence,
+} from "~/providers/TransactionsProvider/bridgeTransactions.fixtures";
 import { RDepositFundsModal } from "./RDepositFundsModal";
 
 const mocks = vi.hoisted(() => ({
   state: null as UsdtBridgeState | null,
+  transactions: new Map<string, BridgeTransaction>(),
 }));
 
+vi.mock("~/providers/TransactionsProvider/TransactionsProvider", () => ({
+  useTransactionsContext: () => ({ transactions: mocks.transactions }),
+}));
 vi.mock("wagmi", () => ({ useConfig: () => ({ chains: [] }) }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ userTokensBalances: {} }),
@@ -42,6 +53,7 @@ vi.mock("./components/BridgeStatusView", () => ({
 }));
 
 beforeEach(() => {
+  mocks.transactions.clear();
   mocks.state = {
     amount: "1",
     recipient: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt",
@@ -88,4 +100,67 @@ it("returns to the submitted screen after successful confirmation recovery", () 
   mocks.state!.isConfirmationUnknown = false;
   mocks.state!.progress!.status = "confirmed";
   expect(renderModal()).toContain("transaction submitted");
+});
+
+it("hands the matching transaction over to the global widget on its first event", () => {
+  const record = {
+    ...localRecord(),
+    sourceHashes: [mocks.state!.progress!.hash!],
+    signerEvents: [
+      {
+        ...signerEventSequence[0],
+        direction: "in" as const,
+        status: "PENDING" as const,
+      },
+    ],
+  };
+  mocks.transactions.set(record.operationId, record);
+  expect(renderModal()).toBe("");
+});
+
+it("does not hide the popup for another deposit's event", () => {
+  mocks.transactions.set("other", {
+    ...localRecord("other"),
+    signerEvents: [
+      { ...signerEventSequence[0], direction: "in", status: "PENDING" },
+    ],
+  });
+  expect(renderModal()).toContain("transaction submitted");
+});
+
+it("closes the open popup once when its matching event arrives", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const element = document.createElement("div");
+  const root = createRoot(element);
+  const onClose = vi.fn();
+  function Popup() {
+    const [isOpen, setIsOpen] = useState(true);
+    return (
+      <RDepositFundsModal
+        isOpen={isOpen}
+        onClose={() => {
+          onClose();
+          setIsOpen(false);
+        }}
+      />
+    );
+  }
+  try {
+    await act(async () => root.render(<Popup />));
+    expect(element.textContent).toContain("transaction submitted");
+    expect(onClose).not.toHaveBeenCalled();
+    mocks.transactions.set("operation-1", {
+      ...localRecord(),
+      sourceHashes: [mocks.state!.progress!.hash!],
+      signerEvents: [
+        { ...signerEventSequence[0], direction: "in", status: "PENDING" },
+      ],
+    });
+    await act(async () => root.render(<Popup />));
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(element.textContent).toBe("");
+  } finally {
+    await act(async () => root.unmount());
+    vi.unstubAllGlobals();
+  }
 });

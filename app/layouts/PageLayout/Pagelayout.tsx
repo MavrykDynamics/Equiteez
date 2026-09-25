@@ -6,8 +6,6 @@ import { RFooter } from "~/layouts/PageLayout/RFooter";
 import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
 import { RBottomNavigation } from "~/layouts/PageLayout/RHeader/RBottomNavigation";
 
-import { RTransactionWidgetHost } from "~/providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidgetHost";
-
 import styles from "./Pagelayout.module.css";
 
 type PageLayoutProps = {
@@ -40,7 +38,6 @@ const PageLayout: FC<PageLayoutProps> = ({
         )}
       >
         <RHeader />
-        <RTransactionWidgetHost />
         {includeContainer ? (
           <div className="flex-1">
             <Container>{children}</Container>

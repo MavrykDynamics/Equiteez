@@ -6,7 +6,11 @@ import {
   useTransactionWidget,
 } from "./TransactionWidgetProvider";
 import { BridgeTransactions, bridgeNetwork } from "./bridgeTransactions";
-import { deposit, localRecord } from "./bridgeTransactions.fixtures";
+import {
+  deposit,
+  localRecord,
+  signerEventSequence,
+} from "./bridgeTransactions.fixtures";
 
 const mocks = vi.hoisted(() => ({
   presentation: undefined as unknown,
@@ -48,6 +52,7 @@ beforeEach(() => {
   }));
   store.update(localRecord());
   store.reconcile([deposit()]);
+  store.observeEvent({ ...signerEventSequence[0], initial_log_index: 1 });
   mocks.context = { ...store.getSnapshot(), session: store, refresh: vi.fn() };
 });
 
