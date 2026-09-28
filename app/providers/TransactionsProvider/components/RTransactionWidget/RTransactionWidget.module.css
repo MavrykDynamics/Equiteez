@@ -25,6 +25,17 @@
 
 .amount {
   overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+}
+
+.header .dismiss {
+  width: var(--r-space-6);
+  height: var(--r-space-6);
+  min-width: var(--r-space-6);
+  min-height: var(--r-space-6);
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .recipient {

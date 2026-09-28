@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import clsx from "clsx";
 
 import Money from "~/lib/atoms/Money";
+import { RButton } from "~/lib/atoms/RButton/RButton";
 import { HashChip } from "~/lib/molecules/HashChip";
 
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
@@ -40,6 +41,8 @@ export type RTransactionWidgetProps = {
   state: RTransactionWidgetState;
   sourceExplorerUrl?: string;
   className?: string;
+  /** Supplied only when WSS confirms a terminal transaction. */
+  onDismiss?: () => void;
 };
 
 const messageIcons: Record<
@@ -61,6 +64,7 @@ export function RTransactionWidget({
   state,
   className,
   sourceExplorerUrl,
+  onDismiss,
 }: RTransactionWidgetProps) {
   return (
     <section
@@ -85,6 +89,17 @@ export function RTransactionWidget({
             </>
           )}
         </RText>
+        {onDismiss && (
+          <RButton
+            aria-label="Dismiss transaction"
+            className={styles.dismiss}
+            size="small"
+            variant="secondary"
+            onClick={onDismiss}
+          >
+            <RIcon name="cross" size="small" aria-hidden />
+          </RButton>
+        )}
         <RText className={styles.recipient} size="body-s">
           <RText color="neutral-700" size="body-s">
             To:

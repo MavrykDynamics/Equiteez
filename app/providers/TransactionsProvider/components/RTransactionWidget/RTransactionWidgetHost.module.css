@@ -1,7 +1,4 @@
 .panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-3);
   position: fixed;
   right: var(--r-space-6);
   bottom: var(--r-space-6);
@@ -11,4 +8,40 @@
   max-height: calc(100dvh - 2 * var(--r-space-6));
   overflow-y: auto;
   overscroll-behavior: contain;
+  overflow-anchor: none;
+}
+
+.item {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition:
+    grid-template-rows var(--r-motion-duration-base) var(--r-motion-ease-premium),
+    opacity var(--r-motion-duration-base) var(--r-motion-ease-premium);
+}
+
+.item.collapsed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.item.expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Spacing collapses with the card, keeping every animation in normal flow. */
+.spacing {
+  padding-top: var(--r-space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
 }

@@ -114,7 +114,13 @@ const event = async (
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.useFakeTimers({
-    toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"],
+    toFake: [
+      "Date",
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+    ],
   });
   vi.clearAllMocks();
   localStorage.clear();
@@ -308,4 +314,115 @@ it("ignores malformed and wrong-recipient event data without creating cards", as
     await event(`invalid-${index}`, "wallet-a", payload);
   expect(transactions.transactions.size).toBe(0);
   expect(element.textContent).toBe("");
+});
+
+it("expires only the successful log after five seconds without resetting its deadline on replay", async () => {
+  await render();
+  await event("first", "wallet-a", signerEventSequence[0]);
+  await event("concurrent", "wallet-a", {
+    ...signerEventSequence[0],
+    initial_log_index: 33,
+  });
+  const cards = () =>
+    element.querySelectorAll('[aria-label="Bridge transaction"]');
+  const activeCard = cards()[1];
+  expect(
+    element.querySelector('[aria-label="Dismiss transaction"]')
+  ).toBeNull();
+  for (const [index, payload] of signerEventSequence.slice(1).entries())
+    await event(`complete-${index}`, "wallet-a", payload);
+  expect(cards()[0].getAttribute("data-status")).toBe("success");
+  expect(cards()[1]).toBe(activeCard);
+  expect(
+    element.querySelectorAll('[aria-label="Dismiss transaction"]')
+  ).toHaveLength(1);
+  await act(async () => vi.advanceTimersByTimeAsync(4_999));
+  await event("duplicate", "wallet-a", signerEventSequence[5]);
+  expect(cards()).toHaveLength(2);
+  await act(async () => vi.advanceTimersByTimeAsync(1));
+  await act(async () => vi.advanceTimersByTimeAsync(360));
+  expect(cards()).toHaveLength(1);
+  expect(cards()[0]).toBe(activeCard);
+  expect(transactions.transactions.size).toBe(2);
+  await event("replay", "wallet-a", signerEventSequence[5]);
+  expect(cards()).toHaveLength(1);
+});
+
+it("manual terminal dismissal survives logout/login and keeps concurrent tracking intact", async () => {
+  await render();
+  for (const [index, payload] of signerEventSequence.entries())
+    await event(`complete-${index}`, "wallet-a", payload);
+  await event("concurrent", "wallet-a", {
+    ...signerEventSequence[0],
+    initial_log_index: 33,
+  });
+  await act(async () =>
+    (
+      element.querySelector(
+        '[aria-label="Dismiss transaction"]'
+      ) as HTMLButtonElement
+    ).click()
+  );
+  await act(async () => vi.advanceTimersByTimeAsync(360));
+  expect(
+    element.querySelectorAll('[aria-label="Bridge transaction"]')
+  ).toHaveLength(1);
+  expect(transactions.transactions.size).toBe(2);
+  mocks.account = null;
+  await render();
+  mocks.account = "wallet-a";
+  await render();
+  await event("terminal-replay", "wallet-a", signerEventSequence[5]);
+  expect(element.querySelector('[aria-label="Bridge transaction"]')).toBeNull();
+  await event("active-replay", "wallet-a", {
+    ...signerEventSequence[1],
+    initial_log_index: 33,
+  });
+  expect(element.querySelector('[data-status="progress"]')).not.toBeNull();
+});
+
+it("follows growing content at the bottom but preserves a user scrolled-up position", async () => {
+  let resize = () => {};
+  const disconnect = vi.fn();
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: () => void) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect = disconnect;
+    }
+  );
+  await render();
+  await event("first", "wallet-a", signerEventSequence[0]);
+  const panel = element.querySelector(
+    '[aria-label="Bridge deposits"]'
+  ) as HTMLElement;
+  let height = 600;
+  Object.defineProperties(panel, {
+    scrollHeight: { get: () => height },
+    clientHeight: { get: () => 300 },
+    scrollTop: { value: 300, writable: true },
+  });
+  await act(async () =>
+    panel.dispatchEvent(new Event("scroll", { bubbles: true }))
+  );
+  height = 750;
+  resize();
+  // The browser clamps this assignment to scrollHeight - clientHeight.
+  expect(panel.scrollTop).toBe(750);
+  panel.scrollTop = 50;
+  await act(async () =>
+    panel.dispatchEvent(new Event("scroll", { bubbles: true }))
+  );
+  await event("second", "wallet-a", {
+    ...signerEventSequence[0],
+    initial_log_index: 33,
+  });
+  height = 900;
+  resize();
+  expect(panel.scrollTop).toBe(50);
+  await render(false);
+  expect(disconnect).toHaveBeenCalled();
 });

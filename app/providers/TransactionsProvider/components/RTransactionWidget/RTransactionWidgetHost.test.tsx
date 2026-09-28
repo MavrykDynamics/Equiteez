@@ -49,6 +49,7 @@ it("renders concurrent cards, exact non-fiat quantities without surrounding cont
       ...localRecord("second"),
       backend: deposit({
         status: "stalled",
+        log_index: 2,
         reason: "<script>unsafe()</script>",
       }),
       verification: "verified",
@@ -106,7 +107,7 @@ it("renders bridge targets, unknown signer thresholds, raw units and source link
     toTransactionWidget({
       ...localRecord("signing"),
       verification: "verified",
-      backend: deposit({ status: "signing", signer_count: 1 }),
+      backend: deposit({ status: "signing", signer_count: 1, log_index: 2 }),
     })!,
     toTransactionWidget(
       {

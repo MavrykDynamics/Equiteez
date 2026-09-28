@@ -15,6 +15,8 @@ export type TransactionWidgetModel = {
   sourceExplorerUrl?: string;
   state: RTransactionWidgetState;
   isHistorical: boolean;
+  /** Only confirmed WSS terminal states can enable dismissal/expiry. */
+  isTerminal: boolean;
 };
 
 type TrackingContext = {
@@ -160,6 +162,7 @@ export function toTransactionWidget(
             : matchesLocal
               ? (record.amount ?? null)
               : null));
+  const state = getState(record, context);
   return {
     operationId: record.operationId,
     backendId: backend
@@ -174,7 +177,8 @@ export function toTransactionWidget(
       USDT_BRIDGE.chainId === sepolia.id
         ? `${sepolia.blockExplorers.default.url}/tx/${event?.initial_tx_hash ?? backend?.evm_tx_hash ?? record.sourceHashes.at(-1)}`
         : undefined,
-    state: getState(record, context),
+    state,
+    isTerminal: Boolean(event && state.status === "success"),
     isHistorical: !event && record.settlement === "executed",
   };
 }
@@ -232,7 +236,12 @@ export function reconcileWidgetPresentation(
     const entry = current ?? (alias ? alias[1] : undefined);
     const visible = Boolean(entry?.visible || !model.isHistorical);
     next.discovered.set(model.operationId, {
-      order: entry?.order ?? next.discovered.size,
+      order:
+        entry?.order ??
+        Math.max(
+          -1,
+          ...[...next.discovered.values()].map((item) => item.order)
+        ) + 1,
       backendId: model.backendId,
       visible,
     });
