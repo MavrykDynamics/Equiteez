@@ -17,7 +17,7 @@ export function useNotifierEvent(
         return;
       }
 
-      handler(frame, wallet);
+      return handler(frame, wallet);
     },
     [eventType, handler]
   );

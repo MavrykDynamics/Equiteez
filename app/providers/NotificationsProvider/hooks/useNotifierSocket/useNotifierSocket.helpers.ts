@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   RECONNECT_BASE_DELAY_MS,
   RECONNECT_MAX_DELAY_MS,
@@ -32,21 +33,36 @@ export const getReconnectDelay = (attempt: number) =>
   Math.random() *
   Math.min(RECONNECT_MAX_DELAY_MS, RECONNECT_BASE_DELAY_MS * 2 ** attempt);
 
+const nonEmptyString = z.string().min(1);
+const serverFrameSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("auth_ok"), wallet: nonEmptyString }),
+  z.object({
+    type: z.literal("subscribed"),
+    channels: z.array(nonEmptyString).optional(),
+  }),
+  z.object({
+    type: z.literal("event"),
+    event_id: nonEmptyString,
+    event_type: nonEmptyString,
+    occurred_at: z.string().datetime({ offset: true }),
+    channel: nonEmptyString,
+    payload: z.record(z.unknown()).optional(),
+  }),
+  z.object({
+    type: z.literal("error"),
+    code: nonEmptyString,
+    message: z.string(),
+  }),
+  z.object({ type: z.literal("pong") }),
+]);
+
 export const parseNotifierServerFrame = (
   data: unknown
 ): NotifierServerFrame | null => {
-  if (typeof data !== "string") {
-    return null;
-  }
-
+  if (typeof data !== "string") return null;
   try {
-    const frame = JSON.parse(data);
-
-    if (!isRecord(frame) || typeof frame.type !== "string") {
-      return null;
-    }
-
-    return frame as NotifierServerFrame;
+    const result = serverFrameSchema.safeParse(JSON.parse(data));
+    return result.success ? (result.data as NotifierServerFrame) : null;
   } catch {
     return null;
   }

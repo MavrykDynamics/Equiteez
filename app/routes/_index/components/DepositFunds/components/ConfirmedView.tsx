@@ -29,14 +29,13 @@ export function ConfirmedView({
         <RText color="neutral-700" size="body-sm">
           Your transaction has been submitted.
           <br />
-          Your funds are being transferred to your wallet. You’ll be notified
-          once they’re available.
+          You can close this window while tracking continues.
         </RText>
       </div>
       <div className={styles.transaction}>
         <RText className={styles.status} size="body-sm">
           <span className={styles.statusDot} aria-hidden="true" />
-          Confirmed on-chain
+          Submitted on Ethereum
         </RText>
         <div className={styles.transactionDetails}>
           <RText color="neutral-700" size="body-sm">

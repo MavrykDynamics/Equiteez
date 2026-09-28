@@ -1,3 +1,4 @@
+import { dispatchNotifierEvent } from "./helpers/dispatchNotifierEvent";
 import React, {
   createContext,
   useCallback,
@@ -235,9 +236,7 @@ export const NotificationsProvider = ({
     (frame: NotifierEventFrame, wallet: string) => {
       const handlers = channelHandlersRef.current.get(frame.channel);
 
-      handlers?.forEach((handler) => {
-        handler(frame, wallet);
-      });
+      if (handlers) dispatchNotifierEvent(handlers, frame, wallet);
     },
     []
   );

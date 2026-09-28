@@ -21,7 +21,7 @@ export const useNotifierChannel = (
     }
 
     return registerChannelHandler(channel, (frame, wallet) => {
-      handlerRef.current(frame, wallet);
+      return handlerRef.current(frame, wallet);
     });
   }, [channel, registerChannelHandler]);
 };
