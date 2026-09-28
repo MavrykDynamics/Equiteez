@@ -99,6 +99,9 @@
     padding: var(--r-space-4);
     border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
+  .metric h5 {
+    font-family: var(--r-font-body);
+  }
 
   .metric h4 {
     margin-top: 1px;
