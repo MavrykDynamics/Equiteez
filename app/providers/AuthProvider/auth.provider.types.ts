@@ -35,6 +35,7 @@ export type AuthRefreshRequest = {
 export type AuthContext = {
   logout: (params?: AuthRefreshRequest) => Promise<void>;
   login: () => Promise<void>;
+  authenticatedWalletAddress: string | null;
   isAuthenticated: boolean;
   isAuthLoading: boolean;
 };

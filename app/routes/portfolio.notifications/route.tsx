@@ -9,7 +9,6 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
 import { formatNotificationDate } from "~/layouts/PageLayout/RHeader/NotificationsPanel";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
-import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { NotifierChannel } from "~/providers/NotificationsProvider/notifications.const";
 import { useNotifierChannel } from "~/providers/NotificationsProvider/hooks/useNotifierChannel";
 import { mapNotificationItemToUserNotification } from "~/providers/NotificationsProvider/helpers/notifications.helpers";
@@ -23,23 +22,28 @@ const isNotificationsNotFoundError = (error: unknown) =>
   isAxiosError(error) && error.response?.status === 404;
 
 export default function PortfolioNotifications() {
-  const { isAuthenticated } = useAuthContext();
-  const { userAddress } = useUserContext();
+  const { authenticatedWalletAddress, isAuthenticated } = useAuthContext();
   const { readAllNotification } = useNotificationsContext();
   const [listRevision, setListRevision] = useState(0);
   const readAllBeforeRef = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const hasNotificationIdentity =
+    isAuthenticated && Boolean(authenticatedWalletAddress);
 
   const notificationsQuery = useInfiniteQuery({
-    queryKey: ["walletNotificationsPage", userAddress, listRevision],
+    queryKey: [
+      "walletNotificationsPage",
+      authenticatedWalletAddress,
+      listRevision,
+    ],
     queryFn: ({ pageParam }) =>
       fetchWalletNotifications({
         cursor: pageParam,
         limit: NOTIFICATIONS_PAGE_SIZE,
-        walletAddress: userAddress ?? "",
+        walletAddress: authenticatedWalletAddress ?? "",
       }),
-    enabled: isAuthenticated && Boolean(userAddress),
+    enabled: hasNotificationIdentity,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
     retry: false,
@@ -61,7 +65,7 @@ export default function PortfolioNotifications() {
 
   useEffect(() => {
     readAllBeforeRef.current = null;
-  }, [userAddress]);
+  }, [authenticatedWalletAddress]);
 
   useEffect(() => {
     const target = loadMoreRef.current;

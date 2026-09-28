@@ -3,6 +3,7 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
 } from "react";
@@ -15,7 +16,6 @@ import {
   readWalletNotifications,
 } from "~/lib/apis/rwa";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
-import { useUserContext } from "~/providers/UserProvider/user.provider";
 import {
   MAX_NOTIFIER_SUBSCRIPTIONS,
   NotifierChannel,
@@ -70,8 +70,7 @@ export const NotificationsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { isAuthenticated } = useAuthContext();
-  const { userAddress } = useUserContext();
+  const { authenticatedWalletAddress, isAuthenticated } = useAuthContext();
   const queryClient = useQueryClient();
   const channelHandlersRef = useRef<Map<string, Set<NotifierChannelHandler>>>(
     new Map()
@@ -80,6 +79,10 @@ export const NotificationsProvider = ({
   const desiredChannelsRef = useRef<Set<string>>(new Set());
   const confirmedChannelsRef = useRef<Set<string>>(new Set());
   const quarantinedChannelsRef = useRef<Set<string>>(new Set());
+  const notificationIdentityRef = useRef<string | null | undefined>(undefined);
+  const notificationWalletAddress = authenticatedWalletAddress;
+  const hasNotificationIdentity =
+    isAuthenticated && Boolean(notificationWalletAddress);
 
   const getActiveDesiredChannels = useCallback(() => {
     const activeDesiredChannels = new Set<string>();
@@ -101,27 +104,27 @@ export const NotificationsProvider = ({
   >(null);
 
   const notificationsSummaryQuery = useQuery({
-    queryKey: [NOTIFICATIONS_SUMMARY_QUERY_KEY, userAddress],
+    queryKey: [NOTIFICATIONS_SUMMARY_QUERY_KEY, notificationWalletAddress],
     queryFn: () =>
       fetchWalletNotificationsSummary({
-        walletAddress: userAddress ?? "",
+        walletAddress: notificationWalletAddress ?? "",
       }),
-    enabled: isAuthenticated && Boolean(userAddress),
+    enabled: hasNotificationIdentity,
     retry: false,
   });
 
   const notificationsPreviewQuery = useQuery({
     queryKey: [
       NOTIFICATIONS_QUERY_KEY,
-      userAddress,
+      notificationWalletAddress,
       NOTIFICATIONS_PREVIEW_LIMIT,
     ],
     queryFn: () =>
       fetchWalletNotifications({
         limit: NOTIFICATIONS_PREVIEW_LIMIT,
-        walletAddress: userAddress ?? "",
+        walletAddress: notificationWalletAddress ?? "",
       }),
-    enabled: isAuthenticated && Boolean(userAddress),
+    enabled: hasNotificationIdentity,
     retry: false,
   });
 
@@ -136,19 +139,48 @@ export const NotificationsProvider = ({
     ]);
   }, [queryClient]);
 
+  useEffect(() => {
+    const nextIdentity = hasNotificationIdentity
+      ? notificationWalletAddress
+      : null;
+
+    if (notificationIdentityRef.current === undefined) {
+      notificationIdentityRef.current = nextIdentity;
+      return;
+    }
+
+    if (notificationIdentityRef.current === nextIdentity) {
+      return;
+    }
+
+    notificationIdentityRef.current = nextIdentity;
+
+    void Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: [NOTIFICATIONS_SUMMARY_QUERY_KEY],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: [NOTIFICATIONS_QUERY_KEY],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["walletNotificationsPage"],
+      }),
+    ]);
+  }, [hasNotificationIdentity, notificationWalletAddress, queryClient]);
+
   const readAllNotification = useCallback(
     async (before: string) => {
-      if (!isAuthenticated || !userAddress) {
+      if (!hasNotificationIdentity || !notificationWalletAddress) {
         return;
       }
 
       await readWalletNotifications({
         before,
-        walletAddress: userAddress,
+        walletAddress: notificationWalletAddress,
       });
       await refetchNotifications();
     },
-    [isAuthenticated, refetchNotifications, userAddress]
+    [hasNotificationIdentity, notificationWalletAddress, refetchNotifications]
   );
 
   const subscribe = useCallback((channel: NotifierChannelType) => {
@@ -288,6 +320,7 @@ export const NotificationsProvider = ({
   );
 
   const isNotificationsEnabled =
+    hasNotificationIdentity &&
     !isNotificationsNotFoundError(notificationsSummaryQuery.error) &&
     !isNotificationsNotFoundError(notificationsPreviewQuery.error);
   const isNotificationsLoading =
