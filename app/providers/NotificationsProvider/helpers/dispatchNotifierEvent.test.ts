@@ -1,5 +1,6 @@
 import { expect, it, vi } from "vitest";
 import { dispatchNotifierEvent } from "./dispatchNotifierEvent";
+import { getNotificationMessage } from "./messages/notifications.messages";
 import { parseNotifierServerFrame } from "../hooks/useNotifierSocket/useNotifierSocket.helpers";
 import { NotifierServerFrameType } from "../notifications.const";
 
@@ -56,4 +57,39 @@ it("validates envelope fields while keeping bridge payloads opaque", () => {
       JSON.stringify({ type: "subscribed", channels: [123] })
     )
   ).toBeNull();
+});
+
+it("preserves event kind so wallet notification frames can render toasts", () => {
+  const orderFilledFrame = {
+    type: NotifierServerFrameType.Event,
+    event_id: "7b13ceef-169e-54d8-805f-c365fcd26a97",
+    event_type: "ORDERBOOK_ORDER_UPDATED",
+    kind: "order_filled",
+    occurred_at: "2026-09-28T09:02:10.787808Z",
+    channel: "wallet",
+    payload: {
+      fulfilled_amount: "3000000",
+      order_id: "6427",
+      order_type: "market_sell",
+      price_per_rwa_token: "0",
+      quote_token_decimals: 6,
+      quote_token_symbol: "USDt",
+      rwa_token_amount: "3000000",
+      token_decimals: 6,
+      token_symbol: "MARS1",
+      total_paid_out: "60107000",
+    },
+  } as const;
+
+  const parsedFrame = parseNotifierServerFrame(
+    JSON.stringify(orderFilledFrame)
+  );
+
+  expect(parsedFrame).toEqual(orderFilledFrame);
+  expect(parsedFrame && getNotificationMessage(parsedFrame)).toEqual({
+    tone: "success",
+    title: "Market Sell Order fully filled",
+    message:
+      "Sold 3 MARS1 at avg. USDt 20.035667. Total 60.107 USDt. Settled onchain. Order #6427.",
+  });
 });

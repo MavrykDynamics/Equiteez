@@ -44,6 +44,7 @@ const serverFrameSchema = z.discriminatedUnion("type", [
     type: z.literal("event"),
     event_id: nonEmptyString,
     event_type: nonEmptyString,
+    kind: nonEmptyString.nullable().optional(),
     occurred_at: z.string().datetime({ offset: true }),
     channel: nonEmptyString,
     payload: z.record(z.unknown()).optional(),
