@@ -25,8 +25,7 @@ const isNotificationsNotFoundError = (error: unknown) =>
 export default function PortfolioNotifications() {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
-  const { readAllNotification, unreadNotificationsCount } =
-    useNotificationsContext();
+  const { readAllNotification } = useNotificationsContext();
   const [listRevision, setListRevision] = useState(0);
   const readAllBeforeRef = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -98,11 +97,14 @@ export default function PortfolioNotifications() {
 
   useEffect(() => {
     const before = notifications[0]?.createdAt;
+    const hasUnreadNotification = notifications.some(
+      (notification) => !notification.isRead
+    );
 
     if (
       !notificationsQuery.isSuccess ||
       !before ||
-      unreadNotificationsCount <= 0 ||
+      !hasUnreadNotification ||
       readAllBeforeRef.current === before
     ) {
       return;
@@ -124,7 +126,6 @@ export default function PortfolioNotifications() {
     notificationsQuery.isSuccess,
     readAllNotification,
     refetch,
-    unreadNotificationsCount,
   ]);
 
   return (
