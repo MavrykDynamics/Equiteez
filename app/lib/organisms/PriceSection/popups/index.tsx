@@ -741,11 +741,13 @@ const BuySellForm: FC<
   );
 
   const memoizedToastProps: ContractActionToastProps = useMemo(() => {
-    const action = orderType === BUY ? "bought" : "sold";
+    const action = orderType === BUY ? "Buy" : "Sell";
+
     return {
       success: {
-        title: `${asset.metadata.symbol} ${orderType === BUY ? "Buy" : "Sell"}`,
-        message: `Successfully ${action} ${asset.metadata.symbol}`,
+        title: `${asset.metadata.symbol} ${action} Order Submitted`,
+        message:
+          "Your transaction was confirmed. You'll receive a notification when the order is updated.",
       },
     };
   }, [orderType, asset.metadata.symbol]);

@@ -65,9 +65,9 @@ export function useOpenOrderAction({
       undefined,
       {
         success: {
-          title: "Order Canceled",
+          title: "Cancellation Requested",
           message:
-            "Your order has been successfully canceled. No funds were used or deducted.",
+            "Your cancellation transaction was confirmed. You'll receive a notification when the order is updated.",
         },
       },
       { onSuccess: handleAfterAction }
@@ -79,8 +79,9 @@ export function useOpenOrderAction({
       undefined,
       {
         success: {
-          title: "Refund Claimed",
-          message: "Your refundable order remainder has been claimed.",
+          title: "Refund Request Confirmed",
+          message:
+            "Your refund transaction was confirmed. You'll receive a notification when the refund is processed.",
         },
       },
       { onSuccess: handleAfterAction }
