@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useConfig } from "wagmi";
 import type { BigNumber } from "bignumber.js";
 
-import {
-  FreshnessSource,
-  useFreshQueryInvalidation,
-} from "~/lib/apis/rwa/freshness";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
@@ -15,6 +10,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
 
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
@@ -33,15 +29,13 @@ export function RDepositFundsModal({
   isOpen,
   onClose,
 }: RDepositFundsModalProps) {
-  const queryClient = useQueryClient();
-  const invalidateFreshQueries = useFreshQueryInvalidation();
-  const [confirmedHash, setConfirmedHash] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
   const { userAddress, userTokensBalances, connect, isLoading } =
     useUserContext();
   const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
+  const { transactions } = useTransactionsContext();
   const { chains } = useConfig();
   const explorer = chains.find((chain) => chain.id === USDT_BRIDGE.chainId)
     ?.blockExplorers?.default;
@@ -50,54 +44,28 @@ export function RDepositFundsModal({
   const destinationMetadata =
     tokensMetadata[USDT_BRIDGE_DESTINATION_SLUG] ??
     USDT_BRIDGE.destinationToken;
-  const progress = ethereumWallet.bridge.state?.progress;
-  const invalidatedTransactionHashRef = useRef<string | null>(null);
+  const bridgeState = ethereumWallet.bridge.state;
+  const progress = bridgeState?.progress;
+  const lockHash =
+    progress?.step === "lock" ? progress.hash?.toLowerCase() : undefined;
+  const hasDepositEvent = Boolean(
+    lockHash &&
+      [...transactions.values()].some(
+        (record) =>
+          record.sourceHashes.includes(lockHash) && record.signerEvents?.length
+      )
+  );
   const transactionHash =
-    progress?.step === "lock" && progress.status === "confirmed"
+    progress?.step === "lock" &&
+    !bridgeState?.error &&
+    !bridgeState?.isConfirmationUnknown
       ? progress.hash
       : undefined;
 
-  useEffect(() => {
-    if (
-      !isOpen ||
-      !transactionHash ||
-      invalidatedTransactionHashRef.current === transactionHash
-    ) {
-      return;
-    }
-
-    invalidatedTransactionHashRef.current = transactionHash;
-
-    void Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: ["rwa-wallet"],
-      }),
-      queryClient.invalidateQueries({
-        queryKey: ["rwa-wallet-portfolio"],
-      }),
-      queryClient.invalidateQueries({
-        queryKey: ["rwa-wallet-portfolio-history"],
-      }),
-      invalidateFreshQueries("fetchWalletTransferHistory", {
-        source: FreshnessSource.Chain,
-      }),
-      invalidateFreshQueries("fetchWalletActivitySummary", {
-        source: FreshnessSource.Chain,
-      }),
-    ]);
-  }, [invalidateFreshQueries, isOpen, queryClient, transactionHash]);
-
-  useEffect(() => {
-    if (!isOpen || !transactionHash) return;
-    const timer = setTimeout(() => setConfirmedHash(transactionHash), 3_500);
-    return () => clearTimeout(timer);
-  }, [transactionHash, isOpen]);
   const resetBridge = ethereumWallet.bridge.reset;
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
   const wasOpen = useRef(isOpen);
   const resetModal = useCallback(() => {
-    invalidatedTransactionHashRef.current = null;
-    setConfirmedHash(null);
     resetBridge();
     closeWalletSelection();
     setDepositAmount(undefined);
@@ -109,11 +77,17 @@ export function RDepositFundsModal({
     wasOpen.current = isOpen;
   }, [isOpen, resetModal]);
 
+  useEffect(() => {
+    if (isOpen && hasDepositEvent) onClose();
+  }, [isOpen, hasDepositEvent, onClose]);
+
   const handleClose = () => {
     resetModal();
     wasOpen.current = false;
     onClose();
   };
+
+  if (hasDepositEvent) return null;
 
   return (
     <CustomPopup
@@ -135,9 +109,7 @@ export function RDepositFundsModal({
         </button>
       </div>
 
-      {transactionHash &&
-      confirmedHash === transactionHash &&
-      ethereumWallet.bridge.state ? (
+      {transactionHash && ethereumWallet.bridge.state ? (
         <ConfirmedView
           transactionHash={transactionHash}
           explorer={
