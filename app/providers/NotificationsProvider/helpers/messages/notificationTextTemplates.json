@@ -2,7 +2,7 @@
   "order_placed": {
     "tone": "info",
     "title": "{order_type} Order placed",
-    "description": "Limit {order_type} for {rwa_token_amount} {token_symbol} at {price_per_rwa_token} {quote_token_symbol}. {total_usd_value_of_rwa_token_amount} {quote_token_symbol} held in escrow. Order #{order_id}."
+    "description": "{order_type} for {rwa_token_amount} {token_symbol}{order_price_segment}. {escrow_amount} {escrow_symbol} held in escrow. Order #{order_id}."
   },
   "order_partially_filled": {
     "tone": "info",
@@ -17,7 +17,7 @@
   "order_canceled": {
     "tone": "info",
     "title": "{order_type} Order canceled",
-    "description": "Your {order_type} order for {rwa_token_amount} {token_symbol} was canceled. {refunded_amount} {quote_token_symbol} released from escrow to your wallet. Order #{order_id}."
+    "description": "Your {order_type} order for {rwa_token_amount} {token_symbol} was canceled. {refunded_amount} {refunded_symbol} released from escrow to your wallet. Order #{order_id}."
   },
   "order_closed": {
     "tone": "info",
@@ -27,12 +27,12 @@
   "order_expired": {
     "tone": "info",
     "title": "Order expired",
-    "description": "Your order for {rwa_token_amount} {token_symbol} expired. {fulfilled_amount} of {rwa_token_amount} filled. {refunded_amount} {quote_token_symbol} released from escrow to your wallet. Order #{order_id}."
+    "description": "Your order for {rwa_token_amount} {token_symbol} expired. {fulfilled_amount} of {rwa_token_amount} filled. {refunded_amount} {refunded_symbol} released from escrow to your wallet. Order #{order_id}."
   },
   "order_refunded": {
     "tone": "success",
     "title": "Order funds refunded",
-    "description": "{refunded_amount} {quote_token_symbol} from order #{order_id} has been returned to your available balance."
+    "description": "{refunded_amount} {refunded_symbol} from order #{order_id} has been returned to your available balance."
   },
   "tokens_received": {
     "tone": "success",
