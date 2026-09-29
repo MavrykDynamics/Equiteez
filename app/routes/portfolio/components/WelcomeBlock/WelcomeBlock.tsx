@@ -7,15 +7,16 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
 import { WithdrawFunds } from "./WithdrawFunds";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { getTrimmedHash } from "~/lib/utils";
 
 export function WelcomeBlock({
   activeTab,
-  userName,
 }: {
   activeTab: string;
-  userName: string;
 }) {
   const navigate = useNavigate();
+  const { userAddress } = useUserContext();
   const { unreadNotificationsCount } = useNotificationsContext();
 
   const tabs = useMemo(
@@ -45,7 +46,7 @@ export function WelcomeBlock({
     <div className={styles.wrapper}>
       <div className={styles.welcome}>
         <RHeading weight="medium" size="h5">
-          Welcome, {userName}
+          Welcome, {getTrimmedHash(userAddress ?? "")}
         </RHeading>
         <div className={styles.actions}>
           <DepositFunds />

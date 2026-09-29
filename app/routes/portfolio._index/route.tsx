@@ -34,7 +34,7 @@ export default function PortfolioOverview() {
 
   return (
     <div className={styles.wrapper}>
-      <WelcomeBlock activeTab={ROUTES.portfolio} userName="Josh" />
+      <WelcomeBlock activeTab={ROUTES.portfolio} />
       <div className={styles.content}>
         <PortfolioGeneralStats stats={portfolioStats} />
         <AssetsStats

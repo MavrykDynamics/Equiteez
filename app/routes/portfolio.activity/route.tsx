@@ -74,7 +74,7 @@ export default function PortfolioActivity() {
 
   return (
     <div className={styles.wrapper}>
-      <WelcomeBlock activeTab={ROUTES.portfolioActivity} userName="Josh" />
+      <WelcomeBlock activeTab={ROUTES.portfolioActivity} />
 
       <div className={styles.content}>
         <div className={styles.statsWrapper}>

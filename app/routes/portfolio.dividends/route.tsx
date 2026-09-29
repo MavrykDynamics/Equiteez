@@ -23,7 +23,7 @@ export default function PortfolioDividends() {
 
   return (
     <div className={styles.wrapper}>
-      <WelcomeBlock activeTab={ROUTES.portfolioDividends} userName="Josh" />
+      <WelcomeBlock activeTab={ROUTES.portfolioDividends} />
       <div className={styles.content}>
         <DividendsStats data={dividendsStatsMock} />
         <MonthlyIncome data={monthlyIncomeMock} />

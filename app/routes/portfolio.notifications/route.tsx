@@ -56,12 +56,8 @@ export default function PortfolioNotifications() {
 
   useNotifierChannel(NotifierChannel.Wallet, resetNotificationsList);
 
-  const {
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = notificationsQuery;
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    notificationsQuery;
 
   useEffect(() => {
     readAllBeforeRef.current = null;
@@ -134,7 +130,7 @@ export default function PortfolioNotifications() {
 
   return (
     <div className={styles.wrapper}>
-      <WelcomeBlock activeTab={ROUTES.portfolioNotifications} userName="Josh" />
+      <WelcomeBlock activeTab={ROUTES.portfolioNotifications} />
 
       <section
         aria-label="Notification centre"
@@ -172,7 +168,10 @@ export default function PortfolioNotifications() {
                   styles.notification,
                   !notification.isRead && styles.unread
                 )}
-                key={notification.id || `${notification.date}-${notification.title}-${index}`}
+                key={
+                  notification.id ||
+                  `${notification.date}-${notification.title}-${index}`
+                }
               >
                 <span className={styles.notificationContent}>
                   <span className={styles.titleLine}>
