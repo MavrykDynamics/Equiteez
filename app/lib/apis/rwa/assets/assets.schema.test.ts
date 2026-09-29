@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { AssetSchema } from "./assets.schema";
+import { AssetHighlightSchema, AssetSchema } from "./assets.schema";
 
 const currencyAmount = {
   timestamp: "2026-09-22T14:39:56Z",
@@ -52,5 +52,21 @@ describe("asset statistics", () => {
     expect(
       AssetSchema.shape.stats.safeParse({ ...stats, ...invalidStats }).success
     ).toBe(false);
+  });
+});
+
+describe("asset highlights", () => {
+  it("accepts highlights without quote price", () => {
+    const parsed = AssetHighlightSchema.parse({
+      address: "KT1asset",
+      symbol: "rwa-usdt",
+      name: "RWA Token",
+      market_type: "secondary",
+      price: currencyAmount,
+      change_24h: null,
+      listed_at: "2026-09-22T14:39:56Z",
+    });
+
+    expect(parsed).not.toHaveProperty("quote_price");
   });
 });
