@@ -82,8 +82,7 @@
   "kyc_updated": {
     "tone": "info",
     "title": "KYC status updated",
-    "description": "",
-    "_comment": "No full description in Notification Text."
+    "description": "KYC updated",
   },
   "relay_failed": {
     "tone": "warning",
