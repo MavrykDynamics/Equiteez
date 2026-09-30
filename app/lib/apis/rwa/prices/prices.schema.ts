@@ -6,7 +6,7 @@ const PriceChangeSchema = z.object({
 });
 
 const PriceChangePeriodSchema = z.object({
-  from_ts: z.string(),
+  from_ts: z.string().nullable(),
   from: z.number().nullable(),
   delta_abs: z.number().nullable(),
   change_pct: z.number().nullable(),
