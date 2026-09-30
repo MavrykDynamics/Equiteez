@@ -35,6 +35,10 @@ export type ContractActionPopupProps = {
 };
 
 export type ContractActionToastProps = {
+  pending?: {
+    title: string;
+    message: string;
+  };
   success: {
     title: string;
     message: string;
@@ -89,7 +93,7 @@ export const useContractAction = <G extends object>(
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys, hidePopup } = usePopupContext();
-  const { success, bug } = useToasterContext();
+  const { success, bug, loading, hideToasterMessage } = useToasterContext();
   const { onSuccess } = contractActionOptions;
   const hasSubmittedRef = useRef(false);
   const confirmationRef = useRef<ContractActionConfirmation | null>(null);
@@ -122,6 +126,15 @@ export const useContractAction = <G extends object>(
   }, [popupDetails, popupKeys, showPopup]);
 
   const invokeAction = useCallback(async () => {
+    let pendingToastId: string | undefined;
+
+    const hidePendingToast = () => {
+      if (pendingToastId) {
+        hideToasterMessage(pendingToastId);
+        pendingToastId = undefined;
+      }
+    };
+
     hasSubmittedRef.current = false;
     confirmationRef.current = null;
 
@@ -143,6 +156,13 @@ export const useContractAction = <G extends object>(
           hasSubmittedRef.current = true;
           dispatchIfMounted(STATUS_CONFIRMING);
           showTransactionPopup();
+          if (toastMessages?.pending && !pendingToastId) {
+            pendingToastId = loading(
+              toastMessages.pending.title,
+              toastMessages.pending.message,
+              false
+            );
+          }
         },
         onTransactionConfirmed: (confirmation) => {
           confirmationRef.current = confirmation;
@@ -150,6 +170,7 @@ export const useContractAction = <G extends object>(
         },
       });
 
+      hidePendingToast();
       dispatchIfMounted(STATUS_SUCCESS);
       success(
         toastMessages?.success?.title || "Action executed successfully",
@@ -168,6 +189,7 @@ export const useContractAction = <G extends object>(
 
       dispatchIfMounted(STATUS_IDLE);
     } catch (e) {
+      hidePendingToast();
       const hasTransactionSubmitted = hasSubmittedRef.current;
 
       if (popupDetails && hasTransactionSubmitted) {
@@ -196,11 +218,14 @@ export const useContractAction = <G extends object>(
     dapp,
     dispatchIfMounted,
     hidePopup,
+    hideToasterMessage,
+    loading,
     onSuccess,
     popupDetails,
     popupKeys,
     showTransactionPopup,
     success,
+    toastMessages?.pending,
     toastMessages?.success?.message,
     toastMessages?.success?.title,
   ]);
