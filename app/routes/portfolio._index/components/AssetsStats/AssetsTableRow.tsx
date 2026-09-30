@@ -67,10 +67,16 @@ export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
       </td>
       <td>
         <RText className={styles.blockText} size="body-sm">
-          $
-          <Money fiat tooltip={false}>
-            {asset.price}
-          </Money>
+          {asset.price === null ? (
+            "—"
+          ) : (
+            <>
+              $
+              <Money fiat tooltip={false}>
+                {asset.price}
+              </Money>
+            </>
+          )}
         </RText>
         {asset.price_change_30d_pct === null ? (
           <RText color="neutral-700" size="body-s">
