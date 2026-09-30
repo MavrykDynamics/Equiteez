@@ -25,7 +25,7 @@ export default function PortfolioNotifications() {
   const { authenticatedWalletAddress, isAuthenticated } = useAuthContext();
   const { readAllNotification } = useNotificationsContext();
   const [listRevision, setListRevision] = useState(0);
-  const readAllBeforeRef = useRef<string | null>(null);
+  const readAllInFlightBeforeRef = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const hasNotificationIdentity =
@@ -60,7 +60,7 @@ export default function PortfolioNotifications() {
     notificationsQuery;
 
   useEffect(() => {
-    readAllBeforeRef.current = null;
+    readAllInFlightBeforeRef.current = null;
   }, [authenticatedWalletAddress]);
 
   useEffect(() => {
@@ -105,20 +105,23 @@ export default function PortfolioNotifications() {
       !notificationsQuery.isSuccess ||
       !before ||
       !hasUnreadNotification ||
-      readAllBeforeRef.current === before
+      readAllInFlightBeforeRef.current === before
     ) {
       return;
     }
 
-    readAllBeforeRef.current = before;
+    readAllInFlightBeforeRef.current = before;
 
     void (async () => {
       try {
         await readAllNotification(before);
         await refetch();
       } catch (error) {
-        readAllBeforeRef.current = null;
         console.error("Unable to mark notifications as read", error);
+      } finally {
+        if (readAllInFlightBeforeRef.current === before) {
+          readAllInFlightBeforeRef.current = null;
+        }
       }
     })();
   }, [

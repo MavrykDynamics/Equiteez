@@ -198,7 +198,7 @@ it("renders completed bridge deposits in notification history", () => {
     isRead: false,
     title: "Bridge deposit completed",
     description:
-      "1.5 USDT deposit completed. Funds are available on Mavryk at mv1DXLv...fQ3G. Source transaction 0xec26c...a14a.",
+      "1.5 wUSDT deposit completed. Funds are available on Mavryk at mv1DXLv...fQ3G. Source transaction 0xec26c...a14a.",
   });
 });
 
@@ -224,7 +224,7 @@ it("renders bridge warning descriptions in notification history", () => {
   ).toMatchObject({
     title: "Bridge deposit stalled",
     description:
-      "1.5 USDT bridge deposit is delayed. Source transaction 0xec26c...a14a. Check status again shortly or contact support if it remains stuck.",
+      "1.5 wUSDT bridge deposit is delayed. Source transaction 0xec26c...a14a. Check status again shortly or contact support if it remains stuck.",
   });
 
   expect(
@@ -242,6 +242,6 @@ it("renders bridge warning descriptions in notification history", () => {
   ).toMatchObject({
     title: "Bridge withdrawal failed",
     description:
-      "1.5 USDT bridge withdrawal failed. Funds were not completed on the destination chain. Source transaction 0xec26c...a14a.",
+      "1.5 wUSDT bridge withdrawal failed. Funds were not completed on the destination chain. Source transaction 0xec26c...a14a.",
   });
 });

@@ -136,6 +136,9 @@ export const NotificationsProvider = ({
       queryClient.invalidateQueries({
         queryKey: [NOTIFICATIONS_QUERY_KEY],
       }),
+      queryClient.invalidateQueries({
+        queryKey: ["walletNotificationsPage"],
+      }),
     ]);
   }, [queryClient]);
 
