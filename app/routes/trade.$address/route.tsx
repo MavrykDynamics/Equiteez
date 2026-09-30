@@ -15,10 +15,6 @@ import { RButton } from "~/lib/atoms/RButton";
 import { ROUTES } from "~/consts";
 import { TABLET_MAX_WIDTH } from "~/hooks/useWindowDimensions";
 import { RPrimarySaleSummary } from "./components/RPrimarySaleSummary/RPrimarySaleSummary";
-import { RTradingCountdown } from "./components/BuySellPanel/RTradingCountdown";
-
-// UI mock: replace with asset info sale_start, normalized to milliseconds.
-const MOCK_SALE_START = Date.parse("2026-10-10T12:00:00Z");
 
 export default function TradePage() {
   const { address } = useParams();
@@ -104,13 +100,13 @@ export default function TradePage() {
               <BuySellPanel
                 key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
                 asset={asset}
+                isPrimary={isPrimary}
                 isOrderBookOpen={isOrderBookOpen}
                 orderBookContainer={
                   !isPrimary && isDesktop ? orderBookContainer : null
                 }
                 setIsOrderBookOpen={setIsOrderBookOpen}
               />
-              {isPrimary && <RTradingCountdown startsAt={MOCK_SALE_START} />}
             </div>
           </div>
         </div>
