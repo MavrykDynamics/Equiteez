@@ -39,6 +39,9 @@ vi.mock("./components/ChartBlock/ChartBlock", () => ({
 vi.mock("./components/BuySellPanel/BuySellPanel", () => ({
   BuySellPanel: () => <div>Live trading panel</div>,
 }));
+vi.mock("./components/BuySellPanel/RTradingCountdown", () => ({
+  RTradingCountdown: () => <div>Trading countdown</div>,
+}));
 vi.mock("./components/AssetGallery/AssetGallerySlider", () => ({
   AssetGallerySlider: ({ size }: { size: string }) => <div>{size} gallery</div>,
 }));
@@ -54,6 +57,7 @@ describe("trade-page asset classification", () => {
       expect(html).toContain("Price chart");
       expect(html).toContain("compact gallery");
       expect(html).toContain("Live trading panel");
+      expect(html).not.toContain("Trading countdown");
       expect(html).not.toContain("Primary Sale");
     }
   );
@@ -70,6 +74,7 @@ describe("trade-page asset classification", () => {
       expect(html).toContain("25,000.00");
       expect(html).toContain('aria-valuenow="90"');
       expect(html).toContain("Live trading panel");
+      expect(html).toContain("Trading countdown");
       expect(html).not.toContain("Price chart");
       expect(html).not.toContain("compact gallery");
     }
