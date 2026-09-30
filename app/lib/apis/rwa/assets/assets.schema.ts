@@ -123,7 +123,7 @@ export const AssetHighlightSchema = z.object({
   icon: z.string().optional(),
   market_type: z.string(),
   price: CurrencyAmountSchema,
-  quote_price: QuotePriceSchema,
+  quote_price: QuotePriceSchema.optional(),
   change_24h: AssetHighlightsChangeSchema.nullable(),
   volume_24h: CurrencyAmountSchema.optional(),
   listed_at: z.string(),
