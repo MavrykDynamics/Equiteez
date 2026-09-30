@@ -82,7 +82,7 @@
   "kyc_updated": {
     "tone": "info",
     "title": "KYC status updated",
-    "description": "KYC updated",
+    "description": "KYC updated"
   },
   "relay_failed": {
     "tone": "warning",
