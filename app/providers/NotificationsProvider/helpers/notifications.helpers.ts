@@ -48,7 +48,11 @@ const HASH_FIELDS = new Set([
   "token_address",
   "orderbook_address",
   "quote_token_address",
+  "initial_tx_hash",
+  "mavryk_address",
 ]);
+
+const BRIDGE_TOKEN_DECIMALS = 18;
 
 const compactNumber = (value: BigNumberJs) =>
   value
@@ -367,6 +371,14 @@ const getNotificationVariableValue = (
 
   if (variableName === "refunded_symbol") {
     return getOrderTokenSymbol(notification.payload, orderType);
+  }
+
+  if (variableName === "bridge_amount") {
+    const amount = getPayloadValue(notification.payload, "amount");
+
+    return amount
+      ? formatNotificationAmount(amount, BRIDGE_TOKEN_DECIMALS)
+      : undefined;
   }
 
   const payloadValue = getPayloadValue(notification.payload, variableName);

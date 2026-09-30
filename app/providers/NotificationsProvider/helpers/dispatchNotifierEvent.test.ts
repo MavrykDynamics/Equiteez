@@ -1,6 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { dispatchNotifierEvent } from "./dispatchNotifierEvent";
 import { getNotificationMessage } from "./messages/notifications.messages";
+import { mapNotificationItemToUserNotification } from "./notifications.helpers";
 import { parseNotifierServerFrame } from "../hooks/useNotifierSocket/useNotifierSocket.helpers";
 import { NotifierServerFrameType } from "../notifications.const";
 
@@ -132,5 +133,115 @@ it("renders closed order notifications with filled and claimable amounts", () =>
     title: "Order closed, funds claimable",
     message:
       "Order closed, budget exhausted. 1.99 of 2 OCEAN filled. Rest funds claimable. Order #74.",
+  });
+});
+
+it("does not render bridge websocket events without a kind as toasts", () => {
+  const bridgeFrame = {
+    type: NotifierServerFrameType.Event,
+    event_id:
+      "734f2b8559488a7c9d8d578575780becbb9a0f2b6d0b7bd6ebe2a0e120e1df19",
+    event_type: "BRIDGE_DEPOSIT_UPDATED",
+    kind: null,
+    occurred_at: "2026-09-25T12:06:46.810234Z",
+    channel: "wallet",
+    payload: {
+      amount: "1500000000000000000",
+      direction: "in",
+      erc_token: "0xada0b668c6598559c5c816a8b633efe714c5b5f3",
+      final_log_index: 32,
+      initial_block: 11779099,
+      initial_log_index: 32,
+      initial_tx_hash:
+        "0xec26c0844d018b8ade360cd5b8abe8fa4dcdb40c388247c7ce5b57dbdf8ea14a",
+      mavryk_address: "mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G",
+      signatory: "mv1E2Y8khTrfaRUeErWUBfg6G7zNMKnM4JJL",
+      status: "COMPLETED",
+      updated_at: "2026-09-25T12:06:46.806471+00:00",
+    },
+  } as const;
+
+  expect(getNotificationMessage(bridgeFrame)).toBeNull();
+});
+
+it("renders completed bridge deposits in notification history", () => {
+  const notification = mapNotificationItemToUserNotification({
+    id: "notification-bridge-completed",
+    event_id:
+      "734f2b8559488a7c9d8d578575780becbb9a0f2b6d0b7bd6ebe2a0e120e1df19",
+    event_type: "BRIDGE_DEPOSIT_UPDATED",
+    kind: "bridge_deposit_completed",
+    entity_key:
+      "bridge:0xec26c0844d018b8ade360cd5b8abe8fa4dcdb40c388247c7ce5b57dbdf8ea14a/32",
+    payload: {
+      amount: "1500000000000000000",
+      direction: "in",
+      erc_token: "0xada0b668c6598559c5c816a8b633efe714c5b5f3",
+      final_log_index: 32,
+      initial_block: 11779099,
+      initial_log_index: 32,
+      initial_tx_hash:
+        "0xec26c0844d018b8ade360cd5b8abe8fa4dcdb40c388247c7ce5b57dbdf8ea14a",
+      mavryk_address: "mv1DXLvsp4T7X6gXLHn7szGN7WLooy14fQ3G",
+      signatory: "mv1E2Y8khTrfaRUeErWUBfg6G7zNMKnM4JJL",
+      status: "COMPLETED",
+      updated_at: "2026-09-25T12:06:46.806471+00:00",
+    },
+    occurred_at: "2026-09-25T12:06:46.810234Z",
+    created_at: "2026-09-25T12:06:50.000000Z",
+    read_at: null,
+  });
+
+  expect(notification).toMatchObject({
+    id: "notification-bridge-completed",
+    kind: "bridge_deposit_completed",
+    isRead: false,
+    title: "Bridge deposit completed",
+    description:
+      "1.5 USDT deposit completed. Funds are available on Mavryk at mv1DXLv...fQ3G. Source transaction 0xec26c...a14a.",
+  });
+});
+
+it("renders bridge warning descriptions in notification history", () => {
+  const payload = {
+    amount: "1500000000000000000",
+    initial_tx_hash:
+      "0xec26c0844d018b8ade360cd5b8abe8fa4dcdb40c388247c7ce5b57dbdf8ea14a",
+  };
+
+  expect(
+    mapNotificationItemToUserNotification({
+      id: "bridge-stalled-notification",
+      event_id: "bridge-stalled",
+      event_type: "BRIDGE_DEPOSIT_UPDATED",
+      kind: "bridge_deposit_stalled",
+      entity_key: "bridge:stalled",
+      payload,
+      occurred_at: "2026-09-25T12:06:46.810234Z",
+      created_at: "2026-09-25T12:06:50.000000Z",
+      read_at: null,
+    })
+  ).toMatchObject({
+    title: "Bridge deposit stalled",
+    description:
+      "1.5 USDT bridge deposit is delayed. Source transaction 0xec26c...a14a. Check status again shortly or contact support if it remains stuck.",
+  });
+
+  expect(
+    mapNotificationItemToUserNotification({
+      id: "bridge-withdrawal-failed-notification",
+      event_id: "bridge-withdrawal-failed",
+      event_type: "BRIDGE_DEPOSIT_UPDATED",
+      kind: "bridge_withdrawal_failed",
+      entity_key: "bridge:withdrawal-failed",
+      payload,
+      occurred_at: "2026-09-25T12:06:46.810234Z",
+      created_at: "2026-09-25T12:06:50.000000Z",
+      read_at: null,
+    })
+  ).toMatchObject({
+    title: "Bridge withdrawal failed",
+    description:
+      "1.5 USDT bridge withdrawal failed. Funds were not completed on the destination chain. Source transaction 0xec26c...a14a.",
   });
 });

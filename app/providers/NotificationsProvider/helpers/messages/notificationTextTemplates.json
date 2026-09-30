@@ -99,19 +99,16 @@
   "bridge_deposit_completed": {
     "tone": "success",
     "title": "Bridge deposit completed",
-    "description": "",
-    "_comment": "No full description in Notification Text."
+    "description": "{bridge_amount} USDT deposit completed. Funds are available on Mavryk at {mavryk_address}. Source transaction {initial_tx_hash}."
   },
   "bridge_deposit_stalled": {
     "tone": "warning",
     "title": "Bridge deposit stalled",
-    "description": "",
-    "_comment": "No full description in Notification Text."
+    "description": "{bridge_amount} USDT bridge deposit is delayed. Source transaction {initial_tx_hash}. Check status again shortly or contact support if it remains stuck."
   },
   "bridge_withdrawal_failed": {
     "tone": "warning",
     "title": "Bridge withdrawal failed",
-    "description": "",
-    "_comment": "No full description in Notification Text."
+    "description": "{bridge_amount} USDT bridge withdrawal failed. Funds were not completed on the destination chain. Source transaction {initial_tx_hash}."
   }
 }
