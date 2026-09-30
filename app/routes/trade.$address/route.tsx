@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "@remix-run/react";
+import clsx from "clsx";
 
 import { AssetGallerySlider } from "./components/AssetGallery/AssetGallerySlider";
 import { AssetDetails } from "./components/AssetDetails/AssetDetails";
@@ -13,6 +14,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { RButton } from "~/lib/atoms/RButton";
 import { ROUTES } from "~/consts";
 import { TABLET_MAX_WIDTH } from "~/hooks/useWindowDimensions";
+import { RPrimarySaleSummary } from "./components/RPrimarySaleSummary/RPrimarySaleSummary";
 
 export default function TradePage() {
   const { address } = useParams();
@@ -57,33 +59,51 @@ export default function TradePage() {
     );
   }
 
+  const isPrimary = asset.market_type.toLowerCase() === "primary";
+  const gallery = (
+    <AssetGallerySlider
+      key={asset.address}
+      images={asset.profile.gallery.map((item) => item.url)}
+      name={asset.metadata.name}
+      size={isPrimary ? "large" : "compact"}
+    />
+  );
+
   return (
     <Container className={styles.tradeContainer}>
-      <div className={styles.contentBlock}>
+      <div className={clsx(styles.contentBlock, isPrimary && styles.primary)}>
         <div className={styles.mainContent}>
           <AssetDetails asset={asset} />
-          <ChartBlock
-            asset={asset}
-            isOrderBookOpen={isOrderBookOpen}
-            orderBookContainerRef={setOrderBookContainer}
-            onOrderBookToggle={() => setIsOrderBookOpen((isOpen) => !isOpen)}
-          />
-          <AssetTabs asset={asset} />
+          {isPrimary ? (
+            <div className={styles.primaryGallery}>{gallery}</div>
+          ) : (
+            <ChartBlock
+              asset={asset}
+              isOrderBookOpen={isOrderBookOpen}
+              orderBookContainerRef={setOrderBookContainer}
+              onOrderBookToggle={() => setIsOrderBookOpen((isOpen) => !isOpen)}
+            />
+          )}
+          {isPrimary ? (
+            <div className={styles.primaryTabs}>
+              <AssetTabs asset={asset} />
+            </div>
+          ) : (
+            <AssetTabs asset={asset} />
+          )}
         </div>
 
         <div className={styles.tradeColumn}>
           <div className={styles.tradeColumnContent}>
-            <AssetGallerySlider
-              key={asset.address}
-              images={asset.profile.gallery.map((item) => item.url)}
-              name={asset.metadata.name}
-            />
+            {isPrimary ? <RPrimarySaleSummary /> : gallery}
             <div className={styles.buySellContainer}>
               <BuySellPanel
                 key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
                 asset={asset}
                 isOrderBookOpen={isOrderBookOpen}
-                orderBookContainer={isDesktop ? orderBookContainer : null}
+                orderBookContainer={
+                  !isPrimary && isDesktop ? orderBookContainer : null
+                }
                 setIsOrderBookOpen={setIsOrderBookOpen}
               />
             </div>
