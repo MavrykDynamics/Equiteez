@@ -22,7 +22,7 @@
   "order_closed": {
     "tone": "info",
     "title": "Order closed, funds claimable",
-    "description": "Order Closed"
+    "description": "Order closed, budget exhausted. {fulfilled_amount} of {rwa_token_amount} {token_symbol} filled. Rest funds claimable. Order #{order_id}."
   },
   "order_expired": {
     "tone": "info",
