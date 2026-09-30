@@ -9,7 +9,7 @@ import type { OrderbookConfigType } from "~/providers/MarketsProvider/market.typ
 export type OrderbookTickSizesByAddress = StringRecord<number>;
 
 type OrderbookConfigView = {
-  tickSize: BigNumber.Value;
+  priceTickSize: BigNumber.Value;
 };
 
 const readOnlyMavrykToolkit = new MavrykToolkit(basenetNetRpcnode);
@@ -19,7 +19,7 @@ const readOrderbookTickSize = async (address: string) => {
   const config = (await contract.contractViews.getConfig().executeView({
     viewCaller: address,
   })) as OrderbookConfigView;
-  const tickSize = new BigNumber(config.tickSize);
+  const tickSize = new BigNumber(config.priceTickSize);
 
   if (!tickSize.isFinite() || tickSize.lte(0)) {
     throw new Error(`Invalid orderbook tick size for ${address}`);
