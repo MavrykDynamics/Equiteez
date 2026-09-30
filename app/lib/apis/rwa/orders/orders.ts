@@ -60,7 +60,7 @@ export const fetchWalletOpenOrders = async ({
     query.set("token_address", tokenAddress);
   }
 
-  query.set("status", "open,expired");
+  // query.set("status", "open,expired");
   query.set("refund", "none,claimable");
 
   const response = await requestFreshQuery({
