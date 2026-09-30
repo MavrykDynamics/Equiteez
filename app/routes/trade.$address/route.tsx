@@ -59,7 +59,7 @@ export default function TradePage() {
     );
   }
 
-  const isPrimary = asset.market_type.toLowerCase() === "primary";
+  const isPrimary = asset.profile.lifecycle === "primary_issuance";
   const gallery = (
     <AssetGallerySlider
       key={asset.address}
