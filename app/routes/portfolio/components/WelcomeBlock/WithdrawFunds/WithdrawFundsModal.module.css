@@ -453,6 +453,10 @@
 .closeAction {
   width: 100%;
 }
+.closeAction {
+  border-radius: 32px;
+  border: 1px solid var(--r-color-neutral-100);
+}
 .statusContent {
   gap: var(--r-space-6);
   align-items: center;

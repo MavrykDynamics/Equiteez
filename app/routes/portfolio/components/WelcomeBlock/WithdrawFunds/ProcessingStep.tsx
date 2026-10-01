@@ -40,13 +40,13 @@ export function ProcessingStep({
               size="medium"
             />
           </div>
-          <RText className={styles.progressCopy} size="body-sm">
+          <RText className={styles.progressCopy} color="neutral-700" size="body-s">
             Waiting for confimations
           </RText>
           <RText
             className={styles.progressStatus}
             color="neutral-700"
-            size="body-xs"
+            size="body-s"
           >
             In progress
           </RText>
@@ -62,8 +62,10 @@ export function ProcessingStep({
         </RText>
       </div>
 
-      <RButton className={styles.closeAction} onClick={onClose} tone="black">
+      <RButton className={styles.closeAction} onClick={onClose} tone="white">
+        <RText weight="medium" size="body-sm">
         Close and Go to Portfolio
+        </RText>
       </RButton>
     </div>
   );
