@@ -10,12 +10,14 @@ type ConfirmedViewProps = {
   transactionHash: string;
   explorer?: { name: string; url: string };
   onClose: () => void;
+  onViewDetails: () => void;
 };
 
 export function ConfirmedView({
   transactionHash,
   explorer,
   onClose,
+  onViewDetails,
 }: ConfirmedViewProps) {
   return (
     <div className={styles.content}>
@@ -27,9 +29,8 @@ export function ConfirmedView({
           Transaction Submitted
         </RHeading>
         <RText color="neutral-700" size="body-sm">
-          Your transaction has been submitted.
-          <br />
-          You can close this window while tracking continues.
+          Your transaction has been submitted. Your funds are being transferred to
+          your wallet. You’ll be notified once they’re available.
         </RText>
       </div>
       <div className={styles.transaction}>
@@ -69,15 +70,9 @@ export function ConfirmedView({
           tone="black"
           variant="secondary"
         >
-          Close And Continue Browsing
+          Minimize And Continue Browsing
         </RButton>
-        <RButton
-          as="link"
-          to="/portfolio"
-          onClick={onClose}
-          size="medium"
-          tone="black"
-        >
+        <RButton onClick={onViewDetails} size="medium" tone="black">
           View Details
         </RButton>
       </div>

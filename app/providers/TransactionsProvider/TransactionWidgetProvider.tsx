@@ -51,8 +51,9 @@ function useWidgetState() {
   const models = useMemo(
     () =>
       records.flatMap((record) => {
-        // Only received WSS events create and drive production widgets.
-        if (!record.signerEvents?.length) return [];
+        // Popup submissions may wait before WSS arrives; only WSS advances steps.
+        if (!record.signerEvents?.length && !record.isWidgetRequested)
+          return [];
         const model = toTransactionWidget(record);
         if (!model) return [];
         // A persisted deadline is evidence of previously received terminal WSS events.
@@ -68,16 +69,6 @@ function useWidgetState() {
       }),
     [records, removalState.entries]
   );
-  useEffect(() => {
-    for (const model of models) {
-      if (
-        model.isTerminal &&
-        model.state.status === "success" &&
-        model.backendId
-      )
-        removals.confirmSuccess(model.backendId);
-    }
-  }, [models, removals]);
   const [presentation, setPresentation] = useState(
     createWidgetPresentation(session)
   );
@@ -105,6 +96,46 @@ function useWidgetState() {
     return next;
   }, [presentation, session, models, removalState.entries]);
   if (current !== presentation) setPresentation(current);
+  useEffect(() => {
+    for (const model of models) {
+      if (
+        model.isTerminal &&
+        model.state.status === "success" &&
+        model.backendId &&
+        !current.heldOperationIds.has(model.operationId)
+      )
+        removals.confirmSuccess(model.backendId);
+    }
+  }, [models, removals, current.heldOperationIds]);
+  // A popup owns a temporary visibility hold, never the transaction's tracking.
+  const holdDeposit = useCallback(
+    (operationId: string) => {
+      setPresentation((previous) =>
+        previous.session !== session ||
+        previous.heldOperationIds.has(operationId)
+          ? previous
+          : {
+              ...previous,
+              heldOperationIds: new Set([
+                ...previous.heldOperationIds,
+                operationId,
+              ]),
+            }
+      );
+      return () =>
+        setPresentation((previous) => {
+          if (
+            previous.session !== session ||
+            !previous.heldOperationIds.has(operationId)
+          )
+            return previous;
+          const heldOperationIds = new Set(previous.heldOperationIds);
+          heldOperationIds.delete(operationId);
+          return { ...previous, heldOperationIds, isOpen: true };
+        });
+    },
+    [session]
+  );
   const setIsOpen = useCallback(
     (isOpen: boolean) =>
       setPresentation((previous) =>
@@ -159,6 +190,7 @@ function useWidgetState() {
         .filter(
           (model) =>
             (!account || removalState.isReady) &&
+            !current.heldOperationIds.has(model.operationId) &&
             removalState.entries.get(model.backendId!) !== null &&
             current.discovered.get(model.operationId)?.visible &&
             !current.dismissed.has(model.operationId)
@@ -181,6 +213,7 @@ function useWidgetState() {
     isOpen: current.isOpen,
     models,
     visibleModels,
+    holdDeposit,
     showDeposits,
     setIsOpen,
     dismiss,

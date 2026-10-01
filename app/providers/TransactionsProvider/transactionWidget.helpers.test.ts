@@ -280,3 +280,27 @@ it("links to the authoritative hash or latest local replacement on the configure
     `https://sepolia.etherscan.io/tx/${deposit().evm_tx_hash}`
   );
 });
+
+it("keeps popup waiting models independent of backend settlement until signer events arrive", () => {
+  const record: BridgeTransaction = {
+    ...localRecord(),
+    isWidgetRequested: true,
+    sourceToken: {
+      address: USDT_BRIDGE.sourceToken.address,
+      decimals: USDT_BRIDGE.sourceToken.decimals,
+    },
+    backend: deposit({ status: "executed", amount: "99" }),
+    settlement: "executed",
+    verification: "verified",
+  };
+  expect(toTransactionWidget(record)).toMatchObject({
+    amount: "1",
+    symbol: "USDT",
+    state: { status: "waiting" },
+    isTerminal: false,
+    isHistorical: false,
+  });
+  expect(
+    toTransactionWidget({ ...record, executionError: "Receipt timeout" })?.state
+  ).toMatchObject({ status: "warning", description: "Receipt timeout" });
+});
