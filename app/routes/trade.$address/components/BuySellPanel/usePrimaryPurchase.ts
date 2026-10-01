@@ -1,3 +1,4 @@
+import { PRIMARY_HISTORY_QUERY_KEY } from "~/lib/apis/primaryPurchases/primaryPurchases";
 import { useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -86,6 +87,9 @@ export function usePrimaryPurchase(assetAddress: string) {
         invalidateFreshQueries("fetchWalletTransferHistory", mark),
         invalidateFreshQueries("fetchWalletActivitySummary", mark),
         queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({
+          queryKey: [PRIMARY_HISTORY_QUERY_KEY],
+        }),
       ]);
       // This wallet-scoped refresh must survive navigation after confirmation.
       // The portfolio endpoint has a 20s TTL and no fresh=1 override.

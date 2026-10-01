@@ -7,8 +7,8 @@ orderbook form and contract calls.
 
 The primary branch reuses `BuySellScreen`, `TradeConfirmationPopup`, the fee
 summary, and `useContractAction`. Its optional shared-component props have no
-effect on secondary trading. It offers a fixed-price Buy flow and eligible sale
-options, defaulting to the cheapest live price. It does not offer Sell, limit
+effect on secondary trading. It offers a fixed-price Buy flow and automatically uses the cheapest eligible
+sale option at the live price, without a dropdown. It does not offer Sell, limit
 orders, order expiry, or orderbook depth.
 
 ## Data and contract boundaries
@@ -63,3 +63,29 @@ operator batching, wallet/balance changes, revalidation and contract errors.
 `PrimaryPurchasePanel.test.tsx` covers amount → review → direct purchase → success,
 changed-price rejection, and live countdown timing. Existing secondary contract,
 fee summary, and route classification suites remain applicable.
+
+## Purchase history
+
+Primary asset tabs replace Open Orders and Order History with Purchase History.
+The shared `RAssetHistoryTable` preserves the secondary table presentation,
+with Date, Asset, Type, Price, Amount, Status, and Total columns, sorting and
+10-row pagination. Secondary data loading and order behavior are unchanged.
+
+`RPurchaseHistoryTab` reads confirmed direct `purchase` operations from the
+configured Basenet launchpad using the existing TzKT client. It verifies the
+asset against the operation's historical `launchLedger` diff and sums the
+matching wUSDT transfers from the buyer, scoped to the operation hash and
+counter. Total includes the actual discounted purchase fee and excludes MAV
+network fees. Price is Total divided by Amount; all arithmetic uses decimal
+strings/BigInt/BigNumber. Current prices and signed payment caps are never used
+as historical payments. Missing or unsupported historical data shows a retryable
+error rather than invented totals. Admin allocations and token distributions
+are excluded. Confirmed means the purchase succeeded; it does not imply a
+MANUAL allocation has been distributed.
+
+Wallet operations are read in cursor batches of 100, with at most 10 concurrent
+detail requests and cached immutable operation groups. Rows are sorted and
+paginated locally after filtering the asset. The query is wallet/network/asset
+scoped, refreshes every 15 seconds while mounted, and is invalidated after
+purchase confirmation or a wallet purchase event. This release covers the direct
+purchase path; permit history must be added when the currently blocked relay ships.

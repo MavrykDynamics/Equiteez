@@ -30,12 +30,6 @@ import type {
 } from "~/contracts/primaryPurchase.types";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
-import {
-  RCustomDropdown,
-  RDropdownFaceContent,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvider/toaster.provider.const";
 import { usePrimaryPurchase } from "./usePrimaryPurchase";
 import { RTradingCountdown } from "./RTradingCountdown";
@@ -100,7 +94,6 @@ function PrimaryPurchaseForm({
   config: PrimaryPurchaseConfig;
   query: PurchaseQuery;
 }) {
-  const [selectedOption, setSelectedOption] = useState(() => config.options[0]);
   const [amount, setAmount] = useState<BigNumber>();
   const [review, setReview] = useState<PrimaryPurchaseReview | null>(null);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
@@ -108,12 +101,7 @@ function PrimaryPurchaseForm({
   const [actionError, setActionError] = useState<string>();
   const [estimateError, setEstimateError] = useState<string>();
   const [fees, setFees] = useState({ networkFee: ZERO, gasFee: ZERO });
-  const option =
-    config.options.find(
-      (item) =>
-        item.name === selectedOption.name &&
-        item.payment === selectedOption.payment
-    ) ?? config.options[0];
+  const option = config.options[0];
   const rawAmount = amount?.isFinite() && amount.gt(0) ? toRaw(amount) : "0";
   const quote = useMemo(
     () => quotePrimaryPurchase(option, rawAmount),
@@ -263,13 +251,13 @@ function PrimaryPurchaseForm({
         throw new Error(
           live?.unavailableReason ?? "The launch is unavailable."
         );
-      const current = live.options.find(
-        (item) => item.name === option.name && item.payment === option.payment
-      );
+      const current = live.options[0];
       if (!current) throw new Error("This sale option is no longer available.");
       validatePrimaryAmount(current, rawAmount);
       const currentQuote = quotePrimaryPurchase(current, rawAmount);
       if (
+        current.name !== option.name ||
+        current.payment !== option.payment ||
         currentQuote.totalPayment !== quote.totalPayment ||
         current.price !== option.price ||
         live.distribution !== config.distribution
@@ -302,36 +290,6 @@ function PrimaryPurchaseForm({
 
   return (
     <div className={formStyles.buySellRoot}>
-      <div className={formStyles.tradeControls}>
-        <RCustomDropdown className={formStyles.marketDropdown}>
-          <RDropdownFaceContent
-            aria-label="Sale option"
-            className={formStyles.marketDropdownTrigger}
-          >
-            {option.name}
-          </RDropdownFaceContent>
-          <RDropdownBodyContent
-            align="left"
-            className={formStyles.marketDropdownMenu}
-          >
-            {config.options.map((item) => (
-              <RDropdownBodyContentItem
-                key={JSON.stringify([item.name, item.payment])}
-                isSelected={
-                  item.name === option.name && item.payment === option.payment
-                }
-                onClick={() => {
-                  setSelectedOption(item);
-                  setAmount(undefined);
-                  setActionError(undefined);
-                }}
-              >
-                {item.name} — {toHuman(item.price).toFixed()} wUSDT
-              </RDropdownBodyContentItem>
-            ))}
-          </RDropdownBodyContent>
-        </RCustomDropdown>
-      </div>
       {(query.error || actionError || estimateError) && (
         <button
           type="button"

@@ -46,24 +46,6 @@ vi.mock("~/contracts/hooks/useContractAction", () => ({
     isLoading: false,
   }),
 }));
-vi.mock("~/lib/organisms/RCustomDropdown/RCustomDropdown", () => ({
-  RCustomDropdown: ({ children }: { children: ReactNode }) => (
-    <div>{children}</div>
-  ),
-  RDropdownFaceContent: ({ children }: { children: ReactNode }) => (
-    <div>{children}</div>
-  ),
-  RDropdownBodyContent: ({ children }: { children: ReactNode }) => (
-    <div>{children}</div>
-  ),
-  RDropdownBodyContentItem: ({
-    children,
-    onClick,
-  }: {
-    children: ReactNode;
-    onClick: () => void;
-  }) => <button onClick={onClick}>{children}</button>,
-}));
 vi.mock("~/lib/organisms/PriceSection/screens/BuySellScreen", () => ({
   BuySellScreen: ({
     actionCb,
@@ -197,6 +179,26 @@ afterEach(async () => {
 });
 
 describe("primary purchase panel flow", () => {
+  it("uses the cheapest eligible option without a dropdown and rechecks option changes at review", async () => {
+    await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
+    expect(container.querySelector('[aria-label="Sale option"]')).toBeNull();
+    expect(container.querySelector('[role="combobox"]')).toBeNull();
+    await click("Enter 1.5");
+    mocks.refetch.mockResolvedValue({
+      data: {
+        ...config,
+        options: [
+          { ...config.options[0], name: "New cheapest" },
+          ...config.options,
+        ],
+      },
+    });
+    await click("Buy");
+    expect(container.textContent).toContain("quote has changed");
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(mocks.purchase).not.toHaveBeenCalled();
+  });
+
   it("requires review before submission and passes exact raw units to the direct purchase", async () => {
     await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
     await click("Enter 1.5");
