@@ -52,6 +52,8 @@ const recordSchema = z.object({
   verification: z.enum(["local", "unverified", "unknown", "verified", "stale"]),
   backend: bridgeDepositSchema.optional(),
   signerEvents: z.array(bridgeDepositEventSchema).optional(),
+  // Opt-in presentation/recovery for deposits started from the deposit popup.
+  isWidgetRequested: z.boolean().optional(),
   announcedStatus: z.enum(["executed", "stalled"]).optional(),
 });
 export type BridgeTransaction = z.infer<typeof recordSchema>;
@@ -133,7 +135,9 @@ export class BridgeTransactions {
           transactions.set(record.operationId, {
             ...record,
             verification: "unverified",
-            signerEvents: undefined,
+            signerEvents: record.isWidgetRequested
+              ? record.signerEvents
+              : undefined,
           });
       }
       this.snapshot = { ...this.snapshot, transactions };
@@ -176,7 +180,9 @@ export class BridgeTransactions {
             transactions.set(record.operationId, {
               ...record,
               verification: "unverified",
-              signerEvents: undefined,
+              signerEvents: record.isWidgetRequested
+                ? record.signerEvents
+                : undefined,
             });
         }
       }

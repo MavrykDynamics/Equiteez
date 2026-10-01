@@ -11,6 +11,20 @@
   background: lightgray;
 }
 
+.large {
+  margin-bottom: var(--r-space-3);
+}
+
+.large .carouselRow {
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.large .viewport {
+  position: absolute;
+  inset: 0;
+}
+
 .viewport {
   height: 100%;
   overflow: hidden;

@@ -349,3 +349,30 @@ it("deduplicates signer/status transitions and rejects regressions without dropp
   expect(record.signerEvents).toHaveLength(6);
   expect(store.getSnapshot().transactions.size).toBe(1);
 });
+
+it("restores signer progress only for opted-in popup deposits and still rejects replay/regression", () => {
+  store.update({ ...localRecord(), isWidgetRequested: true });
+  for (const event of signerEventSequence.slice(0, 3))
+    store.observeEvent(event);
+  store.observeEvent({
+    ...signerEventSequence[0],
+    initial_tx_hash: replacementHash,
+  });
+  const restored = new BridgeTransactions("wallet-a", bridgeNetwork, storage);
+  restored.restore();
+  const popup = restored.getSnapshot().transactions.get("operation-1")!;
+  expect(popup.signerEvents).toHaveLength(3);
+  expect(
+    [...restored.getSnapshot().transactions.values()].find(
+      (record) => record.operationId !== "operation-1"
+    )?.signerEvents
+  ).toBeUndefined();
+  const snapshot = restored.getSnapshot();
+  restored.observeEvent(signerEventSequence[0]);
+  restored.observeEvent(signerEventSequence[2]);
+  expect(restored.getSnapshot()).toBe(snapshot);
+  restored.observeEvent(signerEventSequence[3]);
+  expect(
+    restored.getSnapshot().transactions.get("operation-1")?.signerEvents
+  ).toHaveLength(4);
+});

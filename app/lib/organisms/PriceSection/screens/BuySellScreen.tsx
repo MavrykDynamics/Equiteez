@@ -46,6 +46,12 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  primaryPurchase?: {
+    receiveAmount: BigNumber | undefined;
+    onReceiveChange: (amount: BigNumber | undefined) => void;
+    isEligible: boolean;
+    includedFee: BigNumber;
+  };
 };
 
 export const BuySellScreen: FC<BuySellScreenProps> = ({
@@ -66,6 +72,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   hasQuoteError = false,
   isOrderDataLoading = false,
   validationMessage,
+  primaryPurchase,
 }) => {
   const { baseTokenSlug: slug } = metadata;
   const {
@@ -79,6 +86,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const { userTokensBalances, isKyced } = useUserContext();
+  const canPurchase = primaryPurchase?.isEligible ?? isKyced;
 
   // input refs
   const ref1 = useRef<HTMLInputElement>(null);
@@ -120,10 +128,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
+      if (primaryPurchase) {
+        primaryPurchase.onReceiveChange(val);
+        return;
+      }
       if (isBuyAction) setAmount(val?.times(tokenPrice) ?? new BigNumber(0));
       else setAmount(safeDivByPrice(val, tokenPrice) ?? new BigNumber(0));
     },
-    [isBuyAction, setAmount, tokenPrice]
+    [isBuyAction, primaryPurchase, setAmount, tokenPrice]
   );
 
   const input1Props = useMemo(
@@ -153,7 +165,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     () =>
       isBuyAction
         ? {
-            amount: safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
+            amount: primaryPurchase
+              ? primaryPurchase.receiveAmount
+              : safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }
@@ -170,6 +184,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       slug,
       stableCoinMetadata,
       tokenPrice,
+      primaryPurchase,
     ]
   );
 
@@ -193,7 +208,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     hasInvalidAmount ||
     hasInvalidMarketPrice ||
     isOrderDataLoading ||
-    !isKyced ||
+    !canPurchase ||
     isLoading;
   const isContinueDisabled = isBtnDisabled || Boolean(validationMessage);
 
@@ -307,6 +322,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             networkFee={networkFee}
             gasFee={gasFee}
             orderbookFee={orderbookFee}
+            includedPurchaseFee={primaryPurchase?.includedFee}
             pricePerShare={tokenPrice}
             totalAmount={orderSummaryAmount}
             annualYield={actionType === BUY ? apy : undefined}
@@ -314,7 +330,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       </div>
 
-      {!isKyced && (
+      {!canPurchase && (
         <div className={styles.alertBlock}>
           <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced

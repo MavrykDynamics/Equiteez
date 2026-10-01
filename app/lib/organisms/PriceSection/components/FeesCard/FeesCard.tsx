@@ -21,6 +21,7 @@ type FeesCardProps = {
   pricePerShare?: BigNumber.Value;
   totalAmount?: BigNumber.Value;
   annualYield?: number;
+  includedPurchaseFee?: BigNumber.Value;
 };
 
 export const FeesCard: FC<FeesCardProps> = ({
@@ -31,6 +32,7 @@ export const FeesCard: FC<FeesCardProps> = ({
   pricePerShare,
   totalAmount = 0,
   annualYield,
+  includedPurchaseFee,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const usdToTokenRates = useUsdToTokenRates();
@@ -63,9 +65,16 @@ export const FeesCard: FC<FeesCardProps> = ({
     <div className={styles.feeTooltip}>
       {[
         {
-          label: "Orderbook Fee",
+          label:
+            includedPurchaseFee === undefined
+              ? "Orderbook Fee"
+              : "Purchase Fee (included)",
           value:
-            orderbookFee === undefined ? "-" : `$${orderbookFeeUsd.toFixed(6)}`,
+            includedPurchaseFee === undefined
+              ? orderbookFee === undefined
+                ? "-"
+                : `$${orderbookFeeUsd.toFixed(6)}`
+              : `$${new BigNumber(includedPurchaseFee).toFixed(6)}`,
         },
         { label: "Network Fee", value: `$${networkFeeUsd.toFixed(6)}` },
         {
@@ -132,7 +141,7 @@ export const FeesCard: FC<FeesCardProps> = ({
                   />
                 </div>
                 <span className={styles.detailValue}>
-                  ~ ${platformFeeUsd.toFixed(6)}
+                  ~ ${platformFeeUsd.plus(includedPurchaseFee ?? 0).toFixed(6)}
                 </span>
               </div>
               {annualYield !== undefined && (

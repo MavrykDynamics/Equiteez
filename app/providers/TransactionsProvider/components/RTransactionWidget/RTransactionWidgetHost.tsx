@@ -56,7 +56,8 @@ export function RTransactionWidgetHost() {
       <div ref={content}>
         <TransitionGroup component={null}>
           {visibleModels.map((model) => {
-            const id = model.backendId ?? model.operationId;
+            const id =
+              model.presentationId ?? model.backendId ?? model.operationId;
             const ref = getItemRef(id);
             return (
               <CSSTransition

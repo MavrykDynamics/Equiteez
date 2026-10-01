@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -9,12 +9,20 @@ import styles from "./TradeConfirmationPopup.module.css";
 
 type TradeConfirmationPopupProps = {
   isOpen: boolean;
+  title?: string;
+  description?: string;
+  children?: ReactNode;
+  deliveryMessage?: string;
   onCancel: () => void;
   onContinue: () => Promise<void> | void;
 };
 
 export function TradeConfirmationPopup({
   isOpen,
+  title = "Before Your First Investment",
+  description = "To continue with your first investment, please review and accept the agreements below. This confirmation is only required once.",
+  children,
+  deliveryMessage = "Your tokens will be delivered to your connected wallet,",
   onCancel,
   onContinue,
 }: TradeConfirmationPopupProps) {
@@ -45,7 +53,7 @@ export function TradeConfirmationPopup({
     <PopupWithIcon
       className={styles.popup}
       contentClassName={styles.content}
-      contentLabel="Before Your First Investment"
+      contentLabel={title}
       contentPosition="center"
       isOpen={isOpen}
       onRequestClose={handleCancel}
@@ -59,17 +67,18 @@ export function TradeConfirmationPopup({
               size="h6"
               weight="medium"
             >
-              Before Your First Investment
+              {title}
             </RHeading>
             <RText
               className={styles.description}
               color="neutral-700"
               size="body-sm"
             >
-              To continue with your first investment, please review and accept
-              the agreements below. This confirmation is only required once.
+              {description}
             </RText>
           </div>
+
+          {children}
 
           <div className={styles.agreements}>
             <RText className={styles.agreementText} size="body-sm">
@@ -82,9 +91,9 @@ export function TradeConfirmationPopup({
               By continuing, you confirm that you have completed identity
               verification (KYC), that the information you provided is accurate,
               and that you have read and agree to our Terms of Service, Risk
-              Disclosure, and Token Purchase Agreement. Your tokens will be
-              delivered to your connected wallet, and you are solely responsible
-              for keeping your wallet credentials and recovery phrase secure.
+              Disclosure, and Token Purchase Agreement. {deliveryMessage} and
+              you are solely responsible for keeping your wallet credentials and
+              recovery phrase secure.
             </RText>
             <label className={styles.checkboxRow}>
               <span className={styles.checkboxControl}>

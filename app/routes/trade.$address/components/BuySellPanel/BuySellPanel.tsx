@@ -20,9 +20,11 @@ import { useOrderbookConfig } from "~/hooks/useOrderbookConfig";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./styles.module.css";
+import { PrimaryPurchasePanel } from "./PrimaryPurchasePanel";
 
 type BuySellPanelProps = {
   asset: AssetType;
+  isPrimary?: boolean;
   isOrderBookOpen: boolean;
   orderBookContainer?: HTMLElement | null;
   setIsOrderBookOpen: Dispatch<SetStateAction<boolean>>;
@@ -31,7 +33,15 @@ type BuySellPanelProps = {
 const getOrderTypeFromSearchParam = (side: string | null): OrderType =>
   side === SELL ? SELL : BUY;
 
-export function BuySellPanel({
+export function BuySellPanel(props: BuySellPanelProps) {
+  return props.isPrimary ? (
+    <PrimaryPurchasePanel asset={props.asset} />
+  ) : (
+    <SecondaryBuySellPanel {...props} />
+  );
+}
+
+function SecondaryBuySellPanel({
   asset,
   isOrderBookOpen,
   orderBookContainer,

@@ -21,6 +21,7 @@ import {
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 export type UsdtBridgeState = {
+  operationId?: string;
   amount: string;
   recipient: string;
   sender: Address | null;
@@ -60,7 +61,8 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
     async (
       amount: BigNumber,
       recipient: string,
-      pending?: UsdtBridgeProgress
+      pending?: UsdtBridgeProgress,
+      onTrackDeposit?: (operationId: string) => void
     ) => {
       if (
         executionBusyRef.current ||
@@ -97,8 +99,10 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
           sourceHashes: [],
           settlement: "unknown",
           verification: "local",
+          isWidgetRequested: Boolean(onTrackDeposit),
         };
       }
+      next.operationId = record?.operationId;
       recordRef.current = record;
       updateState(next);
       const onProgress = (progress: UsdtBridgeProgress) => {
@@ -114,6 +118,8 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
       };
 
       try {
+        // Opt-in popup presentation is registered before any broadcast publication.
+        if (!pending && record) onTrackDeposit?.(record.operationId);
         if (pending) {
           await confirmUsdtBridgeTransaction(config, pending, onProgress);
           if (pending.step === "lock") return;
@@ -206,13 +212,17 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
   );
 
   const submit = useCallback(
-    async (amount: BigNumber, recipient: string) => {
+    async (
+      amount: BigNumber,
+      recipient: string,
+      onTrackDeposit?: (operationId: string) => void
+    ) => {
       if (
         stateSessionRef.current === session &&
         stateRef.current?.isConfirmationUnknown
       )
         return;
-      await run(amount, recipient);
+      await run(amount, recipient, undefined, onTrackDeposit);
     },
     [run, session]
   );

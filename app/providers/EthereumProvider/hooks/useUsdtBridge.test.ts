@@ -215,3 +215,17 @@ it("rejects late source progress after account switching, including switching ba
   await operation;
   expect(mocks.publish).toHaveBeenCalledTimes(publications);
 });
+
+it("registers popup visibility before publication and persists the opt-in across replacements", async () => {
+  const hold = vi.fn();
+  mocks.execute.mockImplementation(async ({ onProgress }) => {
+    expect(hold).toHaveBeenCalledOnce();
+    onProgress({ step: "lock", status: "confirming", hash });
+    onProgress({ step: "lock", status: "confirmed", hash: replacementHash });
+  });
+  await setup().submit(new BigNumber(1), "recipient", hold);
+  const record = [...store.getSnapshot().transactions.values()][0];
+  expect(record.operationId).toBe(hold.mock.calls[0][0]);
+  expect(record.isWidgetRequested).toBe(true);
+  expect(record.sourceHashes).toEqual([hash, replacementHash]);
+});

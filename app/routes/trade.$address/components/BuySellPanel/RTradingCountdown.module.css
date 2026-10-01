@@ -1,0 +1,73 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(239, 239, 239, 0.08);
+  border-radius: inherit;
+  background: linear-gradient(
+    108.77deg,
+    rgba(239, 239, 239, 0.6) 8.14%,
+    rgba(239, 239, 239, 0.08) 95.69%
+  );
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  /* This mock is presentation-only; existing trading behavior is unchanged. */
+  pointer-events: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-4);
+}
+
+.heading {
+  margin: 0;
+  font-weight: var(--r-font-weight-medium);
+  text-align: center;
+}
+
+.timer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-1);
+}
+
+.unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-1);
+}
+
+.value {
+  box-sizing: border-box;
+  min-width: 46px;
+  padding: 10px var(--r-space-3);
+  border: 1px solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-color-neutral-white);
+  box-shadow: var(--r-shadow-visual);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.label {
+  font-size: var(--r-font-size-body-xs);
+  line-height: var(--r-line-height-body-xs);
+}
+
+.separator {
+  width: var(--r-space-1);
+  padding-top: 10px;
+  font-weight: var(--r-font-weight-medium);
+  text-align: center;
+}

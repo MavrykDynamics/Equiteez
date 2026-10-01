@@ -8,6 +8,8 @@ import type { RTransactionWidgetState } from "./components/RTransactionWidget/RT
 
 export type TransactionWidgetModel = {
   operationId: string;
+  /** Popup waiting cards retain their identity when the first event supplies a log ID. */
+  presentationId?: string;
   backendId?: string;
   amount: string | null;
   symbol: string;
@@ -41,6 +43,19 @@ function getState(
       status: "progress",
       step: Math.min(events.length, 4) as 1 | 2 | 3 | 4,
     };
+  }
+  if (record.isWidgetRequested) {
+    return record.executionError
+      ? {
+          status: "warning",
+          title: "Check Ethereum transaction",
+          description: record.executionError,
+        }
+      : {
+          status: "waiting",
+          title: "Waiting for the bridge",
+          description: "Transaction submitted. Waiting for bridge updates.",
+        };
   }
   if (record.verification === "verified" && record.backend) {
     switch (record.backend.status) {
@@ -122,7 +137,8 @@ export function toTransactionWidget(
 ): TransactionWidgetModel | null {
   if (!record.backend && !record.sourceHashes.length) return null;
   const event = record.signerEvents?.[0];
-  const backend = event ? undefined : record.backend;
+  const backend =
+    event || record.isWidgetRequested ? undefined : record.backend;
   const isKnownEventToken =
     event?.erc_token === USDT_BRIDGE.sourceToken.address.toLowerCase();
   const sourceAddress = record.sourceToken?.address.toLowerCase();
@@ -165,6 +181,7 @@ export function toTransactionWidget(
   const state = getState(record, context);
   return {
     operationId: record.operationId,
+    presentationId: record.isWidgetRequested ? record.operationId : undefined,
     backendId: backend
       ? getBridgeDepositId(backend)
       : event
@@ -179,7 +196,8 @@ export function toTransactionWidget(
         : undefined,
     state,
     isTerminal: Boolean(event && state.status === "success"),
-    isHistorical: !event && record.settlement === "executed",
+    isHistorical:
+      !event && !record.isWidgetRequested && record.settlement === "executed",
   };
 }
 
@@ -191,6 +209,7 @@ export type WidgetPresentation = {
     { order: number; backendId?: string; visible: boolean }
   >;
   isOpen: boolean;
+  heldOperationIds: Set<string>;
 };
 export function createWidgetPresentation(
   session: object | null
@@ -200,6 +219,7 @@ export function createWidgetPresentation(
     dismissed: new Set(),
     discovered: new Map(),
     isOpen: false,
+    heldOperationIds: new Set(),
   };
 }
 
