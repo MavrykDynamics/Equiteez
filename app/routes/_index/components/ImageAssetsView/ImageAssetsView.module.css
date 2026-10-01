@@ -148,6 +148,9 @@
   align-items: center;
   white-space: nowrap;
 }
+.listingPriceMeta {
+  gap: var(--r-space-1);
+}
 
 .separator {
   width: 2px;
