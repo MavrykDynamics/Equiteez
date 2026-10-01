@@ -16,6 +16,7 @@ export type TransferHistoryItemType = z.infer<typeof TransferHistoryItemSchema>;
 export type TransferHistoryResponseType = z.infer<typeof TransferHistorySchema>;
 
 export type WalletTransferHistoryParams = {
+  types?: ("deposit" | "withdrawal")[];
   walletAddress: string;
   page?: number;
   perPage?: number;
