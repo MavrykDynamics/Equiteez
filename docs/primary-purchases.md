@@ -5,11 +5,13 @@
 route-local `PrimaryPurchasePanel`; secondary assets retain the existing
 orderbook form and contract calls.
 
-The primary branch reuses `BuySellScreen`, `TradeConfirmationPopup`, the fee
+The primary branch reuses `BuySellScreen`, the fee
 summary, and `useContractAction`. Its optional shared-component props have no
 effect on secondary trading. It offers a fixed-price Buy flow and automatically uses the cheapest eligible
 sale option at the live price, without a dropdown. It does not offer Sell, limit
-orders, order expiry, or orderbook depth.
+orders, order expiry, or orderbook depth. Pressing Buy validates the current quote
+and proceeds directly to the wallet purchase flow; the confirmation popup remains
+exclusive to secondary trading.
 
 ## Data and contract boundaries
 
@@ -43,8 +45,9 @@ orders, order expiry, or orderbook depth.
 
 ## Confirmation and refresh
 
-Each purchase confirmation shows the launch, option, exact token amount,
-payment cap, and included fee. AUTO success reports delivery; MANUAL success and
+Before submission, the primary flow revalidates the launch, option, exact token
+amount, payment cap, and included fee without an intermediate popup. AUTO success
+reports delivery; MANUAL success and
 outstanding allocations report pending distribution.
 
 Confirmation and wallet `LAUNCHPAD_PURCHASE` events invalidate transaction and
@@ -65,7 +68,7 @@ failed sale data keeps the layout with unavailable values and an empty bar.
 
 `primaryPurchase.test.ts` covers quotes/rounding, membership, windows, caps,
 operator batching, wallet/balance changes, revalidation and contract errors.
-`PrimaryPurchasePanel.test.tsx` covers amount → review → direct purchase → success,
+`PrimaryPurchasePanel.test.tsx` covers amount → Buy → direct purchase → success,
 changed-price rejection, and live countdown timing. Existing secondary contract,
 fee summary, and route classification suites remain applicable.
 

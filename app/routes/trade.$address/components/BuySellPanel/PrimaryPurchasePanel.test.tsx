@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { BigNumber } from "bignumber.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -39,8 +39,12 @@ vi.mock("~/contracts/hooks/useContractAction", () => ({
     options: { onSuccess: (value: unknown) => void }
   ) => ({
     invokeAction: async () => {
-      await action({ ...args, tezos: mocks.tezos });
-      options.onSuccess({ confirmation: { level: 42 } });
+      try {
+        await action({ ...args, tezos: mocks.tezos });
+        options.onSuccess({ confirmation: { level: 42 } });
+      } catch {
+        // The production hook reports contract failures without rejecting.
+      }
     },
     status: "idle",
     isLoading: false,
@@ -83,35 +87,6 @@ vi.mock("~/lib/organisms/PriceSection/screens/BuySellScreen", () => ({
     </div>
   ),
 }));
-vi.mock(
-  "~/lib/organisms/PriceSection/components/TradeConfirmationPopup",
-  () => ({
-    TradeConfirmationPopup: ({
-      isOpen,
-      children,
-      onContinue,
-      onCancel,
-    }: {
-      isOpen: boolean;
-      children: ReactNode;
-      onContinue: () => Promise<void>;
-      onCancel: () => void;
-    }) =>
-      isOpen ? (
-        <div role="dialog">
-          {children}
-          <button
-            onClick={() => {
-              onCancel();
-              void onContinue();
-            }}
-          >
-            Confirm
-          </button>
-        </div>
-      ) : null,
-  })
-);
 
 const config: PrimaryPurchaseConfig = {
   launchName: "live-launch",
@@ -199,17 +174,13 @@ describe("primary purchase panel flow", () => {
     expect(mocks.purchase).not.toHaveBeenCalled();
   });
 
-  it("requires review before submission and passes exact raw units to the direct purchase", async () => {
+  it("purchases directly without a confirmation popup and passes exact raw units", async () => {
     await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
     await click("Enter 1.5");
     expect(container.textContent).toContain("Pay 45 Receive 1.5");
     await click("Buy");
     expect(mocks.refetch).toHaveBeenCalledOnce();
-    expect(mocks.purchase).not.toHaveBeenCalled();
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain(
-      "Maximum payment45 wUSDT"
-    );
-    await click("Confirm");
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(mocks.purchase).toHaveBeenCalledOnce();
     expect(mocks.purchase.mock.calls[0][0].review).toMatchObject({
       amount: "1500000",

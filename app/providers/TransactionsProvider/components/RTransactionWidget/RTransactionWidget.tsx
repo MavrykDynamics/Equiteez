@@ -88,7 +88,7 @@ export function RTransactionWidget({
             </>
           )}
         </RText>
-        {onDismiss && (
+        {onDismiss && state.status !== "success" && (
           <RButton
             aria-label="Dismiss transaction"
             className={styles.dismiss}

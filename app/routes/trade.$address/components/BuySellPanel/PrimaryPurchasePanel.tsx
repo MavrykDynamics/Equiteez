@@ -12,7 +12,6 @@ import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { toTokenSlug } from "~/lib/assets";
 import { createFallbackTokenMetadata } from "~/lib/metadata";
 import { BuySellScreen } from "~/lib/organisms/PriceSection/screens/BuySellScreen";
-import { TradeConfirmationPopup } from "~/lib/organisms/PriceSection/components/TradeConfirmationPopup";
 import { BUY } from "~/lib/organisms/PriceSection/consts";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
 import {
@@ -24,10 +23,7 @@ import {
   quotePrimaryPurchase,
   validatePrimaryAmount,
 } from "~/contracts/primaryPurchase.quote";
-import type {
-  PrimaryPurchaseConfig,
-  PrimaryPurchaseReview,
-} from "~/contracts/primaryPurchase.types";
+import type { PrimaryPurchaseConfig } from "~/contracts/primaryPurchase.types";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvider/toaster.provider.const";
@@ -95,9 +91,6 @@ function PrimaryPurchaseForm({
   query: PurchaseQuery;
 }) {
   const [amount, setAmount] = useState<BigNumber>();
-  const [review, setReview] = useState<PrimaryPurchaseReview | null>(null);
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [isPreparing, setIsPreparing] = useState(false);
   const [actionError, setActionError] = useState<string>();
   const [estimateError, setEstimateError] = useState<string>();
   const [fees, setFees] = useState({ networkFee: ZERO, gasFee: ZERO });
@@ -171,18 +164,56 @@ function PrimaryPurchaseForm({
   const { refetch, tezos, refreshAfterPurchase } = query;
   const executePurchase = useCallback(
     async (params: Parameters<typeof primaryPurchase>[0]) => {
+      setActionError(undefined);
       try {
-        await primaryPurchase(params);
+        const result = await refetch();
+        if (result.error) throw result.error;
+        const live = result.data;
+        if (!live || live.unavailableReason)
+          throw new Error(
+            live?.unavailableReason ?? "The launch is unavailable."
+          );
+        const current = live.options[0];
+        if (!current)
+          throw new Error("This sale option is no longer available.");
+        validatePrimaryAmount(current, rawAmount);
+        const currentQuote = quotePrimaryPurchase(current, rawAmount);
+        if (
+          current.name !== option.name ||
+          current.payment !== option.payment ||
+          currentQuote.totalPayment !== quote.totalPayment ||
+          current.price !== option.price ||
+          live.distribution !== config.distribution
+        )
+          throw new Error(
+            "The quote has changed. Review the updated amount and continue again."
+          );
+        const nextReview = {
+          config: live,
+          option: current,
+          amount: rawAmount,
+          quote: currentQuote,
+        };
+        const resultFees = await estimatePrimaryPurchase({
+          tezos,
+          review: nextReview,
+        });
+        setFees({
+          networkFee: toHuman(String(resultFees.networkFee)),
+          gasFee: toHuman(String(resultFees.gasFee)),
+        });
+        await primaryPurchase({ ...params, review: nextReview });
       } catch (error) {
+        setActionError((error as Error).message);
         await refetch();
         throw error;
       }
     },
-    [refetch]
+    [refetch, rawAmount, option, quote, config.distribution, tezos]
   );
   const { invokeAction, status, isLoading } = useContractAction(
     executePurchase,
-    { review: review ?? { config, option, amount: rawAmount, quote } },
+    { review: { config, option, amount: rawAmount, quote } },
     undefined,
     {
       pending: TOASTER_UPDATE_DATA_AFTER_ACTION_DATA,
@@ -197,7 +228,6 @@ function PrimaryPurchaseForm({
     {
       onSuccess: (metadata) => {
         setAmount(undefined);
-        setReview(null);
         setActionError(undefined);
         refreshAfterPurchase(metadata);
       },
@@ -205,7 +235,7 @@ function PrimaryPurchaseForm({
   );
 
   useEffect(() => {
-    if (isLoading || isConfirmationOpen) return;
+    if (isLoading) return;
     setFees({ networkFee: ZERO, gasFee: ZERO });
     setEstimateError(undefined);
     if (rawAmount === "0" || config.unavailableReason || amountError) return;
@@ -229,64 +259,7 @@ function PrimaryPurchaseForm({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [
-    amountError,
-    config,
-    isConfirmationOpen,
-    isLoading,
-    option,
-    quote,
-    rawAmount,
-    tezos,
-  ]);
-
-  const handleReview = async () => {
-    setIsPreparing(true);
-    setActionError(undefined);
-    try {
-      const result = await refetch();
-      if (result.error) throw result.error;
-      const live = result.data;
-      if (!live || live.unavailableReason)
-        throw new Error(
-          live?.unavailableReason ?? "The launch is unavailable."
-        );
-      const current = live.options[0];
-      if (!current) throw new Error("This sale option is no longer available.");
-      validatePrimaryAmount(current, rawAmount);
-      const currentQuote = quotePrimaryPurchase(current, rawAmount);
-      if (
-        current.name !== option.name ||
-        current.payment !== option.payment ||
-        currentQuote.totalPayment !== quote.totalPayment ||
-        current.price !== option.price ||
-        live.distribution !== config.distribution
-      )
-        throw new Error(
-          "The quote has changed. Review the updated amount and continue again."
-        );
-      const nextReview = {
-        config: live,
-        option: current,
-        amount: rawAmount,
-        quote: currentQuote,
-      };
-      const resultFees = await estimatePrimaryPurchase({
-        tezos,
-        review: nextReview,
-      });
-      setFees({
-        networkFee: toHuman(String(resultFees.networkFee)),
-        gasFee: toHuman(String(resultFees.gasFee)),
-      });
-      setReview(nextReview);
-      setIsConfirmationOpen(true);
-    } catch (error) {
-      setActionError((error as Error).message);
-    } finally {
-      setIsPreparing(false);
-    }
-  };
+  }, [amountError, config, isLoading, option, quote, rawAmount, tezos]);
 
   return (
     <div className={formStyles.buySellRoot}>
@@ -305,9 +278,7 @@ function PrimaryPurchaseForm({
         metadata={metadata}
         tokenAddress={asset.address}
         actionType={BUY}
-        actionCb={() => {
-          void handleReview();
-        }}
+        actionCb={invokeAction}
         amount={paymentAmount}
         setAmount={setBudget}
         total={paymentAmount}
@@ -316,9 +287,7 @@ function PrimaryPurchaseForm({
         gasFee={fees.gasFee}
         apy={asset.apy}
         status={status}
-        isOrderDataLoading={
-          isPreparing || query.isFetching || isConfirmationOpen
-        }
+        isOrderDataLoading={isLoading || query.isFetching}
         validationMessage={
           query.error?.message ??
           config.unavailableReason ??
@@ -339,38 +308,6 @@ function PrimaryPurchaseForm({
           {asset.metadata.symbol} allocated, pending distribution.
         </p>
       )}
-      <TradeConfirmationPopup
-        isOpen={isConfirmationOpen}
-        onCancel={() => setIsConfirmationOpen(false)}
-        onContinue={invokeAction}
-        title="Confirm Purchase"
-        description="Review your fixed-price purchase and accept the agreements below. The payment cap excludes the wallet's MAV network fee."
-        deliveryMessage={
-          review?.config.distribution === "MANUAL"
-            ? "Your tokens will be allocated pending distribution,"
-            : undefined
-        }
-      >
-        {review && (
-          <dl>
-            <dt>Launch / sale option</dt>
-            <dd>
-              {review.config.launchName} / {review.option.name}
-            </dd>
-            <dt>Receive</dt>
-            <dd>
-              {toHuman(review.amount).toFixed()} {asset.metadata.symbol}
-              {review.config.distribution === "MANUAL"
-                ? " (allocated, pending distribution)"
-                : ""}
-            </dd>
-            <dt>Maximum payment</dt>
-            <dd>{toHuman(review.quote.totalPayment).toFixed()} wUSDT</dd>
-            <dt>Purchase fee (included)</dt>
-            <dd>{toHuman(review.quote.fee).toFixed()} wUSDT</dd>
-          </dl>
-        )}
-      </TradeConfirmationPopup>
     </div>
   );
 }
