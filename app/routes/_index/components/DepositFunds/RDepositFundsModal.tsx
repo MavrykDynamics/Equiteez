@@ -10,7 +10,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
-import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
+import { useTransactionWidget } from "~/providers/TransactionsProvider/TransactionWidgetProvider";
 
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
@@ -31,11 +31,13 @@ export function RDepositFundsModal({
 }: RDepositFundsModalProps) {
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const releaseDeposit = useRef<(() => void) | null>(null);
   const { userAddress, userTokensBalances, connect, isLoading } =
     useUserContext();
   const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
-  const { transactions } = useTransactionsContext();
+  const { transactions, models, holdDeposit } = useTransactionWidget();
   const { chains } = useConfig();
   const explorer = chains.find((chain) => chain.id === USDT_BRIDGE.chainId)
     ?.blockExplorers?.default;
@@ -48,13 +50,12 @@ export function RDepositFundsModal({
   const progress = bridgeState?.progress;
   const lockHash =
     progress?.step === "lock" ? progress.hash?.toLowerCase() : undefined;
-  const hasDepositEvent = Boolean(
-    lockHash &&
-      [...transactions.values()].some(
-        (record) =>
-          record.sourceHashes.includes(lockHash) && record.signerEvents?.length
-      )
-  );
+  const operationId =
+    bridgeState?.operationId ??
+    transactions.find(
+      (record) => lockHash && record.sourceHashes.includes(lockHash)
+    )?.operationId;
+  const deposit = models.find((model) => model.operationId === operationId);
   const transactionHash =
     progress?.step === "lock" &&
     !bridgeState?.error &&
@@ -66,10 +67,13 @@ export function RDepositFundsModal({
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
   const wasOpen = useRef(isOpen);
   const resetModal = useCallback(() => {
+    releaseDeposit.current?.();
+    releaseDeposit.current = null;
     resetBridge();
     closeWalletSelection();
     setDepositAmount(undefined);
     setActiveTab("bridge");
+    setIsDetailsOpen(false);
   }, [resetBridge, closeWalletSelection]);
 
   useEffect(() => {
@@ -77,17 +81,19 @@ export function RDepositFundsModal({
     wasOpen.current = isOpen;
   }, [isOpen, resetModal]);
 
-  useEffect(() => {
-    if (isOpen && hasDepositEvent) onClose();
-  }, [isOpen, hasDepositEvent, onClose]);
+  useEffect(
+    () => () => {
+      releaseDeposit.current?.();
+      releaseDeposit.current = null;
+    },
+    []
+  );
 
   const handleClose = () => {
     resetModal();
     wasOpen.current = false;
     onClose();
   };
-
-  if (hasDepositEvent) return null;
 
   return (
     <CustomPopup
@@ -109,7 +115,7 @@ export function RDepositFundsModal({
         </button>
       </div>
 
-      {transactionHash && ethereumWallet.bridge.state ? (
+      {transactionHash && ethereumWallet.bridge.state && !isDetailsOpen ? (
         <ConfirmedView
           transactionHash={transactionHash}
           explorer={
@@ -121,12 +127,17 @@ export function RDepositFundsModal({
               : undefined
           }
           onClose={handleClose}
+          onViewDetails={() => setIsDetailsOpen(true)}
         />
-      ) : ethereumWallet.bridge.state ? (
+      ) : ethereumWallet.bridge.state &&
+        (isDetailsOpen ||
+          bridgeState?.error ||
+          bridgeState?.isConfirmationUnknown) ? (
         <BridgeStatusView
           state={ethereumWallet.bridge.state}
+          deposit={deposit}
           onCheckConfirmation={ethereumWallet.bridge.checkConfirmation}
-          onReset={ethereumWallet.bridge.reset}
+          onReset={resetModal}
           onClose={handleClose}
         />
       ) : (
@@ -175,7 +186,11 @@ export function RDepositFundsModal({
                 if (depositAmount)
                   await ethereumWallet.bridge.submit(
                     depositAmount,
-                    mavrykAddress
+                    mavrykAddress,
+                    (id) => {
+                      releaseDeposit.current?.();
+                      releaseDeposit.current = holdDeposit(id);
+                    }
                   );
               }}
               onDepositAmountChange={setDepositAmount}

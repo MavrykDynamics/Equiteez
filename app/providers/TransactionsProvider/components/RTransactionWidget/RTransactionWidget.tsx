@@ -10,7 +10,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./RTransactionWidget.module.css";
 
-const stepLabels = [
+export const transactionWidgetStepLabels = [
   "Lock on Ethereum",
   "Validators Sign",
   "Mint on Mavryk",
@@ -63,7 +63,6 @@ export function RTransactionWidget({
   recipient,
   state,
   className,
-  sourceExplorerUrl,
   onDismiss,
 }: RTransactionWidgetProps) {
   return (
@@ -117,7 +116,7 @@ export function RTransactionWidget({
       <div role="status" aria-live="polite" aria-atomic="true">
         {state.status === "progress" ? (
           <ol className={styles.steps} aria-label="Bridge progress">
-            {stepLabels.map((defaultLabel, index) => {
+            {transactionWidgetStepLabels.map((defaultLabel, index) => {
               const step = index + 1;
               const isCurrent = step === state.step;
               const label = isCurrent
@@ -200,16 +199,6 @@ export function RTransactionWidget({
           </RText>
         )}
       </div>
-      {sourceExplorerUrl && (
-        <a
-          className={styles.explorer}
-          href={sourceExplorerUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View source transaction
-        </a>
-      )}
     </section>
   );
 }

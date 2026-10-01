@@ -93,7 +93,8 @@ export default class ToasterProvider extends React.Component<Props, State> {
   addToasterMessage = (
     title: string,
     message: string,
-    type: ToasterTypes
+    type: ToasterTypes,
+    autoHide = true
   ): string => {
     const unique = uuid();
     this.setState((prevState) => ({
@@ -106,6 +107,7 @@ export default class ToasterProvider extends React.Component<Props, State> {
             message,
             unique,
             hide: false,
+            autoHide,
           },
         ]),
       },
@@ -142,8 +144,8 @@ export default class ToasterProvider extends React.Component<Props, State> {
     return this.addToasterMessage(title, message, TOASTER_WARNING);
   };
 
-  loading = (title: string, message: string): string => {
-    return this.addToasterMessage(title, message, TOASTER_LOADING);
+  loading = (title: string, message: string, autoHide = true): string => {
+    return this.addToasterMessage(title, message, TOASTER_LOADING, autoHide);
   };
 
   setError = (error: CustomErrors): void => {

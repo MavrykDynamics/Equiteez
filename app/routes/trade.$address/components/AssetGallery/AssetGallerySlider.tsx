@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useLocation } from "@remix-run/react";
+import clsx from "clsx";
 
 import { RIcon } from "~/lib/atoms/RIcon";
 import { usePrevNextButtons } from "~/lib/ui/use-embla-buttons";
@@ -11,9 +12,14 @@ import styles from "./AssetGallerySlider.module.css";
 type AssetGallerySliderProps = {
   images: string[];
   name: string;
+  size?: "compact" | "large";
 };
 
-export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
+export function AssetGallerySlider({
+  images,
+  name,
+  size = "compact",
+}: AssetGallerySliderProps) {
   const location = useLocation();
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -34,7 +40,10 @@ export function AssetGallerySlider({ images, name }: AssetGallerySliderProps) {
   if (images.length === 0) return null;
 
   return (
-    <section aria-label={`${name} gallery`} className={styles.slider}>
+    <section
+      aria-label={`${name} gallery`}
+      className={clsx(styles.slider, size === "large" && styles.large)}
+    >
       <div className={styles.carouselRow}>
         <button
           aria-label="Previous gallery items"

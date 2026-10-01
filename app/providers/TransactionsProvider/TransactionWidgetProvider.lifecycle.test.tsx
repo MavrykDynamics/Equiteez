@@ -6,7 +6,10 @@ import {
   TransactionsProvider,
   useTransactionsContext,
 } from "./TransactionsProvider";
-import { TransactionWidgetProvider } from "./TransactionWidgetProvider";
+import {
+  TransactionWidgetProvider,
+  useTransactionWidget,
+} from "./TransactionWidgetProvider";
 import { RTransactionWidgetHost } from "./components/RTransactionWidget/RTransactionWidgetHost";
 import {
   deposit,
@@ -64,8 +67,10 @@ let root: Root;
 let element: HTMLDivElement;
 let handlers: Set<NotifierChannelHandler>;
 let transactions!: ReturnType<typeof useTransactionsContext>;
+let widgets!: ReturnType<typeof useTransactionWidget>;
 function Probe() {
   transactions = useTransactionsContext();
+  widgets = useTransactionWidget();
   return null;
 }
 const render = async (showHost = true) => {
@@ -426,3 +431,96 @@ it("follows growing content at the bottom but preserves a user scrolled-up posit
   await render(false);
   expect(disconnect).toHaveBeenCalled();
 });
+
+it("holds only the popup deposit and releases an immediate waiting card before WSS", async () => {
+  await render();
+  let release!: () => void;
+  await act(async () => {
+    release = widgets.holdDeposit("operation-1");
+    transactions.publish({ ...localRecord(), isWidgetRequested: true });
+  });
+  expect(widgets.models[0].state.status).toBe("waiting");
+  expect(widgets.visibleModels).toHaveLength(0);
+  await event("unrelated", "wallet-a", {
+    ...signerEventSequence[0],
+    initial_tx_hash: `0x${"c".repeat(64)}`,
+  });
+  expect(widgets.visibleModels).toHaveLength(1);
+  expect(widgets.visibleModels[0].operationId).not.toBe("operation-1");
+  await act(async () => release());
+  expect(widgets.visibleModels).toHaveLength(2);
+  const waitingCard = element.querySelector('[data-status="waiting"]');
+  expect(waitingCard).not.toBeNull();
+  await event("first", "wallet-a", signerEventSequence[0]);
+  expect(waitingCard?.getAttribute("data-status")).toBe("progress");
+  expect(
+    widgets.models.find((model) => model.operationId === "operation-1")?.state
+  ).toEqual({ status: "progress", step: 1 });
+  expect(element.querySelector('[data-status="waiting"]')).toBeNull();
+});
+
+it("tracks hidden progress and starts only its success deadline on release", async () => {
+  await render();
+  let release!: () => void;
+  await act(async () => {
+    release = widgets.holdDeposit("operation-1");
+    transactions.publish({ ...localRecord(), isWidgetRequested: true });
+  });
+  for (const [index, payload] of signerEventSequence.entries()) {
+    await event(`held-${index}`, "wallet-a", payload);
+    await event(`other-${index}`, "wallet-a", {
+      ...payload,
+      initial_tx_hash: `0x${"c".repeat(64)}`,
+    });
+    expect(widgets.visibleModels).toHaveLength(1);
+  }
+  expect(
+    widgets.models.find((model) => model.operationId === "operation-1")?.state
+      .status
+  ).toBe("success");
+  await act(async () => vi.advanceTimersByTimeAsync(10_000));
+  expect(widgets.visibleModels).toHaveLength(0);
+  await act(async () => release());
+  expect(widgets.visibleModels).toHaveLength(1);
+  expect(widgets.visibleModels[0].state.status).toBe("success");
+  await act(async () => vi.advanceTimersByTimeAsync(4_999));
+  expect(widgets.visibleModels).toHaveLength(1);
+  await event("duplicate", "wallet-a", signerEventSequence[5]);
+  await act(async () => vi.advanceTimersByTimeAsync(361));
+  expect(widgets.visibleModels).toHaveLength(0);
+});
+
+it.each([0, 3, 6])(
+  "releases popup recovery after reload with %s received transitions",
+  async (count) => {
+    await render();
+    await act(async () => {
+      widgets.holdDeposit("operation-1");
+      transactions.publish({ ...localRecord(), isWidgetRequested: true });
+    });
+    for (const [index, payload] of signerEventSequence
+      .slice(0, count)
+      .entries())
+      await event(`held-${index}`, "wallet-a", payload);
+    expect(widgets.visibleModels).toHaveLength(0);
+    await act(async () => root.unmount());
+    root = createRoot(element);
+    await render();
+    expect(widgets.visibleModels).toHaveLength(1);
+    expect(widgets.visibleModels[0].state).toMatchObject(
+      count === 0
+        ? { status: "waiting" }
+        : count === 6
+          ? { status: "success" }
+          : { status: "progress", step: 3 }
+    );
+    if (count === 6) {
+      await act(async () => vi.advanceTimersByTimeAsync(5_360));
+      expect(widgets.visibleModels).toHaveLength(0);
+      await act(async () => root.unmount());
+      root = createRoot(element);
+      await render();
+      expect(widgets.visibleModels).toHaveLength(0);
+    }
+  }
+);

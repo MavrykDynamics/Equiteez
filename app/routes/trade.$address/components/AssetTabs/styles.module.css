@@ -21,6 +21,10 @@
 }
 
 @media (--media-tablet) {
+  .primaryTabs {
+    flex-wrap: wrap;
+  }
+
   .tabSwitcher {
     overflow-x: auto;
     overflow-y: hidden;

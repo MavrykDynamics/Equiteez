@@ -19,7 +19,6 @@ import { TabType } from "~/lib/atoms/Tab";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.types";
 import { matchesOrderbookDepth } from "~/lib/orderbook/orderbookConfig";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { BUY, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 import {
@@ -30,7 +29,6 @@ import {
 } from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 
 import {
-  ContractActionPopupProps,
   ContractActionToastProps,
   useContractAction,
 } from "~/contracts/hooks/useContractAction";
@@ -80,9 +78,9 @@ import {
   type OrderExpiryPeriodId,
 } from "../components/OrderExpiryBlock/OrderExpiryBlock";
 import { TradeConfirmationPopup } from "../components/TradeConfirmationPopup";
+import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvider/toaster.provider.const";
 import * as gtag from "app/utils/gtags.client";
 
-const POPUP_RECOMMENDATIONS_LIMIT = 2;
 type MarketOrderMode = "market" | "limit";
 
 type BuySellContentProps = {
@@ -131,7 +129,6 @@ const BuySellForm: FC<
   setIsOrderBookOpen,
   setOrderType,
 }) => {
-  const { assets, prices } = useAssetsContext();
   const { dapp } = useWalletContext();
   const { hasOrders } = useUserContext();
 
@@ -721,29 +718,11 @@ const BuySellForm: FC<
 
   // actual contract calls and their handlers ---------------
 
-  const popupRecommendedMarkets = useMemo(
-    () =>
-      assets
-        .filter((item) => item.address !== asset.address)
-        .slice(0, POPUP_RECOMMENDATIONS_LIMIT),
-    [assets, asset.address]
-  );
-
-  const memoizedPopupProps: ContractActionPopupProps | undefined = useMemo(
-    () =>
-      popupRecommendedMarkets.length
-        ? {
-            key: "inProgressRwaAd",
-            props: { rwas: popupRecommendedMarkets, prices },
-          }
-        : undefined,
-    [popupRecommendedMarkets, prices]
-  );
-
   const memoizedToastProps: ContractActionToastProps = useMemo(() => {
     const action = orderType === BUY ? "Buy" : "Sell";
 
     return {
+      pending: TOASTER_UPDATE_DATA_AFTER_ACTION_DATA,
       success: {
         title: `${asset.metadata.symbol} ${action} Order Submitted`,
         message:
@@ -778,7 +757,7 @@ const BuySellForm: FC<
     useContractAction(
       orderbookBuy,
       marketBuyProps,
-      memoizedPopupProps,
+      undefined,
       memoizedToastProps,
       contractActionOptions
     );
@@ -787,7 +766,7 @@ const BuySellForm: FC<
     useContractAction(
       orderbookSell,
       marketSellProps,
-      memoizedPopupProps,
+      undefined,
       memoizedToastProps,
       contractActionOptions
     );
@@ -796,7 +775,7 @@ const BuySellForm: FC<
     useContractAction(
       orderbookBuy,
       limitBuyProps,
-      memoizedPopupProps,
+      undefined,
       memoizedToastProps,
       contractActionOptions
     );
@@ -805,7 +784,7 @@ const BuySellForm: FC<
     useContractAction(
       orderbookSell,
       limitSellProps,
-      memoizedPopupProps,
+      undefined,
       memoizedToastProps,
       contractActionOptions
     );

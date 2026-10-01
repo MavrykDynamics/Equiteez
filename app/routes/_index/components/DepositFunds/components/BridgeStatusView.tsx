@@ -7,11 +7,16 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import Money from "~/lib/atoms/Money";
 import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
+import type { TransactionWidgetModel } from "~/providers/TransactionsProvider/transactionWidget.helpers";
+import { transactionWidgetStepLabels } from "~/providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidget";
 
 import styles from "../RDepositFundsModal.module.css";
 
 export type BridgeProcessStatus = "loading" | "success" | "error";
 type BridgeStepStatus = BridgeProcessStatus | "pending";
+
+const trackingNotice =
+  "You can close this window. The bridge keeps running and the funds will appear in your portfolio once process completes.";
 
 export type BridgeStatusStep = {
   description: string;
@@ -21,6 +26,7 @@ export type BridgeStatusStep = {
 
 type BridgeStatusViewProps = {
   state: UsdtBridgeState;
+  deposit?: TransactionWidgetModel;
   onClose: () => void;
   onReset: () => void;
   onCheckConfirmation: () => Promise<void>;
@@ -70,6 +76,37 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
       description: "Waiting for bridge updates",
     },
   ];
+}
+
+// Presentation mapping only: the provider owns all event/status decisions.
+function getDepositSteps({
+  state,
+}: TransactionWidgetModel): BridgeStatusStep[] {
+  return transactionWidgetStepLabels.map((title, index) => {
+    const isCurrent =
+      (state.status === "progress" && state.step === index + 1) ||
+      (state.status === "waiting" && index === 0);
+    const status: BridgeStepStatus =
+      state.status === "success" ||
+      (state.status === "progress" && index + 1 < state.step)
+        ? "success"
+        : isCurrent
+          ? "loading"
+          : "pending";
+    return {
+      title:
+        isCurrent && state.status === "progress"
+          ? (state.title ?? title)
+          : title,
+      status,
+      description:
+        status === "success"
+          ? "Complete"
+          : isCurrent
+            ? (state.description ?? "In progress")
+            : "Waiting for bridge updates",
+    };
+  });
 }
 
 const statusIcons: Record<BridgeProcessStatus, RIconName> = {
@@ -153,11 +190,14 @@ function BridgeStatusListItem({
 
 export function BridgeStatusView({
   state,
+  deposit,
   onClose,
   onReset,
   onCheckConfirmation,
 }: BridgeStatusViewProps) {
-  const steps = getBridgeStatusSteps(state);
+  const steps = deposit
+    ? getDepositSteps(deposit)
+    : getBridgeStatusSteps(state);
   const isLocked =
     state.progress?.step === "lock" && state.progress.status === "confirmed";
 
@@ -189,13 +229,17 @@ export function BridgeStatusView({
           <RIcon aria-hidden="true" name="info" size="small" />
         </div>
         <RText className={styles.statusNoticeText} size="body-sm">
-          {isLocked
-            ? "Your Ethereum lock is confirmed. Delivery to your Mavryk wallet is pending; check your wUSDT balance for arrival."
-            : state.isConfirmationUnknown
-              ? "The transaction has been sent. Check its confirmation before starting another deposit."
-              : state.error
-                ? "The deposit has not completed. Review the message above before trying again."
-                : "You can close this window while tracking continues."}
+          {deposit
+            ? deposit.state.status === "success"
+              ? "Successfully transferred to your Mavryk wallet."
+              : (deposit.state.description ?? trackingNotice)
+            : isLocked
+              ? "Your Ethereum lock is confirmed. Delivery to your Mavryk wallet is pending; check your wUSDT balance for arrival."
+              : state.isConfirmationUnknown
+                ? "The transaction has been sent. Check its confirmation before starting another deposit."
+                : state.error
+                  ? "The deposit has not completed. Review the message above before trying again."
+                  : trackingNotice}
         </RText>
       </div>
       {state.isConfirmationUnknown && (
@@ -226,7 +270,7 @@ export function BridgeStatusView({
         tone="black"
         variant="secondary"
       >
-        Close And Continue Browsing
+        Minimize And Continue Browsing
       </RButton>
     </div>
   );

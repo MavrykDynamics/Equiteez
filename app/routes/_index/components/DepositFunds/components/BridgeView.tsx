@@ -165,7 +165,11 @@ export function BridgeView({
     refreshBalance,
     error,
   } = ethereumWallet;
-  const isBusy = isConnecting || isReconnecting || isMavrykBusy;
+  const isBusy =
+    isConnecting ||
+    isReconnecting ||
+    isMavrykBusy ||
+    Boolean(ethereumWallet.bridge.state?.isBusy);
   const amountError = getUsdtBridgeAmountError(depositAmount);
   const hasInsufficientBalance =
     depositAmount && tokenBalance && depositAmount.gt(tokenBalance);

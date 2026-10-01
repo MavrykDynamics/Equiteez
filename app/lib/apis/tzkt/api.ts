@@ -75,7 +75,7 @@ async function fetchGet<R>(
 type GetOperationsBaseParams = {
   limit?: number;
   offset?: number;
-  entrypoint?: "transfer" | "mintOrBurn";
+  entrypoint?: "transfer" | "mintOrBurn" | "purchase";
   lastId?: number;
 } & {
   [key in `timestamp.${"lt" | "ge"}`]?: string;
@@ -113,6 +113,9 @@ export const fetchGetOperationsByHash = (
 ) => fetchGet<TzktOperation[]>(chainId, `/operations/${hash}`, params);
 
 type GetOperationsTransactionsParams = GetOperationsBaseParams & {
+  status?: "applied";
+  "id.lt"?: number;
+} & {
   [key in `anyof.sender.target${"" | ".initiator"}`]?: string;
 } & {
   [key in `amount${"" | ".ne"}`]?: string;

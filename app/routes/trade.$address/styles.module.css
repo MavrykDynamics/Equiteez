@@ -6,6 +6,48 @@
   }
 }
 
+@media (--media-tablet-max) {
+  .primary.contentBlock {
+    gap: var(--r-space-5);
+  }
+
+  .primary .mainContent {
+    display: contents;
+  }
+
+  .primary .mainContent > :first-child {
+    order: 0;
+  }
+
+  .primary .primaryGallery {
+    order: 1;
+    width: 100%;
+  }
+
+  .primaryGallery > section {
+    margin-bottom: 0;
+  }
+
+  .primary .tradeColumn {
+    display: flex;
+    order: 2;
+  }
+
+  .primary .tradeColumnContent > :first-child {
+    order: 0;
+    margin-bottom: 0;
+  }
+
+  .primary .buySellContainer {
+    display: flex;
+  }
+
+  .primary .primaryTabs {
+    order: 3;
+    width: 100%;
+  }
+}
+
 .contentBlock {
   width: 100%;
   display: flex;
@@ -41,6 +83,7 @@
 }
 
 .buySellContainer {
+  position: relative;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
