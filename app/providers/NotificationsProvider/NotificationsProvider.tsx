@@ -8,7 +8,11 @@ import React, {
   useRef,
 } from "react";
 import { isAxiosError } from "axios";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   fetchWalletNotifications,
@@ -125,6 +129,7 @@ export const NotificationsProvider = ({
         walletAddress: notificationWalletAddress ?? "",
       }),
     enabled: hasNotificationIdentity,
+    placeholderData: keepPreviousData,
     retry: false,
   });
 
@@ -326,8 +331,7 @@ export const NotificationsProvider = ({
     hasNotificationIdentity &&
     !isNotificationsNotFoundError(notificationsSummaryQuery.error) &&
     !isNotificationsNotFoundError(notificationsPreviewQuery.error);
-  const isNotificationsLoading =
-    notificationsSummaryQuery.isLoading || notificationsPreviewQuery.isLoading;
+  const isNotificationsLoading = notificationsPreviewQuery.isFetching;
   const unreadNotificationsCount =
     notificationsSummaryQuery.data?.unread_count ?? 0;
 

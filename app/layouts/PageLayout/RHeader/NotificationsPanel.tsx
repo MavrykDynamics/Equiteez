@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { Link } from "@remix-run/react";
 
 import { ROUTES } from "~/consts";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 
@@ -97,13 +98,7 @@ export function NotificationsPanel({
       </div>
 
       <div className={styles.list}>
-        {isNotificationsLoading ? (
-          <div className={styles.empty}>
-            <RText color="neutral-700" size="body-sm">
-              Loading notifications...
-            </RText>
-          </div>
-        ) : notifications.length ? (
+        {notifications.length ? (
           notifications.map((notification) => (
             <Link
               className={clsx(
@@ -139,13 +134,22 @@ export function NotificationsPanel({
               </RText>
             </Link>
           ))
-        ) : (
+        ) : !isNotificationsLoading ? (
           <div className={styles.empty}>
             <RText color="neutral-700" size="body-sm">
               No notifications yet
             </RText>
           </div>
-        )}
+        ) : null}
+        {isNotificationsLoading ? (
+          <div
+            aria-label="Loading notifications"
+            className={styles.loadingOverlay}
+            role="status"
+          >
+            <RIcon name="loading" size="medium" />
+          </div>
+        ) : null}
       </div>
     </section>
   );

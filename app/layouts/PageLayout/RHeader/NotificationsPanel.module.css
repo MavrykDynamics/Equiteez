@@ -30,6 +30,8 @@
 }
 
 .list {
+  position: relative;
+  min-height: 160px;
   overflow-y: auto;
 }
 
@@ -92,4 +94,14 @@
   min-height: 160px;
   padding: var(--r-space-5);
   text-align: center;
+}
+
+.loadingOverlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--r-color-neutral-700);
+  background: rgb(255 255 255 / 75%);
 }

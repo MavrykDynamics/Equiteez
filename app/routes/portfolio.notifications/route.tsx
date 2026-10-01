@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import clsx from "clsx";
 
 import { ROUTES } from "~/consts";
 import { fetchWalletNotifications } from "~/lib/apis/rwa";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
 import { formatNotificationDate } from "~/layouts/PageLayout/RHeader/NotificationsPanel";
@@ -46,6 +47,7 @@ export default function PortfolioNotifications() {
     enabled: hasNotificationIdentity,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
+    placeholderData: keepPreviousData,
     retry: false,
   });
 
@@ -146,13 +148,7 @@ export default function PortfolioNotifications() {
         </div>
 
         <div className={styles.list} ref={listRef}>
-          {notificationsQuery.isLoading ? (
-            <div className={styles.empty}>
-              <RText color="neutral-700" size="body-m">
-                Loading notifications...
-              </RText>
-            </div>
-          ) : isDisabled ? (
+          {isDisabled ? (
             <div className={styles.empty}>
               <RText color="neutral-700" size="body-m">
                 No notifications yet
@@ -199,13 +195,22 @@ export default function PortfolioNotifications() {
                 </span>
               </div>
             ))
-          ) : (
+          ) : !notificationsQuery.isFetching ? (
             <div className={styles.empty}>
               <RText color="neutral-700" size="body-m">
                 No notifications yet
               </RText>
             </div>
-          )}
+          ) : null}
+          {notificationsQuery.isFetching ? (
+            <div
+              aria-label="Loading notifications"
+              className={styles.loadingOverlay}
+              role="status"
+            >
+              <RIcon name="loading" size="medium" />
+            </div>
+          ) : null}
           {notificationsQuery.hasNextPage ? (
             <div className={styles.loadMore} ref={loadMoreRef}>
               <RText color="neutral-500" size="body-sm">
