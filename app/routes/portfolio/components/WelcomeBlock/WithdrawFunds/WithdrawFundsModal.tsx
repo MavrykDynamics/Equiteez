@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import BigNumber from "bignumber.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
@@ -29,9 +36,15 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import {
+  NotifierChannel,
+  NotifierWalletEvent,
+} from "~/providers/NotificationsProvider/notifications.const";
+import { useNotifierEvent } from "~/providers/NotificationsProvider/hooks/useNotifierEvent";
 
 import styles from "./WithdrawFundsModal.module.css";
 import { Field } from "./Field";
+import { ProcessingStep } from "./ProcessingStep";
 import { SuccessStep } from "./SuccessStep";
 import { WithdrawalSummary } from "./WithdrawalSummary";
 import { useWithdrawableAssets } from "./useWithdrawableAssets";
@@ -40,7 +53,7 @@ import { AssetIcon } from "~/templates/AssetIcon";
 import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 
-type WithdrawStep = "form" | "success";
+type WithdrawStep = "form" | "processing" | "success";
 
 type WithdrawFundsModalProps = {
   isOpen: boolean;
@@ -100,6 +113,9 @@ export function WithdrawFundsModal({
   const [isRecipientKyced, setIsRecipientKyced] = useState<boolean | null>(
     null
   );
+  const [isWalletConfirmed, setIsWalletConfirmed] = useState(false);
+  const [isFallbackDelayElapsed, setIsFallbackDelayElapsed] = useState(false);
+  const activeOperationHashRef = useRef("");
 
   const selectedAsset = useMemo(
     () => assets.find((asset) => asset.tokenSlug === selectedAssetSlug),
@@ -162,7 +178,50 @@ export function WithdrawFundsModal({
     recipientKycQueryError,
   ]);
 
+  useEffect(() => {
+    if (step !== "processing") return;
+
+    const fallbackDelay = window.setTimeout(() => {
+      setIsFallbackDelayElapsed(true);
+    }, 20_000);
+
+    return () => window.clearTimeout(fallbackDelay);
+  }, [step]);
+
+  useEffect(() => {
+    if (
+      step === "processing" &&
+      isWalletConfirmed &&
+      isFallbackDelayElapsed
+    ) {
+      setStep("success");
+    }
+  }, [isFallbackDelayElapsed, isWalletConfirmed, step]);
+
+  const handleTokenSent = useCallback(
+    (frame: { kind?: string | null; payload?: Record<string, unknown> }) => {
+      const operationHash = frame.payload?.operation_hash;
+
+      if (
+        step === "processing" &&
+        frame.kind === "tokens_sent" &&
+        typeof operationHash === "string" &&
+        operationHash === activeOperationHashRef.current
+      ) {
+        setStep("success");
+      }
+    },
+    [step]
+  );
+
+  useNotifierEvent(
+    NotifierChannel.Wallet,
+    NotifierWalletEvent.TokenLedgerTransfer,
+    handleTokenSent
+  );
+
   const handleClose = () => {
+    activeOperationHashRef.current = "";
     setStep("form");
     setRecipientAddress("");
     setAmount("");
@@ -171,6 +230,8 @@ export function WithdrawFundsModal({
     setIsRecipientTouched(false);
     setIsAmountTouched(false);
     setIsRecipientKyced(null);
+    setIsWalletConfirmed(false);
+    setIsFallbackDelayElapsed(false);
     setSelectedAssetSlug(undefined);
     onClose();
   };
@@ -234,30 +295,43 @@ export function WithdrawFundsModal({
             )
             .send();
 
-      setTransactionHash(getOperationHash(operation));
-      const confirmation = await operation.confirmation();
-      const level = getConfirmationLevel(confirmation);
+      const operationHash = getOperationHash(operation);
+      activeOperationHashRef.current = operationHash;
+      setTransactionHash(operationHash);
+      setIsWalletConfirmed(false);
+      setIsFallbackDelayElapsed(false);
+      setStep("processing");
 
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet-portfolio"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["rwa-wallet-portfolio-history"],
-        }),
-        invalidateFreshQueries("fetchWalletTransferHistory", {
-          level,
-          source: FreshnessSource.Chain,
-        }),
-        invalidateFreshQueries("fetchWalletActivitySummary", {
-          level,
-          source: FreshnessSource.Chain,
-        }),
-      ]);
-      setStep("success");
+      void (async () => {
+        try {
+          const confirmation = await operation.confirmation();
+          const level = getConfirmationLevel(confirmation);
+
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["rwa-wallet"] }),
+            queryClient.invalidateQueries({
+              queryKey: ["rwa-wallet-portfolio"],
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ["rwa-wallet-portfolio-history"],
+            }),
+            invalidateFreshQueries("fetchWalletTransferHistory", {
+              level,
+              source: FreshnessSource.Chain,
+            }),
+            invalidateFreshQueries("fetchWalletActivitySummary", {
+              level,
+              source: FreshnessSource.Chain,
+            }),
+          ]);
+
+          if (activeOperationHashRef.current === operationHash) {
+            setIsWalletConfirmed(true);
+          }
+        } catch (error) {
+          console.warn("Withdrawal confirmation failed", error);
+        }
+      })();
     } catch (error) {
       if (error instanceof Error && error.message === "Declined") {
         setStep("form");
@@ -520,6 +594,12 @@ export function WithdrawFundsModal({
             Withdraw Funds
           </RButton>
         </form>
+      ) : step === "processing" ? (
+        <ProcessingStep
+          amount={amount || "0.00"}
+          asset={selectedAsset?.metadata.symbol ?? ""}
+          onClose={handleClose}
+        />
       ) : (
         <SuccessStep
           amount={amount || "0.00"}
