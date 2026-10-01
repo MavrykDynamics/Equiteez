@@ -95,7 +95,11 @@ export default function TradePage() {
 
         <div className={styles.tradeColumn}>
           <div className={styles.tradeColumnContent}>
-            {isPrimary ? <RPrimarySaleSummary /> : gallery}
+            {isPrimary ? (
+              <RPrimarySaleSummary assetAddress={asset.address} />
+            ) : (
+              gallery
+            )}
             <div className={styles.buySellContainer}>
               <BuySellPanel
                 key={`${asset.address}:${asset.orderbook?.address ?? ""}`}

@@ -53,8 +53,13 @@ A wallet-scoped portfolio invalidation runs after its 20-second API TTL and
 survives route navigation. Existing balance updates still use TzKT.
 
 The existing countdown is rendered inside the primary panel using the chain's
-`saleStart`, replacing the route's mock date. The separate primary-sale summary
-remains outside this change.
+`saleStart`, replacing the route's mock date. The primary-only sale summary shares the dynamic
+`/assets/{address}/launch` query and active-first selection with the purchase
+flow, refreshing every ten seconds and on purchase refresh. It displays
+`(max_amount_cap - total_bought) / 10^token.decimals` as Tokens Left (two
+decimal places), the decimal-adjusted allocation, and the API
+`progress_percent` directly. Loading uses placeholders; missing, invalid, or
+failed sale data keeps the layout with unavailable values and an empty bar.
 
 ## Validation
 

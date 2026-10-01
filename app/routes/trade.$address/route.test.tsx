@@ -46,6 +46,11 @@ vi.mock("./components/BuySellPanel/BuySellPanel", () => ({
 vi.mock("./components/BuySellPanel/RTradingCountdown", () => ({
   RTradingCountdown: () => <div>Trading countdown</div>,
 }));
+vi.mock("./components/RPrimarySaleSummary/RPrimarySaleSummary", () => ({
+  RPrimarySaleSummary: ({ assetAddress }: { assetAddress: string }) => (
+    <div>Primary Sale: {assetAddress}</div>
+  ),
+}));
 vi.mock("./components/AssetGallery/AssetGallerySlider", () => ({
   AssetGallerySlider: ({ size }: { size: string }) => <div>{size} gallery</div>,
 }));
@@ -75,8 +80,7 @@ describe("trade-page asset classification", () => {
       const html = renderToStaticMarkup(<TradePage />);
       expect(html).toContain("large gallery");
       expect(html).toContain("Primary Sale");
-      expect(html).toContain("25,000.00");
-      expect(html).toContain('aria-valuenow="90"');
+      expect(html).toContain(`Primary Sale: ${asset.address}`);
       expect(html).toContain("Live trading panel");
       expect(html).toContain("primary purchase");
       expect(html).not.toContain("Price chart");

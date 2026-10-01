@@ -1,10 +1,9 @@
 import { PRIMARY_HISTORY_QUERY_KEY } from "~/lib/apis/primaryPurchases/primaryPurchases";
 import { useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import { basenetNetRpcnode } from "~/consts/rpcNodes";
-import { rwaApi } from "~/lib/apis/rwa/client";
+import { assetLaunchQueryOptions } from "../../hooks/assetLaunch";
 import { readPrimaryPurchaseConfig } from "~/contracts/primaryPurchase.read";
 import { primaryPurchaseError } from "~/contracts/primaryPurchase.errors";
 import {
@@ -19,16 +18,6 @@ import {
   NotifierWalletEvent,
 } from "~/providers/NotificationsProvider/notifications.const";
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
-
-const launchCardsSchema = z.object({
-  address: z.string(),
-  launches: z.array(
-    z.object({
-      name: z.string().min(1),
-      status: z.enum(["active", "inactive", "paused", "closed"]),
-    })
-  ),
-});
 
 export function usePrimaryPurchase(assetAddress: string) {
   const { userAddress } = useUserContext();
@@ -52,18 +41,9 @@ export function usePrimaryPurchase(assetAddress: string) {
     queryKey,
     queryFn: async () => {
       try {
-        const response = await rwaApi.get(
-          `/assets/${encodeURIComponent(assetAddress)}/launch`
+        const card = await queryClient.fetchQuery(
+          assetLaunchQueryOptions(assetAddress)
         );
-        const cards = launchCardsSchema.parse(response.data);
-        if (cards.address !== assetAddress)
-          throw new Error("The launch response does not match this asset.");
-        // The endpoint is active-first/newest-first. Names and options are data.
-        const card =
-          cards.launches.find((item) => item.status === "active") ??
-          cards.launches[0];
-        if (!card)
-          throw new Error("No primary sale is available for this asset.");
         return await readPrimaryPurchaseConfig({
           tezos,
           assetAddress,
