@@ -71,26 +71,49 @@ fee summary, and route classification suites remain applicable.
 
 ## Purchase history
 
-Primary asset tabs replace Open Orders and Order History with Purchase History.
-The shared `RAssetHistoryTable` preserves the secondary table presentation,
-with Date, Asset, Type, Price, Amount, Status, and Total columns, sorting and
-10-row pagination. Secondary data loading and order behavior are unchanged.
+Primary asset tabs retain Purchase History. `RPurchaseHistoryTab` uses the
+configured authenticated RWA client through the existing transfer-history helper:
 
-`RPurchaseHistoryTab` reads confirmed direct `purchase` operations from the
-configured Basenet launchpad using the existing TzKT client. It verifies the
-asset against the operation's historical `launchLedger` diff and sums the
-matching wUSDT transfers from the buyer, scoped to the operation hash and
-counter. Total includes the actual discounted purchase fee and excludes MAV
-network fees. Price is Total divided by Amount; all arithmetic uses decimal
-strings/BigInt/BigNumber. Current prices and signed payment caps are never used
-as historical payments. Missing or unsupported historical data shows a retryable
-error rather than invented totals. Admin allocations and token distributions
-are excluded. Confirmed means the purchase succeeded; it does not imply a
-MANUAL allocation has been distributed.
+```http
+GET /wallets/{wallet}/transactions?page=1&per_page=10&sort=date_desc&token_address={asset}&types=deposit
+```
 
-Wallet operations are read in cursor batches of 100, with at most 10 concurrent
-detail requests and cached immutable operation groups. Rows are sorted and
-paginated locally after filtering the asset. The query is wallet/network/asset
-scoped, refreshes every 15 seconds while mounted, and is invalidated after
-purchase confirmation or a wallet purchase event. This release covers the direct
-purchase path; permit history must be added when the currently blocked relay ships.
+The query shares the `fetchWalletTransferHistory` freshness prefix. Existing
+purchase confirmation invalidation and wallet `LAUNCHPAD_PURCHASE` events mark
+the chain source for `fresh=1`, including confirmation while the tab is unmounted.
+Secondary Order History and purchase execution are unchanged. No indexer fallback
+or direct indexer requests remain in Purchase History.
+
+The tab displays the returned deposits as incoming asset transactions using
+`RAssetHistoryTable`, with server-side date/amount/total sorting and 10-row
+pagination. Price and Total use the row's display currency (USD by default),
+with null values shown as dashes. Type is Deposit and Status is a dash because
+transfer rows provide no purchase status. A note identifies the values as
+valuations rather than purchase payments. Truncated responses show an older
+history notice. Empty, loading, authentication and retryable error states remain.
+
+Deposits can be ordinary transfers, administrative distributions, or purchase
+delivery; they are not verified purchase records. Null hashes are accepted.
+
+### Backend contract required to enable purchase rows
+
+The external RWA service must add a dedicated purchase endpoint or transaction
+type (the current API rejects `types=purchase`). This backend is not implemented
+in this frontend repository. The contract must provide:
+
+- Stable purchase ID, operation hash, timestamp and purchaser (permit signer).
+- Asset address/token ID, launchpad, launch and sale option.
+- Exact quantity, payment-token address/ID/decimals, actual total paid including
+  the paid fee, and effective unit price. Preserve precision using decimal strings.
+- Purchase status and distribution state, including allocations awaiting delivery.
+- Wallet/asset filtering, server pagination and date/amount/total sorting; disclose
+  truncation and source freshness using the existing API conventions.
+- Distinct purchase identity within a batched operation; exclude ordinary deposits,
+  admin `setPurchaseRecord` allocations and subsequent distributions from purchases.
+
+Once the backend contract is available, validate it and reuse `RAssetHistoryTable`
+for Date (purchase timestamp), Asset (verified token identity), Type (Purchase),
+Price (actual total divided by quantity), Amount (purchased quantity), Status
+(purchase/distribution state), and Total (actual payment in its payment currency).
+Use server pagination and sorting. Do not reuse display-currency valuations as
+execution amounts or assume an applied MANUAL purchase was delivered.
