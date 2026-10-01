@@ -62,7 +62,7 @@
   "launch_purchase_recorded": {
     "tone": "info",
     "title": "Launchpad purchase recorded",
-    "description": "Equiteez recorded a purchase of {amount} {token_symbol} in the {launch_name} offering on your behalf. Total {total} {quote_token_symbol}. Ref. {reference}. Didn't expect this? Contact support."
+    "description": "Equiteez recorded a purchase of {amount} {token_symbol} in the {launch_name} offering on your behalf. Didn't expect this? Contact support."
   },
   "launch_tokens_distributed": {
     "tone": "success",
@@ -87,13 +87,13 @@
   "relay_failed": {
     "tone": "warning",
     "title": "Gasless action failed, re-sign",
-    "description": "",
+    "description": "Relay Failed",
     "_comment": "No full description in Notification Text."
   },
   "relay_rejected": {
     "tone": "warning",
     "title": "Gasless action failed, re-sign",
-    "description": "",
+    "description": "Relay Rejected",
     "_comment": "No full description in Notification Text."
   },
   "bridge_deposit_completed": {
