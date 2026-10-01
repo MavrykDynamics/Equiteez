@@ -25,6 +25,10 @@ import {
 } from "~/contracts/primaryPurchase.quote";
 import type { PrimaryPurchaseConfig } from "~/contracts/primaryPurchase.types";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { RButton } from "~/lib/atoms/RButton";
+import { RIcon } from "~/lib/atoms/RIcon";
+import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
+import depositStyles from "~/routes/_index/components/DepositFunds/styles.module.css";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvider/toaster.provider.const";
 import { usePrimaryPurchase } from "./usePrimaryPurchase";
@@ -42,8 +46,20 @@ type PurchaseQuery = ReturnType<typeof usePrimaryPurchase>;
 
 export function PrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   const query = usePrimaryPurchase(asset.address);
-  const { connect } = useUserContext();
+  const { connect, isKyced } = useUserContext();
   const config = query.data;
+  // Temporary ANTH style preview; production continues to use API dates.
+  const [previewCountdown] = useState(() => {
+    const startsAt = Date.now() + (2 * 86400 + 5 * 3600 + 30 * 60) * 1000;
+    return {
+      saleStart: new Date(startsAt).toISOString(),
+      saleEnd: new Date(startsAt + 86400000).toISOString(),
+    };
+  });
+  const countdown =
+    import.meta.env.DEV && asset.metadata.symbol === "ANTH"
+      ? previewCountdown
+      : config?.countdown;
   const retry = () => {
     void query.refetch();
   };
@@ -76,7 +92,25 @@ export function PrimaryPurchasePanel({ asset }: { asset: AssetType }) {
           query={query}
         />
       )}
-      {config && <RTradingCountdown startsAt={config.saleStart} />}
+      {countdown && (
+        <RTradingCountdown {...countdown}>
+          {isKyced ? (
+            <DepositFunds label="Deposit Funds" />
+          ) : (
+            <div className={depositStyles.wrapper}>
+              <RButton
+                className={depositStyles.depositButton}
+                disabled
+                iconLeft={<RIcon aria-hidden="true" name="square-account" />}
+                size="medium"
+                tone="black"
+              >
+                Start KYC
+              </RButton>
+            </div>
+          )}
+        </RTradingCountdown>
+      )}
     </>
   );
 }

@@ -44,12 +44,16 @@ export function usePrimaryPurchase(assetAddress: string) {
         const card = await queryClient.fetchQuery(
           assetLaunchQueryOptions(assetAddress)
         );
-        return await readPrimaryPurchaseConfig({
+        const config = await readPrimaryPurchaseConfig({
           tezos,
           assetAddress,
           launchName: card.name,
           wallet: userAddress,
         });
+        return {
+          ...config,
+          countdown: { saleStart: card.sale_start, saleEnd: card.sale_end },
+        };
       } catch (error) {
         throw primaryPurchaseError(error);
       }

@@ -55,8 +55,15 @@ activity queries through the existing `fresh=1` mechanism and refresh the launch
 A wallet-scoped portfolio invalidation runs after its 20-second API TTL and
 survives route navigation. Existing balance updates still use TzKT.
 
-The existing countdown is rendered inside the primary panel using the chain's
-`saleStart`, replacing the route's mock date. The primary-only sale summary shares the dynamic
+The primary panel countdown uses the selected `/assets/{address}/launch` card's
+`sale_start` and `sale_end`. It counts down to `sale_start` only before the sale,
+and stays hidden during and after the sale. Missing, invalid, or reversed dates
+hide the countdown without falling back to chain dates. Contract-based purchase
+validation remains independent and unchanged. The countdown shows a disabled
+Start KYC action for users without `isKyced`, or the existing Deposit Funds
+modal trigger for KYC-verified (Pro) users. Both actions use the deposit button
+styles, with 16px gaps between title, timer, and action. The interactive overlay
+sits above the purchase slider. The primary-only sale summary shares the dynamic
 `/assets/{address}/launch` query and active-first selection with the purchase
 flow, refreshing every ten seconds and on purchase refresh. It displays
 `(max_amount_cap - total_bought) / 10^token.decimals` as Tokens Left (two
