@@ -56,12 +56,12 @@
   },
   "launch_purchase": {
     "tone": "success",
-    "title": "Launchpad purchase confirmed (self)",
-    "description": "You purchased {amount} {token_symbol} in the {launch_name} offering at {price} {quote_token_symbol}. Total {total} {quote_token_symbol}. Tokens will be delivered on {distribution_date}."
+    "title": "Launchpad purchase confirmed",
+    "description": "You purchased {amount} {token_symbol} in the {launch_name} offering."
   },
   "launch_purchase_recorded": {
     "tone": "info",
-    "title": "Launchpad purchase recorded (by admin)",
+    "title": "Launchpad purchase recorded",
     "description": "Equiteez recorded a purchase of {amount} {token_symbol} in the {launch_name} offering on your behalf. Total {total} {quote_token_symbol}. Ref. {reference}. Didn't expect this? Contact support."
   },
   "launch_tokens_distributed": {

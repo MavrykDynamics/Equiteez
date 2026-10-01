@@ -202,6 +202,43 @@ it("renders completed bridge deposits in notification history", () => {
   });
 });
 
+it("renders launch purchase notification history without falling back", () => {
+  const notification = mapNotificationItemToUserNotification({
+    id: "92928768-eaed-41c1-be74-140f04b034d2",
+    event_id: "ea1ff002-efe6-5594-ac7e-7ee7fbde2e17",
+    event_type: "LAUNCHPAD_PURCHASE",
+    kind: "launch_purchase",
+    entity_key: "purchase:72",
+    payload: {
+      amount: "1000000",
+      source: "user",
+      timestamp: "2026-10-01T10:59:00Z",
+      launch_name: "XAUG-issuance-v3",
+      payment_name: "USDT",
+      token_id_fa2: "0",
+      token_symbol: "XAUG",
+      token_address: "KT1NbgrAUjxgvm4b72VEYPp7r8KXTLgXNjjP",
+      operation_hash: "oo7wbizhRTLCtyLKXJmoq5J9yusYKuMY85xUZFxQ4GbsSEQRTwN",
+      token_decimals: 6,
+      sale_option_name: "Starter",
+      launchpad_address: "KT1U6KXwy8vduoq86HBjGp9m2Czc8rZM85MN",
+      purchase_event_id: "72",
+      payment_token_id_fa2: "0",
+      payment_token_symbol: "wUSDT",
+      payment_token_address: "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      payment_token_decimals: 6,
+    },
+    occurred_at: "2026-10-01T10:59:00Z",
+    created_at: "2026-10-01T10:59:07.831774Z",
+    read_at: "2026-10-01T10:59:21.565253Z",
+  });
+
+  expect(notification).toMatchObject({
+    title: "Launchpad purchase confirmed",
+    description: "You purchased 1 XAUG in the XAUG-issuance-v3 offering.",
+  });
+});
+
 it("renders bridge warning descriptions in notification history", () => {
   const payload = {
     amount: "1500000000000000000",
