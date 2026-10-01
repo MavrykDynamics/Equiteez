@@ -254,7 +254,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
   const marketUsdtBottomValue = amount ? (
     <span className={styles.bottomNote}>
-      $<Money fiat>{balanceTotal ?? ZERO}</Money> per share
+      $<Money fiat>{balanceTotal ?? ZERO}</Money>
     </span>
   ) : undefined;
 
