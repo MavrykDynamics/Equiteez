@@ -150,10 +150,16 @@ function AssetOption({ asset, isSelected, onSelect }: AssetOptionProps) {
         <div className={styles.assetPriceWrapper}>
           <span className={styles.assetPrice}>
             <RText size="body-sm" weight="medium">
-              $
-              <Money fiat tooltip={false}>
-                {price}
-              </Money>
+              {price === undefined ? (
+                "—"
+              ) : (
+                <>
+                  $
+                  <Money fiat tooltip={false}>
+                    {price}
+                  </Money>
+                </>
+              )}
             </RText>
             {priceChange.percentage ? (
               <RText color={isNegative ? "red-500" : "green-600"} size="body-s">

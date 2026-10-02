@@ -57,7 +57,7 @@ const AssetProfileSchema = z.object({
 });
 
 const AssetFinanceSchema = z.object({
-  value_per_token: z.number(),
+  value_per_token: z.number().optional(),
   total_dividends_distributed: z.string(),
   max_supply: z.string().optional(),
   mintable: z.boolean().optional(),
@@ -122,7 +122,7 @@ export const AssetHighlightSchema = z.object({
   name: z.string(),
   icon: z.string().optional(),
   market_type: z.string(),
-  price: CurrencyAmountSchema,
+  price: CurrencyAmountSchema.optional(),
   quote_price: QuotePriceSchema.optional(),
   change_24h: AssetHighlightsChangeSchema.nullable(),
   volume_24h: CurrencyAmountSchema.optional(),

@@ -16,14 +16,17 @@ export function RChartStats({ asset }: RChartStatsProps) {
     { label: "Annual yield (APY)", value: `${asset.apy.toFixed(2)}%` },
     {
       label: "Value per token",
-      value: (
-        <>
-          $
-          <Money fiat tooltip={false}>
-            {asset.finance.value_per_token}
-          </Money>
-        </>
-      ),
+      value:
+        asset.finance.value_per_token === undefined ? (
+          "—"
+        ) : (
+          <>
+            $
+            <Money fiat tooltip={false}>
+              {asset.finance.value_per_token}
+            </Money>
+          </>
+        ),
     },
     {
       label: "Total supply",

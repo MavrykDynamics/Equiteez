@@ -97,10 +97,16 @@ export function CardBody({ asset, isCardInView }: RImageAssetCardProps) {
         <AssetIdentity asset={asset} />
         <div className={styles.priceSummary}>
           <RText size="body-m" weight="medium">
-            $
-            <Money fiat tooltip={false}>
-              {price}
-            </Money>
+            {price === undefined ? (
+              "—"
+            ) : (
+              <>
+                $
+                <Money fiat tooltip={false}>
+                  {price}
+                </Money>
+              </>
+            )}
           </RText>
           {isPrimaryIssuance ? (
             <div className={styles.listingPriceMeta}>

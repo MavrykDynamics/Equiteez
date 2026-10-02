@@ -1,47 +1,43 @@
-/* eslint-disable no-useless-catch */
-import {
-  z,
-  ZodError,
-} from 'zod';
+import { z } from "zod";
 import type {
   ZodSchema,
   objectOutputType,
   ZodNumber,
   ZodType,
   ZodTypeAny,
-} from 'zod';
+} from "zod";
 
 type APIFetchReturnType<T> = objectOutputType<
-  { code: ZodNumber; status: ZodType<'ok' | 'error'>; data: ZodType<T> },
+  { code: ZodNumber; status: ZodType<"ok" | "error">; data: ZodType<T> },
   ZodTypeAny
 >;
 
 export const api = async <T>(
   url: string,
-  options: RequestInit = { method: 'GET' },
+  options: RequestInit = { method: "GET" },
   schema: ZodSchema<T> = z.any()
 ): Promise<APIFetchReturnType<T>> => {
-  const method = options?.method || 'GET';
+  const method = options?.method || "GET";
 
-  try {
-    const response = await fetch(url, { method, ...options });
-    const data = await response.json();
-    const parsedData = schema.parse(data);
+  const response = await fetch(url, { method, ...options });
+  const data: unknown = await response.json();
+  const result = schema.safeParse(data);
 
-    return {
-      code: response.status,
-      status: response.ok ? 'ok' : 'error',
-      data: parsedData,
-    };
-  } catch (error) {
-    if (error instanceof ZodError) {
-      console.error('API Zod schema validation failed:', {
-        url,
-        method,
-        issues: error.issues,
-      });
-    }
+  if (!result.success) {
+    console.error("API Zod schema validation failed:", {
+      url,
+      method,
+      issues: result.error.issues,
+    });
 
-    throw error;
+    // Reject invalid data so query consumers retain their cache and expose an
+    // error state instead of rendering an unchecked response as successful data.
+    throw result.error;
   }
+
+  return {
+    code: response.status,
+    status: response.ok ? "ok" : "error",
+    data: result.data,
+  };
 };

@@ -58,10 +58,18 @@ function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
 }
 
 export function Highlights() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["rwa-assets-highlights"],
     queryFn: fetchAssetsHighlights,
   });
+
+  if (isError && !data) {
+    return (
+      <Container className={styles.wrapper}>
+        <RText color="neutral-700">Highlights are currently unavailable.</RText>
+      </Container>
+    );
+  }
 
   const topGainers = data?.top_gainers ?? [];
   const trending = data?.trending ?? [];

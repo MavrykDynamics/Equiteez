@@ -335,10 +335,16 @@ export function PriceChart({
             <div className={styles.priceSummary}>
               <div className={styles.priceLabelGroup}>
                 <span className={styles.currentPrice}>
-                  $
-                  <Money fiat tooltip={false}>
-                    {price}
-                  </Money>
+                  {price === undefined ? (
+                    "—"
+                  ) : (
+                    <>
+                      $
+                      <Money fiat tooltip={false}>
+                        {price}
+                      </Money>
+                    </>
+                  )}
                 </span>
                 <RText className={styles.priceLabel} size="body-xs">
                   Price

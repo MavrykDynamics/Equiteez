@@ -26,6 +26,20 @@ const asset: Parameters<typeof RChartStats>[0]["asset"] = {
 };
 
 describe("asset statistics", () => {
+  it("shows an unavailable value when finance has no price", () => {
+    const html = renderToStaticMarkup(
+      <RChartStats
+        asset={{
+          ...asset,
+          finance: { total_dividends_distributed: "0", decimals: 6 },
+        }}
+      />
+    );
+    expect(html).toContain("—");
+    expect(html).not.toContain("NaN");
+    expect(html).not.toContain("$undefined");
+  });
+
   it("renders asset values without any chart data", () => {
     const html = renderToStaticMarkup(<RChartStats asset={asset} />);
     const values = Array.from(
