@@ -2,7 +2,7 @@
   "order_placed": {
     "tone": "info",
     "title": "{order_type} Order placed",
-    "description": "{order_type} for {rwa_token_amount} {token_symbol}{order_price_segment}. {escrow_amount} {escrow_symbol} held in escrow. Order #{order_id}."
+    "description": "{order_type} for {rwa_token_amount} {token_symbol}{order_price_segment} placed. {escrow_amount} {escrow_symbol} held in escrow. Order #{order_id}."
   },
   "order_partially_filled": {
     "tone": "info",
