@@ -352,7 +352,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {validationMessage && (
         <div className={styles.alertBlock}>
-          <RAlert type="error" header="Order Cannot Be Submitted">
+          <RAlert
+            type="error"
+            header={
+              primaryPurchase
+                ? "Purchase Unavailable"
+                : "Order Cannot Be Submitted"
+            }
+          >
             {validationMessage}
           </RAlert>
         </div>

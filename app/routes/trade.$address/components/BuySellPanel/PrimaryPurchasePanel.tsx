@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
   type Dispatch,
@@ -14,10 +13,7 @@ import { createFallbackTokenMetadata } from "~/lib/metadata";
 import { BuySellScreen } from "~/lib/organisms/PriceSection/screens/BuySellScreen";
 import { BUY } from "~/lib/organisms/PriceSection/consts";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
-import {
-  primaryPurchase,
-  estimatePrimaryPurchase,
-} from "~/contracts/primaryPurchase.contract";
+import { primaryPurchase } from "~/contracts/primaryPurchase.contract";
 import {
   primaryAmountForBudget,
   quotePrimaryPurchase,
@@ -126,7 +122,6 @@ function PrimaryPurchaseForm({
 }) {
   const [amount, setAmount] = useState<BigNumber>();
   const [actionError, setActionError] = useState<string>();
-  const [estimateError, setEstimateError] = useState<string>();
   const [fees, setFees] = useState({ networkFee: ZERO, gasFee: ZERO });
   const option = config.options[0];
   const rawAmount = amount?.isFinite() && amount.gt(0) ? toRaw(amount) : "0";
@@ -163,6 +158,7 @@ function PrimaryPurchaseForm({
     useCallback(
       (value) => {
         setActionError(undefined);
+        setFees({ networkFee: ZERO, gasFee: ZERO });
         setAmount((previous) => {
           const previousPayment = previous
             ? toHuman(
@@ -180,6 +176,7 @@ function PrimaryPurchaseForm({
     );
   const handleReceiveChange = useCallback((value: BigNumber | undefined) => {
     setActionError(undefined);
+    setFees({ networkFee: ZERO, gasFee: ZERO });
     setAmount(
       value?.isFinite() && value.gte(0) ? toHuman(toRaw(value)) : undefined
     );
@@ -195,7 +192,7 @@ function PrimaryPurchaseForm({
     amountError =
       "This sale option is sold out or your wallet limit has been reached.";
 
-  const { refetch, tezos, refreshAfterPurchase } = query;
+  const { refetch, refreshAfterPurchase } = query;
   const executePurchase = useCallback(
     async (params: Parameters<typeof primaryPurchase>[0]) => {
       setActionError(undefined);
@@ -228,22 +225,23 @@ function PrimaryPurchaseForm({
           amount: rawAmount,
           quote: currentQuote,
         };
-        const resultFees = await estimatePrimaryPurchase({
-          tezos,
+        await primaryPurchase({
+          ...params,
           review: nextReview,
+          onEstimated: (resultFees) => {
+            setFees({
+              networkFee: toHuman(String(resultFees.networkFee)),
+              gasFee: toHuman(String(resultFees.gasFee)),
+            });
+          },
         });
-        setFees({
-          networkFee: toHuman(String(resultFees.networkFee)),
-          gasFee: toHuman(String(resultFees.gasFee)),
-        });
-        await primaryPurchase({ ...params, review: nextReview });
       } catch (error) {
         setActionError((error as Error).message);
         await refetch();
         throw error;
       }
     },
-    [refetch, rawAmount, option, quote, config.distribution, tezos]
+    [refetch, rawAmount, option, quote, config.distribution]
   );
   const { invokeAction, status, isLoading } = useContractAction(
     executePurchase,
@@ -268,36 +266,9 @@ function PrimaryPurchaseForm({
     }
   );
 
-  useEffect(() => {
-    if (isLoading) return;
-    setFees({ networkFee: ZERO, gasFee: ZERO });
-    setEstimateError(undefined);
-    if (rawAmount === "0" || config.unavailableReason || amountError) return;
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      try {
-        const result = await estimatePrimaryPurchase({
-          tezos,
-          review: { config, option, amount: rawAmount, quote },
-        });
-        if (!cancelled)
-          setFees({
-            networkFee: toHuman(String(result.networkFee)),
-            gasFee: toHuman(String(result.gasFee)),
-          });
-      } catch (error) {
-        if (!cancelled) setEstimateError((error as Error).message);
-      }
-    }, 400);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [amountError, config, isLoading, option, quote, rawAmount, tezos]);
-
   return (
     <div className={formStyles.buySellRoot}>
-      {(query.error || actionError || estimateError) && (
+      {(query.error || actionError) && (
         <button
           type="button"
           onClick={() => {
@@ -326,8 +297,7 @@ function PrimaryPurchaseForm({
           query.error?.message ??
           config.unavailableReason ??
           amountError ??
-          actionError ??
-          estimateError
+          actionError
         }
         primaryPurchase={{
           receiveAmount: amount,

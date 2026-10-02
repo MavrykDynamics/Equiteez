@@ -160,6 +160,37 @@ afterEach(async () => {
 });
 
 describe("primary purchase panel flow", () => {
+  it("does not estimate on mount, amount edits, or refreshed config", async () => {
+    vi.useFakeTimers();
+    try {
+      await act(async () =>
+        root.render(<PrimaryPurchasePanel asset={asset} />)
+      );
+      await click("Enter 1.5");
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(11_000);
+      });
+      mocks.query.mockReturnValue({
+        ...mocks.query.mock.results[0].value,
+        data: { ...config, options: [{ ...config.options[0] }] },
+      });
+      await act(async () =>
+        root.render(<PrimaryPurchasePanel asset={asset} />)
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(11_000);
+      });
+      expect(mocks.estimate).not.toHaveBeenCalled();
+      expect(mocks.purchase).not.toHaveBeenCalled();
+      expect(mocks.refetch).not.toHaveBeenCalled();
+      await click("Buy");
+      expect(mocks.purchase).toHaveBeenCalledOnce();
+      expect(mocks.estimate).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("uses the cheapest eligible option without a dropdown and rechecks option changes at review", async () => {
     await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
     expect(container.querySelector('[aria-label="Sale option"]')).toBeNull();

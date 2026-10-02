@@ -59,7 +59,10 @@ export function usePrimaryPurchase(assetAddress: string) {
       }
     },
     retry: false,
-    refetchInterval: 10_000,
+    // Form entry and explicit review own chain reads; display polling belongs
+    // to the launch-card query, not wallet-specific contract validation.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const refreshAfterPurchase = useCallback(
     (metadata?: ContractActionSuccessMetadata) => {
