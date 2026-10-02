@@ -26,7 +26,14 @@ describe("RTradingCountdown", () => {
   });
 
   it("rolls over days and hours and catches up after a clock jump", () => {
-    act(() => root.render(<RTradingCountdown startsAt={start + 86400000} />));
+    act(() =>
+      root.render(
+        <RTradingCountdown
+          saleStart={new Date(start + 86400000).toISOString()}
+          saleEnd={new Date(start + 172800000).toISOString()}
+        />
+      )
+    );
     expect(
       container.querySelector('[role="timer"]')?.getAttribute("aria-label")
     ).toBe("Trading starts in 1 days, 0 hours, 0 minutes, 0 seconds");
@@ -46,15 +53,68 @@ describe("RTradingCountdown", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it.each([
+    [undefined, undefined],
+    ["invalid", "2027-09-28T08:09:25Z"],
+    ["2026-10-01T00:00:00Z", null],
+    ["2026-10-01T00:00:00Z", "invalid"],
+    ["2026-10-01T00:00:00Z", "2026-09-29T00:00:00Z"],
+    ["2026-10-01T00:00:00Z", "2026-10-01T00:00:00Z"],
+  ])("hides invalid windows (%s, %s)", (saleStart, saleEnd) => {
+    act(() =>
+      root.render(<RTradingCountdown saleStart={saleStart} saleEnd={saleEnd} />)
+    );
+    expect(container.innerHTML).toBe("");
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each([0, 1000, 2000, 3000])(
+    "hides at/after start including sale end (+%s ms)",
+    (elapsed) => {
+      vi.setSystemTime(start + elapsed);
+      act(() =>
+        root.render(
+          <RTradingCountdown
+            saleStart={new Date(start).toISOString()}
+            saleEnd={new Date(start + 2000).toISOString()}
+          />
+        )
+      );
+      expect(container.innerHTML).toBe("");
+      expect(vi.getTimerCount()).toBe(0);
+    }
+  );
+
   it("hides past timestamps and resets cleanly when the start changes", () => {
-    act(() => root.render(<RTradingCountdown startsAt={start - 1} />));
+    act(() =>
+      root.render(
+        <RTradingCountdown
+          saleStart={new Date(start - 1).toISOString()}
+          saleEnd={new Date(start + 172800000).toISOString()}
+        />
+      )
+    );
     expect(container.innerHTML).toBe("");
     expect(vi.getTimerCount()).toBe(0);
 
-    act(() => root.render(<RTradingCountdown startsAt={start + 60000} />));
+    act(() =>
+      root.render(
+        <RTradingCountdown
+          saleStart={new Date(start + 60000).toISOString()}
+          saleEnd={new Date(start + 172800000).toISOString()}
+        />
+      )
+    );
     expect(container.textContent).toContain("Token Sale Starts Soon");
     expect(vi.getTimerCount()).toBe(1);
-    act(() => root.render(<RTradingCountdown startsAt={start + 120000} />));
+    act(() =>
+      root.render(
+        <RTradingCountdown
+          saleStart={new Date(start + 120000).toISOString()}
+          saleEnd={new Date(start + 172800000).toISOString()}
+        />
+      )
+    );
     expect(vi.getTimerCount()).toBe(1);
     act(() => root.render(null));
     expect(vi.getTimerCount()).toBe(0);

@@ -20,7 +20,9 @@ exclusive to secondary trading.
   mainnet requires its own deployment configuration.
 - `usePrimaryPurchase.ts` discovers the newest active launch name through
   `/assets/{address}/launch`, then reads authoritative contract storage on form
-  load, every ten seconds, at review, and again before submission. Display prices
+  load, at explicit review, and again before submission. Purchase storage does not
+  poll or refetch on window focus/reconnect; launch-card display polling remains
+  independent. Display prices
   from the API are never executable prices.
 - `primaryPurchase.read.ts` checks the selected asset identity, launch and option
   windows, KYC expiry/freeze/blacklist, registrar-scoped membership and discount,
@@ -39,9 +41,48 @@ exclusive to secondary trading.
   operator only when needed, then calls `purchase` in the same wallet batch with
   zero MAV attached. It waits for one confirmation. No permits or relay requests
   are used.
+- Editing amounts uses local exact quotes and never estimates a contract operation.
+  Buy runs one explicit preflight estimation before the wallet batch; the wallet
+  may also estimate internally. RPC gateway failures are reported as temporary
+  network unavailability, not contract rejections.
 - Contract failures are translated into purchase-specific messages. Estimation
   also catches transfer restrictions and paused entrypoints before the wallet
   prompt. A failed submission refreshes the launch before the next attempt.
+
+## RPC 502 investigation (2026-10-02)
+
+The reported `remote http://10.1.63.25:8732 unreachable ... invalid Read on
+closed Body` is an HTTP gateway/upstream-node failure. It contains no Michelson
+`failwith`; it does not establish that a purchase was rejected by the launchpad.
+The internal addresses belong to the RPC infrastructure, not app configuration.
+
+Previously, form entry read chain storage and polled it every ten seconds.
+Entering a positive amount scheduled estimation after 400ms, and changed config
+could schedule it again. Buy additionally estimated in the form and then again
+in `primaryPurchase`. Read/estimate errors flowed into the shared screen's
+`Order Cannot Be Submitted` alert, even without a submitted operation.
+
+The fix removes background purchase-storage polling and amount-driven estimation,
+uses one explicit Buy preflight, and gives primary failures a purchase-specific
+heading and gateway message. Form-entry reads remain intentional per `primary.md`;
+review, pre-sign validation, operator checks, exact payment caps and zero-MAV
+batching remain. Fees become available after the Buy preflight. Secondary
+execution and its alert heading are unchanged.
+
+Configuration checks matched `primary.md`: launchpad
+`KT1U6KXwy8vduoq86HBjGp9m2Czc8rZM85MN`, membership
+`KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL`, and wUSDT
+`KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v`, ID 0, six decimals.
+Read-only live checks of the Basenet head and launchpad entrypoints returned HTTP
+200. The live purchase schema matched the client's five named fields. No wallet
+operation was submitted during investigation.
+
+The original failing request URL and RPC server logs were not available, so the
+specific failed read/simulation and the server-side reason its body was closed
+cannot be established. The fix removes unnecessary frontend triggers; an actual
+RPC outage can still block required reads or Buy and requires the RPC operator
+to investigate. There is no evidence that these extra calls caused the upstream
+outage itself.
 
 ## Confirmation and refresh
 
@@ -55,8 +96,15 @@ activity queries through the existing `fresh=1` mechanism and refresh the launch
 A wallet-scoped portfolio invalidation runs after its 20-second API TTL and
 survives route navigation. Existing balance updates still use TzKT.
 
-The existing countdown is rendered inside the primary panel using the chain's
-`saleStart`, replacing the route's mock date. The primary-only sale summary shares the dynamic
+The primary panel countdown uses the selected `/assets/{address}/launch` card's
+`sale_start` and `sale_end`. It counts down to `sale_start` only before the sale,
+and stays hidden during and after the sale. Missing, invalid, or reversed dates
+hide the countdown without falling back to chain dates. Contract-based purchase
+validation remains independent and unchanged. The countdown shows a disabled
+Start KYC action for users without `isKyced`, or the existing Deposit Funds
+modal trigger for KYC-verified (Pro) users. Both actions use the deposit button
+styles, with 16px gaps between title, timer, and action. The interactive overlay
+sits above the purchase slider. The primary-only sale summary shares the dynamic
 `/assets/{address}/launch` query and active-first selection with the purchase
 flow, refreshing every ten seconds and on purchase refresh. It displays
 `(max_amount_cap - total_bought) / 10^token.decimals` as Tokens Left (two
@@ -69,7 +117,9 @@ failed sale data keeps the layout with unavailable values and an empty bar.
 `primaryPurchase.test.ts` covers quotes/rounding, membership, windows, caps,
 operator batching, wallet/balance changes, revalidation and contract errors.
 `PrimaryPurchasePanel.test.tsx` covers amount → Buy → direct purchase → success,
-changed-price rejection, and live countdown timing. Existing secondary contract,
+changed-price rejection, absence of amount-driven estimation, and live countdown
+timing. `usePrimaryPurchase.test.tsx` verifies form-entry/explicit-refresh reads
+without background chain polling. Existing secondary contract,
 fee summary, and route classification suites remain applicable.
 
 ## Purchase history

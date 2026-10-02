@@ -1,18 +1,28 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 
 import styles from "./RTradingCountdown.module.css";
 
 type RTradingCountdownProps = {
-  /** Trading start as a Unix timestamp in milliseconds. */
-  startsAt: number;
+  /** Untrusted ISO timestamps from the selected /launch API card. */
+  saleStart?: unknown;
+  saleEnd?: unknown;
+  children?: ReactNode;
 };
 
-export function RTradingCountdown({ startsAt }: RTradingCountdownProps) {
+export function RTradingCountdown({
+  saleStart,
+  saleEnd,
+  children,
+}: RTradingCountdownProps) {
+  const startsAt = typeof saleStart === "string" ? Date.parse(saleStart) : NaN;
+  const endsAt = typeof saleEnd === "string" ? Date.parse(saleEnd) : NaN;
+  const isValidWindow =
+    Number.isFinite(startsAt) && Number.isFinite(endsAt) && endsAt > startsAt;
   // Keep the server and first client render identical.
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!Number.isFinite(startsAt)) return;
+    if (!isValidWindow) return;
 
     setNow(Date.now());
     if (startsAt <= Date.now()) return;
@@ -24,13 +34,10 @@ export function RTradingCountdown({ startsAt }: RTradingCountdownProps) {
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [startsAt]);
+  }, [startsAt, isValidWindow]);
 
-  if (!Number.isFinite(startsAt)) {
-    throw new Error("Trading countdown requires a finite start timestamp.");
-  }
-
-  if (now === null || now >= startsAt) return null;
+  if (!isValidWindow || now === null || now >= startsAt || now >= endsAt)
+    return null;
 
   const seconds = Math.ceil((startsAt - now) / 1000);
   const units = [
@@ -65,6 +72,7 @@ export function RTradingCountdown({ startsAt }: RTradingCountdownProps) {
             </Fragment>
           ))}
         </div>
+        {children}
       </div>
     </div>
   );
