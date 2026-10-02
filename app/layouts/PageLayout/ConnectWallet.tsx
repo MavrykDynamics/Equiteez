@@ -20,6 +20,13 @@ export const ConnectWallet = () => {
   const { changeUser, connect, isLoading, signOut, userAddress } =
     useUserContext();
 
+  const handleConnect = () => {
+    // Opening the wallet popup should not trigger RButton's async loading state.
+    void Promise.resolve().then(connect).catch(() => {
+      console.error("Failed to connect wallet.");
+    });
+  };
+
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
@@ -50,7 +57,7 @@ export const ConnectWallet = () => {
         </RCustomDropdown>
       ) : (
         <RButton
-          onClick={connect}
+          onClick={handleConnect}
           className={styles.connectWalletBtn}
           size="medium"
           tone="black"
