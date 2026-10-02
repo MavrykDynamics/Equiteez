@@ -48,8 +48,9 @@ export const AssetPriceSeriesSchema = z.object({
 export const AssetPriceChangeSchema = z.object({
   symbol: z.string(),
   native_quote: z.string(),
-  as_of: z.string(),
-  now: z.number(),
+  // Assets without price history have no latest observation yet.
+  as_of: z.string().nullable(),
+  now: z.number().nullable(),
   periods: z.object({
     "1h": PriceChangePeriodSchema.optional(),
     "24h": PriceChangePeriodSchema.optional(),
