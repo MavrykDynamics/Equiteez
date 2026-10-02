@@ -27,6 +27,7 @@ export const WalletSchema = z.object({
   pnl: z.number().nullable(),
   pnl_percentage: z.number().nullable(),
   pnl_24h: z.number().nullable(),
+  pnl_24h_percentage: z.number().nullable().optional(),
   pnl_7d: z.number().nullable(),
   pnl_30d: z.number().nullable(),
 });

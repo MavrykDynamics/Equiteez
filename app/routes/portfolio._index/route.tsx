@@ -20,7 +20,7 @@ export default function PortfolioOverview() {
       totalGrowth: 3,
       estNetYieldPct: portfolio?.est_net_yield_pct ?? 0,
       pnl24h: wallet?.pnl_24h ?? 0,
-      pnl24hPercentage: wallet?.pnl_percentage ?? 0,
+      pnl24hPercentage: wallet?.pnl_24h_percentage ?? 0,
       totalValue: portfolio?.total_value ?? wallet?.account_value ?? 0,
     }),
     [
@@ -28,7 +28,7 @@ export default function PortfolioOverview() {
       portfolio?.total_value,
       wallet?.account_value,
       wallet?.pnl_24h,
-      wallet?.pnl_percentage,
+      wallet?.pnl_24h_percentage,
     ]
   );
 
