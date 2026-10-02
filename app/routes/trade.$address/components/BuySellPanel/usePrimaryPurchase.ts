@@ -18,6 +18,7 @@ import {
   NotifierWalletEvent,
 } from "~/providers/NotificationsProvider/notifications.const";
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
+import { useLaunchChannel } from "~/providers/NotificationsProvider/hooks/useLaunchChannel";
 
 export function usePrimaryPurchase(assetAddress: string) {
   const { userAddress } = useUserContext();
@@ -94,10 +95,30 @@ export function usePrimaryPurchase(assetAddress: string) {
     },
     [refreshAfterPurchase, userAddress]
   );
+  const handleLaunchProgress = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: ["asset-launch", assetAddress],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ["rwa-assets"],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ["rwa-prices"],
+    });
+  }, [assetAddress, queryClient]);
+
   useNotifierEvent(
     NotifierChannel.Wallet,
     NotifierWalletEvent.LaunchpadPurchase,
     handlePurchaseEvent
   );
+  useLaunchChannel(
+    query.data?.launchpadAddress ?? null,
+    query.data?.launchName ?? null,
+    {
+      onProgress: handleLaunchProgress,
+    }
+  );
+
   return { ...query, tezos, refreshAfterPurchase };
 }

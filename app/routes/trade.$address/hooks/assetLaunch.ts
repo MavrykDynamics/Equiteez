@@ -34,6 +34,5 @@ export function assetLaunchQueryOptions(assetAddress: string) {
     },
     retry: false,
     staleTime: 0,
-    refetchInterval: 10_000,
   });
 }
