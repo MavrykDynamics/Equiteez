@@ -122,3 +122,20 @@ describe("assets without published prices", () => {
     );
   });
 });
+
+describe("asset profile details", () => {
+  it("preserves optional features and amenities returned by the API", () => {
+    const parsed = AssetSchema.shape.profile.parse({
+      description: "Tokenized asset",
+      asset_type: "real_estate",
+      status: "active",
+      lifecycle: "secondary_market",
+      gallery: [],
+      features: [{ id: "renewable-energy", name: "Renewable Energy" }],
+      amenities: [{ id: "backup-power", name: "Backup Power" }],
+    });
+
+    expect(parsed.features?.[0]?.name).toBe("Renewable Energy");
+    expect(parsed.amenities?.[0]?.name).toBe("Backup Power");
+  });
+});
