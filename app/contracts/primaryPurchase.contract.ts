@@ -15,9 +15,12 @@ import type {
 import type { BatchOperationKindType } from "./types";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
 
+type PrimaryPurchaseFees = { networkFee: bigint; gasFee: bigint };
+
 type PurchaseParams = {
   tezos: MavrykToolkit;
   review: PrimaryPurchaseReview;
+  onEstimated?: (fees: PrimaryPurchaseFees) => void;
 } & ContractActionLifecycleCallbacks;
 type PaymentStorage = {
   ledger: ChainLedger<string, ChainNat>;
@@ -112,17 +115,23 @@ export async function primaryPurchaseBatch({
   return batch;
 }
 
+function summarizePrimaryFees(
+  estimates: { burnFeeMumav: number; suggestedFeeMumav: number }[]
+): PrimaryPurchaseFees {
+  return estimates.reduce(
+    (total, estimate) => ({
+      networkFee: total.networkFee + BigInt(estimate.burnFeeMumav),
+      gasFee: total.gasFee + BigInt(estimate.suggestedFeeMumav),
+    }),
+    { networkFee: 0n, gasFee: 0n }
+  );
+}
+
 export async function estimatePrimaryPurchase(params: PurchaseParams) {
   try {
     const batch = await primaryPurchaseBatch(params);
     const estimates = await params.tezos.estimate.batch(batch);
-    return estimates.reduce(
-      (total, estimate) => ({
-        networkFee: total.networkFee + BigInt(estimate.burnFeeMumav),
-        gasFee: total.gasFee + BigInt(estimate.suggestedFeeMumav),
-      }),
-      { networkFee: 0n, gasFee: 0n }
-    );
+    return summarizePrimaryFees(estimates);
   } catch (error) {
     throw primaryPurchaseError(error);
   }
@@ -132,7 +141,8 @@ export async function primaryPurchase(params: PurchaseParams) {
   try {
     const batch = await primaryPurchaseBatch(params);
     // Estimate before the wallet prompt, surfacing token delivery/KYC failwiths.
-    await params.tezos.estimate.batch(batch);
+    const estimates = await params.tezos.estimate.batch(batch);
+    params.onEstimated?.(summarizePrimaryFees(estimates));
     const operation = await params.tezos.wallet.batch(batch).send();
     params.onTransactionSubmitted?.();
     const confirmation = await operation.confirmation(1);

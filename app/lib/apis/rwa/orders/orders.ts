@@ -118,14 +118,15 @@ export const fetchWalletOrderHistory = async ({
   return OrderHistorySchema.parse(data);
 };
 
-export const fetchWalletTransferHistory = async ({
+export const fetchWalletTransferHistoryResponse = async ({
+  types = ["deposit", "withdrawal"],
   walletAddress,
   page,
   perPage,
   search,
   sort,
   tokenAddress,
-}: WalletTransferHistoryParams): Promise<TransferHistoryResponseType> => {
+}: WalletTransferHistoryParams): Promise<unknown> => {
   const query = new URLSearchParams();
 
   if (page) {
@@ -148,7 +149,7 @@ export const fetchWalletTransferHistory = async ({
     query.set("token_address", tokenAddress);
   }
 
-  ["deposit", "withdrawal"].forEach((type) => query.append("types", type));
+  types.forEach((type) => query.append("types", type));
 
   const { data } = await requestFreshQuery({
     api: rwaApi,
@@ -157,5 +158,10 @@ export const fetchWalletTransferHistory = async ({
     url: `/wallets/${walletAddress}/transactions`,
   });
 
-  return TransferHistorySchema.parse(data);
+  return data;
 };
+
+export const fetchWalletTransferHistory = async (
+  params: WalletTransferHistoryParams
+): Promise<TransferHistoryResponseType> =>
+  TransferHistorySchema.parse(await fetchWalletTransferHistoryResponse(params));

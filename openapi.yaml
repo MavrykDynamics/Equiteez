@@ -1,0 +1,4074 @@
+openapi: 3.0.3
+
+servers:
+  - url: /
+    description: Current host (works for both local dev and production)
+
+info:
+  title: Mavryk RWA Backend API
+  # Tracks the released API contract — same number as the git tag and the
+  # integration document. Was a placeholder "1.0.0" that never moved; aligned
+  # at the v0.8.0 release, so it now goes DOWN once and forward from there.
+  version: "0.15.0"
+  description: |
+    REST API for tokenized real-world assets (RWA) on Mavryk. The backend
+    authenticates end-users by their Mavryk wallet and normalizes data from
+    MvKT (chain indexer), Equiteez (orderbook + asset metadata), the eqtz CRM
+    (descriptive content), and mavryk-external-data (multi-currency RWA quotes).
+
+      * **Auth** — wallet challenge/response login; the service issues its own
+        RS256 access + refresh tokens (Mavryk Wallet extension & Dynamic embedded).
+      * **Wallet** — summary, transactions, open orders (owner-only).
+      * **RWA marketplace** — public asset list, curated homepage blocks,
+        per-asset details, prices, orderbook depth.
+      * **Bridge** — incoming bridge transfers, including ones still in flight.
+      * **Gasless relay** — signed TZIP-17 permits relayed through the Gas
+        Station, this service acting as the validating proxy.
+      * **Notifications** — a durable per-wallet inbox with server-side read state.
+      * **Public wallet view** — a watch-only portfolio and value chart by
+        address, served without a token.
+
+    **Additive in v0.15.0** — nothing that existed changed shape. The `public`
+    tag adds `/public/wallets/{wallet_address}/portfolio` and
+    `/public/wallets/{wallet_address}/portfolio/history`: the only per-address
+    routes that need no token. They are narrower than their `/wallets` twins
+    by design, on by default, and absent (`404`) where the surface is
+    switched off.
+    `PortfolioAsset` gains `icon`, on the authenticated `/portfolio` route as
+    well: an `https://` URL or `null`, never another scheme.
+
+    **Additive in v0.14.0** — nothing that existed changed shape. Three new
+    surfaces (`/wallets/{wallet_address}/bridge/deposits`, the `relay` tag and
+    the `notifications` tag) plus `evm_tx_hash`, `log_index` and
+    `evm_destination` on the transactions feed's transfer rows. Each surface
+    is switched on independently and its routes are simply absent (`404`) where
+    it is off; `GET /relay/config` is the exception, answering
+    `{"enabled": false}` in both states so a client can read the gate. Two
+    conventions differ on the new surfaces: the relay routes and
+    `/notifications` are keyset-paged (`limit` + `cursor`), and money on
+    `/bridge/deposits` and across the relay routes is STRINGS, not numbers —
+    an 18-decimal raw integer does not survive a JSON number.
+
+    **Breaking in v0.13.1**, despite the patch-level number: the release
+    carries nothing but this change, so it stays in the `0.13.x` line, but the
+    wire shape changes under it — do not treat the version as safe to bump.
+    `as_of` is keyed by source. The envelope on
+    `/wallets/{wallet_address}/orders`, `/transactions` and
+    `/activity/summary` no longer carries `level` / `timestamp` / `realtime`
+    at the top of `as_of`; it carries one marker per upstream the route reads
+    (`orderbook`, and `chain` where chain data is read). `as_of.level` is now
+    `undefined`: a `level >= L` gate fails closed, and — the dangerous half —
+    a `realtime === false` guard stops firing, so a lagging indexer renders as
+    interactive. Read `as_of.orderbook.level` and gate each surface on the
+    source that produced its rows. See `AsOfSources`.
+
+    **Breaking in v0.8.0** — two changes need a client edit:
+
+      * `?side=` on `/wallets/{wallet_address}/orders` takes `limit_buy` /
+        `limit_sell`; the bare `buy` / `sell` it used to accept now return
+        `400`. They were previously dropped silently, widening the result set
+        under a `200`.
+      * `LaunchPayment.price` is a JSON `number` in human units (was a raw-nat
+        string requiring `token.decimals`). The supply-scale amount fields are
+        unchanged — still raw-nat strings.
+
+    **Market orders** now report `market_buy` / `market_sell` on both
+    `/transactions` (`type`) and `/orders` (`side`), where they previously
+    reported `limit_*` at the contract's placeholder price. `?side=limit_buy`
+    therefore no longer returns market buys; pass `market_buy` for those.
+
+    All money amounts are JSON numbers (decimals applied — caller does not have
+    to scale by `decimals`). Timestamps are RFC 3339 in UTC.
+
+    The API is mounted at `/api/v1`. The only exception is the `/health`
+    liveness probe, which lives at the root.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  contact:
+    name: API Support
+    url: https://github.com/0xVoronov/mavryk-rwa-backend
+
+tags:
+  - name: system
+    description: Liveness / health probes.
+  - name: auth
+    description: Wallet challenge/response login and token lifecycle.
+  - name: wallet
+    description: Per-wallet aggregations — summary, transactions, orders.
+  - name: rwa
+    description: Public RWA marketplace — list, asset detail, prices, orderbook depth.
+  - name: relay
+    description: |
+      Gasless relay through the Gas Station. The backend is a validating proxy:
+      it decodes the signer out of the `permitAndExecute` Michelson, checks the
+      target against the catalog and the relayer's allowlist, refuses non-KYC
+      wallets and over-quota wallets, persists the operation, and only then
+      spends the sponsor's vault. Every relay route answers errors with the
+      `RelayErrorResponse` envelope (`error`, `message`, `remedy`, `detail`) —
+      the Gas Station's own shape, passed through verbatim when the refusal is
+      the relayer's. Middleware refusals before the handler (401 / 403 / 429)
+      keep the service-wide `ErrorResponse`. Routes exist only when
+      `GAS_STATION_ENABLED=true`; otherwise they are 404. Design and
+      cross-repo contracts: `docs/tasks/gas-station-integration/`; sequencing,
+      polling cadence and the error → UI-action table for the App:
+      `docs/frontend/relay-api.md`.
+  - name: public
+    description: |
+      Watch-only reads by wallet address, served WITHOUT authentication. Every
+      field is a chain-derived aggregate: no cost basis, no PnL, no KYC state,
+      no onboarding date. The routes sit on their own per-IP limiter, tighter
+      than the API-wide one. They are on by default and `404` where a
+      deployment sets `PUBLIC_WALLET_VIEW_ENABLED=false`. The value
+      chart is empty for a wallet that has never signed in to Equiteez, so an
+      empty chart above a populated table reveals that fact about the address.
+      This is accepted: a brand-new user's chart is empty too. Design:
+      ADR-0011.
+  - name: internal
+    description: Service-to-service endpoints; not for browser clients.
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      operationId: getHealth
+      summary: Health check
+      description: Liveness probe for load balancers and orchestration.
+      security: []
+      responses:
+        "200":
+          description: Service is alive.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  status: ok
+                  service: mavryk-rwa-backend
+
+  /api/v1/health:
+    get:
+      tags: [system]
+      operationId: getHealthV1
+      summary: Health check (versioned)
+      description: Same liveness probe as `/health`, mounted under the versioned prefix.
+      security: []
+      responses:
+        "200":
+          description: Service is alive.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+
+  /health/ready:
+    get:
+      tags: [system]
+      operationId: getReadiness
+      summary: Readiness check
+      description: >
+        Readiness probe: reports whether backing dependencies (Redis, Postgres)
+        are reachable so an orchestrator can gate traffic. Unlike `/health`
+        (liveness), a dependency outage returns 503 — but a transient blip should
+        not kill an otherwise-healthy pod, so keep this on `readinessProbe`, not
+        `livenessProbe`. Also mounted at `/api/v1/health/ready`.
+      security: []
+      responses:
+        "200":
+          description: All dependencies reachable.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  status: ok
+        "503":
+          description: A backing dependency is unavailable.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  status: unavailable
+                  dependency: redis
+
+  /.well-known/jwks.json:
+    get:
+      tags: [system]
+      operationId: getJWKS
+      summary: JSON Web Key Set
+      description: >
+        Publishes the public half of the RSA key this service signs access and
+        refresh tokens with, so a sibling service can verify those tokens
+        without being handed key material out of band.
+
+        Unauthenticated and cacheable: the document is identical for every
+        caller and contains no secret. `kid` is the RFC 7638 thumbprint of the
+        key, so it is derivable from the key itself and matches the `kid`
+        header on every token this service mints.
+
+        Absent (404) when authentication is disabled, since there is no signing
+        key to publish.
+      security: []
+      responses:
+        "200":
+          description: The active signing key.
+          headers:
+            Cache-Control:
+              description: Public cache directive; consumers should honour it rather than refetch per request.
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [keys]
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      required: [kty, use, alg, kid, n, e]
+                      properties:
+                        kty:
+                          type: string
+                          example: RSA
+                        use:
+                          type: string
+                          example: sig
+                        alg:
+                          type: string
+                          example: RS256
+                        kid:
+                          type: string
+                          description: RFC 7638 thumbprint; matches the `kid` header on minted tokens.
+                          example: NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs
+                        n:
+                          type: string
+                          description: base64url modulus.
+                        e:
+                          type: string
+                          description: base64url public exponent.
+                          example: AQAB
+        "503":
+          description: The signing key could not be rendered.
+
+  /api/v1/wallets/{wallet_address}:
+    get:
+      tags: [wallet]
+      operationId: getWalletSummary
+      summary: Get wallet summary
+      description: >
+        Returns the MBIO `WalletSummary` for the wallet (§4.2).
+
+
+        After an order or transfer event for the wallet the next response is
+        usually the last healthy summary with `X-Cache: STALE`, pre-event
+        numbers included, while a rebuild runs behind it; poll again in a few
+        seconds for the post-event numbers. Treat `STALE` here as "updating",
+        not as an outage. Absent the header, the response was rebuilt live.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Quote currency the response is denominated in. All numeric equity fields (`account_value`, `spot_balance`, `pnl*`) are scaled to this currency; the `currency` field on the response echoes the applied value. Token quantities under `tokens` are FX-invariant and never scaled. Default `usd` (also returned when the parameter is omitted). An unsupported currency returns 400. A transient FX outage serves the last known good rates; 503 is returned only when no rate has ever been resolved."
+      responses:
+        "200":
+          description: Wallet summary.
+          headers:
+            X-Cache: { $ref: "#/components/headers/XCache" }
+            Warning: { $ref: "#/components/headers/StaleWarning" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletSummary"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/wallets/{wallet_address}/portfolio:
+    get:
+      tags: [wallet]
+      operationId: getWalletPortfolio
+      summary: Get wallet portfolio breakdown
+      description: >
+        The Overview tab's asset table and allocation pie in one payload:
+        every holding (native, fungible tokens, RWA) with its balance, value,
+        share of the total, current price, average entry price and unrealized
+        profit (RWA rows with a tracked cost basis only), per-asset yield and
+        the 30-day price change. Rows are sorted by `value` descending.
+        Nullable columns follow the platform convention — `null` means "no
+        data" (untracked cost basis, unpriced token, no 30d anchor), never a
+        fabricated zero. Best-effort columns degrade to `null` on upstream
+        outages; the request itself still returns 200. Under the PnL
+        killswitch (`pnl.enabled=false`) `avg_price`/`profit`/`profit_pct`
+        are `null` on every row, matching the summary's nulled PnL fields.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Quote currency. Scales `total_value`, `value`, `price`, `avg_price` and `profit`; `balance`, `share_pct`, `profit_pct`, `yield_pct` and `price_change_30d_pct` are FX-invariant. Unsupported currency returns 400."
+      responses:
+        "200":
+          description: Portfolio breakdown.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletPortfolioBreakdown"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/wallets/{wallet_address}/portfolio/history:
+    get:
+      tags: [wallet]
+      operationId: getWalletPortfolioHistory
+      summary: Get portfolio value history
+      description: >
+        The Overview tab's interactive value chart: the wallet's total
+        portfolio value over the requested range, downsampled server-side
+        (hourly points for `1d`/`7d`, 6-hourly for `30d`, daily for
+        `ytd`/`all`). Observed history holds hourly resolution for the last 90
+        days and daily beyond. Before the wallet's registration the series may
+        continue with daily *estimates* reconstructed from on-chain balances and
+        historical closes; `backfilled_until` marks the last such point, so the
+        estimated segment can be rendered distinctly (e.g. dashed). It is `null`
+        when the range contains no reconstructed points, in which case the series
+        starts at onboarding. A wallet with no snapshots yet
+        returns an empty `points` array, not an error. `change_abs`/`change_pct`
+        compare the last point to the first and are `null` when the range holds
+        fewer than two points. Under the PnL killswitch (`pnl.enabled=false`)
+        the endpoint serves an empty series — the snapshot writer is dormant,
+        and a silently truncating chart would be an artifact, not data.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - in: query
+          name: range
+          required: false
+          schema:
+            type: string
+            enum: [1d, 7d, 30d, ytd, all]
+            default: 7d
+          description: Chart range. `ytd` starts at Jan 1 of the current UTC year. Unsupported value returns 400.
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Quote currency. Scales point values and `change_abs`; `change_pct` is FX-invariant."
+      responses:
+        "200":
+          description: Portfolio value series.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioHistory"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/public/wallets/{wallet_address}/portfolio:
+    get:
+      tags: [public]
+      operationId: getPublicWalletPortfolio
+      summary: Watch-only portfolio by address
+      description: |
+        The mobile watch-only screen's header and asset table in one payload,
+        for any address and without a token. Rows are every holding, sorted
+        by `value` descending; paging, search and sorting are client-side.
+
+        The narrowed twin of `GET /wallets/{wallet_address}/portfolio`: the
+        rows carry no cost basis (`avg_price`, `profit`, `profit_pct`), no
+        `share_pct`, `category`, `asset_class`, `yield_pct` or 30-day change.
+
+        `change_24h_abs` / `change_24h_pct` compare the earliest and the
+        latest value snapshot inside the trailing 24 hours. After a gap in the
+        hourly snapshots, or for a wallet registered hours ago, that window is
+        shorter than a day. A deposit reads as growth: label the figure "24h
+        change", never "profit". Both are `null` for a wallet that has never
+        signed in, under the PnL killswitch, and when the snapshot store is
+        unavailable; the table is served regardless.
+
+        An address the chain has never seen answers `200` with
+        `total_value: 0` and empty `assets`, exactly like a wallet that holds
+        nothing. When the chain indexer's token-balance call fails, the
+        response is still `200` with the native row only, and is not cached.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Quote currency. Scales `total_value`, `change_24h_abs`, `value` and `price`; `balance`, `change_24h_pct` and `est_net_yield_pct` are FX-invariant. Unsupported currency returns 400."
+      responses:
+        "200":
+          description: Watch-only portfolio.
+          headers:
+            Cache-Control:
+              description: "`public, max-age=N`, N being the portfolio cache TTL (20s by default). Only on `200`."
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicPortfolio"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/public/wallets/{wallet_address}/portfolio/history:
+    get:
+      tags: [public]
+      operationId: getPublicWalletPortfolioHistory
+      summary: Watch-only portfolio value history by address
+      description: |
+        The watch-only screen's value chart, without a token. Same series,
+        ranges and downsampling as `GET /wallets/{wallet_address}/portfolio/history`,
+        minus `backfilled_until`: that boundary dates the owner's onboarding.
+        Reconstructed pre-registration points stay in the series and are not
+        marked.
+
+        Snapshots exist only for wallets that have signed in to Equiteez, so
+        `points` is empty for any other address, and for every address under
+        the PnL killswitch. An empty series is a `200`, not an error.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - in: query
+          name: range
+          required: false
+          schema:
+            type: string
+            enum: [1d, 7d, 30d, ytd, all]
+            default: 7d
+          description: Chart range. `ytd` starts at Jan 1 of the current UTC year. Unsupported value returns 400.
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Quote currency. Scales point values and `change_abs`; `change_pct` is FX-invariant."
+      responses:
+        "200":
+          description: Portfolio value series.
+          headers:
+            Cache-Control:
+              description: "`public, max-age=300`. Only on `200`."
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicPortfolioHistory"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/wallets/{wallet_address}/activity/summary:
+    get:
+      tags: [wallet]
+      operationId: getWalletActivitySummary
+      summary: Get activity counters
+      description: >
+        The three headline numbers above the Activity tab's History table,
+        plus the counter behind the claim banner. Each is nullable and degrades
+        independently — they come from different sources, and one being
+        unavailable must not blank the others. `null` means "not known right
+        now"; a wallet with nothing on the book reports `0`.
+
+
+        The response is dated by `as_of`, one marker per source: `orderbook`
+        covers `open_orders` and `claimable_refunds`, `chain` covers
+        `transfers` and `onchain_events`. Each key merges the counters it
+        covers — the LOWER `level`, `realtime` only if BOTH were realtime — so
+        a `level >= L` gate may pass only when every number under that key is
+        post-event. Never take the minimum across the two keys: they date
+        different sources, and a lagging chain head says nothing about whether
+        a claim was indexed. Note the asymmetry between them: `open_orders`
+        is reported off a lagging snapshot, `claimable_refunds` is withheld. A
+        stale open-order count misleads a badge; a stale claim count invites a
+        `processRefund` the contract silently refuses, burning the fee.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - $ref: "#/components/parameters/FreshQuery"
+      responses:
+        "200":
+          description: Activity counters.
+          headers:
+            X-Cache-Bypass: { $ref: "#/components/headers/XCacheBypass" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletActivitySummary"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/wallets/{wallet_address}/transactions:
+    get:
+      tags: [wallet]
+      operationId: listWalletTransactions
+      summary: List wallet transactions
+      description: >
+        Paginated transactions with optional filters (§4.2). The feed merges
+        FA token transfers, native MVRK value moves and historical orders;
+        transfer rows carry `chain_from` / `chain_to` so bridge legs are
+        distinguishable from intra-chain moves.
+
+        The response envelope carries `as_of` keyed by source: `orderbook`
+        dates the order-derived half of the merged feed and `chain` the
+        transfer rows. Rows and their ordering are unchanged; the shape of
+        `as_of` is not — see `AsOfSources`.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - $ref: "#/components/parameters/FreshQuery"
+        - name: token_address
+          in: query
+          description: Filter rows by token contract address (exact match). Works for any token — native, stablecoin, or RWA.
+          required: false
+          schema: { type: string }
+        - name: page
+          in: query
+          description: 1-based page number. Out of range returns an empty `items` with the real `total`; `page < 1` is a 400.
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: per_page
+          in: query
+          description: "Page size. Above 100 is clamped to 100; below 1 is a 400, not a clamp."
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: types
+          in: query
+          description: |
+            Transaction types filter. Repeat the query parameter
+            (`types=deposit&types=limit_buy`) or use a comma-separated value.
+            Legacy uppercase aliases (`LIMIT_BUY`) are accepted.
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - deposit
+                - withdrawal
+                - limit_buy
+                - limit_sell
+                - market_buy
+                - market_sell
+        - name: from
+          in: query
+          description: Lower bound of the time range (RFC 3339, UTC).
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: Upper bound of the time range (RFC 3339, UTC).
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Display currency for the row's top-level `price_per_token` and `total` — the only two fields that scale (an unpriced row's `null` stays `null` in every currency). `amount`, the fill fields (`filled_amount` / `remaining_amount` / `filled_percent`), the expiry fields and the on-chain `quote_token` block on order rows are FX-invariant and never scale. Default `usd`. An unsupported currency returns 400. A transient FX outage serves the last known good rates; 503 is returned only when no rate has ever been resolved."
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [date_desc, date_asc, amount_desc, amount_asc, total_desc, total_asc]
+            default: date_desc
+          description: >
+            Server-side ordering. Rows with no value for the sort field (an
+            unpriced row has no `total`) always sort last, in both directions.
+            A page number carries no ordering, so changing `sort` simply re-pages
+            the same rows in the new order.
+        - name: search
+          in: query
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: >
+            Case-insensitive substring match against the row's asset symbol,
+            token address and operation hash.
+      responses:
+        "200":
+          description: Paginated transaction page.
+          headers:
+            X-Cache: { $ref: "#/components/headers/XCache" }
+            Warning: { $ref: "#/components/headers/StaleWarning" }
+            X-Cache-Bypass: { $ref: "#/components/headers/XCacheBypass" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionsListResponse"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /api/v1/wallets/{wallet_address}/bridge/deposits:
+    get:
+      tags: [wallet]
+      operationId: listBridgeDeposits
+      summary: List the wallet's bridge deposits, including those still in flight
+      description: |
+        Incoming bridge transfers for the wallet, newest first, with the phase each
+        one is in. Unpaged and bounded to the 50 most recent deposits — what is in
+        flight plus recent history; paging an in-flight tracker would let a client
+        miss the very deposit it is waiting for. Older deposits that completed are
+        in the Activity feed.
+
+        Both inbound flows are listed: an EVM-origin token arriving, minted as its
+        wrapped form, and a MAV-origin token returning from the far chain, released
+        by the bridge. Each is joined to its own on-chain ledger; `token_evm` on the
+        row tells them apart.
+
+        **This is the only surface that can show a deposit before it lands.** The
+        Activity feed shows a bridge-in only once the wrapped token is minted,
+        because the feed row IS the mint. Before that the deposit exists solely as
+        an EVM lock plus the signers' progress toward the threshold, which this
+        endpoint reports as `confirming`.
+
+        Status is derived from `executed` first; the on-chain signing deadline
+        counts only for a request that has not executed, because it is never
+        cleared on execution.
+
+        A deposit is discovered from the bridge signer's published events, so one
+        that predates that stream, or whose events were lost, will not appear here
+        even though it completed — it is still in the Activity feed.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - $ref: "#/components/parameters/FreshQuery"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [confirming, signing, executed, stalled]
+          description: |
+            Narrows the list. An unrecognised value is a 400, as on every sibling
+            filter — an empty list would be indistinguishable from "nothing in
+            flight".
+      responses:
+        "200":
+          description: The wallet's bridge deposits.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deposits]
+                properties:
+                  deposits:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BridgeDeposit"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /api/v1/wallets/{wallet_address}/orders:
+    get:
+      tags: [wallet]
+      operationId: listOrders
+      summary: List wallet orders
+      description: |
+        Paginated orders for the wallet, optionally narrowed by token address,
+        side, lifecycle `status` or escrow `refund` state (§4.2).
+
+        The population is **open orders plus any order that still holds, or has
+        had returned, escrow** — the resting book and the wallet's claimable /
+        already-returned refunds in one list, off one cache entry, through one
+        set of paging, sorting and `?quote=` machinery. Every row that is not
+        open carries a `refund` block; that block is exactly what earns a
+        closed row its place here.
+
+        With neither `status` nor `refund` passed the response is the open list
+        as before — same rows, same order — plus the additive `status` and
+        `ended_at` fields and the `as_of` envelope block, whose shape changed
+        in v0.13.1: it is now keyed by source and carries `orderbook` only.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - $ref: "#/components/parameters/FreshQuery"
+        - name: token_address
+          in: query
+          description: Filter by token contract address of the traded asset (exact match).
+          required: false
+          schema: { type: string }
+        - name: page
+          in: query
+          description: 1-based page number. Out of range returns an empty `items` with the real `total`; `page < 1` is a 400.
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: per_page
+          in: query
+          description: "Page size. Above 100 is clamped to 100; below 1 is a 400, not a clamp."
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: side
+          in: query
+          description: "Filter by order side, using the same values the row's `side` field returns. `limit_buy` does NOT match a market buy — pass `market_buy` for those. Any other value returns 400 — note this filter previously took bare `buy` / `sell`."
+          required: false
+          schema:
+            $ref: "#/components/schemas/OrderSide"
+        - name: status
+          in: query
+          description: |
+            Lifecycle filter: which closing state (or none, for a resting
+            order) the row is in. Repeat the query parameter
+            (`status=expired&status=fulfilled`) or pass one comma-separated
+            value (`status=expired,fulfilled`), exactly like `?types=` on
+            `/transactions`. `open` covers the two non-terminal row statuses,
+            `pending` and `partial`.
+
+            **Default.** With `status` and `refund` BOTH absent the endpoint
+            behaves as `status=open` — today's response. Passing either
+            parameter replaces that default, so `refund=claimable` on its own
+            is the whole claim worklist and needs no `status`.
+
+            A value outside the enum is a `400` naming the allowed list, like
+            `side` and `sort`; unknown values are never dropped silently.
+
+            **The two axes are orthogonal.** A refund does not un-fill or
+            un-expire an order, so a claimed expired order is still
+            `status=expired` — it has simply stopped being `refund=claimable`.
+            Combining them narrows: `status=expired&refund=claimable` is the
+            expired rows whose money is still in the contract, while
+            `status=open&refund=claimable` is empty by construction, since an
+            open order holds no claim.
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/OrderStatusFilter"
+        - name: refund
+          in: query
+          description: |
+            Escrow filter: what has happened to the money the orderbook is
+            holding for the order. Repeated (`refund=none&refund=claimable`)
+            or one comma-separated value (`refund=none,claimable`), exactly
+            like `status`; values are combined as a union.
+
+            The three values partition every listed row. `none` is the rows
+            with no escrow story at all — on this endpoint that is the resting
+            orders, since a closed order without escrow is never listed;
+            `claimable` is the rows whose escrow is still in the contract and
+            can be recovered by the order's initiator; `refunded` is the rows
+            whose escrow has already come back, as far as the snapshot window
+            reaches. `none` is a filter value only and never appears on a row.
+
+            `refund=none,claimable` is therefore "everything the wallet can
+            still act on" — open orders plus claims — in one request, with
+            `total` and `totals` computed over exactly that set.
+
+            Independent of `status` in both directions, and subject to the same
+            default rule: passing it alone drops the implicit `status=open`. A
+            value outside the enum is a `400` naming the allowed list.
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/RefundFilter"
+        - in: query
+          name: quote
+          required: false
+          schema:
+            type: string
+            enum: [usd, eur, btc, eth, jpy, cny, krw, gbp, rub, aed]
+            default: usd
+          description: "Display currency for the row's top-level `price_per_token` and `total`, plus the two escrow valuations `refund.value` and `totals[].value` — the fields that scale (an unpriced row's `null` stays `null` in every currency). `amount`, the fill fields (`filled_amount` / `remaining_amount` / `filled_percent`), the expiry fields, `refund.amount`, `totals[].amount` and the on-chain `quote_token` block (denominated in `quote_token.address`) are FX-invariant and never scale — they are token quantities, not valuations. Default `usd`. An unsupported currency returns 400. A transient FX outage serves the last known good rates; 503 is returned only when no rate has ever been resolved."
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [date_desc, date_asc, amount_desc, amount_asc, price_desc, price_asc, filled_desc, filled_asc]
+            default: date_desc
+          description: >
+            Server-side ordering. Rows with no value for the sort field (an
+            unpriced order has no `price_per_token`) always sort last, in both
+            directions. A page number carries no ordering, so changing `sort`
+            simply re-pages the same rows in the new order.
+        - name: search
+          in: query
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: >
+            Case-insensitive substring match against the row's asset symbol,
+            token address and orderbook address.
+      responses:
+        "200":
+          description: Paginated orders page.
+          headers:
+            X-Cache-Bypass: { $ref: "#/components/headers/XCacheBypass" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersListResponse"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /api/v1/wallets/{wallet_address}/relay/operations:
+    post:
+      tags: [relay]
+      operationId: relaySubmitOperation
+      summary: Relay a signed permit through the Gas Station
+      description: |
+        Accepts one `permitAndExecute` call the wallet signed (TZIP-17 permit)
+        and relays it gaslessly. Gates, in order, each answering before any
+        gas is spent: drain switch (`503 RELAY_UNAVAILABLE`), entrypoint and
+        zero amount, target in the catalog **and** registered with the relayer
+        (`CONTRACT_NOT_RELAYABLE` with `detail.reason` =
+        `not_in_catalog | not_registered | old_generation`), exactly one permit
+        in the list, `%userPublicKey` deriving to the JWT wallet
+        (`403 SIGNER_MISMATCH`), `intent.kind` ↔ permit variant ↔ contract kind
+        agreement plus a third-party address guard (`INTENT_MISMATCH`), KYC
+        (`403 KYC_REQUIRED`), per-wallet quotas (`429 RELAY_QUOTA_EXCEEDED`
+        with `Retry-After`).
+
+        The row is persisted **before** the relayer is called; one permit may
+        be in flight per `(signer, contract)` — a second one is
+        `409 PERMIT_IN_FLIGHT` with `detail.operationId` = **our** id to poll.
+        A dropped POST is resent once and a `PERMIT_IN_FLIGHT` answer to the
+        resend adopts the id the first attempt created.
+
+        `idempotencyKey` (per user click) replays the stored ids for an
+        identical payload and refuses a different one with
+        `409 IDEMPOTENCY_KEY_REUSED`. `permitCounter` is optional and stored
+        for diagnosis only. The `amount` field may be omitted, `0` or `"0"`;
+        it is never forwarded.
+
+        Two `402`s are different people's problems: `FEE_CREDIT_REQUIRED` is
+        passed through (the user tops up); `INSUFFICIENT_CREDITS` (the
+        sponsor's vault) is reported as `503 RELAY_UNAVAILABLE`.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RelaySubmitRequest"
+      responses:
+        "202":
+          description: Persisted and accepted by the relayer (or an idempotent replay of an earlier acceptance). Poll the operation by `operationId`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayOperationAccepted"
+        "400":
+          description: "`INVALID_REQUEST`, `INVALID_ENTRYPOINT`, `AMOUNT_NOT_ZERO`, `CONTRACT_NOT_RELAYABLE`, `INVALID_PERMIT`, `UNSUPPORTED_BATCH`, `INTENT_MISMATCH`, or a Gas Station 400 passed through."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          description: "`FEE_CREDIT_REQUIRED` from the Gas Station: the wallet has no fee credit; route the user to the top-up."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "403":
+          description: "`SIGNER_MISMATCH`, `KYC_REQUIRED`, or a Gas Station 403 (`ENTRYPOINT_NOT_ALLOWED`, `PERMIT_ACTION_NOT_ALLOWED`). A wallet-ownership refusal by the middleware uses `ErrorResponse`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "409":
+          description: "`PERMIT_IN_FLIGHT` (`detail.operationId` is ours), `IDEMPOTENCY_KEY_REUSED`, or a Gas Station 409 (`PERMIT_STALE_COUNTER`, `PERMIT_DUPLICATE`, `BATCH_CONFLICT`)."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "429":
+          description: "`RELAY_QUOTA_EXCEEDED` with `Retry-After`, or the Gas Station's `QUOTA_EXCEEDED`. The per-IP limiter's 429 uses `ErrorResponse`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "503":
+          description: "`RELAY_UNAVAILABLE` (drain, lookup failures, the sponsor vault, the relayer not answering) or a Gas Station 503 passed through (`RPC_UNAVAILABLE`, `SIGNER_UNAVAILABLE`, `PERMIT_PAUSED`). `remedy` is `retry`; the App decides whether to fall back to the MAV-paying path."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+    get:
+      tags: [relay]
+      operationId: relayListOperations
+      summary: List a wallet's relay operations
+      description: |
+        The wallet's relay history, newest first, keyset-paged by
+        `(createdAt, id)` — `limit` / `cursor` rather than the feed routes'
+        `page` / `per_page`, because an append-only log pages stably by
+        keyset. `status` takes the `RelayStatus` values plus `open` (every
+        non-terminal status), repeated or comma-separated; an unknown value
+        is a `400` naming the allowed list.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - name: status
+          in: query
+          required: false
+          style: form
+          explode: true
+          description: Filter by status; `open` = pending, batched, injecting, submitted. Repeat or comma-separate.
+          schema:
+            type: array
+            items: { type: string }
+        - name: limit
+          in: query
+          required: false
+          description: Page size; default 20, clamped to 100, below 1 is a 400.
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: The previous page's `nextCursor`; opaque.
+          schema: { type: string }
+      responses:
+        "200":
+          description: One page.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayOperationList"
+        "400":
+          description: "`INVALID_REQUEST` — unknown status, malformed cursor or limit."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/wallets/{wallet_address}/relay/operations/{id}:
+    get:
+      tags: [relay]
+      operationId: relayGetOperation
+      summary: Read one relay operation
+      description: |
+        Our row, never the Gas Station's: it carries the intent, our error
+        mapping and the settle state. Poll it every few seconds without
+        `fresh=1` and stop on a terminal `status`; the reconciliation poller
+        and the Gas Station webhook drive every row to a terminal state.
+
+        `?fresh=1` forces one `GET /operations/:id` on the relayer for a
+        **non-terminal** row that already has a Gas Station id, on a
+        relay-specific per-wallet budget (`RELAY_FRESH_PER_MINUTE`, separate
+        from the feed's). The outcome is in `X-Cache-Bypass`: `fresh` (polled,
+        the row shown is what the relayer just reported), `limited` (budget
+        exhausted, stored row), `stale-fallback` (the relayer did not answer,
+        stored row). A terminal row, or one that never got a Gas Station id,
+        makes no upstream call.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - name: id
+          in: path
+          required: true
+          description: Our `operationId` (UUID) as returned by the submit.
+          schema: { type: string, format: uuid }
+        - name: fresh
+          in: query
+          required: false
+          description: "`1` forces one relayer poll for a non-terminal row (see above)."
+          schema: { type: string, enum: ["1"] }
+      responses:
+        "200":
+          description: The operation.
+          headers:
+            X-Cache-Bypass:
+              $ref: "#/components/headers/XCacheBypass"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayOperation"
+        "400":
+          description: "`INVALID_OPERATION_ID` — not a UUID."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "`NOT_FOUND` — no such operation for this wallet (another wallet's id reads as absent)."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+
+  /api/v1/relay/config:
+    get:
+      tags: [relay]
+      operationId: relayGetConfig
+      summary: Gasless capability of this deployment
+      security: []
+      description: |
+        The App's global gasless gate. Public, rate-limited, served
+        cache-first (`GAS_STATION_CONFIG_CACHE_SECONDS`, 30s) with a stale
+        band (`X-Cache: STALE` + `Warning` while a refresh runs behind it).
+
+        `enabled` is true only when the relay is switched on, not draining,
+        and at least one catalog contract is registered with the relayer.
+        `contracts` lists exactly those; an asset is gasless only when its
+        token **and** its orderbook appear. `fee` is always an object —
+        `{enabled:false}` when the service fee is off, which is the launch
+        state — and every unit-bearing value is a string.
+        `X-Relay-Actions-Source` (`static` | `gas-station`) says where
+        `permitActions` came from; additive fields must be tolerated.
+      responses:
+        "200":
+          description: The gate.
+          headers:
+            X-Relay-Actions-Source:
+              schema: { type: string, enum: [static, gas-station] }
+            X-Cache:
+              $ref: "#/components/headers/XCache"
+            Warning:
+              $ref: "#/components/headers/StaleWarning"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayConfig"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/v1/wallets/{wallet_address}/relay/fee/top-up:
+    post:
+      tags: [relay]
+      operationId: relayFeeTopUp
+      summary: Buy service-fee credit gaslessly
+      description: |
+        Forwards a signed `permitTransfer` of the quote token to the fee
+        collector; the Gas Station rebuilds the transfer from its own
+        configuration, so only `publicKey`, `signature` and `amountUnits` are
+        sent. `publicKey` must derive to the JWT wallet (`403 SIGNER_MISMATCH`);
+        `amountUnits` must be a base-10 integer string within
+        `fee.topUpMinUnits..topUpMaxUnits` of `/relay/config`
+        (`400 AMOUNT_OUT_OF_BOUNDS`); with the fee off it is `404 FEE_DISABLED`.
+
+        The top-up occupies the quote token's one-in-flight slot for this
+        wallet, like an operator grant does: a pending `update_operators` on
+        the same token is `409 PERMIT_IN_FLIGHT`. Credit is granted only once
+        the operation confirms — poll it by `operationId`, then re-read
+        `/relay/fee/credits`.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RelayFeeTopUpRequest"
+      responses:
+        "202":
+          description: Persisted and accepted by the relayer.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayFeeTopUpAccepted"
+        "400":
+          description: "`INVALID_REQUEST`, `AMOUNT_OUT_OF_BOUNDS`, or a Gas Station 400 passed through."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: "`SIGNER_MISMATCH`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "404":
+          description: "`FEE_DISABLED`."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "409":
+          description: "`PERMIT_IN_FLIGHT` with `detail.operationId` (ours)."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "503":
+          description: "`RELAY_UNAVAILABLE`, or a Gas Station 503 (`FEE_TOKEN_MISCONFIGURED`, `RPC_UNAVAILABLE`, …) passed through."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+
+  /api/v1/wallets/{wallet_address}/relay/fee/credits:
+    get:
+      tags: [relay]
+      operationId: relayGetFeeCredits
+      summary: The wallet's prepaid fee credit
+      description: |
+        Proxied — the Gas Station's `GET /fee/credits/:address` is
+        sponsor-authenticated. `{enabled:false}` when the fee is off, the
+        full block otherwise; `actionsRemaining` is per permit variant
+        because prices differ per variant. The Gas Station is authoritative
+        if our records ever disagree.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+      responses:
+        "200":
+          description: The credit block.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayFeeCredits"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          description: "`RELAY_UNAVAILABLE` — the relayer did not answer."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+
+  /api/v1/wallets/{wallet_address}/notifications:
+    get:
+      tags: [notifications]
+      operationId: listNotifications
+      summary: The wallet's notification history, newest first
+      description: |
+        The durable twin of the notifier's personal WebSocket channel: every
+        `channel: "wallet"` event is stored as one row per recipient, plus the
+        terminal outcomes this service decides itself (a failed or rejected
+        gasless relay, a bridge deposit that minted or stalled). Rows exist only
+        for wallets that have signed in at least once; history starts at first
+        sign-in.
+
+        Ordered by arrival (`created_at`), so a late event always lands at the
+        head; render `occurred_at` as the event time. Keyset-paged: follow
+        `next_cursor` until it is `null`. Older partial fills of one order are
+        superseded by the order's next row and hidden unless
+        `include_superseded=1`; the badge ignores them too.
+
+        `kind` is an open set: render the kinds you know, ignore the rest. The
+        `payload` is the notifier's allow-listed projection of the source event
+        (the same fields the socket delivers), never the raw payload; for relay
+        rows it is the pinned `RELAY_OPERATION_UPDATED` body. `event_id` is the
+        bus event id when the row came from the bus (the projected kinds and the
+        bridge rows the consumer wrote), so a socket frame can be matched to its
+        row; it is `null` on relay rows and on the bridge `completed` rows the
+        deposits list backfills from the ledger.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          description: Page size; values above 100 are clamped.
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string }
+          description: Opaque `next_cursor` from the previous page. A value this endpoint did not issue is a `400`.
+        - name: kinds
+          in: query
+          required: false
+          explode: true
+          schema:
+            type: array
+            maxItems: 20
+            items: { type: string, pattern: "^[a-z_]{1,40}$" }
+          description: >
+            Keep only these kinds (repeatable, comma-tolerant, at most 20). An
+            unknown kind matches nothing; a value outside the grammar is a `400`.
+            `unread_count` is the wallet's badge and ignores this filter.
+        - name: unread
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+          description: "`1`/`true` returns unread rows only."
+        - name: include_superseded
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+          description: "`1`/`true` also returns partial fills a newer row of the same order has superseded."
+      responses:
+        "200":
+          description: One page of the wallet's notifications.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsListResponse"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/wallets/{wallet_address}/notifications/summary:
+    get:
+      tags: [notifications]
+      operationId: getNotificationsSummary
+      summary: The unread badge
+      description: |
+        The unread count, capped at 100 (`unread_capped` says the cap was hit;
+        show "99+"), and the `created_at` of the newest row, which is the value
+        to pass as `before` to mark everything seen so far as read. Cheap enough
+        to poll where the WebSocket is unavailable; with the socket, refetch on
+        every `channel: "wallet"` frame.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+      responses:
+        "200":
+          description: The badge.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsSummary"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/wallets/{wallet_address}/notifications/read:
+    post:
+      tags: [notifications]
+      operationId: markNotificationsRead
+      summary: Mark notifications read
+      description: |
+        Exactly one of `ids` (at most 100 notification ids) or `before`
+        (an RFC 3339 timestamp: every unread row with `created_at <= before`,
+        with a millisecond of tolerance for clients that truncate). Pin
+        `before` to the `latest_created_at` the client saw and echo the string
+        verbatim, so rows arriving meanwhile stay unread. Idempotent; `updated`
+        counts rows that were unread. Rows of another wallet are never touched.
+      parameters:
+        - $ref: "#/components/parameters/WalletAddressPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationsReadRequest"
+      responses:
+        "200":
+          description: How many rows changed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsReadResponse"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/internal/gas-station/webhook:
+    post:
+      tags: [internal]
+      operationId: gasStationWebhook
+      summary: Gas Station terminal-state webhook (pinned contract A)
+      security: []
+      description: |
+        Receives one `operation.terminal` event per relayed operation from the
+        Gas Station, authenticated by `X-GasStation-Signature` =
+        `sha256=` + hex `HMAC-SHA256(secret, timestamp + "." + rawBody)` over
+        the raw request bytes, with `X-GasStation-Timestamp` within
+        `GAS_STATION_WEBHOOK_MAX_SKEW_SECONDS` of now. Mounted only when
+        `GAS_STATION_WEBHOOK_SECRET` is set (404 otherwise), outside the JWT
+        guard and the per-IP limiter.
+
+        Idempotent by `eventId`, recorded in the same transaction as the
+        settle. Delivery is at-least-once and the sender rebuilds the body at
+        every attempt, so a redelivered `eventId` may carry a newer body:
+        identical → no-op; same status with newer `feeChargedUnits` /
+        `error` / `opHash` → applied to the settled row (`amended_at`);
+        a different terminal status → left untouched and counted
+        (`relay_webhook_status_conflict_total`). An unknown `operationId` is
+        acknowledged with 204 — a 4xx would make the sender retry for 24h.
+      parameters:
+        - name: X-GasStation-Event-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-GasStation-Timestamp
+          in: header
+          required: true
+          description: Unix seconds at send time.
+          schema: { type: string }
+        - name: X-GasStation-Signature
+          in: header
+          required: true
+          schema: { type: string, pattern: "^sha256=[0-9a-f]{64}$" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GasStationWebhookEvent"
+      responses:
+        "204":
+          description: Durably applied, deduplicated, amended, ignored (unknown type / operation) — the sender must not retry.
+        "400":
+          description: "`INVALID_REQUEST` — body not JSON, or its `eventId` differs from the header."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "401":
+          description: "`WEBHOOK_UNAUTHORIZED` (bad or missing signature / headers) or `WEBHOOK_STALE` (timestamp outside the window). No detail, no side effects."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+        "503":
+          description: "`RELAY_UNAVAILABLE` — the event could not be recorded; nothing was written, retry."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelayErrorResponse"
+
+  /api/v1/assets:
+    get:
+      tags: [rwa]
+      operationId: listPublicAssets
+      summary: List RWA marketplace assets
+      description: "Public — the RWA catalog is viewable without a wallet. Page size is fixed at 20 (§4.3)."
+      security: []
+      responses:
+        "200":
+          description: Marketplace asset list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicAssetsResponse"
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/assets/highlights:
+    get:
+      tags: [rwa]
+      operationId: getRWAHighlights
+      summary: Curated asset blocks (top gainers, trending, newly added)
+      description: |
+        Public. Returns three independently-ranked blocks in one response, for the
+        homepage.
+
+        - `top_gainers` — ordered by 24h price change, descending. No sign filter:
+          an asset that fell appears once the ones that rose run out. Assets with
+          no 24h change are excluded, as are those whose 24h baseline is an outlier
+          against their own last day (these order books are thin enough that one
+          fill can set the reported price).
+        - `trending` — ordered by 24h traded notional, descending. Assets that
+          traded nothing are excluded rather than ranked last.
+        - `newly_added` — ordered by catalog listing date, newest first.
+
+        A block returns **fewer than `limit` items, including zero**, when not
+        enough assets qualify; it is never padded. Blocks do not exclude each
+        other — one asset may appear in several.
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Assets per block (not per response). Defaults to 3, capped at 20.
+          schema: { type: integer, minimum: 1, maximum: 20, default: 3 }
+      responses:
+        "200":
+          description: The three highlight blocks.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetHighlights"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/assets/{token_address}:
+    get:
+      tags: [rwa]
+      operationId: getRWAAssetData
+      summary: Get RWA asset data
+      description: |
+        Returns detailed information about a specific RWA asset, including
+        metadata, profile (CRM-sourced), finance block, multi-currency price,
+        and the orderbook summary (top-of-book + fees).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/TokenAddressPath"
+      responses:
+        "200":
+          description: RWA asset detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RWAAsset"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/assets/{token_address}/orderbook:
+    get:
+      tags: [rwa]
+      operationId: getOrderbookDepth
+      summary: Get orderbook depth
+      description: |
+        Returns the aggregated depth of the Equiteez orderbook for one RWA
+        asset — one row per price level (orders at the same price are merged;
+        `orders_count` reports how many). Bids are sorted desc by price, asks
+        asc. Prices and amounts are human units (quote token per 1 RWA token,
+        RWA whole tokens).
+
+        Pagination (`limit`/`offset`) applies AFTER aggregation: requesting 20
+        rows returns 20 price levels, not 20 raw orders. `best_bid`,
+        `best_ask`, `spread` and `totals` describe the top of the book and are
+        only populated on the first page (`offset=0`); deeper pages return them
+        as 0.
+
+        Cache-first with a 3 s TTL on the backend — the frontend may poll at
+        ~1 Hz without overloading the indexer.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/TokenAddressPath"
+        - name: limit
+          in: query
+          description: Aggregated price levels per side (1..200, default 50).
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: offset
+          in: query
+          description: |
+            Aggregated price levels to skip per side (pagination after
+            aggregation). When > 0, `best_bid`/`best_ask`/`spread`/`totals`
+            are omitted (0) — they only describe the first page.
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 2000
+            default: 0
+        - name: depth
+          in: query
+          description: Combined bid+ask cap (0 disables, max 400).
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 400
+        - name: group_by
+          in: query
+          description: |
+            Price bucket size in quote units. 0 disables aggregation and returns rows
+            at native granularity. Restricted to the {1, 2.5, 5}×10^k ladder below —
+            bucket rounding is exact on these steps only (a free float silently
+            produced a different step than requested: 0.3 bucketed in thirds), and
+            each distinct value is a distinct cache entry. Anything else is a 400.
+          required: false
+          schema:
+            type: number
+            enum: [0, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 25, 50, 100]
+        - name: ratio_depth
+          in: query
+          description: Top-N rows used for the buy/sell ratio (default = whole slice).
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 200
+      responses:
+        "200":
+          description: Orderbook depth snapshot.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderbookDepth"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /api/v1/assets/{token_address}/launch:
+    get:
+      tags: [rwa]
+      operationId: getAssetLaunch
+      summary: Get the launchpad card for an asset
+      description: |
+        Returns the launchpad sale card for one RWA asset: status, schedule,
+        progress, and the sale options with their tiers and accepted payment
+        tokens. Sourced on-demand from the Launchpad index (Equiteez) with a
+        short backend cache; the frontend may poll the progress without
+        overloading the indexer.
+
+        Amounts (`total_bought`, `max_amount_cap`, tier limits) are raw on-chain
+        integers as strings — divide by the RWA token's `decimals` (carried in
+        `token`) to display. Payment `price` is already a human number in the
+        payment token's units (e.g. 1250.64 USDT), like orderbook levels.
+
+        A token can have several launches (history, or multiple token_ids under
+        one contract), so the response is an array, ordered active-first then
+        newest. "No launches" is a normal state for a LISTED asset, not an
+        error: the response is `200` with `launches: []`. An address outside
+        the RWA registry is `404`, and a malformed address is `400`. Per-user
+        purchase / claim state is not included.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/TokenAddressPath"
+      responses:
+        "200":
+          description: |
+            The launches for the asset (possibly empty), active first then newest.
+          headers:
+            X-Cache: { $ref: "#/components/headers/XCache" }
+            Warning: { $ref: "#/components/headers/StaleWarning" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetLaunchResponse"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/auth/challenge:
+    post:
+      tags: [auth]
+      operationId: postAuthChallenge
+      summary: Request a wallet-login challenge
+      description: |
+        Returns a one-time, wallet-scoped message to sign. Single-use and
+        TTL-bounded (default 5m), rate-limited per wallet (default 5/min).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChallengeRequest" }
+      responses:
+        "200":
+          description: Challenge issued.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChallengeResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /api/v1/auth/verify:
+    post:
+      tags: [auth]
+      operationId: postAuthVerify
+      summary: Verify a signed challenge and issue tokens
+      description: |
+        Verifies the wallet signature over the challenge and, on success,
+        provisions the account on first login and returns an access + refresh
+        token pair. One verifier covers both the Mavryk Wallet extension
+        (base58 `edpk`/`edsig`, Beacon MICHELINE) and the Dynamic embedded
+        wallet (raw-hex ed25519 key/signature) — both sign the same canonical
+        Micheline payload.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VerifyRequest" }
+      responses:
+        "200":
+          description: Tokens issued.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401":
+          description: Invalid or expired challenge, or signature verification failed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: postAuthRefresh
+      summary: Rotate a refresh token
+      description: |
+        Exchanges a valid refresh token for a fresh access + refresh pair
+        (rotation). A replayed or already-rotated token triggers reuse-detection
+        and revokes the whole token family.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefreshRequest" }
+      responses:
+        "200":
+          description: New token pair.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401":
+          description: Invalid, expired, or reused refresh token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /api/v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: postAuthLogout
+      summary: Revoke the current session
+      description: |
+        Blacklists the presented access token for its remaining TTL and revokes
+        the refresh token. Requires a valid access token.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LogoutRequest" }
+      responses:
+        "200":
+          description: Session revoked.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                example: { message: "logged out" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Access token this service issues after wallet-signature login (RS256,
+        issuer `mavryk-rwa-backend`, default 15m TTL). Obtain it from
+        `POST /api/v1/auth/verify` and pass as `Authorization: Bearer <jwt>`.
+        The middleware pins the algorithm + issuer, checks the logout blacklist
+        (fail-closed), and binds the authenticated wallet to `:wallet_address`.
+
+  parameters:
+    WalletAddressPath:
+      name: wallet_address
+      in: path
+      required: true
+      description: Mavryk wallet address (`mv1` / `mv2` / `mv3` / `KT1` prefix).
+      schema:
+        type: string
+        example: mv1FoXk7sXHm5kZkpkB5z3QwgnBu1CqYxkr1
+    TokenAddressPath:
+      name: token_address
+      in: path
+      required: true
+      description: RWA token contract address (Mavryk KT1-style).
+      schema:
+        type: string
+        example: KT1RWAExampleAssetAddress00000000000000
+    FreshQuery:
+      name: fresh
+      in: query
+      required: false
+      description: >
+        `fresh=1` forces a cold serve for post-event freshness (ADR-0007).
+        Page 1 only (400 otherwise) on the two paginated feeds;
+        `/activity/summary` has no pages, and there the flag forces ONLY the
+        two order-derived counters (`open_orders`, `claimable_refunds`).
+        `transfers` is a pure cache read with no fill behind it, and
+        `onchain_events` reads a different indexer with no ordering relation to
+        the orderbook index that published the event — so neither is covered by
+        the outcome. On the post-event path there is usually nothing to bypass:
+        an order event retires `onchain_events` along with the rest of the
+        wallet's caches. Off that path — a native send, reveal, delegation,
+        origination or staking op — its 60s entry stands, and a counter up to
+        that old is served under a `fresh` outcome. Budgeted per wallet on ONE
+        shared counter across all three routes — an exhausted budget serves
+        the cached path
+        and reports it via `X-Cache-Bypass: limited`, never an error. The
+        outcome is always in `X-Cache-Bypass`. The header says what the backend
+        did, the body's `as_of` says what you got — on all three routes, so
+        `limited` and `stale-fallback` become checkable rather than guessed,
+        without spending the shared per-wallet budget. A `fresh` outcome does
+        not by itself imply `as_of.orderbook.level >= L`. The flag reaches the
+        ORDERBOOK half only: `as_of.chain` can be read but not forced, so a
+        chain-derived number is dated by every response and forced by none.
+      schema:
+        type: string
+        enum: ["1"]
+
+  headers:
+    XCache:
+      description: >
+        Emitted when a read path served a cached entry instead of a live one:
+        the entry aged past its fresh window, an event retired the main entry
+        and the last-good tier answered, or a `?fresh=1` fill failed and the
+        cached entry was kept (see `X-Cache-Bypass: stale-fallback`). In the
+        first two cases one background rebuild runs behind the response; in
+        the last the failed fill was the rebuild. Not by itself an
+        upstream-failure signal. Only value: `STALE`; absent on a live serve.
+      schema:
+        type: string
+        enum: [STALE]
+    StaleWarning:
+      description: >
+        RFC 7234 warn-code paired with `X-Cache: STALE` so clients can branch
+        without parsing it. Value: `110 - "Response is Stale"`.
+      schema:
+        type: string
+    XCacheBypass:
+      description: >
+        Outcome of a `?fresh=1` forced-cold request (ADR-0007): `fresh` (live
+        rebuild), `stale-fallback` (upstream failed — last-good cache served, or
+        on `/activity/summary` an order counter whose assembly failed outright;
+        either way the guarantee is broken and the client should keep its mark),
+        `limited` (per-wallet budget exhausted, cached path served) or
+        `unknown`. A counter nulled by a LAGGING indexer is not a failed
+        assembly: it was served, so the outcome stays `fresh` and
+        `as_of.orderbook.realtime: false` is what distinguishes it. Never read
+        a null counter as covered on the strength of the header alone.
+      schema:
+        type: string
+        enum: [fresh, stale-fallback, limited, unknown]
+
+  responses:
+    BadRequest:
+      description: Invalid input — malformed parameter, bad query, or validation error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Missing, malformed, or rejected token.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Authenticated wallet may not access this resource (ownership mismatch or blocked account).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    TooManyRequests:
+      description: Rate limited — the per-IP API limiter, or the per-wallet challenge limiter on `/auth/challenge`.
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying (always `1`).
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Unexpected server-side failure.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ServiceUnavailable:
+      description: A required upstream is unavailable — request is well-formed but the server can't satisfy it right now (e.g. FX rate source down).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    # --- Common error envelopes -------------------------------------------------
+
+    ErrorResponse:
+      type: object
+      description: |
+        Canonical error envelope used by every endpoint except the legacy
+        `GET /wallets/{wallet_address}/assets` 500 path (see WalletAssetsError).
+      properties:
+        error:
+          type: string
+          description: Human-readable error summary.
+        code:
+          type: string
+          description: Machine-readable category (e.g. `not_found`, `invalid_argument`, `internal`).
+        details:
+          type: string
+          description: Optional implementation detail (stack trace, upstream message).
+      required: [error]
+
+    # --- Auth -------------------------------------------------------------------
+
+    ChallengeRequest:
+      type: object
+      properties:
+        walletAddress:
+          type: string
+          description: Mavryk address (`mv1` / `mv2` / `mv3`).
+          example: mv1FoXk7sXHm5kZkpkB5z3QwgnBu1CqYxkr1
+      required: [walletAddress]
+
+    ChallengeResponse:
+      type: object
+      properties:
+        challenge:
+          type: string
+          description: The exact message to sign (reproduce byte-for-byte when signing).
+        nonce:
+          type: string
+          description: One-time nonce identifying this challenge; pass it to `/auth/verify`.
+        expiresAt:
+          type: string
+          format: date-time
+      required: [challenge, nonce, expiresAt]
+
+    VerifyRequest:
+      type: object
+      properties:
+        walletAddress:
+          type: string
+          example: mv1FoXk7sXHm5kZkpkB5z3QwgnBu1CqYxkr1
+        publicKey:
+          type: string
+          description: base58 `edpk`/`sppk`/`p2pk`, or raw 64-hex ed25519 (Dynamic embedded wallet).
+        signature:
+          type: string
+          description: base58 `edsig`/`spsig`/`p2sig`, or raw 128-hex ed25519 (Dynamic embedded wallet).
+        nonce:
+          type: string
+          description: The nonce returned by `/auth/challenge`.
+        format:
+          type: string
+          description: Signed-payload framing. Defaults to `micheline_string`.
+          enum: [micheline_string]
+        walletProvider:
+          type: string
+          description: Advisory only (client-asserted) — which wallet produced the signature.
+          enum: [mavryk_extension, dynamic]
+        deviceInfo:
+          type: object
+          additionalProperties: true
+          description: Optional device metadata stored with the session (userAgent, ipAddress, …).
+      required: [walletAddress, publicKey, signature, nonce]
+
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required: [refreshToken]
+
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          description: Optional — revoked in addition to blacklisting the access token.
+
+    TokenPair:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: "Short-lived RS256 access token (default 15m). Send as `Authorization: Bearer`."
+        refreshToken:
+          type: string
+          description: Long-lived RS256 refresh token (default 30d); rotate via `/auth/refresh`.
+      required: [accessToken, refreshToken]
+
+    # --- Wallet — summary -------------------------------------------------------
+
+    WalletSummary:
+      type: object
+      description: |
+        Aggregated wallet view (§4.2). All numeric equity fields are denominated
+        in `currency` — selected via `?quote=`, defaulting to `usd`. Token
+        quantities under `tokens` are FX-invariant and never scaled; the same
+        holds for `pnl_percentage`, which is a unitless ratio.
+      properties:
+        is_kyc_approved: { type: boolean }
+        currency:
+          type: string
+          description: "Lowercase ISO code of the quote currency the response is denominated in. Echoes back the applied `?quote=` value (or `usd` by default)."
+          example: usd
+        account_value:   { type: number, description: "Total account value in `currency`." }
+        spot_balance:    { type: number, description: "Free (ledger) balance in `currency`. Order escrow leaves the ledger at placement, so today this equals `account_value`; once valuation becomes escrow-inclusive it will again be account value minus open-order value." }
+        tokens:
+          $ref: "#/components/schemas/TokensBreakdown"
+        rwa_assets:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/WalletRWAAsset"
+          description: "Per-RWA-asset breakdown keyed by lowercase symbol. Empty object on wallets without RWA holdings. Token quantity fields (`total_balance`, `in_orders`, `available_balance`) are FX-invariant; `total_value` and `price_per_token` scale with `?quote=`."
+        pnl:            { type: number, nullable: true, description: "Total unrealized position PnL in `currency`. null when killswitch is off, the wallet has no tracked positions, or the cost-basis store is unavailable (graceful degradation)." }
+        pnl_percentage: { type: number, nullable: true, description: "PnL as a percentage of total invested cost basis. Unitless — does not change with `?quote=`. Same null semantics as `pnl`." }
+        pnl_24h:        { type: number, nullable: true, description: "Delta over the last 24h in `currency`, net of cash flows priced at their own time. null if no pnl_snapshot exists for this wallet older than the window, an in-window flow is unpriceable at its time, or killswitch is off, or the wallet's cached activity snapshot is missing so net inflow for the window is unknown (an order event drops it; it is refilled in the background, and the summary is not cached until then, so a still-cached summary keeps serving its real windows)." }
+        pnl_7d:         { type: number, nullable: true, description: "Delta over the last 7 days in `currency`, net of cash flows priced at their own time. null if no pnl_snapshot is old enough, an in-window flow is unpriceable at its time, or killswitch is off, or the wallet's cached activity snapshot is missing so net inflow for the window is unknown (an order event drops it; it is refilled in the background, and the summary is not cached until then, so a still-cached summary keeps serving its real windows)." }
+        pnl_30d:        { type: number, nullable: true, description: "Delta over the last 30 days in `currency`, net of cash flows priced at their own time. null if no pnl_snapshot is old enough, an in-window flow is unpriceable at its time, or killswitch is off, or the wallet's cached activity snapshot is missing so net inflow for the window is unknown (an order event drops it; it is refilled in the background, and the summary is not cached until then, so a still-cached summary keeps serving its real windows)." }
+
+    TokensBreakdown:
+      type: object
+      description: "Per-token position split. Each entry pairs the on-chain token quantity (`balance`, FX-invariant) with the position's value in the response's `currency` (`value`, scales with `?quote=`)."
+      properties:
+        mvrk: { $ref: "#/components/schemas/TokenAmount" }
+        mbg:  { $ref: "#/components/schemas/TokenAmount" }
+        usdt: { $ref: "#/components/schemas/TokenAmount" }
+
+    TokenAmount:
+      type: object
+      description: "Wallet position in a well-known token. `total_balance` is the on-chain quantity (FX-invariant); `total_value` and `price_per_token` are denominated in the response's `currency` and scale with `?quote=`. Field names are aligned with `WalletRWAAsset` so the same row component works for tokens and RWA holdings."
+      properties:
+        total_balance:    { type: number, description: "Raw on-chain token quantity (decimals applied). FX-invariant." }
+        total_value:      { type: number, description: "`total_balance × price_per_token` in `currency`." }
+        price_per_token:  { type: number, description: "Per-token price in `currency`." }
+
+    WalletRWAAsset:
+      type: object
+      description: "One RWA holding inside a wallet's `rwa_assets` block. Quantity fields are FX-invariant; `total_value` and `price_per_token` are denominated in the parent payload's `currency` and scale with `?quote=`. Distinct from the marketplace-side `RWAAsset` schema, which models catalog/detail data."
+      properties:
+        address:           { type: string, description: "RWA token contract address." }
+        total_balance:     { type: number, description: "On-chain RWA token quantity." }
+        in_orders:         { type: number, description: "Quantity locked in open orderbook positions. Currently always 0 — reserved for orderbook integration." }
+        available_balance: { type: number, description: "`total_balance - in_orders`, currently equal to `total_balance`." }
+        total_value:       { type: number, description: "Total position value (`total_balance × price_per_token`) in `currency`." }
+        price_per_token:   { type: number, description: "Per-token RWA price in `currency`." }
+
+    # --- Wallet — transactions / orders ----------------------------------------
+
+    TransactionsListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+        page: { type: integer, description: "The 1-based page number served." }
+        per_page: { type: integer, description: "Rows per page for this request." }
+        total:
+          type: integer
+          description: |
+            Rows matching the filter WITHIN the fetched window, not the wallet's lifetime
+            count. When `truncated` is true this is a floor.
+        total_pages: { type: integer, description: "`ceil(total / per_page)`; 0 when there are no rows." }
+        truncated:
+          type: boolean
+          description: |
+            History exists beyond the fetched window, so `total` and `total_pages`
+            understate. Render counts accordingly.
+        as_of:
+          allOf:
+            - $ref: "#/components/schemas/AsOfSources"
+            - required: [orderbook, chain]
+          description: >
+            Chain state this response's rows reflect, per source. Both keys are
+            always present, because this route reads both: `orderbook` dates
+            the ORDER rows — every row carrying a `refund` block is one, so the
+            claim gate covers exactly the rows that need it — and `chain` dates
+            the deposit and withdrawal rows, which before this could be dated
+            only by their own `datetime`. The two levels legitimately differ:
+            the order half may come from a snapshot up to a minute older than
+            the chain read. Under `truncated: true` both date the fetched
+            window, not the history beyond it. Identical on every page, filter
+            and sort of one snapshot; a level that changes mid page-walk means
+            the snapshot was rebuilt underneath.
+      required: [items, page, per_page, total, total_pages, truncated, as_of]
+
+    OrdersListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenOrder"
+        page: { type: integer, description: "The 1-based page number served." }
+        per_page: { type: integer, description: "Rows per page for this request." }
+        total:
+          type: integer
+          description: |
+            Rows matching the filter WITHIN the fetched window, not the wallet's lifetime
+            count. When `truncated` is true this is a floor.
+        total_pages: { type: integer, description: "`ceil(total / per_page)`; 0 when there are no rows." }
+        truncated:
+          type: boolean
+          description: |
+            History exists beyond the fetched window, so `total` and `total_pages`
+            understate. Render counts accordingly.
+        as_of:
+          allOf:
+            - $ref: "#/components/schemas/AsOfSources"
+            - required: [orderbook]
+          description: >
+            Chain state the rows in this response reflect. This route reads the
+            orderbook and nothing else, so `orderbook` is the only key and is
+            always present — on every filter including the plain open list,
+            where it dates the window in which a row can read
+            `expires_in_seconds: 0` and still be listed as open. `chain` is
+            absent, not zeroed: no row here comes from the chain indexer.
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/RefundTotal"
+          description: |
+            One entry per refund token, summed over **the request's filtered
+            set, before paging**. So `refund=claimable` alone gives the
+            wallet-wide figure a claim banner needs, and
+            `status=expired&refund=claimable` gives the expired-only figure —
+            the narrower filter sums less.
+
+            It describes the filter, not the page: it is identical on every
+            page of one filter, and a client must not add it up across pages.
+
+            OMITTED when the filtered set holds no claimable row, so the
+            default open list is byte-for-byte unchanged. Under
+            `truncated: true` it is a floor, like `total`: there is claimable
+            escrow beyond the fetched window that no page can show.
+      required: [items, page, per_page, total, total_pages, truncated, as_of]
+
+    WalletActivitySummary:
+      type: object
+      description: >
+        Activity counters. All four keys are always present; a `null` value
+        means the counter could not be determined for this request.
+      properties:
+        as_of:
+          allOf:
+            - $ref: "#/components/schemas/AsOfSources"
+            - required: [orderbook, chain]
+          description: >
+            Which chain state each half of this response was counted from.
+            `orderbook` covers `open_orders` and `claimable_refunds`; `chain`
+            covers `transfers` and `onchain_events`. Each key is merged across
+            the counters it covers — the LOWER `level`, `realtime` only if BOTH
+            were — so a `level >= L` gate passes only when every number under
+            that key is post-event. The merge is never taken ACROSS keys: the
+            two sources are dated independently. A counter that read nothing at
+            all (no feed snapshot yet, so `transfers` is `null`) contributes
+            nothing rather than zeroing its key. Both keys always present; a
+            source read but not datable ships as
+            `{level: 0, timestamp: "", realtime: false}`. Note the asymmetry
+            `orderbook` explains: `open_orders` is reported off a lagging
+            snapshot, `claimable_refunds` is withheld as `null`, and the marker
+            is not withheld with it.
+        onchain_events:
+          type: integer
+          nullable: true
+          description: Lifetime on-chain operation count for the wallet, as the indexer accounts it. Not bounded by the feed snapshot window.
+        open_orders:
+          type: integer
+          nullable: true
+          description: >
+            The Open Orders tab's population — exactly what
+            `/orders?status=open,expired&refund=none,claimable` paginates:
+            resting orders plus expired orders whose escrow can still be
+            claimed. Counted through the same path as the list, so a claim on
+            a book where `processRefund` is paused leaves both the rows and
+            this figure. Changed in v0.12.0 from "resting orders only"; a
+            fulfilled or canceled order with a claim is NOT counted here and
+            shows only in `claimable_refunds`, so the two overlap on expired
+            claims and are not additive. Unlike `claimable_refunds`, this
+            figure is reported even off a non-realtime snapshot — a stale badge
+            misleads, a stale claim count invites a transaction the contract
+            refuses.
+        transfers:
+          type: integer
+          nullable: true
+          description: >
+            Deposits and withdrawals reachable in the wallet's current feed
+            snapshot. Bounded by that snapshot's window. `null` until the feed
+            has been assembled once, `0` once a snapshot exists and holds no
+            transfers — and `null` again after any order or transfer event
+            retires the snapshot. Reading it null is itself what triggers the
+            refill, so the NEXT `/activity/summary` normally carries the number;
+            a `/transactions` request or a PnL refill rewarms it just as well.
+            Not a warm-up but a round trip: a wallet that trades returns to
+            `null` for one request after every trade. A "reachable in
+            history" figure rather than a lifetime total.
+        claimable_refunds:
+          type: integer
+          nullable: true
+          description: >
+            How many rows `GET /wallets/{wallet_address}/orders?refund=claimable`
+            would list — orders whose escrow is still held by the orderbook and
+            can be recovered by the order's initiator. Bounded by the same feed
+            snapshot window as that list, and `0` for a wallet with nothing to
+            claim. `null` when it could not be determined: an upstream failure,
+            or an indexer that is not caught up (the same condition that turns
+            `as_of.orderbook.realtime` false on the wallet feeds), degraded
+            independently of the other three. The marker is not withheld with
+            the count: when it is `null` for a non-realtime indexer,
+            `as_of.orderbook` on the same response carries the level that
+            nulled it.
+      required: [as_of, onchain_events, open_orders, transfers, claimable_refunds]
+
+    WalletPortfolioBreakdown:
+      type: object
+      description: >
+        The Overview tab's asset breakdown. `total_value` and per-row money
+        fields are denominated in `currency`; percentages and token quantities
+        are FX-invariant. `assets` is sorted by `value` descending.
+      properties:
+        currency: { type: string, example: usd }
+        total_value: { type: number, format: double }
+        est_net_yield_pct:
+          type: number
+          format: double
+          nullable: true
+          description: >
+            Blended yield across the holdings that have one, weighted by
+            value. Holdings without a yield are excluded from both the
+            average and its weights rather than counted as 0%. `null` when no
+            holding has a yield. FX-invariant.
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioAsset"
+      required: [currency, total_value, est_net_yield_pct, assets]
+
+    PortfolioAsset:
+      type: object
+      description: >
+        One holding row. Nullable columns render `null` for "no data" — an
+        untracked cost basis (fungible tokens by design, transfer-acquired
+        positions, unregistered wallet), an unpriced token, an unconfigured
+        yield, or a pair without a 30-day anchor. `avg_price` can be present
+        while `profit` is `null` (the ledger knows the entry, the current
+        price is unknown). All nullable keys are always present.
+      properties:
+        token_address: { type: string }
+        symbol: { type: string, description: "Lower-case, matching the wallet summary's `rwa_assets` keys." }
+        name: { type: string }
+        icon:
+          type: string
+          format: uri
+          nullable: true
+          description: >
+            An absolute `https://` image URL, or `null`. RWA rows carry the
+            catalog image; fungible tokens their FA2 `thumbnailUri` or `icon`
+            when that is `https://`; the native MVRK row is always `null`.
+            Any other scheme (`ipfs:`, `data:`, a relative path) is dropped to
+            `null`: token metadata is written by whoever minted the token.
+        category:
+          type: string
+          enum: [rwa, token, native]
+          description: >
+            Which internal balance list the row came from. NOT an asset class —
+            every RWA collapses to `rwa`. Use `asset_class` for allocation.
+        asset_class:
+          type: string
+          nullable: true
+          example: real_estate
+          description: >
+            Bucket for the allocation chart's "By Asset Class" mode: `crypto`
+            (the native MVRK holding), a configured class such as `stablecoin`,
+            or the asset catalog's own type (`real_estate`, `commodity`,
+            `private_equity`, …).
+            **This is an OPEN set, deliberately not an enum** — the catalog owns
+            the vocabulary and can add a value at any time. Treat an unfamiliar
+            value as unclassified and render it (humanising the token for a
+            label); never drop the row or switch on the value.
+            `null` means unclassified and is a real bucket: the holding still
+            counts toward `total_value`, so folding it into an "Other" slice
+            would hide it.
+        balance: { type: number, format: double, description: "Token quantity, FX-invariant." }
+        value: { type: number, format: double }
+        share_pct: { type: number, format: double, description: "Share of `total_value` in percent (0..100), FX-invariant." }
+        price: { type: number, format: double, nullable: true }
+        avg_price: { type: number, format: double, nullable: true, description: "Average entry price from the trade ledger (USDt-quoted fills), scaled by `quote`." }
+        profit: { type: number, format: double, nullable: true, description: "Unrealized profit — tracked quantity × (current price − average entry)." }
+        profit_pct: { type: number, format: double, nullable: true, description: "Profit over total cost basis in percent, FX-invariant." }
+        yield_pct:
+          type: number
+          format: double
+          nullable: true
+          description: >
+            Annual yield for the asset. `null` when no yield source knows it.
+            NOTE: environments with `tokens.mock_rwa_yield` enabled serve a
+            deterministic PLACEHOLDER here (and in `est_net_yield_pct`) until
+            the CRM export gains a yield field; production ships with it off
+            and returns `null`.
+        price_change_30d_pct: { type: number, format: double, nullable: true }
+      required:
+        [token_address, symbol, name, icon, category, asset_class, balance,
+         value, share_pct, price, avg_price, profit, profit_pct, yield_pct,
+         price_change_30d_pct]
+
+    PortfolioHistory:
+      type: object
+      description: >
+        The wallet's total portfolio value over one range, ascending by time.
+        Point timestamps are the real observation times (hover-friendly), not
+        bucket edges. An empty `points` array is a young or unregistered
+        wallet, not an error.
+      properties:
+        range:
+          type: string
+          enum: [1d, 7d, 30d, ytd, all]
+        currency: { type: string, example: usd }
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioHistoryPoint"
+        change_abs:
+          type: number
+          format: double
+          nullable: true
+          description: Last point minus first point; `null` with fewer than two points.
+        change_pct:
+          type: number
+          format: double
+          nullable: true
+          description: Same delta in percent of the first point; additionally `null` when the first value is zero. FX-invariant.
+        backfilled_until:
+          type: string
+          format: date-time
+          nullable: true
+          description: >
+            Timestamp of the last reconstructed (pre-registration) point. Points at
+            or before it are daily estimates — end-of-day on-chain balances valued at
+            that day's close — points after it are observed measurements. `null` when
+            the range holds no reconstructed points.
+      required: [range, currency, points, change_abs, change_pct, backfilled_until]
+
+    PortfolioHistoryPoint:
+      type: object
+      properties:
+        t: { type: string, format: date-time }
+        value: { type: number, format: double }
+      required: [t, value]
+
+    PublicPortfolio:
+      type: object
+      description: >
+        The watch-only screen's portfolio: the chain-derived subset of
+        `WalletPortfolioBreakdown` plus the header's 24h delta. Money is in
+        `currency`; all nullable keys are always present.
+      properties:
+        currency: { type: string, example: usd }
+        total_value: { type: number, format: double }
+        change_24h_abs:
+          type: number
+          format: double
+          nullable: true
+          description: >
+            Latest minus earliest value snapshot inside the trailing 24 hours.
+            `null` under two snapshots (every never-registered wallet), under
+            the PnL killswitch, or when the snapshot store is unavailable.
+        change_24h_pct:
+          type: number
+          format: double
+          nullable: true
+          description: Same delta in percent of the earliest snapshot; additionally `null` when that is zero. FX-invariant.
+        est_net_yield_pct:
+          type: number
+          format: double
+          nullable: true
+          description: >
+            Value-weighted yield across the holdings that have one; `null`
+            when none does, which is every wallet until the catalog carries a
+            yield. Never render `null` as `0%`. FX-invariant.
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicPortfolioAsset"
+      required: [currency, total_value, change_24h_abs, change_24h_pct, est_net_yield_pct, assets]
+
+    PublicPortfolioAsset:
+      type: object
+      description: One holding row of the watch-only table.
+      properties:
+        token_address: { type: string }
+        symbol:
+          type: string
+          description: >
+            Lower-case. For a token outside the catalog this is whatever its
+            minter wrote: render as text, never as markup.
+        name: { type: string, description: "Same caveat as `symbol`." }
+        icon:
+          type: string
+          format: uri
+          nullable: true
+          description: An absolute `https://` URL or `null`; see `PortfolioAsset.icon`.
+        balance: { type: number, format: double, description: "Token quantity, FX-invariant." }
+        value: { type: number, format: double }
+        price: { type: number, format: double, nullable: true }
+      required: [token_address, symbol, name, icon, balance, value, price]
+
+    PublicPortfolioHistory:
+      type: object
+      description: >
+        `PortfolioHistory` without `backfilled_until`. An empty `points` array
+        is a wallet that has never signed in, a young one, or the PnL
+        killswitch, not an error.
+      properties:
+        range:
+          type: string
+          enum: [1d, 7d, 30d, ytd, all]
+        currency: { type: string, example: usd }
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioHistoryPoint"
+        change_abs:
+          type: number
+          format: double
+          nullable: true
+          description: Last point minus first point; `null` with fewer than two points.
+        change_pct:
+          type: number
+          format: double
+          nullable: true
+          description: Same delta in percent of the first point; additionally `null` when the first value is zero. FX-invariant.
+      required: [range, currency, points, change_abs, change_pct]
+
+    BridgeDeposit:
+      type: object
+      description: |
+        One incoming bridge transfer, of either inbound flow: an EVM-origin token
+        arriving as its wrapped form (`token_evm` set) or a MAV-origin token
+        returning from the far chain (`token_evm` empty). Money is reported as
+        STRINGS in the source token's own units: the ledger holds raw integers at
+        the token's decimals, and at 18 of them a JSON number cannot carry the
+        value exactly.
+      required: [direction, status, evm_tx_hash, log_index, chain_from, chain_to,
+                 token_evm, amount_raw, owner, signer_count]
+      properties:
+        direction:
+          type: string
+          enum: [in]
+          description: Always `in` here; present so a bridge-out list can share the shape.
+        status:
+          type: string
+          enum: [confirming, signing, executed, stalled]
+          description: |
+            `confirming` — locked on the source chain, no Mavryk request yet; this
+            is most of the wait and no other endpoint can see it.
+            `signing` — the request is on Mavryk, below the signatory threshold;
+            measured at 5-20s, so a poller will usually miss it.
+            `executed` — minted; the row is also in the Activity feed.
+            `stalled` — a signatory reported a terminal failure, or the request is
+            on the ledger past its signing deadline without having executed.
+        evm_tx_hash:
+          type: string
+          description: Source-chain transaction hash; with `log_index` it identifies the deposit.
+        log_index:
+          type: string
+          description: >
+            Index of the source-chain event within `evm_tx_hash`, as the signer wrote
+            the ledger under it. Until finality this is the first sighting; after a
+            reorg re-inclusion the signer publishes the final index and this value
+            follows it, so the pair always joins the bridge ledger.
+        chain_from:
+          type: string
+          description: Source chain slug. A FAMILY, not a network — see `chain_from` on Transaction.
+        chain_to:
+          type: string
+        token_evm:
+          type: string
+          description: |
+            The source ERC20 address. Empty for a MAV-origin token returning: the
+            bridge records no ERC20 for it, and the empty value is what tells the
+            two flows apart.
+        token:
+          type: string
+          nullable: true
+          description: |
+            The Mavryk-side contract the wallet receives. For an EVM-origin token,
+            the wrapped contract, null until the bridge registry resolves it. For a
+            MAV-origin token returning, the token's own contract, as the signer
+            names it while in flight and as the ledger records it once executed;
+            native MVRK is named by its canonical address, as on the Activity feed.
+        amount:
+          type: string
+          nullable: true
+          description: |
+            Exact decimal in source-token units. **Null when the token is not
+            registered on the bridge** — scaling by a guessed default would
+            misreport the amount by orders of magnitude, so `amount_raw` is served
+            alone and the client decides. A MAV-origin token returning is scaled by
+            the token catalog instead, and is null when the catalog does not list
+            the token.
+        amount_raw:
+          type: string
+          description: The ledger's raw integer, unscaled. Always present.
+        decimals:
+          type: integer
+          nullable: true
+          description: Source-token decimals, read from the bridge's own registry or, for a returning MAV-origin token, from the token catalog. Null with `amount`.
+        owner:
+          type: string
+        signer_count:
+          type: integer
+          description: |
+            Signatures on the mint request, or before it exists the number of
+            DISTINCT signatories reporting success — never a sum across streams.
+        signatory_threshold:
+          type: integer
+          nullable: true
+          description: >
+            N in "n/N", read from the bridge contract's storage. Null when that
+            read fails — an unknown threshold is reported as unknown, never as a
+            plausible-looking default.
+        required_confirmations:
+          type: integer
+          nullable: true
+          description: Source-chain confirmation target while `confirming`.
+        failed_signatories:
+          type: array
+          items: { type: string }
+          description: |
+            Signatories reporting a terminal failure. Non-empty alongside a
+            non-`stalled` status is legitimate and deliberate: one signatory can
+            fail while the other completes, and that is exactly the case an
+            operator needs to see rather than have collapsed.
+        reason:
+          type: string
+          nullable: true
+          description: The signer's explanation for a failure; only it knows why.
+        created_at:
+          type: string
+          description: When the Mavryk request was created; empty while `confirming`.
+        updated_at:
+          type: string
+          format: date-time
+
+    Transaction:
+      type: object
+      description: |
+        One row of the wallet activity feed. The feed is heterogeneous:
+        `deposit` / `withdrawal` rows are bare token transfers (no
+        orderbook involvement), while `limit_*` / `market_*` rows
+        (with non-null `status`) are historical orderbook orders. Order-
+        only fields — `status`, `orderbook_address`, `quote_token`,
+        `filled_amount`, `remaining_amount`, `filled_percent`,
+        `expires_at`, `expires_in_seconds`, `refund` — are omitted on
+        transfer rows so the wire stays compact. Symmetrically, `from` /
+        `to` / `chain_from` / `chain_to` are transfer-only and omitted on
+        order rows. `refund` is narrower still: it is omitted on any order
+        row with no escrow story, so its presence, not its value, is the
+        test.
+
+        Numeric semantics mirror `OpenOrder`. `amount` is the on-chain
+        token quantity (FX-invariant); on order rows it has always been
+        the full original order size, so the fill fields are purely
+        additive here and `total` / `quote_token` keep their meaning.
+        `price_per_token` and `total` are denominated in `currency`
+        (selected via `?quote=`, default `usd`) and scale per request.
+        `quote_token` (orders only) carries the on-chain price/total in
+        the orderbook's quote token; FX-invariant.
+
+        **Fill progress and expiry.** `filled_amount`,
+        `remaining_amount`, `filled_percent`, `expires_at` and
+        `expires_in_seconds` are FX-invariant and apply to order rows
+        only. The three fill fields are present on every order row —
+        including as an explicit `0` where the value is zero, so
+        "not applicable" (absent, transfer row) never collides with
+        "0% filled". On an order that filled in part and was then
+        canceled or expired they are the **only surviving record of what
+        executed**: the PnL ledger keeps no row for an order that never
+        fully fulfilled.
+      properties:
+        id:       { type: string }
+        datetime:
+          type: string
+          format: date-time
+        type:
+          $ref: "#/components/schemas/TransactionType"
+        status:
+          $ref: "#/components/schemas/TransactionStatus"
+        token_address:
+          type: string
+          description: Token contract address of the row's underlying token. Works for any token — native (MVRK), stablecoin (USDt), or RWA. Clients resolve symbol / name / category from their asset catalog using this address.
+        from:
+          type: string
+          description: >
+            Sending address of the underlying on-chain transfer, exactly as the
+            indexer reports it — no normalization, no role labelling. Transfer
+            rows only; omitted on order rows. Also omitted when there is no
+            sender, i.e. a mint. On a `withdrawal` row this is the queried
+            wallet; on a `deposit` row it is the counterparty. Pair it with
+            `type` to decide which side to render.
+        to:
+          type: string
+          description: >
+            Receiving address of the underlying on-chain transfer, reported
+            verbatim like `from`. Transfer rows only; omitted on order rows. On
+            a `deposit` row this is the queried wallet; on a `withdrawal` row it
+            is the counterparty.
+        chain_from:
+          type: string
+          description: >
+            Chain the funds left, as a lowercase snake_case slug. An OPEN set
+            (like `asset_class`): new chains appear without an API version bump
+            — `mavryk` and `ethereum` today, so render unknown slugs as-is.
+            A slug names the chain FAMILY, not a network — `ethereum` is
+            Sepolia today — so derive no chain id or explorer URL from it.
+            Always present on transfer rows, omitted on order rows. Equal
+            `chain_from` / `chain_to` means an intra-chain transfer; a
+            differing pair marks a bridge leg — render "Bridge In" when
+            `type` is `deposit` and `chain_from` is not `mavryk`, and the
+            CHAIN cell as `chain_from - chain_to` (or the single name when
+            equal).
+        chain_to:
+          type: string
+          description: >
+            Chain the funds arrived on, slugged like `chain_from`. Always
+            present on transfer rows, omitted on order rows.
+        evm_tx_hash:
+          type: string
+          description: >
+            Source-chain transaction that started this bridge-in, ready for an
+            explorer link. Present ONLY on a bridge leg (`chain_from` is not the
+            home chain) whose originating call could be resolved; absent on every
+            other row and on a bridge row whose origin is no longer resolvable, so
+            treat it as optional rather than gating the row on it.
+        log_index:
+          type: string
+          description: >
+            Index of the source-chain event within `evm_tx_hash`; together they
+            identify the deposit. Present under the same conditions.
+        evm_destination:
+          type: string
+          description: >
+            The far-chain address a bridge-OUT declared, ready for an explorer
+            link. Present only on an outgoing bridge leg (`chain_to` is not the
+            home chain) whose call was resolvable and whose entrypoint has a
+            parameter shape the backend reads; absent rather than guessed
+            otherwise. Mutually exclusive with `evm_tx_hash` in practice — one
+            row is either incoming or outgoing.
+        operation_hash:
+          type: string
+          nullable: true
+          description: >
+            On-chain operation hash. Always present as a key; `null` when the
+            row has no hash to point at — an origination-minted transfer, or a
+            lookup that could not resolve it. Transfer rows carry it too (it is
+            resolved from the row's operation id), so a client can offer copy
+            and explorer-link affordances on every kind of row.
+        orderbook_address:
+          type: string
+          description: Address of the orderbook contract (omitted on transfer rows).
+        amount: { type: number, description: "On-chain token quantity. FX-invariant. On order rows this is the full original order size as placed — unchanged by the fill fields below." }
+        filled_amount:
+          type: number
+          description: "Executed part of the order, in whole RWA units. FX-invariant. Order rows only; omitted on transfer rows."
+        remaining_amount:
+          type: number
+          description: "Unexecuted part of the order, in whole RWA units — on a terminal row (`canceled` / `expired`) the unfilled quantity; what actually came back is `refund.amount`, which on a buy is denominated in the order's quote currency and may be absent entirely. FX-invariant. `amount == filled_amount + remaining_amount` on every order row, up to 6-decimal rounding. Order rows only; omitted on transfer rows."
+        filled_percent:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: "Executed share of the order, 0…100. **Display-only — never use it as a completion test in either direction; `remaining_amount` and `status` are the completion signals.** On a row whose counters report a strictly partial fill it is capped at `99.99` and floored at `0.01`, so rounding alone can never make partial progress look finished or untouched. Order rows only; omitted on transfer rows."
+        expires_at:
+          type: string
+          format: date-time
+          description: "Expiry instant of the order, normalized to RFC-3339 UTC (`Z` suffix). Kept on terminal rows — it is a historical fact of the order. Order rows only; omitted on transfer rows and on an order that has no expiry."
+        expires_in_seconds:
+          type: integer
+          description: "Seconds until `expires_at`, computed per request rather than at cache-write time, floored to whole seconds and never negative. `0` means expired or expiring now (an `expired` row naturally reads 0). Order rows only; omitted whenever `expires_at` is."
+        quote_token:
+          allOf:
+            - $ref: "#/components/schemas/QuoteTokenAmount"
+          description: "On-chain price/total denominated in the orderbook's quote token. Omitted on transfer rows."
+        currency:
+          type: string
+          description: "Lowercase ISO code echoing the applied `?quote=` value (or `usd` by default)."
+        price_per_token:
+          type: number
+          nullable: true
+          description: "Per-token price in `currency`. The limit price on `limit_*`; on `market_*` the executed average, gross of fees, over the filled units — before any fill, the reference price the escrow was sized from. Scales with `?quote=`. null = no price is known for this row's token (never priced, no last-good, lookup failed) — render \"—\". `0` is different: an honest, known zero. Always present; null stays null under every `?quote=`."
+        total:
+          type: number
+          nullable: true
+          description: "`amount × price_per_token` in `currency`. Scales with `?quote=`. null whenever `price_per_token` is null and no other source supplied a figure (the indexer's notional can rescue an order row — a rescued row carries numbers)."
+        refund:
+          allOf:
+            - $ref: "#/components/schemas/OrderRefund"
+          description: >
+            Escrow story of an order row — the same shape and the same
+            semantics as on `/orders`. Omitted on transfer rows and on every
+            order row with no escrow story, including a zero-residual order
+            that was nevertheless claimed: nothing came back, so there is no
+            block. A `refunded` block reports what the contract actually paid,
+            which on a canceled order can be strictly less than the unfilled
+            value, net of a cancel fee. `refund.value` follows the row's own
+            valuation: where `total` was rescued from the indexer's notional
+            the refund leg is valued the same way, so the two figures on one
+            row never disagree; where neither has a price it is `null`.
+      required: [id, datetime, type, token_address, operation_hash, amount, currency, price_per_token, total]
+
+    TransactionType:
+      type: string
+      enum:
+        - deposit
+        - withdrawal
+        - limit_buy
+        - limit_sell
+        - market_buy
+        - market_sell
+
+    TransactionStatus:
+      type: string
+      description: |
+        Lifecycle state of an order-backed row — how the order rests, or how it
+        closed; transfer rows carry no `status` at all.
+
+        `partial` — still open, already partially executed. It aligns this
+        enum with the notifier's WebSocket enum, which has always published
+        the value while REST did not. Terminal states outrank it: an order
+        that filled in part and was then canceled stays `canceled` and keeps
+        its `filled_*` figures. Widening this enum is itself a compatibility
+        concern — a client switching exhaustively on `status` must tolerate
+        the new value.
+
+        **Precedence**, when a row's flags admit more than one reading:
+        `canceled` > `expired` > `fulfilled` > `partial` > `pending`. A
+        fulfilled buy stays `fulfilled` after its escrow surplus is claimed.
+
+        **`refunded` is deprecated** and is never emitted from the next release
+        on, by either surface — `/orders` never emitted it at all. Escrow state
+        is orthogonal to lifecycle: a refund does not un-fill or un-expire an
+        order, and returning the money must not relabel the executed trade.
+        Read `row.refund.status` (`claimable` / `refunded`) instead. The value
+        stays in this enum for one release so an exhaustive client keeps
+        compiling, then goes.
+      enum:
+        - pending
+        - partial
+        - fulfilled
+        - canceled
+        - expired
+        # Deprecated: never emitted from the next release on. Read `refund.status`.
+        - refunded
+
+    OpenOrder:
+      type: object
+      description: |
+        One order row. The schema is named for the list it started as, but the
+        list is wider: a row is either open, or closed and still carrying an
+        escrow story (`refund`). `status` says which, and it is present on
+        every row. Asset metadata (symbol / name / icon) is resolved
+        client-side via the asset catalog using `token_address`; the row only
+        carries IDs.
+
+        **Two orthogonal axes.** `status` is the lifecycle — how the order
+        rests or how it closed. `refund` is the escrow — what happened to the
+        money the orderbook is holding. Neither determines the other: an
+        expired order stays `expired` after its escrow is claimed, and a
+        `fulfilled` buy can carry a claimable surplus for as long as nobody
+        claims it.
+
+        **Two identifiers, and only one of them cancels an order.** `id` is the
+        indexer's row key — use it for paging and list keys. `order_id` is the
+        on-chain order id and is what a cancel-order call takes. They are
+        different numbers (row `257` can hold on-chain order `14`), so
+        cancelling with `id` addresses the wrong order or none at all.
+
+        The row carries TWO sets of price/total fields. `quote_token` is the
+        self-contained on-chain leg — which token the price is denominated
+        in (`quote_token.address`, typically USDt) plus the per-token price
+        and total notional in that token. These are what the user actually
+        signed; FX-invariant.
+
+        Top-level `price_per_token` and `total` are denominated in
+        `currency` (selected via `?quote=`, default `usd`) and scale per
+        request.
+
+        **Fill progress.** `amount` is the FULL ORIGINAL order size as
+        placed — not the unfilled remainder it used to carry — and `total`
+        and `quote_token.total` are derived from it, so every top-level
+        figure now describes the whole order. `filled_amount` and
+        `remaining_amount` split that size into the executed and unexecuted
+        parts, and `filled_percent` is the ready-made display value. All
+        four are FX-invariant and present on every row. A client that wants
+        the quantity still locked in the order reads `remaining_amount`; for
+        the value still locked it computes
+        `remaining_amount × price_per_token`.
+
+        **Expiry.** `expires_at` is the expiry instant (`null` when the
+        order has no expiry) and `expires_in_seconds` the countdown to it,
+        computed per request so it is exact no matter how long the page sat
+        in cache. Both are FX-invariant and always present, possibly null.
+      properties:
+        id:    { type: string }
+        order_id:
+          type: string
+          description: |
+            The on-chain order id — the value a cancel-order call takes.
+            Distinct from `id`, which is the indexer's row key. A string
+            because the column is a chain-side bigint.
+
+            Added after the v0.8.0 tag; ships in the next release.
+        operation_hash:
+          type: string
+          nullable: true
+          description: Hash of the on-chain operation that placed this order. null when the indexer hasn't backfilled it yet.
+        side:
+          $ref: "#/components/schemas/OrderSide"
+        status:
+          allOf:
+            - $ref: "#/components/schemas/TransactionStatus"
+          description: |
+            Lifecycle state of the row, in the same vocabulary `/transactions`
+            uses: `pending` | `partial` | `expired` | `fulfilled` | `canceled`.
+            Always present. On an open row it is `pending` or `partial` — which
+            a client previously had to infer from `filled_amount`.
+
+            **`refunded` is never emitted on this field**, on this route or any
+            other. Escrow state is the separate `refund` block; read
+            `refund.status` for it.
+        token_address:
+          type: string
+          description: Token contract address of the asset being traded (base token of the orderbook).
+        orderbook_address:
+          type: string
+          description: Address of the orderbook contract this order lives in.
+        amount:
+          type: number
+          description: |
+            The **full original order size as placed**, in whole RWA units —
+            NOT the unfilled remainder this field used to carry. FX-invariant.
+
+            `total` and `quote_token.total` are derived from it and therefore
+            follow the same semantics: they are the notional of the whole
+            order, not of the part still open. A client that wants the
+            quantity still locked reads `remaining_amount`; for the value
+            still locked it computes `remaining_amount × price_per_token`
+            (or `remaining_amount × quote_token.price_per_token` for the
+            on-chain leg).
+        filled_amount:
+          type: number
+          description: "Executed part of the order, in whole RWA units. FX-invariant."
+        remaining_amount:
+          type: number
+          description: "Unexecuted part of the order — on an open row, the quantity still on the book, which is what `amount` used to hold; on a closed row, the unfilled quantity, while what actually came back is `refund.amount` (a different token on a buy, and absent when nothing came back). In whole RWA units, FX-invariant. `amount == filled_amount + remaining_amount` on every row, up to 6-decimal rounding."
+        filled_percent:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: "Executed share of the order, 0…100. **Display-only — never use it as a completion test in either direction; `remaining_amount` (and, on `/transactions`, `status`) are the completion signals.** On a row whose counters report a strictly partial fill it is capped at `99.99` and floored at `0.01`, so rounding alone can never make partial progress look finished or untouched."
+        quote_token:
+          $ref: "#/components/schemas/QuoteTokenAmount"
+        currency:
+          type: string
+          description: "Lowercase ISO code echoing the applied `?quote=` value (or `usd` by default)."
+        price_per_token:
+          type: number
+          nullable: true
+          description: "Per-token price in `currency`. The limit price on `limit_*`; on `market_*` the executed average, gross of fees, over the filled units — before any fill, the reference price the escrow was sized from. Scales with `?quote=`. null = no price is known for this order's quote token — render \"—\"; the on-chain `quote_token` block below is still populated and non-nullable. `0` is different: an honest, known zero. null stays null under every `?quote=`."
+        total:
+          type: number
+          nullable: true
+          description: "`amount × price_per_token` in `currency` — the whole order's notional. Scales with `?quote=`. null exactly when `price_per_token` is null."
+        created_at:
+          type: string
+          format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: "When the order closed, normalized to RFC-3339 UTC (`Z` suffix). null while it is still open. Always present — an explicit null, never an absent key. A later refund does not rewrite it: it dates the close, not the return of the escrow, which is `refund.refunded_at`. It is also the date this list sorts closed rows by, so a mixed page orders on `ended_at ?? created_at`."
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Expiry instant of the order, normalized to RFC-3339 UTC (`Z` suffix). null means the order has no expiry. Always present — an explicit null, never an absent key."
+        expires_in_seconds:
+          type: integer
+          nullable: true
+          description: "Seconds until `expires_at`, computed per request rather than at cache-write time, so it stays exact however long the page sat in cache. Floored to whole seconds and never negative. `0` means the order is expired or expiring right now, and it reads `0` on an already-expired row as a matter of course. On a row whose `status` is still `pending` / `partial` a `0` means the admin keeper has not swept the order yet: render it as expiring, disable actions, and do not offer a claim — the escrow is not claimable until the sweep lands and the row turns `expired`. null exactly when `expires_at` is null."
+        can_cancel:
+          type: boolean
+          description: >
+            Whether a cancel-order call would be accepted for this row.
+            `false` on every closed row — `expired`, `fulfilled` or `canceled`
+            alike — so a list that mixes open and closed rows needs no side
+            channel to decide which rows keep a cancel affordance.
+        refund:
+          allOf:
+            - $ref: "#/components/schemas/OrderRefund"
+          description: >
+            The escrow story of this row. **OMITTED** when the row has no
+            escrow story: every open row, and every closed row that returned
+            nothing (a fulfilled sell, a buy filled at its limit, a claim on a
+            zero residual). `if (row.refund)` is the whole test, and its
+            presence is what earns a closed row a place in this list at all.
+      required: [id, order_id, side, status, token_address, orderbook_address, amount, filled_amount, remaining_amount, filled_percent, quote_token, currency, price_per_token, total, created_at, ended_at, expires_at, expires_in_seconds, can_cancel]
+
+    QuoteTokenAmount:
+      type: object
+      description: "Self-contained on-chain leg of an order: the quote token (`address`) plus the per-token price and total notional denominated in that token. None of these change with `?quote=` — they're the values the user actually signed and what the order fills against."
+      properties:
+        address:         { type: string, description: "Address of the quote token (e.g. USDt)." }
+        price_per_token: { type: number, description: "Per-token price in the quote token — the limit price on `limit_*`, the executed average (gross of fees) on `market_*`." }
+        total:           { type: number, description: "`amount × price_per_token` in the quote token." }
+      required: [address, price_per_token, total]
+
+    OrderSide:
+      type: string
+      enum:
+        - limit_buy
+        - limit_sell
+        - market_buy
+        - market_sell
+
+    OrderStatusFilter:
+      type: string
+      description: >
+        One value of the `?status=` lifecycle filter on the orders list.
+        `open` matches the two non-terminal row statuses, `pending` and
+        `partial`; the other three match the row `status` of the same name.
+        Values are combined as a union, so `status=open,expired` lists both.
+      enum:
+        - open
+        - expired
+        - fulfilled
+        - canceled
+
+    RefundFilter:
+      type: string
+      description: >
+        One value of the `?refund=` escrow filter on the orders list. `none`
+        selects the rows with no escrow story (a filter value only, never a
+        row value); `claimable` the rows whose escrow is still held by the
+        orderbook contract and can be recovered by the order's initiator;
+        `refunded` the rows whose escrow has already been returned, as far
+        back as the snapshot window reaches. Values are combined as a union,
+        so `refund=none,claimable` lists open orders and claims together.
+      enum:
+        - none
+        - claimable
+        - refunded
+
+    OrderRefund:
+      type: object
+      description: |
+        What has happened, or is still owed, to the escrow an orderbook holds
+        for an order. The same block on the orders list and on `/transactions`;
+        OMITTED on any row with no escrow story, so its presence is the test,
+        not its value.
+
+        Orthogonal to the row's `status` — a refund does not un-fill or
+        un-expire an order. A price-improved buy is `fulfilled` and
+        `refund.status: claimable` at the same time, and stays `fulfilled`
+        after the claim.
+
+        **Composing the claim.** `claimable` means the money is still in the
+        contract and only the order's initiator can move it, by calling
+        `processRefund` on `orderbook_address`. Group the rows by
+        `orderbook_address`, send the buy side and the sell side as separate
+        operations, and take the id from the row's `order_id` — never `id`,
+        which is the indexer's row key. The list is authoritative for the
+        orderbook's own preconditions only: a sell claim can still be refused
+        by the RWA token's KYC hook.
+      properties:
+        status:
+          type: string
+          enum: [claimable, refunded]
+          description: >
+            `claimable` — the escrow is still in the contract and the initiator
+            can recover it. `refunded` — it has already been returned, by a
+            claim or by the inline refund a cancel performs.
+        token_address:
+          type: string
+          description: >
+            Contract address of the token the escrow is denominated in: the
+            order's own quote currency on a buy, the RWA token on a sell. It
+            therefore equals the row's `token_address` on sells only — on a buy
+            the money comes back in what the buyer escrowed, not in the asset
+            they were bidding for. Resolve symbol and decimals from it the same
+            way as for any other address.
+        amount:
+          type: number
+          description: >
+            Quantity in `token_address`'s own units, decimals already applied.
+            **FX-invariant** — a token quantity, not a valuation, so it never
+            scales with `?quote=`. On `claimable` it is the residual the
+            contract will pay out; on `refunded` it is what the contract
+            actually paid, which for a canceled order on a fee-bearing book can
+            be strictly less than the residual.
+        currency:
+          type: string
+          description: "Lowercase ISO code echoing the applied `?quote=` value (or `usd` by default) — the denomination of `value`, exactly like the row's own `currency`."
+        value:
+          type: number
+          nullable: true
+          description: >
+            `amount` valued in `currency`. **Scales with `?quote=`**, unlike
+            `amount`. Always present as a key; `null` when the refund token has
+            no price — an explicit "no data", never a zero.
+        refunded_at:
+          type: string
+          format: date-time
+          description: >
+            When the escrow came back, RFC-3339 UTC. Present only on
+            `status: refunded` and absent on `claimable`, where nothing has
+            come back yet. Distinct from the row's `ended_at`, which a refund
+            never rewrites — a claim can land a day after the order closed.
+        operation_hash:
+          type: string
+          nullable: true
+          description: >
+            Hash of the operation that returned the escrow — the claim, or the
+            cancel that refunded inline. NOT the placement hash the row carries
+            at top level; the two are different operations. Present only on
+            `status: refunded`, and `null` there when no event records the
+            return.
+      required: [status, token_address, amount, currency, value]
+
+    RefundTotal:
+      type: object
+      description: >
+        One refund-token subtotal on the orders list's `totals`, summed over
+        the request's filtered set before paging. One entry per distinct refund
+        token, because the money comes back in several tokens and they do not
+        add up.
+      properties:
+        token_address:
+          type: string
+          description: "Contract address of the refund token this entry sums — the grouping key, matching `refund.token_address` on the rows."
+        symbol:
+          type: string
+          description: >
+            Display symbol for that token, from the asset registry, else the
+            indexer's token metadata, else the literal `unknown` — a label to
+            render, never a key to match on.
+        amount:
+          type: number
+          description: >
+            Sum of `refund.amount` over the group's claimable rows, in the
+            token's own units. FX-invariant, like the per-row field it sums.
+        currency:
+          type: string
+          description: "Lowercase ISO code echoing the applied `?quote=` value (or `usd` by default) — the denomination of `value`."
+        value:
+          type: number
+          nullable: true
+          description: >
+            The group's `amount` valued in `currency`; scales with `?quote=`.
+            `null` when ANY member of the group is unpriced, rather than a
+            partial sum presented as a total.
+      required: [token_address, symbol, amount, currency, value]
+
+    AsOfSources:
+      type: object
+      description: |
+        Which chain state a response's rows reflect, KEYED BY THE SOURCE THAT
+        PRODUCED THEM. It describes the ROWS, not the head at serve time: a
+        cached page carries the levels its rows were assembled at, so a client
+        can tell an answer that predates its own just-included operation.
+
+        A response carries one key per upstream it actually reads, and only
+        those. `/orders` reads the orderbook alone and carries `orderbook`
+        alone; `/transactions` and `/activity/summary` read both and carry
+        both. An ABSENT key means the route never reads that source. A source
+        that WAS read but could not be dated is present as the zero marker
+        `{level: 0, timestamp: "", realtime: false}` — never omitted, so a
+        client's freshness gate can never silently vanish.
+
+        Gate on the source that produced the rows you are gating, never on a
+        minimum across the keys: a claim is an orderbook fact, so it waits on
+        `as_of.orderbook.level >= L`, and a lagging chain head must not hold it
+        shut. Both keys carry chain block levels, so either compares directly
+        with an operation's inclusion level `L` — they differ in what they
+        cover, not in units.
+      properties:
+        orderbook:
+          allOf:
+            - $ref: "#/components/schemas/IndexerAsOf"
+          description: >
+            State of the Equiteez orderbook index when the ORDER-derived data
+            in this response was assembled. On `/orders` it dates the whole
+            list; on `/transactions` the order half of the merged feed — every
+            row carrying a `refund` block is an order row, so it covers exactly
+            the rows a claim can touch; on `/activity/summary` it is a MERGE
+            over `open_orders` and `claimable_refunds` (the LOWER `level`,
+            `realtime` only if BOTH were).
+        chain:
+          allOf:
+            - $ref: "#/components/schemas/IndexerAsOf"
+          description: >
+            State of the chain indexer (MvKT) when the CHAIN-derived data in
+            this response was assembled: transfer rows on `/transactions`,
+            `transfers` and `onchain_events` on `/activity/summary`, merged the
+            same way. The head is read BEFORE the queries it dates, so those
+            rows cover at least this level — never less. Absent on `/orders`.
+            `?fresh=1` does NOT reach this half: it can now be dated, but it
+            cannot be forced. MvKT publishes no index status, so `realtime`
+            here is the head's lag alone.
+
+    IndexerAsOf:
+      type: object
+      description: |
+        One source's marker inside `as_of` (see `AsOfSources`): the state that
+        source had reached when the rows it produced were assembled. It
+        describes the ROWS, not the head at serve time, so a cached page
+        carries the level its rows were assembled at and a client can tell an
+        answer that predates its own just-included operation.
+
+        On either feed route, a page walk that sees a level change between
+        pages was rebuilt underneath and should restart.
+
+        `realtime` is fixed when the rows were assembled: the source was at
+        most 60 s behind the instant it was read, and for `orderbook` also
+        reported itself caught up. Cache age never enters it, so a cached entry
+        cannot age out of `realtime`.
+      properties:
+        level:
+          type: integer
+          description: Block level the indexer had reached when these rows were assembled.
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of that block, RFC-3339 UTC.
+        realtime:
+          type: boolean
+          description: >
+            The source was caught up when these rows were assembled —
+            `timestamp` was within 60 s of the read and, under `orderbook`, the
+            index also reported itself realtime. MvKT publishes no such status,
+            so `chain` is the lag test alone. `false` means lagging or
+            reindexing: render the rows that source produced read-only
+            ("syncing") instead of offering a claim, since they may already be
+            stale on chain.
+      required: [level, timestamp, realtime]
+
+    # --- RWA — public marketplace ----------------------------------------------
+
+    PublicAssetsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RWAAsset"
+      required: [items]
+
+    AssetHighlights:
+      type: object
+      description: >
+        Three independently-ranked blocks. Each is always present and always an
+        array — a block with nothing to show is `[]`, never null.
+      properties:
+        as_of:
+          type: string
+          format: date-time
+          nullable: true
+          description: >
+            When the market data behind these blocks was last read from the price
+            service. Null when that snapshot is unavailable, in which case
+            `top_gainers` is empty — the other two blocks do not depend on it.
+        top_gainers:
+          type: array
+          items: { $ref: "#/components/schemas/HighlightAsset" }
+        trending:
+          type: array
+          items: { $ref: "#/components/schemas/HighlightAsset" }
+        newly_added:
+          type: array
+          items: { $ref: "#/components/schemas/HighlightAsset" }
+      required: [as_of, top_gainers, trending, newly_added]
+
+    HighlightAsset:
+      type: object
+      description: >
+        One card in a highlights block. Carries the metric that put it there
+        (`change_24h`, `volume_24h`, `listed_at`) so the card can show its own
+        justification without a second request.
+      properties:
+        address: { type: string, description: "On-chain RWA token contract." }
+        symbol:
+          type: string
+          description: >
+            Pair symbol, lower-case (`ntbm-usdt`), for assets the price service
+            knows; the catalog token symbol otherwise.
+        name: { type: string }
+        icon: { type: string }
+        market_type: { type: string, enum: [primary, secondary] }
+        price:
+          allOf: [{ $ref: "#/components/schemas/RWAMarketPrice" }]
+          description: >
+            Multi-currency price, identical to the one `GET /assets` reports for
+            the same asset.
+        quote_price:
+          type: object
+          description: >
+            The same price denominated in the pair's settlement token — 50.00 USDT,
+            not the 49.93 USD it converts to.
+          properties:
+            value: { type: number }
+            currency: { type: string, example: usdt }
+          required: [value, currency]
+        change_24h:
+          type: object
+          nullable: true
+          description: >
+            24h price movement, denominated in `currency` (the pair's settlement
+            token), NOT in the currency `price` is rendered in. Null — and always
+            rendered as an explicit null rather than an absent key — when there is
+            no baseline 24 hours back: a pair younger than ~25h, a gap in the
+            upstream series, or a primary-issuance asset, which never trades and so
+            never has one. Null is not zero; do not render it as "unchanged".
+          properties:
+            pct: { type: number, nullable: true }
+            abs: { type: number, nullable: true }
+            currency: { type: string, example: usdt }
+          required: [pct, abs, currency]
+        volume_24h:
+          allOf: [{ $ref: "#/components/schemas/RWAMarketPrice" }]
+          description: 24h traded notional — why the asset is in `trending`.
+        listed_at:
+          type: string
+          format: date-time
+          description: >
+            When the asset entered the catalog — why it is in `newly_added`. Read
+            as "entered the catalog", not "started trading": the upstream record
+            can be created before the token is deployed or listed.
+      required: [address, symbol, change_24h]
+
+    RWAAsset:
+      type: object
+      description: Marketplace + detail view of one RWA asset.
+      properties:
+        address: { type: string }
+        category:
+          type: string
+          description: Always `rwa` for RWAAsset.
+        market_type:
+          type: string
+          description: §4.3 Asset catalog field — primary | secondary | none.
+        apy:
+          type: number
+          description: Annual yield, percent.
+        holders_count: { type: integer }
+        total_supply:  { type: string }
+        updated_at:
+          type: string
+          format: date-time
+          description: |
+            When the authoritative source for this asset's descriptive data
+            was last modified — the "last synced" indicator the Exchange
+            header shows. Independent of the live orderbook timestamp.
+        created_at:
+          type: string
+          format: date-time
+          description: |
+            When the asset record was first created in the upstream catalog —
+            the closest thing to a listing date, and what the `newly_added`
+            block of `GET /assets/highlights` orders on (surfaced there as
+            `listed_at`). Read it as "entered the catalog", not "started
+            trading": the record can be created as a draft well before the
+            token is deployed or listed. Omitted when unknown.
+        metadata:
+          $ref: "#/components/schemas/RWAMetadata"
+        profile:
+          $ref: "#/components/schemas/AssetProfile"
+        finance:
+          $ref: "#/components/schemas/AssetFinance"
+        contracts:
+          type: array
+          description: |
+            On-chain contracts attached to the asset in the eqtz CRM —
+            primary- and secondary-market issuance addresses, the orderbook,
+            the RWA token itself.
+          items:
+            $ref: "#/components/schemas/AssetContract"
+        orderbook:
+          $ref: "#/components/schemas/OrderbookSummary"
+        stats:
+          $ref: "#/components/schemas/AssetStats"
+        launch_status:
+          type: string
+          description: |
+            Lightweight launchpad badge — the string status (active | inactive |
+            paused | closed) of the launch surfaced for this asset. Omitted when
+            the asset has no launch. The full card is at
+            `GET /assets/{token_address}/launch`.
+          enum: [active, inactive, paused, closed, unknown]
+        has_active_launch:
+          type: boolean
+          description: |
+            True when the surfaced launch is purchasable now (status active, not
+            paused, within the sale window, not closed). Lets the catalog/list
+            badge live sales without an extra call per row. Omitted when false.
+
+    AssetStats:
+      type: object
+      description: |
+        Market-metrics block assembled by rwa_stats_job and cached at
+        cache.RWAStats. Money fields are multi-currency (RWAMarketPrice) — the
+        endpoint returns every supported currency and the client picks one.
+        Supply fields are raw-nat strings (precision; NOT decimals-applied).
+      properties:
+        symbol: { type: string }
+        price:
+          $ref: "#/components/schemas/RWAMarketPrice"
+        volume_24h:
+          $ref: "#/components/schemas/RWAMarketPrice"
+        market_cap:
+          $ref: "#/components/schemas/RWAMarketPrice"
+        fdv:
+          $ref: "#/components/schemas/RWAMarketPrice"
+        total_supply: { type: string }
+        circulating_supply:
+          type: string
+          description: |
+            total_supply minus the on-chain balance of the launchTreasury
+            wallet(s) (unsold inventory). Raw nat string.
+        ath:
+          $ref: "#/components/schemas/ATHStat"
+        price_one_year_ago:
+          $ref: "#/components/schemas/RWAMarketPrice"
+        avg_hold_time_days:
+          type: number
+          description: |
+            Mean holding time in days over current holders (now − first
+            acquisition). Omitted when not computable. Balance is reconstructed
+            from launchpad + orderbook + p2p movements; holders that moved
+            tokens through other contracts or burned them are not reflected.
+        updated_at:
+          type: integer
+          format: int64
+          description: Unix seconds when the stats block was assembled.
+
+    ATHStat:
+      type: object
+      description: All-time high — the multi-currency peak price and the date it occurred.
+      properties:
+        price:
+          $ref: "#/components/schemas/RWAMarketPrice"
+        date:
+          type: string
+          description: ISO date (YYYY-MM-DD) of the all-time high.
+
+    RWAMetadata:
+      type: object
+      properties:
+        symbol:   { type: string }
+        name:     { type: string }
+        decimals: { type: integer }
+        icon:     { type: string }
+
+    RWAMarketPrice:
+      type: object
+      description: |
+        Multi-currency display price block sourced from mavryk-external-data
+        (`/v1/rwa/{symbol}/latest?in=<csv>`). The cache payload always carries
+        the full set; the rwa-backend never partial-fills these fields, so a
+        zero value means "external-data has no quote for that pair", not
+        "currency was not requested".
+      properties:
+        usd: { type: number }
+        eur: { type: number }
+        btc: { type: number }
+        eth: { type: number }
+        jpy: { type: number }
+        cny: { type: number }
+        krw: { type: number }
+        gbp: { type: number }
+        rub: { type: number }
+        aed: { type: number }
+        timestamp:
+          type: string
+          format: date-time
+
+    AssetProfile:
+      type: object
+      description: Descriptive / presentation content from the eqtz CRM.
+      properties:
+        asset_type:
+          type: string
+          description: "Asset type (Hotel, Real Estate, ...)."
+        brand:       { type: string }
+        description: { type: string }
+        image_url:
+          type: string
+          description: Convenience duplicate of `metadata.icon`.
+        web_url:    { type: string }
+        status:     { type: string }
+        lifecycle:  { type: string }
+        is_draft:   { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+        ratings:
+          type: array
+          description: |
+            Pass-through until the product team pins a schema. Emitted only
+            if the CRM metadata actually contained a `ratings` key.
+          items: { type: integer }
+        gallery:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaItem"
+        location:
+          $ref: "#/components/schemas/AssetLocation"
+
+    MediaItem:
+      type: object
+      properties:
+        url:     { type: string }
+        kind:    { type: string }
+        caption: { type: string }
+
+    AssetLocation:
+      type: object
+      properties:
+        name:    { type: string }
+        city:    { type: string }
+        country: { type: string }
+        coordinates:
+          $ref: "#/components/schemas/GeoCoordinates"
+
+    GeoCoordinates:
+      type: object
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+
+    AssetFinance:
+      type: object
+      properties:
+        decimals:                    { type: integer }
+        max_supply:                  { type: string, description: "Raw integer (counter — may exceed JSON Number; kept as string)." }
+        mintable:                    { type: boolean }
+        value_per_token:             { type: number, format: double, description: "Issuance unit price in human units (chain decimals already applied)." }
+        last_dividend_amount:        { type: number, format: double, description: "Last paid dividend in human units (chain decimals already applied)." }
+        last_dividend_at:
+          type: string
+          format: date-time
+        total_dividends_distributed: { type: string, description: "Lifetime accumulator — precision-sensitive, kept as string to avoid float64 drift on multi-year sums." }
+
+    AssetContract:
+      type: object
+      properties:
+        address:              { type: string }
+        type:                 { type: string }
+        status:               { type: string }
+        deployed_at:
+          type: string
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+        price_per_token:      { type: number, format: double, description: "Issuance unit price in human units (chain decimals already applied)." }
+        min_purchase_amount:  { type: number, format: double, description: "Minimum purchase in human units (chain decimals already applied)." }
+        tokens_offered:       { type: string, description: "Token counter (may exceed JSON Number; kept as string)." }
+        tokens_sold:          { type: string, description: "Token counter (may exceed JSON Number; kept as string)." }
+        trading_pair:         { type: string }
+        trading_pair_address: { type: string }
+
+    # --- RWA — orderbook & prices ----------------------------------------------
+
+    QuoteToken:
+      type: object
+      properties:
+        address:  { type: string }
+        symbol:   { type: string }
+        decimals: { type: integer }
+        token_id: { type: integer }
+
+    OrderbookSummary:
+      type: object
+      description: |
+        Fee + quote-token snapshot embedded in `RWAAsset`. Live prices
+        (last-matched, top-of-book) deliberately live elsewhere — this is a
+        catalog payload, not market data.
+      properties:
+        address:            { type: string }
+        buy_order_fee:      { type: number }
+        sell_order_fee:     { type: number }
+        quote_token:
+          $ref: "#/components/schemas/QuoteToken"
+        updated_at:
+          type: string
+          format: date-time
+
+    AssetLaunchResponse:
+      type: object
+      description: |
+        Envelope for GET /assets/{token_address}/launch. A token can have several
+        launches, so `launches` is an array (active first, then newest; empty when
+        none).
+      required: [address, launches]
+      properties:
+        address: { type: string }
+        launches:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetLaunch"
+
+    AssetLaunch:
+      type: object
+      description: |
+        Launchpad sale for one RWA asset. Amount fields are raw on-chain integers
+        as strings (divide by `token.decimals`, carried on the card, to display);
+        payment `price` is already a human number in the payment token's units.
+        `progress_percent` is computed by the backend.
+      properties:
+        id:
+          type: integer
+          description: launchpad_launch id — stable key when a token has several launches.
+        name: { type: string }
+        status:
+          type: string
+          enum: [active, inactive, paused, closed, unknown]
+        active:
+          type: boolean
+          description: |
+            Purchasable now — status active, not paused, within the sale window,
+            not closed.
+        is_paused: { type: boolean }
+        sale_start: { type: string, format: date-time }
+        sale_end:   { type: string, format: date-time }
+        sale_closed: { type: string, format: date-time }
+        total_bought:  { type: string, description: "Raw, in RWA token units." }
+        max_amount_cap: { type: string, description: "Raw, in RWA token units." }
+        progress_percent:
+          type: number
+          description: total_bought / max_amount_cap * 100 (0 when cap is 0).
+        purchase_fee_percent: { type: string }
+        participant_count:
+          type: integer
+          description: |
+            Distinct buyers, from the indexer stats view (lags up to ~60 s).
+            Best-effort — omitted when the stats view has no row yet.
+        token:
+          $ref: "#/components/schemas/LaunchTokenInfo"
+        sale_options:
+          type: array
+          items:
+            $ref: "#/components/schemas/LaunchSaleOption"
+
+    LaunchTokenInfo:
+      type: object
+      description: |
+        The RWA token being sold. Carries symbol/decimals from the token registry
+        so the card's raw amount strings are formattable without a second
+        /assets round-trip (decimals falls back to 6 when the registry has no
+        entry; symbol is omitted when unknown).
+      properties:
+        address:  { type: string }
+        token_id: { type: integer }
+        symbol:   { type: string }
+        decimals: { type: integer }
+
+    LaunchSaleOption:
+      type: object
+      description: One sale tier-bucket (e.g. "public") with its tiers + payments.
+      properties:
+        name: { type: string }
+        total_bought:  { type: string }
+        max_amount_cap: { type: string }
+        is_paused: { type: boolean }
+        progress_percent: { type: number }
+        sale_start: { type: string, format: date-time }
+        sale_end:   { type: string, format: date-time }
+        tiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/LaunchTier"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/LaunchPayment"
+
+    LaunchTier:
+      type: object
+      description: Per-tier purchase rule (raw amounts as strings).
+      properties:
+        name: { type: string }
+        min_purchase_amount: { type: string }
+        max_amount_per_wallet_total: { type: string }
+
+    LaunchPayment:
+      type: object
+      description: |
+        One accepted payment currency. `price` is the human price per RWA token
+        in the payment token's units (raw nat already divided by
+        `token.decimals`; a fixed sale price, not a market quote) — e.g. 1250.64
+        for USDT. Same ready-to-display convention as orderbook levels. When the
+        indexer row carries no payment token ref, `token` is omitted and the
+        divisor falls back to 6 (micro-USDT).
+      properties:
+        name: { type: string }
+        price: { type: number }
+        token:
+          $ref: "#/components/schemas/LaunchPaymentToken"
+
+    LaunchPaymentToken:
+      type: object
+      description: |
+        The payment currency behind `price`. decimals falls back to 6 (micro-USDT,
+        the orderbook quote posture) when the registry has no metadata.
+      properties:
+        address:  { type: string }
+        symbol:   { type: string }
+        decimals: { type: integer }
+
+    OrderbookDepth:
+      type: object
+      description: Aggregated bid/ask depth for a single asset.
+      properties:
+        token_address:     { type: string }
+        orderbook_address: { type: string }
+        quote_token:
+          $ref: "#/components/schemas/QuoteToken"
+        best_bid: { type: number }
+        best_ask: { type: number }
+        spread:
+          type: number
+          minimum: 0
+          description: |
+            `best_ask - best_bid`. Never negative: the book is assembled from raw
+            resting orders and matching is a separate on-chain operation, so the top
+            of the book can be crossed (`best_bid` > `best_ask`) — `spread` is 0
+            there, as it is on a touching book. Compare `best_bid`/`best_ask`, which
+            are always the raw values, to tell the two apart.
+        bids:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderbookLevel"
+        asks:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderbookLevel"
+        totals:
+          $ref: "#/components/schemas/OrderbookTotals"
+        generated_at:
+          type: string
+          format: date-time
+
+    OrderbookLevel:
+      type: object
+      properties:
+        price:        { type: number }
+        amount:       { type: number }
+        total_quote:  { type: number }
+        orders_count: { type: integer }
+
+    OrderbookTotals:
+      type: object
+      properties:
+        bid_volume:     { type: number }
+        ask_volume:     { type: number }
+        buy_ratio_pct:  { type: number }
+        sell_ratio_pct: { type: number }
+        ratio_depth:
+          type: integer
+          description: |
+            Echoes the depth used to compute the ratio so the UI can label
+            it ("top-20 pressure", etc.) without re-deriving the number from
+            the slice length.
+
+    # --- Gas Station relay ------------------------------------------------------
+
+    RelaySubmitRequest:
+      type: object
+      required: [intent, operation]
+      properties:
+        intent:
+          $ref: "#/components/schemas/RelayIntent"
+        operation:
+          $ref: "#/components/schemas/RelayOperationRequest"
+        idempotencyKey:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: One per user click; 1..128 printable ASCII characters without spaces. Same payload replays the stored ids; a different payload under the same key is `409 IDEMPOTENCY_KEY_REUSED`.
+        permitCounter:
+          type: string
+          pattern: "^[0-9]+$"
+          description: The permit counter the wallet signed against, for `re-sign` diagnosis. Optional, stored, never verified.
+
+    RelayOperationRequest:
+      type: object
+      required: [to, parameter]
+      description: The `TransferParams` Taquito's `toTransferParams()` produced for `permitAndExecute`.
+      properties:
+        to:
+          type: string
+          description: The registered contract (`KT1…`); must equal the intent's `orderbookAddress` / `tokenAddress`.
+          example: KT1JqTYTFuX6JC4FjVYVe2JyvJ7wnT2o5qHw
+        amount:
+          description: Omitted, `0` or `"0"`; anything else is `400 AMOUNT_NOT_ZERO`. Never forwarded.
+          oneOf:
+            - type: integer
+              enum: [0]
+            - type: string
+              enum: ["0"]
+        parameter:
+          type: object
+          required: [entrypoint, value]
+          properties:
+            entrypoint:
+              type: string
+              enum: [permitAndExecute]
+            value:
+              description: Micheline JSON — a one-element list of `Pair(userPublicKey, userSignature, action)`; the `action` is the `Left`/`Right` chain of the contract's `%action` type.
+              type: array
+              items: {}
+
+    RelayIntent:
+      description: What the App says the permit does; the permit variant inside the Michelson must agree (`INTENT_MISMATCH` otherwise). `fee_top_up` appears only on reads.
+      oneOf:
+        - $ref: "#/components/schemas/RelayIntentPlaceOrder"
+        - $ref: "#/components/schemas/RelayIntentCancelOrders"
+        - $ref: "#/components/schemas/RelayIntentProcessRefund"
+        - $ref: "#/components/schemas/RelayIntentUpdateOperators"
+      discriminator:
+        propertyName: kind
+        mapping:
+          place_buy_order: "#/components/schemas/RelayIntentPlaceOrder"
+          place_sell_order: "#/components/schemas/RelayIntentPlaceOrder"
+          cancel_orders: "#/components/schemas/RelayIntentCancelOrders"
+          process_refund: "#/components/schemas/RelayIntentProcessRefund"
+          update_operators: "#/components/schemas/RelayIntentUpdateOperators"
+
+    RelayIntentPlaceOrder:
+      type: object
+      required: [kind, orderbookAddress, rwaTokenAmount, pricePerRwaToken, currency]
+      properties:
+        kind:
+          type: string
+          enum: [place_buy_order, place_sell_order]
+        orderbookAddress: { type: string }
+        rwaTokenAmount: { type: string, description: "Raw nat as a decimal string." }
+        pricePerRwaToken: { type: string, description: "Raw nat as a decimal string." }
+        currency: { type: string }
+        orderExpiry: { type: string, format: date-time, nullable: true }
+        isMarketOrder: { type: boolean }
+
+    RelayIntentCancelOrders:
+      type: object
+      required: [kind, orderbookAddress, orders]
+      properties:
+        kind:
+          type: string
+          enum: [cancel_orders]
+        orderbookAddress: { type: string }
+        orders:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [orderId, orderType]
+            properties:
+              orderId: { type: string }
+              orderType: { type: string, enum: [BUY, SELL] }
+
+    RelayIntentProcessRefund:
+      type: object
+      required: [kind, orderbookAddress, orderId, orderType]
+      properties:
+        kind:
+          type: string
+          enum: [process_refund]
+        orderbookAddress: { type: string }
+        orderId: { type: string }
+        orderType: { type: string, enum: [BUY, SELL] }
+
+    RelayIntentUpdateOperators:
+      type: object
+      required: [kind, tokenAddress, tokenId, operator]
+      properties:
+        kind:
+          type: string
+          enum: [update_operators]
+        tokenAddress: { type: string }
+        tokenId: { type: string }
+        operator: { type: string, description: "Must be the token's own allowlisted orderbook." }
+
+    RelayOperationAccepted:
+      type: object
+      required: [operationId, gasStationOperationId, status]
+      properties:
+        operationId:
+          type: string
+          format: uuid
+          description: Our id — the one to poll and the one `PERMIT_IN_FLIGHT` names.
+        gasStationOperationId:
+          type: string
+          description: The relayer's id; empty only for a replay of a row that never got one.
+        status:
+          $ref: "#/components/schemas/RelayStatus"
+
+    RelayStatus:
+      type: string
+      enum: [pending, batched, injecting, submitted, confirmed, failed, rejected]
+      description: "The Gas Station lifecycle. Terminal: `confirmed`, `failed` (chain rejected), `rejected` (policy, funding, or our own gates after persistence)."
+
+    RelayRemedy:
+      type: string
+      enum: [re-sign, retry, give-up]
+      description: "`re-sign`: re-read the permit counter and sign again, never resend the same bytes. `retry`: back off and resend the same payload. `give-up`: policy, funding or malformed — surface it."
+
+    RelayErrorCode:
+      type: string
+      description: |
+        Our own codes: `INVALID_REQUEST`, `INVALID_ENTRYPOINT`, `AMOUNT_NOT_ZERO`,
+        `CONTRACT_NOT_RELAYABLE`, `INVALID_PERMIT`, `SIGNER_MISMATCH`,
+        `UNSUPPORTED_BATCH`, `INTENT_MISMATCH`, `KYC_REQUIRED`,
+        `RELAY_QUOTA_EXCEEDED`, `PERMIT_IN_FLIGHT`, `IDEMPOTENCY_KEY_REUSED`,
+        `RELAY_UNAVAILABLE`, `RELAY_SUBMIT_FAILED`, `RELAY_SUBMIT_LOST`,
+        `OPERATION_LOST`, `INVALID_OPERATION_ID`, `NOT_FOUND`,
+        `AMOUNT_OUT_OF_BOUNDS`, `FEE_DISABLED`.
+        Gas Station codes passed through (an OPEN set — new ones appear without
+        notice, always with a `remedy`): `BAD_REQUEST`, `TARGET_NOT_ALLOWED`,
+        `CONTRACT_NOT_REGISTERED`, `ENTRYPOINT_NOT_ALLOWED`,
+        `PERMIT_ACTION_NOT_ALLOWED`, `QUOTA_EXCEEDED`, `FEE_CREDIT_REQUIRED`,
+        `PERMIT_MISSIGNED`, `PERMIT_EXPIRED`, `PERMIT_NOT_FOUND`,
+        `PERMIT_DUPLICATE`, `PERMIT_STALE_COUNTER`, `PERMIT_PAUSED`,
+        `SIMULATION_FAILED`, `NOT_PERMIT_OWNER`, `RPC_UNAVAILABLE`,
+        `SIGNER_UNAVAILABLE`, `BATCH_CONFLICT`, `FEE_TOKEN_MISCONFIGURED`,
+        `INTERNAL_ERROR`. `INSUFFICIENT_CREDITS` is never passed through.
+
+    RelayErrorResponse:
+      type: object
+      required: [error, message, remedy]
+      description: The relay envelope — the Gas Station's shape, so the App branches on `remedy` alone and never parses `message`.
+      properties:
+        error:
+          $ref: "#/components/schemas/RelayErrorCode"
+        message:
+          type: string
+          description: Human-readable; may change without notice.
+        remedy:
+          $ref: "#/components/schemas/RelayRemedy"
+        detail:
+          description: Structured context (`operationId` for `PERMIT_IN_FLIGHT`, `address` + `reason` for `CONTRACT_NOT_RELAYABLE`, …).
+
+    RelayOperation:
+      type: object
+      description: One relayed permit as this service tracks it — a superset of the `RELAY_OPERATION_UPDATED` notifier payload. `request_payload` is never returned.
+      required: [operationId, gasStationOperationId, status, intentKind, intent, contractAddress, permitVariant, opHash, feeChargedUnits, error, createdAt, updatedAt, settledAt]
+      properties:
+        operationId: { type: string, format: uuid }
+        gasStationOperationId:
+          type: string
+          nullable: true
+          description: Null only for a row whose submit never got a relayer id.
+        status:
+          $ref: "#/components/schemas/RelayStatus"
+        intentKind:
+          type: string
+          enum: [place_buy_order, place_sell_order, cancel_orders, process_refund, update_operators, fee_top_up]
+          description: "`intent.kind`; `fee_top_up` rows are written by the fee top-up route."
+        intent:
+          type: object
+          additionalProperties: true
+          description: The intent exactly as submitted.
+        contractAddress: { type: string }
+        permitVariant: { type: string, example: permitCancelOrders }
+        opHash: { type: string, nullable: true }
+        feeChargedUnits:
+          type: string
+          nullable: true
+          description: Quote-token units the relayer charged the wallet; null when free or refunded.
+        error:
+          type: object
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/RelayOperationError"
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        settledAt: { type: string, format: date-time, nullable: true }
+
+    RelayOperationError:
+      type: object
+      required: [code, message, remedy]
+      description: The terminal verdict — the Gas Station's `{code, message, remedy}` verbatim, or ours (`RELAY_SUBMIT_FAILED`, `RELAY_SUBMIT_LOST`, `OPERATION_LOST`, …).
+      properties:
+        code:
+          $ref: "#/components/schemas/RelayErrorCode"
+        message: { type: string }
+        remedy:
+          $ref: "#/components/schemas/RelayRemedy"
+
+    RelayOperationList:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RelayOperation"
+        nextCursor:
+          type: string
+          nullable: true
+          description: Pass back as `cursor` for the next page; null on the last page.
+
+    RelayConfig:
+      type: object
+      required: [enabled, fee, contracts, gaslessThresholdMumav]
+      properties:
+        enabled:
+          type: boolean
+          description: Relay on, not draining, and at least one contract registered.
+        fee:
+          $ref: "#/components/schemas/RelayFeeConfig"
+        contracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/RelayContract"
+        gaslessThresholdMumav:
+          type: string
+          description: Wallets holding less MAV than this are steered to the gasless path; a string like every unit-bearing value here.
+          example: "500000"
+
+    RelayFeeConfig:
+      type: object
+      required: [enabled]
+      description: "`{enabled:false}` alone when the service fee is off; the remaining fields are present only when it is on."
+      properties:
+        enabled: { type: boolean }
+        tokenContract: { type: string }
+        tokenId: { type: integer }
+        decimals: { type: integer }
+        collector: { type: string }
+        feeSchedule:
+          type: object
+          additionalProperties: { type: string }
+          description: Price per permit variant in smallest units; a variant absent here is free.
+        defaultFeeUnits: { type: string }
+        topUpMinUnits: { type: string }
+        topUpMaxUnits: { type: string }
+        freeAllowanceOps: { type: integer }
+        entrypoint: { type: string }
+
+    RelayContract:
+      type: object
+      required: [address, kind, permitActions]
+      properties:
+        address: { type: string }
+        kind:
+          type: string
+          enum: [rwa_token, orderbook, quote_token, kyc]
+        permitActions:
+          type: array
+          items: { type: string }
+          description: The variants the relayer will sponsor on this contract.
+
+    RelayFeeTopUpRequest:
+      type: object
+      required: [publicKey, signature, amountUnits]
+      properties:
+        publicKey: { type: string, description: The wallet's public key (edpk/sppk/p2pk); must derive to the JWT wallet. }
+        signature: { type: string, description: The TZIP-17 permit signature over the transfer the Gas Station rebuilds. }
+        amountUnits:
+          type: string
+          pattern: "^[0-9]+$"
+          description: Quote-token smallest units, within the bounds of `/relay/config`.
+
+    RelayFeeTopUpAccepted:
+      type: object
+      required: [operationId, gasStationOperationId, signerAddress, amountUnits]
+      properties:
+        operationId: { type: string, format: uuid }
+        gasStationOperationId: { type: string }
+        signerAddress: { type: string }
+        amountUnits: { type: string }
+
+    RelayFeeCredits:
+      type: object
+      required: [enabled]
+      description: "`{enabled:false}` when the fee is off; otherwise the Gas Station's credit block."
+      properties:
+        enabled: { type: boolean }
+        signerAddress: { type: string }
+        balanceUnits: { type: string }
+        decimals: { type: integer }
+        actionsRemaining:
+          type: object
+          additionalProperties: { type: integer }
+        freeAllowanceRemaining: { type: integer }
+        lifetimeToppedUpUnits: { type: string }
+        lifetimeSpentUnits: { type: string }
+
+    GasStationWebhookEvent:
+      type: object
+      required: [eventId, type, occurredAt, sponsorId, operation]
+      description: Pinned contract A. Unknown keys are ignored; `operation.error.detail` in particular is free-form.
+      properties:
+        eventId: { type: string, format: uuid, description: The sender's outbox row id; stable across retries. }
+        type: { type: string, enum: [operation.terminal] }
+        occurredAt: { type: string, format: date-time }
+        sponsorId: { type: string }
+        operation:
+          type: object
+          required: [operationId, status]
+          properties:
+            operationId: { type: string }
+            status: { type: string, enum: [confirmed, failed, rejected] }
+            opHash: { type: string, nullable: true }
+            sponseeAddress: { type: string }
+            permitSigner: { type: string, nullable: true }
+            permitVariant: { type: string, nullable: true }
+            contractAddress: { type: string, nullable: true }
+            entrypoint: { type: string, nullable: true }
+            feeChargedUnits: { type: string, nullable: true }
+            feeCreditUnits: { type: string, nullable: true }
+            estimatedFeeMumav: { type: string, nullable: true }
+            actualFeeMumav: { type: string, nullable: true }
+            error:
+              type: object
+              nullable: true
+              properties:
+                code: { type: string }
+                message: { type: string }
+                remedy: { type: string }
+                detail: { type: object, additionalProperties: true }
+            createdAt: { type: string, format: date-time }
+            submittedAt: { type: string, format: date-time, nullable: true }
+            settledAt: { type: string, format: date-time, nullable: true }
+
+    Notification:
+      type: object
+      description: One inbox row. `payload` is the allow-listed projection of the source event, in the source's own field names.
+      required: [id, event_id, event_type, kind, entity_key, payload, occurred_at, created_at, read_at]
+      properties:
+        id: { type: string, format: uuid }
+        event_id:
+          type: string
+          nullable: true
+          description: The bus `event_id` the row came from; `null` on relay rows and on bridge `completed` rows the deposits list backfilled from the ledger. Bridge rows the consumer wrote carry the bus id.
+        event_type:
+          type: string
+          description: The source event type, e.g. `ORDERBOOK_ORDER_UPDATED`, `TOKEN_LEDGER_TRANSFER`, `KYC_SET_MEMBER`, `RELAY_OPERATION_UPDATED`, `BRIDGE_DEPOSIT_UPDATED`.
+        kind:
+          $ref: "#/components/schemas/NotificationKind"
+        entity_key:
+          type: string
+          description: What the row is about (`order:<orderbook>/<type>/<id>`, `transfer:<id>`, `purchase:<id>`, `distribution:<id>`, `kyc:<wallet>`, `relay:<operation_id>`, `bridge:<aggregate_id>`); rows sharing it report on one thing.
+        payload:
+          type: object
+          additionalProperties: true
+          description: Allow-listed fields of the source event. Amounts are raw integer strings with `*_decimals` beside them; `null` decimals mean "cannot format".
+        occurred_at: { type: string, format: date-time, description: When it happened on chain (or settled); the time to display. }
+        created_at: { type: string, format: date-time, description: When this service stored it; the list order and the cursor space. }
+        read_at: { type: string, format: date-time, nullable: true }
+        superseded_at:
+          type: string
+          format: date-time
+          description: Present only with `include_superseded=1`; a newer row of the same order replaced this partial fill.
+    NotificationKind:
+      type: string
+      description: |
+        Open set; the App renders the kinds it knows and ignores the rest. Today:
+        orders — `order_placed`, `order_partially_filled`, `order_filled`,
+        `order_canceled` (a user cancel, escrow returned), `order_closed` (a market
+        order the contract closed with escrow still held; a refund is claimable),
+        `order_expired`, `order_refunded` (escrow returned after expiry or a fill);
+        transfers — `tokens_received`, `tokens_sent`, `tokens_minted`, `tokens_burned`;
+        launchpad — `launch_purchase`, `launch_purchase_recorded` (an admin-reconciled
+        purchase the user did not sign), `launch_tokens_distributed`;
+        verification — `kyc_frozen`, `kyc_unfrozen`, `kyc_updated`;
+        gasless relay — `relay_failed`, `relay_rejected` (never a confirmed one, its
+        on-chain twin is the notification);
+        bridge — `bridge_deposit_completed`, `bridge_deposit_stalled`, `bridge_withdrawal_failed`.
+      example: order_filled
+    NotificationsListResponse:
+      type: object
+      required: [items, next_cursor, unread_count, unread_capped]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Notification" }
+        next_cursor:
+          type: string
+          nullable: true
+          description: Pass back as `cursor` for the next page; `null` on the last page.
+        unread_count:
+          type: integer
+          description: The wallet's unread badge, capped at 100; independent of the page and the filters.
+        unread_capped: { type: boolean, description: True when the count hit the cap; show "99+". }
+    NotificationsSummary:
+      type: object
+      required: [unread_count, unread_capped, latest_created_at]
+      properties:
+        unread_count: { type: integer }
+        unread_capped: { type: boolean }
+        latest_created_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: The newest visible row's `created_at`; `null` for an empty inbox. The value to pass as `before`.
+    NotificationsReadRequest:
+      type: object
+      description: Exactly one of the two fields.
+      properties:
+        ids:
+          type: array
+          maxItems: 100
+          items: { type: string, format: uuid }
+        before:
+          type: string
+          format: date-time
+          description: Marks every unread row with `created_at` at or before this instant.
+    NotificationsReadResponse:
+      type: object
+      required: [updated]
+      properties:
+        updated: { type: integer, description: Rows that changed from unread to read. }

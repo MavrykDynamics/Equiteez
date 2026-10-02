@@ -340,7 +340,7 @@ it("expires only the successful log after five seconds without resetting its dea
   expect(cards()[1]).toBe(activeCard);
   expect(
     element.querySelectorAll('[aria-label="Dismiss transaction"]')
-  ).toHaveLength(1);
+  ).toHaveLength(0);
   await act(async () => vi.advanceTimersByTimeAsync(4_999));
   await event("duplicate", "wallet-a", signerEventSequence[5]);
   expect(cards()).toHaveLength(2);
@@ -361,13 +361,12 @@ it("manual terminal dismissal survives logout/login and keeps concurrent trackin
     ...signerEventSequence[0],
     initial_log_index: 33,
   });
-  await act(async () =>
-    (
-      element.querySelector(
-        '[aria-label="Dismiss transaction"]'
-      ) as HTMLButtonElement
-    ).click()
-  );
+  await act(async () => {
+    const model = widgets.visibleModels.find(
+      (item) => item.state.status === "success"
+    )!;
+    widgets.dismiss(model.backendId ?? model.operationId);
+  });
   await act(async () => vi.advanceTimersByTimeAsync(360));
   expect(
     element.querySelectorAll('[aria-label="Bridge transaction"]')

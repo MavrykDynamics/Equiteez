@@ -1,7 +1,8 @@
 .overlay {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  /* Above the purchase amount slider (z-index: 10). */
+  z-index: 11;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,8 +19,7 @@
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
   line-height: var(--r-line-height-body-sm);
-  /* This mock is presentation-only; existing trading behavior is unchanged. */
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .content {

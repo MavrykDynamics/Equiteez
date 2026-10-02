@@ -438,6 +438,24 @@ describe("direct primary purchase batch", () => {
     expect(submitted).toHaveBeenCalledOnce();
     expect(confirmed).toHaveBeenCalledWith({ level: 123 });
   });
+  it("reports RPC gateway failure separately and never submits after failed estimation", async () => {
+    const f = fixture();
+    vi.mocked(f.tezos.estimate.batch).mockRejectedValue(
+      new Error(
+        'Http error response: (502) {"message":"remote http://10.1.63.25:8732 unreachable"}'
+      )
+    );
+    await expect(
+      primaryPurchase({ tezos: f.tezos, review: await f.review() })
+    ).rejects.toThrow("Basenet RPC service is temporarily unavailable");
+    expect(f.send).not.toHaveBeenCalled();
+    for (const status of [502, 503, 504]) {
+      expect(primaryPurchaseError({ status }).message).toContain(
+        "Basenet RPC service"
+      );
+    }
+  });
+
   it("decodes estimation failures without displaying raw contract codes", async () => {
     const f = fixture();
     vi.mocked(f.tezos.estimate.batch).mockRejectedValue({

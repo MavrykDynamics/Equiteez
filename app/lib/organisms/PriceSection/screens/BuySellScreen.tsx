@@ -254,7 +254,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
   const marketUsdtBottomValue = amount ? (
     <span className={styles.bottomNote}>
-      $<Money fiat>{balanceTotal ?? ZERO}</Money> per share
+      $<Money fiat>{balanceTotal ?? ZERO}</Money>
     </span>
   ) : undefined;
 
@@ -352,7 +352,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {validationMessage && (
         <div className={styles.alertBlock}>
-          <RAlert type="error" header="Order Cannot Be Submitted">
+          <RAlert
+            type="error"
+            header={
+              primaryPurchase
+                ? "Purchase Unavailable"
+                : "Order Cannot Be Submitted"
+            }
+          >
             {validationMessage}
           </RAlert>
         </div>

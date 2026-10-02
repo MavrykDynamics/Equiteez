@@ -1,20 +1,16 @@
-import { useCallback, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MavrykToolkit } from "@mavrykdynamics/taquito";
-import { BigNumber } from "bignumber.js";
-import { getPrimaryDeployment } from "~/contracts/primaryPurchase.config";
-import { basenetNetRpcnode } from "~/consts/rpcNodes";
-import { USDT_BRIDGE } from "~/consts/usdtBridge";
-import { MavrykChainId } from "~/lib/mavryk/types";
-import { fetchGetOperationsByHash } from "~/lib/apis/tzkt";
+import { useCallback, useEffect, useState } from "react";
+import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import {
+  FreshnessSource,
+  useFreshQuery,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import {
   fetchPrimaryPurchaseHistory,
   PRIMARY_HISTORY_QUERY_KEY,
 } from "~/lib/apis/primaryPurchases/primaryPurchases";
-import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import {
   NotifierChannel,
   NotifierWalletEvent,
@@ -22,107 +18,76 @@ import {
 import { useNotifierEvent } from "~/providers/NotificationsProvider/hooks/useNotifierEvent";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RButton } from "~/lib/atoms/RButton";
+import { OpenOrdersConnectWalletState } from "../OpenOrdersTab/OpenOrdersConnectWalletState";
 import Money from "~/lib/atoms/Money";
 import {
   getNextSortState,
   type SortState,
 } from "~/lib/molecules/RSortableTableHeader";
-import { OpenOrdersConnectWalletState } from "../OpenOrdersTab/OpenOrdersConnectWalletState";
-import { OpenOrdersEmptyState } from "../OpenOrdersTab/OpenOrdersEmptyState";
-import { formatOrderDate } from "../OpenOrdersTab/OrderItem";
-import { ROrderStatusBadge } from "../OrderHistoryTab/ROrderStatusBadge";
 import { RAssetHistoryTable, type HistorySortKey } from "../RAssetHistoryTable";
+import { OpenOrdersEmptyState } from "../OpenOrdersTab/OpenOrdersEmptyState";
+import {
+  formatOrderDate,
+  renderNullableFiatValue,
+} from "../OpenOrdersTab/OrderItem";
 import styles from "../OrderHistoryTab/styles.module.css";
-
-const PER_PAGE = 10;
 
 export function RPurchaseHistoryTab({ asset }: { asset: AssetType }) {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
-  const { dapp } = useWalletContext();
-  const tezos = useMemo(
-    () => dapp?.tezos() ?? new MavrykToolkit(basenetNetRpcnode),
-    [dapp]
-  );
-  const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const canFetch = isAuthenticated && Boolean(userAddress);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortState<HistorySortKey>>({
     key: "date",
     direction: "descending",
   });
-  const query = useQuery({
+  const serverSort = sort
+    ? `${sort.key}_${sort.direction === "descending" ? "desc" : "asc"}`
+    : "date_desc";
+  useEffect(() => setPage(1), [userAddress, asset.address]);
+  // Share transfer freshness marks with purchase confirmation, including while unmounted.
+  const query = useFreshQuery({
     queryKey: [
+      "fetchWalletTransferHistory",
       PRIMARY_HISTORY_QUERY_KEY,
-      tezos.rpc.getRpcUrl(),
       userAddress,
       asset.address,
+      page,
+      serverSort,
     ],
+    queryFn: () =>
+      fetchPrimaryPurchaseHistory({
+        walletAddress: userAddress ?? "",
+        tokenAddress: asset.address,
+        page,
+        perPage: 10,
+        sort: serverSort,
+      }),
     enabled: canFetch,
     retry: false,
-    refetchInterval: 15_000,
-    queryFn: async () => {
-      const { launchpad } = getPrimaryDeployment(tezos);
-      if (asset.metadata.decimals !== 6)
-        throw new Error("Unsupported primary asset decimals.");
-      try {
-        return await fetchPrimaryPurchaseHistory({
-          chainId: MavrykChainId.Basenet,
-          wallet: userAddress!,
-          assetAddress: asset.address,
-          launchpad,
-          paymentAddress: USDT_BRIDGE.destinationToken.address,
-          paymentTokenId: USDT_BRIDGE.destinationToken.id,
-          loadOperation: (hash) =>
-            queryClient.fetchQuery({
-              queryKey: [
-                "primary-purchase-operation",
-                MavrykChainId.Basenet,
-                hash,
-              ],
-              queryFn: () =>
-                fetchGetOperationsByHash(MavrykChainId.Basenet, hash),
-              staleTime: Infinity,
-            }),
-        });
-      } catch (error) {
-        // A partially indexed operation must be fetched again on retry.
-        await queryClient.invalidateQueries({
-          queryKey: ["primary-purchase-operation", MavrykChainId.Basenet],
-          refetchType: "none",
-        });
-        throw error;
-      }
-    },
   });
-  const { refetch } = query;
+  useEffect(() => {
+    const totalPages = query.data?.total_pages;
+    if (totalPages !== undefined && page > Math.max(1, totalPages)) {
+      setPage(Math.max(1, totalPages));
+    }
+  }, [page, query.data?.total_pages]);
   const handlePurchase = useCallback(
     (_frame: unknown, wallet: string) => {
-      if (wallet === userAddress) void refetch();
+      if (wallet === userAddress) {
+        void invalidateFreshQueries("fetchWalletTransferHistory", {
+          source: FreshnessSource.Chain,
+        });
+      }
     },
-    [refetch, userAddress]
+    [invalidateFreshQueries, userAddress]
   );
   useNotifierEvent(
     NotifierChannel.Wallet,
     NotifierWalletEvent.LaunchpadPurchase,
     handlePurchase
   );
-
-  const sortedItems = useMemo(
-    () =>
-      [...(query.data ?? [])].sort((a, b) => {
-        const key = sort?.key ?? "date";
-        const comparison =
-          key === "date"
-            ? a.datetime.localeCompare(b.datetime)
-            : (new BigNumber(a[key]).comparedTo(b[key]) ?? 0);
-        const direction = sort?.direction === "ascending" ? 1 : -1;
-        return direction * (comparison || a.id - b.id);
-      }),
-    [query.data, sort]
-  );
-  const totalPages = Math.ceil(sortedItems.length / PER_PAGE);
-  const currentPage = Math.min(page, Math.max(1, totalPages));
 
   if (!canFetch)
     return (
@@ -131,7 +96,7 @@ export function RPurchaseHistoryTab({ asset }: { asset: AssetType }) {
         description="Connect your wallet to view your past purchases."
       />
     );
-  if (query.isPending)
+  if (query.isLoading && !query.data)
     return (
       <section className={styles.state} aria-live="polite">
         <RText color="neutral-600" size="body-sm">
@@ -164,30 +129,39 @@ export function RPurchaseHistoryTab({ asset }: { asset: AssetType }) {
         </RButton>
       </section>
     );
-  if (!sortedItems.length)
+  const items = query.data?.items ?? [];
+  if (!items.length) {
     return (
       <OpenOrdersEmptyState
         title="No Purchase History"
-        description="Your purchases for this asset will appear here."
+        description="Incoming asset transactions will appear here."
       />
     );
-
+  }
   return (
-    <RAssetHistoryTable
-      sort={sort}
-      onSort={(key) => {
-        setSort((current) => getNextSortState(current, key));
-        setPage(1);
-      }}
-      isFetching={query.isFetching}
-      page={currentPage}
-      onPageChange={setPage}
-      totalPages={totalPages}
-      paginationLabel="Purchase history pagination"
-    >
-      {sortedItems
-        .slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE)
-        .map((item) => {
+    <>
+      <RText color="neutral-600" size="body-sm">
+        Incoming asset transactions. Price and total show valuations, not
+        purchase payments.
+      </RText>
+      {query.data?.truncated ? (
+        <RText color="neutral-600" size="body-sm">
+          Older transactions may not be included.
+        </RText>
+      ) : null}
+      <RAssetHistoryTable
+        sort={sort}
+        onSort={(key) => {
+          setSort((current) => getNextSortState(current, key));
+          setPage(1);
+        }}
+        isFetching={query.isFetching}
+        page={page}
+        onPageChange={setPage}
+        totalPages={query.data?.total_pages ?? 0}
+        paginationLabel="Purchase history pagination"
+      >
+        {items.map((item) => {
           const [date, time = ""] = formatOrderDate(item.datetime).split(", ");
           return (
             <div className={styles.row} role="row" key={item.id}>
@@ -203,16 +177,16 @@ export function RPurchaseHistoryTab({ asset }: { asset: AssetType }) {
                 <RText size="body-sm">{asset.metadata.symbol}</RText>
               </div>
               <div className={styles.cell} role="cell">
-                <span className={styles.buy}>
-                  +
-                  <RText className={styles.typeLabel} size="body-sm">
-                    Purchase
-                  </RText>
-                </span>
+                <RText className={styles.buy} size="body-sm">
+                  + Deposit
+                </RText>
               </div>
               <div className={styles.cell} role="cell">
                 <RText size="body-sm">
-                  <Money>{item.price}</Money> wUSDT
+                  {renderNullableFiatValue(
+                    item.price_per_token,
+                    item.currency.toUpperCase()
+                  )}
                 </RText>
               </div>
               <div className={styles.cell} role="cell">
@@ -221,16 +195,20 @@ export function RPurchaseHistoryTab({ asset }: { asset: AssetType }) {
                 </RText>
               </div>
               <div className={styles.cell} role="cell">
-                <ROrderStatusBadge status="confirmed" />
+                <RText size="body-sm">—</RText>
               </div>
               <div className={styles.cell} role="cell">
                 <RText size="body-sm">
-                  <Money>{item.total}</Money> wUSDT
+                  {renderNullableFiatValue(
+                    item.total,
+                    item.currency.toUpperCase()
+                  )}
                 </RText>
               </div>
             </div>
           );
         })}
-    </RAssetHistoryTable>
+      </RAssetHistoryTable>
+    </>
   );
 }

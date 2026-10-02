@@ -46,6 +46,16 @@ function findContractCode(value: unknown, depth = 0): string | undefined {
 export function primaryPurchaseError(error: unknown): Error {
   const code = findContractCode(error);
   if (!code && error && typeof error === "object") {
+    const rpcError = error as Record<string, unknown>;
+    if (
+      [502, 503, 504].includes(Number(rpcError.status)) ||
+      (typeof rpcError.message === "string" &&
+        /Http error response: \(50[234]\)/.test(rpcError.message))
+    ) {
+      return new Error(
+        "The Basenet RPC service is temporarily unavailable. Refresh the purchase quote and try again."
+      );
+    }
     const walletError = error as Record<string, unknown>;
     if (
       walletError.title === "Aborted" ||

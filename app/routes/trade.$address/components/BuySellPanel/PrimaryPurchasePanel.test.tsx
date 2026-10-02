@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { BigNumber } from "bignumber.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,14 +14,19 @@ const mocks = vi.hoisted(() => ({
   estimate: vi.fn(),
   refresh: vi.fn(),
   tezos: {},
+  isKyced: false,
 }));
 vi.mock("./usePrimaryPurchase", () => ({ usePrimaryPurchase: mocks.query }));
+vi.mock("~/routes/_index/components/DepositFunds/RDepositFundsModal", () => ({
+  RDepositFundsModal: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div role="dialog">Deposit modal</div> : null,
+}));
 vi.mock("~/contracts/primaryPurchase.contract", () => ({
   primaryPurchase: mocks.purchase,
   estimatePrimaryPurchase: mocks.estimate,
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
-  useUserContext: () => ({ connect: vi.fn() }),
+  useUserContext: () => ({ connect: vi.fn(), isKyced: mocks.isKyced }),
 }));
 vi.mock("~/lib/metadata", () => ({
   createFallbackTokenMetadata: (value: unknown) => value,
@@ -39,8 +44,12 @@ vi.mock("~/contracts/hooks/useContractAction", () => ({
     options: { onSuccess: (value: unknown) => void }
   ) => ({
     invokeAction: async () => {
-      await action({ ...args, tezos: mocks.tezos });
-      options.onSuccess({ confirmation: { level: 42 } });
+      try {
+        await action({ ...args, tezos: mocks.tezos });
+        options.onSuccess({ confirmation: { level: 42 } });
+      } catch {
+        // The production hook reports contract failures without rejecting.
+      }
     },
     status: "idle",
     isLoading: false,
@@ -83,35 +92,6 @@ vi.mock("~/lib/organisms/PriceSection/screens/BuySellScreen", () => ({
     </div>
   ),
 }));
-vi.mock(
-  "~/lib/organisms/PriceSection/components/TradeConfirmationPopup",
-  () => ({
-    TradeConfirmationPopup: ({
-      isOpen,
-      children,
-      onContinue,
-      onCancel,
-    }: {
-      isOpen: boolean;
-      children: ReactNode;
-      onContinue: () => Promise<void>;
-      onCancel: () => void;
-    }) =>
-      isOpen ? (
-        <div role="dialog">
-          {children}
-          <button
-            onClick={() => {
-              onCancel();
-              void onContinue();
-            }}
-          >
-            Confirm
-          </button>
-        </div>
-      ) : null,
-  })
-);
 
 const config: PrimaryPurchaseConfig = {
   launchName: "live-launch",
@@ -154,6 +134,7 @@ const click = async (text: string) => {
 };
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  mocks.isKyced = false;
   mocks.purchase.mockReset().mockResolvedValue(undefined);
   mocks.estimate
     .mockReset()
@@ -179,6 +160,37 @@ afterEach(async () => {
 });
 
 describe("primary purchase panel flow", () => {
+  it("does not estimate on mount, amount edits, or refreshed config", async () => {
+    vi.useFakeTimers();
+    try {
+      await act(async () =>
+        root.render(<PrimaryPurchasePanel asset={asset} />)
+      );
+      await click("Enter 1.5");
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(11_000);
+      });
+      mocks.query.mockReturnValue({
+        ...mocks.query.mock.results[0].value,
+        data: { ...config, options: [{ ...config.options[0] }] },
+      });
+      await act(async () =>
+        root.render(<PrimaryPurchasePanel asset={asset} />)
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(11_000);
+      });
+      expect(mocks.estimate).not.toHaveBeenCalled();
+      expect(mocks.purchase).not.toHaveBeenCalled();
+      expect(mocks.refetch).not.toHaveBeenCalled();
+      await click("Buy");
+      expect(mocks.purchase).toHaveBeenCalledOnce();
+      expect(mocks.estimate).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("uses the cheapest eligible option without a dropdown and rechecks option changes at review", async () => {
     await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
     expect(container.querySelector('[aria-label="Sale option"]')).toBeNull();
@@ -199,17 +211,13 @@ describe("primary purchase panel flow", () => {
     expect(mocks.purchase).not.toHaveBeenCalled();
   });
 
-  it("requires review before submission and passes exact raw units to the direct purchase", async () => {
+  it("purchases directly without a confirmation popup and passes exact raw units", async () => {
     await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
     await click("Enter 1.5");
     expect(container.textContent).toContain("Pay 45 Receive 1.5");
     await click("Buy");
     expect(mocks.refetch).toHaveBeenCalledOnce();
-    expect(mocks.purchase).not.toHaveBeenCalled();
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain(
-      "Maximum payment45 wUSDT"
-    );
-    await click("Confirm");
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(mocks.purchase).toHaveBeenCalledOnce();
     expect(mocks.purchase.mock.calls[0][0].review).toMatchObject({
       amount: "1500000",
@@ -232,14 +240,55 @@ describe("primary purchase panel flow", () => {
     expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(mocks.purchase).not.toHaveBeenCalled();
   });
-  it("uses the live sale start for the countdown", async () => {
+  it("uses the API sale window instead of the contract start for the countdown", async () => {
+    mocks.query.mockReturnValue({
+      data: {
+        ...config,
+        countdown: {
+          saleStart: new Date(Date.now() + 60_000).toISOString(),
+          saleEnd: new Date(Date.now() + 120_000).toISOString(),
+        },
+      },
+      refetch: mocks.refetch,
+      tezos: mocks.tezos,
+    });
+    await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
+    expect(container.querySelector('[role="timer"]')).not.toBeNull();
+  });
+  it.each([false, true])(
+    "shows the countdown action for Pro=%s",
+    async (isKyced) => {
+      mocks.isKyced = isKyced;
+      const previewAsset = {
+        ...asset,
+        metadata: { ...asset.metadata, symbol: "ANTH" },
+      };
+      await act(async () =>
+        root.render(<PrimaryPurchasePanel asset={previewAsset} />)
+      );
+      const button = [...container.querySelectorAll("button")].find(
+        (item) => item.textContent === (isKyced ? "Deposit Funds" : "Start KYC")
+      );
+      expect(button).toBeTruthy();
+      expect(button?.disabled).toBe(!isKyced);
+      if (isKyced) {
+        await click("Deposit Funds");
+        expect(container.querySelector('[role="dialog"]')?.textContent).toBe(
+          "Deposit modal"
+        );
+      } else {
+        expect(container.textContent).not.toContain("Deposit Funds");
+      }
+    }
+  );
+  it("does not fall back to the contract start when API dates are missing", async () => {
     mocks.query.mockReturnValue({
       data: { ...config, saleStart: Date.now() + 60_000 },
       refetch: mocks.refetch,
       tezos: mocks.tezos,
     });
     await act(async () => root.render(<PrimaryPurchasePanel asset={asset} />));
-    expect(container.querySelector('[role="timer"]')).not.toBeNull();
+    expect(container.querySelector('[role="timer"]')).toBeNull();
   });
   it("blocks an unavailable launch and never renders sell or limit controls", async () => {
     mocks.query.mockReturnValue({
