@@ -1,5 +1,6 @@
 import { NotifierLaunchEvent } from "~/providers/NotificationsProvider/notifications.const";
 import type { NotifierEventFrame } from "~/providers/NotificationsProvider/notifications.types";
+import { getLaunchesNotificationMessage } from "~/providers/NotificationsProvider/helpers/messages/launches.messages";
 import type { NotifierToastMessage } from "~/providers/NotificationsProvider/helpers/messages/notifications.message.types";
 
 const getStringPayloadField = (
@@ -29,21 +30,8 @@ export const getLaunchNotificationMessage = (
           : "Launchpad sale progress was updated.",
       };
     case NotifierLaunchEvent.LaunchpadSaleStartingSoon:
-      return {
-        tone: "warning",
-        title: "Launchpad sale starting soon",
-        message: launchName
-          ? `${launchName} sale is starting soon.`
-          : "Launchpad sale is starting soon.",
-      };
     case NotifierLaunchEvent.LaunchpadSaleStarted:
-      return {
-        tone: "success",
-        title: "Launchpad sale started",
-        message: launchName
-          ? `${launchName} sale has started.`
-          : "Launchpad sale has started.",
-      };
+      return getLaunchesNotificationMessage(frame);
     default:
       return null;
   }

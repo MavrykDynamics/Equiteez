@@ -16,6 +16,9 @@ export type AssetsProviderContextType = {
   prices: Record<string, PriceAssetType>;
   assetTypes: Record<string, AssetTypeOption>;
   assetError: Error | null;
+  invalidateLaunchAssetQueries: (
+    tokenAddress?: string | null
+  ) => Promise<void>;
   isLoading: boolean;
   isPricesLoading: boolean;
 };
