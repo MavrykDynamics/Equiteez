@@ -47,6 +47,11 @@ const OrderbookSchema = z.object({
   updated_at: z.string(),
 });
 
+const AssetProfileItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 const AssetProfileSchema = z.object({
   description: z.string(),
   asset_type: z.string(),
@@ -54,6 +59,8 @@ const AssetProfileSchema = z.object({
   lifecycle: z.string(),
   image_url: z.string().optional(),
   gallery: z.array(z.object({ kind: z.string(), url: z.string() })),
+  features: z.array(AssetProfileItemSchema).optional(),
+  amenities: z.array(AssetProfileItemSchema).optional(),
 });
 
 const AssetFinanceSchema = z.object({

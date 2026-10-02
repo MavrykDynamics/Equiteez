@@ -11,31 +11,18 @@ type DetailGroup = {
   items: string[];
 };
 
-// TODO remove mock data. Temporary Figma-aligned data until the asset details API exposes these fields.
-const detailGroups: DetailGroup[] = [
-  {
-    title: "Features",
-    items: [
-      "Deluxe Rooms",
-      "Family Suites",
-      "Signature Villas",
-      "Business Lounge",
-      "Event Space",
-    ],
-  },
-  {
-    title: "Amenities",
-    items: [
-      "Restaurants & Bars",
-      "Beach & Pool",
-      "Fitness Center",
-      "SPA & Wellness",
-      "Water Sports",
-    ],
-  },
-];
-
 export function AssetOverviewTab({ asset }: { asset: AssetType }) {
+  const detailGroups: DetailGroup[] = [
+    {
+      title: "Features",
+      items: asset.profile.features?.map((feature) => feature.name) ?? [],
+    },
+    {
+      title: "Amenities",
+      items: asset.profile.amenities?.map((amenity) => amenity.name) ?? [],
+    },
+  ].filter((group) => group.items.length > 0);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.content}>
@@ -49,27 +36,36 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
 
       <RWhyInvest asset={asset} />
 
-      <div className={styles.details}>
-        {detailGroups.map((group) => (
-          <section aria-labelledby={`${group.title}-heading`} key={group.title}>
-            <RHeading id={`${group.title}-heading`} size="h6" weight="medium">
-              {group.title}
-            </RHeading>
-            <ul className={styles.items}>
-              {group.items.map((item) => (
-                <li className={styles.item} key={item}>
-                  <span aria-hidden="true" className={styles.iconWrap}>
-                    <RIcon className={styles.icon} name="check" size="small" />
-                  </span>
-                  <RText color="neutral-black" size="body-sm">
-                    {item}
-                  </RText>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
+      {detailGroups.length > 0 && (
+        <div className={styles.details}>
+          {detailGroups.map((group) => (
+            <section
+              aria-labelledby={`${group.title}-heading`}
+              key={group.title}
+            >
+              <RHeading id={`${group.title}-heading`} size="h6" weight="medium">
+                {group.title}
+              </RHeading>
+              <ul className={styles.items}>
+                {group.items.map((item) => (
+                  <li className={styles.item} key={item}>
+                    <span aria-hidden="true" className={styles.iconWrap}>
+                      <RIcon
+                        className={styles.icon}
+                        name="check"
+                        size="small"
+                      />
+                    </span>
+                    <RText color="neutral-black" size="body-sm">
+                      {item}
+                    </RText>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
       <RAssetLocation />
     </div>
   );
