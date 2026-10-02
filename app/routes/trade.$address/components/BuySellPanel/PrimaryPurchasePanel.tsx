@@ -44,18 +44,7 @@ export function PrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   const query = usePrimaryPurchase(asset.address);
   const { connect, isKyced } = useUserContext();
   const config = query.data;
-  // Temporary ANTH style preview, including built previews. Remove after style review.
-  const [previewCountdown] = useState(() => {
-    const startsAt = Date.now() + (2 * 86400 + 5 * 3600 + 30 * 60) * 1000;
-    return {
-      saleStart: new Date(startsAt).toISOString(),
-      saleEnd: new Date(startsAt + 86400000).toISOString(),
-    };
-  });
-  const countdown =
-    asset.metadata.symbol === "ANTH"
-      ? previewCountdown
-      : config?.countdown;
+  const countdown = config?.countdown;
   const retry = () => {
     void query.refetch();
   };

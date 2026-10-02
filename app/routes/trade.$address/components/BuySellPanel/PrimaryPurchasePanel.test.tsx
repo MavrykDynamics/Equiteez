@@ -259,12 +259,19 @@ describe("primary purchase panel flow", () => {
     "shows the countdown action for Pro=%s",
     async (isKyced) => {
       mocks.isKyced = isKyced;
-      const previewAsset = {
-        ...asset,
-        metadata: { ...asset.metadata, symbol: "ANTH" },
-      };
+      mocks.query.mockReturnValue({
+        data: {
+          ...config,
+          countdown: {
+            saleStart: new Date(Date.now() + 60_000).toISOString(),
+            saleEnd: new Date(Date.now() + 120_000).toISOString(),
+          },
+        },
+        refetch: mocks.refetch,
+        tezos: mocks.tezos,
+      });
       await act(async () =>
-        root.render(<PrimaryPurchasePanel asset={previewAsset} />)
+        root.render(<PrimaryPurchasePanel asset={asset} />)
       );
       const button = [...container.querySelectorAll("button")].find(
         (item) => item.textContent === (isKyced ? "Deposit Funds" : "Start KYC")
