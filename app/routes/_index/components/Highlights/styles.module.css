@@ -4,7 +4,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
-  padding: var(--r-space-8) 0 var(--r-space-18);
+  padding-top: var(--r-space-8);
+  padding-bottom: var(--r-space-18);
   gap: var(--r-space-5);
 }
 
@@ -12,6 +13,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--r-space-3);
+}
+
+.desktopSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+.mobileSections {
+  display: none;
 }
 
 .sectionList {
@@ -154,6 +165,47 @@
 
 @media (--media-phone-max) {
   .wrapper {
-    grid-template-columns: minmax(0, 1fr);
+    display: block;
+    padding: var(--r-space-8) 0 var(--r-space-18);
+  }
+
+  .desktopSection {
+    display: none;
+  }
+
+  .mobileSections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--r-space-4);
+  }
+
+  .mobileSection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--r-space-3);
+    min-width: 0;
+  }
+  .mobileSectionTitle {
+    padding: 0 var(--r-space-4);
+  }
+
+  .mobileViewport {
+    overflow: hidden;
+    padding: 0 var(--r-space-4);
+  }
+
+  .mobileList {
+    display: flex;
+    gap: var(--r-space-3);
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .mobileSlide {
+    flex: 0 0 96%;
+    min-width: 0;
+  }
+
+  .mobileSlide .cardSkeleton {
+    width: 100%;
   }
 }

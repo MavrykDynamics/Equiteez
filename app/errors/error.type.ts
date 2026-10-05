@@ -58,6 +58,7 @@ export type EstimatedOperation = {
 export type EstimatedBatchCall = {
   batchOperations?: EstimatedOperation[];
   totalGasLimit: number;
+  totalGasFeeMutez: number;
   totalCost: number;
   totalMinimalFeeMutez: number;
   totalSuggestedFeeMutez: number;

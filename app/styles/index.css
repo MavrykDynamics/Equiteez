@@ -415,6 +415,11 @@ html {
   padding: 8px 12px;
 }
 
+.tippy-box[data-theme~="equiteez"][data-theme~="reverse"] {
+  background-color: #000;
+  color: #fff;
+}
+
 .tippy-box[data-theme~="order-expiry-tooltip"] {
   max-width: min(389px, calc(100vw - 24px)) !important;
   padding: 0;
@@ -431,10 +436,20 @@ html {
   border-right-color: #fff;
 }
 
+.tippy-box[data-theme~="equiteez"][data-theme~="reverse"][data-placement^="right"]
+  > .tippy-arrow::before {
+  border-right-color: #000;
+}
+
 /* Left placement tooltip arrow (arrow will be on right side of tooltip) */
 .tippy-box[data-theme~="equiteez"][data-placement^="left"]
   > .tippy-arrow::before {
   border-left-color: #fff;
+}
+
+.tippy-box[data-theme~="equiteez"][data-theme~="reverse"][data-placement^="left"]
+  > .tippy-arrow::before {
+  border-left-color: #000;
 }
 
 /* Top placement tooltip arrow (arrow will be on bottom side of tooltip) */
@@ -443,10 +458,20 @@ html {
   border-top-color: #fff;
 }
 
+.tippy-box[data-theme~="equiteez"][data-theme~="reverse"][data-placement^="top"]
+  > .tippy-arrow::before {
+  border-top-color: #000;
+}
+
 /* Bottom placement tooltip arrow (arrow will be on top side of tooltip) */
 .tippy-box[data-theme~="equiteez"][data-placement^="bottom"]
   > .tippy-arrow::before {
   border-bottom-color: #fff;
+}
+
+.tippy-box[data-theme~="equiteez"][data-theme~="reverse"][data-placement^="bottom"]
+  > .tippy-arrow::before {
+  border-bottom-color: #000;
 }
 
 /* Styles reset */

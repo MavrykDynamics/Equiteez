@@ -19,7 +19,11 @@ import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForcedUpdate";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
-import type { ContractActionLifecycleCallbacks } from "../actions.type";
+import type {
+  ContractActionConfirmation,
+  ContractActionLifecycleCallbacks,
+  ContractActionSuccessMetadata,
+} from "../actions.type";
 
 // Simplified version to handle operation calls
 
@@ -31,6 +35,10 @@ export type ContractActionPopupProps = {
 };
 
 export type ContractActionToastProps = {
+  pending?: {
+    title: string;
+    message: string;
+  };
   success: {
     title: string;
     message: string;
@@ -46,7 +54,7 @@ type ContractActionFn<G extends object> = (
 ) => Promise<void> | void;
 
 type ContractActionOptions = {
-  onSuccess?: () => void;
+  onSuccess?: (metadata: ContractActionSuccessMetadata) => void;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -85,9 +93,10 @@ export const useContractAction = <G extends object>(
   const { dapp } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys, hidePopup } = usePopupContext();
-  const { success, bug } = useToasterContext();
+  const { success, bug, loading, hideToasterMessage } = useToasterContext();
   const { onSuccess } = contractActionOptions;
   const hasSubmittedRef = useRef(false);
+  const confirmationRef = useRef<ContractActionConfirmation | null>(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -117,7 +126,17 @@ export const useContractAction = <G extends object>(
   }, [popupDetails, popupKeys, showPopup]);
 
   const invokeAction = useCallback(async () => {
+    let pendingToastId: string | undefined;
+
+    const hidePendingToast = () => {
+      if (pendingToastId) {
+        hideToasterMessage(pendingToastId);
+        pendingToastId = undefined;
+      }
+    };
+
     hasSubmittedRef.current = false;
+    confirmationRef.current = null;
 
     try {
       const tezos = dapp?.tezos();
@@ -126,16 +145,32 @@ export const useContractAction = <G extends object>(
 
       dispatchIfMounted(STATUS_PENDING);
 
+      const lifecycleCallbacks =
+        args as Partial<ContractActionLifecycleCallbacks>;
+
       await actionFn({
         ...args,
         tezos,
         onTransactionSubmitted: () => {
+          lifecycleCallbacks.onTransactionSubmitted?.();
           hasSubmittedRef.current = true;
           dispatchIfMounted(STATUS_CONFIRMING);
           showTransactionPopup();
+          if (toastMessages?.pending && !pendingToastId) {
+            pendingToastId = loading(
+              toastMessages.pending.title,
+              toastMessages.pending.message,
+              false
+            );
+          }
+        },
+        onTransactionConfirmed: (confirmation) => {
+          confirmationRef.current = confirmation;
+          lifecycleCallbacks.onTransactionConfirmed?.(confirmation);
         },
       });
 
+      hidePendingToast();
       dispatchIfMounted(STATUS_SUCCESS);
       success(
         toastMessages?.success?.title || "Action executed successfully",
@@ -149,11 +184,12 @@ export const useContractAction = <G extends object>(
         await hidePopup(popupKeys[popupDetails.key]);
       }
 
-      onSuccess?.();
+      onSuccess?.({ confirmation: confirmationRef.current });
       await sleep(2000);
 
       dispatchIfMounted(STATUS_IDLE);
     } catch (e) {
+      hidePendingToast();
       const hasTransactionSubmitted = hasSubmittedRef.current;
 
       if (popupDetails && hasTransactionSubmitted) {
@@ -182,11 +218,14 @@ export const useContractAction = <G extends object>(
     dapp,
     dispatchIfMounted,
     hidePopup,
+    hideToasterMessage,
+    loading,
     onSuccess,
     popupDetails,
     popupKeys,
     showTransactionPopup,
     success,
+    toastMessages?.pending,
     toastMessages?.success?.message,
     toastMessages?.success?.title,
   ]);

@@ -1,0 +1,56 @@
+@import "../../../styles/breakpoints.css";
+
+.navigation {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: none;
+  height: 62px;
+  background: rgba(255, 255, 255, 0.9);
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  backdrop-filter: blur(10px);
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 390px;
+  height: 100%;
+  margin-inline: auto;
+  padding-inline: 27px;
+}
+
+.navItem {
+  display: flex;
+  flex: 0 0 75px;
+  flex-direction: column;
+  gap: var(--r-space-1);
+  align-items: center;
+  justify-content: center;
+  color: var(--r-color-neutral-500);
+  text-decoration: none;
+  transition:
+    color var(--r-transition-duration-fast) ease,
+    box-shadow var(--r-transition-duration-fast) ease;
+}
+
+.navItemActive {
+  color: var(--r-color-neutral-black);
+}
+.navItemActive svg path {
+  stroke-color: var(--r-color-neutral-black) !important;
+}
+
+.navItem:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+@media (--media-tablet) {
+  .navigation {
+    display: block;
+  }
+}

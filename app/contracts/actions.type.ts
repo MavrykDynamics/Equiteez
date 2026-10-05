@@ -1,8 +1,8 @@
-import { TransactionWalletOperation } from '@mavrykdynamics/taquito';
-import { BatchWalletOperation } from '@mavrykdynamics/taquito/dist/types/wallet/batch-operation';
-import { WalletOperationError } from '~/errors/error';
-import { WalletErrorPayload } from '~/errors/error.type';
-import { STAKE_ACTION, UNSTAKE_ACTION } from './consts';
+import { TransactionWalletOperation } from "@mavrykdynamics/taquito";
+import { BatchWalletOperation } from "@mavrykdynamics/taquito/dist/types/wallet/batch-operation";
+import { WalletOperationError } from "~/errors/error";
+import { WalletErrorPayload } from "~/errors/error.type";
+import { STAKE_ACTION, UNSTAKE_ACTION } from "./consts";
 
 export type ActionErrorReturnType = {
   actionSuccess: boolean;
@@ -13,7 +13,16 @@ export type ActionSuccessReturnType = {
   operation: TransactionWalletOperation | BatchWalletOperation;
 };
 
+export type ContractActionConfirmation = {
+  level: number;
+};
+
+export type ContractActionSuccessMetadata = {
+  confirmation: ContractActionConfirmation | null;
+};
+
 export type ContractActionLifecycleCallbacks = {
+  onTransactionConfirmed?: (confirmation: ContractActionConfirmation) => void;
   onTransactionSubmitted?: () => void;
 };
 

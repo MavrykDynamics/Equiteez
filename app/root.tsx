@@ -5,7 +5,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLocation,
   useRouteError,
 } from "@remix-run/react";
 import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
@@ -20,8 +19,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
+import { TransactionsProvider } from "./providers/TransactionsProvider/TransactionsProvider";
+import { RTransactionWidgetHost } from "./providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidgetHost";
+import { TransactionWidgetProvider } from "./providers/TransactionsProvider/TransactionWidgetProvider";
+import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
-import { MarketsProvider } from "./providers/MarketsProvider/markets.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
 import { AppGlobalLoader } from "./providers/AppGlobalLoader";
@@ -41,13 +43,12 @@ import {
   errorHeaderDefaultText,
   errorHeaderDefaultTextWhenError,
 } from "./providers/ToasterProvider/toaster.provider.const";
-import { useEffect, useRef } from "react";
-import { DexProvider } from "./providers/Dexprovider/dex.provider";
-import { DipdupProvider } from "./providers/DipdupProvider/DipDup.provider";
-import { ConfigProvider } from "./providers/ConfigProvider/Config.provider";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AssetsProvider } from "~/providers/AssetsProvider/assets.provider";
 import PageLayout from "~/layouts/PageLayout/Pagelayout";
+import { NotificationsProvider } from "~/providers/NotificationsProvider/NotificationsProvider";
+import { NotificationsProviderListeners } from "~/providers/NotificationsProvider/listeners/NotificationsProviderListeners";
 
 export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.webmanifest" },
@@ -139,22 +140,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <QueryClientProvider client={queryClient}>
               <AppProvider>
                 <ApolloProvider>
-                  <DipdupProvider>
-                    <WalletProvider>
-                      <AuthProvider>
-                        <ConfigProvider>
-                          <CurrencyProvider
-                            fiatToTezos={fiatToTezos}
-                            usdToToken={usdToToken}
-                          >
-                            <TokensProvider
-                              initialTokens={tokens}
-                              initialTokensMetadata={tokensMetadata}
-                            >
-                              <AssetsProvider>
-                                <MarketsProvider>
-                                  <DexProvider>
-                                    <UserProvider>
+                  <WalletProvider>
+                    <AuthProvider>
+                      <CurrencyProvider
+                        fiatToTezos={fiatToTezos}
+                        usdToToken={usdToToken}
+                      >
+                        <TokensProvider
+                          initialTokens={tokens}
+                          initialTokensMetadata={tokensMetadata}
+                        >
+                          <AssetsProvider>
+                            <UserProvider>
+                              <NotificationsProvider>
+                                <NotificationsProviderListeners />
+                                <TransactionsProvider>
+                                  <EthereumProvider>
+                                    <TransactionWidgetProvider>
+                                      <RTransactionWidgetHost />
                                       <AppGlobalLoader>
                                         <PopupProvider>
                                           <PageLayout includeContainer={false}>
@@ -162,23 +165,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                           </PageLayout>
                                         </PopupProvider>
                                       </AppGlobalLoader>
-                                    </UserProvider>
-                                  </DexProvider>
-                                </MarketsProvider>
-                              </AssetsProvider>
-                            </TokensProvider>
-                          </CurrencyProvider>
-                        </ConfigProvider>
-                      </AuthProvider>
-                    </WalletProvider>
-                  </DipdupProvider>
+                                    </TransactionWidgetProvider>
+                                  </EthereumProvider>
+                                </TransactionsProvider>
+                              </NotificationsProvider>
+                            </UserProvider>
+                          </AssetsProvider>
+                        </TokensProvider>
+                      </CurrencyProvider>
+                    </AuthProvider>
+                  </WalletProvider>
                 </ApolloProvider>
               </AppProvider>
             </QueryClientProvider>
             <ToasterMessages />
           </ToasterProvider>
           <ScrollRestoration />
-          {/*<RouteScrollReset />*/}
           <Scripts />
         </div>
       </body>
@@ -192,33 +194,6 @@ export default function App() {
       <Outlet />
     </>
   );
-}
-
-function RouteScrollReset() {
-  const location = useLocation();
-  const isInitialRender = useRef(true);
-  const previousPathname = useRef(location.pathname);
-
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
-    }
-
-    if (previousPathname.current === location.pathname) {
-      return;
-    }
-
-    previousPathname.current = location.pathname;
-
-    if (location.hash) {
-      return;
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [location.hash, location.pathname]);
-
-  return null;
 }
 
 /** catch server errors ************************** */

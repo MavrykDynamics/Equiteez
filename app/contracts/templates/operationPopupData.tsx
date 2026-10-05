@@ -6,10 +6,10 @@ import { ThumbCardSecondary } from "~/templates/ThumbCard/ThumbCard";
 import mvrkTokenSvg from "app/misc/mvrk-section.png";
 
 import styles from "./operationPopupData.module.css";
-import { EstateType } from "~/providers/MarketsProvider/market.types";
+import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
+import type { PriceAssetType } from "~/lib/apis/rwa/prices/prices.types";
 import { EMPTY_ARRAY } from "~/consts";
 import { ROUTES } from "~/consts/routes";
-import { SECONDARY_MARKET } from "~/providers/MarketsProvider/market.const";
 
 type PopupAssetCard = {
   type: "asset";
@@ -18,8 +18,8 @@ type PopupAssetCard = {
   title: string;
   imgSrc: string;
   description: string;
-  isSecondaryMarket: boolean;
-  pricePerToken: BigNumber;
+  isSecondaryMarket?: boolean;
+  pricePerToken?: BigNumber;
   height: string;
   APY: number;
   flags: string[];
@@ -33,31 +33,40 @@ type PopupSeparator = {
 
 type PopupAssetItem = PopupAssetCard | PopupSeparator;
 
-const createPopupAssetCard = (asset: EstateType): PopupAssetCard | null => {
-  const identifier = asset.assetDetails.blockchain[0]?.identifier;
-
-  if (!identifier) return null;
-
+const createPopupAssetCard = (
+  asset: AssetType,
+  prices: Record<string, PriceAssetType>
+): PopupAssetCard => {
+  const price = prices[asset.address]?.usd;
   return {
     type: "asset",
-    id: asset.slug,
-    link: generatePath(ROUTES.singleAsset, { id: identifier }),
-    title: asset.name,
-    imgSrc: asset.assetDetails.previewImage,
-    description: asset.assetType,
-    isSecondaryMarket: asset.assetDetails.type === SECONDARY_MARKET,
-    pricePerToken: new BigNumber(
-      asset.assetDetails.financials.expectedIncome.tokenPrice
-    ),
+    id: asset.address,
+    link: generatePath(ROUTES.singleAsset, { id: asset.address }),
+    title: asset.metadata.name,
+    imgSrc: asset.profile.image_url ?? asset.metadata.icon ?? "",
+    description: asset.category,
+    isSecondaryMarket:
+      asset.market_type.toLowerCase() === "secondary"
+        ? true
+        : asset.market_type.toLowerCase() === "primary"
+          ? false
+          : undefined,
+    pricePerToken:
+      price !== undefined && Number.isFinite(price)
+        ? new BigNumber(price)
+        : undefined,
     height: "253px",
-    APY: asset.assetDetails.APY,
-    flags: asset.assetDetails.propertyDetails.tags ?? EMPTY_ARRAY,
+    APY: asset.apy,
+    flags: EMPTY_ARRAY,
   };
 };
 
-const withSeparator = (items: EstateType[]): PopupAssetItem[] => {
+const withSeparator = (
+  items: AssetType[],
+  prices: Record<string, PriceAssetType>
+): PopupAssetItem[] => {
   const assetCards = items.reduce<PopupAssetCard[]>((acc, asset) => {
-    const assetCard = createPopupAssetCard(asset);
+    const assetCard = createPopupAssetCard(asset, prices);
 
     if (assetCard) {
       acc.push(assetCard);
@@ -82,11 +91,13 @@ const withSeparator = (items: EstateType[]): PopupAssetItem[] => {
 };
 
 type popupOperationInProgressProps = {
-  rwas: EstateType[];
+  rwas: AssetType[];
+  prices: Record<string, PriceAssetType>;
 };
 
 export const popupOperationInProgress = ({
   rwas,
+  prices,
 }: popupOperationInProgressProps) => ({
   subTitle: (
     <div className="flex gap-1 justify-center items-baseline">
@@ -101,7 +112,7 @@ export const popupOperationInProgress = ({
   title: "Choose Your Next Investment ",
   body: (
     <div className="flex xl:flex-row flex-col gap-4 items-center w-full">
-      {withSeparator(rwas).map((asset) => {
+      {withSeparator(rwas, prices).map((asset) => {
         if (asset.type === "separator") {
           return (
             <div key={asset.id} className="max-w-[365px] w-full xl:w-[365px]">
@@ -123,6 +134,7 @@ export const popupOperationInProgress = ({
             target="_blank"
             rel="noopener noreferrer"
           >
+            {!asset.pricePerToken && <span>Price unavailable</span>}
             <ThumbCardSecondary
               flags={asset.flags}
               imgSrc={asset.imgSrc}

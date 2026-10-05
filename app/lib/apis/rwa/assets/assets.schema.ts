@@ -47,6 +47,11 @@ const OrderbookSchema = z.object({
   updated_at: z.string(),
 });
 
+const AssetProfileItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 const AssetProfileSchema = z.object({
   description: z.string(),
   asset_type: z.string(),
@@ -54,6 +59,8 @@ const AssetProfileSchema = z.object({
   lifecycle: z.string(),
   image_url: z.string().optional(),
   gallery: z.array(z.object({ kind: z.string(), url: z.string() })),
+  features: z.array(AssetProfileItemSchema).optional(),
+  amenities: z.array(AssetProfileItemSchema).optional(),
 });
 
 const AssetFinanceSchema = z.object({
@@ -84,10 +91,10 @@ const AssetStatsSchema = z.object({
   symbol: z.string(),
   price: CurrencyAmountSchema,
   volume_24h: CurrencyAmountSchema.optional(),
-  market_cap: CurrencyAmountSchema,
+  market_cap: CurrencyAmountSchema.optional(),
   fdv: CurrencyAmountSchema,
   total_supply: z.string(),
-  circulating_supply: z.string(),
+  circulating_supply: z.string().optional(),
   ath: AssetAthSchema.optional(),
   avg_hold_time_days: z.number().optional(),
   updated_at: z.number(),
@@ -122,7 +129,7 @@ export const AssetHighlightSchema = z.object({
   name: z.string(),
   icon: z.string().optional(),
   market_type: z.string(),
-  price: CurrencyAmountSchema,
+  price: CurrencyAmountSchema.optional(),
   quote_price: QuotePriceSchema.optional(),
   change_24h: AssetHighlightsChangeSchema.nullable(),
   volume_24h: CurrencyAmountSchema.optional(),

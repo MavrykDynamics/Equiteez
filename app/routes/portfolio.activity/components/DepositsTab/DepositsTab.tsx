@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
 import { fetchWalletTransferHistory } from "~/lib/apis/rwa";
+import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RPagination } from "~/lib/molecules/RPagination";
 import {
@@ -49,7 +49,7 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
     return `${sort.key}_${sort.direction === "descending" ? "desc" : "asc"}`;
   }, [sort]);
 
-  const depositsQuery = useQuery({
+  const depositsQuery = useFreshQuery({
     queryKey: [
       "fetchWalletTransferHistory",
       userAddress,

@@ -252,9 +252,27 @@ export default {
           progress: "#50B2FA",
         };
 
+        const redesignColors = {
+          "r-color-neutral": {
+            black: "var(--r-color-neutral-black)",
+            900: "var(--r-color-neutral-900)",
+            800: "var(--r-color-neutral-800)",
+            700: "var(--r-color-neutral-700)",
+            600: "var(--r-color-neutral-600)",
+            500: "var(--r-color-neutral-500)",
+            400: "var(--r-color-neutral-400)",
+            300: "var(--r-color-neutral-300)",
+            200: "var(--r-color-neutral-200)",
+            100: "var(--r-color-neutral-100)",
+            50: "var(--r-color-neutral-50)",
+            white: "var(--r-color-neutral-white)",
+          },
+        };
+
         return {
           ...baseColors,
           ...brandColors,
+          ...redesignColors,
         };
       })(),
       spacing: {

@@ -76,7 +76,7 @@ export function toShortened(value: BigNumber.Value) {
 
   if (target.lt(0.01)) return toLocalFixed(bn.toPrecision(2));
 
-  if (target.lt(10_000)) return toLocalFixed(bn, 2);
+  if (target.lt(10_000)) return toLocalFormat(bn, { decimalPlaces: 2 });
 
   bn = bn.integerValue();
 
@@ -88,7 +88,7 @@ export function toShortened(value: BigNumber.Value) {
     bn = bn.div(1000);
   }
 
-  if (formatIndex === -1) return toLocalFixed(bn, 2);
+  if (formatIndex === -1) return toLocalFormat(bn, { decimalPlaces: 2 });
 
   return `${toLocalFixed(bn, 0)}${formats[formatIndex]}`;
 }

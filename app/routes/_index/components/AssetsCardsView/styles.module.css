@@ -13,11 +13,11 @@
 .secondaryAssetCard {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-3);
+  gap: var(--r-space-1);
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  padding: var(--r-space-5) var(--r-space-5) 5px;
+  padding: var(--r-space-5) 0 0 0;
   overflow: hidden;
   color: inherit;
   text-decoration: none;
@@ -26,6 +26,11 @@
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: 0;
   transition: background-color var(--r-transition-duration-fast) ease;
+}
+.assetBadgeList {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-1);
 }
 
 /* Four-column grid perimeter. Borders are owned by cards, never the wrapper. */
@@ -78,6 +83,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 var(--r-space-5);
 }
 
 .assetIdentity {
@@ -124,7 +130,6 @@
   display: flex;
   align-items: center;
   height: 72px;
-  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
 .saleProgress {
@@ -181,7 +186,6 @@
   margin-bottom: 0;
   margin-left: calc(var(--r-space-5) * -1);
   overflow: hidden;
-  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
 @media (--media-laptop) {

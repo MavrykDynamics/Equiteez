@@ -1,7 +1,11 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 
-import { fetchWalletPortfolioHistory } from "~/lib/apis/rwa";
+import {
+  fetchPublicWalletPortfolioHistory,
+  fetchWalletPortfolioHistory,
+} from "~/lib/apis/rwa";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
@@ -36,9 +40,23 @@ function formatTooltipDate(date: Date) {
   }).format(date);
 }
 
-export function PortfolioValueChart() {
+type PortfolioValueChartProps = {
+  /** Lets the public mobile portfolio look up an address without a session. */
+  allowUnauthenticated?: boolean;
+  /** Uses the stacked chart controls from the mobile Portfolio design. */
+  mobile?: boolean;
+  /** Overrides the connected wallet address for public portfolio lookups. */
+  walletAddress?: string;
+};
+
+export function PortfolioValueChart({
+  allowUnauthenticated = false,
+  mobile = false,
+  walletAddress,
+}: PortfolioValueChartProps) {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
+  const address = walletAddress ?? userAddress;
   const [period, setPeriod] = useState<PortfolioChartPeriod>("7d");
   const [hoveredPoint, setHoveredPoint] = useState<AssetPriceChartHover | null>(
     null
@@ -48,13 +66,24 @@ export function PortfolioValueChart() {
   const [tooltipSize, setTooltipSize] = useState({ height: 0, width: 0 });
 
   const portfolioHistoryQuery = useQuery({
-    queryKey: ["rwa-wallet-portfolio-history", userAddress, period],
-    queryFn: () =>
-      fetchWalletPortfolioHistory({
-        walletAddress: userAddress || "",
+    queryKey: [
+      allowUnauthenticated
+        ? "rwa-public-wallet-portfolio-history"
+        : "rwa-wallet-portfolio-history",
+      address,
+      period,
+    ],
+    queryFn: () => {
+      const fetchPortfolioHistory = allowUnauthenticated
+        ? fetchPublicWalletPortfolioHistory
+        : fetchWalletPortfolioHistory;
+
+      return fetchPortfolioHistory({
+        walletAddress: address || "",
         range: period,
-      }),
-    enabled: isAuthenticated && Boolean(userAddress),
+      });
+    },
+    enabled: (allowUnauthenticated || isAuthenticated) && Boolean(address),
   });
 
   const points = useMemo<AssetPriceChartPoint[]>(
@@ -115,8 +144,11 @@ export function PortfolioValueChart() {
   }
 
   return (
-    <section className={styles.chartSection} aria-label="Portfolio value chart">
-      <div className={styles.header}>
+    <section
+      className={clsx(styles.chartSection, mobile && styles.mobileChartSection)}
+      aria-label="Portfolio value chart"
+    >
+      <div className={clsx(styles.header, mobile && styles.mobileChartHeader)}>
         <div
           aria-label="Portfolio chart range"
           className={styles.periodTabs}

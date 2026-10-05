@@ -2,11 +2,9 @@ import { FC } from "react";
 
 import clsx from "clsx";
 import { Container } from "~/lib/atoms/Container/Container";
-import { FiltersProvider } from "~/routes/marketplace._index/components/Filters/FiltersProvider";
 import { RFooter } from "~/layouts/PageLayout/RFooter";
 import { RHeader } from "~/layouts/PageLayout/RHeader/RHeader";
-import { RMobileHeader } from "~/layouts/PageLayout/RHeader/RMobileHeader";
-import { MobileLayout } from "~/layouts/PageLayout/MobileLayout";
+import { RBottomNavigation } from "~/layouts/PageLayout/RHeader/RBottomNavigation";
 
 import styles from "./Pagelayout.module.css";
 
@@ -31,30 +29,26 @@ const PageLayout: FC<PageLayoutProps> = ({
   className,
 }) => {
   return (
-    <FiltersProvider>
-      <div className={styles.root}>
-        <MobileLayout />
-
-        <div
-          className={clsx(
-            "relative flex flex-col flex-1 pb-[66px] md:pb-0",
-            styles.desktopLayout,
-            className
-          )}
-        >
-          <RHeader />
-          {includeContainer ? (
-            <div className="flex-1">
-              <Container>{children}</Container>
-            </div>
-          ) : (
-            children
-          )}
-          {includeFooter && <RFooter />}
-          {/*<RMobileHeader />*/}
-        </div>
+    <div className={styles.root}>
+      <div
+        className={clsx(
+          "relative flex flex-col flex-1 pb-[62px] md:pb-0",
+          styles.desktopLayout,
+          className
+        )}
+      >
+        <RHeader />
+        {includeContainer ? (
+          <div className="flex-1">
+            <Container>{children}</Container>
+          </div>
+        ) : (
+          children
+        )}
+        {includeFooter && <RFooter />}
+        <RBottomNavigation />
       </div>
-    </FiltersProvider>
+    </div>
   );
 };
 

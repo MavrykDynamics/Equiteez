@@ -1,10 +1,9 @@
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import type { Placement } from "tippy.js";
-
 import useTippy from "~/lib/ui/useTippy";
-
-import "./RTooltip.module.css";
+import classNames from "clsx";
+import styles from "./RTooltip.module.css";
 
 export type RTooltipProps = PropsWithChildren<{
   content: string;
@@ -36,11 +35,14 @@ export function RTooltip({
     }),
     [content, placement]
   );
-  const tooltipRef = useTippy<HTMLSpanElement>(tippyProps);
+  const tooltipRef = useTippy<HTMLSpanElement>({
+    ...tippyProps,
+    appendTo: (reference) => reference.parentElement ?? document.body,
+  });
 
   return (
-    <span ref={tooltipRef} className={className}>
-      {children}
+    <span className={classNames(styles.wrapper, className)}>
+      <span ref={tooltipRef}>{children}</span>
     </span>
   );
 }

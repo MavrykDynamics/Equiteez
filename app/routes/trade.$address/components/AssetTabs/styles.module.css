@@ -1,7 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
-  padding: var(--r-space-5) 0 0 0;
+  padding: 0; /* The chart statistics panel supplies the 12px spacing above tabs. */
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);
@@ -21,6 +21,10 @@
 }
 
 @media (--media-tablet) {
+  .primaryTabs {
+    flex-wrap: wrap;
+  }
+
   .tabSwitcher {
     overflow-x: auto;
     overflow-y: hidden;
@@ -40,5 +44,24 @@
   }
   .divider {
     display: none;
+  }
+}
+
+@media (--media-phone-max) {
+  .wrapper {
+    width: 100%;
+    padding-top: 52px;
+    margin-bottom: var(--r-space-11);
+  }
+
+  .tabSwitcher {
+    overflow: visible;
+    padding-bottom: var(--r-space-6);
+  }
+
+  .tabSwitcher .assetTabs {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    max-width: 100%;
   }
 }

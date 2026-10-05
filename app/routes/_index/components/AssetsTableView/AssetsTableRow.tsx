@@ -20,8 +20,14 @@ type AssetsTableRowProps = {
 };
 
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
-  const { assetPrices, priceChange, isNegative, price, points } = useAssetPrice(asset);
+  const { assetPrices, priceChange, isNegative, price, points } =
+    useAssetPrice(asset);
   const assetSlug = toTokenSlug(asset.address);
+  const marketCap =
+    atomsToTokens(
+      assetPrices.primary_issuance?.max_amount_cap ?? 0,
+      asset.metadata.decimals
+    ) || asset.stats?.market_cap?.usd;
 
   return (
     <Link
@@ -37,10 +43,12 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
             className={styles.assetIcon}
           />
           <div className={styles.assetIdentity}>
-            <RText size="body-sm" weight="medium">
-              {asset.metadata.symbol}
-            </RText>
-            <RText className={styles.assetIdentityName} color="neutral-700" size="body-s">
+            <RText size="body-sm">{asset.metadata.symbol}</RText>
+            <RText
+              className={styles.assetIdentityName}
+              color="neutral-700"
+              size="body-s"
+            >
               {asset.metadata.name}
             </RText>
           </div>
@@ -51,7 +59,13 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          $<Money fiat>{price}</Money>
+          {price === undefined ? (
+            "—"
+          ) : (
+            <>
+              $<Money fiat>{price}</Money>
+            </>
+          )}
         </RText>
       </div>
       <div className={styles.cell} role="cell">
@@ -62,23 +76,20 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
           size="body-sm"
         />
       </div>
-      {/*TODO remove mock data*/}
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          <Money>4.78</Money>%
+          <Money>{asset.apy}</Money>%
         </RText>
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">
-          $
-          <Money>
-            {(atomsToTokens(
-              assetPrices.primary_issuance?.max_amount_cap ?? 0,
-              asset.metadata.decimals
-            ) ||
-              asset.stats?.market_cap.usd) ??
-              0}
-          </Money>
+          {marketCap !== undefined ? (
+            <>
+              $<Money>{marketCap}</Money>
+            </>
+          ) : (
+            "—"
+          )}
         </RText>
       </div>
       <div

@@ -970,7 +970,7 @@ export type Dodo_Mav_Avg_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -1993,7 +1993,7 @@ export type Dodo_Mav_History_Data_Avg_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2037,7 +2037,7 @@ export type Dodo_Mav_History_Data_Max_Order_By = {
   /** Trade timestamp */
   timestamp?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2061,7 +2061,7 @@ export type Dodo_Mav_History_Data_Min_Order_By = {
   /** Trade timestamp */
   timestamp?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2238,7 +2238,7 @@ export type Dodo_Mav_History_Data_Stddev_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2260,7 +2260,7 @@ export type Dodo_Mav_History_Data_Stddev_Pop_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2282,7 +2282,7 @@ export type Dodo_Mav_History_Data_Stddev_Samp_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2314,7 +2314,7 @@ export type Dodo_Mav_History_Data_Stream_Cursor_Value_Input = {
   /** Trade timestamp */
   timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
   trader_id?: InputMaybe<Scalars['Int']['input']>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Scalars['smallint']['input']>;
 };
 
@@ -2336,7 +2336,7 @@ export type Dodo_Mav_History_Data_Sum_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2358,7 +2358,7 @@ export type Dodo_Mav_History_Data_Var_Pop_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2380,7 +2380,7 @@ export type Dodo_Mav_History_Data_Var_Samp_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2402,7 +2402,7 @@ export type Dodo_Mav_History_Data_Variance_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** Type of trade (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2580,7 +2580,7 @@ export type Dodo_Mav_Max_Order_By = {
   new_super_admin?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -2629,7 +2629,7 @@ export type Dodo_Mav_Min_Order_By = {
   new_super_admin?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -2928,7 +2928,7 @@ export type Dodo_Mav_Stddev_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -2971,7 +2971,7 @@ export type Dodo_Mav_Stddev_Pop_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3014,7 +3014,7 @@ export type Dodo_Mav_Stddev_Samp_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3071,7 +3071,7 @@ export type Dodo_Mav_Stream_Cursor_Value_Input = {
   new_super_admin?: InputMaybe<Scalars['String']['input']>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Scalars['bigint']['input']>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Scalars['smallint']['input']>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Scalars['float8']['input']>;
@@ -3116,7 +3116,7 @@ export type Dodo_Mav_Sum_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3159,7 +3159,7 @@ export type Dodo_Mav_Var_Pop_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3202,7 +3202,7 @@ export type Dodo_Mav_Var_Samp_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3245,7 +3245,7 @@ export type Dodo_Mav_Variance_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** Pricing model (FIXED/DYNAMIC) */
+  /** FIXED: 0\nDYNAMIC: 1 */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -5280,7 +5280,7 @@ export type Kyc_Valid_Input_Aggregate_Order_By = {
 
 /** order by avg() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Avg_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5302,7 +5302,7 @@ export type Kyc_Valid_Input_Bool_Exp = {
 
 /** order by max() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Max_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5314,7 +5314,7 @@ export type Kyc_Valid_Input_Max_Order_By = {
 
 /** order by min() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Min_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5350,7 +5350,7 @@ export enum Kyc_Valid_Input_Select_Column {
 
 /** order by stddev() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Stddev_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5359,7 +5359,7 @@ export type Kyc_Valid_Input_Stddev_Order_By = {
 
 /** order by stddev_pop() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Stddev_Pop_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5368,7 +5368,7 @@ export type Kyc_Valid_Input_Stddev_Pop_Order_By = {
 
 /** order by stddev_samp() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Stddev_Samp_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5385,7 +5385,7 @@ export type Kyc_Valid_Input_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Kyc_Valid_Input_Stream_Cursor_Value_Input = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Scalars['smallint']['input']>;
   /** Primary key identifier */
   id?: InputMaybe<Scalars['Int']['input']>;
@@ -5397,7 +5397,7 @@ export type Kyc_Valid_Input_Stream_Cursor_Value_Input = {
 
 /** order by sum() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Sum_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5406,7 +5406,7 @@ export type Kyc_Valid_Input_Sum_Order_By = {
 
 /** order by var_pop() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Var_Pop_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5415,7 +5415,7 @@ export type Kyc_Valid_Input_Var_Pop_Order_By = {
 
 /** order by var_samp() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Var_Samp_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5424,7 +5424,7 @@ export type Kyc_Valid_Input_Var_Samp_Order_By = {
 
 /** order by variance() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Variance_Order_By = {
-  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
+  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -6247,12 +6247,12 @@ export type Launchpad_Launch_Avg_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6304,12 +6304,12 @@ export type Launchpad_Launch_Max_Order_By = {
   sale_end?: InputMaybe<Order_By>;
   /** Schedule */
   sale_start?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6330,12 +6330,12 @@ export type Launchpad_Launch_Min_Order_By = {
   sale_end?: InputMaybe<Order_By>;
   /** Schedule */
   sale_start?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6473,12 +6473,12 @@ export type Launchpad_Launch_Stddev_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6492,12 +6492,12 @@ export type Launchpad_Launch_Stddev_Pop_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6511,12 +6511,12 @@ export type Launchpad_Launch_Stddev_Samp_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6546,12 +6546,12 @@ export type Launchpad_Launch_Stream_Cursor_Value_Input = {
   sale_end?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Schedule */
   sale_start?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Scalars['smallint']['input']>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Scalars['smallint']['input']>;
   token_id?: InputMaybe<Scalars['Int']['input']>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Scalars['smallint']['input']>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Scalars['bigint']['input']>;
@@ -6566,12 +6566,12 @@ export type Launchpad_Launch_Sum_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6585,12 +6585,12 @@ export type Launchpad_Launch_Var_Pop_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6604,12 +6604,12 @@ export type Launchpad_Launch_Var_Samp_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6623,12 +6623,12 @@ export type Launchpad_Launch_Variance_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
+  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
   status?: InputMaybe<Order_By>;
-  /** auto / manual */
+  /** AUTO: 0\nMANUAL: 1 */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** mint / transfer */
+  /** MINT: 0\nTRANSFER: 1 */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6930,7 +6930,7 @@ export type Launchpad_Purchase_Event_Avg_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -6973,7 +6973,7 @@ export type Launchpad_Purchase_Event_Max_Order_By = {
   payment_name?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   timestamp?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
@@ -6994,7 +6994,7 @@ export type Launchpad_Purchase_Event_Min_Order_By = {
   payment_name?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   timestamp?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
@@ -7059,7 +7059,7 @@ export type Launchpad_Purchase_Event_Stddev_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7075,7 +7075,7 @@ export type Launchpad_Purchase_Event_Stddev_Pop_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7091,7 +7091,7 @@ export type Launchpad_Purchase_Event_Stddev_Samp_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7119,7 +7119,7 @@ export type Launchpad_Purchase_Event_Stream_Cursor_Value_Input = {
   payment_name?: InputMaybe<Scalars['String']['input']>;
   payment_token_id?: InputMaybe<Scalars['Int']['input']>;
   sale_option_id?: InputMaybe<Scalars['Int']['input']>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Scalars['smallint']['input']>;
   timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
   user_id?: InputMaybe<Scalars['Int']['input']>;
@@ -7136,7 +7136,7 @@ export type Launchpad_Purchase_Event_Sum_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7152,7 +7152,7 @@ export type Launchpad_Purchase_Event_Var_Pop_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7168,7 +7168,7 @@ export type Launchpad_Purchase_Event_Var_Samp_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7184,7 +7184,7 @@ export type Launchpad_Purchase_Event_Variance_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
+  /** USER: 0\nADMIN: 1 */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -9292,7 +9292,7 @@ export type Marketplace_Listing_Avg_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9338,7 +9338,7 @@ export type Marketplace_Listing_Max_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9360,7 +9360,7 @@ export type Marketplace_Listing_Min_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9474,7 +9474,7 @@ export type Marketplace_Listing_Stddev_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9494,7 +9494,7 @@ export type Marketplace_Listing_Stddev_Pop_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9514,7 +9514,7 @@ export type Marketplace_Listing_Stddev_Samp_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9544,7 +9544,7 @@ export type Marketplace_Listing_Stream_Cursor_Value_Input = {
   price_per_unit?: InputMaybe<Scalars['bigint']['input']>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Scalars['bigint']['input']>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Scalars['smallint']['input']>;
   token_id?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -9564,7 +9564,7 @@ export type Marketplace_Listing_Sum_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9584,7 +9584,7 @@ export type Marketplace_Listing_Var_Pop_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9604,7 +9604,7 @@ export type Marketplace_Listing_Var_Samp_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9624,7 +9624,7 @@ export type Marketplace_Listing_Variance_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** Listing status (CLOSED/ACTIVE) */
+  /** CLOSED: 0\nACTIVE: 1 */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9743,7 +9743,7 @@ export type Marketplace_Offer_Avg_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9784,7 +9784,7 @@ export type Marketplace_Offer_Max_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9804,7 +9804,7 @@ export type Marketplace_Offer_Min_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9912,7 +9912,7 @@ export type Marketplace_Offer_Stddev_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9930,7 +9930,7 @@ export type Marketplace_Offer_Stddev_Pop_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9948,7 +9948,7 @@ export type Marketplace_Offer_Stddev_Samp_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9976,7 +9976,7 @@ export type Marketplace_Offer_Stream_Cursor_Value_Input = {
   offer_id?: InputMaybe<Scalars['bigint']['input']>;
   /** Offer price */
   price?: InputMaybe<Scalars['bigint']['input']>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Scalars['smallint']['input']>;
 };
 
@@ -9994,7 +9994,7 @@ export type Marketplace_Offer_Sum_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10012,7 +10012,7 @@ export type Marketplace_Offer_Var_Pop_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10030,7 +10030,7 @@ export type Marketplace_Offer_Var_Samp_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10048,7 +10048,7 @@ export type Marketplace_Offer_Variance_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** Offer status (CLOSED/OPEN/ACCEPTED) */
+  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
   status?: InputMaybe<Order_By>;
 };
 
@@ -11414,7 +11414,7 @@ export type Orderbook_Order_Avg_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -11962,7 +11962,7 @@ export type Orderbook_Order_Max_Order_By = {
   order_expiry?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -11998,7 +11998,7 @@ export type Orderbook_Order_Min_Order_By = {
   order_expiry?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12135,7 +12135,7 @@ export type Orderbook_Order_Stddev_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12162,7 +12162,7 @@ export type Orderbook_Order_Stddev_Pop_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12189,7 +12189,7 @@ export type Orderbook_Order_Stddev_Samp_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12242,7 +12242,7 @@ export type Orderbook_Order_Stream_Cursor_Value_Input = {
   order_expiry?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Unique order identifier */
   order_id?: InputMaybe<Scalars['bigint']['input']>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Scalars['smallint']['input']>;
   orderbook_id?: InputMaybe<Scalars['Int']['input']>;
   /** Price per RWA token */
@@ -12270,7 +12270,7 @@ export type Orderbook_Order_Sum_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12297,7 +12297,7 @@ export type Orderbook_Order_Var_Pop_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12324,7 +12324,7 @@ export type Orderbook_Order_Var_Samp_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12351,7 +12351,7 @@ export type Orderbook_Order_Variance_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** Type of order (BUY/SELL) */
+  /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -14066,7 +14066,7 @@ export type Super_Admin_Signatory_Action_Avg_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14285,7 +14285,7 @@ export type Super_Admin_Signatory_Action_Max_Order_By = {
   start_datetime?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -14314,7 +14314,7 @@ export type Super_Admin_Signatory_Action_Min_Order_By = {
   start_datetime?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -14402,7 +14402,7 @@ export type Super_Admin_Signatory_Action_Stddev_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14420,7 +14420,7 @@ export type Super_Admin_Signatory_Action_Stddev_Pop_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14438,7 +14438,7 @@ export type Super_Admin_Signatory_Action_Stddev_Samp_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14476,7 +14476,7 @@ export type Super_Admin_Signatory_Action_Stream_Cursor_Value_Input = {
   start_datetime?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Scalars['bigint']['input']>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Scalars['smallint']['input']>;
   super_admin_id?: InputMaybe<Scalars['Int']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -14495,7 +14495,7 @@ export type Super_Admin_Signatory_Action_Sum_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14513,7 +14513,7 @@ export type Super_Admin_Signatory_Action_Var_Pop_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14531,7 +14531,7 @@ export type Super_Admin_Signatory_Action_Var_Samp_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14549,7 +14549,7 @@ export type Super_Admin_Signatory_Action_Variance_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** Action status (FLUSHED/EXECUTED/PENDING) */
+  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -15434,7 +15434,7 @@ export type Token_Stream_Cursor_Value_Input = {
   token_id?: InputMaybe<Scalars['smallint']['input']>;
   /** Additional token metadata */
   token_metadata?: InputMaybe<Scalars['jsonb']['input']>;
-  /** Token standard type (FA12, FA2, MAV) */
+  /** FA12: 0\nFA2: 1\nMAV: 2 */
   token_standard?: InputMaybe<Scalars['smallint']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
 };
@@ -15548,35 +15548,12 @@ export type User_Orders_Summary_View_Stream_Cursor_Value_Input = {
   user_address?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type OpenOrderFieldsFragment = { __typename?: 'orderbook_order', id: number, is_canceled: boolean, is_expired: boolean, is_fulfilled: boolean, is_refunded: boolean, order_expiry?: any | null, order_id: any, order_type: any, created_at?: any | null, ended_at?: any | null, fulfilled_amount: any, orderbook_id: number, price_per_rwa_token: any, refunded_amount: any, rwa_token_amount: any, total_paid_out: any, total_usd_value_of_rwa_token_amount: any, unfulfilled_amount: any, orderbook: { __typename?: 'orderbook', rwa_token?: { __typename?: 'token', address: string } | null } } & { ' $fragmentName'?: 'OpenOrderFieldsFragment' };
-
-export type AllOpenOrdersQueryQueryVariables = Exact<{
-  rwaAddress?: InputMaybe<Scalars['String']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
+export type OrderbookConfigQueryVariables = Exact<{
+  address: Scalars['String']['input'];
 }>;
 
 
-export type AllOpenOrdersQueryQuery = { __typename?: 'query_root', buyOrders: Array<(
-    { __typename?: 'orderbook_order' }
-    & { ' $fragmentRefs'?: { 'OpenOrderFieldsFragment': OpenOrderFieldsFragment } }
-  )>, sellOrders: Array<(
-    { __typename?: 'orderbook_order' }
-    & { ' $fragmentRefs'?: { 'OpenOrderFieldsFragment': OpenOrderFieldsFragment } }
-  )> };
-
-export type OpenOrdersByRwaAddressesQueryQueryVariables = Exact<{
-  rwaAddresses: Array<Scalars['String']['input']> | Scalars['String']['input'];
-}>;
-
-
-export type OpenOrdersByRwaAddressesQueryQuery = { __typename?: 'query_root', buyOrders: Array<(
-    { __typename?: 'orderbook_order' }
-    & { ' $fragmentRefs'?: { 'OpenOrderFieldsFragment': OpenOrderFieldsFragment } }
-  )>, sellOrders: Array<(
-    { __typename?: 'orderbook_order' }
-    & { ' $fragmentRefs'?: { 'OpenOrderFieldsFragment': OpenOrderFieldsFragment } }
-  )> };
+export type OrderbookConfigQuery = { __typename?: 'query_root', orderbook: Array<{ __typename?: 'orderbook', address: string, tick_size: any, min_buy_order_amount: any, min_buy_order_value: any, min_sell_order_amount: any, min_sell_order_value: any, rwa_token?: { __typename?: 'token', address: string, token_id: any } | null, currencies: Array<{ __typename?: 'orderbook_currency', currency_name: string, token?: { __typename?: 'token', address: string, token_id: any } | null }> }> };
 
 export type OrderbookLastTradesQueryQueryVariables = Exact<{
   rwaAddress?: InputMaybe<Scalars['String']['input']>;
@@ -15586,16 +15563,6 @@ export type OrderbookLastTradesQueryQueryVariables = Exact<{
 
 export type OrderbookLastTradesQueryQuery = { __typename?: 'query_root', tradeEvents: Array<{ __typename?: 'orderbook_order_event', id: number, counter: any, currency_delta: any, fulfilled_after: any, fulfilled_before: any, order_type: any, timestamp: any, operation_hash: string, order: { __typename?: 'orderbook_order', created_at?: any | null, is_market_order: boolean, price_per_rwa_token: any } }> };
 
-export type ConfigQueryQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type ConfigQueryQuery = { __typename?: 'query_root', super_admin: Array<{ __typename?: 'super_admin', address: string }> };
-
-export type DipDupHeadLvlSubscriptionVariables = Exact<{ [key: string]: never; }>;
-
-
-export type DipDupHeadLvlSubscription = { __typename?: 'subscription_root', dipdup_head: Array<{ __typename?: 'dipdup_head', level: number }> };
-
 export type UserAccountStatusQueryVariables = Exact<{
   address: Scalars['String']['input'];
 }>;
@@ -15603,10 +15570,7 @@ export type UserAccountStatusQueryVariables = Exact<{
 
 export type UserAccountStatusQuery = { __typename?: 'query_root', kyc_member: Array<{ __typename?: 'kyc_member', user?: { __typename?: 'equiteez_user', address: string, orderbook_order_events: Array<{ __typename?: 'orderbook_order_event', counter: any }> } | null }> };
 
-export const OpenOrderFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OpenOrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"orderbook_order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"is_canceled"}},{"kind":"Field","name":{"kind":"Name","value":"is_expired"}},{"kind":"Field","name":{"kind":"Name","value":"is_fulfilled"}},{"kind":"Field","name":{"kind":"Name","value":"is_refunded"}},{"kind":"Field","name":{"kind":"Name","value":"order_expiry"}},{"kind":"Field","name":{"kind":"Name","value":"order_id"}},{"kind":"Field","name":{"kind":"Name","value":"order_type"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_amount"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook_id"}},{"kind":"Field","name":{"kind":"Name","value":"price_per_rwa_token"}},{"kind":"Field","name":{"kind":"Name","value":"refunded_amount"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"total_paid_out"}},{"kind":"Field","name":{"kind":"Name","value":"total_usd_value_of_rwa_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"unfulfilled_amount"}}]}}]} as unknown as DocumentNode<OpenOrderFieldsFragment, unknown>;
-export const AllOpenOrdersQueryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"allOpenOrdersQuery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"buyOrders"},"name":{"kind":"Name","value":"orderbook_order"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"price_per_rwa_token"},"value":{"kind":"EnumValue","value":"desc"}},{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"desc"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"is_canceled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_expired"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_fulfilled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_refunded"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"order_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"IntValue","value":"0"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"orderbook"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"rwa_token"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}}}]}}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OpenOrderFields"}}]}},{"kind":"Field","alias":{"kind":"Name","value":"sellOrders"},"name":{"kind":"Name","value":"orderbook_order"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"price_per_rwa_token"},"value":{"kind":"EnumValue","value":"asc"}},{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"desc"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"is_canceled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_expired"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_fulfilled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_refunded"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"order_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"IntValue","value":"1"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"orderbook"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"rwa_token"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}}}]}}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OpenOrderFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OpenOrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"orderbook_order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"is_canceled"}},{"kind":"Field","name":{"kind":"Name","value":"is_expired"}},{"kind":"Field","name":{"kind":"Name","value":"is_fulfilled"}},{"kind":"Field","name":{"kind":"Name","value":"is_refunded"}},{"kind":"Field","name":{"kind":"Name","value":"order_expiry"}},{"kind":"Field","name":{"kind":"Name","value":"order_id"}},{"kind":"Field","name":{"kind":"Name","value":"order_type"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_amount"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook_id"}},{"kind":"Field","name":{"kind":"Name","value":"price_per_rwa_token"}},{"kind":"Field","name":{"kind":"Name","value":"refunded_amount"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"total_paid_out"}},{"kind":"Field","name":{"kind":"Name","value":"total_usd_value_of_rwa_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"unfulfilled_amount"}}]}}]} as unknown as DocumentNode<AllOpenOrdersQueryQuery, AllOpenOrdersQueryQueryVariables>;
-export const OpenOrdersByRwaAddressesQueryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"openOrdersByRwaAddressesQuery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddresses"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"buyOrders"},"name":{"kind":"Name","value":"orderbook_order"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"price_per_rwa_token"},"value":{"kind":"EnumValue","value":"desc"}},{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"desc"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"is_canceled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_expired"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_fulfilled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_refunded"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"order_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"IntValue","value":"0"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"orderbook"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"rwa_token"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddresses"}}}]}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OpenOrderFields"}}]}},{"kind":"Field","alias":{"kind":"Name","value":"sellOrders"},"name":{"kind":"Name","value":"orderbook_order"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"price_per_rwa_token"},"value":{"kind":"EnumValue","value":"asc"}},{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"desc"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"is_canceled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_expired"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_fulfilled"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"is_refunded"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"order_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"IntValue","value":"1"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"orderbook"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"rwa_token"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddresses"}}}]}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OpenOrderFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OpenOrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"orderbook_order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"is_canceled"}},{"kind":"Field","name":{"kind":"Name","value":"is_expired"}},{"kind":"Field","name":{"kind":"Name","value":"is_fulfilled"}},{"kind":"Field","name":{"kind":"Name","value":"is_refunded"}},{"kind":"Field","name":{"kind":"Name","value":"order_expiry"}},{"kind":"Field","name":{"kind":"Name","value":"order_id"}},{"kind":"Field","name":{"kind":"Name","value":"order_type"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_amount"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook_id"}},{"kind":"Field","name":{"kind":"Name","value":"price_per_rwa_token"}},{"kind":"Field","name":{"kind":"Name","value":"refunded_amount"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"total_paid_out"}},{"kind":"Field","name":{"kind":"Name","value":"total_usd_value_of_rwa_token_amount"}},{"kind":"Field","name":{"kind":"Name","value":"unfulfilled_amount"}}]}}]} as unknown as DocumentNode<OpenOrdersByRwaAddressesQueryQuery, OpenOrdersByRwaAddressesQueryQueryVariables>;
+
+export const OrderbookConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"OrderbookConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"tick_size"}},{"kind":"Field","name":{"kind":"Name","value":"min_buy_order_amount"}},{"kind":"Field","name":{"kind":"Name","value":"min_buy_order_value"}},{"kind":"Field","name":{"kind":"Name","value":"min_sell_order_amount"}},{"kind":"Field","name":{"kind":"Name","value":"min_sell_order_value"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"currencies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currency_name"}},{"kind":"Field","name":{"kind":"Name","value":"token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}}]}}]}}]}}]} as unknown as DocumentNode<OrderbookConfigQuery, OrderbookConfigQueryVariables>;
 export const OrderbookLastTradesQueryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"orderbookLastTradesQuery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"tradeEvents"},"name":{"kind":"Name","value":"orderbook_order_event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"timestamp"},"value":{"kind":"EnumValue","value":"desc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"counter"},"value":{"kind":"EnumValue","value":"desc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"EnumValue","value":"desc"}}]}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"IntValue","value":"1"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"orderbook"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"rwa_token"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}}}]}}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"counter"}},{"kind":"Field","name":{"kind":"Name","value":"currency_delta"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_after"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_before"}},{"kind":"Field","name":{"kind":"Name","value":"order_type"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"order"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_market_order"}},{"kind":"Field","name":{"kind":"Name","value":"price_per_rwa_token"}}]}},{"kind":"Field","name":{"kind":"Name","value":"operation_hash"}}]}}]}}]} as unknown as DocumentNode<OrderbookLastTradesQueryQuery, OrderbookLastTradesQueryQueryVariables>;
-export const ConfigQueryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"configQuery"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"super_admin"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}}]} as unknown as DocumentNode<ConfigQueryQuery, ConfigQueryQueryVariables>;
-export const DipDupHeadLvlDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"DipDupHeadLvl"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dipdup_head"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"level"}}]}}]}}]} as unknown as DocumentNode<DipDupHeadLvlSubscription, DipDupHeadLvlSubscriptionVariables>;
 export const UserAccountStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"UserAccountStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kyc_member"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"user"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook_order_events"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"counter"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UserAccountStatusQuery, UserAccountStatusQueryVariables>;

@@ -64,6 +64,14 @@
 .row:last-child .cell {
   border-bottom: 0;
 }
+.rowExpired {
+  background: linear-gradient(
+      0deg,
+      rgba(242, 209, 107, 0.08) 0%,
+      rgba(242, 209, 107, 0.08) 100%
+    ),
+    #fff;
+}
 
 .expiredCell {
   gap: var(--r-space-1);

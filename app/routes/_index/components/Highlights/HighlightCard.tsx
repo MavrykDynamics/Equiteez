@@ -10,7 +10,7 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 export function HighlightCard(props: { asset: AssetHighlightType }) {
   const { asset } = props;
   const { assets } = useAssetsContext();
-  const price = asset.price.usd;
+  const price = asset.price?.usd;
   const priceChange = asset.change_24h?.pct;
   const isNegative = (priceChange ?? 0) < 0;
   const imageUrl =
@@ -26,7 +26,6 @@ export function HighlightCard(props: { asset: AssetHighlightType }) {
         alt=""
         className={styles.cardImage}
         decoding="async"
-        fetchPriority="low"
         loading="lazy"
         src={imageUrl}
       />
@@ -43,7 +42,13 @@ export function HighlightCard(props: { asset: AssetHighlightType }) {
 
         <div className={styles.priceBlock}>
           <RText size="body-sm" weight="medium">
-            $<Money fiat>{price}</Money>
+            {price === undefined ? (
+              "—"
+            ) : (
+              <>
+                $<Money fiat>{price}</Money>
+              </>
+            )}
           </RText>
           {priceChange !== undefined && priceChange !== null ? (
             <RText

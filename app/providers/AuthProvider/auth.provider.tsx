@@ -38,6 +38,8 @@ import {
   subscribeToAuthSyncEvents,
 } from "~/providers/AuthProvider/helpers/auth-sync.helpers";
 import { clearAuthSession } from "~/providers/AuthProvider/helpers/auth.service";
+import { clearFreshQueries } from "~/lib/apis/rwa/freshness";
+import { getAuthJwtWalletAddress } from "~/providers/AuthProvider/helpers/auth.jwt";
 
 export const authContext = React.createContext<AuthContext>(undefined!);
 
@@ -45,16 +47,23 @@ type Props = {
   children: React.ReactNode;
 };
 
+const getAuthenticatedWalletAddress = (accessToken?: string | null) =>
+  getAuthJwtWalletAddress(accessToken);
+
 export const AuthProvider = ({ children }: Props) => {
   const { dapp } = useWalletContext();
   const { IS_WEB } = useAppContext();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authenticatedWalletAddress, setAuthenticatedWalletAddress] = useState<
+    string | null
+  >(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const { accessToken, refreshToken } = await getAuthTokensFromStorage();
       setIsAuthenticated(Boolean(accessToken || refreshToken));
+      setAuthenticatedWalletAddress(getAuthenticatedWalletAddress(accessToken));
       setIsAuthLoading(false);
     })();
   }, []);
@@ -64,6 +73,7 @@ export const AuthProvider = ({ children }: Props) => {
 
     const onAuthExpired = () => {
       setIsAuthenticated(false);
+      setAuthenticatedWalletAddress(null);
       setIsAuthLoading(false);
     };
 
@@ -82,6 +92,7 @@ export const AuthProvider = ({ children }: Props) => {
       const nextAuthenticated = Boolean(accessToken || refreshToken);
 
       setIsAuthenticated(nextAuthenticated);
+      setAuthenticatedWalletAddress(getAuthenticatedWalletAddress(accessToken));
       setIsAuthLoading(false);
 
       if (type === AUTH_LOGOUT_EVENT || !nextAuthenticated) {
@@ -140,6 +151,8 @@ export const AuthProvider = ({ children }: Props) => {
   );
 
   const logout = useCallback(async (params: AuthRefreshRequest = {}) => {
+    clearFreshQueries();
+
     const { refreshToken: storedRefreshToken } =
       await getAuthTokensFromStorage();
     const refreshToken = params.refreshToken ?? storedRefreshToken;
@@ -149,12 +162,14 @@ export const AuthProvider = ({ children }: Props) => {
     } finally {
       await clearAuthSession();
       setIsAuthenticated(false);
+      setAuthenticatedWalletAddress(null);
       setIsAuthLoading(false);
       emitAuthExpiredEvent();
     }
   }, []);
 
   const login = useCallback(async () => {
+    clearFreshQueries();
     setIsAuthLoading(true);
 
     try {
@@ -162,7 +177,9 @@ export const AuthProvider = ({ children }: Props) => {
         const activeAccount = await dapp.getDAppClient().getActiveAccount();
 
         if (!activeAccount?.address) {
+          await clearAuthSession();
           setIsAuthenticated(false);
+          setAuthenticatedWalletAddress(null);
           return;
         }
 
@@ -171,23 +188,30 @@ export const AuthProvider = ({ children }: Props) => {
         });
         const signedChallenge = await signAuthChallenge(challenge);
 
-        await verifyAuthSignature({
+        const authResponse = await verifyAuthSignature({
           nonce,
           signature: signedChallenge.signature,
           publicKey: signedChallenge.publicKey,
-          // @ts-expect-error
+          // @ts-expect-error Beacon signer format is narrowed by wallet provider.
           format: signedChallenge.format,
           walletAddress: activeAccount.address,
-          // @ts-expect-error
+          // @ts-expect-error Beacon wallet provider is narrowed by signer.
           walletProvider: signedChallenge.walletProvider,
         });
+        setAuthenticatedWalletAddress(
+          getAuthenticatedWalletAddress(authResponse.accessToken)
+        );
         setIsAuthenticated(true);
         return;
       }
 
+      await clearAuthSession();
       setIsAuthenticated(false);
+      setAuthenticatedWalletAddress(null);
     } catch (error) {
+      await clearAuthSession();
       setIsAuthenticated(false);
+      setAuthenticatedWalletAddress(null);
       throw error;
     } finally {
       setIsAuthLoading(false);
@@ -198,10 +222,17 @@ export const AuthProvider = ({ children }: Props) => {
     () => ({
       logout,
       login,
+      authenticatedWalletAddress,
       isAuthenticated,
       isAuthLoading,
     }),
-    [logout, login, isAuthenticated, isAuthLoading]
+    [
+      logout,
+      login,
+      authenticatedWalletAddress,
+      isAuthenticated,
+      isAuthLoading,
+    ]
   );
 
   return (

@@ -19,8 +19,8 @@ export function AssetDetails({ asset }: AssetDetailsProps) {
       <div className={styles.assetInfo}>
         <AssetDropdown asset={asset} />
         <div className={styles.badges}>
-          <span className={styles.apyBadge}>APY {asset.apy.toFixed(2)}%</span>
           <span className={styles.typeBadge}>{assetType}</span>
+          <span className={styles.apyBadge}>APY {asset.apy.toFixed(2)}%</span>
         </div>
       </div>
       <div className={styles.actions}>

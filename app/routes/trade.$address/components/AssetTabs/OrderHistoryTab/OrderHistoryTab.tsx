@@ -1,20 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { RAssetHistoryTable, type HistorySortKey } from "../RAssetHistoryTable";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
 import { fetchWalletOrderHistory } from "~/lib/apis/rwa/orders/orders";
+import {
+  FreshnessSource,
+  useFreshQuery,
+  useFreshQueryInvalidation,
+} from "~/lib/apis/rwa/freshness";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
-import { Spinner } from "~/lib/atoms/Spinner";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { RPagination } from "~/lib/molecules/RPagination";
 import {
   getNextSortState,
-  TableHeader,
   type SortState,
 } from "~/lib/molecules/RSortableTableHeader";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import {
+  NotifierChannel,
+  NotifierWalletEvent,
+} from "~/providers/NotificationsProvider/notifications.const";
+import { useNotifierEvent } from "~/providers/NotificationsProvider/hooks/useNotifierEvent";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import {
   formatOrderDate,
@@ -28,23 +35,6 @@ import { ROrderStatusBadge } from "./ROrderStatusBadge";
 import styles from "./styles.module.css";
 
 const ORDER_HISTORY_PER_PAGE = 10;
-
-type ServerSortKey = "amount" | "date" | "total";
-
-type HeaderConfig = {
-  label: string;
-  sortKey?: ServerSortKey;
-};
-
-const headers: HeaderConfig[] = [
-  { label: "DATE", sortKey: "date" },
-  { label: "ASSET" },
-  { label: "TYPE" },
-  { label: "PRICE" },
-  { label: "AMOUNT", sortKey: "amount" },
-  { label: "STATUS" },
-  { label: "TOTAL", sortKey: "total" },
-];
 
 type OrderHistoryTabProps = {
   asset: AssetType;
@@ -109,9 +99,10 @@ function OrderHistoryTableRow({
 export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
   const { isAuthenticated } = useAuthContext();
   const { userAddress } = useUserContext();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const canFetchOrders = isAuthenticated && Boolean(userAddress);
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<SortState<ServerSortKey>>({
+  const [sort, setSort] = useState<SortState<HistorySortKey>>({
     direction: "descending",
     key: "date",
   });
@@ -122,7 +113,7 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     return `${sort.key}_${sort.direction === "descending" ? "desc" : "asc"}`;
   }, [sort]);
 
-  const ordersHistoryQuery = useQuery({
+  const ordersHistoryQuery = useFreshQuery({
     queryKey: [
       "fetchWalletOrderHistory",
       userAddress,
@@ -142,6 +133,18 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     placeholderData: (previousData) => previousData,
     retry: false,
   });
+
+  const handleOrderbookOrderUpdated = useCallback(() => {
+    void invalidateFreshQueries("fetchWalletOrderHistory", {
+      source: FreshnessSource.Orderbook,
+    });
+  }, [invalidateFreshQueries]);
+
+  useNotifierEvent(
+    NotifierChannel.Wallet,
+    NotifierWalletEvent.OrderbookOrderUpdated,
+    handleOrderbookOrderUpdated
+  );
 
   useEffect(() => {
     const totalPages = ordersHistoryQuery.data?.total_pages ?? 0;
@@ -208,7 +211,7 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     );
   }
 
-  const handleSort = (key: ServerSortKey) => {
+  const handleSort = (key: HistorySortKey) => {
     setSort((currentSort) => getNextSortState(currentSort, key));
     setPage(1);
   };
@@ -217,61 +220,22 @@ export function OrderHistoryTab({ asset }: OrderHistoryTabProps) {
     ordersHistoryQuery.data ?? {};
 
   return (
-    <div className={styles.content}>
-      <div className={styles.viewport}>
-        {ordersHistoryQuery.isFetching ? (
-          <div
-            className={styles.loadingOverlay}
-            role="status"
-            aria-live="polite"
-          >
-            <Spinner size={32} />
-          </div>
-        ) : null}
-        <div className={styles.table} role="table">
-          <div className={styles.headerRow} role="row">
-            {headers.map((header) => (
-              <div
-                className={styles.headerCell}
-                key={header.label}
-                role="columnheader"
-              >
-                <TableHeader
-                  direction={
-                    sort?.key === header.sortKey ? sort?.direction : undefined
-                  }
-                  label={header.label}
-                  onSort={
-                    header.sortKey
-                      ? () => handleSort(header.sortKey as ServerSortKey)
-                      : undefined
-                  }
-                />
-              </div>
-            ))}
-          </div>
-          <div role="rowgroup">
-            {orders.map((order) => (
-              <OrderHistoryTableRow
-                assetSymbol={asset.metadata.symbol}
-                key={order.id}
-                order={order}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-      {total && totalPages > 0 ? (
-        <div className={styles.paginationFooter}>
-          <RPagination
-            ariaLabel="Order history pagination"
-            currentPage={page}
-            isLoading={ordersHistoryQuery.isFetching}
-            onPageChange={setPage}
-            totalPages={totalPages}
-          />
-        </div>
-      ) : null}
-    </div>
+    <RAssetHistoryTable
+      sort={sort}
+      onSort={handleSort}
+      isFetching={ordersHistoryQuery.isFetching}
+      page={page}
+      onPageChange={setPage}
+      totalPages={total ? totalPages : 0}
+      paginationLabel="Order history pagination"
+    >
+      {orders.map((order) => (
+        <OrderHistoryTableRow
+          assetSymbol={asset.metadata.symbol}
+          key={order.id}
+          order={order}
+        />
+      ))}
+    </RAssetHistoryTable>
   );
 }

@@ -5,7 +5,7 @@ import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RDepositFundsModal } from "./RDepositFundsModal";
 
-export function DepositFunds() {
+export function DepositFunds({ label = "Deposit" }: { label?: string }) {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
 
   return (
@@ -17,7 +17,7 @@ export function DepositFunds() {
         size="medium"
         tone="black"
       >
-        Deposit
+        {label}
       </RButton>
       <RDepositFundsModal
         isOpen={isDepositModalOpen}

@@ -1,5 +1,0 @@
-.assetDetailsGrid {
-  display: grid;
-  grid-template-columns: 301px 1fr;
-  gap: 24px;
-}

@@ -32,15 +32,55 @@
   justify-self: end;
 }
 
-.wallet .depositButton {
-  padding: 9px 14px 9px var(--r-space-4);
-  min-height: auto;
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+.notifications {
+  position: relative;
 }
 
+.notificationsButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: var(--r-space-1);
+  place-items: center;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-pill);
+}
+
+.notificationsButton:hover {
+  background: var(--r-color-neutral-100);
+}
+
+.notificationsIconRead circle[fill="#EAB308"] {
+  display: none;
+}
+
+.wallet .depositButton {
+  padding: 9px 16px;
+  min-height: auto;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 150%;
+}
+
+@media (--media-tablet-max) {
+  .inner {
+    padding: var(--r-space-2) var(--r-space-8);
+  }
+}
 
 @media (--media-tablet) {
-  .header {
+  .navigation {
     display: none;
+  }
+  .wallet {
+    display: none;
+  }
+}
+@media (--media-phone) {
+  .inner {
+    padding: var(--r-space-2) var(--r-space-4);
   }
 }

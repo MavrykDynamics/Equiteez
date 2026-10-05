@@ -18,8 +18,6 @@ import { useAppContext } from "~/providers/AppProvider/AppProvider";
 // types
 import type { HubConnection } from "@microsoft/signalr";
 import { TokenMetadata } from "~/lib/metadata";
-import { AccountInfo } from "@mavrykdynamics/beacon-dapp";
-
 type UseUserSocketsType = {
   setIsTzktBalancesLoading: (newLoading: boolean) => void;
 
@@ -28,14 +26,14 @@ type UseUserSocketsType = {
   setUserTzktTokens: React.Dispatch<
     React.SetStateAction<UserTzKtTokenBalances>
   >;
-  account: AccountInfo | null | undefined;
+  userAddress: string | null;
 };
 
 export const useUserSockets = ({
   setIsTzktBalancesLoading,
   setUserCtxState,
   setUserTzktTokens,
-  account,
+  userAddress,
 }: UseUserSocketsType) => {
   const { tokensMetadata } = useTokensContext();
   const { IS_WEB } = useAppContext();
@@ -67,7 +65,7 @@ export const useUserSockets = ({
         },
       }));
     },
-    [tokensMetadata]
+    [setUserTzktTokens, tokensMetadata]
   );
 
   /**
@@ -85,11 +83,14 @@ export const useUserSockets = ({
     }) => {
       if (isUsingLoader) setIsTzktBalancesLoading(true);
 
-      setUserCtxState((prev) => ({
-        ...prev,
-        userAddress,
-        isAdmin: ADMIN_ADDRESSES[userAddress],
-      }));
+      setUserCtxState((prev) =>
+        prev.userAddress === userAddress
+          ? {
+              ...prev,
+              isAdmin: ADMIN_ADDRESSES[userAddress],
+            }
+          : prev
+      );
 
       const fetchedTokens = await fetchTzktUserBalances({
         userAddress,
@@ -158,11 +159,11 @@ export const useUserSockets = ({
 
   // set socket
   useEffect(() => {
-    if (IS_WEB && account?.address) {
+    if (IS_WEB && userAddress) {
       openTzktWebSocket()
         .then((socket) => {
           tzktSocketRef.current = socket;
-          attachSocketListeners(socket, account?.address);
+          attachSocketListeners(socket, userAddress);
         })
         .catch((e) => console.error(e));
     }
@@ -170,7 +171,7 @@ export const useUserSockets = ({
     return () => {
       tzktSocketRef?.current?.stop();
     };
-  }, [IS_WEB, account?.address, attachSocketListeners]);
+  }, [IS_WEB, userAddress, attachSocketListeners]);
 
   return {
     loadInitialTzktTokensForNewlyConnectedUser,

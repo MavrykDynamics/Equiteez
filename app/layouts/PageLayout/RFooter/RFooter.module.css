@@ -166,3 +166,10 @@
     flex-direction: column;
   }
 }
+
+@media (--media-phone-max) {
+  .bottom {
+    align-items: flex-start;
+    text-align: left;
+  }
+}

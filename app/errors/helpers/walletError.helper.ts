@@ -1,5 +1,6 @@
 import {
   ContractMethod,
+  Estimate,
   OpKind,
   SendParams,
   MavrykOperationError,
@@ -103,6 +104,7 @@ export const estimateBatchOperation = async (
 ): Promise<EstimatedBatchCall> => {
   const defaultEstimatedBatchCalls: EstimatedBatchCall = {
     totalGasLimit: 0,
+    totalGasFeeMutez: 0,
     totalCost: 0,
     totalMinimalFeeMutez: 0,
     totalSuggestedFeeMutez: 0,
@@ -117,6 +119,10 @@ export const estimateBatchOperation = async (
       (acc: EstimatedBatchCall, estimateData) => {
         acc.batchOperations?.push(estimateData);
         acc.totalGasLimit += estimateData.gasLimit;
+        // Keep the SDK's base/byte fees and rounding; isolate only the gas charge.
+        const feeWithoutGas = new Estimate(0, 0, estimateData.opSize, 0)
+          .minimalFeeMumav;
+        acc.totalGasFeeMutez += estimateData.minimalFeeMumav - feeWithoutGas;
         acc.totalCost += estimateData.totalCost;
         acc.totalMinimalFeeMutez += estimateData.minimalFeeMumav;
         acc.totalSuggestedFeeMutez += estimateData.suggestedFeeMumav;

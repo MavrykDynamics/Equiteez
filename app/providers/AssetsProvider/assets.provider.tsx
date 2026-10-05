@@ -33,7 +33,7 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
     queryKey: ["rwa-prices"],
     queryFn: fetchPrices,
     refetchInterval: 60000,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
   });
 
   useEffect(() => {
@@ -76,13 +76,14 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
 
   const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
+      assetError: assetsQuery.error,
       assets,
       prices,
       assetTypes,
       isLoading,
       isPricesLoading,
     }),
-    [assets, prices, assetTypes, isLoading, isPricesLoading]
+    [assets, prices, assetTypes, isLoading, isPricesLoading, assetsQuery.error]
   );
 
   return (

@@ -1,11 +1,14 @@
 import { rwaApi } from "~/lib/apis/rwa/client";
+import { requestFreshQuery } from "~/lib/apis/rwa/freshness";
 import {
+  PublicWalletPortfolioSchema,
   WalletActivitySummarySchema,
   WalletPortfolioHistorySchema,
   WalletPortfolioSchema,
   WalletSchema,
 } from "~/lib/apis/rwa/wallet/wallet.schema";
 import {
+  PublicWalletPortfolioResponseType,
   WalletActivitySummaryResponseType,
   WalletPortfolioHistoryResponseType,
   WalletPortfolioResponseType,
@@ -38,6 +41,32 @@ export const fetchWalletPortfolio = async ({
   return WalletPortfolioSchema.parse(data);
 };
 
+export const fetchPublicWalletPortfolio = async ({
+  walletAddress,
+}: FetchWalletParams): Promise<PublicWalletPortfolioResponseType> => {
+  const { data } = await rwaApi.get(
+    `/public/wallets/${walletAddress}/portfolio`
+  );
+
+  return PublicWalletPortfolioSchema.parse(data);
+};
+
+export const fetchPublicWalletPortfolioHistory = async ({
+  walletAddress,
+  currency = "usd",
+  range = "1d",
+}: FetchWalletPortfolioHistoryParams): Promise<WalletPortfolioHistoryResponseType> => {
+  const query = new URLSearchParams({
+    currency,
+    range,
+  });
+  const { data } = await rwaApi.get(
+    `/public/wallets/${walletAddress}/portfolio/history?${query.toString()}`
+  );
+
+  return WalletPortfolioHistorySchema.parse(data);
+};
+
 export const fetchWalletPortfolioHistory = async ({
   walletAddress,
   currency = "usd",
@@ -57,7 +86,11 @@ export const fetchWalletPortfolioHistory = async ({
 export const fetchWalletActivitySummary = async ({
   walletAddress,
 }: FetchWalletParams): Promise<WalletActivitySummaryResponseType> => {
-  const { data } = await rwaApi.get(`/wallets/${walletAddress}/activity/summary`);
+  const { data } = await requestFreshQuery({
+    api: rwaApi,
+    queryKeyStart: "fetchWalletActivitySummary",
+    url: `/wallets/${walletAddress}/activity/summary`,
+  });
 
   return WalletActivitySummarySchema.parse(data);
 };

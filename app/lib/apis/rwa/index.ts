@@ -11,7 +11,14 @@ export {
   fetchWalletTransferHistory,
 } from "~/lib/apis/rwa/orders/orders";
 export {
+  fetchWalletNotifications,
+  fetchWalletNotificationsSummary,
+  readWalletNotifications,
+} from "~/lib/apis/rwa/notifications/notifications";
+export {
   fetchWalletActivitySummary,
+  fetchPublicWalletPortfolio,
+  fetchPublicWalletPortfolioHistory,
   fetchWallet,
   fetchWalletPortfolio,
   fetchWalletPortfolioHistory,

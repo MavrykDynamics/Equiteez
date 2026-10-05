@@ -4,18 +4,27 @@ import { FC } from "react";
 import InfoIcon from "app/icons/info.svg?react";
 import { Tooltip, TooltipProps } from "~/lib/molecules/Tooltip";
 
-type InfoTooltipProps = Pick<TooltipProps, "content" | "maxWidth" | "theme"> & {
+type InfoTooltipProps = Pick<
+  TooltipProps,
+  "content" | "maxWidth" | "theme" | "allowHTML"
+> & {
   className?: string;
 };
 
 export const InfoTooltip: FC<InfoTooltipProps> = ({
   content,
+  allowHTML,
   className = "w-4 h-4",
   maxWidth,
   theme,
 }) => {
   return (
-    <Tooltip content={content} maxWidth={maxWidth} theme={theme}>
+    <Tooltip
+      content={content}
+      allowHTML={allowHTML}
+      maxWidth={maxWidth}
+      theme={theme}
+    >
       <InfoIcon className={clsx("text-[#021A12]", className)} />
     </Tooltip>
   );

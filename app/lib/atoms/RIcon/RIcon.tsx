@@ -1,6 +1,8 @@
 import { useId, type ReactNode, type SVGProps } from "react";
 import clsx from "clsx";
 
+import LinkIcon from "~/icons/link.svg?react";
+
 import styles from "./RIcon.module.css";
 
 export type RIconName =
@@ -15,26 +17,36 @@ export type RIconName =
   | "arrow-long-up-right"
   | "arrow-round"
   | "burger-menu"
+  | "bell"
   | "check"
   | "close"
   | "copy"
+  | "cross"
   | "heart"
+  | "house"
   | "grid"
   | "info"
   | "image"
+  | "link"
   | "list"
   | "loading"
+  | "loading-progress"
   | "lock"
   | "lock-open"
+  | "ok"
   | "radio"
   | "refund"
   | "search"
   | "sort"
+  | "square-account"
   | "star"
   | "trash"
   | "trending-down"
   | "trending-up"
   | "upload"
+  | "nav-discovery"
+  | "nav-portfolio"
+  | "nav-trade"
   | "web";
 
 export type RIconSize = "small" | "medium";
@@ -97,6 +109,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M4 17h16" />
     </>
   ),
+  bell: (
+    <>
+      <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+      <path d="M10 21h4" />
+    </>
+  ),
   check: <path d="m7 12 3 3 7-7" />,
   close: (
     <path
@@ -110,10 +128,22 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       transform="translate(5.5 5.5)"
     />
   ),
+  cross: (
+    <>
+      <path d="M5 5 19 19" strokeWidth={2} strokeMiterlimit={10} />
+      <path d="M5 19 19 5" strokeWidth={2} strokeMiterlimit={10} />
+    </>
+  ),
   heart: (
     <path
       d="M6.5 2.60283C5.16667-.526792.5-.193458.5 3.80656c0 4 6 7.33344 6 7.33344s6-3.33342 6-7.33344c0-4-4.66667-4.33335-6-1.20373Z"
       transform="translate(5.5 6.18)"
+    />
+  ),
+  house: (
+    <path
+      d="M20 17.0002V11.4522C20 10.9179 19.9995 10.6506 19.9346 10.4019C19.877 10.1816 19.7825 9.97307 19.6546 9.78464C19.5102 9.57201 19.3096 9.39569 18.9074 9.04383L14.1074 4.84383C13.3608 4.19054 12.9875 3.86406 12.5674 3.73982C12.1972 3.63035 11.8026 3.63035 11.4324 3.73982C11.0126 3.86397 10.6398 4.19014 9.89436 4.84244L5.09277 9.04383C4.69064 9.39569 4.49004 9.57201 4.3457 9.78464C4.21779 9.97307 4.12255 10.1816 4.06497 10.4019C4 10.6506 4 10.9179 4 11.4522V17.0002C4 17.932 4 18.3978 4.15224 18.7654C4.35523 19.2554 4.74432 19.6452 5.23438 19.8482C5.60192 20.0005 6.06786 20.0005 6.99974 20.0005C7.93163 20.0005 8.39808 20.0005 8.76562 19.8482C9.25568 19.6452 9.64467 19.2555 9.84766 18.7654C9.9999 18.3979 10 17.932 10 17.0001V16.0001C10 14.8955 10.8954 14.0001 12 14.0001C13.1046 14.0001 14 14.8955 14 16.0001V17.0001C14 17.932 14 18.3979 14.1522 18.7654C14.3552 19.2555 14.7443 19.6452 15.2344 19.8482C15.6019 20.0005 16.0679 20.0005 16.9997 20.0005C17.9316 20.0005 18.3981 20.0005 18.7656 19.8482C19.2557 19.6452 19.6447 19.2554 19.8477 18.7654C19.9999 18.3978 20 17.932 20 17.0002Z"
+      strokeWidth={1}
     />
   ),
   grid: (
@@ -128,7 +158,7 @@ const rIconPaths: Record<RIconName, ReactNode> = {
     <>
       <path
         d="M6.5 4.13346V6.80013M6.5 12.5C3.18629 12.5 0.5 9.81371 0.5 6.5C0.5 3.18629 3.18629 0.5 6.5 0.5C9.81371 0.5 12.5 3.18629 12.5 6.5C12.5 9.81371 9.81371 12.5 6.5 12.5ZM6.5332 8.80013V8.8668L6.4668 8.86654V8.80013H6.5332Z"
-        stroke="#010101"
+        stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -141,6 +171,7 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <circle cx="15" cy="9" r="1" />
     </>
   ),
+  link: null,
   list: (
     <>
       <path d="M5 17h14" />
@@ -148,7 +179,16 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M5 7h14" />
     </>
   ),
-  loading: <path d="M12 3a9 9 0 1 0 9 9" />,
+  loading: (
+    <path d="M12 1C5.92487 1 1 5.92487 1 12C1 18.0751 5.92487 23 12 23C18.0751 23 23 18.0751 23 12C23 8.31954 21.1925 5.06125 18.4167 3.06442" />
+  ),
+  "loading-progress": (
+    <path
+      d="M18.37 12C18.7179 12 19.0029 12.2826 18.9717 12.6292C18.8459 14.0226 18.3048 15.3518 17.4111 16.4408C16.3837 17.6926 14.954 18.5496 13.3656 18.8655C11.7773 19.1814 10.1285 18.9369 8.70022 18.1734C7.27196 17.41 6.15259 16.175 5.53284 14.6788C4.91309 13.1826 4.83131 11.5178 5.30142 9.96801C5.77153 8.41826 6.76445 7.07945 8.11101 6.17971C9.45756 5.27997 11.0744 4.87497 12.6861 5.03371C14.0881 5.17178 15.4106 5.72898 16.4848 6.62538C16.752 6.84831 16.7503 7.2497 16.5043 7.49573C16.2582 7.74176 15.8613 7.73863 15.5898 7.52103C14.7251 6.82802 13.6743 6.39713 12.5626 6.28764C11.241 6.15748 9.9152 6.48958 8.81103 7.22737C7.70685 7.96515 6.89265 9.06297 6.50716 10.3338C6.12167 11.6046 6.18874 12.9697 6.69693 14.1966C7.20513 15.4235 8.12301 16.4362 9.29418 17.0622C10.4654 17.6882 11.8174 17.8888 13.1198 17.6297C14.4223 17.3706 15.5946 16.668 16.4371 15.6414C17.1457 14.7779 17.5841 13.7302 17.7055 12.6288C17.7436 12.2829 18.0221 12 18.37 12Z"
+      fill="#EAB308"
+      stroke="none"
+    />
+  ),
   lock: (
     <>
       <rect x="5" y="10" width="14" height="10" rx="2" />
@@ -161,6 +201,7 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M8 10V7a4 4 0 0 1 7.6-1.75" />
     </>
   ),
+  ok: <path d="m4 13 5 5L20 7" />,
   radio: (
     <>
       <circle cx="12" cy="12" r="7" />
@@ -190,6 +231,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
         data-sort-direction="ascending"
       />
     </>
+  ),
+  "square-account": (
+    <path
+      d="M17 21C17 18.2386 14.7614 16 12 16C9.23858 16 7 18.2386 7 21M17 21H17.8031C18.921 21 19.48 21 19.9074 20.7822C20.2837 20.5905 20.5905 20.2837 20.7822 19.9074C21 19.48 21 18.921 21 17.8031V6.19691C21 5.07899 21 4.5192 20.7822 4.0918C20.5905 3.71547 20.2837 3.40973 19.9074 3.21799C19.4796 3 18.9203 3 17.8002 3H6.2002C5.08009 3 4.51962 3 4.0918 3.21799C3.71547 3.40973 3.40973 3.71547 3.21799 4.0918C3 4.51962 3 5.08009 3 6.2002V17.8002C3 18.9203 3 19.4796 3.21799 19.9074C3.40973 20.2837 3.71547 20.5905 4.0918 20.7822C4.5192 21 5.07899 21 6.19691 21H7M17 21H7M12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10C15 11.6569 13.6569 13 12 13Z"
+      strokeWidth="1"
+    />
   ),
   star: (
     <path
@@ -231,6 +278,42 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M12 4a12 12 0 0 0 0 16" />
     </>
   ),
+  "nav-trade": (
+    <>
+      <path
+        d="M16 19L19 16L16 13M19 16H5M8 5L5 8L8 11M5 8H19"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  ),
+  "nav-portfolio": (
+    <>
+      <path
+        d="M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12M12 3C16.9706 3 21 7.02944 21 12M18 18.5L12 12V3M21 12H12"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  ),
+  "nav-discovery": (
+    <>
+      <path
+        d="M3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10.5 10.5L16 8L13.5 13.5L8 16L10.5 10.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  ),
 };
 
 export function RIcon({
@@ -242,15 +325,16 @@ export function RIcon({
   ...props
 }: RIconProps) {
   const titleId = useId();
+  const Icon = name === "link" ? LinkIcon : "svg";
 
   return (
-    <svg
+    <Icon
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       className={clsx(
         styles.icon,
         styles[size],
-        name === "loading" && styles.spin,
+        (name === "loading" || name === "loading-progress") && styles.spin,
         className
       )}
       fill="none"
@@ -267,6 +351,6 @@ export function RIcon({
     >
       {title ? <title id={titleId}>{title}</title> : null}
       {rIconPaths[name]}
-    </svg>
+    </Icon>
   );
 }

@@ -9,6 +9,7 @@ import { AssetMetadataBase } from "~/lib/metadata";
 import { CryptoBalance } from "../Balance";
 import { Icon } from "~/lib/atoms/Icon";
 import { AssetView } from "~/templates/BalanceInput/AssetView";
+import styles from "./styles.module.css";
 
 type BalanceInputProps = {
   label?: React.ReactNode;
@@ -20,6 +21,7 @@ type BalanceInputProps = {
   additionalTopRightBlock?: React.ReactNode;
   additionalBottomRightBlock?: React.ReactNode;
   additionalBottomLeftBlock?: React.ReactNode;
+  assetIconSrc?: string;
   amountInputClassName?: string;
   amountInputContainerClassName?: string;
   amountInputStyle?: React.CSSProperties;
@@ -33,6 +35,9 @@ type BalanceInputProps = {
   headerClassName?: string;
   isAssetViewSmall?: boolean;
   sectionClassName?: string;
+  secondaryAssetIconAlt?: string;
+  secondaryAssetIconSrc?: string;
+  secondaryAssetSlug?: string;
   selectedAssetMetadata?: AssetMetadataBase;
   shouldRenderFooter?: boolean;
   onNext?: () => void;
@@ -49,6 +54,7 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
       additionalTopRightBlock,
       additionalBottomLeftBlock,
       additionalBottomRightBlock,
+      assetIconSrc,
       amountInputClassName,
       amountInputContainerClassName,
       amountInputStyle,
@@ -62,6 +68,9 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
       headerClassName,
       isAssetViewSmall,
       sectionClassName,
+      secondaryAssetIconAlt,
+      secondaryAssetIconSrc,
+      secondaryAssetSlug,
       selectedAssetSlug,
       selectedAssetMetadata,
       shouldRenderFooter = true,
@@ -127,10 +136,11 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
           <div
             className={clsx(
               "flex justify-between items-center",
+              styles.header,
               headerClassName
             )}
           >
-            <div className="text-left text-xs text-r-color-neutral-700 leading-[18px]">
+            <div className={styles.label}>
               {label}
             </div>
             {additionalTopRightBlock}
@@ -143,8 +153,13 @@ export const BalanceInput = forwardRef<HTMLInputElement, BalanceInputProps>(
           >
             <AssetView
               className={assetViewClassName}
+              assetIconSrc={assetIconSrc}
               isSmallView={isAssetViewSmall}
+              secondaryAssetIconAlt={secondaryAssetIconAlt}
+              secondaryAssetIconSrc={secondaryAssetIconSrc}
+              secondaryAssetSlug={secondaryAssetSlug}
               selectedAssetSlug={selectedAssetSlug}
+              selectedAssetMetadata={selectedAssetMetadata}
             />
             <AssetField
               ref={inputRef}
@@ -231,12 +246,54 @@ const BalanceTotalBlock: FC<BalanceTotalBlockProps> = ({
   );
 };
 
+type BalanceDisplayPlacement = "top-right" | "bottom-left";
+
+type BalanceDisplayBlockProps = {
+  balanceClassName?: string;
+  balanceLabel?: string;
+  balanceSuffix?: React.ReactNode;
+  cryptoDecimals?: number;
+  cryptoValue: number | BigNumber;
+  selectedAssetMetadata?: AssetMetadataBase;
+  showBalanceIcon?: boolean;
+};
+
+const BalanceDisplayBlock: FC<BalanceDisplayBlockProps> = ({
+  balanceClassName,
+  balanceLabel,
+  balanceSuffix,
+  cryptoDecimals,
+  cryptoValue,
+  selectedAssetMetadata,
+  showBalanceIcon = true,
+}) => {
+  return (
+    <div
+      className={clsx(
+        styles.balanceDisplay,
+        balanceClassName
+      )}
+    >
+      {showBalanceIcon && <Icon icon="wallet-secondary" className="size-4" />}
+      {balanceLabel && <span>{balanceLabel}</span>}
+      <CryptoBalance
+        value={new BigNumber(cryptoValue)}
+        cryptoDecimals={cryptoDecimals}
+      />
+      <span>{selectedAssetMetadata?.symbol ?? "???"}</span>
+      {balanceSuffix}
+    </div>
+  );
+};
+
 export const BalanceInputWithTotal = forwardRef<
   HTMLInputElement,
   BalanceInputProps &
     BalanceTotalBlockProps & {
       balanceClassName?: string;
       balanceLabel?: string;
+      balancePlacement?: BalanceDisplayPlacement;
+      balanceSuffix?: React.ReactNode;
       cryptoValue: number | BigNumber;
       cryptoDecimals?: number;
       showBalanceIcon?: boolean;
@@ -248,6 +305,8 @@ export const BalanceInputWithTotal = forwardRef<
     selectedAssetMetadata,
     balanceClassName,
     balanceLabel,
+    balancePlacement = "top-right",
+    balanceSuffix,
     cryptoValue,
     cryptoDecimals,
     showBalanceIcon = true,
@@ -257,6 +316,18 @@ export const BalanceInputWithTotal = forwardRef<
     ...balanceInputProps
   } = props;
 
+  const balanceBlock = (
+    <BalanceDisplayBlock
+      balanceClassName={balanceClassName}
+      balanceLabel={balanceLabel}
+      balanceSuffix={balanceSuffix}
+      cryptoDecimals={cryptoDecimals}
+      cryptoValue={cryptoValue}
+      selectedAssetMetadata={selectedAssetMetadata}
+      showBalanceIcon={showBalanceIcon}
+    />
+  );
+
   return (
     <>
       <BalanceInput
@@ -264,29 +335,16 @@ export const BalanceInputWithTotal = forwardRef<
         {...balanceInputProps}
         selectedAssetMetadata={selectedAssetMetadata}
         additionalTopRightBlock={
-          additionalTopRightBlock || (
-            <div
-              className={clsx(
-                "text-xs text-r-color-neutral-700 flex items-center gap-[4px] font-semibold",
-                balanceClassName
-              )}
-            >
-              {showBalanceIcon && (
-                <Icon icon="wallet-secondary" className="size-4" />
-              )}
-              {balanceLabel && <span>{balanceLabel}</span>}
-              <CryptoBalance
-                value={new BigNumber(cryptoValue)}
-                cryptoDecimals={cryptoDecimals}
-              />
-              {selectedAssetMetadata?.symbol ?? "???"}
-            </div>
-          )
+          additionalTopRightBlock ||
+          (balancePlacement === "top-right" ? balanceBlock : undefined)
         }
-        additionalBottomLeftBlock={additionalBottomLeftBlock}
+        additionalBottomLeftBlock={
+          additionalBottomLeftBlock ||
+          (balancePlacement === "bottom-left" ? balanceBlock : undefined)
+        }
         additionalBottomRightBlock={
           additionalBottomRightBlock || (
-            <div className="text-xs text-r-color-neutral-700 flex items-center justify-between font-semibold">
+            <div className={styles.balanceTotal}>
               <BalanceTotalBlock
                 balanceTotal={balanceTotal}
                 decimals={decimals}

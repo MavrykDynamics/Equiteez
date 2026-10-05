@@ -1,3 +1,4 @@
+import { RPurchaseHistoryTab } from "./PurchaseHistoryTab/RPurchaseHistoryTab";
 import styles from "./styles.module.css";
 import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
 import { useMemo, useState } from "react";
@@ -12,6 +13,7 @@ import { OpenOrdersTab } from "~/routes/trade.$address/components/AssetTabs/Open
 import { OrderHistoryTab } from "~/routes/trade.$address/components/AssetTabs/OrderHistoryTab/OrderHistoryTab";
 
 type AssetTabId =
+  | "purchase_history"
   | "open_orders"
   | "order_history"
   | "asset_overview"
@@ -29,6 +31,10 @@ const orders_tabs: RTabSwitcherItem[] = [
     label: "Order History",
   },
 ];
+const purchaseTabs: RTabSwitcherItem[] = [
+  { id: "purchase_history", label: "Purchase History" },
+];
+
 const tabs: RTabSwitcherItem[] = [
   {
     id: "asset_overview",
@@ -50,10 +56,21 @@ const tabs: RTabSwitcherItem[] = [
 ];
 
 export function AssetTabs({ asset }: { asset: AssetType }) {
+  const isPrimary = asset.profile.lifecycle === "primary_issuance";
   const [activeTab, setActiveTab] = useState<AssetTabId>("asset_overview");
+
+  const visibleTab =
+    (isPrimary &&
+      (activeTab === "open_orders" || activeTab === "order_history")) ||
+    (!isPrimary && activeTab === "purchase_history")
+      ? "asset_overview"
+      : activeTab;
 
   const content = useMemo(
     (): Record<AssetTabId, ReactNode> => ({
+      purchase_history: (
+        <RPurchaseHistoryTab key={asset.address} asset={asset} />
+      ),
       open_orders: <OpenOrdersTab asset={asset} />,
       order_history: <OrderHistoryTab asset={asset} />,
       asset_overview: <AssetOverviewTab asset={asset} />,
@@ -65,10 +82,13 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
   );
   return (
     <div className={styles.wrapper}>
-      <div className={styles.tabSwitcher}>
+      <div
+        className={`${styles.tabSwitcher} ${isPrimary ? styles.primaryTabs : ""}`}
+      >
         <RTabSwitcher
-          activeTabId={activeTab}
+          activeTabId={visibleTab}
           ariaLabel="Asset Tabs"
+          className={styles.assetTabs}
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
@@ -76,17 +96,17 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
         />
         <span className={styles.divider} />
         <RTabSwitcher
-          activeTabId={activeTab}
-          ariaLabel="Order Tabs"
+          activeTabId={visibleTab}
+          ariaLabel={isPrimary ? "Purchase Tabs" : "Order Tabs"}
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
-          className={styles.desktopTabs}
-          tabs={orders_tabs}
+          className={isPrimary ? undefined : styles.desktopTabs}
+          tabs={isPrimary ? purchaseTabs : orders_tabs}
         />
       </div>
       <div className={styles.content}>
-        {content[activeTab] ?? <div>No active tab</div>}
+        {content[visibleTab] ?? <div>No active tab</div>}
       </div>
     </div>
   );

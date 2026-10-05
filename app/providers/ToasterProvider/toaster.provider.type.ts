@@ -28,6 +28,7 @@ export type ToasterMessage = {
   message: string;
   unique: string;
   hide: boolean;
+  autoHide?: boolean;
 };
 
 export interface ErrorTransfer {
