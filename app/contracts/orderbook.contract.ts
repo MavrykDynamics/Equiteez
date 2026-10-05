@@ -123,19 +123,17 @@ const validateOrderRules = ({
   const amountAtoms = new BigNumber(rwaTokenAmount);
   const priceAtoms = new BigNumber(pricePerRwaToken);
 
-  if (isMarketOrder) {
-    if (quantityTickSizeAtoms === undefined) {
-      throw new Error("Market quantity tick size is required");
-    }
-    if (
-      !alignQuantityAtomsToTick(amountAtoms, quantityTickSizeAtoms).eq(
-        amountAtoms
-      )
-    ) {
-      throw new Error(
-        "Quantity is not aligned to the orderbook quantity tick size"
-      );
-    }
+  if (quantityTickSizeAtoms === undefined) {
+    throw new Error("Order quantity tick size is required");
+  }
+  if (
+    !alignQuantityAtomsToTick(amountAtoms, quantityTickSizeAtoms).eq(
+      amountAtoms
+    )
+  ) {
+    throw new Error(
+      "Quantity is not aligned to the orderbook quantity tick size"
+    );
   }
 
   if (!isMarketOrder && tickSizeAtoms !== undefined) {

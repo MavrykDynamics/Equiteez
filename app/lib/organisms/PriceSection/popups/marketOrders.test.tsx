@@ -120,13 +120,18 @@ vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
 vi.mock("~/templates/Alert/RAlert", () => ({
   RAlert: ({ children }: { children: ReactNode }) => <p>{children}</p>,
 }));
-vi.mock("../screens/BuySellLimitScreen", () => ({
-  BuySellLimitScreen: () => null,
-}));
 vi.mock("~/lib/organisms/RCustomDropdown/RCustomDropdown", () => ({
-  RCustomDropdown: () => null,
-  RDropdownBodyContent: () => null,
-  RDropdownBodyContentItem: () => null,
+  RCustomDropdown: ({ children }: { children: ReactNode }) => <>{children}</>,
+  RDropdownBodyContent: ({ children }: { children: ReactNode }) => (
+    <>{children}</>
+  ),
+  RDropdownBodyContentItem: ({
+    children,
+    onClick,
+  }: {
+    children: ReactNode;
+    onClick: () => void;
+  }) => <button onClick={onClick}>{children}</button>,
   RDropdownFaceContent: () => null,
 }));
 vi.mock("~/lib/organisms/TabSwitcherV2/TabSwitcherV2", () => ({
@@ -141,6 +146,7 @@ vi.mock("~/lib/organisms/OrderBookPopup/OrderBookTable", () => ({
 vi.mock("~/lib/atoms/RIcon/RIcon", () => ({ RIcon: () => null }));
 vi.mock("../components/OrderExpiryBlock/OrderExpiryBlock", () => ({
   getOrderExpiryTimestamp: vi.fn(),
+  OrderExpiryBlock: () => null,
 }));
 vi.mock("../components/TradeConfirmationPopup", () => ({
   TradeConfirmationPopup: () => null,
@@ -321,4 +327,96 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
       expect(mocks.sell).not.toHaveBeenCalled();
     }
   );
+});
+
+describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
+  function renderLimit(overrides: Partial<OrderbookExecutionConfig> = {}) {
+    render(side, overrides);
+    act(() =>
+      Array.from(container.querySelectorAll("button"))
+        .find((button) => button.textContent === "Limit")!
+        .click()
+    );
+    change("Limit Price", "30");
+  }
+  it.each([
+    ["10000", "0.966666", "960000", "28.8"],
+    ["100", "0.966666", "966600", "28.998"],
+    ["10000", "0.95", "950000", "28.5"],
+    ["100", "0.95", "950000", "28.5"],
+  ])(
+    "aligns direct quantities at tick %s: %s",
+    async (tick, amount, atoms, total) => {
+      renderLimit({ quantityTickSize: tick });
+      change("Amount", amount);
+      expect(input("Total").value).toBe(total);
+      expect(container.querySelector("[data-total]")?.textContent).toBe(total);
+      await estimate();
+      expect(
+        side === BUY ? mocks.estimateBuy : mocks.estimateSell
+      ).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          rwaTokenAmount: atoms,
+          isMarketOrder: false,
+          pricePerRwaToken: "30000000",
+        })
+      );
+      expect(submit().disabled).toBe(false);
+      expect(side === BUY ? mocks.buy : mocks.sell).toHaveBeenLastCalledWith(
+        expect.objectContaining({ rwaTokenAmount: atoms, isMarketOrder: false })
+      );
+    }
+  );
+  it.each([50, 100])("aligns %s%% balance selection", async (percent) => {
+    renderLimit();
+    act(() =>
+      Array.from(container.querySelectorAll("button"))
+        .find((button) => button.textContent === `${percent}%`)!
+        .click()
+    );
+    await estimate();
+    expect(submit().disabled).toBe(false);
+    expect(side === BUY ? mocks.buy : mocks.sell).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        rwaTokenAmount: percent === 100 ? "960000" : "480000",
+      })
+    );
+  });
+  it.each([
+    ["below tick", {}, "0.001"],
+    [
+      "amount minimum",
+      { minBuyOrderAmount: "965000", minSellOrderAmount: "965000" },
+      "0.966666",
+    ],
+    [
+      "value minimum",
+      { minBuyOrderValue: "28900000", minSellOrderValue: "28900000" },
+      "0.966666",
+    ],
+    ["missing tick", { quantityTickSize: undefined }, "0.966666"],
+    ["invalid tick", { quantityTickSize: "0" }, "0.966666"],
+    ["balance exceeded", {}, "2"],
+  ] as const)(
+    "blocks estimation and submission: %s",
+    async (_label, overrides, amount) => {
+      renderLimit(overrides);
+      change("Amount", amount);
+      await estimate();
+      expect(submit().disabled).toBe(true);
+      expect(mocks.estimateBuy).not.toHaveBeenCalled();
+      expect(mocks.estimateSell).not.toHaveBeenCalled();
+      expect(mocks.buy).not.toHaveBeenCalled();
+      expect(mocks.sell).not.toHaveBeenCalled();
+    }
+  );
+  it("preserves price tick rejection", async () => {
+    renderLimit();
+    change("Amount", "0.96");
+    change("Limit Price", "30.01");
+    await estimate();
+    expect(submit().disabled).toBe(true);
+    expect(mocks.estimateBuy).not.toHaveBeenCalled();
+    expect(mocks.estimateSell).not.toHaveBeenCalled();
+  });
 });

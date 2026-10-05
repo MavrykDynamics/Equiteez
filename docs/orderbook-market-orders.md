@@ -1,4 +1,4 @@
-# Secondary Market quantities
+# Secondary order quantities
 
 The selected-orderbook query loads `quantity_tick_size` separately from the
 existing price `tick_size`. Both must be positive integer atom values. Missing
@@ -31,9 +31,17 @@ and balance-percentage selections all pass through this calculation.
 
 Invalid or missing quantity ticks, quantities rounded to zero, insufficient
 balances, and post-rounding amount/value minimum violations block estimation
-and submission. The contract adapter separately rejects off-tick Market
-quantities; it never silently adjusts a submitted payload. Limit price/quantity
-calculations and primary purchases retain their existing behavior.
+and submission. The contract adapter separately rejects off-tick Market and Limit
+quantities; it never silently adjusts a submitted payload. Limit price-tick
+validation and primary purchases retain their existing behavior.
+
+Limit Buy and Sell apply the same downward quantity alignment to the requested
+RWA amount. Direct Amount input and balance-percentage selections share the
+aligned quantity for Total, the order summary, balance/minimum checks, fee
+estimation, and submission. Buy consideration rounds up to quote atoms for the
+balance check; Sell consideration rounds down. The Amount field retains the
+requested quantity so users can edit it without losing precision while typing.
+Limit prices still must align independently to the configured price tick.
 
 For six RWA decimals, 966666 atoms becomes 960000 at tick 10000, or 966600 at
 tick 100. The latter is test coverage, not a deployed configuration change.
