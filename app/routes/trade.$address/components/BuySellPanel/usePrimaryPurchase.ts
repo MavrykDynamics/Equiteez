@@ -99,12 +99,6 @@ export function usePrimaryPurchase(assetAddress: string) {
     void queryClient.invalidateQueries({
       queryKey: ["asset-launch", assetAddress],
     });
-    void queryClient.invalidateQueries({
-      queryKey: ["rwa-assets"],
-    });
-    void queryClient.invalidateQueries({
-      queryKey: ["rwa-prices"],
-    });
   }, [assetAddress, queryClient]);
 
   useNotifierEvent(
