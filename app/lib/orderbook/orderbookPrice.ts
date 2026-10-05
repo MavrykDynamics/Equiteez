@@ -3,7 +3,10 @@ import {
   atomsToTokens,
   decimalScale,
   priceToAtoms,
+  tokensToAtoms,
 } from "~/lib/utils/formaters";
+
+import { alignQuantityAtomsToTick } from "./orderbookTick";
 
 // Orderbook Market logic
 // The contract ignores whatever price a market order is submitted with - it
@@ -204,11 +207,13 @@ export function getQuoteValueAtomsForOrder({
 
 export function getMarketBuyTokenAmountAtoms({
   quoteBudget,
+  quantityTickSize,
   quoteTokenDecimals,
   baseTokenDecimals,
   pricePerTokenAtoms,
 }: {
   quoteBudget: BigNumber.Value;
+  quantityTickSize: BigNumber.Value;
   quoteTokenDecimals: number;
   baseTokenDecimals: number;
   pricePerTokenAtoms: BigNumber.Value;
@@ -228,10 +233,12 @@ export function getMarketBuyTokenAmountAtoms({
     throw new Error("Market buy reference price must be a positive atom value");
   }
 
-  return quoteBudgetAtoms
-    .times(decimalScale(baseTokenDecimals))
-    .div(priceAtoms)
-    .integerValue(BigNumber.ROUND_DOWN);
+  return alignQuantityAtomsToTick(
+    quoteBudgetAtoms
+      .times(decimalScale(baseTokenDecimals))
+      .dividedToIntegerBy(priceAtoms),
+    quantityTickSize
+  );
 }
 
 export function getBestPricesFromOrderbookDepth(
@@ -249,5 +256,46 @@ export function getBestPricesFromOrderbookDepth(
         orderbookDepth,
         quoteTokenDecimals
       )?.toNumber() ?? 0,
+  };
+}
+
+/** Canonical Market quantity and consideration shared by preview and payload. */
+export function getMarketOrderAmounts({
+  isBuyOrder,
+  amount,
+  quantityTickSize,
+  baseTokenDecimals,
+  quoteTokenDecimals,
+  pricePerTokenAtoms,
+}: {
+  isBuyOrder: boolean;
+  amount: BigNumber.Value;
+  quantityTickSize: BigNumber.Value;
+  baseTokenDecimals: number;
+  quoteTokenDecimals: number;
+  pricePerTokenAtoms: BigNumber.Value;
+}) {
+  const quantityAtoms = isBuyOrder
+    ? getMarketBuyTokenAmountAtoms({
+        quoteBudget: amount,
+        quantityTickSize,
+        baseTokenDecimals,
+        quoteTokenDecimals,
+        pricePerTokenAtoms,
+      })
+    : alignQuantityAtomsToTick(
+        tokensToAtoms(amount, baseTokenDecimals, BigNumber.ROUND_DOWN),
+        quantityTickSize
+      );
+  const considerationAtoms = getQuoteValueAtomsForOrder({
+    tokenAmountAtoms: quantityAtoms,
+    pricePerTokenAtoms,
+    baseTokenDecimals,
+    roundingMode: isBuyOrder ? BigNumber.ROUND_UP : BigNumber.ROUND_DOWN,
+  });
+  return {
+    quantityAtoms,
+    quantity: atomsToTokens(quantityAtoms, baseTokenDecimals),
+    consideration: atomsToTokens(considerationAtoms, quoteTokenDecimals),
   };
 }

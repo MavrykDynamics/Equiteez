@@ -21,6 +21,7 @@ const row: OrderbookConfigQuery["orderbook"][number] = {
   address: "book",
   rwa_token: { address: "base", token_id: "19" },
   tick_size: "25",
+  quantity_tick_size: "10000",
   min_buy_order_amount: "0",
   min_buy_order_value: "90071992547409930000",
   min_sell_order_amount: "1",
@@ -82,6 +83,7 @@ describe("selected orderbook normalization", () => {
   it("requires a positive integer tick, preferring API values over verified fallback", () => {
     const fallback = {
       tickSize: "50",
+      quantityTickSize: "100",
       minBuyOrderAmount: "2",
       minBuyOrderValue: "2",
       minSellOrderAmount: "2",
@@ -141,4 +143,25 @@ describe("selected orderbook normalization", () => {
     ).toBe(false);
     expect(matchesOrderbookDepth(depth, config, 6)).toBe(false);
   });
+});
+
+describe("quantity tick configuration", () => {
+  it.each([undefined, null, "0", "-1", "0.5", "NaN", "Infinity"])(
+    "requires a fallback for quantity tick %s without changing the price tick",
+    (quantityTick) => {
+      const missing = { ...row, quantity_tick_size: quantityTick };
+      expect(needsOrderbookContractConfig(missing)).toBe(true);
+      expect(() => normalizeOrderbookConfig(asset, missing)).toThrow();
+      const config = normalizeOrderbookConfig(asset, missing, {
+        tickSize: "100000",
+        quantityTickSize: "100",
+        minBuyOrderAmount: "1",
+        minBuyOrderValue: "1",
+        minSellOrderAmount: "1",
+        minSellOrderValue: "1",
+      });
+      expect(config.quantityTickSize).toBe("100");
+      expect(config.tickSize).toBe("25");
+    }
+  );
 });

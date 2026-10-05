@@ -18,7 +18,8 @@ beforeEach(() => {
     contractViews: { getConfig: () => ({ executeView }) },
   });
   executeView.mockResolvedValue({
-    tickSize: new BigNumber("100000"),
+    priceTickSize: new BigNumber("100000"),
+    quantityTickSize: new BigNumber("10000"),
     minBuyOrderAmount: new BigNumber(0),
     minBuyOrderValue: new BigNumber(1),
     minSellOrderAmount: new BigNumber(0),
@@ -29,6 +30,7 @@ describe("read-only selected contract configuration", () => {
   it("validates verified view fields without losing atom precision", async () => {
     expect(await readOrderbookConfig("book")).toEqual({
       tickSize: "100000",
+      quantityTickSize: "10000",
       minBuyOrderAmount: "0",
       minBuyOrderValue: "1",
       minSellOrderAmount: "0",
@@ -38,9 +40,12 @@ describe("read-only selected contract configuration", () => {
     expect(executeView).toHaveBeenCalledWith({ viewCaller: "book" });
   });
   it("does not turn missing or invalid view fields into zeros", async () => {
-    executeView.mockResolvedValueOnce({ tickSize: new BigNumber(0) });
-    await expect(readOrderbookConfig("book")).rejects.toThrow("tickSize");
-    executeView.mockResolvedValueOnce({ tickSize: new BigNumber(10) });
+    executeView.mockResolvedValueOnce({ priceTickSize: new BigNumber(0) });
+    await expect(readOrderbookConfig("book")).rejects.toThrow("priceTickSize");
+    executeView.mockResolvedValueOnce({
+      priceTickSize: new BigNumber(10),
+      quantityTickSize: new BigNumber(100),
+    });
     await expect(readOrderbookConfig("book")).rejects.toThrow(
       "minBuyOrderAmount"
     );
@@ -70,3 +75,16 @@ describe("read-only selected contract configuration", () => {
     client.clear();
   });
 });
+
+it.each([undefined, "0", "-1", "1.5", "NaN", "Infinity"])(
+  "rejects invalid deployed quantity tick %s",
+  async (quantityTickSize) => {
+    executeView.mockResolvedValue({
+      priceTickSize: "100000",
+      quantityTickSize,
+    });
+    await expect(readOrderbookConfig("book")).rejects.toThrow(
+      "quantityTickSize"
+    );
+  }
+);
