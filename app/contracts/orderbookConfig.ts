@@ -15,18 +15,23 @@ export async function readOrderbookConfig(
     .executeView({ viewCaller: address });
   if (!config || typeof config !== "object")
     throw new Error("Contract returned invalid orderbook configuration.");
-  const readNat = (field: keyof OrderbookContractConfig) => {
+  const readNat = (
+    field: "priceTickSize" | Exclude<keyof OrderbookContractConfig, "tickSize">
+  ) => {
     const raw =
       field in config ? (config as Record<string, unknown>)[field] : undefined;
     const value = BigNumber.isBigNumber(raw) ? raw.toFixed() : raw;
     const normalized =
-      field === "tickSize" ? normalizeTick(value) : normalizeNat(value);
+      field === "priceTickSize" || field === "quantityTickSize"
+        ? normalizeTick(value)
+        : normalizeNat(value);
     if (normalized === null)
       throw new Error(`Contract returned invalid ${field}.`);
     return normalized;
   };
   return {
-    tickSize: readNat("tickSize"),
+    tickSize: readNat("priceTickSize"),
+    quantityTickSize: readNat("quantityTickSize"),
     minBuyOrderAmount: readNat("minBuyOrderAmount"),
     minBuyOrderValue: readNat("minBuyOrderValue"),
     minSellOrderAmount: readNat("minSellOrderAmount"),

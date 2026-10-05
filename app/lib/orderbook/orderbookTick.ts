@@ -56,3 +56,19 @@ export const isPriceAtomsAlignedToTickSize = ({
 
   return price.mod(tickSize).isZero();
 };
+
+/** Floor quantities to the configured RWA atom tick; never round a sell up. */
+export function alignQuantityAtomsToTick(
+  rawQuantityAtoms: BigNumber.Value,
+  quantityTickSize: BigNumber.Value
+): BigNumber {
+  const quantity = new BigNumber(rawQuantityAtoms);
+  const tick = new BigNumber(quantityTickSize);
+  if (!tick.isFinite() || !tick.isInteger() || tick.lte(0)) {
+    throw new Error("Quantity tick size must be a positive integer atom value");
+  }
+  if (!quantity.isFinite() || quantity.lt(0)) {
+    throw new Error("Quantity must be a non-negative finite atom value");
+  }
+  return quantity.dividedToIntegerBy(tick).times(tick);
+}

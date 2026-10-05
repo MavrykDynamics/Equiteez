@@ -46,6 +46,7 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  marketAmounts?: { quantity: BigNumber; consideration: BigNumber };
   primaryPurchase?: {
     receiveAmount: BigNumber | undefined;
     onReceiveChange: (amount: BigNumber | undefined) => void;
@@ -61,7 +62,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   actionCb,
   continueButtonClassName,
   amount,
-  total,
   networkFee,
   gasFee,
   apy,
@@ -73,6 +73,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   isOrderDataLoading = false,
   validationMessage,
   primaryPurchase,
+  marketAmounts,
 }) => {
   const { baseTokenSlug: slug } = metadata;
   const {
@@ -118,9 +119,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     ? amount
       ? amount.gt(usdBalance)
       : false
-    : amount
-      ? amount.gt(tokenBalance)
-      : false;
+    : Boolean(marketAmounts?.quantity.gt(tokenBalance));
 
   const handleContinueClick = useCallback(() => {
     actionCb();
@@ -167,24 +166,23 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         ? {
             amount: primaryPurchase
               ? primaryPurchase.receiveAmount
-              : safeDivByPrice(amount, tokenPrice), // BUY: USDT -> Token
+              : marketAmounts?.quantity, // Canonical aligned Market quantity
             selectedAssetSlug: slug,
             selectedAssetMetadata: selectedAssetMetadata,
           }
         : {
-            amount: amount?.times(tokenPrice) || undefined, // SELL: Token -> USDT
+            amount: marketAmounts?.consideration, // Canonical Market proceeds
             selectedAssetSlug: quoteTokenSlug,
             selectedAssetMetadata: stableCoinMetadata,
           },
     [
-      amount,
       isBuyAction,
       quoteTokenSlug,
       selectedAssetMetadata,
       slug,
       stableCoinMetadata,
-      tokenPrice,
       primaryPurchase,
+      marketAmounts,
     ]
   );
 
@@ -223,8 +221,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
   const orderSummaryAmount = useMemo(
-    () => (isBuyAction ? amount : total) ?? ZERO,
-    [amount, isBuyAction, total]
+    () => (primaryPurchase ? amount : marketAmounts?.consideration) ?? ZERO,
+    [amount, primaryPurchase, marketAmounts]
   );
 
   const inputClassNames = {
@@ -285,7 +283,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 : selectedAssetMetadata.decimals
             }
             {...inputClassNames}
-            label={"Pay with"}
+            label={isBuyAction && !primaryPurchase ? "Budget" : "Pay with"}
           />
 
           <BalanceInputWithTotal

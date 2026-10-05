@@ -6,6 +6,7 @@ export type OrderbookExecutionConfig = {
   quoteTokenId: string;
   currencyKey: string;
   tickSize: string;
+  quantityTickSize: string;
   minBuyOrderAmount: string;
   minBuyOrderValue: string;
   minSellOrderAmount: string;
@@ -15,6 +16,7 @@ export type OrderbookExecutionConfig = {
 export type OrderbookContractConfig = Pick<
   OrderbookExecutionConfig,
   | "tickSize"
+  | "quantityTickSize"
   | "minBuyOrderAmount"
   | "minBuyOrderValue"
   | "minSellOrderAmount"

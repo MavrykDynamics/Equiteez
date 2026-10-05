@@ -56,6 +56,9 @@ export function normalizeOrderbookConfig(
   }
   const tickSize =
     normalizeTick(row.tick_size) ?? normalizeTick(fallback?.tickSize);
+  const quantityTickSize =
+    normalizeTick(row.quantity_tick_size) ??
+    normalizeTick(fallback?.quantityTickSize);
   const minBuyOrderAmount =
     normalizeNat(row.min_buy_order_amount) ??
     normalizeNat(fallback?.minBuyOrderAmount);
@@ -70,6 +73,7 @@ export function normalizeOrderbookConfig(
     normalizeNat(fallback?.minSellOrderValue);
   if (
     tickSize === null ||
+    quantityTickSize === null ||
     minBuyOrderAmount === null ||
     minBuyOrderValue === null ||
     minSellOrderAmount === null ||
@@ -87,6 +91,7 @@ export function normalizeOrderbookConfig(
     quoteTokenId,
     currencyKey: currencies[0].currency_name,
     tickSize,
+    quantityTickSize,
     minBuyOrderAmount,
     minBuyOrderValue,
     minSellOrderAmount,
@@ -114,6 +119,7 @@ export function needsOrderbookContractConfig(
 ): boolean {
   return (
     normalizeTick(row.tick_size) === null ||
+    normalizeTick(row.quantity_tick_size) === null ||
     [
       row.min_buy_order_amount,
       row.min_buy_order_value,
