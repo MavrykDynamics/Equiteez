@@ -82,9 +82,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
   );
   return (
     <div className={styles.wrapper}>
-      <div
-        className={`${styles.tabSwitcher} ${isPrimary ? styles.primaryTabs : ""}`}
-      >
+      <div className={styles.tabSwitcher}>
         <RTabSwitcher
           activeTabId={visibleTab}
           ariaLabel="Asset Tabs"
@@ -101,7 +99,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
-          className={isPrimary ? undefined : styles.desktopTabs}
+          className={styles.desktopTabs}
           tabs={isPrimary ? purchaseTabs : orders_tabs}
         />
       </div>

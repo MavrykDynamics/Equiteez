@@ -9,6 +9,7 @@ import {
   getBestLimitBidFromOrderbookDepth,
   getBestPricesFromOrderbookDepth,
   getMarketBuyTokenAmountAtoms,
+  getMarketOrderAmounts,
   getMarketBuyPrice,
   getMarketSellPrice,
   getQuoteValueAtomsForOrder,
@@ -201,6 +202,7 @@ describe("one-sided depth", () => {
 describe("getMarketBuyTokenAmountAtoms", () => {
   it("floors 40 / 6 so the implied quote cost stays within budget", () => {
     const tokenAtoms = getMarketBuyTokenAmountAtoms({
+      quantityTickSize: "1",
       quoteBudget: "40",
       quoteTokenDecimals: 6,
       baseTokenDecimals: 6,
@@ -220,6 +222,7 @@ describe("getMarketBuyTokenAmountAtoms", () => {
   it("floors 1 / 3 instead of rounding up", () => {
     expect(
       getMarketBuyTokenAmountAtoms({
+        quantityTickSize: "1",
         quoteBudget: "1",
         quoteTokenDecimals: 6,
         baseTokenDecimals: 6,
@@ -231,6 +234,7 @@ describe("getMarketBuyTokenAmountAtoms", () => {
   it("handles a value near a token-atom boundary", () => {
     expect(
       getMarketBuyTokenAmountAtoms({
+        quantityTickSize: "1",
         quoteBudget: "0.000001",
         quoteTokenDecimals: 6,
         baseTokenDecimals: 6,
@@ -241,6 +245,7 @@ describe("getMarketBuyTokenAmountAtoms", () => {
 
   it("handles large amounts above Number.MAX_SAFE_INTEGER without precision loss", () => {
     const tokenAtoms = getMarketBuyTokenAmountAtoms({
+      quantityTickSize: "1",
       quoteBudget: "9007199254740993",
       quoteTokenDecimals: 6,
       baseTokenDecimals: 6,
@@ -324,3 +329,35 @@ describe("exceedsAvailableBalance (side-aware order guard)", () => {
     ).toBe(false);
   });
 });
+
+describe.each([true, false])(
+  "canonical Market amounts (buy=%s)",
+  (isBuyOrder) => {
+    it.each([
+      ["10000", "0.966666", "960000"],
+      ["100", "0.966666", "966600"],
+      ["10000", "0.95", "950000"],
+      ["100", "0.95", "950000"],
+      ["10000", "0.009999", "0"],
+      ["100", "0.000099", "0"],
+    ])(
+      "floors quantity %s/%s to %s atoms",
+      (quantityTickSize, quantity, expected) => {
+        const amounts = getMarketOrderAmounts({
+          isBuyOrder,
+          amount: isBuyOrder ? new BigNumber(quantity).times(20) : quantity,
+          quantityTickSize,
+          baseTokenDecimals: 6,
+          quoteTokenDecimals: 6,
+          pricePerTokenAtoms: "20000000",
+        });
+        expect(amounts.quantityAtoms.toFixed()).toBe(expected);
+        expect(amounts.quantity.times(1e6).eq(amounts.quantityAtoms)).toBe(
+          true
+        );
+        expect(amounts.consideration.eq(amounts.quantity.times(20))).toBe(true);
+        expect(amounts.quantity.lte(quantity)).toBe(true);
+      }
+    );
+  }
+);

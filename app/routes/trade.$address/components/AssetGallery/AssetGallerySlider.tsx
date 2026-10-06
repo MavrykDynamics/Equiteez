@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useLocation } from "@remix-run/react";
 import clsx from "clsx";
@@ -13,12 +13,14 @@ type AssetGallerySliderProps = {
   images: string[];
   name: string;
   size?: "compact" | "large";
+  overlay?: ReactNode;
 };
 
 export function AssetGallerySlider({
   images,
   name,
   size = "compact",
+  overlay,
 }: AssetGallerySliderProps) {
   const location = useLocation();
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -45,15 +47,18 @@ export function AssetGallerySlider({
       className={clsx(styles.slider, size === "large" && styles.large)}
     >
       <div className={styles.carouselRow}>
-        <button
-          aria-label="Previous gallery items"
-          className={`${styles.arrowButton} ${styles.previousButton}`}
-          disabled={prevBtnDisabled}
-          onClick={onPrevButtonClick}
-          type="button"
-        >
-          <RIcon name="arrow-short-left" size="medium" />
-        </button>
+        {overlay}
+        {images.length > 1 ? (
+          <button
+            aria-label="Previous gallery items"
+            className={`${styles.arrowButton} ${styles.previousButton}`}
+            disabled={prevBtnDisabled}
+            onClick={onPrevButtonClick}
+            type="button"
+          >
+            <RIcon name="arrow-short-left" size="medium" />
+          </button>
+        ) : null}
 
         <div className={styles.viewport} ref={emblaRef}>
           <div className={styles.container}>
@@ -76,15 +81,17 @@ export function AssetGallerySlider({
           </div>
         </div>
 
-        <button
-          aria-label="Next gallery items"
-          className={`${styles.arrowButton} ${styles.nextButton}`}
-          disabled={nextBtnDisabled}
-          onClick={onNextButtonClick}
-          type="button"
-        >
-          <RIcon name="arrow-short-right" size="medium" />
-        </button>
+        {images.length > 1 ? (
+          <button
+            aria-label="Next gallery items"
+            className={`${styles.arrowButton} ${styles.nextButton}`}
+            disabled={nextBtnDisabled}
+            onClick={onNextButtonClick}
+            type="button"
+          >
+            <RIcon name="arrow-short-right" size="medium" />
+          </button>
+        ) : null}
       </div>
 
       <AssetGalleryModal

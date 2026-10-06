@@ -5,6 +5,13 @@
 route-local `PrimaryPurchasePanel`; secondary assets retain the existing
 orderbook form and contract calls.
 
+When disconnected, both branches keep the inputs beneath the countdown's shared
+blurred `RTradingOverlay`, with only the Purchase History-style Connect Wallet
+button above it. Covered controls are inert and hidden from assistive technology.
+The primary branch reuses `BuySellScreen` as a non-executable API-price preview;
+wallet-specific contract validation and the sale countdown resume on connection.
+Above 1000px, the disconnected card is 623px tall including its padding.
+
 The primary branch reuses `BuySellScreen`, the fee
 summary, and `useContractAction`. Its optional shared-component props have no
 effect on secondary trading. It offers a fixed-price Buy flow and automatically uses the cheapest eligible
@@ -12,6 +19,30 @@ sale option at the live price, without a dropdown. It does not offer Sell, limit
 orders, order expiry, or orderbook depth. Pressing Buy validates the current quote
 and proceeds directly to the wallet purchase flow; the confirmation popup remains
 exclusive to secondary trading.
+
+Inside the primary gallery, the Price / Market Cap label sits at `top: 18px`
+and `left: 16px` on desktop and mobile. The value is white; both captions use
+`--r-color-neutral-200` (`#CCC`) and remain visible on mobile. It reuses the
+secondary chart’s price formatting. Its display price comes from the prices
+API's `primary_issuance.price` through `AssetsProvider`, independently of wallet
+connection. This API value is already in human units. It shows an em dash when
+the primary price is unavailable. Executable purchase quotes continue to use
+validated contract prices; secondary chart behavior remains unchanged.
+
+Single-image trade galleries hide navigation and open directly in fullscreen.
+Closing returns to the trade page. Multi-image galleries retain their overview
+and fullscreen navigation.
+
+Primary galleries are followed by the same `RChartStats` asset statistics
+component used below secondary charts, with shared metrics and styles. The
+gallery establishes the same inline-size container so the shared six-column
+layout applies at container widths of at least 720px, retaining the compact
+three-column layout below that width.
+
+At viewport widths of 1000px and below, primary trade pages show asset details,
+then the sale summary, then the 439px-high gallery and asset statistics, with
+12px gaps between page sections. BuySellPanel and the Purchase
+History tab are hidden. Layouts above 1000px and secondary galleries are unchanged.
 
 ## Data and contract boundaries
 

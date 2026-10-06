@@ -11,6 +11,7 @@ import {
   toNatString,
   toPositiveNatString,
 } from "~/lib/utils/formaters";
+import { alignQuantityAtomsToTick } from "~/lib/orderbook/orderbookTick";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
 import { BatchOperationKindType } from "./types";
 
@@ -26,6 +27,7 @@ export type OrderbookBuyParams = {
   isMarketOrder: boolean;
   baseTokenDecimals?: number;
   tickSizeAtoms?: BigNumber.Value;
+  quantityTickSizeAtoms?: BigNumber.Value;
   minRwaTokenAmount?: BigNumber.Value;
   minQuoteValue?: BigNumber.Value;
 } & ContractActionLifecycleCallbacks;
@@ -104,6 +106,7 @@ const validateOrderRules = ({
   isMarketOrder,
   baseTokenDecimals,
   tickSizeAtoms,
+  quantityTickSizeAtoms,
   minRwaTokenAmount,
   minQuoteValue,
 }: Pick<
@@ -113,11 +116,25 @@ const validateOrderRules = ({
   | "isMarketOrder"
   | "baseTokenDecimals"
   | "tickSizeAtoms"
+  | "quantityTickSizeAtoms"
   | "minRwaTokenAmount"
   | "minQuoteValue"
 >) => {
   const amountAtoms = new BigNumber(rwaTokenAmount);
   const priceAtoms = new BigNumber(pricePerRwaToken);
+
+  if (quantityTickSizeAtoms === undefined) {
+    throw new Error("Order quantity tick size is required");
+  }
+  if (
+    !alignQuantityAtomsToTick(amountAtoms, quantityTickSizeAtoms).eq(
+      amountAtoms
+    )
+  ) {
+    throw new Error(
+      "Quantity is not aligned to the orderbook quantity tick size"
+    );
+  }
 
   if (!isMarketOrder && tickSizeAtoms !== undefined) {
     const tickSize = new BigNumber(tickSizeAtoms);
@@ -165,6 +182,7 @@ export async function orderbookBuyBatch({
   isMarketOrder,
   baseTokenDecimals,
   tickSizeAtoms,
+  quantityTickSizeAtoms,
   minRwaTokenAmount,
   minQuoteValue,
 }: OrderbookBuyParams) {
@@ -191,6 +209,7 @@ export async function orderbookBuyBatch({
       isMarketOrder,
       baseTokenDecimals,
       tickSizeAtoms,
+      quantityTickSizeAtoms,
       minRwaTokenAmount,
       minQuoteValue,
     });
@@ -255,6 +274,7 @@ export async function orderbookSellBatch({
   isMarketOrder,
   baseTokenDecimals,
   tickSizeAtoms,
+  quantityTickSizeAtoms,
   minRwaTokenAmount,
   minQuoteValue,
 }: OrderbookSellParams) {
@@ -281,6 +301,7 @@ export async function orderbookSellBatch({
       isMarketOrder,
       baseTokenDecimals,
       tickSizeAtoms,
+      quantityTickSizeAtoms,
       minRwaTokenAmount,
       minQuoteValue,
     });

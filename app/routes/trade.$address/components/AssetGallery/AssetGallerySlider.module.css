@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .slider {
   width: 100%;
   min-width: 0;
@@ -18,6 +20,13 @@
 .large .carouselRow {
   height: auto;
   aspect-ratio: 16 / 9;
+}
+
+@media (--media-tablet) {
+  .large .carouselRow {
+    height: 439px;
+    aspect-ratio: auto;
+  }
 }
 
 .large .viewport {

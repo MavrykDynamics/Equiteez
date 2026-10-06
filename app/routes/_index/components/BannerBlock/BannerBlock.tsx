@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 
 import RealAssetsBannerImage from "~/assets/redesign/banner-optimized/RBannerRealAssets.jpg";
@@ -9,6 +9,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./styles.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
+import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 
 type BannerMetric = {
   label: string;
@@ -18,44 +19,19 @@ type BannerMetric = {
 type BannerSlide = {
   alt: string;
   buttonLabel: string;
-  buttonTo: string;
+  buttonTo?: string;
   description: string;
   eyebrow?: string;
   image: string;
   metrics?: BannerMetric[];
+  onClick?: () => void;
   tag?: string;
   title: string;
 };
 
-const bannerSlides: BannerSlide[] = [
-  {
-    alt: "Modern home exterior for The Cove investment opportunity",
-    buttonLabel: "Invest Now",
-    buttonTo: "/trade/KT1SYFeAjDsu7KXfN3VUgyuzfdMth16r8BQ2",
-    description:
-      "Single-family income generating property on the Upper East Side. Fractionalized into 12,500 shares.",
-    image: TheCoveBannerImage,
-    metrics: [
-      { label: "Starting price", value: "$45.00" },
-      { label: "Annual return", value: "8%" },
-      { label: "Available", value: "1,234" },
-    ],
-    tag: "Real Estate",
-    title: "The Queen",
-  },
-  {
-    alt: "Dubai skyline representing tokenized real-world assets",
-    buttonLabel: "Deposit Funds",
-    buttonTo: "/",
-    description:
-      "Invest in tokenized real-world assets. Own fractional shares of premium properties and portfolios.",
-    eyebrow: "Tokenized real world assets",
-    image: RealAssetsBannerImage,
-    title: "Income-producing real assets, tradable 24/7",
-  },
-];
-
 export function BannerBlock() {
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
     loop: false,
@@ -81,6 +57,34 @@ export function BannerBlock() {
       emblaApi.off("select", handleSelect);
     };
   }, [emblaApi, handleSelect]);
+
+  const bannerSlides: BannerSlide[] = useMemo(() => [
+    {
+      alt: "Modern home exterior for The Cove investment opportunity",
+      buttonLabel: "Invest Now",
+      buttonTo: "/trade/KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o",
+      description:
+        "Class-A office tower with a ground-floor retail podium in Midtown Manhattan",
+      image: TheCoveBannerImage,
+      metrics: [
+        { label: "Starting price", value: "$45.00" },
+        { label: "Annual return", value: "8%" },
+        { label: "Available", value: "1,234" },
+      ],
+      tag: "Real Estate",
+      title: "The Queen",
+    },
+    {
+      alt: "Dubai skyline representing tokenized real-world assets",
+      buttonLabel: "Deposit Funds",
+      description:
+        "Invest in tokenized real-world assets. Own fractional shares of premium properties and portfolios.",
+      eyebrow: "Tokenized real world assets",
+      image: RealAssetsBannerImage,
+      onClick: () => setIsDepositModalOpen(true),
+      title: "Income-producing real assets, tradable 24/7",
+    },
+  ], []);
 
   return (
     <Container className={styles.wrapper}>
@@ -141,9 +145,15 @@ export function BannerBlock() {
                     </dl>
                   ) : null}
 
-                  <RButton as="link" size="small" to={slide.buttonTo}>
-                    {slide.buttonLabel}
-                  </RButton>
+                  {slide.onClick ? (
+                    <RButton onClick={slide.onClick} size="small">
+                      {slide.buttonLabel}
+                    </RButton>
+                  ) : (
+                    <RButton as="link" size="small" to={slide.buttonTo ?? "/"}>
+                      {slide.buttonLabel}
+                    </RButton>
+                  )}
                 </div>
               </article>
             ))}
@@ -170,6 +180,11 @@ export function BannerBlock() {
           ))}
         </div>
       </section>
+
+      <RDepositFundsModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+      />
     </Container>
   );
 }
