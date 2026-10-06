@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import BigNumberJs from "bignumber.js";
 
 import RealAssetsBannerImage from "~/assets/redesign/banner-optimized/RBannerRealAssets.jpg";
 import TheCoveBannerImage from "~/assets/redesign/banner-optimized/RBannerTheCove.jpg";
@@ -24,6 +25,7 @@ const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
 
 type BannerMetric = {
   label: string;
+  rawValue?: BigNumberJs.Value | null;
   value: ReactNode;
 };
 
@@ -61,6 +63,8 @@ export function BannerBlock() {
           featuredAsset.metadata.decimals
         ).times(price)
       : undefined;
+  const isZeroMetric = (value: BannerMetric["rawValue"]) =>
+    value !== undefined && value !== null && new BigNumberJs(value).isZero();
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
@@ -100,6 +104,7 @@ export function BannerBlock() {
         metrics: [
           {
             label: "Current price",
+            rawValue: price,
             value:
               price === undefined || price === null ? (
                 "—"
@@ -114,6 +119,7 @@ export function BannerBlock() {
           },
           {
             label: "APY",
+            rawValue: featuredAsset?.apy,
             value: featuredAsset ? (
               <>
                 <Money tooltip={false}>{featuredAsset.apy}</Money>%
@@ -124,6 +130,7 @@ export function BannerBlock() {
           },
           {
             label: "Market cap",
+            rawValue: marketCap,
             value:
               marketCap === undefined || marketCap === null ? (
                 "—"
@@ -204,12 +211,14 @@ export function BannerBlock() {
 
                   {slide.metrics ? (
                     <dl className={styles.metrics}>
-                      {slide.metrics.map((metric) => (
-                        <div className={styles.metric} key={metric.label}>
-                          <dt>{metric.label}</dt>
-                          <dd>{metric.value}</dd>
-                        </div>
-                      ))}
+                      {slide.metrics
+                        .filter((metric) => !isZeroMetric(metric.rawValue))
+                        .map((metric) => (
+                          <div className={styles.metric} key={metric.label}>
+                            <dt>{metric.label}</dt>
+                            <dd>{metric.value}</dd>
+                          </div>
+                        ))}
                     </dl>
                   ) : null}
 
