@@ -26,7 +26,11 @@ export class BridgeReconciler {
     private store: BridgeTransactions,
     private fetchDeposits: FetchDeposits,
     private onSettlement: (records: BridgeSettlementUpdate[]) => void,
-    private isCurrent: () => boolean = () => true
+    private isCurrent: () => boolean = () => true,
+    private recoverWidgets?: (
+      signal: AbortSignal,
+      isCurrent: () => boolean
+    ) => Promise<void>
   ) {}
   start() {
     this.active = true;
@@ -69,6 +73,10 @@ export class BridgeReconciler {
       this.isCurrent() &&
       generation === this.generation &&
       !request.signal.aborted;
+    const recovery = this.recoverWidgets?.(request.signal, current).then(
+      () => false,
+      () => true
+    );
     try {
       const rows = await this.fetchDeposits(
         this.store.account,
@@ -99,6 +107,18 @@ export class BridgeReconciler {
           "Bridge status is unavailable. The last known state is retained; no transaction was resubmitted."
         );
     } finally {
+      const hasRecoveryError = await recovery;
+      if (
+        current() &&
+        revision === this.revision &&
+        hasRecoveryError &&
+        this.store.getWidgetRecoveryRecords().length > 0
+      ) {
+        hasError = true;
+        this.store.markStale(
+          "Completed deposit history is unavailable. Restored widgets remain hidden until recovery can be checked."
+        );
+      }
       if (current()) {
         this.request = undefined;
         if (this.queued) {
@@ -106,6 +126,7 @@ export class BridgeReconciler {
           void this.run();
         } else if (
           this.store.hasPending() ||
+          this.store.getWidgetRecoveryRecords().length > 0 ||
           (hasError && !this.store.getSnapshot().transactions.size)
         ) {
           if (--this.remaining > 0)

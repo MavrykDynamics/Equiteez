@@ -20,6 +20,7 @@ export const fetchWalletNotifications = async ({
   kinds,
   unread,
   includeSuperseded,
+  signal,
 }: FetchWalletNotificationsParams): Promise<NotificationsResponseType> => {
   const query = new URLSearchParams();
 
@@ -47,7 +48,8 @@ export const fetchWalletNotifications = async ({
   const { data } = await rwaApi.get(
     `/wallets/${walletAddress}/notifications${
       queryString ? `?${queryString}` : ""
-    }`
+    }`,
+    signal ? { signal, timeout: 15_000 } : undefined
   );
 
   return NotificationsSchema.parse(data);
