@@ -1,5 +1,4 @@
-import { BigNumber } from "bignumber.js";
-import { usePrimaryPurchaseConfig } from "../BuySellPanel/usePrimaryPurchase";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { RPriceLabelGroup } from "./RPriceLabelGroup";
 
 export function RPrimaryPriceLabelGroup({
@@ -7,13 +6,13 @@ export function RPrimaryPriceLabelGroup({
 }: {
   assetAddress: string;
 }) {
-  const { data } = usePrimaryPurchaseConfig(assetAddress);
-  const option = data?.options[0];
+  const { prices } = useAssetsContext();
+  const price = prices[assetAddress]?.primary_issuance?.price;
 
   return (
     <RPriceLabelGroup
       variant="gallery"
-      price={option ? new BigNumber(option.price).shiftedBy(-6) : undefined}
+      price={price !== undefined && Number.isFinite(price) ? price : undefined}
     />
   );
 }

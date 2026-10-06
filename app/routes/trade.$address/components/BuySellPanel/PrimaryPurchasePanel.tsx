@@ -21,6 +21,8 @@ import {
 } from "~/contracts/primaryPurchase.quote";
 import type { PrimaryPurchaseConfig } from "~/contracts/primaryPurchase.types";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { STATUS_IDLE } from "~/lib/ui/use-status-flag";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
@@ -40,7 +42,71 @@ const toRaw = (value: BigNumber) =>
 
 type PurchaseQuery = ReturnType<typeof usePrimaryPurchase>;
 
-export function PrimaryPurchasePanel({ asset }: { asset: AssetType }) {
+export function PrimaryPurchasePanel({
+  asset,
+  isDisconnected = false,
+}: {
+  asset: AssetType;
+  isDisconnected?: boolean;
+}) {
+  return isDisconnected ? (
+    <PrimaryPurchasePreview asset={asset} />
+  ) : (
+    <ConnectedPrimaryPurchasePanel asset={asset} />
+  );
+}
+
+// Presentation only: no contract configuration, quote, or transaction callback.
+// The parent keeps this screen inert beneath the wallet overlay.
+function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
+  const { prices } = useAssetsContext();
+  const [amount, setAmount] = useState<BigNumber>();
+  const quoteToken = USDT_BRIDGE.destinationToken;
+  const metadata = {
+    baseTokenSlug: asset.address,
+    baseTokenMetadata: createFallbackTokenMetadata({
+      ...asset.metadata,
+      address: asset.address,
+      id: "",
+      thumbnailUri: asset.metadata.icon,
+    }),
+    quoteTokenSlug: toTokenSlug(quoteToken.address, quoteToken.id),
+    quoteTokenMetadata: quoteToken,
+    baseTokenDecimals: asset.metadata.decimals,
+    quoteTokenDecimals: quoteToken.decimals,
+    isMetadataLoaded: false,
+  };
+
+  return (
+    <div className={formStyles.buySellRoot}>
+      <BuySellScreen
+        metadata={metadata}
+        tokenAddress={asset.address}
+        actionType={BUY}
+        actionCb={() => {
+          throw new Error("Connect your wallet to purchase.");
+        }}
+        amount={amount}
+        setAmount={setAmount}
+        total={amount}
+        tokenPrice={
+          new BigNumber(prices[asset.address]?.primary_issuance?.price ?? NaN)
+        }
+        networkFee={ZERO}
+        apy={asset.apy}
+        status={STATUS_IDLE}
+        primaryPurchase={{
+          receiveAmount: undefined,
+          onReceiveChange: setAmount,
+          isEligible: false,
+          includedFee: ZERO,
+        }}
+      />
+    </div>
+  );
+}
+
+function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   const query = usePrimaryPurchase(asset.address);
   const { connect, isKyced } = useUserContext();
   const config = query.data;

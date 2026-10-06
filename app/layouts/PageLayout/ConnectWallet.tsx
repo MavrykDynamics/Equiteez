@@ -22,9 +22,11 @@ export const ConnectWallet = () => {
 
   const handleConnect = () => {
     // Opening the wallet popup should not trigger RButton's async loading state.
-    void Promise.resolve().then(connect).catch(() => {
-      console.error("Failed to connect wallet.");
-    });
+    void Promise.resolve()
+      .then(connect)
+      .catch(() => {
+        console.error("Failed to connect wallet.");
+      });
   };
 
   return (
@@ -56,14 +58,8 @@ export const ConnectWallet = () => {
           </RDropdownBodyContent>
         </RCustomDropdown>
       ) : (
-        <RButton
-          onClick={handleConnect}
-          className={styles.connectWalletBtn}
-          size="medium"
-          tone="black"
-          variant="secondary"
-        >
-          <RText size="body-s" weight="medium">
+        <RButton onClick={connect} size="medium" tone="black" variant="primary">
+          <RText size="body-s" weight="medium" color="neutral-white">
             Connect Wallet
           </RText>
         </RButton>
