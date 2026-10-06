@@ -57,7 +57,7 @@ export function PrimaryPurchasePanel({
 }
 
 // Presentation only: no contract configuration, quote, or transaction callback.
-// The parent keeps this screen inert beneath the wallet overlay.
+// Also used for non-Pro wallets without an eligible sale option.
 function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
   const { prices } = useAssetsContext();
   const [amount, setAmount] = useState<BigNumber>();
@@ -84,7 +84,7 @@ function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
         tokenAddress={asset.address}
         actionType={BUY}
         actionCb={() => {
-          throw new Error("Connect your wallet to purchase.");
+          throw new Error("Purchasing is unavailable in this preview.");
         }}
         amount={amount}
         setAmount={setAmount}
@@ -119,6 +119,11 @@ function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
         <div className={styles.state}>
           <Spinner size={56} />
         </div>
+      ) : config &&
+        !config.options.length &&
+        !isKyced &&
+        asset.metadata.decimals === 6 ? (
+        <PrimaryPurchasePreview asset={asset} />
       ) : !config || !config.options.length || asset.metadata.decimals !== 6 ? (
         <div className={styles.state} role="status">
           {query.error?.message ??
@@ -174,6 +179,7 @@ function PrimaryPurchaseForm({
   config: PrimaryPurchaseConfig;
   query: PurchaseQuery;
 }) {
+  const { isKyced } = useUserContext();
   const [amount, setAmount] = useState<BigNumber>();
   const [actionError, setActionError] = useState<string>();
   const [fees, setFees] = useState({ gasFee: ZERO });
@@ -347,14 +353,18 @@ function PrimaryPurchaseForm({
         isOrderDataLoading={isLoading || query.isFetching}
         validationMessage={
           query.error?.message ??
-          config.unavailableReason ??
+          (!isKyced &&
+          config.unavailableReason ===
+            "Verify with Mavryk Pro before purchasing."
+            ? undefined
+            : config.unavailableReason) ??
           amountError ??
           actionError
         }
         primaryPurchase={{
           receiveAmount: amount,
           onReceiveChange: handleReceiveChange,
-          isEligible: true,
+          isEligible: isKyced,
           includedFee: toHuman(quote.fee),
         }}
       />
