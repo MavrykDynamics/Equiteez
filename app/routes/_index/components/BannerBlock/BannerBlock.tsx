@@ -31,9 +31,9 @@ const bannerSlides: BannerSlide[] = [
   {
     alt: "Modern home exterior for The Cove investment opportunity",
     buttonLabel: "Invest Now",
-    buttonTo: "/trade/KT1SYFeAjDsu7KXfN3VUgyuzfdMth16r8BQ2",
+    buttonTo: "/trade/KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o",
     description:
-      "Single-family income generating property on the Upper East Side. Fractionalized into 12,500 shares.",
+      "Class-A office tower with a ground-floor retail podium in Midtown Manhattan",
     image: TheCoveBannerImage,
     metrics: [
       { label: "Starting price", value: "$45.00" },

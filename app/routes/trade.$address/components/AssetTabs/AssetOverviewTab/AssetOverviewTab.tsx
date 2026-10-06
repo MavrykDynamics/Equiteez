@@ -66,7 +66,7 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
           ))}
         </div>
       )}
-      <RAssetLocation />
+      <RAssetLocation asset={asset} />
     </div>
   );
 }
