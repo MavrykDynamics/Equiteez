@@ -15,6 +15,7 @@ import { RButton } from "~/lib/atoms/RButton";
 import { ROUTES } from "~/consts";
 import { TABLET_MAX_WIDTH } from "~/hooks/useWindowDimensions";
 import { RPrimarySaleSummary } from "./components/RPrimarySaleSummary/RPrimarySaleSummary";
+import { RPrimaryPriceLabelGroup } from "./components/RPriceLabelGroup/RPrimaryPriceLabelGroup";
 
 export default function TradePage() {
   const { address } = useParams();
@@ -66,6 +67,13 @@ export default function TradePage() {
       images={asset.profile.gallery.map((item) => item.url)}
       name={asset.metadata.name}
       size={isPrimary ? "large" : "compact"}
+      overlay={
+        isPrimary ? (
+          <div className={styles.primaryPrice}>
+            <RPrimaryPriceLabelGroup assetAddress={asset.address} />
+          </div>
+        ) : undefined
+      }
     />
   );
 

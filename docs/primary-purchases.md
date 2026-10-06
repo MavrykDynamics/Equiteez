@@ -13,6 +13,23 @@ orders, order expiry, or orderbook depth. Pressing Buy validates the current quo
 and proceeds directly to the wallet purchase flow; the confirmation popup remains
 exclusive to secondary trading.
 
+Inside the primary gallery, the Price / Market Cap label sits at `top: 18px`
+and `left: 16px` on desktop and mobile. The value is white; both captions use
+`--r-color-neutral-200` (`#CCC`) and remain visible on mobile. It reuses the
+secondary chart’s price formatting. Its price matches the primary form’s per-share value:
+`options[0].price` from the shared primary purchase configuration, converted from
+six-decimal units. It shows an em dash until an option is available. The label
+does not use API display prices or secondary orderbook pricing; secondary chart
+behavior remains unchanged.
+
+Single-image trade galleries hide navigation and open directly in fullscreen.
+Closing returns to the trade page. Multi-image galleries retain their overview
+and fullscreen navigation.
+
+At viewport widths of 1000px and below, primary trade pages show asset details,
+then the sale summary, then the 439px-high gallery. BuySellPanel and the Purchase
+History tab are hidden. Layouts above 1000px and secondary galleries are unchanged.
+
 ## Data and contract boundaries
 
 - `app/contracts/primaryPurchase.config.ts` contains the Basenet launchpad and

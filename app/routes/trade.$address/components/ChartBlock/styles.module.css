@@ -476,3 +476,11 @@
     display: none;
   }
 }
+
+.galleryPriceLabelGroup .currentPrice {
+  color: var(--r-color-neutral-white);
+}
+
+.galleryPriceLabelGroup .priceLabel {
+  display: inline;
+}

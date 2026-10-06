@@ -69,6 +69,14 @@
   min-width: 0;
 }
 
+.primaryPrice {
+  position: absolute;
+  top: 18px;
+  left: var(--r-space-4);
+  z-index: 2;
+  pointer-events: none;
+}
+
 .tradeColumn {
   display: flex;
   flex-direction: column;
@@ -116,6 +124,18 @@
 }
 
 @media (--media-tablet) {
+  .primary .tradeColumn {
+    order: 1;
+  }
+
+  .primary .primaryGallery {
+    order: 2;
+  }
+
+  .primary .buySellContainer {
+    display: none;
+  }
+
   .contentBlock {
     padding-top: 16px;
   }

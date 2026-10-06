@@ -19,7 +19,7 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 
-export function usePrimaryPurchase(assetAddress: string) {
+export function usePrimaryPurchaseConfig(assetAddress: string) {
   const { userAddress } = useUserContext();
   const { dapp } = useWalletContext();
   const tezos = useMemo(
@@ -27,7 +27,6 @@ export function usePrimaryPurchase(assetAddress: string) {
     [dapp]
   );
   const queryClient = useQueryClient();
-  const invalidateFreshQueries = useFreshQueryInvalidation();
   const queryKey = useMemo(
     () => [
       "primary-purchase",
@@ -64,6 +63,15 @@ export function usePrimaryPurchase(assetAddress: string) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+  return { ...query, tezos, queryKey };
+}
+
+export function usePrimaryPurchase(assetAddress: string) {
+  const query = usePrimaryPurchaseConfig(assetAddress);
+  const { queryKey } = query;
+  const { userAddress } = useUserContext();
+  const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const refreshAfterPurchase = useCallback(
     (metadata?: ContractActionSuccessMetadata) => {
       const mark = {
@@ -99,5 +107,5 @@ export function usePrimaryPurchase(assetAddress: string) {
     NotifierWalletEvent.LaunchpadPurchase,
     handlePurchaseEvent
   );
-  return { ...query, tezos, refreshAfterPurchase };
+  return { ...query, refreshAfterPurchase };
 }

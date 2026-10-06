@@ -48,7 +48,7 @@ export function RPrimarySaleSummary({
       aria-busy={query.isPending}
     >
       <div className={styles.row}>
-        <RText size="body-sm" color="neutral-600">
+        <RText size="body-sm" color="neutral-700">
           Tokens Left
         </RText>
         <RText size="body-l" weight="medium">
@@ -69,14 +69,14 @@ export function RPrimarySaleSummary({
         />
       </div>
       <div className={styles.row}>
-        <RText size="body-s" color="neutral-600">
+        <RText size="body-s" color="neutral-700">
           {sale
             ? `${soldPercentage}% sold`
             : query.isPending
               ? "—"
               : "Sale data unavailable"}
         </RText>
-        <RText size="body-s" color="neutral-600">
+        <RText size="body-s" color="neutral-700">
           {total?.toFormat() ?? "—"} total
         </RText>
       </div>
