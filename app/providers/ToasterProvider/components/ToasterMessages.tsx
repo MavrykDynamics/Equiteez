@@ -24,14 +24,14 @@ const Toast = ({ toast }: { toast: ToasterMessage }) => {
 
   // effect to update toast property "hide" to 'true' for playing hide animation
   useEffect(() => {
-    if (!autoHide) return;
+    if (!autoHide || hide) return;
 
     const timeout = setTimeout(() => {
       hideToasterMessage(unique);
     }, TOAST_TIME_TO_LIVE);
 
     return () => clearTimeout(timeout);
-  }, [autoHide, hideToasterMessage, type, unique]);
+  }, [autoHide, hide, hideToasterMessage, type, unique]);
 
   // play hide animation and completely delete toast
   useEffect(() => {

@@ -177,24 +177,12 @@ export default class ToasterProvider extends React.Component<Props, State> {
    * @param unique toaster id
    */
   hideToasterMessage = (unique: string): void => {
-    const { messages } = this.state.context;
-    const message = messages.find((m) => m.unique === unique);
-
-    if (!message) return;
-
-    const hidedMessage = { ...message, hide: true };
-
-    const _messages = messages.map((m) => {
-      if (m.unique === unique) {
-        return hidedMessage;
-      }
-      return m;
-    });
-
     this.setState((prevState) => ({
       context: {
         ...prevState.context,
-        messages: _messages,
+        messages: prevState.context.messages.map((message) =>
+          message.unique === unique ? { ...message, hide: true } : message
+        ),
       },
     }));
   };
@@ -205,12 +193,12 @@ export default class ToasterProvider extends React.Component<Props, State> {
    * @param unique toast id
    */
   deleteToasterFromArray = (unique: string): void => {
-    const { messages } = this.state.context;
-
     this.setState((prevState) => ({
       context: {
         ...prevState.context,
-        messages: messages.filter((m) => m.unique !== unique),
+        messages: prevState.context.messages.filter(
+          (message) => message.unique !== unique
+        ),
       },
     }));
   };
