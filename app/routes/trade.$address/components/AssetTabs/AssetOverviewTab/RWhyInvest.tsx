@@ -1,35 +1,36 @@
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import assetsMock from "~/providers/AssetsProvider/consts/assets-mock.json";
 
 import styles from "./styles.module.css";
 
+type WhyInvestItem = {
+  title: string;
+  description: string;
+};
+
+const FALLBACK_COLUMN_SIZE = 2;
+
+export function getAssetMock(asset: AssetType) {
+  const assetAddress = asset.address.toLowerCase();
+
+  return assetsMock.find((mockAsset) => {
+    const mockContract = mockAsset.contract.toLowerCase();
+    return mockContract === assetAddress;
+  });
+}
+
+function getColumns(items: WhyInvestItem[]) {
+  const columnSize = Math.ceil(items.length / FALLBACK_COLUMN_SIZE);
+
+  return [items.slice(0, columnSize), items.slice(columnSize)];
+}
+
 export function RWhyInvest({ asset }: { asset: AssetType }) {
-  // TODO: Replace temporary Figma copy with asset-specific investment highlights from the API.
-  const columns = [
-    [
-      {
-        title: "Prime Location",
-        description: `${asset.metadata.name} strategically targets properties in high-demand urban corridors. Each asset is selected for its proximity to transit, commerce, and growing residential communities.`,
-      },
-      {
-        title: "Premium Assets",
-        description:
-          "The portfolio features Class A commercial spaces, luxury residential complexes, and mixed-use developments with best-in-class amenities and strong tenant retention rates.",
-      },
-    ],
-    [
-      {
-        title: "High Rental Demand",
-        description: `Strong investment fundamentals with a ${asset.apy.toFixed(2)}% projected dividend yield, driven by consistent occupancy rates and long-term lease agreements with creditworthy tenants.`,
-      },
-      {
-        title: "Market Growth Trajectory",
-        description:
-          "Capitalize on accelerating urbanization and real estate demand, fueled by continued infrastructure investment, favorable interest rate trends, and positioning in top-tier metropolitan markets.",
-      },
-    ],
-  ];
+  const assetMock = getAssetMock(asset);
+  const whyInvest = assetMock?.whyInvest ?? [];
+  const columns = getColumns(whyInvest);
 
   return (
     <section className={styles.content} aria-label="Why Invest">

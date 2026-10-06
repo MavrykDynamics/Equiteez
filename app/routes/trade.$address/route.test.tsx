@@ -36,6 +36,9 @@ vi.mock("./components/AssetTabs/AssetTabs", () => ({
 vi.mock("./components/ChartBlock/ChartBlock", () => ({
   ChartBlock: () => <div>Price chart</div>,
 }));
+vi.mock("./components/ChartBlock/RChartStats", () => ({
+  RChartStats: () => <div>Asset statistics</div>,
+}));
 vi.mock("./components/BuySellPanel/BuySellPanel", () => ({
   BuySellPanel: ({ isPrimary }: { isPrimary: boolean }) => (
     <div>
@@ -50,6 +53,9 @@ vi.mock("./components/RPrimarySaleSummary/RPrimarySaleSummary", () => ({
   RPrimarySaleSummary: ({ assetAddress }: { assetAddress: string }) => (
     <div>Primary Sale: {assetAddress}</div>
   ),
+}));
+vi.mock("./components/RPriceLabelGroup/RPrimaryPriceLabelGroup", () => ({
+  RPrimaryPriceLabelGroup: () => <div>Primary price</div>,
 }));
 vi.mock("./components/AssetGallery/AssetGallerySlider", () => ({
   AssetGallerySlider: ({ size }: { size: string }) => <div>{size} gallery</div>,
@@ -79,6 +85,12 @@ describe("trade-page asset classification", () => {
       asset.profile.lifecycle = "primary_issuance";
       const html = renderToStaticMarkup(<TradePage />);
       expect(html).toContain("large gallery");
+      expect(html.indexOf("Asset statistics")).toBeGreaterThan(
+        html.indexOf("large gallery")
+      );
+      expect(html.indexOf("Asset statistics")).toBeLessThan(
+        html.indexOf("Asset tabs")
+      );
       expect(html).toContain("Primary Sale");
       expect(html).toContain(`Primary Sale: ${asset.address}`);
       expect(html).toContain("Live trading panel");

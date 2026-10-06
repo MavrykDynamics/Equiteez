@@ -21,6 +21,8 @@ import {
 } from "~/contracts/primaryPurchase.quote";
 import type { PrimaryPurchaseConfig } from "~/contracts/primaryPurchase.types";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { STATUS_IDLE } from "~/lib/ui/use-status-flag";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
@@ -40,7 +42,70 @@ const toRaw = (value: BigNumber) =>
 
 type PurchaseQuery = ReturnType<typeof usePrimaryPurchase>;
 
-export function PrimaryPurchasePanel({ asset }: { asset: AssetType }) {
+export function PrimaryPurchasePanel({
+  asset,
+  isDisconnected = false,
+}: {
+  asset: AssetType;
+  isDisconnected?: boolean;
+}) {
+  return isDisconnected ? (
+    <PrimaryPurchasePreview asset={asset} />
+  ) : (
+    <ConnectedPrimaryPurchasePanel asset={asset} />
+  );
+}
+
+// Presentation only: no contract configuration, quote, or transaction callback.
+// The parent keeps this screen inert beneath the wallet overlay.
+function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
+  const { prices } = useAssetsContext();
+  const [amount, setAmount] = useState<BigNumber>();
+  const quoteToken = USDT_BRIDGE.destinationToken;
+  const metadata = {
+    baseTokenSlug: asset.address,
+    baseTokenMetadata: createFallbackTokenMetadata({
+      ...asset.metadata,
+      address: asset.address,
+      id: "",
+      thumbnailUri: asset.metadata.icon,
+    }),
+    quoteTokenSlug: toTokenSlug(quoteToken.address, quoteToken.id),
+    quoteTokenMetadata: quoteToken,
+    baseTokenDecimals: asset.metadata.decimals,
+    quoteTokenDecimals: quoteToken.decimals,
+    isMetadataLoaded: false,
+  };
+
+  return (
+    <div className={formStyles.buySellRoot}>
+      <BuySellScreen
+        metadata={metadata}
+        tokenAddress={asset.address}
+        actionType={BUY}
+        actionCb={() => {
+          throw new Error("Connect your wallet to purchase.");
+        }}
+        amount={amount}
+        setAmount={setAmount}
+        total={amount}
+        tokenPrice={
+          new BigNumber(prices[asset.address]?.primary_issuance?.price ?? NaN)
+        }
+        apy={asset.apy}
+        status={STATUS_IDLE}
+        primaryPurchase={{
+          receiveAmount: undefined,
+          onReceiveChange: setAmount,
+          isEligible: false,
+          includedFee: ZERO,
+        }}
+      />
+    </div>
+  );
+}
+
+function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   const query = usePrimaryPurchase(asset.address);
   const { connect, isKyced } = useUserContext();
   const config = query.data;
@@ -111,7 +176,7 @@ function PrimaryPurchaseForm({
 }) {
   const [amount, setAmount] = useState<BigNumber>();
   const [actionError, setActionError] = useState<string>();
-  const [fees, setFees] = useState({ networkFee: ZERO, gasFee: ZERO });
+  const [fees, setFees] = useState({ gasFee: ZERO });
   const option = config.options[0];
   const rawAmount = amount?.isFinite() && amount.gt(0) ? toRaw(amount) : "0";
   const quote = useMemo(
@@ -147,7 +212,7 @@ function PrimaryPurchaseForm({
     useCallback(
       (value) => {
         setActionError(undefined);
-        setFees({ networkFee: ZERO, gasFee: ZERO });
+        setFees({ gasFee: ZERO });
         setAmount((previous) => {
           const previousPayment = previous
             ? toHuman(
@@ -165,7 +230,7 @@ function PrimaryPurchaseForm({
     );
   const handleReceiveChange = useCallback((value: BigNumber | undefined) => {
     setActionError(undefined);
-    setFees({ networkFee: ZERO, gasFee: ZERO });
+    setFees({ gasFee: ZERO });
     setAmount(
       value?.isFinite() && value.gte(0) ? toHuman(toRaw(value)) : undefined
     );
@@ -219,7 +284,6 @@ function PrimaryPurchaseForm({
           review: nextReview,
           onEstimated: (resultFees) => {
             setFees({
-              networkFee: toHuman(String(resultFees.networkFee)),
               gasFee: toHuman(String(resultFees.gasFee)),
             });
           },
@@ -277,7 +341,6 @@ function PrimaryPurchaseForm({
         setAmount={setBudget}
         total={paymentAmount}
         tokenPrice={toHuman(option.price)}
-        networkFee={fees.networkFee}
         gasFee={fees.gasFee}
         apy={asset.apy}
         status={status}

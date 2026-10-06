@@ -20,7 +20,7 @@ import {
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { useLaunchChannel } from "~/providers/NotificationsProvider/hooks/useLaunchChannel";
 
-export function usePrimaryPurchase(assetAddress: string) {
+export function usePrimaryPurchaseConfig(assetAddress: string) {
   const { userAddress } = useUserContext();
   const { dapp } = useWalletContext();
   const tezos = useMemo(
@@ -28,7 +28,6 @@ export function usePrimaryPurchase(assetAddress: string) {
     [dapp]
   );
   const queryClient = useQueryClient();
-  const invalidateFreshQueries = useFreshQueryInvalidation();
   const queryKey = useMemo(
     () => [
       "primary-purchase",
@@ -65,6 +64,15 @@ export function usePrimaryPurchase(assetAddress: string) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+  return { ...query, tezos, queryKey };
+}
+
+export function usePrimaryPurchase(assetAddress: string) {
+  const query = usePrimaryPurchaseConfig(assetAddress);
+  const { queryKey } = query;
+  const { userAddress } = useUserContext();
+  const queryClient = useQueryClient();
+  const invalidateFreshQueries = useFreshQueryInvalidation();
   const refreshAfterPurchase = useCallback(
     (metadata?: ContractActionSuccessMetadata) => {
       const mark = {
@@ -101,11 +109,6 @@ export function usePrimaryPurchase(assetAddress: string) {
     });
   }, [assetAddress, queryClient]);
 
-  useNotifierEvent(
-    NotifierChannel.Wallet,
-    NotifierWalletEvent.LaunchpadPurchase,
-    handlePurchaseEvent
-  );
   useLaunchChannel(
     query.data?.launchpadAddress ?? null,
     query.data?.launchName ?? null,
@@ -114,5 +117,10 @@ export function usePrimaryPurchase(assetAddress: string) {
     }
   );
 
-  return { ...query, tezos, refreshAfterPurchase };
+  useNotifierEvent(
+    NotifierChannel.Wallet,
+    NotifierWalletEvent.LaunchpadPurchase,
+    handlePurchaseEvent
+  );
+  return { ...query, refreshAfterPurchase };
 }

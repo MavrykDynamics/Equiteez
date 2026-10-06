@@ -17,6 +17,9 @@ const mocks = vi.hoisted(() => ({
   isKyced: false,
 }));
 vi.mock("./usePrimaryPurchase", () => ({ usePrimaryPurchase: mocks.query }));
+vi.mock("~/providers/AssetsProvider/assets.provider", () => ({
+  useAssetsContext: () => ({ prices: {} }),
+}));
 vi.mock("~/routes/_index/components/DepositFunds/RDepositFundsModal", () => ({
   RDepositFundsModal: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div role="dialog">Deposit modal</div> : null,
@@ -138,7 +141,7 @@ beforeEach(() => {
   mocks.purchase.mockReset().mockResolvedValue(undefined);
   mocks.estimate
     .mockReset()
-    .mockResolvedValue({ networkFee: 100n, gasFee: 10n });
+    .mockResolvedValue({ gasFee: 10n });
   mocks.refresh.mockReset();
   mocks.refetch.mockReset().mockResolvedValue({ data: config });
   mocks.query.mockReturnValue({
@@ -160,6 +163,15 @@ afterEach(async () => {
 });
 
 describe("primary purchase panel flow", () => {
+  it("keeps purchase inputs visible without reading a wallet quote when disconnected", async () => {
+    await act(async () =>
+      root.render(<PrimaryPurchasePanel asset={asset} isDisconnected />)
+    );
+    expect(container.textContent).toContain("Enter 1.5");
+    expect(mocks.query).not.toHaveBeenCalled();
+    expect(mocks.purchase).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="timer"]')).toBeNull();
+  });
   it("does not estimate on mount, amount edits, or refreshed config", async () => {
     vi.useFakeTimers();
     try {

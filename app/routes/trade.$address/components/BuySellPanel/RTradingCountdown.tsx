@@ -9,6 +9,14 @@ type RTradingCountdownProps = {
   children?: ReactNode;
 };
 
+export function RTradingOverlay({ children }: { children: ReactNode }) {
+  return (
+    <div className={styles.overlay}>
+      <div className={styles.content}>{children}</div>
+    </div>
+  );
+}
+
 export function RTradingCountdown({
   saleStart,
   saleEnd,
@@ -48,32 +56,30 @@ export function RTradingCountdown({
   ];
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.content}>
-        <p className={styles.heading}>Token Sale Starts Soon</p>
-        <div
-          aria-label={`Trading starts in ${units.map(({ label, value }) => `${value} ${label}`).join(", ")}`}
-          className={styles.timer}
-          role="timer"
-        >
-          {units.map(({ label, value }, index) => (
-            <Fragment key={label}>
-              {index > 0 && (
-                <span aria-hidden="true" className={styles.separator}>
-                  :
-                </span>
-              )}
-              <div aria-hidden="true" className={styles.unit}>
-                <span className={styles.value}>
-                  {String(value).padStart(2, "0")}
-                </span>
-                <span className={styles.label}>{label}</span>
-              </div>
-            </Fragment>
-          ))}
-        </div>
-        {children}
+    <RTradingOverlay>
+      <p className={styles.heading}>Token Sale Starts Soon</p>
+      <div
+        aria-label={`Trading starts in ${units.map(({ label, value }) => `${value} ${label}`).join(", ")}`}
+        className={styles.timer}
+        role="timer"
+      >
+        {units.map(({ label, value }, index) => (
+          <Fragment key={label}>
+            {index > 0 && (
+              <span aria-hidden="true" className={styles.separator}>
+                :
+              </span>
+            )}
+            <div aria-hidden="true" className={styles.unit}>
+              <span className={styles.value}>
+                {String(value).padStart(2, "0")}
+              </span>
+              <span className={styles.label}>{label}</span>
+            </div>
+          </Fragment>
+        ))}
       </div>
-    </div>
+      {children}
+    </RTradingOverlay>
   );
 }

@@ -28,6 +28,7 @@ const row = {
     { currency_name: "KEY", token: { address: "quote", token_id: 7 } },
   ],
   tick_size: "25",
+  quantity_tick_size: "10000",
   min_buy_order_amount: "0",
   min_buy_order_value: "0",
   min_sell_order_amount: "0",
@@ -120,5 +121,28 @@ describe("selected orderbook readiness", () => {
     expect(renderConfig({ ...asset, orderbook: undefined }).status).toBe(
       "unavailable"
     );
+  });
+});
+
+it("loads the contract when only the quantity tick is missing", () => {
+  query.mockReturnValue({
+    data: { orderbook: [{ ...row, quantity_tick_size: null }] },
+  });
+  expect(renderConfig().status).toBe("loading");
+  expect(fallback.mock.calls[0][0].enabled).toBe(true);
+  fallback.mockReturnValue({
+    isPending: false,
+    data: {
+      tickSize: "100000",
+      quantityTickSize: "10000",
+      minBuyOrderAmount: "1",
+      minBuyOrderValue: "1",
+      minSellOrderAmount: "1",
+      minSellOrderValue: "1",
+    },
+  });
+  expect(renderConfig().config).toMatchObject({
+    tickSize: "25",
+    quantityTickSize: "10000",
   });
 });

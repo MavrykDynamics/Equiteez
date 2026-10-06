@@ -69,7 +69,8 @@
   line-height: var(--r-line-height-body-l);
 }
 
-.amountInput:focus {
+.amountInput:focus,
+.amountInput:not(:placeholder-shown) {
   color: var(--r-color-neutral-black);
 }
 

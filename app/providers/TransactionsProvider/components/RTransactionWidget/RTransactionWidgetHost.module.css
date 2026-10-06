@@ -11,12 +11,18 @@
   overflow-anchor: none;
 }
 
+/* Outer shadows are clipped into square edges by the scroll/collapse wrappers. */
+.panel .widget {
+  box-shadow: none;
+}
+
 .item {
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
   transition:
-    grid-template-rows var(--r-motion-duration-base) var(--r-motion-ease-premium),
+    grid-template-rows var(--r-motion-duration-base)
+      var(--r-motion-ease-premium),
     opacity var(--r-motion-duration-base) var(--r-motion-ease-premium);
 }
 

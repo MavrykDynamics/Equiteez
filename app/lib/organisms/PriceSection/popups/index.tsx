@@ -18,7 +18,11 @@ import { TabType } from "~/lib/atoms/Tab";
 //consts & types
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.types";
-import { matchesOrderbookDepth } from "~/lib/orderbook/orderbookConfig";
+import { fromAssetSlug } from "~/lib/assets";
+import {
+  matchesOrderbookDepth,
+  normalizeTick,
+} from "~/lib/orderbook/orderbookConfig";
 import { BUY, OrderType, SELL } from "../consts";
 import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 import {
@@ -35,7 +39,6 @@ import {
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
-import { isDefined } from "~/lib/utils";
 import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
 
 import { MAX_ORDERBOOK_DEPTH_LIMIT, useOrderbookDepth } from "~/lib/apis/rwa";
@@ -57,7 +60,8 @@ import {
   getBestLimitAskFromOrderbookDepth,
   getBestLimitBidFromOrderbookDepth,
   getBestPricesFromOrderbookDepth,
-  getMarketBuyTokenAmountAtoms,
+  getMarketOrderAmounts,
+  alignQuantityAtomsToTick,
   getQuoteValueAtomsForOrder,
   isPriceAlignedToTickSize,
   resolveMarketPrice,
@@ -130,7 +134,7 @@ const BuySellForm: FC<
   setOrderType,
 }) => {
   const { dapp } = useWalletContext();
-  const { hasOrders } = useUserContext();
+  const { hasOrders, userTokensBalances } = useUserContext();
 
   const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
 
@@ -157,8 +161,7 @@ const BuySellForm: FC<
       ? asset.orderbook?.buy_order_fee
       : asset.orderbook?.sell_order_fee;
 
-  // network fee estimation state --------------------------------------------
-  const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
+  // Gas fee estimation state --------------------------------------------
   const [gasFee, setGasFee] = useState<BigNumber>(ZERO);
 
   // --------------------------------------------
@@ -186,6 +189,7 @@ const BuySellForm: FC<
     ? fetchedDepth
     : null;
   const rawTickSize = orderbookConfig.tickSize;
+  const quantityTickSize = orderbookConfig.quantityTickSize;
   const { currencyKey, quoteTokenAddress, quoteTokenId, rwaTokenId } =
     orderbookConfig;
   const hasLimitPriceTickError = useMemo(
@@ -300,27 +304,6 @@ const BuySellForm: FC<
   const isOrderDataLoading = isMarketTypeMarket && isOrderbookDepthLoading;
 
   useEffect(() => {
-    const priceToUse = isMarketTypeMarket ? tokenPrice : limitPrice;
-
-    if (!isDefined(amountB)) {
-      setTotal(undefined);
-    } else if (isMarketTypeMarket && activetabId === BUY) {
-      setTotal(amountB);
-    } else if (priceToUse) {
-      setTotal(amountB.times(priceToUse));
-    }
-  }, [
-    amountB,
-    activetabId,
-    asset.address,
-    marketType,
-    slug,
-    tokenPrice,
-    limitPrice,
-    isMarketTypeMarket,
-  ]);
-
-  useEffect(() => {
     setAvtiveTabId(orderType);
   }, [orderType]);
 
@@ -330,13 +313,6 @@ const BuySellForm: FC<
     setLimitPrice(undefined);
   }, [activetabId, marketType]);
 
-  const limitAmountAtoms = useMemo(
-    () =>
-      amountB
-        ? tokensToAtoms(amountB, baseTokenDecimals, BigNumber.ROUND_DOWN)
-        : ZERO,
-    [amountB, baseTokenDecimals]
-  );
   const limitPriceAtoms = useMemo(
     () =>
       limitPrice
@@ -344,27 +320,71 @@ const BuySellForm: FC<
         : ZERO,
     [limitPrice, quoteTokenDecimals]
   );
-  const marketBuyAmountAtoms = useMemo(() => {
-    if (!amountB || !bestLimitAskAtoms) return ZERO;
-
+  const orderAmounts = useMemo(() => {
+    if (!amountB) return undefined;
+    const priceAtoms = isMarketTypeMarket
+      ? orderType === BUY
+        ? bestLimitAskAtoms
+        : bestLimitBidAtoms
+      : limitPriceAtoms;
+    if (!priceAtoms) return undefined;
     try {
-      return getMarketBuyTokenAmountAtoms({
-        quoteBudget: amountB,
-        quoteTokenDecimals,
-        baseTokenDecimals,
-        pricePerTokenAtoms: bestLimitAskAtoms,
-      });
-    } catch {
-      return ZERO;
+      if (!isMarketTypeMarket) {
+        const quantityAtoms = alignQuantityAtomsToTick(
+          tokensToAtoms(amountB, baseTokenDecimals, BigNumber.ROUND_DOWN),
+          quantityTickSize
+        );
+        const considerationAtoms = getQuoteValueAtomsForOrder({
+          tokenAmountAtoms: quantityAtoms,
+          pricePerTokenAtoms: limitPriceAtoms,
+          baseTokenDecimals,
+          roundingMode:
+            orderType === BUY ? BigNumber.ROUND_UP : BigNumber.ROUND_DOWN,
+        });
+        return {
+          quantityAtoms,
+          quantity: atomsToTokens(quantityAtoms, baseTokenDecimals),
+          consideration: atomsToTokens(considerationAtoms, quoteTokenDecimals),
+          error: undefined,
+        };
+      }
+      return {
+        ...getMarketOrderAmounts({
+          isBuyOrder: orderType === BUY,
+          amount: amountB,
+          quantityTickSize,
+          baseTokenDecimals,
+          quoteTokenDecimals,
+          pricePerTokenAtoms: priceAtoms,
+        }),
+        error: undefined,
+      };
+    } catch (error) {
+      return {
+        quantityAtoms: ZERO,
+        quantity: ZERO,
+        consideration: ZERO,
+        error:
+          error instanceof Error ? error.message : "Invalid order quantity.",
+      };
     }
-  }, [amountB, baseTokenDecimals, bestLimitAskAtoms, quoteTokenDecimals]);
-  const marketSellAmountAtoms = useMemo(
-    () =>
-      amountB
-        ? tokensToAtoms(amountB, baseTokenDecimals, BigNumber.ROUND_DOWN)
-        : ZERO,
-    [amountB, baseTokenDecimals]
-  );
+  }, [
+    isMarketTypeMarket,
+    amountB,
+    orderType,
+    bestLimitAskAtoms,
+    bestLimitBidAtoms,
+    quantityTickSize,
+    limitPriceAtoms,
+    baseTokenDecimals,
+    quoteTokenDecimals,
+  ]);
+  const quantityAtoms = orderAmounts?.quantityAtoms ?? ZERO;
+
+  useEffect(() => {
+    setTotal(orderAmounts?.consideration);
+  }, [orderAmounts]);
+
   const orderExpiry = useMemo(
     () =>
       !isMarketTypeMarket && orderExpiryPeriodId
@@ -379,6 +399,7 @@ const BuySellForm: FC<
       orderExpiry,
       baseTokenDecimals,
       tickSizeAtoms: rawTickSize || undefined,
+      quantityTickSizeAtoms: quantityTickSize,
     }),
     [
       baseTokenDecimals,
@@ -386,6 +407,7 @@ const BuySellForm: FC<
       orderExpiry,
       orderbookConfig?.address,
       rawTickSize,
+      quantityTickSize,
     ]
   );
 
@@ -395,7 +417,7 @@ const BuySellForm: FC<
       ...commonOrderProps,
       quoteTokenAddress,
       quoteTokenId,
-      rwaTokenAmount: limitAmountAtoms.toFixed(0),
+      rwaTokenAmount: quantityAtoms.toFixed(0),
       pricePerRwaToken: limitPriceAtoms.toFixed(0),
       minRwaTokenAmount: orderbookConfig?.minBuyOrderAmount,
       minQuoteValue: orderbookConfig?.minBuyOrderValue,
@@ -403,7 +425,7 @@ const BuySellForm: FC<
     }),
     [
       commonOrderProps,
-      limitAmountAtoms,
+      quantityAtoms,
       limitPriceAtoms,
       orderbookConfig?.minBuyOrderAmount,
       orderbookConfig?.minBuyOrderValue,
@@ -437,7 +459,7 @@ const BuySellForm: FC<
       ...commonOrderProps,
       quoteTokenAddress,
       quoteTokenId,
-      rwaTokenAmount: marketBuyAmountAtoms.toFixed(0),
+      rwaTokenAmount: quantityAtoms.toFixed(0),
       pricePerRwaToken: bestLimitAskAtoms?.toFixed(0) ?? "0",
       minRwaTokenAmount: orderbookConfig?.minBuyOrderAmount,
       minQuoteValue: orderbookConfig?.minBuyOrderValue,
@@ -446,7 +468,7 @@ const BuySellForm: FC<
   }, [
     bestLimitAskAtoms,
     commonOrderProps,
-    marketBuyAmountAtoms,
+    quantityAtoms,
     orderbookConfig?.minBuyOrderAmount,
     orderbookConfig?.minBuyOrderValue,
     quoteTokenAddress,
@@ -456,7 +478,7 @@ const BuySellForm: FC<
   const marketSellProps = useMemo(() => {
     return {
       ...commonOrderProps,
-      rwaTokenAmount: marketSellAmountAtoms.toFixed(0),
+      rwaTokenAmount: quantityAtoms.toFixed(0),
       pricePerRwaToken: bestLimitBidAtoms?.toFixed(0) ?? "0",
       minRwaTokenAmount: orderbookConfig?.minSellOrderAmount,
       minQuoteValue: orderbookConfig?.minSellOrderValue,
@@ -468,7 +490,7 @@ const BuySellForm: FC<
     bestLimitBidAtoms,
     commonOrderProps,
     asset.address,
-    marketSellAmountAtoms,
+    quantityAtoms,
     orderbookConfig?.minSellOrderAmount,
     orderbookConfig?.minSellOrderValue,
     rwaTokenId,
@@ -476,6 +498,8 @@ const BuySellForm: FC<
 
   const marketConfigValidationMessage = useMemo(() => {
     if (configError) return configError;
+    if (normalizeTick(quantityTickSize) === null)
+      return "Selected market is missing valid quantity-tick configuration.";
     if (fetchedDepth && !orderbookDepth)
       return "Orderbook depth does not match the selected token pair.";
     if (isMarketTypeMarket && depthError)
@@ -517,6 +541,7 @@ const BuySellForm: FC<
     return undefined;
   }, [
     configError,
+    quantityTickSize,
     fetchedDepth,
     orderbookDepth,
     isMarketTypeMarket,
@@ -547,11 +572,7 @@ const BuySellForm: FC<
   }, [bestLimitAskAtoms, bestLimitBidAtoms, isMarketTypeMarket, orderType]);
 
   const minOrderValidationMessage = useMemo(() => {
-    const amountAtoms = isMarketTypeMarket
-      ? orderType === BUY
-        ? marketBuyAmountAtoms
-        : marketSellAmountAtoms
-      : limitAmountAtoms;
+    const amountAtoms = quantityAtoms;
     const priceAtoms = isMarketTypeMarket
       ? orderType === BUY
         ? (bestLimitAskAtoms ?? ZERO)
@@ -566,7 +587,11 @@ const BuySellForm: FC<
         ? orderbookConfig?.minBuyOrderValue
         : orderbookConfig?.minSellOrderValue;
 
-    if (!amountAtoms.isFinite() || amountAtoms.lte(0)) return undefined;
+    if (!amountAtoms.isFinite() || amountAtoms.lte(0)) {
+      return amountB
+        ? "Order quantity must be at least one quantity tick."
+        : undefined;
+    }
 
     if (minAmount !== undefined && amountAtoms.lt(minAmount)) {
       return "Order amount is below the selected orderbook minimum.";
@@ -586,14 +611,13 @@ const BuySellForm: FC<
 
     return undefined;
   }, [
+    amountB,
     baseTokenDecimals,
     bestLimitAskAtoms,
     bestLimitBidAtoms,
     isMarketTypeMarket,
-    limitAmountAtoms,
+    quantityAtoms,
     limitPriceAtoms,
-    marketBuyAmountAtoms,
-    marketSellAmountAtoms,
     orderType,
     orderbookConfig?.minBuyOrderAmount,
     orderbookConfig?.minBuyOrderValue,
@@ -617,7 +641,7 @@ const BuySellForm: FC<
       BigNumber.ROUND_DOWN
     );
     const requiredQuoteAtoms = getQuoteValueAtomsForOrder({
-      tokenAmountAtoms: marketBuyAmountAtoms,
+      tokenAmountAtoms: quantityAtoms,
       pricePerTokenAtoms: bestLimitAskAtoms,
       baseTokenDecimals,
       roundingMode: BigNumber.ROUND_UP,
@@ -633,15 +657,44 @@ const BuySellForm: FC<
     baseTokenDecimals,
     bestLimitAskAtoms,
     isMarketTypeMarket,
-    marketBuyAmountAtoms,
+    quantityAtoms,
     orderType,
     quoteTokenDecimals,
+  ]);
+
+  const balanceValidationMessage = useMemo(() => {
+    if (!amountB) return undefined;
+    const balanceSlug = orderType === BUY ? metadata.quoteTokenSlug : slug;
+    const balanceAddress = fromAssetSlug(balanceSlug)[0];
+    const balance =
+      userTokensBalances[balanceSlug] ??
+      userTokensBalances[balanceAddress] ??
+      ZERO;
+    const amountToCheck =
+      orderType === BUY
+        ? isMarketTypeMarket
+          ? amountB
+          : orderAmounts?.consideration
+        : orderAmounts?.quantity;
+    return amountToCheck?.gt(balance)
+      ? "The amount entered exceeds your available balance."
+      : undefined;
+  }, [
+    isMarketTypeMarket,
+    amountB,
+    orderType,
+    metadata.quoteTokenSlug,
+    orderAmounts,
+    slug,
+    userTokensBalances,
   ]);
 
   const orderValidationMessage = isOrderDataLoading
     ? undefined
     : marketConfigValidationMessage ||
       liquidityValidationMessage ||
+      orderAmounts?.error ||
+      balanceValidationMessage ||
       minOrderValidationMessage ||
       marketBuyBudgetValidationMessage;
 
@@ -655,7 +708,6 @@ const BuySellForm: FC<
       hasLimitPriceTickError ||
       orderValidationMessage
     ) {
-      setNetworkFee(ZERO);
       setGasFee(ZERO);
       return;
     }
@@ -683,16 +735,14 @@ const BuySellForm: FC<
         if (cancelled) return;
 
         if (res.actionSuccess) {
-          const { totalCost, totalGasFeeMutez } = res.data;
-          // Preserve the full on-chain estimate while displaying gas separately.
-          setNetworkFee(
-            new BigNumber(totalCost).minus(totalGasFeeMutez).dividedBy(MILLION)
+          setGasFee(
+            new BigNumber(res.data.totalSuggestedFeeMutez).dividedBy(MILLION)
           );
-          setGasFee(new BigNumber(totalGasFeeMutez).dividedBy(MILLION));
+        } else {
+          setGasFee(ZERO);
         }
       } catch (e) {
         if (!cancelled) {
-          setNetworkFee(ZERO);
           setGasFee(ZERO);
         }
       }
@@ -738,7 +788,6 @@ const BuySellForm: FC<
       setTotal(undefined);
       setLimitPrice(undefined);
       setOrderExpiryPeriodId(null);
-      setNetworkFee(ZERO);
       setGasFee(ZERO);
       setIsOrderBookOpen(false);
       onSuccessfulTransaction?.(metadata);
@@ -1009,6 +1058,7 @@ const BuySellForm: FC<
           (marketType === "market" ? (
             <BuySellScreen
               metadata={metadata}
+              marketAmounts={orderAmounts}
               tokenAddress={asset.address}
               actionCb={handleBuySellAction}
               actionType={activetabId}
@@ -1016,7 +1066,6 @@ const BuySellForm: FC<
               setAmount={setAmountB}
               total={total}
               tokenPrice={tokenPrice}
-              networkFee={networkFee}
               gasFee={gasFee}
               apy={asset.apy}
               orderbookFee={orderbookFee}
@@ -1026,6 +1075,7 @@ const BuySellForm: FC<
             />
           ) : (
             <BuySellLimitScreen
+              alignedQuantity={orderAmounts?.quantity}
               rawTickSize={rawTickSize}
               limitPrice={limitPrice}
               marketTokenPrice={tokenPrice}
@@ -1039,7 +1089,6 @@ const BuySellForm: FC<
               orderExpiryPeriodId={orderExpiryPeriodId}
               setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
-              networkFee={networkFee}
               gasFee={gasFee}
               apy={asset.apy}
               orderbookFee={orderbookFee}

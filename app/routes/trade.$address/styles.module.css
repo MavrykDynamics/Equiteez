@@ -24,7 +24,7 @@
     width: 100%;
   }
 
-  .primaryGallery > section {
+  .primaryGallery > section:first-child {
     margin-bottom: 0;
   }
 
@@ -67,6 +67,14 @@
 .mainContent {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.primaryPrice {
+  position: absolute;
+  top: 18px;
+  left: var(--r-space-4);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .tradeColumn {
@@ -116,6 +124,22 @@
 }
 
 @media (--media-tablet) {
+  .primary.contentBlock {
+    gap: var(--r-space-3);
+  }
+
+  .primary .tradeColumn {
+    order: 1;
+  }
+
+  .primary .primaryGallery {
+    order: 2;
+  }
+
+  .primary .buySellContainer {
+    display: none;
+  }
+
   .contentBlock {
     padding-top: 16px;
   }
@@ -149,4 +173,8 @@
     order: -1;
     margin-bottom: var(--r-space-3);
   }
+}
+
+.primaryGallery {
+  container-type: inline-size;
 }

@@ -20,6 +20,12 @@ export function AssetGalleryModal({
   onClose,
 }: AssetGalleryModalProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const isSingleImage = images.length === 1;
+  const fullSizeIndex = isSingleImage ? 0 : selectedIndex;
+  const handleFullSizeClose = () => {
+    if (isSingleImage) onClose();
+    else setSelectedIndex(null);
+  };
 
   useEffect(() => {
     if (!isOpen) setSelectedIndex(null);
@@ -48,7 +54,7 @@ export function AssetGalleryModal({
         className={styles.modal}
         contentLabel={`${name} gallery`}
         contentPosition="center"
-        isOpen={isOpen}
+        isOpen={isOpen && !isSingleImage}
         onRequestClose={onClose}
         overlayClassName={styles.overlay}
       >
@@ -75,33 +81,37 @@ export function AssetGalleryModal({
       </CustomPopup>
       <CustomPopup
         className={`${styles.modal} ${styles.singleImageModal}`}
-        contentLabel={`${name}, view ${(selectedIndex ?? 0) + 1}`}
+        contentLabel={`${name}, view ${(fullSizeIndex ?? 0) + 1}`}
         contentPosition="center"
-        isOpen={isOpen && selectedIndex !== null}
-        onRequestClose={() => setSelectedIndex(null)}
+        isOpen={isOpen && fullSizeIndex !== null}
+        onRequestClose={handleFullSizeClose}
         overlayClassName={styles.overlay}
       >
         <header className={styles.singleImageHeader}>
           <button
-            aria-label="Back to full gallery"
+            aria-label={
+              isSingleImage ? "Close gallery" : "Back to full gallery"
+            }
             className={styles.closeButton}
-            onClick={() => setSelectedIndex(null)}
+            onClick={handleFullSizeClose}
             type="button"
           >
             <RIcon aria-hidden="true" name="close" size="medium" />
           </button>
         </header>
-        {selectedIndex !== null ? (
+        {fullSizeIndex !== null ? (
           <div className={styles.singleImageContent}>
-            <RText color="neutral-white" size="body-sm">
-              {selectedIndex + 1} / {images.length}
-            </RText>
+            {!isSingleImage ? (
+              <RText color="neutral-white" size="body-sm">
+                {fullSizeIndex + 1} / {images.length}
+              </RText>
+            ) : null}
             <div className={styles.singleImageRow}>
               {images.length > 1 ? (
                 <button
                   aria-label="Previous image"
                   className={`${sliderStyles.arrowButton} ${sliderStyles.previousButton} ${styles.fullSizeArrow}`}
-                  disabled={selectedIndex === 0}
+                  disabled={fullSizeIndex === 0}
                   onClick={() =>
                     setSelectedIndex((index) =>
                       index === null ? null : Math.max(0, index - 1)
@@ -117,15 +127,15 @@ export function AssetGalleryModal({
                 </button>
               ) : null}
               <img
-                alt={`${name}, view ${selectedIndex + 1}`}
+                alt={`${name}, view ${fullSizeIndex + 1}`}
                 className={styles.fullSizeImage}
-                src={images[selectedIndex]}
+                src={images[fullSizeIndex]}
               />
               {images.length > 1 ? (
                 <button
                   aria-label="Next image"
                   className={`${sliderStyles.arrowButton} ${sliderStyles.nextButton} ${styles.fullSizeArrow}`}
-                  disabled={selectedIndex === images.length - 1}
+                  disabled={fullSizeIndex === images.length - 1}
                   onClick={() =>
                     setSelectedIndex((index) =>
                       index === null

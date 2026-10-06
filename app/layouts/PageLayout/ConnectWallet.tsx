@@ -22,9 +22,11 @@ export const ConnectWallet = () => {
 
   const handleConnect = () => {
     // Opening the wallet popup should not trigger RButton's async loading state.
-    void Promise.resolve().then(connect).catch(() => {
-      console.error("Failed to connect wallet.");
-    });
+    void Promise.resolve()
+      .then(connect)
+      .catch(() => {
+        console.error("Failed to connect wallet.");
+      });
   };
 
   return (

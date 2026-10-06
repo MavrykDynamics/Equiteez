@@ -84,6 +84,7 @@ export function RTransactionWidgetHost() {
                   <div className={styles.clip}>
                     <div className={styles.spacing}>
                       <RTransactionWidget
+                        className={styles.widget}
                         amount={model.amount}
                         amountMode="token"
                         symbol={model.symbol}

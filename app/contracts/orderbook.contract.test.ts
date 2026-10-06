@@ -41,6 +41,7 @@ const baseBuyParams = {
   orderExpiry: null,
   baseTokenDecimals: 6,
   tickSizeAtoms: "100000",
+  quantityTickSizeAtoms: "10000",
   minRwaTokenAmount: "1",
   minQuoteValue: "1",
 };
@@ -55,6 +56,7 @@ const baseSellParams = {
   orderExpiry: null,
   baseTokenDecimals: 6,
   tickSizeAtoms: "100000",
+  quantityTickSizeAtoms: "10000",
   minRwaTokenAmount: "1",
   minQuoteValue: "1",
 };
@@ -157,4 +159,54 @@ describe("selected-config transaction arguments", () => {
       ]);
     }
   );
+});
+
+describe.each([
+  ["Buy", true],
+  ["Sell", true],
+  ["Buy", false],
+  ["Sell", false],
+] as const)("%s quantity validation (market=%s)", (_side, isMarketOrder) => {
+  const place = (overrides: Partial<typeof baseBuyParams> = {}) => {
+    const common = {
+      pricePerRwaToken: "30000000",
+      ...overrides,
+      isMarketOrder,
+      tezos: createMockTezos(),
+    };
+    return _side === "Buy"
+      ? orderbookBuyBatch({ ...baseBuyParams, ...common })
+      : orderbookSellBatch({ ...baseSellParams, ...common });
+  };
+  it.each(["10000", "100"])(
+    "rejects off-tick quantities at %s",
+    async (tick) => {
+      await expect(
+        place({ quantityTickSizeAtoms: tick, rwaTokenAmount: "966666" })
+      ).rejects.toThrow("Quantity is not aligned");
+    }
+  );
+  it.each([undefined, "0", "-1", "1.5", "NaN", "Infinity"])(
+    "rejects missing/invalid tick %s",
+    async (tick) => {
+      await expect(place({ quantityTickSizeAtoms: tick })).rejects.toThrow(
+        /tick size/
+      );
+    }
+  );
+  it("rejects a zero quantity and post-rounding minimum violations", async () => {
+    await expect(place({ rwaTokenAmount: "0" })).rejects.toThrow(
+      "greater than zero"
+    );
+    await expect(
+      place({ rwaTokenAmount: "960000", minRwaTokenAmount: "965000" })
+    ).rejects.toThrow("amount is below");
+    await expect(
+      place({
+        rwaTokenAmount: "960000",
+        pricePerRwaToken: "30000000",
+        minQuoteValue: "28900000",
+      })
+    ).rejects.toThrow("quote value is below");
+  });
 });

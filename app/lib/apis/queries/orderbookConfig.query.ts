@@ -4,6 +4,7 @@ export const ORDERBOOK_CONFIG_QUERY = gql(`
   query OrderbookConfig($address: String!) {
     orderbook(where: {address: {_eq: $address}}) {
       address
+      quantity_tick_size
       tick_size
       min_buy_order_amount
       min_buy_order_value

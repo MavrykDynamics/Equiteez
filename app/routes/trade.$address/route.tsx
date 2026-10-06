@@ -9,12 +9,14 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { AssetTabs } from "~/routes/trade.$address/components/AssetTabs/AssetTabs";
 import { BuySellPanel } from "~/routes/trade.$address/components/BuySellPanel/BuySellPanel";
 import { ChartBlock } from "~/routes/trade.$address/components/ChartBlock/ChartBlock";
+import { RChartStats } from "./components/ChartBlock/RChartStats";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RButton } from "~/lib/atoms/RButton";
 import { ROUTES } from "~/consts";
 import { TABLET_MAX_WIDTH } from "~/hooks/useWindowDimensions";
 import { RPrimarySaleSummary } from "./components/RPrimarySaleSummary/RPrimarySaleSummary";
+import { RPrimaryPriceLabelGroup } from "./components/RPriceLabelGroup/RPrimaryPriceLabelGroup";
 
 export default function TradePage() {
   const { address } = useParams();
@@ -66,6 +68,13 @@ export default function TradePage() {
       images={asset.profile.gallery.map((item) => item.url)}
       name={asset.metadata.name}
       size={isPrimary ? "large" : "compact"}
+      overlay={
+        isPrimary ? (
+          <div className={styles.primaryPrice}>
+            <RPrimaryPriceLabelGroup assetAddress={asset.address} />
+          </div>
+        ) : undefined
+      }
     />
   );
 
@@ -75,7 +84,10 @@ export default function TradePage() {
         <div className={styles.mainContent}>
           <AssetDetails asset={asset} />
           {isPrimary ? (
-            <div className={styles.primaryGallery}>{gallery}</div>
+            <div className={styles.primaryGallery}>
+              {gallery}
+              <RChartStats asset={asset} />
+            </div>
           ) : (
             <ChartBlock
               asset={asset}

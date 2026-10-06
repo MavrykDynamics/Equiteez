@@ -140,10 +140,6 @@ export function RPurchaseHistoryTab({ asset }: { asset: AssetType }) {
   }
   return (
     <>
-      <RText color="neutral-600" size="body-sm">
-        Incoming asset transactions. Price and total show valuations, not
-        purchase payments.
-      </RText>
       {query.data?.truncated ? (
         <RText color="neutral-600" size="body-sm">
           Older transactions may not be included.

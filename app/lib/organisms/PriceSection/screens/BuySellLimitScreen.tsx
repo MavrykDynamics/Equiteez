@@ -43,9 +43,9 @@ type BuySellLimitScreenProps = {
   actionCb: () => void;
   continueButtonClassName?: string;
   amount: BigNumber | undefined;
+  alignedQuantity: BigNumber | undefined;
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
-  networkFee: BigNumber;
   gasFee?: BigNumber.Value;
   apy: number;
   orderbookFee?: BigNumber.Value;
@@ -68,8 +68,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   actionCb,
   continueButtonClassName,
   amount,
+  alignedQuantity,
   total,
-  networkFee,
   gasFee,
   apy,
   orderbookFee,
@@ -150,11 +150,11 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       exceedsAvailableBalance({
         isBuyAction,
         total,
-        amount,
+        amount: alignedQuantity,
         usdBalance,
         tokenBalance,
       }),
-    [isBuyAction, total, amount, usdBalance, tokenBalance]
+    [isBuyAction, total, alignedQuantity, usdBalance, tokenBalance]
   );
 
   const handleContinueClick = useCallback(() => {
@@ -341,7 +341,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
           <FeesCard
             className={styles.summaryCard}
-            networkFee={networkFee}
             gasFee={gasFee}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}

@@ -7,11 +7,11 @@ export const TOASTER_LOADING = "loading";
 
 // icon helper
 export const TOAST_ICON_MAPPER = {
-  [TOASTER_SUCCESS]: "okay",
-  [TOASTER_ERROR]: TOASTER_ERROR,
-  [TOASTER_WARNING]: "attention",
-  [TOASTER_INFO]: "info-reg",
-  [TOASTER_LOADING]: "small-spinner",
+  [TOASTER_SUCCESS]: "toast-success",
+  [TOASTER_ERROR]: "toast-error",
+  [TOASTER_WARNING]: "toast-warning",
+  [TOASTER_INFO]: "toast-info",
+  [TOASTER_LOADING]: "toast-loading",
 };
 
 // consts

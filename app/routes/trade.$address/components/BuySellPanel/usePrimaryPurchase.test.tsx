@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { expect, it, vi } from "vitest";
-import { usePrimaryPurchase } from "./usePrimaryPurchase";
+import { usePrimaryPurchase, usePrimaryPurchaseConfig } from "./usePrimaryPurchase";
 
 const mocks = vi.hoisted(() => ({
   read: vi.fn(async () => ({
@@ -43,7 +43,7 @@ vi.mock("../../hooks/assetLaunch", () => ({
   }),
 }));
 
-it("reads on form entry and explicit refresh without background chain polling", async () => {
+it("shares config between the price label and form without extra reads or polling", async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   vi.useFakeTimers();
   const client = new QueryClient({
@@ -52,6 +52,11 @@ it("reads on form entry and explicit refresh without background chain polling", 
   const container = document.createElement("div");
   const root = createRoot(container);
   let query: ReturnType<typeof usePrimaryPurchase>;
+  let displayQuery: ReturnType<typeof usePrimaryPurchaseConfig>;
+  function PriceLabel() {
+    displayQuery = usePrimaryPurchaseConfig("asset");
+    return null;
+  }
   function Form() {
     query = usePrimaryPurchase("asset");
     return null;
@@ -60,6 +65,7 @@ it("reads on form entry and explicit refresh without background chain polling", 
     await act(async () =>
       root.render(
         <QueryClientProvider client={client}>
+          <PriceLabel />
           <Form />
         </QueryClientProvider>
       )
@@ -68,6 +74,7 @@ it("reads on form entry and explicit refresh without background chain polling", 
       await vi.advanceTimersByTimeAsync(1);
     });
     expect(mocks.read).toHaveBeenCalledOnce();
+    expect(displayQuery!.data).toBe(query!.data);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30_000);
     });
@@ -76,6 +83,10 @@ it("reads on form entry and explicit refresh without background chain polling", 
       await query!.refetch();
     });
     expect(mocks.read).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(displayQuery!.data).toBe(query!.data);
   } finally {
     await act(async () => root.unmount());
     client.clear();

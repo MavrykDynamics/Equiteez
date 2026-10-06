@@ -970,7 +970,7 @@ export type Dodo_Mav_Avg_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -1993,7 +1993,7 @@ export type Dodo_Mav_History_Data_Avg_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2037,7 +2037,7 @@ export type Dodo_Mav_History_Data_Max_Order_By = {
   /** Trade timestamp */
   timestamp?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2061,7 +2061,7 @@ export type Dodo_Mav_History_Data_Min_Order_By = {
   /** Trade timestamp */
   timestamp?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2238,7 +2238,7 @@ export type Dodo_Mav_History_Data_Stddev_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2260,7 +2260,7 @@ export type Dodo_Mav_History_Data_Stddev_Pop_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2282,7 +2282,7 @@ export type Dodo_Mav_History_Data_Stddev_Samp_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2314,7 +2314,7 @@ export type Dodo_Mav_History_Data_Stream_Cursor_Value_Input = {
   /** Trade timestamp */
   timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
   trader_id?: InputMaybe<Scalars['Int']['input']>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Scalars['smallint']['input']>;
 };
 
@@ -2336,7 +2336,7 @@ export type Dodo_Mav_History_Data_Sum_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2358,7 +2358,7 @@ export type Dodo_Mav_History_Data_Var_Pop_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2380,7 +2380,7 @@ export type Dodo_Mav_History_Data_Var_Samp_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2402,7 +2402,7 @@ export type Dodo_Mav_History_Data_Variance_Order_By = {
   /** Quote token quantity traded */
   quote_token_qty?: InputMaybe<Order_By>;
   trader_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of trade (BUY/SELL) */
   type?: InputMaybe<Order_By>;
 };
 
@@ -2580,7 +2580,7 @@ export type Dodo_Mav_Max_Order_By = {
   new_super_admin?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -2629,7 +2629,7 @@ export type Dodo_Mav_Min_Order_By = {
   new_super_admin?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -2928,7 +2928,7 @@ export type Dodo_Mav_Stddev_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -2971,7 +2971,7 @@ export type Dodo_Mav_Stddev_Pop_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3014,7 +3014,7 @@ export type Dodo_Mav_Stddev_Samp_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3071,7 +3071,7 @@ export type Dodo_Mav_Stream_Cursor_Value_Input = {
   new_super_admin?: InputMaybe<Scalars['String']['input']>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Scalars['bigint']['input']>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Scalars['smallint']['input']>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Scalars['float8']['input']>;
@@ -3116,7 +3116,7 @@ export type Dodo_Mav_Sum_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3159,7 +3159,7 @@ export type Dodo_Mav_Var_Pop_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3202,7 +3202,7 @@ export type Dodo_Mav_Var_Samp_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3245,7 +3245,7 @@ export type Dodo_Mav_Variance_Order_By = {
   maintainer_fee?: InputMaybe<Order_By>;
   /** Orderbook price percentage */
   orderbook_price_percent?: InputMaybe<Order_By>;
-  /** FIXED: 0\nDYNAMIC: 1 */
+  /** Pricing model (FIXED/DYNAMIC) */
   price_model?: InputMaybe<Order_By>;
   /** Current quote token balance */
   quote_balance?: InputMaybe<Order_By>;
@@ -3277,6 +3277,10 @@ export type Equiteez_User_Bool_Exp = {
   kyc_blacklists_aggregate?: InputMaybe<Kyc_Blacklisted_Aggregate_Bool_Exp>;
   kyc_members?: InputMaybe<Kyc_Member_Bool_Exp>;
   kyc_members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Bool_Exp>;
+  kyc_memberships?: InputMaybe<Kyc_Membership_Bool_Exp>;
+  kyc_memberships_aggregate?: InputMaybe<Kyc_Membership_Aggregate_Bool_Exp>;
+  kyc_registrar_admins?: InputMaybe<Kyc_Registrar_Admin_Bool_Exp>;
+  kyc_registrar_admins_aggregate?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Bool_Exp>;
   kyc_registrars?: InputMaybe<Kyc_Registrar_Bool_Exp>;
   kyc_registrars_aggregate?: InputMaybe<Kyc_Registrar_Aggregate_Bool_Exp>;
   kyc_whitelists?: InputMaybe<Kyc_Whitelisted_Bool_Exp>;
@@ -3313,6 +3317,8 @@ export type Equiteez_User_Order_By = {
   id?: InputMaybe<Order_By>;
   kyc_blacklists_aggregate?: InputMaybe<Kyc_Blacklisted_Aggregate_Order_By>;
   kyc_members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Order_By>;
+  kyc_memberships_aggregate?: InputMaybe<Kyc_Membership_Aggregate_Order_By>;
+  kyc_registrar_admins_aggregate?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Order_By>;
   kyc_registrars_aggregate?: InputMaybe<Kyc_Registrar_Aggregate_Order_By>;
   kyc_whitelists_aggregate?: InputMaybe<Kyc_Whitelisted_Aggregate_Order_By>;
   launchpad_distribution_events_aggregate?: InputMaybe<Launchpad_Distribution_Event_Aggregate_Order_By>;
@@ -3816,10 +3822,18 @@ export type Kyc_Bool_Exp = {
   members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Bool_Exp>;
   membership_tier_discounts?: InputMaybe<Kyc_Membership_Tier_Discount_Bool_Exp>;
   membership_tier_discounts_aggregate?: InputMaybe<Kyc_Membership_Tier_Discount_Aggregate_Bool_Exp>;
+  membership_tiers?: InputMaybe<Kyc_Membership_Tier_Bool_Exp>;
+  membership_tiers_aggregate?: InputMaybe<Kyc_Membership_Tier_Aggregate_Bool_Exp>;
+  memberships?: InputMaybe<Kyc_Membership_Bool_Exp>;
+  memberships_aggregate?: InputMaybe<Kyc_Membership_Aggregate_Bool_Exp>;
   metadata?: InputMaybe<Jsonb_Comparison_Exp>;
   new_super_admin?: InputMaybe<String_Comparison_Exp>;
   orderbooks?: InputMaybe<Orderbook_Bool_Exp>;
   orderbooks_aggregate?: InputMaybe<Orderbook_Aggregate_Bool_Exp>;
+  permit_default_expiry_duration?: InputMaybe<Bigint_Comparison_Exp>;
+  permit_max_expiry_duration?: InputMaybe<Bigint_Comparison_Exp>;
+  registrar_admins?: InputMaybe<Kyc_Registrar_Admin_Bool_Exp>;
+  registrar_admins_aggregate?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Bool_Exp>;
   registrars?: InputMaybe<Kyc_Registrar_Bool_Exp>;
   registrars_aggregate?: InputMaybe<Kyc_Registrar_Aggregate_Bool_Exp>;
   super_admin?: InputMaybe<String_Comparison_Exp>;
@@ -4449,7 +4463,7 @@ export type Kyc_Member_Max_Order_By = {
   investor_type?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
   kyc_registrar_id?: InputMaybe<Order_By>;
-  /** Membership tier assigned to the member (e.g., "none", "tierA") */
+  /** Tier assigned by the registrar that verified the member's KYC (the one the launchpad and orderbooks price against); all per-registrar assignments live in KycMembership */
   membership_tier?: InputMaybe<Order_By>;
   /** Member's region (e.g., asia, north-america) */
   region?: InputMaybe<Order_By>;
@@ -4469,7 +4483,7 @@ export type Kyc_Member_Min_Order_By = {
   investor_type?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
   kyc_registrar_id?: InputMaybe<Order_By>;
-  /** Membership tier assigned to the member (e.g., "none", "tierA") */
+  /** Tier assigned by the registrar that verified the member's KYC (the one the launchpad and orderbooks price against); all per-registrar assignments live in KycMembership */
   membership_tier?: InputMaybe<Order_By>;
   /** Member's region (e.g., asia, north-america) */
   region?: InputMaybe<Order_By>;
@@ -4543,6 +4557,7 @@ export type Kyc_Member_Status_View_Bool_Exp = {
   frozen?: InputMaybe<Boolean_Comparison_Exp>;
   investor_type?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  is_blacklisted?: InputMaybe<Boolean_Comparison_Exp>;
   is_expired?: InputMaybe<Boolean_Comparison_Exp>;
   kyc_address?: InputMaybe<String_Comparison_Exp>;
   kyc_id?: InputMaybe<Int_Comparison_Exp>;
@@ -4560,6 +4575,7 @@ export type Kyc_Member_Status_View_Order_By = {
   frozen?: InputMaybe<Order_By>;
   investor_type?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
+  is_blacklisted?: InputMaybe<Order_By>;
   is_expired?: InputMaybe<Order_By>;
   kyc_address?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
@@ -4582,6 +4598,8 @@ export enum Kyc_Member_Status_View_Select_Column {
   InvestorType = 'investor_type',
   /** column name */
   IsActive = 'is_active',
+  /** column name */
+  IsBlacklisted = 'is_blacklisted',
   /** column name */
   IsExpired = 'is_expired',
   /** column name */
@@ -4615,6 +4633,7 @@ export type Kyc_Member_Status_View_Stream_Cursor_Value_Input = {
   frozen?: InputMaybe<Scalars['Boolean']['input']>;
   investor_type?: InputMaybe<Scalars['String']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_blacklisted?: InputMaybe<Scalars['Boolean']['input']>;
   is_expired?: InputMaybe<Scalars['Boolean']['input']>;
   kyc_address?: InputMaybe<Scalars['String']['input']>;
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
@@ -4674,7 +4693,7 @@ export type Kyc_Member_Stream_Cursor_Value_Input = {
   investor_type?: InputMaybe<Scalars['String']['input']>;
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
   kyc_registrar_id?: InputMaybe<Scalars['Int']['input']>;
-  /** Membership tier assigned to the member (e.g., "none", "tierA") */
+  /** Tier assigned by the registrar that verified the member's KYC (the one the launchpad and orderbooks price against); all per-registrar assignments live in KycMembership */
   membership_tier?: InputMaybe<Scalars['String']['input']>;
   /** Member's region (e.g., asia, north-america) */
   region?: InputMaybe<Scalars['String']['input']>;
@@ -4718,6 +4737,205 @@ export type Kyc_Member_Variance_Order_By = {
   user_id?: InputMaybe<Order_By>;
 };
 
+export type Kyc_Membership_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Kyc_Membership_Aggregate_Bool_Exp_Count>;
+};
+
+export type Kyc_Membership_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Kyc_Membership_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Kyc_Membership_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** order by aggregate values of table "kyc_membership" */
+export type Kyc_Membership_Aggregate_Order_By = {
+  avg?: InputMaybe<Kyc_Membership_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Kyc_Membership_Max_Order_By>;
+  min?: InputMaybe<Kyc_Membership_Min_Order_By>;
+  stddev?: InputMaybe<Kyc_Membership_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Kyc_Membership_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Kyc_Membership_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Kyc_Membership_Sum_Order_By>;
+  var_pop?: InputMaybe<Kyc_Membership_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Kyc_Membership_Var_Samp_Order_By>;
+  variance?: InputMaybe<Kyc_Membership_Variance_Order_By>;
+};
+
+/** order by avg() on columns of table "kyc_membership" */
+export type Kyc_Membership_Avg_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "kyc_membership". All fields are combined with a logical 'AND'. */
+export type Kyc_Membership_Bool_Exp = {
+  _and?: InputMaybe<Array<Kyc_Membership_Bool_Exp>>;
+  _not?: InputMaybe<Kyc_Membership_Bool_Exp>;
+  _or?: InputMaybe<Array<Kyc_Membership_Bool_Exp>>;
+  id?: InputMaybe<Int_Comparison_Exp>;
+  kyc?: InputMaybe<Kyc_Bool_Exp>;
+  kyc_id?: InputMaybe<Int_Comparison_Exp>;
+  registrar?: InputMaybe<Kyc_Registrar_Bool_Exp>;
+  registrar_id?: InputMaybe<Int_Comparison_Exp>;
+  tier?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  user?: InputMaybe<Equiteez_User_Bool_Exp>;
+  user_id?: InputMaybe<Int_Comparison_Exp>;
+};
+
+/** order by max() on columns of table "kyc_membership" */
+export type Kyc_Membership_Max_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  /** Tier name under the registrar */
+  tier?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by min() on columns of table "kyc_membership" */
+export type Kyc_Membership_Min_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  /** Tier name under the registrar */
+  tier?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** Ordering options when selecting data from "kyc_membership". */
+export type Kyc_Membership_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc?: InputMaybe<Kyc_Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar?: InputMaybe<Kyc_Registrar_Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  tier?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  user?: InputMaybe<Equiteez_User_Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "kyc_membership" */
+export enum Kyc_Membership_Select_Column {
+  /** column name */
+  Id = 'id',
+  /** column name */
+  KycId = 'kyc_id',
+  /** column name */
+  RegistrarId = 'registrar_id',
+  /** column name */
+  Tier = 'tier',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UserId = 'user_id'
+}
+
+/** order by stddev() on columns of table "kyc_membership" */
+export type Kyc_Membership_Stddev_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_pop() on columns of table "kyc_membership" */
+export type Kyc_Membership_Stddev_Pop_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_samp() on columns of table "kyc_membership" */
+export type Kyc_Membership_Stddev_Samp_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "kyc_membership" */
+export type Kyc_Membership_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Kyc_Membership_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Kyc_Membership_Stream_Cursor_Value_Input = {
+  id?: InputMaybe<Scalars['Int']['input']>;
+  kyc_id?: InputMaybe<Scalars['Int']['input']>;
+  registrar_id?: InputMaybe<Scalars['Int']['input']>;
+  /** Tier name under the registrar */
+  tier?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  user_id?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** order by sum() on columns of table "kyc_membership" */
+export type Kyc_Membership_Sum_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+export type Kyc_Membership_Tier_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Kyc_Membership_Tier_Aggregate_Bool_Exp_Count>;
+};
+
+export type Kyc_Membership_Tier_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Kyc_Membership_Tier_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Kyc_Membership_Tier_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** order by aggregate values of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Aggregate_Order_By = {
+  avg?: InputMaybe<Kyc_Membership_Tier_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Kyc_Membership_Tier_Max_Order_By>;
+  min?: InputMaybe<Kyc_Membership_Tier_Min_Order_By>;
+  stddev?: InputMaybe<Kyc_Membership_Tier_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Kyc_Membership_Tier_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Kyc_Membership_Tier_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Kyc_Membership_Tier_Sum_Order_By>;
+  var_pop?: InputMaybe<Kyc_Membership_Tier_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Kyc_Membership_Tier_Var_Samp_Order_By>;
+  variance?: InputMaybe<Kyc_Membership_Tier_Variance_Order_By>;
+};
+
+/** order by avg() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Avg_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "kyc_membership_tier". All fields are combined with a logical 'AND'. */
+export type Kyc_Membership_Tier_Bool_Exp = {
+  _and?: InputMaybe<Array<Kyc_Membership_Tier_Bool_Exp>>;
+  _not?: InputMaybe<Kyc_Membership_Tier_Bool_Exp>;
+  _or?: InputMaybe<Array<Kyc_Membership_Tier_Bool_Exp>>;
+  id?: InputMaybe<Int_Comparison_Exp>;
+  kyc?: InputMaybe<Kyc_Bool_Exp>;
+  kyc_id?: InputMaybe<Int_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  registrar?: InputMaybe<Kyc_Registrar_Bool_Exp>;
+  registrar_id?: InputMaybe<Int_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
 export type Kyc_Membership_Tier_Discount_Aggregate_Bool_Exp = {
   count?: InputMaybe<Kyc_Membership_Tier_Discount_Aggregate_Bool_Exp_Count>;
 };
@@ -4751,6 +4969,7 @@ export type Kyc_Membership_Tier_Discount_Avg_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "kyc_membership_tier_discount". All fields are combined with a logical 'AND'. */
@@ -4764,6 +4983,8 @@ export type Kyc_Membership_Tier_Discount_Bool_Exp = {
   kyc?: InputMaybe<Kyc_Bool_Exp>;
   kyc_id?: InputMaybe<Int_Comparison_Exp>;
   membership_tier?: InputMaybe<String_Comparison_Exp>;
+  registrar?: InputMaybe<Kyc_Registrar_Bool_Exp>;
+  registrar_id?: InputMaybe<Int_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
 };
 
@@ -4778,6 +4999,7 @@ export type Kyc_Membership_Tier_Discount_Max_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Membership tier name (e.g., "tierA") */
   membership_tier?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
 };
 
@@ -4792,6 +5014,7 @@ export type Kyc_Membership_Tier_Discount_Min_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Membership tier name (e.g., "tierA") */
   membership_tier?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
 };
 
@@ -4803,6 +5026,8 @@ export type Kyc_Membership_Tier_Discount_Order_By = {
   kyc?: InputMaybe<Kyc_Order_By>;
   kyc_id?: InputMaybe<Order_By>;
   membership_tier?: InputMaybe<Order_By>;
+  registrar?: InputMaybe<Kyc_Registrar_Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
 };
 
@@ -4819,6 +5044,8 @@ export enum Kyc_Membership_Tier_Discount_Select_Column {
   /** column name */
   MembershipTier = 'membership_tier',
   /** column name */
+  RegistrarId = 'registrar_id',
+  /** column name */
   UpdatedAt = 'updated_at'
 }
 
@@ -4829,6 +5056,7 @@ export type Kyc_Membership_Tier_Discount_Stddev_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_pop() on columns of table "kyc_membership_tier_discount" */
@@ -4838,6 +5066,7 @@ export type Kyc_Membership_Tier_Discount_Stddev_Pop_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_samp() on columns of table "kyc_membership_tier_discount" */
@@ -4847,6 +5076,7 @@ export type Kyc_Membership_Tier_Discount_Stddev_Samp_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** Streaming cursor of the table "kyc_membership_tier_discount" */
@@ -4868,6 +5098,7 @@ export type Kyc_Membership_Tier_Discount_Stream_Cursor_Value_Input = {
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
   /** Membership tier name (e.g., "tierA") */
   membership_tier?: InputMaybe<Scalars['String']['input']>;
+  registrar_id?: InputMaybe<Scalars['Int']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
 };
 
@@ -4878,6 +5109,7 @@ export type Kyc_Membership_Tier_Discount_Sum_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** order by var_pop() on columns of table "kyc_membership_tier_discount" */
@@ -4887,6 +5119,7 @@ export type Kyc_Membership_Tier_Discount_Var_Pop_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** order by var_samp() on columns of table "kyc_membership_tier_discount" */
@@ -4896,6 +5129,7 @@ export type Kyc_Membership_Tier_Discount_Var_Samp_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
 };
 
 /** order by variance() on columns of table "kyc_membership_tier_discount" */
@@ -4905,6 +5139,143 @@ export type Kyc_Membership_Tier_Discount_Variance_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by max() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Max_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  /** Tier name (e.g. "Starter") */
+  name?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** order by min() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Min_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  /** Tier name (e.g. "Starter") */
+  name?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** Ordering options when selecting data from "kyc_membership_tier". */
+export type Kyc_Membership_Tier_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc?: InputMaybe<Kyc_Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  registrar?: InputMaybe<Kyc_Registrar_Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "kyc_membership_tier" */
+export enum Kyc_Membership_Tier_Select_Column {
+  /** column name */
+  Id = 'id',
+  /** column name */
+  KycId = 'kyc_id',
+  /** column name */
+  Name = 'name',
+  /** column name */
+  RegistrarId = 'registrar_id',
+  /** column name */
+  UpdatedAt = 'updated_at'
+}
+
+/** order by stddev() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Stddev_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_pop() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Stddev_Pop_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_samp() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Stddev_Samp_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Kyc_Membership_Tier_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Kyc_Membership_Tier_Stream_Cursor_Value_Input = {
+  id?: InputMaybe<Scalars['Int']['input']>;
+  kyc_id?: InputMaybe<Scalars['Int']['input']>;
+  /** Tier name (e.g. "Starter") */
+  name?: InputMaybe<Scalars['String']['input']>;
+  registrar_id?: InputMaybe<Scalars['Int']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** order by sum() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Sum_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by var_pop() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Var_Pop_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by var_samp() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Var_Samp_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by variance() on columns of table "kyc_membership_tier" */
+export type Kyc_Membership_Tier_Variance_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+};
+
+/** order by var_pop() on columns of table "kyc_membership" */
+export type Kyc_Membership_Var_Pop_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by var_samp() on columns of table "kyc_membership" */
+export type Kyc_Membership_Var_Samp_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by variance() on columns of table "kyc_membership" */
+export type Kyc_Membership_Variance_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** Ordering options when selecting data from "kyc". */
@@ -4921,14 +5292,185 @@ export type Kyc_Order_By = {
   launchpads_aggregate?: InputMaybe<Launchpad_Aggregate_Order_By>;
   members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Order_By>;
   membership_tier_discounts_aggregate?: InputMaybe<Kyc_Membership_Tier_Discount_Aggregate_Order_By>;
+  membership_tiers_aggregate?: InputMaybe<Kyc_Membership_Tier_Aggregate_Order_By>;
+  memberships_aggregate?: InputMaybe<Kyc_Membership_Aggregate_Order_By>;
   metadata?: InputMaybe<Order_By>;
   new_super_admin?: InputMaybe<Order_By>;
   orderbooks_aggregate?: InputMaybe<Orderbook_Aggregate_Order_By>;
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  registrar_admins_aggregate?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Order_By>;
   registrars_aggregate?: InputMaybe<Kyc_Registrar_Aggregate_Order_By>;
   super_admin?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
   valid_inputs_aggregate?: InputMaybe<Kyc_Valid_Input_Aggregate_Order_By>;
   whitelisted_aggregate?: InputMaybe<Kyc_Whitelisted_Aggregate_Order_By>;
+};
+
+export type Kyc_Registrar_Admin_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Bool_Exp_Count>;
+};
+
+export type Kyc_Registrar_Admin_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Kyc_Registrar_Admin_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Kyc_Registrar_Admin_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** order by aggregate values of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Aggregate_Order_By = {
+  avg?: InputMaybe<Kyc_Registrar_Admin_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Kyc_Registrar_Admin_Max_Order_By>;
+  min?: InputMaybe<Kyc_Registrar_Admin_Min_Order_By>;
+  stddev?: InputMaybe<Kyc_Registrar_Admin_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Kyc_Registrar_Admin_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Kyc_Registrar_Admin_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Kyc_Registrar_Admin_Sum_Order_By>;
+  var_pop?: InputMaybe<Kyc_Registrar_Admin_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Kyc_Registrar_Admin_Var_Samp_Order_By>;
+  variance?: InputMaybe<Kyc_Registrar_Admin_Variance_Order_By>;
+};
+
+/** order by avg() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Avg_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "kyc_registrar_admin". All fields are combined with a logical 'AND'. */
+export type Kyc_Registrar_Admin_Bool_Exp = {
+  _and?: InputMaybe<Array<Kyc_Registrar_Admin_Bool_Exp>>;
+  _not?: InputMaybe<Kyc_Registrar_Admin_Bool_Exp>;
+  _or?: InputMaybe<Array<Kyc_Registrar_Admin_Bool_Exp>>;
+  id?: InputMaybe<Int_Comparison_Exp>;
+  kyc?: InputMaybe<Kyc_Bool_Exp>;
+  kyc_id?: InputMaybe<Int_Comparison_Exp>;
+  registrar?: InputMaybe<Kyc_Registrar_Bool_Exp>;
+  registrar_id?: InputMaybe<Int_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  user?: InputMaybe<Equiteez_User_Bool_Exp>;
+  user_id?: InputMaybe<Int_Comparison_Exp>;
+};
+
+/** order by max() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Max_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by min() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Min_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** Ordering options when selecting data from "kyc_registrar_admin". */
+export type Kyc_Registrar_Admin_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc?: InputMaybe<Kyc_Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar?: InputMaybe<Kyc_Registrar_Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  user?: InputMaybe<Equiteez_User_Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "kyc_registrar_admin" */
+export enum Kyc_Registrar_Admin_Select_Column {
+  /** column name */
+  Id = 'id',
+  /** column name */
+  KycId = 'kyc_id',
+  /** column name */
+  RegistrarId = 'registrar_id',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UserId = 'user_id'
+}
+
+/** order by stddev() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Stddev_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_pop() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Stddev_Pop_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by stddev_samp() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Stddev_Samp_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Kyc_Registrar_Admin_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Kyc_Registrar_Admin_Stream_Cursor_Value_Input = {
+  id?: InputMaybe<Scalars['Int']['input']>;
+  kyc_id?: InputMaybe<Scalars['Int']['input']>;
+  registrar_id?: InputMaybe<Scalars['Int']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  user_id?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** order by sum() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Sum_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by var_pop() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Var_Pop_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by var_samp() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Var_Samp_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** order by variance() on columns of table "kyc_registrar_admin" */
+export type Kyc_Registrar_Admin_Variance_Order_By = {
+  id?: InputMaybe<Order_By>;
+  kyc_id?: InputMaybe<Order_By>;
+  registrar_id?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
 };
 
 export type Kyc_Registrar_Aggregate_Bool_Exp = {
@@ -4978,7 +5520,7 @@ export type Kyc_Registrar_Avg_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -4988,18 +5530,26 @@ export type Kyc_Registrar_Bool_Exp = {
   _and?: InputMaybe<Array<Kyc_Registrar_Bool_Exp>>;
   _not?: InputMaybe<Kyc_Registrar_Bool_Exp>;
   _or?: InputMaybe<Array<Kyc_Registrar_Bool_Exp>>;
+  admins?: InputMaybe<Kyc_Registrar_Admin_Bool_Exp>;
+  admins_aggregate?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Bool_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   freeze_member_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   kyc?: InputMaybe<Kyc_Bool_Exp>;
-  kyc_admins?: InputMaybe<String_Array_Comparison_Exp>;
   kyc_id?: InputMaybe<Int_Comparison_Exp>;
   member_verified?: InputMaybe<Bigint_Comparison_Exp>;
   members?: InputMaybe<Kyc_Member_Bool_Exp>;
   members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Bool_Exp>;
+  membership_tier_discounts?: InputMaybe<Kyc_Membership_Tier_Discount_Bool_Exp>;
+  membership_tier_discounts_aggregate?: InputMaybe<Kyc_Membership_Tier_Discount_Aggregate_Bool_Exp>;
+  membership_tiers?: InputMaybe<Kyc_Membership_Tier_Bool_Exp>;
+  membership_tiers_aggregate?: InputMaybe<Kyc_Membership_Tier_Aggregate_Bool_Exp>;
+  memberships?: InputMaybe<Kyc_Membership_Bool_Exp>;
+  memberships_aggregate?: InputMaybe<Kyc_Membership_Aggregate_Bool_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
+  set_member_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   set_member_kyc_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
-  unfreeze_member_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
+  set_registrar_admin_is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   user?: InputMaybe<Equiteez_User_Bool_Exp>;
   user_id?: InputMaybe<Int_Comparison_Exp>;
@@ -5011,10 +5561,8 @@ export type Kyc_Registrar_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
-  /** List of KYC admin addresses */
-  kyc_admins?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   /** Registrar name */
   name?: InputMaybe<Order_By>;
@@ -5028,10 +5576,8 @@ export type Kyc_Registrar_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
-  /** List of KYC admin addresses */
-  kyc_admins?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   /** Registrar name */
   name?: InputMaybe<Order_By>;
@@ -5041,17 +5587,21 @@ export type Kyc_Registrar_Min_Order_By = {
 
 /** Ordering options when selecting data from "kyc_registrar". */
 export type Kyc_Registrar_Order_By = {
+  admins_aggregate?: InputMaybe<Kyc_Registrar_Admin_Aggregate_Order_By>;
   created_at?: InputMaybe<Order_By>;
   freeze_member_is_paused?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   kyc?: InputMaybe<Kyc_Order_By>;
-  kyc_admins?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
   member_verified?: InputMaybe<Order_By>;
   members_aggregate?: InputMaybe<Kyc_Member_Aggregate_Order_By>;
+  membership_tier_discounts_aggregate?: InputMaybe<Kyc_Membership_Tier_Discount_Aggregate_Order_By>;
+  membership_tiers_aggregate?: InputMaybe<Kyc_Membership_Tier_Aggregate_Order_By>;
+  memberships_aggregate?: InputMaybe<Kyc_Membership_Aggregate_Order_By>;
   name?: InputMaybe<Order_By>;
+  set_member_is_paused?: InputMaybe<Order_By>;
   set_member_kyc_is_paused?: InputMaybe<Order_By>;
-  unfreeze_member_is_paused?: InputMaybe<Order_By>;
+  set_registrar_admin_is_paused?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
   user?: InputMaybe<Equiteez_User_Order_By>;
   user_id?: InputMaybe<Order_By>;
@@ -5066,17 +5616,17 @@ export enum Kyc_Registrar_Select_Column {
   /** column name */
   Id = 'id',
   /** column name */
-  KycAdmins = 'kyc_admins',
-  /** column name */
   KycId = 'kyc_id',
   /** column name */
   MemberVerified = 'member_verified',
   /** column name */
   Name = 'name',
   /** column name */
+  SetMemberIsPaused = 'set_member_is_paused',
+  /** column name */
   SetMemberKycIsPaused = 'set_member_kyc_is_paused',
   /** column name */
-  UnfreezeMemberIsPaused = 'unfreeze_member_is_paused',
+  SetRegistrarAdminIsPaused = 'set_registrar_admin_is_paused',
   /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
@@ -5088,9 +5638,11 @@ export enum Kyc_Registrar_Select_Column_Kyc_Registrar_Aggregate_Bool_Exp_Bool_An
   /** column name */
   FreezeMemberIsPaused = 'freeze_member_is_paused',
   /** column name */
+  SetMemberIsPaused = 'set_member_is_paused',
+  /** column name */
   SetMemberKycIsPaused = 'set_member_kyc_is_paused',
   /** column name */
-  UnfreezeMemberIsPaused = 'unfreeze_member_is_paused'
+  SetRegistrarAdminIsPaused = 'set_registrar_admin_is_paused'
 }
 
 /** select "kyc_registrar_aggregate_bool_exp_bool_or_arguments_columns" columns of table "kyc_registrar" */
@@ -5098,9 +5650,11 @@ export enum Kyc_Registrar_Select_Column_Kyc_Registrar_Aggregate_Bool_Exp_Bool_Or
   /** column name */
   FreezeMemberIsPaused = 'freeze_member_is_paused',
   /** column name */
+  SetMemberIsPaused = 'set_member_is_paused',
+  /** column name */
   SetMemberKycIsPaused = 'set_member_kyc_is_paused',
   /** column name */
-  UnfreezeMemberIsPaused = 'unfreeze_member_is_paused'
+  SetRegistrarAdminIsPaused = 'set_registrar_admin_is_paused'
 }
 
 /** order by stddev() on columns of table "kyc_registrar" */
@@ -5108,7 +5662,7 @@ export type Kyc_Registrar_Stddev_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5118,7 +5672,7 @@ export type Kyc_Registrar_Stddev_Pop_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5128,7 +5682,7 @@ export type Kyc_Registrar_Stddev_Samp_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5145,21 +5699,21 @@ export type Kyc_Registrar_Stream_Cursor_Input = {
 export type Kyc_Registrar_Stream_Cursor_Value_Input = {
   /** Registrar creation timestamp */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Whether freeze_member entrypoint is paused */
+  /** Whether the registrar's freezeMember is paused */
   freeze_member_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   /** Primary key identifier */
   id?: InputMaybe<Scalars['Int']['input']>;
-  /** List of KYC admin addresses */
-  kyc_admins?: InputMaybe<Array<Scalars['String']['input']>>;
   kyc_id?: InputMaybe<Scalars['Int']['input']>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Scalars['bigint']['input']>;
   /** Registrar name */
   name?: InputMaybe<Scalars['String']['input']>;
-  /** Whether set_member_kyc entrypoint is paused */
+  /** Whether the registrar's setMember is paused */
+  set_member_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Whether the registrar's setMemberKyc is paused */
   set_member_kyc_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Whether unfreeze_member entrypoint is paused */
-  unfreeze_member_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Whether the registrar's setRegistrarAdmin is paused */
+  set_registrar_admin_is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   user_id?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -5169,7 +5723,7 @@ export type Kyc_Registrar_Sum_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5179,7 +5733,7 @@ export type Kyc_Registrar_Var_Pop_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5189,7 +5743,7 @@ export type Kyc_Registrar_Var_Samp_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5199,7 +5753,7 @@ export type Kyc_Registrar_Variance_Order_By = {
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   kyc_id?: InputMaybe<Order_By>;
-  /** Count of verified members */
+  /** Count of verified members (initialised to 0 by the contract, never incremented) */
   member_verified?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -5220,6 +5774,10 @@ export enum Kyc_Select_Column {
   Metadata = 'metadata',
   /** column name */
   NewSuperAdmin = 'new_super_admin',
+  /** column name */
+  PermitDefaultExpiryDuration = 'permit_default_expiry_duration',
+  /** column name */
+  PermitMaxExpiryDuration = 'permit_max_expiry_duration',
   /** column name */
   SuperAdmin = 'super_admin',
   /** column name */
@@ -5247,6 +5805,9 @@ export type Kyc_Stream_Cursor_Value_Input = {
   metadata?: InputMaybe<Scalars['jsonb']['input']>;
   /** Pending super admin address (for transfer) */
   new_super_admin?: InputMaybe<Scalars['String']['input']>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Scalars['bigint']['input']>;
+  permit_max_expiry_duration?: InputMaybe<Scalars['bigint']['input']>;
   /** Current super admin address */
   super_admin?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -5280,7 +5841,7 @@ export type Kyc_Valid_Input_Aggregate_Order_By = {
 
 /** order by avg() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Avg_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5302,7 +5863,7 @@ export type Kyc_Valid_Input_Bool_Exp = {
 
 /** order by max() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Max_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5314,7 +5875,7 @@ export type Kyc_Valid_Input_Max_Order_By = {
 
 /** order by min() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Min_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5350,7 +5911,7 @@ export enum Kyc_Valid_Input_Select_Column {
 
 /** order by stddev() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Stddev_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5359,7 +5920,7 @@ export type Kyc_Valid_Input_Stddev_Order_By = {
 
 /** order by stddev_pop() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Stddev_Pop_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5368,7 +5929,7 @@ export type Kyc_Valid_Input_Stddev_Pop_Order_By = {
 
 /** order by stddev_samp() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Stddev_Samp_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5385,7 +5946,7 @@ export type Kyc_Valid_Input_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Kyc_Valid_Input_Stream_Cursor_Value_Input = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Scalars['smallint']['input']>;
   /** Primary key identifier */
   id?: InputMaybe<Scalars['Int']['input']>;
@@ -5397,7 +5958,7 @@ export type Kyc_Valid_Input_Stream_Cursor_Value_Input = {
 
 /** order by sum() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Sum_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5406,7 +5967,7 @@ export type Kyc_Valid_Input_Sum_Order_By = {
 
 /** order by var_pop() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Var_Pop_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5415,7 +5976,7 @@ export type Kyc_Valid_Input_Var_Pop_Order_By = {
 
 /** order by var_samp() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Var_Samp_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5424,7 +5985,7 @@ export type Kyc_Valid_Input_Var_Samp_Order_By = {
 
 /** order by variance() on columns of table "kyc_valid_input" */
 export type Kyc_Valid_Input_Variance_Order_By = {
-  /** COUNTRY: 0\nREGION: 1\nINVESTOR_TYPE: 2 */
+  /** Input category (COUNTRY/REGION/INVESTOR_TYPE) */
   category?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
@@ -5630,6 +6191,9 @@ export type Launchpad_Aggregate_Order_By = {
 export type Launchpad_Avg_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "launchpad". All fields are combined with a logical 'AND'. */
@@ -5650,6 +6214,8 @@ export type Launchpad_Bool_Exp = {
   membership_kyc_id?: InputMaybe<Int_Comparison_Exp>;
   metadata?: InputMaybe<Jsonb_Comparison_Exp>;
   new_super_admin?: InputMaybe<String_Comparison_Exp>;
+  permit_default_expiry_duration?: InputMaybe<Bigint_Comparison_Exp>;
+  permit_max_expiry_duration?: InputMaybe<Bigint_Comparison_Exp>;
   super_admin?: InputMaybe<String_Comparison_Exp>;
   treasuries?: InputMaybe<Launchpad_Treasury_Bool_Exp>;
   treasuries_aggregate?: InputMaybe<Launchpad_Treasury_Aggregate_Bool_Exp>;
@@ -6247,12 +6813,12 @@ export type Launchpad_Launch_Avg_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6265,6 +6831,7 @@ export type Launchpad_Launch_Bool_Exp = {
   _or?: InputMaybe<Array<Launchpad_Launch_Bool_Exp>>;
   distribution_events?: InputMaybe<Launchpad_Distribution_Event_Bool_Exp>;
   distribution_events_aggregate?: InputMaybe<Launchpad_Distribution_Event_Aggregate_Bool_Exp>;
+  enable_kyc?: InputMaybe<Boolean_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   is_paused?: InputMaybe<Boolean_Comparison_Exp>;
   launchpad?: InputMaybe<Launchpad_Bool_Exp>;
@@ -6304,12 +6871,12 @@ export type Launchpad_Launch_Max_Order_By = {
   sale_end?: InputMaybe<Order_By>;
   /** Schedule */
   sale_start?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6330,12 +6897,12 @@ export type Launchpad_Launch_Min_Order_By = {
   sale_end?: InputMaybe<Order_By>;
   /** Schedule */
   sale_start?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6345,6 +6912,7 @@ export type Launchpad_Launch_Min_Order_By = {
 /** Ordering options when selecting data from "launchpad_launch". */
 export type Launchpad_Launch_Order_By = {
   distribution_events_aggregate?: InputMaybe<Launchpad_Distribution_Event_Aggregate_Order_By>;
+  enable_kyc?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_paused?: InputMaybe<Order_By>;
   launchpad?: InputMaybe<Launchpad_Order_By>;
@@ -6369,6 +6937,8 @@ export type Launchpad_Launch_Order_By = {
 
 /** select columns of table "launchpad_launch" */
 export enum Launchpad_Launch_Select_Column {
+  /** column name */
+  EnableKyc = 'enable_kyc',
   /** column name */
   Id = 'id',
   /** column name */
@@ -6404,11 +6974,15 @@ export enum Launchpad_Launch_Select_Column {
 /** select "launchpad_launch_aggregate_bool_exp_bool_and_arguments_columns" columns of table "launchpad_launch" */
 export enum Launchpad_Launch_Select_Column_Launchpad_Launch_Aggregate_Bool_Exp_Bool_And_Arguments_Columns {
   /** column name */
+  EnableKyc = 'enable_kyc',
+  /** column name */
   IsPaused = 'is_paused'
 }
 
 /** select "launchpad_launch_aggregate_bool_exp_bool_or_arguments_columns" columns of table "launchpad_launch" */
 export enum Launchpad_Launch_Select_Column_Launchpad_Launch_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns {
+  /** column name */
+  EnableKyc = 'enable_kyc',
   /** column name */
   IsPaused = 'is_paused'
 }
@@ -6473,12 +7047,12 @@ export type Launchpad_Launch_Stddev_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6492,12 +7066,12 @@ export type Launchpad_Launch_Stddev_Pop_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6511,12 +7085,12 @@ export type Launchpad_Launch_Stddev_Samp_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6532,8 +7106,10 @@ export type Launchpad_Launch_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Launchpad_Launch_Stream_Cursor_Value_Input = {
+  /** Purchases require a current (not frozen, not expired, not blacklisted) KYC */
+  enable_kyc?: InputMaybe<Scalars['Boolean']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
-  /** Convenience flag: true iff any pause entry covers this launch */
+  /** Mirrors the contract flag: true only while status is PAUSED */
   is_paused?: InputMaybe<Scalars['Boolean']['input']>;
   launchpad_id?: InputMaybe<Scalars['Int']['input']>;
   /** Total supply cap for this launch */
@@ -6546,12 +7122,12 @@ export type Launchpad_Launch_Stream_Cursor_Value_Input = {
   sale_end?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Schedule */
   sale_start?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Scalars['smallint']['input']>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Scalars['smallint']['input']>;
   token_id?: InputMaybe<Scalars['Int']['input']>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Scalars['smallint']['input']>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Scalars['bigint']['input']>;
@@ -6566,12 +7142,12 @@ export type Launchpad_Launch_Sum_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6585,12 +7161,12 @@ export type Launchpad_Launch_Var_Pop_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6604,12 +7180,12 @@ export type Launchpad_Launch_Var_Samp_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6623,12 +7199,12 @@ export type Launchpad_Launch_Variance_Order_By = {
   max_amount_cap?: InputMaybe<Order_By>;
   /** Fee percent for purchases (basis points or nat as stored on chain) */
   purchase_fee_percent?: InputMaybe<Order_By>;
-  /** ACTIVE: 0\nINACTIVE: 1\nPAUSED: 2\nCLOSED: 3 */
+  /** ACTIVE / INACTIVE / PAUSED / CLOSED */
   status?: InputMaybe<Order_By>;
-  /** AUTO: 0\nMANUAL: 1 */
+  /** auto / manual */
   token_distribution_type?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
-  /** MINT: 0\nTRANSFER: 1 */
+  /** mint / transfer */
   token_issuance_type?: InputMaybe<Order_By>;
   /** Running tally of purchased tokens (all sale options combined) */
   total_bought?: InputMaybe<Order_By>;
@@ -6641,6 +7217,9 @@ export type Launchpad_Max_Order_By = {
   membership_kyc_id?: InputMaybe<Order_By>;
   /** Pending super admin address (2-step rotation) */
   new_super_admin?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
   /** Current super admin address */
   super_admin?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -6653,6 +7232,9 @@ export type Launchpad_Min_Order_By = {
   membership_kyc_id?: InputMaybe<Order_By>;
   /** Pending super admin address (2-step rotation) */
   new_super_admin?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
   /** Current super admin address */
   super_admin?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -6670,6 +7252,8 @@ export type Launchpad_Order_By = {
   membership_kyc_id?: InputMaybe<Order_By>;
   metadata?: InputMaybe<Order_By>;
   new_super_admin?: InputMaybe<Order_By>;
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
   super_admin?: InputMaybe<Order_By>;
   treasuries_aggregate?: InputMaybe<Launchpad_Treasury_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -6930,7 +7514,7 @@ export type Launchpad_Purchase_Event_Avg_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -6973,7 +7557,7 @@ export type Launchpad_Purchase_Event_Max_Order_By = {
   payment_name?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   timestamp?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
@@ -6994,7 +7578,7 @@ export type Launchpad_Purchase_Event_Min_Order_By = {
   payment_name?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   timestamp?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
@@ -7059,7 +7643,7 @@ export type Launchpad_Purchase_Event_Stddev_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7075,7 +7659,7 @@ export type Launchpad_Purchase_Event_Stddev_Pop_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7091,7 +7675,7 @@ export type Launchpad_Purchase_Event_Stddev_Samp_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7119,7 +7703,7 @@ export type Launchpad_Purchase_Event_Stream_Cursor_Value_Input = {
   payment_name?: InputMaybe<Scalars['String']['input']>;
   payment_token_id?: InputMaybe<Scalars['Int']['input']>;
   sale_option_id?: InputMaybe<Scalars['Int']['input']>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Scalars['smallint']['input']>;
   timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
   user_id?: InputMaybe<Scalars['Int']['input']>;
@@ -7136,7 +7720,7 @@ export type Launchpad_Purchase_Event_Sum_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7152,7 +7736,7 @@ export type Launchpad_Purchase_Event_Var_Pop_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7168,7 +7752,7 @@ export type Launchpad_Purchase_Event_Var_Samp_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7184,7 +7768,7 @@ export type Launchpad_Purchase_Event_Variance_Order_By = {
   level?: InputMaybe<Order_By>;
   payment_token_id?: InputMaybe<Order_By>;
   sale_option_id?: InputMaybe<Order_By>;
-  /** USER: 0\nADMIN: 1 */
+  /** USER (on-chain) vs ADMIN (off-chain reconciliation) */
   source?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
@@ -7740,6 +8324,7 @@ export type Launchpad_Sale_Option_Bool_Exp = {
   _or?: InputMaybe<Array<Launchpad_Sale_Option_Bool_Exp>>;
   id?: InputMaybe<Int_Comparison_Exp>;
   is_paused?: InputMaybe<Boolean_Comparison_Exp>;
+  is_removed?: InputMaybe<Boolean_Comparison_Exp>;
   launch?: InputMaybe<Launchpad_Launch_Bool_Exp>;
   launch_id?: InputMaybe<Int_Comparison_Exp>;
   max_amount_cap?: InputMaybe<Bigint_Comparison_Exp>;
@@ -7794,6 +8379,7 @@ export type Launchpad_Sale_Option_Min_Order_By = {
 export type Launchpad_Sale_Option_Order_By = {
   id?: InputMaybe<Order_By>;
   is_paused?: InputMaybe<Order_By>;
+  is_removed?: InputMaybe<Order_By>;
   launch?: InputMaybe<Launchpad_Launch_Order_By>;
   launch_id?: InputMaybe<Order_By>;
   max_amount_cap?: InputMaybe<Order_By>;
@@ -8000,6 +8586,8 @@ export enum Launchpad_Sale_Option_Select_Column {
   /** column name */
   IsPaused = 'is_paused',
   /** column name */
+  IsRemoved = 'is_removed',
+  /** column name */
   LaunchId = 'launch_id',
   /** column name */
   MaxAmountCap = 'max_amount_cap',
@@ -8018,13 +8606,17 @@ export enum Launchpad_Sale_Option_Select_Column {
 /** select "launchpad_sale_option_aggregate_bool_exp_bool_and_arguments_columns" columns of table "launchpad_sale_option" */
 export enum Launchpad_Sale_Option_Select_Column_Launchpad_Sale_Option_Aggregate_Bool_Exp_Bool_And_Arguments_Columns {
   /** column name */
-  IsPaused = 'is_paused'
+  IsPaused = 'is_paused',
+  /** column name */
+  IsRemoved = 'is_removed'
 }
 
 /** select "launchpad_sale_option_aggregate_bool_exp_bool_or_arguments_columns" columns of table "launchpad_sale_option" */
 export enum Launchpad_Sale_Option_Select_Column_Launchpad_Sale_Option_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns {
   /** column name */
-  IsPaused = 'is_paused'
+  IsPaused = 'is_paused',
+  /** column name */
+  IsRemoved = 'is_removed'
 }
 
 /** order by stddev() on columns of table "launchpad_sale_option" */
@@ -8069,6 +8661,8 @@ export type Launchpad_Sale_Option_Stream_Cursor_Input = {
 export type Launchpad_Sale_Option_Stream_Cursor_Value_Input = {
   id?: InputMaybe<Scalars['Int']['input']>;
   is_paused?: InputMaybe<Scalars['Boolean']['input']>;
+  /** The option is no longer in the launch's saleOptions map (updateTokenLaunch replaces the whole map). Kept, not deleted: purchase history references it */
+  is_removed?: InputMaybe<Scalars['Boolean']['input']>;
   launch_id?: InputMaybe<Scalars['Int']['input']>;
   /** Optional global cap (null = unlimited) */
   max_amount_cap?: InputMaybe<Scalars['bigint']['input']>;
@@ -8331,6 +8925,10 @@ export enum Launchpad_Select_Column {
   /** column name */
   NewSuperAdmin = 'new_super_admin',
   /** column name */
+  PermitDefaultExpiryDuration = 'permit_default_expiry_duration',
+  /** column name */
+  PermitMaxExpiryDuration = 'permit_max_expiry_duration',
+  /** column name */
   SuperAdmin = 'super_admin',
   /** column name */
   UpdatedAt = 'updated_at'
@@ -8352,18 +8950,27 @@ export enum Launchpad_Select_Column_Launchpad_Aggregate_Bool_Exp_Bool_Or_Argumen
 export type Launchpad_Stddev_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_pop() on columns of table "launchpad" */
 export type Launchpad_Stddev_Pop_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_samp() on columns of table "launchpad" */
 export type Launchpad_Stddev_Samp_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** Streaming cursor of the table "launchpad" */
@@ -8384,6 +8991,9 @@ export type Launchpad_Stream_Cursor_Value_Input = {
   metadata?: InputMaybe<Scalars['jsonb']['input']>;
   /** Pending super admin address (2-step rotation) */
   new_super_admin?: InputMaybe<Scalars['String']['input']>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Scalars['bigint']['input']>;
+  permit_max_expiry_duration?: InputMaybe<Scalars['bigint']['input']>;
   /** Current super admin address */
   super_admin?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -8393,6 +9003,9 @@ export type Launchpad_Stream_Cursor_Value_Input = {
 export type Launchpad_Sum_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 export type Launchpad_Treasury_Aggregate_Bool_Exp = {
@@ -8551,18 +9164,27 @@ export type Launchpad_Treasury_Variance_Order_By = {
 export type Launchpad_Var_Pop_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** order by var_samp() on columns of table "launchpad" */
 export type Launchpad_Var_Samp_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** order by variance() on columns of table "launchpad" */
 export type Launchpad_Variance_Order_By = {
   id?: InputMaybe<Order_By>;
   membership_kyc_id?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "market_addresses_view". All fields are combined with a logical 'AND'. */
@@ -9292,7 +9914,7 @@ export type Marketplace_Listing_Avg_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9338,7 +9960,7 @@ export type Marketplace_Listing_Max_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9360,7 +9982,7 @@ export type Marketplace_Listing_Min_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9474,7 +10096,7 @@ export type Marketplace_Listing_Stddev_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9494,7 +10116,7 @@ export type Marketplace_Listing_Stddev_Pop_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9514,7 +10136,7 @@ export type Marketplace_Listing_Stddev_Samp_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9544,7 +10166,7 @@ export type Marketplace_Listing_Stream_Cursor_Value_Input = {
   price_per_unit?: InputMaybe<Scalars['bigint']['input']>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Scalars['bigint']['input']>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Scalars['smallint']['input']>;
   token_id?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -9564,7 +10186,7 @@ export type Marketplace_Listing_Sum_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9584,7 +10206,7 @@ export type Marketplace_Listing_Var_Pop_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9604,7 +10226,7 @@ export type Marketplace_Listing_Var_Samp_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9624,7 +10246,7 @@ export type Marketplace_Listing_Variance_Order_By = {
   price_per_unit?: InputMaybe<Order_By>;
   /** Quick buy price (if available) */
   quick_buy_price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nACTIVE: 1 */
+  /** Listing status (CLOSED/ACTIVE) */
   status?: InputMaybe<Order_By>;
   token_id?: InputMaybe<Order_By>;
 };
@@ -9743,7 +10365,7 @@ export type Marketplace_Offer_Avg_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9784,7 +10406,7 @@ export type Marketplace_Offer_Max_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9804,7 +10426,7 @@ export type Marketplace_Offer_Min_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9912,7 +10534,7 @@ export type Marketplace_Offer_Stddev_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9930,7 +10552,7 @@ export type Marketplace_Offer_Stddev_Pop_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9948,7 +10570,7 @@ export type Marketplace_Offer_Stddev_Samp_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -9976,7 +10598,7 @@ export type Marketplace_Offer_Stream_Cursor_Value_Input = {
   offer_id?: InputMaybe<Scalars['bigint']['input']>;
   /** Offer price */
   price?: InputMaybe<Scalars['bigint']['input']>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Scalars['smallint']['input']>;
 };
 
@@ -9994,7 +10616,7 @@ export type Marketplace_Offer_Sum_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10012,7 +10634,7 @@ export type Marketplace_Offer_Var_Pop_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10030,7 +10652,7 @@ export type Marketplace_Offer_Var_Samp_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10048,7 +10670,7 @@ export type Marketplace_Offer_Variance_Order_By = {
   offer_id?: InputMaybe<Order_By>;
   /** Offer price */
   price?: InputMaybe<Order_By>;
-  /** CLOSED: 0\nOPEN: 1\nACCEPTED: 2 */
+  /** Offer status (CLOSED/OPEN/ACCEPTED) */
   status?: InputMaybe<Order_By>;
 };
 
@@ -10401,6 +11023,8 @@ export type Orderbook_Avg_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -10409,10 +11033,15 @@ export type Orderbook_Avg_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -10425,13 +11054,22 @@ export type Orderbook_Avg_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "orderbook". All fields are combined with a logical 'AND'. */
@@ -10442,6 +11080,7 @@ export type Orderbook_Bool_Exp = {
   address?: InputMaybe<String_Comparison_Exp>;
   buy_order_counter?: InputMaybe<Bigint_Comparison_Exp>;
   buy_order_fee?: InputMaybe<Bigint_Comparison_Exp>;
+  cancel_order_fee?: InputMaybe<Bigint_Comparison_Exp>;
   currencies?: InputMaybe<Orderbook_Currency_Bool_Exp>;
   currencies_aggregate?: InputMaybe<Orderbook_Currency_Aggregate_Bool_Exp>;
   dodo_mavs?: InputMaybe<Dodo_Mav_Bool_Exp>;
@@ -10461,9 +11100,12 @@ export type Orderbook_Bool_Exp = {
   lambdas_aggregate?: InputMaybe<Orderbook_Lambda_Aggregate_Bool_Exp>;
   last_matched_price?: InputMaybe<Bigint_Comparison_Exp>;
   last_matched_price_timestamp?: InputMaybe<Timestamptz_Comparison_Exp>;
+  lower_bound_buy_order_percent?: InputMaybe<Bigint_Comparison_Exp>;
+  lower_bound_sell_order_percent?: InputMaybe<Bigint_Comparison_Exp>;
   lowest_sell_price?: InputMaybe<Bigint_Comparison_Exp>;
   lowest_sell_price_market_order_exists?: InputMaybe<Boolean_Comparison_Exp>;
   lowest_sell_price_order_id?: InputMaybe<Bigint_Comparison_Exp>;
+  max_orders_per_price_level?: InputMaybe<Bigint_Comparison_Exp>;
   metadata?: InputMaybe<Jsonb_Comparison_Exp>;
   min_buy_order_amount?: InputMaybe<Bigint_Comparison_Exp>;
   min_buy_order_value?: InputMaybe<Bigint_Comparison_Exp>;
@@ -10476,15 +11118,21 @@ export type Orderbook_Bool_Exp = {
   order_events_aggregate?: InputMaybe<Orderbook_Order_Event_Aggregate_Bool_Exp>;
   orders?: InputMaybe<Orderbook_Order_Bool_Exp>;
   orders_aggregate?: InputMaybe<Orderbook_Order_Aggregate_Bool_Exp>;
+  permit_default_expiry_duration?: InputMaybe<Bigint_Comparison_Exp>;
+  permit_max_expiry_duration?: InputMaybe<Bigint_Comparison_Exp>;
+  quantity_tick_size?: InputMaybe<Bigint_Comparison_Exp>;
   rwa_orders?: InputMaybe<Orderbook_Rwa_Order_Bool_Exp>;
   rwa_orders_aggregate?: InputMaybe<Orderbook_Rwa_Order_Aggregate_Bool_Exp>;
   rwa_token?: InputMaybe<Token_Bool_Exp>;
+  rwa_token_decimals?: InputMaybe<Bigint_Comparison_Exp>;
   rwa_token_id?: InputMaybe<Int_Comparison_Exp>;
   sell_order_counter?: InputMaybe<Bigint_Comparison_Exp>;
   sell_order_fee?: InputMaybe<Bigint_Comparison_Exp>;
   super_admin?: InputMaybe<String_Comparison_Exp>;
   tick_size?: InputMaybe<Bigint_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  upper_bound_buy_order_percent?: InputMaybe<Bigint_Comparison_Exp>;
+  upper_bound_sell_order_percent?: InputMaybe<Bigint_Comparison_Exp>;
 };
 
 export type Orderbook_Currency_Aggregate_Bool_Exp = {
@@ -10515,6 +11163,10 @@ export type Orderbook_Currency_Aggregate_Order_By = {
 
 /** order by avg() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Avg_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10527,6 +11179,8 @@ export type Orderbook_Currency_Bool_Exp = {
   _not?: InputMaybe<Orderbook_Currency_Bool_Exp>;
   _or?: InputMaybe<Array<Orderbook_Currency_Bool_Exp>>;
   currency_name?: InputMaybe<String_Comparison_Exp>;
+  decimals?: InputMaybe<Int_Comparison_Exp>;
+  fa2_token_id?: InputMaybe<Bigint_Comparison_Exp>;
   fees?: InputMaybe<Orderbook_Fee_Bool_Exp>;
   fees_aggregate?: InputMaybe<Orderbook_Fee_Aggregate_Bool_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
@@ -10545,6 +11199,10 @@ export type Orderbook_Currency_Bool_Exp = {
 export type Orderbook_Currency_Max_Order_By = {
   /** Name of the currency */
   currency_name?: InputMaybe<Order_By>;
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10556,6 +11214,10 @@ export type Orderbook_Currency_Max_Order_By = {
 export type Orderbook_Currency_Min_Order_By = {
   /** Name of the currency */
   currency_name?: InputMaybe<Order_By>;
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10566,6 +11228,8 @@ export type Orderbook_Currency_Min_Order_By = {
 /** Ordering options when selecting data from "orderbook_currency". */
 export type Orderbook_Currency_Order_By = {
   currency_name?: InputMaybe<Order_By>;
+  decimals?: InputMaybe<Order_By>;
+  fa2_token_id?: InputMaybe<Order_By>;
   fees_aggregate?: InputMaybe<Orderbook_Fee_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   order_events_aggregate?: InputMaybe<Orderbook_Order_Event_Aggregate_Order_By>;
@@ -10582,6 +11246,10 @@ export enum Orderbook_Currency_Select_Column {
   /** column name */
   CurrencyName = 'currency_name',
   /** column name */
+  Decimals = 'decimals',
+  /** column name */
+  Fa2TokenId = 'fa2_token_id',
+  /** column name */
   Id = 'id',
   /** column name */
   OrderbookId = 'orderbook_id',
@@ -10593,6 +11261,10 @@ export enum Orderbook_Currency_Select_Column {
 
 /** order by stddev() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Stddev_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10601,6 +11273,10 @@ export type Orderbook_Currency_Stddev_Order_By = {
 
 /** order by stddev_pop() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Stddev_Pop_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10609,6 +11285,10 @@ export type Orderbook_Currency_Stddev_Pop_Order_By = {
 
 /** order by stddev_samp() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Stddev_Samp_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10627,6 +11307,10 @@ export type Orderbook_Currency_Stream_Cursor_Input = {
 export type Orderbook_Currency_Stream_Cursor_Value_Input = {
   /** Name of the currency */
   currency_name?: InputMaybe<Scalars['String']['input']>;
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Scalars['Int']['input']>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Scalars['bigint']['input']>;
   /** Primary key identifier */
   id?: InputMaybe<Scalars['Int']['input']>;
   orderbook_id?: InputMaybe<Scalars['Int']['input']>;
@@ -10636,6 +11320,10 @@ export type Orderbook_Currency_Stream_Cursor_Value_Input = {
 
 /** order by sum() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Sum_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10644,6 +11332,10 @@ export type Orderbook_Currency_Sum_Order_By = {
 
 /** order by var_pop() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Var_Pop_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10652,6 +11344,10 @@ export type Orderbook_Currency_Var_Pop_Order_By = {
 
 /** order by var_samp() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Var_Samp_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -10660,6 +11356,10 @@ export type Orderbook_Currency_Var_Samp_Order_By = {
 
 /** order by variance() on columns of table "orderbook_currency" */
 export type Orderbook_Currency_Variance_Order_By = {
+  /** Decimals declared in the currency ledger */
+  decimals?: InputMaybe<Order_By>;
+  /** FA2 token id of the currency token */
+  fa2_token_id?: InputMaybe<Order_By>;
   /** Primary key identifier */
   id?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
@@ -11275,6 +11975,8 @@ export type Orderbook_Max_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -11285,10 +11987,15 @@ export type Orderbook_Max_Order_By = {
   last_matched_price?: InputMaybe<Order_By>;
   /** Timestamp of last matched price */
   last_matched_price_timestamp?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -11303,6 +12010,13 @@ export type Orderbook_Max_Order_By = {
   min_time_before_closing_order?: InputMaybe<Order_By>;
   /** Pending super admin address */
   new_super_admin?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
@@ -11310,9 +12024,11 @@ export type Orderbook_Max_Order_By = {
   sell_order_fee?: InputMaybe<Order_By>;
   /** Current super admin address */
   super_admin?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** order by min() on columns of table "orderbook" */
@@ -11322,6 +12038,8 @@ export type Orderbook_Min_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -11332,10 +12050,15 @@ export type Orderbook_Min_Order_By = {
   last_matched_price?: InputMaybe<Order_By>;
   /** Timestamp of last matched price */
   last_matched_price_timestamp?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -11350,6 +12073,13 @@ export type Orderbook_Min_Order_By = {
   min_time_before_closing_order?: InputMaybe<Order_By>;
   /** Pending super admin address */
   new_super_admin?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
@@ -11357,9 +12087,11 @@ export type Orderbook_Min_Order_By = {
   sell_order_fee?: InputMaybe<Order_By>;
   /** Current super admin address */
   super_admin?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 export type Orderbook_Order_Aggregate_Bool_Exp = {
@@ -11414,7 +12146,7 @@ export type Orderbook_Order_Avg_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -11471,6 +12203,7 @@ export type Orderbook_Order_By = {
   address?: InputMaybe<Order_By>;
   buy_order_counter?: InputMaybe<Order_By>;
   buy_order_fee?: InputMaybe<Order_By>;
+  cancel_order_fee?: InputMaybe<Order_By>;
   currencies_aggregate?: InputMaybe<Orderbook_Currency_Aggregate_Order_By>;
   dodo_mavs_aggregate?: InputMaybe<Dodo_Mav_Aggregate_Order_By>;
   entrypoint_status_aggregate?: InputMaybe<Orderbook_Entrypoint_Status_Aggregate_Order_By>;
@@ -11485,9 +12218,12 @@ export type Orderbook_Order_By = {
   lambdas_aggregate?: InputMaybe<Orderbook_Lambda_Aggregate_Order_By>;
   last_matched_price?: InputMaybe<Order_By>;
   last_matched_price_timestamp?: InputMaybe<Order_By>;
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   lowest_sell_price?: InputMaybe<Order_By>;
   lowest_sell_price_market_order_exists?: InputMaybe<Order_By>;
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   metadata?: InputMaybe<Order_By>;
   min_buy_order_amount?: InputMaybe<Order_By>;
   min_buy_order_value?: InputMaybe<Order_By>;
@@ -11498,14 +12234,20 @@ export type Orderbook_Order_By = {
   new_super_admin?: InputMaybe<Order_By>;
   order_events_aggregate?: InputMaybe<Orderbook_Order_Event_Aggregate_Order_By>;
   orders_aggregate?: InputMaybe<Orderbook_Order_Aggregate_Order_By>;
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  quantity_tick_size?: InputMaybe<Order_By>;
   rwa_orders_aggregate?: InputMaybe<Orderbook_Rwa_Order_Aggregate_Order_By>;
   rwa_token?: InputMaybe<Token_Order_By>;
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   sell_order_counter?: InputMaybe<Order_By>;
   sell_order_fee?: InputMaybe<Order_By>;
   super_admin?: InputMaybe<Order_By>;
   tick_size?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 export type Orderbook_Order_Event_Aggregate_Bool_Exp = {
@@ -11546,6 +12288,8 @@ export type Orderbook_Order_Event_Avg_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11556,6 +12300,7 @@ export type Orderbook_Order_Event_Avg_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11573,6 +12318,7 @@ export type Orderbook_Order_Event_Bool_Exp = {
   currency_id?: InputMaybe<Int_Comparison_Exp>;
   event_seq?: InputMaybe<Int_Comparison_Exp>;
   event_type?: InputMaybe<Smallint_Comparison_Exp>;
+  fee_delta?: InputMaybe<Bigint_Comparison_Exp>;
   fulfilled_after?: InputMaybe<Bigint_Comparison_Exp>;
   fulfilled_before?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
@@ -11603,6 +12349,8 @@ export type Orderbook_Order_Event_Max_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11614,6 +12362,7 @@ export type Orderbook_Order_Event_Max_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   timestamp?: InputMaybe<Order_By>;
@@ -11632,6 +12381,8 @@ export type Orderbook_Order_Event_Min_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11643,6 +12394,7 @@ export type Orderbook_Order_Event_Min_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   timestamp?: InputMaybe<Order_By>;
@@ -11658,6 +12410,7 @@ export type Orderbook_Order_Event_Order_By = {
   currency_id?: InputMaybe<Order_By>;
   event_seq?: InputMaybe<Order_By>;
   event_type?: InputMaybe<Order_By>;
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   fulfilled_before?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
@@ -11690,6 +12443,8 @@ export enum Orderbook_Order_Event_Select_Column {
   EventSeq = 'event_seq',
   /** column name */
   EventType = 'event_type',
+  /** column name */
+  FeeDelta = 'fee_delta',
   /** column name */
   FulfilledAfter = 'fulfilled_after',
   /** column name */
@@ -11730,6 +12485,8 @@ export type Orderbook_Order_Event_Stddev_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11740,6 +12497,7 @@ export type Orderbook_Order_Event_Stddev_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11757,6 +12515,8 @@ export type Orderbook_Order_Event_Stddev_Pop_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11767,6 +12527,7 @@ export type Orderbook_Order_Event_Stddev_Pop_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11784,6 +12545,8 @@ export type Orderbook_Order_Event_Stddev_Samp_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11794,6 +12557,7 @@ export type Orderbook_Order_Event_Stddev_Samp_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11819,6 +12583,8 @@ export type Orderbook_Order_Event_Stream_Cursor_Value_Input = {
   event_seq?: InputMaybe<Scalars['Int']['input']>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Scalars['smallint']['input']>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Scalars['bigint']['input']>;
   fulfilled_after?: InputMaybe<Scalars['bigint']['input']>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Scalars['bigint']['input']>;
@@ -11830,6 +12596,7 @@ export type Orderbook_Order_Event_Stream_Cursor_Value_Input = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Scalars['smallint']['input']>;
   orderbook_id?: InputMaybe<Scalars['Int']['input']>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Scalars['bigint']['input']>;
   rwa_delta?: InputMaybe<Scalars['bigint']['input']>;
   timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -11848,6 +12615,8 @@ export type Orderbook_Order_Event_Sum_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11858,6 +12627,7 @@ export type Orderbook_Order_Event_Sum_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11875,6 +12645,8 @@ export type Orderbook_Order_Event_Var_Pop_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11885,6 +12657,7 @@ export type Orderbook_Order_Event_Var_Pop_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11902,6 +12675,8 @@ export type Orderbook_Order_Event_Var_Samp_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11912,6 +12687,7 @@ export type Orderbook_Order_Event_Var_Samp_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11929,6 +12705,8 @@ export type Orderbook_Order_Event_Variance_Order_By = {
   event_seq?: InputMaybe<Order_By>;
   /** PLACE: 0\nFILL: 1\nCANCEL: 2\nEXPIRE: 3\nREFUND: 4\nSEED: 5 */
   event_type?: InputMaybe<Order_By>;
+  /** Escrow retained by the contract as a fee (cancelOrderFee) by this event, in currency units for BUY and RWA units for SELL */
+  fee_delta?: InputMaybe<Order_By>;
   fulfilled_after?: InputMaybe<Order_By>;
   /** Fill trajectory (RWA token amounts) */
   fulfilled_before?: InputMaybe<Order_By>;
@@ -11939,6 +12717,7 @@ export type Orderbook_Order_Event_Variance_Order_By = {
   /** BUY: 0\nSELL: 1 */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
+  /** Escrow actually returned to the initiator by this event. A sell cancel blocked by KYC records its refund amount on the order but returns it only on the later processRefund, which is where this column carries it */
   refunded_delta?: InputMaybe<Order_By>;
   rwa_delta?: InputMaybe<Order_By>;
   unfulfilled_after?: InputMaybe<Order_By>;
@@ -11962,7 +12741,7 @@ export type Orderbook_Order_Max_Order_By = {
   order_expiry?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -11998,7 +12777,7 @@ export type Orderbook_Order_Min_Order_By = {
   order_expiry?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12135,7 +12914,7 @@ export type Orderbook_Order_Stddev_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12162,7 +12941,7 @@ export type Orderbook_Order_Stddev_Pop_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12189,7 +12968,7 @@ export type Orderbook_Order_Stddev_Samp_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12242,7 +13021,7 @@ export type Orderbook_Order_Stream_Cursor_Value_Input = {
   order_expiry?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Unique order identifier */
   order_id?: InputMaybe<Scalars['bigint']['input']>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Scalars['smallint']['input']>;
   orderbook_id?: InputMaybe<Scalars['Int']['input']>;
   /** Price per RWA token */
@@ -12270,7 +13049,7 @@ export type Orderbook_Order_Sum_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12297,7 +13076,7 @@ export type Orderbook_Order_Var_Pop_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12324,7 +13103,7 @@ export type Orderbook_Order_Var_Samp_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12351,7 +13130,7 @@ export type Orderbook_Order_Variance_Order_By = {
   initiator_id?: InputMaybe<Order_By>;
   /** Unique order identifier */
   order_id?: InputMaybe<Order_By>;
-  /** BUY: 0\nSELL: 1 */
+  /** Type of order (BUY/SELL) */
   order_type?: InputMaybe<Order_By>;
   orderbook_id?: InputMaybe<Order_By>;
   /** Price per RWA token */
@@ -12451,7 +13230,9 @@ export type Orderbook_Rwa_Order_Buy_Order_Aggregate_Order_By = {
 
 /** order by avg() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Avg_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
@@ -12461,7 +13242,9 @@ export type Orderbook_Rwa_Order_Buy_Order_Bool_Exp = {
   _and?: InputMaybe<Array<Orderbook_Rwa_Order_Buy_Order_Bool_Exp>>;
   _not?: InputMaybe<Orderbook_Rwa_Order_Buy_Order_Bool_Exp>;
   _or?: InputMaybe<Array<Orderbook_Rwa_Order_Buy_Order_Bool_Exp>>;
+  head_counter?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
+  next_counter?: InputMaybe<Bigint_Comparison_Exp>;
   order_ids?: InputMaybe<Int_Array_Comparison_Exp>;
   price?: InputMaybe<Bigint_Comparison_Exp>;
   rwa_order?: InputMaybe<Orderbook_Rwa_Order_Bool_Exp>;
@@ -12471,7 +13254,9 @@ export type Orderbook_Rwa_Order_Buy_Order_Bool_Exp = {
 
 /** order by max() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Max_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   order_ids?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
@@ -12480,7 +13265,9 @@ export type Orderbook_Rwa_Order_Buy_Order_Max_Order_By = {
 
 /** order by min() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Min_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   order_ids?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
@@ -12489,7 +13276,9 @@ export type Orderbook_Rwa_Order_Buy_Order_Min_Order_By = {
 
 /** Ordering options when selecting data from "orderbook_rwa_order_buy_order". */
 export type Orderbook_Rwa_Order_Buy_Order_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   order_ids?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order?: InputMaybe<Orderbook_Rwa_Order_Order_By>;
@@ -12500,7 +13289,11 @@ export type Orderbook_Rwa_Order_Buy_Order_Order_By = {
 /** select columns of table "orderbook_rwa_order_buy_order" */
 export enum Orderbook_Rwa_Order_Buy_Order_Select_Column {
   /** column name */
+  HeadCounter = 'head_counter',
+  /** column name */
   Id = 'id',
+  /** column name */
+  NextCounter = 'next_counter',
   /** column name */
   OrderIds = 'order_ids',
   /** column name */
@@ -12513,21 +13306,27 @@ export enum Orderbook_Rwa_Order_Buy_Order_Select_Column {
 
 /** order by stddev() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Stddev_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_pop() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Stddev_Pop_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_samp() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Stddev_Samp_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
@@ -12542,7 +13341,9 @@ export type Orderbook_Rwa_Order_Buy_Order_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Orderbook_Rwa_Order_Buy_Order_Stream_Cursor_Value_Input = {
+  head_counter?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
+  next_counter?: InputMaybe<Scalars['bigint']['input']>;
   order_ids?: InputMaybe<Array<Scalars['Int']['input']>>;
   price?: InputMaybe<Scalars['bigint']['input']>;
   rwa_order_id?: InputMaybe<Scalars['Int']['input']>;
@@ -12551,28 +13352,36 @@ export type Orderbook_Rwa_Order_Buy_Order_Stream_Cursor_Value_Input = {
 
 /** order by sum() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Sum_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by var_pop() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Var_Pop_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by var_samp() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Var_Samp_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by variance() on columns of table "orderbook_rwa_order_buy_order" */
 export type Orderbook_Rwa_Order_Buy_Order_Variance_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
@@ -12844,7 +13653,9 @@ export type Orderbook_Rwa_Order_Sell_Order_Aggregate_Order_By = {
 
 /** order by avg() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Avg_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
@@ -12854,7 +13665,9 @@ export type Orderbook_Rwa_Order_Sell_Order_Bool_Exp = {
   _and?: InputMaybe<Array<Orderbook_Rwa_Order_Sell_Order_Bool_Exp>>;
   _not?: InputMaybe<Orderbook_Rwa_Order_Sell_Order_Bool_Exp>;
   _or?: InputMaybe<Array<Orderbook_Rwa_Order_Sell_Order_Bool_Exp>>;
+  head_counter?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
+  next_counter?: InputMaybe<Bigint_Comparison_Exp>;
   order_ids?: InputMaybe<Int_Array_Comparison_Exp>;
   price?: InputMaybe<Bigint_Comparison_Exp>;
   rwa_order?: InputMaybe<Orderbook_Rwa_Order_Bool_Exp>;
@@ -12864,7 +13677,9 @@ export type Orderbook_Rwa_Order_Sell_Order_Bool_Exp = {
 
 /** order by max() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Max_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   order_ids?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
@@ -12873,7 +13688,9 @@ export type Orderbook_Rwa_Order_Sell_Order_Max_Order_By = {
 
 /** order by min() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Min_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   order_ids?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
@@ -12882,7 +13699,9 @@ export type Orderbook_Rwa_Order_Sell_Order_Min_Order_By = {
 
 /** Ordering options when selecting data from "orderbook_rwa_order_sell_order". */
 export type Orderbook_Rwa_Order_Sell_Order_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   order_ids?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order?: InputMaybe<Orderbook_Rwa_Order_Order_By>;
@@ -12893,7 +13712,11 @@ export type Orderbook_Rwa_Order_Sell_Order_Order_By = {
 /** select columns of table "orderbook_rwa_order_sell_order" */
 export enum Orderbook_Rwa_Order_Sell_Order_Select_Column {
   /** column name */
+  HeadCounter = 'head_counter',
+  /** column name */
   Id = 'id',
+  /** column name */
+  NextCounter = 'next_counter',
   /** column name */
   OrderIds = 'order_ids',
   /** column name */
@@ -12906,21 +13729,27 @@ export enum Orderbook_Rwa_Order_Sell_Order_Select_Column {
 
 /** order by stddev() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Stddev_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_pop() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Stddev_Pop_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_samp() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Stddev_Samp_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
@@ -12935,7 +13764,9 @@ export type Orderbook_Rwa_Order_Sell_Order_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Orderbook_Rwa_Order_Sell_Order_Stream_Cursor_Value_Input = {
+  head_counter?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
+  next_counter?: InputMaybe<Scalars['bigint']['input']>;
   order_ids?: InputMaybe<Array<Scalars['Int']['input']>>;
   price?: InputMaybe<Scalars['bigint']['input']>;
   rwa_order_id?: InputMaybe<Scalars['Int']['input']>;
@@ -12944,28 +13775,36 @@ export type Orderbook_Rwa_Order_Sell_Order_Stream_Cursor_Value_Input = {
 
 /** order by sum() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Sum_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by var_pop() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Var_Pop_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by var_samp() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Var_Samp_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
 
 /** order by variance() on columns of table "orderbook_rwa_order_sell_order" */
 export type Orderbook_Rwa_Order_Sell_Order_Variance_Order_By = {
+  head_counter?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  next_counter?: InputMaybe<Order_By>;
   price?: InputMaybe<Order_By>;
   rwa_order_id?: InputMaybe<Order_By>;
 };
@@ -13247,6 +14086,8 @@ export enum Orderbook_Select_Column {
   /** column name */
   BuyOrderFee = 'buy_order_fee',
   /** column name */
+  CancelOrderFee = 'cancel_order_fee',
+  /** column name */
   HighestBuyPrice = 'highest_buy_price',
   /** column name */
   HighestBuyPriceMarketOrderExists = 'highest_buy_price_market_order_exists',
@@ -13263,11 +14104,17 @@ export enum Orderbook_Select_Column {
   /** column name */
   LastMatchedPriceTimestamp = 'last_matched_price_timestamp',
   /** column name */
+  LowerBoundBuyOrderPercent = 'lower_bound_buy_order_percent',
+  /** column name */
+  LowerBoundSellOrderPercent = 'lower_bound_sell_order_percent',
+  /** column name */
   LowestSellPrice = 'lowest_sell_price',
   /** column name */
   LowestSellPriceMarketOrderExists = 'lowest_sell_price_market_order_exists',
   /** column name */
   LowestSellPriceOrderId = 'lowest_sell_price_order_id',
+  /** column name */
+  MaxOrdersPerPriceLevel = 'max_orders_per_price_level',
   /** column name */
   Metadata = 'metadata',
   /** column name */
@@ -13285,6 +14132,14 @@ export enum Orderbook_Select_Column {
   /** column name */
   NewSuperAdmin = 'new_super_admin',
   /** column name */
+  PermitDefaultExpiryDuration = 'permit_default_expiry_duration',
+  /** column name */
+  PermitMaxExpiryDuration = 'permit_max_expiry_duration',
+  /** column name */
+  QuantityTickSize = 'quantity_tick_size',
+  /** column name */
+  RwaTokenDecimals = 'rwa_token_decimals',
+  /** column name */
   RwaTokenId = 'rwa_token_id',
   /** column name */
   SellOrderCounter = 'sell_order_counter',
@@ -13295,7 +14150,11 @@ export enum Orderbook_Select_Column {
   /** column name */
   TickSize = 'tick_size',
   /** column name */
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UpperBoundBuyOrderPercent = 'upper_bound_buy_order_percent',
+  /** column name */
+  UpperBoundSellOrderPercent = 'upper_bound_sell_order_percent'
 }
 
 /** select "orderbook_aggregate_bool_exp_bool_and_arguments_columns" columns of table "orderbook" */
@@ -13324,6 +14183,8 @@ export type Orderbook_Stddev_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13332,10 +14193,15 @@ export type Orderbook_Stddev_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13348,13 +14214,22 @@ export type Orderbook_Stddev_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_pop() on columns of table "orderbook" */
@@ -13363,6 +14238,8 @@ export type Orderbook_Stddev_Pop_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13371,10 +14248,15 @@ export type Orderbook_Stddev_Pop_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13387,13 +14269,22 @@ export type Orderbook_Stddev_Pop_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** order by stddev_samp() on columns of table "orderbook" */
@@ -13402,6 +14293,8 @@ export type Orderbook_Stddev_Samp_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13410,10 +14303,15 @@ export type Orderbook_Stddev_Samp_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13426,13 +14324,22 @@ export type Orderbook_Stddev_Samp_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** Streaming cursor of the table "orderbook" */
@@ -13450,6 +14357,8 @@ export type Orderbook_Stream_Cursor_Value_Input = {
   buy_order_counter?: InputMaybe<Scalars['bigint']['input']>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Scalars['bigint']['input']>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Scalars['bigint']['input']>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Scalars['bigint']['input']>;
   /** Whether a market buy order rests at the protected price */
@@ -13463,12 +14372,17 @@ export type Orderbook_Stream_Cursor_Value_Input = {
   last_matched_price?: InputMaybe<Scalars['bigint']['input']>;
   /** Timestamp of last matched price */
   last_matched_price_timestamp?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Scalars['bigint']['input']>;
+  lower_bound_sell_order_percent?: InputMaybe<Scalars['bigint']['input']>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Scalars['bigint']['input']>;
   /** Whether a market sell order rests at the protected price */
   lowest_sell_price_market_order_exists?: InputMaybe<Scalars['Boolean']['input']>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Scalars['bigint']['input']>;
   /** Contract metadata */
   metadata?: InputMaybe<Scalars['jsonb']['input']>;
   /** Minimum buy order amount */
@@ -13485,6 +14399,13 @@ export type Orderbook_Stream_Cursor_Value_Input = {
   min_time_before_closing_order?: InputMaybe<Scalars['bigint']['input']>;
   /** Pending super admin address */
   new_super_admin?: InputMaybe<Scalars['String']['input']>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Scalars['bigint']['input']>;
+  permit_max_expiry_duration?: InputMaybe<Scalars['bigint']['input']>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Scalars['bigint']['input']>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Scalars['bigint']['input']>;
   rwa_token_id?: InputMaybe<Scalars['Int']['input']>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Scalars['bigint']['input']>;
@@ -13492,9 +14413,11 @@ export type Orderbook_Stream_Cursor_Value_Input = {
   sell_order_fee?: InputMaybe<Scalars['bigint']['input']>;
   /** Current super admin address */
   super_admin?: InputMaybe<Scalars['String']['input']>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Scalars['bigint']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  upper_bound_buy_order_percent?: InputMaybe<Scalars['bigint']['input']>;
+  upper_bound_sell_order_percent?: InputMaybe<Scalars['bigint']['input']>;
 };
 
 /** order by sum() on columns of table "orderbook" */
@@ -13503,6 +14426,8 @@ export type Orderbook_Sum_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13511,10 +14436,15 @@ export type Orderbook_Sum_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13527,13 +14457,22 @@ export type Orderbook_Sum_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "orderbook_summary_view". All fields are combined with a logical 'AND'. */
@@ -13629,6 +14568,8 @@ export type Orderbook_Var_Pop_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13637,10 +14578,15 @@ export type Orderbook_Var_Pop_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13653,13 +14599,22 @@ export type Orderbook_Var_Pop_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** order by var_samp() on columns of table "orderbook" */
@@ -13668,6 +14623,8 @@ export type Orderbook_Var_Samp_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13676,10 +14633,15 @@ export type Orderbook_Var_Samp_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13692,13 +14654,22 @@ export type Orderbook_Var_Samp_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** order by variance() on columns of table "orderbook" */
@@ -13707,6 +14678,8 @@ export type Orderbook_Variance_Order_By = {
   buy_order_counter?: InputMaybe<Order_By>;
   /** Fee for buy orders */
   buy_order_fee?: InputMaybe<Order_By>;
+  /** Fee charged against the remaining escrow when an order is cancelled */
+  cancel_order_fee?: InputMaybe<Order_By>;
   /** Highest buy price */
   highest_buy_price?: InputMaybe<Order_By>;
   /** ID of highest buy price order */
@@ -13715,10 +14688,15 @@ export type Orderbook_Variance_Order_By = {
   kyc_id?: InputMaybe<Order_By>;
   /** Last matched order price */
   last_matched_price?: InputMaybe<Order_By>;
+  /** Allowed limit-price band around the reference price (4 decimals, 0 disables) */
+  lower_bound_buy_order_percent?: InputMaybe<Order_By>;
+  lower_bound_sell_order_percent?: InputMaybe<Order_By>;
   /** Lowest sell price */
   lowest_sell_price?: InputMaybe<Order_By>;
   /** ID of lowest sell price order */
   lowest_sell_price_order_id?: InputMaybe<Order_By>;
+  /** Maximum active orders per side and price level */
+  max_orders_per_price_level?: InputMaybe<Order_By>;
   /** Minimum buy order amount */
   min_buy_order_amount?: InputMaybe<Order_By>;
   /** Minimum buy order value */
@@ -13731,13 +14709,22 @@ export type Orderbook_Variance_Order_By = {
   min_sell_order_value?: InputMaybe<Order_By>;
   /** Minimum time before order can be closed */
   min_time_before_closing_order?: InputMaybe<Order_By>;
+  /** Permit expiry settings (seconds) */
+  permit_default_expiry_duration?: InputMaybe<Order_By>;
+  permit_max_expiry_duration?: InputMaybe<Order_By>;
+  /** Minimum RWA quantity increment in base units */
+  quantity_tick_size?: InputMaybe<Order_By>;
+  /** Decimals of the traded RWA token as stored by the contract */
+  rwa_token_decimals?: InputMaybe<Order_By>;
   rwa_token_id?: InputMaybe<Order_By>;
   /** Counter for sell orders */
   sell_order_counter?: InputMaybe<Order_By>;
   /** Fee for sell orders */
   sell_order_fee?: InputMaybe<Order_By>;
-  /** Minimum price increment for orders (tick size) */
+  /** Minimum price increment for orders (contract config priceTickSize) */
   tick_size?: InputMaybe<Order_By>;
+  upper_bound_buy_order_percent?: InputMaybe<Order_By>;
+  upper_bound_sell_order_percent?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "rwa_volume_24h_tokens". All fields are combined with a logical 'AND'. */
@@ -14066,7 +15053,7 @@ export type Super_Admin_Signatory_Action_Avg_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14285,7 +15272,7 @@ export type Super_Admin_Signatory_Action_Max_Order_By = {
   start_datetime?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -14314,7 +15301,7 @@ export type Super_Admin_Signatory_Action_Min_Order_By = {
   start_datetime?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -14402,7 +15389,7 @@ export type Super_Admin_Signatory_Action_Stddev_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14420,7 +15407,7 @@ export type Super_Admin_Signatory_Action_Stddev_Pop_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14438,7 +15425,7 @@ export type Super_Admin_Signatory_Action_Stddev_Samp_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14476,7 +15463,7 @@ export type Super_Admin_Signatory_Action_Stream_Cursor_Value_Input = {
   start_datetime?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Scalars['bigint']['input']>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Scalars['smallint']['input']>;
   super_admin_id?: InputMaybe<Scalars['Int']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -14495,7 +15482,7 @@ export type Super_Admin_Signatory_Action_Sum_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14513,7 +15500,7 @@ export type Super_Admin_Signatory_Action_Var_Pop_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14531,7 +15518,7 @@ export type Super_Admin_Signatory_Action_Var_Samp_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -14549,7 +15536,7 @@ export type Super_Admin_Signatory_Action_Variance_Order_By = {
   signers_count?: InputMaybe<Order_By>;
   /** Blockchain level when action started */
   start_level?: InputMaybe<Order_By>;
-  /** FLUSHED: 0\nEXECUTED: 1\nPENDING: 2 */
+  /** Action status (FLUSHED/EXECUTED/PENDING) */
   status?: InputMaybe<Order_By>;
   super_admin_id?: InputMaybe<Order_By>;
 };
@@ -15218,6 +16205,7 @@ export type Token_Bool_Exp = {
   dodo_mav_quote_tokens_aggregate?: InputMaybe<Dodo_Mav_Aggregate_Bool_Exp>;
   id?: InputMaybe<Int_Comparison_Exp>;
   in_allowlist?: InputMaybe<Boolean_Comparison_Exp>;
+  is_killed?: InputMaybe<Boolean_Comparison_Exp>;
   launchpad_launches?: InputMaybe<Launchpad_Launch_Bool_Exp>;
   launchpad_launches_aggregate?: InputMaybe<Launchpad_Launch_Aggregate_Bool_Exp>;
   launchpad_payment_events?: InputMaybe<Launchpad_Purchase_Event_Bool_Exp>;
@@ -15378,6 +16366,7 @@ export type Token_Order_By = {
   dodo_mav_quote_tokens_aggregate?: InputMaybe<Dodo_Mav_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   in_allowlist?: InputMaybe<Order_By>;
+  is_killed?: InputMaybe<Order_By>;
   launchpad_launches_aggregate?: InputMaybe<Launchpad_Launch_Aggregate_Order_By>;
   launchpad_payment_events_aggregate?: InputMaybe<Launchpad_Purchase_Event_Aggregate_Order_By>;
   launchpad_payments_aggregate?: InputMaybe<Launchpad_Sale_Option_Payment_Aggregate_Order_By>;
@@ -15404,6 +16393,8 @@ export enum Token_Select_Column {
   /** column name */
   InAllowlist = 'in_allowlist',
   /** column name */
+  IsKilled = 'is_killed',
+  /** column name */
   Metadata = 'metadata',
   /** column name */
   TokenId = 'token_id',
@@ -15428,13 +16419,15 @@ export type Token_Stream_Cursor_Value_Input = {
   address?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['Int']['input']>;
   in_allowlist?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Whether the RWA token contract has been killed (terminal: ledger cleared) */
+  is_killed?: InputMaybe<Scalars['Boolean']['input']>;
   /** Token metadata in JSON format */
   metadata?: InputMaybe<Scalars['jsonb']['input']>;
   /** Token ID (for FA2 tokens with multiple token types) */
   token_id?: InputMaybe<Scalars['smallint']['input']>;
   /** Additional token metadata */
   token_metadata?: InputMaybe<Scalars['jsonb']['input']>;
-  /** FA12: 0\nFA2: 1\nMAV: 2 */
+  /** Token standard type (FA12, FA2, MAV) */
   token_standard?: InputMaybe<Scalars['smallint']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
 };
@@ -15553,7 +16546,7 @@ export type OrderbookConfigQueryVariables = Exact<{
 }>;
 
 
-export type OrderbookConfigQuery = { __typename?: 'query_root', orderbook: Array<{ __typename?: 'orderbook', address: string, tick_size: any, min_buy_order_amount: any, min_buy_order_value: any, min_sell_order_amount: any, min_sell_order_value: any, rwa_token?: { __typename?: 'token', address: string, token_id: any } | null, currencies: Array<{ __typename?: 'orderbook_currency', currency_name: string, token?: { __typename?: 'token', address: string, token_id: any } | null }> }> };
+export type OrderbookConfigQuery = { __typename?: 'query_root', orderbook: Array<{ __typename?: 'orderbook', address: string, quantity_tick_size: any, tick_size: any, min_buy_order_amount: any, min_buy_order_value: any, min_sell_order_amount: any, min_sell_order_value: any, rwa_token?: { __typename?: 'token', address: string, token_id: any } | null, currencies: Array<{ __typename?: 'orderbook_currency', currency_name: string, token?: { __typename?: 'token', address: string, token_id: any } | null }> }> };
 
 export type OrderbookLastTradesQueryQueryVariables = Exact<{
   rwaAddress?: InputMaybe<Scalars['String']['input']>;
@@ -15571,6 +16564,6 @@ export type UserAccountStatusQueryVariables = Exact<{
 export type UserAccountStatusQuery = { __typename?: 'query_root', kyc_member: Array<{ __typename?: 'kyc_member', user?: { __typename?: 'equiteez_user', address: string, orderbook_order_events: Array<{ __typename?: 'orderbook_order_event', counter: any }> } | null }> };
 
 
-export const OrderbookConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"OrderbookConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"tick_size"}},{"kind":"Field","name":{"kind":"Name","value":"min_buy_order_amount"}},{"kind":"Field","name":{"kind":"Name","value":"min_buy_order_value"}},{"kind":"Field","name":{"kind":"Name","value":"min_sell_order_amount"}},{"kind":"Field","name":{"kind":"Name","value":"min_sell_order_value"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"currencies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currency_name"}},{"kind":"Field","name":{"kind":"Name","value":"token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}}]}}]}}]}}]} as unknown as DocumentNode<OrderbookConfigQuery, OrderbookConfigQueryVariables>;
+export const OrderbookConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"OrderbookConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"orderbook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"quantity_tick_size"}},{"kind":"Field","name":{"kind":"Name","value":"tick_size"}},{"kind":"Field","name":{"kind":"Name","value":"min_buy_order_amount"}},{"kind":"Field","name":{"kind":"Name","value":"min_buy_order_value"}},{"kind":"Field","name":{"kind":"Name","value":"min_sell_order_amount"}},{"kind":"Field","name":{"kind":"Name","value":"min_sell_order_value"}},{"kind":"Field","name":{"kind":"Name","value":"rwa_token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"currencies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currency_name"}},{"kind":"Field","name":{"kind":"Name","value":"token"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"token_id"}}]}}]}}]}}]}}]} as unknown as DocumentNode<OrderbookConfigQuery, OrderbookConfigQueryVariables>;
 export const OrderbookLastTradesQueryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"orderbookLastTradesQuery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"tradeEvents"},"name":{"kind":"Name","value":"orderbook_order_event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"timestamp"},"value":{"kind":"EnumValue","value":"desc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"counter"},"value":{"kind":"EnumValue","value":"desc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"EnumValue","value":"desc"}}]}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"IntValue","value":"1"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"orderbook"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"rwa_token"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rwaAddress"}}}]}}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"counter"}},{"kind":"Field","name":{"kind":"Name","value":"currency_delta"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_after"}},{"kind":"Field","name":{"kind":"Name","value":"fulfilled_before"}},{"kind":"Field","name":{"kind":"Name","value":"order_type"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"order"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_market_order"}},{"kind":"Field","name":{"kind":"Name","value":"price_per_rwa_token"}}]}},{"kind":"Field","name":{"kind":"Name","value":"operation_hash"}}]}}]}}]} as unknown as DocumentNode<OrderbookLastTradesQueryQuery, OrderbookLastTradesQueryQueryVariables>;
 export const UserAccountStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"UserAccountStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kyc_member"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"user"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"orderbook_order_events"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"counter"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UserAccountStatusQuery, UserAccountStatusQueryVariables>;
