@@ -1,0 +1,242 @@
+[
+  {
+    "symbol": "QUEEN",
+    "name": "QUEEN Tower",
+    "contract": "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o",
+    "whyInvest": [
+      {
+        "title": "Class-A Office Space",
+        "description": "A modern office tower built to the top specification in its market, aimed at tenants who pay for quality space, amenities and location."
+      },
+      {
+        "title": "Retail Podium Income",
+        "description": "Ground-floor shops and restaurants add a second stream of rent alongside the office floors, so income doesn't depend on one type of tenant."
+      },
+      {
+        "title": "Contracted Rental Income",
+        "description": "Rent comes from long-term leases with financial, legal and technology firms. Distributions are paid onchain to token holders in proportion to their holdings."
+      },
+      {
+        "title": "Central Business District Address",
+        "description": "Office space in Midtown is limited and close to transit, services and talent, which supports long-term tenant demand."
+      }
+    ],
+    "location": "QUEEN Tower is in Midtown Manhattan, a short walk from Grand Central Terminal and Bryant Park. Midtown is one of the largest office markets in the world, and newer Class-A buildings continue to attract tenants upgrading from older stock."
+  },
+  {
+    "symbol": "MARS1",
+    "name": "Mars One",
+    "contract": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+    "whyInvest": [
+      {
+        "title": "Specialist Aerospace Facility",
+        "description": "An R&D campus built for aerospace work, a niche property type with few comparable sites."
+      },
+      {
+        "title": "Long-Term Tenants",
+        "description": "Labs, test bays and launch-support facilities are expensive to relocate, so tenants typically sign long leases and renew."
+      },
+      {
+        "title": "Dedicated Logistics Pad",
+        "description": "The on-site pad handles heavy cargo and launch-support equipment that general industrial property can't accommodate."
+      },
+      {
+        "title": "Growing Space Economy",
+        "description": "Commercial launch and satellite activity has grown sharply over the past decade, raising demand for purpose-built aerospace facilities."
+      }
+    ],
+    "location": "Mars One is in Titusville, Florida, on the Space Coast, minutes from Kennedy Space Center and Cape Canaveral. The area is home to a dense cluster of launch providers, satellite manufacturers and aerospace suppliers."
+  },
+  {
+    "symbol": "OCEAN",
+    "name": "OCEAN",
+    "contract": "KT1PXS6bacaVGHHWCQtvNSvoGL9Daho3ozcp",
+    "whyInvest": [
+      {
+        "title": "Hotel + Retail Mix",
+        "description": "Combines hotel income with marina-side retail, so returns come from both room revenue and shop leases."
+      },
+      {
+        "title": "Waterfront Scarcity",
+        "description": "Coastal and marina-front land is limited and hard to get approved for new building, which protects the value of existing waterfront property."
+      },
+      {
+        "title": "Tourism-Driven Demand",
+        "description": "Visitors to the marina and nearby beaches drive both hotel occupancy and retail footfall."
+      },
+      {
+        "title": "Operating Upside",
+        "description": "Hotel income moves with nightly room rates, so strong management can grow revenue faster than fixed leases can. It can also fall faster in a downturn."
+      }
+    ],
+    "location": "OCEAN sits on the waterfront in Miami Beach, Florida, next to the Miami Beach Marina at South Pointe. Peak season runs December through April, when winter visitors and boat-show traffic fill hotels and restaurants."
+  },
+  {
+    "symbol": "NTBM",
+    "name": "North Texas Bitcoin Miners",
+    "contract": "KT1XbAtSp5i1GJZTHzjc5J8SYkcEE8kqtkSv",
+    "whyInvest": [
+      {
+        "title": "Industrial-Scale Hashrate",
+        "description": "15,000 Antminer S19 XP units, about 2.1 EH/s and roughly 45 MW at full capacity, mining bitcoin around the clock."
+      },
+      {
+        "title": "Renewable Power",
+        "description": "Runs on renewable-sourced power. Energy is the biggest cost in mining, so cheaper and cleaner power improves margins and meets institutional ESG requirements."
+      },
+      {
+        "title": "Built-In Resilience",
+        "description": "Backup power and Starlink satellite internet keep machines running through grid or local network outages."
+      },
+      {
+        "title": "Productive Bitcoin Exposure",
+        "description": "Returns follow bitcoin's price and network difficulty, giving exposure through an income-producing asset rather than holding the coin. Revenue can fall sharply if the price drops or difficulty rises."
+      }
+    ],
+    "location": "The facility is about an hour northwest of Dallas–Fort Worth, on the ERCOT grid. Texas offers below-average industrial power prices, large wind and solar capacity, and demand-response programmes that pay miners to power down during peak grid demand."
+  },
+  {
+    "symbol": "XAUG",
+    "name": "King's Gold",
+    "contract": "KT1NbgrAUjxgvm4b72VEYPp7r8KXTLgXNjjP",
+    "whyInvest": [
+      {
+        "title": "Allocated Physical Gold",
+        "description": "Each token is backed by specific, allocated bars held in a vault, not a paper claim on a shared pool."
+      },
+      {
+        "title": "Good Delivery Standard",
+        "description": "Bars meet the LBMA Good Delivery standard, the purity and weight benchmark accepted by the world's major gold markets."
+      },
+      {
+        "title": "Onchain Proof of Reserve",
+        "description": "Vault holdings are verified onchain on Mavryk and independently audited, so anyone can check that tokens in circulation match the gold in storage."
+      },
+      {
+        "title": "Long-Term Store of Value",
+        "description": "Gold has preserved wealth for centuries and has often held its value during inflation and market stress."
+      }
+    ],
+    "location": "The gold comes from the Ashanti region of Ghana, Africa's largest gold producer and one of the world's oldest gold-mining areas. Bars are refined in Switzerland and held in a fully insured, high-security vault in Zurich."
+  },
+  {
+    "symbol": "ANTH",
+    "name": "Anthropic",
+    "contract": "KT1HR56nVuVDnidsabd2TBB9YvAtKbCbHKpP",
+    "whyInvest": [
+      {
+        "title": "Frontier AI Developer",
+        "description": "Anthropic builds the Claude family of AI models, used by businesses and developers through its API, apps and major cloud platforms."
+      },
+      {
+        "title": "Pre-IPO Access",
+        "description": "Economic exposure to a private company, a stage usually open only to venture funds and large institutions."
+      },
+      {
+        "title": "SPV Structure",
+        "description": "Tokens represent an interest in a special purpose vehicle that holds Anthropic shares. Token holders don't own shares directly, and a future listing is not guaranteed."
+      },
+      {
+        "title": "Fractional Entry",
+        "description": "Invest small amounts instead of the six-figure minimums typical of private-company secondaries."
+      }
+    ],
+    "location": "Anthropic is headquartered in San Francisco, California. The SPV is a Delaware limited liability company managed by a regulated fund administrator."
+  },
+  {
+    "symbol": "KRKN",
+    "name": "Kraken",
+    "contract": "KT19PyrK3NKTiAfjxPJwhswgzkiMeQuawkFc",
+    "whyInvest": [
+      {
+        "title": "Established Exchange",
+        "description": "Founded in 2011, Kraken is one of the longest-running crypto exchanges, serving retail and institutional clients worldwide."
+      },
+      {
+        "title": "Proof-of-Reserves Track Record",
+        "description": "Kraken was an early adopter of proof-of-reserves audits, letting clients verify that balances are fully backed."
+      },
+      {
+        "title": "Multiple Business Lines",
+        "description": "Revenue comes from spot trading, derivatives and other services rather than a single product."
+      },
+      {
+        "title": "Pre-IPO Access via SPV",
+        "description": "Tokens represent an interest in an SPV holding shares of Payward, Inc., Kraken's parent company. Token holders don't own shares directly, and a future listing is not guaranteed."
+      }
+    ],
+    "location": "Kraken was founded in San Francisco and operates as a remote-first company serving clients around the world. The SPV is a Delaware limited liability company."
+  },
+  {
+    "symbol": "VOO",
+    "name": "Vanguard S&P 500 ETF",
+    "contract": "KT1DoCAu9Hyx2gy8BFV6HUvMNSiqPJiNPLAY",
+    "whyInvest": [
+      {
+        "title": "Broad US Market Exposure",
+        "description": "One token tracks the S&P 500, spreading your investment across about 500 of the largest US companies in every major sector."
+      },
+      {
+        "title": "Low Cost",
+        "description": "The underlying fund charges a 0.03% annual expense ratio, among the lowest in the industry. Equiteez platform fees apply separately."
+      },
+      {
+        "title": "Quarterly Dividends",
+        "description": "The fund pays dividends each quarter, passed through to token holders onchain, net of fees and withholding tax."
+      },
+      {
+        "title": "Trade Beyond Market Hours",
+        "description": "Tokens trade 24/7 on Equiteez, while the ETF itself trades only during US market hours. Off-hours prices may differ from the fund's value."
+      }
+    ],
+    "location": "VOO is issued by Vanguard, headquartered in Malvern, Pennsylvania, and listed on NYSE Arca. It holds US large-cap companies. The ETF shares backing each token are held by a regulated US custodian."
+  },
+  {
+    "symbol": "O",
+    "name": "Realty Income Corporation",
+    "contract": "KT1NkKkvSFYMYfaTxAFkMAKiDqZEt53UoV4a",
+    "whyInvest": [
+      {
+        "title": "Monthly Dividends",
+        "description": "Realty Income pays dividends every month and is an S&P 500 Dividend Aristocrat, with 25+ consecutive years of dividend increases."
+      },
+      {
+        "title": "Net-Lease Model",
+        "description": "Tenants cover most property taxes, insurance and maintenance, making rental income more predictable."
+      },
+      {
+        "title": "Diversified Portfolio",
+        "description": "15,000+ commercial properties leased to tenants across retail, industrial and other sectors."
+      },
+      {
+        "title": "Investment-Grade Balance Sheet",
+        "description": "Investment-grade credit ratings keep borrowing costs down and support the dividend through market cycles."
+      }
+    ],
+    "location": "Realty Income is headquartered in San Diego, California, and listed on the NYSE (ticker: O). Its properties span all 50 US states, the UK and several other European countries."
+  },
+  {
+    "symbol": "USTB",
+    "name": "US Treasury Bill",
+    "contract": "KT18jYZuGDajywWdCniEkfxdPeRWZFyrEuUg",
+    "whyInvest": [
+      {
+        "title": "Backed by the US Government",
+        "description": "T-bills are short-term debt issued by the US Treasury and widely regarded as one of the lowest-risk assets available."
+      },
+      {
+        "title": "Daily Yield",
+        "description": "Yield accrues daily and is reflected in the token price."
+      },
+      {
+        "title": "Low Volatility",
+        "description": "Maturities under one year keep price moves small, making it a practical place to hold cash between trades."
+      },
+      {
+        "title": "Onchain Liquidity",
+        "description": "Settles instantly and transfers 24/7 on Mavryk, unlike T-bills bought through a traditional broker."
+      }
+    ],
+    "location": "The underlying T-bills are issued by the US Department of the Treasury and held by a qualified US custodian. The issuing vehicle is a dedicated fund that holds only T-bills and cash."
+  }
+]
