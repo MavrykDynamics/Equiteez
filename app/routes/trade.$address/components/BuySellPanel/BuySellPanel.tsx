@@ -53,12 +53,7 @@ export function BuySellPanel(props: BuySellPanelProps) {
             isDisconnected={isDisconnected}
           />
         ) : (
-          <SecondaryBuySellPanel
-            {...props}
-            orderBookContainer={
-              isDisconnected ? null : props.orderBookContainer
-            }
-          />
+          <SecondaryBuySellPanel {...props} />
         )}
       </div>
       {isDisconnected && (
