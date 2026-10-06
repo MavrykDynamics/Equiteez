@@ -141,7 +141,7 @@ beforeEach(() => {
   mocks.purchase.mockReset().mockResolvedValue(undefined);
   mocks.estimate
     .mockReset()
-    .mockResolvedValue({ networkFee: 100n, gasFee: 10n });
+    .mockResolvedValue({ gasFee: 10n });
   mocks.refresh.mockReset();
   mocks.refetch.mockReset().mockResolvedValue({ data: config });
   mocks.query.mockReturnValue({

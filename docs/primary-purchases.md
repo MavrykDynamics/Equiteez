@@ -97,7 +97,10 @@ The fix removes background purchase-storage polling and amount-driven estimation
 uses one explicit Buy preflight, and gives primary failures a purchase-specific
 heading and gateway message. Form-entry reads remain intentional per `primary.md`;
 review, pre-sign validation, operator checks, exact payment caps and zero-MAV
-batching remain. Fees become available after the Buy preflight. Secondary
+batching remain. Fees become available after the Buy preflight. The tooltip
+shows Purchase Fee (included) and Gas Fee, using the summed SDK
+`suggestedFeeMumav` converted to USD; Network Fee and storage burn are excluded
+from the summary. The purchase fee remains included in the payment. Secondary
 execution and its alert heading are unchanged.
 
 Configuration checks matched `primary.md`: launchpad

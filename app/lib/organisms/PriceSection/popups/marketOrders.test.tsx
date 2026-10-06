@@ -112,8 +112,17 @@ vi.mock("~/templates/ESnakeBlock/ESnakeblock", () => ({
   ),
 }));
 vi.mock("../components/FeesCard/FeesCard", () => ({
-  FeesCard: ({ totalAmount }: { totalAmount: BigNumber }) => (
-    <output data-total>{totalAmount.toFixed()}</output>
+  FeesCard: ({
+    totalAmount,
+    gasFee,
+  }: {
+    totalAmount: BigNumber;
+    gasFee: BigNumber;
+  }) => (
+    <>
+      <output data-total>{totalAmount.toFixed()}</output>
+      <output data-gas-fee>{gasFee.toFixed()}</output>
+    </>
   ),
 }));
 vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
@@ -232,6 +241,22 @@ function submit() {
 }
 
 describe.each([BUY, SELL] as const)("Market %s form", (side) => {
+  it("uses the suggested gas fee and clears it after a failed estimate", async () => {
+    const estimateMock = side === BUY ? mocks.estimateBuy : mocks.estimateSell;
+    estimateMock.mockResolvedValueOnce({
+      actionSuccess: true,
+      data: { totalSuggestedFeeMutez: 444, totalCost: 1154 },
+    });
+    render(side);
+    change(side === BUY ? "Budget" : "Pay with", side === BUY ? "29" : "0.96");
+    await estimate();
+    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe(
+      "0.000444"
+    );
+    change(side === BUY ? "Budget" : "Pay with", side === BUY ? "28" : "0.95");
+    await estimate();
+    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("0");
+  });
   it.each([
     ["10000", "960000", "0.96", "28.8"],
     ["100", "966600", "0.9666", "28.998"],

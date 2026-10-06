@@ -53,3 +53,15 @@ multi-level fill simulation or a guarantee of the final execution price.
 Focused regression coverage lives in `app/lib/orderbook`,
 `app/contracts/orderbook*.test.ts`, `app/hooks/useOrderbookConfig.test.ts`, and
 `app/lib/organisms/PriceSection/popups/marketOrders.test.tsx`.
+
+## Fee summary
+
+The Market and Limit fee tooltip shows Orderbook Fee and Gas Fee only. Gas Fee
+uses the batch estimator's summed `suggestedFeeMumav` (`totalSuggestedFeeMutez`),
+converted from MVRK atoms to MVRK and then USD. This includes the SDK's gas,
+base/byte charges and fee buffer; storage burn is excluded. There is no custom
+gas/network split. Platform Fee is Orderbook Fee plus Gas Fee, each added once
+to the order value. Failed estimates clear the displayed gas fee.
+Both Order Summary and Total display that calculated sum with two to six decimal
+places, preserving small fees even for large orders. They update with the order
+value and fee estimates; rounding applies only to the displayed sum.

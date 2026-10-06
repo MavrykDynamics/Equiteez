@@ -2,13 +2,12 @@ import { BigNumber } from "bignumber.js";
 
 import { MILLION, ZERO } from "~/lib/utils/numbers";
 
-const DEFAULT_NETWORK_FEE_USD_RATE = 1;
+const DEFAULT_FEE_USD_RATE = 1;
 
 type CalculateOrderSummaryValuesParams = {
-  networkFee?: BigNumber.Value;
   gasFee?: BigNumber.Value;
   orderbookFee?: BigNumber.Value;
-  networkFeeUsdRate?: BigNumber.Value;
+  feeUsdRate?: BigNumber.Value;
   orderValue?: BigNumber.Value;
   pricePerShare?: BigNumber.Value;
 };
@@ -24,31 +23,25 @@ const toFinitePositiveOrZero = (value?: BigNumber.Value) => {
 };
 
 export const calculateOrderSummaryValues = ({
-  networkFee,
   gasFee,
   orderbookFee,
-  networkFeeUsdRate,
+  feeUsdRate,
   orderValue,
   pricePerShare,
 }: CalculateOrderSummaryValuesParams) => {
-  const normalizedNetworkFee = toFinitePositiveOrZero(networkFee);
-  const normalizedNetworkFeeUsdRate = toFinitePositiveOrZero(networkFeeUsdRate);
-  const effectiveNetworkFeeUsdRate = normalizedNetworkFeeUsdRate.gt(0)
-    ? normalizedNetworkFeeUsdRate
-    : new BigNumber(DEFAULT_NETWORK_FEE_USD_RATE);
-  const networkFeeUsd = normalizedNetworkFee.times(effectiveNetworkFeeUsdRate);
-  // Asset orderbook fees are MVRK atoms; the network estimate is already in MVRK.
+  const normalizedFeeUsdRate = toFinitePositiveOrZero(feeUsdRate);
+  const effectiveFeeUsdRate = normalizedFeeUsdRate.gt(0)
+    ? normalizedFeeUsdRate
+    : new BigNumber(DEFAULT_FEE_USD_RATE);
+  // Asset orderbook fees are MVRK atoms; the gas estimate is already in MVRK.
   const orderbookFeeUsd = toFinitePositiveOrZero(orderbookFee)
     .dividedBy(MILLION)
-    .times(effectiveNetworkFeeUsdRate);
-  const gasFeeUsd = toFinitePositiveOrZero(gasFee).times(
-    effectiveNetworkFeeUsdRate
-  );
-  const platformFeeUsd = networkFeeUsd.plus(gasFeeUsd).plus(orderbookFeeUsd);
+    .times(effectiveFeeUsdRate);
+  const gasFeeUsd = toFinitePositiveOrZero(gasFee).times(effectiveFeeUsdRate);
+  const platformFeeUsd = gasFeeUsd.plus(orderbookFeeUsd);
   const normalizedOrderValue = toFinitePositiveOrZero(orderValue);
 
   return {
-    networkFeeUsd,
     gasFeeUsd,
     orderbookFeeUsd,
     platformFeeUsd,
