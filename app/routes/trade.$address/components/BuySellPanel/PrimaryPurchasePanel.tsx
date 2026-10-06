@@ -309,10 +309,10 @@ function PrimaryPurchaseForm({
     {
       pending: TOASTER_UPDATE_DATA_AFTER_ACTION_DATA,
       success: {
-        title: `${asset.metadata.symbol} Purchase Confirmed`,
+        title: `Transaction Confirmed`,
         message:
           config.distribution === "AUTO"
-            ? "Your tokens have been delivered to your wallet."
+            ? "Your transaction was confirmed. You’ll receive a notification once your purchase is confirmed."
             : "Your tokens are allocated, pending distribution.",
       },
     },
