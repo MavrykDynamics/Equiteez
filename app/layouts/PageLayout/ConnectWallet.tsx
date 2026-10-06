@@ -58,8 +58,14 @@ export const ConnectWallet = () => {
           </RDropdownBodyContent>
         </RCustomDropdown>
       ) : (
-        <RButton onClick={connect} size="medium" tone="black" variant="primary">
-          <RText size="body-s" weight="medium" color="neutral-white">
+        <RButton
+          onClick={handleConnect}
+          className={styles.connectWalletBtn}
+          size="medium"
+          tone="black"
+          variant="secondary"
+        >
+          <RText size="body-s" weight="medium">
             Connect Wallet
           </RText>
         </RButton>
