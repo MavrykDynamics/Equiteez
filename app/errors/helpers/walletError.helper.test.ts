@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { estimateBatchOperation } from "./walletError.helper";
 
-describe("batch gas fee breakdown", () => {
-  it("isolates gas with SDK rounding while retaining base, byte and storage costs", async () => {
+describe("batch fee estimation", () => {
+  it("keeps the suggested operation fee separate from storage-inclusive total cost", async () => {
     const estimates = [
       new Estimate(10_001, 3, 120, 250),
       new Estimate(20_000, 0, 80, 250),
@@ -15,8 +15,8 @@ describe("batch gas fee breakdown", () => {
     const result = await estimateBatchOperation(toolkit, []);
 
     expect(result.error).toBeUndefined();
-    expect(result.totalGasFeeMutez).toBe(4);
-    expect(result.totalCost - result.totalGasFeeMutez).toBe(1150);
+    expect(result.totalSuggestedFeeMutez).toBe(444);
+    expect(result.totalCost).toBe(1154);
     expect(result.totalCost).toBe(
       estimates.reduce((total, estimate) => total + estimate.totalCost, 0)
     );

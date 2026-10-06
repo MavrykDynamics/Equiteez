@@ -92,7 +92,6 @@ function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
         tokenPrice={
           new BigNumber(prices[asset.address]?.primary_issuance?.price ?? NaN)
         }
-        networkFee={ZERO}
         apy={asset.apy}
         status={STATUS_IDLE}
         primaryPurchase={{
@@ -177,7 +176,7 @@ function PrimaryPurchaseForm({
 }) {
   const [amount, setAmount] = useState<BigNumber>();
   const [actionError, setActionError] = useState<string>();
-  const [fees, setFees] = useState({ networkFee: ZERO, gasFee: ZERO });
+  const [fees, setFees] = useState({ gasFee: ZERO });
   const option = config.options[0];
   const rawAmount = amount?.isFinite() && amount.gt(0) ? toRaw(amount) : "0";
   const quote = useMemo(
@@ -213,7 +212,7 @@ function PrimaryPurchaseForm({
     useCallback(
       (value) => {
         setActionError(undefined);
-        setFees({ networkFee: ZERO, gasFee: ZERO });
+        setFees({ gasFee: ZERO });
         setAmount((previous) => {
           const previousPayment = previous
             ? toHuman(
@@ -231,7 +230,7 @@ function PrimaryPurchaseForm({
     );
   const handleReceiveChange = useCallback((value: BigNumber | undefined) => {
     setActionError(undefined);
-    setFees({ networkFee: ZERO, gasFee: ZERO });
+    setFees({ gasFee: ZERO });
     setAmount(
       value?.isFinite() && value.gte(0) ? toHuman(toRaw(value)) : undefined
     );
@@ -285,7 +284,6 @@ function PrimaryPurchaseForm({
           review: nextReview,
           onEstimated: (resultFees) => {
             setFees({
-              networkFee: toHuman(String(resultFees.networkFee)),
               gasFee: toHuman(String(resultFees.gasFee)),
             });
           },
@@ -343,7 +341,6 @@ function PrimaryPurchaseForm({
         setAmount={setBudget}
         total={paymentAmount}
         tokenPrice={toHuman(option.price)}
-        networkFee={fees.networkFee}
         gasFee={fees.gasFee}
         apy={asset.apy}
         status={status}
