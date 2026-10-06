@@ -214,11 +214,20 @@ export function BannerBlock() {
                   ) : null}
 
                   {slide.onClick ? (
-                    <RButton onClick={slide.onClick} size="small">
+                    <RButton
+                      className={styles.button}
+                      onClick={slide.onClick}
+                      size="small"
+                    >
                       {slide.buttonLabel}
                     </RButton>
                   ) : (
-                    <RButton as="link" size="small" to={slide.buttonTo ?? "/"}>
+                    <RButton
+                      as="link"
+                      className={styles.button}
+                      size="small"
+                      to={slide.buttonTo ?? "/"}
+                    >
                       {slide.buttonLabel}
                     </RButton>
                   )}
