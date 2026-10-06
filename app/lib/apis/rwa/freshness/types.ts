@@ -72,6 +72,7 @@ export type FreshRequestParams<TRequestData = unknown> = {
   api: FreshRequestApi;
   config?: AxiosRequestConfig;
   data?: TRequestData;
+  freshEnabled?: boolean;
   method?: FreshRequestMethod;
   query?: URLSearchParams;
   queryKeyStart: FreshQueryKeyStartInput;
