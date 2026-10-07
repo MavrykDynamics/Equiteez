@@ -162,7 +162,7 @@
   color: var(--r-color-neutral-black);
 }
 
-@media (--media-phone-max) {
+@media (--media-tablet) {
   .wrapper {
     padding: 0;
   }
