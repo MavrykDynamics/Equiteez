@@ -65,6 +65,7 @@ export const fetchWalletOpenOrders = async ({
 
   const response = await requestFreshQuery({
     api: rwaApi,
+    freshEnabled: page === undefined || page === 1,
     query,
     queryKeyStart: "fetchWalletOpenOrders",
     url: `/wallets/${walletAddress}/orders`,
@@ -110,6 +111,7 @@ export const fetchWalletOrderHistory = async ({
 
   const { data } = await requestFreshQuery({
     api: rwaApi,
+    freshEnabled: page === undefined || page === 1,
     query,
     queryKeyStart: "fetchWalletOrderHistory",
     url: `/wallets/${walletAddress}/transactions`,
@@ -153,6 +155,7 @@ export const fetchWalletTransferHistoryResponse = async ({
 
   const { data } = await requestFreshQuery({
     api: rwaApi,
+    freshEnabled: page === undefined || page === 1,
     query,
     queryKeyStart: "fetchWalletTransferHistory",
     url: `/wallets/${walletAddress}/transactions`,

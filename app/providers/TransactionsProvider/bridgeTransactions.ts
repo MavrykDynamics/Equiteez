@@ -11,6 +11,7 @@ import {
 import {
   bridgeDepositEventSchema,
   getBridgeEventId,
+  hasCompletedBridgeSigners,
 } from "./bridgeDepositEvent";
 
 const progressSchema = z.object({
@@ -54,6 +55,7 @@ const recordSchema = z.object({
   signerEvents: z.array(bridgeDepositEventSchema).optional(),
   // Opt-in presentation/recovery for deposits started from the deposit popup.
   isWidgetRequested: z.boolean().optional(),
+  widgetRecovery: z.enum(["pending", "ready", "suppressed"]).optional(),
   announcedStatus: z.enum(["executed", "stalled"]).optional(),
 });
 export type BridgeTransaction = z.infer<typeof recordSchema>;
@@ -135,6 +137,13 @@ export class BridgeTransactions {
           transactions.set(record.operationId, {
             ...record,
             verification: "unverified",
+            widgetRecovery:
+              record.widgetRecovery === "suppressed"
+                ? "suppressed"
+                : record.isWidgetRequested &&
+                    !hasCompletedBridgeSigners(record.signerEvents)
+                  ? "pending"
+                  : undefined,
             signerEvents: record.isWidgetRequested
               ? record.signerEvents
               : undefined,
@@ -176,6 +185,12 @@ export class BridgeTransactions {
                   record.sourceHashes.includes(hash)
                 )
             );
+          const current = transactions.get(record.operationId);
+          if (current && record.widgetRecovery === "suppressed")
+            transactions.set(record.operationId, {
+              ...current,
+              widgetRecovery: "suppressed",
+            });
           if (!transactions.has(record.operationId) && !wasMerged)
             transactions.set(record.operationId, {
               ...record,
@@ -245,6 +260,7 @@ export class BridgeTransactions {
       settlement: backendRecord?.settlement ?? "unknown",
       verification: backendRecord?.verification ?? record.verification,
       announcedStatus: backendRecord?.announcedStatus,
+      widgetRecovery: previous?.widgetRecovery ?? backendRecord?.widgetRecovery,
     });
     this.snapshot = { ...this.snapshot, transactions };
     this.persist(); // Synchronous: before React effects or modal dismissal.
@@ -295,11 +311,48 @@ export class BridgeTransactions {
       // Keep distinct transitions: each signer/status advances the widget once.
       signerEvents: [...(previous?.signerEvents ?? []), event],
     };
+    if (
+      record.widgetRecovery === "pending" &&
+      hasCompletedBridgeSigners(record.signerEvents)
+    )
+      record.widgetRecovery = "ready";
     transactions.set(record.operationId, record);
     this.snapshot = { ...this.snapshot, transactions };
     this.persist();
     this.emit();
     return true;
+  }
+  getWidgetRecoveryRecords() {
+    return [...this.snapshot.transactions.values()].filter(
+      (record) => record.widgetRecovery === "pending"
+    );
+  }
+  resolveWidgetRecovery(
+    completedIds: ReadonlySet<string>,
+    isHistoryComplete: boolean
+  ) {
+    const transactions = new Map(this.snapshot.transactions);
+    let changed = false;
+    for (const [id, record] of transactions) {
+      if (record.widgetRecovery !== "pending") continue;
+      const depositId = record.signerEvents?.length
+        ? getBridgeEventId(record.signerEvents[0])
+        : record.backend
+          ? getBridgeDepositId(record.backend)
+          : undefined;
+      const isCompleted =
+        depositId !== undefined && completedIds.has(depositId);
+      if (!depositId || (!isCompleted && !isHistoryComplete)) continue;
+      transactions.set(id, {
+        ...record,
+        widgetRecovery: isCompleted ? "suppressed" : "ready",
+      });
+      changed = true;
+    }
+    if (!changed) return;
+    this.snapshot = { ...this.snapshot, transactions };
+    this.persist();
+    this.emit();
   }
   markStale(message: string) {
     this.snapshot = {
@@ -385,6 +438,13 @@ export class BridgeTransactions {
         backend: row,
         settlement: row.status,
         verification: "verified",
+        widgetRecovery:
+          previous?.widgetRecovery &&
+          row.status === "executed" &&
+          !hasCompletedBridgeSigners(previous.signerEvents) &&
+          (exact || (!previous.backend && !previous.signerEvents?.length))
+            ? "suppressed"
+            : previous?.widgetRecovery,
       };
       if (
         (row.status === "executed" || row.status === "stalled") &&

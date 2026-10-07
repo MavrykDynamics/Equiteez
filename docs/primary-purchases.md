@@ -20,6 +20,13 @@ orders, order expiry, or orderbook depth. Pressing Buy validates the current quo
 and proceeds directly to the wallet purchase flow; the confirmation popup remains
 exclusive to secondary trading.
 
+Connected non-Pro wallets see the primary inputs, the shared Mavryk Pro warning
+below them, and a disabled Buy button. If no eligible sale option is available,
+the panel reuses the non-executable primary preview. With an eligible option,
+the existing primary amount and fee calculations remain unchanged. Contract KYC
+validation remains enforced; the shared warning replaces its custom KYC message
+for non-Pro users.
+
 Inside the primary gallery, the Price / Market Cap label sits at `top: 18px`
 and `left: 16px` on desktop and mobile. The value is white; both captions use
 `--r-color-neutral-200` (`#CCC`) and remain visible on mobile. It reuses the
@@ -97,7 +104,10 @@ The fix removes background purchase-storage polling and amount-driven estimation
 uses one explicit Buy preflight, and gives primary failures a purchase-specific
 heading and gateway message. Form-entry reads remain intentional per `primary.md`;
 review, pre-sign validation, operator checks, exact payment caps and zero-MAV
-batching remain. Fees become available after the Buy preflight. Secondary
+batching remain. Fees become available after the Buy preflight. The tooltip
+shows Purchase Fee (included) and Gas Fee, using the summed SDK
+`suggestedFeeMumav` converted to USD; Network Fee and storage burn are excluded
+from the summary. The purchase fee remains included in the payment. Secondary
 execution and its alert heading are unchanged.
 
 Configuration checks matched `primary.md`: launchpad

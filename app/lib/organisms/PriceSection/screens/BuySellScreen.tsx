@@ -35,7 +35,6 @@ type BuySellScreenProps = {
   continueButtonClassName?: string;
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
-  networkFee: BigNumber;
   gasFee?: BigNumber.Value;
   apy: number;
   orderbookFee?: BigNumber.Value;
@@ -62,7 +61,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   actionCb,
   continueButtonClassName,
   amount,
-  networkFee,
   gasFee,
   apy,
   orderbookFee,
@@ -317,7 +315,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
           <FeesCard
             className={styles.summaryCard}
-            networkFee={networkFee}
             gasFee={gasFee}
             orderbookFee={orderbookFee}
             includedPurchaseFee={primaryPurchase?.includedFee}

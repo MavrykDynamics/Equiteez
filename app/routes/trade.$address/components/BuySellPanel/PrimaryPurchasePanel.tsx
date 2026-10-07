@@ -57,7 +57,7 @@ export function PrimaryPurchasePanel({
 }
 
 // Presentation only: no contract configuration, quote, or transaction callback.
-// The parent keeps this screen inert beneath the wallet overlay.
+// Also used for non-Pro wallets without an eligible sale option.
 function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
   const { prices } = useAssetsContext();
   const [amount, setAmount] = useState<BigNumber>();
@@ -84,7 +84,7 @@ function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
         tokenAddress={asset.address}
         actionType={BUY}
         actionCb={() => {
-          throw new Error("Connect your wallet to purchase.");
+          throw new Error("Purchasing is unavailable in this preview.");
         }}
         amount={amount}
         setAmount={setAmount}
@@ -92,7 +92,6 @@ function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
         tokenPrice={
           new BigNumber(prices[asset.address]?.primary_issuance?.price ?? NaN)
         }
-        networkFee={ZERO}
         apy={asset.apy}
         status={STATUS_IDLE}
         primaryPurchase={{
@@ -120,6 +119,11 @@ function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
         <div className={styles.state}>
           <Spinner size={56} />
         </div>
+      ) : config &&
+        !config.options.length &&
+        !isKyced &&
+        asset.metadata.decimals === 6 ? (
+        <PrimaryPurchasePreview asset={asset} />
       ) : !config || !config.options.length || asset.metadata.decimals !== 6 ? (
         <div className={styles.state} role="status">
           {query.error?.message ??
@@ -175,9 +179,10 @@ function PrimaryPurchaseForm({
   config: PrimaryPurchaseConfig;
   query: PurchaseQuery;
 }) {
+  const { isKyced } = useUserContext();
   const [amount, setAmount] = useState<BigNumber>();
   const [actionError, setActionError] = useState<string>();
-  const [fees, setFees] = useState({ networkFee: ZERO, gasFee: ZERO });
+  const [fees, setFees] = useState({ gasFee: ZERO });
   const option = config.options[0];
   const rawAmount = amount?.isFinite() && amount.gt(0) ? toRaw(amount) : "0";
   const quote = useMemo(
@@ -213,7 +218,7 @@ function PrimaryPurchaseForm({
     useCallback(
       (value) => {
         setActionError(undefined);
-        setFees({ networkFee: ZERO, gasFee: ZERO });
+        setFees({ gasFee: ZERO });
         setAmount((previous) => {
           const previousPayment = previous
             ? toHuman(
@@ -231,7 +236,7 @@ function PrimaryPurchaseForm({
     );
   const handleReceiveChange = useCallback((value: BigNumber | undefined) => {
     setActionError(undefined);
-    setFees({ networkFee: ZERO, gasFee: ZERO });
+    setFees({ gasFee: ZERO });
     setAmount(
       value?.isFinite() && value.gte(0) ? toHuman(toRaw(value)) : undefined
     );
@@ -285,7 +290,6 @@ function PrimaryPurchaseForm({
           review: nextReview,
           onEstimated: (resultFees) => {
             setFees({
-              networkFee: toHuman(String(resultFees.networkFee)),
               gasFee: toHuman(String(resultFees.gasFee)),
             });
           },
@@ -305,10 +309,10 @@ function PrimaryPurchaseForm({
     {
       pending: TOASTER_UPDATE_DATA_AFTER_ACTION_DATA,
       success: {
-        title: `${asset.metadata.symbol} Purchase Confirmed`,
+        title: `Transaction Confirmed`,
         message:
           config.distribution === "AUTO"
-            ? "Your tokens have been delivered to your wallet."
+            ? "Your transaction was confirmed. You’ll receive a notification once your purchase is confirmed."
             : "Your tokens are allocated, pending distribution.",
       },
     },
@@ -343,21 +347,24 @@ function PrimaryPurchaseForm({
         setAmount={setBudget}
         total={paymentAmount}
         tokenPrice={toHuman(option.price)}
-        networkFee={fees.networkFee}
         gasFee={fees.gasFee}
         apy={asset.apy}
         status={status}
         isOrderDataLoading={isLoading || query.isFetching}
         validationMessage={
           query.error?.message ??
-          config.unavailableReason ??
+          (!isKyced &&
+          config.unavailableReason ===
+            "Verify with Mavryk Pro before purchasing."
+            ? undefined
+            : config.unavailableReason) ??
           amountError ??
           actionError
         }
         primaryPurchase={{
           receiveAmount: amount,
           onReceiveChange: handleReceiveChange,
-          isEligible: true,
+          isEligible: isKyced,
           includedFee: toHuman(quote.fee),
         }}
       />

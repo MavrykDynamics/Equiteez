@@ -11,6 +11,16 @@ type RChartStatsProps = {
   >;
 };
 
+function formatProfileValue(value: string) {
+  const normalizedValue = value.split("_").join(" ").trim();
+
+  if (!normalizedValue) {
+    return "—";
+  }
+
+  return normalizedValue.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export function RChartStats({ asset }: RChartStatsProps) {
   const metrics = [
     { label: "Annual yield (APY)", value: `${asset.apy.toFixed(2)}%` },
@@ -36,8 +46,11 @@ export function RChartStats({ asset }: RChartStatsProps) {
       label: "Holders",
       value: <Money tooltip={false}>{asset.holders_count}</Money>,
     },
-    { label: "Asset type", value: asset.profile.asset_type || "—" },
-    { label: "Asset status", value: asset.profile.status || "—" },
+    {
+      label: "Asset type",
+      value: formatProfileValue(asset.profile.asset_type),
+    },
+    { label: "Asset status", value: formatProfileValue(asset.profile.status) },
   ];
 
   return (

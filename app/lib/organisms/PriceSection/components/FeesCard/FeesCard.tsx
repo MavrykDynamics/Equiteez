@@ -6,6 +6,7 @@ import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 
 import { BigNumber } from "bignumber.js";
 import Money from "~/lib/atoms/Money";
+import { toLocalFormat } from "~/lib/formaters/formaters";
 import { useUsdToTokenRates } from "~/lib/fiat-currency";
 import { MVRK_ASSET_SLUG } from "~/lib/metadata";
 
@@ -15,7 +16,6 @@ import { RIcon } from "~/lib/atoms/RIcon";
 
 type FeesCardProps = {
   className?: string;
-  networkFee: BigNumber.Value;
   gasFee?: BigNumber.Value;
   orderbookFee?: BigNumber.Value;
   pricePerShare?: BigNumber.Value;
@@ -26,7 +26,6 @@ type FeesCardProps = {
 
 export const FeesCard: FC<FeesCardProps> = ({
   className,
-  networkFee,
   gasFee,
   orderbookFee,
   pricePerShare,
@@ -38,7 +37,6 @@ export const FeesCard: FC<FeesCardProps> = ({
   const usdToTokenRates = useUsdToTokenRates();
   const mvrkUsdRate = usdToTokenRates[MVRK_ASSET_SLUG];
   const {
-    networkFeeUsd,
     gasFeeUsd,
     orderbookFeeUsd,
     platformFeeUsd,
@@ -47,19 +45,22 @@ export const FeesCard: FC<FeesCardProps> = ({
   } = useMemo(
     () =>
       calculateOrderSummaryValues({
-        networkFee,
         gasFee,
         orderbookFee,
-        networkFeeUsdRate: mvrkUsdRate,
+        feeUsdRate: mvrkUsdRate,
         orderValue: totalAmount,
         pricePerShare,
       }),
-    [mvrkUsdRate, networkFee, gasFee, orderbookFee, pricePerShare, totalAmount]
+    [mvrkUsdRate, gasFee, orderbookFee, pricePerShare, totalAmount]
   );
 
   const annualIncome = new BigNumber(totalAmount)
     .times(annualYield ?? 0)
     .dividedBy(100);
+  const formattedTotal = toLocalFormat(totalValue, {
+    decimalPlaces: Math.min(6, Math.max(2, totalValue.decimalPlaces() ?? 0)),
+    roundingMode: BigNumber.ROUND_HALF_UP,
+  });
 
   const feeTooltip = renderToStaticMarkup(
     <div className={styles.feeTooltip}>
@@ -76,7 +77,6 @@ export const FeesCard: FC<FeesCardProps> = ({
                 : `$${orderbookFeeUsd.toFixed(6)}`
               : `$${new BigNumber(includedPurchaseFee).toFixed(6)}`,
         },
-        { label: "Network Fee", value: `$${networkFeeUsd.toFixed(6)}` },
         {
           label: "Gas Fee",
           value: gasFee === undefined ? "-" : `$${gasFeeUsd.toFixed(6)}`,
@@ -101,10 +101,7 @@ export const FeesCard: FC<FeesCardProps> = ({
         <span className={styles.summaryLabel}>Order Summary</span>
         <span className={styles.summaryValue}>
           <span className={styles.summaryAmount}>
-            $
-            <Money fiat tooltip={false}>
-              {totalValue}
-            </Money>
+            ${formattedTotal}
           </span>
           <RIcon
             className={styles.arrowIcon}
@@ -161,10 +158,7 @@ export const FeesCard: FC<FeesCardProps> = ({
             <div className={styles.totalRow}>
               <span>Total</span>
               <span className={styles.totalValue}>
-                $
-                <Money fiat tooltip={false}>
-                  {totalValue}
-                </Money>
+                ${formattedTotal}
               </span>
             </div>
           </div>

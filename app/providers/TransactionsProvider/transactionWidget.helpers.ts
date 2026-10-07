@@ -2,7 +2,10 @@ import { BigNumber } from "bignumber.js";
 import { sepolia } from "wagmi/chains";
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { getBridgeDepositId } from "~/lib/apis/rwa/bridge/bridge.schema";
-import { getBridgeEventId } from "./bridgeDepositEvent";
+import {
+  getBridgeEventId,
+  hasCompletedBridgeSigners,
+} from "./bridgeDepositEvent";
 import type { BridgeTransaction } from "./bridgeTransactions";
 import type { RTransactionWidgetState } from "./components/RTransactionWidget/RTransactionWidget";
 
@@ -33,12 +36,7 @@ function getState(
   const events = record.signerEvents ?? [];
   if (events.length) {
     // The two-signer flow in events.md completes on two distinct COMPLETED updates.
-    const completed = new Set(
-      events
-        .filter((event) => event.status === "COMPLETED")
-        .map((event) => event.signatory)
-    ).size;
-    if (completed >= 2) return { status: "success" };
+    if (hasCompletedBridgeSigners(events)) return { status: "success" };
     return {
       status: "progress",
       step: Math.min(events.length, 4) as 1 | 2 | 3 | 4,

@@ -15,7 +15,7 @@ import type {
 import type { BatchOperationKindType } from "./types";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
 
-type PrimaryPurchaseFees = { networkFee: bigint; gasFee: bigint };
+type PrimaryPurchaseFees = { gasFee: bigint };
 
 type PurchaseParams = {
   tezos: MavrykToolkit;
@@ -116,14 +116,13 @@ export async function primaryPurchaseBatch({
 }
 
 function summarizePrimaryFees(
-  estimates: { burnFeeMumav: number; suggestedFeeMumav: number }[]
+  estimates: { suggestedFeeMumav: number }[]
 ): PrimaryPurchaseFees {
   return estimates.reduce(
     (total, estimate) => ({
-      networkFee: total.networkFee + BigInt(estimate.burnFeeMumav),
       gasFee: total.gasFee + BigInt(estimate.suggestedFeeMumav),
     }),
-    { networkFee: 0n, gasFee: 0n }
+    { gasFee: 0n }
   );
 }
 

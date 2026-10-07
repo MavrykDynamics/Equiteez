@@ -161,8 +161,7 @@ const BuySellForm: FC<
       ? asset.orderbook?.buy_order_fee
       : asset.orderbook?.sell_order_fee;
 
-  // network fee estimation state --------------------------------------------
-  const [networkFee, setNetworkFee] = useState<BigNumber>(ZERO);
+  // Gas fee estimation state --------------------------------------------
   const [gasFee, setGasFee] = useState<BigNumber>(ZERO);
 
   // --------------------------------------------
@@ -709,7 +708,6 @@ const BuySellForm: FC<
       hasLimitPriceTickError ||
       orderValidationMessage
     ) {
-      setNetworkFee(ZERO);
       setGasFee(ZERO);
       return;
     }
@@ -737,16 +735,14 @@ const BuySellForm: FC<
         if (cancelled) return;
 
         if (res.actionSuccess) {
-          const { totalCost, totalGasFeeMutez } = res.data;
-          // Preserve the full on-chain estimate while displaying gas separately.
-          setNetworkFee(
-            new BigNumber(totalCost).minus(totalGasFeeMutez).dividedBy(MILLION)
+          setGasFee(
+            new BigNumber(res.data.totalSuggestedFeeMutez).dividedBy(MILLION)
           );
-          setGasFee(new BigNumber(totalGasFeeMutez).dividedBy(MILLION));
+        } else {
+          setGasFee(ZERO);
         }
       } catch (e) {
         if (!cancelled) {
-          setNetworkFee(ZERO);
           setGasFee(ZERO);
         }
       }
@@ -792,7 +788,6 @@ const BuySellForm: FC<
       setTotal(undefined);
       setLimitPrice(undefined);
       setOrderExpiryPeriodId(null);
-      setNetworkFee(ZERO);
       setGasFee(ZERO);
       setIsOrderBookOpen(false);
       onSuccessfulTransaction?.(metadata);
@@ -1071,7 +1066,6 @@ const BuySellForm: FC<
               setAmount={setAmountB}
               total={total}
               tokenPrice={tokenPrice}
-              networkFee={networkFee}
               gasFee={gasFee}
               apy={asset.apy}
               orderbookFee={orderbookFee}
@@ -1095,7 +1089,6 @@ const BuySellForm: FC<
               orderExpiryPeriodId={orderExpiryPeriodId}
               setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
-              networkFee={networkFee}
               gasFee={gasFee}
               apy={asset.apy}
               orderbookFee={orderbookFee}

@@ -128,6 +128,10 @@
     gap: var(--r-space-3);
   }
 
+  .primary .mainContent > :first-child {
+    margin-bottom: 0;
+  }
+
   .primary .tradeColumn {
     order: 1;
   }

@@ -1,19 +1,32 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import BigNumberJs from "bignumber.js";
 
 import RealAssetsBannerImage from "~/assets/redesign/banner-optimized/RBannerRealAssets.jpg";
 import TheCoveBannerImage from "~/assets/redesign/banner-optimized/RBannerTheCove.jpg";
 import { RButton } from "~/lib/atoms/RButton";
+import Money from "~/lib/atoms/Money";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./styles.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
+import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { atomsToTokens } from "~/lib/utils/formaters";
+
+const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
 
 type BannerMetric = {
   label: string;
-  value: string;
+  rawValue?: BigNumberJs.Value | null;
+  value: ReactNode;
 };
 
 type BannerSlide = {
@@ -30,7 +43,28 @@ type BannerSlide = {
 };
 
 export function BannerBlock() {
+  const { assets, prices } = useAssetsContext();
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const featuredAsset = assets.find(
+    (asset) => asset.address === FEATURED_ASSET_ADDRESS
+  );
+  const featuredAssetPrices = prices[FEATURED_ASSET_ADDRESS];
+  const price =
+    featuredAssetPrices?.usd ??
+    featuredAssetPrices?.price ??
+    featuredAsset?.stats?.price.usd ??
+    featuredAsset?.finance.value_per_token;
+  const marketCap =
+    price !== undefined &&
+    price !== null &&
+    featuredAsset?.stats?.circulating_supply !== undefined
+      ? atomsToTokens(
+          featuredAsset.stats.circulating_supply,
+          featuredAsset.metadata.decimals
+        ).times(price)
+      : undefined;
+  const isZeroMetric = (value: BannerMetric["rawValue"]) =>
+    value !== undefined && value !== null && new BigNumberJs(value).isZero();
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
@@ -58,33 +92,74 @@ export function BannerBlock() {
     };
   }, [emblaApi, handleSelect]);
 
-  const bannerSlides: BannerSlide[] = useMemo(() => [
-    {
-      alt: "Modern home exterior for The Cove investment opportunity",
-      buttonLabel: "Invest Now",
-      buttonTo: "/trade/KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o",
-      description:
-        "Class-A office tower with a ground-floor retail podium in Midtown Manhattan",
-      image: TheCoveBannerImage,
-      metrics: [
-        { label: "Starting price", value: "$45.00" },
-        { label: "Annual return", value: "8%" },
-        { label: "Available", value: "1,234" },
-      ],
-      tag: "Real Estate",
-      title: "The Queen",
-    },
-    {
-      alt: "Dubai skyline representing tokenized real-world assets",
-      buttonLabel: "Deposit Funds",
-      description:
-        "Invest in tokenized real-world assets. Own fractional shares of premium properties and portfolios.",
-      eyebrow: "Tokenized real world assets",
-      image: RealAssetsBannerImage,
-      onClick: () => setIsDepositModalOpen(true),
-      title: "Income-producing real assets, tradable 24/7",
-    },
-  ], []);
+  const bannerSlides: BannerSlide[] = useMemo(
+    () => [
+      {
+        alt: "Modern home exterior for The Cove investment opportunity",
+        buttonLabel: "Invest Now",
+        buttonTo: `/trade/${FEATURED_ASSET_ADDRESS}`,
+        description:
+          "Class-A office tower with a ground-floor retail podium in Midtown Manhattan",
+        image: TheCoveBannerImage,
+        metrics: [
+          {
+            label: "Current price",
+            rawValue: price,
+            value:
+              price === undefined || price === null ? (
+                "—"
+              ) : (
+                <>
+                  $
+                  <Money fiat tooltip={false}>
+                    {price}
+                  </Money>
+                </>
+              ),
+          },
+          {
+            label: "APY",
+            rawValue: featuredAsset?.apy,
+            value: featuredAsset ? (
+              <>
+                <Money tooltip={false}>{featuredAsset.apy}</Money>%
+              </>
+            ) : (
+              "—"
+            ),
+          },
+          {
+            label: "Market cap",
+            rawValue: marketCap,
+            value:
+              marketCap === undefined || marketCap === null ? (
+                "—"
+              ) : (
+                <>
+                  $
+                  <Money shortened tooltip={false}>
+                    {marketCap}
+                  </Money>
+                </>
+              ),
+          },
+        ],
+        tag: "Real Estate",
+        title: "The Queen",
+      },
+      {
+        alt: "Dubai skyline representing tokenized real-world assets",
+        buttonLabel: "Deposit Funds",
+        description:
+          "Invest in tokenized real-world assets. Own fractional shares of premium properties and portfolios.",
+        eyebrow: "Tokenized real world assets",
+        image: RealAssetsBannerImage,
+        onClick: () => setIsDepositModalOpen(true),
+        title: "Income-producing real assets, tradable 24/7",
+      },
+    ],
+    [price, featuredAsset, marketCap]
+  );
 
   return (
     <Container className={styles.wrapper}>
@@ -136,21 +211,32 @@ export function BannerBlock() {
 
                   {slide.metrics ? (
                     <dl className={styles.metrics}>
-                      {slide.metrics.map((metric) => (
-                        <div className={styles.metric} key={metric.label}>
-                          <dt>{metric.label}</dt>
-                          <dd>{metric.value}</dd>
-                        </div>
-                      ))}
+                      {slide.metrics
+                        .filter((metric) => !isZeroMetric(metric.rawValue))
+                        .map((metric) => (
+                          <div className={styles.metric} key={metric.label}>
+                            <dt>{metric.label}</dt>
+                            <dd>{metric.value}</dd>
+                          </div>
+                        ))}
                     </dl>
                   ) : null}
 
                   {slide.onClick ? (
-                    <RButton onClick={slide.onClick} size="small">
+                    <RButton
+                      className={styles.button}
+                      onClick={slide.onClick}
+                      size="small"
+                    >
                       {slide.buttonLabel}
                     </RButton>
                   ) : (
-                    <RButton as="link" size="small" to={slide.buttonTo ?? "/"}>
+                    <RButton
+                      as="link"
+                      className={styles.button}
+                      size="small"
+                      to={slide.buttonTo ?? "/"}
+                    >
                       {slide.buttonLabel}
                     </RButton>
                   )}

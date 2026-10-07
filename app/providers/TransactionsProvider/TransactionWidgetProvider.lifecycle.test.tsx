@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { QueryClient } from "@tanstack/react-query";
 import { act, createElement, StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -28,6 +29,7 @@ const mocks = vi.hoisted(() => ({
   account: "wallet-a" as string | null,
   connected: true,
   fetch: vi.fn(),
+  fetchNotifications: vi.fn(),
   register: vi.fn(),
   success: vi.fn(),
   warning: vi.fn(),
@@ -51,8 +53,13 @@ vi.mock("~/providers/NotificationsProvider/NotificationsProvider", () => ({
 vi.mock("~/providers/ToasterProvider/toaster.provider", () => ({
   useToasterContext: () => ({ success: mocks.success, warning: mocks.warning }),
 }));
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  useQueryClient: () => queryClient,
+}));
+vi.mock("~/lib/apis/rwa/notifications/notifications", () => ({
+  fetchWalletNotifications: (...args: unknown[]) =>
+    mocks.fetchNotifications(...args),
 }));
 vi.mock("~/lib/apis/rwa/bridge/bridge", () => ({
   fetchBridgeDeposits: (...args: unknown[]) => mocks.fetch(...args),
@@ -63,6 +70,7 @@ vi.mock("~/lib/molecules/HashChip", () => ({
 }));
 vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
 
+let queryClient: QueryClient;
 let root: Root;
 let element: HTMLDivElement;
 let handlers: Set<NotifierChannelHandler>;
@@ -132,6 +140,18 @@ beforeEach(() => {
   mocks.account = "wallet-a";
   mocks.connected = true;
   mocks.fetch.mockReset().mockResolvedValue([]);
+  mocks.fetchNotifications.mockReset().mockResolvedValue({
+    items: [],
+    next_cursor: null,
+    unread_count: 0,
+    unread_capped: false,
+  });
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
+  vi.spyOn(queryClient, "invalidateQueries").mockImplementation(
+    mocks.invalidateQueries
+  );
   handlers = new Set();
   mocks.register.mockImplementation(
     (_channel: string, handler: NotifierChannelHandler) => {
@@ -145,6 +165,7 @@ beforeEach(() => {
 });
 afterEach(async () => {
   await act(async () => root.unmount());
+  queryClient.clear();
   expect(handlers.size).toBe(0);
   await vi.advanceTimersByTimeAsync(0);
   const remainingTimers = vi.getTimerCount();
@@ -247,6 +268,7 @@ it("shows no local-only or API-only cards and resets live evidence on logout/log
   expect(element.querySelector('[data-status="progress"]')).not.toBeNull();
   mocks.account = null;
   await render();
+  queryClient.clear();
   expect(handlers.size).toBe(0);
   expect(element.textContent).toBe("");
   mocks.account = "wallet-a";
@@ -505,10 +527,16 @@ it.each([0, 3, 6])(
     await act(async () => root.unmount());
     root = createRoot(element);
     await render();
+    if (count === 0) {
+      expect(widgets.visibleModels).toHaveLength(0);
+      expect(mocks.fetchNotifications).not.toHaveBeenCalled();
+      await event("identity-after-reload", "wallet-a", signerEventSequence[0]);
+      await act(async () => transactions.refresh());
+    }
     expect(widgets.visibleModels).toHaveLength(1);
     expect(widgets.visibleModels[0].state).toMatchObject(
       count === 0
-        ? { status: "waiting" }
+        ? { status: "progress", step: 1 }
         : count === 6
           ? { status: "success" }
           : { status: "progress", step: 3 }
@@ -523,3 +551,83 @@ it.each([0, 3, 6])(
     }
   }
 );
+
+it("suppresses a deposit completed during wallet disconnect and keeps it suppressed after another reload", async () => {
+  await render();
+  await act(async () =>
+    transactions.publish({ ...localRecord(), isWidgetRequested: true })
+  );
+  await event("before-disconnect", "wallet-a", signerEventSequence[2]);
+  expect(widgets.visibleModels).toHaveLength(1);
+  mocks.account = null;
+  await render();
+  expect(widgets.visibleModels).toHaveLength(0);
+  await act(async () => vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1_000));
+  queryClient.setQueryData(["rwa-wallet-notifications", "wallet-a", 5], {
+    items: [
+      {
+        id: "completed",
+        event_id: null,
+        event_type: "BRIDGE_DEPOSIT_UPDATED",
+        kind: "bridge_deposit_completed",
+        entity_key: "bridge:hash/32",
+        payload: signerEventSequence[4],
+        occurred_at: "2026-09-25T12:07:00Z",
+        created_at: "2026-09-25T12:07:00Z",
+        read_at: null,
+      },
+    ],
+    next_cursor: null,
+    unread_count: 1,
+    unread_capped: false,
+  });
+  mocks.account = "wallet-a";
+  await render();
+  expect(widgets.visibleModels).toHaveLength(0);
+  expect(mocks.fetchNotifications).not.toHaveBeenCalled();
+  await event("late-replay", "wallet-a", signerEventSequence[3]);
+  expect(widgets.visibleModels).toHaveLength(0);
+  await act(async () => root.unmount());
+  root = createRoot(element);
+  queryClient.clear();
+  await render();
+  expect(widgets.visibleModels).toHaveLength(0);
+  expect(mocks.fetchNotifications).not.toHaveBeenCalled();
+});
+
+it("hides unresolved restored cards on history failure, leaves fresh cards live, and retries on refresh", async () => {
+  await render();
+  await act(async () =>
+    transactions.publish({ ...localRecord(), isWidgetRequested: true })
+  );
+  await event("before-disconnect", "wallet-a", signerEventSequence[2]);
+  mocks.account = null;
+  await render();
+  mocks.fetchNotifications.mockRejectedValue(new Error("offline"));
+  mocks.account = "wallet-a";
+  await render();
+  expect(widgets.visibleModels).toHaveLength(0);
+  expect(widgets.reconciliationError).toContain("history is unavailable");
+  await act(async () =>
+    transactions.publish({
+      ...localRecord("new-operation"),
+      sourceHashes: [`0x${"c".repeat(64)}`],
+      isWidgetRequested: true,
+    })
+  );
+  expect(widgets.visibleModels.map((model) => model.operationId)).toEqual([
+    "new-operation",
+  ]);
+  mocks.fetchNotifications.mockResolvedValue({
+    items: [],
+    next_cursor: null,
+    unread_count: 0,
+    unread_capped: false,
+  });
+  await act(async () => transactions.refresh());
+  expect(widgets.visibleModels).toHaveLength(2);
+  expect(
+    widgets.visibleModels.find((model) => model.operationId === "operation-1")
+      ?.state.status
+  ).toBe("progress");
+});

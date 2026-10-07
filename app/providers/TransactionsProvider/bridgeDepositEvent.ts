@@ -19,3 +19,12 @@ export const bridgeDepositEventSchema = z.object({
 export type BridgeDepositEvent = z.infer<typeof bridgeDepositEventSchema>;
 export const getBridgeEventId = (event: BridgeDepositEvent) =>
   `${event.initial_tx_hash}:${event.initial_log_index}`;
+
+export const hasCompletedBridgeSigners = (
+  events: readonly BridgeDepositEvent[] = []
+) =>
+  new Set(
+    events
+      .filter((event) => event.status === "COMPLETED")
+      .map((event) => event.signatory)
+  ).size >= 2;

@@ -46,7 +46,6 @@ type BuySellLimitScreenProps = {
   alignedQuantity: BigNumber | undefined;
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
-  networkFee: BigNumber;
   gasFee?: BigNumber.Value;
   apy: number;
   orderbookFee?: BigNumber.Value;
@@ -71,7 +70,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   amount,
   alignedQuantity,
   total,
-  networkFee,
   gasFee,
   apy,
   orderbookFee,
@@ -343,7 +341,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
           <FeesCard
             className={styles.summaryCard}
-            networkFee={networkFee}
             gasFee={gasFee}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
