@@ -424,18 +424,13 @@
 }
 
 @media (--media-tablet) {
-  .chartHeader {
-    flex-direction: column-reverse;
-    align-items: flex-start;
-  }
-}
-
-@media (--media-phone-max) {
   /* Remove 16px of axis padding without resizing the label canvases. */
   .chartCanvas .chart {
     width: calc(100% + var(--r-space-4));
   }
-
+  .chartHeader {
+    align-items: flex-start;
+  }
   .chart :global(table) {
     width: calc(100% - var(--r-space-4)) !important;
   }
@@ -459,7 +454,7 @@
 
   .chartContent {
     padding: var(--r-space-4) var(--r-space-3);
-    margin-bottom: var(--r-space-1);
+    margin-bottom: 0;
   }
 
   .chartHeader {

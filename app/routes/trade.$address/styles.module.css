@@ -109,6 +109,7 @@
 @media (--media-tablet-max) {
   .contentBlock {
     flex-direction: column;
+    padding-top: 16px;
   }
 
   .mainContent {
@@ -144,25 +145,16 @@
     display: none;
   }
 
-  .contentBlock {
-    padding-top: 16px;
-  }
-
   .buySellContainer {
     display: none;
   }
-}
-
-@media (--media-phone-max) {
-  .tradeContainer.tradeContainer {
-    padding-inline: var(--r-space-4);
+  .primaryGallery > section:last-child {
+    margin-bottom: var(--r-space-5);
   }
-
-  .contentBlock {
-    gap: 0;
-    margin-bottom: 0;
+  .tradeColumnContent > :first-child {
+    order: -1;
+    margin-bottom: var(--r-space-3);
   }
-
   .mainContent,
   .tradeColumn {
     display: contents;
@@ -172,10 +164,15 @@
     order: -2;
     width: 100%;
   }
+  .contentBlock {
+    gap: 0;
+    margin-bottom: 0;
+  }
+}
 
-  .tradeColumnContent > :first-child {
-    order: -1;
-    margin-bottom: var(--r-space-3);
+@media (--media-phone-max) {
+  .tradeContainer.tradeContainer {
+    padding-inline: var(--r-space-4);
   }
 }
 

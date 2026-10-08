@@ -24,7 +24,6 @@
   .tabSwitcher {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: var(--r-space-4);
     scrollbar-width: none;
   }
 
@@ -46,13 +45,11 @@
 @media (--media-phone-max) {
   .wrapper {
     width: 100%;
-    padding-top: 52px;
     margin-bottom: var(--r-space-11);
   }
 
   .tabSwitcher {
     overflow: visible;
-    padding-bottom: var(--r-space-6);
   }
 
   .tabSwitcher .assetTabs {
