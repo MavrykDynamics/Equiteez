@@ -21,6 +21,9 @@
 }
 
 @media (--media-tablet) {
+  .wrapper {
+    min-width: 100%;
+  }
   .tabSwitcher {
     overflow-x: auto;
     overflow-y: hidden;
