@@ -80,6 +80,13 @@ export default function TradePage() {
 
   return (
     <Container className={styles.tradeContainer}>
+      <RText
+        className={styles.viewOnlyNotice}
+        color="neutral-700"
+        size="body-s"
+      >
+        View-only on mobile. Open on desktop to trade.
+      </RText>
       <div className={clsx(styles.contentBlock, isPrimary && styles.primary)}>
         <div className={styles.mainContent}>
           <AssetDetails asset={asset} />

@@ -56,6 +56,10 @@
   margin-bottom: var(--r-space-5);
   padding-top: var(--r-space-10);
 }
+
+.viewOnlyNotice {
+  display: none;
+}
 .notFoundWrapper {
   display: flex;
   align-items: center;
@@ -125,6 +129,16 @@
 }
 
 @media (--media-tablet) {
+  .contentBlock {
+    padding-top: 0;
+  }
+
+  .viewOnlyNotice {
+    display: block;
+    padding: var(--r-space-3) 0;
+    text-align: center;
+  }
+
   .primary.contentBlock {
     gap: var(--r-space-3);
   }
