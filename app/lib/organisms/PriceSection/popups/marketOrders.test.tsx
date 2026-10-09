@@ -14,6 +14,8 @@ const mocks = vi.hoisted(() => ({
   estimateSell: vi.fn(),
   balances: {} as Record<string, string>,
   toolkit: {},
+  userAddress: "wallet",
+  connect: vi.fn(),
 }));
 vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookBuy: mocks.buy,
@@ -32,6 +34,8 @@ vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({
+    userAddress: mocks.userAddress,
+    connect: mocks.connect,
     hasOrders: true,
     isKyced: true,
     userTokensBalances: mocks.balances,
@@ -187,6 +191,8 @@ const asset = {
 } as AssetType;
 
 beforeEach(() => {
+  mocks.userAddress = "wallet";
+  mocks.connect.mockReset();
   vi.clearAllMocks();
   vi.useFakeTimers();
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -241,6 +247,17 @@ function submit() {
 }
 
 describe.each([BUY, SELL] as const)("Market %s form", (side) => {
+  it("connects the wallet from the main action with empty inputs", () => {
+    mocks.userAddress = "";
+    render(side);
+    const button = submit();
+    expect(button.textContent).toBe("Connect Wallet");
+    expect(button.disabled).toBe(false);
+    expect(mocks.connect).toHaveBeenCalledOnce();
+    expect(mocks.buy).not.toHaveBeenCalled();
+    expect(mocks.sell).not.toHaveBeenCalled();
+  });
+
   it("uses the suggested gas fee and clears it after a failed estimate", async () => {
     const estimateMock = side === BUY ? mocks.estimateBuy : mocks.estimateSell;
     estimateMock.mockResolvedValueOnce({
@@ -355,6 +372,17 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
 });
 
 describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
+  it("connects the wallet from the main action with empty inputs", () => {
+    mocks.userAddress = "";
+    renderLimit();
+    const button = submit();
+    expect(button.textContent).toBe("Connect Wallet");
+    expect(button.disabled).toBe(false);
+    expect(mocks.connect).toHaveBeenCalledOnce();
+    expect(mocks.buy).not.toHaveBeenCalled();
+    expect(mocks.sell).not.toHaveBeenCalled();
+  });
+
   function renderLimit(overrides: Partial<OrderbookExecutionConfig> = {}) {
     render(side, overrides);
     act(() =>

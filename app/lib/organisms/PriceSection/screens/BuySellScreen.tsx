@@ -84,7 +84,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const isDisconnected = !userAddress;
   const canPurchase = primaryPurchase?.isEligible ?? isKyced;
 
   // input refs
@@ -363,17 +364,23 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <Button
         className={clsx(
           styles.submitButton,
-          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          isDisconnected
+            ? styles.connectSubmitButton
+            : isBuyAction
+              ? styles.buySubmitButton
+              : styles.sellSubmitButton,
           continueButtonClassName
         )}
-        onClick={handleContinueClick}
-        disabled={isContinueDisabled}
-        isLoading={isLoading}
+        onClick={isDisconnected ? connect : handleContinueClick}
+        disabled={!isDisconnected && isContinueDisabled}
+        isLoading={!isDisconnected && isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+        {isDisconnected
+          ? "Connect Wallet"
+          : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );

@@ -100,7 +100,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const isDisconnected = !userAddress;
 
   // Read the balance of the orderbook's actual quote token, not a hardcoded
   // stablecoin — otherwise markets quoting a different USDT report a $0 balance
@@ -371,17 +372,23 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       <Button
         className={clsx(
           styles.submitButton,
-          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          isDisconnected
+            ? styles.connectSubmitButton
+            : isBuyAction
+              ? styles.buySubmitButton
+              : styles.sellSubmitButton,
           continueButtonClassName
         )}
-        onClick={handleContinueClick}
-        disabled={isBtnDisabled}
-        isLoading={isLoading}
+        onClick={isDisconnected ? connect : handleContinueClick}
+        disabled={!isDisconnected && isBtnDisabled}
+        isLoading={!isDisconnected && isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+        {isDisconnected
+          ? "Connect Wallet"
+          : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );
