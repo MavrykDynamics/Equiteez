@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import BigNumberJs from "bignumber.js";
 
@@ -22,6 +23,7 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
 const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
+const AUTO_SCROLL_INTERVAL_MS = 3_000;
 
 type BannerMetric = {
   label: string;
@@ -66,11 +68,22 @@ export function BannerBlock() {
   const isZeroMetric = (value: BannerMetric["rawValue"]) =>
     value !== undefined && value !== null && new BigNumberJs(value).isZero();
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "center",
-    loop: false,
-    slidesToScroll: 1,
-  });
+  const autoplay = useMemo(
+    () =>
+      Autoplay({
+        delay: AUTO_SCROLL_INTERVAL_MS,
+        stopOnInteraction: false,
+      }),
+    []
+  );
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      align: "center",
+      loop: true,
+      slidesToScroll: 1,
+    },
+    [autoplay]
+  );
   const [selectedSlide, setSelectedSlide] = useState(0);
 
   const handleSelect = useCallback(() => {
