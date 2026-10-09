@@ -83,7 +83,15 @@
 }
 
 .priceSummary {
+  align-items: flex-start;
   gap: var(--r-space-2);
+}
+
+.priceChange {
+  min-height: var(--r-size-icon-medium);
+  margin-top: calc(
+    (var(--r-line-height-heading-h4) - var(--r-size-icon-medium)) / 2
+  );
 }
 
 .priceLabelGroup {
@@ -445,6 +453,12 @@
 
   .priceChange span {
     font-weight: var(--r-font-weight-medium);
+  }
+
+  .priceChange {
+    margin-top: calc(
+      (var(--r-line-height-heading-h5) - var(--r-size-icon-medium)) / 2
+    );
   }
 
   .wrapper {
