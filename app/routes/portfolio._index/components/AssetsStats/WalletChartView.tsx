@@ -27,6 +27,7 @@ export function WalletChartView({
   assets,
   portfolioTotal,
 }: WalletChartViewProps) {
+  const [activeTokenAddress, setActiveTokenAddress] = useState<string>();
   const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
   const orderedAssets = [...assets]
     .filter(
@@ -84,7 +85,9 @@ export function WalletChartView({
   return (
     <>
       <AssetsDonutChart
+        activeTokenAddress={activeTokenAddress}
         chartAssets={donutChartAssets}
+        onActiveTokenAddressChange={setActiveTokenAddress}
         portfolioTotal={portfolioTotal}
       />
       <div className={styles.legend}>
@@ -92,8 +95,18 @@ export function WalletChartView({
           <div
             className={
               asset.members
-                ? `${styles.legendItem} ${styles.otherLegendItem}`
-                : styles.legendItem
+                ? `${styles.legendItem} ${styles.otherLegendItem} ${
+                    activeTokenAddress &&
+                    activeTokenAddress !== asset.token_address
+                      ? styles.legendItemInactive
+                      : ""
+                  }`
+                : `${styles.legendItem} ${
+                    activeTokenAddress &&
+                    activeTokenAddress !== asset.token_address
+                      ? styles.legendItemInactive
+                      : ""
+                  }`
             }
             key={asset.token_address}
             onMouseEnter={() => asset.members && setIsOtherDetailsVisible(true)}

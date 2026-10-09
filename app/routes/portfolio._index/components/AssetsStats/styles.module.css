@@ -259,7 +259,15 @@
 
 .donutTrack {
   fill: none;
-  stroke: var(--r-color-neutral-100);
+  stroke: #ffffff;
+}
+
+.donutSlice {
+  cursor: pointer;
+}
+
+.donutSlice:focus-visible {
+  outline: none;
 }
 
 .donutCenter {
@@ -283,6 +291,7 @@
 }
 .donutCenterText {
   z-index: 1;
+  font-family: var(--r-font-body);
 }
 
 .legend {
@@ -305,6 +314,10 @@
   color: inherit;
   font: inherit;
   text-align: left;
+}
+
+.legendItemInactive {
+  opacity: 0.5;
 }
 
 .legendItem:focus-visible {
