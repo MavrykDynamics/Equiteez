@@ -23,6 +23,7 @@
 }
 
 .portfolioValue {
+  font-family: var(--r-font-body);
   white-space: nowrap;
 }
 
@@ -68,6 +69,7 @@
 }
 
 .value {
+  font-family: var(--r-font-body);
   margin-top: 1px;
 }
 .changeIconPositive {
