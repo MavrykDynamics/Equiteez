@@ -139,7 +139,6 @@ export const OrderExpiryBlock: FC<OrderExpiryBlockProps> = ({
           className={styles.infoIcon}
           content={ORDER_EXPIRY_TOOLTIP}
           maxWidth={389}
-          theme="order-expiry-tooltip"
         />
       </div>
 

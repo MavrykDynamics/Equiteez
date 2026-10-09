@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import type { Placement } from "tippy.js";
-import useTippy from "~/lib/ui/useTippy";
+import useTippy, { type UseTippyOptions } from "~/lib/ui/useTippy";
 import classNames from "clsx";
 import styles from "./RTooltip.module.css";
 
@@ -9,6 +9,9 @@ export type RTooltipProps = PropsWithChildren<{
   content: string;
   placement?: Placement;
   className?: string;
+  allowHTML?: boolean;
+  maxWidth?: UseTippyOptions["maxWidth"];
+  theme?: string;
 }>;
 
 /**
@@ -20,20 +23,24 @@ export function RTooltip({
   className,
   content,
   placement = "top",
+  allowHTML = false,
+  maxWidth,
+  theme = "r-tooltip",
 }: RTooltipProps) {
   const tippyProps = useMemo(
     () => ({
-      allowHTML: false,
+      allowHTML,
       animation: "shift-away-subtle",
       arrow: true,
       content,
       hideOnClick: false,
       placement,
       role: "tooltip" as const,
-      theme: "r-tooltip",
+      theme,
+      maxWidth,
       trigger: "mouseenter focus",
     }),
-    [content, placement]
+    [allowHTML, content, maxWidth, placement, theme]
   );
   const tooltipRef = useTippy<HTMLSpanElement>({
     ...tippyProps,
