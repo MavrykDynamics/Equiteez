@@ -289,6 +289,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             additionalBottomRightBlock={hiddenInputBlock}
             additionalTopRightBlock={hiddenInputBlock}
             {...input1Props}
+            errorCaption={isDisconnected ? undefined : input1Props.errorCaption}
             balanceTotal={balanceTotal}
             decimals={selectedAssetMetadata.decimals}
             cryptoDecimals={stableCoinMetadata.decimals}
@@ -301,6 +302,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             onPrev={() => ref1.current?.focus()}
             amountInputDisabled={false}
             {...input2Props}
+            errorCaption={isDisconnected ? undefined : input2Props.errorCaption}
             balanceTotal={balanceTotal}
             decimals={selectedAssetMetadata.decimals}
             cryptoDecimals={stableCoinMetadata.decimals}
@@ -351,7 +353,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       </div>
 
-      {!isKyced && (
+      {!isDisconnected && !isKyced && (
         <div className={styles.alertBlock}>
           <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
@@ -361,7 +363,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       )}
 
-      {validationMessage && (
+      {!isDisconnected && validationMessage && (
         <div className={styles.alertBlock}>
           <RAlert type="error" header="Order Cannot Be Submitted">
             {validationMessage}

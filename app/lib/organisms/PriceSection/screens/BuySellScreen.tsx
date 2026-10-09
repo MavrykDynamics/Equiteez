@@ -265,7 +265,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             onChange={(data) => setAmount(data)}
             amountInputDisabled={false}
             errorCaption={
-              hasTotalError
+              !isDisconnected && hasTotalError
                 ? "The amount entered exceeds your available balance."
                 : undefined
             }
@@ -326,7 +326,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       </div>
 
-      {!canPurchase && (
+      {!isDisconnected && !canPurchase && (
         <div className={styles.alertBlock}>
           <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
@@ -336,7 +336,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       )}
 
-      {hasQuoteError && (
+      {!isDisconnected && hasQuoteError && (
         <div className={styles.alertBlock}>
           <RAlert type="error" header="Low Quote Detected">
             The current quote is too low to complete the operation. This may
@@ -346,7 +346,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       )}
 
-      {validationMessage && (
+      {!isDisconnected && validationMessage && (
         <div className={styles.alertBlock}>
           <RAlert
             type="error"
