@@ -48,3 +48,18 @@
   justify-content: center;
   padding-bottom: 0.5px;
 }
+
+.notification {
+  align-items: center;
+}
+
+.notification .count {
+  width: 18px;
+  border-radius: var(--r-radius-pill);
+  background: rgba(242, 209, 107, 0.5);
+  text-align: center;
+}
+
+.notification.selected .count {
+  background: rgba(242, 209, 107, 0.75);
+}
