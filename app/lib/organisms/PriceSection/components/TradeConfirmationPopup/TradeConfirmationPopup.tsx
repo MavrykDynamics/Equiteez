@@ -117,7 +117,7 @@ export function TradeConfirmationPopup({
           <RButton
             className={`${styles.actionButton} ${styles.cancelButton}`}
             onClick={handleCancel}
-            size="large"
+            size="medium"
             tone="black"
             variant="secondary"
           >
@@ -127,7 +127,7 @@ export function TradeConfirmationPopup({
             className={styles.actionButton}
             disabled={!isAccepted}
             onClick={handleContinue}
-            size="large"
+            size="medium"
             tone="black"
           >
             Confirm

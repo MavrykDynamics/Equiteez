@@ -1,6 +1,8 @@
 @import "../../../../styles/breakpoints.css";
 
 .banner {
+  --banner-slide-spacing: 20px;
+
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);
@@ -14,7 +16,6 @@
 
 .slideContainer {
   display: flex;
-  gap: 20px;
   touch-action: pan-y pinch-zoom;
 }
 
@@ -24,6 +25,7 @@
   flex: 0 0 100%;
   min-width: 0;
   min-height: 301px;
+  margin-left: var(--banner-slide-spacing);
   overflow: hidden;
   border-radius: var(--r-radius-lg);
   isolation: isolate;
@@ -162,11 +164,13 @@
   color: var(--r-color-neutral-black);
 }
 
-@media (--media-phone-max) {
+@media (--media-tablet) {
   .wrapper {
     padding: 0;
   }
   .banner {
+    --banner-slide-spacing: var(--r-space-2);
+
     gap: var(--r-space-5);
     padding-top: var(--r-space-4);
   }
@@ -174,10 +178,6 @@
   .viewport {
     padding: 0 var(--r-space-4);
     border-radius: 0;
-  }
-
-  .slideContainer {
-    gap: var(--r-space-2);
   }
 
   .slide {

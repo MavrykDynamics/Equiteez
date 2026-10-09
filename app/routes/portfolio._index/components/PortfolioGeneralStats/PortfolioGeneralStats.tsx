@@ -67,17 +67,13 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
           description="Asset growth + dividends"
           label="Total Growth"
           value={
-            <RHeading
-              // color={totalGrowth >= 0 ? "green-500" : "red-500"}
-              size="h4"
-              weight="medium"
-            >
+            <>
               {/*{totalGrowth >= 0 ? "+" : "-"}*/}
               {/*<Money fiat tooltip={false}>*/}
               {/*  {totalGrowth}*/}
               {/*</Money>*/}
               {/*%*/}--
-            </RHeading>
+            </>
           }
         />
         <PortfolioMetric

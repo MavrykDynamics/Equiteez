@@ -184,7 +184,7 @@
   line-height: var(--r-line-height-body-s) !important;
 }
 
-@media (--media-tablet) {
+@media (max-width: 750px) {
   .calculator {
     grid-template-columns: minmax(0, 1fr);
   }

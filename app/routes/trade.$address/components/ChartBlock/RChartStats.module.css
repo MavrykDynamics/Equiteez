@@ -52,8 +52,16 @@
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
 }
+@media (--media-tablet) {
+  .panel {
+    margin: var(--r-space-4) 0 var(--r-space-11) 0;
+  }
+}
 
 @media (--media-phone-max) {
+  .panel {
+    margin: var(--r-space-4) 0 var(--r-space-8) 0;
+  }
   .panel {
     row-gap: var(--r-space-3);
   }

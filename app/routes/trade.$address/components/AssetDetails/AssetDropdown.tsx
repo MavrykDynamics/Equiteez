@@ -3,7 +3,7 @@ import { type CSSProperties, useMemo, useState } from "react";
 
 import { ROUTES } from "~/consts";
 import {
-  PHONE_MAX_WIDTH,
+  TABLET_WIDTH,
   useWindowDimensions,
 } from "~/hooks/useWindowDimensions";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
@@ -31,7 +31,7 @@ export function AssetDropdown({ asset }: AssetDropdownProps) {
   const { assets } = useAssetsContext();
   const [query, setQuery] = useState("");
   const { width } = useWindowDimensions();
-  const isMobile = width > 0 && width <= PHONE_MAX_WIDTH;
+  const isMobile = width > 0 && width <= TABLET_WIDTH;
 
   const matchingAssets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

@@ -157,16 +157,13 @@
   }
 }
 
-@media (--media-tablet-max) {
-  .wrapper {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (--media-tablet) {
+  .cardWrapper {
+    max-width: 375px;
   }
-}
-
-@media (--media-phone-max) {
   .wrapper {
     display: block;
-    padding: var(--r-space-8) 0 var(--r-space-18);
+    padding: var(--r-space-8) 0 var(--r-space-16);
   }
 
   .desktopSection {
@@ -203,6 +200,7 @@
   .mobileSlide {
     flex: 0 0 96%;
     min-width: 0;
+    max-width: 375px;
   }
 
   .mobileSlide .cardSkeleton {

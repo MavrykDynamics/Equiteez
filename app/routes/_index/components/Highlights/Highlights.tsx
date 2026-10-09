@@ -17,8 +17,14 @@ type HighlightRowProps = {
 function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
   const [emblaRef] = useEmblaCarousel({
     align: "center",
+    dragFree: true,
     loop: false,
     slidesToScroll: 1,
+    breakpoints: {
+      "(max-width: 670px)": {
+        dragFree: false,
+      },
+    },
   });
 
   const cards: Array<AssetHighlightType | null> = isLoading

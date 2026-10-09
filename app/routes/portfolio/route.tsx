@@ -21,11 +21,17 @@ export default function Portfolio() {
 
   if (!isAuthenticated)
     return (
-      <Container>
+      <Container className={styles.authContainer}>
         <div className={styles.authWrapper}>
-          <RText size="body-l" weight="medium">
-            Log in to your Account
-          </RText>
+          <div className={styles.authCopy}>
+            <RText size="body-sm" weight="medium">
+              Log Into Your Account
+            </RText>
+            <RText color="neutral-700" size="body-sm">
+              Connect your wallet to view your personalized data and manage your
+              account.
+            </RText>
+          </div>
           <ConnectWallet />
         </div>
       </Container>

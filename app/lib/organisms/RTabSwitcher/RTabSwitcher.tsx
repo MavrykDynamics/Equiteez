@@ -8,6 +8,7 @@ export type RTabSwitcherItem = {
   count?: number;
   id: string;
   label: string;
+  type?: "notification";
 };
 
 export type RTabSwitcherProps = {
@@ -39,6 +40,7 @@ export function RTabSwitcher({
           key={tab.id}
           label={tab.label}
           onSelect={onChange}
+          variant={tab.type}
         />
       ))}
     </div>

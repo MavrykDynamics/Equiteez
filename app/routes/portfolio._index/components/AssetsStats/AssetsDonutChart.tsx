@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import Money from "~/lib/atoms/Money";
 
@@ -11,6 +13,7 @@ const DONUT_STROKE_WIDTH = DONUT_OUTER_RADIUS - DONUT_INNER_RADIUS;
 const DONUT_RADIUS = DONUT_INNER_RADIUS + DONUT_STROKE_WIDTH / 2;
 const SEPARATOR_DEGREES = 2;
 const MINIMUM_SLICE_DEGREES = 4;
+const HOVER_RADIUS_INCREASE = 6;
 
 export const chartColors = [
   "#08a88a",
@@ -78,9 +81,22 @@ function describeArcPath(
 }
 
 export function AssetsDonutChart({
+  activeTokenAddress,
   chartAssets,
+  onActiveTokenAddressChange,
   portfolioTotal,
-}: AssetsDonutChartProps) {
+}: AssetsDonutChartProps & {
+  activeTokenAddress?: string;
+  onActiveTokenAddressChange?: (tokenAddress?: string) => void;
+}) {
+  const [uncontrolledActiveTokenAddress, setUncontrolledActiveTokenAddress] =
+    useState<string>();
+  const currentActiveTokenAddress =
+    activeTokenAddress ?? uncontrolledActiveTokenAddress;
+  const setActiveTokenAddress = (tokenAddress?: string) => {
+    onActiveTokenAddressChange?.(tokenAddress);
+    setUncontrolledActiveTokenAddress(tokenAddress);
+  };
   const distributableDegrees = Math.max(
     0,
     360 - chartAssets.length * MINIMUM_SLICE_DEGREES
@@ -96,6 +112,7 @@ export function AssetsDonutChart({
       color: chartColors[index],
       endAngle,
       startAngle: currentAngle,
+      symbol: asset.symbol,
       token_address: asset.token_address,
     };
 
@@ -106,8 +123,10 @@ export function AssetsDonutChart({
   return (
     <div className={styles.donut}>
       <svg
-        aria-hidden="true"
+        aria-label="Portfolio allocation"
         className={styles.donutSvg}
+        onMouseLeave={() => setActiveTokenAddress(undefined)}
+        role="group"
         viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
       >
         <circle
@@ -119,25 +138,48 @@ export function AssetsDonutChart({
         />
         {chartSlices.map((slice) =>
           slice.endAngle > slice.startAngle ? (
-            <path
-              key={slice.token_address}
-              d={describeArcPath(
-                DONUT_SIZE / 2,
-                DONUT_SIZE / 2,
-                DONUT_RADIUS,
-                slice.startAngle,
-                slice.endAngle
-              )}
-              fill="none"
-              stroke={slice.color}
-              strokeWidth={DONUT_STROKE_WIDTH}
-            />
+            (() => {
+              const isActive =
+                currentActiveTokenAddress === slice.token_address;
+              const outerRadius =
+                DONUT_OUTER_RADIUS +
+                (isActive ? HOVER_RADIUS_INCREASE : 0);
+              const strokeWidth = outerRadius - DONUT_INNER_RADIUS;
+              const radius = DONUT_INNER_RADIUS + strokeWidth / 2;
+
+              return (
+                <path
+                  aria-label={slice.symbol}
+                  className={styles.donutSlice}
+                  key={slice.token_address}
+                  d={describeArcPath(
+                    DONUT_SIZE / 2,
+                    DONUT_SIZE / 2,
+                    radius,
+                    slice.startAngle,
+                    slice.endAngle
+                  )}
+                  fill="none"
+                  onBlur={() => setActiveTokenAddress(undefined)}
+                  onFocus={() => setActiveTokenAddress(slice.token_address)}
+                  onMouseEnter={() => setActiveTokenAddress(slice.token_address)}
+                  role="button"
+                  stroke={slice.color}
+                  strokeWidth={strokeWidth}
+                  tabIndex={0}
+                />
+              );
+            })()
           ) : null
         )}
       </svg>
       <div className={styles.donutCenter}>
         <div className={styles.donutCenterBg} />
-        <RHeading size="h6" weight="medium" className={styles.donutCenterText}>
+        <RHeading
+          size="h6"
+          weight="medium"
+          className={styles.donutCenterText}
+        >
           $
           <Money fiat tooltip={false} shortened>
             {portfolioTotal}
