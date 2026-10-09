@@ -23,7 +23,7 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { atomsToTokens } from "~/lib/utils/formaters";
 
 const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
-const AUTO_SCROLL_INTERVAL_MS = 3_000;
+const AUTO_SCROLL_INTERVAL_MS = 30_000;
 
 type BannerMetric = {
   label: string;
