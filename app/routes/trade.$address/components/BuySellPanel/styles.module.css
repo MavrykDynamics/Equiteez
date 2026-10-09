@@ -1,5 +1,3 @@
-@import "../../../../styles/breakpoints.css";
-
 .state {
   display: flex;
   align-items: center;
@@ -9,20 +7,4 @@
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-sm);
   line-height: var(--r-line-height-body-sm);
-}
-
-@media not all and (--media-tablet) {
-  .disconnected {
-    /* Include the trade card's top and bottom padding in its 623px height. */
-    height: calc(623px - 2 * var(--r-space-4));
-  }
-}
-
-.connected {
-  display: contents;
-}
-
-.disconnected {
-  pointer-events: none;
-  overflow: hidden;
 }

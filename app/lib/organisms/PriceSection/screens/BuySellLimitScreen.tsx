@@ -100,7 +100,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const isDisconnected = !userAddress;
 
   // Read the balance of the orderbook's actual quote token, not a hardcoded
   // stablecoin — otherwise markets quoting a different USDT report a $0 balance
@@ -288,6 +289,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             additionalBottomRightBlock={hiddenInputBlock}
             additionalTopRightBlock={hiddenInputBlock}
             {...input1Props}
+            errorCaption={isDisconnected ? undefined : input1Props.errorCaption}
             balanceTotal={balanceTotal}
             decimals={selectedAssetMetadata.decimals}
             cryptoDecimals={stableCoinMetadata.decimals}
@@ -300,6 +302,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             onPrev={() => ref1.current?.focus()}
             amountInputDisabled={false}
             {...input2Props}
+            errorCaption={isDisconnected ? undefined : input2Props.errorCaption}
             balanceTotal={balanceTotal}
             decimals={selectedAssetMetadata.decimals}
             cryptoDecimals={stableCoinMetadata.decimals}
@@ -350,7 +353,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       </div>
 
-      {!isKyced && (
+      {!isDisconnected && !isKyced && (
         <div className={styles.alertBlock}>
           <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
             Trading on Equiteez requires the Mavryk Pro wallet for enhanced
@@ -360,7 +363,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       )}
 
-      {validationMessage && (
+      {!isDisconnected && validationMessage && (
         <div className={styles.alertBlock}>
           <RAlert type="error" header="Order Cannot Be Submitted">
             {validationMessage}
@@ -371,17 +374,23 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
       <Button
         className={clsx(
           styles.submitButton,
-          isBuyAction ? styles.buySubmitButton : styles.sellSubmitButton,
+          isDisconnected
+            ? styles.connectSubmitButton
+            : isBuyAction
+              ? styles.buySubmitButton
+              : styles.sellSubmitButton,
           continueButtonClassName
         )}
-        onClick={handleContinueClick}
-        disabled={isBtnDisabled}
-        isLoading={isLoading}
+        onClick={isDisconnected ? connect : handleContinueClick}
+        disabled={!isDisconnected && isBtnDisabled}
+        isLoading={!isDisconnected && isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+        {isDisconnected
+          ? "Connect Wallet"
+          : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
     </div>
   );
