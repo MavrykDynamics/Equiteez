@@ -35,6 +35,7 @@ export enum NotifierConnectionStatus {
 export enum NotifierChannel {
   Wallet = "wallet",
   Catalog = "catalog",
+  Launches = "launches",
 }
 
 export enum NotifierWalletEvent {

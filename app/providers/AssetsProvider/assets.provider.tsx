@@ -1,5 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { fetchAssets } from "~/lib/apis/rwa/assets/assets";
 import { fetchPrices } from "~/lib/apis/rwa/prices/prices";
@@ -16,6 +23,7 @@ import { mapPricesByTokenAddress } from "~/providers/AssetsProvider/helpers/mapP
 const AssetsContext = createContext<AssetsProviderContextType | null>(null);
 
 export function AssetsProvider({ children }: AssetsProviderProps) {
+  const queryClient = useQueryClient();
   const [assets, setAssets] = useState<AssetType[]>([]);
   const [prices, setPrices] = useState<Record<string, PriceAssetType>>({});
   const [assetTypes, setAssetTypes] = useState<Record<string, AssetTypeOption>>(
@@ -74,16 +82,47 @@ export function AssetsProvider({ children }: AssetsProviderProps) {
     );
   }, [pricesQuery.isFetching, pricesQuery.isLoading, pricesQuery.isPending]);
 
+  const invalidateLaunchAssetQueries = useCallback(
+    async (tokenAddress?: string | null) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["rwa-assets"] }),
+        queryClient.invalidateQueries({ queryKey: ["rwa-assets-highlights"] }),
+        ...(tokenAddress
+          ? [
+              queryClient.invalidateQueries({
+                queryKey: ["asset-launch", tokenAddress],
+              }),
+            ]
+          : []),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === "primary-purchase" &&
+            (!tokenAddress || query.queryKey[2] === tokenAddress),
+        }),
+      ]);
+    },
+    [queryClient]
+  );
+
   const contextValue = useMemo<AssetsProviderContextType>(
     () => ({
       assetError: assetsQuery.error,
       assets,
       prices,
       assetTypes,
+      invalidateLaunchAssetQueries,
       isLoading,
       isPricesLoading,
     }),
-    [assets, prices, assetTypes, isLoading, isPricesLoading, assetsQuery.error]
+    [
+      assets,
+      prices,
+      assetTypes,
+      invalidateLaunchAssetQueries,
+      isLoading,
+      isPricesLoading,
+      assetsQuery.error,
+    ]
   );
 
   return (
