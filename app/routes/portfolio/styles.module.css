@@ -1,8 +1,40 @@
+.authContainer {
+  display: flex;
+  flex: 1;
+  padding-top: var(--r-space-10);
+  padding-bottom: var(--r-space-18);
+}
+
 .authWrapper {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--r-space-4);
+  align-items: center;
+  justify-content: center;
+}
+
+.authCopy {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-2);
   align-items: center;
-  justify-content: center;
-  min-height: 70vh;
+  text-align: center;
+}
+
+.authWrapper button {
+  min-width: 155px;
+  background: var(--r-color-neutral-black);
+  min-height: var(--r-size-control-medium) !important;
+  padding: var(--r-space-3) var(--r-space-6) !important;
+}
+
+.authWrapper button:hover {
+  background-color: var(--r-surface-primary-black-button-hover) !important;
+}
+
+.authWrapper button span {
+  color: var(--r-color-neutral-white);
+  font-size: var(--r-font-size-body-sm) !important;
+  line-height: var(--r-line-height-body-sm) !important;
 }
