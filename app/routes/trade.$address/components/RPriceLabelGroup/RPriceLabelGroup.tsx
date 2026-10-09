@@ -32,12 +32,12 @@ export function RPriceLabelGroup({
       </span>
       <RText
         className={styles.priceLabel}
-        size="body-xs"
+        size="body-s"
         color={variant === "gallery" ? "neutral-white" : "neutral-black"}
       >
         Price
         <RText
-          size="body-xs"
+          size="body-s"
           color={variant === "gallery" ? "neutral-200" : "neutral-500"}
         >
           {" "}
