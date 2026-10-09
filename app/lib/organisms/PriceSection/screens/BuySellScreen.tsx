@@ -282,7 +282,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
                 : selectedAssetMetadata.decimals
             }
             {...inputClassNames}
-            label={isBuyAction && !primaryPurchase ? "Budget" : "Pay with"}
+            label="Pay with"
           />
 
           <BalanceInputWithTotal

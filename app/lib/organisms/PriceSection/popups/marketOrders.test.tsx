@@ -265,12 +265,12 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
       data: { totalSuggestedFeeMutez: 444, totalCost: 1154 },
     });
     render(side);
-    change(side === BUY ? "Budget" : "Pay with", side === BUY ? "29" : "0.96");
+    change("Pay with", side === BUY ? "29" : "0.96");
     await estimate();
     expect(container.querySelector("[data-gas-fee]")?.textContent).toBe(
       "0.000444"
     );
-    change(side === BUY ? "Budget" : "Pay with", side === BUY ? "28" : "0.95");
+    change("Pay with", side === BUY ? "28" : "0.95");
     await estimate();
     expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("0");
   });
@@ -282,7 +282,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     async (tick, atoms, quantity, consideration) => {
       render(side, { quantityTickSize: tick });
       change(
-        side === BUY ? "Budget" : "Pay with",
+        "Pay with",
         side === BUY ? "29" : "0.966666"
       );
       expect(input("Receive").value).toBe(
@@ -308,7 +308,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
         })
       );
       // The Buy input remains the budget, while the summary uses estimated spend.
-      if (side === BUY) expect(input("Budget").value).toBe("29");
+      if (side === BUY) expect(input("Pay with").value).toBe("29");
     }
   );
   it("aligns editable receive input", async () => {
@@ -358,7 +358,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     async (_label, overrides, amount) => {
       render(side, overrides);
       change(
-        side === BUY ? "Budget" : "Pay with",
+        "Pay with",
         amount ?? (side === BUY ? "29" : "0.966666")
       );
       await estimate();
