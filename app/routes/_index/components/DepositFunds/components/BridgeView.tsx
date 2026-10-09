@@ -339,6 +339,7 @@ export function BridgeView({
         }
         isLoading={isBusy}
         onClick={handlePrimaryAction}
+        size="medium"
         tone="black"
       >
         {!isConnected

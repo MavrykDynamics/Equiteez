@@ -61,7 +61,7 @@ export function SuccessStep({
         </span>
       </div>
       <div className={styles.successDivider} />
-      <RButton className={styles.submitButton} onClick={onClose} tone="black">
+      <RButton className={styles.submitButton} onClick={onClose} tone="black" size="medium">
         OK
       </RButton>
     </div>
