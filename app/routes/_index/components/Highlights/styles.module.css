@@ -103,6 +103,11 @@
   text-align: right;
 }
 
+.tokensAvailable {
+  text-align: right;
+  white-space: nowrap;
+}
+
 .cardSkeleton {
   display: flex;
   align-items: center;
