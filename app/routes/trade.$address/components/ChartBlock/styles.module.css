@@ -447,10 +447,6 @@
     margin-inline: calc(-1 * var(--r-space-2));
   }
 
-  .priceLabel {
-    display: none;
-  }
-
   .priceChange span {
     font-weight: var(--r-font-weight-medium);
   }
