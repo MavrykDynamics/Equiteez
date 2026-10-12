@@ -23,6 +23,7 @@
 @media (--media-tablet) {
   .wrapper {
     min-width: 100%;
+    margin-bottom: var(--r-space-11);
   }
   .tabSwitcher {
     overflow-x: auto;
