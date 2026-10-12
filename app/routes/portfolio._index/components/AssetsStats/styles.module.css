@@ -364,6 +364,10 @@
   align-items: center;
   justify-content: space-between;
 }
+.assetBlockWrapper {
+  display: flex;
+  flex-direction: column;
+}
 
 @media (--media-tablet-max) {
   .stats {

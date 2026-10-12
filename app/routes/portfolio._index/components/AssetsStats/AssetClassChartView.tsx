@@ -45,12 +45,12 @@ export function AssetClassChartView({
       groups[groupKey] = currentGroup
         ? {
             ...currentGroup,
-            balance: currentGroup.balance + asset.balance,
+            balance: currentGroup.balance + asset.value,
             share_pct: currentGroup.share_pct + asset.share_pct,
           }
         : {
             assetClass,
-            balance: asset.balance,
+            balance: asset.value,
             share_pct: asset.share_pct,
             symbol: assetClass,
             token_address: `asset-class-${groupKey}`,
@@ -95,9 +95,17 @@ export function AssetClassChartView({
               </Money>
               %
             </RText>
-            <RText className={styles.blockText} size="body-s">
-              {asset.assetClass}
-            </RText>
+            <div className={styles.assetBlockWrapper}>
+              <RText className={styles.blockText} size="body-s">
+                {asset.assetClass}
+              </RText>
+              <RText color="neutral-700" size="body-s">
+                $
+                <Money fiat tooltip={false}>
+                  {asset.balance}
+                </Money>
+              </RText>
+            </div>
           </div>
         ))}
       </div>
