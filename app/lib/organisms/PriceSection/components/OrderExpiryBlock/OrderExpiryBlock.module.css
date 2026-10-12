@@ -32,10 +32,13 @@
 }
 
 .infoIcon {
-  color: var(--r-color-neutral-400);
+  color: var(--r-color-neutral-500);
   flex-shrink: 0;
-  height: 16px;
-  width: 16px;
+  height: 12px;
+  width: 12px;
+}
+.infoIcon:hover {
+  color: var(--r-color-neutral-black);
 }
 
 .dropdown {
