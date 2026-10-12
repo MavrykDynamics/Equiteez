@@ -14,7 +14,7 @@ import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RButton } from "~/lib/atoms/RButton";
 import { ROUTES } from "~/consts";
-import { TABLET_MAX_WIDTH } from "~/hooks/useWindowDimensions";
+import { TABLET_WIDTH } from "~/hooks/useWindowDimensions";
 import { RPrimarySaleSummary } from "./components/RPrimarySaleSummary/RPrimarySaleSummary";
 import { RPrimaryPriceLabelGroup } from "./components/RPriceLabelGroup/RPrimaryPriceLabelGroup";
 
@@ -30,7 +30,7 @@ export default function TradePage() {
     useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(`(max-width: ${TABLET_MAX_WIDTH}px)`);
+    const mediaQuery = window.matchMedia(`(max-width: ${TABLET_WIDTH}px)`);
     const handleViewportChange = () => setIsDesktop(!mediaQuery.matches);
 
     handleViewportChange();

@@ -27,7 +27,7 @@
   display: none;
 }
 
-@media not all and (--media-tablet-max) {
+@media not all and (--media-tablet) {
   .chartContent:has(> .orderBookContainer:not(:empty)) {
     flex-direction: row;
     align-items: flex-start;
