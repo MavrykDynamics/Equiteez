@@ -138,6 +138,16 @@
   color: var(--r-color-neutral-white);
 }
 
+@media (--media-tablet) {
+  .wrapper h6 {
+    font-size: var(--r-font-size-body-m);
+    line-height: var(--r-line-height-body-m);
+  }
+  .wrapper {
+    gap: var(--r-space-8);
+  }
+}
+
 @media not all and (--media-phone-max) {
   .investColumns {
     flex-direction: row;
@@ -145,15 +155,6 @@
 }
 
 @media (--media-phone-max) {
-  .wrapper {
-    gap: var(--r-space-8);
-  }
-
-  .wrapper h6 {
-    font-size: var(--r-font-size-body-m);
-    line-height: var(--r-line-height-body-m);
-  }
-
   .items {
     grid-template-columns: minmax(0, 1fr);
     row-gap: var(--r-space-3);
