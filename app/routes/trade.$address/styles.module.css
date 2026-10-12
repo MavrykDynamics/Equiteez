@@ -135,7 +135,7 @@
 
   .viewOnlyNotice {
     display: block;
-    padding: var(--r-space-3) 0;
+    padding: var(--r-space-4) 0;
     text-align: center;
   }
 
@@ -187,6 +187,9 @@
 @media (--media-phone-max) {
   .tradeContainer.tradeContainer {
     padding-inline: var(--r-space-4);
+  }
+  .viewOnlyNotice {
+    padding: var(--r-space-3) 0;
   }
 }
 
