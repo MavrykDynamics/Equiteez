@@ -57,14 +57,16 @@ export function RHeader() {
         </nav>
 
         <div className={styles.wallet}>
-          <RButton
-            className={styles.depositButton}
-            size="medium"
-            tone="black"
-            onClick={() => setIsDepositModalOpen(true)}
-          >
-            Deposit
-          </RButton>
+          {isAuthenticated && (
+            <RButton
+              className={styles.depositButton}
+              size="medium"
+              tone="black"
+              onClick={() => setIsDepositModalOpen(true)}
+            >
+              Deposit
+            </RButton>
+          )}
 
           <ConnectWallet />
 
