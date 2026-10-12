@@ -92,6 +92,7 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
         <PortfolioMetric
           description="Blended across holdings"
           label="Est. Net Yield"
+          color="accent-green-500"
           value={
             <>
               <Money fiat tooltip={false}>
