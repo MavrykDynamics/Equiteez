@@ -63,9 +63,9 @@ export const ConnectWallet = () => {
           className={styles.connectWalletBtn}
           size="medium"
           tone="black"
-          variant="secondary"
+          variant="primary"
         >
-          <RText size="body-s" weight="medium">
+          <RText color="neutral-white" size="body-s" weight="medium">
             Connect Wallet
           </RText>
         </RButton>
