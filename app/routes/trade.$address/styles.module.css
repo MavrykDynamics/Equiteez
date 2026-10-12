@@ -163,7 +163,7 @@
     display: none;
   }
   .primaryGallery > section:last-child {
-    margin-bottom: var(--r-space-5);
+    margin-bottom: var(--r-space-8);
   }
   .tradeColumnContent > :first-child {
     order: -1;
@@ -190,6 +190,9 @@
   }
   .viewOnlyNotice {
     padding: var(--r-space-3) 0;
+  }
+  .primaryGallery > section:last-child {
+    margin-bottom: var(--r-space-5);
   }
 }
 
