@@ -2,8 +2,8 @@
 
 .calculator {
   display: grid;
-  grid-template-columns: minmax(280px, 352px) minmax(0, 1fr);
-  gap: var(--r-space-8);
+  grid-template-columns: minmax(280px, 352px) 1px minmax(0, 1fr);
+  gap: var(--r-space-6);
 }
 
 .parameters {
@@ -21,6 +21,11 @@
 
 .periodControl {
   gap: var(--r-space-3);
+}
+.line {
+  height: 100%;
+  width: 0;
+  border-right: 1px solid var(--r-color-neutral-100);
 }
 
 .periods {
@@ -141,7 +146,8 @@
 .metricCards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--r-space-2);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
 }
 
 .metricCard {
@@ -149,9 +155,11 @@
   flex-direction: column;
   gap: var(--r-space-1);
   min-height: 65px;
-  padding: var(--r-space-2) var(--r-space-3);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-sm);
+  padding: 10px var(--r-space-4);
+  border-right: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+.metricCard:last-child {
+  border-right: 0;
 }
 
 .chart :global(.apexcharts-canvas) {
@@ -184,8 +192,21 @@
   line-height: var(--r-line-height-body-s) !important;
 }
 
+@media (--media-tablet) {
+  .metricCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--r-space-1);
+    padding: 10px var(--r-space-3);
+  }
+}
 @media (max-width: 750px) {
   .calculator {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .line {
+    height: 0;
+    width: 100%;
+    border-bottom: 1px solid var(--r-color-neutral-100);
   }
 }
