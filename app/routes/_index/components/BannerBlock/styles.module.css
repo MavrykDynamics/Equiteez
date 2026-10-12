@@ -172,11 +172,11 @@
     --banner-slide-spacing: var(--r-space-2);
 
     gap: var(--r-space-5);
-    padding-top: var(--r-space-4);
+    padding-top: var(--r-space-6);
   }
 
   .viewport {
-    padding: 0 var(--r-space-4);
+    padding: 0 var(--r-space-6);
     border-radius: 0;
   }
 
@@ -189,7 +189,7 @@
   .content {
     justify-content: flex-start;
     gap: var(--r-space-4);
-    padding: var(--r-space-5) var(--r-space-4);
+    padding: var(--r-space-6);
   }
 
   .titleGroup {
@@ -230,5 +230,17 @@
   .paginationDot {
     width: 8px;
     height: 8px;
+  }
+}
+@media (--media-phone-max) {
+  .content {
+    padding: var(--r-space-5) var(--r-space-4);
+  }
+
+  .banner {
+    padding-top: var(--r-space-4);
+  }
+  .viewport {
+    padding: 0 var(--r-space-4);
   }
 }

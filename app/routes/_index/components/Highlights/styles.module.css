@@ -188,12 +188,12 @@
     min-width: 0;
   }
   .mobileSectionTitle {
-    padding: 0 var(--r-space-4);
+    padding: 0 var(--r-space-6);
   }
 
   .mobileViewport {
     overflow: hidden;
-    padding: 0 var(--r-space-4);
+    padding: 0 var(--r-space-6);
   }
 
   .mobileList {
@@ -210,5 +210,15 @@
 
   .mobileSlide .cardSkeleton {
     width: 100%;
+  }
+}
+@media (--media-phone-max) {
+  .mobileSectionTitle {
+    padding: 0 var(--r-space-4);
+  }
+
+  .mobileViewport {
+    overflow: hidden;
+    padding: 0 var(--r-space-4);
   }
 }
