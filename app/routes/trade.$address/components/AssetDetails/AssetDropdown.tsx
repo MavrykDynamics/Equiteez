@@ -149,7 +149,7 @@ function AssetOption({ asset, isSelected, onSelect }: AssetOptionProps) {
         <AssetIdentity asset={asset} />
         <div className={styles.assetPriceWrapper}>
           <span className={styles.assetPrice}>
-            <RText size="body-sm" weight="medium">
+            <RText size="body-sm">
               {price === undefined ? (
                 "—"
               ) : (
