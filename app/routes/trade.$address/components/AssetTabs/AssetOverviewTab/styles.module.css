@@ -176,6 +176,9 @@
   .wrapper {
     gap: var(--r-space-8);
   }
+  .items {
+    row-gap: var(--r-space-3);
+  }
 }
 
 @media not all and (--media-phone-max) {
