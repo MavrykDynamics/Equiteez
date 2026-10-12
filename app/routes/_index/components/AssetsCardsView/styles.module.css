@@ -61,11 +61,6 @@
   border-bottom-right-radius: var(--r-radius-md);
 }
 
-.primaryAssetCard:nth-child(4n + 1):nth-last-child(-n + 4),
-.secondaryAssetCard:nth-child(4n + 1):nth-last-child(-n + 4) {
-  border-bottom-left-radius: var(--r-radius-md);
-}
-
 .primaryAssetCard:hover,
 .secondaryAssetCard:hover {
   background: var(--r-color-neutral-50);
@@ -188,11 +183,22 @@
   overflow: hidden;
 }
 
+@media not all and (--media-laptop) {
+  .primaryAssetCard:nth-child(4n + 1):nth-last-child(-n + 4),
+  .secondaryAssetCard:nth-child(4n + 1):nth-last-child(-n + 4) {
+    border-bottom-left-radius: var(--r-radius-md);
+  }
+}
+
 @media (--media-laptop) {
   .primaryAssetCard:nth-child(n),
   .secondaryAssetCard:nth-child(n) {
     border-top: 0;
     border-left: 0;
+  }
+
+  .primaryAssetCard:nth-child(n):nth-last-child(n),
+  .secondaryAssetCard:nth-child(n):nth-last-child(n) {
     border-radius: 0;
   }
 
@@ -206,20 +212,20 @@
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
 
-  .primaryAssetCard:first-child,
-  .secondaryAssetCard:first-child {
+  .primaryAssetCard:first-child:nth-child(n),
+  .secondaryAssetCard:first-child:nth-child(n) {
     border-top-left-radius: var(--r-radius-md);
   }
 
-  .primaryAssetCard:nth-child(3),
-  .secondaryAssetCard:nth-child(3),
+  .primaryAssetCard:nth-child(3):nth-last-child(n),
+  .secondaryAssetCard:nth-child(3):nth-last-child(n),
   .primaryAssetCard:last-child:nth-child(-n + 3),
   .secondaryAssetCard:last-child:nth-child(-n + 3) {
     border-top-right-radius: var(--r-radius-md);
   }
 
-  .primaryAssetCard:last-child,
-  .secondaryAssetCard:last-child {
+  .primaryAssetCard:last-child:nth-child(n),
+  .secondaryAssetCard:last-child:nth-child(n) {
     border-bottom-right-radius: var(--r-radius-md);
   }
 
@@ -238,6 +244,10 @@
   .secondaryAssetCard:nth-child(n) {
     border-top: 0;
     border-left: 0;
+  }
+
+  .primaryAssetCard:nth-child(n):nth-last-child(n),
+  .secondaryAssetCard:nth-child(n):nth-last-child(n) {
     border-radius: 0;
   }
 
@@ -251,20 +261,20 @@
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
 
-  .primaryAssetCard:first-child,
-  .secondaryAssetCard:first-child {
+  .primaryAssetCard:first-child:nth-child(n),
+  .secondaryAssetCard:first-child:nth-child(n) {
     border-top-left-radius: var(--r-radius-md);
   }
 
-  .primaryAssetCard:nth-child(2),
-  .secondaryAssetCard:nth-child(2),
+  .primaryAssetCard:nth-child(2):nth-last-child(n),
+  .secondaryAssetCard:nth-child(2):nth-last-child(n),
   .primaryAssetCard:last-child:nth-child(-n + 2),
   .secondaryAssetCard:last-child:nth-child(-n + 2) {
     border-top-right-radius: var(--r-radius-md);
   }
 
-  .primaryAssetCard:last-child,
-  .secondaryAssetCard:last-child {
+  .primaryAssetCard:last-child:nth-child(n),
+  .secondaryAssetCard:last-child:nth-child(n) {
     border-bottom-right-radius: var(--r-radius-md);
   }
 
@@ -283,21 +293,21 @@
   .secondaryAssetCard:nth-child(n) {
     border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .primaryAssetCard:nth-child(n):nth-last-child(n),
+  .secondaryAssetCard:nth-child(n):nth-last-child(n) {
     border-radius: 0;
   }
 
-  .primaryAssetCard:first-child,
-  .secondaryAssetCard:first-child {
+  .primaryAssetCard:first-child:nth-child(n),
+  .secondaryAssetCard:first-child:nth-child(n) {
     border-top-left-radius: var(--r-radius-md);
-  }
-
-  .primaryAssetCard:first-child:last-child,
-  .secondaryAssetCard:first-child:last-child {
     border-top-right-radius: var(--r-radius-md);
   }
 
-  .primaryAssetCard:last-child,
-  .secondaryAssetCard:last-child {
+  .primaryAssetCard:last-child:nth-child(n),
+  .secondaryAssetCard:last-child:nth-child(n) {
     border-bottom-right-radius: var(--r-radius-md);
     border-bottom-left-radius: var(--r-radius-md);
   }
