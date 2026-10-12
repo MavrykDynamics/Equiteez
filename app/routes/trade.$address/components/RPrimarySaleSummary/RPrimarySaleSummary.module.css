@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .summary {
   box-sizing: border-box;
   display: flex;
@@ -27,4 +29,11 @@
   height: 100%;
   border-radius: inherit;
   background: var(--r-color-orange-500);
+}
+
+@media (--media-tablet) {
+  .remainingText {
+    font-size: var(--r-font-size-body-m);
+    line-height: var(--r-line-height-body-m);
+  }
 }

@@ -51,7 +51,7 @@ export function RPrimarySaleSummary({
         <RText size="body-sm" color="neutral-700">
           Tokens Left
         </RText>
-        <RText size="body-l" weight="medium">
+        <RText size="body-l" weight="medium" className={styles.remainingText}>
           {remaining?.toFormat(2) ?? "—"}
         </RText>
       </div>
