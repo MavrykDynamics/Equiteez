@@ -188,12 +188,12 @@
     min-width: 0;
   }
   .mobileSectionTitle {
-    padding: 0 var(--r-space-6);
+    padding: 0 var(--r-space-8);
   }
 
   .mobileViewport {
     overflow: hidden;
-    padding: 0 var(--r-space-6);
+    padding: 0 var(--r-space-8);
   }
 
   .mobileList {
