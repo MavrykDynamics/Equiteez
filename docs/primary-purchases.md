@@ -5,9 +5,18 @@
 route-local `PrimaryPurchasePanel`; secondary assets retain the existing
 orderbook form and contract calls.
 
-When disconnected, both branches keep the inputs beneath the countdown's shared
-blurred `RTradingOverlay`, with only the Purchase History-style Connect Wallet
-button above it. Covered controls are inert and hidden from assistive technology.
+When disconnected, both branches show the full trading form without a wallet
+blur overlay. The existing Buy/Sell button displays Connect Wallet with the same
+size and layout, using the shared black background and white text button tokens.
+It opens the existing wallet connection flow, regardless of form validity.
+This also applies to secondary limit orders. Primary and secondary forms hide
+KYC warnings, balance errors, quote errors, and validation messages while the
+wallet is disconnected. Connected-wallet validation and message visibility are
+unchanged. The primary branch reuses
+`BuySellScreen` as a non-executable API-price preview; wallet-specific contract
+validation and the sale countdown resume on connection. Countdown visibility
+conditions are unchanged.
+
 The primary branch reuses `BuySellScreen` as a non-executable API-price preview;
 wallet-specific contract validation and the sale countdown resume on connection.
 Above 1000px, the disconnected card is 623px tall including its padding.

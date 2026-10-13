@@ -9,9 +9,6 @@ import { useSearchParams } from "@remix-run/react";
 
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 import { Spinner } from "~/lib/atoms/Spinner";
-import { RButton } from "~/lib/atoms/RButton";
-import { RText } from "~/lib/atoms/RTypography/RText";
-import { RTradingOverlay } from "./RTradingCountdown";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import {
   FreshnessSource,
@@ -37,40 +34,12 @@ const getOrderTypeFromSearchParam = (side: string | null): OrderType =>
   side === SELL ? SELL : BUY;
 
 export function BuySellPanel(props: BuySellPanelProps) {
-  const { userAddress, connect } = useUserContext();
-  const isDisconnected = !userAddress;
+  const { userAddress } = useUserContext();
 
-  return (
-    <>
-      <div
-        className={isDisconnected ? styles.disconnected : styles.connected}
-        aria-hidden={isDisconnected || undefined}
-        {...(isDisconnected ? { inert: "" } : {})}
-      >
-        {props.isPrimary ? (
-          <PrimaryPurchasePanel
-            asset={props.asset}
-            isDisconnected={isDisconnected}
-          />
-        ) : (
-          <SecondaryBuySellPanel {...props} />
-        )}
-      </div>
-      {isDisconnected && (
-        <RTradingOverlay>
-          <RButton
-            onClick={connect}
-            size="medium"
-            tone="black"
-            variant="primary"
-          >
-            <RText size="body-s" weight="medium" color="neutral-white">
-              Connect Wallet
-            </RText>
-          </RButton>
-        </RTradingOverlay>
-      )}
-    </>
+  return props.isPrimary ? (
+    <PrimaryPurchasePanel asset={props.asset} isDisconnected={!userAddress} />
+  ) : (
+    <SecondaryBuySellPanel {...props} />
   );
 }
 
