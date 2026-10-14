@@ -4,8 +4,11 @@
   color: var(--r-text-body-black);
   background: var(--r-color-neutral-white);
   border-radius: var(--r-radius-sm);
-  box-shadow: var(--r-shadow-tooltip);
-  font-family: var(--r-font-body);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 18px rgba(0, 0, 0, 0.08);
+  font-family: "Inter", Inter, Poppins, system-ui, sans-serif;
   font-size: var(--r-font-size-body-s);
   font-weight: var(--r-font-weight-regular);
   letter-spacing: var(--r-letter-spacing-body);

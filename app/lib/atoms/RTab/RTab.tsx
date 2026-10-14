@@ -14,6 +14,7 @@ export type RTabProps = Omit<
   isSelected?: boolean;
   label: string;
   onSelect: (id: string) => void;
+  variant?: "notification";
 };
 
 export function RTab({
@@ -24,6 +25,7 @@ export function RTab({
   isSelected = false,
   label,
   onSelect,
+  variant,
   ...props
 }: RTabProps) {
   const handleClick = () => {
@@ -35,7 +37,12 @@ export function RTab({
   return (
     <button
       aria-selected={isSelected}
-      className={clsx(styles.tab, isSelected && styles.selected, className)}
+      className={clsx(
+        styles.tab,
+        isSelected && styles.selected,
+        variant === "notification" && styles.notification,
+        className
+      )}
       disabled={disabled}
       onClick={handleClick}
       role="tab"
@@ -51,7 +58,13 @@ export function RTab({
       {count !== undefined ? (
         <span className={styles.count}>
           <RText
-            color={isSelected ? "neutral-200" : "neutral-700"}
+            color={
+              variant === "notification" && isSelected
+                ? "neutral-white"
+                : isSelected
+                  ? "neutral-200"
+                  : "neutral-700"
+            }
             size="body-s"
           >
             {count}

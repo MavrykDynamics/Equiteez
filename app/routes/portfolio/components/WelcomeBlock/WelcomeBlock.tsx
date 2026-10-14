@@ -37,6 +37,7 @@ export function WelcomeBlock({
         id: ROUTES.portfolioNotifications,
         label: "Notifications",
         count: unreadNotificationsCount || undefined,
+        type: "notification" as const,
       },
     ],
     [unreadNotificationsCount]

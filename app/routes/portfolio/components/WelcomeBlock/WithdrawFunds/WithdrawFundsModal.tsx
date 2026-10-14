@@ -590,6 +590,7 @@ export function WithdrawFundsModal({
             isLoading={isSubmitting}
             tone="black"
             type="submit"
+            size="medium"
           >
             Withdraw Funds
           </RButton>

@@ -14,7 +14,11 @@ type OrderItemProps = {
   order: OpenOrderItemType;
 };
 
-export function renderNullableFiatValue(value: number | null, suffix?: string, prefix?: string) {
+export function renderNullableFiatValue(
+  value: number | null,
+  suffix?: string,
+  prefix?: string
+) {
   if (value === null) {
     return "—";
   }
@@ -123,9 +127,11 @@ export function OrderItem({
       </tr>
 
       <CancelOrderPopup
+        assetSymbol={assetSymbol}
         onClose={handleClosePopup}
         isOpen={isPopupOpen}
         onSubmit={handleOrderAction}
+        order={order}
         title={popupTitle}
         description={popupDescription}
         submitLabel={popupSubmitLabel}
