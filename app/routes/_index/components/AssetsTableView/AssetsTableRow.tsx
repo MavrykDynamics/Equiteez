@@ -11,7 +11,6 @@ import { AssetPriceChart } from "~/routes/_index/components/AssetPriceChart/Asse
 import { ROUTES } from "~/consts";
 import { AssetSaleProgress } from "~/routes/_index/components/AssetsCardsView/AssetSaleProgress";
 import { useAssetPrice } from "~/providers/AssetsProvider/hooks/useAssetPrice";
-import { atomsToTokens } from "~/lib/utils/formaters";
 import { AssetIcon } from "~/templates/AssetIcon";
 import { toTokenSlug } from "~/lib/assets";
 
@@ -20,14 +19,9 @@ type AssetsTableRowProps = {
 };
 
 export function AssetsTableRow({ asset }: AssetsTableRowProps) {
-  const { assetPrices, priceChange, isNegative, price, points } =
-    useAssetPrice(asset);
+  const { priceChange, isNegative, price, points } = useAssetPrice(asset);
   const assetSlug = toTokenSlug(asset.address);
-  const marketCap =
-    atomsToTokens(
-      assetPrices.primary_issuance?.max_amount_cap ?? 0,
-      asset.metadata.decimals
-    ) || asset.stats?.market_cap?.usd;
+  const marketCap = asset.stats?.market_cap?.usd;
 
   return (
     <Link
@@ -85,7 +79,7 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
         <RText size="body-sm">
           {marketCap !== undefined ? (
             <>
-              $<Money>{marketCap}</Money>
+              $<Money shortened fiat>{marketCap}</Money>
             </>
           ) : (
             "—"

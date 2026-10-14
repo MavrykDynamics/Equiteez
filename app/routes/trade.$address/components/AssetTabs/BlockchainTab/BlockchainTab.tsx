@@ -8,6 +8,7 @@ import styles from "./BlockchainTab.module.css";
 import { useMemo } from "react";
 import Money from "~/lib/atoms/Money";
 import HashShortView from "~/lib/atoms/HashShortView";
+import { formatRawSupply } from "~/lib/utils/formaters";
 
 type BlockchainDetail = {
   isLink?: boolean;
@@ -16,7 +17,10 @@ type BlockchainDetail = {
 };
 
 function BlockchainDetailList({ asset }: { asset: AssetType }) {
-  const tokenSupply = asset.finance.max_supply ?? asset.total_supply;
+  const tokenSupply = formatRawSupply(
+    asset.total_supply,
+    asset.metadata.decimals
+  );
 
   const blockchainDetails: BlockchainDetail[] = useMemo(
     () => [
@@ -28,7 +32,12 @@ function BlockchainDetailList({ asset }: { asset: AssetType }) {
       { label: "Token Standard", value: "RWA" },
       {
         label: "Token Supply",
-        value: <Money>{tokenSupply}</Money>,
+        value:
+          tokenSupply === undefined ? (
+            "-"
+          ) : (
+            <Money shortened tooltip={false}>{tokenSupply}</Money>
+          ),
       },
       { label: "Holders", value: "-" },
       { label: "Asset Issuer", value: "Equiteez Issuance Ltd" },

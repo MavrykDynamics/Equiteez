@@ -20,7 +20,6 @@ import styles from "./styles.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
-import { atomsToTokens } from "~/lib/utils/formaters";
 
 const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
 const AUTO_SCROLL_INTERVAL_MS = 30_000;
@@ -54,17 +53,9 @@ export function BannerBlock() {
   const price =
     featuredAssetPrices?.usd ??
     featuredAssetPrices?.price ??
-    featuredAsset?.stats?.price.usd ??
+    featuredAsset?.stats?.price?.usd ??
     featuredAsset?.finance.value_per_token;
-  const marketCap =
-    price !== undefined &&
-    price !== null &&
-    featuredAsset?.stats?.circulating_supply !== undefined
-      ? atomsToTokens(
-          featuredAsset.stats.circulating_supply,
-          featuredAsset.metadata.decimals
-        ).times(price)
-      : undefined;
+  const marketCap = featuredAsset?.stats?.market_cap?.usd;
   const isZeroMetric = (value: BannerMetric["rawValue"]) =>
     value !== undefined && value !== null && new BigNumberJs(value).isZero();
 
