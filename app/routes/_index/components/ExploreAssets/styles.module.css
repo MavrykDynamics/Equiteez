@@ -59,6 +59,7 @@
   }
   .wrapper {
     padding-top: 0;
+    gap: var(--r-space-4);
   }
 
   .mobileFiltersButton {
@@ -126,6 +127,11 @@
   .tableView {
     display: none;
   }
+  .title {
+    font-size: var(--r-font-size-heading-h7);
+    letter-spacing: 0.16px;
+    line-height: var(--r-line-height-heading-h7);
+  }
 }
 
 @media (--media-phone-max) {
@@ -133,9 +139,5 @@
     gap: var(--r-space-4);
   }
 
-  .title {
-    font-size: var(--r-font-size-heading-h7);
-    letter-spacing: 0.16px;
-    line-height: var(--r-line-height-heading-h7);
-  }
+
 }

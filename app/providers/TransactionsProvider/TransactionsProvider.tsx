@@ -21,6 +21,7 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
+import { recoverBridgeWidgets } from "./bridgeWidgetRecovery";
 import { BridgeReconciler } from "./bridgeReconciler";
 import {
   BridgeTransactions,
@@ -113,10 +114,12 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
             store,
             fetchBridgeDeposits,
             (records) => settlementHandler.current(records),
-            () => currentStore.current === store
+            () => currentStore.current === store,
+            (signal, isCurrent) =>
+              recoverBridgeWidgets(store, queryClient, signal, isCurrent)
           )
         : null,
-    [store]
+    [store, queryClient]
   );
   const snapshot = useSyncExternalStore(
     store?.subscribe ?? emptySubscribe,

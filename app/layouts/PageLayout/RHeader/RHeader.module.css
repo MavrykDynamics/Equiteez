@@ -72,6 +72,9 @@
 }
 
 @media (--media-tablet) {
+  .inner {
+    min-height: 53px;
+  }
   .navigation {
     display: none;
   }

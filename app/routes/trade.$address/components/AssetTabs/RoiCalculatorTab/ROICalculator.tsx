@@ -369,6 +369,8 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
         </div>
       </div>
 
+      <div className={styles.line} />
+
       <div className={styles.results}>
         <div className={styles.metricCards}>
           {metricCards.map((card) => (

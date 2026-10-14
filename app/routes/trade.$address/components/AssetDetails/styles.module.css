@@ -71,8 +71,12 @@
   outline: none;
   box-shadow: var(--r-focus-ring);
 }
-
-@media (--media-tablet-max) {
+@media (--media-tablet) {
+  .details {
+    min-height: auto;
+  }
+}
+@media (--media-phone-max) {
   .details {
     align-items: flex-end;
     gap: var(--r-space-5);
@@ -81,9 +85,6 @@
   .assetInfo {
     flex-wrap: wrap;
   }
-}
-
-@media (--media-phone-max) {
   .details {
     position: relative;
     align-items: flex-start;

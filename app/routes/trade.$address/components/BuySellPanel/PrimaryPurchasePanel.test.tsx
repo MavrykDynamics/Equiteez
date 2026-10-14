@@ -71,6 +71,7 @@ vi.mock("~/lib/organisms/PriceSection/screens/BuySellScreen", () => ({
     isOrderDataLoading: boolean;
     validationMessage?: string;
     primaryPurchase: {
+      isEligible: boolean;
       receiveAmount?: BigNumber;
       onReceiveChange: (value: BigNumber) => void;
     };
@@ -86,8 +87,15 @@ vi.mock("~/lib/organisms/PriceSection/screens/BuySellScreen", () => ({
         {primaryPurchase.receiveAmount?.toFixed()}
       </div>
       <div>{validationMessage}</div>
+      {!primaryPurchase.isEligible && (
+        <div>Verify with Mavryk Pro to Trade</div>
+      )}
       <button
-        disabled={isOrderDataLoading || !!validationMessage}
+        disabled={
+          !primaryPurchase.isEligible ||
+          isOrderDataLoading ||
+          !!validationMessage
+        }
         onClick={actionCb}
       >
         Buy
@@ -137,11 +145,10 @@ const click = async (text: string) => {
 };
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
-  mocks.isKyced = false;
+  mocks.isKyced = true;
+  mocks.query.mockReset();
   mocks.purchase.mockReset().mockResolvedValue(undefined);
-  mocks.estimate
-    .mockReset()
-    .mockResolvedValue({ gasFee: 10n });
+  mocks.estimate.mockReset().mockResolvedValue({ gasFee: 10n });
   mocks.refresh.mockReset();
   mocks.refetch.mockReset().mockResolvedValue({ data: config });
   mocks.query.mockReturnValue({
@@ -163,6 +170,40 @@ afterEach(async () => {
 });
 
 describe("primary purchase panel flow", () => {
+  it.each([true, false])(
+    "shows inputs and disables purchasing for non-Pro wallets with eligible option=%s",
+    async (hasOption) => {
+      mocks.isKyced = false;
+      mocks.query.mockReturnValue({
+        data: {
+          ...config,
+          options: hasOption ? config.options : [],
+          unavailableReason: "Verify with Mavryk Pro before purchasing.",
+        },
+        refetch: mocks.refetch,
+        refreshAfterPurchase: mocks.refresh,
+      });
+      await act(async () =>
+        root.render(<PrimaryPurchasePanel asset={asset} />)
+      );
+      expect(container.textContent).toContain("Enter 1.5");
+      expect(container.textContent).toContain(
+        "Verify with Mavryk Pro to Trade"
+      );
+      expect(container.textContent).not.toContain(
+        "Verify with Mavryk Pro before purchasing."
+      );
+      await click("Enter 1.5");
+      if (hasOption)
+        expect(container.textContent).toContain("Pay 45 Receive 1.5");
+      const buy = [...container.querySelectorAll("button")].find(
+        (button) => button.textContent === "Buy"
+      );
+      expect(buy?.disabled).toBe(true);
+      await click("Buy");
+      expect(mocks.purchase).not.toHaveBeenCalled();
+    }
+  );
   it("keeps purchase inputs visible without reading a wallet quote when disconnected", async () => {
     await act(async () =>
       root.render(<PrimaryPurchasePanel asset={asset} isDisconnected />)

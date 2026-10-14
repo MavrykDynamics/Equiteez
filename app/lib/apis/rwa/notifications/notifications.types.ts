@@ -23,6 +23,7 @@ export type FetchWalletNotificationsParams = {
   kinds?: string[];
   unread?: boolean;
   includeSuperseded?: boolean;
+  signal?: AbortSignal;
 };
 
 export type FetchWalletNotificationsSummaryParams = {

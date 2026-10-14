@@ -51,6 +51,11 @@ function useWidgetState() {
   const models = useMemo(
     () =>
       records.flatMap((record) => {
+        if (
+          record.widgetRecovery === "pending" ||
+          record.widgetRecovery === "suppressed"
+        )
+          return [];
         // Popup submissions may wait before WSS arrives; only WSS advances steps.
         if (!record.signerEvents?.length && !record.isWidgetRequested)
           return [];

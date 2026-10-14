@@ -413,6 +413,9 @@ html {
   line-height: 18px;
   color: #000;
   padding: 8px 12px;
+
+  /* cards with content */
+  box-shadow: 0 7px 51.562px -12.891px rgba(0, 0, 0, 0.08);
 }
 
 .tippy-box[data-theme~="equiteez"][data-theme~="reverse"] {

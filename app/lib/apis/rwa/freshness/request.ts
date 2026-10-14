@@ -66,12 +66,15 @@ export async function requestFreshQuery<TResponseData = unknown>({
   api,
   config,
   data,
+  freshEnabled = true,
   method = "get",
   query,
   queryKeyStart,
   url,
 }: FreshRequestParams): Promise<AxiosResponse<TResponseData>> {
-  const freshQuery = getFreshQueryRequest(queryKeyStart);
+  const freshQuery = getFreshQueryRequest(queryKeyStart, {
+    enabled: freshEnabled,
+  });
   const requestUrl = getRequestUrl({
     query,
     shouldRequestFresh: freshQuery.shouldRequestFresh,

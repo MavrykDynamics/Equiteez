@@ -121,6 +121,6 @@ export function useOpenOrderAction({
       ? "Claim the unrefunded remainder from this closed order."
       : "Are you sure you want to cancel your order?",
     popupSubmitLabel: isRefundAction ? "Claim Refund" : "Cancel Order",
-    popupTitle: isRefundAction ? "Confirm Refund" : "Confirm Cancellation",
+    popupTitle: isRefundAction ? "Confirm Refund" : "Cancel Open Order",
   };
 }

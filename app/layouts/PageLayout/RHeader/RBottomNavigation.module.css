@@ -17,15 +17,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 390px;
   height: 100%;
   margin-inline: auto;
-  padding-inline: 27px;
 }
 
 .navItem {
   display: flex;
-  flex: 0 0 75px;
+  flex: 1;
   flex-direction: column;
   gap: var(--r-space-1);
   align-items: center;

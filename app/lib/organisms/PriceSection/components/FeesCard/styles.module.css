@@ -145,8 +145,12 @@
 }
 
 .feeInfoIcon {
-  width: var(--r-size-icon-small);
-  height: var(--r-size-icon-small);
+  color: var(--r-color-neutral-500);
+  height: 12px;
+  width: 12px;
+}
+.feeInfoIcon:hover {
+  color: var(--r-color-neutral-black);
 }
 
 .feeTooltip {
