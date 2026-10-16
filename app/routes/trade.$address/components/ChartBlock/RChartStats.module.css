@@ -44,7 +44,7 @@
 
 @container (min-width: 720px) {
   .panel {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--metrics-count, 6), minmax(0, 1fr));
   }
 
   .metric:nth-child(n + 2) {

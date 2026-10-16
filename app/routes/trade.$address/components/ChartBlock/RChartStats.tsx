@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RMetricCard } from "~/lib/molecules/RMetricCard/RMetricCard";
@@ -56,7 +57,11 @@ export function RChartStats({ asset }: RChartStatsProps) {
   ];
 
   return (
-    <section className={styles.panel} aria-label="Asset statistics">
+    <section
+      className={styles.panel}
+      aria-label="Asset statistics"
+      style={{ "--metrics-count": metrics.length } as CSSProperties}
+    >
       {metrics.map(({ label, value }) => (
         <RMetricCard
           className={styles.metric}
