@@ -292,6 +292,9 @@
   .grid {
     grid-template-columns: minmax(0, 1fr);
   }
+  .card:not(:last-child) {
+    border-bottom: none;
+  }
 
   .card:nth-child(n) {
     border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);

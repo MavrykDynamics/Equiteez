@@ -63,6 +63,7 @@
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-pill);
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 .iconButton svg {
   stroke-width: 1px;
@@ -71,6 +72,10 @@
   outline: none;
   box-shadow: var(--r-focus-ring);
 }
+.iconButton:hover {
+  background: var(--r-color-neutral-50);
+}
+
 @media (--media-tablet) {
   .details {
     min-height: auto;

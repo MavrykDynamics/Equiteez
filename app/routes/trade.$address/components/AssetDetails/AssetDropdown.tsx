@@ -1,5 +1,5 @@
 import { generatePath, useNavigate } from "@remix-run/react";
-import { type CSSProperties, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { ROUTES } from "~/consts";
 import {
@@ -32,6 +32,20 @@ export function AssetDropdown({ asset }: AssetDropdownProps) {
   const [query, setQuery] = useState("");
   const { width } = useWindowDimensions();
   const isMobile = width > 0 && width <= TABLET_WIDTH;
+
+  useEffect(() => {
+    const imageUrls = new Set(
+      assets
+        .map((item) => item.profile.image_url)
+        .filter((url): url is string => Boolean(url))
+    );
+
+    imageUrls.forEach((src) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = src;
+    });
+  }, [assets]);
 
   const matchingAssets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

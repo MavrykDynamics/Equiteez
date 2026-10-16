@@ -14,6 +14,43 @@ const CurrencyAmountSchema = z.object({
   aed: z.number(),
 });
 
+const RawSupplySchema = z.string().regex(/^(0|[1-9][0-9]*)$/);
+
+const SupplyBlockSchema = z.object({
+  level: z.number(),
+  hash: z.string(),
+  timestamp: z.string(),
+});
+
+const SupplyQualitySchema = z.object({
+  status: z.enum(["fresh", "stale", "unavailable"]),
+  reason: z.string().optional(),
+  observed_at: z.string().optional(),
+  price_at: z.string().optional(),
+  decimals_version: z.number().optional(),
+  block: SupplyBlockSchema.optional(),
+});
+
+const SupplyStateSchema = SupplyQualitySchema.extend({
+  source: z.literal("mvkt"),
+  version: z.string().optional(),
+  identity: z
+    .object({
+      network: z.string(),
+      contract: z.string(),
+      token_id: z.string(),
+    })
+    .optional(),
+  indexed_head: SupplyBlockSchema.optional(),
+});
+
+const SupplyDataQualitySchema = z.object({
+  total_supply: SupplyQualitySchema.optional(),
+  circulating_supply: SupplyQualitySchema.optional(),
+  fdv: SupplyQualitySchema.optional(),
+  market_cap: SupplyQualitySchema.optional(),
+});
+
 const QuotePriceSchema = z.object({
   value: z.number(),
   currency: z.string(),
@@ -29,7 +66,7 @@ const TokenMetadataSchema = z.object({
   icon: z.string().optional(),
   name: z.string(),
   symbol: z.string(),
-  decimals: z.number(),
+  decimals: z.number().int().min(0).max(40),
 });
 
 const QuoteTokenSchema = z.object({
@@ -88,22 +125,24 @@ const AssetAthSchema = z.object({
 });
 
 const AssetStatsSchema = z.object({
-  symbol: z.string(),
-  price: CurrencyAmountSchema,
+  symbol: z.string().optional(),
+  price: CurrencyAmountSchema.optional(),
   volume_24h: CurrencyAmountSchema.optional(),
   market_cap: CurrencyAmountSchema.optional(),
-  fdv: CurrencyAmountSchema,
-  total_supply: z.string(),
-  circulating_supply: z.string().optional(),
+  fdv: CurrencyAmountSchema.optional(),
+  total_supply: RawSupplySchema.optional(),
+  circulating_supply: RawSupplySchema.optional(),
   ath: AssetAthSchema.optional(),
   avg_hold_time_days: z.number().optional(),
-  updated_at: z.number(),
+  updated_at: z.number().optional(),
+  data_quality: SupplyDataQualitySchema.optional(),
 });
 
 export const AssetSchema = z.object({
   address: z.string(),
   metadata: TokenMetadataSchema,
-  total_supply: z.string(),
+  total_supply: RawSupplySchema.optional(),
+  supply: SupplyStateSchema.optional(),
   holders_count: z.number(),
   market_type: z.string(),
   category: z.string(),
