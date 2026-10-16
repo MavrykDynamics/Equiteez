@@ -35,6 +35,6 @@ export function assetLaunchQueryOptions(assetAddress: string) {
     retry: false,
     // A purchase emits both launch-progress and wallet-purchase events. Keep
     // the launch card fresh briefly so their back-to-back refreshes share it.
-    staleTime: 1_000,
+    staleTime: 2_000,
   });
 }

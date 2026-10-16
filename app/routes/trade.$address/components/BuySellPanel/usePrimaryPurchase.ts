@@ -82,7 +82,12 @@ export function usePrimaryPurchase(assetAddress: string) {
       void Promise.all([
         invalidateFreshQueries("fetchWalletTransferHistory", mark),
         invalidateFreshQueries("fetchWalletActivitySummary", mark),
-        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries(
+          { queryKey },
+          // A launch update can arrive with the purchase notification. Reuse
+          // its in-flight refresh instead of cancelling it and starting again.
+          { cancelRefetch: false }
+        ),
         queryClient.invalidateQueries({
           queryKey: [PRIMARY_HISTORY_QUERY_KEY],
         }),
@@ -104,9 +109,10 @@ export function usePrimaryPurchase(assetAddress: string) {
     [refreshAfterPurchase, userAddress]
   );
   const handleLaunchProgress = useCallback(() => {
-    void queryClient.invalidateQueries({
-      queryKey: ["asset-launch", assetAddress],
-    });
+    void queryClient.invalidateQueries(
+      { queryKey: ["asset-launch", assetAddress] },
+      { cancelRefetch: false }
+    );
   }, [assetAddress, queryClient]);
 
   useLaunchChannel(
