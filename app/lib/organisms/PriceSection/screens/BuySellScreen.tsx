@@ -36,7 +36,7 @@ type BuySellScreenProps = {
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   gasFee?: BigNumber.Value;
-  apy: number;
+  apy: number | null;
   orderbookFee?: BigNumber.Value;
   tokenPrice: BigNumber;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
@@ -321,7 +321,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             includedPurchaseFee={primaryPurchase?.includedFee}
             pricePerShare={tokenPrice}
             totalAmount={orderSummaryAmount}
-            annualYield={actionType === BUY ? apy : undefined}
+            annualYield={actionType === BUY ? (apy ?? undefined) : undefined}
           />
         </div>
       </div>

@@ -77,9 +77,11 @@ export function AssetsTableRow({ asset }: AssetsTableRowProps) {
         />
       </div>
       <div className={styles.cell} role="cell">
-        <RText size="body-sm">
-          <Money>{asset.apy}</Money>%
-        </RText>
+        {asset.apy !== null && (
+          <RText size="body-sm">
+            <Money>{asset.apy}</Money>%
+          </RText>
+        )}
       </div>
       <div className={styles.cell} role="cell">
         <RText size="body-sm">

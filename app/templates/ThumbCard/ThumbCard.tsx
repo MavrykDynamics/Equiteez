@@ -12,7 +12,7 @@ type ThumbCardProps = {
   imgSrc: string;
   title: string;
   address: string;
-  APY: number;
+  APY: number | null;
   height?: string;
 };
 
@@ -83,10 +83,16 @@ export const ThumbCardSecondary: FC<ThumbCardSecondary> = ({
                   </span>
                 </div>
               )}
-              <div className="flex flex-col items-center">
-                <span className="text-card-headline text-sand-50">{APY}%</span>
-                <span className="text-sand-50 text-body-xs leading-5">APY</span>
-              </div>
+              {APY !== null && (
+                <div className="flex flex-col items-center">
+                  <span className="text-card-headline text-sand-50">
+                    {APY}%
+                  </span>
+                  <span className="text-sand-50 text-body-xs leading-5">
+                    APY
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           {progressBarPercentage && (

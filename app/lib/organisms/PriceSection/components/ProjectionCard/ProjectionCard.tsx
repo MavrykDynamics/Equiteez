@@ -7,7 +7,7 @@ import styles from "./projectionCard.module.css";
 type ProjectionGradient = "blue" | "orange";
 
 type ProjectionCardProps = {
-  apy: number;
+  apy: number | null;
   monthkyReturns: number;
   yearlyReturns: number;
   gradient: ProjectionGradient;
@@ -32,10 +32,12 @@ export const ProjectionCard: FC<ProjectionCardProps> = ({
     >
       <p className="text-base font-semibold mb-3">Yield Projections</p>
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between text-sm">
-          <p>Estimated APY</p>
-          <span className="font-semibold">{apy}%</span>
-        </div>
+        {apy !== null && (
+          <div className="flex items-center justify-between text-sm">
+            <p>Estimated APY</p>
+            <span className="font-semibold">{apy}%</span>
+          </div>
+        )}
         <div className="flex items-center justify-between text-sm">
           <p>Projected Monthly Returns</p>
           <div className="font-semibold">

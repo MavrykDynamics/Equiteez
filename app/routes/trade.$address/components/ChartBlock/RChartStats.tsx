@@ -23,7 +23,9 @@ function formatProfileValue(value: string) {
 
 export function RChartStats({ asset }: RChartStatsProps) {
   const metrics = [
-    { label: "Annual yield (APY)", value: `${asset.apy.toFixed(2)}%` },
+    ...(asset.apy !== null
+      ? [{ label: "Annual yield (APY)", value: `${asset.apy.toFixed(2)}%` }]
+      : []),
     {
       label: "Value per token",
       value:
