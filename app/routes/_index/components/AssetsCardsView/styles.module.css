@@ -63,7 +63,7 @@
 
 .primaryAssetCard:hover,
 .secondaryAssetCard:hover {
-  background: var(--r-color-neutral-50);
+  background: #f8fcf7;
 }
 
 .primaryAssetCard:focus-visible,
@@ -86,7 +86,6 @@
   flex-direction: column;
   gap: var(--r-space-1);
   min-width: 0;
-  margin-top: var(--r-space-1);
 }
 
 .assetName {

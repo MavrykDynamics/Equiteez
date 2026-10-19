@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -8,6 +10,7 @@ import { atomsToTokens } from "~/lib/utils/formaters";
 
 type AssetSaleProgressProps = {
   asset: AssetType;
+  className?: string;
   isSecondaryView?: boolean;
 };
 
@@ -19,6 +22,7 @@ function getNumericValue(value: string) {
 
 export function AssetSaleProgress({
   asset,
+  className,
   isSecondaryView = false,
 }: AssetSaleProgressProps) {
   const { prices } = useAssetsContext();
@@ -32,7 +36,7 @@ export function AssetSaleProgress({
   const isSoldOut = totalTokens > 0 && tokensLeft === 0;
 
   return (
-    <div className={styles.saleProgress}>
+    <div className={clsx(styles.saleProgress, className)}>
       {isSecondaryView ? null : (
         <div className={styles.saleProgressHeader}>
           <RText color="neutral-700" size="body-s">

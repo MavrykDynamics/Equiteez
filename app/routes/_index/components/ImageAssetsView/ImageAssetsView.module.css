@@ -65,7 +65,7 @@
 }
 
 .card:hover {
-  background: var(--r-color-neutral-50);
+  background: #f8fcf7;
 }
 
 .card:focus-visible {
@@ -77,8 +77,8 @@
 
 .media {
   position: relative;
-  flex: 1 1 0;
-  min-height: 94px;
+  flex: 0 0 auto;
+  height: 124px;
   overflow: hidden;
 }
 
@@ -118,7 +118,7 @@
   flex: 0 0 auto;
   flex-direction: column;
   gap: var(--r-space-3);
-  padding: var(--r-space-2) 0 var(--r-space-5) 0;
+  padding: var(--r-space-3) 0 var(--r-space-5) 0;
 }
 
 .assetSummary {
@@ -135,7 +135,6 @@
   flex-direction: column;
   gap: var(--r-space-1);
   align-items: flex-end;
-  margin-top: var(--r-space-1);
 }
 
 .listingPriceMeta,
@@ -158,9 +157,13 @@
 .primaryProgress {
   display: flex;
   align-items: center;
-  height: 72px;
+  height: 54px;
   margin: 0 var(--r-space-5);
 }
+.primaryProgress .cardSaleProgress {
+  gap: 6px;
+}
+
 .assetBadgeWrapper {
   background: white;
   padding: 0;
@@ -175,8 +178,10 @@
   gap: var(--r-space-1);
 }
 
+/* Design: 52px chart pinned to the bottom of a 54px slot */
 .secondaryChart {
-  height: 72px !important;
+  height: 52px !important;
+  margin-top: 2px;
   overflow: hidden !important;
 }
 
