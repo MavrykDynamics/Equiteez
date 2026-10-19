@@ -124,7 +124,7 @@ export function BannerBlock() {
           {
             label: "APY",
             rawValue: featuredAsset?.apy,
-            value: featuredAsset ? (
+            value: featuredAsset?.apy != null ? (
               <>
                 <Money tooltip={false}>{featuredAsset.apy}</Money>%
               </>

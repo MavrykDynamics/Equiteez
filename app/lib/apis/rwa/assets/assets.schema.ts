@@ -146,7 +146,7 @@ export const AssetSchema = z.object({
   holders_count: z.number(),
   market_type: z.string(),
   category: z.string(),
-  apy: z.number(),
+  apy: z.number().nullable(),
   orderbook: OrderbookSchema.optional(),
   profile: AssetProfileSchema,
   finance: AssetFinanceSchema,

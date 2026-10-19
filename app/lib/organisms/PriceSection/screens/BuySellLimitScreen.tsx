@@ -47,7 +47,7 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   gasFee?: BigNumber.Value;
-  apy: number;
+  apy: number | null;
   orderbookFee?: BigNumber.Value;
   orderExpiryPeriodId: OrderExpiryPeriodId | null;
   setAmount: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
@@ -348,7 +348,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
             totalAmount={orderSummaryAmount}
-            annualYield={actionType === BUY ? apy : undefined}
+            annualYield={actionType === BUY ? (apy ?? undefined) : undefined}
           />
         </div>
       </div>

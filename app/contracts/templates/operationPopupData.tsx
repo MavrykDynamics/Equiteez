@@ -21,7 +21,7 @@ type PopupAssetCard = {
   isSecondaryMarket?: boolean;
   pricePerToken?: BigNumber;
   height: string;
-  APY: number;
+  APY: number | null;
   flags: string[];
 };
 
