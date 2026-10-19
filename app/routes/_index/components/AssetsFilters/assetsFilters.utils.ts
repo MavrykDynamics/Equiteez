@@ -3,8 +3,14 @@ import type { RTabSwitcherItem } from "~/lib/organisms/RTabSwitcher/RTabSwitcher
 import type { AssetTypeOption } from "~/providers/AssetsProvider/assets.provider.types";
 import {
   ALL_ASSETS_FILTER_VALUE,
+  AssetTypePluralLabel,
   PRIMARY_MARKET_FILTER_VALUE,
 } from "./assetsFilters.const";
+
+const getAssetTypeTabLabel = ({ label, value }: AssetTypeOption) =>
+  AssetTypePluralLabel[
+    value.toLowerCase() as keyof typeof AssetTypePluralLabel
+  ] ?? label;
 
 const isPrimaryMarket = (asset: AssetType) =>
   asset.market_type.toLowerCase() === "primary";
@@ -45,7 +51,7 @@ export const getAssetsFilterTabs = (
     ...Object.values(assetTypes).map((assetType) => ({
       count: assetTypeCounts[assetType.value] ?? 0,
       id: assetType.value,
-      label: assetType.label,
+      label: getAssetTypeTabLabel(assetType),
     })),
   ];
 };
