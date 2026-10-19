@@ -8,7 +8,7 @@ export function AssetApyBadge({ asset }: { asset: AssetType }) {
 
   return (
     <span className={styles.assetApyBadge}>
-      <RText color="blue-900" size="body-s">
+      <RText color="blue-900" size="body-s" weight="medium">
         APY{" "}
         <Money fiat tooltip={false}>
           {asset.apy}
