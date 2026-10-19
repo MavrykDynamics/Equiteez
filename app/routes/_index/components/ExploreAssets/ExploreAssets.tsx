@@ -6,10 +6,8 @@ import { AssetsFilters } from "~/routes/_index/components/AssetsFilters/AssetsFi
 import { AssetsTableView } from "~/routes/_index/components/AssetsTableView/AssetsTableView";
 import { AssetsCardsView } from "~/routes/_index/components/AssetsCardsView/AssetsCardsView";
 import { ImageAssetsView } from "~/routes/_index/components/ImageAssetsView/ImageAssetsView";
-import {
-  ALL_ASSETS_FILTER_VALUE,
-  INITIAL_ASSETS_FILTER_STATE,
-} from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
+import { INITIAL_ASSETS_FILTER_STATE } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
+import { matchesAssetsFilter } from "~/routes/_index/components/AssetsFilters/assetsFilters.utils";
 import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -30,9 +28,7 @@ export function ExploreAssets() {
 
     return assets
       .filter((asset) => {
-        const matchesFilter =
-          filters.filter === ALL_ASSETS_FILTER_VALUE ||
-          asset.profile.asset_type === filters.filter;
+        const matchesFilter = matchesAssetsFilter(asset, filters.filter);
         const matchesSearch =
           !normalizedSearch ||
           asset.address.toLowerCase().includes(normalizedSearch) ||
