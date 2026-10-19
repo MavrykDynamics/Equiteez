@@ -50,6 +50,7 @@ import { WithdrawalSummary } from "./WithdrawalSummary";
 import { useWithdrawableAssets } from "./useWithdrawableAssets";
 import { MVRK_ASSET_SLUG, MVRK_CONTRACT_ADDRESS } from "~/lib/metadata";
 import { AssetIcon } from "~/templates/AssetIcon";
+import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 
@@ -511,7 +512,12 @@ export function WithdrawFundsModal({
               <Field className={styles.amountField} label="Amount">
                 {selectedAsset ? (
                   <span className={styles.amountLabel}>
-                    Bal.{" "}
+                    <WalletBalanceIcon
+                      aria-label="Balance"
+                      className={styles.amountLabelIcon}
+                      height={16}
+                      width={16}
+                    />{" "}
                     <Money tooltip={false}>
                       {selectedAsset.availableBalance}
                     </Money>{" "}
