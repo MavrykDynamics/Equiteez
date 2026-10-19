@@ -56,8 +56,6 @@ export function BannerBlock() {
     featuredAsset?.stats?.price?.usd ??
     featuredAsset?.finance.value_per_token;
   const marketCap = featuredAsset?.stats?.market_cap?.usd;
-  const isZeroMetric = (value: BannerMetric["rawValue"]) =>
-    value !== undefined && value !== null && new BigNumberJs(value).isZero();
 
   const autoplay = useMemo(
     () =>
@@ -124,13 +122,14 @@ export function BannerBlock() {
           {
             label: "APY",
             rawValue: featuredAsset?.apy,
-            value: featuredAsset?.apy != null ? (
-              <>
-                <Money tooltip={false}>{featuredAsset.apy}</Money>%
-              </>
-            ) : (
-              "—"
-            ),
+            value:
+              featuredAsset?.apy != null ? (
+                <>
+                  <Money tooltip={false}>{featuredAsset.apy}</Money>%
+                </>
+              ) : (
+                "—"
+              ),
           },
           {
             label: "Market cap",
@@ -216,7 +215,7 @@ export function BannerBlock() {
                   {slide.metrics ? (
                     <dl className={styles.metrics}>
                       {slide.metrics
-                        .filter((metric) => !isZeroMetric(metric.rawValue))
+                        .filter((metric) => metric.rawValue)
                         .map((metric) => (
                           <div className={styles.metric} key={metric.label}>
                             <dt>{metric.label}</dt>
