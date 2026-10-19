@@ -39,7 +39,9 @@ export function RPrimarySaleSummary({
   const total = sale
     ? new BigNumber(sale.max_amount_cap).shiftedBy(-sale.token.decimals)
     : undefined;
-  const soldPercentage = sale?.progress_percent;
+  const soldPercentage = sale?.progress_percent ?? 0;
+  const soldPercentageLabel =
+    soldPercentage > 0 && soldPercentage < 1 ? "<1" : soldPercentage.toFixed(0);
 
   return (
     <section
@@ -71,7 +73,7 @@ export function RPrimarySaleSummary({
       <div className={styles.row}>
         <RText size="body-s" color="neutral-700">
           {sale
-            ? `${soldPercentage}% sold`
+            ? `${soldPercentageLabel}% sold`
             : query.isPending
               ? "—"
               : "Sale data unavailable"}
