@@ -6,7 +6,12 @@ import { expect, it, vi } from "vitest";
 import { usePrimaryPurchase, usePrimaryPurchaseConfig } from "./usePrimaryPurchase";
 
 const mocks = vi.hoisted(() => ({
-  read: vi.fn(async () => ({ options: [] })),
+  read: vi.fn(async () => ({
+    launchName: "launch",
+    launchpadAddress: "KT1launchpad",
+    options: [],
+  })),
+  useLaunchChannel: vi.fn(),
   tezos: { rpc: { getRpcUrl: () => "https://basenet.rpc.mavryk.network" } },
 }));
 vi.mock("~/contracts/primaryPurchase.read", () => ({
@@ -24,6 +29,9 @@ vi.mock("~/lib/apis/rwa/freshness", () => ({
 }));
 vi.mock("~/providers/NotificationsProvider/hooks/useNotifierEvent", () => ({
   useNotifierEvent: vi.fn(),
+}));
+vi.mock("~/providers/NotificationsProvider/hooks/useLaunchChannel", () => ({
+  useLaunchChannel: mocks.useLaunchChannel,
 }));
 vi.mock("~/lib/apis/primaryPurchases/primaryPurchases", () => ({
   PRIMARY_HISTORY_QUERY_KEY: "primary-history",
@@ -83,5 +91,50 @@ it("shares config between the price label and form without extra reads or pollin
     await act(async () => root.unmount());
     client.clear();
     vi.useRealTimers();
+  }
+});
+
+it("subscribes to the primary launch and refreshes launch card data on progress updates", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const invalidate = vi.spyOn(client, "invalidateQueries");
+  const container = document.createElement("div");
+  const root = createRoot(container);
+  function Form() {
+    usePrimaryPurchase("asset");
+    return null;
+  }
+  try {
+    await act(async () =>
+      root.render(
+        <QueryClientProvider client={client}>
+          <Form />
+        </QueryClientProvider>
+      )
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    const latestSubscription =
+      mocks.useLaunchChannel.mock.calls[
+        mocks.useLaunchChannel.mock.calls.length - 1
+      ];
+
+    expect(latestSubscription[0]).toBe("KT1launchpad");
+    expect(latestSubscription[1]).toBe("launch");
+
+    await act(async () => {
+      latestSubscription[2].onProgress();
+    });
+
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: ["asset-launch", "asset"],
+    });
+  } finally {
+    await act(async () => root.unmount());
+    client.clear();
+    invalidate.mockRestore();
   }
 });

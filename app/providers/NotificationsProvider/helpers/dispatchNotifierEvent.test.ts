@@ -3,7 +3,11 @@ import { dispatchNotifierEvent } from "./dispatchNotifierEvent";
 import { getNotificationMessage } from "./messages/notifications.messages";
 import { mapNotificationItemToUserNotification } from "./notifications.helpers";
 import { parseNotifierServerFrame } from "../hooks/useNotifierSocket/useNotifierSocket.helpers";
-import { NotifierServerFrameType } from "../notifications.const";
+import {
+  NotifierChannel,
+  NotifierLaunchEvent,
+  NotifierServerFrameType,
+} from "../notifications.const";
 
 const frame = {
   type: NotifierServerFrameType.Event,
@@ -87,7 +91,10 @@ it("preserves event kind so wallet notification frames can render toasts", () =>
   );
 
   expect(parsedFrame).toEqual(orderFilledFrame);
-  expect(parsedFrame && getNotificationMessage(parsedFrame)).toEqual({
+  if (!parsedFrame || parsedFrame.type !== NotifierServerFrameType.Event) {
+    throw new Error("Expected an event frame");
+  }
+  expect(getNotificationMessage(parsedFrame)).toEqual({
     tone: "success",
     title: "Market Sell Order fully filled",
     message:
@@ -162,6 +169,51 @@ it("does not render bridge websocket events without a kind as toasts", () => {
   } as const;
 
   expect(getNotificationMessage(bridgeFrame)).toBeNull();
+});
+
+it("renders app-wide launch sale announcements from the launches channel", () => {
+  expect(
+    getNotificationMessage({
+      type: NotifierServerFrameType.Event,
+      event_id: "sale-soon-example",
+      event_type: NotifierLaunchEvent.LaunchpadSaleStartingSoon,
+      occurred_at: "2026-10-02T11:45:00Z",
+      channel: NotifierChannel.Launches,
+      payload: {
+        launch_id: "launch-example",
+        launchpad_address: "KT1LaunchpadExample",
+        launch_name: "spring-sale",
+        token_address: "KT1AssetExample",
+        sale_start: "2026-10-02T12:00:00Z",
+        notice_offset_seconds: 900,
+      },
+    })
+  ).toEqual({
+    tone: "info",
+    title: "Token sale starts soon",
+    message: "A token sale starts soon.",
+  });
+});
+
+it("renders overlapping individual launch sale frames as global announcements", () => {
+  expect(
+    getNotificationMessage({
+      type: NotifierServerFrameType.Event,
+      event_id: "sale-started-example",
+      event_type: NotifierLaunchEvent.LaunchpadSaleStarted,
+      occurred_at: "2026-10-02T12:00:00Z",
+      channel: "launch:KT1LaunchpadExample/spring-sale",
+      payload: {
+        launch_name: "spring-sale",
+        token_address: "KT1AssetExample",
+        sale_start: "2026-10-02T12:00:00Z",
+      },
+    })
+  ).toEqual({
+    tone: "info",
+    title: "Token sale has started",
+    message: "A token sale has started.",
+  });
 });
 
 it("renders completed bridge deposits in notification history", () => {

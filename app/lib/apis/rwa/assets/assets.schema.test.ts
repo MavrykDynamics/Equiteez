@@ -43,11 +43,41 @@ describe("asset statistics", () => {
     expect(parsed?.circulating_supply).toBe("0");
   });
 
+  it("accepts backend market cap without unrelated stats fields", () => {
+    const parsed = AssetSchema.shape.stats.parse({
+      market_cap: currencyAmount,
+      data_quality: {
+        market_cap: {
+          status: "stale",
+          reason: "price_stale",
+          price_at: "2026-09-22T14:39:56Z",
+        },
+      },
+    });
+
+    expect(parsed?.market_cap?.usd).toBe(0);
+    expect(parsed?.data_quality?.market_cap?.status).toBe("stale");
+  });
+
+  it("accepts quality-only stats during backend rollout", () => {
+    const parsed = AssetSchema.shape.stats.parse({
+      data_quality: {
+        total_supply: { status: "unavailable", reason: "not_observed" },
+        circulating_supply: { status: "unavailable", reason: "not_observed" },
+        fdv: { status: "unavailable", reason: "not_observed" },
+        market_cap: { status: "unavailable", reason: "not_observed" },
+      },
+    });
+
+    expect(parsed?.data_quality?.market_cap?.reason).toBe("not_observed");
+  });
+
   it.each([
     { market_cap: {} },
     { market_cap: null },
     { circulating_supply: 0 },
     { circulating_supply: null },
+    { total_supply: "001" },
   ])("rejects malformed supplied statistics: %j", (invalidStats) => {
     expect(
       AssetSchema.shape.stats.safeParse({ ...stats, ...invalidStats }).success

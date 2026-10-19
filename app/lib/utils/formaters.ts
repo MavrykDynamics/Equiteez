@@ -46,12 +46,32 @@ export function atomsToTokens(x: BigNumber.Value, decimals: number) {
     .div(decimalScale(decimals));
 }
 
+export function formatRawSupply(
+  raw: string | undefined,
+  decimals: number | undefined
+) {
+  if (
+    raw === undefined ||
+    !/^(0|[1-9][0-9]*)$/.test(raw) ||
+    decimals === undefined ||
+    !Number.isInteger(decimals) ||
+    decimals < 0 ||
+    decimals > 40
+  ) {
+    return undefined;
+  }
+
+  return atomsToTokens(raw, decimals);
+}
+
 export function tokensToAtoms(
   x: BigNumber.Value,
   decimals: number,
   roundingMode: BigNumber.RoundingMode = BigNumber.ROUND_DOWN
 ) {
-  return new BigNumber(x).times(decimalScale(decimals)).integerValue(roundingMode);
+  return new BigNumber(x)
+    .times(decimalScale(decimals))
+    .integerValue(roundingMode);
 }
 
 export function priceToAtoms(

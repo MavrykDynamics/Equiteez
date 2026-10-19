@@ -294,6 +294,10 @@
     border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
+  .secondaryAssetCard:not(:last-child),
+  .primaryAssetCard:not(:last-child) {
+    border-bottom: none;
+  }
 
   .primaryAssetCard:nth-child(n):nth-last-child(n),
   .secondaryAssetCard:nth-child(n):nth-last-child(n) {

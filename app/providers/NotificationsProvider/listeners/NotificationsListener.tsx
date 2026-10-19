@@ -31,17 +31,16 @@ export const NotificationsListener = () => {
     (frame: NotifierEventFrame) => {
       const notification = getNotificationMessage(frame);
 
-      if (!notification) {
-        return;
+      if (notification) {
+        showNotificationToast(toaster, notification);
       }
-
-      showNotificationToast(toaster, notification);
     },
     [toaster]
   );
 
   useNotifierChannel(NotifierChannel.Wallet, handleNotificationEvent);
   useNotifierChannel(NotifierChannel.Catalog, handleNotificationEvent);
+  useNotifierChannel(NotifierChannel.Launches, handleNotificationEvent);
 
   return null;
 };
