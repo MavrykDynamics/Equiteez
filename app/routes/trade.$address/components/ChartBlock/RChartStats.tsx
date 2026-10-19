@@ -2,13 +2,19 @@ import type { CSSProperties } from "react";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import Money from "~/lib/atoms/Money";
 import { RMetricCard } from "~/lib/molecules/RMetricCard/RMetricCard";
+import { formatRawSupply } from "~/lib/utils/formaters";
 
 import styles from "./RChartStats.module.css";
 
 type RChartStatsProps = {
   asset: Pick<
     AssetType,
-    "apy" | "finance" | "total_supply" | "holders_count" | "profile"
+    | "apy"
+    | "finance"
+    | "metadata"
+    | "total_supply"
+    | "holders_count"
+    | "profile"
   >;
 };
 
@@ -23,6 +29,10 @@ function formatProfileValue(value: string) {
 }
 
 export function RChartStats({ asset }: RChartStatsProps) {
+  const totalSupply = formatRawSupply(
+    asset.total_supply,
+    asset.metadata.decimals
+  );
   const metrics = [
     ...(asset.apy !== null
       ? [{ label: "Annual yield (APY)", value: `${asset.apy.toFixed(2)}%` }]
@@ -43,7 +53,12 @@ export function RChartStats({ asset }: RChartStatsProps) {
     },
     {
       label: "Total supply",
-      value: <Money tooltip={false}>{asset.total_supply}</Money>,
+      value:
+        totalSupply === undefined ? (
+          "—"
+        ) : (
+          <Money shortened tooltip={false}>{totalSupply}</Money>
+        ),
     },
     {
       label: "Holders",

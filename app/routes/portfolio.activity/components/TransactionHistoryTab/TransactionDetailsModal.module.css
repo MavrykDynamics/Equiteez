@@ -60,7 +60,7 @@
   display: flex;
   width: 100%;
   flex-direction: column;
-  gap: var(--r-space-3);
+  gap: var(--r-space-2);
   margin: 0;
 }
 

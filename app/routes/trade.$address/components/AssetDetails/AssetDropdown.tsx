@@ -1,9 +1,9 @@
 import { generatePath, useNavigate } from "@remix-run/react";
-import { type CSSProperties, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { ROUTES } from "~/consts";
 import {
-  PHONE_MAX_WIDTH,
+  TABLET_WIDTH,
   useWindowDimensions,
 } from "~/hooks/useWindowDimensions";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
@@ -31,7 +31,21 @@ export function AssetDropdown({ asset }: AssetDropdownProps) {
   const { assets } = useAssetsContext();
   const [query, setQuery] = useState("");
   const { width } = useWindowDimensions();
-  const isMobile = width > 0 && width <= PHONE_MAX_WIDTH;
+  const isMobile = width > 0 && width <= TABLET_WIDTH;
+
+  useEffect(() => {
+    const imageUrls = new Set(
+      assets
+        .map((item) => item.profile.image_url)
+        .filter((url): url is string => Boolean(url))
+    );
+
+    imageUrls.forEach((src) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = src;
+    });
+  }, [assets]);
 
   const matchingAssets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -149,7 +163,7 @@ function AssetOption({ asset, isSelected, onSelect }: AssetOptionProps) {
         <AssetIdentity asset={asset} />
         <div className={styles.assetPriceWrapper}>
           <span className={styles.assetPrice}>
-            <RText size="body-sm" weight="medium">
+            <RText size="body-sm">
               {price === undefined ? (
                 "—"
               ) : (

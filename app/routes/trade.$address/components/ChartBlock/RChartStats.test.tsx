@@ -14,7 +14,12 @@ const asset: Parameters<typeof RChartStats>[0]["asset"] = {
     total_dividends_distributed: "0",
     decimals: 6,
   },
-  total_supply: "12000",
+  metadata: {
+    name: "Asset",
+    symbol: "RWA",
+    decimals: 6,
+  },
+  total_supply: "12000000000",
   holders_count: 42,
   profile: {
     description: "",
@@ -51,7 +56,7 @@ describe("asset statistics", () => {
       "$100",
       "12000",
       "42",
-      "Real estate",
+      "Real Estate",
       "Active",
     ]);
     expect(html).toContain('aria-label="Asset statistics"');
@@ -70,5 +75,34 @@ describe("asset statistics", () => {
     );
     expect(html).toContain("0.00%");
     expect(html.match(/—/g)).toHaveLength(2);
+  });
+
+  it("shows unavailable total supply when scale is missing", () => {
+    const html = renderToStaticMarkup(
+      <RChartStats
+        asset={{
+          ...asset,
+          metadata: {
+            ...asset.metadata,
+            decimals: undefined as unknown as number,
+          },
+        }}
+      />
+    );
+
+    expect(html).toContain("—");
+  });
+
+  it("formats large raw supply values without rounding", () => {
+    const html = renderToStaticMarkup(
+      <RChartStats
+        asset={{
+          ...asset,
+          total_supply: "9007199254740993000001",
+        }}
+      />
+    );
+
+    expect(html).toContain("9007199254740993.000001");
   });
 });

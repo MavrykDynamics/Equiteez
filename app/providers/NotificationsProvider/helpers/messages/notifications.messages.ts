@@ -2,6 +2,7 @@ import { NotifierChannel } from "~/providers/NotificationsProvider/notifications
 import type { NotifierEventFrame } from "~/providers/NotificationsProvider/notifications.types";
 import { getCatalogNotificationMessage } from "~/providers/NotificationsProvider/helpers/messages/catalog.messages";
 import { getLaunchNotificationMessage } from "~/providers/NotificationsProvider/helpers/messages/launch.messages";
+import { getLaunchesNotificationMessage } from "~/providers/NotificationsProvider/helpers/messages/launches.messages";
 import { getWalletNotificationMessage } from "~/providers/NotificationsProvider/helpers/messages/wallet.messages";
 import type { NotifierToastMessage } from "~/providers/NotificationsProvider/helpers/messages/notifications.message.types";
 
@@ -24,6 +25,8 @@ export const getNotificationMessage = (
       return getWalletNotificationMessage(frame);
     case NotifierChannel.Catalog:
       return getCatalogNotificationMessage(frame);
+    case NotifierChannel.Launches:
+      return getLaunchesNotificationMessage(frame);
     default:
       return null;
   }

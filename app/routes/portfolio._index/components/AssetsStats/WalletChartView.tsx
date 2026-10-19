@@ -27,6 +27,7 @@ export function WalletChartView({
   assets,
   portfolioTotal,
 }: WalletChartViewProps) {
+  const [activeTokenAddress, setActiveTokenAddress] = useState<string>();
   const [isOtherDetailsVisible, setIsOtherDetailsVisible] = useState(false);
   const orderedAssets = [...assets]
     .filter(
@@ -52,12 +53,13 @@ export function WalletChartView({
     0
   );
   const otherBalance = otherMembers.reduce(
-    (sum, asset) => sum + asset.balance,
+    (sum, asset) => sum + asset.value,
     0
   );
   const chartAssets: ChartAsset[] = [
     ...primaryAssets.map((item) => ({
       ...item,
+      balance: item.value,
       symbol: item.symbol.toUpperCase(),
     })),
     ...(otherSharePct > 0
@@ -84,7 +86,9 @@ export function WalletChartView({
   return (
     <>
       <AssetsDonutChart
+        activeTokenAddress={activeTokenAddress}
         chartAssets={donutChartAssets}
+        onActiveTokenAddressChange={setActiveTokenAddress}
         portfolioTotal={portfolioTotal}
       />
       <div className={styles.legend}>
@@ -92,8 +96,18 @@ export function WalletChartView({
           <div
             className={
               asset.members
-                ? `${styles.legendItem} ${styles.otherLegendItem}`
-                : styles.legendItem
+                ? `${styles.legendItem} ${styles.otherLegendItem} ${
+                    activeTokenAddress &&
+                    activeTokenAddress !== asset.token_address
+                      ? styles.legendItemInactive
+                      : ""
+                  }`
+                : `${styles.legendItem} ${
+                    activeTokenAddress &&
+                    activeTokenAddress !== asset.token_address
+                      ? styles.legendItemInactive
+                      : ""
+                  }`
             }
             key={asset.token_address}
             onMouseEnter={() => asset.members && setIsOtherDetailsVisible(true)}
@@ -114,9 +128,17 @@ export function WalletChartView({
               </Money>
               %
             </RText>
-            <RText className={styles.blockText} size="body-s">
-              {asset.symbol}
-            </RText>
+            <div className={styles.assetBlockWrapper}>
+              <RText className={styles.blockText} size="body-s">
+                {asset.symbol}
+              </RText>
+              <RText color="neutral-700" size="body-s">
+                $
+                <Money fiat tooltip={false}>
+                  {asset.balance}
+                </Money>
+              </RText>
+            </div>
             {asset.members && isOtherDetailsVisible ? (
               <div className={styles.otherTooltip} role="tooltip">
                 <div className={styles.otherTooltipList}>
@@ -138,7 +160,7 @@ export function WalletChartView({
                         <RText color="neutral-700" size="body-xs">
                           $
                           <Money fiat tooltip={false}>
-                            {member.balance}
+                            {member.value}
                           </Money>
                         </RText>
                       </div>

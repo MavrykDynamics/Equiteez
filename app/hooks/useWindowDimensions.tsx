@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 export const PHONE_WIDTH = 480;
 export const PHONE_MAX_WIDTH = 670;
 export const TABLET_MIN_WIDTH = 820;
+export const TABLET_WIDTH = 1000;
 export const TABLET_MAX_WIDTH = 1180;
 export const DESKTOP_WIDTH = 1304;
 

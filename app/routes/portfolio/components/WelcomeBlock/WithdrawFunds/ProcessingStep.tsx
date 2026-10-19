@@ -62,7 +62,7 @@ export function ProcessingStep({
         </RText>
       </div>
 
-      <RButton className={styles.closeAction} onClick={onClose} tone="white">
+      <RButton className={styles.closeAction} onClick={onClose} tone="white" size="medium">
         <RText weight="medium" size="body-sm">
         Close and Go to Portfolio
         </RText>
