@@ -246,7 +246,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
       <span className={styles.rwaBottomNote}>
         <Money>{tokenPrice}</Money>
       </span>{" "}
-      per share
+      est. per share
     </span>
   );
   const marketUsdtBottomValue = amount ? (
