@@ -20,6 +20,24 @@
   height: 44px;
 }
 
+/* Desktop: scroll tab labels inside the row instead of overflowing the page */
+@media not all and (--media-tablet) {
+  .tabSwitcher {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .tabSwitcher::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabSwitcher > * {
+    flex-shrink: 0;
+  }
+}
+
 @media (--media-tablet) {
   .wrapper {
     min-width: 100%;
