@@ -305,7 +305,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             onNext={() => ref2.current?.focus()}
             amountInputDisabled={false}
             additionalBottomRightBlock={hiddenInputBlock}
-            additionalTopRightBlock={hiddenInputBlock}
             {...input1Props}
             errorCaption={isDisconnected ? undefined : input1Props.errorCaption}
             balanceTotal={balanceTotal}
