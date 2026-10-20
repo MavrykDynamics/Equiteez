@@ -84,7 +84,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } =
+    useUserContext();
   const isDisconnected = !userAddress;
   const canPurchase = primaryPurchase?.isEligible ?? isKyced;
 
@@ -251,11 +252,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
   const pricePerShare = (
     <span className={clsx(styles.bottomNote)}>
-      $
+      est.{" "}
       <span className={styles.rwaBottomNote}>
-        <Money>{tokenPrice}</Money>
+        $<Money>{tokenPrice}</Money>
       </span>{" "}
-      est. per share
+      per share
     </span>
   );
   const marketUsdtBottomValue = amount ? (
