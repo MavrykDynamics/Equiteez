@@ -24,6 +24,7 @@ import {
   type StatusFlag,
 } from "~/lib/ui/use-status-flag";
 
+import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
@@ -239,7 +240,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     amountInputContainerClassName: styles.amountInputContainer,
     assetViewClassName: styles.assetPill,
     balanceClassName: styles.balanceText,
-    balanceLabel: "Bal.",
+    balanceIcon: (
+      <WalletBalanceIcon
+        aria-label="Balance"
+        className={styles.balanceIcon}
+        height={16}
+        width={16}
+      />
+    ),
     bodyClassName: styles.balanceBody,
     bottomLeftClassName: styles.bottomValue,
     bottomRightClassName: styles.bottomValue,
@@ -247,7 +255,6 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     footerClassName: styles.balanceFooter,
     headerClassName: styles.balanceHeader,
     sectionClassName: styles.balanceCard,
-    showBalanceIcon: false,
   };
 
   const pricePerShare = (
