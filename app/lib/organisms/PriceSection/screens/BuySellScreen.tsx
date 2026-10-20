@@ -219,6 +219,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     }
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
+  // Slider position derived from the current amount, so typing in the inputs moves it too
+  const sliderPercentage = useMemo(() => {
+    const balance = new BigNumber(isBuyAction ? usdBalance : tokenBalance);
+    if (!amount || !amount.isFinite() || balance.lte(0)) return 0;
+    return BigNumber.min(amount.div(balance).times(100), 100)
+      .decimalPlaces(0)
+      .toNumber();
+  }, [amount, isBuyAction, tokenBalance, usdBalance]);
+
   const orderSummaryAmount = useMemo(
     () => (primaryPurchase ? amount : marketAmounts?.consideration) ?? ZERO,
     [amount, primaryPurchase, marketAmounts]
@@ -262,7 +271,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <BalanceInputWithTotal
             ref={ref1}
             onNext={() => ref2.current?.focus()}
-            onChange={(data) => setAmount(data)}
+            onChange={(data) => {
+              setSelectedPercentage(null);
+              setAmount(data);
+            }}
             amountInputDisabled={false}
             errorCaption={
               !isDisconnected && hasTotalError
@@ -288,7 +300,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <BalanceInputWithTotal
             ref={ref2}
             onPrev={() => ref1.current?.focus()}
-            onChange={handleOutputChange}
+            onChange={(data) => {
+              setSelectedPercentage(null);
+              handleOutputChange(data);
+            }}
             amountInputDisabled={false}
             additionalBottomRightBlock={
               isBuyAction ? pricePerShare : marketUsdtBottomValue
@@ -308,7 +323,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
           <div className={styles.snakeWrapper}>
             <ESnakeblock
-              selectedOption={selectedPercentage}
+              selectedOption={sliderPercentage}
               setSelectedOption={setSelectedPercentage}
               variant="neutral"
             />

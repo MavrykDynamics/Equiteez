@@ -164,6 +164,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
 
   const handleOutputChange = useCallback(
     (val: BigNumber | undefined) => {
+      setSelectedPercentage(null);
       setAmount(val);
     },
     [setAmount]
@@ -214,6 +215,16 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   const balanceTotal = total;
 
   const orderSummaryAmount = useMemo(() => total ?? ZERO, [total]);
+
+  // Slider position derived from the current order, so typing in the inputs moves it too
+  const sliderPercentage = useMemo(() => {
+    const value = isBuyAction ? total : amount;
+    const balance = new BigNumber(isBuyAction ? usdBalance : tokenBalance);
+    if (!value || !value.isFinite() || balance.lte(0)) return 0;
+    return BigNumber.min(value.div(balance).times(100), 100)
+      .decimalPlaces(0)
+      .toNumber();
+  }, [amount, isBuyAction, tokenBalance, total, usdBalance]);
 
   const isLoading = status === STATUS_PENDING || status === STATUS_CONFIRMING;
   const isBtnDisabled =
@@ -314,7 +325,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           <div className={styles.fieldStack}>
             <div className={styles.snakeWrapper}>
               <ESnakeblock
-                selectedOption={selectedPercentage}
+                selectedOption={sliderPercentage}
                 setSelectedOption={setSelectedPercentage}
                 variant="neutral"
               />
