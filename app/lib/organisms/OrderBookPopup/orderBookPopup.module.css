@@ -513,6 +513,7 @@
 }
 
 .midPrice {
+  font-size: var(--r-font-size-body-sm);
   color: var(--r-color-neutral-black);
   font-weight: var(--r-font-weight-medium);
 }

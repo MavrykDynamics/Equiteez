@@ -1017,20 +1017,20 @@ export const OrderBookTable: FC<OrderBookTableProps> = ({
   const midRow = (
     <div className={clsx(styles.spreadRow, styles.spreadRowBoth)}>
       <span className={styles.midBlock}>
-        <span className={styles.spreadText}>MID</span>
+        {/*<span className={styles.spreadText}>MID</span>*/}
         <span className={clsx(styles.spreadText, styles.midPrice)}>
           {midPrice ? formatters.price.format(midPrice.toNumber()) : "--"}
         </span>
       </span>
-      <span className={styles.spreadText}>
-        Spread{" "}
-        {midPrice
-          ? formatters.price.format(renderData.spread.value)
-          : "--"}{" "}
-        (
-        {spreadPercentage !== null ? `${spreadPercentage}%` : "--"}
-        )
-      </span>
+      {/*<span className={styles.spreadText}>*/}
+      {/*  Spread{" "}*/}
+      {/*  {midPrice*/}
+      {/*    ? formatters.price.format(renderData.spread.value)*/}
+      {/*    : "--"}{" "}*/}
+      {/*  (*/}
+      {/*  {spreadPercentage !== null ? `${spreadPercentage}%` : "--"}*/}
+      {/*  )*/}
+      {/*</span>*/}
     </div>
   );
 
