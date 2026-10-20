@@ -486,6 +486,8 @@
   min-height: 26px;
   padding: var(--r-space-1) 0;
   box-sizing: border-box;
+  border-bottom: 1px solid var(--r-color-neutral-100);
+  border-top: 1px solid var(--r-color-neutral-100);
 }
 
 .spreadRowBoth {
