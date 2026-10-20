@@ -22,7 +22,7 @@ import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDep
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
-const AUTO_SCROLL_INTERVAL_MS = 15_000;
+const AUTO_SCROLL_INTERVAL_MS = 7_000;
 
 type BannerMetric = {
   label: string;
