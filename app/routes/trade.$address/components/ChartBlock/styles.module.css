@@ -36,7 +36,9 @@
   .orderBookContainer:not(:empty) {
     display: block;
     flex: 0 0 325px;
-    height: 503px;
+    /* Match the chart's height instead of driving it */
+    align-self: stretch;
+    contain: size;
   }
 
   .chartContent:has(> .orderBookContainer:not(:empty)) .priceChart {
