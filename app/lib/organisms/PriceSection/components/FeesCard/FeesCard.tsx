@@ -118,15 +118,15 @@ export const FeesCard: FC<FeesCardProps> = ({
         <div className={styles.summaryContent}>
           <div className={styles.summaryContentInner}>
             <div className={styles.details}>
-              {/*<div className={styles.detailRow}>*/}
-              {/*  <span>Est. price per share</span>*/}
-              {/*  <span className={styles.detailValue}>*/}
-              {/*    $*/}
-              {/*    <Money fiat tooltip={false}>*/}
-              {/*      {displayPricePerShare}*/}
-              {/*    </Money>*/}
-              {/*  </span>*/}
-              {/*</div>*/}
+              <div className={styles.detailRow}>
+                <span>Est. price per share</span>
+                <span className={styles.detailValue}>
+                  $
+                  <Money fiat tooltip={false}>
+                    {displayPricePerShare}
+                  </Money>
+                </span>
+              </div>
 
               <div className={styles.detailRow}>
                 <div className={styles.feeLabel}>
