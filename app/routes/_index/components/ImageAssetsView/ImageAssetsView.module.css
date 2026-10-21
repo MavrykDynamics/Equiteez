@@ -64,10 +64,6 @@
   border-bottom-right-radius: var(--r-radius-md);
 }
 
-.card:nth-child(4n + 1):nth-last-child(-n + 4) {
-  border-bottom-left-radius: var(--r-radius-md);
-}
-
 .card:hover {
   background: var(--r-color-neutral-50);
 }
@@ -81,8 +77,8 @@
 
 .media {
   position: relative;
-  flex: 1 1 0;
-  min-height: 94px;
+  flex: 0 0 auto;
+  height: 124px;
   overflow: hidden;
 }
 
@@ -122,7 +118,7 @@
   flex: 0 0 auto;
   flex-direction: column;
   gap: var(--r-space-3);
-  padding: var(--r-space-2) 0 var(--r-space-5) 0;
+  padding: var(--r-space-3) 0 var(--r-space-5) 0;
 }
 
 .assetSummary {
@@ -139,7 +135,6 @@
   flex-direction: column;
   gap: var(--r-space-1);
   align-items: flex-end;
-  margin-top: var(--r-space-1);
 }
 
 .listingPriceMeta,
@@ -162,9 +157,13 @@
 .primaryProgress {
   display: flex;
   align-items: center;
-  height: 72px;
+  height: 54px;
   margin: 0 var(--r-space-5);
 }
+.primaryProgress .cardSaleProgress {
+  gap: 6px;
+}
+
 .assetBadgeWrapper {
   background: white;
   padding: 0;
@@ -179,8 +178,10 @@
   gap: var(--r-space-1);
 }
 
+/* Design: 52px chart pinned to the bottom of a 54px slot */
 .secondaryChart {
-  height: 72px !important;
+  height: 52px !important;
+  margin-top: 2px;
   overflow: hidden !important;
 }
 
@@ -206,10 +207,19 @@
   gap: 6px;
 }
 
+@media not all and (--media-laptop) {
+  .card:nth-child(4n + 1):nth-last-child(-n + 4) {
+    border-bottom-left-radius: var(--r-radius-md);
+  }
+}
+
 @media (--media-laptop) {
   .card:nth-child(n) {
     border-top: 0;
     border-left: 0;
+  }
+
+  .card:nth-child(n):nth-last-child(n) {
     border-radius: 0;
   }
 
@@ -225,16 +235,16 @@
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
 
-  .card:first-child {
+  .card:first-child:nth-child(n) {
     border-top-left-radius: var(--r-radius-md);
   }
 
-  .card:nth-child(3),
+  .card:nth-child(3):nth-last-child(n),
   .card:last-child:nth-child(-n + 3) {
     border-top-right-radius: var(--r-radius-md);
   }
 
-  .card:last-child {
+  .card:last-child:nth-child(n) {
     border-bottom-right-radius: var(--r-radius-md);
   }
 
@@ -247,6 +257,9 @@
   .card:nth-child(n) {
     border-top: 0;
     border-left: 0;
+  }
+
+  .card:nth-child(n):nth-last-child(n) {
     border-radius: 0;
   }
 
@@ -262,16 +275,16 @@
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
 
-  .card:first-child {
+  .card:first-child:nth-child(n) {
     border-top-left-radius: var(--r-radius-md);
   }
 
-  .card:nth-child(2),
+  .card:nth-child(2):nth-last-child(n),
   .card:last-child:nth-child(-n + 2) {
     border-top-right-radius: var(--r-radius-md);
   }
 
-  .card:last-child {
+  .card:last-child:nth-child(n) {
     border-bottom-right-radius: var(--r-radius-md);
   }
 
@@ -284,19 +297,25 @@
   .grid {
     grid-template-columns: minmax(0, 1fr);
   }
+  .card:not(:last-child) {
+    border-bottom: none;
+  }
 
   .card:nth-child(n) {
     border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  }
+
+  .card:nth-child(n):nth-last-child(n) {
     border-radius: 0;
   }
 
-  .card:first-child {
+  .card:first-child:nth-child(n) {
     border-top-left-radius: var(--r-radius-md);
     border-top-right-radius: var(--r-radius-md);
   }
 
-  .card:last-child {
+  .card:last-child:nth-child(n) {
     border-bottom-right-radius: var(--r-radius-md);
     border-bottom-left-radius: var(--r-radius-md);
   }

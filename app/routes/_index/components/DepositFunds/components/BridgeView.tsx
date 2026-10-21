@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
 import EthereumLogo from "~/icons/ethereum-logo.svg";
 import MavenIcon from "~/icons/maven-icon.svg";
+import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -36,7 +37,9 @@ const depositInputClassNames = {
   amountInputContainerClassName: styles.depositAmountInputContainer,
   assetViewClassName: styles.depositAssetPill,
   balanceClassName: styles.depositBalanceText,
-  balanceLabel: "Bal.",
+  balanceIcon: (
+    <WalletBalanceIcon aria-label="Balance" height={16} width={16} />
+  ),
   balancePlacement: "bottom-left" as const,
   bodyClassName: styles.depositInputBody,
   bottomLeftClassName: styles.depositFooterLeft,
@@ -45,7 +48,6 @@ const depositInputClassNames = {
   footerClassName: styles.depositInputFooter,
   headerClassName: styles.depositInputHeader,
   sectionClassName: styles.depositInputCard,
-  showBalanceIcon: false,
 };
 
 function AddressButton({
@@ -339,6 +341,7 @@ export function BridgeView({
         }
         isLoading={isBusy}
         onClick={handlePrimaryAction}
+        size="medium"
         tone="black"
       >
         {!isConnected

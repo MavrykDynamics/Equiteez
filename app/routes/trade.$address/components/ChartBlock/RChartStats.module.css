@@ -4,7 +4,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   row-gap: var(--r-space-4);
-  margin-block: var(--r-space-3);
+  margin: var(--r-space-3) 0 var(--r-space-5) 0;
   padding: var(--r-space-3) var(--r-space-4);
   border-radius: var(--r-radius-md);
   background: var(--r-color-neutral-50);
@@ -52,8 +52,16 @@
     border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   }
 }
+@media (--media-tablet) {
+  .panel {
+    margin: var(--r-space-4) 0 var(--r-space-11) 0;
+  }
+}
 
 @media (--media-phone-max) {
+  .panel {
+    margin: var(--r-space-4) 0 var(--r-space-8) 0;
+  }
   .panel {
     row-gap: var(--r-space-3);
   }

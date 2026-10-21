@@ -78,6 +78,9 @@
     padding-right: var(--r-space-10);
     padding-left: var(--r-space-10);
   }
+  .header {
+    padding: var(--r-space-4) var(--r-space-10) var(--r-space-10);
+  }
 }
 
 @media (--media-phone-max) {

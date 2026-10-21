@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -22,6 +24,7 @@ export function AssetClassChartView({
   assets,
   portfolioTotal,
 }: AssetClassChartViewProps) {
+  const [activeTokenAddress, setActiveTokenAddress] = useState<string>();
   const chartAssets = Object.values(
     assets.reduce<Record<string, AssetClassChartAsset>>((groups, asset) => {
       if (
@@ -32,7 +35,6 @@ export function AssetClassChartView({
       ) {
         return groups;
       }
-
       const assetClass = (asset.asset_class?.trim() || "Other").replace(
         "_",
         " "
@@ -43,12 +45,12 @@ export function AssetClassChartView({
       groups[groupKey] = currentGroup
         ? {
             ...currentGroup,
-            balance: currentGroup.balance + asset.balance,
+            balance: currentGroup.balance + asset.value,
             share_pct: currentGroup.share_pct + asset.share_pct,
           }
         : {
             assetClass,
-            balance: asset.balance,
+            balance: asset.value,
             share_pct: asset.share_pct,
             symbol: assetClass,
             token_address: `asset-class-${groupKey}`,
@@ -63,12 +65,21 @@ export function AssetClassChartView({
   return (
     <>
       <AssetsDonutChart
+        activeTokenAddress={activeTokenAddress}
         chartAssets={chartAssets}
+        onActiveTokenAddressChange={setActiveTokenAddress}
         portfolioTotal={portfolioTotal}
       />
       <div className={styles.legend}>
         {chartAssets.map((asset, index) => (
-          <div className={styles.legendItem} key={asset.token_address}>
+          <div
+            className={`${styles.legendItem} ${
+              activeTokenAddress && activeTokenAddress !== asset.token_address
+                ? styles.legendItemInactive
+                : ""
+            }`}
+            key={asset.token_address}
+          >
             <span
               aria-hidden="true"
               className={styles.legendColor}
@@ -84,9 +95,17 @@ export function AssetClassChartView({
               </Money>
               %
             </RText>
-            <RText className={styles.blockText} size="body-s">
-              {asset.assetClass}
-            </RText>
+            <div className={styles.assetBlockWrapper}>
+              <RText className={styles.blockText} size="body-s">
+                {asset.assetClass}
+              </RText>
+              <RText color="neutral-700" size="body-s">
+                $
+                <Money fiat tooltip={false}>
+                  {asset.balance}
+                </Money>
+              </RText>
+            </div>
           </div>
         ))}
       </div>

@@ -32,7 +32,7 @@ const PageLayout: FC<PageLayoutProps> = ({
     <div className={styles.root}>
       <div
         className={clsx(
-          "relative flex flex-col flex-1 pb-[62px] md:pb-0",
+          "relative flex flex-col flex-1",
           styles.desktopLayout,
           className
         )}

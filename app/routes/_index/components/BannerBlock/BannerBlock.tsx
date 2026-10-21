@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import BigNumberJs from "bignumber.js";
 
@@ -19,9 +20,9 @@ import styles from "./styles.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
-import { atomsToTokens } from "~/lib/utils/formaters";
 
 const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
+const AUTO_SCROLL_INTERVAL_MS = 7_000;
 
 type BannerMetric = {
   label: string;
@@ -52,25 +53,26 @@ export function BannerBlock() {
   const price =
     featuredAssetPrices?.usd ??
     featuredAssetPrices?.price ??
-    featuredAsset?.stats?.price.usd ??
+    featuredAsset?.stats?.price?.usd ??
     featuredAsset?.finance.value_per_token;
-  const marketCap =
-    price !== undefined &&
-    price !== null &&
-    featuredAsset?.stats?.circulating_supply !== undefined
-      ? atomsToTokens(
-          featuredAsset.stats.circulating_supply,
-          featuredAsset.metadata.decimals
-        ).times(price)
-      : undefined;
-  const isZeroMetric = (value: BannerMetric["rawValue"]) =>
-    value !== undefined && value !== null && new BigNumberJs(value).isZero();
+  const marketCap = featuredAsset?.stats?.market_cap?.usd;
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "center",
-    loop: false,
-    slidesToScroll: 1,
-  });
+  const autoplay = useMemo(
+    () =>
+      Autoplay({
+        delay: AUTO_SCROLL_INTERVAL_MS,
+        stopOnInteraction: false,
+      }),
+    []
+  );
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      align: "center",
+      loop: true,
+      slidesToScroll: 1,
+    },
+    [autoplay]
+  );
   const [selectedSlide, setSelectedSlide] = useState(0);
 
   const handleSelect = useCallback(() => {
@@ -120,13 +122,14 @@ export function BannerBlock() {
           {
             label: "APY",
             rawValue: featuredAsset?.apy,
-            value: featuredAsset?.apy != null ? (
-              <>
-                <Money tooltip={false}>{featuredAsset.apy}</Money>%
-              </>
-            ) : (
-              "—"
-            ),
+            value:
+              featuredAsset?.apy != null ? (
+                <>
+                  <Money tooltip={false}>{featuredAsset.apy}</Money>%
+                </>
+              ) : (
+                "—"
+              ),
           },
           {
             label: "Market cap",
@@ -212,7 +215,7 @@ export function BannerBlock() {
                   {slide.metrics ? (
                     <dl className={styles.metrics}>
                       {slide.metrics
-                        .filter((metric) => !isZeroMetric(metric.rawValue))
+                        .filter((metric) => metric.rawValue)
                         .map((metric) => (
                           <div className={styles.metric} key={metric.label}>
                             <dt>{metric.label}</dt>

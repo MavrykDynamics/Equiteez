@@ -24,6 +24,7 @@ import {
   type StatusFlag,
 } from "~/lib/ui/use-status-flag";
 
+import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
@@ -84,7 +85,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } =
+    useUserContext();
   const isDisconnected = !userAddress;
   const canPurchase = primaryPurchase?.isEligible ?? isKyced;
 
@@ -219,6 +221,15 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     }
   }, [isBuyAction, selectedPercentage, setAmount, tokenBalance, usdBalance]);
 
+  // Slider position derived from the current amount, so typing in the inputs moves it too
+  const sliderPercentage = useMemo(() => {
+    const balance = new BigNumber(isBuyAction ? usdBalance : tokenBalance);
+    if (!amount || !amount.isFinite() || balance.lte(0)) return 0;
+    return BigNumber.min(amount.div(balance).times(100), 100)
+      .decimalPlaces(0)
+      .toNumber();
+  }, [amount, isBuyAction, tokenBalance, usdBalance]);
+
   const orderSummaryAmount = useMemo(
     () => (primaryPurchase ? amount : marketAmounts?.consideration) ?? ZERO,
     [amount, primaryPurchase, marketAmounts]
@@ -229,7 +240,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     amountInputContainerClassName: styles.amountInputContainer,
     assetViewClassName: styles.assetPill,
     balanceClassName: styles.balanceText,
-    balanceLabel: "Bal.",
+    balanceIcon: (
+      <WalletBalanceIcon
+        aria-label="Balance"
+        className={styles.balanceIcon}
+        height={16}
+        width={16}
+      />
+    ),
     bodyClassName: styles.balanceBody,
     bottomLeftClassName: styles.bottomValue,
     bottomRightClassName: styles.bottomValue,
@@ -237,14 +255,13 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     footerClassName: styles.balanceFooter,
     headerClassName: styles.balanceHeader,
     sectionClassName: styles.balanceCard,
-    showBalanceIcon: false,
   };
 
   const pricePerShare = (
     <span className={clsx(styles.bottomNote)}>
-      $
+      est.{" "}
       <span className={styles.rwaBottomNote}>
-        <Money>{tokenPrice}</Money>
+        $<Money>{tokenPrice}</Money>
       </span>{" "}
       per share
     </span>
@@ -262,7 +279,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <BalanceInputWithTotal
             ref={ref1}
             onNext={() => ref2.current?.focus()}
-            onChange={(data) => setAmount(data)}
+            onChange={(data) => {
+              setSelectedPercentage(null);
+              setAmount(data);
+            }}
             amountInputDisabled={false}
             errorCaption={
               !isDisconnected && hasTotalError
@@ -288,7 +308,10 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <BalanceInputWithTotal
             ref={ref2}
             onPrev={() => ref1.current?.focus()}
-            onChange={handleOutputChange}
+            onChange={(data) => {
+              setSelectedPercentage(null);
+              handleOutputChange(data);
+            }}
             amountInputDisabled={false}
             additionalBottomRightBlock={
               isBuyAction ? pricePerShare : marketUsdtBottomValue
@@ -308,7 +331,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
           <div className={styles.snakeWrapper}>
             <ESnakeblock
-              selectedOption={selectedPercentage}
+              selectedOption={sliderPercentage}
               setSelectedOption={setSelectedPercentage}
               variant="neutral"
             />

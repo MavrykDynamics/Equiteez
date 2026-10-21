@@ -18,6 +18,7 @@ import {
   NotifierWalletEvent,
 } from "~/providers/NotificationsProvider/notifications.const";
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
+import { useLaunchChannel } from "~/providers/NotificationsProvider/hooks/useLaunchChannel";
 
 export function usePrimaryPurchaseConfig(assetAddress: string) {
   const { userAddress } = useUserContext();
@@ -81,7 +82,12 @@ export function usePrimaryPurchase(assetAddress: string) {
       void Promise.all([
         invalidateFreshQueries("fetchWalletTransferHistory", mark),
         invalidateFreshQueries("fetchWalletActivitySummary", mark),
-        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries(
+          { queryKey },
+          // A launch update can arrive with the purchase notification. Reuse
+          // its in-flight refresh instead of cancelling it and starting again.
+          { cancelRefetch: false }
+        ),
         queryClient.invalidateQueries({
           queryKey: [PRIMARY_HISTORY_QUERY_KEY],
         }),
@@ -102,6 +108,21 @@ export function usePrimaryPurchase(assetAddress: string) {
     },
     [refreshAfterPurchase, userAddress]
   );
+  const handleLaunchProgress = useCallback(() => {
+    void queryClient.invalidateQueries(
+      { queryKey: ["asset-launch", assetAddress] },
+      { cancelRefetch: false }
+    );
+  }, [assetAddress, queryClient]);
+
+  useLaunchChannel(
+    query.data?.launchpadAddress ?? null,
+    query.data?.launchName ?? null,
+    {
+      onProgress: handleLaunchProgress,
+    }
+  );
+
   useNotifierEvent(
     NotifierChannel.Wallet,
     NotifierWalletEvent.LaunchpadPurchase,

@@ -160,15 +160,9 @@
   }
 }
 
-
-@media (--media-tablet) {
-  .bottom {
-    flex-direction: column;
-  }
-}
-
 @media (--media-phone-max) {
   .bottom {
+    flex-direction: column;
     align-items: flex-start;
     text-align: left;
   }

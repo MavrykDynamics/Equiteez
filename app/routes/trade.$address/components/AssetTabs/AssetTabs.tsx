@@ -57,14 +57,21 @@ const tabs: RTabSwitcherItem[] = [
 
 export function AssetTabs({ asset }: { asset: AssetType }) {
   const isPrimary = asset.profile.lifecycle === "primary_issuance";
+  const hasApy = asset.apy !== null;
   const [activeTab, setActiveTab] = useState<AssetTabId>("asset_overview");
 
-  const visibleTab =
+  const isActiveTabHidden =
     (isPrimary &&
       (activeTab === "open_orders" || activeTab === "order_history")) ||
-    (!isPrimary && activeTab === "purchase_history")
-      ? "asset_overview"
-      : activeTab;
+    (!isPrimary && activeTab === "purchase_history") ||
+    (!hasApy && activeTab === "ROI_calculator");
+  const visibleTab = isActiveTabHidden ? "asset_overview" : activeTab;
+
+  const assetTabs = hasApy
+    ? tabs
+    : tabs.filter((tab) => tab.id !== "ROI_calculator");
+  const sideTabs = isPrimary ? purchaseTabs : orders_tabs;
+  const sideTabsAriaLabel = isPrimary ? "Purchase Tabs" : "Order Tabs";
 
   const content = useMemo(
     (): Record<AssetTabId, ReactNode> => ({
@@ -90,17 +97,17 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
-          tabs={tabs}
+          tabs={assetTabs}
         />
         <span className={styles.divider} />
         <RTabSwitcher
           activeTabId={visibleTab}
-          ariaLabel={isPrimary ? "Purchase Tabs" : "Order Tabs"}
+          ariaLabel={sideTabsAriaLabel}
           onChange={(id: string) => {
             setActiveTab(id as AssetTabId);
           }}
           className={styles.desktopTabs}
-          tabs={isPrimary ? purchaseTabs : orders_tabs}
+          tabs={sideTabs}
         />
       </div>
       <div className={styles.content}>

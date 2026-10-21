@@ -5,12 +5,12 @@ import { RViewSwitcher } from "~/lib/atoms/RViewSwitcher/RViewSwitcher";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
-  ALL_ASSETS_FILTER_VALUE,
   INITIAL_ASSETS_FILTER_STATE,
   ASSET_SORT_OPTIONS,
 } from "~/routes/_index/components/AssetsFilters/assetsFilters.const";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import type { AssetsFilterState } from "~/routes/_index/components/AssetsFilters/assetsFilters.types";
+import { getAssetsFilterTabs } from "~/routes/_index/components/AssetsFilters/assetsFilters.utils";
 
 import styles from "./MobileAssetsFilters.module.css";
 
@@ -29,31 +29,10 @@ export function MobileAssetsFilters({
 }: MobileAssetsFiltersProps) {
   const { assets, assetTypes } = useAssetsContext();
 
-  const filterTabs = useMemo(() => {
-    const assetTypeCounts = assets.reduce<Record<string, number>>(
-      (counts, asset) => {
-        const assetType = asset.profile.asset_type;
-
-        counts[assetType] = (counts[assetType] ?? 0) + 1;
-
-        return counts;
-      },
-      {}
-    );
-
-    return [
-      {
-        count: assets.length,
-        id: ALL_ASSETS_FILTER_VALUE,
-        label: "All",
-      },
-      ...Object.values(assetTypes).map((assetType) => ({
-        count: assetTypeCounts[assetType.value] ?? 0,
-        id: assetType.value,
-        label: assetType.label,
-      })),
-    ];
-  }, [assets, assetTypes]);
+  const filterTabs = useMemo(
+    () => getAssetsFilterTabs(assets, assetTypes),
+    [assets, assetTypes]
+  );
 
   return (
     <CustomPopup

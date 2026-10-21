@@ -132,7 +132,10 @@ export function CardBody({ asset, isCardInView }: RImageAssetCardProps) {
       <div>
         {isPrimaryIssuance ? (
           <div className={styles.primaryProgress}>
-            <AssetSaleProgress asset={asset} />
+            <AssetSaleProgress
+              asset={asset}
+              className={styles.cardSaleProgress}
+            />
           </div>
         ) : (
           <motion.div

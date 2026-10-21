@@ -19,7 +19,7 @@ export function useAssetPrice(asset: AssetType) {
   const price =
     assetPrices.usd ??
     assetPrices.price ??
-    asset.stats?.price.usd ??
+    asset.stats?.price?.usd ??
     asset.finance.value_per_token;
 
   const highPrice24h = pointValues.length ? Math.max(...pointValues) : price;

@@ -320,6 +320,10 @@
   font-size: var(--r-font-size-body-sm);
   line-height: var(--r-line-height-body-sm);
 }
+.amountLabelIcon {
+  display: inline-block;
+  vertical-align: -3px;
+}
 .amountField > :first-child {
   padding-right: var(--r-space-8);
 }

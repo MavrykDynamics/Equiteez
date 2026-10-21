@@ -28,7 +28,10 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
   ).split(", ");
   const orderDetails = getOrderDetails(order.side);
   const isBuyOrder = orderDetails.side.toLowerCase() === "buy";
-  const { expiresLabel, isExpired } = getExpiresLabel(order.expires_at, order.status);
+  const { expiresLabel, isExpired } = getExpiresLabel(
+    order.expires_at,
+    order.status
+  );
 
   const assetSlug = toTokenSlug(order.token_address);
   const metadata = useAssetMetadata(assetSlug);
@@ -48,7 +51,10 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
 
   return (
     <>
-      <div className={classNames(styles.row, isExpired && styles.rowExpired)} role="row">
+      <div
+        className={classNames(styles.row, isExpired && styles.rowExpired)}
+        role="row"
+      >
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
             <RText size="body-sm">{formattedDate}</RText>
@@ -118,10 +124,12 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
       </div>
 
       <CancelOrderPopup
+        assetSymbol={assetSymbol}
         description={popupDescription}
         isOpen={isPopupOpen}
         onClose={handleClosePopup}
         onSubmit={handleOrderAction}
+        order={order}
         submitLabel={popupSubmitLabel}
         title={popupTitle}
       />

@@ -24,10 +24,6 @@ import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { RPriceLabelGroup } from "../RPriceLabelGroup/RPriceLabelGroup";
 
 import { RChartStats } from "./RChartStats";
-import {
-  PHONE_MAX_WIDTH,
-  useWindowDimensions,
-} from "~/hooks/useWindowDimensions";
 
 type AssetDetailsProps = {
   asset: AssetType;
@@ -51,10 +47,50 @@ const CHART_RANGES: Array<{ label: string; value: ChartRange }> = [
   { label: "1M", value: "1m" },
 ];
 
-const PRICE_DECIMALS = 2;
+const DEFAULT_PRICE_DECIMALS = 2;
 
 function getPrice(point: AssetPriceChartPoint) {
   return point.usd ?? point.p;
+}
+
+export function getChartPriceDecimals(points: AssetPriceChartPoint[]) {
+  if (!points.length) {
+    return DEFAULT_PRICE_DECIMALS;
+  }
+
+  let minPrice = Number.POSITIVE_INFINITY;
+  let maxPrice = Number.NEGATIVE_INFINITY;
+
+  for (const point of points) {
+    const price = getPrice(point);
+
+    if (!Number.isFinite(price)) {
+      continue;
+    }
+
+    minPrice = Math.min(minPrice, price);
+    maxPrice = Math.max(maxPrice, price);
+  }
+
+  if (!Number.isFinite(minPrice) || !Number.isFinite(maxPrice)) {
+    return DEFAULT_PRICE_DECIMALS;
+  }
+
+  const priceRange = maxPrice - minPrice;
+
+  if (priceRange > 0 && priceRange < 0.001) {
+    return 5;
+  }
+
+  if (priceRange > 0 && priceRange < 0.01) {
+    return 4;
+  }
+
+  if (priceRange > 0 && priceRange < 0.1) {
+    return 3;
+  }
+
+  return DEFAULT_PRICE_DECIMALS;
 }
 
 function getPeriodByRange(range: ChartRange): "1h" | "24h" | "7d" | "30d" {
@@ -184,8 +220,6 @@ export function PriceChart({
   orderBookContent,
 }: AssetDetailsProps) {
   const { price } = useAssetPrice(asset);
-  const { width } = useWindowDimensions();
-  const isMobile = width > 0 && width <= PHONE_MAX_WIDTH;
   const [range, setRange] = useState<ChartRange>("1d");
   const [points, setPoints] = useState<AssetPriceChartPoint[]>([]);
   const [priceChangeView, setPriceChangeView] = useState<PriceChangeView>({
@@ -257,6 +291,10 @@ export function PriceChart({
   }, [asset.metadata.symbol, range]);
 
   const tone = priceChangeView.tone;
+  const chartPriceDecimals = useMemo(
+    () => getChartPriceDecimals(points),
+    [points]
+  );
 
   useEffect(() => {
     onToneChange?.(tone);
@@ -401,8 +439,8 @@ export function PriceChart({
                     className={styles.chart}
                     onHover={handleChartHover}
                     points={points}
-                    priceDecimals={PRICE_DECIMALS}
-                    priceScaleMinimumWidth={isMobile ? 0 : undefined}
+                    priceDecimals={chartPriceDecimals}
+                    priceScaleMinimumWidth={0}
                     showPriceScale
                     showTimeScale
                     timeTickFormatter={timeTickFormatter}

@@ -256,6 +256,7 @@ type BalanceDisplayBlockProps = {
   cryptoValue: number | BigNumber;
   selectedAssetMetadata?: AssetMetadataBase;
   showBalanceIcon?: boolean;
+  balanceIcon?: React.ReactNode;
 };
 
 const BalanceDisplayBlock: FC<BalanceDisplayBlockProps> = ({
@@ -266,6 +267,7 @@ const BalanceDisplayBlock: FC<BalanceDisplayBlockProps> = ({
   cryptoValue,
   selectedAssetMetadata,
   showBalanceIcon = true,
+  balanceIcon,
 }) => {
   return (
     <div
@@ -274,7 +276,8 @@ const BalanceDisplayBlock: FC<BalanceDisplayBlockProps> = ({
         balanceClassName
       )}
     >
-      {showBalanceIcon && <Icon icon="wallet-secondary" className="size-4" />}
+      {showBalanceIcon &&
+        (balanceIcon ?? <Icon icon="wallet-secondary" className="size-4" />)}
       {balanceLabel && <span>{balanceLabel}</span>}
       <CryptoBalance
         value={new BigNumber(cryptoValue)}
@@ -297,6 +300,7 @@ export const BalanceInputWithTotal = forwardRef<
       cryptoValue: number | BigNumber;
       cryptoDecimals?: number;
       showBalanceIcon?: boolean;
+      balanceIcon?: React.ReactNode;
     }
 >((props, inputRef) => {
   const {
@@ -310,6 +314,7 @@ export const BalanceInputWithTotal = forwardRef<
     cryptoValue,
     cryptoDecimals,
     showBalanceIcon = true,
+    balanceIcon,
     additionalBottomLeftBlock,
     additionalTopRightBlock,
     additionalBottomRightBlock,
@@ -325,6 +330,7 @@ export const BalanceInputWithTotal = forwardRef<
       cryptoValue={cryptoValue}
       selectedAssetMetadata={selectedAssetMetadata}
       showBalanceIcon={showBalanceIcon}
+      balanceIcon={balanceIcon}
     />
   );
 

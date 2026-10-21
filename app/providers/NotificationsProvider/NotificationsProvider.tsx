@@ -24,6 +24,7 @@ import {
   MAX_NOTIFIER_SUBSCRIPTIONS,
   NotifierChannel,
   NotifierClientFrameType,
+  NotifierLaunchEvent,
 } from "~/providers/NotificationsProvider/notifications.const";
 import type {
   NotifierChannelType,
@@ -51,6 +52,12 @@ const isNotificationsNotFoundError = (error: unknown) =>
 
 const isImplicitChannel = (channel: NotifierChannelType) =>
   channel === NotifierChannel.Wallet;
+
+const isLaunchChannel = (channel: string) => channel.startsWith("launch:");
+
+const isLaunchSaleAnnouncement = (frame: NotifierEventFrame) =>
+  frame.event_type === NotifierLaunchEvent.LaunchpadSaleStartingSoon ||
+  frame.event_type === NotifierLaunchEvent.LaunchpadSaleStarted;
 
 const toSortedChannels = (channels: Set<string>) =>
   Array.from(channels).sort((left, right) => left.localeCompare(right));
@@ -277,6 +284,20 @@ export const NotificationsProvider = ({
       const handlers = channelHandlersRef.current.get(frame.channel);
 
       if (handlers) dispatchNotifierEvent(handlers, frame, wallet);
+
+      if (
+        isLaunchSaleAnnouncement(frame) &&
+        isLaunchChannel(frame.channel) &&
+        frame.channel !== NotifierChannel.Launches
+      ) {
+        const launchAnnouncementHandlers = channelHandlersRef.current.get(
+          NotifierChannel.Launches
+        );
+
+        if (launchAnnouncementHandlers) {
+          dispatchNotifierEvent(launchAnnouncementHandlers, frame, wallet);
+        }
+      }
     },
     []
   );
