@@ -1,24 +1,14 @@
-import { Link } from "@remix-run/react";
-
-import { ROUTES } from "~/consts/routes";
 import { RButton } from "~/lib/atoms/RButton";
-import { HashShortView } from "~/lib/atoms/HashShortView";
-import IdentIcon from "~/lib/organisms/IdenIcon";
-import {
-  RCustomDropdown,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-  RDropdownFaceContent,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
 import styles from "./ConnectWallet.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
+// import { MvrkWalletDropdown } from "./WalletDropdown/MvrkWalletDropdown";
+import { CreditsWalletDropdown } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/CreditsWalletDropdown";
 
 export const ConnectWallet = () => {
-  const { changeUser, connect, isLoading, signOut, userAddress } =
-    useUserContext();
+  const { connect, isLoading, userAddress } = useUserContext();
 
   const handleConnect = () => {
     // Opening the wallet popup should not trigger RButton's async loading state.
@@ -32,31 +22,10 @@ export const ConnectWallet = () => {
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
-        <RCustomDropdown className={styles.dropdown}>
-          <RDropdownFaceContent className={styles.trigger}>
-            <IdentIcon
-              className={styles.identIcon}
-              hash={userAddress}
-              size={24}
-              type="bottts"
-            />
-            <RText size="body-sm" className={styles.address}>
-              <HashShortView hash={userAddress} />
-            </RText>
-          </RDropdownFaceContent>
-
-          <RDropdownBodyContent align="right" className={styles.menu}>
-            <Link className={styles.profileLink} to={ROUTES.portfolio}>
-              Portfolio
-            </Link>
-            <RDropdownBodyContentItem onClick={changeUser}>
-              Change account
-            </RDropdownBodyContentItem>
-            <RDropdownBodyContentItem onClick={signOut}>
-              Sign out
-            </RDropdownBodyContentItem>
-          </RDropdownBodyContent>
-        </RCustomDropdown>
+        <>
+          <CreditsWalletDropdown userAddress={userAddress} />
+          {/*<MvrkWalletDropdown userAddress={userAddress} />*/}
+        </>
       ) : (
         <RButton
           onClick={handleConnect}
