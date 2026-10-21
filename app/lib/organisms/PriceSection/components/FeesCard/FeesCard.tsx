@@ -22,6 +22,7 @@ type FeesCardProps = {
   totalAmount?: BigNumber.Value;
   annualYield?: number;
   includedPurchaseFee?: BigNumber.Value;
+  isLimitOrder?: boolean;
 };
 
 export const FeesCard: FC<FeesCardProps> = ({
@@ -32,6 +33,7 @@ export const FeesCard: FC<FeesCardProps> = ({
   totalAmount = 0,
   annualYield,
   includedPurchaseFee,
+  isLimitOrder = false,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const usdToTokenRates = useUsdToTokenRates();
@@ -119,7 +121,9 @@ export const FeesCard: FC<FeesCardProps> = ({
           <div className={styles.summaryContentInner}>
             <div className={styles.details}>
               <div className={styles.detailRow}>
-                <span>Est. price per share</span>
+                <span>
+                  {isLimitOrder ? "Price per share" : "Est. price per share"}
+                </span>
                 <span className={styles.detailValue}>
                   $
                   <Money fiat tooltip={false}>

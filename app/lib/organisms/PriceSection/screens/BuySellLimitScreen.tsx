@@ -364,6 +364,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             gasFee={gasFee}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
+            isLimitOrder
             totalAmount={orderSummaryAmount}
             annualYield={actionType === BUY ? (apy ?? undefined) : undefined}
           />
