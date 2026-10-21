@@ -169,3 +169,62 @@ describe("asset profile details", () => {
     expect(parsed.amenities?.[0]?.name).toBe("Backup Power");
   });
 });
+
+describe("asset profile content", () => {
+  const profile = {
+    description: "About text",
+    asset_type: "commodity",
+    status: "active",
+    lifecycle: "secondary_market",
+    gallery: [],
+  };
+
+  it("omits absent optional content", () => {
+    const parsed = AssetSchema.shape.profile.parse(profile);
+
+    expect(parsed.tagline).toBeUndefined();
+    expect(parsed.why_invest).toBeUndefined();
+    expect(parsed.location).toBeUndefined();
+  });
+
+  it("keeps investment reasons in order and skips malformed ones", () => {
+    const parsed = AssetSchema.shape.profile.parse({
+      ...profile,
+      why_invest: [
+        { title: "First", description: "One" },
+        { title: " ", description: "Blank title" },
+        { title: "Blank description", description: "" },
+        "malformed",
+        { title: "Second", description: "Two" },
+      ],
+    });
+
+    expect(parsed.why_invest).toEqual([
+      { title: "First", description: "One" },
+      { title: "Second", description: "Two" },
+    ]);
+  });
+
+  it("drops malformed tagline and location fields without rejecting the profile", () => {
+    const parsed = AssetSchema.shape.profile.parse({
+      ...profile,
+      tagline: 42,
+      features: [{ id: "a", name: "Feature" }],
+      location: {
+        description: { text: "bad" },
+        name: "Emirates Gold, DMCC",
+        city: "Dubai",
+        country: "AE",
+        coordinates: { lat: "25" },
+      },
+    });
+
+    expect(parsed.tagline).toBeUndefined();
+    expect(parsed.features).toEqual([{ id: "a", name: "Feature" }]);
+    expect(parsed.location).toEqual({
+      name: "Emirates Gold, DMCC",
+      city: "Dubai",
+      country: "AE",
+    });
+  });
+});

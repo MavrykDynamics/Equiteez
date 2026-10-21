@@ -89,8 +89,46 @@ const AssetProfileItemSchema = z.object({
   name: z.string(),
 });
 
+// Optional profile content is parsed leniently: a malformed field is dropped
+// instead of rejecting the whole asset.
+const OptionalTextSchema = z.string().optional().catch(undefined);
+
+const AssetWhyInvestItemSchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+});
+
+type AssetWhyInvestItem = z.infer<typeof AssetWhyInvestItemSchema>;
+
+const AssetWhyInvestSchema = z
+  .array(z.unknown())
+  .transform((items) =>
+    items.flatMap((item): AssetWhyInvestItem[] => {
+      const result = AssetWhyInvestItemSchema.safeParse(item);
+
+      return result.success ? [result.data] : [];
+    })
+  )
+  .optional()
+  .catch(undefined);
+
+const AssetLocationSchema = z
+  .object({
+    description: OptionalTextSchema,
+    name: OptionalTextSchema,
+    city: OptionalTextSchema,
+    country: OptionalTextSchema,
+    coordinates: z
+      .object({ lat: z.number(), lng: z.number() })
+      .optional()
+      .catch(undefined),
+  })
+  .optional()
+  .catch(undefined);
+
 const AssetProfileSchema = z.object({
   description: z.string(),
+  tagline: OptionalTextSchema,
   asset_type: z.string(),
   status: z.string(),
   lifecycle: z.string(),
@@ -98,6 +136,8 @@ const AssetProfileSchema = z.object({
   gallery: z.array(z.object({ kind: z.string(), url: z.string() })),
   features: z.array(AssetProfileItemSchema).optional(),
   amenities: z.array(AssetProfileItemSchema).optional(),
+  why_invest: AssetWhyInvestSchema,
+  location: AssetLocationSchema,
 });
 
 const AssetFinanceSchema = z.object({

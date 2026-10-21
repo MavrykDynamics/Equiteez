@@ -214,3 +214,11 @@
     height: 268px;
   }
 }
+
+.tagline {
+  font-style: italic;
+}
+
+.multilineText {
+  white-space: pre-line;
+}

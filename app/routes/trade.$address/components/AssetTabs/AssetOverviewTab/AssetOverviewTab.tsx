@@ -12,6 +12,7 @@ type DetailGroup = {
 };
 
 export function AssetOverviewTab({ asset }: { asset: AssetType }) {
+  const tagline = asset.profile.tagline?.trim();
   const detailGroups: DetailGroup[] = [
     {
       title: "Features",
@@ -29,7 +30,16 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
         <RHeading size="h6" weight="medium">
           About {asset.metadata.name}
         </RHeading>
-        <RText color="neutral-700" size="body-sm">
+        {tagline ? (
+          <RText className={styles.tagline} size="body-sm">
+            {tagline}
+          </RText>
+        ) : null}
+        <RText
+          className={styles.multilineText}
+          color="neutral-700"
+          size="body-sm"
+        >
           {asset.profile.description}
         </RText>
       </div>
