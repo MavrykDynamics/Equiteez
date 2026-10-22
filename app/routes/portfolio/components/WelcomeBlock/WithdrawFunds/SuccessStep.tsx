@@ -1,3 +1,4 @@
+import { CopyButton } from "~/lib/atoms/CopyButton";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -9,7 +10,6 @@ type SuccessStepProps = {
   amount: string;
   asset: string;
   onClose: () => void;
-  onCopy: () => void;
   transactionHash: string;
 };
 
@@ -17,7 +17,6 @@ export function SuccessStep({
   amount,
   asset,
   onClose,
-  onCopy,
   transactionHash,
 }: SuccessStepProps) {
   return (
@@ -50,14 +49,14 @@ export function SuccessStep({
         <span className={styles.transactionDivider} />
         <span className={styles.transaction}>
           Txn{" "}
-          <button
+          <CopyButton
             aria-label="Copy transaction hash"
-            onClick={onCopy}
-            type="button"
+            text={transactionHash}
+            type="block"
           >
             {formatTransactionHash(transactionHash)}
             <RIcon aria-hidden="true" name="copy" size="small" />
-          </button>
+          </CopyButton>
         </span>
       </div>
       <div className={styles.successDivider} />

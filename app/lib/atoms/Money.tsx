@@ -250,7 +250,7 @@ const FullAmountTippy: FC<FullAmountTippyProps> = ({
     if (copied) {
       return "Copied!";
     }
-    return showAmountTooltip ? fullAmountStr : "copy";
+    return showAmountTooltip ? fullAmountStr : "Copy";
   }, [copied, showAmountTooltip, fullAmountStr]);
 
   const tippyInstanceRef = useRef<TippyInstance>();
