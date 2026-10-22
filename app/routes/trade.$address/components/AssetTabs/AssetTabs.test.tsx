@@ -5,6 +5,7 @@ import { expect, it, vi } from "vitest";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import { AssetTabs } from "./AssetTabs";
 
+vi.mock("~/lib/organisms/AssetRefundAll/AssetRefundAll", () => ({ AssetRefundAll: () => <div>Asset refunds</div> }));
 vi.mock("~/lib/organisms/RTabSwitcher", () => ({
   RTabSwitcher: ({
     tabs,

@@ -1,3 +1,4 @@
+import { AssetRefundAll } from "~/lib/organisms/AssetRefundAll/AssetRefundAll";
 import { RPurchaseHistoryTab } from "./PurchaseHistoryTab/RPurchaseHistoryTab";
 import styles from "./styles.module.css";
 import { RTabSwitcher } from "~/lib/organisms/RTabSwitcher";
@@ -110,6 +111,7 @@ export function AssetTabs({ asset }: { asset: AssetType }) {
           tabs={sideTabs}
         />
       </div>
+      <AssetRefundAll key={asset.address} asset={asset.address} />
       <div className={styles.content}>
         {content[visibleTab] ?? <div>No active tab</div>}
       </div>

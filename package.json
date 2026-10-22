@@ -87,7 +87,11 @@
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-svgr": "^4.2.0",
     "wagmi": "^2.14.16",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@mavrykdynamics/taquito-michel-codec": "^20.1.0",
+    "@mavrykdynamics/taquito-michelson-encoder": "^20.1.0",
+    "@mavrykdynamics/taquito-utils": "^20.1.0",
+    "@noble/hashes": "^1.8.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240405.0",
