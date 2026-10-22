@@ -35,7 +35,13 @@ const orders: Chunk["orders"] = [
   { orderId: "9007199254740993", orderType: "BUY" },
   { orderId: "12", orderType: "SELL" },
 ];
-const chunk = (): Chunk => ({ book, orders, state: "submitted", hash });
+const chunk = (): Chunk => ({
+  book,
+  orders,
+  state: "submitted",
+  hash,
+  signature: "expected-signature",
+});
 const run = (mode: RefundRun["mode"] = "credits"): RefundRun => ({
   version: 1,
   wallet,
@@ -51,7 +57,7 @@ const run = (mode: RefundRun["mode"] = "credits"): RefundRun => ({
 
 function blockReceipt(
   internals: unknown[] = [],
-  entrypoint = "permitAndExecute",
+  entrypoint = "permitAndExecute"
 ) {
   return {
     operations: [
@@ -123,7 +129,13 @@ function receipt(key = publicKey, entries = orders) {
     target: { address: book },
     parameter: {
       entrypoint: "permitAndExecute",
-      value: [{ userPublicKey: key, action: { permitProcessRefund: entries } }],
+      value: [
+        {
+          userPublicKey: key,
+          userSignature: "expected-signature",
+          action: { permitProcessRefund: entries },
+        },
+      ],
     },
   };
 }
@@ -131,6 +143,47 @@ function receipt(key = publicKey, entries = orders) {
 beforeEach(() => vi.clearAllMocks());
 
 describe("refund receipt reconciliation", () => {
+  it("rejects an older permit with the same signer and orders but a different signature", async () => {
+    const { dapp } = setup();
+    const old = receipt();
+    old.parameter.value[0].userSignature = "old-signature";
+    mocks.operations.mockResolvedValue([old]);
+    await expect(
+      createPorts(dapp, run(), vi.fn(), () => true).chain(hash, chunk())
+    ).rejects.toThrow("does not match");
+  });
+  it("does not adopt another in-flight request based only on its intent", async () => {
+    const { dapp } = setup();
+    mocks.post.mockRejectedValueOnce({
+      response: {
+        status: 409,
+        data: { code: "PERMIT_IN_FLIGHT", detail: { operationId: "other" } },
+      },
+    });
+    await expect(
+      createPorts(dapp, run(), vi.fn(), () => true).submit({})
+    ).rejects.toMatchObject({ code: "PERMIT_IN_FLIGHT" });
+  });
+  it("rejects an old direct transaction and persists the current send's block fence", async () => {
+    const { dapp, send } = setup();
+    const c = chunk(),
+      r = run("mvrk");
+    r.chunks = [c];
+    const save = vi.fn();
+    const ports = createPorts(dapp, r, save, () => true);
+    await ports.send(c);
+    expect(c.afterLevel).toBe(102);
+    expect(save.mock.invocationCallOrder[0]).toBeLessThan(
+      send.mock.invocationCallOrder[0]
+    );
+    const row = {
+      ...receipt(),
+      sender: { address: wallet },
+      parameter: { entrypoint: "processRefund", value: orders },
+    };
+    mocks.operations.mockResolvedValue([row]);
+    await expect(ports.chain(hash, c)).rejects.toThrow("predates");
+  });
   it("finds the exact user's request after a different user in a shared relay hash", async () => {
     const { dapp, toolkit } = setup();
     mocks.operations.mockResolvedValue([
@@ -139,7 +192,7 @@ describe("refund receipt reconciliation", () => {
       receipt(),
     ]);
     expect(
-      await createPorts(dapp, run(), vi.fn(), () => true).chain(hash, chunk()),
+      await createPorts(dapp, run(), vi.fn(), () => true).chain(hash, chunk())
     ).toEqual({ state: "applied", level: 100, payouts: [] });
     expect(toolkit.rpc.getBlockHash).toHaveBeenCalledWith({ block: "100" });
   });
@@ -155,11 +208,11 @@ describe("refund receipt reconciliation", () => {
     ]) {
       mocks.operations.mockResolvedValue([row]);
       await expect(ports.chain(hash, chunk())).rejects.toThrow(
-        "does not match",
+        "does not match"
       );
     }
     await expect(ports.chain("invalid", chunk())).rejects.toThrow(
-      "Invalid transaction hash",
+      "Invalid transaction hash"
     );
   });
 
@@ -271,7 +324,7 @@ describe("permit packing", () => {
   // the current shape matches _packPermitPayload(counter, hash, deadline).
   it("packs a lossless counter in the legacy contract layout", () => {
     expect(packedPermit(chain, book, "9007199254740993", "04".repeat(32))).toBe(
-      "05070707070a00000004081b203f0a000000160103030303030303030303030303030303030303030007070081808080808080200a000000200404040404040404040404040404040404040404040404040404040404040404",
+      "05070707070a00000004081b203f0a000000160103030303030303030303030303030303030303030007070081808080808080200a000000200404040404040404040404040404040404040404040404040404040404040404"
     );
   });
   it("includes the deadline in the current nested pair layout", () => {
@@ -281,10 +334,10 @@ describe("permit packing", () => {
         book,
         "9007199254740993",
         "04".repeat(32),
-        "2030-01-01T00:00:00.000Z",
-      ),
+        "2030-01-01T00:00:00.000Z"
+      )
     ).toBe(
-      "05070707070a00000004081b203f0a0000001601030303030303030303030303030303030303030300070700818080808080802007070a0000002004040404040404040404040404040404040404040404040404040404040404040080e2de8d0e",
+      "05070707070a00000004081b203f0a0000001601030303030303030303030303030303030303030300070700818080808080802007070a0000002004040404040404040404040404040404040404040404040404040404040404040080e2de8d0e"
     );
   });
   it("rejects an oversized intent and an unsupported relay counter before asking for a signature", async () => {
@@ -294,7 +347,7 @@ describe("permit packing", () => {
       ports.sign({
         ...chunk(),
         orders: [{ orderId: "1".repeat(33 * 1024), orderType: "BUY" }],
-      }),
+      })
     ).rejects.toMatchObject({ code: "PAYLOAD_TOO_LARGE" });
     mocks.get.mockResolvedValue({
       data: {
@@ -520,7 +573,7 @@ describe.each(["current", "legacy"] as const)(
         parameter: { entrypoint: "permitAndExecute" },
       });
       const decoded = new Schema(env.entry).Execute(
-        operation.parameter.value,
+        operation.parameter.value
       ) as {
         userPublicKey: string;
         userSignature: string;
@@ -539,11 +592,11 @@ describe.each(["current", "legacy"] as const)(
         decoded[0].action.permitProcessRefund.map((o) => ({
           orderId: o.orderId.toFixed(),
           orderType: o.orderType,
-        })),
+        }))
       ).toEqual(orders);
       if (version === "current")
         expect(new Date(decoded[0].deadline!).toISOString()).toBe(
-          "2030-01-01T00:03:00.000Z",
+          "2030-01-01T00:03:00.000Z"
         );
       else expect(decoded[0]).not.toHaveProperty("deadline");
       expect(mocks.get).toHaveBeenCalledTimes(1); // free refund needs no Credits balance check
@@ -568,12 +621,12 @@ describe.each(["current", "legacy"] as const)(
     it("rejects a valid signature reused for a differently ordered refund list", async () => {
       const env = signingSetup(version);
       await expect(
-        env.ports.sign({ ...chunk(), orders: [...orders].reverse() }),
+        env.ports.sign({ ...chunk(), orders: [...orders].reverse() })
       ).rejects.toMatchObject({ code: "BAD_SIGNATURE" });
       expect(env.encode).not.toHaveBeenCalled();
       expect(mocks.post).not.toHaveBeenCalled();
     });
-  },
+  }
 );
 
 describe("direct send scope and ambiguity", () => {
@@ -597,7 +650,7 @@ describe("direct send scope and ambiguity", () => {
       code: "OPERATION_RESOURCE_LIMIT",
     });
     toolkit.estimate.transfer.mockRejectedValueOnce(
-      new Error(JSON.stringify([{ id: "proto.test.gas_exhausted.operation" }])),
+      new Error(JSON.stringify([{ id: "proto.test.gas_exhausted.operation" }]))
     );
     await expect(ports.send(chunk())).rejects.toMatchObject({
       code: "SIMULATION_FAILED",
@@ -612,7 +665,7 @@ describe("direct send scope and ambiguity", () => {
       return {};
     });
     await expect(
-      createPorts(dapp, run("mvrk"), vi.fn(), () => true).send(chunk()),
+      createPorts(dapp, run("mvrk"), vi.fn(), () => true).send(chunk())
     ).rejects.toMatchObject({ code: "SCOPE_CHANGED" });
     expect(send).not.toHaveBeenCalled();
   });

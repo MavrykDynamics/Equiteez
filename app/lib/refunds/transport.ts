@@ -437,13 +437,11 @@ export function createPorts(
         deadline
       );
       await scope();
-      const signature = await dapp
-        .getDAppClient()
-        .requestSignPayload({
-          payload: packed,
-          sourceAddress: run.wallet,
-          signingType: "micheline" as SigningType,
-        });
+      const signature = await dapp.getDAppClient().requestSignPayload({
+        payload: packed,
+        sourceAddress: run.wallet,
+        signingType: "micheline" as SigningType,
+      });
       await scope();
       if (!verifySignature(packed, account.publicKey, signature.signature))
         throw new RefundFailure(
@@ -471,6 +469,7 @@ export function createPorts(
           "PAYLOAD_TOO_LARGE",
           "The signed refund is too large. Nothing was submitted; refresh using smaller parts."
         );
+      chunk.signature = signature.signature;
       return request;
     },
     async submit(request) {
@@ -498,17 +497,12 @@ export function createPorts(
         };
         const body = e.response?.data,
           code = body?.code ?? body?.error;
-        if (code === "PERMIT_IN_FLIGHT" && body?.detail?.operationId) {
-          // It could belong to another browser. Do not adopt an unrelated intent.
-          const old = (
-            await rwaApi.get(
-              `/wallets/${run.wallet}/relay/operations/${body.detail.operationId}`
-            )
-          ).data;
-          if (JSON.stringify(old.intent) === JSON.stringify(request.intent))
-            return { operationId: body.detail.operationId };
-          throw new Error(
-            "Another operation is in flight. Keep this signed request and check again later."
+        if (code === "PERMIT_IN_FLIGHT") {
+          // The backend idempotency path returns our own accepted request.
+          // A different in-flight operation is not proof that THIS signature ran.
+          throw new RefundFailure(
+            code,
+            `Another operation is in flight${body?.detail?.operationId ? ` (${body.detail.operationId})` : ""}. Wait for it to finish, then refresh the remaining balances.`
           );
         }
         if (
@@ -534,6 +528,12 @@ export function createPorts(
           ...method.toTransferParams(),
           source: run.wallet,
         });
+        await scope();
+        const header = await toolkit.rpc.getBlockHeader();
+        if (!Number.isSafeInteger(header.level) || header.level < 0)
+          throw new Error("Chain head is unavailable");
+        chunk.afterLevel = header.level;
+        persist(run);
         await scope();
         send = async () => (await method.send()).opHash;
       } catch (error) {
@@ -572,6 +572,10 @@ export function createPorts(
         !/^o[1-9A-HJ-NP-Za-km-z]{50}$/.test(hash)
       )
         throw new Error("Invalid transaction hash or network");
+      if (run.mode === "credits" && !chunk.signature)
+        throw new Error(
+          "The saved permit signature is unavailable; check the original relay operation before retrying."
+        );
       const operations = await fetchGetOperationsByHash(run.chain, hash);
       if (!operations.length) return { state: "pending" };
       // One relay hash can include refunds for many users in the same book.
@@ -588,6 +592,11 @@ export function createPorts(
         if (
           run.mode === "credits" &&
           (!Array.isArray(value) || value.length !== 1)
+        )
+          return false;
+        if (
+          run.mode === "credits" &&
+          value[0]?.userSignature !== chunk.signature
         )
           return false;
         const orders =
@@ -626,6 +635,8 @@ export function createPorts(
         );
       if (!row.level || !Number.isSafeInteger(row.level) || !row.block)
         return { state: "pending" };
+      if (chunk.afterLevel !== undefined && row.level <= chunk.afterLevel)
+        throw new Error("This transaction predates the saved refund request.");
       const rpc = dapp.tezos().rpc;
       const head = await rpc.getBlockHeader();
       if (

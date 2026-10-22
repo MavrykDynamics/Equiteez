@@ -53,6 +53,8 @@ export type Chunk = {
     | "failed"
     | "unknown";
   payouts?: Payout[];
+  signature?: string;
+  afterLevel?: number;
   request?: Record<string, unknown>;
   operationId?: string;
   hash?: string;
@@ -236,6 +238,8 @@ export function restoreRun(
           payouts: z
             .array(z.object({ token: z.string(), id: nat, units: nat }))
             .optional(),
+          signature: z.string().optional(),
+          afterLevel: z.number().int().nonnegative().optional(),
           request: z.record(z.unknown()).optional(),
           operationId: z.string().optional(),
           hash: z.string().optional(),

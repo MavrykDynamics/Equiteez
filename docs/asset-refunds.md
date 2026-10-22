@@ -18,3 +18,5 @@ Credits fees use the resolved `feeSchedule`: a missing refund variant is free; a
 A proven `OPERATION_RESOURCE_LIMIT` or `PAYLOAD_TOO_LARGE` allows smaller parts with a refreshed preview and new signature. The client stops reducing at one order. Other simulation failures do not imply an oversized batch. Backend ingress is 64 KiB; Gas Station ingress is 256 KiB. Gas Station must include `OPERATION_RESOURCE_LIMIT` in `FEE_REFUND_ON` to return any service fee charged before the isolated resource rejection.
 
 Regression tests: `npm run test:run -- app/lib/refunds app/lib/organisms/AssetRefundAll 'app/routes/trade.$address/components/AssetTabs/AssetTabs.test.tsx'`. They use local mocks, SDK encoders and receipt fixtures; they do not submit transactions or replace sandbox/testnet validation.
+
+Recovery also binds a gasless receipt to the exact persisted signature, and a direct receipt to a level after the pre-send block marker. Older identical-order refunds cannot stand in for the current attempt. A different `PERMIT_IN_FLIGHT` request is a definitive rejection of this new submission; wait for it and refresh, without adopting its intent as proof of execution.
