@@ -29,6 +29,8 @@ export const NotificationsListener = () => {
 
   const handleNotificationEvent = useCallback(
     (frame: NotifierEventFrame) => {
+      // RelayProvider owns durable once-only terminal toasts; inbox rows remain backend-authored.
+      if (frame.event_type === "RELAY_OPERATION_UPDATED") return;
       const notification = getNotificationMessage(frame);
 
       if (notification) {

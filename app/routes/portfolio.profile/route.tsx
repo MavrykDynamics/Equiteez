@@ -67,6 +67,8 @@ export default function PortfolioProfile() {
     touchEmail,
     isDirty,
     isSaving,
+    saveError,
+    retryNetwork,
     save,
   } = useProfileForm();
 
@@ -93,6 +95,10 @@ export default function PortfolioProfile() {
 
       <div className={styles.card}>
         <Section title="Profile Info">
+          <RText size="body-s">
+            Name and email are previews and are not saved. Save applies only to
+            the payment method on this browser.
+          </RText>
           <div className={styles.grid}>
             <Field label="Full Name">
               <RInput
@@ -159,7 +165,7 @@ export default function PortfolioProfile() {
               </RCustomDropdown>
             </Field>
             <RButton
-              disabled={!isDirty || Boolean(emailError)}
+              disabled={!isDirty}
               isLoading={isSaving}
               onClick={save}
               size="medium"
@@ -168,6 +174,16 @@ export default function PortfolioProfile() {
               Save
             </RButton>
           </div>
+          {saveError && (
+            <div role="alert">
+              <RText size="body-s" color="red-500">
+                {saveError}
+              </RText>
+              <RButton onClick={retryNetwork} size="medium" tone="black">
+                Retry network verification
+              </RButton>
+            </div>
+          )}
         </Section>
 
         {/*<Section title="KYC Info">*/}

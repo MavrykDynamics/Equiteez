@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { KycInfo, ProfileFormValues } from "../profile.types";
 
@@ -26,8 +27,11 @@ export const validateEmail = (email: string) => {
 
 export function useProfileForm() {
   const [values, setValues] = useState<ProfileFormValues>(INITIAL_VALUES);
-  const [savedValues, setSavedValues] =
-    useState<ProfileFormValues>(INITIAL_VALUES);
+  const payment = useGasPayment();
+  useEffect(() => {
+    setValues({ ...INITIAL_VALUES, gasPaymentMethod: payment.method });
+    setIsEmailTouched(false);
+  }, [payment.scope, payment.method, payment.isRestored]);
   const [kyc] = useState<KycInfo>(INITIAL_KYC);
   const [isEmailTouched, setIsEmailTouched] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,31 +47,24 @@ export function useProfileForm() {
   );
 
   const emailError = useMemo(() => validateEmail(values.email), [values.email]);
-  const isDirty = useMemo(
-    () =>
-      (Object.keys(values) as (keyof ProfileFormValues)[]).some(
-        (field) => values[field] !== savedValues[field]
-      ),
-    [savedValues, values]
-  );
-
-  const save = useCallback(async () => {
-    setIsEmailTouched(true);
-
-    if (emailError) return;
-
+  const isDirty =
+    payment.isRestored &&
+    (!payment.isExplicit ||
+      values.gasPaymentMethod !== payment.method ||
+      Boolean(payment.error));
+  const save = () => {
     setIsSaving(true);
-
     try {
-      // TODO: send `values` to the API
-      setSavedValues(values);
+      payment.save(values.gasPaymentMethod);
     } finally {
       setIsSaving(false);
     }
-  }, [emailError, values]);
+  };
 
   return {
     values,
+    saveError: payment.error,
+    retryNetwork: payment.retryNetwork,
     kyc,
     setField,
     emailError: isEmailTouched ? emailError : null,

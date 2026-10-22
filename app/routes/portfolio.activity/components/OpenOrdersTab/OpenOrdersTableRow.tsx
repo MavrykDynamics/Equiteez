@@ -45,6 +45,8 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
     handleOrderAction,
     isPopupOpen,
     popupDescription,
+    paymentSettings,
+    popupSubmitDisabled,
     popupSubmitLabel,
     popupTitle,
   } = useOpenOrderAction({ assetSymbol, order });
@@ -126,6 +128,8 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
       <CancelOrderPopup
         assetSymbol={assetSymbol}
         description={popupDescription}
+        paymentSettings={paymentSettings}
+        submitDisabled={popupSubmitDisabled}
         isOpen={isPopupOpen}
         onClose={handleClosePopup}
         onSubmit={handleOrderAction}

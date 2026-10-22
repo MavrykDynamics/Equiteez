@@ -1,39 +1,30 @@
+import { assertNoStoredRelayLock } from "~/lib/relay/relay.storage";
 /* eslint-disable no-useless-catch */
 import { MavrykToolkit, OpKind } from "@mavrykdynamics/taquito";
-import BigNumber from "bignumber.js";
+import type { BigNumber } from "bignumber.js";
 import {
   getEstimationBatchResult,
   sendContractBatchOperation,
 } from "~/errors/helpers/estimateAction.helper";
 
-import {
-  decimalScale,
-  toNatString,
-  toPositiveNatString,
-} from "~/lib/utils/formaters";
-import { alignQuantityAtomsToTick } from "~/lib/orderbook/orderbookTick";
+import { toNatString } from "~/lib/utils/formaters";
+import { buildOrderPayload, type OrderPayloadParams } from "./orderbookPayload";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
+import { verifyDirectOrderFee } from "./directOrderFee";
 import { BatchOperationKindType } from "./types";
 
 export type OrderbookBuyParams = {
   tezos: MavrykToolkit;
+  beforeSubmit?: () => void | Promise<void>;
   orderbookContractAddress: string;
   quoteTokenAddress: string;
   quoteTokenId: BigNumber.Value;
-  rwaTokenAmount: BigNumber.Value;
-  pricePerRwaToken: BigNumber.Value;
-  currency: string;
-  orderExpiry: string | null;
-  isMarketOrder: boolean;
-  baseTokenDecimals?: number;
-  tickSizeAtoms?: BigNumber.Value;
-  quantityTickSizeAtoms?: BigNumber.Value;
-  minRwaTokenAmount?: BigNumber.Value;
-  minQuoteValue?: BigNumber.Value;
-} & ContractActionLifecycleCallbacks;
+} & OrderPayloadParams &
+  ContractActionLifecycleCallbacks;
 
 type OrderbookCancelOrderParams = {
   tezos: MavrykToolkit;
+  beforeSubmit?: () => void | Promise<void>;
   orderbookContractAddress: string;
   orderId: BigNumber.Value;
   orderType: string;
@@ -52,121 +43,6 @@ export type OrderbookSellParams = Omit<
 const assertAddress = (value: string, label: string) => {
   if (!value || typeof value !== "string") {
     throw new Error(`${label} is required`);
-  }
-};
-
-const assertCurrency = (value: string) => {
-  if (!value || typeof value !== "string" || !value.trim()) {
-    throw new Error("Order currency key is required");
-  }
-};
-
-const assertOrderExpiry = (value: string | null) => {
-  if (value === null) return;
-
-  const parsed = Date.parse(value);
-
-  if (!Number.isFinite(parsed)) {
-    throw new Error("Order expiry must be null or a valid timestamp");
-  }
-};
-
-const buildOrderPayload = ({
-  rwaTokenAmount,
-  pricePerRwaToken,
-  currency,
-  orderExpiry,
-  isMarketOrder,
-}: Pick<
-  OrderbookBuyParams,
-  | "rwaTokenAmount"
-  | "pricePerRwaToken"
-  | "currency"
-  | "orderExpiry"
-  | "isMarketOrder"
->) => {
-  assertCurrency(currency);
-  assertOrderExpiry(orderExpiry);
-
-  return {
-    rwaTokenAmount: toPositiveNatString(rwaTokenAmount, "RWA token amount"),
-    pricePerRwaToken: toPositiveNatString(
-      pricePerRwaToken,
-      "Price per RWA token"
-    ),
-    currency: currency.trim(),
-    orderExpiry,
-    isMarketOrder,
-  };
-};
-
-const validateOrderRules = ({
-  rwaTokenAmount,
-  pricePerRwaToken,
-  isMarketOrder,
-  baseTokenDecimals,
-  tickSizeAtoms,
-  quantityTickSizeAtoms,
-  minRwaTokenAmount,
-  minQuoteValue,
-}: Pick<
-  OrderbookBuyParams,
-  | "rwaTokenAmount"
-  | "pricePerRwaToken"
-  | "isMarketOrder"
-  | "baseTokenDecimals"
-  | "tickSizeAtoms"
-  | "quantityTickSizeAtoms"
-  | "minRwaTokenAmount"
-  | "minQuoteValue"
->) => {
-  const amountAtoms = new BigNumber(rwaTokenAmount);
-  const priceAtoms = new BigNumber(pricePerRwaToken);
-
-  if (quantityTickSizeAtoms === undefined) {
-    throw new Error("Order quantity tick size is required");
-  }
-  if (
-    !alignQuantityAtomsToTick(amountAtoms, quantityTickSizeAtoms).eq(
-      amountAtoms
-    )
-  ) {
-    throw new Error(
-      "Quantity is not aligned to the orderbook quantity tick size"
-    );
-  }
-
-  if (!isMarketOrder && tickSizeAtoms !== undefined) {
-    const tickSize = new BigNumber(tickSizeAtoms);
-
-    if (
-      tickSize.isFinite() &&
-      tickSize.isInteger() &&
-      tickSize.gt(0) &&
-      !priceAtoms.mod(tickSize).isZero()
-    ) {
-      throw new Error("Price is not aligned to the orderbook tick size");
-    }
-  }
-
-  if (minRwaTokenAmount !== undefined) {
-    const minAmount = new BigNumber(minRwaTokenAmount);
-
-    if (minAmount.isFinite() && minAmount.gt(0) && amountAtoms.lt(minAmount)) {
-      throw new Error("Order amount is below the orderbook minimum");
-    }
-  }
-
-  if (minQuoteValue !== undefined && baseTokenDecimals !== undefined) {
-    const minValue = new BigNumber(minQuoteValue);
-    const quoteValue = amountAtoms
-      .times(priceAtoms)
-      .div(decimalScale(baseTokenDecimals))
-      .integerValue(BigNumber.ROUND_DOWN);
-
-    if (minValue.isFinite() && minValue.gt(0) && quoteValue.lt(minValue)) {
-      throw new Error("Order quote value is below the orderbook minimum");
-    }
   }
 };
 
@@ -201,11 +77,6 @@ export async function orderbookBuyBatch({
       pricePerRwaToken,
       currency,
       orderExpiry,
-      isMarketOrder,
-    });
-    validateOrderRules({
-      rwaTokenAmount,
-      pricePerRwaToken,
       isMarketOrder,
       baseTokenDecimals,
       tickSizeAtoms,
@@ -249,18 +120,8 @@ export async function orderbookBuyBatch({
   }
 }
 
-export async function orderbookBuy(params: OrderbookBuyParams) {
-  try {
-    const batchArr = await orderbookBuyBatch(params);
-
-    await sendContractBatchOperation(params.tezos, batchArr, {
-      onTransactionConfirmed: params.onTransactionConfirmed,
-      onTransactionSubmitted: params.onTransactionSubmitted,
-    });
-  } catch (e: unknown) {
-    throw e;
-  }
-}
+export const orderbookBuy = (params: OrderbookBuyParams) =>
+  sendDirectOrder(params, orderbookBuyBatch);
 
 export async function orderbookSellBatch({
   tezos,
@@ -293,11 +154,6 @@ export async function orderbookSellBatch({
       pricePerRwaToken,
       currency,
       orderExpiry,
-      isMarketOrder,
-    });
-    validateOrderRules({
-      rwaTokenAmount,
-      pricePerRwaToken,
       isMarketOrder,
       baseTokenDecimals,
       tickSizeAtoms,
@@ -340,82 +196,74 @@ export async function orderbookSellBatch({
   }
 }
 
-export async function orderbookSell(params: OrderbookSellParams) {
-  try {
-    const batchArr = await orderbookSellBatch(params);
+export const orderbookSell = (params: OrderbookSellParams) =>
+  sendDirectOrder(params, orderbookSellBatch);
 
-    await sendContractBatchOperation(params.tezos, batchArr, {
-      onTransactionConfirmed: params.onTransactionConfirmed,
-      onTransactionSubmitted: params.onTransactionSubmitted,
-    });
-  } catch (e: unknown) {
-    throw e;
-  }
+async function buildOrderManagementBatch(
+  {
+    tezos,
+    orderbookContractAddress,
+    orderId,
+    orderType,
+  }: OrderbookCancelOrderParams,
+  entrypoint: "cancelOrders" | "processRefund"
+): Promise<BatchOperationKindType> {
+  assertAddress(orderbookContractAddress, "Orderbook contract address");
+  if (orderType !== "BUY" && orderType !== "SELL")
+    throw new Error("Invalid order type");
+  const contract = await tezos.wallet.at(orderbookContractAddress);
+  const transfer = contract.methodsObject[entrypoint]([
+    {
+      orderId: toNatString(orderId, "Order ID"),
+      orderType,
+    },
+  ]).toTransferParams();
+  return [{ kind: OpKind.TRANSACTION, ...transfer }];
 }
-
-export async function orderbookCancelOrder({
-  tezos,
-  orderbookContractAddress,
-  orderId,
-  orderType,
-  onTransactionSubmitted,
-  onTransactionConfirmed,
-}: OrderbookCancelOrderParams) {
-  try {
-    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
-
-    const rwaOrderbookOperation = await orderbookContract.methodsObject
-      .cancelOrders([
-        {
-          orderId: toNatString(orderId, "Order ID"),
-          orderType,
-        },
-      ])
-      .send();
-    onTransactionSubmitted?.();
-    const confirmation = await rwaOrderbookOperation.confirmation();
-    const level = confirmation?.block.header.level;
-
-    if (typeof level === "number") {
-      onTransactionConfirmed?.({ level });
-    }
-  } catch (e: unknown) {
-    throw e;
+export const orderbookCancelBatch = (params: OrderbookCancelOrderParams) =>
+  buildOrderManagementBatch(params, "cancelOrders");
+export const orderbookRefundBatch = (params: OrderbookProcessRefundParams) =>
+  buildOrderManagementBatch(params, "processRefund");
+async function sendDirectOrder<
+  P extends {
+    tezos: MavrykToolkit;
+    beforeSubmit?: () => void | Promise<void>;
+  } & ContractActionLifecycleCallbacks,
+>(params: P, builder: (params: P) => Promise<BatchOperationKindType>) {
+  const relayApiUrl =
+    typeof window !== "undefined"
+      ? (await import("~/lib/apis/rwa/config")).rwaApiUrl
+      : null;
+  const wallet = await params.tezos.wallet.pkh();
+  const chain = await params.tezos.rpc.getChainId();
+  const batch = await builder(params);
+  await verifyDirectOrderFee(
+    params.tezos,
+    batch,
+    wallet,
+    chain,
+    params.beforeSubmit
+  );
+  if (typeof window !== "undefined") {
+    assertNoStoredRelayLock(
+      window.localStorage,
+      JSON.stringify([
+        1,
+        "basenet",
+        params.tezos.rpc.getRpcUrl(),
+        chain,
+        relayApiUrl,
+        wallet,
+      ]),
+      batch.map((item) => item.to)
+    );
   }
+  await sendContractBatchOperation(params.tezos, batch, params);
 }
-
-export async function orderbookProcessRefund({
-  tezos,
-  orderbookContractAddress,
-  orderId,
-  orderType,
-  onTransactionSubmitted,
-  onTransactionConfirmed,
-}: OrderbookProcessRefundParams) {
-  try {
-    assertAddress(orderbookContractAddress, "Orderbook contract address");
-
-    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
-
-    const rwaOrderbookOperation = await orderbookContract.methodsObject
-      .processRefund([
-        {
-          orderId: toNatString(orderId, "Order ID"),
-          orderType,
-        },
-      ])
-      .send();
-    onTransactionSubmitted?.();
-    const confirmation = await rwaOrderbookOperation.confirmation();
-    const level = confirmation?.block.header.level;
-
-    if (typeof level === "number") {
-      onTransactionConfirmed?.({ level });
-    }
-  } catch (e: unknown) {
-    throw e;
-  }
-}
+export const orderbookCancelOrder = (params: OrderbookCancelOrderParams) =>
+  sendDirectOrder(params, orderbookCancelBatch);
+export const orderbookProcessRefund = (params: OrderbookProcessRefundParams) =>
+  sendDirectOrder(params, orderbookRefundBatch);
 
 // Estimation functions
 

@@ -1,10 +1,11 @@
+import { Link } from "@remix-run/react";
+import { ROUTES } from "~/consts";
 import CloseIcon from "app/icons/cross.svg?react";
 import type { ReactNode } from "react";
 
 import type { OpenOrderItemType } from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
@@ -15,6 +16,8 @@ import styles from "./styles.module.css";
 type CancelOrderPopupProps = {
   assetSymbol: string;
   description?: string;
+  paymentSettings?: boolean;
+  submitDisabled?: boolean;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => Promise<void>;
@@ -40,6 +43,8 @@ export function CancelOrderPopup({
   assetSymbol,
   description = "Are you sure you want to cancel your order?",
   isOpen,
+  paymentSettings = false,
+  submitDisabled = false,
   onClose,
   onSubmit,
   order,
@@ -73,6 +78,14 @@ export function CancelOrderPopup({
             </RHeading>
             <RText color="neutral-700" size="body-sm">
               {description}
+              {paymentSettings && (
+                <>
+                  {" "}
+                  <Link to={ROUTES.portfolioProfile} onClick={onClose}>
+                    Payment settings
+                  </Link>
+                </>
+              )}
             </RText>
           </div>
           <div className={styles.orderDetails}>
@@ -90,7 +103,10 @@ export function CancelOrderPopup({
                 }
               >
                 {isBuyOrder ? "+" : "-"}{" "}
-                <RText size="body-sm" color={isBuyOrder ? "green-500": "red-500"}>
+                <RText
+                  size="body-sm"
+                  color={isBuyOrder ? "green-500" : "red-500"}
+                >
                   {orderDetails.type} {orderDetails.side}
                 </RText>
               </span>
@@ -149,6 +165,7 @@ export function CancelOrderPopup({
           </RButton>
           <RButton
             className={styles.actionButton}
+            disabled={submitDisabled}
             onClick={onSubmit}
             size="medium"
             tone="black"

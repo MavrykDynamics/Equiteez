@@ -36,3 +36,13 @@ export {
   fetchPriceSeries,
   fetchPrices,
 } from "~/lib/apis/rwa/prices/prices";
+export {
+  fetchRelayConfig,
+  relayConfigQueryOptions,
+  submitRelayOperation,
+  fetchRelayOperation,
+  checkRelayOperationNow,
+  fetchRelayOperations,
+  fetchRelayCredits,
+  submitRelayTopUp,
+} from "~/lib/apis/rwa/relay/relay";

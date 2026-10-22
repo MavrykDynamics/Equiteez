@@ -1,13 +1,15 @@
+import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { RButton } from "~/lib/atoms/RButton";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
 import styles from "./ConnectWallet.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
-// import { MvrkWalletDropdown } from "./WalletDropdown/MvrkWalletDropdown";
+import { MvrkWalletDropdown } from "./WalletDropdown/MvrkWalletDropdown";
 import { CreditsWalletDropdown } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/CreditsWalletDropdown";
 
 export const ConnectWallet = () => {
+  const { method } = useGasPayment();
   const { connect, isLoading, userAddress } = useUserContext();
 
   const handleConnect = () => {
@@ -23,8 +25,11 @@ export const ConnectWallet = () => {
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
         <>
-          <CreditsWalletDropdown userAddress={userAddress} />
-          {/*<MvrkWalletDropdown userAddress={userAddress} />*/}
+          {method === "mvrk" ? (
+            <MvrkWalletDropdown userAddress={userAddress} />
+          ) : (
+            <CreditsWalletDropdown userAddress={userAddress} />
+          )}
         </>
       ) : (
         <RButton

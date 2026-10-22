@@ -1,4 +1,5 @@
-export type GasPaymentMethod = "credits" | "mvrk";
+import type { GasPaymentMethod } from "~/providers/GasPaymentProvider/paymentPreference";
+export type { GasPaymentMethod } from "~/providers/GasPaymentProvider/paymentPreference";
 
 export type ProfileFormValues = {
   fullName: string;
