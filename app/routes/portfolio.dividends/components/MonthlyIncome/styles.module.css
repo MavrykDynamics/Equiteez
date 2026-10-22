@@ -88,7 +88,7 @@
   padding: var(--r-space-3);
   border-radius: var(--r-radius-sm);
   background: var(--r-color-neutral-white);
-  box-shadow: 0 25.781px 51.563px -12.891px rgb(0 0 0 / 15%);
+  box-shadow: var(--r-shadow-tooltip);
   pointer-events: none;
   transform: translateX(-50%);
 }

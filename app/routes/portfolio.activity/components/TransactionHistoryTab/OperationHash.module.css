@@ -73,7 +73,7 @@
   color: var(--r-color-neutral-black);
   background: var(--r-color-neutral-white);
   border-radius: var(--r-radius-sm);
-  box-shadow: 0 7px 25.781px rgb(0 0 0 / 8%);
+  box-shadow: var(--r-shadow-tooltip);
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-s);
   font-weight: var(--r-font-weight-regular);
