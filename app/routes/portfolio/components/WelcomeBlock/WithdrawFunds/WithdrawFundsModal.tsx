@@ -350,10 +350,6 @@ export function WithdrawFundsModal({
     }
   };
 
-  const handleCopyTransactionHash = () => {
-    void navigator.clipboard?.writeText(transactionHash);
-  };
-
   return (
     <CustomPopup
       className={styles.modal}
@@ -612,7 +608,6 @@ export function WithdrawFundsModal({
           amount={amount || "0.00"}
           asset={selectedAsset?.metadata.symbol ?? ""}
           onClose={handleClose}
-          onCopy={handleCopyTransactionHash}
           transactionHash={transactionHash}
         />
       )}
