@@ -10,7 +10,7 @@ const appDirectory = path.join(rootDirectory, "app");
 const outputFile = path.join(appDirectory, "generated", "sitemap-routes.ts");
 
 const EXCLUDED_PATHS = new Set(["/robots.txt", "/sitemap.xml"]);
-const EXCLUDED_PATH_PREFIXES = ["/admin", "/wallet"];
+const EXCLUDED_PATH_PREFIXES = ["/portfolio"];
 
 const routeManifest = flatRoutes(appDirectory);
 const pathnameCache = new Map([["root", "/"]]);

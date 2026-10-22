@@ -1,9 +1,9 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { getSitemapUrls, toXmlSitemap } from "~/lib/sitemap/sitemap.server";
+import { getSitemapEntries, toXmlSitemap } from "~/lib/sitemap/sitemap.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
-    const sitemap = toXmlSitemap(getSitemapUrls(request));
+    const sitemap = toXmlSitemap(await getSitemapEntries(request));
 
     return new Response(sitemap, {
       status: 200,
