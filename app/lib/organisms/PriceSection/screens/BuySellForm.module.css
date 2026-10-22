@@ -87,6 +87,10 @@
   gap: var(--r-space-1);
 }
 
+.balanceIcon {
+  color: var(--r-color-neutral-500);
+}
+
 .bottomValue,
 .bottomValue * {
   font-weight: var(--r-font-weight-regular);

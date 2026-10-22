@@ -63,7 +63,7 @@
 
 .primaryAssetCard:hover,
 .secondaryAssetCard:hover {
-  background: #f8fcf7;
+  background: var(--r-color-neutral-50);
 }
 
 .primaryAssetCard:focus-visible,

@@ -33,6 +33,7 @@ import {
   type OrderExpiryPeriodId,
 } from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
+import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
@@ -276,7 +277,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     amountInputContainerClassName: styles.amountInputContainer,
     assetViewClassName: styles.assetPill,
     balanceClassName: styles.balanceText,
-    balanceLabel: "Bal.",
+    balanceIcon: (
+      <WalletBalanceIcon
+        aria-label="Balance"
+        className={styles.balanceIcon}
+        height={16}
+        width={16}
+      />
+    ),
     bodyClassName: styles.balanceBody,
     bottomLeftClassName: styles.bottomValue,
     bottomRightClassName: styles.bottomValue,
@@ -284,7 +292,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     footerClassName: styles.balanceFooter,
     headerClassName: styles.balanceHeader,
     sectionClassName: styles.balanceCard,
-    showBalanceIcon: false,
     shouldRenderFooter: false,
   };
   const hiddenInputBlock = <span aria-hidden="true" />;
@@ -298,7 +305,6 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             onNext={() => ref2.current?.focus()}
             amountInputDisabled={false}
             additionalBottomRightBlock={hiddenInputBlock}
-            additionalTopRightBlock={hiddenInputBlock}
             {...input1Props}
             errorCaption={isDisconnected ? undefined : input1Props.errorCaption}
             balanceTotal={balanceTotal}
@@ -358,6 +364,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
             gasFee={gasFee}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
+            isLimitOrder
             totalAmount={orderSummaryAmount}
             annualYield={actionType === BUY ? (apy ?? undefined) : undefined}
           />
