@@ -271,14 +271,18 @@ function useRelayOwner() {
     error: storageError ?? lifecycle?.error ?? null,
     isReady: Boolean(lifecycle?.isReconciled && !lifecycle.error),
     isLocked: (contract: string) => !lifecycle || lifecycle.locked(contract),
-    submit: async (signed: Awaited<ReturnType<typeof signPreparedPermit>>) => {
+    submit: async (
+      signed: Awaited<ReturnType<typeof signPreparedPermit>>,
+      onAttempt?: (id: string) => void
+    ) => {
       if (!runtime || !lifecycle || !signed.ordinary)
         throw new Error(
           "Ordinary relay submission is unavailable. Top-up submission remains blocked."
         );
-      return lifecycle.submit(
-        { ...signed.ordinary, idempotencyKey: uuid() },
-        () => assertPermitCurrent(runtime, signed.prepared)
+      const idempotencyKey = uuid();
+      onAttempt?.(idempotencyKey);
+      return lifecycle.submit({ ...signed.ordinary, idempotencyKey }, () =>
+        assertPermitCurrent(runtime, signed.prepared)
       );
     },
   };

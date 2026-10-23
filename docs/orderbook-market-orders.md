@@ -87,3 +87,9 @@ Price/quantity tick alignment and raw unit conversion remain unchanged. See
 ## Shared payload validation
 
 `app/contracts/orderbookPayload.ts::buildOrderPayload` owns raw order normalization and rule validation for both direct buy/sell batches and future verified permit construction. The extraction preserves quantity rejection without rounding, limit-only price-tick enforcement, exact nat values, currency trimming, nullable expiry and downward-rounded quote minimums. `orderbook.contract.ts` retains direct grant/order/revoke batches. Phase 3 ordinary permit builders reuse this validator. Permit review/signing is available as a reusable service/component; mode-aware relay execution remains deferred to Phase 5. This does not yet enable Credits execution in the trade panel.
+
+## Phase 5 secondary execution
+
+`BuySellContent` and `useOpenOrderAction` share `useOrderbookExecution`. MVRK retains the existing `useContractAction` and grant/order/revoke batches. Credits freezes the same normalized market/limit intent, reuses `buildOrderPayload` and prepares each ordinary permit through the existing RelayProvider runtime. Price ticks, quantity ticks, downward quantity alignment and quote rounding are unchanged.
+
+`orderPlanValidation.ts` checks exact token-address/token-ID RPC balances, expiry and current cancel/refund rows. The adapter refreshes KYC; live permit preparation checks the book configuration/counter. Every signature and initial submission rechecks business validity. An absent operator requires its own reviewed persistent grant and confirmation before an explicit order review. Changed form/price/configuration requires a new review. Relay acceptance/setup never resets inputs; only confirmation of the requested order action can reset unchanged inputs. Closing or reloading leaves durable relay recovery active but does not resume signatures. Required top-ups remain blocked.

@@ -109,6 +109,30 @@ describe("readable permit review", () => {
     expect(onSigned).not.toHaveBeenCalled();
     expect(host.querySelectorAll("button")[1].disabled).toBe(true);
   });
+  it("rechecks live order gates before requesting a wallet signature", async () => {
+    const beforeSign = vi
+      .fn()
+      .mockRejectedValue(new Error("Refund is no longer claimable"));
+    const onSigned = vi.fn();
+    act(() =>
+      root.render(
+        <RPermitReview
+          prepared={prepared}
+          runtime={runtime}
+          beforeSign={beforeSign}
+          onSigned={onSigned}
+          onCancel={vi.fn()}
+        />
+      )
+    );
+    await act(async () => {
+      host.querySelectorAll("button")[1].click();
+    });
+    expect(beforeSign).toHaveBeenCalledOnce();
+    expect(signPreparedPermit).not.toHaveBeenCalled();
+    expect(onSigned).not.toHaveBeenCalled();
+    expect(host.textContent).toContain("Refund is no longer claimable");
+  });
   it("keeps unsupported top-up signing disabled with its reason", () => {
     act(() =>
       root.render(

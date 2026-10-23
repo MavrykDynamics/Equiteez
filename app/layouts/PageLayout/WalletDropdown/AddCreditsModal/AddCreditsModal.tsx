@@ -26,6 +26,7 @@ const DEFAULT_OPTION: CreditsOption = 20;
 
 type AddCreditsModalProps = {
   isOpen: boolean;
+  blockedReason?: string;
   onAddCredits: (amount: number) => Promise<void>;
   onClose: () => void;
   walletBalanceUsd: number;
@@ -39,6 +40,7 @@ const formatUsd = (value: number) =>
 
 export function AddCreditsModal({
   isOpen,
+  blockedReason,
   onAddCredits,
   onClose,
   walletBalanceUsd,
@@ -87,6 +89,21 @@ export function AddCreditsModal({
     handleClose();
     navigate(ROUTES.portfolioActivity);
   };
+
+  if (blockedReason)
+    return (
+      <CustomPopup
+        isOpen={isOpen}
+        contentPosition="center"
+        className={styles.modal}
+        contentLabel="Top Up unavailable"
+        onRequestClose={onClose}
+      >
+        <RHeading size="h6">Top Up unavailable</RHeading>
+        <RText size="body-sm">{blockedReason}</RText>
+        <RButton onClick={onClose}>Return to order</RButton>
+      </CustomPopup>
+    );
 
   return (
     <CustomPopup
@@ -189,9 +206,7 @@ export function AddCreditsModal({
                     className={styles.customInput}
                     inputMode="decimal"
                     onChange={(event) =>
-                      setCustomAmount(
-                        event.target.value.replace(/[^\d.]/g, "")
-                      )
+                      setCustomAmount(event.target.value.replace(/[^\d.]/g, ""))
                     }
                     onFocus={() => setSelectedOption("custom")}
                     placeholder={`$${formatUsd(CUSTOM_CREDITS_MIN)}-${formatUsd(

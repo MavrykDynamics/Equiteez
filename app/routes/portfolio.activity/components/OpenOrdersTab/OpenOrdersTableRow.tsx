@@ -38,6 +38,7 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
   const assetSymbol = metadata.symbol;
 
   const {
+    executionControls,
     actionIcon,
     actionLabel,
     handleClosePopup,
@@ -125,6 +126,7 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
         </div>
       </div>
 
+      {executionControls}
       <CancelOrderPopup
         assetSymbol={assetSymbol}
         description={popupDescription}

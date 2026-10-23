@@ -94,6 +94,14 @@ export function canResignRelay(
 ): boolean {
   return (
     isConclusive &&
+    ![
+      "IDEMPOTENCY_KEY_REUSED",
+      "INTENT_MISMATCH",
+      "INVALID_PERMIT",
+      "UNSUPPORTED_BATCH",
+      "INVALID_ENTRYPOINT",
+      "AMOUNT_NOT_ZERO",
+    ].includes(error.code) &&
     error.remedy === "re-sign" &&
     Number.isInteger(attemptsCompleted) &&
     attemptsCompleted >= 0 &&

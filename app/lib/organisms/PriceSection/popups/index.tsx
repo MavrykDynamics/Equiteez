@@ -1,3 +1,4 @@
+import { useOrderbookExecution } from "~/hooks/useOrderbookExecution";
 import { Link } from "@remix-run/react";
 import { ROUTES } from "~/consts";
 import { useDirectOrderFee } from "~/hooks/useDirectOrderFee";
@@ -721,7 +722,6 @@ const BuySellForm: FC<
   );
   // Network gas is reviewed separately from the existing protocol fee card.
   const gasFee = undefined;
-  const paymentValidationMessage = orderValidationMessage || directFee.reason;
 
   // actual contract calls and their handlers ---------------
 
@@ -810,6 +810,25 @@ const BuySellForm: FC<
     orderType,
   ]);
 
+  const execution = useOrderbookExecution({
+    request: {
+      kind: orderType === BUY ? "place_buy_order" : "place_sell_order",
+      book: orderbookConfig,
+      order: selectedParams,
+    },
+    validationMessage:
+      orderValidationMessage ||
+      (isOrderDataLoading
+        ? "Waiting for order data."
+        : hasLimitPriceTickError
+          ? "Price must align to the selected tick."
+          : undefined),
+    directReason: directFee.reason,
+    invokeDirect: buySellActionCb,
+    onConfirmed: () => handleSuccessfulTransaction({ confirmation: null }),
+  });
+  const paymentValidationMessage = execution.reason;
+
   const handleCloseTradeConfirmation = useCallback(() => {
     setIsTradeConfirmationOpen(false);
   }, []);
@@ -821,7 +840,8 @@ const BuySellForm: FC<
       hasLimitPriceTickError
     )
       return;
-    buySellActionCb();
+    setIsTradeConfirmationOpen(false);
+    void execution.execute();
 
     const isBuyAction = orderType === BUY;
     const actionName = isMarketTypeMarket
@@ -845,7 +865,7 @@ const BuySellForm: FC<
       label: eventLabel,
     });
   }, [
-    buySellActionCb,
+    execution,
     isMarketTypeMarket,
     orderType,
     isOrderDataLoading,
@@ -974,6 +994,7 @@ const BuySellForm: FC<
         onContinue={handleConfirmedBuySellAction}
       />
 
+      {execution.controls}
       <div className={styles.buySellRoot}>
         <div role="status" className={styles.paymentReview}>
           Payment method: {directFee.method === "mvrk" ? "MVRK" : "Credits"}.{" "}
@@ -1048,7 +1069,7 @@ const BuySellForm: FC<
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}
-              isOrderDataLoading={isOrderDataLoading}
+              isOrderDataLoading={isOrderDataLoading || execution.isBusy}
               validationMessage={paymentValidationMessage}
             />
           ) : (
@@ -1071,7 +1092,7 @@ const BuySellForm: FC<
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}
-              isOrderDataLoading={isOrderDataLoading}
+              isOrderDataLoading={isOrderDataLoading || execution.isBusy}
               validationMessage={paymentValidationMessage}
             />
           ))}

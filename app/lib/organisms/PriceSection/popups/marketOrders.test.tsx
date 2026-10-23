@@ -22,6 +22,22 @@ const mocks = vi.hoisted(() => ({
   userAddress: "wallet",
   connect: vi.fn(),
 }));
+vi.mock("~/providers/AuthProvider/auth.provider", () => ({
+  useAuthContext: () => ({ isAuthenticated: true, login: vi.fn() }),
+}));
+vi.mock("~/contracts/orderPlanValidation", () => ({
+  validateOrderPlan: vi.fn(),
+}));
+vi.mock("~/lib/apis/rwa/relay/relay", () => ({ fetchRelayCredits: vi.fn() }));
+vi.mock("@apollo/client", () => ({
+  useApolloClient: () => ({ query: vi.fn() }),
+}));
+vi.mock("~/providers/RelayProvider/RelayProvider", () => ({
+  useRelay: () => ({ records: [], runtime: null, isReady: false, error: null }),
+}));
+vi.mock("~/lib/organisms/ROrderPlan/ROrderPlan", () => ({
+  ROrderPlan: () => null,
+}));
 vi.mock("@remix-run/react", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => (
     <a href={to}>{children}</a>

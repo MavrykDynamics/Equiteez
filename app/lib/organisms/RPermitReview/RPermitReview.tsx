@@ -14,6 +14,7 @@ type SignedPermit = Awaited<ReturnType<typeof signPreparedPermit>>;
 type Props = {
   prepared: PreparedPermit;
   runtime: PermitRuntime;
+  beforeSign?: () => Promise<void>;
   onCancel: () => void;
   onSigned: (permit: SignedPermit) => void;
 };
@@ -24,6 +25,7 @@ export function RPermitReview({
   runtime,
   onCancel,
   onSigned,
+  beforeSign,
 }: Props) {
   const [isSigning, setIsSigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +33,7 @@ export function RPermitReview({
     if (isSigning || error || prepared.signingBlocker) return;
     setIsSigning(true);
     try {
+      await beforeSign?.();
       const signed = await signPreparedPermit(runtime, prepared);
       onSigned(signed);
     } catch (cause) {

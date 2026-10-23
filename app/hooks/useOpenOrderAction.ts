@@ -1,3 +1,4 @@
+import { useOrderbookExecution } from "./useOrderbookExecution";
 import { useDirectOrderFee } from "./useDirectOrderFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -23,7 +24,7 @@ type UseOpenOrderActionOptions = {
   order: OpenOrderItemType;
 };
 
-function getContractOrderType(side: string) {
+function getContractOrderType(side: string): "BUY" | "SELL" {
   return side.toLowerCase().includes("buy") ? "BUY" : "SELL";
 }
 
@@ -112,21 +113,43 @@ export function useOpenOrderAction({
     }
   }, [activeActionStatus]);
 
+  const execution = useOrderbookExecution({
+    showSignIn: false,
+    request: isRefundAction
+      ? {
+          kind: "process_refund",
+          orderbookAddress: order.orderbook_address,
+          order: contractActionArgs,
+        }
+      : {
+          kind: "cancel_orders",
+          orderbookAddress: order.orderbook_address,
+          orders: [
+            {
+              ...contractActionArgs,
+              orderbookAddress: order.orderbook_address,
+            },
+          ],
+        },
+    validationMessage:
+      isRefundAction && order.refund?.status !== "claimable"
+        ? "This order has no claimable refund."
+        : undefined,
+    directReason: directFee.reason,
+    invokeDirect: isRefundAction ? invokeRefundOrder : invokeCancelOrder,
+    onConfirmed: () => handleAfterAction({ confirmation: null }),
+  });
   const handleOrderAction = async () => {
-    if (isRefundAction && order.refund?.status !== "claimable") return;
-    if (directFee.reason) {
+    if (directFee.method === "mvrk" && directFee.reason) {
       directFee.retry();
       return;
     }
-    if (isRefundAction) {
-      await invokeRefundOrder();
-      return;
-    }
-
-    await invokeCancelOrder();
+    if (directFee.method === "credits") setIsPopupOpen(false);
+    await execution.execute();
   };
 
   return {
+    executionControls: execution.controls,
     actionIcon: (isRefundAction ? "refund" : "trash") as RIconName,
     actionLabel: isRefundAction
       ? `Request refund for ${assetSymbol} order`
@@ -134,28 +157,31 @@ export function useOpenOrderAction({
     handleClosePopup: () => setIsPopupOpen(false),
     handleOpenPopup: () => setIsPopupOpen(true),
     handleOrderAction,
-    isPopupOpen,
+    isPopupOpen: isPopupOpen && !execution.isBusy,
     popupSubmitDisabled:
+      execution.isBusy ||
       (isRefundAction && order.refund?.status !== "claimable") ||
-      directFee.method === "credits" ||
-      directFee.state.status === "idle" ||
-      directFee.state.status === "loading",
+      (directFee.method === "credits"
+        ? Boolean(execution.reason)
+        : directFee.state.status === "idle" ||
+          directFee.state.status === "loading"),
     paymentSettings: directFee.method === "credits",
     popupDescription:
       (isRefundAction && order.refund?.status !== "claimable"
         ? "This order has no claimable refund."
         : undefined) ??
-      directFee.reason ??
+      execution.reason ??
       (directFee.state.status === "ready"
         ? `Payment: MVRK. Estimated network fee: ${directFee.state.fee.networkFee.div(1_000_000).toFixed()} MVRK; storage: ${directFee.state.fee.storageCost.div(1_000_000).toFixed()} MVRK.`
         : isRefundAction
           ? "Claim the unrefunded remainder from this closed order."
           : "Are you sure you want to cancel your order?"),
-    popupSubmitLabel: directFee.reason
-      ? "Retry verification"
-      : isRefundAction
-        ? "Claim Refund"
-        : "Cancel Order",
+    popupSubmitLabel:
+      directFee.method === "mvrk" && directFee.reason
+        ? "Retry verification"
+        : isRefundAction
+          ? "Claim Refund"
+          : "Cancel Order",
     popupTitle: isRefundAction ? "Confirm Refund" : "Cancel Open Order",
   };
 }
