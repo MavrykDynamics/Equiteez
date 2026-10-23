@@ -19,6 +19,7 @@ export const tableHeaders: HeaderConfig[] = [
   { label: "Price / 1M", sortKey: "price" },
   { label: "Yield", sortKey: "yield_pct" },
   { label: "Profit", sortKey: "profit" },
+  { label: "" },
 ];
 
 export function compareNullableNumbers(
