@@ -19,9 +19,18 @@ import { Spinner } from "~/lib/atoms/Spinner";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 
 export function AssetsTable({ assets }: AllAssetsTableProps) {
-  const { isLoading } = usePortfolioContext();
+  const { isLoading, wallet } = usePortfolioContext();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortState<SortKey>>(null);
+
+  // rwa_assets is keyed by symbol, so match portfolio rows by contract address.
+  const rwaAddresses = useMemo(
+    () =>
+      new Set(
+        Object.values(wallet?.rwa_assets ?? {}).map(({ address }) => address)
+      ),
+    [wallet?.rwa_assets]
+  );
 
   const filteredAssets = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -81,7 +90,7 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
           <thead>
             <tr>
               {tableHeaders.map((header) => (
-                <th key={header.label} scope="col">
+                <th key={header.label || "actions"} scope="col">
                   <TableHeader
                     direction={
                       sort?.key === header.sortKey ? sort?.direction : undefined
@@ -99,7 +108,11 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
           </thead>
           <tbody>
             {filteredAssets.map((asset) => (
-              <AssetsTableRow asset={asset} key={asset.token_address} />
+              <AssetsTableRow
+                asset={asset}
+                canRefund={rwaAddresses.has(asset.token_address)}
+                key={asset.token_address}
+              />
             ))}
           </tbody>
         </table>

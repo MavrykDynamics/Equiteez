@@ -41,6 +41,12 @@ type OrderbookCancelOrderParams = {
 
 type OrderbookProcessRefundParams = OrderbookCancelOrderParams;
 
+export type OrderbookProcessRefundsParams = {
+  tezos: MavrykToolkit;
+  orderbookContractAddress: string;
+  orders: { orderId: BigNumber.Value; orderType: string }[];
+} & ContractActionLifecycleCallbacks;
+
 export type OrderbookSellParams = Omit<
   OrderbookBuyParams,
   "quoteTokenAddress" | "quoteTokenId"
@@ -385,26 +391,54 @@ export async function orderbookCancelOrder({
 }
 
 export async function orderbookProcessRefund({
-  tezos,
-  orderbookContractAddress,
   orderId,
   orderType,
+  ...params
+}: OrderbookProcessRefundParams) {
+  return orderbookProcessRefunds({
+    ...params,
+    orders: [{ orderId, orderType }],
+  });
+}
+
+export async function orderbookProcessRefunds({
+  tezos,
+  orderbookContractAddress,
+  orders,
   onTransactionSubmitted,
   onTransactionConfirmed,
-}: OrderbookProcessRefundParams) {
+}: OrderbookProcessRefundsParams) {
   try {
     assertAddress(orderbookContractAddress, "Orderbook contract address");
 
-    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+    if (orders.length === 0) {
+      throw new Error("At least one order is required for refund");
+    }
 
-    const rwaOrderbookOperation = await orderbookContract.methodsObject
-      .processRefund([
-        {
-          orderId: toNatString(orderId, "Order ID"),
-          orderType,
-        },
-      ])
-      .send();
+    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+    const processRefundMethod = orderbookContract.methodsObject.processRefund(
+      orders.map(({ orderId, orderType }) => ({
+        orderId: toNatString(orderId, "Order ID"),
+        orderType,
+      }))
+    );
+
+    // A failed estimation is definitive: no wallet request was sent.
+    const estimation = await getEstimationBatchResult(tezos, [
+      { kind: OpKind.TRANSACTION, ...processRefundMethod.toTransferParams() },
+    ]);
+
+    if (!estimation.actionSuccess) {
+      const { error } = estimation;
+
+      throw new Error(
+        typeof error === "string"
+          ? error
+          : error.message || "Refund transaction cannot be executed"
+      );
+    }
+
+    const rwaOrderbookOperation = await processRefundMethod.send();
     onTransactionSubmitted?.();
     const confirmation = await rwaOrderbookOperation.confirmation();
     const level = confirmation?.block.header.level;

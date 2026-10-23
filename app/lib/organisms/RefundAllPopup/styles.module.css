@@ -1,0 +1,129 @@
+@import "../../../styles/breakpoints.css";
+
+.popupWrapper:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.popupWrapper {
+  width: 588px;
+  max-width: calc(100vw - 32px);
+  padding: 0;
+  border-radius: var(--r-radius-lg);
+}
+
+.closeRow {
+  display: flex;
+  height: 44px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--r-space-3) var(--r-space-4) var(--r-space-2);
+}
+
+.closeButton {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  place-items: center;
+  background: transparent;
+  color: var(--r-color-neutral-black);
+  cursor: pointer;
+}
+
+.closeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.closeButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.closeIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  padding: 0 var(--r-space-11) var(--r-space-8);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+  align-items: center;
+  text-align: center;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--r-space-4) 0;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+}
+
+.detailRow {
+  display: flex;
+  min-height: 21px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
+.progressNote {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.divider {
+  width: 100%;
+  height: var(--r-border-width-sm);
+  background: var(--r-color-neutral-100);
+}
+
+.btnWrapper {
+  display: flex;
+  width: 100%;
+  gap: var(--r-space-3);
+}
+
+.actionButton {
+  flex: 1;
+}
+
+@media (--media-phone-max) {
+  .popupWrapper {
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
+    border-radius: 0;
+  }
+
+  .contentWrapper {
+    padding: 0 var(--r-space-4) var(--r-space-6);
+  }
+
+  .btnWrapper {
+    flex-direction: column;
+  }
+}

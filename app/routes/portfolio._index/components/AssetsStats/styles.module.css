@@ -102,7 +102,34 @@
 
 .table th:not(:first-child),
 .table td:not(:first-child) {
-  width: 15.96%;
+  width: 14.5%;
+}
+
+.table th:last-child,
+.table td.actionCell {
+  width: 48px;
+  padding-right: var(--r-space-2);
+  text-align: right;
+}
+
+.actionIcon {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--r-color-neutral-500);
+  cursor: pointer;
+  transition: color var(--r-transition-duration-fast) ease;
+}
+
+.tableRow:hover .actionIcon,
+.actionIcon:hover {
+  color: var(--r-color-neutral-black);
+}
+
+.actionIcon:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
 }
 
 .headerContent {
