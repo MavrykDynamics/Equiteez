@@ -46,3 +46,11 @@ export {
   fetchRelayCredits,
   submitRelayTopUp,
 } from "~/lib/apis/rwa/relay/relay";
+export {
+  fetchPaymentPreference,
+  fetchWalletProfile,
+  PaymentPreferenceError,
+  savePaymentPreference,
+  toApiPaymentMethod,
+  toGasPaymentMethod,
+} from "~/lib/apis/rwa/paymentPreference/paymentPreference";
