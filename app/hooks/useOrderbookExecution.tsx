@@ -1,7 +1,7 @@
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { RButton } from "~/lib/atoms/RButton";
 import { useEffect, useReducer, useRef } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/index";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
