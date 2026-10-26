@@ -98,31 +98,31 @@ export default function PortfolioProfile() {
 
       <div className={styles.card}>
         <Section title="Profile Info">
-          <RText size="body-s">
-            Name and email are previews and are not saved. Save stores the
-            payment method for this wallet.
-          </RText>
+          {/*<RText size="body-s">*/}
+          {/*  Name and email are previews and are not saved. Save stores the*/}
+          {/*  payment method for this wallet.*/}
+          {/*</RText>*/}
           <div className={styles.grid}>
-            <Field label="Full Name">
-              <RInput
-                autoComplete="name"
-                onChange={(event) => setField("fullName", event.target.value)}
-                placeholder="Full name"
-                value={values.fullName}
-              />
-            </Field>
-            <Field error={emailError} label="Email">
-              <RInput
-                aria-invalid={Boolean(emailError)}
-                autoComplete="email"
-                className={clsx(emailError && styles.inputError)}
-                onBlur={touchEmail}
-                onChange={(event) => setField("email", event.target.value)}
-                placeholder="Email"
-                type="email"
-                value={values.email}
-              />
-            </Field>
+            {/*<Field label="Full Name">*/}
+            {/*  <RInput*/}
+            {/*    autoComplete="name"*/}
+            {/*    onChange={(event) => setField("fullName", event.target.value)}*/}
+            {/*    placeholder="Full name"*/}
+            {/*    value={values.fullName}*/}
+            {/*  />*/}
+            {/*</Field>*/}
+            {/*<Field error={emailError} label="Email">*/}
+            {/*  <RInput*/}
+            {/*    aria-invalid={Boolean(emailError)}*/}
+            {/*    autoComplete="email"*/}
+            {/*    className={clsx(emailError && styles.inputError)}*/}
+            {/*    onBlur={touchEmail}*/}
+            {/*    onChange={(event) => setField("email", event.target.value)}*/}
+            {/*    placeholder="Email"*/}
+            {/*    type="email"*/}
+            {/*    value={values.email}*/}
+            {/*  />*/}
+            {/*</Field>*/}
             <div className={styles.field}>
               <RText size="body-sm">Wallet Address</RText>
               <div className={styles.walletAddress}>
