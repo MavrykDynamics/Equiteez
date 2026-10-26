@@ -164,6 +164,7 @@ describe("payment preference", () => {
     await render();
     expect(mocks.get).not.toHaveBeenCalled();
     expect(payment.isRestored).toBe(false);
+    expect(payment.needsSignIn).toBe(true);
     expect(payment.method).toBe("credits");
   });
   it("saves with expected_version and updates the active method", async () => {
@@ -253,6 +254,7 @@ describe("payment preference", () => {
     await render();
     expect(payment.isRestored).toBe(false);
     expect(payment.error).toContain("could not be loaded");
+    expect(payment.errorAction).toBe("reload");
     await act(async () => {
       expect(await payment.save("mvrk")).toBe(false);
     });

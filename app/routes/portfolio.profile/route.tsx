@@ -68,6 +68,9 @@ export default function PortfolioProfile() {
     isDirty,
     isSaving,
     saveError,
+    errorAction,
+    needsSignIn,
+    reload,
     retryNetwork,
     save,
   } = useProfileForm();
@@ -96,8 +99,8 @@ export default function PortfolioProfile() {
       <div className={styles.card}>
         <Section title="Profile Info">
           <RText size="body-s">
-            Name and email are previews and are not saved. Save applies only to
-            the payment method on this browser.
+            Name and email are previews and are not saved. Save stores the
+            payment method for this wallet.
           </RText>
           <div className={styles.grid}>
             <Field label="Full Name">
@@ -167,21 +170,33 @@ export default function PortfolioProfile() {
             <RButton
               disabled={!isDirty}
               isLoading={isSaving}
-              onClick={save}
+              onClick={() => void save()}
               size="medium"
               tone="black"
             >
               Save
             </RButton>
           </div>
+          {needsSignIn && !saveError && (
+            <RText size="body-s">
+              Sign in with your wallet to load and save payment settings.
+            </RText>
+          )}
           {saveError && (
             <div role="alert">
               <RText size="body-s" color="red-500">
                 {saveError}
               </RText>
-              <RButton onClick={retryNetwork} size="medium" tone="black">
-                Retry network verification
-              </RButton>
+              {errorAction === "retry-network" && (
+                <RButton onClick={retryNetwork} size="medium" tone="black">
+                  Retry network verification
+                </RButton>
+              )}
+              {errorAction === "reload" && (
+                <RButton onClick={reload} size="medium" tone="black">
+                  Reload
+                </RButton>
+              )}
             </div>
           )}
         </Section>

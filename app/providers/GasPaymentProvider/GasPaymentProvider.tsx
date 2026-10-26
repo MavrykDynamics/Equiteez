@@ -120,6 +120,12 @@ function usePaymentPreference() {
       : saveError && saveError.wallet === userAddress
         ? saveError.message
         : null;
+  // Conflict and unconfirmed Saves already reloaded; Save itself is their retry.
+  const errorAction = chain.isError
+    ? ("retry-network" as const)
+    : preference.isError && isAuthorized
+      ? ("reload" as const)
+      : null;
   return {
     method: isRestored ? saved!.method : ("credits" as GasPaymentMethod),
     isExplicit: isRestored && saved!.source !== "default",
@@ -128,6 +134,8 @@ function usePaymentPreference() {
     version: isRestored ? saved!.version : null,
     updatedAt: isRestored ? saved!.updatedAt : null,
     error,
+    errorAction,
+    needsSignIn: Boolean(userAddress && !auth.isAuthLoading && !isAuthorized),
     scope,
     toolkit,
     wallet: userAddress,
