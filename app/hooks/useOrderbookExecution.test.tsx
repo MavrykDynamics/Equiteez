@@ -29,7 +29,7 @@ vi.mock("~/contracts/orderPlanValidation", () => ({
   validateOrderPlan: mocks.validate,
 }));
 vi.mock("~/lib/apis/rwa/relay/relay", () => ({ fetchRelayCredits: vi.fn() }));
-vi.mock("@apollo/client", () => ({
+vi.mock("@apollo/client/index", () => ({
   useApolloClient: () => ({
     query: async () => ({
       data: {
