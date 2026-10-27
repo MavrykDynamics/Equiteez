@@ -134,9 +134,7 @@ export const FeesCard: FC<FeesCardProps> = ({
 
               <div className={styles.detailRow}>
                 <div className={styles.feeLabel}>
-                  <span>
-                    {paymentDetails ? "Protocol Fee" : "Platform Fee"}
-                  </span>
+                  <span>Platform Fee</span>
                   <InfoTooltip
                     content={feeTooltip}
                     allowHTML
@@ -147,7 +145,6 @@ export const FeesCard: FC<FeesCardProps> = ({
                   ~ ${platformFeeUsd.plus(includedPurchaseFee ?? 0).toFixed(6)}
                 </span>
               </div>
-              {paymentDetails}
               {annualYield !== undefined && (
                 <div className={styles.detailRow}>
                   <span>Est. Annual Income</span>

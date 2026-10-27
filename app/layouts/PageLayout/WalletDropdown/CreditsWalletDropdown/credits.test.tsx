@@ -45,8 +45,21 @@ vi.mock("~/providers/UserProvider/user.provider", async () => {
   const { createContext } = await import("react");
   return { userContext: createContext(undefined) };
 });
-vi.mock("@remix-run/react", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("@remix-run/react", () => ({
+  useNavigate: () => vi.fn(),
+  Link: ({ children }: { children: ReactNode }) => <a href="/">{children}</a>,
+}));
 vi.mock("~/icons/info-message.svg?react", () => ({ default: () => <svg /> }));
+vi.mock("~/icons/gas-credit-info.svg?react", () => ({
+  default: () => <svg />,
+}));
+vi.mock("~/icons/gas-credit-low.svg?react", () => ({ default: () => <svg /> }));
+vi.mock("~/icons/gas-credit-empty.svg?react", () => ({
+  default: () => <svg />,
+}));
+vi.mock("~/lib/atoms/RTooltip", () => ({
+  RTooltip: ({ children }: { children: ReactNode }) => children,
+}));
 vi.mock("~/lib/relay/relay.scope", () => ({
   getRelayScopeRevision: () => mocks.revision,
   subscribeRelayScope: () => () => {},
@@ -429,26 +442,63 @@ it("an accepted top-up shows Transaction Submitted", async () => {
   expect(submit.mock.calls[0][0].toFixed()).toBe("20");
   expect(host.textContent).toContain("Transaction Submitted");
 });
-it("inline Top Up uses the same modal and disappears when fees turn off", async () => {
+const buttonByText = (text: string) =>
+  [...host.querySelectorAll("button")].find((b) => b.textContent === text);
+it("order summary shows the per-order Gas Credit charge without warnings when healthy", async () => {
   await render(
     <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
   );
-  expect(host.textContent).toContain("1.5 quote tokens");
-  await act(async () => host.querySelector("button")!.click());
+  expect(host.textContent).toContain("Gas Credit1.5 Gas Credits");
+  expect(host.textContent).not.toContain("Top Up");
+  expect(
+    host.querySelector('[aria-label^="1 Gas Credit covers"]')
+  ).not.toBeNull();
+});
+it("low balance warns and Top Up opens the shared modal", async () => {
+  mocks.credits.mockResolvedValue({ ...balance, balanceUnits: "2000000" });
+  await render(
+    <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
+  );
+  expect(host.textContent).toContain(
+    "Running low on Gas Credits. Please Top Up your balance."
+  );
+  await act(async () => buttonByText("Top Up")!.click());
   expect(host.textContent).toContain("Add Gas Credit");
-  mocks.config.mockResolvedValue(off);
-  await act(async () => {
-    await client.invalidateQueries({
-      queryKey: ["relay", mocks.scope, "config"],
-    });
+});
+it("empty balance offers Top Up or switching to manual gas", async () => {
+  mocks.credits.mockResolvedValue({
+    ...balance,
+    balanceUnits: "0",
+    freeAllowanceRemaining: 0,
   });
   await render(
     <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
   );
-  expect(host.querySelector("button")).toBeNull();
-  expect(host.textContent).toContain("No relay service fee");
+  expect(host.textContent).toContain(
+    "You're out of Gas Credits. Please Top Up your balance or Switch to Manual Gas Transactions."
+  );
 });
-it("direct itemization shows the exact wallet fee and no paid Credit controls", async () => {
+it("free allowance prevents the empty warning", async () => {
+  mocks.credits.mockResolvedValue({
+    ...balance,
+    balanceUnits: "0",
+    freeAllowanceRemaining: 2,
+  });
+  await render(
+    <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
+  );
+  expect(host.textContent).not.toContain("out of Gas Credits");
+});
+it("fee-off shows a free Gas Credit row with no Top Up", async () => {
+  mocks.config.mockResolvedValue(off);
+  await render(
+    <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
+  );
+  expect(host.textContent).toContain("Gas CreditFree");
+  expect(buttonByText("Top Up")).toBeUndefined();
+  expect(mocks.credits).not.toHaveBeenCalled();
+});
+it("direct mode shows one wallet network fee row and no Credit controls", async () => {
   await render(
     <RGasPaymentDetails
       method="mvrk"
@@ -457,8 +507,7 @@ it("direct itemization shows the exact wallet fee and no paid Credit controls", 
       storageCost="0.01"
     />
   );
-  expect(host.textContent).toContain("0.123456 MVRK");
-  expect(host.textContent).toContain("0.01 MVRK");
+  expect(host.textContent).toBe("Network Fee~ 0.133456 MVRK");
   expect(host.querySelector("button")).toBeNull();
   expect(mocks.credits).not.toHaveBeenCalled();
 });
