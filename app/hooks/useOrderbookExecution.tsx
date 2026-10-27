@@ -1,4 +1,3 @@
-import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { RButton } from "~/lib/atoms/RButton";
 import { useEffect, useReducer, useRef } from "react";
 import { useApolloClient } from "@apollo/client/index";
@@ -12,7 +11,6 @@ import { OrderPlan, type OrderPlanRequest } from "~/lib/relay/orderPlan";
 import { ROrderPlan } from "~/lib/organisms/ROrderPlan/ROrderPlan";
 
 type Options = {
-  showSignIn?: boolean;
   request: OrderPlanRequest;
   validationMessage?: string;
   directReason?: string;
@@ -21,7 +19,6 @@ type Options = {
 };
 /** Mode routing only: direct success stays in useContractAction; relay success requires a confirmed row. */
 export function useOrderbookExecution(options: Options) {
-  const auth = useAuthContext();
   const payment = useGasPayment();
   const relay = useRelay();
   const user = useUserContext();
@@ -161,19 +158,6 @@ export function useOrderbookExecution(options: Options) {
           render();
         }}
       />
-    ) : options.showSignIn !== false &&
-      payment.method === "credits" &&
-      !auth.isAuthenticated ? (
-      <RButton
-        onClick={() => {
-          void auth.login().catch(() => {
-            startError.current = "Sign-in failed. Try again.";
-            render();
-          });
-        }}
-      >
-        Sign in to use Credits
-      </RButton>
     ) : startError.current ? (
       <RButton
         onClick={() => {

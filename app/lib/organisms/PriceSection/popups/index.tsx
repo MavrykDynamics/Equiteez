@@ -1,7 +1,5 @@
 import { RGasPaymentDetails } from "../components/FeesCard/RGasPaymentDetails";
 import { useOrderbookExecution } from "~/hooks/useOrderbookExecution";
-import { Link } from "@remix-run/react";
-import { ROUTES } from "~/consts";
 import { useDirectOrderFee } from "~/hooks/useDirectOrderFee";
 import {
   FC,
@@ -1015,24 +1013,6 @@ const BuySellForm: FC<
 
       {execution.controls}
       <div className={styles.buySellRoot}>
-        <div role="status" className={styles.paymentReview}>
-          Payment method: {directFee.method === "mvrk" ? "MVRK" : "Credits"}.{" "}
-          {directFee.state.status === "ready" && (
-            <>
-              Estimated network fee:{" "}
-              {directFee.state.fee.networkFee.div(MILLION).toFixed()} MVRK.
-              Storage cost:{" "}
-              {directFee.state.fee.storageCost.div(MILLION).toFixed()} MVRK.
-            </>
-          )}
-          <Link to={ROUTES.portfolioProfile}>Payment settings</Link>
-          {(directFee.state.status === "error" ||
-            (directFee.state.status === "ready" && directFee.reason)) && (
-            <button type="button" onClick={directFee.retry}>
-              Retry estimate
-            </button>
-          )}
-        </div>
         {configError && (
           <button type="button" onClick={onRetryConfig}>
             Retry configuration

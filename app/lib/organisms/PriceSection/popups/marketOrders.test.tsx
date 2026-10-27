@@ -301,17 +301,16 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     expect(mocks.sell).not.toHaveBeenCalled();
   });
 
-  it("reviews suggested fee separately and blocks a failed estimate", async () => {
+  it("allows a verified fee estimate and blocks a failed one", async () => {
     mocks.toolkit.estimate.batch.mockResolvedValueOnce([
       { suggestedFeeMumav: 444, burnFeeMumav: 710 },
     ]);
     render(side);
     change("Pay with", side === BUY ? "29" : "0.96");
     await estimate();
-    expect(container.textContent).toContain(
-      "Estimated network fee: 0.000444 MVRK"
-    );
-    expect(container.textContent).toContain("Storage cost: 0.00071 MVRK");
+    expect(
+      container.querySelector<HTMLButtonElement>("[data-submit]")!.disabled
+    ).toBe(false);
     mocks.toolkit.estimate.batch.mockRejectedValueOnce(new Error("offline"));
     change("Pay with", side === BUY ? "28" : "0.95");
     expect(submit().disabled).toBe(true);

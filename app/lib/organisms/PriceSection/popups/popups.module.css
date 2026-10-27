@@ -174,15 +174,3 @@
     grid-template-columns: 1fr;
   }
 }
-
-.paymentReview {
-  font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-s);
-  line-height: var(--r-line-height-body-s);
-  color: var(--r-color-neutral-700);
-  overflow-wrap: anywhere;
-}
-.paymentReview a,
-.paymentReview button {
-  text-decoration: underline;
-}

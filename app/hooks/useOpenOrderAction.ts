@@ -114,7 +114,6 @@ export function useOpenOrderAction({
   }, [activeActionStatus]);
 
   const execution = useOrderbookExecution({
-    showSignIn: false,
     request: isRefundAction
       ? {
           kind: "process_refund",
