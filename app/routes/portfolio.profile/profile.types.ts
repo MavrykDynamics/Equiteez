@@ -1,5 +1,5 @@
-import type { GasPaymentMethod } from "~/providers/GasPaymentProvider/paymentPreference";
-export type { GasPaymentMethod } from "~/providers/GasPaymentProvider/paymentPreference";
+import type { GasPaymentMethod } from "~/lib/apis/rwa/paymentPreference/paymentPreference.types";
+export type { GasPaymentMethod } from "~/lib/apis/rwa/paymentPreference/paymentPreference.types";
 
 export type ProfileFormValues = {
   fullName: string;

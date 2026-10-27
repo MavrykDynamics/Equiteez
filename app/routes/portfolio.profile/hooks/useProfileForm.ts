@@ -29,12 +29,18 @@ export function useProfileForm() {
   const [values, setValues] = useState<ProfileFormValues>(INITIAL_VALUES);
   const payment = useGasPayment();
   useEffect(() => {
-    setValues({ ...INITIAL_VALUES, gasPaymentMethod: payment.method });
+    setValues(INITIAL_VALUES);
     setIsEmailTouched(false);
-  }, [payment.scope, payment.method, payment.isRestored]);
+  }, [payment.wallet]);
+  // A new server version (own Save, reload after conflict, another device) replaces the draft.
+  useEffect(() => {
+    setValues((currentValues) => ({
+      ...currentValues,
+      gasPaymentMethod: payment.method,
+    }));
+  }, [payment.wallet, payment.method, payment.version, payment.isRestored]);
   const [kyc] = useState<KycInfo>(INITIAL_KYC);
   const [isEmailTouched, setIsEmailTouched] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   const setField = useCallback(
     <K extends keyof ProfileFormValues>(
@@ -48,29 +54,24 @@ export function useProfileForm() {
 
   const emailError = useMemo(() => validateEmail(values.email), [values.email]);
   const isDirty =
-    payment.isRestored &&
-    (!payment.isExplicit ||
-      values.gasPaymentMethod !== payment.method ||
-      Boolean(payment.error));
-  const save = () => {
-    setIsSaving(true);
-    try {
-      payment.save(values.gasPaymentMethod);
-    } finally {
-      setIsSaving(false);
-    }
+    payment.isRestored && values.gasPaymentMethod !== payment.method;
+  const save = async () => {
+    await payment.save(values.gasPaymentMethod);
   };
 
   return {
     values,
     saveError: payment.error,
+    errorAction: payment.errorAction,
+    needsSignIn: payment.needsSignIn,
+    reload: payment.reload,
     retryNetwork: payment.retryNetwork,
     kyc,
     setField,
     emailError: isEmailTouched ? emailError : null,
     touchEmail: () => setIsEmailTouched(true),
     isDirty,
-    isSaving,
+    isSaving: payment.isSaving,
     save,
   };
 }
