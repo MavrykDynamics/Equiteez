@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { RGasPaymentDetails } from "~/lib/organisms/PriceSection/components/FeesCard/RGasPaymentDetails";
 import { act, type ReactNode } from "react";
+import { BigNumber } from "bignumber.js";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -40,6 +41,12 @@ vi.mock("~/providers/AuthProvider/auth.provider", () => ({
 vi.mock("~/providers/RelayProvider/RelayProvider", () => ({
   useRelay: () => ({ records: mocks.records }),
 }));
+vi.mock("~/providers/UserProvider/user.provider", async () => {
+  const { createContext } = await import("react");
+  return { userContext: createContext(undefined) };
+});
+vi.mock("@remix-run/react", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("~/icons/info-message.svg?react", () => ({ default: () => <svg /> }));
 vi.mock("~/lib/relay/relay.scope", () => ({
   getRelayScopeRevision: () => mocks.revision,
   subscribeRelayScope: () => () => {},
@@ -345,35 +352,90 @@ it("itemizes exact per-variant fees without default price, USD parity or protoco
     "protocol fees remain separate"
   );
 });
-it("close/reopen never enables top-up submission, fake payment or success", async () => {
-  const submit = vi.fn();
+const submitForm = async () => {
+  await act(async () => {
+    host
+      .querySelector("form")!
+      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  });
+};
+it("top-up form defaults to 20 Gas Credits and authorizes the exact payment", async () => {
+  await render(
+    <AddCreditsModal
+      isOpen
+      onClose={vi.fn()}
+      walletBalance={new BigNumber(999)}
+    />
+  );
+  expect(host.textContent).toContain("Add Gas Credit");
+  expect(host.textContent).toContain("Wallet Balance:$999.00");
+  expect(host.textContent).toContain(
+    "You're authorizing one payment of exactly 20.00 USDT."
+  );
+});
+it("without a submit handler the form ends in Top Up unavailable, never success", async () => {
   const close = vi.fn();
-  for (const isOpen of [true, false, true])
-    await render(
-      <AddCreditsModal
-        isOpen={isOpen}
-        onClose={close}
-        onAddCredits={submit}
-        walletBalanceUsd={999}
-      />
-    );
+  await render(
+    <AddCreditsModal
+      isOpen
+      onClose={close}
+      walletBalance={new BigNumber(999)}
+    />
+  );
+  await submitForm();
   expect(host.textContent).toContain("Top Up unavailable");
   expect(host.textContent).not.toContain("Transaction Submitted");
   expect(host.querySelector("input")).toBeNull();
-  expect(host.textContent).not.toContain("0.00");
   await act(async () => {
     host.querySelector("button")!.click();
   });
   expect(close).toHaveBeenCalledOnce();
+});
+it("blocked reason and insufficient balance never call the submit handler", async () => {
+  const submit = vi.fn();
+  await render(
+    <AddCreditsModal
+      isOpen
+      blockedReason="Blocked by plan"
+      onClose={vi.fn()}
+      onAddCredits={submit}
+      walletBalance={new BigNumber(999)}
+    />
+  );
+  expect(host.textContent).toContain("Blocked by plan");
+  await render(
+    <AddCreditsModal
+      isOpen
+      onClose={vi.fn()}
+      onAddCredits={submit}
+      walletBalance={new BigNumber(1)}
+    />
+  );
+  expect(host.textContent).toContain("Insufficient wallet balance.");
+  await submitForm();
   expect(submit).not.toHaveBeenCalled();
 });
-it("inline Top Up uses the same blocked modal and disappears when fees turn off", async () => {
+it("an accepted top-up shows Transaction Submitted", async () => {
+  const submit = vi.fn().mockResolvedValue(undefined);
+  await render(
+    <AddCreditsModal
+      isOpen
+      onClose={vi.fn()}
+      onAddCredits={submit}
+      walletBalance={new BigNumber(999)}
+    />
+  );
+  await submitForm();
+  expect(submit.mock.calls[0][0].toFixed()).toBe("20");
+  expect(host.textContent).toContain("Transaction Submitted");
+});
+it("inline Top Up uses the same modal and disappears when fees turn off", async () => {
   await render(
     <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
   );
   expect(host.textContent).toContain("1.5 quote tokens");
   await act(async () => host.querySelector("button")!.click());
-  expect(host.textContent).toContain("Top Up unavailable");
+  expect(host.textContent).toContain("Add Gas Credit");
   mocks.config.mockResolvedValue(off);
   await act(async () => {
     await client.invalidateQueries({
@@ -399,4 +461,29 @@ it("direct itemization shows the exact wallet fee and no paid Credit controls", 
   expect(host.textContent).toContain("0.01 MVRK");
   expect(host.querySelector("button")).toBeNull();
   expect(mocks.credits).not.toHaveBeenCalled();
+});
+it("badge shows hardcoded-price Credit counts with design tones", async () => {
+  const at = (units: string, free = 0) =>
+    render(
+      <CreditsBalanceBadge
+        status="ready"
+        progress={null}
+        credits={{
+          ...balance,
+          balanceUnits: units,
+          freeAllowanceRemaining: free,
+        }}
+        onAddCredits={vi.fn()}
+      />
+    );
+  await at("20500000");
+  expect(host.textContent).toBe("20 Gas Credits");
+  await at("2000000");
+  expect(host.textContent).toBe("2 Gas Credits");
+  await at("1000000");
+  expect(host.textContent).toBe("1 Gas Credit");
+  await at("999999");
+  expect(host.textContent).toBe("0 Gas CreditsAdd Credits");
+  await at("0", 5);
+  expect(host.textContent).toBe("5 Free Gas Credits");
 });

@@ -167,10 +167,6 @@ export function ROrderPlan({
           isOpen={topUpOpen}
           onClose={() => setTopUpOpen(false)}
           blockedReason={TOP_UP_BLOCKER}
-          walletBalanceUsd={0}
-          onAddCredits={async () => {
-            throw new Error(TOP_UP_BLOCKER);
-          }}
         />
       </section>
     </PopupWithIcon>

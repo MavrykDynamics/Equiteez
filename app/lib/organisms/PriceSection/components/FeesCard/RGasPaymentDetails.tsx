@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { RButton } from "~/lib/atoms/RButton";
 import { AddCreditsModal } from "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/AddCreditsModal";
-import { useCredits } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/useCredits";
+import {
+  useCreditTokenWalletBalance,
+  useCredits,
+} from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/useCredits";
 import { getCreditFeeText } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
 import styles from "./styles.module.css";
 
@@ -17,6 +20,7 @@ export function RGasPaymentDetails({
   storageCost?: string;
 }) {
   const credits = useCredits(method === "credits");
+  const walletBalance = useCreditTokenWalletBalance(credits.config);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   return (
     <div className={styles.paymentDetails}>
@@ -46,6 +50,7 @@ export function RGasPaymentDetails({
           <AddCreditsModal
             isOpen={isTopUpOpen && credits.canTopUp}
             onClose={() => setIsTopUpOpen(false)}
+            walletBalance={walletBalance}
           />
         </>
       )}

@@ -12,8 +12,8 @@ import { AddCreditsModal } from "../AddCreditsModal/AddCreditsModal";
 import { WalletAccountFace } from "../WalletAccountFace";
 import { WalletMenuLinks } from "../WalletMenuLinks";
 import { CreditsBalanceBadge } from "./CreditsBalanceBadge";
-import { formatCreditTokenUnits } from "./credits.utils";
-import { useCredits } from "./useCredits";
+import { formatCredits, getCreditsCount } from "./credits.utils";
+import { useCreditTokenWalletBalance, useCredits } from "./useCredits";
 import styles from "./CreditsWalletDropdown.module.css";
 
 type CreditsWalletDropdownProps = {
@@ -23,9 +23,10 @@ type CreditsWalletDropdownProps = {
 export function CreditsWalletDropdown({
   userAddress,
 }: CreditsWalletDropdownProps) {
-  const { credits, status, progress, canTopUp } = useCredits();
-  const balance = credits?.enabled
-    ? formatCreditTokenUnits(credits.balanceUnits, credits.decimals)
+  const { credits, config, status, progress, canTopUp } = useCredits();
+  const walletBalance = useCreditTokenWalletBalance(config);
+  const creditsCount = credits?.enabled
+    ? getCreditsCount(credits.balanceUnits, credits.decimals)
     : null;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
@@ -42,7 +43,12 @@ export function CreditsWalletDropdown({
         isOpen={isDropdownOpen}
         onOpenChange={setIsDropdownOpen}
       >
-        <CreditsBalanceBadge status={status} progress={progress} />
+        <CreditsBalanceBadge
+          credits={credits}
+          onAddCredits={canTopUp ? openAddCredits : undefined}
+          progress={progress}
+          status={status}
+        />
         <span aria-hidden className={styles.divider} />
         <WalletAccountFace
           className={styles.accountTrigger}
@@ -58,11 +64,11 @@ export function CreditsWalletDropdown({
               {status === "ready" && credits?.enabled ? (
                 <>
                   <RText size="body-m" weight="medium">
-                    {balance} Prepaid Quote Tokens
+                    {creditsCount && formatCredits(creditsCount)}
                   </RText>
                   {credits.freeAllowanceRemaining > 0 && (
                     <RText color="neutral-700" size="body-s">
-                      Free allowance: {credits.freeAllowanceRemaining}
+                      + {credits.freeAllowanceRemaining} Free Gas Credits
                     </RText>
                   )}
                 </>
@@ -104,6 +110,7 @@ export function CreditsWalletDropdown({
       <AddCreditsModal
         isOpen={isAddCreditsOpen && canTopUp}
         onClose={() => setIsAddCreditsOpen(false)}
+        walletBalance={walletBalance}
       />
     </>
   );

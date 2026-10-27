@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   reconnect: vi.fn(),
   login: vi.fn(),
 }));
+vi.mock("~/icons/info-message.svg?react", () => ({ default: () => <svg /> }));
 vi.mock("~/lib/apis/rwa/relay/relay", () => ({
   fetchRelayCredits: mocks.credits,
 }));

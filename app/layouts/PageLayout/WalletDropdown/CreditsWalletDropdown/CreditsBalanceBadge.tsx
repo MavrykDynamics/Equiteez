@@ -1,10 +1,17 @@
 import clsx from "clsx";
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import type { CreditsBalanceStatus } from "./credits.utils";
+import {
+  formatCredits,
+  getCreditsCount,
+  getCreditsTone,
+  type Credits,
+  type CreditsBalanceStatus,
+  type CreditsTone,
+} from "./credits.utils";
 import styles from "./CreditsWalletDropdown.module.css";
 
-type BadgeTone = "healthy" | "empty" | "pending" | "free" | "neutral";
+type BadgeTone = CreditsTone | "pending" | "neutral";
 
 const STATUS_ICONS: Record<CreditsBalanceStatus, RIconName> = {
   ready: "credit-card",
@@ -27,31 +34,71 @@ const STATUS_TEXT: Record<CreditsBalanceStatus, string> = {
   error: "Gas Credits unavailable",
   free: "Gas sponsored",
 };
+const TONE_ICONS: Record<CreditsTone, RIconName> = {
+  healthy: "credit-card",
+  low: "warning-circle",
+  empty: "warning-triangle",
+  free: "gift",
+};
 
 export function CreditsBalanceBadge({
   status,
   progress,
+  credits,
+  onAddCredits,
 }: {
   status: CreditsBalanceStatus;
   progress: "pending" | "updating" | null;
+  credits?: Credits;
+  onAddCredits?: () => void;
 }) {
-  const tone = progress ? "pending" : STATUS_TONES[status];
+  const count =
+    status === "ready" && credits?.enabled
+      ? getCreditsCount(credits.balanceUnits, credits.decimals)
+      : null;
+  const countTone =
+    count && credits?.enabled
+      ? getCreditsTone(count, credits.freeAllowanceRemaining)
+      : null;
+
+  let tone: BadgeTone = STATUS_TONES[status];
+  let icon = STATUS_ICONS[status];
+  let text = STATUS_TEXT[status];
+  if (progress) {
+    tone = "pending";
+    icon = "dots";
+    text =
+      progress === "pending" ? "Adding Gas Credits" : "Updating Gas Credits";
+  } else if (count && countTone && credits?.enabled) {
+    tone = countTone;
+    icon = TONE_ICONS[countTone];
+    text =
+      countTone === "free"
+        ? `${credits.freeAllowanceRemaining} Free Gas ${credits.freeAllowanceRemaining === 1 ? "Credit" : "Credits"}`
+        : formatCredits(count);
+  }
 
   return (
     <div className={styles.badge} role="status">
       <RIcon
         aria-hidden
         className={clsx(styles.statusIcon, styles[tone])}
-        name={progress ? "dots" : STATUS_ICONS[status]}
+        name={icon}
         size="small"
       />
-      <RText size="body-s">
-        {progress === "pending"
-          ? "Adding Gas Credits"
-          : progress === "updating"
-            ? "Updating Gas Credits"
-            : STATUS_TEXT[status]}
-      </RText>
+      <RText size="body-s">{text}</RText>
+      {!progress && countTone === "empty" && onAddCredits && (
+        <>
+          <span aria-hidden className={styles.dot} />
+          <button
+            className={styles.addCreditsLink}
+            onClick={onAddCredits}
+            type="button"
+          >
+            Add Credits
+          </button>
+        </>
+      )}
     </div>
   );
 }

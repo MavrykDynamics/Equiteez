@@ -1,10 +1,12 @@
-import { useSyncExternalStore } from "react";
+import { useContext, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchRelayCredits,
   relayConfigQueryOptions,
 } from "~/lib/apis/rwa/relay/relay";
+import { toTokenSlug } from "~/lib/assets";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { userContext } from "~/providers/UserProvider/user.provider";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
 import {
@@ -78,4 +80,19 @@ export function useCredits(enabled = true) {
       if (canRead) void credits.refetch();
     },
   };
+}
+
+// Wallet balance of the fee token, in whole tokens; null while unknown.
+export function useCreditTokenWalletBalance(
+  config: ReturnType<typeof useCredits>["config"]
+) {
+  const user = useContext(userContext);
+  if (!user || config?.state !== "ready" || !config.config.fee.enabled)
+    return null;
+  const { tokenContract, tokenId } = config.config.fee;
+  return (
+    user.userTokensBalances[toTokenSlug(tokenContract, tokenId)] ??
+    user.userTokensBalances[tokenContract] ??
+    null
+  );
 }

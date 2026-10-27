@@ -7,6 +7,16 @@ import type { fetchRelayCredits } from "~/lib/apis/rwa/relay/relay";
 import type { RelayRecord } from "~/lib/relay/relay.storage";
 
 export type Credits = Awaited<ReturnType<typeof fetchRelayCredits>>;
+// TODO(gas): temporary hardcoded tariff until the API exposes a Credit price.
+// One Gas Credit costs this many fee tokens (USDT).
+export const CREDIT_PRICE_USDT = 1;
+export const CREDIT_PACKAGES = [5, 20, 50] as const;
+export const DEFAULT_CREDIT_PACKAGE = 20;
+export const CUSTOM_TOP_UP_MIN_USDT = 5;
+export const CUSTOM_TOP_UP_MAX_USDT = 100;
+
+export type CreditsTone = "healthy" | "low" | "empty" | "free";
+
 export type CreditsBalanceStatus =
   | "unknown"
   | "loading"
@@ -75,4 +85,28 @@ export function getCreditTokenLabel(config: RelayConfig) {
   return config.fee.enabled
     ? `${config.fee.tokenContract} / token ${config.fee.tokenId}`
     : null;
+}
+
+export function getCreditsCount(units: string, decimals: number) {
+  return new BigNumber(units)
+    .shiftedBy(-decimals)
+    .dividedToIntegerBy(CREDIT_PRICE_USDT);
+}
+
+export function getCreditsTone(
+  count: BigNumber,
+  freeAllowance: number
+): CreditsTone {
+  if (count.isZero() && freeAllowance > 0) return "free";
+  if (count.gt(2)) return "healthy";
+  return count.isZero() ? "empty" : "low";
+}
+
+export function formatCredits(count: BigNumber.Value) {
+  const value = new BigNumber(count);
+  return `${value.toFormat()} Gas ${value.eq(1) ? "Credit" : "Credits"}`;
+}
+
+export function formatUsdt(amount: BigNumber.Value) {
+  return new BigNumber(amount).toFormat(2);
 }
