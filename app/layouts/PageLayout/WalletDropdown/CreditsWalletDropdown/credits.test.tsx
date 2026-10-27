@@ -184,7 +184,7 @@ it("does not combine paid and free counts or label them Credits", async () => {
   await render();
   expect(result.status).toBe("ready");
   expect(result.credits).toEqual(balance);
-  expect(host.textContent).toBe("Credits");
+  expect(host.textContent).toBe("Gas Credits");
   expect(result).not.toHaveProperty("addCredits");
 });
 it("fee-off skips protected credit reads and top-up controls", async () => {

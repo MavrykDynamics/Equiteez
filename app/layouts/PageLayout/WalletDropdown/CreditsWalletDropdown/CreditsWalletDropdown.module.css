@@ -41,6 +41,10 @@
   color: var(--r-color-neutral-500);
 }
 
+.neutral {
+  color: var(--r-color-neutral-500);
+}
+
 .pending circle {
   animation: creditsPendingDot 1.2s ease-in-out infinite;
 }
@@ -99,19 +103,29 @@
   padding: 0;
   background: transparent;
   border: 0;
+  box-shadow: none;
+}
+
+.dropdown:has(.accountTrigger:hover) {
+  border-color: var(--r-color-neutral-300);
+}
+
+.dropdown:has(.accountTrigger[aria-expanded="true"]) {
+  border-color: var(--r-color-neutral-black);
 }
 
 .dropdown .menu {
   top: 100%;
   width: min(298px, calc(100vw - 32px));
   margin-top: var(--r-space-1);
+  box-shadow: 0 25.78px 51.56px -12.89px rgba(0, 0, 0, 0.2);
 }
 
 .balanceSection {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-2);
-  padding: var(--r-space-2) var(--r-space-3) 9px;
+  padding: var(--r-space-2) var(--r-space-3);
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
@@ -119,7 +133,7 @@
   display: flex;
   flex-direction: column;
   overflow-wrap: anywhere;
-  gap: var(--r-space-2);
+  gap: var(--r-space-1);
 }
 
 .addCreditsButton {
