@@ -1,69 +1,46 @@
 import clsx from "clsx";
-
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
-
-import {
-  type CreditsBalanceStatus,
-  formatCredits,
-  formatCreditsUsd,
-} from "./credits.utils";
+import type { CreditsBalanceStatus } from "./credits.utils";
 import styles from "./CreditsWalletDropdown.module.css";
 
 const STATUS_ICONS: Record<CreditsBalanceStatus, RIconName> = {
-  healthy: "credit-card",
-  low: "warning-circle",
-  empty: "warning-triangle",
-  pending: "dots",
+  ready: "credit-card",
+  unknown: "credit-card",
+  loading: "dots",
+  error: "warning-triangle",
   free: "gift",
 };
-
-type CreditsBalanceBadgeProps = {
-  balance: number;
-  freeCredits: number;
-  onAddCredits: () => void;
-  pendingAmount: number | null;
-  status: CreditsBalanceStatus;
+const STATUS_TEXT: Record<CreditsBalanceStatus, string> = {
+  ready: "Credits",
+  unknown: "Credits unavailable",
+  loading: "Credits loading…",
+  error: "Credits unavailable",
+  free: "Gas sponsored",
 };
 
 export function CreditsBalanceBadge({
-  balance,
-  freeCredits,
-  onAddCredits,
-  pendingAmount,
   status,
-}: CreditsBalanceBadgeProps) {
+  progress,
+}: {
+  status: CreditsBalanceStatus;
+  progress: "pending" | "updating" | null;
+}) {
   return (
-    <div className={styles.badge}>
+    <div className={styles.badge} role="status">
       <RIcon
+        aria-hidden
         className={clsx(styles.statusIcon, styles[status])}
-        name={STATUS_ICONS[status]}
+        name={progress ? "dots" : STATUS_ICONS[status]}
         size="medium"
       />
-
-      {status === "pending" ? (
-        <RText size="body-s">Adding {formatCredits(pendingAmount ?? 0)}</RText>
-      ) : status === "free" ? (
-        <RText size="body-s">{freeCredits} Free Credits</RText>
-      ) : (
-        <>
-          <RText size="body-s">{formatCredits(balance)}</RText>
-          <span aria-hidden className={styles.dot} />
-          {status === "empty" ? (
-            <button
-              className={styles.addCreditsLink}
-              onClick={onAddCredits}
-              type="button"
-            >
-              Add Credits
-            </button>
-          ) : (
-            <RText color="neutral-500" size="body-s">
-              {formatCreditsUsd(balance)}
-            </RText>
-          )}
-        </>
-      )}
+      <RText size="body-s">
+        {progress === "pending"
+          ? "Top-up pending"
+          : progress === "updating"
+            ? "Credits updating"
+            : STATUS_TEXT[status]}
+      </RText>
     </div>
   );
 }

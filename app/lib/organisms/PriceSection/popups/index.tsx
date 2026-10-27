@@ -1,3 +1,4 @@
+import { RGasPaymentDetails } from "../components/FeesCard/RGasPaymentDetails";
 import { useOrderbookExecution } from "~/hooks/useOrderbookExecution";
 import { Link } from "@remix-run/react";
 import { ROUTES } from "~/consts";
@@ -955,6 +956,24 @@ const BuySellForm: FC<
     />
   );
 
+  const paymentDetails = (
+    <RGasPaymentDetails
+      method={directFee.method}
+      variant={
+        activetabId === BUY ? "permitPlaceBuyOrder" : "permitPlaceSellOrder"
+      }
+      networkFee={
+        directFee.state.status === "ready"
+          ? directFee.state.fee.networkFee.div(MILLION).toFixed()
+          : undefined
+      }
+      storageCost={
+        directFee.state.status === "ready"
+          ? directFee.state.fee.storageCost.div(MILLION).toFixed()
+          : undefined
+      }
+    />
+  );
   return (
     <>
       {orderBookContainer ? (
@@ -1066,6 +1085,7 @@ const BuySellForm: FC<
               total={total}
               tokenPrice={tokenPrice}
               gasFee={gasFee}
+              paymentDetails={paymentDetails}
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}
@@ -1089,6 +1109,7 @@ const BuySellForm: FC<
               setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               gasFee={gasFee}
+              paymentDetails={paymentDetails}
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}

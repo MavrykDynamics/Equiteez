@@ -174,3 +174,17 @@
 .feeTooltipValue {
   color: var(--r-color-neutral-black);
 }
+
+.paymentDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  overflow-wrap: anywhere;
+}
+
+.paymentDetails p {
+  margin: 0;
+}

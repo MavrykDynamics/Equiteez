@@ -48,6 +48,7 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   gasFee?: BigNumber.Value;
+  paymentDetails?: React.ReactNode;
   apy: number | null;
   orderbookFee?: BigNumber.Value;
   orderExpiryPeriodId: OrderExpiryPeriodId | null;
@@ -72,6 +73,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   alignedQuantity,
   total,
   gasFee,
+  paymentDetails,
   apy,
   orderbookFee,
   orderExpiryPeriodId,
@@ -101,7 +103,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } =
+    useUserContext();
   const isDisconnected = !userAddress;
 
   // Read the balance of the orderbook's actual quote token, not a hardcoded
@@ -362,6 +365,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             gasFee={gasFee}
+            paymentDetails={paymentDetails}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
             isLimitOrder

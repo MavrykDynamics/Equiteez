@@ -1,45 +1,81 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useSyncExternalStore } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  fetchRelayCredits,
+  relayConfigQueryOptions,
+} from "~/lib/apis/rwa/relay/relay";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
+import { useRelay } from "~/providers/RelayProvider/RelayProvider";
+import {
+  getRelayScopeRevision,
+  subscribeRelayScope,
+} from "~/lib/relay/relay.scope";
+import { getCreditsBalanceStatus, getTopUpProgress } from "./credits.utils";
 
-import { type CreditsState, getCreditsBalanceStatus } from "./credits.utils";
-
-// TODO: replace with credits balance from the API
-const INITIAL_CREDITS: CreditsState = {
-  balance: 20,
-  freeCredits: 0,
-  pendingAmount: null,
-};
-
-// TODO: replace with the user's USDT wallet balance
-const MOCK_WALLET_BALANCE_USD = 172507.78;
-const MOCK_CONFIRMATION_DELAY_MS = 3000;
-
-export function useCredits() {
-  const [credits, setCredits] = useState<CreditsState>(INITIAL_CREDITS);
-  const confirmationTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => () => clearTimeout(confirmationTimeoutRef.current), []);
-
-  const addCredits = useCallback(async (amount: number) => {
-    // TODO: send the add credits transaction and track its confirmation
-    setCredits((currentCredits) => ({
-      ...currentCredits,
-      pendingAmount: amount,
-    }));
-
-    clearTimeout(confirmationTimeoutRef.current);
-    confirmationTimeoutRef.current = setTimeout(() => {
-      setCredits((currentCredits) => ({
-        ...currentCredits,
-        balance: currentCredits.balance + amount,
-        pendingAmount: null,
-      }));
-    }, MOCK_CONFIRMATION_DELAY_MS);
-  }, []);
-
+export function useCredits(enabled = true) {
+  const payment = useGasPayment();
+  const auth = useAuthContext();
+  const relay = useRelay();
+  const revision = useSyncExternalStore(
+    subscribeRelayScope,
+    getRelayScopeRevision,
+    () => 0
+  );
+  const authenticated = Boolean(
+    enabled &&
+      payment.scope &&
+      payment.wallet &&
+      auth.isAuthenticated &&
+      !auth.isAuthLoading &&
+      auth.authenticatedWalletAddress === payment.wallet
+  );
+  const config = useQuery({
+    ...relayConfigQueryOptions(payment.scope ?? "unresolved"),
+    enabled: authenticated,
+    refetchInterval: 60_000,
+  });
+  const currentConfig = authenticated ? config.data : undefined;
+  const canRead =
+    authenticated &&
+    currentConfig?.state === "ready" &&
+    currentConfig.config.enabled &&
+    currentConfig.config.fee.enabled;
+  const credits = useQuery({
+    // Keep the lifecycle's invalidation prefix. Auth transitions and fee-token
+    // changes never reuse a prior response, even on an away-and-back switch.
+    queryKey: [
+      "relay",
+      payment.scope,
+      "credits",
+      revision,
+      currentConfig?.config.fee,
+    ],
+    queryFn: ({ signal }) =>
+      fetchRelayCredits(payment.wallet!, currentConfig!.config, signal),
+    enabled: Boolean(canRead),
+    staleTime: 0,
+    refetchInterval: 30_000,
+    retry: false,
+  });
+  const data = canRead ? credits.data : undefined;
+  const status = getCreditsBalanceStatus({
+    authenticated,
+    config: currentConfig,
+    credits: data,
+    isError: config.isError || (Boolean(canRead) && credits.isError),
+  });
   return {
-    ...credits,
-    status: getCreditsBalanceStatus(credits),
-    walletBalanceUsd: MOCK_WALLET_BALANCE_USD,
-    addCredits,
+    status,
+    config: currentConfig,
+    credits: status === "ready" ? data : undefined,
+    progress: canRead ? getTopUpProgress(relay.records) : null,
+    isRefreshing: Boolean(canRead && credits.isFetching),
+    canTopUp: Boolean(canRead),
+    refresh: () => {
+      if (!authenticated) return;
+      void config.refetch();
+      if (canRead) void credits.refetch();
+    },
   };
 }

@@ -1,0 +1,17 @@
+Read AGENTS.md, gas.md, gas-plan.md, docs/gasless-trading.md, api.yaml, and docs/fixtures/permit-deployment/README.md.
+
+Implement Phase 7 only — History, inbox and release verification from gas-plan.md. Preserve all staged/unrelated changes, including app/generated/sitemap-routes.ts. Do not commit or deploy. Connected-wallet/end-to-end testing is user-owned after all phases; continue independently without requesting credentials.
+
+Reuse Phases 1–6, existing RelayProvider, GasPaymentProvider, useCredits, relay schemas/cache/monotonic merging, progress details, order history components and notifier/inbox infrastructure. Keep primary purchases, direct order history and bridge history/widgets unchanged. Do not resume signatures after reload or infer completion from relay acceptance.
+
+Use authoritative fee_top_up relay rows for top-up history: exact intent.amountUnits, proven token metadata, createdAt, status, internal operationId and real opHash only. Handle missing/unverified historical metadata explicitly; current fee config alone is not evidence of a historical token denomination. Do not invent contract addresses, transaction hashes, Credit conversion, USD parity, refunds or successful settlement.
+
+For independently verifiable frontend work, use the plan's explicit Top Ups filter with separate newest-first cursor paging; keep existing order-history search/sort/numbered pagination unchanged. Do not claim a unified timeline/total or product release acceptance. Follow cursors through sparse/empty matching pages, deduplicate IDs and documented hash identities, and preserve cursor bookkeeping. Do not send unsupported intentKind/search/sort parameters. Document any remaining unified-feed/product decision as a release blocker.
+
+Add backend-authored relay_failed/relay_rejected inbox templates and internal details routing for entity_key=relay:<id>. Accept nullable event_id; do not synthesize confirmed inbox rows or retry-blip failures. Reuse existing settlement/fee-amendment behavior and neutral null-charge wording.
+
+Verify disabled/fee-off/fee-on and production gating with deterministic fixtures. Use public read-only live config only if accessible; distinguish current evidence from historical snapshots and document access failures without requesting credentials. Do not introduce an unapproved dev fixture override or sponsor secrets.
+
+Keep unsupported top-up signing/submission blocked until deployed deadline reconstruction, duplicate-signature/idempotency and authoritative lost-response correlation are documented. Credit denomination, preset conversion, free-allowance overlap/applicability and post-confirmation balance-inclusion evidence remain unresolved; retain truthful unknown/updating states and no optimistic balance increase.
+
+Follow designer/new-r-design and update registries for new R components. Run deterministic Phase 7 pagination/inbox tests and relevant Credits/plan/permit/relay/API/lifecycle/direct/primary/bridge regressions; targeted ESLint; typecheck; and direct npx remix vite:build without sitemap prebuild. Distinguish the seven documented baseline typecheck paths and bridge-widget Etherscan-link failure from regressions. Update gas-plan.md and implementation documentation with changed files, results, blockers and exact release-verification steps. Do not write Status: Complete while required checks or release dependencies remain blocked.

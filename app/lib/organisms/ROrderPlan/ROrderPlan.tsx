@@ -36,14 +36,20 @@ export function ROrderPlan({
     )
       return;
     let cancelled = false;
-    if (code === "FEE_CREDIT_REQUIRED") setTopUpOpen(true);
+    setTopUpOpen(false);
     void Promise.resolve()
       .then(async () => {
         const scope = JSON.stringify(runtime.getScope());
         const config = await runtime.refreshConfig();
         if (cancelled || JSON.stringify(runtime.getScope()) !== scope) return;
-        if (code === "FEE_CREDIT_REQUIRED" && config.fee.enabled)
+        if (
+          code === "FEE_CREDIT_REQUIRED" &&
+          config.enabled &&
+          config.fee.enabled
+        ) {
+          setTopUpOpen(true);
           await fetchRelayCredits(runtime.getScope().wallet, config);
+        }
       })
       .catch(() => {
         if (!cancelled)

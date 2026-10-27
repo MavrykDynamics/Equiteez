@@ -103,7 +103,7 @@
 
 .dropdown .menu {
   top: 100%;
-  width: 298px;
+  width: min(298px, calc(100vw - 32px));
   margin-top: var(--r-space-1);
 }
 
@@ -117,7 +117,8 @@
 
 .balanceValue {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  overflow-wrap: anywhere;
   gap: var(--r-space-2);
 }
 

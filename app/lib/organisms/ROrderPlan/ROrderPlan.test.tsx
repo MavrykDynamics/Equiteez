@@ -126,3 +126,14 @@ it("signer mismatch offers reconnect", async () => {
   });
   expect(mocks.reconnect).toHaveBeenCalledOnce();
 });
+it("a stale 402 does not open Top Up after fees turn off", async () => {
+  vi.mocked(runtime.refreshConfig).mockResolvedValueOnce({
+    enabled: true,
+    fee: { enabled: false },
+    contracts: [],
+    gaslessThresholdMumav: "0",
+  });
+  await render(new RelayApiError(402, "FEE_CREDIT_REQUIRED", "give-up"));
+  expect(mocks.credits).not.toHaveBeenCalled();
+  expect(host.textContent).not.toContain("Top Up unavailable");
+});
