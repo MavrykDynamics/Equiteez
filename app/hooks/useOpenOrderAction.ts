@@ -143,8 +143,10 @@ export function useOpenOrderAction({
       directFee.retry();
       return;
     }
-    if (directFee.method === "credits") setIsPopupOpen(false);
+    // Credits resolve here (confirmed, failed or rejected), so the popup keeps
+    // the button loader like MVRK and closes once the action ends.
     await execution.execute();
+    if (directFee.method === "credits") setIsPopupOpen(false);
   };
 
   return {
@@ -155,7 +157,7 @@ export function useOpenOrderAction({
     handleClosePopup: () => setIsPopupOpen(false),
     handleOpenPopup: () => setIsPopupOpen(true),
     handleOrderAction,
-    isPopupOpen: isPopupOpen && !execution.isBusy,
+    isPopupOpen,
     popupSubmitDisabled:
       execution.isBusy ||
       (isRefundAction && order.refund?.status !== "claimable") ||
