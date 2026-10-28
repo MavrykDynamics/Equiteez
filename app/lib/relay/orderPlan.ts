@@ -19,8 +19,8 @@ export type OrderPlanRequest = Exclude<
   { kind: "fee_top_up" } | { kind: "update_operators" }
 >;
 export type SignedPermit = Awaited<ReturnType<typeof signPreparedPermit>>;
-export const TOP_UP_BLOCKER =
-  "Top-up required. Submission is blocked until the API specifies signed-deadline reconstruction and safe recovery. Your order has been preserved.";
+export const CREDIT_SHORTAGE_MESSAGE =
+  "You’re out of Credits. Please Top Up your balance. Your order has been preserved.";
 export type PlanState =
   | "idle"
   | "preparing"
@@ -143,7 +143,7 @@ export class OrderPlan {
       undefined,
       0,
       undefined,
-      TOP_UP_BLOCKER
+      CREDIT_SHORTAGE_MESSAGE
     );
   }
   private async operator() {

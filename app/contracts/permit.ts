@@ -17,6 +17,8 @@ import {
   findAnnotation,
   fingerprint,
   hashBytes,
+  scriptFingerprint,
+  toPermitDeadline,
   verifyPermitSignature,
 } from "./permitCodec";
 import { permitGeneration } from "./permitGeneration";
@@ -126,7 +128,7 @@ function checkGeneration(
   contract: Contract,
   kind: "orderbook" | "quote_token" | "rwa_token"
 ) {
-  if (fingerprint(contract.script.code) !== permitGeneration[kind])
+  if (scriptFingerprint(contract.script.code) !== permitGeneration[kind])
     throw new Error(
       "Unsupported permit contract generation. Refresh the deployment evidence."
     );
@@ -414,10 +416,6 @@ export async function preparePermit(
     ...encoded,
     fields,
     configFingerprint: fingerprint(config),
-    signingBlocker:
-      request.kind === "fee_top_up"
-        ? "Top-up signing is unavailable until the API specifies how it reconstructs the signed deadline."
-        : null,
   });
 }
 export type PreparedPermit = Awaited<ReturnType<typeof preparePermit>>;
@@ -451,7 +449,6 @@ export async function signPreparedPermit(
   runtime: PermitRuntime,
   prepared: PreparedPermit
 ) {
-  if (prepared.signingBlocker) throw new Error(prepared.signingBlocker);
   if (usedReviews.has(prepared))
     throw new Error(
       "Review this action again before requesting another signature"
@@ -519,6 +516,8 @@ export async function signPreparedPermit(
         publicKey: prepared.publicKey,
         signature: response.signature,
         amountUnits: prepared.built.topUpAmount,
+        // Never regenerated after signing: the same instant that was signed.
+        deadline: toPermitDeadline(prepared.deadline),
       })
     : null;
   await assertPermitCurrent(runtime, prepared);

@@ -1,7 +1,13 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { v4 as uuid } from "uuid";
 import { z } from "zod";
 import * as api from "~/lib/apis/rwa/relay/relay";
-import type { RelaySubmitRequest } from "~/lib/apis/rwa/relay/relay.types";
+import type {
+  RelayConfig,
+  RelayOperation,
+  RelaySubmitRequest,
+  RelayTopUpRequest,
+} from "~/lib/apis/rwa/relay/relay.types";
 import {
   RelayApiError,
   getRelayErrorAction,
@@ -38,11 +44,14 @@ type Dependencies = {
   api?: Pick<
     typeof api,
     | "submitRelayOperation"
+    | "submitRelayTopUp"
     | "fetchRelayOperation"
     | "checkRelayOperationNow"
     | "fetchRelayOperations"
   >;
 };
+// Tolerates client/server clock differences when matching or expiring top-ups.
+const TOP_UP_CLOCK_SKEW = 120_000;
 export class RelayLifecycle {
   records: RelayRecord[] = [];
   error: string | null = null;
@@ -153,6 +162,7 @@ export class RelayLifecycle {
         ),
       ];
       await Promise.all(ids.map((id) => this.refresh(id)));
+      await this.retryUnknown();
       if (
         !this.isReconciled ||
         this.records.some((r) => !r.operationId && r.state !== "settled")
@@ -161,6 +171,23 @@ export class RelayLifecycle {
       this.changed();
       if (timerRevision === this.timerRevision) this.schedule();
     }, relayPollInterval(this.notifier));
+  }
+  // Bounded replays of the exact payload and idempotency key; the key makes
+  // a replay of an already admitted operation return its stored ids.
+  private async retryUnknown() {
+    const due = this.records.filter(
+      (r) =>
+        r.payload &&
+        !r.operationId &&
+        r.state === "unknown" &&
+        r.remedy !== "sign-in" &&
+        r.posts < 4 &&
+        Date.now() >= r.nextRetryAt
+    );
+    for (const record of due) {
+      if (!this.current()) return;
+      await this.retry(record.id).catch(() => undefined);
+    }
   }
   private save(record: RelayRecord) {
     this.assertCurrent();
@@ -244,6 +271,9 @@ export class RelayLifecycle {
         row: merged,
         state: terminal ? "settled" : "tracking",
         payload: terminal ? undefined : record.payload,
+        settledObservedAt: terminal
+          ? (record.settledObservedAt ?? Date.now())
+          : undefined,
       });
     if (
       terminal &&
@@ -297,6 +327,7 @@ export class RelayLifecycle {
         (r) => !r.operationId && r.state !== "settled"
       );
       const seen = new Set<string>();
+      const topUps: RelayOperation[] = [];
       let cursor: string | undefined;
       do {
         const page = await this.api.fetchRelayOperations(
@@ -306,6 +337,7 @@ export class RelayLifecycle {
         );
         this.assertCurrent();
         for (const row of page.items) {
+          if (row.intentKind === "fee_top_up") topUps.push(row);
           if (
             !isRelayTerminal(row.status) ||
             this.records.some((r) => r.operationId === row.operationId)
@@ -319,11 +351,149 @@ export class RelayLifecycle {
           );
         if (cursor) seen.add(cursor);
       } while (cursor);
+      if (uncertain) this.resolveTopUps(topUps);
       this.isReconciled = true;
       if (this.storageHealthy) this.error = null;
       this.changed();
     } catch (error) {
       this.failure(error);
+    }
+  }
+  /**
+   * Matches top-ups whose POST outcome is unknown against a complete history
+   * list. Without a match the attempt is released only when the API answered
+   * the POST or the signed deadline has passed, so it can no longer execute.
+   */
+  private resolveTopUps(rows: RelayOperation[]) {
+    for (const record of this.records) {
+      if (!record.topUp || record.operationId || record.state === "settled")
+        continue;
+      const { amountUnits, deadline, answered } = record.topUp;
+      const candidates = rows.filter(
+        (row) =>
+          row.contractAddress === record.contract &&
+          Date.parse(row.createdAt) >= record.createdAt - TOP_UP_CLOCK_SKEW &&
+          (row.intent.amountUnits === undefined ||
+            String(row.intent.amountUnits) === amountUnits) &&
+          !this.records.some((r) => r.operationId === row.operationId)
+      );
+      if (candidates.length === 1) {
+        this.save({
+          ...record,
+          operationId: candidates[0].operationId,
+          state: "tracking",
+          error: undefined,
+        });
+        this.accept(candidates[0]);
+      } else if (
+        !candidates.length &&
+        (answered || Date.now() > Date.parse(deadline) + TOP_UP_CLOCK_SKEW)
+      ) {
+        this.save({
+          ...record,
+          state: "settled",
+          error: "The top-up was not received. No payment was made.",
+        });
+      }
+    }
+  }
+  /**
+   * The top-up route has no idempotency key: one POST, never replayed. The
+   * attempt is saved first and locks the fee token until its outcome is known.
+   */
+  async submitTopUp(
+    payload: RelayTopUpRequest,
+    config: RelayConfig,
+    validate: () => Promise<void>
+  ) {
+    if (!config.enabled || !config.fee.enabled)
+      throw new RelayApiError(undefined, "FEE_DISABLED", "give-up");
+    const contract = config.fee.tokenContract;
+    this.assertCurrent();
+    this.restore();
+    if (this.locked(contract))
+      throw new Error(
+        "Relay recovery must finish before another action on this token."
+      );
+    await validate();
+    this.assertCurrent();
+    this.restore();
+    if (this.locked(contract))
+      throw new Error("Another relay action occupies this token.");
+    const record: RelayRecord = {
+      version: 1,
+      scope: this.dependencies.scope,
+      id: uuid(),
+      contract,
+      identity: `fee_top_up:${payload.amountUnits}:${payload.deadline}`,
+      topUp: {
+        amountUnits: payload.amountUnits,
+        deadline: payload.deadline,
+        answered: false,
+      },
+      createdAt: Date.now(),
+      method: "credits",
+      state: "unknown",
+      posts: 1,
+      nextRetryAt: 0,
+      minimized: false,
+      dismissed: false,
+    };
+    this.save(record); // MUST succeed before the POST.
+    try {
+      const accepted = await this.api.submitRelayTopUp(
+        this.dependencies.wallet,
+        payload,
+        config,
+        this.controller.signal
+      );
+      this.assertCurrent();
+      this.save({
+        ...record,
+        operationId: accepted.operationId,
+        state: "tracking",
+      });
+      // The 202 has no status; the full row comes from the GET below.
+      this.accept({
+        operationId: accepted.operationId,
+        gasStationOperationId: accepted.gasStationOperationId,
+        status: "pending",
+        intentKind: "fee_top_up",
+        contractAddress: contract,
+      });
+      await this.refresh(accepted.operationId);
+      return accepted.operationId;
+    } catch (raw) {
+      this.assertCurrent();
+      // Accepted already: tracking owns the outcome from here.
+      if (this.records.find((r) => r.id === record.id)?.operationId) throw raw;
+      const error = toRelayApiError(raw);
+      const message = error.serverMessage ?? error.message;
+      if (error.status && error.status < 500) {
+        // Refused before persistence. An in-flight conflict names another
+        // operation (possibly an operator grant): track it, never adopt it.
+        if (error.code === "PERMIT_IN_FLIGHT") {
+          const detail = z
+            .object({ operationId: z.string().uuid() })
+            .safeParse(error.detail);
+          if (detail.success) void this.refresh(detail.data.operationId);
+        }
+        this.save({
+          ...record,
+          state: "settled",
+          error: message,
+          remedy: getRelayErrorAction(error),
+        });
+      } else {
+        this.save({
+          ...record,
+          topUp: { ...record.topUp!, answered: error.status !== undefined },
+          error: message,
+          remedy: getRelayErrorAction(error),
+        });
+        void this.reconcile();
+      }
+      throw error;
     }
   }
   event(eventId: string, wallet: string, payload: unknown) {

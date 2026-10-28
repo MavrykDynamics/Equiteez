@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   relayIntentSchema,
   relaySubmitSchema,
+  rfc3339Seconds,
 } from "~/lib/apis/rwa/relay/relay.schema";
 import {
   isRelayTerminal,
@@ -20,6 +21,15 @@ const recordSchema = z
     identity: z.string(),
     intent: relayIntentSchema.optional(),
     payload: relaySubmitSchema.optional(),
+    // A top-up is never replayed (no idempotency key), so no payload is kept.
+    topUp: z
+      .object({
+        amountUnits: z.string().regex(/^\d+$/),
+        deadline: rfc3339Seconds,
+        // The API answered the POST, so a complete list is authoritative.
+        answered: z.boolean(),
+      })
+      .optional(),
     operationId: z.string().uuid().optional(),
     state: z.enum(["unknown", "tracking", "settled", "blocked"]),
     posts: z.number().int().min(0).max(4),
@@ -29,6 +39,9 @@ const recordSchema = z
     minimized: z.boolean(),
     dismissed: z.boolean(),
     row: relayRowSchema.optional(),
+    // Client time when this tab first saw the terminal row; avoids comparing
+    // server timestamps with local query times.
+    settledObservedAt: z.number().nonnegative().optional(),
   })
   .strict()
   .superRefine((r, ctx) => {

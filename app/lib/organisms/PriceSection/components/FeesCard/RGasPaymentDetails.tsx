@@ -9,6 +9,7 @@ import GasCreditInfoIcon from "~/icons/gas-credit-info.svg?react";
 import GasCreditLowIcon from "~/icons/gas-credit-low.svg?react";
 import { RTooltip } from "~/lib/atoms/RTooltip";
 import { AddCreditsModal } from "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/AddCreditsModal";
+import { useAddCredits } from "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/useAddCredits";
 import {
   useCreditTokenWalletBalance,
   useCredits,
@@ -37,6 +38,7 @@ export function RGasPaymentDetails({
 }) {
   const credits = useCredits(method === "credits");
   const walletBalance = useCreditTokenWalletBalance(credits.config);
+  const addCredits = useAddCredits();
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
   if (method === "mvrk")
@@ -132,6 +134,7 @@ export function RGasPaymentDetails({
 
       <AddCreditsModal
         isOpen={isTopUpOpen && credits.canTopUp}
+        onAddCredits={addCredits}
         onClose={() => setIsTopUpOpen(false)}
         walletBalance={walletBalance}
       />

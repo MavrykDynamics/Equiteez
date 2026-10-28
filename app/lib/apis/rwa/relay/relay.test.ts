@@ -231,6 +231,7 @@ describe("transport", () => {
         publicKey: "test-key",
         signature: "test-signature",
         amountUnits: "1000000",
+        deadline: "2026-11-01T15:00:00Z",
       },
       config
     );
@@ -240,6 +241,7 @@ describe("transport", () => {
         publicKey: "test-key",
         signature: "test-signature",
         amountUnits: "1000000",
+        deadline: "2026-11-01T15:00:00Z",
       },
       expect.objectContaining({ _retry: true })
     );
@@ -251,6 +253,7 @@ describe("transport", () => {
       publicKey: "test-key",
       signature: "test-signature",
       amountUnits: "1000000",
+      deadline: "2026-11-01T15:00:00Z",
     };
     await expect(submitRelayTopUp("w", topUp, off)).rejects.toMatchObject({
       code: "FEE_DISABLED",
@@ -262,6 +265,23 @@ describe("transport", () => {
         config
       )
     ).rejects.toMatchObject({ code: "AMOUNT_OUT_OF_BOUNDS" });
+    // The API requires RFC3339 with seconds and an explicit offset.
+    for (const deadline of [
+      "1792677600",
+      "2026-11-01T15:00Z",
+      "2026-11-01T15:00:00",
+      "2026-11-01T15:00:00.000Z",
+    ])
+      await expect(
+        submitRelayTopUp("w", { ...topUp, deadline }, config)
+      ).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+    await expect(
+      submitRelayTopUp(
+        "w",
+        { ...topUp, deadline: undefined } as unknown as typeof topUp,
+        config
+      )
+    ).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
     expect(mocks.get).not.toHaveBeenCalled();
     expect(mocks.post).not.toHaveBeenCalled();
   });

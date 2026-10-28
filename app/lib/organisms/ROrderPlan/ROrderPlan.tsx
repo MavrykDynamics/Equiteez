@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@remix-run/react";
 import { ROUTES } from "~/consts";
 import type { PermitRuntime } from "~/contracts/permit";
-import { OrderPlan, TOP_UP_BLOCKER } from "~/lib/relay/orderPlan";
+import type { OrderPlan } from "~/lib/relay/orderPlan";
 import { RelayApiError } from "~/lib/relay/relay.errors";
 import { getContractErrorMessage } from "~/errors/helpers/walletError.helper";
 import { RPermitReview } from "~/lib/organisms/RPermitReview/RPermitReview";
@@ -11,6 +11,11 @@ import { RButton } from "~/lib/atoms/RButton";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { AddCreditsModal } from "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/AddCreditsModal";
+import { useAddCredits } from "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/useAddCredits";
+import {
+  useCreditTokenWalletBalance,
+  useCredits,
+} from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/useCredits";
 import { fetchRelayCredits } from "~/lib/apis/rwa/relay/relay";
 import styles from "../RPermitReview/RPermitReview.module.css";
 
@@ -26,6 +31,8 @@ export function ROrderPlan({
   const auth = useAuthContext();
   const user = useUserContext();
   const [topUpOpen, setTopUpOpen] = useState(false);
+  const addCredits = useAddCredits();
+  const walletBalance = useCreditTokenWalletBalance(useCredits().config);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const error = plan.error;
   const code = error instanceof RelayApiError ? error.code : "";
@@ -165,8 +172,9 @@ export function ROrderPlan({
         )}
         <AddCreditsModal
           isOpen={topUpOpen}
+          onAddCredits={addCredits}
           onClose={() => setTopUpOpen(false)}
-          blockedReason={TOP_UP_BLOCKER}
+          walletBalance={walletBalance}
         />
       </section>
     </PopupWithIcon>

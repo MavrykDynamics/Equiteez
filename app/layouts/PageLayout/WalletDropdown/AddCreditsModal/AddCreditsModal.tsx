@@ -26,15 +26,15 @@ type CreditsOption = number | "custom";
 type AddCreditsStep = "form" | "submitted" | "unavailable";
 
 export const TOP_UP_UNAVAILABLE_REASON =
-  "Credit pricing and safe top-up processing are not yet available. Your existing balance is unchanged.";
+  "Gas Credits top-up is unavailable right now. Your existing balance is unchanged.";
 
 type AddCreditsModalProps = {
   isOpen: boolean;
   // Forces the unavailable presentation instead of the top-up form.
   blockedReason?: string;
   onClose: () => void;
-  // Submits the exact USDT payment. Without it the form ends in the
-  // unavailable state, because top-up signing is not supported yet.
+  // Signs and submits the exact USDT payment. Without it the form ends in
+  // the unavailable state.
   onAddCredits?: (amountUsdt: BigNumber) => Promise<void>;
   // Fee-token wallet balance in whole tokens; null while unknown.
   walletBalance?: BigNumber | null;
@@ -57,6 +57,7 @@ export function AddCreditsModal({
   );
   const [customAmount, setCustomAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const paymentUsdt =
     selectedOption === "custom"
@@ -81,6 +82,7 @@ export function AddCreditsModal({
     setStep("form");
     setSelectedOption(DEFAULT_CREDIT_PACKAGE);
     setCustomAmount("");
+    setSubmitError(null);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -94,14 +96,15 @@ export function AddCreditsModal({
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await onAddCredits(paymentUsdt);
       setStep("submitted");
     } catch (error) {
-      setUnavailableReason(
+      // Recoverable: the form keeps the chosen amount for another attempt.
+      setSubmitError(
         error instanceof Error ? error.message : TOP_UP_UNAVAILABLE_REASON
       );
-      setStep("unavailable");
     } finally {
       setIsSubmitting(false);
     }
@@ -238,6 +241,11 @@ export function AddCreditsModal({
                 <InfoMessageIcon aria-hidden />
               </span>
               <div className={styles.messageText}>
+                {submitError && (
+                  <RText role="alert" size="body-sm" weight="medium">
+                    {submitError}
+                  </RText>
+                )}
                 <RText size="body-sm">
                   {isAmountValid
                     ? `You're authorizing one payment of exactly ${formatUsdt(paymentUsdt)} USDT.`

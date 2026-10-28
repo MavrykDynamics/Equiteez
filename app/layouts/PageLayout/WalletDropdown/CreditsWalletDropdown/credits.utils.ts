@@ -52,15 +52,24 @@ export function getCreditsBalanceStatus({
 }
 
 export function getTopUpProgress(
-  records: RelayRecord[]
+  records: RelayRecord[],
+  // When the last successful credits read completed (ms); 0 when none.
+  creditsReadAt = 0
 ): "pending" | "updating" | null {
   const topUps = records.filter(
-    (record) => record.row?.intentKind === "fee_top_up"
+    (record) => record.row?.intentKind === "fee_top_up" || record.topUp
   );
   if (topUps.some((record) => record.state !== "settled")) return "pending";
-  // The credit endpoint has no settlement watermark. Even a later successful
-  // read cannot prove inclusion, and concurrent spending defeats balance deltas.
-  if (topUps.some((record) => record.row?.status === "confirmed"))
+  // Updating until a credits read completes after this tab saw the
+  // confirmation (both client clock); the credit endpoint has no settlement
+  // watermark beyond that.
+  if (
+    topUps.some(
+      (record) =>
+        record.row?.status === "confirmed" &&
+        creditsReadAt <= (record.settledObservedAt ?? 0)
+    )
+  )
     return "updating";
   return null;
 }

@@ -13,8 +13,8 @@ import {
   assertPermitSigner,
   encodePermit,
   findAnnotation,
-  fingerprint,
   hashBytes,
+  scriptFingerprint,
   verifyPermitSignature,
 } from "./permitCodec";
 import { permitGeneration } from "./permitGeneration";
@@ -26,6 +26,15 @@ import {
   type PermitScope,
 } from "./permit";
 import type { PermitRequest } from "./orderbookPermit";
+import { generateKeyPairFromSeed, sign } from "@stablelib/ed25519";
+import { hash } from "@stablelib/blake2b";
+import {
+  b58cencode,
+  getPkhfromPk,
+  hex2buf,
+  prefix,
+  Prefix,
+} from "@mavrykdynamics/taquito-utils";
 
 const entry = findAnnotation(
   quoteScript.code.find((n) => n.prim === "parameter"),
@@ -155,7 +164,24 @@ describe("permit generation evidence", () => {
     ["quote_token", quoteScript],
     ["rwa_token", rwaScript],
   ] as const)("pins %s executable code", (kind, script) => {
-    expect(fingerprint(script.code)).toBe(permitGeneration[kind]);
+    expect(scriptFingerprint(script.code)).toBe(permitGeneration[kind]);
+  });
+  it("ignores the RPC endpoint's top-level section order", () => {
+    // `/contracts/{a}` (Taquito) lists views last; `/script` lists them first.
+    const code = quoteScript.code;
+    const viewsFirst = [
+      ...code.filter((n) => n.prim === "view"),
+      ...code.filter((n) => n.prim !== "view"),
+    ];
+    const viewsLast = [
+      ...code.filter((n) => n.prim !== "view"),
+      ...code.filter((n) => n.prim === "view"),
+    ];
+    expect(scriptFingerprint(viewsFirst)).toBe(permitGeneration.quote_token);
+    expect(scriptFingerprint(viewsLast)).toBe(permitGeneration.quote_token);
+    expect(scriptFingerprint([...viewsLast].slice(1))).not.toBe(
+      permitGeneration.quote_token
+    );
   });
   it("pins the separately stored orderbook execution lambda", () =>
     expect(hashBytes(lambdaFile.bytes)).toBe(permitGeneration.orderbookLambda));
@@ -371,17 +397,48 @@ describe("reviewed permit signing", () => {
       );
     }
   );
-  it("builds top-up review but blocks signing while deadline reconstruction is unspecified", async () => {
+  it("signs a top-up and posts the exact signed deadline as RFC3339 seconds", async () => {
     const f = permitFixture();
+    // A throwaway ed25519 key so the wallet signature verifies locally.
+    const key = generateKeyPairFromSeed(new Uint8Array(32).fill(7));
+    const publicKey = b58cencode(key.publicKey, prefix[Prefix.EDPK]);
+    const wallet = getPkhfromPk(publicKey);
+    f.changeScope({ wallet, authenticatedWallet: wallet });
+    f.getActiveAccount.mockImplementation(async () => ({
+      address: wallet,
+      publicKey,
+      network: {
+        type: "basenet",
+        rpcUrl: "https://basenet.rpc.mavryk.network",
+      },
+    }));
+    f.requestSignPayload.mockImplementation(
+      async ({ payload }: { payload: string }) => ({
+        signature: b58cencode(
+          sign(key.secretKey, hash(hex2buf(payload), 32)),
+          prefix[Prefix.EDSIG]
+        ),
+      })
+    );
     const p = await preparePermit(
       f.runtime,
       { kind: "fee_top_up", amountUnits: "5000000" },
       vector.deadline
     );
     expect(p.built.action).toMatchObject({
-      permitTransfer: [{ from_: vector.wallet }],
+      permitTransfer: [{ from_: wallet }],
     });
-    await expect(signPreparedPermit(f.runtime, p)).rejects.toThrow("deadline");
-    expect(f.requestSignPayload).not.toHaveBeenCalled();
+    const signed = await signPreparedPermit(f.runtime, p);
+    expect(f.requestSignPayload).toHaveBeenCalledOnce();
+    expect(signed.ordinary).toBeNull();
+    expect(signed.topUp).toEqual({
+      publicKey,
+      signature: expect.stringMatching(/^edsig/),
+      amountUnits: "5000000",
+      deadline: "2026-10-22T14:00:00Z",
+    });
+    expect(new Date(signed.topUp!.deadline).getTime() / 1000).toBe(
+      Number(vector.deadline)
+    );
   });
 });

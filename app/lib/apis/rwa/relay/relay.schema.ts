@@ -176,10 +176,17 @@ export const relayCreditsSchema = z.discriminatedUnion("enabled", [
     lifetimeSpentUnits: nat,
   }),
 ]);
+// RFC3339 with whole seconds and an explicit offset; bare epoch strings are refused.
+export const rfc3339Seconds = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})$/)
+  .refine((value) => Number.isFinite(Date.parse(value)));
 export const relayTopUpSchema = z.object({
   publicKey: z.string().min(1),
   signature: z.string().min(1),
   amountUnits: nat,
+  // The exact deadline inside the signed payload.
+  deadline: rfc3339Seconds,
 });
 export const relayTopUpAcceptedSchema = z.object({
   operationId: z.string().uuid(),

@@ -44,13 +44,15 @@ import type { RelayRow } from "~/lib/relay/relay.state";
 import { RelayLifecycle } from "./relayLifecycle";
 
 export function relayOutcomeText(row: RelayRow) {
+  if (row.error?.code === "PERMIT_EXPIRED")
+    return "The signature expired before it was processed. Sign a new request to try again.";
   if (row.status !== "confirmed")
     return `Relay action ${row.status}. Review details before trying again.`;
   switch (row.intentKind) {
     case "update_operators":
       return "Operator permission confirmed. No order was placed by this setup action.";
     case "fee_top_up":
-      return "Top-up confirmed. Refreshing the authoritative balance.";
+      return "Gas Credits added. Your balance is updating.";
     case "place_buy_order":
     case "place_sell_order":
       return "Order placement confirmed. This does not mean the order has filled.";
@@ -276,12 +278,20 @@ function useRelayOwner() {
       onAttempt?: (id: string) => void
     ) => {
       if (!runtime || !lifecycle || !signed.ordinary)
-        throw new Error(
-          "Ordinary relay submission is unavailable. Top-up submission remains blocked."
-        );
+        throw new Error("Relay submission is unavailable.");
       const idempotencyKey = uuid();
       onAttempt?.(idempotencyKey);
       return lifecycle.submit({ ...signed.ordinary, idempotencyKey }, () =>
+        assertPermitCurrent(runtime, signed.prepared)
+      );
+    },
+    submitTopUp: async (
+      signed: Awaited<ReturnType<typeof signPreparedPermit>>
+    ) => {
+      if (!runtime || !lifecycle || !signed.topUp)
+        throw new Error("Gas Credits top-up is unavailable.");
+      const config = await runtime.refreshConfig();
+      return lifecycle.submitTopUp(signed.topUp, config, () =>
         assertPermitCurrent(runtime, signed.prepared)
       );
     },

@@ -3,7 +3,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ROrderPlan } from "./ROrderPlan";
-import { OrderPlan, TOP_UP_BLOCKER } from "~/lib/relay/orderPlan";
+import type { OrderPlan } from "~/lib/relay/orderPlan";
 import { RelayApiError } from "~/lib/relay/relay.errors";
 import type { PermitRuntime } from "~/contracts/permit";
 const mocks = vi.hoisted(() => ({
@@ -12,6 +12,17 @@ const mocks = vi.hoisted(() => ({
   login: vi.fn(),
 }));
 vi.mock("~/icons/info-message.svg?react", () => ({ default: () => <svg /> }));
+vi.mock(
+  "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/useAddCredits",
+  () => ({ useAddCredits: () => vi.fn() })
+);
+vi.mock(
+  "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/useCredits",
+  () => ({
+    useCredits: () => ({ config: undefined }),
+    useCreditTokenWalletBalance: () => null,
+  })
+);
 vi.mock("~/lib/apis/rwa/relay/relay", () => ({
   fetchRelayCredits: mocks.credits,
 }));
@@ -88,13 +99,12 @@ async function render(error: RelayApiError | null = null, state = "failed") {
   );
   return plan;
 }
-it("402 refreshes credit/config and opens the existing modal with no numeric controls", async () => {
+it("402 refreshes credit/config and opens the top-up form", async () => {
   await render(new RelayApiError(402, "FEE_CREDIT_REQUIRED", "give-up"));
   expect(runtime.refreshConfig).toHaveBeenCalled();
   expect(mocks.credits).toHaveBeenCalled();
-  expect(host.textContent).toContain(TOP_UP_BLOCKER);
-  expect(host.querySelectorAll("input")).toHaveLength(0);
-  expect(host.textContent).not.toContain("You're authorizing");
+  expect(host.textContent).toContain("Add Gas Credit");
+  expect(host.querySelectorAll("input").length).toBeGreaterThan(0);
   expect(host.textContent).not.toContain("Transaction Submitted");
 });
 it("sponsor outage offers settings without Top Up", async () => {

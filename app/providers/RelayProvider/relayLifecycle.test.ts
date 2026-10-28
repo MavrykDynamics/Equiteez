@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 import type {
+  RelayConfig,
   RelayOperation,
   RelaySubmitRequest,
+  RelayTopUpRequest,
 } from "~/lib/apis/rwa/relay/relay.types";
 import { RelayApiError } from "~/lib/relay/relay.errors";
 import {
@@ -69,6 +71,12 @@ function setup(storage = memory(), scope = "scope") {
       operationId: id,
       gasStationOperationId: "station",
       status: "pending",
+    }),
+    submitRelayTopUp: vi.fn().mockResolvedValue({
+      operationId: id2,
+      gasStationOperationId: "station",
+      signerAddress: "wallet",
+      amountUnits: "20000000",
     }),
     fetchRelayOperation: vi.fn().mockResolvedValue({ operation: row() }),
     checkRelayOperationNow: vi.fn().mockResolvedValue({ operation: row() }),
@@ -528,5 +536,193 @@ describe("durable relay lifecycle", () => {
     });
     await ready(t);
     expect(t.owner.locked("unrelated-contract")).toBe(true);
+  });
+});
+
+const feeToken = "quote-token";
+const feeConfig = {
+  enabled: true,
+  fee: {
+    enabled: true,
+    tokenContract: feeToken,
+    tokenId: 0,
+    decimals: 6,
+    collector: "collector",
+    feeSchedule: {},
+    defaultFeeUnits: "0",
+    topUpMinUnits: "5000000",
+    topUpMaxUnits: "100000000",
+    freeAllowanceOps: 0,
+    entrypoint: "permitAndExecute",
+  },
+  contracts: [],
+  gaslessThresholdMumav: "0",
+} as RelayConfig;
+const topUp: RelayTopUpRequest = {
+  publicKey: "key",
+  signature: "sig",
+  amountUnits: "20000000",
+  deadline: "2026-10-22T00:16:00Z",
+};
+const topUpRow = (overrides: Partial<RelayOperation> = {}) =>
+  row({
+    operationId: id2,
+    intentKind: "fee_top_up",
+    intent: { kind: "fee_top_up", amountUnits: "20000000" },
+    contractAddress: feeToken,
+    permitVariant: "permitTransfer",
+    createdAt: "2026-10-22T00:01:00Z",
+    ...overrides,
+  });
+
+describe("automatic recovery", () => {
+  it("replays an unknown ordinary submit with the same payload and key on the poll", async () => {
+    const t = await ready(setup());
+    t.transport.submitRelayOperation.mockRejectedValueOnce(
+      new RelayApiError(undefined, "NETWORK_UNKNOWN", "retry")
+    );
+    await expect(t.owner.submit(payload, async () => {})).rejects.toThrow();
+    expect(t.owner.records[0].operationId).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(t.transport.submitRelayOperation).toHaveBeenCalledTimes(2);
+    expect(t.transport.submitRelayOperation.mock.calls[1][1]).toEqual(payload);
+    expect(t.owner.records[0]).toMatchObject({ operationId: id });
+  });
+  it("stops after the bounded number of posts", async () => {
+    const t = await ready(setup());
+    t.transport.submitRelayOperation.mockRejectedValue(
+      new RelayApiError(undefined, "NETWORK_UNKNOWN", "retry")
+    );
+    await expect(t.owner.submit(payload, async () => {})).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(t.transport.submitRelayOperation).toHaveBeenCalledTimes(4);
+    expect(t.owner.locked("book")).toBe(true);
+  });
+});
+
+describe("top-up lifecycle", () => {
+  it("saves the attempt before the single POST and tracks the accepted operation", async () => {
+    const t = await ready(setup());
+    t.transport.fetchRelayOperation.mockResolvedValue({
+      operation: topUpRow(),
+    });
+    t.transport.submitRelayTopUp.mockImplementation(async () => {
+      expect(readRelayRecords(t.storage, "scope")[0]).toMatchObject({
+        contract: feeToken,
+        state: "unknown",
+        topUp: { amountUnits: "20000000", deadline: topUp.deadline },
+      });
+      expect(t.owner.locked(feeToken)).toBe(true);
+      return {
+        operationId: id2,
+        gasStationOperationId: "station",
+        signerAddress: "wallet",
+        amountUnits: "20000000",
+      };
+    });
+    await expect(
+      t.owner.submitTopUp(topUp, feeConfig, async () => {})
+    ).resolves.toBe(id2);
+    expect(t.transport.submitRelayTopUp).toHaveBeenCalledOnce();
+    expect(t.transport.submitRelayTopUp.mock.calls[0][1]).toEqual(topUp);
+    expect(t.owner.records[0]).toMatchObject({
+      operationId: id2,
+      state: "tracking",
+    });
+    // Signature material is never persisted for a replay.
+    expect(JSON.stringify(readRelayRecords(t.storage, "scope"))).not.toContain(
+      "sig"
+    );
+  });
+  it("refuses a second top-up while one is pending", async () => {
+    const t = await ready(setup());
+    t.transport.fetchRelayOperation.mockResolvedValue({
+      operation: topUpRow({ status: "submitted" }),
+    });
+    await t.owner.submitTopUp(topUp, feeConfig, async () => {});
+    await expect(
+      t.owner.submitTopUp(topUp, feeConfig, async () => {})
+    ).rejects.toThrow("Relay recovery must finish");
+    expect(t.transport.submitRelayTopUp).toHaveBeenCalledOnce();
+  });
+  it("settles a conclusive refusal and tracks the in-flight operation it names", async () => {
+    const t = await ready(setup());
+    t.transport.fetchRelayOperation.mockResolvedValue({
+      operation: topUpRow({
+        operationId: id,
+        intentKind: "update_operators",
+        status: "submitted",
+      }),
+    });
+    t.transport.submitRelayTopUp.mockRejectedValue(
+      new RelayApiError(409, "PERMIT_IN_FLIGHT", "retry", { operationId: id })
+    );
+    await expect(
+      t.owner.submitTopUp(topUp, feeConfig, async () => {})
+    ).rejects.toMatchObject({ code: "PERMIT_IN_FLIGHT" });
+    await vi.advanceTimersByTimeAsync(0);
+    const attempt = t.owner.records.find((r) => r.topUp);
+    expect(attempt).toMatchObject({ state: "settled" });
+    expect(attempt?.operationId).toBeUndefined();
+    expect(t.owner.records.some((r) => r.operationId === id)).toBe(true);
+    expect(t.owner.locked(feeToken)).toBe(true);
+  });
+  it("never re-POSTs a lost response and adopts the matching row from history", async () => {
+    const t = await ready(setup());
+    t.transport.submitRelayTopUp.mockRejectedValue(
+      new RelayApiError(undefined, "NETWORK_UNKNOWN", "retry")
+    );
+    await expect(
+      t.owner.submitTopUp(topUp, feeConfig, async () => {})
+    ).rejects.toThrow();
+    expect(t.owner.locked(feeToken)).toBe(true);
+    const attemptId = t.owner.records[0].id;
+    await expect(t.owner.retry(attemptId)).rejects.toThrow("cannot be retried");
+
+    t.transport.fetchRelayOperations.mockResolvedValue({
+      items: [topUpRow({ status: "confirmed" })],
+      nextCursor: null,
+    });
+    await t.owner.reconcile();
+    expect(t.transport.fetchRelayOperations.mock.lastCall?.[1].status).toBe(
+      undefined
+    );
+    expect(t.owner.records.find((r) => r.id === attemptId)).toMatchObject({
+      operationId: id2,
+      state: "settled",
+      settledObservedAt: Date.now(),
+    });
+    expect(t.transport.submitRelayTopUp).toHaveBeenCalledOnce();
+  });
+  it("keeps an unanswered attempt locked until its signed deadline passes", async () => {
+    const t = await ready(setup());
+    t.transport.submitRelayTopUp.mockRejectedValue(
+      new RelayApiError(undefined, "NETWORK_UNKNOWN", "retry")
+    );
+    await expect(
+      t.owner.submitTopUp(topUp, feeConfig, async () => {})
+    ).rejects.toThrow();
+    await t.owner.reconcile();
+    expect(t.owner.locked(feeToken)).toBe(true);
+
+    vi.setSystemTime(new Date("2026-10-22T00:18:01Z"));
+    await t.owner.reconcile();
+    expect(t.owner.records[0]).toMatchObject({
+      state: "settled",
+      error: "The top-up was not received. No payment was made.",
+    });
+    expect(t.owner.locked(feeToken)).toBe(false);
+  });
+  it("releases an answered server failure after one complete list without a row", async () => {
+    const t = await ready(setup());
+    t.transport.submitRelayTopUp.mockRejectedValue(
+      new RelayApiError(503, "RELAY_UNAVAILABLE", "retry")
+    );
+    await expect(
+      t.owner.submitTopUp(topUp, feeConfig, async () => {})
+    ).rejects.toMatchObject({ code: "RELAY_UNAVAILABLE" });
+    await t.owner.reconcile();
+    expect(t.owner.records[0].state).toBe("settled");
+    expect(t.owner.locked(feeToken)).toBe(false);
   });
 });

@@ -17,7 +17,6 @@ import "react-datepicker/dist/react-datepicker.css";
 
 // providers
 import { RelayProvider } from "./providers/RelayProvider/RelayProvider";
-import { RRelayProgress } from "./lib/organisms/RRelayProgress/RRelayProgress";
 import { GasPaymentProvider } from "./providers/GasPaymentProvider/GasPaymentProvider";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
@@ -159,7 +158,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 <NotificationsProvider>
                                   <NotificationsProviderListeners />
                                   <RelayProvider>
-                                    <RRelayProgress />
                                     <TransactionsProvider>
                                       <EthereumProvider>
                                         <TransactionWidgetProvider>

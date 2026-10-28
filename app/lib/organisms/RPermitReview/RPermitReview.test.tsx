@@ -56,7 +56,6 @@ const prepared = {
     { label: "Payment (raw units)", value: "90071992547409931" },
     { label: "Permission", value: "Persistent operator permission" },
   ],
-  signingBlocker: null,
 } as unknown as PreparedPermit;
 const runtime = {} as PermitRuntime;
 
@@ -132,24 +131,5 @@ describe("readable permit review", () => {
     expect(signPreparedPermit).not.toHaveBeenCalled();
     expect(onSigned).not.toHaveBeenCalled();
     expect(host.textContent).toContain("Refund is no longer claimable");
-  });
-  it("keeps unsupported top-up signing disabled with its reason", () => {
-    act(() =>
-      root.render(
-        <RPermitReview
-          prepared={{
-            ...prepared,
-            signingBlocker: "Deadline reconstruction is unspecified",
-          }}
-          runtime={runtime}
-          onSigned={vi.fn()}
-          onCancel={vi.fn()}
-        />
-      )
-    );
-    expect(host.textContent).toContain(
-      "Deadline reconstruction is unspecified"
-    );
-    expect(host.querySelectorAll("button")[1].disabled).toBe(true);
   });
 });

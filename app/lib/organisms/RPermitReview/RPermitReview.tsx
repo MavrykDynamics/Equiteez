@@ -30,7 +30,7 @@ export function RPermitReview({
   const [isSigning, setIsSigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const handleSign = async () => {
-    if (isSigning || error || prepared.signingBlocker) return;
+    if (isSigning || error) return;
     setIsSigning(true);
     try {
       await beforeSign?.();
@@ -70,9 +70,6 @@ export function RPermitReview({
             </div>
           ))}
         </dl>
-        {prepared.signingBlocker && (
-          <p role="status">{prepared.signingBlocker}</p>
-        )}
         {error && (
           <p role="alert" className={styles.error}>
             {error} Close this review and refresh before trying again.
@@ -89,7 +86,7 @@ export function RPermitReview({
           </RButton>
           <RButton
             tone="black"
-            disabled={isSigning || !!error || !!prepared.signingBlocker}
+            disabled={isSigning || !!error}
             isLoading={isSigning}
             onClick={handleSign}
           >

@@ -9,6 +9,7 @@ import {
 } from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 
 import { AddCreditsModal } from "../AddCreditsModal/AddCreditsModal";
+import { useAddCredits } from "../AddCreditsModal/useAddCredits";
 import { WalletAccountFace } from "../WalletAccountFace";
 import { WalletMenuLinks } from "../WalletMenuLinks";
 import { CreditsBalanceBadge } from "./CreditsBalanceBadge";
@@ -25,6 +26,7 @@ export function CreditsWalletDropdown({
 }: CreditsWalletDropdownProps) {
   const { credits, config, status, progress, canTopUp } = useCredits();
   const walletBalance = useCreditTokenWalletBalance(config);
+  const addCredits = useAddCredits();
   const creditsCount = credits?.enabled
     ? getCreditsCount(credits.balanceUnits, credits.decimals)
     : null;
@@ -109,6 +111,7 @@ export function CreditsWalletDropdown({
 
       <AddCreditsModal
         isOpen={isAddCreditsOpen && canTopUp}
+        onAddCredits={addCredits}
         onClose={() => setIsAddCreditsOpen(false)}
         walletBalance={walletBalance}
       />

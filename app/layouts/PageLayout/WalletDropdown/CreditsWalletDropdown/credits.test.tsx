@@ -328,12 +328,18 @@ function topUp(status: "pending" | "confirmed" | "failed"): RelayRecord {
     row: { operationId: "top-up", status, intentKind: "fee_top_up" },
   };
 }
-it("pending overlays preexisting balance; delayed reads and concurrent spend never synthesize settlement", async () => {
+it("pending overlays preexisting balance; confirmation stays updating until the next credits read", async () => {
   mocks.records = [topUp("pending")];
   await render();
   expect(result.progress).toBe("pending");
   expect(result.credits).toEqual(balance);
-  mocks.records = [topUp("confirmed")];
+  // Observed after the read above completed.
+  mocks.records = [
+    { ...topUp("confirmed"), settledObservedAt: Date.now() + 1000 },
+  ];
+  await render();
+  expect(result.progress).toBe("updating");
+  mocks.records = [{ ...topUp("confirmed"), settledObservedAt: 1 }];
   mocks.credits.mockResolvedValue({ ...balance, balanceUnits: "0" });
   await act(async () => {
     await client.invalidateQueries({
@@ -341,12 +347,21 @@ it("pending overlays preexisting balance; delayed reads and concurrent spend nev
     });
   });
   await render();
-  expect(result.progress).toBe("updating");
+  expect(result.progress).toBeNull();
   expect(result.credits).toMatchObject({ balanceUnits: "0" });
-  await act(async () => root.unmount());
-  root = createRoot(host);
-  await render();
-  expect(result.progress).toBe("updating");
+});
+it("updating clears once a credits read completes after the confirmation was observed", () => {
+  const confirmedAt = Date.parse("2026-10-22T00:02:00Z");
+  const confirmed = {
+    ...topUp("confirmed"),
+    // A server timestamp far ahead of the client must not keep it updating.
+    row: { ...topUp("confirmed").row!, updatedAt: "2030-01-01T00:00:00Z" },
+    settledObservedAt: confirmedAt,
+  };
+  expect(getTopUpProgress([confirmed])).toBe("updating");
+  expect(getTopUpProgress([confirmed], confirmedAt - 1)).toBe("updating");
+  expect(getTopUpProgress([confirmed], confirmedAt + 1)).toBeNull();
+  expect(getTopUpProgress([topUp("pending")], confirmedAt + 1)).toBe("pending");
 });
 it("failed top-ups do not create adding/success state", () => {
   expect(getTopUpProgress([topUp("failed")])).toBeNull();
@@ -440,6 +455,32 @@ it("an accepted top-up shows Transaction Submitted", async () => {
   );
   await submitForm();
   expect(submit.mock.calls[0][0].toFixed()).toBe("20");
+  expect(host.textContent).toContain("Transaction Submitted");
+});
+it("a failed top-up keeps the form and amount for another attempt", async () => {
+  const submit = vi
+    .fn()
+    .mockRejectedValueOnce(
+      new Error("Signature request was rejected. No payment was made.")
+    )
+    .mockResolvedValueOnce(undefined);
+  await render(
+    <AddCreditsModal
+      isOpen
+      onClose={vi.fn()}
+      onAddCredits={submit}
+      walletBalance={new BigNumber(999)}
+    />
+  );
+  await submitForm();
+  expect(host.querySelector("[role=alert]")?.textContent).toBe(
+    "Signature request was rejected. No payment was made."
+  );
+  expect(host.textContent).toContain(
+    "You're authorizing one payment of exactly 20.00 USDT."
+  );
+  await submitForm();
+  expect(submit).toHaveBeenCalledTimes(2);
   expect(host.textContent).toContain("Transaction Submitted");
 });
 const buttonByText = (text: string) =>

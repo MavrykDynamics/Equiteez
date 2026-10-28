@@ -19,6 +19,23 @@ export const hashBytes = (bytes: string) => buf2hex(hash(hex2buf(bytes), 32));
 export const fingerprint = (value: unknown) =>
   buf2hex(hash(new TextEncoder().encode(JSON.stringify(value)), 32));
 
+// RPC endpoints list the same top-level sections in different orders
+// (`/contracts/{a}` puts views last, `/script` first). Pin the content only.
+const sectionOrder = ["parameter", "storage", "code"];
+function sectionKey(node: unknown) {
+  const section = node as { prim?: string; args?: { string?: string }[] };
+  const index = sectionOrder.indexOf(section.prim ?? "");
+  return index >= 0
+    ? `${index}`
+    : `${sectionOrder.length}:${section.prim}:${section.args?.[0]?.string ?? ""}`;
+}
+export const scriptFingerprint = (code: unknown) =>
+  fingerprint(
+    Array.isArray(code)
+      ? [...code].sort((a, b) => sectionKey(a).localeCompare(sectionKey(b)))
+      : code
+  );
+
 export function findAnnotation(
   node: unknown,
   annotation: string
@@ -56,6 +73,13 @@ export const permitDomainType: MichelsonType = {
     },
   ],
 };
+
+/** Unix seconds → RFC3339 with whole seconds, as the top-up API requires. */
+export function toPermitDeadline(seconds: string) {
+  return new Date(Number(toNatString(seconds)) * 1000)
+    .toISOString()
+    .replace(/\.\d{3}Z$/, "Z");
+}
 
 export function encodePermit(input: {
   actionType: MichelsonType;

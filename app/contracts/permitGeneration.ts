@@ -1,10 +1,11 @@
-// Executable generation fingerprints from docs/fixtures/permit-deployment.
+// Executable generation fingerprints from docs/fixtures/permit-deployment,
+// independent of the RPC endpoint's top-level section order (scriptFingerprint).
 // No catalog/address override: unknown generations fail before signing.
 export const permitGeneration = {
-  orderbook: "f88d9928393a1750a0d48e773990d92ac37ca6dfd17d6e7a7372e7bb9da26839",
+  orderbook: "f70f9eed413e7caa18411d0f2b19299d94e8d9c3ade4a7cd0670f7e0d1daf3d4",
   quote_token:
-    "5c1dea2778734c804bdc1db5c397e49de4c3c1ea111076ea881d74dee0c48022",
-  rwa_token: "c6f54abbd2430d5e20242e0cd4db220e2ea36b2a36a09fba766ec4c4af560d9b",
+    "4983d8c9fe0a80789de220df83c834d9ee7814fff5a2fe7e991d26ec3e6cfbcd",
+  rwa_token: "83e240d3ef95db559a87c71e8d944669264758301c90d82fec493ebcc498101f",
   orderbookLambda:
     "4797fb5b8afb578c9f1b2d05c9b01e738c16b9bd3bc2f2ea3b8789650ed2a596",
   orderbookSellLambda:

@@ -71,7 +71,9 @@ export function useCredits(enabled = true) {
     status,
     config: currentConfig,
     credits: status === "ready" ? data : undefined,
-    progress: canRead ? getTopUpProgress(relay.records) : null,
+    progress: canRead
+      ? getTopUpProgress(relay.records, credits.dataUpdatedAt)
+      : null,
     isRefreshing: Boolean(canRead && credits.isFetching),
     canTopUp: Boolean(canRead),
     refresh: () => {

@@ -10,7 +10,6 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import { updateRelayScopeIdentity } from "~/lib/relay/relay.scope";
 import { RelayProvider, useRelay } from "./RelayProvider";
-import { RRelayProgress } from "~/lib/organisms/RRelayProgress/RRelayProgress";
 const mocks = vi.hoisted(() => ({
   wallet: "wallet",
   scope: "network-api-wallet",
@@ -135,7 +134,7 @@ const row = {
 let context: ReturnType<typeof useRelay>;
 function Probe() {
   context = useRelay();
-  return <RRelayProgress />;
+  return null;
 }
 let root: Root, container: HTMLDivElement, client: QueryClient;
 async function render() {
@@ -149,10 +148,6 @@ async function render() {
     );
   });
 }
-const button = (text: string) =>
-  [...container.querySelectorAll("button")].find(
-    (b) => b.textContent === text
-  )!;
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-10-22T00:00:30Z"));
@@ -179,23 +174,22 @@ afterEach(async () => {
   client.clear();
   vi.useRealTimers();
 });
-it("tracks above page UI with persistent minimize/details, no fabricated hash and ten-minute state", async () => {
+it("tracks open operations across remounts without a fabricated hash or a new POST", async () => {
   await render();
   expect(context.isReady).toBe(true);
-  expect(container.textContent).toContain("Relaying transaction");
-  expect(container.querySelector("a")).toBeNull();
-  await act(async () => button("Details").click());
-  expect(container.textContent).toContain(id);
-  await act(async () => button("Minimize").click());
+  expect(context.records[0]).toMatchObject({
+    operationId: id,
+    state: "tracking",
+  });
+  expect(context.records[0].row?.opHash).toBeNull();
   await act(async () => {
     await vi.advanceTimersByTimeAsync(600_000);
   });
-  expect(container.textContent).toContain("Still processing");
   expect(mocks.get).toHaveBeenCalled();
   await act(async () => root.unmount());
   root = createRoot(container);
   await render();
-  expect(button("Details")).toBeDefined();
+  expect(context.records[0]).toMatchObject({ operationId: id });
   expect(mocks.post).not.toHaveBeenCalled();
 });
 it("only slows polling for this authenticated notifier wallet and keeps errors scoped", async () => {
@@ -245,10 +239,10 @@ it("terminal events invalidate balances/order feeds without confirmation levels 
   expect(mocks.invalidate).toHaveBeenCalledWith("fetchWalletOpenOrders", {
     source: "orderbook",
   });
-  await act(async () => button("Details").click());
-  expect(container.querySelector("a")?.href).toContain(
-    "/explorer/operation/oHash"
-  );
+  expect(context.records[0].row).toMatchObject({
+    status: "confirmed",
+    opHash: "oHash",
+  });
   await act(async () => {
     await mocks.handler!(frame, "wallet");
   });
