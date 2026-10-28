@@ -3,32 +3,32 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useOrderbookExecution } from "./useOrderbookExecution";
-import type { OrderPlan } from "~/lib/relay/orderPlan";
-import type { RelayRecord } from "~/lib/relay/relay.storage";
+import type { OrderPlanRequest } from "~/lib/relay/orderPlan";
+
+type StartDeps = {
+  validate: (request: OrderPlanRequest) => Promise<void>;
+};
 const mocks = vi.hoisted(() => ({
   method: "credits",
-  records: [] as RelayRecord[],
   validate: vi.fn(),
-  submit: vi.fn(),
   direct: vi.fn(),
   confirmed: vi.fn(),
+  bug: vi.fn(),
   kyced: true,
   revision: 0,
-  prepare: vi.fn(),
-  currentPlan: null as OrderPlan | null,
+  start: vi.fn(),
+  plan: { reconcile: vi.fn(), stop: vi.fn() },
+  settle: null as null | ((error?: unknown) => void),
+  deps: null as null | StartDeps,
 }));
-vi.mock("~/providers/AuthProvider/auth.provider", () => ({
-  useAuthContext: () => ({ isAuthenticated: true, login: vi.fn() }),
-}));
-vi.mock("~/contracts/permit", () => ({ preparePermit: mocks.prepare }));
-vi.mock("~/contracts/orderbookPermit", () => ({
-  buildPermitAction: () => ({ variant: "permitCancelOrders" }),
-  readPermitOperator: vi.fn(),
+vi.mock("~/lib/relay/permitAction", () => ({
+  startPermitAction: mocks.start,
+  getPermitActionErrorMessage: (error: unknown) =>
+    error instanceof Error ? error.message : undefined,
 }));
 vi.mock("~/contracts/orderPlanValidation", () => ({
   validateOrderPlan: mocks.validate,
 }));
-vi.mock("~/lib/apis/rwa/relay/relay", () => ({ fetchRelayCredits: vi.fn() }));
 vi.mock("@apollo/client/index", () => ({
   useApolloClient: () => ({
     query: async () => ({
@@ -37,6 +37,9 @@ vi.mock("@apollo/client/index", () => ({
       },
     }),
   }),
+}));
+vi.mock("~/providers/ToasterProvider/toaster.provider", () => ({
+  useToasterContext: () => ({ bug: mocks.bug }),
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ isKyced: mocks.kyced }),
@@ -48,89 +51,62 @@ vi.mock("~/providers/RelayProvider/RelayProvider", () => ({
   useRelay: () => ({
     runtime: {
       getScope: () => ({ wallet: "wallet", revision: mocks.revision }),
-      refreshConfig: async () => ({ enabled: true, fee: { enabled: false } }),
     },
-    records: mocks.records,
+    records: [],
     isReady: true,
-    isLocked: () => mocks.records.some((r) => r.state !== "settled"),
-    submit: mocks.submit,
+    isLocked: () => false,
+    submit: vi.fn(),
   }),
-}));
-vi.mock("~/lib/organisms/ROrderPlan/ROrderPlan", () => ({
-  ROrderPlan: ({ plan }: { plan: OrderPlan }) => {
-    mocks.currentPlan = plan;
-    return <p>{plan.state}</p>;
-  },
 }));
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root;
-let container: HTMLDivElement;
 let execution: ReturnType<typeof useOrderbookExecution>;
+const toRequest = (orderId: string): OrderPlanRequest => ({
+  kind: "cancel_orders",
+  orderbookAddress: "book",
+  orders: [{ orderbookAddress: "book", orderType: "BUY", orderId }],
+});
 function Harness({ orderId = "1" }: { orderId?: string }) {
   execution = useOrderbookExecution({
-    request: {
-      kind: "cancel_orders",
-      orderbookAddress: "book",
-      orders: [{ orderbookAddress: "book", orderType: "BUY", orderId }],
-    },
+    request: toRequest(orderId),
     invokeDirect: mocks.direct,
     onConfirmed: mocks.confirmed,
   });
-  return <>{execution.controls}</>;
+  return null;
 }
 beforeEach(async () => {
   vi.clearAllMocks();
-  mocks.records = [];
   mocks.method = "credits";
   mocks.kyced = true;
   mocks.revision = 0;
-  mocks.currentPlan = null;
-  mocks.prepare.mockImplementation(async (_r, request) => ({
-    request,
-    built: {
-      contract: "book",
-      intent: {
-        kind: "cancel_orders",
-        orderbookAddress: "book",
-        orders: request.orders.map(
-          ({ orderId, orderType }: { orderId: string; orderType: string }) => ({
-            orderId,
-            orderType,
-          })
-        ),
-      },
-    },
-  }));
-  mocks.submit.mockImplementation(async (signed, onAttempt) => {
-    onAttempt("attempt");
-    mocks.records = [
-      {
-        id: "attempt",
-        state: "tracking",
-        contract: "book",
-        intent: signed.ordinary.intent,
-      } as RelayRecord,
-    ];
-    return "op";
+  mocks.settle = null;
+  mocks.deps = null;
+  mocks.start.mockImplementation((_request, deps: StartDeps) => {
+    mocks.deps = deps;
+    const done = new Promise<void>((resolve, reject) => {
+      mocks.settle = (error) => (error ? reject(error) : resolve());
+    });
+    return { plan: mocks.plan, done };
   });
-  container = document.createElement("div");
-  root = createRoot(container);
+  root = createRoot(document.createElement("div"));
   await act(async () => root.render(<Harness />));
 });
 afterEach(async () => {
   await act(async () => root.unmount());
 });
-async function sign() {
-  const prepared = mocks.currentPlan!.prepared!;
+async function start() {
+  let running!: Promise<void>;
   await act(async () => {
-    await mocks.currentPlan!.submit({
-      prepared,
-      ordinary: { intent: prepared.built.intent! },
-      operation: {},
-      topUp: null,
-    } as Parameters<OrderPlan["submit"]>[0]);
+    running = execution.execute();
+  });
+  return { running };
+}
+async function settle(error?: unknown, running?: Promise<void>) {
+  await act(async () => {
+    mocks.settle!(error);
+    await running;
   });
 }
 it("direct mode invokes only the existing direct action", async () => {
@@ -138,66 +114,71 @@ it("direct mode invokes only the existing direct action", async () => {
   await act(async () => root.render(<Harness />));
   await act(async () => execution.execute());
   expect(mocks.direct).toHaveBeenCalledOnce();
-  expect(mocks.prepare).not.toHaveBeenCalled();
-  expect(mocks.submit).not.toHaveBeenCalled();
+  expect(mocks.start).not.toHaveBeenCalled();
   expect(mocks.confirmed).not.toHaveBeenCalled();
 });
-it("relay acceptance never completes the form; confirmed exact action does once", async () => {
-  await act(async () => execution.execute());
-  expect(container.textContent).toBe("review");
-  await sign();
+it("Credits mode starts the permit action without a plan dialog", async () => {
+  const { running } = await start();
+  expect(mocks.start).toHaveBeenCalledOnce();
+  expect(mocks.start.mock.calls[0][0]).toEqual(toRequest("1"));
+  expect(execution.isBusy).toBe(true);
+  expect(mocks.confirmed).not.toHaveBeenCalled();
+  await settle(undefined, running);
+  expect(mocks.confirmed).toHaveBeenCalledOnce();
   expect(mocks.direct).not.toHaveBeenCalled();
-  expect(mocks.confirmed).not.toHaveBeenCalled();
-  const r = mocks.records[0];
-  mocks.records = [
-    {
-      ...r,
-      state: "settled",
-      row: {
-        operationId: "op",
-        status: "confirmed",
-        updatedAt: new Date().toISOString(),
-        contractAddress: "book",
-        intentKind: "cancel_orders",
-        intent: r.intent,
-      },
-    },
-  ];
-  await act(async () => root.render(<Harness />));
-  expect(mocks.confirmed).toHaveBeenCalledOnce();
-  await act(async () => root.render(<Harness />));
-  expect(mocks.confirmed).toHaveBeenCalledOnce();
+  expect(execution.isBusy).toBe(false);
 });
-it("changed inputs require fresh review and remain intact on failure", async () => {
-  await act(async () => execution.execute());
+it("ignores a second confirm while an action is running", async () => {
+  const { running } = await start();
+  await act(async () => void execution.execute());
+  expect(mocks.start).toHaveBeenCalledOnce();
+  await settle(undefined, running);
+});
+it("relay rows reconcile the running action", async () => {
+  const { running } = await start();
+  await act(async () => root.render(<Harness />));
+  expect(mocks.plan.reconcile).toHaveBeenCalled();
+  await settle(undefined, running);
+});
+it("validation rejects an order edited after the confirm click", async () => {
+  const { running } = await start();
   await act(async () => root.render(<Harness orderId="2" />));
-  await sign();
-  expect(mocks.submit).not.toHaveBeenCalled();
-  expect(mocks.confirmed).not.toHaveBeenCalled();
-  expect(container.textContent).toBe("failed");
-});
-it("saved mode change does not redirect a reviewed Credits action", async () => {
-  await act(async () => execution.execute());
-  mocks.method = "mvrk";
-  await act(async () => root.render(<Harness />));
-  await sign();
-  expect(mocks.submit).toHaveBeenCalledOnce();
-  expect(mocks.direct).not.toHaveBeenCalled();
-});
-it("fresh order validation rejection prevents review/signing", async () => {
-  mocks.validate.mockRejectedValueOnce(
-    new Error("Order is no longer claimable")
+  await expect(mocks.deps!.validate(toRequest("1"))).rejects.toThrow(
+    "The order or price changed"
   );
-  await act(async () => execution.execute());
-  expect(mocks.prepare).not.toHaveBeenCalled();
-  expect(container.textContent).toBe("failed");
+  await settle(new Error("The order or price changed."), running);
+  expect(mocks.confirmed).not.toHaveBeenCalled();
 });
-it("remount never resumes a remaining signature", async () => {
-  await act(async () => execution.execute());
-  await sign();
+it("does not complete the form when the order changed before confirmation", async () => {
+  const { running } = await start();
+  await act(async () => root.render(<Harness orderId="2" />));
+  await settle(undefined, running);
+  expect(mocks.confirmed).not.toHaveBeenCalled();
+});
+it("validation requires fresh KYC", async () => {
+  const { running } = await start();
+  mocks.kyced = false;
+  await expect(mocks.deps!.validate(toRequest("1"))).rejects.toThrow(
+    "Verify with Mavryk Pro"
+  );
+  expect(mocks.validate).not.toHaveBeenCalled();
+  await settle(new Error("x"), running);
+});
+it("shows a relay failure as a toast", async () => {
+  const { running } = await start();
+  await settle(new Error("Order is no longer claimable"), running);
+  expect(mocks.bug).toHaveBeenCalledWith("Order is no longer claimable");
+  expect(mocks.confirmed).not.toHaveBeenCalled();
+  expect(execution.isBusy).toBe(false);
+});
+it("stays silent when the wallet signature is rejected", async () => {
+  const { running } = await start();
+  await settle({ name: "UnknownBeaconError", title: "Aborted" }, running);
+  expect(mocks.bug).not.toHaveBeenCalled();
+});
+it("unmount stops the running action", async () => {
+  await start();
   await act(async () => root.unmount());
-  root = createRoot(container);
-  await act(async () => root.render(<Harness />));
-  expect(mocks.prepare).toHaveBeenCalledOnce();
-  expect(container.textContent).toBe("");
+  expect(mocks.plan.stop).toHaveBeenCalledOnce();
+  root = createRoot(document.createElement("div"));
 });

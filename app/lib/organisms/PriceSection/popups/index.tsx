@@ -1011,7 +1011,6 @@ const BuySellForm: FC<
         onContinue={handleConfirmedBuySellAction}
       />
 
-      {execution.controls}
       <div className={styles.buySellRoot}>
         {configError && (
           <button type="button" onClick={onRetryConfig}>

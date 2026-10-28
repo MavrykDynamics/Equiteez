@@ -1,14 +1,18 @@
-import { RButton } from "~/lib/atoms/RButton";
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client/index";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
+import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 import { validateOrderPlan } from "~/contracts/orderPlanValidation";
-import { OrderPlan, type OrderPlanRequest } from "~/lib/relay/orderPlan";
-import { ROrderPlan } from "~/lib/organisms/ROrderPlan/ROrderPlan";
+import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
+import type { OrderPlan, OrderPlanRequest } from "~/lib/relay/orderPlan";
+import {
+  getPermitActionErrorMessage,
+  startPermitAction,
+} from "~/lib/relay/permitAction";
 
 type Options = {
   request: OrderPlanRequest;
@@ -17,17 +21,22 @@ type Options = {
   invokeDirect: () => Promise<void>;
   onConfirmed: () => void;
 };
-/** Mode routing only: direct success stays in useContractAction; relay success requires a confirmed row. */
+/**
+ * Mode routing only: direct success stays in useContractAction; relay success
+ * requires a confirmed row. Both paths go straight from the caller's confirm
+ * click to the wallet prompt, with no plan dialogs.
+ */
 export function useOrderbookExecution(options: Options) {
   const payment = useGasPayment();
   const relay = useRelay();
   const user = useUserContext();
   const apollo = useApolloClient();
-  const [, render] = useReducer((n) => n + 1, 0);
+  const { bug } = useToasterContext();
+  const [isBusy, setIsBusy] = useState(false);
   const plan = useRef<OrderPlan | null>(null);
   const mounted = useRef(true);
-  const current = useRef({ options, relay, payment });
-  current.current = { options, relay, payment };
+  const current = useRef({ options, relay });
+  current.current = { options, relay };
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -35,13 +44,10 @@ export function useOrderbookExecution(options: Options) {
       plan.current?.stop();
     };
   }, []);
+  // Relay rows arrive through the provider; the active action settles on them.
   useEffect(() => {
     plan.current?.reconcile();
   }, [relay.records]);
-  const active = plan.current;
-  const isBusy = Boolean(
-    active && !["failed", "confirmed", "idle"].includes(active.state)
-  );
   const reason =
     options.validationMessage ??
     (!payment.isRestored
@@ -55,44 +61,25 @@ export function useOrderbookExecution(options: Options) {
               "Connect and sign in; waiting for relay recovery.")
             : undefined);
   const execute = async () => {
-    if (isBusy) return;
-    if (reason) return;
+    if (isBusy || reason) return;
     if (payment.method === "mvrk") {
-      try {
-        // A failed relay is not a direct retry: refresh the underlying action first.
-        if (active?.state === "failed") {
-          if (!relay.runtime)
-            throw new Error("Reconnect before reviewing this action.");
-          const scope = JSON.stringify(relay.runtime.getScope());
-          const action = JSON.stringify(options.request);
-          await user.refetchUserAccountStatus();
-          await user.refetchUserBalances?.();
-          await validateOrderPlan(relay.runtime, options.request);
-          if (
-            JSON.stringify(relay.runtime.getScope()) !== scope ||
-            JSON.stringify(current.current.options.request) !== action ||
-            current.current.payment.method !== "mvrk"
-          )
-            throw new Error(
-              "Action, wallet or payment method changed. Review again."
-            );
-        }
-        await options.invokeDirect();
-      } catch (error) {
-        startError.current =
-          error instanceof Error
-            ? error.message
-            : "Unable to refresh the action.";
-        render();
-      }
+      await options.invokeDirect();
       return;
     }
     const runtime = relay.runtime;
     if (!runtime) return;
+    const originalKey = JSON.stringify(options.request);
+    const assertForm = () => {
+      if (JSON.stringify(current.current.options.request) !== originalKey)
+        throw new Error(
+          "The order or price changed. Review the updated order."
+        );
+      if (current.current.options.validationMessage)
+        throw new Error(current.current.options.validationMessage);
+    };
+    setIsBusy(true);
     try {
-      plan.current?.stop();
-      const originalKey = JSON.stringify(options.request);
-      const next = new OrderPlan(options.request, {
+      const { plan: next, done } = startPermitAction(options.request, {
         runtime,
         isLocked: (contract) => current.current.relay.isLocked(contract),
         records: () =>
@@ -100,23 +87,7 @@ export function useOrderbookExecution(options: Options) {
           current.current.relay.records,
         submit: (signed, onAttempt) =>
           current.current.relay.submit(signed, onAttempt),
-        changed: () => {
-          if (mounted.current) render();
-        },
-        confirmed: () => {
-          // Do not erase edits made while the submitted order was being tracked.
-          if (JSON.stringify(current.current.options.request) === originalKey)
-            current.current.options.onConfirmed();
-        },
         validate: async (request) => {
-          const assertForm = () => {
-            if (JSON.stringify(current.current.options.request) !== originalKey)
-              throw new Error(
-                "The order or price changed. Close this plan and review the updated order."
-              );
-            if (current.current.options.validationMessage)
-              throw new Error(current.current.options.validationMessage);
-          };
           assertForm();
           const scope = JSON.stringify(runtime.getScope());
           const wallet = runtime.getScope().wallet;
@@ -134,39 +105,24 @@ export function useOrderbookExecution(options: Options) {
         },
       });
       plan.current = next;
-      await next.review();
+      await done;
+      // Do not erase edits made while the submitted order was being tracked.
+      if (
+        mounted.current &&
+        JSON.stringify(current.current.options.request) === originalKey
+      )
+        current.current.options.onConfirmed();
     } catch (error) {
-      // Scope may disappear before the plan is constructed.
-      startError.current =
-        error instanceof Error ? error.message : "Unable to start review.";
-      render();
+      if (mounted.current && !checkWhetherWalletAbortError(error))
+        bug(
+          getPermitActionErrorMessage(error) ||
+            unknownToError(error)?.message ||
+            "Unable to complete the action."
+        );
+    } finally {
+      plan.current = null;
+      if (mounted.current) setIsBusy(false);
     }
   };
-  const startError = useRef<string | null>(null);
-  return {
-    execute,
-    isBusy,
-    reason: reason ?? startError.current ?? undefined,
-    controls: active ? (
-      <ROrderPlan
-        plan={active}
-        runtime={relay.runtime}
-        onClose={() => {
-          active.stop();
-          plan.current = null;
-          startError.current = null;
-          render();
-        }}
-      />
-    ) : startError.current ? (
-      <RButton
-        onClick={() => {
-          startError.current = null;
-          render();
-        }}
-      >
-        Retry review
-      </RButton>
-    ) : null,
-  };
+  return { execute, isBusy, reason };
 }

@@ -32,11 +32,15 @@ vi.mock("~/lib/apis/rwa/relay/relay", () => ({ fetchRelayCredits: vi.fn() }));
 vi.mock("@apollo/client/index", () => ({
   useApolloClient: () => ({ query: vi.fn() }),
 }));
+vi.mock(
+  "~/providers/ToasterProvider/toaster.provider",
+  async (importOriginal) => ({
+    ...(await importOriginal<object>()),
+    useToasterContext: () => ({ bug: vi.fn(), success: vi.fn() }),
+  })
+);
 vi.mock("~/providers/RelayProvider/RelayProvider", () => ({
   useRelay: () => ({ records: [], runtime: null, isReady: false, error: null }),
-}));
-vi.mock("~/lib/organisms/ROrderPlan/ROrderPlan", () => ({
-  ROrderPlan: () => null,
 }));
 vi.mock("@remix-run/react", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => (

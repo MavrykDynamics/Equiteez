@@ -148,7 +148,6 @@ export function useOpenOrderAction({
   };
 
   return {
-    executionControls: execution.controls,
     actionIcon: (isRefundAction ? "refund" : "trash") as RIconName,
     actionLabel: isRefundAction
       ? `Request refund for ${assetSymbol} order`
