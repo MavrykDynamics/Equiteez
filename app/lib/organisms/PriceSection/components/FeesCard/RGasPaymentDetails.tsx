@@ -39,7 +39,7 @@ export function RGasPaymentDetails({
   if (method === "mvrk")
     return (
       <div className={styles.detailRow}>
-        <span>Network Fee</span>
+        <span>Platform Fee</span>
         <span className={styles.detailValue}>
           {networkFee === undefined
             ? "—"

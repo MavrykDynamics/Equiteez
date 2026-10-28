@@ -132,19 +132,21 @@ export const FeesCard: FC<FeesCardProps> = ({
                 </span>
               </div>
 
-              <div className={styles.detailRow}>
-                <div className={styles.feeLabel}>
-                  <span>Platform Fee</span>
-                  <InfoTooltip
-                    content={feeTooltip}
-                    allowHTML
-                    className={styles.feeInfoIcon}
-                  />
-                </div>
-                <span className={styles.detailValue}>
-                  ~ ${platformFeeUsd.plus(includedPurchaseFee ?? 0).toFixed(6)}
-                </span>
-              </div>
+              {/*<div className={styles.detailRow}>*/}
+              {/*  <div className={styles.feeLabel}>*/}
+              {/*    <span>Platform Fee</span>*/}
+              {/*    <InfoTooltip*/}
+              {/*      content={feeTooltip}*/}
+              {/*      allowHTML*/}
+              {/*      className={styles.feeInfoIcon}*/}
+              {/*    />*/}
+              {/*  </div>*/}
+              {/*  <span className={styles.detailValue}>*/}
+              {/*    ~ ${platformFeeUsd.plus(includedPurchaseFee ?? 0).toFixed(6)}*/}
+              {/*  </span>*/}
+              {/*</div>*/}
+              {/* Gas Credit row (Credits) or network fee row (MVRK). */}
+              {paymentDetails}
               {annualYield !== undefined && (
                 <div className={styles.detailRow}>
                   <span>Est. Annual Income</span>
