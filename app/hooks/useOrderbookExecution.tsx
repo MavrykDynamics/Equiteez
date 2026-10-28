@@ -16,7 +16,14 @@ import {
 import {
   getPermitActionErrorMessage,
   startPermitAction,
+  type PermitActionStep,
 } from "~/lib/relay/permitAction";
+import {
+  STATUS_CONFIRMING,
+  STATUS_IDLE,
+  STATUS_PENDING,
+  type StatusFlag,
+} from "~/lib/ui/use-status-flag";
 
 type Options = {
   request: OrderPlanRequest;
@@ -36,7 +43,8 @@ export function useOrderbookExecution(options: Options) {
   const user = useUserContext();
   const apollo = useApolloClient();
   const { bug } = useToasterContext();
-  const [isBusy, setIsBusy] = useState(false);
+  const [step, setStep] = useState<PermitActionStep | null>(null);
+  const isBusy = step !== null;
   const plan = useRef<OrderPlan | null>(null);
   const mounted = useRef(true);
   const current = useRef({ options, relay });
@@ -81,33 +89,39 @@ export function useOrderbookExecution(options: Options) {
       if (current.current.options.validationMessage)
         throw new Error(current.current.options.validationMessage);
     };
-    setIsBusy(true);
+    setStep("preparing");
     try {
-      const { plan: next, done } = startPermitAction(options.request, {
-        runtime,
-        isLocked: (contract) => current.current.relay.isLocked(contract),
-        records: () =>
-          current.current.relay.lifecycle?.records ??
-          current.current.relay.records,
-        submit: (signed, onAttempt) =>
-          current.current.relay.submit(signed, onAttempt),
-        validate: async (request) => {
-          assertForm();
-          const scope = JSON.stringify(runtime.getScope());
-          const wallet = runtime.getScope().wallet;
-          const { data } = await apollo.query({
-            query: USER_ACCOUNT_STATUS_QUERY,
-            variables: { address: wallet },
-            fetchPolicy: "network-only",
-          });
-          if (JSON.stringify(runtime.getScope()) !== scope)
-            throw new Error("Wallet changed. Review again.");
-          if (!getIsKycedForAddress(data, wallet))
-            throw new Error("Verify with Mavryk Pro before trading.");
-          await validateOrderPlan(runtime, request);
-          assertForm();
+      const { plan: next, done } = startPermitAction(
+        options.request,
+        {
+          runtime,
+          isLocked: (contract) => current.current.relay.isLocked(contract),
+          records: () =>
+            current.current.relay.lifecycle?.records ??
+            current.current.relay.records,
+          submit: (signed, onAttempt) =>
+            current.current.relay.submit(signed, onAttempt),
+          validate: async (request) => {
+            assertForm();
+            const scope = JSON.stringify(runtime.getScope());
+            const wallet = runtime.getScope().wallet;
+            const { data } = await apollo.query({
+              query: USER_ACCOUNT_STATUS_QUERY,
+              variables: { address: wallet },
+              fetchPolicy: "network-only",
+            });
+            if (JSON.stringify(runtime.getScope()) !== scope)
+              throw new Error("Wallet changed. Review again.");
+            if (!getIsKycedForAddress(data, wallet))
+              throw new Error("Verify with Mavryk Pro before trading.");
+            await validateOrderPlan(runtime, request);
+            assertForm();
+          },
         },
-      });
+        (next) => {
+          if (mounted.current) setStep(next);
+        }
+      );
       plan.current = next;
       await done;
       // Do not erase edits made while the submitted order was being tracked.
@@ -130,8 +144,18 @@ export function useOrderbookExecution(options: Options) {
         );
     } finally {
       plan.current = null;
-      if (mounted.current) setIsBusy(false);
+      if (mounted.current) setStep(null);
     }
   };
-  return { execute, isBusy, reason };
+  return {
+    execute,
+    isBusy,
+    // Same button states as a direct wallet operation.
+    status: (step === "processing"
+      ? STATUS_CONFIRMING
+      : step
+        ? STATUS_PENDING
+        : STATUS_IDLE) as StatusFlag,
+    reason,
+  };
 }

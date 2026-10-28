@@ -110,6 +110,11 @@ export function useDirectOrderFee(
   return {
     state,
     reason,
+    // Waiting for an estimate blocks submission but is not an error to show.
+    isPending:
+      payment.isRestored &&
+      payment.method === "mvrk" &&
+      (state.status === "idle" || state.status === "loading"),
     beforeSubmit,
     retry: () => setRevision((value) => value + 1),
     method: payment.method,

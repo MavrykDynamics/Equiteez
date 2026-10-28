@@ -827,6 +827,12 @@ const BuySellForm: FC<
     onConfirmed: () => handleSuccessfulTransaction({ confirmation: null }),
   });
   const paymentValidationMessage = execution.reason;
+  // A pending MVRK estimate only disables the button; real reasons get the alert.
+  const isFeePending =
+    directFee.isPending && paymentValidationMessage === directFee.reason;
+  const visibleValidationMessage = isFeePending
+    ? undefined
+    : paymentValidationMessage;
 
   const handleCloseTradeConfirmation = useCallback(() => {
     setIsTradeConfirmationOpen(false);
@@ -888,9 +894,11 @@ const BuySellForm: FC<
         buyStatus,
         sellStatus,
         limitBuyStatus,
-        limitSellStatus
+        limitSellStatus,
+        // Credits: the same Pending/Confirming loader as a wallet operation.
+        execution.status
       ),
-    [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
+    [buyStatus, limitBuyStatus, limitSellStatus, sellStatus, execution.status]
   );
 
   const closeOrderBook = useCallback(() => {
@@ -1068,8 +1076,8 @@ const BuySellForm: FC<
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}
-              isOrderDataLoading={isOrderDataLoading || execution.isBusy}
-              validationMessage={paymentValidationMessage}
+              isOrderDataLoading={isOrderDataLoading || isFeePending}
+              validationMessage={visibleValidationMessage}
             />
           ) : (
             <BuySellLimitScreen
@@ -1092,8 +1100,8 @@ const BuySellForm: FC<
               apy={asset.apy}
               orderbookFee={orderbookFee}
               status={status}
-              isOrderDataLoading={isOrderDataLoading || execution.isBusy}
-              validationMessage={paymentValidationMessage}
+              isOrderDataLoading={isOrderDataLoading || isFeePending}
+              validationMessage={visibleValidationMessage}
             />
           ))}
       </div>

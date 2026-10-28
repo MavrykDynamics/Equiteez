@@ -126,11 +126,13 @@ it("Credits mode starts the permit action without a plan dialog", async () => {
   expect(mocks.start).toHaveBeenCalledOnce();
   expect(mocks.start.mock.calls[0][0]).toEqual(toRequest("1"));
   expect(execution.isBusy).toBe(true);
+  expect(execution.status).toBe("STATUS_PENDING");
   expect(mocks.confirmed).not.toHaveBeenCalled();
   await settle(undefined, running);
   expect(mocks.confirmed).toHaveBeenCalledOnce();
   expect(mocks.direct).not.toHaveBeenCalled();
   expect(execution.isBusy).toBe(false);
+  expect(execution.status).toBe("STATUS_IDLE");
 });
 it("ignores a second confirm while an action is running", async () => {
   const { running } = await start();
