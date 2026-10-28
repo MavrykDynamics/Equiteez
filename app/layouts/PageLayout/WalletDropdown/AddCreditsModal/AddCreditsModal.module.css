@@ -102,6 +102,14 @@
   border-color: var(--r-color-neutral-black);
 }
 
+/* Unaffordable or out-of-bounds presets stay visible but cannot be chosen. */
+.optionDisabled,
+.optionDisabled:hover {
+  cursor: not-allowed;
+  border-color: var(--r-color-neutral-200);
+  opacity: 0.5;
+}
+
 /* 24px icon slot with an 18px ring, as in the design's radio icon. */
 .radio {
   display: grid;

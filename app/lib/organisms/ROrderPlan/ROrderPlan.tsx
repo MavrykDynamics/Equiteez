@@ -32,7 +32,8 @@ export function ROrderPlan({
   const user = useUserContext();
   const [topUpOpen, setTopUpOpen] = useState(false);
   const addCredits = useAddCredits();
-  const walletBalance = useCreditTokenWalletBalance(useCredits().config);
+  const creditsConfig = useCredits().config;
+  const walletBalance = useCreditTokenWalletBalance(creditsConfig);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const error = plan.error;
   const code = error instanceof RelayApiError ? error.code : "";
@@ -172,6 +173,7 @@ export function ROrderPlan({
         )}
         <AddCreditsModal
           isOpen={topUpOpen}
+          fee={creditsConfig?.config.fee}
           onAddCredits={addCredits}
           onClose={() => setTopUpOpen(false)}
           walletBalance={walletBalance}

@@ -1,10 +1,12 @@
 import { useCallback } from "react";
-import { BigNumber } from "bignumber.js";
+import { useQueryClient } from "@tanstack/react-query";
 import { preparePermit, signPreparedPermit } from "~/contracts/permit";
 import { checkWhetherWalletAbortError } from "~/errors/error";
 import { RelayApiError } from "~/lib/relay/relay.errors";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
+import { getCreditPriceUnits } from "../CreditsWalletDropdown/credits.utils";
+import type { AddCreditsRequest } from "./AddCreditsModal";
 
 const TOP_UP_ERRORS: Record<string, string> = {
   PERMIT_EXPIRED:
@@ -35,10 +37,11 @@ export function useAddCredits() {
   const relay = useRelay();
   const payment = useGasPayment();
   const { runtime, isReady, isLocked, submitTopUp } = relay;
-  const { reload } = payment;
+  const { reload, scope } = payment;
+  const queryClient = useQueryClient();
 
   return useCallback(
-    async (amount: BigNumber) => {
+    async ({ amountUnits, reviewedPriceUnits }: AddCreditsRequest) => {
       try {
         if (!runtime)
           throw new Error("Connect and sign in to add Gas Credits.");
@@ -53,15 +56,22 @@ export function useAddCredits() {
           throw new Error(
             "A previous top-up or token permission is still processing. Wait for it to finish before adding more."
           );
-        const amountUnits = new BigNumber(amount).shiftedBy(
-          config.fee.decimals
-        );
-        if (!amountUnits.isInteger() || amountUnits.lte(0))
-          throw new Error("Enter a valid top-up amount.");
+        // A preset was priced at the reviewed tariff; never sign a stale one.
+        if (
+          reviewedPriceUnits !== undefined &&
+          getCreditPriceUnits(config.fee)?.toString() !== reviewedPriceUnits
+        ) {
+          void queryClient.invalidateQueries({
+            queryKey: ["relay", scope, "config"],
+          });
+          throw new Error(
+            "The Gas Credit price changed. Review the updated amount and try again."
+          );
+        }
 
         const prepared = await preparePermit(runtime, {
           kind: "fee_top_up",
-          amountUnits: amountUnits.toFixed(),
+          amountUnits,
         });
         const signed = await signPreparedPermit(runtime, prepared);
         await submitTopUp(signed);
@@ -74,6 +84,6 @@ export function useAddCredits() {
         throw new Error(getTopUpErrorMessage(error));
       }
     },
-    [isLocked, isReady, reload, runtime, submitTopUp]
+    [isLocked, isReady, queryClient, reload, runtime, scope, submitTopUp]
   );
 }

@@ -19,6 +19,7 @@ import {
   collectAssetRefunds,
 } from "~/lib/apis/rwa/refunds/refunds";
 import type { RefundPart } from "~/lib/apis/rwa/refunds/refunds.types";
+import type { RelayConfig } from "~/lib/apis/rwa/relay/relay.types";
 import type { OrderPlan, OrderPlanRequest } from "~/lib/relay/orderPlan";
 import {
   getPermitActionErrorMessage,
@@ -49,6 +50,8 @@ export type RefundAllCreditsInfo = {
   unsupportedParts: number;
   feeUnits: bigint;
   feeDecimals: number | null;
+  // Resolved fee config, to show the charge in Credits at the current tariff.
+  fee: RelayConfig["fee"];
 };
 
 const PROCESS_REFUND_VARIANT = "permitProcessRefund";
@@ -122,6 +125,7 @@ const fetchRefundAllCreditsInfo = async (
         BigInt(parts.length)
       : 0n,
     feeDecimals: fee.enabled ? fee.decimals : null,
+    fee,
   };
 };
 

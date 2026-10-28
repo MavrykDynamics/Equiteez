@@ -11,19 +11,25 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 
+import type { RelayConfig } from "~/lib/apis/rwa/relay/relay.types";
 import {
   CREDIT_PACKAGES,
-  CREDIT_PRICE_USDT,
-  CUSTOM_TOP_UP_MAX_USDT,
-  CUSTOM_TOP_UP_MIN_USDT,
   DEFAULT_CREDIT_PACKAGE,
   formatCredits,
   formatUsdt,
+  getCreditPriceUnits,
+  toTokenAmount,
+  toTokenUnits,
 } from "../CreditsWalletDropdown/credits.utils";
 import styles from "./AddCreditsModal.module.css";
 
 type CreditsOption = number | "custom";
 type AddCreditsStep = "form" | "submitted" | "unavailable";
+export type AddCreditsRequest = {
+  amountUnits: string;
+  // The Credit price a preset was reviewed at; a change needs a new review.
+  reviewedPriceUnits?: string;
+};
 
 export const TOP_UP_UNAVAILABLE_REASON =
   "Gas Credits top-up is unavailable right now. Your existing balance is unchanged.";
@@ -33,9 +39,11 @@ type AddCreditsModalProps = {
   // Forces the unavailable presentation instead of the top-up form.
   blockedReason?: string;
   onClose: () => void;
-  // Signs and submits the exact USDT payment. Without it the form ends in
-  // the unavailable state.
-  onAddCredits?: (amountUsdt: BigNumber) => Promise<void>;
+  // Signs and submits the exact payment. Without it the form ends in the
+  // unavailable state.
+  onAddCredits?: (request: AddCreditsRequest) => Promise<void>;
+  // Current fee configuration: tariff, decimals and top-up bounds.
+  fee?: RelayConfig["fee"];
   // Fee-token wallet balance in whole tokens; null while unknown.
   walletBalance?: BigNumber | null;
 };
@@ -45,6 +53,7 @@ export function AddCreditsModal({
   blockedReason,
   onClose,
   onAddCredits,
+  fee,
   walletBalance = null,
 }: AddCreditsModalProps) {
   const navigate = useNavigate();
@@ -59,23 +68,44 @@ export function AddCreditsModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const enabledFee = fee?.enabled ? fee : null;
+  const decimals = enabledFee?.decimals ?? 0;
+  const price = getCreditPriceUnits(enabledFee ?? undefined);
+  const minUnits = BigInt(enabledFee?.topUpMinUnits ?? "0");
+  const maxUnits = BigInt(enabledFee?.topUpMaxUnits ?? "0");
+  const balanceUnits =
+    walletBalance === null
+      ? null
+      : BigInt(
+          toTokenUnits(walletBalance, decimals)
+            .integerValue(BigNumber.ROUND_FLOOR)
+            .toFixed()
+        );
+  const presetUnits = (credits: number) =>
+    price === null ? null : BigInt(credits) * price;
+  const inBounds = (units: bigint | null): units is bigint =>
+    units !== null && units >= minUnits && units <= maxUnits;
+  const isAffordable = (units: bigint) =>
+    balanceUnits === null || units <= balanceUnits;
+
+  const customUnits = (() => {
+    const value = toTokenUnits(customAmount || NaN, decimals);
+    return value.isFinite() && value.isInteger() && value.gt(0)
+      ? BigInt(value.toFixed())
+      : null;
+  })();
+  const paymentUnits =
+    selectedOption === "custom" ? customUnits : presetUnits(selectedOption);
   const paymentUsdt =
-    selectedOption === "custom"
-      ? new BigNumber(customAmount || NaN)
-      : new BigNumber(selectedOption).times(CREDIT_PRICE_USDT);
-  const creditsAmount = paymentUsdt.dividedToIntegerBy(CREDIT_PRICE_USDT);
-  const isAmountValid =
-    paymentUsdt.isFinite() &&
-    paymentUsdt.gte(CUSTOM_TOP_UP_MIN_USDT) &&
-    paymentUsdt.lte(CUSTOM_TOP_UP_MAX_USDT) &&
-    paymentUsdt.decimalPlaces()! <= 2;
+    paymentUnits === null ? null : toTokenAmount(paymentUnits, decimals);
+  const isAmountValid = inBounds(paymentUnits);
   const hasEnoughBalance =
-    walletBalance !== null && isAmountValid && paymentUsdt.lte(walletBalance);
-  const canSubmit = isAmountValid && hasEnoughBalance;
-  const view = blockedReason ? "unavailable" : step;
-  const customPlaceholder = `$${formatUsdt(CUSTOM_TOP_UP_MIN_USDT)}-${formatUsdt(
-    CUSTOM_TOP_UP_MAX_USDT
-  )}`;
+    balanceUnits !== null && isAmountValid && paymentUnits <= balanceUnits;
+  const canSubmit = Boolean(enabledFee) && isAmountValid && hasEnoughBalance;
+  const view = blockedReason || !enabledFee ? "unavailable" : step;
+  const minUsdt = formatUsdt(toTokenAmount(minUnits, decimals));
+  const maxUsdt = formatUsdt(toTokenAmount(maxUnits, decimals));
+  const customPlaceholder = `$${minUsdt}-${maxUsdt}`;
 
   const handleClose = () => {
     onClose();
@@ -98,7 +128,11 @@ export function AddCreditsModal({
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await onAddCredits(paymentUsdt);
+      await onAddCredits({
+        amountUnits: paymentUnits!.toString(),
+        reviewedPriceUnits:
+          selectedOption === "custom" ? undefined : price?.toString(),
+      });
       setStep("submitted");
     } catch (error) {
       // Recoverable: the form keeps the chosen amount for another attempt.
@@ -144,10 +178,10 @@ export function AddCreditsModal({
               Add Gas Credit
             </RHeading>
             <RText color="neutral-700" size="body-sm">
-              Gas Credits cover platform and network fees on Equiteez. Each
-              order uses 1 Gas Credit (${formatUsdt(CREDIT_PRICE_USDT)}), and
-              there&apos;s no charge if you cancel. Any Gas Credits you buy
-              can&apos;t be withdrawn.
+              Gas Credits cover platform and network fees on Equiteez.{" "}
+              {price !== null &&
+                `Each order uses 1 Gas Credit ($${formatUsdt(toTokenAmount(price, decimals))}), and there's no charge if you cancel. `}
+              Any Gas Credits you buy can&apos;t be withdrawn.
             </RText>
           </header>
 
@@ -164,34 +198,39 @@ export function AddCreditsModal({
               className={styles.options}
               role="radiogroup"
             >
-              {CREDIT_PACKAGES.map((credits) => (
-                <label
-                  className={clsx(
-                    styles.option,
-                    selectedOption === credits && styles.optionSelected
-                  )}
-                  key={credits}
-                >
-                  <input
-                    checked={selectedOption === credits}
-                    className={styles.radio}
-                    name="credits-amount"
-                    onChange={() => setSelectedOption(credits)}
-                    type="radio"
-                  />
-                  <RText size="body-sm">{formatCredits(credits)}</RText>
-                  <RText
-                    className={styles.optionPrice}
-                    color="neutral-700"
-                    size="body-sm"
-                  >
-                    $
-                    {formatUsdt(
-                      new BigNumber(credits).times(CREDIT_PRICE_USDT)
-                    )}
-                  </RText>
-                </label>
-              ))}
+              {price !== null &&
+                CREDIT_PACKAGES.map((credits) => {
+                  const units = presetUnits(credits);
+                  // Out of bounds or unaffordable presets cannot be chosen.
+                  const isDisabled = !inBounds(units) || !isAffordable(units);
+                  return (
+                    <label
+                      className={clsx(
+                        styles.option,
+                        selectedOption === credits && styles.optionSelected,
+                        isDisabled && styles.optionDisabled
+                      )}
+                      key={credits}
+                    >
+                      <input
+                        checked={selectedOption === credits}
+                        className={styles.radio}
+                        disabled={isDisabled}
+                        name="credits-amount"
+                        onChange={() => setSelectedOption(credits)}
+                        type="radio"
+                      />
+                      <RText size="body-sm">{formatCredits(credits)}</RText>
+                      <RText
+                        className={styles.optionPrice}
+                        color="neutral-700"
+                        size="body-sm"
+                      >
+                        ${formatUsdt(toTokenAmount(units!, decimals))}
+                      </RText>
+                    </label>
+                  );
+                })}
 
               <label
                 className={clsx(
@@ -248,8 +287,8 @@ export function AddCreditsModal({
                 )}
                 <RText size="body-sm">
                   {isAmountValid
-                    ? `You're authorizing one payment of exactly ${formatUsdt(paymentUsdt)} USDT.`
-                    : `Enter an amount between ${formatUsdt(CUSTOM_TOP_UP_MIN_USDT)} and ${formatUsdt(CUSTOM_TOP_UP_MAX_USDT)} USDT.`}
+                    ? `You're authorizing one payment of exactly ${formatUsdt(paymentUsdt!)} USDT.`
+                    : `Enter an amount between ${minUsdt} and ${maxUsdt} USDT.`}
                 </RText>
                 <RText color="neutral-700" size="body-sm">
                   {isAmountValid && walletBalance !== null && !hasEnoughBalance
@@ -297,9 +336,12 @@ export function AddCreditsModal({
               Transaction Submitted
             </RHeading>
             <RText color="neutral-700" size="body-sm">
-              Your payment of {formatUsdt(paymentUsdt)} USDT has been submitted.{" "}
-              {formatCredits(creditsAmount)} will be added to your balance once
-              the transaction is confirmed.
+              Your payment of {paymentUsdt ? formatUsdt(paymentUsdt) : "—"} USDT
+              has been submitted.{" "}
+              {selectedOption === "custom"
+                ? "Your Gas Credits balance will update"
+                : `${formatCredits(selectedOption)} will be added to your balance`}{" "}
+              once the transaction is confirmed.
             </RText>
           </header>
           <div className={styles.divider} />

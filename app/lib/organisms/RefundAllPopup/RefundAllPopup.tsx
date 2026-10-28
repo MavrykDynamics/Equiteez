@@ -6,7 +6,6 @@ import LoadingLightIcon from "app/icons/refund-loading-light.svg?react";
 import NoticeInfoIcon from "app/icons/refund-info.svg?react";
 import ProcessingIcon from "app/icons/refund-processing.svg?react";
 import type { ReactNode } from "react";
-import { BigNumber } from "bignumber.js";
 
 import type { DirectOrderFee } from "~/contracts/directOrderFee";
 import {
@@ -14,10 +13,7 @@ import {
   type RefundAllProgress,
   useRefundAllAssetOrders,
 } from "~/hooks/useRefundAllAssetOrders";
-import {
-  CREDIT_PRICE_USDT,
-  formatCredits,
-} from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
+import { formatCreditCharge } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
 import { toTokenSlug } from "~/lib/assets";
 import { formatRefundUnits } from "~/lib/apis/rwa/refunds/refunds.helpers";
 import type {
@@ -391,13 +387,9 @@ function RefundDetails({
         <DetailRow
           label="Gas Credit"
           value={
-            creditsInfo.feeUnits === 0n || creditsInfo.feeDecimals === null
+            creditsInfo.feeUnits === 0n || !creditsInfo.fee.enabled
               ? "Free"
-              : formatCredits(
-                  new BigNumber(creditsInfo.feeUnits.toString())
-                    .shiftedBy(-creditsInfo.feeDecimals)
-                    .div(CREDIT_PRICE_USDT)
-                )
+              : formatCreditCharge(creditsInfo.feeUnits, creditsInfo.fee)
           }
         />
       ) : null}

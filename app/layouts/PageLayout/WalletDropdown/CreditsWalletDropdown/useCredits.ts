@@ -13,7 +13,11 @@ import {
   getRelayScopeRevision,
   subscribeRelayScope,
 } from "~/lib/relay/relay.scope";
-import { getCreditsBalanceStatus, getTopUpProgress } from "./credits.utils";
+import {
+  getCreditsBalanceStatus,
+  getCreditsSummary,
+  getTopUpProgress,
+} from "./credits.utils";
 
 export function useCredits(enabled = true) {
   const payment = useGasPayment();
@@ -71,6 +75,10 @@ export function useCredits(enabled = true) {
     status,
     config: currentConfig,
     credits: status === "ready" ? data : undefined,
+    summary:
+      status === "ready"
+        ? getCreditsSummary(data, currentConfig?.config.fee)
+        : null,
     progress: canRead
       ? getTopUpProgress(relay.records, credits.dataUpdatedAt)
       : null,

@@ -19,7 +19,23 @@ vi.mock(
 vi.mock(
   "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/useCredits",
   () => ({
-    useCredits: () => ({ config: undefined }),
+    useCredits: () => ({
+      config: {
+        state: "ready",
+        config: {
+          fee: {
+            enabled: true,
+            decimals: 6,
+            feeSchedule: {
+              permitPlaceBuyOrder: "1000000",
+              permitPlaceSellOrder: "1000000",
+            },
+            topUpMinUnits: "5000000",
+            topUpMaxUnits: "100000000",
+          },
+        },
+      },
+    }),
     useCreditTokenWalletBalance: () => null,
   })
 );

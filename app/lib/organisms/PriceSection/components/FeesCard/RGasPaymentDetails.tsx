@@ -14,12 +14,7 @@ import {
   useCreditTokenWalletBalance,
   useCredits,
 } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/useCredits";
-import {
-  CREDIT_PRICE_USDT,
-  formatCredits,
-  getCreditsCount,
-  getCreditsTone,
-} from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
+import { formatCreditCharge } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
 import styles from "./styles.module.css";
 
 const GAS_CREDIT_TOOLTIP =
@@ -55,27 +50,21 @@ export function RGasPaymentDetails({
 
   const fee =
     credits.config?.state === "ready" ? credits.config.config.fee : undefined;
-  const orderCredits =
-    fee?.enabled &&
-    new BigNumber(fee.feeSchedule[variant] ?? "0")
-      .shiftedBy(-fee.decimals)
-      .div(CREDIT_PRICE_USDT);
+  // Absent variants are free; the resolved schedule is authoritative.
+  const orderUnits = fee?.enabled
+    ? BigInt(fee.feeSchedule[variant] ?? "0")
+    : null;
   const value =
-    credits.status === "free" || (orderCredits && orderCredits.isZero())
+    credits.status === "free" || orderUnits === 0n
       ? "Free"
-      : credits.status === "ready" && orderCredits
-        ? formatCredits(orderCredits)
+      : credits.status === "ready" && fee?.enabled && orderUnits !== null
+        ? formatCreditCharge(orderUnits, fee)
         : "—";
 
+  // Warnings only for chargeable orders; free ones never need Credits.
   const tone =
-    credits.status === "ready" && credits.credits?.enabled && !credits.progress
-      ? getCreditsTone(
-          getCreditsCount(
-            credits.credits.balanceUnits,
-            credits.credits.decimals
-          ),
-          credits.credits.freeAllowanceRemaining
-        )
+    credits.status === "ready" && !credits.progress && orderUnits
+      ? (credits.summary?.tone ?? null)
       : null;
   const topUpLink = credits.canTopUp ? (
     <button
@@ -133,6 +122,7 @@ export function RGasPaymentDetails({
       )}
 
       <AddCreditsModal
+        fee={fee}
         isOpen={isTopUpOpen && credits.canTopUp}
         onAddCredits={addCredits}
         onClose={() => setIsTopUpOpen(false)}

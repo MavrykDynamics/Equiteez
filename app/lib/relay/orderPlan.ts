@@ -126,16 +126,12 @@ export class OrderPlan {
       throw new Error(
         "Credit configuration changed. Refresh and review again."
       );
-    // Do not add actionsRemaining and freeAllowanceRemaining: their overlap is unspecified.
-    if (
-      BigInt(credits.balanceUnits) >= price ||
-      (credits.actionsRemaining[action.variant] ?? 0) > 0
-    )
-      return;
-    if (credits.freeAllowanceRemaining > 0)
-      throw new Error(
-        "Free allowance eligibility for this action is unresolved. Refresh Credits or choose MVRK in payment settings."
-      );
+    // actionsRemaining already includes the free allowance; never add it again.
+    const remaining =
+      credits.actionsRemaining[action.variant] ??
+      Number(BigInt(credits.balanceUnits) / price) +
+        credits.freeAllowanceRemaining;
+    if (remaining > 0) return;
     throw new RelayApiError(
       402,
       "FEE_CREDIT_REQUIRED",

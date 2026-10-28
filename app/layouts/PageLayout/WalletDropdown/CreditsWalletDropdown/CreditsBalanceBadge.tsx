@@ -3,10 +3,9 @@ import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
   formatCredits,
-  getCreditsCount,
-  getCreditsTone,
-  type Credits,
+  formatUsdt,
   type CreditsBalanceStatus,
+  type CreditsSummary,
   type CreditsTone,
 } from "./credits.utils";
 import styles from "./CreditsWalletDropdown.module.css";
@@ -44,22 +43,15 @@ const TONE_ICONS: Record<CreditsTone, RIconName> = {
 export function CreditsBalanceBadge({
   status,
   progress,
-  credits,
+  summary,
   onAddCredits,
 }: {
   status: CreditsBalanceStatus;
   progress: "pending" | "updating" | null;
-  credits?: Credits;
+  summary?: CreditsSummary | null;
   onAddCredits?: () => void;
 }) {
-  const count =
-    status === "ready" && credits?.enabled
-      ? getCreditsCount(credits.balanceUnits, credits.decimals)
-      : null;
-  const countTone =
-    count && credits?.enabled
-      ? getCreditsTone(count, credits.freeAllowanceRemaining)
-      : null;
+  const countTone = status === "ready" ? (summary?.tone ?? null) : null;
 
   let tone: BadgeTone = STATUS_TONES[status];
   let icon = STATUS_ICONS[status];
@@ -69,13 +61,16 @@ export function CreditsBalanceBadge({
     icon = "dots";
     text =
       progress === "pending" ? "Adding Gas Credits" : "Updating Gas Credits";
-  } else if (count && countTone && credits?.enabled) {
+  } else if (summary && countTone) {
     tone = countTone;
     icon = TONE_ICONS[countTone];
     text =
       countTone === "free"
-        ? `${credits.freeAllowanceRemaining} Free Gas ${credits.freeAllowanceRemaining === 1 ? "Credit" : "Credits"}`
-        : formatCredits(count);
+        ? `${summary.free} Free Gas ${summary.free === 1 ? "Credit" : "Credits"}`
+        : formatCredits(summary.available!);
+  } else if (status === "ready" && summary) {
+    // Buy and sell prices differ: no single Credit count exists.
+    text = `${formatUsdt(summary.balance)} USDT`;
   }
 
   return (

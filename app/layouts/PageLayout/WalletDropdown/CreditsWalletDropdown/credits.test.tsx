@@ -12,6 +12,7 @@ import {
   formatCreditTokenUnits,
   getCreditFeeText,
   getCreditsBalanceStatus,
+  getCreditsSummary,
   getTopUpProgress,
   type Credits,
 } from "./credits.utils";
@@ -89,7 +90,11 @@ const paid: RelayConfigResult = {
       tokenId: 0,
       collector: "collector",
       decimals: 6,
-      feeSchedule: { permitPlaceBuyOrder: "1500000" },
+      // A non-default tariff: one Credit costs 1.5 USDT.
+      feeSchedule: {
+        permitPlaceBuyOrder: "1500000",
+        permitPlaceSellOrder: "1500000",
+      },
       defaultFeeUnits: "9000000",
       topUpMinUnits: "1",
       topUpMaxUnits: "999999999999",
@@ -103,7 +108,7 @@ const balance: Credits = {
   signerAddress: "alice",
   decimals: 6,
   balanceUnits: "9007199254740993123456",
-  actionsRemaining: { permitPlaceBuyOrder: 2 },
+  actionsRemaining: { permitPlaceBuyOrder: 1000, permitPlaceSellOrder: 1000 },
   freeAllowanceRemaining: 3,
   lifetimeToppedUpUnits: "0",
   lifetimeSpentUnits: "0",
@@ -380,6 +385,11 @@ it("itemizes exact per-variant fees without default price, USD parity or protoco
     "protocol fees remain separate"
   );
 });
+const fee = (() => {
+  const { fee } = paid.config;
+  if (!fee.enabled) throw new Error("Fixture must have fees enabled");
+  return fee;
+})();
 const submitForm = async () => {
   await act(async () => {
     host
@@ -387,9 +397,10 @@ const submitForm = async () => {
       .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
   });
 };
-it("top-up form defaults to 20 Gas Credits and authorizes the exact payment", async () => {
+it("top-up form defaults to 20 Gas Credits priced at the configured tariff", async () => {
   await render(
     <AddCreditsModal
+      fee={fee}
       isOpen
       onClose={vi.fn()}
       walletBalance={new BigNumber(999)}
@@ -398,13 +409,14 @@ it("top-up form defaults to 20 Gas Credits and authorizes the exact payment", as
   expect(host.textContent).toContain("Add Gas Credit");
   expect(host.textContent).toContain("Wallet Balance:$999.00");
   expect(host.textContent).toContain(
-    "You're authorizing one payment of exactly 20.00 USDT."
+    "You're authorizing one payment of exactly 30.00 USDT."
   );
 });
 it("without a submit handler the form ends in Top Up unavailable, never success", async () => {
   const close = vi.fn();
   await render(
     <AddCreditsModal
+      fee={fee}
       isOpen
       onClose={close}
       walletBalance={new BigNumber(999)}
@@ -423,6 +435,7 @@ it("blocked reason and insufficient balance never call the submit handler", asyn
   const submit = vi.fn();
   await render(
     <AddCreditsModal
+      fee={fee}
       isOpen
       blockedReason="Blocked by plan"
       onClose={vi.fn()}
@@ -433,6 +446,7 @@ it("blocked reason and insufficient balance never call the submit handler", asyn
   expect(host.textContent).toContain("Blocked by plan");
   await render(
     <AddCreditsModal
+      fee={fee}
       isOpen
       onClose={vi.fn()}
       onAddCredits={submit}
@@ -447,6 +461,7 @@ it("an accepted top-up shows Transaction Submitted", async () => {
   const submit = vi.fn().mockResolvedValue(undefined);
   await render(
     <AddCreditsModal
+      fee={fee}
       isOpen
       onClose={vi.fn()}
       onAddCredits={submit}
@@ -454,7 +469,10 @@ it("an accepted top-up shows Transaction Submitted", async () => {
     />
   );
   await submitForm();
-  expect(submit.mock.calls[0][0].toFixed()).toBe("20");
+  expect(submit.mock.calls[0][0]).toEqual({
+    amountUnits: "30000000",
+    reviewedPriceUnits: "1500000",
+  });
   expect(host.textContent).toContain("Transaction Submitted");
 });
 it("a failed top-up keeps the form and amount for another attempt", async () => {
@@ -466,6 +484,7 @@ it("a failed top-up keeps the form and amount for another attempt", async () => 
     .mockResolvedValueOnce(undefined);
   await render(
     <AddCreditsModal
+      fee={fee}
       isOpen
       onClose={vi.fn()}
       onAddCredits={submit}
@@ -477,7 +496,7 @@ it("a failed top-up keeps the form and amount for another attempt", async () => 
     "Signature request was rejected. No payment was made."
   );
   expect(host.textContent).toContain(
-    "You're authorizing one payment of exactly 20.00 USDT."
+    "You're authorizing one payment of exactly 30.00 USDT."
   );
   await submitForm();
   expect(submit).toHaveBeenCalledTimes(2);
@@ -489,14 +508,19 @@ it("order summary shows the per-order Gas Credit charge without warnings when he
   await render(
     <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
   );
-  expect(host.textContent).toContain("Gas Credit1.5 Gas Credits");
+  expect(host.textContent).toContain("Gas Credit1 Gas Credit");
   expect(host.textContent).not.toContain("Top Up");
   expect(
     host.querySelector('[aria-label^="1 Gas Credit covers"]')
   ).not.toBeNull();
 });
 it("low balance warns and Top Up opens the shared modal", async () => {
-  mocks.credits.mockResolvedValue({ ...balance, balanceUnits: "2000000" });
+  mocks.credits.mockResolvedValue({
+    ...balance,
+    balanceUnits: "3000000",
+    actionsRemaining: { permitPlaceBuyOrder: 2, permitPlaceSellOrder: 2 },
+    freeAllowanceRemaining: 0,
+  });
   await render(
     <RGasPaymentDetails method="credits" variant="permitPlaceBuyOrder" />
   );
@@ -510,6 +534,7 @@ it("empty balance offers Top Up or switching to manual gas", async () => {
   mocks.credits.mockResolvedValue({
     ...balance,
     balanceUnits: "0",
+    actionsRemaining: { permitPlaceBuyOrder: 0, permitPlaceSellOrder: 0 },
     freeAllowanceRemaining: 0,
   });
   await render(
@@ -523,6 +548,7 @@ it("free allowance prevents the empty warning", async () => {
   mocks.credits.mockResolvedValue({
     ...balance,
     balanceUnits: "0",
+    actionsRemaining: { permitPlaceBuyOrder: 2, permitPlaceSellOrder: 2 },
     freeAllowanceRemaining: 2,
   });
   await render(
@@ -552,28 +578,109 @@ it("direct mode shows one wallet network fee row and no Credit controls", async 
   expect(host.querySelector("button")).toBeNull();
   expect(mocks.credits).not.toHaveBeenCalled();
 });
-it("badge shows hardcoded-price Credit counts with design tones", async () => {
+it("badge shows Credit counts at the configured tariff with design tones", async () => {
   const at = (units: string, free = 0) =>
     render(
       <CreditsBalanceBadge
         status="ready"
         progress={null}
-        credits={{
-          ...balance,
-          balanceUnits: units,
-          freeAllowanceRemaining: free,
-        }}
+        summary={getCreditsSummary(
+          {
+            ...balance,
+            balanceUnits: units,
+            actionsRemaining: {},
+            freeAllowanceRemaining: free,
+          },
+          fee
+        )}
         onAddCredits={vi.fn()}
       />
     );
-  await at("20500000");
+  await at("30750000");
   expect(host.textContent).toBe("20 Gas Credits");
-  await at("2000000");
+  await at("3000000");
   expect(host.textContent).toBe("2 Gas Credits");
-  await at("1000000");
+  await at("1500000");
   expect(host.textContent).toBe("1 Gas Credit");
-  await at("999999");
+  await at("1499999");
   expect(host.textContent).toBe("0 Gas CreditsAdd Credits");
   await at("0", 5);
   expect(host.textContent).toBe("5 Free Gas Credits");
+});
+it("free allowance is counted once and buy/sell counts are never summed", () => {
+  // Backend example: 3 USDT, 1 USDT tariff, 2 free → 5 available in total.
+  const oneUsdt = {
+    ...fee,
+    feeSchedule: {
+      permitPlaceBuyOrder: "1000000",
+      permitPlaceSellOrder: "1000000",
+    },
+  };
+  const summary = getCreditsSummary(
+    {
+      ...balance,
+      balanceUnits: "3000000",
+      actionsRemaining: { permitPlaceBuyOrder: 5, permitPlaceSellOrder: 5 },
+      freeAllowanceRemaining: 2,
+    },
+    oneUsdt
+  );
+  expect(summary).toMatchObject({ available: 5, paid: 3, free: 2 });
+  expect(summary?.balance.toFixed()).toBe("3");
+});
+it("different buy/sell prices show the prepaid balance instead of Credits", async () => {
+  const split = {
+    ...fee,
+    feeSchedule: {
+      permitPlaceBuyOrder: "1000000",
+      permitPlaceSellOrder: "2000000",
+    },
+  };
+  await render(
+    <CreditsBalanceBadge
+      status="ready"
+      progress={null}
+      summary={getCreditsSummary(
+        { ...balance, balanceUnits: "3500000" },
+        split
+      )}
+    />
+  );
+  expect(host.textContent).toBe("3.50 USDT");
+});
+it("a 0.50 USDT tariff prices 20 Credits at 10 USDT and disables out-of-bounds presets", async () => {
+  await render(
+    <AddCreditsModal
+      fee={{
+        ...fee,
+        feeSchedule: {
+          permitPlaceBuyOrder: "500000",
+          permitPlaceSellOrder: "500000",
+        },
+        topUpMinUnits: "5000000",
+        topUpMaxUnits: "20000000",
+      }}
+      isOpen
+      onClose={vi.fn()}
+      walletBalance={new BigNumber(999)}
+    />
+  );
+  expect(host.textContent).toContain(
+    "You're authorizing one payment of exactly 10.00 USDT."
+  );
+  const radios = [
+    ...host.querySelectorAll<HTMLInputElement>("input[type=radio]"),
+  ];
+  // 5 Credits = 2.50 USDT is below the 5 USDT minimum; 50 = 25 USDT is above 20.
+  expect(radios.map((radio) => radio.disabled)).toEqual([
+    true,
+    false,
+    true,
+    false,
+  ]);
+  expect(
+    host
+      .querySelector("input[aria-label='Custom amount in USDT']")
+      ?.getAttribute("placeholder")
+  ).toBe("$5.00-20.00");
 });

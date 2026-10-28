@@ -13,7 +13,7 @@ import { useAddCredits } from "../AddCreditsModal/useAddCredits";
 import { WalletAccountFace } from "../WalletAccountFace";
 import { WalletMenuLinks } from "../WalletMenuLinks";
 import { CreditsBalanceBadge } from "./CreditsBalanceBadge";
-import { formatCredits, getCreditsCount } from "./credits.utils";
+import { formatCredits, formatUsdt } from "./credits.utils";
 import { useCreditTokenWalletBalance, useCredits } from "./useCredits";
 import styles from "./CreditsWalletDropdown.module.css";
 
@@ -24,12 +24,9 @@ type CreditsWalletDropdownProps = {
 export function CreditsWalletDropdown({
   userAddress,
 }: CreditsWalletDropdownProps) {
-  const { credits, config, status, progress, canTopUp } = useCredits();
+  const { summary, config, status, progress, canTopUp } = useCredits();
   const walletBalance = useCreditTokenWalletBalance(config);
   const addCredits = useAddCredits();
-  const creditsCount = credits?.enabled
-    ? getCreditsCount(credits.balanceUnits, credits.decimals)
-    : null;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
 
@@ -46,7 +43,7 @@ export function CreditsWalletDropdown({
         onOpenChange={setIsDropdownOpen}
       >
         <CreditsBalanceBadge
-          credits={credits}
+          summary={summary}
           onAddCredits={canTopUp ? openAddCredits : undefined}
           progress={progress}
           status={status}
@@ -63,15 +60,24 @@ export function CreditsWalletDropdown({
               Gas Credits Balance
             </RText>
             <div className={styles.balanceValue} role="status">
-              {status === "ready" && credits?.enabled ? (
+              {status === "ready" && summary ? (
                 <>
                   <RText size="body-m" weight="medium">
-                    {creditsCount && formatCredits(creditsCount)}
+                    {summary.available === null
+                      ? `${formatUsdt(summary.balance)} USDT`
+                      : formatCredits(summary.available)}
                   </RText>
-                  {credits.freeAllowanceRemaining > 0 && (
+                  {summary.available === null ? (
                     <RText color="neutral-700" size="body-s">
-                      + {credits.freeAllowanceRemaining} Free Gas Credits
+                      Gasless balance
                     </RText>
+                  ) : (
+                    summary.free > 0 && (
+                      // Already included in the count above, never added again.
+                      <RText color="neutral-700" size="body-s">
+                        Including {summary.free} free
+                      </RText>
+                    )
                   )}
                 </>
               ) : (
@@ -111,6 +117,7 @@ export function CreditsWalletDropdown({
 
       <AddCreditsModal
         isOpen={isAddCreditsOpen && canTopUp}
+        fee={config?.config.fee}
         onAddCredits={addCredits}
         onClose={() => setIsAddCreditsOpen(false)}
         walletBalance={walletBalance}
