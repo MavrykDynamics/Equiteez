@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useApolloClient } from "@apollo/client/index";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MavrykToolkit } from "@mavrykdynamics/taquito";
 import { BigNumber } from "bignumber.js";
@@ -13,16 +14,22 @@ import {
 } from "~/contracts/orderbook.contract";
 import type { PermitRuntime } from "~/contracts/permit";
 import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
-import { useOrderbookExecution } from "~/hooks/useOrderbookExecution";
 import {
   assertRefundPartClaimable,
   collectAssetRefunds,
 } from "~/lib/apis/rwa/refunds/refunds";
 import type { RefundPart } from "~/lib/apis/rwa/refunds/refunds.types";
-import type { OrderPlanRequest } from "~/lib/relay/orderPlan";
+import type { OrderPlan, OrderPlanRequest } from "~/lib/relay/orderPlan";
+import {
+  getPermitActionErrorMessage,
+  startPermitAction,
+} from "~/lib/relay/permitAction";
+import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
+import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
+import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 type UseRefundAllAssetOrdersOptions = {
@@ -42,13 +49,6 @@ export type RefundAllCreditsInfo = {
   unsupportedParts: number;
   feeUnits: bigint;
   feeDecimals: number | null;
-};
-
-type CreditsRun = {
-  parts: RefundPart[];
-  index: number;
-  completed: number;
-  pendingStart: boolean;
 };
 
 const PROCESS_REFUND_VARIANT = "permitProcessRefund";
@@ -130,23 +130,30 @@ export function useRefundAllAssetOrders({
   enabled,
   onRunEnd,
 }: UseRefundAllAssetOrdersOptions) {
-  const { userAddress } = useUserContext();
+  const user = useUserContext();
+  const { userAddress } = user;
+  const auth = useAuthContext();
   const payment = useGasPayment();
   const relay = useRelay();
+  const apollo = useApolloClient();
   const { success, bug } = useToasterContext();
   const queryClient = useQueryClient();
   const [progress, setProgress] = useState<RefundAllProgress | null>(null);
-  const [creditsRun, setCreditsRun] = useState<CreditsRun | null>(null);
-  const creditsRunRef = useRef(creditsRun);
-  creditsRunRef.current = creditsRun;
   const onRunEndRef = useRef(onRunEnd);
   onRunEndRef.current = onRunEnd;
+  const relayRef = useRef(relay);
+  relayRef.current = relay;
   const userAddressRef = useRef(userAddress);
+  userAddressRef.current = userAddress;
+  const planRef = useRef<OrderPlan | null>(null);
   const isRunningRef = useRef(false);
 
+  // Relay rows arrive through the provider; the active part settles on them.
   useEffect(() => {
-    userAddressRef.current = userAddress;
-  }, [userAddress]);
+    planRef.current?.reconcile();
+  }, [relay.records]);
+
+  useEffect(() => () => planRef.current?.stop(), []);
 
   const scanQuery = useQuery({
     queryKey: ["rwa-wallet-refunds", userAddress, tokenAddress],
@@ -237,7 +244,8 @@ export function useRefundAllAssetOrders({
         );
       } else if (error && !checkWhetherWalletAbortError(error)) {
         bug(
-          unknownToError(error)?.message ||
+          getPermitActionErrorMessage(error) ||
+            unknownToError(error)?.message ||
             "An error occurred while processing refund"
         );
       }
@@ -248,13 +256,27 @@ export function useRefundAllAssetOrders({
     [bug, refreshAfterRefund, success]
   );
 
-  const validateRefundPart = useCallback(
+  /** Fresh KYC and refund eligibility before each Credits signature. */
+  const validateCreditsPart = useCallback(
     async (runtime: PermitRuntime, request: OrderPlanRequest) => {
       if (request.kind !== "process_refund")
         throw new Error("Unsupported refund action");
 
+      const scope = JSON.stringify(runtime.getScope());
+      const wallet = runtime.getScope().wallet;
+      const { data } = await apollo.query({
+        query: USER_ACCOUNT_STATUS_QUERY,
+        variables: { address: wallet },
+        fetchPolicy: "network-only",
+      });
+
+      if (JSON.stringify(runtime.getScope()) !== scope)
+        throw new Error("Wallet changed. Refund was stopped.");
+      if (!getIsKycedForAddress(data, wallet))
+        throw new Error("Verify with Mavryk Pro before claiming refunds.");
+
       await assertRefundPartClaimable({
-        walletAddress: runtime.getScope().wallet,
+        walletAddress: wallet,
         tokenAddress,
         part: {
           orderbookAddress: request.orderbookAddress,
@@ -262,64 +284,8 @@ export function useRefundAllAssetOrders({
         },
       });
     },
-    [tokenAddress]
+    [apollo, tokenAddress]
   );
-
-  const execution = useOrderbookExecution({
-    request: toRefundRequest(
-      creditsRun?.parts[creditsRun.index] ?? scan?.parts[0]
-    ),
-    // Direct runs never go through this hook; see runDirect.
-    invokeDirect: async () => undefined,
-    validateRequest: validateRefundPart,
-    onConfirmed: () => {
-      const run = creditsRunRef.current;
-      if (!run) return;
-
-      const completed = run.completed + 1;
-
-      if (completed === run.parts.length) {
-        setCreditsRun(null);
-        finishRun(completed, run.parts.length);
-        return;
-      }
-
-      // The next part needs its own review and wallet signature.
-      setCreditsRun({
-        ...run,
-        index: run.index + 1,
-        completed,
-        pendingStart: true,
-      });
-    },
-  });
-
-  // Starts the pending part once its request is rendered into the execution.
-  useEffect(() => {
-    if (!creditsRun?.pendingStart) return;
-
-    if (payment.method !== "credits") {
-      setCreditsRun(null);
-      finishRun(
-        creditsRun.completed,
-        creditsRun.parts.length,
-        new Error("Payment method changed. Refund was stopped.")
-      );
-      return;
-    }
-
-    void execution.execute();
-    setCreditsRun({ ...creditsRun, pendingStart: false });
-  }, [creditsRun, execution, finishRun, payment.method]);
-
-  // Closing the plan (or a start that never began) ends the run.
-  useEffect(() => {
-    if (!creditsRun || creditsRun.pendingStart || execution.state !== null)
-      return;
-
-    setCreditsRun(null);
-    finishRun(creditsRun.completed, creditsRun.parts.length);
-  }, [creditsRun, execution.state, finishRun]);
 
   const mvrkReason = feeQuery.isError
     ? "Unable to verify MVRK balance or network fee. Retry the estimate."
@@ -329,15 +295,21 @@ export function useRefundAllAssetOrders({
         ? "Insufficient MVRK for network fees and storage costs."
         : undefined;
 
-  const creditsReason =
-    execution.reason ??
-    (creditsQuery.isError
-      ? "Unable to check Credits availability. Retry."
-      : !creditsInfo
-        ? "Checking Credits availability."
-        : creditsInfo.unsupportedParts > 0
-          ? `${creditsInfo.unsupportedParts} of ${scan?.parts.length ?? 0} refund transactions can't be paid with Credits. Choose MVRK in Profile payment settings.`
-          : undefined);
+  const needsSignIn = isCredits && payment.needsSignIn;
+
+  const creditsReason = needsSignIn
+    ? "Sign in to pay with Gas Credits."
+    : !user.isKyced
+      ? "Verify with Mavryk Pro before claiming refunds."
+      : !relay.isReady
+        ? (relay.error ?? "Connecting to Gas Credits. Please wait.")
+        : creditsQuery.isError
+          ? "Unable to check Credits availability. Retry."
+          : !creditsInfo
+            ? "Checking Credits availability."
+            : creditsInfo.unsupportedParts > 0
+              ? `${creditsInfo.unsupportedParts} of ${scan?.parts.length ?? 0} refund transactions can't be paid with Credits. Choose MVRK in Profile payment settings.`
+              : undefined;
 
   const reason = !payment.isRestored
     ? "Waiting for wallet, network and payment preference."
@@ -345,44 +317,85 @@ export function useRefundAllAssetOrders({
       ? creditsReason
       : mvrkReason;
 
-  const runDirect = async () => {
+  const runDirectPart = async (
+    part: RefundPart,
+    tezos: MavrykToolkit,
+    runWallet: string,
+    runChainId: string | undefined
+  ) => {
+    await orderbookProcessRefunds({
+      tezos,
+      // Each part is re-estimated and balance-checked by sendDirectOrder.
+      beforeSubmit: async () => {
+        const [wallet, chain] = await Promise.all([
+          tezos.wallet.pkh(),
+          tezos.rpc.getChainId(),
+        ]);
+
+        if (
+          wallet !== runWallet ||
+          userAddressRef.current !== runWallet ||
+          chain !== runChainId
+        ) {
+          throw new Error("Wallet or network changed. Refund was stopped.");
+        }
+      },
+      orderbookContractAddress: part.orderbookAddress,
+      orders: part.orders,
+    });
+  };
+
+  const runCreditsPart = async (part: RefundPart) => {
+    const current = relayRef.current;
+    const runtime = current.runtime;
+
+    if (!runtime || !current.isReady)
+      throw new Error("Gas Credits are unavailable. Sign in and try again.");
+
+    const { plan, done } = startPermitAction(toRefundRequest(part), {
+      runtime,
+      validate: (request) => validateCreditsPart(runtime, request),
+      isLocked: (contract) => relayRef.current.isLocked(contract),
+      records: () =>
+        relayRef.current.lifecycle?.records ?? relayRef.current.records,
+      submit: (signed, onAttempt) => relayRef.current.submit(signed, onAttempt),
+    });
+
+    planRef.current = plan;
+
+    try {
+      await done;
+    } finally {
+      planRef.current = null;
+    }
+  };
+
+  /** One loop for both payment paths: one signature and one call per part. */
+  const runRefundAll = async () => {
+    if (!scan) return;
+
+    // The payment path is locked for the whole run.
+    const isCreditsRun = isCredits;
     const tezos = payment.toolkit;
     const runWallet = userAddress;
     const runChainId = payment.chainId;
 
-    if (!scan || !tezos || !runWallet) return;
+    if (!isCreditsRun && (!tezos || !runWallet)) return;
 
     isRunningRef.current = true;
     const { parts } = scan;
     let completedParts = 0;
     let runError: unknown;
 
-    // Each part is re-estimated and balance-checked by sendDirectOrder.
-    const beforeSubmit = async () => {
-      const [wallet, chain] = await Promise.all([
-        tezos.wallet.pkh(),
-        tezos.rpc.getChainId(),
-      ]);
-
-      if (
-        wallet !== runWallet ||
-        userAddressRef.current !== runWallet ||
-        chain !== runChainId
-      ) {
-        throw new Error("Wallet or network changed. Refund was stopped.");
-      }
-    };
-
     try {
       for (const [index, part] of parts.entries()) {
         setProgress({ current: index + 1, total: parts.length });
 
-        await orderbookProcessRefunds({
-          tezos,
-          beforeSubmit,
-          orderbookContractAddress: part.orderbookAddress,
-          orders: part.orders,
-        });
+        if (isCreditsRun) {
+          await runCreditsPart(part);
+        } else {
+          await runDirectPart(part, tezos!, runWallet!, runChainId);
+        }
 
         completedParts += 1;
       }
@@ -396,21 +409,9 @@ export function useRefundAllAssetOrders({
   };
 
   const refundAll = () => {
-    if (!scan || reason || isRunningRef.current || creditsRunRef.current)
-      return;
+    if (!scan || reason || isRunningRef.current) return;
 
-    if (isCredits) {
-      // Payment path is locked for the run; one part is signed at a time.
-      setCreditsRun({
-        parts: scan.parts,
-        index: 0,
-        completed: 0,
-        pendingStart: true,
-      });
-      return;
-    }
-
-    void runDirect();
+    void runRefundAll();
   };
 
   const canRetry = isCredits
@@ -430,11 +431,11 @@ export function useRefundAllAssetOrders({
       (canCheckCredits && creditsQuery.isFetching),
     canRetry,
     retry: () => void (isCredits ? creditsQuery.refetch() : feeQuery.refetch()),
+    needsSignIn,
+    signIn: () => void auth.login().catch(() => undefined),
     reason,
     refundAll,
     progress,
     isRefunding: progress !== null,
-    isCreditsRunning: creditsRun !== null,
-    executionControls: execution.controls,
   };
 }

@@ -66,8 +66,8 @@ export function RefundAllPopup({
     refundAll,
     progress,
     isRefunding,
-    isCreditsRunning,
-    executionControls,
+    needsSignIn,
+    signIn,
   } = useRefundAllAssetOrders({
     tokenAddress,
     enabled: isOpen,
@@ -81,10 +81,15 @@ export function RefundAllPopup({
   });
 
   const handleClose = () => {
-    if (!isRefunding && !isCreditsRunning) onClose();
+    if (!isRefunding) onClose();
   };
 
   const handleRefund = () => {
+    if (needsSignIn) {
+      signIn();
+      return;
+    }
+
     if (canRetry) {
       retry();
       return;
@@ -193,13 +198,13 @@ export function RefundAllPopup({
             </RButton>
             <RButton
               className={styles.actionButton}
-              disabled={Boolean(reason) && !canRetry}
+              disabled={Boolean(reason) && !canRetry && !needsSignIn}
               isLoading={isRefunding || isPreparing}
               onClick={handleRefund}
               size="medium"
               tone="black"
             >
-              {canRetry ? "Retry" : "Refund"}
+              {needsSignIn ? "Sign In" : canRetry ? "Retry" : "Refund"}
             </RButton>
           </>
         }
@@ -222,28 +227,24 @@ export function RefundAllPopup({
   };
 
   return (
-    <>
-      <CustomPopup
-        // The relay plan shows its own review/progress dialogs while running.
-        isOpen={isOpen && !isCreditsRunning}
-        contentPosition="center"
-        className={styles.popupWrapper}
-      >
-        <div className={styles.closeRow}>
-          <button
-            aria-label="Close dialog"
-            className={styles.closeButton}
-            disabled={isRefunding}
-            onClick={handleClose}
-            type="button"
-          >
-            <CloseIcon aria-hidden className={styles.closeIcon} />
-          </button>
-        </div>
-        {renderContent()}
-      </CustomPopup>
-      {executionControls}
-    </>
+    <CustomPopup
+      isOpen={isOpen}
+      contentPosition="center"
+      className={styles.popupWrapper}
+    >
+      <div className={styles.closeRow}>
+        <button
+          aria-label="Close dialog"
+          className={styles.closeButton}
+          disabled={isRefunding}
+          onClick={handleClose}
+          type="button"
+        >
+          <CloseIcon aria-hidden className={styles.closeIcon} />
+        </button>
+      </div>
+      {renderContent()}
+    </CustomPopup>
   );
 }
 
