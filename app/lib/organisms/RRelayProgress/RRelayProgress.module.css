@@ -1,0 +1,58 @@
+@import "../../../styles/breakpoints.css";
+.host {
+  position: fixed;
+  bottom: var(--r-space-6);
+  left: var(--r-space-6);
+  z-index: 50;
+  display: grid;
+  gap: var(--r-space-3);
+  width: min(380px, calc(100vw - 48px));
+  max-height: 70vh;
+  overflow-y: auto;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  color: var(--r-color-neutral-900);
+}
+.card {
+  margin: 0;
+  padding: var(--r-space-4);
+  border: 1px solid var(--r-color-neutral-300);
+  border-radius: var(--r-radius-md);
+  background: var(--r-color-neutral-white);
+  box-shadow: var(--r-shadow-tooltip);
+  overflow-wrap: anywhere;
+}
+.status {
+  margin: 0 0 var(--r-space-3);
+  font-weight: var(--r-font-weight-medium);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--r-space-2);
+}
+.details {
+  display: grid;
+  gap: var(--r-space-3);
+  margin-top: var(--r-space-4);
+}
+.details dl,
+.details p {
+  margin: 0;
+}
+.details dt {
+  color: var(--r-color-neutral-700);
+  margin-top: var(--r-space-2);
+}
+.details dd {
+  margin: 0;
+}
+@media (--media-phone) {
+  .host {
+    left: var(--r-space-4);
+    top: var(--r-space-6);
+    bottom: auto;
+    width: calc(100vw - 32px);
+    max-height: 50vh;
+  }
+}

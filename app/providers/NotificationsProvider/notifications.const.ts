@@ -39,6 +39,7 @@ export enum NotifierChannel {
 }
 
 export enum NotifierWalletEvent {
+  RelayOperationUpdated = "RELAY_OPERATION_UPDATED",
   BridgeDepositUpdated = "BRIDGE_DEPOSIT_UPDATED",
   OrderbookOrderUpdated = "ORDERBOOK_ORDER_UPDATED",
   TokenLedgerTransfer = "TOKEN_LEDGER_TRANSFER",

@@ -174,3 +174,67 @@
 .feeTooltipValue {
   color: var(--r-color-neutral-black);
 }
+
+.gasCreditInfo {
+  display: inline-flex;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--r-color-neutral-500);
+  border-radius: 50%;
+  cursor: help;
+}
+
+.gasCreditInfo svg {
+  width: 16px;
+  height: 16px;
+}
+
+.gasCreditInfo:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.creditMessage {
+  display: flex;
+  gap: var(--r-space-2);
+  align-items: flex-start;
+  padding: var(--r-space-2) var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  border-radius: 12px;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+}
+
+.creditMessage p {
+  flex: 1 0 0;
+  min-width: 1px;
+  margin: 0;
+}
+
+.creditMessageLow {
+  align-items: center;
+  background: #fcf6e1;
+}
+
+.creditMessageEmpty {
+  background: #ffdfdf;
+}
+
+.creditMessageIcon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.messageLink {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

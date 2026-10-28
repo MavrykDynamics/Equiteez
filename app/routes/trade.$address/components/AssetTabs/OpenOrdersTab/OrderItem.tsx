@@ -56,6 +56,7 @@ export function OrderItem({
 }: OrderItemProps) {
   const orderDetails = getOrderDetails(order.side);
   const {
+    executionControls,
     actionIcon,
     actionLabel,
     handleClosePopup,
@@ -63,6 +64,8 @@ export function OrderItem({
     handleOrderAction,
     isPopupOpen,
     popupDescription,
+    paymentSettings,
+    popupSubmitDisabled,
     popupSubmitLabel,
     popupTitle,
   } = useOpenOrderAction({ assetSymbol, onAfterAction, order });
@@ -126,6 +129,7 @@ export function OrderItem({
         </td>
       </tr>
 
+      {executionControls}
       <CancelOrderPopup
         assetSymbol={assetSymbol}
         onClose={handleClosePopup}
@@ -134,6 +138,8 @@ export function OrderItem({
         order={order}
         title={popupTitle}
         description={popupDescription}
+        paymentSettings={paymentSettings}
+        submitDisabled={popupSubmitDisabled}
         submitLabel={popupSubmitLabel}
       />
     </>
