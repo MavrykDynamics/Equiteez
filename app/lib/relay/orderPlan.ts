@@ -21,6 +21,15 @@ export type OrderPlanRequest = Exclude<
 export type SignedPermit = Awaited<ReturnType<typeof signPreparedPermit>>;
 export const CREDIT_SHORTAGE_MESSAGE =
   "You’re out of Credits. Please Top Up your balance. Your order has been preserved.";
+// A failed/rejected relay row: RelayProvider already toasts it once.
+const relayOutcomes = new WeakSet<object>();
+const markRelayOutcome = <T extends object>(error: T) => {
+  relayOutcomes.add(error);
+  return error;
+};
+export const isRelayOutcomeError = (error: unknown) =>
+  typeof error === "object" && error !== null && relayOutcomes.has(error);
+
 export type PlanState =
   | "idle"
   | "preparing"
@@ -266,14 +275,16 @@ export class OrderPlan {
         }
       } else if (row.status === "failed" || row.status === "rejected") {
         this.fail(
-          new RelayApiError(
-            undefined,
-            row.error?.code ?? "RELAY_FAILED",
-            row.error?.remedy ?? "give-up",
-            undefined,
-            0,
-            undefined,
-            row.error?.message
+          markRelayOutcome(
+            new RelayApiError(
+              undefined,
+              row.error?.code ?? "RELAY_FAILED",
+              row.error?.remedy ?? "give-up",
+              undefined,
+              0,
+              undefined,
+              row.error?.message
+            )
           ),
           true
         );

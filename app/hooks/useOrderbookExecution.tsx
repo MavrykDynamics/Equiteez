@@ -8,7 +8,11 @@ import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 import { validateOrderPlan } from "~/contracts/orderPlanValidation";
 import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
-import type { OrderPlan, OrderPlanRequest } from "~/lib/relay/orderPlan";
+import {
+  isRelayOutcomeError,
+  type OrderPlan,
+  type OrderPlanRequest,
+} from "~/lib/relay/orderPlan";
 import {
   getPermitActionErrorMessage,
   startPermitAction,
@@ -113,7 +117,12 @@ export function useOrderbookExecution(options: Options) {
       )
         current.current.options.onConfirmed();
     } catch (error) {
-      if (mounted.current && !checkWhetherWalletAbortError(error))
+      // A failed relay row is toasted once by RelayProvider.
+      if (
+        mounted.current &&
+        !checkWhetherWalletAbortError(error) &&
+        !isRelayOutcomeError(error)
+      )
         bug(
           getPermitActionErrorMessage(error) ||
             unknownToError(error)?.message ||

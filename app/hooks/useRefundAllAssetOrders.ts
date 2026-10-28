@@ -20,7 +20,11 @@ import {
 } from "~/lib/apis/rwa/refunds/refunds";
 import type { RefundPart } from "~/lib/apis/rwa/refunds/refunds.types";
 import type { RelayConfig } from "~/lib/apis/rwa/relay/relay.types";
-import type { OrderPlan, OrderPlanRequest } from "~/lib/relay/orderPlan";
+import {
+  isRelayOutcomeError,
+  type OrderPlan,
+  type OrderPlanRequest,
+} from "~/lib/relay/orderPlan";
 import {
   getPermitActionErrorMessage,
   startPermitAction,
@@ -246,7 +250,12 @@ export function useRefundAllAssetOrders({
           "Some transactions couldn’t be completed. Successfully processed refunds remain completed.",
           "Some refunds failed"
         );
-      } else if (error && !checkWhetherWalletAbortError(error)) {
+      } else if (
+        error &&
+        !checkWhetherWalletAbortError(error) &&
+        // A failed relay row is toasted once by RelayProvider.
+        !isRelayOutcomeError(error)
+      ) {
         bug(
           getPermitActionErrorMessage(error) ||
             unknownToError(error)?.message ||

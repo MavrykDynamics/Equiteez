@@ -26,6 +26,10 @@ vi.mock("~/lib/relay/permitAction", () => ({
   getPermitActionErrorMessage: (error: unknown) =>
     error instanceof Error ? error.message : undefined,
 }));
+vi.mock("~/lib/relay/orderPlan", () => ({
+  isRelayOutcomeError: (error: unknown) =>
+    (error as { outcome?: boolean } | null)?.outcome === true,
+}));
 vi.mock("~/contracts/orderPlanValidation", () => ({
   validateOrderPlan: mocks.validate,
 }));
@@ -170,6 +174,15 @@ it("shows a relay failure as a toast", async () => {
   expect(mocks.bug).toHaveBeenCalledWith("Order is no longer claimable");
   expect(mocks.confirmed).not.toHaveBeenCalled();
   expect(execution.isBusy).toBe(false);
+});
+it("leaves a failed relay row to the RelayProvider toast", async () => {
+  const { running } = await start();
+  await settle(
+    Object.assign(new Error("Rejected"), { outcome: true }),
+    running
+  );
+  expect(mocks.bug).not.toHaveBeenCalled();
+  expect(mocks.confirmed).not.toHaveBeenCalled();
 });
 it("stays silent when the wallet signature is rejected", async () => {
   const { running } = await start();

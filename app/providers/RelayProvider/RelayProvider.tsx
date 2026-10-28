@@ -43,26 +43,14 @@ import { relayStoragePrefix } from "~/lib/relay/relay.storage";
 import type { RelayRow } from "~/lib/relay/relay.state";
 import { RelayLifecycle } from "./relayLifecycle";
 
-export function relayOutcomeText(row: RelayRow) {
+/** Terminal failure text; the row's verdict, never a pointer to a details panel. */
+export function relayFailureText(row: RelayRow) {
   if (row.error?.code === "PERMIT_EXPIRED")
     return "The signature expired before it was processed. Sign a new request to try again.";
-  if (row.status !== "confirmed")
-    return `Relay action ${row.status}. Review details before trying again.`;
-  switch (row.intentKind) {
-    case "update_operators":
-      return "Operator permission confirmed. No order was placed by this setup action.";
-    case "fee_top_up":
-      return "Gas Credits added. Your balance is updating.";
-    case "place_buy_order":
-    case "place_sell_order":
-      return "Order placement confirmed. This does not mean the order has filled.";
-    case "cancel_orders":
-      return "Cancellation transaction confirmed. Order data is updating.";
-    case "process_refund":
-      return "Refund transaction confirmed. Balances are updating.";
-    default:
-      return "Relay transaction confirmed.";
-  }
+  return (
+    row.error?.message ??
+    `The action was ${row.status} and nothing was changed. Try again.`
+  );
 }
 function useRelayOwner() {
   const payment = useGasPayment();
@@ -202,10 +190,22 @@ function useRelayOwner() {
           });
         },
         notify: (row) => {
-          const text = relayOutcomeText(row);
-          if (row.status === "confirmed")
-            effects.current.toaster.success("Relay confirmed", text);
-          else effects.current.toaster.warning("Relay action ended", text);
+          // Order actions get their own backend notification (order_placed,
+          // order_canceled, order_refunded); a grant is a setup step. Only a
+          // top-up has no other success signal.
+          if (row.status === "confirmed") {
+            if (row.intentKind === "fee_top_up")
+              effects.current.toaster.success(
+                "Gas Credits added",
+                "Your balance is updating."
+              );
+            return;
+          }
+          // The single failure toast, also for outcomes seen after a reload.
+          effects.current.toaster.warning(
+            "Gasless action failed",
+            relayFailureText(row)
+          );
         },
       });
       owner.current = lifecycle;

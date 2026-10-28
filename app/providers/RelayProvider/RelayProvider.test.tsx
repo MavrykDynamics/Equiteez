@@ -214,7 +214,7 @@ it("only slows polling for this authenticated notifier wallet and keeps errors s
   });
   expect(mocks.get).toHaveBeenCalledTimes(1);
 });
-it("terminal events invalidate balances/order feeds without confirmation levels and notify once", async () => {
+it("terminal events invalidate balances/order feeds without confirmation levels; an order confirmation is not toasted", async () => {
   await render();
   const frame = {
     type: NotifierServerFrameType.Event as const,
@@ -233,7 +233,8 @@ it("terminal events invalidate balances/order feeds without confirmation levels 
   await act(async () => {
     await mocks.handler!(frame, "wallet");
   });
-  expect(mocks.notify).toHaveBeenCalledTimes(1);
+  // The backend order notification is the success signal.
+  expect(mocks.notify).not.toHaveBeenCalled();
   expect(mocks.refresh).toHaveBeenCalled();
   expect(mocks.balances).toHaveBeenCalled();
   expect(mocks.invalidate).toHaveBeenCalledWith("fetchWalletOpenOrders", {
@@ -246,7 +247,7 @@ it("terminal events invalidate balances/order feeds without confirmation levels 
   await act(async () => {
     await mocks.handler!(frame, "wallet");
   });
-  expect(mocks.notify).toHaveBeenCalledTimes(1);
+  expect(mocks.notify).not.toHaveBeenCalled();
 });
 it("isolates account/API scope and restores only tracking when returning", async () => {
   await render();
