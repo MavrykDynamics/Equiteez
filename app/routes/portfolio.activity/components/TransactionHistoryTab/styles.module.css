@@ -59,6 +59,10 @@
   background: var(--r-color-neutral-50);
 }
 
+.staticRow {
+  cursor: default;
+}
+
 .row:focus-visible {
   outline: none;
   box-shadow: inset var(--r-focus-ring);

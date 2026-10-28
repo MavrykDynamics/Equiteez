@@ -150,6 +150,11 @@ function useRelayOwner() {
           void queryClient.invalidateQueries({
             queryKey: ["relay", scope, "list"],
           });
+          // Top-up rows in the history feed are a relay projection.
+          if (row.intentKind === "fee_top_up")
+            void queryClient.invalidateQueries({
+              queryKey: ["fetchWalletOrderHistory"],
+            });
           if (row.status !== "confirmed") return;
           if (
             [
