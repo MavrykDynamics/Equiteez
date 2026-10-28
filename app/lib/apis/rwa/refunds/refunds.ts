@@ -5,6 +5,7 @@ import { RefundsPageSchema } from "~/lib/apis/rwa/refunds/refunds.schema";
 import type {
   AssetRefundsScan,
   RefundItemType,
+  RefundPart,
   RefundsPageResponseType,
 } from "~/lib/apis/rwa/refunds/refunds.types";
 import {
@@ -153,5 +154,45 @@ export const collectAssetRefunds = async (
         throw error;
       }
     }
+  }
+};
+
+type AssertRefundPartClaimableParams = CollectAssetRefundsParams & {
+  part: RefundPart;
+};
+
+/**
+ * Fresh full scan before signing one part: every order of the part must still
+ * be an eligible refund with a positive amount on realtime data.
+ */
+export const assertRefundPartClaimable = async ({
+  part,
+  ...params
+}: AssertRefundPartClaimableParams) => {
+  const scan = await collectAssetRefunds(params);
+
+  if (!scan.isRealtime) {
+    throw new RefundsScanError(
+      "Order data is still syncing. Wait a minute and review again."
+    );
+  }
+
+  const claimable = new Set(
+    scan.parts.flatMap(({ orderbookAddress, orders }) =>
+      orders.map(
+        ({ orderId, orderType }) =>
+          `${orderbookAddress}|${orderType}|${orderId}`
+      )
+    )
+  );
+
+  const isClaimable = part.orders.every(({ orderId, orderType }) =>
+    claimable.has(`${part.orderbookAddress}|${orderType}|${orderId}`)
+  );
+
+  if (!isClaimable) {
+    throw new RefundsScanError(
+      "Some refunds were already claimed or are no longer available. Close and check refunds again."
+    );
   }
 };

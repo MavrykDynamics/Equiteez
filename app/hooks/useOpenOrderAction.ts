@@ -118,7 +118,7 @@ export function useOpenOrderAction({
       ? {
           kind: "process_refund",
           orderbookAddress: order.orderbook_address,
-          order: contractActionArgs,
+          orders: [contractActionArgs],
         }
       : {
           kind: "cancel_orders",

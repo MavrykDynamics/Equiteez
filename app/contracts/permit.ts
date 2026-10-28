@@ -283,9 +283,12 @@ function reviewFields(
         .join(", "),
     });
   } else if (intent?.kind === "process_refund") {
+    const orders = intent.orders ?? [
+      { orderId: intent.orderId!, orderType: intent.orderType! },
+    ];
     rows.push({
-      label: "Refund order",
-      value: `${intent.orderType} #${intent.orderId}`,
+      label: orders.length > 1 ? "Refund orders" : "Refund order",
+      value: orders.map((o) => `${o.orderType} #${o.orderId}`).join(", "),
     });
   } else if (intent?.kind === "update_operators") {
     rows.push(

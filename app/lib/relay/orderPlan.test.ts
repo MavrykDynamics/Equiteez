@@ -74,7 +74,7 @@ function intent(
     };
   return input.kind === "cancel_orders"
     ? { kind: input.kind, orderbookAddress: "book", orders: input.orders }
-    : { kind: input.kind, orderbookAddress: "book", ...input.order };
+    : { kind: input.kind, orderbookAddress: "book", orders: input.orders };
 }
 function fixture(input = request()) {
   const records: RelayRecord[] = [];
@@ -341,7 +341,7 @@ describe("sequential ordinary plans", () => {
           : {
               kind,
               orderbookAddress: "book",
-              order: { orderId: "0", orderType: "BUY" },
+              orders: [{ orderId: "0", orderType: "BUY" }],
             }
       );
       await f.plan.review();
@@ -389,7 +389,7 @@ describe("sequential ordinary plans", () => {
     const f = fixture({
       kind: "process_refund",
       orderbookAddress: "book",
-      order: { orderId: "1", orderType: "BUY" },
+      orders: [{ orderId: "1", orderType: "BUY" }],
     });
     f.setConfig({
       enabled: true,

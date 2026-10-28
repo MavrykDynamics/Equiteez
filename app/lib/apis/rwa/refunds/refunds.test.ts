@@ -2,7 +2,10 @@ import { AxiosError, AxiosHeaders } from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { rwaApi } from "~/lib/apis/rwa/client";
-import { collectAssetRefunds } from "~/lib/apis/rwa/refunds/refunds";
+import {
+  assertRefundPartClaimable,
+  collectAssetRefunds,
+} from "~/lib/apis/rwa/refunds/refunds";
 import {
   buildAssetRefundsScan,
   formatRefundUnits,
@@ -241,5 +244,61 @@ describe("formatRefundUnits", () => {
     expect(formatRefundUnits(5n, 6)).toBe("0.000005");
     expect(formatRefundUnits(3000000n, 6)).toBe("3");
     expect(formatRefundUnits(7n, 0)).toBe("7");
+  });
+});
+
+describe("assertRefundPartClaimable", () => {
+  const part = {
+    orderbookAddress: "KT1Book",
+    orders: [
+      { orderId: "1", orderType: "BUY" as const },
+      { orderId: "1", orderType: "SELL" as const },
+    ],
+  };
+
+  beforeEach(() => {
+    getMock.mockReset();
+  });
+
+  it("passes when every order of the part is still eligible", async () => {
+    getMock.mockResolvedValueOnce(
+      makePage([makeItem(), makeItem({ order_type: "SELL" })], null)
+    );
+
+    await expect(
+      assertRefundPartClaimable({ ...scanParams, part })
+    ).resolves.toBeUndefined();
+  });
+
+  it("fails when an order was claimed or became blocked", async () => {
+    getMock.mockResolvedValueOnce(
+      makePage(
+        [
+          makeItem(),
+          makeItem({
+            order_type: "SELL",
+            availability: "blocked",
+            blocked_reason: "process_refund_paused",
+          }),
+        ],
+        null
+      )
+    );
+
+    await expect(
+      assertRefundPartClaimable({ ...scanParams, part })
+    ).rejects.toThrow("no longer available");
+  });
+
+  it("fails on stale indexer data", async () => {
+    getMock.mockResolvedValueOnce(
+      makePage([makeItem(), makeItem({ order_type: "SELL" })], null, {
+        realtime: false,
+      })
+    );
+
+    await expect(
+      assertRefundPartClaimable({ ...scanParams, part })
+    ).rejects.toThrow("syncing");
   });
 });

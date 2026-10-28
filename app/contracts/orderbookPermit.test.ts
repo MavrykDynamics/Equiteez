@@ -134,7 +134,7 @@ describe("contract-defined permit actions", () => {
       {
         kind: "process_refund",
         orderbookAddress: book.address,
-        order: { orderId: "90071992547409931", orderType: "SELL" },
+        orders: [{ orderId: "90071992547409931", orderType: "SELL" }],
       },
       {
         ...config,
@@ -147,6 +147,40 @@ describe("contract-defined permit actions", () => {
         { orderId: "90071992547409931", orderType: "SELL" },
       ],
     });
+  });
+  it("builds one refund action for a list with the same ID on both sides", () => {
+    const orders = [
+      { orderId: "12", orderType: "BUY" as const },
+      { orderId: "12", orderType: "SELL" as const },
+    ];
+    const result = build({
+      kind: "process_refund",
+      orderbookAddress: book.address,
+      orders,
+    });
+    expect(result.action).toEqual({ permitProcessRefund: orders });
+    expect(result.intent).toEqual({
+      kind: "process_refund",
+      orderbookAddress: book.address,
+      orders,
+    });
+  });
+  it("rejects duplicate or empty refund lists", () => {
+    const order = { orderId: "12", orderType: "BUY" as const };
+    expect(() =>
+      build({
+        kind: "process_refund",
+        orderbookAddress: book.address,
+        orders: [order, order],
+      })
+    ).toThrow("Duplicate");
+    expect(() =>
+      build({
+        kind: "process_refund",
+        orderbookAddress: book.address,
+        orders: [],
+      })
+    ).toThrow("between 1 and 100");
   });
   it.each(["buy", "sell"] as const)(
     "grants only the selected token/book for %s",

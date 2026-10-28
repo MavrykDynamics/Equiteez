@@ -1,10 +1,17 @@
 import CloseIcon from "app/icons/cross.svg?react";
 import type { ReactNode } from "react";
 
-import { useRefundAllAssetOrders } from "~/hooks/useRefundAllAssetOrders";
 import { formatRefundUnits } from "~/lib/apis/rwa/refunds/refunds.helpers";
 import type { AssetRefundsScan } from "~/lib/apis/rwa/refunds/refunds.types";
 import type { DirectOrderFee } from "~/contracts/directOrderFee";
+import {
+  type RefundAllCreditsInfo,
+  useRefundAllAssetOrders,
+} from "~/hooks/useRefundAllAssetOrders";
+import {
+  CREDIT_PRICE_USDT,
+  formatCredits,
+} from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -12,6 +19,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { Spinner } from "~/lib/atoms/Spinner";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { MILLION } from "~/lib/utils/numbers";
+import { BigNumber } from "bignumber.js";
 
 import styles from "./styles.module.css";
 
@@ -33,33 +41,41 @@ export function RefundAllPopup({
     isScanning,
     scanError,
     rescan,
+    paymentMethod,
     fee,
-    isEstimatingFee,
-    canRetryFee,
-    retryFee,
+    creditsInfo,
+    isPreparing,
+    canRetry,
+    retry,
     reason,
     refundAll,
     progress,
     isRefunding,
-  } = useRefundAllAssetOrders({ tokenAddress, enabled: isOpen });
+    isCreditsRunning,
+    executionControls,
+  } = useRefundAllAssetOrders({
+    tokenAddress,
+    enabled: isOpen,
+    onRunEnd: (isCompleted) => {
+      if (isCompleted) {
+        onClose();
+      } else {
+        void rescan();
+      }
+    },
+  });
 
   const handleClose = () => {
-    if (!isRefunding) onClose();
+    if (!isRefunding && !isCreditsRunning) onClose();
   };
 
-  const handleRefund = async () => {
-    if (canRetryFee) {
-      void retryFee();
+  const handleRefund = () => {
+    if (canRetry) {
+      retry();
       return;
     }
 
-    const isCompleted = await refundAll();
-
-    if (isCompleted) {
-      onClose();
-    } else {
-      void rescan();
-    }
+    refundAll();
   };
 
   const renderContent = () => {
@@ -146,21 +162,26 @@ export function RefundAllPopup({
             </RButton>
             <RButton
               className={styles.actionButton}
-              disabled={Boolean(reason) && !canRetryFee}
-              isLoading={isRefunding || isEstimatingFee}
+              disabled={Boolean(reason) && !canRetry}
+              isLoading={isRefunding || isPreparing}
               onClick={handleRefund}
               size="medium"
               tone="black"
             >
-              {canRetryFee ? "Retry" : "Refund"}
+              {canRetry ? "Retry" : "Refund"}
             </RButton>
           </>
         }
         description={`Are you sure you want to refund all your closed ${assetSymbol} orders?`}
         title="Claim All Refunds"
       >
-        <RefundDetails fee={fee} scan={scan} />
-        {reason && !isEstimatingFee && !isRefunding ? (
+        <RefundDetails
+          creditsInfo={creditsInfo}
+          fee={fee}
+          paymentMethod={paymentMethod}
+          scan={scan}
+        />
+        {reason && !isPreparing && !isRefunding ? (
           <RText color="neutral-700" size="body-s">
             {reason}
           </RText>
@@ -181,32 +202,40 @@ export function RefundAllPopup({
   };
 
   return (
-    <CustomPopup
-      isOpen={isOpen}
-      contentPosition="center"
-      className={styles.popupWrapper}
-    >
-      <div className={styles.closeRow}>
-        <button
-          aria-label="Close dialog"
-          className={styles.closeButton}
-          disabled={isRefunding}
-          onClick={handleClose}
-          type="button"
-        >
-          <CloseIcon aria-hidden className={styles.closeIcon} />
-        </button>
-      </div>
-      {renderContent()}
-    </CustomPopup>
+    <>
+      <CustomPopup
+        // The relay plan shows its own review/progress dialogs while running.
+        isOpen={isOpen && !isCreditsRunning}
+        contentPosition="center"
+        className={styles.popupWrapper}
+      >
+        <div className={styles.closeRow}>
+          <button
+            aria-label="Close dialog"
+            className={styles.closeButton}
+            disabled={isRefunding}
+            onClick={handleClose}
+            type="button"
+          >
+            <CloseIcon aria-hidden className={styles.closeIcon} />
+          </button>
+        </div>
+        {renderContent()}
+      </CustomPopup>
+      {executionControls}
+    </>
   );
 }
 
 function RefundDetails({
+  creditsInfo,
   fee,
+  paymentMethod,
   scan,
 }: {
+  creditsInfo: RefundAllCreditsInfo | undefined;
   fee: DirectOrderFee | undefined;
+  paymentMethod: "credits" | "mvrk" | null;
   scan: AssetRefundsScan;
 }) {
   return (
@@ -236,10 +265,30 @@ function RefundDetails({
       {scan.blockedCount > 0 ? (
         <DetailRow label="Unavailable right now" value={scan.blockedCount} />
       ) : null}
-      {fee ? (
+      {paymentMethod ? (
+        <DetailRow
+          label="Payment"
+          value={paymentMethod === "credits" ? "Gas Credits" : "MVRK"}
+        />
+      ) : null}
+      {paymentMethod === "mvrk" && fee ? (
         <DetailRow
           label="Estimated network fee"
           value={`~ ${fee.totalDebit.div(MILLION).toFixed()} MVRK`}
+        />
+      ) : null}
+      {paymentMethod === "credits" && creditsInfo ? (
+        <DetailRow
+          label="Gas Credit"
+          value={
+            creditsInfo.feeUnits === 0n || creditsInfo.feeDecimals === null
+              ? "Free"
+              : formatCredits(
+                  new BigNumber(creditsInfo.feeUnits.toString())
+                    .shiftedBy(-creditsInfo.feeDecimals)
+                    .div(CREDIT_PRICE_USDT)
+                )
+          }
         />
       ) : null}
       {scan.parts.length > 1 ? (

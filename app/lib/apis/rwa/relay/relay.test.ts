@@ -404,3 +404,38 @@ describe("error and eligibility policies", () => {
     ).toMatchObject({ reason: "config-loading" });
   });
 });
+
+describe("process_refund intent", () => {
+  const base = { kind: "process_refund", orderbookAddress: "book" } as const;
+  const orders = [
+    { orderId: "12", orderType: "BUY" },
+    { orderId: "12", orderType: "SELL" },
+  ];
+
+  it("accepts the order list and the legacy single-order form", () => {
+    expect(relayIntentSchema.safeParse({ ...base, orders }).success).toBe(true);
+    expect(
+      relayIntentSchema.safeParse({ ...base, orderId: "1", orderType: "BUY" })
+        .success
+    ).toBe(true);
+  });
+
+  it("rejects mixed, incomplete and oversized refund intents", () => {
+    expect(
+      relayIntentSchema.safeParse({ ...base, orders, orderId: "1" }).success
+    ).toBe(false);
+    expect(relayIntentSchema.safeParse({ ...base, orderId: "1" }).success).toBe(
+      false
+    );
+    expect(relayIntentSchema.safeParse(base).success).toBe(false);
+    expect(
+      relayIntentSchema.safeParse({
+        ...base,
+        orders: Array.from({ length: 101 }, (_, i) => ({
+          orderId: String(i),
+          orderType: "BUY",
+        })),
+      }).success
+    ).toBe(false);
+  });
+});

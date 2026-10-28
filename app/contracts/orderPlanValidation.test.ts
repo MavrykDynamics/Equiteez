@@ -83,7 +83,7 @@ describe("fresh plan validation", () => {
         validateOrderPlan(setup().runtime, {
           kind: "process_refund",
           orderbookAddress: "book",
-          order: { orderId: "1", orderType: "BUY" },
+          orders: [{ orderId: "1", orderType: "BUY" }],
         })
       ).rejects.toThrow("not claimable");
     }
@@ -106,7 +106,7 @@ describe("fresh plan validation", () => {
     await validateOrderPlan(f.runtime, {
       kind: "process_refund",
       orderbookAddress: "book",
-      order: { orderId: "1", orderType: "BUY" },
+      orders: [{ orderId: "1", orderType: "BUY" }],
     });
     expect(f.at).not.toHaveBeenCalled();
   });

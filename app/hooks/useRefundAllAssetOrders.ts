@@ -11,16 +11,25 @@ import {
   orderbookProcessRefunds,
   orderbookRefundsBatch,
 } from "~/contracts/orderbook.contract";
+import type { PermitRuntime } from "~/contracts/permit";
 import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
-import { collectAssetRefunds } from "~/lib/apis/rwa/refunds/refunds";
+import { useOrderbookExecution } from "~/hooks/useOrderbookExecution";
+import {
+  assertRefundPartClaimable,
+  collectAssetRefunds,
+} from "~/lib/apis/rwa/refunds/refunds";
 import type { RefundPart } from "~/lib/apis/rwa/refunds/refunds.types";
+import type { OrderPlanRequest } from "~/lib/relay/orderPlan";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
+import { useRelay } from "~/providers/RelayProvider/RelayProvider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 type UseRefundAllAssetOrdersOptions = {
   tokenAddress: string;
   enabled: boolean;
+  /** Called once per run, after the last part settles or the run stops. */
+  onRunEnd?: (isCompleted: boolean) => void;
 };
 
 export type RefundAllProgress = {
@@ -28,11 +37,33 @@ export type RefundAllProgress = {
   total: number;
 };
 
+/** Credits preview: per-part service fee from the resolved relay schedule. */
+export type RefundAllCreditsInfo = {
+  unsupportedParts: number;
+  feeUnits: bigint;
+  feeDecimals: number | null;
+};
+
+type CreditsRun = {
+  parts: RefundPart[];
+  index: number;
+  completed: number;
+  pendingStart: boolean;
+};
+
+const PROCESS_REFUND_VARIANT = "permitProcessRefund";
+
 const portfolioQueryPrefixes = [
   "rwa-wallet",
   "rwa-wallet-portfolio",
   "rwa-wallet-portfolio-history",
 ];
+
+const toRefundRequest = (part: RefundPart | undefined): OrderPlanRequest => ({
+  kind: "process_refund",
+  orderbookAddress: part?.orderbookAddress ?? "",
+  orders: part?.orders ?? [],
+});
 
 const estimateRefundAllFee = async (
   tezos: MavrykToolkit,
@@ -65,15 +96,51 @@ const estimateRefundAllFee = async (
   };
 };
 
+const fetchRefundAllCreditsInfo = async (
+  runtime: PermitRuntime,
+  parts: RefundPart[]
+): Promise<RefundAllCreditsInfo> => {
+  const config = await runtime.refreshConfig();
+  // Historical discoverability does not imply relay eligibility: check each book.
+  const unsupportedParts = parts.filter(
+    ({ orderbookAddress }) =>
+      !config.enabled ||
+      !config.contracts.some(
+        (contract) =>
+          contract.address === orderbookAddress &&
+          contract.kind === "orderbook" &&
+          contract.permitActions.includes(PROCESS_REFUND_VARIANT)
+      )
+  ).length;
+  const fee = config.fee;
+
+  return {
+    unsupportedParts,
+    // An absent variant is free; the fee is charged per part, not per order.
+    feeUnits: fee.enabled
+      ? BigInt(fee.feeSchedule[PROCESS_REFUND_VARIANT] ?? "0") *
+        BigInt(parts.length)
+      : 0n,
+    feeDecimals: fee.enabled ? fee.decimals : null,
+  };
+};
+
 export function useRefundAllAssetOrders({
   tokenAddress,
   enabled,
+  onRunEnd,
 }: UseRefundAllAssetOrdersOptions) {
   const { userAddress } = useUserContext();
   const payment = useGasPayment();
+  const relay = useRelay();
   const { success, bug } = useToasterContext();
   const queryClient = useQueryClient();
   const [progress, setProgress] = useState<RefundAllProgress | null>(null);
+  const [creditsRun, setCreditsRun] = useState<CreditsRun | null>(null);
+  const creditsRunRef = useRef(creditsRun);
+  creditsRunRef.current = creditsRun;
+  const onRunEndRef = useRef(onRunEnd);
+  onRunEndRef.current = onRunEnd;
   const userAddressRef = useRef(userAddress);
   const isRunningRef = useRef(false);
 
@@ -96,15 +163,17 @@ export function useRefundAllAssetOrders({
   });
 
   const scan = scanQuery.data;
+  const hasParts = Boolean(scan?.isRealtime && scan.parts.length > 0);
+  const isCredits = payment.isRestored && payment.method === "credits";
   const isMvrk = payment.isRestored && payment.method === "mvrk";
+
   const canEstimate = Boolean(
     enabled &&
       isMvrk &&
+      hasParts &&
       payment.toolkit &&
       payment.wallet &&
-      payment.wallet === userAddress &&
-      scan?.isRealtime &&
-      scan.parts.length > 0
+      payment.wallet === userAddress
   );
 
   const feeQuery = useQuery({
@@ -123,19 +192,26 @@ export function useRefundAllAssetOrders({
     retry: false,
   });
 
-  const fee = canEstimate ? feeQuery.data : undefined;
+  const canCheckCredits = Boolean(
+    enabled && isCredits && hasParts && relay.runtime
+  );
 
-  const reason = !payment.isRestored
-    ? "Waiting for wallet, network and payment preference."
-    : payment.method === "credits"
-      ? "Claiming all refunds with Credits is not available yet. Choose MVRK in Profile payment settings."
-      : feeQuery.isError
-        ? "Unable to verify MVRK balance or network fee. Retry the estimate."
-        : !fee
-          ? "Waiting for a verified MVRK balance and network fee."
-          : fee.balance.lt(fee.totalDebit)
-            ? "Insufficient MVRK for network fees and storage costs."
-            : undefined;
+  const creditsQuery = useQuery({
+    queryKey: [
+      "rwa-refund-all-credits",
+      relay.runtime ? JSON.stringify(relay.runtime.getScope()) : null,
+      tokenAddress,
+      scan?.parts,
+    ],
+    queryFn: () => fetchRefundAllCreditsInfo(relay.runtime!, scan!.parts),
+    enabled: canCheckCredits,
+    gcTime: 0,
+    staleTime: 0,
+    retry: false,
+  });
+
+  const fee = canEstimate ? feeQuery.data : undefined;
+  const creditsInfo = canCheckCredits ? creditsQuery.data : undefined;
 
   const refreshAfterRefund = useCallback(() => {
     void Promise.all(
@@ -145,18 +221,140 @@ export function useRefundAllAssetOrders({
     );
   }, [queryClient]);
 
-  /** Resolves to true when every part was confirmed. */
-  const refundAll = useCallback(async () => {
+  const finishRun = useCallback(
+    (completedParts: number, totalParts: number, error?: unknown) => {
+      const isCompleted = completedParts === totalParts;
+
+      if (isCompleted) {
+        success(
+          "Refund Confirmed",
+          "Your refund transactions were confirmed. Funds will appear in your wallet shortly."
+        );
+      } else if (completedParts > 0) {
+        bug(
+          `${completedParts} of ${totalParts} refund transactions were confirmed. The rest were not completed, please try again.`
+        );
+      } else if (error && !checkWhetherWalletAbortError(error)) {
+        bug(
+          unknownToError(error)?.message ||
+            "An error occurred while processing refund"
+        );
+      }
+
+      if (completedParts > 0) refreshAfterRefund();
+      onRunEndRef.current?.(isCompleted);
+    },
+    [bug, refreshAfterRefund, success]
+  );
+
+  const validateRefundPart = useCallback(
+    async (runtime: PermitRuntime, request: OrderPlanRequest) => {
+      if (request.kind !== "process_refund")
+        throw new Error("Unsupported refund action");
+
+      await assertRefundPartClaimable({
+        walletAddress: runtime.getScope().wallet,
+        tokenAddress,
+        part: {
+          orderbookAddress: request.orderbookAddress,
+          orders: request.orders,
+        },
+      });
+    },
+    [tokenAddress]
+  );
+
+  const execution = useOrderbookExecution({
+    request: toRefundRequest(
+      creditsRun?.parts[creditsRun.index] ?? scan?.parts[0]
+    ),
+    // Direct runs never go through this hook; see runDirect.
+    invokeDirect: async () => undefined,
+    validateRequest: validateRefundPart,
+    onConfirmed: () => {
+      const run = creditsRunRef.current;
+      if (!run) return;
+
+      const completed = run.completed + 1;
+
+      if (completed === run.parts.length) {
+        setCreditsRun(null);
+        finishRun(completed, run.parts.length);
+        return;
+      }
+
+      // The next part needs its own review and wallet signature.
+      setCreditsRun({
+        ...run,
+        index: run.index + 1,
+        completed,
+        pendingStart: true,
+      });
+    },
+  });
+
+  // Starts the pending part once its request is rendered into the execution.
+  useEffect(() => {
+    if (!creditsRun?.pendingStart) return;
+
+    if (payment.method !== "credits") {
+      setCreditsRun(null);
+      finishRun(
+        creditsRun.completed,
+        creditsRun.parts.length,
+        new Error("Payment method changed. Refund was stopped.")
+      );
+      return;
+    }
+
+    void execution.execute();
+    setCreditsRun({ ...creditsRun, pendingStart: false });
+  }, [creditsRun, execution, finishRun, payment.method]);
+
+  // Closing the plan (or a start that never began) ends the run.
+  useEffect(() => {
+    if (!creditsRun || creditsRun.pendingStart || execution.state !== null)
+      return;
+
+    setCreditsRun(null);
+    finishRun(creditsRun.completed, creditsRun.parts.length);
+  }, [creditsRun, execution.state, finishRun]);
+
+  const mvrkReason = feeQuery.isError
+    ? "Unable to verify MVRK balance or network fee. Retry the estimate."
+    : !fee
+      ? "Waiting for a verified MVRK balance and network fee."
+      : fee.balance.lt(fee.totalDebit)
+        ? "Insufficient MVRK for network fees and storage costs."
+        : undefined;
+
+  const creditsReason =
+    execution.reason ??
+    (creditsQuery.isError
+      ? "Unable to check Credits availability. Retry."
+      : !creditsInfo
+        ? "Checking Credits availability."
+        : creditsInfo.unsupportedParts > 0
+          ? `${creditsInfo.unsupportedParts} of ${scan?.parts.length ?? 0} refund transactions can't be paid with Credits. Choose MVRK in Profile payment settings.`
+          : undefined);
+
+  const reason = !payment.isRestored
+    ? "Waiting for wallet, network and payment preference."
+    : isCredits
+      ? creditsReason
+      : mvrkReason;
+
+  const runDirect = async () => {
     const tezos = payment.toolkit;
     const runWallet = userAddress;
     const runChainId = payment.chainId;
 
-    if (!scan || !tezos || !runWallet || reason || isRunningRef.current)
-      return false;
+    if (!scan || !tezos || !runWallet) return;
 
     isRunningRef.current = true;
     const { parts } = scan;
     let completedParts = 0;
+    let runError: unknown;
 
     // Each part is re-estimated and balance-checked by sendDirectOrder.
     const beforeSubmit = async () => {
@@ -187,59 +385,55 @@ export function useRefundAllAssetOrders({
 
         completedParts += 1;
       }
-
-      success(
-        "Refund Confirmed",
-        "Your refund transactions were confirmed. Funds will appear in your wallet shortly."
-      );
-
-      return true;
     } catch (error) {
-      const isAborted = checkWhetherWalletAbortError(error);
-
-      if (completedParts > 0) {
-        bug(
-          `${completedParts} of ${parts.length} refund transactions were confirmed. The rest were not completed, please try again.`
-        );
-      } else if (!isAborted) {
-        bug(
-          unknownToError(error)?.message ||
-            "An error occurred while processing refund"
-        );
-      }
-
-      return false;
+      runError = error;
     } finally {
       isRunningRef.current = false;
       setProgress(null);
-
-      if (completedParts > 0) {
-        refreshAfterRefund();
-      }
+      finishRun(completedParts, parts.length, runError);
     }
-  }, [
-    bug,
-    payment.chainId,
-    payment.toolkit,
-    reason,
-    refreshAfterRefund,
-    scan,
-    success,
-    userAddress,
-  ]);
+  };
+
+  const refundAll = () => {
+    if (!scan || reason || isRunningRef.current || creditsRunRef.current)
+      return;
+
+    if (isCredits) {
+      // Payment path is locked for the run; one part is signed at a time.
+      setCreditsRun({
+        parts: scan.parts,
+        index: 0,
+        completed: 0,
+        pendingStart: true,
+      });
+      return;
+    }
+
+    void runDirect();
+  };
+
+  const canRetry = isCredits
+    ? canCheckCredits && creditsQuery.isError
+    : canEstimate && feeQuery.isError;
 
   return {
     scan,
     isScanning: scanQuery.isFetching,
     scanError: scanQuery.error,
     rescan: scanQuery.refetch,
+    paymentMethod: payment.isRestored ? payment.method : null,
     fee,
-    isEstimatingFee: canEstimate && feeQuery.isFetching,
-    canRetryFee: canEstimate && feeQuery.isError,
-    retryFee: feeQuery.refetch,
+    creditsInfo,
+    isPreparing:
+      (canEstimate && feeQuery.isFetching) ||
+      (canCheckCredits && creditsQuery.isFetching),
+    canRetry,
+    retry: () => void (isCredits ? creditsQuery.refetch() : feeQuery.refetch()),
     reason,
     refundAll,
     progress,
     isRefunding: progress !== null,
+    isCreditsRunning: creditsRun !== null,
+    executionControls: execution.controls,
   };
 }

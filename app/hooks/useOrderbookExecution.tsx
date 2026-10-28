@@ -7,6 +7,7 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
 import { validateOrderPlan } from "~/contracts/orderPlanValidation";
+import type { PermitRuntime } from "~/contracts/permit";
 import { OrderPlan, type OrderPlanRequest } from "~/lib/relay/orderPlan";
 import { ROrderPlan } from "~/lib/organisms/ROrderPlan/ROrderPlan";
 
@@ -16,6 +17,11 @@ type Options = {
   directReason?: string;
   invokeDirect: () => Promise<void>;
   onConfirmed: () => void;
+  /** Replaces the open-orders reconciliation, e.g. for refunds from historical books. */
+  validateRequest?: (
+    runtime: PermitRuntime,
+    request: OrderPlanRequest
+  ) => Promise<void>;
 };
 /** Mode routing only: direct success stays in useContractAction; relay success requires a confirmed row. */
 export function useOrderbookExecution(options: Options) {
@@ -129,7 +135,10 @@ export function useOrderbookExecution(options: Options) {
             throw new Error("Wallet changed. Review again.");
           if (!getIsKycedForAddress(data, wallet))
             throw new Error("Verify with Mavryk Pro before trading.");
-          await validateOrderPlan(runtime, request);
+          await (current.current.options.validateRequest ?? validateOrderPlan)(
+            runtime,
+            request
+          );
           assertForm();
         },
       });
@@ -146,6 +155,7 @@ export function useOrderbookExecution(options: Options) {
   return {
     execute,
     isBusy,
+    state: active?.state ?? null,
     reason: reason ?? startError.current ?? undefined,
     controls: active ? (
       <ROrderPlan

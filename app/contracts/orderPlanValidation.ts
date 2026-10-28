@@ -52,9 +52,10 @@ export async function validateOrderPlan(
     return;
   }
   const remaining = new Map(
-    (request.kind === "cancel_orders" ? request.orders : [request.order]).map(
-      (order) => [`${order.orderType}:${order.orderId}`, order]
-    )
+    request.orders.map((order) => [
+      `${order.orderType}:${order.orderId}`,
+      order,
+    ])
   );
   for (let page = 1; remaining.size; page++) {
     const result = await checked(

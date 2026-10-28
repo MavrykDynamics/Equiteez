@@ -55,27 +55,44 @@ const placeOrder = {
   isMarketOrder: z.boolean().optional(),
 };
 const order = { orderId: nat, orderType: z.enum(["BUY", "SELL"]) };
-export const relayIntentSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("place_buy_order"), ...placeOrder }),
-  z.object({ kind: z.literal("place_sell_order"), ...placeOrder }),
-  z.object({
-    kind: z.literal("cancel_orders"),
-    orderbookAddress: address,
-    orders: z.array(z.object(order)).min(1).max(10),
-  }),
-  z.object({
-    kind: z.literal("process_refund"),
-    orderbookAddress: address,
-    ...order,
-  }),
-  z.object({
-    kind: z.literal("update_operators"),
-    tokenAddress: address,
-    tokenId: z.string().regex(/^(0|[1-9]\d*)$/),
-    operator: address,
-    operatorAction: z.literal("add_operator").optional(),
-  }),
-]);
+export const relayIntentSchema = z
+  .discriminatedUnion("kind", [
+    z.object({ kind: z.literal("place_buy_order"), ...placeOrder }),
+    z.object({ kind: z.literal("place_sell_order"), ...placeOrder }),
+    z.object({
+      kind: z.literal("cancel_orders"),
+      orderbookAddress: address,
+      orders: z.array(z.object(order)).min(1).max(10),
+    }),
+    z.object({
+      kind: z.literal("process_refund"),
+      orderbookAddress: address,
+      orders: z.array(z.object(order)).min(1).max(100).optional(),
+      // Legacy single-order form; kept only to read previously stored attempts.
+      orderId: order.orderId.optional(),
+      orderType: order.orderType.optional(),
+    }),
+    z.object({
+      kind: z.literal("update_operators"),
+      tokenAddress: address,
+      tokenId: z.string().regex(/^(0|[1-9]\d*)$/),
+      operator: address,
+      operatorAction: z.literal("add_operator").optional(),
+    }),
+  ])
+  .superRefine((intent, ctx) => {
+    if (intent.kind !== "process_refund") return;
+    const hasLegacy =
+      intent.orderId !== undefined || intent.orderType !== undefined;
+    const isLegacy =
+      intent.orderId !== undefined && intent.orderType !== undefined;
+    // Exactly one form: never mix the order list with the single-order fields.
+    if (intent.orders ? hasLegacy : !isLegacy)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Refund intent must use either orders or orderId/orderType",
+      });
+  });
 export const relaySubmitSchema = z
   .object({
     intent: relayIntentSchema,

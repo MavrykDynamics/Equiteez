@@ -25,7 +25,7 @@ export type PermitRequest =
       orderbookAddress: string;
       orders: (OrderId & { orderbookAddress: string })[];
     }
-  | { kind: "process_refund"; orderbookAddress: string; order: OrderId }
+  | { kind: "process_refund"; orderbookAddress: string; orders: OrderId[] }
   | {
       kind: "update_operators";
       book: OrderbookExecutionConfig;
@@ -211,19 +211,28 @@ export function buildPermitAction(
       topUpAmount: null,
     };
   } else if (request.kind === "process_refund") {
-    const order = {
-      orderId: toNatString(request.order.orderId),
-      orderType: request.order.orderType,
-    };
+    if (request.orders.length < 1 || request.orders.length > 100)
+      throw new Error("Refund between 1 and 100 orders from the same book");
+    const seen = new Set<string>();
+    const orders = request.orders.map((order) => {
+      const value = {
+        orderId: toNatString(order.orderId),
+        orderType: order.orderType,
+      };
+      const key = `${value.orderType}:${value.orderId}`;
+      if (seen.has(key)) throw new Error("Duplicate refund order");
+      seen.add(key);
+      return value;
+    });
     result = {
       contract: request.orderbookAddress,
       contractKind: "orderbook",
       variant: "permitProcessRefund",
-      action: { permitProcessRefund: [order] },
+      action: { permitProcessRefund: orders },
       intent: {
         kind: request.kind,
         orderbookAddress: request.orderbookAddress,
-        ...order,
+        orders,
       },
       topUpAmount: null,
     };
