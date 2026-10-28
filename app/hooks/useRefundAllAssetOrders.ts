@@ -227,12 +227,13 @@ export function useRefundAllAssetOrders({
 
       if (isCompleted) {
         success(
-          "Refund Confirmed",
-          "Your refund transactions were confirmed. Funds will appear in your wallet shortly."
+          "Refund completed successfully",
+          "Your refund has been processed. The funds have been returned to your wallet."
         );
       } else if (completedParts > 0) {
         bug(
-          `${completedParts} of ${totalParts} refund transactions were confirmed. The rest were not completed, please try again.`
+          "Some transactions couldn’t be completed. Successfully processed refunds remain completed.",
+          "Some refunds failed"
         );
       } else if (error && !checkWhetherWalletAbortError(error)) {
         bug(
