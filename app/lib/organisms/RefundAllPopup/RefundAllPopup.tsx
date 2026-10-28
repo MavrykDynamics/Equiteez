@@ -4,12 +4,14 @@ import type { ReactNode } from "react";
 import { useRefundAllAssetOrders } from "~/hooks/useRefundAllAssetOrders";
 import { formatRefundUnits } from "~/lib/apis/rwa/refunds/refunds.helpers";
 import type { AssetRefundsScan } from "~/lib/apis/rwa/refunds/refunds.types";
+import type { DirectOrderFee } from "~/contracts/directOrderFee";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { Spinner } from "~/lib/atoms/Spinner";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { MILLION } from "~/lib/utils/numbers";
 
 import styles from "./styles.module.css";
 
@@ -31,6 +33,11 @@ export function RefundAllPopup({
     isScanning,
     scanError,
     rescan,
+    fee,
+    isEstimatingFee,
+    canRetryFee,
+    retryFee,
+    reason,
     refundAll,
     progress,
     isRefunding,
@@ -41,6 +48,11 @@ export function RefundAllPopup({
   };
 
   const handleRefund = async () => {
+    if (canRetryFee) {
+      void retryFee();
+      return;
+    }
+
     const isCompleted = await refundAll();
 
     if (isCompleted) {
@@ -134,19 +146,25 @@ export function RefundAllPopup({
             </RButton>
             <RButton
               className={styles.actionButton}
-              isLoading={isRefunding}
+              disabled={Boolean(reason) && !canRetryFee}
+              isLoading={isRefunding || isEstimatingFee}
               onClick={handleRefund}
               size="medium"
               tone="black"
             >
-              Refund
+              {canRetryFee ? "Retry" : "Refund"}
             </RButton>
           </>
         }
         description={`Are you sure you want to refund all your closed ${assetSymbol} orders?`}
         title="Claim All Refunds"
       >
-        <RefundDetails scan={scan} />
+        <RefundDetails fee={fee} scan={scan} />
+        {reason && !isEstimatingFee && !isRefunding ? (
+          <RText color="neutral-700" size="body-s">
+            {reason}
+          </RText>
+        ) : null}
         {isRefunding && progress ? (
           <div className={styles.progressNote}>
             <Spinner size={16} />
@@ -184,7 +202,13 @@ export function RefundAllPopup({
   );
 }
 
-function RefundDetails({ scan }: { scan: AssetRefundsScan }) {
+function RefundDetails({
+  fee,
+  scan,
+}: {
+  fee: DirectOrderFee | undefined;
+  scan: AssetRefundsScan;
+}) {
   return (
     <div className={styles.details}>
       <DetailRow label="Orders to refund" value={scan.eligibleCount} />
@@ -211,6 +235,12 @@ function RefundDetails({ scan }: { scan: AssetRefundsScan }) {
       ) : null}
       {scan.blockedCount > 0 ? (
         <DetailRow label="Unavailable right now" value={scan.blockedCount} />
+      ) : null}
+      {fee ? (
+        <DetailRow
+          label="Estimated network fee"
+          value={`~ ${fee.totalDebit.div(MILLION).toFixed()} MVRK`}
+        />
       ) : null}
       {scan.parts.length > 1 ? (
         <RText color="neutral-700" size="body-s">

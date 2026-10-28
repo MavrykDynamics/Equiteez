@@ -1,12 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { MavrykToolkit } from "@mavrykdynamics/taquito";
+import { BigNumber } from "bignumber.js";
 
-import { orderbookProcessRefunds } from "~/contracts/orderbook.contract";
+import {
+  estimateDirectOrderFee,
+  type DirectOrderFee,
+} from "~/contracts/directOrderFee";
+import {
+  orderbookProcessRefunds,
+  orderbookRefundsBatch,
+} from "~/contracts/orderbook.contract";
 import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
 import { collectAssetRefunds } from "~/lib/apis/rwa/refunds/refunds";
+import type { RefundPart } from "~/lib/apis/rwa/refunds/refunds.types";
+import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 type UseRefundAllAssetOrdersOptions = {
   tokenAddress: string;
@@ -24,12 +34,43 @@ const portfolioQueryPrefixes = [
   "rwa-wallet-portfolio-history",
 ];
 
+const estimateRefundAllFee = async (
+  tezos: MavrykToolkit,
+  wallet: string,
+  parts: RefundPart[]
+): Promise<DirectOrderFee> => {
+  let networkFee = new BigNumber(0);
+  let storageCost = new BigNumber(0);
+  let balance = new BigNumber(0);
+
+  // One estimate per orderbook call, exactly as it will be sent; fees are summed.
+  for (const part of parts) {
+    const batch = await orderbookRefundsBatch({
+      tezos,
+      orderbookContractAddress: part.orderbookAddress,
+      orders: part.orders,
+    });
+    const fee = await estimateDirectOrderFee(tezos, batch, wallet);
+
+    networkFee = networkFee.plus(fee.networkFee);
+    storageCost = storageCost.plus(fee.storageCost);
+    balance = fee.balance;
+  }
+
+  return {
+    networkFee,
+    storageCost,
+    totalDebit: networkFee.plus(storageCost),
+    balance,
+  };
+};
+
 export function useRefundAllAssetOrders({
   tokenAddress,
   enabled,
 }: UseRefundAllAssetOrdersOptions) {
   const { userAddress } = useUserContext();
-  const { dapp } = useWalletContext();
+  const payment = useGasPayment();
   const { success, bug } = useToasterContext();
   const queryClient = useQueryClient();
   const [progress, setProgress] = useState<RefundAllProgress | null>(null);
@@ -54,6 +95,48 @@ export function useRefundAllAssetOrders({
     retry: false,
   });
 
+  const scan = scanQuery.data;
+  const isMvrk = payment.isRestored && payment.method === "mvrk";
+  const canEstimate = Boolean(
+    enabled &&
+      isMvrk &&
+      payment.toolkit &&
+      payment.wallet &&
+      payment.wallet === userAddress &&
+      scan?.isRealtime &&
+      scan.parts.length > 0
+  );
+
+  const feeQuery = useQuery({
+    queryKey: [
+      "rwa-refund-all-fee",
+      payment.wallet,
+      payment.chainId,
+      tokenAddress,
+      scan?.parts,
+    ],
+    queryFn: () =>
+      estimateRefundAllFee(payment.toolkit!, payment.wallet!, scan!.parts),
+    enabled: canEstimate,
+    gcTime: 0,
+    staleTime: 0,
+    retry: false,
+  });
+
+  const fee = canEstimate ? feeQuery.data : undefined;
+
+  const reason = !payment.isRestored
+    ? "Waiting for wallet, network and payment preference."
+    : payment.method === "credits"
+      ? "Claiming all refunds with Credits is not available yet. Choose MVRK in Profile payment settings."
+      : feeQuery.isError
+        ? "Unable to verify MVRK balance or network fee. Retry the estimate."
+        : !fee
+          ? "Waiting for a verified MVRK balance and network fee."
+          : fee.balance.lt(fee.totalDebit)
+            ? "Insufficient MVRK for network fees and storage costs."
+            : undefined;
+
   const refreshAfterRefund = useCallback(() => {
     void Promise.all(
       portfolioQueryPrefixes.map((prefix) =>
@@ -64,26 +147,40 @@ export function useRefundAllAssetOrders({
 
   /** Resolves to true when every part was confirmed. */
   const refundAll = useCallback(async () => {
-    const scan = scanQuery.data;
-    const tezos = dapp?.tezos();
+    const tezos = payment.toolkit;
     const runWallet = userAddress;
+    const runChainId = payment.chainId;
 
-    if (!scan || !tezos || !runWallet || isRunningRef.current) return false;
+    if (!scan || !tezos || !runWallet || reason || isRunningRef.current)
+      return false;
 
     isRunningRef.current = true;
     const { parts } = scan;
     let completedParts = 0;
 
+    // Each part is re-estimated and balance-checked by sendDirectOrder.
+    const beforeSubmit = async () => {
+      const [wallet, chain] = await Promise.all([
+        tezos.wallet.pkh(),
+        tezos.rpc.getChainId(),
+      ]);
+
+      if (
+        wallet !== runWallet ||
+        userAddressRef.current !== runWallet ||
+        chain !== runChainId
+      ) {
+        throw new Error("Wallet or network changed. Refund was stopped.");
+      }
+    };
+
     try {
       for (const [index, part] of parts.entries()) {
-        if (userAddressRef.current !== runWallet) {
-          throw new Error("Wallet changed. Refund was stopped.");
-        }
-
         setProgress({ current: index + 1, total: parts.length });
 
         await orderbookProcessRefunds({
           tezos,
+          beforeSubmit,
           orderbookContractAddress: part.orderbookAddress,
           orders: part.orders,
         });
@@ -122,18 +219,25 @@ export function useRefundAllAssetOrders({
     }
   }, [
     bug,
-    dapp,
+    payment.chainId,
+    payment.toolkit,
+    reason,
     refreshAfterRefund,
-    scanQuery.data,
+    scan,
     success,
     userAddress,
   ]);
 
   return {
-    scan: scanQuery.data,
+    scan,
     isScanning: scanQuery.isFetching,
     scanError: scanQuery.error,
     rescan: scanQuery.refetch,
+    fee,
+    isEstimatingFee: canEstimate && feeQuery.isFetching,
+    canRetryFee: canEstimate && feeQuery.isError,
+    retryFee: feeQuery.refetch,
+    reason,
     refundAll,
     progress,
     isRefunding: progress !== null,

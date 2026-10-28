@@ -32,6 +32,18 @@ type OrderbookCancelOrderParams = {
 
 type OrderbookProcessRefundParams = OrderbookCancelOrderParams;
 
+type OrderbookOrderRef = Pick<
+  OrderbookCancelOrderParams,
+  "orderId" | "orderType"
+>;
+
+export type OrderbookProcessRefundsParams = Omit<
+  OrderbookCancelOrderParams,
+  "orderId" | "orderType"
+> & {
+  orders: OrderbookOrderRef[];
+};
+
 export type OrderbookSellParams = Omit<
   OrderbookBuyParams,
   "quoteTokenAddress" | "quoteTokenId"
@@ -200,29 +212,39 @@ export const orderbookSell = (params: OrderbookSellParams) =>
   sendDirectOrder(params, orderbookSellBatch);
 
 async function buildOrderManagementBatch(
-  {
-    tezos,
-    orderbookContractAddress,
-    orderId,
-    orderType,
-  }: OrderbookCancelOrderParams,
+  { tezos, orderbookContractAddress, orders }: OrderbookProcessRefundsParams,
   entrypoint: "cancelOrders" | "processRefund"
 ): Promise<BatchOperationKindType> {
   assertAddress(orderbookContractAddress, "Orderbook contract address");
-  if (orderType !== "BUY" && orderType !== "SELL")
-    throw new Error("Invalid order type");
+  if (orders.length === 0) throw new Error("At least one order is required");
+  const seen = new Set<string>();
+  const payload = orders.map(({ orderId, orderType }) => {
+    if (orderType !== "BUY" && orderType !== "SELL")
+      throw new Error("Invalid order type");
+    const value = { orderId: toNatString(orderId, "Order ID"), orderType };
+    const key = `${value.orderType}:${value.orderId}`;
+    if (seen.has(key)) throw new Error("Duplicate order");
+    seen.add(key);
+    return value;
+  });
   const contract = await tezos.wallet.at(orderbookContractAddress);
-  const transfer = contract.methodsObject[entrypoint]([
-    {
-      orderId: toNatString(orderId, "Order ID"),
-      orderType,
-    },
-  ]).toTransferParams();
+  const transfer =
+    contract.methodsObject[entrypoint](payload).toTransferParams();
   return [{ kind: OpKind.TRANSACTION, ...transfer }];
 }
+const toSingleOrder = ({
+  orderId,
+  orderType,
+  ...params
+}: OrderbookCancelOrderParams): OrderbookProcessRefundsParams => ({
+  ...params,
+  orders: [{ orderId, orderType }],
+});
 export const orderbookCancelBatch = (params: OrderbookCancelOrderParams) =>
-  buildOrderManagementBatch(params, "cancelOrders");
+  buildOrderManagementBatch(toSingleOrder(params), "cancelOrders");
 export const orderbookRefundBatch = (params: OrderbookProcessRefundParams) =>
+  buildOrderManagementBatch(toSingleOrder(params), "processRefund");
+export const orderbookRefundsBatch = (params: OrderbookProcessRefundsParams) =>
   buildOrderManagementBatch(params, "processRefund");
 async function sendDirectOrder<
   P extends {
@@ -264,6 +286,9 @@ export const orderbookCancelOrder = (params: OrderbookCancelOrderParams) =>
   sendDirectOrder(params, orderbookCancelBatch);
 export const orderbookProcessRefund = (params: OrderbookProcessRefundParams) =>
   sendDirectOrder(params, orderbookRefundBatch);
+export const orderbookProcessRefunds = (
+  params: OrderbookProcessRefundsParams
+) => sendDirectOrder(params, orderbookRefundsBatch);
 
 // Estimation functions
 
