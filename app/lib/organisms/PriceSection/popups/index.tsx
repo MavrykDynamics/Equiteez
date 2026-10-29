@@ -719,6 +719,10 @@ const BuySellForm: FC<
         !orderValidationMessage
     )
   );
+  // The orderbook fee is not sent with a relay permit and its charge under
+  // Credits is unconfirmed, so only the MVRK total includes it.
+  const summaryOrderbookFee =
+    directFee.method === "mvrk" ? orderbookFee : undefined;
   // MVRK pays the wallet's network fee and storage burn; Credits pay no gas.
   const gasFee =
     directFee.method === "mvrk" && directFee.state.status === "ready"
@@ -1084,7 +1088,7 @@ const BuySellForm: FC<
               gasFee={gasFee}
               paymentDetails={paymentDetails}
               apy={asset.apy}
-              orderbookFee={orderbookFee}
+              orderbookFee={summaryOrderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading || isFeePending}
               validationMessage={visibleValidationMessage}
@@ -1108,7 +1112,7 @@ const BuySellForm: FC<
               gasFee={gasFee}
               paymentDetails={paymentDetails}
               apy={asset.apy}
-              orderbookFee={orderbookFee}
+              orderbookFee={summaryOrderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading || isFeePending}
               validationMessage={visibleValidationMessage}
