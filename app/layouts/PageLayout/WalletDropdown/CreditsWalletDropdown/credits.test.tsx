@@ -61,6 +61,9 @@ vi.mock("~/icons/gas-credit-empty.svg?react", () => ({
 vi.mock("~/lib/atoms/RTooltip", () => ({
   RTooltip: ({ children }: { children: ReactNode }) => children,
 }));
+vi.mock("~/lib/fiat-currency", () => ({
+  useUsdToTokenRates: () => ({ mav: 2 }),
+}));
 vi.mock("~/lib/relay/relay.scope", () => ({
   getRelayScopeRevision: () => mocks.revision,
   subscribeRelayScope: () => () => {},
@@ -565,17 +568,22 @@ it("fee-off shows a free Gas Credit row with no Top Up", async () => {
   expect(buttonByText("Top Up")).toBeUndefined();
   expect(mocks.credits).not.toHaveBeenCalled();
 });
-it("direct mode shows one wallet network fee row and no Credit controls", async () => {
+it("direct mode shows one wallet platform fee row and no Credit controls", async () => {
   await render(
     <RGasPaymentDetails
       method="mvrk"
       variant="permitPlaceBuyOrder"
       networkFee="0.123456"
       storageCost="0.01"
+      orderbookFee={200}
     />
   );
-  expect(host.textContent).toBe("Network Fee~ 0.133456 MVRK");
-  expect(host.querySelector("button")).toBeNull();
+  // 0.123456 network + 0.01 storage + 200 atoms orderbook fee.
+  expect(host.textContent).toBe("Platform Fee~ 0.133656 MVRK");
+  // Only the breakdown tooltip trigger; no Top Up.
+  const buttons = host.querySelectorAll("button");
+  expect(buttons).toHaveLength(1);
+  expect(buttons[0].getAttribute("aria-label")).toBe("Platform fee breakdown");
   expect(mocks.credits).not.toHaveBeenCalled();
 });
 it("badge shows Credit counts at the configured tariff with design tones", async () => {

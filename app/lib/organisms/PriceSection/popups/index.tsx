@@ -719,8 +719,13 @@ const BuySellForm: FC<
         !orderValidationMessage
     )
   );
-  // Network gas is reviewed separately from the existing protocol fee card.
-  const gasFee = undefined;
+  // MVRK pays the wallet's network fee and storage burn; Credits pay no gas.
+  const gasFee =
+    directFee.method === "mvrk" && directFee.state.status === "ready"
+      ? directFee.state.fee.networkFee
+          .plus(directFee.state.fee.storageCost)
+          .div(MILLION)
+      : undefined;
 
   // actual contract calls and their handlers ---------------
 
@@ -972,6 +977,7 @@ const BuySellForm: FC<
         activetabId === BUY ? "permitPlaceBuyOrder" : "permitPlaceSellOrder"
       }
       notice={execution.notice}
+      orderbookFee={orderbookFee}
       networkFee={
         directFee.state.status === "ready"
           ? directFee.state.fee.networkFee.div(MILLION).toFixed()
