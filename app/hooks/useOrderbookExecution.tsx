@@ -41,6 +41,8 @@ type Options = {
   onConfirmed: () => void;
   /** The caller renders `notice` itself instead of a toast for relay failures. */
   inlineNotice?: boolean;
+  /** Shown while a signed permit is relayed, like a direct wallet operation. */
+  pendingToast?: { title: string; message: string };
 };
 
 const PENDING_AVAILABILITY = "Checking Gas Station availability.";
@@ -66,7 +68,7 @@ export function useOrderbookExecution(options: Options) {
   const relay = useRelay();
   const user = useUserContext();
   const apollo = useApolloClient();
-  const { bug } = useToasterContext();
+  const { bug, loading, hideToasterMessage } = useToasterContext();
   const [step, setStep] = useState<PermitActionStep | null>(null);
   const [failure, setFailure] = useState<
     (RelayFailureNotice & { at: number }) | null
@@ -176,6 +178,11 @@ export function useOrderbookExecution(options: Options) {
     };
     setFailure(null);
     setStep("preparing");
+    let pendingToastId: string | undefined;
+    const hidePendingToast = () => {
+      if (pendingToastId) hideToasterMessage(pendingToastId);
+      pendingToastId = undefined;
+    };
     try {
       const { plan: next, done } = startPermitAction(
         options.request,
@@ -205,6 +212,12 @@ export function useOrderbookExecution(options: Options) {
           },
         },
         (next) => {
+          // Processing starts after the signature; a later wallet prompt (the
+          // order after an operator grant) is not "processing".
+          const pending = current.current.options.pendingToast;
+          if (next !== "processing") hidePendingToast();
+          else if (pending && !pendingToastId)
+            pendingToastId = loading(pending.title, pending.message, false);
           if (mounted.current) setStep(next);
         }
       );
@@ -234,6 +247,7 @@ export function useOrderbookExecution(options: Options) {
             "Unable to complete the action."
         );
     } finally {
+      hidePendingToast();
       plan.current = null;
       if (mounted.current) setStep(null);
     }

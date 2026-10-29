@@ -22,6 +22,10 @@ const mocks = vi.hoisted(() => ({
   settle: null as null | ((error?: unknown) => void),
   deps: null as null | StartDeps,
   reload: vi.fn(),
+  loading: vi.fn(() => "toast-1"),
+  hide: vi.fn(),
+  onStep: null as null | ((step: string) => void),
+  pendingToast: undefined as undefined | { title: string; message: string },
   inline: false,
   config: undefined as unknown,
 }));
@@ -65,7 +69,11 @@ vi.mock("@apollo/client/index", () => ({
   }),
 }));
 vi.mock("~/providers/ToasterProvider/toaster.provider", () => ({
-  useToasterContext: () => ({ bug: mocks.bug }),
+  useToasterContext: () => ({
+    bug: mocks.bug,
+    loading: mocks.loading,
+    hideToasterMessage: mocks.hide,
+  }),
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ isKyced: mocks.kyced }),
@@ -106,6 +114,7 @@ function Harness({ orderId = "1" }: { orderId?: string }) {
     invokeDirect: mocks.direct,
     onConfirmed: mocks.confirmed,
     inlineNotice: mocks.inline,
+    pendingToast: mocks.pendingToast,
   });
   return null;
 }
@@ -118,8 +127,11 @@ beforeEach(async () => {
   mocks.deps = null;
   mocks.inline = false;
   mocks.config = readyConfig();
-  mocks.start.mockImplementation((_request, deps: StartDeps) => {
+  mocks.pendingToast = undefined;
+  mocks.onStep = null;
+  mocks.start.mockImplementation((_request, deps: StartDeps, onStep) => {
     mocks.deps = deps;
+    mocks.onStep = onStep;
     const done = new Promise<void>((resolve, reject) => {
       mocks.settle = (error) => (error ? reject(error) : resolve());
     });
@@ -293,4 +305,28 @@ it("rereads the saved method on a payment mismatch", async () => {
   mocks.method = "mvrk";
   await act(async () => root.render(<Harness />));
   expect(execution.notice?.kind).toBe("payment-mismatch");
+});
+it("shows the processing toast only while a signed permit is relayed", async () => {
+  mocks.pendingToast = { title: "Processing", message: "Waiting" };
+  await act(async () => root.render(<Harness />));
+  const { running } = await start();
+  await act(async () => mocks.onStep!("signing"));
+  expect(mocks.loading).not.toHaveBeenCalled();
+  await act(async () => mocks.onStep!("processing"));
+  expect(mocks.loading).toHaveBeenCalledWith("Processing", "Waiting", false);
+  // The order's own signature after an operator grant.
+  await act(async () => mocks.onStep!("signing"));
+  expect(mocks.hide).toHaveBeenCalledWith("toast-1");
+  await act(async () => mocks.onStep!("processing"));
+  expect(mocks.loading).toHaveBeenCalledTimes(2);
+  await settle(undefined, running);
+  expect(mocks.hide).toHaveBeenCalledTimes(2);
+});
+it("hides the processing toast when the relay fails", async () => {
+  mocks.pendingToast = { title: "Processing", message: "Waiting" };
+  await act(async () => root.render(<Harness />));
+  const { running } = await start();
+  await act(async () => mocks.onStep!("processing"));
+  await settle(new Error("Rejected"), running);
+  expect(mocks.hide).toHaveBeenCalledWith("toast-1");
 });

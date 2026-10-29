@@ -835,6 +835,7 @@ const BuySellForm: FC<
     invokeDirect: buySellActionCb,
     onConfirmed: () => handleSuccessfulTransaction({ confirmation: null }),
     inlineNotice: true,
+    pendingToast: memoizedToastProps.pending,
   });
   const paymentValidationMessage = execution.reason;
   // A pending MVRK estimate only disables the button; real reasons get the alert.
