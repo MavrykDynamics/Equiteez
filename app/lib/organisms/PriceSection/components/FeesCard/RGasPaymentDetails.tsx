@@ -118,7 +118,11 @@ export function RGasPaymentDetails({
       <div className={styles.detailRow}>
         <span className={styles.feeLabel}>
           Gas Credit
-          <RTooltip content={GAS_CREDIT_TOOLTIP} maxWidth={315}>
+          <RTooltip
+            className={styles.gasCreditTooltip}
+            content={GAS_CREDIT_TOOLTIP}
+            maxWidth={315}
+          >
             <button
               aria-label={GAS_CREDIT_TOOLTIP}
               className={styles.gasCreditInfo}

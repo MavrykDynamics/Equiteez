@@ -175,6 +175,12 @@
   color: var(--r-color-neutral-black);
 }
 
+/* The tooltip's inline spans would sit the icon on the text baseline. */
+.gasCreditTooltip,
+.gasCreditTooltip > span {
+  display: flex;
+}
+
 .gasCreditInfo {
   display: inline-flex;
   padding: 0;
