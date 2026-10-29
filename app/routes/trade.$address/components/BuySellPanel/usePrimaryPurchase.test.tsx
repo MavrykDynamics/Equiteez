@@ -3,7 +3,10 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { expect, it, vi } from "vitest";
-import { usePrimaryPurchase, usePrimaryPurchaseConfig } from "./usePrimaryPurchase";
+import {
+  usePrimaryPurchase,
+  usePrimaryPurchaseConfig,
+} from "./usePrimaryPurchase";
 
 const mocks = vi.hoisted(() => ({
   read: vi.fn(async () => ({
@@ -114,24 +117,27 @@ it("subscribes to the primary launch and refreshes launch card data on progress 
         </QueryClientProvider>
       )
     );
-    await act(async () => {
-      await Promise.resolve();
-    });
-    const latestSubscription =
+    const latestSubscription = () =>
       mocks.useLaunchChannel.mock.calls[
         mocks.useLaunchChannel.mock.calls.length - 1
       ];
-
-    expect(latestSubscription[0]).toBe("KT1launchpad");
-    expect(latestSubscription[1]).toBe("launch");
+    // The config loads after the launch card and the contract read; let each
+    // async step commit before inspecting the subscription.
+    for (let tick = 0; tick < 10 && !latestSubscription()[0]; tick++)
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    expect(latestSubscription()[0]).toBe("KT1launchpad");
+    expect(latestSubscription()[1]).toBe("launch");
 
     await act(async () => {
-      latestSubscription[2].onProgress();
+      latestSubscription()[2].onProgress();
     });
 
-    expect(invalidate).toHaveBeenCalledWith({
-      queryKey: ["asset-launch", "asset"],
-    });
+    expect(invalidate).toHaveBeenCalledWith(
+      { queryKey: ["asset-launch", "asset"] },
+      { cancelRefetch: false }
+    );
   } finally {
     await act(async () => root.unmount());
     client.clear();
