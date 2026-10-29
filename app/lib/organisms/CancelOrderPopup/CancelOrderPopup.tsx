@@ -76,17 +76,17 @@ export function CancelOrderPopup({
             <RHeading size="h6" weight="medium">
               {title}
             </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              {description}
-              {paymentSettings && (
-                <>
-                  {" "}
-                  <Link to={ROUTES.portfolioProfile} onClick={onClose}>
-                    Payment settings
-                  </Link>
-                </>
-              )}
-            </RText>
+            {/*<RText color="neutral-700" size="body-sm">*/}
+            {/*  {description}*/}
+            {/*  {paymentSettings && (*/}
+            {/*    <>*/}
+            {/*      {" "}*/}
+            {/*      <Link to={ROUTES.portfolioProfile} onClick={onClose}>*/}
+            {/*        Payment settings*/}
+            {/*      </Link>*/}
+            {/*    </>*/}
+            {/*  )}*/}
+            {/*</RText>*/}
           </div>
           <div className={styles.orderDetails}>
             <DetailRow
