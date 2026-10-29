@@ -18,9 +18,13 @@ const mocks = vi.hoisted(() => ({
     reload: vi.fn(),
     retryNetwork: vi.fn(),
   },
+  success: vi.fn(),
 }));
 vi.mock("~/providers/GasPaymentProvider/GasPaymentProvider", () => ({
   useGasPayment: () => mocks.payment,
+}));
+vi.mock("~/providers/ToasterProvider/toaster.provider", () => ({
+  useToasterContext: () => ({ success: mocks.success }),
 }));
 
 let form: ReturnType<typeof useProfileForm>;
@@ -42,6 +46,7 @@ beforeEach(() => {
     isRestored: true,
   });
   mocks.payment.save.mockClear();
+  mocks.success.mockClear();
   root = createRoot(document.createElement("div"));
 });
 afterEach(async () => {
@@ -56,6 +61,23 @@ describe("profile form payment method", () => {
     expect(form.isDirty).toBe(true);
     await act(async () => form.save());
     expect(mocks.payment.save).toHaveBeenCalledWith("mvrk");
+    expect(mocks.success).toHaveBeenCalledWith(
+      "Payment method saved",
+      "Gas fees will be paid with MVRK."
+    );
+  });
+  it("sends nothing when the choice is unchanged", async () => {
+    await render();
+    await act(async () => form.save());
+    expect(mocks.payment.save).not.toHaveBeenCalled();
+    expect(mocks.success).not.toHaveBeenCalled();
+  });
+  it("does not toast a failed save", async () => {
+    mocks.payment.save.mockResolvedValueOnce(false);
+    await render();
+    await act(async () => form.setField("gasPaymentMethod", "mvrk"));
+    await act(async () => form.save());
+    expect(mocks.success).not.toHaveBeenCalled();
   });
   it("is not dirty before the preference is restored", async () => {
     mocks.payment.isRestored = false;

@@ -65,7 +65,6 @@ export default function PortfolioProfile() {
     setField,
     emailError,
     touchEmail,
-    isDirty,
     isSaving,
     saveError,
     errorAction,
@@ -168,7 +167,6 @@ export default function PortfolioProfile() {
               </RCustomDropdown>
             </Field>
             <RButton
-              disabled={!isDirty}
               isLoading={isSaving}
               onClick={() => void save()}
               size="medium"

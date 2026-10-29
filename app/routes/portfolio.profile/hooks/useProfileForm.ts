@@ -1,7 +1,12 @@
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
+import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { KycInfo, ProfileFormValues } from "../profile.types";
+import {
+  GAS_PAYMENT_METHOD_OPTIONS,
+  type KycInfo,
+  type ProfileFormValues,
+} from "../profile.types";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,6 +33,7 @@ export const validateEmail = (email: string) => {
 export function useProfileForm() {
   const [values, setValues] = useState<ProfileFormValues>(INITIAL_VALUES);
   const payment = useGasPayment();
+  const { success } = useToasterContext();
   useEffect(() => {
     setValues(INITIAL_VALUES);
     setIsEmailTouched(false);
@@ -56,7 +62,15 @@ export function useProfileForm() {
   const isDirty =
     payment.isRestored && values.gasPaymentMethod !== payment.method;
   const save = async () => {
-    await payment.save(values.gasPaymentMethod);
+    // Save stays clickable; an unchanged choice sends nothing.
+    if (!isDirty) return;
+    const method = values.gasPaymentMethod;
+    // Failures are shown inline under the form; only a stored choice is toasted.
+    if (!(await payment.save(method))) return;
+    const label = GAS_PAYMENT_METHOD_OPTIONS.find(
+      (option) => option.id === method
+    )?.label;
+    success("Payment method saved", `Gas fees will be paid with ${label}.`);
   };
 
   return {
