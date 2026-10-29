@@ -45,8 +45,10 @@ describe("primary sale summary", () => {
     expect(html).toContain("Tokens Left");
     expect(html).toContain("99,998.28");
     expect(html).toContain("100,000 total");
-    expect(html).toContain("0.001724793% sold");
+    // Under 1% reads "<1% sold"; the bar keeps the exact API percentage.
+    expect(html).toContain("&lt;1% sold");
     expect(html).toContain("width:0.001724793%");
+    expect(html).toContain('aria-valuenow="0.001724793"');
   });
 
   it("selects the active launch and supports other decimals without precision loss", async () => {
