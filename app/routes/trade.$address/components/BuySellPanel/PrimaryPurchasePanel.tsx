@@ -11,6 +11,7 @@ import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { toTokenSlug } from "~/lib/assets";
 import { createFallbackTokenMetadata } from "~/lib/metadata";
 import { BuySellScreen } from "~/lib/organisms/PriceSection/screens/BuySellScreen";
+import { RPrimaryPurchaseFeeDetails } from "~/lib/organisms/PriceSection/components/FeesCard/RPrimaryPurchaseFeeDetails";
 import { BUY } from "~/lib/organisms/PriceSection/consts";
 import { useContractAction } from "~/contracts/hooks/useContractAction";
 import { primaryPurchase } from "~/contracts/primaryPurchase.contract";
@@ -36,6 +37,8 @@ import formStyles from "~/lib/organisms/PriceSection/popups/popups.module.css";
 
 const ZERO = new BigNumber(0);
 const SCALE = new BigNumber("1000000");
+// MVRK atoms; unrelated to the payment token's scale even though both are 6.
+const MVRK_SCALE = new BigNumber("1000000");
 const toHuman = (raw: string) => new BigNumber(raw).dividedBy(SCALE);
 const toRaw = (value: BigNumber) =>
   value.times(SCALE).integerValue(BigNumber.ROUND_DOWN).toFixed(0);
@@ -182,7 +185,8 @@ function PrimaryPurchaseForm({
   const { isKyced } = useUserContext();
   const [amount, setAmount] = useState<BigNumber>();
   const [actionError, setActionError] = useState<string>();
-  const [fees, setFees] = useState({ gasFee: ZERO });
+  // Network gas in MVRK; known only after the Buy preflight estimate.
+  const [fees, setFees] = useState<{ gasFee?: BigNumber }>({});
   const option = config.options[0];
   const rawAmount = amount?.isFinite() && amount.gt(0) ? toRaw(amount) : "0";
   const quote = useMemo(
@@ -218,7 +222,7 @@ function PrimaryPurchaseForm({
     useCallback(
       (value) => {
         setActionError(undefined);
-        setFees({ gasFee: ZERO });
+        setFees({});
         setAmount((previous) => {
           const previousPayment = previous
             ? toHuman(
@@ -236,7 +240,7 @@ function PrimaryPurchaseForm({
     );
   const handleReceiveChange = useCallback((value: BigNumber | undefined) => {
     setActionError(undefined);
-    setFees({ gasFee: ZERO });
+    setFees({});
     setAmount(
       value?.isFinite() && value.gte(0) ? toHuman(toRaw(value)) : undefined
     );
@@ -290,7 +294,9 @@ function PrimaryPurchaseForm({
           review: nextReview,
           onEstimated: (resultFees) => {
             setFees({
-              gasFee: toHuman(String(resultFees.gasFee)),
+              gasFee: new BigNumber(String(resultFees.gasFee)).dividedBy(
+                MVRK_SCALE
+              ),
             });
           },
         });
@@ -348,6 +354,12 @@ function PrimaryPurchaseForm({
         total={paymentAmount}
         tokenPrice={toHuman(option.price)}
         gasFee={fees.gasFee}
+        paymentDetails={
+          <RPrimaryPurchaseFeeDetails
+            gasFee={fees.gasFee}
+            purchaseFee={toHuman(quote.fee)}
+          />
+        }
         apy={asset.apy}
         status={status}
         isOrderDataLoading={isLoading || query.isFetching}

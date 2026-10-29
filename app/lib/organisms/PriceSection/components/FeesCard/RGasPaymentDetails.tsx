@@ -26,7 +26,21 @@ import styles from "./styles.module.css";
 const GAS_CREDIT_TOOLTIP =
   "1 Gas Credit covers the platform and network fees for this order. Gas Credits can't be withdrawn.";
 
-function InfoButton({
+/** Static tooltip markup listing fee components; "-" while one is unknown. */
+export function feeBreakdownTooltip(rows: { label: string; value: string }[]) {
+  return renderToStaticMarkup(
+    <div className={styles.feeTooltip}>
+      {rows.map(({ label, value }) => (
+        <div className={styles.feeTooltipRow} key={label}>
+          <span>{label}</span>
+          <span className={styles.feeTooltipValue}>{value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function InfoButton({
   content,
   allowHTML,
   label,
@@ -111,28 +125,17 @@ export function RGasPaymentDetails({
       orderbookFee,
       feeUsdRate: mvrkUsdRate,
     });
-    const feeTooltip = renderToStaticMarkup(
-      <div className={styles.feeTooltip}>
-        {[
-          {
-            label: "Orderbook Fee",
-            value:
-              orderbookFee === undefined
-                ? "-"
-                : `$${orderbookFeeUsd.toFixed(6)}`,
-          },
-          {
-            label: "Gas Fee",
-            value: gasFee === undefined ? "-" : `$${gasFeeUsd.toFixed(6)}`,
-          },
-        ].map(({ label, value }) => (
-          <div className={styles.feeTooltipRow} key={label}>
-            <span>{label}</span>
-            <span className={styles.feeTooltipValue}>{value}</span>
-          </div>
-        ))}
-      </div>
-    );
+    const feeTooltip = feeBreakdownTooltip([
+      {
+        label: "Orderbook Fee",
+        value:
+          orderbookFee === undefined ? "-" : `$${orderbookFeeUsd.toFixed(6)}`,
+      },
+      {
+        label: "Gas Fee",
+        value: gasFee === undefined ? "-" : `$${gasFeeUsd.toFixed(6)}`,
+      },
+    ]);
 
     return (
       <>
