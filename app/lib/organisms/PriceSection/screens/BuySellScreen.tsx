@@ -37,6 +37,7 @@ type BuySellScreenProps = {
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   gasFee?: BigNumber.Value;
+  paymentDetails?: React.ReactNode;
   apy: number | null;
   orderbookFee?: BigNumber.Value;
   tokenPrice: BigNumber;
@@ -63,6 +64,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   continueButtonClassName,
   amount,
   gasFee,
+  paymentDetails,
   apy,
   orderbookFee,
   tokenPrice,
@@ -340,6 +342,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             gasFee={gasFee}
+            paymentDetails={paymentDetails}
             orderbookFee={orderbookFee}
             includedPurchaseFee={primaryPurchase?.includedFee}
             pricePerShare={tokenPrice}

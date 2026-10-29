@@ -63,6 +63,8 @@ export function OrderItem({
     handleOrderAction,
     isPopupOpen,
     popupDescription,
+    paymentSettings,
+    popupSubmitDisabled,
     popupSubmitLabel,
     popupTitle,
   } = useOpenOrderAction({ assetSymbol, onAfterAction, order });
@@ -134,6 +136,8 @@ export function OrderItem({
         order={order}
         title={popupTitle}
         description={popupDescription}
+        paymentSettings={paymentSettings}
+        submitDisabled={popupSubmitDisabled}
         submitLabel={popupSubmitLabel}
       />
     </>

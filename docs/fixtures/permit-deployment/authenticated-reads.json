@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-10-22T13:02:48.141998+00:00",
+  "provenance": "Live authenticated GET summary; credentials and wallet rows omitted. Not signing vectors.",
+  "responses": [
+    {
+      "path": "/wallets/{wallet}/relay/operations?limit=20",
+      "status": 401,
+      "error": "Invalid or expired token",
+      "code": "unauthorized"
+    },
+    {
+      "path": "/wallets/{wallet}/relay/fee/credits",
+      "status": 401,
+      "error": "Invalid or expired token",
+      "code": "unauthorized"
+    }
+  ]
+}

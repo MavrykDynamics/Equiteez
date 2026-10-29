@@ -30,6 +30,7 @@ export type UserContext = UserContextStateType & {
   // actions
   connect: () => void;
   refetchUserAccountStatus: () => Promise<void>;
+  refetchUserBalances?: () => Promise<void>;
   signOut: () => void;
   changeUser: () => void;
 };

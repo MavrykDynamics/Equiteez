@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-10-22T12:57:51.652091+00:00",
+  "api": "https://test-api.rwa.equiteez.com/api/v1",
+  "rpc": "https://basenet.rpc.mavryk.network",
+  "chainId": "NetXmtMsNf69w1w",
+  "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+  "provenance": "Live public read-only API/RPC capture. Not signing vectors or owner-reviewed deployment approval.",
+  "artifacts": [
+    {
+      "kind": "orderbook",
+      "address": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+      "file": "orderbook-script.json",
+      "sha256": "bc21af8acfe71e65c06342716ed4c6e9757a6d31604a495bc0b30edf39bdfbcb"
+    },
+    {
+      "kind": "rwa_token",
+      "address": "KT18jYZuGDajywWdCniEkfxdPeRWZFyrEuUg",
+      "file": "rwa_token-script.json",
+      "sha256": "4b5484ab468a04f66a1e39436fff05531d99d2475d118398ff3acedc2bbda29f"
+    },
+    {
+      "kind": "quote_token",
+      "address": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "file": "quote_token-script.json",
+      "sha256": "354d38b5d9f141bf189a8a007da19abf9eeba846b52f2c52cc918254684bfa3c"
+    }
+  ],
+  "serialization": "Scripts are complete parsed RPC JSON serialized compactly, not original HTTP bytes; SHA-256 hashes cover saved files.",
+  "scope": "One representative contract per kind, selected from config; not proof of token/orderbook linkage or all catalog scripts.",
+  "authenticatedReads": {
+    "operations": "HTTP 401: Invalid or expired token (unauthorized)",
+    "credits": "HTTP 401: Invalid or expired token (unauthorized)",
+    "credentialsStored": false
+  },
+  "additionalArtifacts": [
+    {
+      "file": "lambdaPermitAndExecute.json",
+      "sha256": "c040656749b3e8e68263d4c3b0a53a8cffa8ab7010ac5c679be369ebcedd7e89"
+    },
+    {
+      "file": "lambdaPlaceSellOrder.json",
+      "sha256": "fbf0c6df43d0a02e2970e10fe724e98d36b1fe4c8df12d5e68e3cd31277a2a5c"
+    },
+    {
+      "file": "signature-vectors.json",
+      "sha256": "8a8ae78dd343fbcea78ec890400814bfe4c58f882ae68499424db0e346617aac"
+    },
+    {
+      "file": "orderbook-signature-vectors.json",
+      "sha256": "4baddd259523939967d63c830559871307036bd4667ba294178c992a38c60375"
+    }
+  ],
+  "lambdaSource": {
+    "bigMapId": "3834",
+    "keys": [
+      "lambdaPermitAndExecute",
+      "lambdaPlaceSellOrder"
+    ],
+    "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi"
+  },
+  "signatureVerification": "Six generated public, unfunded test vectors accepted by read-only RPC run_code: edpk/sppk/p2pk for quote-token operator addition and orderbook empty cancellation signature isolation. No wallet extension, relay submission or funded private keys used."
+}

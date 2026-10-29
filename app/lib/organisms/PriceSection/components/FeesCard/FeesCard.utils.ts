@@ -46,6 +46,9 @@ export const calculateOrderSummaryValues = ({
     orderbookFeeUsd,
     platformFeeUsd,
     pricePerShare: toFinitePositiveOrZero(pricePerShare),
-    totalValue: normalizedOrderValue.plus(platformFeeUsd),
+    // No order, no fee: an empty form totals zero.
+    totalValue: normalizedOrderValue.gt(0)
+      ? normalizedOrderValue.plus(platformFeeUsd)
+      : ZERO,
   };
 };

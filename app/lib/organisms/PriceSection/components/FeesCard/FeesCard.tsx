@@ -16,6 +16,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 
 type FeesCardProps = {
   className?: string;
+  paymentDetails?: React.ReactNode;
   gasFee?: BigNumber.Value;
   orderbookFee?: BigNumber.Value;
   pricePerShare?: BigNumber.Value;
@@ -27,6 +28,7 @@ type FeesCardProps = {
 
 export const FeesCard: FC<FeesCardProps> = ({
   className,
+  paymentDetails,
   gasFee,
   orderbookFee,
   pricePerShare,
@@ -102,9 +104,7 @@ export const FeesCard: FC<FeesCardProps> = ({
       >
         <span className={styles.summaryLabel}>Order Summary</span>
         <span className={styles.summaryValue}>
-          <span className={styles.summaryAmount}>
-            ${formattedTotal}
-          </span>
+          <span className={styles.summaryAmount}>${formattedTotal}</span>
           <RIcon
             className={styles.arrowIcon}
             name={"arrow-short-up"}
@@ -132,19 +132,21 @@ export const FeesCard: FC<FeesCardProps> = ({
                 </span>
               </div>
 
-              <div className={styles.detailRow}>
-                <div className={styles.feeLabel}>
-                  <span>Platform Fee</span>
-                  <InfoTooltip
-                    content={feeTooltip}
-                    allowHTML
-                    className={styles.feeInfoIcon}
-                  />
-                </div>
-                <span className={styles.detailValue}>
-                  ~ ${platformFeeUsd.plus(includedPurchaseFee ?? 0).toFixed(6)}
-                </span>
-              </div>
+              {/*<div className={styles.detailRow}>*/}
+              {/*  <div className={styles.feeLabel}>*/}
+              {/*    <span>Platform Fee</span>*/}
+              {/*    <InfoTooltip*/}
+              {/*      content={feeTooltip}*/}
+              {/*      allowHTML*/}
+              {/*      className={styles.feeInfoIcon}*/}
+              {/*    />*/}
+              {/*  </div>*/}
+              {/*  <span className={styles.detailValue}>*/}
+              {/*    ~ ${platformFeeUsd.plus(includedPurchaseFee ?? 0).toFixed(6)}*/}
+              {/*  </span>*/}
+              {/*</div>*/}
+              {/* Gas Credit row (Credits) or network fee row (MVRK). */}
+              {paymentDetails}
               {annualYield !== undefined && (
                 <div className={styles.detailRow}>
                   <span>Est. Annual Income</span>
@@ -161,9 +163,7 @@ export const FeesCard: FC<FeesCardProps> = ({
 
             <div className={styles.totalRow}>
               <span>Total</span>
-              <span className={styles.totalValue}>
-                ${formattedTotal}
-              </span>
+              <span className={styles.totalValue}>${formattedTotal}</span>
             </div>
           </div>
         </div>

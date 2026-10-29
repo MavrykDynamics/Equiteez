@@ -1,0 +1,115 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--r-space-18);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-8);
+  padding: var(--r-space-6);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--r-space-6);
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+.inputError,
+.inputError:focus-within {
+  border-color: var(--r-color-red-500);
+}
+
+.walletAddress {
+  display: flex;
+  min-height: var(--r-size-control-medium);
+  align-items: center;
+  gap: 10px;
+  padding: var(--r-space-3);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+}
+
+.walletAddressText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyButton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 0;
+  color: var(--r-color-neutral-700);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--r-transition-duration-fast) ease;
+}
+
+.copyButton:hover {
+  color: var(--r-color-neutral-black);
+}
+
+.gasPayment {
+  display: flex;
+  width: calc((100% - var(--r-space-6)) / 2);
+  align-items: flex-end;
+  gap: var(--r-space-3);
+}
+
+.gasPaymentField {
+  flex: 1;
+}
+
+.dropdown {
+  width: 100%;
+}
+
+.dropdownTrigger {
+  border-radius: var(--r-radius-sm);
+}
+
+.kycMessage {
+  display: flex;
+  max-width: 894px;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  background: #dff0e6;
+  border-radius: var(--r-radius-sm);
+}
+
+.kycMessage svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gasPayment {
+    width: 100%;
+  }
+}

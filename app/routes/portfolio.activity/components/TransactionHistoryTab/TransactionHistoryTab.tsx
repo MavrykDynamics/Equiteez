@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 
-import { fetchWalletOrderHistory } from "~/lib/apis/rwa/orders/orders";
+import { fetchWalletTransactionHistory } from "~/lib/apis/rwa/orders/orders";
 import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import { Spinner } from "~/lib/atoms/Spinner";
 import { RPagination } from "~/lib/molecules/RPagination";
@@ -62,12 +62,14 @@ export function TransactionHistoryTab({
     queryKey: [
       "fetchWalletOrderHistory",
       userAddress,
+      // Includes Gas Credits top-ups; never shares a cache entry with orders.
+      "transactions",
       searchValueDebounced,
       serverSort,
       page,
     ],
     queryFn: () =>
-      fetchWalletOrderHistory({
+      fetchWalletTransactionHistory({
         page,
         perPage: TRANSACTION_HISTORY_PER_PAGE,
         search: searchValueDebounced || undefined,
@@ -124,10 +126,8 @@ export function TransactionHistoryTab({
     setPage(1);
   };
 
-  const {
-    total,
-    total_pages: totalPages = 0,
-  } = transactionHistoryQuery.data ?? {};
+  const { total, total_pages: totalPages = 0 } =
+    transactionHistoryQuery.data ?? {};
 
   return (
     <div className={styles.content}>

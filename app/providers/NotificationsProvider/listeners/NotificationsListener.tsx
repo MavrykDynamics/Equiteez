@@ -29,6 +29,13 @@ export const NotificationsListener = () => {
 
   const handleNotificationEvent = useCallback(
     (frame: NotifierEventFrame) => {
+      // RelayProvider owns relay toasts; relay_* inbox rows stay in the
+      // notification centre without a second toast.
+      if (
+        frame.event_type === "RELAY_OPERATION_UPDATED" ||
+        frame.kind?.startsWith("relay_")
+      )
+        return;
       const notification = getNotificationMessage(frame);
 
       if (notification) {

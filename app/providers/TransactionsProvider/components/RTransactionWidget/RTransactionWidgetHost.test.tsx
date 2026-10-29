@@ -97,7 +97,7 @@ it("retains status announcements and legacy fiat props", () => {
   expect(html).toContain("USD");
 });
 
-it("renders bridge targets, unknown signer thresholds, raw units and source links through the host", () => {
+it("renders bridge targets, unknown signer thresholds and raw units through the host", () => {
   const models = [
     toTransactionWidget({
       ...localRecord(),
@@ -127,10 +127,7 @@ it("renders bridge targets, unknown signer thresholds, raw units and source link
   expect(html).toContain("12 source confirmations");
   expect(html).toContain("Validators sign 1/?");
   expect(html).toContain("12345678901234567890 raw units");
-  expect(html).toContain(
-    `href="https://sepolia.etherscan.io/tx/${deposit().evm_tx_hash}"`
-  );
-  expect(html).toContain('rel="noopener noreferrer"');
+  // The widget no longer links the source transaction (a640ba48).
   expect(html).toContain('data-status="waiting"');
   expect(html).not.toContain("Successfully transferred");
 });

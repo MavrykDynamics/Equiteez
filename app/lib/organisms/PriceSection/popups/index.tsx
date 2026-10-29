@@ -1,3 +1,6 @@
+import { RGasPaymentDetails } from "../components/FeesCard/RGasPaymentDetails";
+import { useOrderbookExecution } from "~/hooks/useOrderbookExecution";
+import { useDirectOrderFee } from "~/hooks/useDirectOrderFee";
 import {
   FC,
   useCallback,
@@ -45,9 +48,9 @@ import { MAX_ORDERBOOK_DEPTH_LIMIT, useOrderbookDepth } from "~/lib/apis/rwa";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
 import {
   orderbookBuy,
-  orderbookBuyEstimation,
+  orderbookBuyBatch,
   orderbookSell,
-  orderbookSellEstimation,
+  orderbookSellBatch,
 } from "~/contracts/orderbook.contract";
 
 import styles from "./popups.module.css";
@@ -67,7 +70,6 @@ import {
   resolveMarketPrice,
 } from "~/lib/orderbook";
 import { MILLION, ZERO } from "~/lib/utils/numbers";
-import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import clsx from "clsx";
 import {
@@ -133,10 +135,7 @@ const BuySellForm: FC<
   setIsOrderBookOpen,
   setOrderType,
 }) => {
-  const { dapp } = useWalletContext();
   const { hasOrders, userTokensBalances } = useUserContext();
-
-  const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
 
   const {
     error: depthError,
@@ -162,7 +161,6 @@ const BuySellForm: FC<
       : asset.orderbook?.sell_order_fee;
 
   // Gas fee estimation state --------------------------------------------
-  const [gasFee, setGasFee] = useState<BigNumber>(ZERO);
 
   // --------------------------------------------
 
@@ -698,73 +696,40 @@ const BuySellForm: FC<
       minOrderValidationMessage ||
       marketBuyBudgetValidationMessage;
 
-  // Operation estimation effect -------------------------------------------
-  useEffect(() => {
-    if (
-      !mavrykToolkit ||
-      !total ||
-      total.lte(0) ||
-      isOrderDataLoading ||
-      hasLimitPriceTickError ||
-      orderValidationMessage
-    ) {
-      setGasFee(ZERO);
-      return;
-    }
-
-    let cancelled = false;
-
-    const t = window.setTimeout(async () => {
-      try {
-        const estimateFnToUse =
-          orderType === BUY ? orderbookBuyEstimation : orderbookSellEstimation;
-        const paramsToUse = isMarketTypeMarket
-          ? orderType === BUY
-            ? marketBuyProps
-            : marketSellProps
-          : orderType === BUY
-            ? limitBuyProps
-            : limitSellProps;
-
-        // @ts-expect-error // amount is defined
-        const res = await estimateFnToUse({
-          ...paramsToUse,
-          tezos: mavrykToolkit,
-        });
-
-        if (cancelled) return;
-
-        if (res.actionSuccess) {
-          setGasFee(
-            new BigNumber(res.data.totalSuggestedFeeMutez).dividedBy(MILLION)
-          );
-        } else {
-          setGasFee(ZERO);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setGasFee(ZERO);
-        }
-      }
-    }, 400);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(t);
-    };
-  }, [
-    hasLimitPriceTickError,
-    isOrderDataLoading,
-    isMarketTypeMarket,
-    limitBuyProps,
-    limitSellProps,
-    mavrykToolkit,
-    marketBuyProps,
-    marketSellProps,
-    orderType,
-    orderValidationMessage,
-    total,
-  ]);
+  const selectedParams = isMarketTypeMarket
+    ? orderType === BUY
+      ? marketBuyProps
+      : marketSellProps
+    : orderType === BUY
+      ? limitBuyProps
+      : limitSellProps;
+  const directFee = useDirectOrderFee(
+    JSON.stringify([orderType, selectedParams]),
+    (tezos) =>
+      orderType === BUY
+        ? // Validity below ensures the optional form amount exists.
+          // @ts-expect-error Form amount is validated before estimation.
+          orderbookBuyBatch({ ...selectedParams, tezos })
+        : // @ts-expect-error Form amount is validated before estimation.
+          orderbookSellBatch({ ...selectedParams, tezos }),
+    Boolean(
+      total?.gt(0) &&
+        !isOrderDataLoading &&
+        !hasLimitPriceTickError &&
+        !orderValidationMessage
+    )
+  );
+  // The orderbook fee is not sent with a relay permit and its charge under
+  // Credits is unconfirmed, so only the MVRK total includes it.
+  const summaryOrderbookFee =
+    directFee.method === "mvrk" ? orderbookFee : undefined;
+  // MVRK pays the wallet's network fee and storage burn; Credits pay no gas.
+  const gasFee =
+    directFee.method === "mvrk" && directFee.state.status === "ready"
+      ? directFee.state.fee.networkFee
+          .plus(directFee.state.fee.storageCost)
+          .div(MILLION)
+      : undefined;
 
   // actual contract calls and their handlers ---------------
 
@@ -788,7 +753,6 @@ const BuySellForm: FC<
       setTotal(undefined);
       setLimitPrice(undefined);
       setOrderExpiryPeriodId(null);
-      setGasFee(ZERO);
       setIsOrderBookOpen(false);
       onSuccessfulTransaction?.(metadata);
     },
@@ -805,7 +769,7 @@ const BuySellForm: FC<
   const { invokeAction: handleMarketBuy, status: buyStatus } =
     useContractAction(
       orderbookBuy,
-      marketBuyProps,
+      { ...marketBuyProps, beforeSubmit: directFee.beforeSubmit },
       undefined,
       memoizedToastProps,
       contractActionOptions
@@ -814,7 +778,7 @@ const BuySellForm: FC<
   const { invokeAction: handleMarketSell, status: sellStatus } =
     useContractAction(
       orderbookSell,
-      marketSellProps,
+      { ...marketSellProps, beforeSubmit: directFee.beforeSubmit },
       undefined,
       memoizedToastProps,
       contractActionOptions
@@ -823,7 +787,7 @@ const BuySellForm: FC<
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
     useContractAction(
       orderbookBuy,
-      limitBuyProps,
+      { ...limitBuyProps, beforeSubmit: directFee.beforeSubmit },
       undefined,
       memoizedToastProps,
       contractActionOptions
@@ -832,7 +796,7 @@ const BuySellForm: FC<
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
     useContractAction(
       orderbookSell,
-      limitSellProps,
+      { ...limitSellProps, beforeSubmit: directFee.beforeSubmit },
       undefined,
       memoizedToastProps,
       contractActionOptions
@@ -854,14 +818,48 @@ const BuySellForm: FC<
     orderType,
   ]);
 
+  const execution = useOrderbookExecution({
+    request: {
+      kind: orderType === BUY ? "place_buy_order" : "place_sell_order",
+      book: orderbookConfig,
+      order: selectedParams,
+    },
+    validationMessage:
+      orderValidationMessage ||
+      (isOrderDataLoading
+        ? "Waiting for order data."
+        : hasLimitPriceTickError
+          ? "Price must align to the selected tick."
+          : undefined),
+    directReason: directFee.reason,
+    invokeDirect: buySellActionCb,
+    onConfirmed: () => handleSuccessfulTransaction({ confirmation: null }),
+    inlineNotice: true,
+    pendingToast: memoizedToastProps.pending,
+  });
+  const paymentValidationMessage = execution.reason;
+  // A pending MVRK estimate only disables the button; real reasons get the alert.
+  const isFeePending =
+    directFee.isPending && paymentValidationMessage === directFee.reason;
+  // Gas Station availability is explained beside the Gas Credit row instead.
+  const visibleValidationMessage =
+    isFeePending || execution.isReasonInline
+      ? undefined
+      : paymentValidationMessage;
+
   const handleCloseTradeConfirmation = useCallback(() => {
     setIsTradeConfirmationOpen(false);
   }, []);
 
   const handleConfirmedBuySellAction = useCallback(() => {
-    if (isOrderDataLoading || orderValidationMessage || hasLimitPriceTickError)
+    if (
+      isOrderDataLoading ||
+      paymentValidationMessage ||
+      hasLimitPriceTickError
+    )
       return;
-    buySellActionCb();
+    setIsTradeConfirmationOpen(false);
+    void execution.execute();
 
     const isBuyAction = orderType === BUY;
     const actionName = isMarketTypeMarket
@@ -885,11 +883,11 @@ const BuySellForm: FC<
       label: eventLabel,
     });
   }, [
-    buySellActionCb,
+    execution,
     isMarketTypeMarket,
     orderType,
     isOrderDataLoading,
-    orderValidationMessage,
+    paymentValidationMessage,
     hasLimitPriceTickError,
   ]);
 
@@ -909,9 +907,11 @@ const BuySellForm: FC<
         buyStatus,
         sellStatus,
         limitBuyStatus,
-        limitSellStatus
+        limitSellStatus,
+        // Credits: the same Pending/Confirming loader as a wallet operation.
+        execution.status
       ),
-    [buyStatus, limitBuyStatus, limitSellStatus, sellStatus]
+    [buyStatus, limitBuyStatus, limitSellStatus, sellStatus, execution.status]
   );
 
   const closeOrderBook = useCallback(() => {
@@ -975,6 +975,26 @@ const BuySellForm: FC<
     />
   );
 
+  const paymentDetails = (
+    <RGasPaymentDetails
+      method={directFee.method}
+      variant={
+        activetabId === BUY ? "permitPlaceBuyOrder" : "permitPlaceSellOrder"
+      }
+      notice={execution.notice}
+      orderbookFee={orderbookFee}
+      networkFee={
+        directFee.state.status === "ready"
+          ? directFee.state.fee.networkFee.div(MILLION).toFixed()
+          : undefined
+      }
+      storageCost={
+        directFee.state.status === "ready"
+          ? directFee.state.fee.storageCost.div(MILLION).toFixed()
+          : undefined
+      }
+    />
+  );
   return (
     <>
       {orderBookContainer ? (
@@ -1067,11 +1087,12 @@ const BuySellForm: FC<
               total={total}
               tokenPrice={tokenPrice}
               gasFee={gasFee}
+              paymentDetails={paymentDetails}
               apy={asset.apy}
-              orderbookFee={orderbookFee}
+              orderbookFee={summaryOrderbookFee}
               status={status}
-              isOrderDataLoading={isOrderDataLoading}
-              validationMessage={orderValidationMessage}
+              isOrderDataLoading={isOrderDataLoading || isFeePending}
+              validationMessage={visibleValidationMessage}
             />
           ) : (
             <BuySellLimitScreen
@@ -1090,11 +1111,12 @@ const BuySellForm: FC<
               setOrderExpiryPeriodId={setOrderExpiryPeriodId}
               total={total}
               gasFee={gasFee}
+              paymentDetails={paymentDetails}
               apy={asset.apy}
-              orderbookFee={orderbookFee}
+              orderbookFee={summaryOrderbookFee}
               status={status}
-              isOrderDataLoading={isOrderDataLoading}
-              validationMessage={orderValidationMessage}
+              isOrderDataLoading={isOrderDataLoading || isFeePending}
+              validationMessage={visibleValidationMessage}
             />
           ))}
       </div>
