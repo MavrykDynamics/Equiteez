@@ -2,7 +2,10 @@ import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { preparePermit, signPreparedPermit } from "~/contracts/permit";
 import { checkWhetherWalletAbortError } from "~/errors/error";
-import { RelayApiError } from "~/lib/relay/relay.errors";
+import {
+  isConfigUnavailableError,
+  RelayApiError,
+} from "~/lib/relay/relay.errors";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
 import { getCreditPriceUnits } from "../CreditsWalletDropdown/credits.utils";
@@ -24,6 +27,9 @@ export function getTopUpErrorMessage(error: unknown) {
     return "Signature request was rejected. No payment was made.";
   if (error instanceof RelayApiError) {
     if (TOP_UP_ERRORS[error.code]) return TOP_UP_ERRORS[error.code];
+    // The pre-signing config refresh failed: nothing was signed or sent.
+    if (isConfigUnavailableError(error))
+      return "Gas Station is temporarily unavailable. Try again later.";
     // No answer, or a server failure: the top-up may still have been received.
     if (!error.status || error.status >= 500)
       return "We couldn't confirm that the top-up was received. We're checking its status, so don't add Gas Credits again until it finishes.";

@@ -41,6 +41,10 @@ import {
 import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForcedUpdate";
 import { relayStoragePrefix } from "~/lib/relay/relay.storage";
 import type { RelayRow } from "~/lib/relay/relay.state";
+import {
+  CONFIG_UNAVAILABLE_DETAIL,
+  RelayApiError,
+} from "~/lib/relay/relay.errors";
 import { RelayLifecycle } from "./relayLifecycle";
 
 /** Terminal failure text; the row's verdict, never a pointer to a details panel. */
@@ -116,7 +120,18 @@ function useRelayOwner() {
                 revision: current.current.revision + getRelayScopeRevision(),
               };
             },
-            refreshConfig: async () => (await fetchRelayConfig()).config,
+            refreshConfig: async () => {
+              const result = await fetchRelayConfig();
+              // An outage is not "relay off": never sign against the fallback.
+              if (result.state !== "ready")
+                throw new RelayApiError(
+                  undefined,
+                  "RELAY_UNAVAILABLE",
+                  "retry",
+                  CONFIG_UNAVAILABLE_DETAIL
+                );
+              return result.config;
+            },
           }
         : null,
     [dapp, payment.toolkit]

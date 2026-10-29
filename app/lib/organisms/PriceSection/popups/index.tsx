@@ -825,14 +825,17 @@ const BuySellForm: FC<
     directReason: directFee.reason,
     invokeDirect: buySellActionCb,
     onConfirmed: () => handleSuccessfulTransaction({ confirmation: null }),
+    inlineNotice: true,
   });
   const paymentValidationMessage = execution.reason;
   // A pending MVRK estimate only disables the button; real reasons get the alert.
   const isFeePending =
     directFee.isPending && paymentValidationMessage === directFee.reason;
-  const visibleValidationMessage = isFeePending
-    ? undefined
-    : paymentValidationMessage;
+  // Gas Station availability is explained beside the Gas Credit row instead.
+  const visibleValidationMessage =
+    isFeePending || execution.isReasonInline
+      ? undefined
+      : paymentValidationMessage;
 
   const handleCloseTradeConfirmation = useCallback(() => {
     setIsTradeConfirmationOpen(false);
@@ -968,6 +971,7 @@ const BuySellForm: FC<
       variant={
         activetabId === BUY ? "permitPlaceBuyOrder" : "permitPlaceSellOrder"
       }
+      notice={execution.notice}
       networkFee={
         directFee.state.status === "ready"
           ? directFee.state.fee.networkFee.div(MILLION).toFixed()

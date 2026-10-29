@@ -354,7 +354,7 @@ describe("reviewed permit signing", () => {
       enabled: false,
     });
     await expect(assertPermitCurrent(f.runtime, p)).rejects.toThrow(
-      "unavailable"
+      "RELAY_DISABLED"
     );
     vi.mocked(f.runtime.refreshConfig).mockResolvedValue(config);
     vi.setSystemTime(new Date(Number(vector.deadline) * 1000));

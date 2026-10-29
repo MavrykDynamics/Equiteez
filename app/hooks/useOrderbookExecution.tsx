@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client/index";
+import { useQuery } from "@tanstack/react-query";
+import { relayConfigQueryOptions } from "~/lib/apis/rwa/relay/relay";
 import { useGasPayment } from "~/providers/GasPaymentProvider/GasPaymentProvider";
 import { useRelay } from "~/providers/RelayProvider/RelayProvider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
@@ -13,6 +15,12 @@ import {
   type OrderPlan,
   type OrderPlanRequest,
 } from "~/lib/relay/orderPlan";
+import { getRelayEligibility } from "~/lib/relay/relay.eligibility";
+import {
+  getRelayFailureNotice,
+  getRelayNoticeForCode,
+  type RelayFailureNotice,
+} from "~/lib/relay/relayFailure";
 import {
   getPermitActionErrorMessage,
   startPermitAction,
@@ -31,7 +39,23 @@ type Options = {
   directReason?: string;
   invokeDirect: () => Promise<void>;
   onConfirmed: () => void;
+  /** The caller renders `notice` itself instead of a toast for relay failures. */
+  inlineNotice?: boolean;
 };
+
+const PENDING_AVAILABILITY = "Checking Gas Station availability.";
+
+function getRequestContracts(request: OrderPlanRequest) {
+  if (!("book" in request))
+    return { orderbookAddress: request.orderbookAddress };
+  return {
+    orderbookAddress: request.book.address,
+    tokenAddress:
+      request.kind === "place_buy_order"
+        ? request.book.quoteTokenAddress
+        : request.book.baseTokenAddress,
+  };
+}
 /**
  * Mode routing only: direct success stays in useContractAction; relay success
  * requires a confirmed row. Both paths go straight from the caller's confirm
@@ -44,6 +68,16 @@ export function useOrderbookExecution(options: Options) {
   const apollo = useApolloClient();
   const { bug } = useToasterContext();
   const [step, setStep] = useState<PermitActionStep | null>(null);
+  const [failure, setFailure] = useState<
+    (RelayFailureNotice & { at: number }) | null
+  >(null);
+  const isCredits = payment.isRestored && payment.method === "credits";
+  // Same cache entry as the Credits badge; signing still refreshes it.
+  const config = useQuery({
+    ...relayConfigQueryOptions(payment.scope ?? "unresolved"),
+    enabled: Boolean(isCredits && payment.scope),
+    refetchInterval: 60_000,
+  });
   const isBusy = step !== null;
   const plan = useRef<OrderPlan | null>(null);
   const mounted = useRef(true);
@@ -60,6 +94,55 @@ export function useOrderbookExecution(options: Options) {
   useEffect(() => {
     plan.current?.reconcile();
   }, [relay.records]);
+  const requestKey = JSON.stringify(options.request);
+  // A notice belongs to the reviewed order and payment method; a mismatch
+  // notice explains the method change itself, so it survives that reread.
+  useEffect(() => {
+    setFailure(null);
+  }, [requestKey]);
+  useEffect(() => {
+    setFailure((previous) =>
+      previous?.kind === "payment-mismatch" ? previous : null
+    );
+  }, [payment.method]);
+  // A confirmed top-up after a shortage resolves it.
+  useEffect(() => {
+    if (failure?.kind !== "credit-shortage") return;
+    if (
+      relay.records.some(
+        ({ row }) =>
+          row?.intentKind === "fee_top_up" &&
+          row.status === "confirmed" &&
+          Date.parse(row.updatedAt ?? "") > failure.at
+      )
+    )
+      setFailure(null);
+  }, [failure, relay.records]);
+  const eligibility = isCredits
+    ? getRelayEligibility({
+        config: config.data ?? { state: "loading" },
+        // Sign-in is gated by relay.isReady below.
+        wallet: payment.wallet,
+        authenticatedWallet: payment.wallet,
+        isAuthLoading: false,
+        action: options.request.kind,
+        ...getRequestContracts(options.request),
+      })
+    : null;
+  const availability =
+    !eligibility || eligibility.eligible
+      ? null
+      : eligibility.reason === "unsupported-contract"
+        ? getRelayNoticeForCode("CONTRACT_NOT_RELAYABLE")
+        : eligibility.reason === "relay-disabled"
+          ? getRelayNoticeForCode(
+              config.data?.state === "ready"
+                ? "RELAY_DISABLED"
+                : "RELAY_UNAVAILABLE"
+            )
+          : null;
+  const isAvailabilityPending =
+    eligibility !== null && !eligibility.eligible && !availability;
   const reason =
     options.validationMessage ??
     (!payment.isRestored
@@ -71,7 +154,9 @@ export function useOrderbookExecution(options: Options) {
           : !relay.isReady
             ? (relay.error ??
               "Connect and sign in; waiting for relay recovery.")
-            : undefined);
+            : isAvailabilityPending
+              ? PENDING_AVAILABILITY
+              : availability?.message);
   const execute = async () => {
     if (isBusy || reason) return;
     if (payment.method === "mvrk") {
@@ -89,6 +174,7 @@ export function useOrderbookExecution(options: Options) {
       if (current.current.options.validationMessage)
         throw new Error(current.current.options.validationMessage);
     };
+    setFailure(null);
     setStep("preparing");
     try {
       const { plan: next, done } = startPermitAction(
@@ -131,8 +217,13 @@ export function useOrderbookExecution(options: Options) {
       )
         current.current.options.onConfirmed();
     } catch (error) {
+      const notice = getRelayFailureNotice(error);
+      // Never fall back to MVRK: reread the saved choice and let the user review.
+      if (notice?.kind === "payment-mismatch") payment.reload();
+      if (mounted.current && notice && current.current.options.inlineNotice)
+        setFailure({ ...notice, at: Date.now() });
       // A failed relay row is toasted once by RelayProvider.
-      if (
+      else if (
         mounted.current &&
         !checkWhetherWalletAbortError(error) &&
         !isRelayOutcomeError(error)
@@ -157,5 +248,12 @@ export function useOrderbookExecution(options: Options) {
         ? STATUS_PENDING
         : STATUS_IDLE) as StatusFlag,
     reason,
+    /** Relay availability before signing, or the last relay failure. */
+    notice: failure ?? (reason === availability?.message ? availability : null),
+    /** `reason` is already explained by `notice`, or is only a pending check. */
+    isReasonInline: Boolean(
+      reason &&
+        (reason === PENDING_AVAILABILITY || reason === availability?.message)
+    ),
   };
 }

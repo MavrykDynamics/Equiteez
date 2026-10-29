@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useOrderbookExecution } from "./useOrderbookExecution";
 import type { OrderPlanRequest } from "~/lib/relay/orderPlan";
+import { RelayApiError } from "~/lib/relay/relay.errors";
 
 type StartDeps = {
   validate: (request: OrderPlanRequest) => Promise<void>;
@@ -20,6 +21,26 @@ const mocks = vi.hoisted(() => ({
   plan: { reconcile: vi.fn(), stop: vi.fn() },
   settle: null as null | ((error?: unknown) => void),
   deps: null as null | StartDeps,
+  reload: vi.fn(),
+  inline: false,
+  config: undefined as unknown,
+}));
+const readyConfig = (permitActions = ["permitCancelOrders"]) => ({
+  state: "ready",
+  config: {
+    enabled: true,
+    fee: { enabled: false },
+    contracts: [{ address: "book", kind: "orderbook", permitActions }],
+    gaslessThresholdMumav: "0",
+  },
+});
+vi.mock("~/lib/apis/rwa/relay/relay", () => ({
+  relayConfigQueryOptions: (scope: string) => ({
+    queryKey: ["relay", scope, "config"],
+  }),
+}));
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: () => ({ data: mocks.config }),
 }));
 vi.mock("~/lib/relay/permitAction", () => ({
   startPermitAction: mocks.start,
@@ -27,6 +48,7 @@ vi.mock("~/lib/relay/permitAction", () => ({
     error instanceof Error ? error.message : undefined,
 }));
 vi.mock("~/lib/relay/orderPlan", () => ({
+  CREDIT_SHORTAGE_MESSAGE: "You’re out of Credits.",
   isRelayOutcomeError: (error: unknown) =>
     (error as { outcome?: boolean } | null)?.outcome === true,
 }));
@@ -49,7 +71,13 @@ vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ isKyced: mocks.kyced }),
 }));
 vi.mock("~/providers/GasPaymentProvider/GasPaymentProvider", () => ({
-  useGasPayment: () => ({ method: mocks.method, isRestored: true }),
+  useGasPayment: () => ({
+    method: mocks.method,
+    isRestored: true,
+    scope: "scope",
+    wallet: "wallet",
+    reload: mocks.reload,
+  }),
 }));
 vi.mock("~/providers/RelayProvider/RelayProvider", () => ({
   useRelay: () => ({
@@ -77,6 +105,7 @@ function Harness({ orderId = "1" }: { orderId?: string }) {
     request: toRequest(orderId),
     invokeDirect: mocks.direct,
     onConfirmed: mocks.confirmed,
+    inlineNotice: mocks.inline,
   });
   return null;
 }
@@ -87,6 +116,8 @@ beforeEach(async () => {
   mocks.revision = 0;
   mocks.settle = null;
   mocks.deps = null;
+  mocks.inline = false;
+  mocks.config = readyConfig();
   mocks.start.mockImplementation((_request, deps: StartDeps) => {
     mocks.deps = deps;
     const done = new Promise<void>((resolve, reject) => {
@@ -196,4 +227,70 @@ it("unmount stops the running action", async () => {
   await act(async () => root.unmount());
   expect(mocks.plan.stop).toHaveBeenCalledOnce();
   root = createRoot(document.createElement("div"));
+});
+
+const relayError = (code: string, retryAfterMs = 0) =>
+  new RelayApiError(undefined, code, "give-up", undefined, retryAfterMs);
+it("blocks an unsupported contract before signing", async () => {
+  mocks.config = readyConfig([]);
+  await act(async () => root.render(<Harness />));
+  expect(execution.notice?.kind).toBe("unavailable");
+  expect(execution.reason).toBe(execution.notice?.message);
+  expect(execution.isReasonInline).toBe(true);
+  await act(async () => execution.execute());
+  expect(mocks.start).not.toHaveBeenCalled();
+});
+it("treats a failed config read as an outage, not relay off", async () => {
+  mocks.config = {
+    ...readyConfig(),
+    state: "disabled",
+    reason: "unavailable",
+  };
+  (mocks.config as ReturnType<typeof readyConfig>).config.enabled = false;
+  await act(async () => root.render(<Harness />));
+  expect(execution.notice?.reason).toBe(
+    "Gas Station is temporarily unavailable."
+  );
+});
+it("waits for the config without an alert", async () => {
+  mocks.config = undefined;
+  await act(async () => root.render(<Harness />));
+  expect(execution.reason).toBeDefined();
+  expect(execution.notice).toBeNull();
+  expect(execution.isReasonInline).toBe(true);
+});
+it("keeps credit shortage inline instead of a toast", async () => {
+  mocks.inline = true;
+  await act(async () => root.render(<Harness />));
+  const { running } = await start();
+  await settle(relayError("FEE_CREDIT_REQUIRED"), running);
+  expect(mocks.bug).not.toHaveBeenCalled();
+  expect(execution.notice?.kind).toBe("credit-shortage");
+  await act(async () => root.render(<Harness orderId="2" />));
+  expect(execution.notice).toBeNull();
+});
+it("separates sponsor outage from credit shortage", async () => {
+  mocks.inline = true;
+  await act(async () => root.render(<Harness />));
+  const { running } = await start();
+  await settle(relayError("RELAY_UNAVAILABLE"), running);
+  expect(execution.notice?.kind).toBe("unavailable");
+});
+it("toasts the readable notice where it cannot be shown inline", async () => {
+  const { running } = await start();
+  await settle(relayError("RELAY_QUOTA_EXCEEDED", 90_000), running);
+  expect(mocks.bug).toHaveBeenCalledOnce();
+  expect(execution.notice).toBeNull();
+});
+it("rereads the saved method on a payment mismatch", async () => {
+  mocks.inline = true;
+  await act(async () => root.render(<Harness />));
+  const { running } = await start();
+  await settle(relayError("PAYMENT_METHOD_MISMATCH"), running);
+  expect(mocks.reload).toHaveBeenCalledOnce();
+  expect(execution.notice?.kind).toBe("payment-mismatch");
+  // The reread switches to MVRK; the explanation stays.
+  mocks.method = "mvrk";
+  await act(async () => root.render(<Harness />));
+  expect(execution.notice?.kind).toBe("payment-mismatch");
 });

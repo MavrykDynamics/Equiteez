@@ -9,6 +9,7 @@ import type {
   RelayIntent,
 } from "~/lib/apis/rwa/relay/relay.types";
 import { relayIntentSchema } from "~/lib/apis/rwa/relay/relay.schema";
+import { RelayApiError } from "~/lib/relay/relay.errors";
 import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.types";
 import { toNatString, toPositiveNatString } from "~/lib/utils/formaters";
 import { buildOrderPayload, type OrderPayloadParams } from "./orderbookPayload";
@@ -61,7 +62,13 @@ export function assertCapability(
         c.permitActions.includes(variant)
     )
   ) {
-    throw new Error(
+    throw new RelayApiError(
+      undefined,
+      config.enabled ? "CONTRACT_NOT_RELAYABLE" : "RELAY_DISABLED",
+      "give-up",
+      undefined,
+      0,
+      undefined,
       "Gasless execution is unavailable for this contract and action"
     );
   }

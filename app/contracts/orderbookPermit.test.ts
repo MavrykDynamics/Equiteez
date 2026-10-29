@@ -252,7 +252,7 @@ describe("contract-defined permit actions", () => {
         { ...config, contracts: [] },
         vector.wallet
       )
-    ).toThrow("unavailable");
+    ).toThrow("CONTRACT_NOT_RELAYABLE");
   });
 });
 

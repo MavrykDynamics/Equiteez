@@ -28,6 +28,10 @@ export class RelayApiError extends Error {
     this.name = "RelayApiError";
   }
 }
+/** Local marker: the pre-signing config refresh failed, nothing was sent. */
+export const CONFIG_UNAVAILABLE_DETAIL = { reason: "config_unavailable" };
+export const isConfigUnavailableError = (error: RelayApiError) =>
+  error.detail === CONFIG_UNAVAILABLE_DETAIL;
 export function parseRetryAfter(value: unknown, now = Date.now()): number {
   if (typeof value !== "string" && typeof value !== "number") return 0;
   const raw = String(value);

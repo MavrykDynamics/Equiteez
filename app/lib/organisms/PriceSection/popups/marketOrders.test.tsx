@@ -28,7 +28,18 @@ vi.mock("~/providers/AuthProvider/auth.provider", () => ({
 vi.mock("~/contracts/orderPlanValidation", () => ({
   validateOrderPlan: vi.fn(),
 }));
-vi.mock("~/lib/apis/rwa/relay/relay", () => ({ fetchRelayCredits: vi.fn() }));
+vi.mock("~/lib/apis/rwa/relay/relay", () => ({
+  fetchRelayCredits: vi.fn(),
+  relayConfigQueryOptions: (scope: string) => ({
+    queryKey: ["relay", scope, "config"],
+    queryFn: vi.fn(),
+  }),
+}));
+// Direct-mode forms never enable the relay config read.
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  useQuery: () => ({ data: undefined }),
+}));
 vi.mock("@apollo/client/index", () => ({
   useApolloClient: () => ({ query: vi.fn() }),
 }));

@@ -1,6 +1,7 @@
 import { signPreparedPermit } from "~/contracts/permit";
 import { OrderPlan, type OrderPlanRequest } from "./orderPlan";
 import { RelayApiError } from "./relay.errors";
+import { getRelayFailureNotice } from "./relayFailure";
 
 type PlanDependencies = ConstructorParameters<typeof OrderPlan>[1];
 
@@ -73,6 +74,8 @@ export function startPermitAction(
 
 /** Human-readable relay failure text; never the raw `Relay request failed: CODE`. */
 export function getPermitActionErrorMessage(error: unknown) {
+  const notice = getRelayFailureNotice(error);
+  if (notice) return notice.message;
   if (error instanceof RelayApiError)
     return error.serverMessage ?? `Relay request failed (${error.code}).`;
 
