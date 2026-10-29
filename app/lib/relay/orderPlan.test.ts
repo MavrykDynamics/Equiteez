@@ -18,7 +18,10 @@ const mocks = vi.hoisted(() => ({
   credits: vi.fn(),
   build: vi.fn(),
 }));
-vi.mock("~/contracts/permit", () => ({ preparePermit: mocks.prepare }));
+vi.mock("~/contracts/permit", () => ({
+  preparePermit: mocks.prepare,
+  createReviewRuntime: (runtime: unknown) => runtime,
+}));
 vi.mock("~/contracts/orderbookPermit", () => ({
   readPermitOperator: mocks.operator,
   buildPermitAction: mocks.build,
@@ -382,8 +385,8 @@ describe("sequential ordinary plans", () => {
     await f.plan.review();
     expect(f.plan.state).toBe("failed");
     expect(f.plan.error).toMatchObject({ code: "FEE_CREDIT_REQUIRED" });
+    // The operator read runs alongside; nothing is prepared or signed.
     expect(mocks.prepare).not.toHaveBeenCalled();
-    expect(mocks.operator).not.toHaveBeenCalled();
   });
   it("free actions skip paid reads even with fees enabled and an empty balance", async () => {
     const f = fixture({

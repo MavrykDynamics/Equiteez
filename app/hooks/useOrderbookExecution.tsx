@@ -194,20 +194,23 @@ export function useOrderbookExecution(options: Options) {
             current.current.relay.records,
           submit: (signed, onAttempt) =>
             current.current.relay.submit(signed, onAttempt),
-          validate: async (request) => {
+          validate: async (request, reviewRuntime) => {
             assertForm();
             const scope = JSON.stringify(runtime.getScope());
             const wallet = runtime.getScope().wallet;
-            const { data } = await apollo.query({
-              query: USER_ACCOUNT_STATUS_QUERY,
-              variables: { address: wallet },
-              fetchPolicy: "network-only",
-            });
+            // KYC and balances are independent reads.
+            const [{ data }] = await Promise.all([
+              apollo.query({
+                query: USER_ACCOUNT_STATUS_QUERY,
+                variables: { address: wallet },
+                fetchPolicy: "network-only",
+              }),
+              validateOrderPlan(reviewRuntime, request),
+            ]);
             if (JSON.stringify(runtime.getScope()) !== scope)
               throw new Error("Wallet changed. Review again.");
             if (!getIsKycedForAddress(data, wallet))
               throw new Error("Verify with Mavryk Pro before trading.");
-            await validateOrderPlan(runtime, request);
             assertForm();
           },
         },

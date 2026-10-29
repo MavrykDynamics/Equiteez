@@ -15,6 +15,7 @@ import {
   RPCNodeType,
 } from "app/consts/rpcNodes";
 import { getItemFromStorage } from "~/lib/utils/local-storage";
+import { withCachedChainId } from "~/lib/utils/chainId";
 
 // utils
 
@@ -96,7 +97,7 @@ export function dappClient() {
 
   function tezos() {
     const wallet = getDAppClientWallet();
-    const Tezos = new MavrykToolkit(getRpcNode());
+    const Tezos = withCachedChainId(new MavrykToolkit(getRpcNode()));
 
     if (wallet) Tezos.setWalletProvider(wallet);
 

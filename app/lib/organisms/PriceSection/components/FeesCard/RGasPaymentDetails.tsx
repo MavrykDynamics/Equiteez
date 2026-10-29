@@ -1,14 +1,11 @@
 import { useState } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { Link } from "@remix-run/react";
 import { BigNumber } from "bignumber.js";
 import clsx from "clsx";
 
 import { ROUTES } from "~/consts/routes";
 import GasCreditEmptyIcon from "~/icons/gas-credit-empty.svg?react";
-import GasCreditInfoIcon from "~/icons/gas-credit-info.svg?react";
 import GasCreditLowIcon from "~/icons/gas-credit-low.svg?react";
-import { RTooltip } from "~/lib/atoms/RTooltip";
 import { useUsdToTokenRates } from "~/lib/fiat-currency";
 import { MVRK_ASSET_SLUG } from "~/lib/metadata";
 import { AddCreditsModal } from "~/layouts/PageLayout/WalletDropdown/AddCreditsModal/AddCreditsModal";
@@ -21,47 +18,11 @@ import { formatCreditCharge } from "~/layouts/PageLayout/WalletDropdown/CreditsW
 import type { RelayFailureNotice } from "~/lib/relay/relayFailure";
 import { MILLION } from "~/lib/utils/numbers";
 import { calculateOrderSummaryValues } from "./FeesCard.utils";
+import { feeBreakdownTooltip, InfoButton } from "./FeeInfo";
 import styles from "./styles.module.css";
 
 const GAS_CREDIT_TOOLTIP =
   "1 Gas Credit covers the platform and network fees for this order. Gas Credits can't be withdrawn.";
-
-/** Static tooltip markup listing fee components; "-" while one is unknown. */
-export function feeBreakdownTooltip(rows: { label: string; value: string }[]) {
-  return renderToStaticMarkup(
-    <div className={styles.feeTooltip}>
-      {rows.map(({ label, value }) => (
-        <div className={styles.feeTooltipRow} key={label}>
-          <span>{label}</span>
-          <span className={styles.feeTooltipValue}>{value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export function InfoButton({
-  content,
-  allowHTML,
-  label,
-}: {
-  content: string;
-  allowHTML?: boolean;
-  label: string;
-}) {
-  return (
-    <RTooltip
-      allowHTML={allowHTML}
-      className={styles.gasCreditTooltip}
-      content={content}
-      maxWidth={315}
-    >
-      <button aria-label={label} className={styles.gasCreditInfo} type="button">
-        <GasCreditInfoIcon aria-hidden />
-      </button>
-    </RTooltip>
-  );
-}
 
 const switchLink = (
   <Link className={styles.messageLink} to={ROUTES.portfolioProfile}>

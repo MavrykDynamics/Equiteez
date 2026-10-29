@@ -4,6 +4,7 @@ import {
   type PermitRequest,
 } from "~/contracts/orderbookPermit";
 import {
+  createReviewRuntime,
   preparePermit,
   type PermitRuntime,
   type PreparedPermit,
@@ -12,15 +13,16 @@ import {
 import { fetchRelayCredits } from "~/lib/apis/rwa/relay/relay";
 import { canResignRelay, RelayApiError } from "./relay.errors";
 import { matchesRelayIntent } from "./relay.state";
+import { CREDIT_SHORTAGE_MESSAGE } from "./relayFailure";
 import type { RelayRecord } from "./relay.storage";
+
+export { CREDIT_SHORTAGE_MESSAGE };
 
 export type OrderPlanRequest = Exclude<
   PermitRequest,
   { kind: "fee_top_up" } | { kind: "update_operators" }
 >;
 export type SignedPermit = Awaited<ReturnType<typeof signPreparedPermit>>;
-export const CREDIT_SHORTAGE_MESSAGE =
-  "You’re out of Credits. Please Top Up your balance. Your order has been preserved.";
 // A failed/rejected relay row: RelayProvider already toasts it once.
 const relayOutcomes = new WeakSet<object>();
 const markRelayOutcome = <T extends object>(error: T) => {
@@ -41,7 +43,11 @@ export type PlanState =
   | "confirmed";
 type Dependencies = {
   runtime: PermitRuntime;
-  validate: (request: OrderPlanRequest) => Promise<void>;
+  /** `runtime` is the current review's (shared config and contracts). */
+  validate: (
+    request: OrderPlanRequest,
+    runtime: PermitRuntime
+  ) => Promise<void>;
   isLocked: (contract: string) => boolean;
   records: () => RelayRecord[];
   submit: (
@@ -118,8 +124,11 @@ export class OrderPlan {
         "An existing relay action must settle before this action. Use its recovery details."
       );
   }
-  private async checkAllowance(request: PermitRequest) {
-    const config = await this.checked(this.deps.runtime.refreshConfig());
+  private async checkAllowance(
+    request: PermitRequest,
+    runtime: PermitRuntime = this.deps.runtime
+  ) {
+    const config = await this.checked(runtime.refreshConfig());
     const action = buildPermitAction(
       request,
       config,
@@ -151,13 +160,13 @@ export class OrderPlan {
       CREDIT_SHORTAGE_MESSAGE
     );
   }
-  private async operator() {
+  private async operator(runtime: PermitRuntime = this.deps.runtime) {
     const request = this.request;
     if (!("book" in request)) return null;
     const isBuy = request.kind === "place_buy_order";
     return this.checked(
       readPermitOperator(
-        this.deps.runtime.tezos,
+        runtime.tezos,
         isBuy ? request.book.quoteTokenAddress : request.book.baseTokenAddress,
         {
           owner: this.deps.runtime.getScope().wallet,
@@ -179,9 +188,13 @@ export class OrderPlan {
     try {
       this.assertCurrent();
       this.assertUnlocked();
-      await this.checked(this.deps.validate(this.request));
-      await this.checkAllowance(this.request); // Stop before an unnecessary setup signature.
-      const operator = await this.operator();
+      const runtime = createReviewRuntime(this.deps.runtime);
+      // Independent reads; all settle before any setup signature is requested.
+      const [, , operator] = await Promise.all([
+        this.checked(this.deps.validate(this.request, runtime)),
+        this.checkAllowance(this.request, runtime),
+        this.operator(runtime),
+      ]);
       let step: PermitRequest = this.request;
       if (operator?.needsGrant && "book" in this.request) {
         if (this.setupConfirmed)
@@ -193,11 +206,9 @@ export class OrderPlan {
           book: this.request.book,
           side: this.request.kind === "place_buy_order" ? "buy" : "sell",
         };
-        await this.checkAllowance(step);
+        await this.checkAllowance(step, runtime);
       }
-      this.prepared = await this.checked(
-        preparePermit(this.deps.runtime, step)
-      );
+      this.prepared = await this.checked(preparePermit(runtime, step));
       this.assertUnlocked();
       this.set("review");
     } catch (error) {
@@ -208,17 +219,21 @@ export class OrderPlan {
   async validateReview() {
     this.assertCurrent();
     this.assertUnlocked();
-    await this.checked(this.deps.validate(this.request));
-    await this.checkAllowance(this.request);
-    if (
-      this.prepared?.request.kind !== "update_operators" &&
-      (await this.operator())?.needsGrant
-    )
+    // Fresh config after the wallet prompt, read once for this pass.
+    const runtime = createReviewRuntime(this.deps.runtime);
+    const [, , operator] = await Promise.all([
+      this.checked(this.deps.validate(this.request, runtime)),
+      this.checkAllowance(this.request, runtime),
+      this.prepared?.request.kind === "update_operators"
+        ? null
+        : this.operator(runtime),
+    ]);
+    if (operator?.needsGrant)
       throw new Error(
         "Operator permission changed. Close and review the action again."
       );
     if (this.prepared?.request.kind === "update_operators")
-      await this.checkAllowance(this.prepared.request);
+      await this.checkAllowance(this.prepared.request, runtime);
     this.assertUnlocked();
   }
   async submit(signed: SignedPermit) {

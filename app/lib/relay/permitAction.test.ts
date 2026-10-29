@@ -77,7 +77,8 @@ describe("startPermitAction", () => {
     await flush();
     const plan = mocks.plans[0];
 
-    expect(plan.validateReview).toHaveBeenCalledOnce();
+    // review() just validated; the plan revalidates before its POST.
+    expect(plan.validateReview).not.toHaveBeenCalled();
     expect(mocks.sign).toHaveBeenCalledOnce();
     expect(plan.submit).toHaveBeenCalledWith({ signed: true });
     expect(steps).toEqual(["preparing", "signing", "processing"]);

@@ -45,7 +45,8 @@ export function startPermitAction(
       if (plan.state !== "review" || !plan.prepared)
         throw plan.error ?? new Error("Unable to prepare the relay action.");
 
-      await plan.validateReview();
+      // review() has just validated everything; the plan revalidates before
+      // its POST, after the wallet prompt.
       onStep?.("signing");
       const signed = await signPreparedPermit(deps.runtime, plan.prepared);
       onStep?.("processing");

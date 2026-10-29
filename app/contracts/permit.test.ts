@@ -19,6 +19,7 @@ import {
 } from "./permitCodec";
 import { permitGeneration } from "./permitGeneration";
 import {
+  createReviewRuntime,
   preparePermit,
   signPreparedPermit,
   assertPermitCurrent,
@@ -299,12 +300,27 @@ describe("reviewed permit signing", () => {
       "again"
     );
   });
-  it("rejects stale counters before wallet signing", async () => {
+  it("rejects stale counters before signing an older review", async () => {
     const f = permitFixture();
     const p = await preparePermit(f.runtime, f.request, vector.deadline);
     f.counter.mockResolvedValue("1");
-    await expect(signPreparedPermit(f.runtime, p)).rejects.toThrow("counter");
+    const now = Date.now();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(now + 11_000);
+    try {
+      await expect(signPreparedPermit(f.runtime, p)).rejects.toThrow("counter");
+    } finally {
+      clock.mockRestore();
+    }
     expect(f.requestSignPayload).not.toHaveBeenCalled();
+  });
+  it("signs a fresh review without re-reading it, then rechecks", async () => {
+    const f = permitFixture();
+    const p = await preparePermit(f.runtime, f.request, vector.deadline);
+    // Consumed between review and prompt: caught right after signing.
+    f.counter.mockResolvedValue("1");
+    await expect(signPreparedPermit(f.runtime, p)).rejects.toThrow("counter");
+    expect(f.requestSignPayload).toHaveBeenCalledOnce();
+    expect(f.toTransferParams).not.toHaveBeenCalled();
   });
   it.each([
     "wallet",
@@ -440,5 +456,39 @@ describe("reviewed permit signing", () => {
     expect(new Date(signed.topUp!.deadline).getTime() / 1000).toBe(
       Number(vector.deadline)
     );
+  });
+});
+
+describe("review runtime", () => {
+  it("reads the relay config once per review", async () => {
+    const f = permitFixture();
+    const review = createReviewRuntime(f.runtime);
+    await review.refreshConfig();
+    await preparePermit(review, f.request, vector.deadline);
+    expect(f.runtime.refreshConfig).toHaveBeenCalledOnce();
+    // A new review (and the post-signature recheck) reads it again.
+    await createReviewRuntime(f.runtime).refreshConfig();
+    expect(f.runtime.refreshConfig).toHaveBeenCalledTimes(2);
+  });
+  it("loads each contract once, but storage and counters stay live", async () => {
+    const f = permitFixture();
+    const review = createReviewRuntime(f.runtime);
+    const at = vi.mocked(f.runtime.tezos.contract.at);
+    await review.tezos.contract.at(book.address);
+    await review.tezos.contract.at(book.address);
+    await review.tezos.contract.at(vector.contract);
+    expect(at).toHaveBeenCalledTimes(2);
+    await preparePermit(review, f.request, vector.deadline);
+    expect(at).toHaveBeenCalledTimes(2);
+    expect(f.counter).toHaveBeenCalledOnce();
+  });
+  it("retries a failed contract read and forwards the rest of the toolkit", async () => {
+    const f = permitFixture();
+    const at = vi.mocked(f.runtime.tezos.contract.at);
+    at.mockRejectedValueOnce(new Error("502"));
+    const review = createReviewRuntime(f.runtime);
+    await expect(review.tezos.contract.at(book.address)).rejects.toThrow("502");
+    await expect(review.tezos.contract.at(book.address)).resolves.toBeDefined();
+    expect(review.tezos.rpc.getRpcUrl()).toBe(f.runtime.tezos.rpc.getRpcUrl());
   });
 });

@@ -7,7 +7,7 @@ import type { OrderPlanRequest } from "~/lib/relay/orderPlan";
 import { RelayApiError } from "~/lib/relay/relay.errors";
 
 type StartDeps = {
-  validate: (request: OrderPlanRequest) => Promise<void>;
+  validate: (request: OrderPlanRequest, runtime: never) => Promise<void>;
 };
 const mocks = vi.hoisted(() => ({
   method: "credits",
@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   settle: null as null | ((error?: unknown) => void),
   deps: null as null | StartDeps,
   reload: vi.fn(),
+  reviewRuntime: { review: true } as never,
   loading: vi.fn(() => "toast-1"),
   hide: vi.fn(),
   onStep: null as null | ((step: string) => void),
@@ -52,7 +53,6 @@ vi.mock("~/lib/relay/permitAction", () => ({
     error instanceof Error ? error.message : undefined,
 }));
 vi.mock("~/lib/relay/orderPlan", () => ({
-  CREDIT_SHORTAGE_MESSAGE: "You’re out of Credits.",
   isRelayOutcomeError: (error: unknown) =>
     (error as { outcome?: boolean } | null)?.outcome === true,
 }));
@@ -192,9 +192,9 @@ it("relay rows reconcile the running action", async () => {
 it("validation rejects an order edited after the confirm click", async () => {
   const { running } = await start();
   await act(async () => root.render(<Harness orderId="2" />));
-  await expect(mocks.deps!.validate(toRequest("1"))).rejects.toThrow(
-    "The order or price changed"
-  );
+  await expect(
+    mocks.deps!.validate(toRequest("1"), mocks.reviewRuntime)
+  ).rejects.toThrow("The order or price changed");
   await settle(new Error("The order or price changed."), running);
   expect(mocks.confirmed).not.toHaveBeenCalled();
 });
@@ -207,10 +207,14 @@ it("does not complete the form when the order changed before confirmation", asyn
 it("validation requires fresh KYC", async () => {
   const { running } = await start();
   mocks.kyced = false;
-  await expect(mocks.deps!.validate(toRequest("1"))).rejects.toThrow(
-    "Verify with Mavryk Pro"
+  await expect(
+    mocks.deps!.validate(toRequest("1"), mocks.reviewRuntime)
+  ).rejects.toThrow("Verify with Mavryk Pro");
+  // Balances are read alongside KYC, through the review's runtime.
+  expect(mocks.validate).toHaveBeenCalledWith(
+    mocks.reviewRuntime,
+    toRequest("1")
   );
-  expect(mocks.validate).not.toHaveBeenCalled();
   await settle(new Error("x"), running);
 });
 it("shows a relay failure as a toast", async () => {

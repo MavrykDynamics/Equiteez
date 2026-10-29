@@ -3,7 +3,7 @@ import { BigNumber } from "bignumber.js";
 import { useUsdToTokenRates } from "~/lib/fiat-currency";
 import { MVRK_ASSET_SLUG } from "~/lib/metadata";
 import { calculateOrderSummaryValues } from "./FeesCard.utils";
-import { feeBreakdownTooltip, InfoButton } from "./RGasPaymentDetails";
+import { feeBreakdownTooltip, InfoButton } from "./FeeInfo";
 import styles from "./styles.module.css";
 
 /**

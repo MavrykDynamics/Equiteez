@@ -210,8 +210,11 @@ async function checkBook(
       throw new Error("Orderbook settings changed. Refresh and review again.");
   }
   return {
-    baseDecimals: Number(toNatString(storage.rwaTokenDecimals)),
-    quoteDecimals: Number(toNatString(currency.decimals)),
+    storage,
+    decimals: {
+      baseDecimals: Number(toNatString(storage.rwaTokenDecimals)),
+      quoteDecimals: Number(toNatString(currency.decimals)),
+    },
   };
 }
 
@@ -359,25 +362,30 @@ export async function preparePermit(
     await checked(runtime.refreshConfig())
   );
   const built = buildPermitAction(request, config, scope.wallet);
-  const decimals = await checked(checkBook(runtime, request, checked));
-  const contract = await checked(runtime.tezos.contract.at(built.contract));
+  // Independent reads run together; each still rechecks the scope.
+  const [book, contract, header] = await Promise.all([
+    checked(checkBook(runtime, request, checked)),
+    checked(runtime.tezos.contract.at(built.contract)),
+    checked(runtime.tezos.rpc.getBlockHeader()),
+  ]);
+  const decimals = book?.decimals;
   const actionType = checkGeneration(
     contract,
     built.contractKind
   ) as MichelsonType;
-  if (built.contractKind === "orderbook") {
-    const storage = await checked(
-      contract.storage<{
-        lambdaLedger: { get(key: string): Promise<string | undefined> };
-      }>()
-    );
+  const assertPermitLambda = async () => {
+    if (built.contractKind !== "orderbook") return;
+    // The book's storage was just read for this same contract.
+    const storage =
+      book && "book" in request && request.book.address === built.contract
+        ? book.storage
+        : await checked(contract.storage<Pick<BookStorage, "lambdaLedger">>());
     const lambda = await checked(
       storage.lambdaLedger.get("lambdaPermitAndExecute")
     );
     if (!lambda || hashBytes(lambda) !== permitGeneration.orderbookLambda)
       throw new Error("Unsupported orderbook permit execution lambda");
-  }
-  const header = await checked(runtime.tezos.rpc.getBlockHeader());
+  };
   const now = Math.max(
     Math.floor(Date.now() / 1000),
     Math.floor(Date.parse(header.timestamp) / 1000)
@@ -391,11 +399,14 @@ export async function preparePermit(
       "Permit expired or deadline is outside the 15-minute review window"
     );
   // Read from the actual view; absent counters resolve to zero inside this verified generation.
-  const rawCounter = await checked(
-    contract.contractViews
-      .getPermitCounter(scope.wallet)
-      .executeView({ viewCaller: scope.wallet })
-  );
+  const [, rawCounter] = await Promise.all([
+    assertPermitLambda(),
+    checked(
+      contract.contractViews
+        .getPermitCounter(scope.wallet)
+        .executeView({ viewCaller: scope.wallet })
+    ),
+  ]);
   const counter = toNatString(rawCounter as NatValue, "Permit counter");
   const encoded = encodePermit({
     actionType,
@@ -416,11 +427,53 @@ export async function preparePermit(
     ...encoded,
     fields,
     configFingerprint: fingerprint(config),
+    preparedAt: Date.now(),
   });
 }
 export type PreparedPermit = Awaited<ReturnType<typeof preparePermit>>;
 
+const bound = (value: unknown, target: object) =>
+  typeof value === "function" ? value.bind(target) : value;
+/**
+ * One review pass: a single relay config read and one contract abstraction
+ * (script and entrypoints) per address. Storage, views, counters and balances
+ * are still read live. Never reuse it across reviews or after signing.
+ */
+export function createReviewRuntime(runtime: PermitRuntime): PermitRuntime {
+  let config: Promise<RelayConfig> | undefined;
+  const contracts = new Map<string, Promise<Contract>>();
+  const at = (address: string) => {
+    let contract = contracts.get(address);
+    if (!contract) {
+      contract = runtime.tezos.contract.at(address).catch((error: unknown) => {
+        contracts.delete(address);
+        throw error;
+      });
+      contracts.set(address, contract);
+    }
+    return contract;
+  };
+  const contract = new Proxy(runtime.tezos.contract, {
+    get: (target, key) =>
+      key === "at" ? at : bound(Reflect.get(target, key), target),
+  });
+  const tezos = new Proxy(runtime.tezos, {
+    get: (target, key) =>
+      key === "contract" ? contract : bound(Reflect.get(target, key), target),
+  });
+  return {
+    ...runtime,
+    tezos,
+    refreshConfig: () =>
+      (config ??= runtime.refreshConfig().catch((error: unknown) => {
+        config = undefined;
+        throw error;
+      })),
+  };
+}
+
 const usedReviews = new WeakSet<PreparedPermit>();
+const FRESH_REVIEW_MS = 10_000;
 export async function assertPermitCurrent(
   runtime: PermitRuntime,
   prepared: PreparedPermit
@@ -454,7 +507,11 @@ export async function signPreparedPermit(
       "Review this action again before requesting another signature"
     );
   usedReviews.add(prepared);
-  await assertPermitCurrent(runtime, prepared);
+  // A review prepared moments ago is current; re-reading every contract would
+  // only delay the wallet prompt. The checks after signing always run.
+  if (Date.now() - prepared.preparedAt > FRESH_REVIEW_MS)
+    await assertPermitCurrent(runtime, prepared);
+  else await assertScope(runtime, prepared.scope, prepared.publicKey);
   const response = await runtime.client.requestSignPayload({
     signingType: "micheline" as SigningType,
     payload: prepared.payload,

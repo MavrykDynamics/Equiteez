@@ -1,5 +1,7 @@
-import { CREDIT_SHORTAGE_MESSAGE } from "./orderPlan";
 import { RelayApiError } from "./relay.errors";
+
+export const CREDIT_SHORTAGE_MESSAGE =
+  "You’re out of Credits. Please Top Up your balance. Your order has been preserved.";
 
 /**
  * What the user can do about a relay failure:
