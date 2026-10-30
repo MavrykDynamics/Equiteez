@@ -244,3 +244,34 @@
     padding: 0 var(--r-space-4);
   }
 }
+
+/* Skeleton */
+.skeletonSlide {
+  width: 100%;
+  min-height: 301px;
+}
+
+.skeletonDot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: var(--r-space-1);
+  background: var(--r-color-neutral-100);
+  border-radius: 50%;
+}
+
+.skeletonDot:first-child {
+  background: var(--r-color-neutral-black);
+}
+
+@media (--media-tablet) {
+  .skeletonSlide {
+    min-height: 259px;
+  }
+
+  .skeletonDot {
+    width: 8px;
+    height: 8px;
+    margin: 0;
+  }
+}

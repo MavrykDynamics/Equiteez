@@ -15,9 +15,11 @@ import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import FiltersIcon from "app/icons/filters.svg?react";
 import { MobileAssetsFilters } from "~/routes/_index/components/MobileAssetsFilters/MobileAssetsFilters";
 import { DepositFunds } from "../DepositFunds/DepositFunds";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
+import { ExploreAssetsSkeleton } from "./ExploreAssetsSkeleton";
 
 export function ExploreAssets() {
-  const { assets } = useAssetsContext();
+  const { assets, isLoading } = useAssetsContext();
   const [filters, setFilters] = useState<AssetsFilterState>(
     INITIAL_ASSETS_FILTER_STATE
   );
@@ -52,86 +54,91 @@ export function ExploreAssets() {
   }, [assets, filters.filter, filters.search]);
 
   return (
-    <div className={styles.wrapper}>
-      <Reveal className={styles.titleReveal} preset="rise">
-        <>
-          <div className={styles.titleBlock}>
-            <RHeading className={styles.title} size="h5" weight="medium">
-              Explore Assets
-            </RHeading>
-            <div className={styles.desktopDeposit}>
-              <DepositFunds />
+    <RSkeletonReveal
+      isLoading={isLoading && !assets.length}
+      skeleton={<ExploreAssetsSkeleton />}
+    >
+      <div className={styles.wrapper}>
+        <Reveal className={styles.titleReveal} preset="rise">
+          <>
+            <div className={styles.titleBlock}>
+              <RHeading className={styles.title} size="h5" weight="medium">
+                Explore Assets
+              </RHeading>
+              <div className={styles.desktopDeposit}>
+                <DepositFunds />
+              </div>
             </div>
-          </div>
-          <div className={styles.mobileSearchRow}>
-            <div className={styles.mobileSearch}>
-              <RIcon aria-hidden="true" name="search" size="small" />
-              <input
-                aria-label="Search assets"
-                className={styles.mobileSearchInput}
-                onChange={(event) =>
-                  setFilters((currentFilters) => ({
-                    ...currentFilters,
-                    search: event.target.value,
-                  }))
-                }
-                placeholder="Search"
-                value={filters.search}
-              />
+            <div className={styles.mobileSearchRow}>
+              <div className={styles.mobileSearch}>
+                <RIcon aria-hidden="true" name="search" size="small" />
+                <input
+                  aria-label="Search assets"
+                  className={styles.mobileSearchInput}
+                  onChange={(event) =>
+                    setFilters((currentFilters) => ({
+                      ...currentFilters,
+                      search: event.target.value,
+                    }))
+                  }
+                  placeholder="Search"
+                  value={filters.search}
+                />
+              </div>
+              <button
+                aria-label="Open filters"
+                className={styles.mobileFiltersButton}
+                onClick={() => {
+                  setIsMobileFiltersOpen(true);
+                }}
+                type="button"
+              >
+                <FiltersIcon aria-hidden="true" height={16} width={16} />
+              </button>
             </div>
-            <button
-              aria-label="Open filters"
-              className={styles.mobileFiltersButton}
-              onClick={() => {
-                setIsMobileFiltersOpen(true);
-              }}
-              type="button"
-            >
-              <FiltersIcon aria-hidden="true" height={16} width={16} />
-            </button>
-          </div>
-        </>
-      </Reveal>
+          </>
+        </Reveal>
 
-      <Reveal className={styles.desktopFilters} delay={0.06} preset="rise">
-        <AssetsFilters
+        <Reveal className={styles.desktopFilters} delay={0.06} preset="rise">
+          <AssetsFilters
+            filters={filters}
+            onChange={(updates: Partial<AssetsFilterState>) =>
+              setFilters((currentFilters) => ({
+                ...currentFilters,
+                ...updates,
+              }))
+            }
+          />
+        </Reveal>
+        <MobileAssetsFilters
           filters={filters}
+          isOpen={isMobileFiltersOpen}
           onChange={(updates: Partial<AssetsFilterState>) =>
             setFilters((currentFilters) => ({
               ...currentFilters,
               ...updates,
             }))
           }
+          onClose={() => setIsMobileFiltersOpen(false)}
         />
-      </Reveal>
-      <MobileAssetsFilters
-        filters={filters}
-        isOpen={isMobileFiltersOpen}
-        onChange={(updates: Partial<AssetsFilterState>) =>
-          setFilters((currentFilters) => ({
-            ...currentFilters,
-            ...updates,
-          }))
-        }
-        onClose={() => setIsMobileFiltersOpen(false)}
-      />
-      {filteredAssets.length ? (
-        filters.viewType === "image" ? (
-          <ImageAssetsView assets={filteredAssets} />
-        ) : filters.viewType === "grid" ? (
-          <AssetsCardsView assets={filteredAssets} />
+        {filteredAssets.length ? (
+          filters.viewType === "image" ? (
+            <ImageAssetsView assets={filteredAssets} />
+          ) : filters.viewType === "grid" ? (
+            <AssetsCardsView assets={filteredAssets} />
+          ) : (
+            <AssetsTableView assets={filteredAssets} />
+          )
         ) : (
-          <AssetsTableView assets={filteredAssets} />
-        )
-      ) : (
-        <Reveal delay={0.1} preset="fade">
-          <div className={styles.emptyState}>
-            <RText size="body-sm" color="neutral-700">
-              No Results Found
-            </RText>
-          </div>
-        </Reveal>
-      )}
-    </div>
+          <Reveal delay={0.1} preset="fade">
+            <div className={styles.emptyState}>
+              <RText size="body-sm" color="neutral-700">
+                No Results Found
+              </RText>
+            </div>
+          </Reveal>
+        )}
+      </div>
+    </RSkeletonReveal>
   );
 }

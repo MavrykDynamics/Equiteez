@@ -1,15 +1,11 @@
 import { FC } from "react";
 import { useWalletContext } from "./WalletProvider/wallet.provider";
 import { Spinner } from "~/lib/atoms/Spinner/Spinner";
-import { useTokensContext } from "./TokensProvider/tokens.provider";
-import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 
 export const AppGlobalLoader: FC<PropsWithChildren> = ({ children }) => {
   const { isLoading } = useWalletContext();
-  const { isLoading: isTokensMetaLoading } = useTokensContext();
-  const { isLoading: isAssetsLoading } = useAssetsContext();
 
-  if (isLoading || isTokensMetaLoading || isAssetsLoading)
+  if (isLoading)
     return (
       <div className="h-screen w-full flex items-center justify-center bg-mvrk-dark">
         <Spinner size={56} />

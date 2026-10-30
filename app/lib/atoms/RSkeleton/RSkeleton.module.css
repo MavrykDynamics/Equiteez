@@ -1,0 +1,108 @@
+/* Shimmer follows Motion's skeleton-shimmer example: a 200%-wide gradient
+   swept across the placeholder, 1.5s easeInOut, infinite, left → right. */
+.skeleton {
+  flex-shrink: 0;
+  background-color: var(--skeleton-base);
+  background-image: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-mid) 40%,
+    var(--skeleton-highlight) 50%,
+    var(--skeleton-mid) 60%,
+    var(--skeleton-base) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.surface {
+  --skeleton-base: #e6e6e6;
+  --skeleton-mid: #eeeeee;
+  --skeleton-highlight: #f5f5f5;
+}
+
+.element {
+  --skeleton-base: #cccccc;
+  --skeleton-mid: #d8d8d8;
+  --skeleton-highlight: #e6e6e6;
+}
+
+.radius-none {
+  border-radius: 0;
+}
+
+.radius-xs {
+  border-radius: var(--r-radius-xs);
+}
+
+.radius-sm {
+  border-radius: var(--r-radius-sm);
+}
+
+.radius-12 {
+  border-radius: var(--r-radius-12);
+}
+
+.radius-md {
+  border-radius: var(--r-radius-md);
+}
+
+.radius-lg {
+  border-radius: var(--r-radius-lg);
+}
+
+.radius-pill {
+  border-radius: var(--r-radius-pill);
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Loaded content wipes in left → right over the skeleton it replaces. */
+@property --r-skeleton-wipe {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+.reveal {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 var(--r-skeleton-wipe),
+    transparent calc(var(--r-skeleton-wipe) + 100%)
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 var(--r-skeleton-wipe),
+    transparent calc(var(--r-skeleton-wipe) + 100%)
+  );
+  animation: skeletonWipe 0.6s ease-in-out both;
+}
+
+@keyframes skeletonWipe {
+  from {
+    --r-skeleton-wipe: -100%;
+  }
+  to {
+    --r-skeleton-wipe: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background-image: none;
+  }
+
+  .reveal {
+    animation: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
