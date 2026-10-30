@@ -7,14 +7,15 @@ import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import useEmblaCarousel from "embla-carousel-react";
 import type { AssetHighlightType } from "~/lib/apis/rwa/assets/assets.types";
 import { Container } from "~/lib/atoms/Container/Container";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
+import { HighlightsSkeleton } from "~/routes/_index/components/Highlights/HighlightsSkeleton";
 
 type HighlightRowProps = {
   assets: AssetHighlightType[];
-  isLoading: boolean;
   title: string;
 };
 
-function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
+function MobileHighlightRow({ assets, title }: HighlightRowProps) {
   const [emblaRef] = useEmblaCarousel({
     align: "center",
     dragFree: true,
@@ -27,34 +28,16 @@ function MobileHighlightRow({ assets, isLoading, title }: HighlightRowProps) {
     },
   });
 
-  const cards: Array<AssetHighlightType | null> = isLoading
-    ? Array.from({ length: 3 }, () => null)
-    : assets;
-
   return (
     <section className={styles.mobileSection}>
-      <RText weight="medium" className={styles.mobileSectionTitle}>{title}</RText>
+      <RText weight="medium" className={styles.mobileSectionTitle}>
+        {title}
+      </RText>
       <div className={styles.mobileViewport} ref={emblaRef}>
         <div className={styles.mobileList}>
-          {cards.map((asset, index) => (
-            <div
-              className={styles.mobileSlide}
-              key={asset?.address ?? `${title}-${index}`}
-            >
-              {isLoading ? (
-                <div className={styles.cardSkeleton} aria-hidden="true">
-                  <div className={styles.cardBlock}>
-                    <div className={styles.skeletonTitle} />
-                    <div className={styles.skeletonSubtitle} />
-                  </div>
-                  <div className={styles.cardBlock}>
-                    <div className={styles.skeletonValue} />
-                    <div className={styles.skeletonChange} />
-                  </div>
-                </div>
-              ) : asset ? (
-                <HighlightCard asset={asset} />
-              ) : null}
+          {assets.map((asset) => (
+            <div className={styles.mobileSlide} key={asset.address}>
+              <HighlightCard asset={asset} />
             </div>
           ))}
         </div>
@@ -81,94 +64,63 @@ export function Highlights() {
   const trending = data?.trending ?? [];
   const newlyAdded = data?.newly_added ?? [];
 
-  const renderSkeletonCards = () =>
-    Array.from({ length: 3 }, (_, index) => (
-      <div className={styles.cardSkeleton} key={index} aria-hidden="true">
-        <div className={styles.cardBlock}>
-          <div className={styles.skeletonTitle} />
-          <div className={styles.skeletonSubtitle} />
-        </div>
-
-        <div className={styles.cardBlock}>
-          <div className={styles.skeletonValue} />
-          <div className={styles.skeletonChange} />
-        </div>
-      </div>
-    ));
-
   return (
-    <Container className={styles.wrapper}>
-      <div className={styles.desktopSection}>
-        <RText weight="medium">Top Gainers</RText>
-        <div className={styles.sectionList}>
-          {isLoading
-            ? renderSkeletonCards()
-            : topGainers.map((asset, index) => (
-                <Reveal
-                  className={styles.cardReveal}
-                  delay={Math.min(0.04 * (index + 1), 0.2)}
-                  key={asset.address}
-                  preset="rise"
-                >
-                  <HighlightCard asset={asset} />
-                </Reveal>
-              ))}
+    <RSkeletonReveal isLoading={isLoading} skeleton={<HighlightsSkeleton />}>
+      <Container className={styles.wrapper}>
+        <div className={styles.desktopSection}>
+          <RText weight="medium">Top Gainers</RText>
+          <div className={styles.sectionList}>
+            {topGainers.map((asset, index) => (
+              <Reveal
+                className={styles.cardReveal}
+                delay={Math.min(0.04 * (index + 1), 0.2)}
+                key={asset.address}
+                preset="rise"
+              >
+                <HighlightCard asset={asset} />
+              </Reveal>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className={styles.desktopSection}>
-        <RText weight="medium">Trending</RText>
-        <div className={styles.sectionList}>
-          {isLoading
-            ? renderSkeletonCards()
-            : trending.map((asset, index) => (
-                <Reveal
-                  className={styles.cardReveal}
-                  delay={Math.min(0.04 * (index + 1), 0.2)}
-                  key={asset.address}
-                  preset="rise"
-                >
-                  <HighlightCard asset={asset} />
-                </Reveal>
-              ))}
+        <div className={styles.desktopSection}>
+          <RText weight="medium">Trending</RText>
+          <div className={styles.sectionList}>
+            {trending.map((asset, index) => (
+              <Reveal
+                className={styles.cardReveal}
+                delay={Math.min(0.04 * (index + 1), 0.2)}
+                key={asset.address}
+                preset="rise"
+              >
+                <HighlightCard asset={asset} />
+              </Reveal>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className={styles.desktopSection}>
-        <RText weight="medium">Newly Added</RText>
-        <div className={styles.sectionList}>
-          {isLoading
-            ? renderSkeletonCards()
-            : newlyAdded.map((asset, index) => (
-                <Reveal
-                  className={styles.cardReveal}
-                  delay={Math.min(0.04 * (index + 1), 0.2)}
-                  key={asset.address}
-                  preset="rise"
-                >
-                  <HighlightCard asset={asset} />
-                </Reveal>
-              ))}
+        <div className={styles.desktopSection}>
+          <RText weight="medium">Newly Added</RText>
+          <div className={styles.sectionList}>
+            {newlyAdded.map((asset, index) => (
+              <Reveal
+                className={styles.cardReveal}
+                delay={Math.min(0.04 * (index + 1), 0.2)}
+                key={asset.address}
+                preset="rise"
+              >
+                <HighlightCard asset={asset} />
+              </Reveal>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className={styles.mobileSections}>
-        <MobileHighlightRow
-          assets={topGainers}
-          isLoading={isLoading}
-          title="Top Gainers"
-        />
-        <MobileHighlightRow
-          assets={trending}
-          isLoading={isLoading}
-          title="Trending"
-        />
-        <MobileHighlightRow
-          assets={newlyAdded}
-          isLoading={isLoading}
-          title="Newly Added"
-        />
-      </div>
-    </Container>
+        <div className={styles.mobileSections}>
+          <MobileHighlightRow assets={topGainers} title="Top Gainers" />
+          <MobileHighlightRow assets={trending} title="Trending" />
+          <MobileHighlightRow assets={newlyAdded} title="Newly Added" />
+        </div>
+      </Container>
+    </RSkeletonReveal>
   );
 }
