@@ -1,0 +1,267 @@
+@import "../../../../styles/breakpoints.css";
+
+/* Sizes mirror the loaded components: AssetDetails, ChartBlock, RChartStats,
+   AssetTabs, AssetGallerySlider and the buy/sell panel. */
+
+.details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-2);
+  min-height: 48px;
+  margin: 0 0 var(--r-space-3);
+}
+
+.assetInfoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+  min-width: 0;
+}
+
+.assetInfo {
+  display: flex;
+  align-items: center;
+  width: 469px;
+  max-width: 100%;
+  height: 48px;
+  padding: 0 var(--r-space-4);
+}
+
+.assetIcon {
+  width: 32px;
+  height: 32px;
+}
+
+/* Badges drop under the asset name on phones only */
+.badges {
+  display: none;
+  width: 179px;
+  height: 26px;
+}
+
+.actions {
+  display: flex;
+  gap: var(--r-space-3);
+}
+
+.chart {
+  width: 100%;
+  height: 508px;
+}
+
+.stats {
+  width: 100%;
+  height: 60px;
+  margin: var(--r-space-3) 0 var(--r-space-5) 0;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  margin-bottom: var(--r-space-18);
+}
+
+.tabSwitcher {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-4);
+  min-width: 0;
+  padding-bottom: var(--r-space-6);
+  overflow: hidden;
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.tabGroup,
+.sideTabs {
+  display: flex;
+  gap: var(--r-space-2);
+  flex-shrink: 0;
+}
+
+.divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 44px;
+  background: var(--r-color-neutral-100);
+}
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-10);
+}
+
+.section,
+.locationSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+}
+
+.locationSection {
+  gap: var(--r-space-4);
+}
+
+.sectionTitle {
+  width: 220px;
+  max-width: 100%;
+  height: 28px;
+}
+
+.paragraph {
+  width: 100%;
+  height: 105px;
+}
+
+.whyInvest {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--r-space-6);
+}
+
+.whyInvestItem {
+  height: 116px;
+}
+
+.detailGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-8);
+}
+
+.detailColumns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--r-space-5) var(--r-space-8);
+}
+
+.detailColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+}
+
+.detailItem {
+  width: 170px;
+  max-width: 100%;
+  height: 32px;
+}
+
+.locationAddress {
+  width: 200px;
+  max-width: 100%;
+  height: 21px;
+}
+
+.locationText {
+  width: 100%;
+  height: 63px;
+}
+
+.map {
+  width: 100%;
+  height: 453px;
+}
+
+.gallery {
+  width: 100%;
+  height: 120px;
+}
+
+.buySell {
+  width: 100%;
+  height: 623px;
+}
+
+@media (--media-tablet-max) {
+  /* Market dropdown and buy/sell tabs stack on a full-width panel */
+  .buySell {
+    height: 668px;
+  }
+}
+
+@media (--media-tablet) {
+  .details {
+    min-height: auto;
+  }
+
+  .assetInfo {
+    height: 36px;
+  }
+
+  .assetIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .chart {
+    height: 459px;
+  }
+
+  .stats {
+    margin: var(--r-space-4) 0 var(--r-space-11) 0;
+  }
+
+  .tabs {
+    min-width: 100%;
+    margin-bottom: var(--r-space-11);
+  }
+
+  .divider,
+  .sideTabs,
+  .buySell {
+    display: none;
+  }
+}
+
+@media (--media-phone-max) {
+  .details {
+    position: relative;
+    align-items: flex-start;
+  }
+
+  .assetInfoGroup {
+    width: 100%;
+  }
+
+  .assetInfo {
+    width: 235px;
+  }
+
+  .badges {
+    display: block;
+  }
+
+  .actions {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    gap: var(--r-space-2);
+  }
+
+  .stats {
+    height: 108px;
+    margin: var(--r-space-4) 0 var(--r-space-8) 0;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tabSwitcher {
+    overflow: visible;
+  }
+
+  .tabGroup {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    max-width: 100%;
+  }
+
+  .whyInvest,
+  .detailColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

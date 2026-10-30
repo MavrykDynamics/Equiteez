@@ -17,6 +17,8 @@ import { ROUTES } from "~/consts";
 import { TABLET_WIDTH } from "~/hooks/useWindowDimensions";
 import { RPrimarySaleSummary } from "./components/RPrimarySaleSummary/RPrimarySaleSummary";
 import { RPrimaryPriceLabelGroup } from "./components/RPriceLabelGroup/RPrimaryPriceLabelGroup";
+import { TradePageSkeleton } from "./components/TradePageSkeleton/TradePageSkeleton";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
 export default function TradePage() {
   const { address } = useParams();
@@ -43,9 +45,14 @@ export default function TradePage() {
   }, [address]);
 
   if (!asset) {
-    // TODO: replace with the trade page skeleton
+    // Same element type and position as the loaded page below, so React keeps
+    // this RSkeletonReveal mounted and wipes the page in once assets arrive
     if (isLoading && !assets.length) {
-      return <div className={styles.notFoundWrapper} />;
+      return (
+        <RSkeletonReveal isLoading skeleton={<TradePageSkeleton />}>
+          {null}
+        </RSkeletonReveal>
+      );
     }
 
     return (
@@ -84,61 +91,65 @@ export default function TradePage() {
   );
 
   return (
-    <Container className={styles.tradeContainer}>
-      <RText
-        className={styles.viewOnlyNotice}
-        color="neutral-700"
-        size="body-s"
-      >
-        View-only on mobile. Open on desktop to trade.
-      </RText>
-      <div className={clsx(styles.contentBlock, isPrimary && styles.primary)}>
-        <div className={styles.mainContent}>
-          <AssetDetails asset={asset} />
-          {isPrimary ? (
-            <div className={styles.primaryGallery}>
-              {gallery}
-              <RChartStats asset={asset} />
-            </div>
-          ) : (
-            <ChartBlock
-              asset={asset}
-              isOrderBookOpen={isOrderBookOpen}
-              orderBookContainerRef={setOrderBookContainer}
-              onOrderBookToggle={() => setIsOrderBookOpen((isOpen) => !isOpen)}
-            />
-          )}
-          {isPrimary ? (
-            <div className={styles.primaryTabs}>
-              <AssetTabs asset={asset} />
-            </div>
-          ) : (
-            <AssetTabs asset={asset} />
-          )}
-        </div>
-
-        <div className={styles.tradeColumn}>
-          <div className={styles.tradeColumnContent}>
+    <RSkeletonReveal isLoading={false} skeleton={null}>
+      <Container className={styles.tradeContainer}>
+        <RText
+          className={styles.viewOnlyNotice}
+          color="neutral-700"
+          size="body-s"
+        >
+          View-only on mobile. Open on desktop to trade.
+        </RText>
+        <div className={clsx(styles.contentBlock, isPrimary && styles.primary)}>
+          <div className={styles.mainContent}>
+            <AssetDetails asset={asset} />
             {isPrimary ? (
-              <RPrimarySaleSummary assetAddress={asset.address} />
+              <div className={styles.primaryGallery}>
+                {gallery}
+                <RChartStats asset={asset} />
+              </div>
             ) : (
-              gallery
-            )}
-            <div className={styles.buySellContainer}>
-              <BuySellPanel
-                key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
+              <ChartBlock
                 asset={asset}
-                isPrimary={isPrimary}
                 isOrderBookOpen={isOrderBookOpen}
-                orderBookContainer={
-                  !isPrimary && isDesktop ? orderBookContainer : null
+                orderBookContainerRef={setOrderBookContainer}
+                onOrderBookToggle={() =>
+                  setIsOrderBookOpen((isOpen) => !isOpen)
                 }
-                setIsOrderBookOpen={setIsOrderBookOpen}
               />
+            )}
+            {isPrimary ? (
+              <div className={styles.primaryTabs}>
+                <AssetTabs asset={asset} />
+              </div>
+            ) : (
+              <AssetTabs asset={asset} />
+            )}
+          </div>
+
+          <div className={styles.tradeColumn}>
+            <div className={styles.tradeColumnContent}>
+              {isPrimary ? (
+                <RPrimarySaleSummary assetAddress={asset.address} />
+              ) : (
+                gallery
+              )}
+              <div className={styles.buySellContainer}>
+                <BuySellPanel
+                  key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
+                  asset={asset}
+                  isPrimary={isPrimary}
+                  isOrderBookOpen={isOrderBookOpen}
+                  orderBookContainer={
+                    !isPrimary && isDesktop ? orderBookContainer : null
+                  }
+                  setIsOrderBookOpen={setIsOrderBookOpen}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </RSkeletonReveal>
   );
 }
