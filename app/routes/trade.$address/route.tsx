@@ -20,7 +20,7 @@ import { RPrimaryPriceLabelGroup } from "./components/RPriceLabelGroup/RPrimaryP
 
 export default function TradePage() {
   const { address } = useParams();
-  const { assets, assetError } = useAssetsContext();
+  const { assets, assetError, isLoading } = useAssetsContext();
   const navigate = useNavigate();
 
   const asset = assets.find((item) => item.address === address);
@@ -43,6 +43,11 @@ export default function TradePage() {
   }, [address]);
 
   if (!asset) {
+    // TODO: replace with the trade page skeleton
+    if (isLoading && !assets.length) {
+      return <div className={styles.notFoundWrapper} />;
+    }
+
     return (
       <Container className={styles.notFoundWrapper}>
         <RText size="body-l" weight="medium">
