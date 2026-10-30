@@ -271,7 +271,7 @@ button.slide:hover .button {
 /* Skeleton */
 .skeletonSlide {
   width: 100%;
-  min-height: 301px;
+  min-height: 315px;
 }
 
 .skeletonDot {
@@ -296,5 +296,11 @@ button.slide:hover .button {
     width: 8px;
     height: 8px;
     margin: 0;
+  }
+}
+
+@media (--media-phone-max) {
+  .skeletonSlide {
+    min-height: 261px;
   }
 }
