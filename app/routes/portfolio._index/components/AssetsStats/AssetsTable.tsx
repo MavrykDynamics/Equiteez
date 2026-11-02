@@ -15,11 +15,11 @@ import {
 } from "./AssetsTable.types";
 import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { Spinner } from "~/lib/atoms/Spinner";
+import { AssetsTableSkeletonRows } from "./AssetsStatsSkeleton";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 
 export function AssetsTable({ assets }: AllAssetsTableProps) {
-  const { isLoading, wallet } = usePortfolioContext();
+  const { isPortfolioLoading, wallet } = usePortfolioContext();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortState<SortKey>>(null);
 
@@ -77,15 +77,6 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
         </label>
       </div>
       <div className={styles.tableViewport}>
-        {isLoading ? (
-          <div
-            className={styles.sectionLoader}
-            role="status"
-            aria-live="polite"
-          >
-            <Spinner size={32} />
-          </div>
-        ) : null}
         <table className={styles.table}>
           <thead>
             <tr>
@@ -106,14 +97,18 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
               ))}
             </tr>
           </thead>
-          <tbody>
-            {filteredAssets.map((asset) => (
-              <AssetsTableRow
-                asset={asset}
-                canRefund={rwaAddresses.has(asset.token_address)}
-                key={asset.token_address}
-              />
-            ))}
+          <tbody aria-busy={isPortfolioLoading}>
+            {isPortfolioLoading ? (
+              <AssetsTableSkeletonRows />
+            ) : (
+              filteredAssets.map((asset) => (
+                <AssetsTableRow
+                  asset={asset}
+                  canRefund={rwaAddresses.has(asset.token_address)}
+                  key={asset.token_address}
+                />
+              ))
+            )}
           </tbody>
         </table>
       </div>

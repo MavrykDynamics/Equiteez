@@ -45,6 +45,10 @@ export function PortfolioProvider({ children }: PortfolioProviderProps) {
         portfolioQuery.isLoading ||
         portfolioQuery.isFetching ||
         portfolioQuery.isPending,
+      // First load only (no data, no error yet) — drives per-block skeletons,
+      // so background refetches keep showing the previous data
+      isWalletLoading: walletQuery.isPending,
+      isPortfolioLoading: portfolioQuery.isPending,
     }),
     [
       portfolioQuery.data,
