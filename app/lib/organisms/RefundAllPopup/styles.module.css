@@ -140,23 +140,11 @@
   gap: var(--r-space-1);
 }
 
-.infoButton {
-  display: inline-flex;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  cursor: help;
-}
-
-.infoButton svg {
-  width: 16px;
-  height: 16px;
-}
-
-.infoButton:focus-visible {
-  outline: none;
-  box-shadow: var(--r-focus-ring);
+.infoIcon {
+  color: var(--r-color-neutral-500);
+  flex-shrink: 0;
+  height: 12px;
+  width: 12px;
 }
 
 .processingTitle {

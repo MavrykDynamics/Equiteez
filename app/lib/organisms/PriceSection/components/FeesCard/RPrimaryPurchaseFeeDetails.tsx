@@ -3,7 +3,8 @@ import { BigNumber } from "bignumber.js";
 import { useUsdToTokenRates } from "~/lib/fiat-currency";
 import { MVRK_ASSET_SLUG } from "~/lib/metadata";
 import { calculateOrderSummaryValues } from "./FeesCard.utils";
-import { feeBreakdownTooltip, InfoButton } from "./FeeInfo";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
+import { feeBreakdownTooltip } from "./FeeInfo";
 import styles from "./styles.module.css";
 
 /**
@@ -37,10 +38,12 @@ export function RPrimaryPurchaseFeeDetails({
     <div className={styles.detailRow}>
       <span className={styles.feeLabel}>
         Platform Fee
-        <InfoButton
+        <InfoTooltip
           allowHTML
+          className={styles.feeInfoIcon}
           content={feeTooltip}
           label="Platform fee breakdown"
+          maxWidth={315}
         />
       </span>
       <span className={styles.detailValue}>

@@ -66,7 +66,7 @@ export function CreditsWalletDropdown({
         <RDropdownBodyContent align="right" className={styles.menu}>
           <div className={styles.balanceSection}>
             <RText color="neutral-700" size="body-s">
-              Gas Credits Balance
+              Credits Balance
             </RText>
             <div className={styles.balanceValue} role="status">
               {status === "ready" && summary ? (

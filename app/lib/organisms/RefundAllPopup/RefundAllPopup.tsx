@@ -1,6 +1,5 @@
 import CloseIcon from "app/icons/toast-close.svg?react";
 import ErrorIcon from "app/icons/refund-error.svg?react";
-import InfoIcon from "app/icons/gas-credit-info.svg?react";
 import LoadingIcon from "app/icons/refund-loading.svg?react";
 import LoadingLightIcon from "app/icons/refund-loading-light.svg?react";
 import NoticeInfoIcon from "app/icons/refund-info.svg?react";
@@ -22,10 +21,10 @@ import type {
 } from "~/lib/apis/rwa/refunds/refunds.types";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
-import { RTooltip } from "~/lib/atoms/RTooltip";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import { MILLION } from "~/lib/utils/numbers";
 import { AssetIcon } from "~/templates/AssetIcon";
 
@@ -360,15 +359,12 @@ function RefundDetails({
         label={
           <span className={styles.labelWithInfo}>
             Unavailable orders
-            <RTooltip content={UNAVAILABLE_ORDERS_TOOLTIP} maxWidth={315}>
-              <button
-                aria-label={UNAVAILABLE_ORDERS_TOOLTIP}
-                className={styles.infoButton}
-                type="button"
-              >
-                <InfoIcon aria-hidden />
-              </button>
-            </RTooltip>
+            <InfoTooltip
+              className={styles.infoIcon}
+              content={UNAVAILABLE_ORDERS_TOOLTIP}
+              label={UNAVAILABLE_ORDERS_TOOLTIP}
+              maxWidth={315}
+            />
           </span>
         }
         value={scan.blockedCount > 0 ? pluralizeOrders(scan.blockedCount) : "–"}

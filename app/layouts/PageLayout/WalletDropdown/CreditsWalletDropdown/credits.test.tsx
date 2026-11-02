@@ -51,9 +51,7 @@ vi.mock("@remix-run/react", () => ({
   Link: ({ children }: { children: ReactNode }) => <a href="/">{children}</a>,
 }));
 vi.mock("~/icons/info-message.svg?react", () => ({ default: () => <svg /> }));
-vi.mock("~/icons/gas-credit-info.svg?react", () => ({
-  default: () => <svg />,
-}));
+vi.mock("app/icons/info.svg?react", () => ({ default: () => <svg /> }));
 vi.mock("~/icons/gas-credit-low.svg?react", () => ({ default: () => <svg /> }));
 vi.mock("~/icons/gas-credit-empty.svg?react", () => ({
   default: () => <svg />,
