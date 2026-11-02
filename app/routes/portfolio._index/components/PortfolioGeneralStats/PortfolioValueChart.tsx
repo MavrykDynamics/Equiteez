@@ -6,7 +6,7 @@ import {
   fetchPublicWalletPortfolioHistory,
   fetchWalletPortfolioHistory,
 } from "~/lib/apis/rwa";
-import { Spinner } from "~/lib/atoms/Spinner";
+import { RSkeleton } from "~/lib/atoms/RSkeleton";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -179,16 +179,13 @@ export function PortfolioValueChart({
         ) : null}
       </div>
       <div className={styles.chartCanvas} ref={chartCanvasRef}>
-        {portfolioHistoryQuery.isLoading ||
-        portfolioHistoryQuery.isFetching ||
-        portfolioHistoryQuery.isPending ? (
-          <div
-            className={styles.chartLoader}
-            role="status"
+        {portfolioHistoryQuery.isPending ? (
+          <RSkeleton
             aria-label="Loading chart"
-          >
-            <Spinner size={32} />
-          </div>
+            className={styles.chartSkeleton}
+            role="status"
+            variant="surface"
+          />
         ) : !hasChartData ? (
           <div className={styles.chartEmpty} role="status">
             <RText color="neutral-700" size="body-sm">

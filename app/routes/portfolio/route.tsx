@@ -1,21 +1,35 @@
 import { Container } from "~/lib/atoms/Container/Container";
 import styles from "./styles.module.css";
-import { Outlet } from "@remix-run/react";
+import { Outlet, useLocation } from "@remix-run/react";
 import { PortfolioProvider } from "~/providers/PortfolioProvider/portfolio.provider";
 import { MobilePortfolio } from "~/routes/portfolio/components/MobilePortfolio/MobilePortfolio";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { ConnectWallet } from "~/layouts/PageLayout/ConnectWallet";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
+import { ROUTES } from "~/consts";
+import { PortfolioPageSkeleton } from "~/routes/portfolio/components/PortfolioPageSkeleton/PortfolioPageSkeleton";
 
 export default function Portfolio() {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isAuthLoading } = useAuthContext();
   const isMobile = useIsMobileViewport();
+  const { pathname } = useLocation();
 
   if (isMobile)
     return (
       <Container>
         <MobilePortfolio />
+      </Container>
+    );
+
+  // Until the stored session is restored isAuthenticated is false, which used
+  // to flash the login prompt with a spinner before the real page
+  if (isAuthLoading)
+    return (
+      <Container>
+        <PortfolioPageSkeleton
+          withOverview={pathname.replace(/\/$/, "") === ROUTES.portfolio}
+        />
       </Container>
     );
 

@@ -56,14 +56,41 @@
   overflow-x: auto;
 }
 
-.sectionLoader {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+.skeletonCell {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeletonAssetName {
+  width: 65px;
+  height: 18px;
+}
+
+.skeletonAssetSymbol {
+  width: 80px;
+  height: 15px;
+}
+
+.skeletonLine {
+  width: 60px;
+  height: 15px;
+}
+
+.skeletonLineShort {
+  width: 32px;
+  height: 15px;
+}
+
+.skeletonSubLine {
+  width: 36px;
+  height: 13px;
+}
+
+.skeletonLegendItem {
+  width: 183px;
+  max-width: 100%;
+  height: 36px;
 }
 
 .table {
@@ -185,13 +212,6 @@
   min-width: 0;
   padding-left: var(--r-space-6);
   border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-}
-
-.chartSectionLoader {
-  display: flex;
-  min-height: 263px;
-  align-items: center;
-  justify-content: center;
 }
 
 .chartSwitcher {
