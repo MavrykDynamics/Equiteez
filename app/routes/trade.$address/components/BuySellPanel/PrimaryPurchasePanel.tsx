@@ -27,11 +27,11 @@ import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { DepositFunds } from "~/routes/_index/components/DepositFunds/DepositFunds";
 import depositStyles from "~/routes/_index/components/DepositFunds/styles.module.css";
-import { Spinner } from "~/lib/atoms/Spinner";
 import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvider/toaster.provider.const";
 import { usePrimaryPurchase } from "./usePrimaryPurchase";
 import { RTradingCountdown } from "./RTradingCountdown";
 import styles from "./styles.module.css";
+import { BuySellPanelSkeleton } from "./BuySellPanelSkeleton";
 import formStyles from "~/lib/organisms/PriceSection/popups/popups.module.css";
 
 const ZERO = new BigNumber(0);
@@ -116,9 +116,7 @@ function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   return (
     <>
       {query.isPending ? (
-        <div className={styles.state}>
-          <Spinner size={56} />
-        </div>
+        <BuySellPanelSkeleton />
       ) : config &&
         !config.options.length &&
         !isKyced &&

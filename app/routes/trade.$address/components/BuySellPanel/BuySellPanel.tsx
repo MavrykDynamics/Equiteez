@@ -8,7 +8,6 @@ import {
 import { useSearchParams } from "@remix-run/react";
 
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
-import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import {
   FreshnessSource,
@@ -20,6 +19,7 @@ import { useOrderbookConfig } from "~/hooks/useOrderbookConfig";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./styles.module.css";
+import { BuySellPanelSkeleton } from "./BuySellPanelSkeleton";
 import { PrimaryPurchasePanel } from "./PrimaryPurchasePanel";
 
 type BuySellPanelProps = {
@@ -86,11 +86,7 @@ function SecondaryBuySellPanel({
   );
 
   if (status === "loading") {
-    return (
-      <div className={styles.state}>
-        <Spinner size={56} />
-      </div>
-    );
+    return <BuySellPanelSkeleton />;
   }
 
   if (!config) {
