@@ -34,6 +34,13 @@ export type AddCreditsRequest = {
 export const TOP_UP_UNAVAILABLE_REASON =
   "Gas Credits top-up is unavailable right now. Your existing balance is unchanged.";
 
+// "13" -> "13.00", "13.5" -> "13.50"; longer fractions are kept as typed.
+function padCents(amount: string) {
+  const match = /^(\d*)\.?(\d*)$/.exec(amount);
+  if (!match || (!match[1] && !match[2])) return amount;
+  return `${match[1] || "0"}.${match[2].padEnd(2, "0")}`;
+}
+
 type AddCreditsModalProps = {
   isOpen: boolean;
   // Forces the unavailable presentation instead of the top-up form.
@@ -256,21 +263,28 @@ export function AddCreditsModal({
                   )}
                 >
                   {customAmount ? "$" : null}
-                  <input
-                    aria-label="Custom amount in USDT"
-                    className={styles.customInput}
-                    inputMode="decimal"
-                    onChange={(event) =>
-                      setCustomAmount(event.target.value.replace(/[^\d.]/g, ""))
-                    }
-                    onFocus={() => setSelectedOption("custom")}
-                    placeholder={customPlaceholder}
-                    // Grow with the typed value; show the full range when empty.
-                    style={{
-                      width: `${(customAmount || customPlaceholder).length + 0.5}ch`,
-                    }}
-                    value={customAmount}
-                  />
+                  {/* A hidden copy of the text sizes the input to its exact
+                      width; show the full range when empty. */}
+                  <span
+                    className={styles.customInputSizer}
+                    data-value={customAmount || customPlaceholder}
+                  >
+                    <input
+                      aria-label="Custom amount in USDT"
+                      className={styles.customInput}
+                      inputMode="decimal"
+                      onBlur={() => setCustomAmount(padCents(customAmount))}
+                      onChange={(event) =>
+                        setCustomAmount(
+                          event.target.value.replace(/[^\d.]/g, "")
+                        )
+                      }
+                      onFocus={() => setSelectedOption("custom")}
+                      placeholder={customPlaceholder}
+                      size={1}
+                      value={customAmount}
+                    />
+                  </span>
                 </span>
               </label>
             </div>

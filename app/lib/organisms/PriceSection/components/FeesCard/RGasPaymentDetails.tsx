@@ -17,8 +17,9 @@ import {
 import { formatCreditCharge } from "~/layouts/PageLayout/WalletDropdown/CreditsWalletDropdown/credits.utils";
 import type { RelayFailureNotice } from "~/lib/relay/relayFailure";
 import { MILLION } from "~/lib/utils/numbers";
+import { InfoTooltip } from "~/lib/organisms/InfoTooltip";
 import { calculateOrderSummaryValues } from "./FeesCard.utils";
-import { feeBreakdownTooltip, InfoButton } from "./FeeInfo";
+import { feeBreakdownTooltip } from "./FeeInfo";
 import styles from "./styles.module.css";
 
 const GAS_CREDIT_TOOLTIP =
@@ -103,10 +104,12 @@ export function RGasPaymentDetails({
         <div className={styles.detailRow}>
           <span className={styles.feeLabel}>
             Platform Fee
-            <InfoButton
+            <InfoTooltip
               allowHTML
+              className={styles.feeInfoIcon}
               content={feeTooltip}
               label="Platform fee breakdown"
+              maxWidth={315}
             />
           </span>
           <span className={styles.detailValue}>
@@ -159,7 +162,12 @@ export function RGasPaymentDetails({
       <div className={styles.detailRow}>
         <span className={styles.feeLabel}>
           Gas Credit
-          <InfoButton content={GAS_CREDIT_TOOLTIP} label={GAS_CREDIT_TOOLTIP} />
+          <InfoTooltip
+            className={styles.feeInfoIcon}
+            content={GAS_CREDIT_TOOLTIP}
+            label={GAS_CREDIT_TOOLTIP}
+            maxWidth={315}
+          />
         </span>
         <span className={styles.detailValue}>{value}</span>
       </div>

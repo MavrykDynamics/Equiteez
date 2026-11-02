@@ -5,7 +5,7 @@
 .modal {
   width: min(588px, 100%);
   max-height: calc(100vh - var(--r-space-8));
-  padding: 0;
+  padding: 0 !important;
   overflow: auto;
   color: var(--r-color-neutral-black);
   background: var(--r-color-neutral-white);
@@ -40,7 +40,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-8);
+  gap: var(--r-space-6);
   padding: var(--r-space-4) var(--r-space-11) var(--r-space-8);
   overflow-wrap: anywhere;
 }
@@ -165,16 +165,35 @@
   border-color: var(--r-color-red-500);
 }
 
-.customInput {
+/* The input and a hidden copy of its text share one grid cell, so the input
+   is exactly as wide as what it shows. */
+.customInputSizer {
+  display: inline-grid;
   min-width: 1ch;
   max-width: 14ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.customInputSizer::after,
+.customInput {
+  grid-area: 1 / 1;
+  font: inherit;
+}
+
+.customInputSizer::after {
+  content: attr(data-value);
+  visibility: hidden;
+  white-space: pre;
+}
+
+.customInput {
+  width: 100%;
+  min-width: 0;
   padding: 0;
   color: inherit;
   background: transparent;
   border: 0;
   outline: 0;
-  font: inherit;
-  font-variant-numeric: tabular-nums;
   text-align: left;
 }
 
@@ -218,6 +237,7 @@
 .actions {
   display: flex;
   width: 100%;
+  margin-top: var(--r-space-2);
   gap: var(--r-space-3);
 }
 

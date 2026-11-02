@@ -175,32 +175,6 @@
   color: var(--r-color-neutral-black);
 }
 
-/* The tooltip's inline spans would sit the icon on the text baseline. */
-.gasCreditTooltip,
-.gasCreditTooltip > span {
-  display: flex;
-}
-
-.gasCreditInfo {
-  display: inline-flex;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  color: var(--r-color-neutral-500);
-  border-radius: 50%;
-  cursor: help;
-}
-
-.gasCreditInfo svg {
-  width: 16px;
-  height: 16px;
-}
-
-.gasCreditInfo:focus-visible {
-  outline: none;
-  box-shadow: var(--r-focus-ring);
-}
-
 .creditMessage {
   display: flex;
   gap: var(--r-space-2);
