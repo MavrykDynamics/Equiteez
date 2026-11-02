@@ -8,7 +8,20 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { ConnectWallet } from "~/layouts/PageLayout/ConnectWallet";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import { ROUTES } from "~/consts";
-import { PortfolioPageSkeleton } from "~/routes/portfolio/components/PortfolioPageSkeleton/PortfolioPageSkeleton";
+import {
+  PortfolioPageSkeleton,
+  type PortfolioPageSkeletonVariant,
+} from "~/routes/portfolio/components/PortfolioPageSkeleton/PortfolioPageSkeleton";
+
+const SKELETON_VARIANTS: Record<string, PortfolioPageSkeletonVariant> = {
+  [ROUTES.portfolio]: "overview",
+  [ROUTES.portfolioActivity]: "activity",
+  [ROUTES.portfolioNotifications]: "notifications",
+  [ROUTES.portfolioProfile]: "profile",
+};
+
+const getSkeletonVariant = (pathname: string) =>
+  SKELETON_VARIANTS[pathname.replace(/\/$/, "")] ?? "none";
 
 export default function Portfolio() {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
@@ -27,9 +40,7 @@ export default function Portfolio() {
   if (isAuthLoading)
     return (
       <Container>
-        <PortfolioPageSkeleton
-          withOverview={pathname.replace(/\/$/, "") === ROUTES.portfolio}
-        />
+        <PortfolioPageSkeleton variant={getSkeletonVariant(pathname)} />
       </Container>
     );
 

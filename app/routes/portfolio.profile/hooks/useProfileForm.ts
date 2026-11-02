@@ -85,6 +85,7 @@ export function useProfileForm() {
     emailError: isEmailTouched ? emailError : null,
     touchEmail: () => setIsEmailTouched(true),
     isDirty,
+    isLoading: payment.isLoading,
     isSaving: payment.isSaving,
     save,
   };

@@ -130,6 +130,11 @@ function usePaymentPreference() {
     method: isRestored ? saved!.method : ("credits" as GasPaymentMethod),
     isExplicit: isRestored && saved!.source !== "default",
     isRestored,
+    // First fetch of the network or the stored preference; false once either
+    // settles with an error, so the UI never waits on a request that failed
+    isLoading:
+      (Boolean(toolkit && userAddress) && chain.isPending) ||
+      (isAuthorized && preference.isPending),
     isSaving,
     version: isRestored ? saved!.version : null,
     updatedAt: isRestored ? saved!.updatedAt : null,

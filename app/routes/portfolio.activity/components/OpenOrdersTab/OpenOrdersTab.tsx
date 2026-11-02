@@ -20,6 +20,23 @@ import {
   type ServerSortKey,
 } from "./OpenOrdersTab.types";
 import styles from "./styles.module.css";
+import {
+  ActivityTableSkeleton,
+  type ActivitySkeletonCell,
+} from "~/routes/portfolio.activity/components/ActivityTableSkeleton";
+
+// One entry per column of the tab's grid template
+const SKELETON_COLUMNS: ActivitySkeletonCell[] = [
+  "date",
+  "text",
+  "text",
+  "text",
+  "text",
+  "progress",
+  "text",
+  "text",
+  "icon",
+];
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { OpenOrdersConnectWalletState } from "~/routes/trade.$address/components/AssetTabs/OpenOrdersTab/OpenOrdersConnectWalletState";
@@ -97,11 +114,11 @@ export function OpenOrdersTab({
 
   if (openOrdersQuery.isLoading && !openOrdersQuery.data) {
     return (
-      <div className={styles.state} aria-live="polite">
-        <RText color="neutral-600" size="body-sm">
-          Loading open orders...
-        </RText>
-      </div>
+      <ActivityTableSkeleton
+        ariaLabel="Loading open orders"
+        columns={SKELETON_COLUMNS}
+        styles={styles}
+      />
     );
   }
 
@@ -146,7 +163,7 @@ export function OpenOrdersTab({
   return (
     <div className={styles.content}>
       <div className={styles.viewport}>
-        {openOrdersQuery.isFetching && (
+        {openOrdersQuery.isPlaceholderData && (
           <div
             className={styles.loadingOverlay}
             role="status"

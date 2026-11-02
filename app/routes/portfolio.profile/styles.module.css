@@ -88,6 +88,12 @@
   border-radius: var(--r-radius-sm);
 }
 
+/* Same box as the loaded dropdown trigger */
+.dropdownSkeleton {
+  width: 100%;
+  height: 45px;
+}
+
 .kycMessage {
   display: flex;
   max-width: 894px;

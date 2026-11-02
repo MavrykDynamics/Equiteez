@@ -21,6 +21,21 @@ import {
   type TransactionHistoryTabProps,
 } from "./TransactionHistoryTab.types";
 import styles from "./styles.module.css";
+import {
+  ActivityTableSkeleton,
+  type ActivitySkeletonCell,
+} from "~/routes/portfolio.activity/components/ActivityTableSkeleton";
+
+// One entry per column of the tab's grid template
+const SKELETON_COLUMNS: ActivitySkeletonCell[] = [
+  "date",
+  "asset",
+  "text",
+  "text",
+  "text",
+  "text",
+  "badge",
+];
 
 const TRANSACTION_HISTORY_PER_PAGE = 10;
 
@@ -91,11 +106,11 @@ export function TransactionHistoryTab({
 
   if (transactionHistoryQuery.isLoading && !transactionHistoryQuery.data) {
     return (
-      <div className={styles.state} aria-live="polite">
-        <RText color="neutral-600" size="body-sm">
-          Loading transaction history...
-        </RText>
-      </div>
+      <ActivityTableSkeleton
+        ariaLabel="Loading transaction history"
+        columns={SKELETON_COLUMNS}
+        styles={styles}
+      />
     );
   }
 
@@ -132,7 +147,7 @@ export function TransactionHistoryTab({
   return (
     <div className={styles.content}>
       <div className={styles.viewport}>
-        {transactionHistoryQuery.isFetching && (
+        {transactionHistoryQuery.isPlaceholderData && (
           <div
             className={styles.loadingOverlay}
             role="status"

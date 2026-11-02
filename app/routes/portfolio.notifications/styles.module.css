@@ -93,3 +93,28 @@
   min-height: 48px;
   place-items: center;
 }
+
+/* Skeleton rows keep the 59px notification height: two 21px text lines */
+.skeletonLines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.skeletonTitle {
+  width: 187px;
+  max-width: 100%;
+  height: 17px;
+}
+
+.skeletonDescription {
+  max-width: 100%;
+  height: 17px;
+}
+
+.skeletonDate {
+  width: 106px;
+  height: 17px;
+  margin-bottom: 2px;
+}
