@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type MouseEvent, useState } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -35,11 +35,20 @@ export function CreditsWalletDropdown({
     setIsAddCreditsOpen(true);
   };
 
+  // The whole pill opens the menu; nested buttons, links and the menu itself
+  // keep their own click handling.
+  const handlePillClick = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("button, a, [role='listbox']")) return;
+    setIsDropdownOpen((isOpen) => !isOpen);
+  };
+
   return (
     <>
       <RCustomDropdown
         className={styles.dropdown}
         isOpen={isDropdownOpen}
+        onClick={handlePillClick}
         onOpenChange={setIsDropdownOpen}
       >
         <CreditsBalanceBadge
