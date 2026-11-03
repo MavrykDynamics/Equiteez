@@ -43,11 +43,14 @@ const TONE_ICONS: Record<CreditsTone, RIconName> = {
 export function CreditsBalanceBadge({
   status,
   progress,
+  pendingTopUp,
   summary,
   onAddCredits,
 }: {
   status: CreditsBalanceStatus;
   progress: "pending" | "updating" | null;
+  // Formatted amount being added, e.g. "20 Gas Credits".
+  pendingTopUp?: string | null;
   summary?: CreditsSummary | null;
   onAddCredits?: () => void;
 }) {
@@ -60,7 +63,9 @@ export function CreditsBalanceBadge({
     tone = "pending";
     icon = "dots";
     text =
-      progress === "pending" ? "Adding Gas Credits" : "Updating Gas Credits";
+      progress === "pending"
+        ? `Adding ${pendingTopUp ?? "Gas Credits"}`
+        : "Updating Gas Credits";
   } else if (summary && countTone) {
     tone = countTone;
     icon = TONE_ICONS[countTone];

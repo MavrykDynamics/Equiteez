@@ -24,7 +24,8 @@ type CreditsWalletDropdownProps = {
 export function CreditsWalletDropdown({
   userAddress,
 }: CreditsWalletDropdownProps) {
-  const { summary, config, status, progress, canTopUp } = useCredits();
+  const { summary, config, status, progress, pendingTopUp, canTopUp } =
+    useCredits();
   const walletBalance = useCreditTokenWalletBalance(config);
   const addCredits = useAddCredits();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -54,6 +55,7 @@ export function CreditsWalletDropdown({
         <CreditsBalanceBadge
           summary={summary}
           onAddCredits={canTopUp ? openAddCredits : undefined}
+          pendingTopUp={pendingTopUp}
           progress={progress}
           status={status}
         />
@@ -103,7 +105,7 @@ export function CreditsWalletDropdown({
               {progress && (
                 <RText color="neutral-700" size="body-s">
                   {progress === "pending"
-                    ? "Adding Gas Credits. The balance above excludes the pending top-up."
+                    ? `Adding ${pendingTopUp ?? "Gas Credits"}. The balance above excludes the pending top-up.`
                     : "Top-up confirmed; updating the balance."}
                 </RText>
               )}

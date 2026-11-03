@@ -15,7 +15,9 @@ import {
 } from "~/lib/relay/relay.scope";
 import {
   getCreditsBalanceStatus,
+  formatTopUpAmount,
   getCreditsSummary,
+  getPendingTopUpUnits,
   getTopUpProgress,
 } from "./credits.utils";
 
@@ -71,6 +73,11 @@ export function useCredits(enabled = true) {
     credits: data,
     isError: config.isError || (Boolean(canRead) && credits.isError),
   });
+  const progress = canRead
+    ? getTopUpProgress(relay.records, credits.dataUpdatedAt)
+    : null;
+  const pendingTopUpUnits =
+    progress === "pending" ? getPendingTopUpUnits(relay.records) : null;
   return {
     status,
     config: currentConfig,
@@ -79,9 +86,12 @@ export function useCredits(enabled = true) {
       status === "ready"
         ? getCreditsSummary(data, currentConfig?.config.fee)
         : null,
-    progress: canRead
-      ? getTopUpProgress(relay.records, credits.dataUpdatedAt)
-      : null,
+    progress,
+    // "20 Gas Credits" / "12.50 USDT"; null when the amount is unknown.
+    pendingTopUp:
+      pendingTopUpUnits === null
+        ? null
+        : formatTopUpAmount(pendingTopUpUnits, currentConfig?.config.fee),
     isRefreshing: Boolean(canRead && credits.isFetching),
     canTopUp: Boolean(canRead),
     refresh: () => {
