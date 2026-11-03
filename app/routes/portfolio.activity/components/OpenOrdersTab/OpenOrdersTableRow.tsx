@@ -54,7 +54,10 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
   return (
     <>
       <div
-        className={classNames(styles.row, isExpired && styles.rowExpired)}
+        className={classNames(
+          styles.row,
+          actionIcon === "refund" && styles.rowRefund
+        )}
         role="row"
       >
         <div className={styles.cell} role="cell">
