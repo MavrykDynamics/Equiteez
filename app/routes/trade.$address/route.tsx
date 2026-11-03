@@ -135,6 +135,11 @@ export default function TradePage() {
               </div>
             ) : (
               <div className={styles.chartSlider}>
+                {/* Mobile: buy/sell card comes first, chart second */}
+                <div
+                  ref={setMobileBuySellSlot}
+                  className={styles.buySellSlide}
+                />
                 <div className={styles.chartSlide}>
                   <ChartBlock
                     asset={asset}
@@ -145,10 +150,6 @@ export default function TradePage() {
                     }
                   />
                 </div>
-                <div
-                  ref={setMobileBuySellSlot}
-                  className={styles.buySellSlide}
-                />
               </div>
             )}
             {!isPrimary && (

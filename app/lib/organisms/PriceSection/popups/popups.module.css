@@ -186,3 +186,11 @@
   white-space: nowrap;
   width: 1px;
 }
+
+/* Mobile card: let the buy/sell card grow with its content */
+@media (--media-tablet) {
+  .buySellRoot {
+    flex: 1 0 auto;
+    min-height: auto;
+  }
+}
