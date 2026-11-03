@@ -177,6 +177,11 @@
 
 /* Mobile card: Market dropdown and Buy/Sell tabs share one row */
 @media (--media-tablet) {
+  .buySellRoot {
+    flex: 1 0 auto;
+    min-height: auto;
+  }
+
   .tradeControls {
     grid-template-columns: 119px minmax(0, 1fr);
   }
