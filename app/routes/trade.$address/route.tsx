@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "@remix-run/react";
 import clsx from "clsx";
 
@@ -20,6 +21,22 @@ import { RPrimaryPriceLabelGroup } from "./components/RPriceLabelGroup/RPrimaryP
 import { TradePageSkeleton } from "./components/TradePageSkeleton/TradePageSkeleton";
 import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
+const MOBILE_QUERY = `(max-width: ${TABLET_WIDTH}px)`;
+
+const subscribeToMobileViewport = (onChange: () => void) => {
+  const mediaQuery = window.matchMedia(MOBILE_QUERY);
+  mediaQuery.addEventListener("change", onChange);
+  return () => mediaQuery.removeEventListener("change", onChange);
+};
+
+// Server render assumes desktop so the desktop layout never remounts on hydrate
+const useIsMobileViewport = () =>
+  useSyncExternalStore(
+    subscribeToMobileViewport,
+    () => window.matchMedia(MOBILE_QUERY).matches,
+    () => false
+  );
+
 export default function TradePage() {
   const { address } = useParams();
   const { assets, assetError, isLoading } = useAssetsContext();
@@ -27,18 +44,13 @@ export default function TradePage() {
 
   const asset = assets.find((item) => item.address === address);
   const [isOrderBookOpen, setIsOrderBookOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const isMobile = useIsMobileViewport();
+  const isDesktop = !isMobile;
   const [orderBookContainer, setOrderBookContainer] =
     useState<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(`(max-width: ${TABLET_WIDTH}px)`);
-    const handleViewportChange = () => setIsDesktop(!mediaQuery.matches);
-
-    handleViewportChange();
-    mediaQuery.addEventListener("change", handleViewportChange);
-    return () => mediaQuery.removeEventListener("change", handleViewportChange);
-  }, []);
+  // Mobile: the buy/sell panel moves into a swipeable slide next to the chart
+  const [mobileBuySellSlot, setMobileBuySellSlot] =
+    useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setIsOrderBookOpen(false);
@@ -90,6 +102,19 @@ export default function TradePage() {
     />
   );
 
+  const buySellPanel = (
+    <div className={styles.buySellContainer}>
+      <BuySellPanel
+        key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
+        asset={asset}
+        isPrimary={isPrimary}
+        isOrderBookOpen={isOrderBookOpen}
+        orderBookContainer={!isPrimary && isDesktop ? orderBookContainer : null}
+        setIsOrderBookOpen={setIsOrderBookOpen}
+      />
+    </div>
+  );
+
   return (
     <RSkeletonReveal isLoading={false} skeleton={null}>
       <Container className={styles.tradeContainer}>
@@ -109,14 +134,27 @@ export default function TradePage() {
                 <RChartStats asset={asset} />
               </div>
             ) : (
-              <ChartBlock
-                asset={asset}
-                isOrderBookOpen={isOrderBookOpen}
-                orderBookContainerRef={setOrderBookContainer}
-                onOrderBookToggle={() =>
-                  setIsOrderBookOpen((isOpen) => !isOpen)
-                }
-              />
+              <div className={styles.chartSlider}>
+                <div className={styles.chartSlide}>
+                  <ChartBlock
+                    asset={asset}
+                    isOrderBookOpen={isOrderBookOpen}
+                    orderBookContainerRef={setOrderBookContainer}
+                    onOrderBookToggle={() =>
+                      setIsOrderBookOpen((isOpen) => !isOpen)
+                    }
+                  />
+                </div>
+                <div
+                  ref={setMobileBuySellSlot}
+                  className={styles.buySellSlide}
+                />
+              </div>
+            )}
+            {!isPrimary && (
+              <div className={styles.chartStats}>
+                <RChartStats asset={asset} />
+              </div>
             )}
             {isPrimary ? (
               <div className={styles.primaryTabs}>
@@ -134,18 +172,9 @@ export default function TradePage() {
               ) : (
                 gallery
               )}
-              <div className={styles.buySellContainer}>
-                <BuySellPanel
-                  key={`${asset.address}:${asset.orderbook?.address ?? ""}`}
-                  asset={asset}
-                  isPrimary={isPrimary}
-                  isOrderBookOpen={isOrderBookOpen}
-                  orderBookContainer={
-                    !isPrimary && isDesktop ? orderBookContainer : null
-                  }
-                  setIsOrderBookOpen={setIsOrderBookOpen}
-                />
-              </div>
+              {!isPrimary && isMobile && mobileBuySellSlot
+                ? createPortal(buySellPanel, mobileBuySellSlot)
+                : buySellPanel}
             </div>
           </div>
         </div>
