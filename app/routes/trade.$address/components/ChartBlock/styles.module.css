@@ -470,7 +470,7 @@
 
   .chartHeader {
     flex-direction: column;
-    gap: var(--r-space-2);
+    gap: var(--r-space-3);
   }
 
   .currentPrice {
