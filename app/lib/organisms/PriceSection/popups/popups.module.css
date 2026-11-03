@@ -174,3 +174,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile card: Market dropdown and Buy/Sell tabs share one row */
+@media (--media-tablet) {
+  .tradeControls {
+    grid-template-columns: 119px minmax(0, 1fr);
+  }
+}
