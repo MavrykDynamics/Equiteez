@@ -1,67 +1,223 @@
+@import "../../../../styles/breakpoints.css";
+
+/* Sizes follow BuySellContent (popups.module.css, BuySellForm.module.css and
+   FeesCard): 40px controls row, 108px balance cards, 42px slider, 176px Order
+   Summary and a 45px button — 591px on desktop. */
+
 /* min-height + overflow: in the mobile slider the card has a fixed height
-   (the chart's) and the panel fits it, but the skeleton is taller; clip it
-   instead of giving the card a scrollbar while it loads */
+   (the chart's) and the panel fits it; never give the card a scrollbar while
+   the skeleton is up */
 .skeleton {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-4);
   width: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
-.tabs {
+/* Market dropdown + Buy / Sell tabs */
+.controls {
+  display: grid;
+  grid-template-columns: 119px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--r-space-2);
+  margin-bottom: var(--r-space-4);
+}
+
+.marketDropdown {
+  width: 100%;
+  height: 40px;
+}
+
+.sideTabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--r-space-2);
 }
 
-.tab {
-  height: 44px;
+.sideTab {
+  height: 37px;
 }
 
-.select {
-  width: 100%;
-  height: 48px;
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
 }
 
-.priceRow {
+.row,
+.rowEnd {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--r-space-4);
 }
 
-.label {
-  width: 96px;
-  height: 18px;
+.rowEnd {
+  justify-content: flex-end;
 }
 
-.value {
-  width: 72px;
-  height: 18px;
-}
-
-.input {
-  width: 100%;
-  height: 72px;
-}
-
-.slider {
-  width: 100%;
-  height: 8px;
-  margin: var(--r-space-2) 0;
-}
-
+/* White balance cards on the grey panel, as in the loaded form */
+.card,
 .summary {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-3);
-  padding: var(--r-space-2) 0;
+  padding: var(--r-space-4);
+  border-radius: 12px;
+  background: var(--r-color-neutral-white);
+}
+
+.card {
+  gap: var(--r-space-1);
+}
+
+.cardLabel {
+  width: 48px;
+  height: 18px;
+}
+
+.cardBalance {
+  width: 114px;
+  height: 18px;
+}
+
+.assetPill {
+  width: 91px;
+  height: 32px;
+}
+
+.amount {
+  width: 56px;
+  height: 28px;
+}
+
+.cardValue {
+  width: 60px;
+  height: 18px;
+}
+
+/* Percentage stops: 16px track row + 22px labels, 4px below */
+.slider {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 38px;
+  margin-bottom: var(--r-space-1);
+}
+
+.sliderTrack {
+  width: 100%;
+  height: 5px;
+  margin-top: 6px;
+}
+
+.sliderLabels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sliderLabel {
+  width: 32px;
+  height: 14px;
+}
+
+.summary {
+  margin-top: var(--r-space-1);
+}
+
+.summaryLabel {
+  width: 105px;
+  height: 21px;
+}
+
+.summaryValue {
+  width: 64px;
+  height: 21px;
+}
+
+.summaryDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.summaryRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+/* Detail and Total rows keep the 21px body-sm line height */
+.summaryRows .row,
+.summaryDetails > .row {
+  height: 21px;
+}
+
+.detailLabel {
+  width: 120px;
+  height: 15px;
+}
+
+.detailValue {
+  width: 64px;
+  height: 15px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--r-color-neutral-100);
+}
+
+.totalLabel {
+  width: 40px;
+  height: 18px;
+}
+
+.totalValue {
+  width: 56px;
+  height: 18px;
 }
 
 .button {
   width: 100%;
-  height: 52px;
-  margin-top: var(--r-space-2);
+  height: 45px;
+  margin-top: var(--r-space-4);
+}
+
+.mobileNotice {
+  display: none;
+  width: 200px;
+  height: 18px;
+  margin: var(--r-space-4) auto 0;
+}
+
+/* The dropdown sits above the tabs until the mobile card layout kicks in */
+@media (--media-tablet-max) {
+  .controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Mobile card (≤ 1000px): controls share one row, balance rows 8px apart,
+   Order Summary collapsed, the button replaced by the view-only hint */
+@media (--media-tablet) {
+  .controls {
+    grid-template-columns: 119px minmax(0, 1fr);
+  }
+
+  .card {
+    gap: var(--r-space-2);
+  }
+
+  .summaryDetails,
+  .button {
+    display: none;
+  }
+
+  /* The loaded form content ends 2px below the collapsed summary */
+  .mobileNotice {
+    display: block;
+    margin-top: calc(var(--r-space-4) + 2px);
+  }
 }
