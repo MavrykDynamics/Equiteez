@@ -50,15 +50,10 @@ function ValueSkeleton({ size }: { size: "large" | "medium" }) {
     <div className={styles.valueGroup}>
       <RSkeleton
         className={isLarge ? styles.valueLabelLarge : styles.valueLabel}
-        radius="none"
       />
-      <RSkeleton
-        className={isLarge ? styles.valueLarge : styles.valueMedium}
-        radius="none"
-      />
+      <RSkeleton className={isLarge ? styles.valueLarge : styles.valueMedium} />
       <RSkeleton
         className={isLarge ? styles.valueCaptionLarge : styles.valueCaption}
-        radius="none"
       />
     </div>
   );
@@ -83,14 +78,14 @@ function OverviewSkeleton() {
       <RSkeleton className={styles.assetsCard} radius="lg" variant="surface">
         <div className={styles.tableSection}>
           <div className={styles.toolbar}>
-            <RSkeleton className={styles.tableTitle} radius="none" />
+            <RSkeleton className={styles.tableTitle} />
             <RSkeleton className={styles.search} radius="sm" />
           </div>
           <div className={styles.table}>
             <div className={styles.tableRow}>
               {range(TABLE_COLUMNS_COUNT).map((column) => (
                 <div key={column}>
-                  <RSkeleton className={styles.headerCell} radius="none" />
+                  <RSkeleton className={styles.headerCell} />
                 </div>
               ))}
             </div>
@@ -99,19 +94,16 @@ function OverviewSkeleton() {
                 <div className={styles.assetCell}>
                   <RSkeleton className={styles.assetIcon} style={CIRCLE} />
                   <div className={styles.assetLines}>
-                    <RSkeleton className={styles.assetName} radius="none" />
-                    <RSkeleton className={styles.assetSymbol} radius="none" />
+                    <RSkeleton className={styles.assetName} />
+                    <RSkeleton className={styles.assetSymbol} />
                   </div>
                 </div>
                 {VALUE_CELLS_TWO_LINE.map((twoLine, cell) => (
                   <div className={styles.cellLines} key={cell}>
                     <RSkeleton
                       className={twoLine ? styles.line : styles.lineShort}
-                      radius="none"
                     />
-                    {twoLine ? (
-                      <RSkeleton className={styles.subLine} radius="none" />
-                    ) : null}
+                    {twoLine ? <RSkeleton className={styles.subLine} /> : null}
                   </div>
                 ))}
               </div>
@@ -120,15 +112,11 @@ function OverviewSkeleton() {
         </div>
 
         <div className={styles.chartPanel}>
-          <RSkeleton className={styles.chartTitle} radius="none" />
+          <RSkeleton className={styles.chartTitle} />
           <RSkeleton className={styles.donut} style={CIRCLE} />
           <div className={styles.legend}>
             {range(LEGEND_ITEMS_COUNT).map((item) => (
-              <RSkeleton
-                className={styles.legendItem}
-                key={item}
-                radius="none"
-              />
+              <RSkeleton className={styles.legendItem} key={item} />
             ))}
           </div>
         </div>
@@ -149,7 +137,7 @@ function ActivitySkeleton() {
       </RSkeleton>
 
       <RSkeleton className={styles.card} radius="lg" variant="surface">
-        <RSkeleton className={styles.tableTitle} radius="none" />
+        <RSkeleton className={styles.tableTitle} />
         <div className={styles.toolbar}>
           <div className={styles.pills}>
             {ACTIVITY_TAB_WIDTHS.map((width) => (
@@ -167,21 +155,19 @@ function ActivitySkeleton() {
               {range(ACTIVITY_COLUMNS_COUNT).map((cell) => (
                 <div key={cell}>
                   {row === 0 ? (
-                    <RSkeleton className={styles.headerCell} radius="none" />
+                    <RSkeleton className={styles.headerCell} />
                   ) : cell === 0 ? (
                     <div className={styles.cellLines}>
-                      <RSkeleton className={styles.line} radius="none" />
-                      <RSkeleton className={styles.subLine} radius="none" />
+                      <RSkeleton className={styles.line} />
+                      <RSkeleton className={styles.subLine} />
                     </div>
                   ) : (
-                    <RSkeleton className={styles.lineShort} radius="none" />
+                    <RSkeleton className={styles.lineShort} />
                   )}
                 </div>
               ))}
               <div>
-                {row ? (
-                  <RSkeleton className={styles.actionIcon} radius="none" />
-                ) : null}
+                {row ? <RSkeleton className={styles.actionIcon} /> : null}
               </div>
             </div>
           ))}
@@ -195,15 +181,15 @@ function NotificationsSkeleton() {
   return (
     <div className={styles.content}>
       <RSkeleton className={styles.card} radius="md" variant="surface">
-        <RSkeleton className={styles.notificationsTitle} radius="none" />
+        <RSkeleton className={styles.notificationsTitle} />
         <div className={styles.notificationsList}>
           {NOTIFICATION_DESCRIPTION_WIDTHS.map((width, index) => (
             <div className={styles.notification} key={index}>
               <div className={styles.notificationLines}>
-                <RSkeleton className={styles.notificationTitle} radius="none" />
-                <RSkeleton radius="none" style={{ width, height: 17 }} />
+                <RSkeleton className={styles.notificationTitle} />
+                <RSkeleton style={{ width, height: 17 }} />
               </div>
-              <RSkeleton className={styles.notificationDate} radius="none" />
+              <RSkeleton className={styles.notificationDate} />
             </div>
           ))}
         </div>
@@ -217,19 +203,19 @@ function ProfileSkeleton() {
     <div className={styles.content}>
       <RSkeleton className={styles.profileCard} radius="md" variant="surface">
         <div className={styles.profileSection}>
-          <RSkeleton className={styles.profileSectionTitle} radius="none" />
+          <RSkeleton className={styles.profileSectionTitle} />
           <div
             className={`${styles.profileField} ${styles.profileWalletField}`}
           >
-            <RSkeleton className={styles.profileLabel} radius="none" />
+            <RSkeleton className={styles.profileLabel} />
             <RSkeleton className={styles.profileInput} radius="sm" />
           </div>
         </div>
         <div className={styles.profileSection}>
-          <RSkeleton className={styles.profileSectionTitle} radius="none" />
+          <RSkeleton className={styles.profileSectionTitle} />
           <div className={styles.profileGasRow}>
             <div className={styles.profileField}>
-              <RSkeleton className={styles.profileLabel} radius="none" />
+              <RSkeleton className={styles.profileLabel} />
               <RSkeleton className={styles.profileInput} radius="sm" />
             </div>
             <RSkeleton height={47} radius="pill" width={83} />
