@@ -83,7 +83,11 @@ export function TradePageSkeleton() {
           </div>
 
           <RSkeleton className={styles.chart} radius="md" variant="surface" />
-          <RSkeleton className={styles.stats} radius="md" variant="surface" />
+          {/* Same container as the loaded RChartStats, so the skeleton switches
+              between one and two rows with the same container query */}
+          <div className={pageStyles.chartStats}>
+            <RSkeleton className={styles.stats} radius="md" variant="surface" />
+          </div>
 
           <div className={styles.tabs}>
             <div className={styles.tabSwitcher}>
@@ -112,43 +116,14 @@ export function TradePageSkeleton() {
               </div>
             </div>
 
+            {/* Asset Overview tab: "About <asset>" and the Features list */}
             <div className={styles.overview}>
               <div className={styles.section}>
                 <SectionTitle />
                 <RSkeleton className={styles.paragraph} variant="surface" />
               </div>
 
-              <div className={styles.section}>
-                <SectionTitle />
-                <div className={styles.whyInvest}>
-                  {range(4).map((item) => (
-                    <RSkeleton
-                      className={styles.whyInvestItem}
-                      key={item}
-                      variant="surface"
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.detailGroups}>
-                <DetailsGroupSkeleton />
-                <DetailsGroupSkeleton />
-              </div>
-
-              <div className={styles.locationSection}>
-                <SectionTitle />
-                <RSkeleton
-                  className={styles.locationAddress}
-                  variant="surface"
-                />
-                <RSkeleton className={styles.locationText} variant="surface" />
-                <RSkeleton
-                  className={styles.map}
-                  radius="md"
-                  variant="surface"
-                />
-              </div>
+              <DetailsGroupSkeleton />
             </div>
           </div>
         </div>
