@@ -32,6 +32,7 @@ import { usePrimaryPurchase } from "./usePrimaryPurchase";
 import { RTradingCountdown } from "./RTradingCountdown";
 import styles from "./styles.module.css";
 import { BuySellPanelSkeleton } from "./BuySellPanelSkeleton";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import formStyles from "~/lib/organisms/PriceSection/popups/popups.module.css";
 
 const ZERO = new BigNumber(0);
@@ -115,36 +116,42 @@ function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   };
   return (
     <>
-      {query.isPending ? (
-        <BuySellPanelSkeleton />
-      ) : config &&
+      <RSkeletonReveal
+        className={styles.revealFill}
+        isLoading={query.isPending}
+        skeleton={<BuySellPanelSkeleton />}
+      >
+        {config &&
         !config.options.length &&
         !isKyced &&
         asset.metadata.decimals === 6 ? (
-        <PrimaryPurchasePreview asset={asset} />
-      ) : !config || !config.options.length || asset.metadata.decimals !== 6 ? (
-        <div className={styles.state} role="status">
-          {query.error?.message ??
-            config?.unavailableReason ??
-            "Primary purchases are temporarily unavailable."}
-          {config && !config.wallet ? (
-            <button type="button" onClick={connect}>
-              Connect wallet
-            </button>
-          ) : (
-            <button type="button" onClick={retry}>
-              Retry
-            </button>
-          )}
-        </div>
-      ) : (
-        <PrimaryPurchaseForm
-          key={`${config.launchName}:${config.wallet}`}
-          asset={asset}
-          config={config}
-          query={query}
-        />
-      )}
+          <PrimaryPurchasePreview asset={asset} />
+        ) : !config ||
+          !config.options.length ||
+          asset.metadata.decimals !== 6 ? (
+          <div className={styles.state} role="status">
+            {query.error?.message ??
+              config?.unavailableReason ??
+              "Primary purchases are temporarily unavailable."}
+            {config && !config.wallet ? (
+              <button type="button" onClick={connect}>
+                Connect wallet
+              </button>
+            ) : (
+              <button type="button" onClick={retry}>
+                Retry
+              </button>
+            )}
+          </div>
+        ) : (
+          <PrimaryPurchaseForm
+            key={`${config.launchName}:${config.wallet}`}
+            asset={asset}
+            config={config}
+            query={query}
+          />
+        )}
+      </RSkeletonReveal>
       {countdown && (
         <RTradingCountdown {...countdown}>
           {isKyced ? (
