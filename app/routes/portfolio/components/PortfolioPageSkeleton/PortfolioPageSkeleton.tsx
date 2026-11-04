@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
 
+import mobileStyles from "../MobilePortfolio/styles.module.css";
 import welcomeStyles from "../WelcomeBlock/styles.module.css";
 import styles from "./PortfolioPageSkeleton.module.css";
 
@@ -237,6 +238,25 @@ const BODY_SKELETONS: Record<PortfolioPageSkeletonVariant, ComponentType> = {
 // Shown while the stored auth session is being restored, so the page doesn't
 // flash the "Log Into Your Account" state with a spinner. Every tab gets the
 // shared header plus a body that mirrors that tab's layout.
+// MobilePortfolio's first screen: the wallet address lookup form. Reuses its
+// layout classes so the skeleton lines up with the form it crossfades into.
+function MobileSkeleton() {
+  return (
+    <div className={mobileStyles.page}>
+      <div className={mobileStyles.walletSearch}>
+        <RSkeleton className={styles.mobileIntro} />
+        <div className={mobileStyles.addressControls}>
+          <div className={mobileStyles.addressField}>
+            <RSkeleton className={styles.mobileLabel} />
+            <RSkeleton className={styles.mobileInput} />
+          </div>
+          <RSkeleton className={styles.mobileButton} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PortfolioPageSkeleton({
   variant,
 }: {
@@ -244,40 +264,47 @@ export function PortfolioPageSkeleton({
 }) {
   const BodySkeleton = BODY_SKELETONS[variant];
 
+  // The server can't tell a phone from a desktop, so both variants render and
+  // CSS shows the one matching the viewport (same 820px as useIsMobileViewport)
   return (
     <div aria-busy="true" role="status">
-      <div className={welcomeStyles.wrapper}>
-        <div className={welcomeStyles.welcome}>
-          <RSkeleton className={styles.welcomeTitle} variant="surface" />
-          <div className={welcomeStyles.actions}>
-            <RSkeleton
-              height={45}
-              radius="pill"
-              variant="surface"
-              width={121}
-            />
-            {/* Withdraw is 50px tall in the loaded header */}
-            <RSkeleton
-              height={50}
-              radius="pill"
-              variant="surface"
-              width={138}
-            />
+      <div className={styles.mobileOnly}>
+        <MobileSkeleton />
+      </div>
+      <div className={styles.desktopOnly}>
+        <div className={welcomeStyles.wrapper}>
+          <div className={welcomeStyles.welcome}>
+            <RSkeleton className={styles.welcomeTitle} variant="surface" />
+            <div className={welcomeStyles.actions}>
+              <RSkeleton
+                height={45}
+                radius="pill"
+                variant="surface"
+                width={121}
+              />
+              {/* Withdraw is 50px tall in the loaded header */}
+              <RSkeleton
+                height={50}
+                radius="pill"
+                variant="surface"
+                width={138}
+              />
+            </div>
+          </div>
+          <div className={styles.tabs}>
+            {TAB_WIDTHS.map((width) => (
+              <RSkeleton
+                height={39}
+                key={width}
+                radius="pill"
+                variant="surface"
+                width={width}
+              />
+            ))}
           </div>
         </div>
-        <div className={styles.tabs}>
-          {TAB_WIDTHS.map((width) => (
-            <RSkeleton
-              height={39}
-              key={width}
-              radius="pill"
-              variant="surface"
-              width={width}
-            />
-          ))}
-        </div>
+        <BodySkeleton />
       </div>
-      <BodySkeleton />
     </div>
   );
 }
