@@ -76,33 +76,34 @@
   }
 }
 
-/* Loaded content wipes in left → right over the skeleton it replaces. */
-@property --r-skeleton-wipe {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 100%;
-}
-
+/* Crossfade (popLayout): the content takes over the layout at once and the
+   skeleton is popped into an overlay on top of it. The overlay is painted on
+   the page background, so fading it out is a true crossfade from the
+   skeleton to the content - no frame shows neither, nothing dips. */
 .reveal {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    #000 var(--r-skeleton-wipe),
-    transparent calc(var(--r-skeleton-wipe) + 100%)
-  );
-  mask-image: linear-gradient(
-    to right,
-    #000 var(--r-skeleton-wipe),
-    transparent calc(var(--r-skeleton-wipe) + 100%)
-  );
-  animation: skeletonWipe 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
 }
 
-@keyframes skeletonWipe {
+/* Grid stretches the skeleton to the content's box, so a skeleton that centres
+   or spaces its parts (flex / justify-content) keeps them where they were */
+.revealSkeleton {
+  display: grid;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--r-skeleton-reveal-bg, var(--r-color-neutral-white, #ffffff));
+  animation: skeletonOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+  will-change: opacity;
+}
+
+@keyframes skeletonOut {
   from {
-    --r-skeleton-wipe: -100%;
+    opacity: 1;
   }
   to {
-    --r-skeleton-wipe: 100%;
+    opacity: 0;
   }
 }
 
@@ -112,9 +113,7 @@
     display: none;
   }
 
-  .reveal {
-    animation: none;
-    -webkit-mask-image: none;
-    mask-image: none;
+  .revealSkeleton {
+    display: none;
   }
 }

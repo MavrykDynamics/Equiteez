@@ -116,7 +116,7 @@ export default function TradePage() {
   );
 
   return (
-    <RSkeletonReveal isLoading={false} skeleton={null}>
+    <RSkeletonReveal isLoading={false} skeleton={<TradePageSkeleton />}>
       <Container className={styles.tradeContainer}>
         <RText
           className={styles.viewOnlyNotice}
