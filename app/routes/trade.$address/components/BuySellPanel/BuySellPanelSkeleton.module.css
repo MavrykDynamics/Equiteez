@@ -1,8 +1,13 @@
+/* min-height + overflow: in the mobile slider the card has a fixed height
+   (the chart's) and the panel fits it, but the skeleton is taller; clip it
+   instead of giving the card a scrollbar while it loads */
 .skeleton {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-4);
   width: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tabs {
