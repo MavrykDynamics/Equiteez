@@ -130,9 +130,7 @@ export function getTopUpProgress(
   // When the last successful credits read completed (ms); 0 when none.
   creditsReadAt = 0
 ): "pending" | "updating" | null {
-  const topUps = records.filter(
-    (record) => record.row?.intentKind === "fee_top_up" || record.topUp
-  );
+  const topUps = records.filter(isTopUpRecord);
   if (topUps.some((record) => record.state !== "settled")) return "pending";
   // Updating until a credits read completes after this tab saw the
   // confirmation (both client clock); the credit endpoint has no settlement
@@ -146,6 +144,46 @@ export function getTopUpProgress(
   )
     return "updating";
   return null;
+}
+
+const isTopUpRecord = (record: RelayRecord) =>
+  record.row?.intentKind === "fee_top_up" || Boolean(record.topUp);
+
+// The signed amount: kept locally on submit, or read back from the server row.
+function getTopUpUnits(record: RelayRecord) {
+  const units = record.topUp?.amountUnits ?? record.row?.intent?.amountUnits;
+  if (typeof units === "number" && Number.isSafeInteger(units) && units >= 0)
+    return BigInt(units);
+  return typeof units === "string" && /^\d+$/.test(units)
+    ? BigInt(units)
+    : null;
+}
+
+/**
+ * Raw fee-token units of every unsettled top-up, or null when none is pending
+ * or any amount is unknown (never show a partial total).
+ */
+export function getPendingTopUpUnits(records: RelayRecord[]) {
+  let total = 0n;
+  for (const record of records) {
+    if (!isTopUpRecord(record) || record.state === "settled") continue;
+    const units = getTopUpUnits(record);
+    if (units === null) return null;
+    total += units;
+  }
+  return total > 0n ? total : null;
+}
+
+/**
+ * A top-up as whole Credits when it buys an exact count at the current
+ * tariff; otherwise the exact fee-token amount, never a rounded Credit count.
+ */
+export function formatTopUpAmount(units: bigint, fee?: RelayConfig["fee"]) {
+  if (!fee?.enabled) return null;
+  const price = getCreditPriceUnits(fee);
+  return price && units % price === 0n
+    ? formatCredits((units / price).toString())
+    : `${formatUsdt(toTokenAmount(units, fee.decimals))} USDT`;
 }
 
 export function getCreditFeeText(

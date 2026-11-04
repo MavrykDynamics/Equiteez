@@ -10,9 +10,11 @@ import type { RelayRecord } from "~/lib/relay/relay.storage";
 import { useCredits } from "./useCredits";
 import {
   formatCreditTokenUnits,
+  formatTopUpAmount,
   getCreditFeeText,
   getCreditsBalanceStatus,
   getCreditsSummary,
+  getPendingTopUpUnits,
   getTopUpProgress,
   type Credits,
 } from "./credits.utils";
@@ -134,7 +136,11 @@ function Probe({
   return both ? (
     <Second />
   ) : (
-    <CreditsBalanceBadge status={result.status} progress={result.progress} />
+    <CreditsBalanceBadge
+      status={result.status}
+      progress={result.progress}
+      pendingTopUp={result.pendingTopUp}
+    />
   );
 }
 function Second() {
@@ -368,6 +374,47 @@ it("updating clears once a credits read completes after the confirmation was obs
   expect(getTopUpProgress([confirmed], confirmedAt - 1)).toBe("updating");
   expect(getTopUpProgress([confirmed], confirmedAt + 1)).toBeNull();
   expect(getTopUpProgress([topUp("pending")], confirmedAt + 1)).toBe("pending");
+});
+it("pending top-up amount comes from the local record or the server intent", () => {
+  const local = {
+    ...topUp("pending"),
+    topUp: {
+      amountUnits: "30000000",
+      deadline: "2026-10-22T00:02:00Z",
+      answered: true,
+    },
+  };
+  const remote = {
+    ...topUp("pending"),
+    row: { ...topUp("pending").row!, intent: { amountUnits: "3000000" } },
+  };
+  expect(getPendingTopUpUnits([local])).toBe(30000000n);
+  expect(getPendingTopUpUnits([local, remote])).toBe(33000000n);
+  // Unknown amount: no partial total.
+  expect(getPendingTopUpUnits([local, topUp("pending")])).toBeNull();
+  expect(getPendingTopUpUnits([{ ...local, state: "settled" }])).toBeNull();
+});
+it("formats a top-up as whole Credits, else as the exact USDT amount", () => {
+  const fee = paid.config.fee;
+  expect(formatTopUpAmount(30000000n, fee)).toBe("20 Gas Credits");
+  expect(formatTopUpAmount(1500000n, fee)).toBe("1 Gas Credit");
+  expect(formatTopUpAmount(12500000n, fee)).toBe("12.50 USDT");
+  expect(formatTopUpAmount(30000000n, off.config.fee)).toBeNull();
+});
+it("the badge names the amount being added", async () => {
+  mocks.records = [
+    {
+      ...topUp("pending"),
+      topUp: {
+        amountUnits: "30000000",
+        deadline: "2026-10-22T00:02:00Z",
+        answered: true,
+      },
+    },
+  ];
+  await render();
+  expect(result.pendingTopUp).toBe("20 Gas Credits");
+  expect(host.textContent).toContain("Adding 20 Gas Credits");
 });
 it("failed top-ups do not create adding/success state", () => {
   expect(getTopUpProgress([topUp("failed")])).toBeNull();
