@@ -18,11 +18,14 @@
   align-items: center;
 }
 
+/* Stable gutter: the scrollbar showing up once the second page loads (or not
+   at all for the skeleton) must not change the rows' width */
 .list {
   position: relative;
   min-height: 220px;
   max-height: 720px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .notification {
@@ -94,11 +97,12 @@
   place-items: center;
 }
 
-/* Skeleton rows keep the 59px notification height: two 21px text lines */
+/* Skeleton rows keep the 59px notification height: two 21px text lines,
+   each 17px bar centred in its line (2 + 17 + 4 + 17 + 2 = 42) */
 .skeletonLines {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   padding: 2px 0;
 }
 

@@ -93,10 +93,13 @@
   height: 36px;
 }
 
+/* Fixed layout: column widths come from the header, not from the cell
+   content, so skeleton rows and loaded rows share the same columns and nothing shifts while the portfolio loads. */
 .table {
   width: 100%;
   min-width: 760px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table th,
@@ -121,9 +124,10 @@
   text-transform: uppercase;
 }
 
+/* Asset takes what the value columns leave */
 .table th:first-child,
 .table td:first-child {
-  width: 20.2%;
+  width: auto;
   padding-left: var(--r-space-2);
 }
 

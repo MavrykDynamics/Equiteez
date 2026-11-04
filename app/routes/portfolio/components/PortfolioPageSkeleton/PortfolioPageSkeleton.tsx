@@ -196,7 +196,7 @@ function NotificationsSkeleton() {
     <div className={styles.content}>
       <RSkeleton className={styles.card} radius="md" variant="surface">
         <RSkeleton className={styles.notificationsTitle} radius="none" />
-        <div>
+        <div className={styles.notificationsList}>
           {NOTIFICATION_DESCRIPTION_WIDTHS.map((width, index) => (
             <div className={styles.notification} key={index}>
               <div className={styles.notificationLines}>
@@ -218,7 +218,9 @@ function ProfileSkeleton() {
       <RSkeleton className={styles.profileCard} radius="md" variant="surface">
         <div className={styles.profileSection}>
           <RSkeleton className={styles.profileSectionTitle} radius="none" />
-          <div className={styles.profileField}>
+          <div
+            className={`${styles.profileField} ${styles.profileWalletField}`}
+          >
             <RSkeleton className={styles.profileLabel} radius="none" />
             <RSkeleton className={styles.profileInput} radius="sm" />
           </div>
@@ -230,7 +232,7 @@ function ProfileSkeleton() {
               <RSkeleton className={styles.profileLabel} radius="none" />
               <RSkeleton className={styles.profileInput} radius="sm" />
             </div>
-            <RSkeleton height={45} radius="pill" width={77} />
+            <RSkeleton height={47} radius="pill" width={83} />
           </div>
         </div>
       </RSkeleton>
@@ -268,8 +270,9 @@ export function PortfolioPageSkeleton({
               variant="surface"
               width={121}
             />
+            {/* Withdraw is 50px tall in the loaded header */}
             <RSkeleton
-              height={45}
+              height={50}
               radius="pill"
               variant="surface"
               width={138}
