@@ -28,15 +28,10 @@ const getSkeletonVariant = (pathname: string) =>
 export default function Portfolio() {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const { userAddress } = useUserContext();
+  // false on the server and the first client render, so hydration matches the
+  // server's page skeleton and then crossfades into MobilePortfolio
   const isMobile = useIsMobileViewport();
   const { pathname } = useLocation();
-
-  if (isMobile)
-    return (
-      <Container>
-        <MobilePortfolio />
-      </Container>
-    );
 
   // Until the stored session is restored isAuthenticated is false, which used
   // to flash the login prompt with a spinner before the real page. The user
@@ -44,7 +39,7 @@ export default function Portfolio() {
   // the tabs flash "Welcome," and their "Connect wallet" empty states.
   const isSessionRestoring = isAuthLoading || (isAuthenticated && !userAddress);
 
-  if (!isSessionRestoring && !isAuthenticated)
+  if (!isMobile && !isSessionRestoring && !isAuthenticated)
     return (
       <Container className={styles.authContainer}>
         <div className={styles.authWrapper}>
@@ -67,14 +62,18 @@ export default function Portfolio() {
   return (
     <Container>
       <RSkeletonReveal
-        isLoading={isSessionRestoring}
+        isLoading={!isMobile && isSessionRestoring}
         skeleton={
           <PortfolioPageSkeleton variant={getSkeletonVariant(pathname)} />
         }
       >
-        <PortfolioProvider>
-          <Outlet />
-        </PortfolioProvider>
+        {isMobile ? (
+          <MobilePortfolio />
+        ) : (
+          <PortfolioProvider>
+            <Outlet />
+          </PortfolioProvider>
+        )}
       </RSkeletonReveal>
     </Container>
   );

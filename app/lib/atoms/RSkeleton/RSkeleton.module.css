@@ -84,6 +84,17 @@
   position: relative;
 }
 
+/* Keep the content's top/bottom margins inside the wrapper while the overlay
+   is up: a first child's margin-top otherwise collapses through it, the
+   wrapper (and the inset: 0 overlay) start below that margin, and the
+   skeleton - which keeps its own margin in the overlay - sits that much lower
+   than the content (16px on the mobile portfolio). Visually nothing moves. */
+.reveal::before,
+.reveal::after {
+  content: "";
+  display: table;
+}
+
 /* Grid stretches the skeleton to the content's box, so a skeleton that centres
    or spaces its parts (flex / justify-content) keeps them where they were */
 .revealSkeleton {

@@ -441,3 +441,40 @@
     border-left: 0;
   }
 }
+
+/* Mobile (≤ 820px, useIsMobileViewport) renders MobilePortfolio instead */
+.mobileOnly {
+  display: none;
+}
+
+@media (--media-tablet-min) {
+  .mobileOnly {
+    display: block;
+  }
+
+  .desktopOnly {
+    display: none;
+  }
+}
+
+/* MobilePortfolio lookup form: body-sm intro, label, 47px input, 44px button */
+.mobileIntro {
+  width: 100%;
+  height: 21px;
+}
+
+.mobileLabel {
+  width: 104px;
+  height: 21px;
+}
+
+.mobileInput {
+  width: 100%;
+  height: 47px;
+}
+
+.mobileButton {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+}
