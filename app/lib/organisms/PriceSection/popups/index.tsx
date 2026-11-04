@@ -103,6 +103,7 @@ type BuySellContentProps = {
   setOrderType: React.Dispatch<React.SetStateAction<OrderType>>;
 };
 
+const ORDER_DATA_LOADING_MESSAGE = "Waiting for order data.";
 export const BuySellContent: FC<BuySellContentProps> = (props) => {
   const metadata = useOrderbookTokenMetadata(
     props.asset,
@@ -827,7 +828,7 @@ const BuySellForm: FC<
     validationMessage:
       orderValidationMessage ||
       (isOrderDataLoading
-        ? "Waiting for order data."
+        ? ORDER_DATA_LOADING_MESSAGE
         : hasLimitPriceTickError
           ? "Price must align to the selected tick."
           : undefined),
@@ -841,9 +842,13 @@ const BuySellForm: FC<
   // A pending MVRK estimate only disables the button; real reasons get the alert.
   const isFeePending =
     directFee.isPending && paymentValidationMessage === directFee.reason;
+  // Same for the orderbook depth still loading: it's a loading state, not an
+  // error, and flashing the red alert on mount also overflowed the mobile card
+  const isOrderDataPending =
+    paymentValidationMessage === ORDER_DATA_LOADING_MESSAGE;
   // Gas Station availability is explained beside the Gas Credit row instead.
   const visibleValidationMessage =
-    isFeePending || execution.isReasonInline
+    isFeePending || isOrderDataPending || execution.isReasonInline
       ? undefined
       : paymentValidationMessage;
 
