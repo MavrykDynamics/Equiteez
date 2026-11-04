@@ -162,6 +162,11 @@
   overflow: hidden;
 }
 
+/* RSkeletonReveal wrapper: the chart sizes itself to 100% of it */
+.chartFill {
+  height: 100%;
+}
+
 .chartSkeleton {
   width: 100%;
   height: 100%;

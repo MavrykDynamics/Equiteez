@@ -17,6 +17,7 @@ import styles from "./styles.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { AssetsTableSkeletonRows } from "./AssetsStatsSkeleton";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
 export function AssetsTable({ assets }: AllAssetsTableProps) {
   const { isPortfolioLoading } = usePortfolioContext();
@@ -50,6 +51,28 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
     setSort((currentSort) => getNextSortState(currentSort, key));
   };
 
+  const tableHead = (
+    <thead>
+      <tr>
+        {tableHeaders.map((header) => (
+          <th key={header.label || "actions"} scope="col">
+            <TableHeader
+              direction={
+                sort?.key === header.sortKey ? sort?.direction : undefined
+              }
+              label={header.label}
+              onSort={
+                header.sortKey
+                  ? () => handleSort(header.sortKey ?? "value")
+                  : undefined
+              }
+            />
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+
   return (
     <div className={styles.tableSection}>
       <div className={styles.tableToolbar}>
@@ -67,38 +90,32 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
           />
         </label>
       </div>
-      <div className={styles.tableViewport}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              {tableHeaders.map((header) => (
-                <th key={header.label} scope="col">
-                  <TableHeader
-                    direction={
-                      sort?.key === header.sortKey ? sort?.direction : undefined
-                    }
-                    label={header.label}
-                    onSort={
-                      header.sortKey
-                        ? () => handleSort(header.sortKey ?? "value")
-                        : undefined
-                    }
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody aria-busy={isPortfolioLoading}>
-            {isPortfolioLoading ? (
-              <AssetsTableSkeletonRows />
-            ) : (
-              filteredAssets.map((asset) => (
+      {/* The skeleton is the same table with placeholder rows, so the header
+          stays put while the rows crossfade in */}
+      <RSkeletonReveal
+        isLoading={isPortfolioLoading}
+        skeleton={
+          <div className={styles.tableViewport}>
+            <table className={styles.table}>
+              {tableHead}
+              <tbody aria-busy="true">
+                <AssetsTableSkeletonRows />
+              </tbody>
+            </table>
+          </div>
+        }
+      >
+        <div className={styles.tableViewport}>
+          <table className={styles.table}>
+            {tableHead}
+            <tbody>
+              {filteredAssets.map((asset) => (
                 <AssetsTableRow asset={asset} key={asset.token_address} />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </RSkeletonReveal>
     </div>
   );
 }

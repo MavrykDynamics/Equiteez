@@ -6,7 +6,7 @@ import {
   fetchPublicWalletPortfolioHistory,
   fetchWalletPortfolioHistory,
 } from "~/lib/apis/rwa";
-import { RSkeleton } from "~/lib/atoms/RSkeleton";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -179,30 +179,36 @@ export function PortfolioValueChart({
         ) : null}
       </div>
       <div className={styles.chartCanvas} ref={chartCanvasRef}>
-        {portfolioHistoryQuery.isPending ? (
-          <RSkeleton
-            aria-label="Loading chart"
-            className={styles.chartSkeleton}
-            role="status"
-            variant="surface"
-          />
-        ) : !hasChartData ? (
-          <div className={styles.chartEmpty} role="status">
-            <RText color="neutral-700" size="body-sm">
-              No chart data available
-            </RText>
-          </div>
-        ) : (
-          <AssetPriceChart
-            className={styles.chart}
-            onHover={handleChartHover}
-            points={points}
-            priceDecimals={2}
-            showPriceScale={false}
-            showTimeScale={false}
-            tone={isPositiveChange ? "positive" : "negative"}
-          />
-        )}
+        <RSkeletonReveal
+          className={styles.chartFill}
+          isLoading={portfolioHistoryQuery.isPending}
+          skeleton={
+            <RSkeleton
+              aria-label="Loading chart"
+              className={styles.chartSkeleton}
+              role="status"
+              variant="surface"
+            />
+          }
+        >
+          {!hasChartData ? (
+            <div className={styles.chartEmpty} role="status">
+              <RText color="neutral-700" size="body-sm">
+                No chart data available
+              </RText>
+            </div>
+          ) : (
+            <AssetPriceChart
+              className={styles.chart}
+              onHover={handleChartHover}
+              points={points}
+              priceDecimals={2}
+              showPriceScale={false}
+              showTimeScale={false}
+              tone={isPositiveChange ? "positive" : "negative"}
+            />
+          )}
+        </RSkeletonReveal>
         {hasChartData && hoveredPoint ? (
           <>
             <span

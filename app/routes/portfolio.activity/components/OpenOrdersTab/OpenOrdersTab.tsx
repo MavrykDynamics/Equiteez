@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 import { fetchWalletOpenOrders } from "~/lib/apis/rwa/orders/orders";
@@ -112,18 +113,28 @@ export function OpenOrdersTab({
     }
   }, [openOrdersQuery.data?.total_pages, page]);
 
-  if (openOrdersQuery.isLoading && !openOrdersQuery.data) {
-    return (
-      <ActivityTableSkeleton
-        ariaLabel="Loading open orders"
-        columns={SKELETON_COLUMNS}
-        styles={styles}
-      />
-    );
+  const isInitialLoading = openOrdersQuery.isLoading && !openOrdersQuery.data;
+  const skeleton = (
+    <ActivityTableSkeleton
+      ariaLabel="Loading open orders"
+      columns={SKELETON_COLUMNS}
+      styles={styles}
+    />
+  );
+  // Every branch returns this same RSkeletonReveal at the root, so it stays
+  // mounted and crossfades the skeleton into whatever state loads
+  const reveal = (content: ReactNode) => (
+    <RSkeletonReveal isLoading={isInitialLoading} skeleton={skeleton}>
+      {content}
+    </RSkeletonReveal>
+  );
+
+  if (isInitialLoading) {
+    return reveal(null);
   }
 
   if (!canFetchOrders) {
-    return (
+    return reveal(
       <OpenOrdersConnectWalletState
         title="No Open Orders"
         description="Connect your wallet to view your open orders."
@@ -132,7 +143,7 @@ export function OpenOrdersTab({
   }
 
   if (openOrdersQuery.isError) {
-    return (
+    return reveal(
       <div className={styles.state} aria-live="polite">
         <RText color="neutral-600" size="body-sm">
           Unable to load open orders.
@@ -144,7 +155,7 @@ export function OpenOrdersTab({
   const orders = openOrdersQuery.data?.items ?? [];
 
   if (!orders.length) {
-    return (
+    return reveal(
       <div className={styles.state}>
         <RText color="neutral-600" size="body-sm">
           No open orders.
@@ -160,7 +171,7 @@ export function OpenOrdersTab({
 
   const { total, total_pages: totalPages = 0 } = openOrdersQuery.data ?? {};
 
-  return (
+  return reveal(
     <div className={styles.content}>
       <div className={styles.viewport}>
         {openOrdersQuery.isPlaceholderData && (

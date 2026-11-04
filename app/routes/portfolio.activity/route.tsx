@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { fetchWalletActivitySummary } from "~/lib/apis/rwa";
 import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import styles from "./styles.module.css";
-import { RSkeleton } from "~/lib/atoms/RSkeleton";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import Money from "~/lib/atoms/Money";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -85,12 +85,15 @@ export default function PortfolioActivity() {
             <RText color="neutral-700" size="body-s" weight="medium">
               On-chain Activity
             </RText>
-            {isSummaryLoading ? (
-              <RSkeleton
-                className={styles.statValueSkeleton}
-                variant="surface"
-              />
-            ) : (
+            <RSkeletonReveal
+              isLoading={isSummaryLoading}
+              skeleton={
+                <RSkeleton
+                  className={styles.statValueSkeleton}
+                  variant="surface"
+                />
+              }
+            >
               <RHeading color="neutral-black" size="h4" weight="medium">
                 {onChainActivity === null ? (
                   "—"
@@ -98,7 +101,7 @@ export default function PortfolioActivity() {
                   <Money tooltip={false}>{onChainActivity}</Money>
                 )}
               </RHeading>
-            )}
+            </RSkeletonReveal>
             <RText color="neutral-700" size="body-s">
               Events recorded across portfolio
             </RText>
@@ -108,12 +111,15 @@ export default function PortfolioActivity() {
             <RText color="neutral-700" size="body-s" weight="medium">
               Open Orders
             </RText>
-            {isSummaryLoading ? (
-              <RSkeleton
-                className={styles.statValueSkeleton}
-                variant="surface"
-              />
-            ) : (
+            <RSkeletonReveal
+              isLoading={isSummaryLoading}
+              skeleton={
+                <RSkeleton
+                  className={styles.statValueSkeleton}
+                  variant="surface"
+                />
+              }
+            >
               <RHeading color="neutral-black" size="h4" weight="medium">
                 {openOrders === null ? (
                   "—"
@@ -121,7 +127,7 @@ export default function PortfolioActivity() {
                   <Money tooltip={false}>{openOrders}</Money>
                 )}
               </RHeading>
-            )}
+            </RSkeletonReveal>
             <RText color="neutral-700" size="body-s">
               Resting on the book
             </RText>
@@ -131,12 +137,15 @@ export default function PortfolioActivity() {
             <RText color="neutral-700" size="body-s" weight="medium">
               Transfers
             </RText>
-            {isSummaryLoading ? (
-              <RSkeleton
-                className={styles.statValueSkeleton}
-                variant="surface"
-              />
-            ) : (
+            <RSkeletonReveal
+              isLoading={isSummaryLoading}
+              skeleton={
+                <RSkeleton
+                  className={styles.statValueSkeleton}
+                  variant="surface"
+                />
+              }
+            >
               <RHeading color="neutral-black" size="h4" weight="medium">
                 {transfers === null ? (
                   "—"
@@ -144,7 +153,7 @@ export default function PortfolioActivity() {
                   <Money tooltip={false}>{transfers}</Money>
                 )}
               </RHeading>
-            )}
+            </RSkeletonReveal>
             <RText color="neutral-700" size="body-s">
               Deposits & withdrawals
             </RText>

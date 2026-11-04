@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
 import { AssetClassChartView } from "./AssetClassChartView";
 import { WalletChartView } from "./WalletChartView";
@@ -40,13 +41,19 @@ export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
         </button>
         <RText size="body-s">By Asset Class</RText>
       </div>
-      {isPortfolioLoading ? (
-        <AssetsChartSkeleton />
-      ) : chartView === "wallet" ? (
-        <WalletChartView assets={assets} portfolioTotal={portfolioTotal} />
-      ) : (
-        <AssetClassChartView assets={assets} portfolioTotal={portfolioTotal} />
-      )}
+      <RSkeletonReveal
+        isLoading={isPortfolioLoading}
+        skeleton={<AssetsChartSkeleton />}
+      >
+        {chartView === "wallet" ? (
+          <WalletChartView assets={assets} portfolioTotal={portfolioTotal} />
+        ) : (
+          <AssetClassChartView
+            assets={assets}
+            portfolioTotal={portfolioTotal}
+          />
+        )}
+      </RSkeletonReveal>
     </aside>
   );
 }

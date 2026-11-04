@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 import { fetchWalletTransferHistory } from "~/lib/apis/rwa";
@@ -93,18 +94,28 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
     }
   }, [page, depositsQuery.data?.total_pages]);
 
-  if (depositsQuery.isLoading && !depositsQuery.data) {
-    return (
-      <ActivityTableSkeleton
-        ariaLabel="Loading deposits"
-        columns={SKELETON_COLUMNS}
-        styles={styles}
-      />
-    );
+  const isInitialLoading = depositsQuery.isLoading && !depositsQuery.data;
+  const skeleton = (
+    <ActivityTableSkeleton
+      ariaLabel="Loading deposits"
+      columns={SKELETON_COLUMNS}
+      styles={styles}
+    />
+  );
+  // Every branch returns this same RSkeletonReveal at the root, so it stays
+  // mounted and crossfades the skeleton into whatever state loads
+  const reveal = (content: ReactNode) => (
+    <RSkeletonReveal isLoading={isInitialLoading} skeleton={skeleton}>
+      {content}
+    </RSkeletonReveal>
+  );
+
+  if (isInitialLoading) {
+    return reveal(null);
   }
 
   if (depositsQuery.isError) {
-    return (
+    return reveal(
       <div className={styles.state} aria-live="polite">
         <RText color="neutral-600" size="body-sm">
           Unable to load deposits.
@@ -116,7 +127,7 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
   const deposits = depositsQuery.data?.items ?? [];
 
   if (!deposits.length) {
-    return (
+    return reveal(
       <div className={styles.state}>
         <RText color="neutral-600" size="body-sm">
           No deposits yet.
@@ -132,7 +143,7 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
 
   const { total, total_pages: totalPages = 0 } = depositsQuery.data ?? {};
 
-  return (
+  return reveal(
     <div className={styles.content}>
       <div className={styles.viewport}>
         {depositsQuery.isPlaceholderData ? (

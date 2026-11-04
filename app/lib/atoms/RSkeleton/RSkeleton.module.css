@@ -93,9 +93,17 @@
   z-index: 10;
   overflow: hidden;
   pointer-events: none;
-  background-color: var(--r-skeleton-reveal-bg, var(--r-color-neutral-white, #ffffff));
-  animation: skeletonOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+  background-color: var(
+    --r-skeleton-reveal-bg,
+    var(--r-color-neutral-white, #ffffff)
+  );
   will-change: opacity;
+}
+
+/* Added once the content has been painted (see RSkeletonReveal), so a slow
+   mount can't eat the start of the fade */
+.revealSkeletonFading {
+  animation: skeletonOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes skeletonOut {
