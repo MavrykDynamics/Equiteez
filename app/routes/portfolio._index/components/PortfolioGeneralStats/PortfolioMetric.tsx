@@ -1,4 +1,4 @@
-import { RSkeleton } from "~/lib/atoms/RSkeleton";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import type { RTypographyColor } from "~/lib/atoms/RTypography/types";
@@ -26,9 +26,12 @@ export function PortfolioMetric({
       <RText color="neutral-700" size="body-s" weight="medium">
         {label}
       </RText>
-      {isLoading ? (
-        <RSkeleton className={styles.skeletonMetricValue} variant="surface" />
-      ) : (
+      <RSkeletonReveal
+        isLoading={isLoading}
+        skeleton={
+          <RSkeleton className={styles.skeletonMetricValue} variant="surface" />
+        }
+      >
         <RHeading
           as="div"
           className={styles.value}
@@ -38,7 +41,7 @@ export function PortfolioMetric({
         >
           {value}
         </RHeading>
-      )}
+      </RSkeletonReveal>
       <RText color="neutral-700" size="body-s">
         {description}
       </RText>

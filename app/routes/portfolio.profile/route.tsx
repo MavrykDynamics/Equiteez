@@ -5,7 +5,7 @@ import { ROUTES } from "~/consts";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
-import { RSkeleton } from "~/lib/atoms/RSkeleton";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
   RCustomDropdown,
@@ -151,14 +151,17 @@ export default function PortfolioProfile() {
         <Section title="Gas Payment">
           <div className={styles.gasPayment}>
             <Field className={styles.gasPaymentField} label="Payment Method">
-              {isLoading ? (
-                <RSkeleton
-                  aria-label="Loading payment method"
-                  className={styles.dropdownSkeleton}
-                  role="status"
-                  variant="surface"
-                />
-              ) : (
+              <RSkeletonReveal
+                isLoading={isLoading}
+                skeleton={
+                  <RSkeleton
+                    aria-label="Loading payment method"
+                    className={styles.dropdownSkeleton}
+                    role="status"
+                    variant="surface"
+                  />
+                }
+              >
                 <RCustomDropdown className={styles.dropdown}>
                   <RDropdownFaceContent className={styles.dropdownTrigger}>
                     {selectedGasPaymentMethod?.label}
@@ -175,7 +178,7 @@ export default function PortfolioProfile() {
                     ))}
                   </RDropdownBodyContent>
                 </RCustomDropdown>
-              )}
+              </RSkeletonReveal>
             </Field>
             <RButton
               disabled={isLoading}

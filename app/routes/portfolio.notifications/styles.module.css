@@ -41,7 +41,8 @@
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
-.notification:last-child {
+/* "of .notification": the reveal overlay briefly follows the last row */
+.notification:nth-last-child(1 of .notification) {
   border-bottom: 0;
 }
 

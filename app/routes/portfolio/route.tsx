@@ -9,6 +9,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { ConnectWallet } from "~/layouts/PageLayout/ConnectWallet";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import { ROUTES } from "~/consts";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import {
   PortfolioPageSkeleton,
   type PortfolioPageSkeletonVariant,
@@ -41,14 +42,9 @@ export default function Portfolio() {
   // to flash the login prompt with a spinner before the real page. The user
   // context picks the address up one render after auth resolves; without it
   // the tabs flash "Welcome," and their "Connect wallet" empty states.
-  if (isAuthLoading || (isAuthenticated && !userAddress))
-    return (
-      <Container>
-        <PortfolioPageSkeleton variant={getSkeletonVariant(pathname)} />
-      </Container>
-    );
+  const isSessionRestoring = isAuthLoading || (isAuthenticated && !userAddress);
 
-  if (!isAuthenticated)
+  if (!isSessionRestoring && !isAuthenticated)
     return (
       <Container className={styles.authContainer}>
         <div className={styles.authWrapper}>
@@ -66,11 +62,20 @@ export default function Portfolio() {
       </Container>
     );
 
+  // One RSkeletonReveal for both states, so the page skeleton crossfades into
+  // the route (whose blocks then crossfade their own skeletons in)
   return (
     <Container>
-      <PortfolioProvider>
-        <Outlet />
-      </PortfolioProvider>
+      <RSkeletonReveal
+        isLoading={isSessionRestoring}
+        skeleton={
+          <PortfolioPageSkeleton variant={getSkeletonVariant(pathname)} />
+        }
+      >
+        <PortfolioProvider>
+          <Outlet />
+        </PortfolioProvider>
+      </RSkeletonReveal>
     </Container>
   );
 }

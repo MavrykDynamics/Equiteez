@@ -3,6 +3,45 @@ import clsx from "clsx";
 
 import styles from "./RSkeleton.module.css";
 
+// The overlay sits fully opaque until the browser has actually painted a frame
+// with the content under it, and only then starts fading. Heavy mounts (charts,
+// tables) block the main thread for a while; a fade that started on creation
+// would be mostly over by the first visible frame and look like a hard swap.
+function RevealSkeletonOverlay({
+  children,
+  onDone,
+}: {
+  children: ReactNode;
+  onDone: () => void;
+}) {
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setIsFading(true));
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      aria-hidden="true"
+      className={clsx(
+        styles.revealSkeleton,
+        isFading && styles.revealSkeletonFading
+      )}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget) {
+          onDone();
+        }
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export type RSkeletonRevealProps = {
   children: ReactNode;
   className?: string;
@@ -41,22 +80,12 @@ export function RSkeletonReveal({
   const isCrossfading = isRevealing || hasShownSkeleton;
 
   return (
-    <div
-      className={clsx(isCrossfading && styles.reveal, className)}
-    >
+    <div className={clsx(isCrossfading && styles.reveal, className)}>
       {children}
       {isCrossfading && skeleton && (
-        <div
-          aria-hidden="true"
-          className={styles.revealSkeleton}
-          onAnimationEnd={(event) => {
-            if (event.target === event.currentTarget) {
-              setIsRevealing(false);
-            }
-          }}
-        >
+        <RevealSkeletonOverlay onDone={() => setIsRevealing(false)}>
           {skeleton}
-        </div>
+        </RevealSkeletonOverlay>
       )}
     </div>
   );
