@@ -107,6 +107,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [gaTrackingId]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") {
+      addContentsquareScript();
+    }
+  }, []);
+
   return (
     <html lang="en">
       <head>
@@ -114,13 +120,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        {process.env.NODE_ENV === "production" && (
-          // Contentsquare (Hotjar) user behavior analytics
-          <script
-            src="https://t.contentsquare.net/uxa/35ecac218d256.js"
-            defer
-          />
-        )}
       </head>
 
       <body>
@@ -224,6 +223,24 @@ export function ErrorBoundary() {
       type="fatal"
     />
   );
+}
+
+/**
+ * Contentsquare (Hotjar) user behavior analytics.
+ * Injected after hydration: the script mutates <head>, and rendering it
+ * in JSX makes the server HTML mismatch the client on hydrate.
+ */
+const CONTENTSQUARE_SRC = "https://t.contentsquare.net/uxa/35ecac218d256.js";
+
+function addContentsquareScript() {
+  if (document.querySelector(`script[src="${CONTENTSQUARE_SRC}"]`)) {
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.src = CONTENTSQUARE_SRC;
+  script.async = true;
+  document.head.appendChild(script);
 }
 
 /**
