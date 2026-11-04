@@ -301,12 +301,17 @@
   border-radius: 50%;
 }
 
+/* The SVG box is padded by the 6px hover growth (see the viewBox) so the
+   slices never draw outside it. With overflow: visible Chrome mis-rasterised
+   slices touching the box edge whenever the SVG got its own GPU layer (e.g.
+   while skeleton crossfades were animating), leaving them shifted. */
 .donutSvg {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+  /* 6 / 263: the padding scales with the donut on small screens */
+  inset: calc(-100% * 6 / 263);
+  width: calc(100% * 275 / 263);
+  height: calc(100% * 275 / 263);
+  overflow: hidden;
 }
 
 .donutTrack {
