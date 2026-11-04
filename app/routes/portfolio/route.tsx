@@ -4,6 +4,7 @@ import { Outlet, useLocation } from "@remix-run/react";
 import { PortfolioProvider } from "~/providers/PortfolioProvider/portfolio.provider";
 import { MobilePortfolio } from "~/routes/portfolio/components/MobilePortfolio/MobilePortfolio";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
+import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { ConnectWallet } from "~/layouts/PageLayout/ConnectWallet";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
@@ -25,6 +26,7 @@ const getSkeletonVariant = (pathname: string) =>
 
 export default function Portfolio() {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
+  const { userAddress } = useUserContext();
   const isMobile = useIsMobileViewport();
   const { pathname } = useLocation();
 
@@ -36,8 +38,10 @@ export default function Portfolio() {
     );
 
   // Until the stored session is restored isAuthenticated is false, which used
-  // to flash the login prompt with a spinner before the real page
-  if (isAuthLoading)
+  // to flash the login prompt with a spinner before the real page. The user
+  // context picks the address up one render after auth resolves; without it
+  // the tabs flash "Welcome," and their "Connect wallet" empty states.
+  if (isAuthLoading || (isAuthenticated && !userAddress))
     return (
       <Container>
         <PortfolioPageSkeleton variant={getSkeletonVariant(pathname)} />

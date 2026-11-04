@@ -22,6 +22,15 @@
   padding-bottom: var(--r-space-18);
 }
 
+/* Loaded cards have a 1px border; keep it (transparent) so the insides line up */
+.statsCard,
+.assetsCard,
+.activityStats,
+.card,
+.profileCard {
+  border: var(--r-border-width-sm) solid transparent;
+}
+
 .statsCard {
   display: flex;
   flex-direction: column;
@@ -31,7 +40,7 @@
 .valueSection {
   display: flex;
   align-items: center;
-  min-height: 218px;
+  min-height: 219px;
   padding: var(--r-space-6);
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
@@ -46,7 +55,7 @@
 }
 
 .metric {
-  min-height: 136px;
+  min-height: 137px;
   padding: var(--r-space-6);
 }
 
@@ -54,6 +63,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--r-space-1);
+}
+
+/* Total Portfolio Value spaces its lines 8px apart */
+.valueSection .valueGroup {
+  gap: var(--r-space-2);
 }
 
 .valueLabel {
@@ -72,9 +86,11 @@
   height: 58px;
 }
 
+/* The loaded metric value sits 1px lower than the 4px gap */
 .valueMedium {
   width: 119px;
   height: 44px;
+  margin-top: 1px;
 }
 
 .valueCaption {
@@ -124,7 +140,7 @@
 /* Column widths follow the loaded table: Asset, 5 value columns, actions */
 .tableRow {
   display: grid;
-  grid-template-columns: 31.7% repeat(5, minmax(0, 1fr)) 44px;
+  grid-template-columns: minmax(0, 1fr) repeat(5, 12.5%) 48px;
   align-items: center;
   height: 61px;
 }
@@ -201,9 +217,11 @@
   border-left: var(--r-border-width-sm) solid var(--r-color-neutral-200);
 }
 
+/* The loaded switcher is inline-flex, so its line box adds 4px on top */
 .chartTitle {
-  width: 188px;
+  width: 187px;
   height: 18px;
+  margin-top: 4px;
   margin-bottom: var(--r-space-6);
 }
 
@@ -250,6 +268,17 @@
   min-height: 136px;
 }
 
+/* Activity stats: plain 4px gaps and the same 72px bar as the loaded tab */
+.activityStats .valueMedium {
+  width: 72px;
+  margin-top: 0;
+}
+
+/* The loaded RInput search is 47px tall, which also centres the pills lower */
+.card > .toolbar .search {
+  height: 47px;
+}
+
 /* History title → controls is 16px in the loaded card, controls → table 24px */
 .card > .toolbar {
   margin: calc(var(--r-space-2) * -1) 0 0;
@@ -291,20 +320,31 @@
   height: 24px;
 }
 
+/* Same scroll box as the loaded list, so the stable gutter matches */
+.notificationsList {
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* Loaded row: 8px padding, two 21px lines, 1px divider = 59px */
 .notification {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 10px;
-  height: 59px;
   padding: var(--r-space-2) var(--r-space-3);
+  border-bottom: var(--r-border-width-sm) solid transparent;
+}
+
+.notification:last-child {
+  border-bottom: 0;
 }
 
 .notificationLines {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   padding: 2px 0;
 }
 
@@ -318,7 +358,7 @@
   flex-shrink: 0;
   width: 106px;
   height: 17px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 /* Profile */
@@ -359,10 +399,34 @@
   height: 45px;
 }
 
+/* Loaded wallet address box: one column of the 2-column grid, 47px tall */
+.profileWalletField {
+  width: calc((100% - var(--r-space-6)) / 2);
+  max-width: none;
+}
+
+.profileWalletField .profileInput {
+  height: 47px;
+}
+
+/* Loaded gas row: half width, dropdown grows, 83×47 Save button */
 .profileGasRow {
   display: flex;
+  width: calc((100% - var(--r-space-6)) / 2);
   align-items: flex-end;
   gap: var(--r-space-3);
+}
+
+.profileGasRow .profileField {
+  flex: 1;
+  width: auto;
+}
+
+@media (max-width: 1024px) {
+  .profileWalletField,
+  .profileGasRow {
+    width: 100%;
+  }
 }
 
 @media (--media-tablet-max) {

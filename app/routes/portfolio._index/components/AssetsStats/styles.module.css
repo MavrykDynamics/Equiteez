@@ -93,10 +93,14 @@
   height: 36px;
 }
 
+/* Fixed layout: column widths come from the header, not from the cell
+   content, so skeleton rows, loaded rows and the late refund icon all share
+   the same columns and nothing shifts while the portfolio loads. */
 .table {
   width: 100%;
   min-width: 760px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table th,
@@ -121,15 +125,16 @@
   text-transform: uppercase;
 }
 
+/* Asset takes what the value and action columns leave */
 .table th:first-child,
 .table td:first-child {
-  width: 20.2%;
+  width: auto;
   padding-left: var(--r-space-2);
 }
 
 .table th:not(:first-child),
 .table td:not(:first-child) {
-  width: 14.5%;
+  width: 12.5%;
 }
 
 .table th:last-child,
