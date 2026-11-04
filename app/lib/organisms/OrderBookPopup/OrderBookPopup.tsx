@@ -1,4 +1,4 @@
-import { FC, memo, useEffect, useState } from "react";
+import { FC, memo, useEffect, useLayoutEffect, useState } from "react";
 
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
@@ -49,16 +49,23 @@ type OrderBookToggleButtonProps = {
 const getIsMobileViewport = () =>
   typeof window !== "undefined" && window.innerWidth <= MOBILE_BREAKPOINT;
 
+// useLayoutEffect warns during SSR (React 18)
+const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+// Starts as desktop on the server and on the first client render alike, so
+// hydration matches the server HTML (reading innerWidth in the initial state
+// made the header logo and the mobile pages mismatch). The real viewport is
+// read in a layout effect, before the first paint.
 export const useIsMobileViewport = () => {
-  const [isMobileViewport, setIsMobileViewport] = useState(getIsMobileViewport);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-
+  useIsomorphicLayoutEffect(() => {
     const handleResize = () => {
       setIsMobileViewport(getIsMobileViewport());
     };
 
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => {
