@@ -84,7 +84,7 @@ export function BuySellPanelSkeleton() {
             <RSkeleton className={styles.summaryLabel} variant="surface" />
             <RSkeleton className={styles.summaryValue} variant="surface" />
           </div>
-          {/* Expanded on desktop, collapsed on mobile (as FeesCard) */}
+          {/* Hidden: FeesCard starts collapsed */}
           <div className={styles.summaryDetails}>
             <div className={styles.summaryRows}>
               {range(SUMMARY_DETAIL_ROWS_COUNT).map((row) => (
