@@ -9,11 +9,18 @@ const ASSET_TAB_WIDTHS = [138, 128, 88, 106];
 const SIDE_TAB_WIDTHS = [119, 123];
 const DETAIL_COLUMNS_COUNT = 3;
 const DETAIL_ROWS_COUNT = 2;
+const DETAIL_GROUPS_COUNT = 2;
+const WHY_INVEST_COLUMNS_COUNT = 2;
+const WHY_INVEST_ROWS_COUNT = 2;
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
 
 function SectionTitle() {
-  return <RSkeleton className={styles.sectionTitle} variant="surface" />;
+  return <RSkeleton
+      className={styles.sectionTitle}
+      radius="none"
+      variant="surface"
+    />;
 }
 
 function DetailsGroupSkeleton() {
@@ -27,12 +34,49 @@ function DetailsGroupSkeleton() {
               <RSkeleton
                 className={styles.detailItem}
                 key={row}
+                radius="none"
                 variant="surface"
               />
             ))}
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function WhyInvestSkeleton() {
+  return (
+    <div className={styles.section}>
+      <SectionTitle />
+      <div className={styles.investColumns}>
+        {range(WHY_INVEST_COLUMNS_COUNT).map((column) => (
+          <div className={styles.investColumn} key={column}>
+            {range(WHY_INVEST_ROWS_COUNT).map((row) => (
+              <RSkeleton
+                className={styles.investItem}
+                key={row}
+                radius="none"
+                variant="surface"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LocationSkeleton() {
+  return (
+    <div className={styles.location}>
+      <SectionTitle />
+      <RSkeleton
+        className={styles.locationText}
+        radius="none"
+        variant="surface"
+      />
+      <RSkeleton className={styles.map} radius="none" variant="surface" />
     </div>
   );
 }
@@ -116,14 +160,27 @@ export function TradePageSkeleton() {
               </div>
             </div>
 
-            {/* Asset Overview tab: "About <asset>" and the Features list */}
+            {/* Asset Overview tab: About, Why Invest, Features, Amenities and
+                Location, laid out like AssetOverviewTab */}
             <div className={styles.overview}>
               <div className={styles.section}>
                 <SectionTitle />
-                <RSkeleton className={styles.paragraph} variant="surface" />
+                <RSkeleton
+                  className={styles.paragraph}
+                  radius="none"
+                  variant="surface"
+                />
               </div>
 
-              <DetailsGroupSkeleton />
+              <WhyInvestSkeleton />
+
+              <div className={styles.detailGroups}>
+                {range(DETAIL_GROUPS_COUNT).map((group) => (
+                  <DetailsGroupSkeleton key={group} />
+                ))}
+              </div>
+
+              <LocationSkeleton />
             </div>
           </div>
         </div>

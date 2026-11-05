@@ -113,10 +113,58 @@
   height: 28px;
 }
 
-/* Two body-sm lines (three on phones) */
+/* Five body-sm lines of About text (as in the design) */
 .paragraph {
   width: 100%;
-  height: 42px;
+  height: 105px;
+}
+
+/* Why Invest: two columns of two items (side by side above phones) */
+.investColumns,
+.investColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.investColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+.investItem {
+  width: 100%;
+  height: 116px;
+}
+
+/* Features and Amenities sit closer together than the other sections */
+.detailGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-8);
+}
+
+.location {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+/* Three body-sm lines */
+.locationText {
+  width: 100%;
+  height: 63px;
+}
+
+.map {
+  width: 100%;
+  height: 453px;
+}
+
+@media not all and (--media-phone-max) {
+  .investColumns {
+    flex-direction: row;
+  }
 }
 
 .detailColumns {
@@ -249,12 +297,12 @@
     max-width: 100%;
   }
 
-  /* Phones: three-line About text, Features in one column */
-  .paragraph {
-    height: 63px;
-  }
-
+  /* Phones: Features in one column, shorter map */
   .detailColumns {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .map {
+    height: 268px;
   }
 }
