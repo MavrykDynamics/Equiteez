@@ -56,6 +56,14 @@
   overflow-x: auto;
 }
 
+/* Right-aligned 16px under the table; RPagination renders nothing for a
+   single page, so no empty gap is left */
+.tableSection .pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--r-space-4);
+}
+
 .skeletonCell {
   display: flex;
   flex-direction: column;
@@ -209,34 +217,6 @@
 .blockText {
   display: block;
   text-transform: capitalize;
-}
-
-.pagination {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--r-space-1);
-  margin-top: var(--r-space-4);
-}
-
-.pagination button {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: 0;
-  border-radius: var(--r-radius-sm);
-  background: transparent;
-  color: var(--r-color-neutral-700);
-  font: var(--r-font-weight-medium) 13px / 1 var(--r-font-body);
-}
-
-.pagination button:not(.currentPage):hover {
-  background: var(--r-color-neutral-50);
-}
-
-.pagination .currentPage {
-  background: var(--r-color-neutral-black);
-  color: var(--r-color-neutral-white);
 }
 
 .chartPanel {
