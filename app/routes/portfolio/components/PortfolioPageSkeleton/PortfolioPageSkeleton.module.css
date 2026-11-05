@@ -228,7 +228,8 @@
 .donut {
   width: 263px;
   max-width: 100%;
-  height: 263px;
+  aspect-ratio: 1;
+  height: auto;
 }
 
 .legend {

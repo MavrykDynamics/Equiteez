@@ -190,15 +190,16 @@
   height: 120px;
 }
 
+/* BuySellPanelSkeleton height: Order Summary collapsed (53px, not 176px) */
 .buySell {
   width: 100%;
-  height: 623px;
+  height: 500px;
 }
 
 @media (--media-tablet-max) {
   /* Market dropdown and buy/sell tabs stack on a full-width panel */
   .buySell {
-    height: 668px;
+    height: 545px;
   }
 }
 
