@@ -29,7 +29,11 @@ export function PortfolioMetric({
       <RSkeletonReveal
         isLoading={isLoading}
         skeleton={
-          <RSkeleton className={styles.skeletonMetricValue} variant="surface" />
+          <RSkeleton
+            className={styles.skeletonMetricValue}
+            radius="none"
+            variant="surface"
+          />
         }
       >
         <RHeading

@@ -41,8 +41,13 @@ function NotificationsSkeleton() {
         <div aria-hidden="true" className={styles.notification} key={index}>
           <span className={styles.notificationContent}>
             <span className={styles.skeletonLines}>
-              <RSkeleton className={styles.skeletonTitle} variant="surface" />
               <RSkeleton
+                radius="none"
+                className={styles.skeletonTitle}
+                variant="surface"
+              />
+              <RSkeleton
+                radius="none"
                 className={styles.skeletonDescription}
                 style={{ width }}
                 variant="surface"
@@ -50,7 +55,11 @@ function NotificationsSkeleton() {
             </span>
           </span>
           <span className={styles.meta}>
-            <RSkeleton className={styles.skeletonDate} variant="surface" />
+            <RSkeleton
+              radius="none"
+              className={styles.skeletonDate}
+              variant="surface"
+            />
           </span>
         </div>
       ))}
