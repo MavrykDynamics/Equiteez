@@ -76,7 +76,7 @@ function LocationSkeleton() {
         radius="none"
         variant="surface"
       />
-      <RSkeleton className={styles.map} radius="none" variant="surface" />
+      <RSkeleton className={styles.map} radius="md" variant="surface" />
     </div>
   );
 }

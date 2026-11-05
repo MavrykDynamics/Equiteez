@@ -264,11 +264,15 @@
   transform: translateX(16px);
 }
 
+/* Shrinks with a column narrower than 263px; the SVG and the centre scale
+   with it */
 .donut {
   position: relative;
   display: grid;
   width: 263px;
-  height: 263px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  height: auto;
   place-items: center;
   border-radius: 50%;
 }
@@ -301,8 +305,9 @@
 
 .donutCenter {
   display: flex;
-  width: 116px;
-  height: 116px;
+  /* 116 / 263 of the donut */
+  width: calc(100% * 116 / 263);
+  aspect-ratio: 1;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
@@ -312,8 +317,9 @@
 .donutCenterBg {
   content: "";
   position: absolute;
-  width: 185px;
-  height: 185px;
+  /* 185px on a 263px donut: sized against .donutCenter (116px) */
+  width: calc(100% * 185 / 116);
+  aspect-ratio: 1;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   z-index: 0;
@@ -454,10 +460,6 @@
   }
 
   .donut {
-    width: 100%;
-    max-width: 263px;
-    aspect-ratio: 1;
-    height: auto;
     justify-self: center;
   }
 
