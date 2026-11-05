@@ -65,3 +65,31 @@ to the order value. Failed estimates clear the displayed gas fee.
 Both Order Summary and Total display that calculated sum with two to six decimal
 places, preserving small fees even for large orders. They update with the order
 value and fee estimates; rounding applies only to the displayed sum.
+
+## Payment preferences and direct network fees
+
+Secondary order forms use the saved wallet/network-scoped payment method from
+`GasPaymentProvider`; Profile edits are drafts until local persistence succeeds.
+Changing the saved method preserves amount, limit price and expiry inputs.
+Credits execution is not yet enabled; select and Save MVRK in Profile for direct
+execution. There is no automatic fallback and no relay dependency in direct mode.
+
+`useDirectOrderFee` keeps idle/loading/ready/error distinct and invalidates estimates
+on argument or scope changes. A separate RPC read verifies native balance. The
+review shows network fees and storage separately from the protocol-fee summary.
+Buy/sell retain the existing shared payload validation and grant/order/revoke batch;
+cancel/refund reuse transfer builders for preview and execution. The shared direct
+sender freshly checks suggested fees, storage burns, reveal costs, native transfers,
+wallet and chain before submission. Unknown or insufficient MVRK blocks execution.
+Price/quantity tick alignment and raw unit conversion remain unchanged. See
+[gasless trading](gasless-trading.md) for persistence and later transport phases.
+
+## Shared payload validation
+
+`app/contracts/orderbookPayload.ts::buildOrderPayload` owns raw order normalization and rule validation for both direct buy/sell batches and future verified permit construction. The extraction preserves quantity rejection without rounding, limit-only price-tick enforcement, exact nat values, currency trimming, nullable expiry and downward-rounded quote minimums. `orderbook.contract.ts` retains direct grant/order/revoke batches. Phase 3 ordinary permit builders reuse this validator. Permit review/signing is available as a reusable service/component; mode-aware relay execution remains deferred to Phase 5. This does not yet enable Credits execution in the trade panel.
+
+## Phase 5 secondary execution
+
+`BuySellContent` and `useOpenOrderAction` share `useOrderbookExecution`. MVRK retains the existing `useContractAction` and grant/order/revoke batches. Credits freezes the same normalized market/limit intent, reuses `buildOrderPayload` and prepares each ordinary permit through the existing RelayProvider runtime. Price ticks, quantity ticks, downward quantity alignment and quote rounding are unchanged.
+
+`orderPlanValidation.ts` checks exact token-address/token-ID RPC balances, expiry and current cancel/refund rows. The adapter refreshes KYC; live permit preparation checks the book configuration/counter. Every signature and initial submission rechecks business validity. An absent operator requires its own reviewed persistent grant and confirmation before an explicit order review. Changed form/price/configuration requires a new review. Relay acceptance/setup never resets inputs; only confirmation of the requested order action can reset unchanged inputs. Closing or reloading leaves durable relay recovery active but does not resume signatures. Required top-ups remain blocked.

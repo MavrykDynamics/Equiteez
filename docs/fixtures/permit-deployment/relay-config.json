@@ -1,0 +1,218 @@
+{
+  "enabled": true,
+  "fee": {
+    "enabled": true,
+    "tokenContract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+    "tokenId": 0,
+    "decimals": 6,
+    "collector": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+    "feeSchedule": {
+      "permitPlaceBuyOrder": "1000000",
+      "permitPlaceSellOrder": "1000000"
+    },
+    "defaultFeeUnits": "1000000",
+    "topUpMinUnits": "5000000",
+    "topUpMaxUnits": "100000000",
+    "freeAllowanceOps": 0,
+    "entrypoint": "permitAndExecute"
+  },
+  "contracts": [
+    {
+      "address": "KT18jYZuGDajywWdCniEkfxdPeRWZFyrEuUg",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT19PyrK3NKTiAfjxPJwhswgzkiMeQuawkFc",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1BoNtqMaowWKGrsrSZUnr8zBc7KdX37Ym6",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1DhyC3hPkX7PUQY5GNsVjqy6ArcCDYauP9",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1DoCAu9Hyx2gy8BFV6HUvMNSiqPJiNPLAY",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1HPSAA67RcgPhbdkjrordYwwaLZhVdDAP5",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1HR56nVuVDnidsabd2TBB9YvAtKbCbHKpP",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1NEHFH8Hp1wCjT6FZ93d33mBzH6vHnnrhc",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1NbgrAUjxgvm4b72VEYPp7r8KXTLgXNjjP",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1NkKkvSFYMYfaTxAFkMAKiDqZEt53UoV4a",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1PXS6bacaVGHHWCQtvNSvoGL9Daho3ozcp",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "kind": "quote_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1TRsoJDcn9ygXMeEdxhmGzugsaWHU6UoYV",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1TVHEqEy7bsbrVK4ftP84v4MtuUBhhs4hn",
+      "kind": "orderbook",
+      "permitActions": [
+        "permitCancelOrders",
+        "permitPlaceBuyOrder",
+        "permitPlaceSellOrder",
+        "permitProcessRefund",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+      "kind": "kyc",
+      "permitActions": [
+        "permitFreezeMember",
+        "permitSetMemberKyc",
+        "permitSetPermitExpiry"
+      ]
+    },
+    {
+      "address": "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    },
+    {
+      "address": "KT1XbAtSp5i1GJZTHzjc5J8SYkcEE8kqtkSv",
+      "kind": "rwa_token",
+      "permitActions": [
+        "permitSetPermitExpiry",
+        "permitTransfer",
+        "permitUpdateOperators"
+      ]
+    }
+  ],
+  "gaslessThresholdMumav": "500000"
+}

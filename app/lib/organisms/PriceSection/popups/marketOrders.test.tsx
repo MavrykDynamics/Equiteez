@@ -13,15 +13,66 @@ const mocks = vi.hoisted(() => ({
   estimateBuy: vi.fn(),
   estimateSell: vi.fn(),
   balances: {} as Record<string, string>,
-  toolkit: {},
+  method: "mvrk",
+  toolkit: {
+    estimate: { batch: vi.fn() },
+    rpc: { getBalance: vi.fn(), getChainId: vi.fn() },
+    wallet: { pkh: vi.fn() },
+  },
   userAddress: "wallet",
   connect: vi.fn(),
+}));
+vi.mock("~/providers/AuthProvider/auth.provider", () => ({
+  useAuthContext: () => ({ isAuthenticated: true, login: vi.fn() }),
+}));
+vi.mock("~/contracts/orderPlanValidation", () => ({
+  validateOrderPlan: vi.fn(),
+}));
+vi.mock("~/lib/apis/rwa/relay/relay", () => ({
+  fetchRelayCredits: vi.fn(),
+  relayConfigQueryOptions: (scope: string) => ({
+    queryKey: ["relay", scope, "config"],
+    queryFn: vi.fn(),
+  }),
+}));
+// Direct-mode forms never enable the relay config read.
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  useQuery: () => ({ data: undefined }),
+}));
+vi.mock("@apollo/client/index", () => ({
+  useApolloClient: () => ({ query: vi.fn() }),
+}));
+vi.mock(
+  "~/providers/ToasterProvider/toaster.provider",
+  async (importOriginal) => ({
+    ...(await importOriginal<object>()),
+    useToasterContext: () => ({ bug: vi.fn(), success: vi.fn() }),
+  })
+);
+vi.mock("~/providers/RelayProvider/RelayProvider", () => ({
+  useRelay: () => ({ records: [], runtime: null, isReady: false, error: null }),
+}));
+vi.mock("@remix-run/react", () => ({
+  Link: ({ children, to }: { children: ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookBuy: mocks.buy,
   orderbookSell: mocks.sell,
-  orderbookBuyEstimation: mocks.estimateBuy,
-  orderbookSellEstimation: mocks.estimateSell,
+  orderbookBuyBatch: mocks.estimateBuy,
+  orderbookSellBatch: mocks.estimateSell,
+}));
+vi.mock("~/providers/GasPaymentProvider/GasPaymentProvider", () => ({
+  useGasPayment: () => ({
+    method: mocks.method,
+    isRestored: true,
+    scope: "scope",
+    wallet: mocks.userAddress,
+    chainId: "chain",
+    toolkit: mocks.toolkit,
+  }),
 }));
 vi.mock("~/contracts/hooks/useContractAction", () => ({
   useContractAction: (action: (props: unknown) => void, props: unknown) => ({
@@ -125,7 +176,7 @@ vi.mock("../components/FeesCard/FeesCard", () => ({
   }) => (
     <>
       <output data-total>{totalAmount.toFixed()}</output>
-      <output data-gas-fee>{gasFee.toFixed()}</output>
+      <output data-gas-fee>{gasFee?.toFixed() ?? "unknown"}</output>
     </>
   ),
 }));
@@ -191,14 +242,21 @@ const asset = {
 } as AssetType;
 
 beforeEach(() => {
+  mocks.method = "mvrk";
   mocks.userAddress = "wallet";
   mocks.connect.mockReset();
   vi.clearAllMocks();
   vi.useFakeTimers();
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   mocks.balances = { base: "0.966666", quote: "29" };
-  mocks.estimateBuy.mockResolvedValue({ actionSuccess: false });
-  mocks.estimateSell.mockResolvedValue({ actionSuccess: false });
+  mocks.estimateBuy.mockResolvedValue([]);
+  mocks.estimateSell.mockResolvedValue([]);
+  mocks.toolkit.estimate.batch.mockResolvedValue([
+    { suggestedFeeMumav: 100, burnFeeMumav: 0 },
+  ]);
+  mocks.toolkit.rpc.getBalance.mockResolvedValue(new BigNumber(10000));
+  mocks.toolkit.rpc.getChainId.mockResolvedValue("chain");
+  mocks.toolkit.wallet.pkh.mockResolvedValue("wallet");
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -258,21 +316,26 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     expect(mocks.sell).not.toHaveBeenCalled();
   });
 
-  it("uses the suggested gas fee and clears it after a failed estimate", async () => {
-    const estimateMock = side === BUY ? mocks.estimateBuy : mocks.estimateSell;
-    estimateMock.mockResolvedValueOnce({
-      actionSuccess: true,
-      data: { totalSuggestedFeeMutez: 444, totalCost: 1154 },
-    });
+  it("allows a verified fee estimate and blocks a failed one", async () => {
+    mocks.toolkit.estimate.batch.mockResolvedValueOnce([
+      { suggestedFeeMumav: 444, burnFeeMumav: 710 },
+    ]);
     render(side);
     change("Pay with", side === BUY ? "29" : "0.96");
     await estimate();
-    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe(
-      "0.000444"
-    );
+    expect(
+      container.querySelector<HTMLButtonElement>("[data-submit]")!.disabled
+    ).toBe(false);
+    mocks.toolkit.estimate.batch.mockRejectedValueOnce(new Error("offline"));
     change("Pay with", side === BUY ? "28" : "0.95");
+    expect(submit().disabled).toBe(true);
     await estimate();
-    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("0");
+    expect(submit().disabled).toBe(true);
+    expect(container.textContent).toContain(
+      "Unable to verify MVRK balance or network fee"
+    );
+    expect(mocks.buy).not.toHaveBeenCalled();
+    expect(mocks.sell).not.toHaveBeenCalled();
   });
   it.each([
     ["10000", "960000", "0.96", "28.8"],
@@ -281,10 +344,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     "shares quantity for direct-input preview, estimate and submission at tick %s",
     async (tick, atoms, quantity, consideration) => {
       render(side, { quantityTickSize: tick });
-      change(
-        "Pay with",
-        side === BUY ? "29" : "0.966666"
-      );
+      change("Pay with", side === BUY ? "29" : "0.966666");
       expect(input("Receive").value).toBe(
         side === BUY ? quantity : consideration
       );
@@ -357,10 +417,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     "blocks estimation and submission: %s",
     async (_label, overrides, amount) => {
       render(side, overrides);
-      change(
-        "Pay with",
-        amount ?? (side === BUY ? "29" : "0.966666")
-      );
+      change("Pay with", amount ?? (side === BUY ? "29" : "0.966666"));
       await estimate();
       expect(submit().disabled).toBe(true);
       expect(mocks.estimateBuy).not.toHaveBeenCalled();
@@ -472,4 +529,67 @@ describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
     expect(mocks.estimateBuy).not.toHaveBeenCalled();
     expect(mocks.estimateSell).not.toHaveBeenCalled();
   });
+});
+
+it("keeps amount input through saved payment changes and blocks Credits execution", async () => {
+  render(BUY);
+  change("Pay with", "10");
+  const before = input("Pay with").value;
+  mocks.method = "credits";
+  render(BUY);
+  expect(input("Pay with").value).toBe(before);
+  expect(submit().disabled).toBe(true);
+  expect(mocks.buy).not.toHaveBeenCalled();
+  mocks.method = "mvrk";
+  render(BUY);
+  expect(input("Pay with").value).toBe(before);
+});
+
+it("ignores an old estimate after arguments change", async () => {
+  let resolveOld!: (
+    value: { suggestedFeeMumav: number; burnFeeMumav: number }[]
+  ) => void;
+  mocks.toolkit.estimate.batch.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        resolveOld = resolve;
+      })
+  );
+  render(BUY);
+  change("Pay with", "29");
+  await estimate();
+  change("Pay with", "28");
+  await act(async () =>
+    resolveOld([{ suggestedFeeMumav: 999, burnFeeMumav: 0 }])
+  );
+  expect(submit().disabled).toBe(true);
+  expect(container.textContent).not.toContain("0.000999");
+  await estimate();
+  expect(submit().disabled).toBe(false);
+});
+it.each(["unknown", "insufficient"])(
+  "blocks %s native funds",
+  async (state) => {
+    if (state === "unknown")
+      mocks.toolkit.rpc.getBalance.mockRejectedValueOnce(new Error("offline"));
+    else mocks.toolkit.rpc.getBalance.mockResolvedValueOnce(new BigNumber(99));
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+    expect(submit().disabled).toBe(true);
+    expect(mocks.buy).not.toHaveBeenCalled();
+  }
+);
+
+it("rejects a captured submission guard after the saved method changes", async () => {
+  render(BUY);
+  change("Pay with", "29");
+  await estimate();
+  submit();
+  const args = mocks.buy.mock.calls[0][0] as {
+    beforeSubmit: () => Promise<void>;
+  };
+  mocks.method = "credits";
+  render(BUY);
+  await expect(args.beforeSubmit()).rejects.toThrow("changed");
 });

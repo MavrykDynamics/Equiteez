@@ -1,3 +1,4 @@
+import { updateRelayScopeIdentity } from "~/lib/relay/relay.scope";
 import React, {
   useCallback,
   useContext,
@@ -134,7 +135,13 @@ export const UserProvider = ({ children }: Props) => {
       (async function () {
         try {
           await dapp.listenToActiveAccount((activeAccount) => {
-            if (isMounted) setAccount(activeAccount);
+            if (isMounted) {
+              updateRelayScopeIdentity(
+                "wallet",
+                JSON.stringify([activeAccount?.address, activeAccount?.network])
+              );
+              setAccount(activeAccount);
+            }
           });
         } catch (err) {
           console.log(err);
@@ -289,6 +296,19 @@ export const UserProvider = ({ children }: Props) => {
     logout,
   ]);
 
+  const refetchUserBalances = useCallback(async () => {
+    if (!authenticatedUserAddress) return;
+    await loadInitialTzktTokensForNewlyConnectedUser({
+      userAddress: authenticatedUserAddress,
+      tokensMetadata,
+      isUsingLoader: false,
+    });
+  }, [
+    authenticatedUserAddress,
+    loadInitialTzktTokensForNewlyConnectedUser,
+    tokensMetadata,
+  ]);
+
   const providerValue = useMemo(() => {
     const isLoading =
       isUserLoading || tzktBalancesLoading || isUserAccountStatusLoading;
@@ -304,6 +324,7 @@ export const UserProvider = ({ children }: Props) => {
       isLoading,
       connect: connectAndLogin,
       refetchUserAccountStatus,
+      refetchUserBalances,
       signOut: disconnectAndLogout,
       changeUser: switchAccount,
     };
@@ -316,6 +337,7 @@ export const UserProvider = ({ children }: Props) => {
     userTzktTokens.tokens,
     connectAndLogin,
     refetchUserAccountStatus,
+    refetchUserBalances,
     disconnectAndLogout,
     switchAccount,
   ]);

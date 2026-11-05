@@ -72,6 +72,16 @@ describe("calculateOrderSummaryValues", () => {
     expect(result.totalValue.toString()).toBe("2500.01");
   });
 
+  it("totals zero without an order, even with fees", () => {
+    const result = calculateOrderSummaryValues({
+      orderbookFee: 200,
+      gasFee: "0.001",
+      feeUsdRate: 1,
+    });
+    expect(result.platformFeeUsd.toFixed(6)).toBe("0.001200");
+    expect(result.totalValue.toString()).toBe("0");
+  });
+
   it("normalizes invalid values to zero", () => {
     const result = calculateOrderSummaryValues({
       gasFee: "-1",

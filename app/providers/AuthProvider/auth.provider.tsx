@@ -1,3 +1,4 @@
+import { updateRelayScopeIdentity } from "~/lib/relay/relay.scope";
 import React, {
   useCallback,
   useContext,
@@ -53,11 +54,24 @@ const getAuthenticatedWalletAddress = (accessToken?: string | null) =>
 export const AuthProvider = ({ children }: Props) => {
   const { dapp } = useWalletContext();
   const { IS_WEB } = useAppContext();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authenticatedWalletAddress, setAuthenticatedWalletAddress] = useState<
+  const [isAuthenticated, setAuthenticatedState] = useState(false);
+  const [authenticatedWalletAddress, setAuthenticatedWalletState] = useState<
     string | null
   >(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isAuthLoading, setAuthLoadingState] = useState(true);
+
+  const setIsAuthenticated = useCallback((value: boolean) => {
+    updateRelayScopeIdentity("authenticated", String(value));
+    setAuthenticatedState(value);
+  }, []);
+  const setAuthenticatedWalletAddress = useCallback((value: string | null) => {
+    updateRelayScopeIdentity("authenticatedWallet", value ?? "");
+    setAuthenticatedWalletState(value);
+  }, []);
+  const setIsAuthLoading = useCallback((value: boolean) => {
+    updateRelayScopeIdentity("authLoading", String(value));
+    setAuthLoadingState(value);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -66,7 +80,7 @@ export const AuthProvider = ({ children }: Props) => {
       setAuthenticatedWalletAddress(getAuthenticatedWalletAddress(accessToken));
       setIsAuthLoading(false);
     })();
-  }, []);
+  }, [setIsAuthenticated, setAuthenticatedWalletAddress, setIsAuthLoading]);
 
   useEffect(() => {
     if (!IS_WEB) return;
@@ -82,7 +96,12 @@ export const AuthProvider = ({ children }: Props) => {
     return () => {
       window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
     };
-  }, [IS_WEB]);
+  }, [
+    IS_WEB,
+    setIsAuthenticated,
+    setAuthenticatedWalletAddress,
+    setIsAuthLoading,
+  ]);
 
   useEffect(() => {
     if (!IS_WEB) return;
@@ -99,7 +118,12 @@ export const AuthProvider = ({ children }: Props) => {
         emitAuthExpiredEvent();
       }
     });
-  }, [IS_WEB]);
+  }, [
+    IS_WEB,
+    setIsAuthenticated,
+    setAuthenticatedWalletAddress,
+    setIsAuthLoading,
+  ]);
 
   const requestAuthChallenge = useCallback(
     async (params: AuthChallengeRequest) => {
@@ -150,23 +174,26 @@ export const AuthProvider = ({ children }: Props) => {
     []
   );
 
-  const logout = useCallback(async (params: AuthRefreshRequest = {}) => {
-    clearFreshQueries();
+  const logout = useCallback(
+    async (params: AuthRefreshRequest = {}) => {
+      clearFreshQueries();
 
-    const { refreshToken: storedRefreshToken } =
-      await getAuthTokensFromStorage();
-    const refreshToken = params.refreshToken ?? storedRefreshToken;
+      const { refreshToken: storedRefreshToken } =
+        await getAuthTokensFromStorage();
+      const refreshToken = params.refreshToken ?? storedRefreshToken;
 
-    try {
-      await rwaApi.post("/auth/logout", { refreshToken });
-    } finally {
-      await clearAuthSession();
-      setIsAuthenticated(false);
-      setAuthenticatedWalletAddress(null);
-      setIsAuthLoading(false);
-      emitAuthExpiredEvent();
-    }
-  }, []);
+      try {
+        await rwaApi.post("/auth/logout", { refreshToken });
+      } finally {
+        await clearAuthSession();
+        setIsAuthenticated(false);
+        setAuthenticatedWalletAddress(null);
+        setIsAuthLoading(false);
+        emitAuthExpiredEvent();
+      }
+    },
+    [setIsAuthenticated, setAuthenticatedWalletAddress, setIsAuthLoading]
+  );
 
   const login = useCallback(async () => {
     clearFreshQueries();
@@ -216,7 +243,15 @@ export const AuthProvider = ({ children }: Props) => {
     } finally {
       setIsAuthLoading(false);
     }
-  }, [IS_WEB, dapp, requestAuthChallenge, verifyAuthSignature]);
+  }, [
+    IS_WEB,
+    dapp,
+    requestAuthChallenge,
+    verifyAuthSignature,
+    setIsAuthenticated,
+    setAuthenticatedWalletAddress,
+    setIsAuthLoading,
+  ]);
 
   const providerValue = useMemo(
     () => ({
@@ -226,13 +261,7 @@ export const AuthProvider = ({ children }: Props) => {
       isAuthenticated,
       isAuthLoading,
     }),
-    [
-      logout,
-      login,
-      authenticatedWalletAddress,
-      isAuthenticated,
-      isAuthLoading,
-    ]
+    [logout, login, authenticatedWalletAddress, isAuthenticated, isAuthLoading]
   );
 
   return (

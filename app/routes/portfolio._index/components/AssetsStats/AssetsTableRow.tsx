@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
@@ -6,17 +8,21 @@ import Money from "~/lib/atoms/Money";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { AssetIcon } from "~/templates/AssetIcon";
 import { toTokenSlug } from "~/lib/assets";
+import { RTooltip } from "~/lib/atoms/RTooltip";
+import { RefundAllPopup } from "~/lib/organisms/RefundAllPopup/RefundAllPopup";
 
 type AllAssetsTableRowProps = {
   asset: WalletPortfolioAssetType;
+  canRefund: boolean;
 };
 
-export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
+export function AssetsTableRow({ asset, canRefund }: AllAssetsTableRowProps) {
+  const [isRefundPopupOpen, setIsRefundPopupOpen] = useState(false);
   const isPositiveChange = (asset.price_change_30d_pct ?? 0) >= 0;
   const isPositiveProfit = (asset.profit ?? 0) >= 0;
 
   return (
-    <tr>
+    <tr className={styles.tableRow}>
       <td>
         <div className={styles.assetIdentity}>
           <AssetIcon
@@ -141,6 +147,28 @@ export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
             </RText>
           </>
         )}
+      </td>
+      <td className={styles.actionCell}>
+        {canRefund ? (
+          <>
+            <RTooltip content="Claim remaining funds">
+              <button
+                aria-label={`Claim remaining funds for ${asset.symbol.toUpperCase()}`}
+                className={styles.actionIcon}
+                onClick={() => setIsRefundPopupOpen(true)}
+                type="button"
+              >
+                <RIcon name="refund" size="medium" />
+              </button>
+            </RTooltip>
+            <RefundAllPopup
+              assetSymbol={asset.symbol.toUpperCase()}
+              isOpen={isRefundPopupOpen}
+              onClose={() => setIsRefundPopupOpen(false)}
+              tokenAddress={asset.token_address}
+            />
+          </>
+        ) : null}
       </td>
     </tr>
   );

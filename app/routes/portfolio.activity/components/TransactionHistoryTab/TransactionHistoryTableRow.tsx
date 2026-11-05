@@ -1,5 +1,9 @@
 import { useState } from "react";
-import type { OrderHistoryItemType } from "~/lib/apis/rwa/orders/orders.types";
+import type {
+  GasCreditTopUpItemType,
+  OrderHistoryItemType,
+  TransactionHistoryItemType,
+} from "~/lib/apis/rwa/orders/orders.types";
 import Money from "~/lib/atoms/Money";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
@@ -14,14 +18,32 @@ import styles from "./styles.module.css";
 import { toTokenSlug } from "~/lib/assets";
 import { AssetIcon } from "~/templates/AssetIcon";
 import { useAssetMetadata } from "~/lib/metadata";
+import { GasCreditTopUpTableRow } from "./GasCreditTopUpTableRow";
+
+// Order rows type `type` as any string, so narrow on the top-up payload.
+const isGasCreditTopUp = (
+  transaction: TransactionHistoryItemType
+): transaction is GasCreditTopUpItemType => "gas_credit_top_up" in transaction;
 
 type TransactionHistoryTableRowProps = {
-  transaction: OrderHistoryItemType;
+  transaction: TransactionHistoryItemType;
 };
 
 export function TransactionHistoryTableRow({
   transaction,
 }: TransactionHistoryTableRowProps) {
+  return isGasCreditTopUp(transaction) ? (
+    <GasCreditTopUpTableRow transaction={transaction} />
+  ) : (
+    <OrderTransactionTableRow transaction={transaction} />
+  );
+}
+
+function OrderTransactionTableRow({
+  transaction,
+}: {
+  transaction: OrderHistoryItemType;
+}) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formattedDate, formattedTime = ""] = formatOrderDate(
     transaction.datetime
@@ -42,9 +64,7 @@ export function TransactionHistoryTableRow({
       <div className={styles.row} onClick={() => setIsDetailsOpen(true)}>
         <div className={styles.cell} role="cell">
           <div className={styles.date}>
-            <RText size="body-sm">
-              {formattedDate}
-            </RText>
+            <RText size="body-sm">{formattedDate}</RText>
             <RText color="neutral-700" size="body-s">
               {formattedTime}
             </RText>
@@ -58,9 +78,7 @@ export function TransactionHistoryTableRow({
               className={styles.assetIcon}
             />
             <div className={styles.assetIdentity}>
-              <RText size="body-sm">
-                {assetSymbol}
-              </RText>
+              <RText size="body-sm">{assetSymbol}</RText>
               <RText color="neutral-700" size="body-s">
                 {assetName}
               </RText>

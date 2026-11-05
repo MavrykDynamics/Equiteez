@@ -1,0 +1,218 @@
+{
+  "provenance": "Generated with ephemeral unfunded test keys; private keys discarded. Static signatures verified locally and submitted only to RPC run_code simulation of the complete captured orderbook script with an empty cancellation list for signature isolation (not an admitted relay intent) at the pinned block. Not wallet-extension or relay verification.",
+  "vectors": [
+    {
+      "curve": "edpk",
+      "publicKey": "edpkuJdRwPhpD44PtQ3Ddh9vPaCeB3SpA1eCLRfB1mPoWzSTxYdWWV",
+      "wallet": "mv1KFUykaZxpLFdGMjdrJYxxBQAmHjHaJUqr",
+      "contract": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+      "chainId": "NetXmtMsNf69w1w",
+      "counter": "0",
+      "deadline": "1792677600",
+      "action": {
+        "permitCancelOrders": []
+      },
+      "actionBytes": "050508050805050200000000",
+      "actionHash": "3abeb649d5e0cc3a09094d2e92c018c18a01798db4e604d2073c5a8985de70ba",
+      "payload": "05070707070a00000004acb171020a000000160106529377f603984398885d600755f6963dc32d5c000707000007070a000000203abeb649d5e0cc3a09094d2e92c018c18a01798db4e604d2073c5a8985de70ba00a0dbd0ad0d",
+      "signature": "edsigtiSWwb52SBv1TxDmcH5x4Dk95RaKxwH1QUP8ipPsQuiZNXjAGSQpcr455K6nDg9hH9Bifj7c6Hsp5J17ctQQhMHHjLDpsf",
+      "operation": {
+        "to": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuJdRwPhpD44PtQ3Ddh9vPaCeB3SpA1eCLRfB1mPoWzSTxYdWWV"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtiSWwb52SBv1TxDmcH5x4Dk95RaKxwH1QUP8ipPsQuiZNXjAGSQpcr455K6nDg9hH9Bifj7c6Hsp5J17ctQQhMHHjLDpsf"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Left",
+                                  "args": [
+                                    []
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-10-22T14:00:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rpcVerification": {
+        "status": 200,
+        "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+        "now": "1792674000",
+        "result": "run_code accepted; no injection"
+      }
+    },
+    {
+      "curve": "sppk",
+      "publicKey": "sppk7bcw4thxj3gCvtEu1ABS4dDrbxARDiRDakrYhyix3caKmKYiZt4",
+      "wallet": "mv2XkPCiNcn9Zrw6n9pVq4KLeB5berybgRQr",
+      "contract": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+      "chainId": "NetXmtMsNf69w1w",
+      "counter": "0",
+      "deadline": "1792677600",
+      "action": {
+        "permitCancelOrders": []
+      },
+      "actionBytes": "050508050805050200000000",
+      "actionHash": "3abeb649d5e0cc3a09094d2e92c018c18a01798db4e604d2073c5a8985de70ba",
+      "payload": "05070707070a00000004acb171020a000000160106529377f603984398885d600755f6963dc32d5c000707000007070a000000203abeb649d5e0cc3a09094d2e92c018c18a01798db4e604d2073c5a8985de70ba00a0dbd0ad0d",
+      "signature": "spsig18xoZzrNFpsUKW26sKk53zbtZh4HWC4ZfrCdnhgagkZoohFfJVRQEqHDXQf4BhBUbaefJmEiPxZYWc9SfDnqzNTEtju7Hj",
+      "operation": {
+        "to": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "sppk7bcw4thxj3gCvtEu1ABS4dDrbxARDiRDakrYhyix3caKmKYiZt4"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "spsig18xoZzrNFpsUKW26sKk53zbtZh4HWC4ZfrCdnhgagkZoohFfJVRQEqHDXQf4BhBUbaefJmEiPxZYWc9SfDnqzNTEtju7Hj"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Left",
+                                  "args": [
+                                    []
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-10-22T14:00:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rpcVerification": {
+        "status": 200,
+        "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+        "now": "1792674000",
+        "result": "run_code accepted; no injection"
+      }
+    },
+    {
+      "curve": "p2pk",
+      "publicKey": "p2pk66QUKr186iuZCnNKayGh2AdXTWVdfkDApf8Mh3HHeZhTLsTMtau",
+      "wallet": "mv3CkTGApz8fASPDEpHMCQ3412uiAEhET8e5",
+      "contract": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+      "chainId": "NetXmtMsNf69w1w",
+      "counter": "0",
+      "deadline": "1792677600",
+      "action": {
+        "permitCancelOrders": []
+      },
+      "actionBytes": "050508050805050200000000",
+      "actionHash": "3abeb649d5e0cc3a09094d2e92c018c18a01798db4e604d2073c5a8985de70ba",
+      "payload": "05070707070a00000004acb171020a000000160106529377f603984398885d600755f6963dc32d5c000707000007070a000000203abeb649d5e0cc3a09094d2e92c018c18a01798db4e604d2073c5a8985de70ba00a0dbd0ad0d",
+      "signature": "p2sigNDY9M5gThp4ArQj7ettE4B5qGDfn6XeoGx2DP7rQd5GKosr1rBAyTMxd3eyzMpvEFr9VgKPKvg8yzpffzXt2XeQtT58aa",
+      "operation": {
+        "to": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "p2pk66QUKr186iuZCnNKayGh2AdXTWVdfkDApf8Mh3HHeZhTLsTMtau"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "p2sigNDY9M5gThp4ArQj7ettE4B5qGDfn6XeoGx2DP7rQd5GKosr1rBAyTMxd3eyzMpvEFr9VgKPKvg8yzpffzXt2XeQtT58aa"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Left",
+                                  "args": [
+                                    []
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-10-22T14:00:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rpcVerification": {
+        "status": 200,
+        "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+        "now": "1792674000",
+        "result": "run_code accepted; no injection"
+      }
+    }
+  ]
+}

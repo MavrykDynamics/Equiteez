@@ -45,6 +45,8 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
     handleOrderAction,
     isPopupOpen,
     popupDescription,
+    paymentSettings,
+    popupSubmitDisabled,
     popupSubmitLabel,
     popupTitle,
   } = useOpenOrderAction({ assetSymbol, order });
@@ -52,7 +54,10 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
   return (
     <>
       <div
-        className={classNames(styles.row, isExpired && styles.rowExpired)}
+        className={classNames(
+          styles.row,
+          actionIcon === "refund" && styles.rowRefund
+        )}
         role="row"
       >
         <div className={styles.cell} role="cell">
@@ -126,6 +131,8 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
       <CancelOrderPopup
         assetSymbol={assetSymbol}
         description={popupDescription}
+        paymentSettings={paymentSettings}
+        submitDisabled={popupSubmitDisabled}
         isOpen={isPopupOpen}
         onClose={handleClosePopup}
         onSubmit={handleOrderAction}

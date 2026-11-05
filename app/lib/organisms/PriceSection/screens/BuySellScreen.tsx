@@ -27,6 +27,7 @@ import {
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
+import { TRANSACTION_PROCESSING_MESSAGE } from "./buySell.consts";
 
 type BuySellScreenProps = {
   metadata: OrderbookTokenMetadata;
@@ -37,6 +38,7 @@ type BuySellScreenProps = {
   amount: BigNumber | undefined;
   total: BigNumber | undefined;
   gasFee?: BigNumber.Value;
+  paymentDetails?: React.ReactNode;
   apy: number | null;
   orderbookFee?: BigNumber.Value;
   tokenPrice: BigNumber;
@@ -46,6 +48,8 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  // A Gas Credits order is signed and still being processed.
+  isProcessingCredits?: boolean;
   marketAmounts?: { quantity: BigNumber; consideration: BigNumber };
   primaryPurchase?: {
     receiveAmount: BigNumber | undefined;
@@ -63,6 +67,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   continueButtonClassName,
   amount,
   gasFee,
+  paymentDetails,
   apy,
   orderbookFee,
   tokenPrice,
@@ -71,6 +76,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   hasQuoteError = false,
   isOrderDataLoading = false,
   validationMessage,
+  isProcessingCredits = false,
   primaryPurchase,
   marketAmounts,
 }) => {
@@ -340,6 +346,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             gasFee={gasFee}
+            paymentDetails={paymentDetails}
             orderbookFee={orderbookFee}
             includedPurchaseFee={primaryPurchase?.includedFee}
             pricePerShare={tokenPrice}
@@ -384,6 +391,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         </div>
       )}
 
+      {!isDisconnected && isProcessingCredits && (
+        <div className={styles.alertBlock}>
+          <RAlert icon="warning-triangle" role="status" type="warning">
+            {TRANSACTION_PROCESSING_MESSAGE}
+          </RAlert>
+        </div>
+      )}
+
       <Button
         className={clsx(
           styles.submitButton,
@@ -405,6 +420,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
           ? "Connect Wallet"
           : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
+      <p className={styles.mobileTradeNotice}>Open on desktop to trade.</p>
     </div>
   );
 };

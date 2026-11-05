@@ -36,3 +36,21 @@ export {
   fetchPriceSeries,
   fetchPrices,
 } from "~/lib/apis/rwa/prices/prices";
+export {
+  fetchRelayConfig,
+  relayConfigQueryOptions,
+  submitRelayOperation,
+  fetchRelayOperation,
+  checkRelayOperationNow,
+  fetchRelayOperations,
+  fetchRelayCredits,
+  submitRelayTopUp,
+} from "~/lib/apis/rwa/relay/relay";
+export {
+  fetchPaymentPreference,
+  fetchWalletProfile,
+  PaymentPreferenceError,
+  savePaymentPreference,
+  toApiPaymentMethod,
+  toGasPaymentMethod,
+} from "~/lib/apis/rwa/paymentPreference/paymentPreference";

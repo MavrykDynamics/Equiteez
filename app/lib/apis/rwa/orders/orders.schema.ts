@@ -75,6 +75,32 @@ export const OrderHistorySchema = PaginationSchema.extend({
   as_of: AsOfSchema,
 });
 
+/** Gas Credits top-up projected from relay operations into the main feed. */
+export const GasCreditTopUpItemSchema = z.object({
+  id: z.string(),
+  datetime: z.string(),
+  type: z.literal("gas_credit_top_up"),
+  // `pending` for every non-terminal relay state.
+  status: z.string(),
+  operation_hash: z.string().nullable(),
+  // Human token amount; null for legacy rows without a recorded scale.
+  amount: z.number().nullable(),
+  // Quoted display value when available.
+  total: z.number().nullable().optional(),
+  gas_credit_top_up: z.object({
+    operation_id: z.string(),
+    relay_status: z.string(),
+    amount_units: z.string(),
+    token_decimals: z.number().nullable().optional(),
+    token_symbol: z.string().nullable().optional(),
+  }),
+});
+
+export const TransactionHistorySchema = PaginationSchema.extend({
+  items: z.array(z.union([GasCreditTopUpItemSchema, OrderHistoryItemSchema])),
+  as_of: AsOfSchema,
+});
+
 export const TransferHistoryItemSchema = HistoryItemBaseSchema.extend({
   price_per_token: z.number().nullable(),
   status: z.string().optional(),

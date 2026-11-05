@@ -1,3 +1,5 @@
+@import "../../../../styles/breakpoints.css";
+
 .form {
   color: var(--r-color-neutral-black);
   display: flex;
@@ -164,4 +166,39 @@
 
 .alertBlock {
   margin-top: var(--r-space-5);
+}
+
+.mobileTradeNotice {
+  display: none;
+}
+
+/* Mobile is view-only: the action button is replaced by a hint */
+@media (--media-tablet) {
+  .balanceCard {
+    gap: var(--r-space-2);
+  }
+
+  /* Mobile card has a fixed height and scrolls: keep natural height
+     instead of shrinking under the content */
+  .form,
+  .content {
+    flex: 1 0 auto;
+    min-height: auto;
+  }
+
+  /* Two classes to beat the Button's Tailwind `flex` */
+  .form .submitButton {
+    display: none;
+  }
+
+  .mobileTradeNotice {
+    display: block;
+    margin: var(--r-space-4) 0 0;
+    color: var(--r-color-neutral-700);
+    font-family: var(--r-font-body);
+    font-size: var(--r-font-size-body-s);
+    font-weight: var(--r-font-weight-regular);
+    line-height: var(--r-line-height-body-s);
+    text-align: center;
+  }
 }

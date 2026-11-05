@@ -1,0 +1,20 @@
+/* The tooltip's inline spans would sit the icon on the text baseline. */
+.wrapper,
+.wrapper > span {
+  display: inline-flex;
+}
+
+.button {
+  display: inline-flex;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: initial;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}

@@ -43,10 +43,16 @@ function getOrderStatusBadgeDetails(status: string): OrderStatusBadgeDetails {
 
 type ROrderStatusBadgeProps = {
   status: string;
+  /** Replaces the order wording, e.g. PENDING for a non-order row. */
+  label?: string;
 };
 
-export function ROrderStatusBadge({ status }: ROrderStatusBadgeProps) {
-  const { label, variant } = getOrderStatusBadgeDetails(status);
+export function ROrderStatusBadge({ status, label }: ROrderStatusBadgeProps) {
+  const details = getOrderStatusBadgeDetails(status);
 
-  return <span className={clsx(styles.badge, styles[variant])}>{label}</span>;
+  return (
+    <span className={clsx(styles.badge, styles[details.variant])}>
+      {label ?? details.label}
+    </span>
+  );
 }

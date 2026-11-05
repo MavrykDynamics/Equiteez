@@ -36,6 +36,7 @@ import {
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
+import { TRANSACTION_PROCESSING_MESSAGE } from "./buySell.consts";
 
 type BuySellLimitScreenProps = {
   metadata: OrderbookTokenMetadata;
@@ -48,6 +49,7 @@ type BuySellLimitScreenProps = {
   marketTokenPrice: BigNumber;
   total: BigNumber | undefined;
   gasFee?: BigNumber.Value;
+  paymentDetails?: React.ReactNode;
   apy: number | null;
   orderbookFee?: BigNumber.Value;
   orderExpiryPeriodId: OrderExpiryPeriodId | null;
@@ -60,6 +62,8 @@ type BuySellLimitScreenProps = {
   status: StatusFlag;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  // A Gas Credits order is signed and still being processed.
+  isProcessingCredits?: boolean;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -72,6 +76,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   alignedQuantity,
   total,
   gasFee,
+  paymentDetails,
   apy,
   orderbookFee,
   orderExpiryPeriodId,
@@ -83,6 +88,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   status,
   isOrderDataLoading = false,
   validationMessage,
+  isProcessingCredits = false,
 }) => {
   const { baseTokenSlug: slug } = metadata;
 
@@ -101,7 +107,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const { userTokensBalances, isKyced, userAddress, connect } =
+    useUserContext();
   const isDisconnected = !userAddress;
 
   // Read the balance of the orderbook's actual quote token, not a hardcoded
@@ -362,6 +369,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           <FeesCard
             className={styles.summaryCard}
             gasFee={gasFee}
+            paymentDetails={paymentDetails}
             orderbookFee={orderbookFee}
             pricePerShare={limitPrice}
             isLimitOrder
@@ -389,6 +397,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         </div>
       )}
 
+      {!isDisconnected && isProcessingCredits && (
+        <div className={styles.alertBlock}>
+          <RAlert icon="warning-triangle" role="status" type="warning">
+            {TRANSACTION_PROCESSING_MESSAGE}
+          </RAlert>
+        </div>
+      )}
+
       <Button
         className={clsx(
           styles.submitButton,
@@ -410,6 +426,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           ? "Connect Wallet"
           : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
+      <p className={styles.mobileTradeNotice}>Open on desktop to trade.</p>
     </div>
   );
 };

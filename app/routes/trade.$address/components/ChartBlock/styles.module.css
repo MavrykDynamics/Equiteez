@@ -459,7 +459,7 @@
   }
 
   .wrapper {
-    --chart-height: 328px;
+    --chart-height: 356px;
     width: 100%;
   }
 
@@ -470,7 +470,7 @@
 
   .chartHeader {
     flex-direction: column;
-    gap: var(--r-space-2);
+    gap: var(--r-space-3);
   }
 
   .currentPrice {

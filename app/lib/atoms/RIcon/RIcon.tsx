@@ -21,9 +21,12 @@ export type RIconName =
   | "check"
   | "close"
   | "copy"
+  | "credit-card"
   | "cross"
+  | "dots"
   | "heart"
   | "house"
+  | "gift"
   | "grid"
   | "info"
   | "image"
@@ -34,6 +37,7 @@ export type RIconName =
   | "lock"
   | "lock-open"
   | "ok"
+  | "plus"
   | "radio"
   | "refund"
   | "search"
@@ -44,6 +48,8 @@ export type RIconName =
   | "trending-down"
   | "trending-up"
   | "upload"
+  | "warning-circle"
+  | "warning-triangle"
   | "nav-discovery"
   | "nav-portfolio"
   | "nav-trade"
@@ -128,10 +134,33 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       transform="translate(5.5 5.5)"
     />
   ),
+  "credit-card": (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M7 15h3" />
+    </>
+  ),
   cross: (
     <>
       <path d="M5 5 19 19" strokeWidth={2} strokeMiterlimit={10} />
       <path d="M5 19 19 5" strokeWidth={2} strokeMiterlimit={10} />
+    </>
+  ),
+  dots: (
+    <>
+      <circle cx="6" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="12" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  gift: (
+    <>
+      <rect x="4" y="8" width="16" height="4" rx="1" />
+      <path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+      <path d="M12 8v12" />
+      <path d="M12 8S10.5 4 8.5 4a2 2 0 0 0 0 4H12Z" />
+      <path d="M12 8s1.5-4 3.5-4a2 2 0 0 1 0 4H12Z" />
     </>
   ),
   heart: (
@@ -202,6 +231,12 @@ const rIconPaths: Record<RIconName, ReactNode> = {
     </>
   ),
   ok: <path d="m4 13 5 5L20 7" />,
+  plus: (
+    <>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </>
+  ),
   radio: (
     <>
       <circle cx="12" cy="12" r="7" />
@@ -268,6 +303,20 @@ const rIconPaths: Record<RIconName, ReactNode> = {
         d="M7.83333 2.5 5.83333.5 3.83333 2.5M5.83333.5v6.66667M2.50015 5.16667c-.62125 0-.93188 0-1.17691.10149a2 2 0 0 0-.721746.72175C.500001 6.23494.500001 6.54541.500001 7.16667v3.2c0 .7467 0 1.1198.145324 1.405a2 2 0 0 0 .582545.5831c.28493.1452.65813.1452 1.4034.1452h6.40445c.74528 0 1.118 0 1.40288-.1452a2 2 0 0 0 .5829-.5831c.1452-.2849.1452-.6577.1452-1.403v-3.202c0-.62126 0-.93173-.1016-1.17676a2 2 0 0 0-.7215-.7215c-.245-.1015-.5556-.1015-1.1768-.1015"
         transform="translate(6.16665 5.5)"
       />
+    </>
+  ),
+  "warning-circle": (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v4.5" />
+      <path d="M12 15.75v.25" />
+    </>
+  ),
+  "warning-triangle": (
+    <>
+      <path d="M10.27 4.99 3.4 17a2 2 0 0 0 1.73 3h13.74a2 2 0 0 0 1.73-3L13.73 4.99a2 2 0 0 0-3.46 0Z" />
+      <path d="M12 9.5v4" />
+      <path d="M12 16.75V17" />
     </>
   ),
   web: (

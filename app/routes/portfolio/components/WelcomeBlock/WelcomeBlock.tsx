@@ -39,6 +39,10 @@ export function WelcomeBlock({
         count: unreadNotificationsCount || undefined,
         type: "notification" as const,
       },
+      {
+        id: ROUTES.portfolioProfile,
+        label: "Profile",
+      },
     ],
     [unreadNotificationsCount]
   );

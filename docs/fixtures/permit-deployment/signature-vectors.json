@@ -1,0 +1,302 @@
+{
+  "provenance": "Generated with ephemeral unfunded test keys; private keys discarded. Static signatures verified locally and submitted only to RPC run_code simulation of the complete captured quote-token script at the pinned block. Not wallet-extension or relay verification.",
+  "vectors": [
+    {
+      "curve": "edpk",
+      "publicKey": "edpktnMcAm9gSDfJDQnHR736mJVZ4fgzCek5BzasdKPw5q5nuTcbeF",
+      "wallet": "mv1HbPvBJp836m46f6hFayKoCRdRTXpszfph",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "counter": "0",
+      "deadline": "1792677600",
+      "action": {
+        "permitUpdateOperators": [
+          {
+            "add_operator": {
+              "owner": "mv1HbPvBJp836m46f6hFayKoCRdRTXpszfph",
+              "operator": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+              "token_id": "0"
+            }
+          }
+        ]
+      },
+      "actionBytes": "0505080505020000003e050507070a00000016000069223373299d04ab4da38821f677d8dfa22641c907070a000000160106529377f603984398885d600755f6963dc32d5c000000",
+      "actionHash": "76b1281064a3c1c8142e20f7092180410d16ba9066f74f8ce315981822f821e1",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a0000002076b1281064a3c1c8142e20f7092180410d16ba9066f74f8ce315981822f821e100a0dbd0ad0d",
+      "signature": "edsigu5CkV71WVfvKyDUNMPJB7rETQX9oqJ39od6wDBvxuQgAyRcohNiSiZBE5cftbX9BVKaTdysAczAvdXUUKpBmpSsTN3MmXs",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpktnMcAm9gSDfJDQnHR736mJVZ4fgzCek5BzasdKPw5q5nuTcbeF"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigu5CkV71WVfvKyDUNMPJB7rETQX9oqJ39od6wDBvxuQgAyRcohNiSiZBE5cftbX9BVKaTdysAczAvdXUUKpBmpSsTN3MmXs"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Left",
+                                    "args": [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "mv1HbPvBJp836m46f6hFayKoCRdRTXpszfph"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM"
+                                              },
+                                              {
+                                                "int": "0"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-10-22T14:00:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rpcVerification": {
+        "status": 200,
+        "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+        "now": "1792674000",
+        "result": "run_code accepted; no injection"
+      }
+    },
+    {
+      "curve": "sppk",
+      "publicKey": "sppk7bVdwyQ9zmtfNAJXawp5buUmNGhL6faeqhs18sGRW5EuJK65KwU",
+      "wallet": "mv2bYLi9rF8aS1ikpRbxHAqLVXDKdjtbCox5",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "counter": "0",
+      "deadline": "1792677600",
+      "action": {
+        "permitUpdateOperators": [
+          {
+            "add_operator": {
+              "owner": "mv2bYLi9rF8aS1ikpRbxHAqLVXDKdjtbCox5",
+              "operator": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+              "token_id": "0"
+            }
+          }
+        ]
+      },
+      "actionBytes": "0505080505020000003e050507070a000000160001aa37d5d71aa46e1fc3a1019005bed5cff02d72dc07070a000000160106529377f603984398885d600755f6963dc32d5c000000",
+      "actionHash": "155612150830fe7c0c31ca5b46d5c381f76aef76ca2e502cd4cda37fd7e231d7",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020155612150830fe7c0c31ca5b46d5c381f76aef76ca2e502cd4cda37fd7e231d700a0dbd0ad0d",
+      "signature": "spsig1RHweAMqC19G74sH3gTBKLubzffddAxLzHnk3YGv8eH2d7b5q7s1ZMBn6pJqXktVQt2Z3ZG59yF2HMsAL7yektDGaqsWAG",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "sppk7bVdwyQ9zmtfNAJXawp5buUmNGhL6faeqhs18sGRW5EuJK65KwU"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "spsig1RHweAMqC19G74sH3gTBKLubzffddAxLzHnk3YGv8eH2d7b5q7s1ZMBn6pJqXktVQt2Z3ZG59yF2HMsAL7yektDGaqsWAG"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Left",
+                                    "args": [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "mv2bYLi9rF8aS1ikpRbxHAqLVXDKdjtbCox5"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM"
+                                              },
+                                              {
+                                                "int": "0"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-10-22T14:00:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rpcVerification": {
+        "status": 200,
+        "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+        "now": "1792674000",
+        "result": "run_code accepted; no injection"
+      }
+    },
+    {
+      "curve": "p2pk",
+      "publicKey": "p2pk64sbTWoFbg73x2F5iP1J2ZsBZwMdmZia2NMycfVX4Prd4EUwgwc",
+      "wallet": "mv3AYdSaBAgekEqgMyQYSmkWjny2HAxyvexB",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "counter": "0",
+      "deadline": "1792677600",
+      "action": {
+        "permitUpdateOperators": [
+          {
+            "add_operator": {
+              "owner": "mv3AYdSaBAgekEqgMyQYSmkWjny2HAxyvexB",
+              "operator": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM",
+              "token_id": "0"
+            }
+          }
+        ]
+      },
+      "actionBytes": "0505080505020000003e050507070a0000001600021441f3ec222923818e0761819436dded148d58b207070a000000160106529377f603984398885d600755f6963dc32d5c000000",
+      "actionHash": "c11c6fd1c48ff5f4cd89b1a79b41c8803bc9e405839b25f30cf5789bc779563a",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020c11c6fd1c48ff5f4cd89b1a79b41c8803bc9e405839b25f30cf5789bc779563a00a0dbd0ad0d",
+      "signature": "p2sigdacWKHao8364WdyobxD8r2TVYcHaRwSxiSTRB55ZZRuJvuVnjqt75FqHFHodehGMbUuwGzoSTLsfsb5eXcfHjBBjQMKKn",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "p2pk64sbTWoFbg73x2F5iP1J2ZsBZwMdmZia2NMycfVX4Prd4EUwgwc"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "p2sigdacWKHao8364WdyobxD8r2TVYcHaRwSxiSTRB55ZZRuJvuVnjqt75FqHFHodehGMbUuwGzoSTLsfsb5eXcfHjBBjQMKKn"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Left",
+                                    "args": [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "mv3AYdSaBAgekEqgMyQYSmkWjny2HAxyvexB"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "KT19ACYQCndgTJTaD2hTvpkBmmyEDxq7fZjM"
+                                              },
+                                              {
+                                                "int": "0"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-10-22T14:00:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rpcVerification": {
+        "status": 200,
+        "block": "BLLjdfnNHhsha7cCuCqnxF173Z69LeG3U2vVSWFg47KYPx26MRi",
+        "now": "1792674000",
+        "result": "run_code accepted; no injection"
+      }
+    }
+  ]
+}

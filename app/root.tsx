@@ -16,6 +16,8 @@ import marqueeStylesheet from "~/styles/marquee.css?url";
 import "react-datepicker/dist/react-datepicker.css";
 
 // providers
+import { RelayProvider } from "./providers/RelayProvider/RelayProvider";
+import { GasPaymentProvider } from "./providers/GasPaymentProvider/GasPaymentProvider";
 import { AppProvider } from "./providers/AppProvider/AppProvider";
 import { WalletProvider } from "./providers/WalletProvider/wallet.provider";
 import { UserProvider } from "./providers/UserProvider/user.provider";
@@ -26,7 +28,6 @@ import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
-import { AppGlobalLoader } from "./providers/AppGlobalLoader";
 import { CurrencyProvider } from "./providers/CurrencyProvider/currency.provider";
 import {
   fetchTokensData,
@@ -152,23 +153,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         >
                           <AssetsProvider>
                             <UserProvider>
-                              <NotificationsProvider>
-                                <NotificationsProviderListeners />
-                                <TransactionsProvider>
-                                  <EthereumProvider>
-                                    <TransactionWidgetProvider>
-                                      <RTransactionWidgetHost />
-                                      <AppGlobalLoader>
-                                        <PopupProvider>
-                                          <PageLayout includeContainer={false}>
-                                            {children}
-                                          </PageLayout>
-                                        </PopupProvider>
-                                      </AppGlobalLoader>
-                                    </TransactionWidgetProvider>
-                                  </EthereumProvider>
-                                </TransactionsProvider>
-                              </NotificationsProvider>
+                              <GasPaymentProvider>
+                                <NotificationsProvider>
+                                  <NotificationsProviderListeners />
+                                  <RelayProvider>
+                                    <TransactionsProvider>
+                                      <EthereumProvider>
+                                        <TransactionWidgetProvider>
+                                          <RTransactionWidgetHost />
+                                          <PopupProvider>
+                                            <PageLayout
+                                              includeContainer={false}
+                                            >
+                                              {children}
+                                            </PageLayout>
+                                          </PopupProvider>
+                                        </TransactionWidgetProvider>
+                                      </EthereumProvider>
+                                    </TransactionsProvider>
+                                  </RelayProvider>
+                                </NotificationsProvider>
+                              </GasPaymentProvider>
                             </UserProvider>
                           </AssetsProvider>
                         </TokensProvider>

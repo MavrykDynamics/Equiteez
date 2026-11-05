@@ -2,11 +2,13 @@ import { rwaApi } from "~/lib/apis/rwa/client";
 import {
   OpenOrdersSchema,
   OrderHistorySchema,
+  TransactionHistorySchema,
   TransferHistorySchema,
 } from "~/lib/apis/rwa/orders/orders.schema";
 import {
   OpenOrdersResponseType,
   OrderHistoryResponseType,
+  TransactionHistoryResponseType,
   TransferHistoryResponseType,
   WalletTransferHistoryParams,
 } from "~/lib/apis/rwa/orders/orders.types";
@@ -75,14 +77,24 @@ export const fetchWalletOpenOrders = async ({
   return parsedData;
 };
 
-export const fetchWalletOrderHistory = async ({
-  walletAddress,
-  page,
-  perPage,
-  search,
-  sort,
-  tokenAddress,
-}: WalletOrdersParams): Promise<OrderHistoryResponseType> => {
+const ORDER_HISTORY_TYPES = [
+  "limit_sell",
+  "limit_buy",
+  "market_buy",
+  "market_sell",
+];
+
+const requestWalletTransactions = async (
+  {
+    walletAddress,
+    page,
+    perPage,
+    search,
+    sort,
+    tokenAddress,
+  }: WalletOrdersParams,
+  types: string[]
+) => {
   const query = new URLSearchParams();
 
   if (page) {
@@ -105,9 +117,7 @@ export const fetchWalletOrderHistory = async ({
     query.set("token_address", tokenAddress);
   }
 
-  ["limit_sell", "limit_buy", "market_buy", "market_sell"].forEach((type) =>
-    query.append("types", type)
-  );
+  types.forEach((type) => query.append("types", type));
 
   const { data } = await requestFreshQuery({
     api: rwaApi,
@@ -117,8 +127,26 @@ export const fetchWalletOrderHistory = async ({
     url: `/wallets/${walletAddress}/transactions`,
   });
 
-  return OrderHistorySchema.parse(data);
+  return data;
 };
+
+export const fetchWalletOrderHistory = async (
+  params: WalletOrdersParams
+): Promise<OrderHistoryResponseType> =>
+  OrderHistorySchema.parse(
+    await requestWalletTransactions(params, ORDER_HISTORY_TYPES)
+  );
+
+/** Order history plus Gas Credits top-ups, sorted and paginated by the backend. */
+export const fetchWalletTransactionHistory = async (
+  params: WalletOrdersParams
+): Promise<TransactionHistoryResponseType> =>
+  TransactionHistorySchema.parse(
+    await requestWalletTransactions(params, [
+      ...ORDER_HISTORY_TYPES,
+      "gas_credit_top_up",
+    ])
+  );
 
 export const fetchWalletTransferHistoryResponse = async ({
   types = ["deposit", "withdrawal"],

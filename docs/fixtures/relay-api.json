@@ -1,0 +1,542 @@
+{
+  "source": {
+    "path": "api.yaml",
+    "version": "0.15.0",
+    "sha256": "f579dc77c3f05b8f131c5a4d7e927cc04ea4ed1a05504fea1973d8a5c73eefd2"
+  },
+  "provenance": "Schema-derived synthetic frontend examples, not captured responses or owner-reviewed signing vectors. Identifiers are intentionally non-executable. Numeric values are test data, not prices or allowance policy.",
+  "cases": [
+    {
+      "name": "config-disabled",
+      "schema": "#/components/schemas/RelayConfig",
+      "value": {
+        "enabled": false,
+        "fee": {
+          "enabled": false
+        },
+        "contracts": [],
+        "gaslessThresholdMumav": "500000"
+      }
+    },
+    {
+      "name": "config-fee-off",
+      "schema": "#/components/schemas/RelayConfig",
+      "value": {
+        "enabled": true,
+        "fee": {
+          "enabled": false
+        },
+        "contracts": [
+          {
+            "address": "fixture-orderbook",
+            "kind": "orderbook",
+            "permitActions": [
+              "permitCancelOrders"
+            ]
+          }
+        ],
+        "gaslessThresholdMumav": "500000"
+      }
+    },
+    {
+      "name": "config-fee-on",
+      "schema": "#/components/schemas/RelayConfig",
+      "value": {
+        "enabled": true,
+        "fee": {
+          "enabled": true,
+          "tokenContract": "fixture-token",
+          "tokenId": 0,
+          "decimals": 6,
+          "collector": "fixture-collector",
+          "feeSchedule": {
+            "permitPlaceBuyOrder": "12345",
+            "permitPlaceSellOrder": "23456"
+          },
+          "defaultFeeUnits": "0",
+          "topUpMinUnits": "1000000",
+          "topUpMaxUnits": "100000000",
+          "freeAllowanceOps": 3,
+          "entrypoint": "permitTransfer"
+        },
+        "contracts": [
+          {
+            "address": "fixture-token",
+            "kind": "quote_token",
+            "permitActions": [
+              "permitTransfer",
+              "permitUpdateOperators"
+            ]
+          }
+        ],
+        "gaslessThresholdMumav": "500000"
+      }
+    },
+    {
+      "name": "credits-off",
+      "schema": "#/components/schemas/RelayFeeCredits",
+      "value": {
+        "enabled": false
+      }
+    },
+    {
+      "name": "credits-zero",
+      "schema": "#/components/schemas/RelayFeeCredits",
+      "value": {
+        "enabled": true,
+        "signerAddress": "fixture-wallet",
+        "balanceUnits": "0",
+        "decimals": 6,
+        "actionsRemaining": {
+          "permitPlaceBuyOrder": 7,
+          "permitPlaceSellOrder": 4
+        },
+        "freeAllowanceRemaining": 0,
+        "lifetimeToppedUpUnits": "900719925474099312345",
+        "lifetimeSpentUnits": "0"
+      }
+    },
+    {
+      "name": "credits-mixed",
+      "schema": "#/components/schemas/RelayFeeCredits",
+      "value": {
+        "enabled": true,
+        "signerAddress": "fixture-wallet",
+        "balanceUnits": "900719925474099312345",
+        "decimals": 6,
+        "actionsRemaining": {
+          "permitPlaceBuyOrder": 7,
+          "permitPlaceSellOrder": 4
+        },
+        "freeAllowanceRemaining": 2,
+        "lifetimeToppedUpUnits": "900719925474099312345",
+        "lifetimeSpentUnits": "0"
+      }
+    },
+    {
+      "name": "intent-place_buy_order",
+      "schema": "#/components/schemas/RelayIntent",
+      "value": {
+        "kind": "place_buy_order",
+        "orderbookAddress": "fixture-orderbook",
+        "rwaTokenAmount": "900719925474099312345",
+        "pricePerRwaToken": "123456",
+        "currency": "fixture-currency",
+        "orderExpiry": null,
+        "isMarketOrder": true
+      }
+    },
+    {
+      "name": "intent-place_sell_order",
+      "schema": "#/components/schemas/RelayIntent",
+      "value": {
+        "kind": "place_sell_order",
+        "orderbookAddress": "fixture-orderbook",
+        "rwaTokenAmount": "900719925474099312345",
+        "pricePerRwaToken": "123456",
+        "currency": "fixture-currency",
+        "orderExpiry": null,
+        "isMarketOrder": true
+      }
+    },
+    {
+      "name": "intent-cancel_orders",
+      "schema": "#/components/schemas/RelayIntent",
+      "value": {
+        "kind": "cancel_orders",
+        "orderbookAddress": "fixture-orderbook",
+        "orders": [
+          {
+            "orderId": "9007199254740993",
+            "orderType": "BUY"
+          }
+        ]
+      }
+    },
+    {
+      "name": "intent-process_refund",
+      "schema": "#/components/schemas/RelayIntent",
+      "value": {
+        "kind": "process_refund",
+        "orderbookAddress": "fixture-orderbook",
+        "orderId": "9007199254740993",
+        "orderType": "SELL"
+      }
+    },
+    {
+      "name": "intent-update_operators",
+      "schema": "#/components/schemas/RelayIntent",
+      "value": {
+        "kind": "update_operators",
+        "tokenAddress": "fixture-token",
+        "tokenId": "0",
+        "operator": "fixture-orderbook"
+      }
+    },
+    {
+      "name": "intent-limit-expiry",
+      "schema": "#/components/schemas/RelayIntent",
+      "value": {
+        "kind": "place_buy_order",
+        "orderbookAddress": "fixture-orderbook",
+        "rwaTokenAmount": "900719925474099312345",
+        "pricePerRwaToken": "123456",
+        "currency": "fixture-currency",
+        "orderExpiry": "2026-10-23T12:00:00Z",
+        "isMarketOrder": false
+      }
+    },
+    {
+      "name": "accepted",
+      "schema": "#/components/schemas/RelayOperationAccepted",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": "fixture-relayer-id",
+        "status": "pending"
+      }
+    },
+    {
+      "name": "accepted-replay-without-relayer-id",
+      "schema": "#/components/schemas/RelayOperationAccepted",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": "",
+        "status": "failed"
+      }
+    },
+    {
+      "name": "top-up-accepted",
+      "schema": "#/components/schemas/RelayFeeTopUpAccepted",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": "fixture-relayer-id",
+        "signerAddress": "fixture-wallet",
+        "amountUnits": "1000000"
+      }
+    },
+    {
+      "name": "operation-pending",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "pending",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": null,
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": null
+      }
+    },
+    {
+      "name": "operation-batched",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "batched",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": null,
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": null
+      }
+    },
+    {
+      "name": "operation-injecting",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "injecting",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": null,
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": null
+      }
+    },
+    {
+      "name": "operation-submitted",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "submitted",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": null,
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": null
+      }
+    },
+    {
+      "name": "operation-confirmed",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "confirmed",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": null,
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": "2026-10-22T10:01:00Z"
+      }
+    },
+    {
+      "name": "operation-failed",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "failed",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": {
+          "code": "SIMULATION_FAILED",
+          "message": "Fixture error",
+          "remedy": "give-up"
+        },
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": "2026-10-22T10:01:00Z"
+      }
+    },
+    {
+      "name": "operation-rejected",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "rejected",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": null,
+        "error": {
+          "code": "SIMULATION_FAILED",
+          "message": "Fixture error",
+          "remedy": "give-up"
+        },
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:00:00Z",
+        "settledAt": "2026-10-22T10:01:00Z"
+      }
+    },
+    {
+      "name": "operation-later-charge",
+      "schema": "#/components/schemas/RelayOperation",
+      "value": {
+        "operationId": "00000000-0000-4000-8000-000000000001",
+        "gasStationOperationId": null,
+        "status": "failed",
+        "intentKind": "cancel_orders",
+        "intent": {
+          "kind": "cancel_orders",
+          "orderbookAddress": "fixture-orderbook",
+          "orders": [
+            {
+              "orderId": "9007199254740993",
+              "orderType": "BUY"
+            }
+          ]
+        },
+        "contractAddress": "fixture-orderbook",
+        "permitVariant": "permitCancelOrders",
+        "opHash": null,
+        "feeChargedUnits": "12345",
+        "error": {
+          "code": "SIMULATION_FAILED",
+          "message": "Fixture error",
+          "remedy": "give-up"
+        },
+        "createdAt": "2026-10-22T10:00:00Z",
+        "updatedAt": "2026-10-22T10:02:00Z",
+        "settledAt": "2026-10-22T10:01:00Z"
+      }
+    },
+    {
+      "name": "list-first",
+      "schema": "#/components/schemas/RelayOperationList",
+      "value": {
+        "items": [
+          {
+            "operationId": "00000000-0000-4000-8000-000000000001",
+            "gasStationOperationId": null,
+            "status": "pending",
+            "intentKind": "cancel_orders",
+            "intent": {
+              "kind": "cancel_orders",
+              "orderbookAddress": "fixture-orderbook",
+              "orders": [
+                {
+                  "orderId": "9007199254740993",
+                  "orderType": "BUY"
+                }
+              ]
+            },
+            "contractAddress": "fixture-orderbook",
+            "permitVariant": "permitCancelOrders",
+            "opHash": null,
+            "feeChargedUnits": null,
+            "error": null,
+            "createdAt": "2026-10-22T10:00:00Z",
+            "updatedAt": "2026-10-22T10:00:00Z",
+            "settledAt": null
+          }
+        ],
+        "nextCursor": "fixture-opaque-cursor"
+      }
+    },
+    {
+      "name": "list-exhausted",
+      "schema": "#/components/schemas/RelayOperationList",
+      "value": {
+        "items": [],
+        "nextCursor": null
+      }
+    },
+    {
+      "name": "error-retry",
+      "schema": "#/components/schemas/RelayErrorResponse",
+      "value": {
+        "error": "FIXTURE_ERROR",
+        "message": "Fixture error",
+        "remedy": "retry"
+      }
+    },
+    {
+      "name": "error-re-sign",
+      "schema": "#/components/schemas/RelayErrorResponse",
+      "value": {
+        "error": "FIXTURE_ERROR",
+        "message": "Fixture error",
+        "remedy": "re-sign"
+      }
+    },
+    {
+      "name": "error-give-up",
+      "schema": "#/components/schemas/RelayErrorResponse",
+      "value": {
+        "error": "FIXTURE_ERROR",
+        "message": "Fixture error",
+        "remedy": "give-up"
+      }
+    },
+    {
+      "name": "error-in-flight",
+      "schema": "#/components/schemas/RelayErrorResponse",
+      "value": {
+        "error": "PERMIT_IN_FLIGHT",
+        "message": "Fixture conflict",
+        "remedy": "retry",
+        "detail": {
+          "operationId": "00000000-0000-4000-8000-000000000001"
+        }
+      }
+    },
+    {
+      "name": "middleware-error",
+      "schema": "#/components/schemas/ErrorResponse",
+      "value": {
+        "error": "Fixture unauthorized",
+        "code": "unauthorized"
+      }
+    }
+  ]
+}
