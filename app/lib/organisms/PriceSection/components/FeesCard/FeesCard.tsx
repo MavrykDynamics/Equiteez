@@ -37,7 +37,8 @@ export const FeesCard: FC<FeesCardProps> = ({
   includedPurchaseFee,
   isLimitOrder = false,
 }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  // Collapsed by default on every screen size
+  const [isOpen, setIsOpen] = useState(false);
   const usdToTokenRates = useUsdToTokenRates();
   const mvrkUsdRate = usdToTokenRates[MVRK_ASSET_SLUG];
   const {

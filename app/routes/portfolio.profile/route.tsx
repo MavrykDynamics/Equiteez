@@ -5,6 +5,7 @@ import { ROUTES } from "~/consts";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import {
   RCustomDropdown,
@@ -65,6 +66,7 @@ export default function PortfolioProfile() {
     setField,
     emailError,
     touchEmail,
+    isLoading,
     isSaving,
     saveError,
     errorAction,
@@ -149,24 +151,37 @@ export default function PortfolioProfile() {
         <Section title="Gas Payment">
           <div className={styles.gasPayment}>
             <Field className={styles.gasPaymentField} label="Payment Method">
-              <RCustomDropdown className={styles.dropdown}>
-                <RDropdownFaceContent className={styles.dropdownTrigger}>
-                  {selectedGasPaymentMethod?.label}
-                </RDropdownFaceContent>
-                <RDropdownBodyContent aria-label="Payment method">
-                  {GAS_PAYMENT_METHOD_OPTIONS.map((option) => (
-                    <RDropdownBodyContentItem
-                      isSelected={option.id === values.gasPaymentMethod}
-                      key={option.id}
-                      onClick={() => setField("gasPaymentMethod", option.id)}
-                    >
-                      {option.label}
-                    </RDropdownBodyContentItem>
-                  ))}
-                </RDropdownBodyContent>
-              </RCustomDropdown>
+              <RSkeletonReveal
+                isLoading={isLoading}
+                skeleton={
+                  <RSkeleton
+                    aria-label="Loading payment method"
+                    className={styles.dropdownSkeleton}
+                    role="status"
+                    variant="surface"
+                  />
+                }
+              >
+                <RCustomDropdown className={styles.dropdown}>
+                  <RDropdownFaceContent className={styles.dropdownTrigger}>
+                    {selectedGasPaymentMethod?.label}
+                  </RDropdownFaceContent>
+                  <RDropdownBodyContent aria-label="Payment method">
+                    {GAS_PAYMENT_METHOD_OPTIONS.map((option) => (
+                      <RDropdownBodyContentItem
+                        isSelected={option.id === values.gasPaymentMethod}
+                        key={option.id}
+                        onClick={() => setField("gasPaymentMethod", option.id)}
+                      >
+                        {option.label}
+                      </RDropdownBodyContentItem>
+                    ))}
+                  </RDropdownBodyContent>
+                </RCustomDropdown>
+              </RSkeletonReveal>
             </Field>
             <RButton
+              disabled={isLoading}
               isLoading={isSaving}
               onClick={() => void save()}
               size="medium"

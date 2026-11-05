@@ -11,7 +11,6 @@ import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { getRHeaderNavigationItems } from "./navigationItems";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 import { useState } from "react";
-import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import { useAuthContext } from "~/providers/AuthProvider/auth.provider";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 import BellIcon from "app/icons/notification-bell.svg?react";
@@ -24,7 +23,6 @@ export function RHeader() {
   const navigationItems = getRHeaderNavigationItems(assets[0]?.address);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const isMobileViewport = useIsMobileViewport();
   const { isAuthenticated } = useAuthContext();
   const { isNotificationsEnabled, unreadNotificationsCount } =
     useNotificationsContext();
@@ -34,11 +32,9 @@ export function RHeader() {
   return (
     <header className={styles.header}>
       <Container className={styles.inner}>
-        <RLogo
-          className={styles.logo}
-          size={isMobileViewport ? "compact" : "medium"}
-          tone="black"
-        />
+        {/* Compact on phones via CSS (see .logo), so the server HTML and the
+            first client render match and the header doesn't resize */}
+        <RLogo className={styles.logo} size="medium" tone="black" />
 
         <nav aria-label="Primary navigation" className={styles.navigation}>
           {navigationItems.map(({ desktopLabel, to }) => (
