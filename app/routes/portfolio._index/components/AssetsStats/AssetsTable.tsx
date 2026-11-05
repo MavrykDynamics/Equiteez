@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { RPagination } from "~/lib/molecules/RPagination";
 import {
   getNextSortState,
   TableHeader,
@@ -19,10 +20,14 @@ import { AssetsTableSkeletonRows } from "./AssetsStatsSkeleton";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
+const ASSETS_PER_PAGE = 8;
+
 export function AssetsTable({ assets }: AllAssetsTableProps) {
   const { isPortfolioLoading } = usePortfolioContext();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortState<SortKey>>(null);
+  // One-based; a new search or sort starts again from the first page.
+  const [page, setPage] = useState(1);
 
   const filteredAssets = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -47,8 +52,20 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
     );
   }, [assets, search, sort]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredAssets.length / ASSETS_PER_PAGE)
+  );
+  // Stay on a page that still exists when the asset list shrinks.
+  const currentPage = Math.min(page, totalPages);
+  const pageAssets = filteredAssets.slice(
+    (currentPage - 1) * ASSETS_PER_PAGE,
+    currentPage * ASSETS_PER_PAGE
+  );
+
   const handleSort = (key: SortKey) => {
     setSort((currentSort) => getNextSortState(currentSort, key));
+    setPage(1);
   };
 
   const tableHead = (
@@ -83,7 +100,10 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
           <RIcon name="search" size="small" />
           <input
             aria-label="Search asset"
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
             placeholder="Search Asset"
             type="search"
             value={search}
@@ -109,12 +129,19 @@ export function AssetsTable({ assets }: AllAssetsTableProps) {
           <table className={styles.table}>
             {tableHead}
             <tbody>
-              {filteredAssets.map((asset) => (
+              {pageAssets.map((asset) => (
                 <AssetsTableRow asset={asset} key={asset.token_address} />
               ))}
             </tbody>
           </table>
         </div>
+        <RPagination
+          ariaLabel="Portfolio assets pagination"
+          className={styles.pagination}
+          currentPage={currentPage}
+          onPageChange={setPage}
+          totalPages={totalPages}
+        />
       </RSkeletonReveal>
     </div>
   );
