@@ -1,8 +1,8 @@
 @import "../../../../styles/breakpoints.css";
 
 /* Sizes follow BuySellContent (popups.module.css, BuySellForm.module.css and
-   FeesCard): 40px controls row, 108px balance cards, 42px slider, 176px Order
-   Summary and a 45px button — 591px on desktop. */
+   FeesCard): 40px controls row, 108px balance cards, 42px slider, collapsed
+   Order Summary and a 45px button. */
 
 /* min-height + overflow: in the mobile slider the card has a fixed height
    (the chart's) and the panel fits it; never give the card a scrollbar while
@@ -135,8 +135,9 @@
   height: 21px;
 }
 
+/* FeesCard starts collapsed on every screen size */
 .summaryDetails {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 10px;
   padding-top: 10px;
@@ -200,7 +201,7 @@
 }
 
 /* Mobile card (≤ 1000px): controls share one row, balance rows 8px apart,
-   Order Summary collapsed, the button replaced by the view-only hint */
+   the button replaced by the view-only hint */
 @media (--media-tablet) {
   .controls {
     grid-template-columns: 119px minmax(0, 1fr);
@@ -210,7 +211,6 @@
     gap: var(--r-space-2);
   }
 
-  .summaryDetails,
   .button {
     display: none;
   }

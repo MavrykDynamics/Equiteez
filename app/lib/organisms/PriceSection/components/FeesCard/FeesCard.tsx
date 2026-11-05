@@ -9,7 +9,6 @@ import Money from "~/lib/atoms/Money";
 import { toLocalFormat } from "~/lib/formaters/formaters";
 import { useUsdToTokenRates } from "~/lib/fiat-currency";
 import { MVRK_ASSET_SLUG } from "~/lib/metadata";
-import { TABLET_WIDTH } from "~/hooks/useWindowDimensions";
 
 import styles from "./styles.module.css";
 import { calculateOrderSummaryValues } from "./FeesCard.utils";
@@ -36,12 +35,8 @@ export const FeesCard: FC<FeesCardProps> = ({
   includedPurchaseFee,
   isLimitOrder = false,
 }) => {
-  // Collapsed on mobile so the buy/sell card fits the chart card height
-  const [isOpen, setIsOpen] = useState(
-    () =>
-      typeof window === "undefined" ||
-      !window.matchMedia(`(max-width: ${TABLET_WIDTH}px)`).matches
-  );
+  // Collapsed by default on every screen size
+  const [isOpen, setIsOpen] = useState(false);
   const usdToTokenRates = useUsdToTokenRates();
   const mvrkUsdRate = usdToTokenRates[MVRK_ASSET_SLUG];
   const {
