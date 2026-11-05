@@ -5,7 +5,7 @@ import styles from "./styles.module.css";
 const TABLE_ROWS_COUNT = 10;
 const LEGEND_ITEMS_COUNT = 10;
 // Amount, Avg Price, Price / 1M, Yield, Profit — two-line cells show a sub-value
-const VALUE_CELLS_TWO_LINE = [true, false, true, false, false];
+const VALUE_CELLS_TWO_LINE = [true, false, true, false, true];
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
 

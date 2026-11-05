@@ -20,7 +20,7 @@ import { AssetsTableSkeletonRows } from "./AssetsStatsSkeleton";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
-const ASSETS_PER_PAGE = 8;
+const ASSETS_PER_PAGE = 10;
 
 export function AssetsTable({ assets }: AllAssetsTableProps) {
   const { isPortfolioLoading, wallet } = usePortfolioContext();
