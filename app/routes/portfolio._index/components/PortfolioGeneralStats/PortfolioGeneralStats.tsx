@@ -12,9 +12,21 @@ import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 function ValueDetailsSkeleton() {
   return (
     <div aria-busy="true" className={styles.valueDetails} role="status">
-      <RSkeleton className={styles.skeletonLabel} variant="surface" />
-      <RSkeleton className={styles.skeletonValue} variant="surface" />
-      <RSkeleton className={styles.skeletonChange} variant="surface" />
+      <RSkeleton
+        radius="none"
+        className={styles.skeletonLabel}
+        variant="surface"
+      />
+      <RSkeleton
+        radius="none"
+        className={styles.skeletonValue}
+        variant="surface"
+      />
+      <RSkeleton
+        radius="none"
+        className={styles.skeletonChange}
+        variant="surface"
+      />
     </div>
   );
 }

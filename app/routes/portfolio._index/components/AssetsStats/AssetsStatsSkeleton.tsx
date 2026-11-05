@@ -13,11 +13,16 @@ function CellLines({ twoLine }: { twoLine: boolean }) {
   return (
     <div className={styles.skeletonCell}>
       <RSkeleton
+        radius="none"
         className={twoLine ? styles.skeletonLine : styles.skeletonLineShort}
         variant="surface"
       />
       {twoLine ? (
-        <RSkeleton className={styles.skeletonSubLine} variant="surface" />
+        <RSkeleton
+          radius="none"
+          className={styles.skeletonSubLine}
+          variant="surface"
+        />
       ) : null}
     </div>
   );
@@ -38,10 +43,12 @@ export function AssetsTableSkeletonRows() {
               />
               <div className={styles.skeletonCell}>
                 <RSkeleton
+                  radius="none"
                   className={styles.skeletonLineShort}
                   variant="surface"
                 />
                 <RSkeleton
+                  radius="none"
                   className={styles.skeletonSubLine}
                   variant="surface"
                 />
@@ -67,6 +74,7 @@ export function AssetsChartSkeleton() {
       <div className={styles.legend}>
         {range(LEGEND_ITEMS_COUNT).map((item) => (
           <RSkeleton
+            radius="none"
             className={styles.skeletonLegendItem}
             key={item}
             variant="surface"

@@ -29,8 +29,16 @@ function SkeletonCell({ type }: { type: ActivitySkeletonCell }) {
     case "date":
       return (
         <div className={skeletonStyles.lines}>
-          <RSkeleton className={skeletonStyles.date} variant="surface" />
-          <RSkeleton className={skeletonStyles.time} variant="surface" />
+          <RSkeleton
+            radius="none"
+            className={skeletonStyles.date}
+            variant="surface"
+          />
+          <RSkeleton
+            radius="none"
+            className={skeletonStyles.time}
+            variant="surface"
+          />
         </div>
       );
     case "asset":
@@ -41,7 +49,11 @@ function SkeletonCell({ type }: { type: ActivitySkeletonCell }) {
             style={{ borderRadius: "50%" }}
             variant="surface"
           />
-          <RSkeleton className={skeletonStyles.text} variant="surface" />
+          <RSkeleton
+            radius="none"
+            className={skeletonStyles.text}
+            variant="surface"
+          />
         </div>
       );
     case "badge":
@@ -55,7 +67,11 @@ function SkeletonCell({ type }: { type: ActivitySkeletonCell }) {
     case "progress":
       return (
         <div className={skeletonStyles.lines}>
-          <RSkeleton className={skeletonStyles.text} variant="surface" />
+          <RSkeleton
+            radius="none"
+            className={skeletonStyles.text}
+            variant="surface"
+          />
           <RSkeleton
             className={skeletonStyles.progress}
             radius="pill"
@@ -64,9 +80,21 @@ function SkeletonCell({ type }: { type: ActivitySkeletonCell }) {
         </div>
       );
     case "icon":
-      return <RSkeleton className={skeletonStyles.icon} variant="surface" />;
+      return (
+        <RSkeleton
+          radius="none"
+          className={skeletonStyles.icon}
+          variant="surface"
+        />
+      );
     default:
-      return <RSkeleton className={skeletonStyles.text} variant="surface" />;
+      return (
+        <RSkeleton
+          radius="none"
+          className={skeletonStyles.text}
+          variant="surface"
+        />
+      );
   }
 }
 
@@ -90,6 +118,7 @@ export function ActivityTableSkeleton({
               <div className={styles.headerCell} key={index}>
                 {type === "icon" ? null : (
                   <RSkeleton
+                    radius="none"
                     className={skeletonStyles.header}
                     variant="surface"
                   />

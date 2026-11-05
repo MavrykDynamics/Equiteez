@@ -89,6 +89,7 @@ export default function PortfolioActivity() {
               isLoading={isSummaryLoading}
               skeleton={
                 <RSkeleton
+                  radius="none"
                   className={styles.statValueSkeleton}
                   variant="surface"
                 />
@@ -115,6 +116,7 @@ export default function PortfolioActivity() {
               isLoading={isSummaryLoading}
               skeleton={
                 <RSkeleton
+                  radius="none"
                   className={styles.statValueSkeleton}
                   variant="surface"
                 />
@@ -141,6 +143,7 @@ export default function PortfolioActivity() {
               isLoading={isSummaryLoading}
               skeleton={
                 <RSkeleton
+                  radius="none"
                   className={styles.statValueSkeleton}
                   variant="surface"
                 />
