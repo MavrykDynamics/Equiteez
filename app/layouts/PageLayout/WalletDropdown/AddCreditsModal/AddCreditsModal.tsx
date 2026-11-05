@@ -368,7 +368,7 @@ export function AddCreditsModal({
               type="button"
               variant="secondary"
             >
-              Minimize And Continue Browsing
+              Close And Continue Browsing
             </RButton>
             <RButton
               className={styles.action}
