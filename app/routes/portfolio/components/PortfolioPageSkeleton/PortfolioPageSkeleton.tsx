@@ -11,7 +11,7 @@ const TAB_WIDTHS = [97, 84, 118, 77];
 const METRICS_COUNT = 3;
 const TABLE_COLUMNS_COUNT = 6;
 // Amount, Avg Price, Price / 1M, Yield, Profit — two-line cells show a sub-value
-const VALUE_CELLS_TWO_LINE = [true, false, true, false, false];
+const VALUE_CELLS_TWO_LINE = [true, false, true, false, true];
 const TABLE_ROWS_COUNT = 10;
 const LEGEND_ITEMS_COUNT = 10;
 
@@ -21,7 +21,7 @@ const CIRCLE = { borderRadius: "50%" };
 const ACTIVITY_TAB_WIDTHS = [119, 163, 191];
 // Open Orders grid: date, 7 value columns, action icon
 const ACTIVITY_COLUMNS_COUNT = 8;
-const ACTIVITY_ROWS_COUNT = 5;
+const ACTIVITY_ROWS_COUNT = 10;
 const NOTIFICATION_DESCRIPTION_WIDTHS = [
   "48%",
   "36%",

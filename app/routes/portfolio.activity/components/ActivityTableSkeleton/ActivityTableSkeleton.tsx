@@ -101,7 +101,7 @@ function SkeletonCell({ type }: { type: ActivitySkeletonCell }) {
 export function ActivityTableSkeleton({
   ariaLabel,
   columns,
-  rowsCount = 5,
+  rowsCount = 10,
   styles,
 }: ActivityTableSkeletonProps) {
   return (
