@@ -36,6 +36,7 @@ import {
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
+import { TRANSACTION_PROCESSING_MESSAGE } from "./buySell.consts";
 
 type BuySellLimitScreenProps = {
   metadata: OrderbookTokenMetadata;
@@ -61,6 +62,8 @@ type BuySellLimitScreenProps = {
   status: StatusFlag;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  // A Gas Credits order is signed and still being processed.
+  isProcessingCredits?: boolean;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -85,6 +88,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   status,
   isOrderDataLoading = false,
   validationMessage,
+  isProcessingCredits = false,
 }) => {
   const { baseTokenSlug: slug } = metadata;
 
@@ -389,6 +393,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
         <div className={styles.alertBlock}>
           <RAlert type="error" header="Order Cannot Be Submitted">
             {validationMessage}
+          </RAlert>
+        </div>
+      )}
+
+      {!isDisconnected && isProcessingCredits && (
+        <div className={styles.alertBlock}>
+          <RAlert icon="warning-triangle" role="status" type="warning">
+            {TRANSACTION_PROCESSING_MESSAGE}
           </RAlert>
         </div>
       )}

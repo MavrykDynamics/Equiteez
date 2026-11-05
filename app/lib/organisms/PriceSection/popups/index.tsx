@@ -42,7 +42,10 @@ import {
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
 // eslint-disable-next-line import/no-named-as-default
 import BigNumber from "bignumber.js";
-import { pickStatusFromMultiple } from "~/lib/ui/use-status-flag";
+import {
+  pickStatusFromMultiple,
+  STATUS_CONFIRMING,
+} from "~/lib/ui/use-status-flag";
 
 import { MAX_ORDERBOOK_DEPTH_LIMIT, useOrderbookDepth } from "~/lib/apis/rwa";
 import { BuySellLimitScreen } from "../screens/BuySellLimitScreen";
@@ -1091,6 +1094,7 @@ const BuySellForm: FC<
               apy={asset.apy}
               orderbookFee={summaryOrderbookFee}
               status={status}
+              isProcessingCredits={execution.status === STATUS_CONFIRMING}
               isOrderDataLoading={isOrderDataLoading || isFeePending}
               validationMessage={visibleValidationMessage}
             />
@@ -1115,6 +1119,7 @@ const BuySellForm: FC<
               apy={asset.apy}
               orderbookFee={summaryOrderbookFee}
               status={status}
+              isProcessingCredits={execution.status === STATUS_CONFIRMING}
               isOrderDataLoading={isOrderDataLoading || isFeePending}
               validationMessage={visibleValidationMessage}
             />

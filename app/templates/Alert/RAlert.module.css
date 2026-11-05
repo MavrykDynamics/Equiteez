@@ -49,3 +49,11 @@
 .description {
   color: var(--r-color-neutral-700);
 }
+
+.compact {
+  gap: var(--r-space-2);
+}
+
+.compact .description {
+  color: var(--r-color-neutral-black);
+}

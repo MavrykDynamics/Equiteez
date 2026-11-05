@@ -27,6 +27,7 @@ import {
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
+import { TRANSACTION_PROCESSING_MESSAGE } from "./buySell.consts";
 
 type BuySellScreenProps = {
   metadata: OrderbookTokenMetadata;
@@ -47,6 +48,8 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  // A Gas Credits order is signed and still being processed.
+  isProcessingCredits?: boolean;
   marketAmounts?: { quantity: BigNumber; consideration: BigNumber };
   primaryPurchase?: {
     receiveAmount: BigNumber | undefined;
@@ -73,6 +76,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   hasQuoteError = false,
   isOrderDataLoading = false,
   validationMessage,
+  isProcessingCredits = false,
   primaryPurchase,
   marketAmounts,
 }) => {
@@ -383,6 +387,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
             }
           >
             {validationMessage}
+          </RAlert>
+        </div>
+      )}
+
+      {!isDisconnected && isProcessingCredits && (
+        <div className={styles.alertBlock}>
+          <RAlert icon="warning-triangle" role="status" type="warning">
+            {TRANSACTION_PROCESSING_MESSAGE}
           </RAlert>
         </div>
       )}
