@@ -111,6 +111,13 @@
   will-change: opacity;
 }
 
+/* A grid item never shrinks below its content (min-width: auto), which would
+   stop a skeleton part sized with max-width: 100% (the portfolio donut) from
+   fitting a narrower column, so it grew and shifted everything below it */
+.revealSkeleton > * {
+  min-width: 0;
+}
+
 /* Added once the content has been painted (see RSkeletonReveal), so a slow
    mount can't eat the start of the fade */
 .revealSkeletonFading {
