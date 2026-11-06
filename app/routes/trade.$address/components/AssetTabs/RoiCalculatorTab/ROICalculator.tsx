@@ -215,17 +215,7 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
         },
         xaxis: { lines: { show: false } },
       },
-      legend: {
-        fontSize: "14px",
-        horizontalAlign: "left",
-        markers: {
-          fillColors: SERIES_COLORS,
-          radius: 9999,
-          size: 8,
-          strokeWidth: 0,
-        },
-        position: "top",
-      },
+      legend: { show: false },
       plotOptions: {
         bar: {
           borderRadius: 0,
@@ -383,6 +373,18 @@ export const ROICalculator: FC<{ data?: ROICalculatorData }> = ({ data }) => {
           ))}
         </div>
         <div className={styles.chart}>
+          <ul className={styles.legend}>
+            {chartData.series.map((serie, index) => (
+              <li className={styles.legendItem} key={serie.name}>
+                <span
+                  aria-hidden
+                  className={styles.legendMarker}
+                  style={{ background: SERIES_COLORS[index] }}
+                />
+                <RText size="body-s">{serie.name}</RText>
+              </li>
+            ))}
+          </ul>
           <LoadableComponent
             Component={ChartModule}
             componentProps={chartModuleProps}
