@@ -88,75 +88,93 @@
 }
 
 .tradeControls {
-  align-items: center;
-  display: grid;
+  align-items: flex-end;
+  display: flex;
   gap: var(--r-space-2);
-  grid-template-columns: 119px minmax(0, 1fr);
+  justify-content: space-between;
   margin-bottom: var(--r-space-4);
   position: relative;
 }
 
-.marketDropdown {
-  width: 100%;
+.tradeControls::after {
+  background: var(--r-color-neutral-100);
+  bottom: 0;
+  content: "";
+  height: 1px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
 }
 
-.marketDropdownTrigger {
+.sideTabs {
+  display: flex;
+  gap: var(--r-space-2);
+  min-width: 0;
+}
+
+.sideTab {
+  background: transparent;
   border: 0;
-  border-radius: var(--r-radius-pill);
-  height: 40px;
-  min-height: 40px;
-  padding: 0 var(--r-space-3) 0 var(--r-space-4);
+  border-bottom: 1px solid transparent;
+  color: var(--r-color-neutral-500);
+  cursor: pointer;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  min-width: 36px;
+  padding: 0 0 var(--r-space-2);
+  position: relative;
+  text-align: center;
+  white-space: nowrap;
+  z-index: 1;
 }
 
+.sideTab:hover:not(.sideTabActive) {
+  border-bottom-color: var(--r-color-neutral-500);
+}
+
+.sideTab:focus-visible {
+  border-radius: var(--r-radius-xs);
+  box-shadow: var(--r-focus-ring);
+  outline: none;
+}
+
+.sideTabActive {
+  border-bottom-color: var(--r-color-neutral-black);
+  color: var(--r-color-neutral-black);
+}
+
+.marketDropdown {
+  align-self: flex-start;
+  flex-shrink: 0;
+  width: auto;
+}
+
+.tradeControls .marketDropdownTrigger {
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+  gap: var(--r-space-1);
+  height: var(--r-line-height-body-sm);
+  justify-content: flex-end;
+  min-height: 0;
+  padding: 0;
+}
+
+.tradeControls .marketDropdownTrigger:disabled {
+  background: transparent;
+}
+
+.marketDropdownTrigger :global(p),
 .marketDropdownTrigger :global(span) {
-  flex: 0 0 59px;
-  overflow: hidden;
-  text-align: left;
-  text-overflow: ellipsis;
+  font-weight: var(--r-font-weight-medium);
   white-space: nowrap;
 }
 
 .marketDropdownMenu {
   z-index: 30;
-}
-
-.sideTabs {
-  background: transparent !important;
-  display: grid;
-  gap: var(--r-space-2);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-width: 0;
-  padding: 0;
-  width: 100% !important;
-}
-
-.tradeControls .sideTab {
-  background: var(--r-color-neutral-white) !important;
-  border: 0;
-  border-radius: var(--r-radius-pill);
-  box-sizing: border-box;
-  height: 37px;
-  min-width: 0;
-  padding: var(--r-space-2) var(--r-space-4);
-  width: 100%;
-}
-
-.tradeControls .sideTab p {
-  color: var(--r-color-neutral-black) !important;
-  font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-sm);
-  font-weight: var(--r-font-weight-regular);
-  line-height: var(--r-line-height-body-sm);
-  white-space: nowrap;
-}
-
-.tradeControls .sideTabActive {
-  background: var(--r-color-neutral-black) !important;
-  border-color: var(--r-color-neutral-black);
-}
-
-.tradeControls .sideTabActive p {
-  color: var(--r-color-neutral-white) !important;
 }
 
 .visuallyHidden {
@@ -167,10 +185,4 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
-}
-
-@media (--media-tablet-max) {
-  .tradeControls {
-    grid-template-columns: 1fr;
-  }
 }

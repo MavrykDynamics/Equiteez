@@ -24,7 +24,6 @@ import {
   normalizeTick,
 } from "~/lib/orderbook/orderbookConfig";
 import { BUY, OrderType, SELL } from "../consts";
-import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 import {
   RCustomDropdown,
   RDropdownBodyContent,
@@ -1021,6 +1020,32 @@ const BuySellForm: FC<
           </button>
         )}
         <div className={styles.tradeControls}>
+          <div
+            aria-label="Order side"
+            className={styles.sideTabs}
+            role="tablist"
+          >
+            {tabs.map((tab) => {
+              const isActive = tab.id === activetabId;
+
+              return (
+                <button
+                  aria-selected={isActive}
+                  className={clsx(
+                    styles.sideTab,
+                    isActive && styles.sideTabActive
+                  )}
+                  key={tab.id}
+                  onClick={() => tab.handleClick?.(tab.id)}
+                  role="tab"
+                  type="button"
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
           <RCustomDropdown className={styles.marketDropdown}>
             <RDropdownFaceContent
               aria-label="Order mode"
@@ -1029,7 +1054,7 @@ const BuySellForm: FC<
               {selectedMarketTab?.label ?? "Market"}
             </RDropdownFaceContent>
             <RDropdownBodyContent
-              align="left"
+              align="right"
               className={styles.marketDropdownMenu}
             >
               {marketTabs.map((tab) => (
@@ -1043,15 +1068,6 @@ const BuySellForm: FC<
               ))}
             </RDropdownBodyContent>
           </RCustomDropdown>
-
-          <TabSwitcherV2
-            activeClassName={styles.sideTabActive}
-            activeTabId={activetabId}
-            className={styles.sideTabs}
-            // @ts-expect-error // OrderType is string
-            tabs={tabs}
-            tabClassName={styles.sideTab}
-          />
         </div>
 
         {(activetabId === BUY || activetabId === SELL) &&
