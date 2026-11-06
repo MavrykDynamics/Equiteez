@@ -28,7 +28,7 @@
   background: var(--r-color-neutral-white) !important;
   border: 0 !important;
   border-radius: 12px !important;
-  gap: var(--r-space-1);
+  gap: var(--r-space-2);
   min-height: 86px;
   padding: var(--r-space-4);
 }
