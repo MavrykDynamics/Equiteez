@@ -1,7 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
-  --chart-height: 406px;
+  --chart-height: 412px;
 
   container-type: inline-size;
   display: flex;
