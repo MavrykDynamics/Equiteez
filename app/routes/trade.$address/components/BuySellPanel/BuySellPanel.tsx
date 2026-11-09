@@ -4,11 +4,11 @@ import {
   type SetStateAction,
   useEffect,
   useState,
+  type ReactNode,
 } from "react";
 import { useSearchParams } from "@remix-run/react";
 
 import type { ContractActionSuccessMetadata } from "~/contracts/actions.type";
-import { Spinner } from "~/lib/atoms/Spinner";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
 import {
   FreshnessSource,
@@ -20,6 +20,8 @@ import { useOrderbookConfig } from "~/hooks/useOrderbookConfig";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 
 import styles from "./styles.module.css";
+import { BuySellPanelSkeleton } from "./BuySellPanelSkeleton";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { PrimaryPurchasePanel } from "./PrimaryPurchasePanel";
 
 type BuySellPanelProps = {
@@ -85,16 +87,24 @@ function SecondaryBuySellPanel({
     [hasOrders, invalidateFreshQueries, refetchUserAccountStatus]
   );
 
+  // Same RSkeletonReveal at the root of every branch, so it stays mounted and
+  // crossfades the skeleton into the panel (or its error state)
+  const reveal = (content: ReactNode) => (
+    <RSkeletonReveal
+      className={styles.revealFill}
+      isLoading={status === "loading"}
+      skeleton={<BuySellPanelSkeleton />}
+    >
+      {content}
+    </RSkeletonReveal>
+  );
+
   if (status === "loading") {
-    return (
-      <div className={styles.state}>
-        <Spinner size={56} />
-      </div>
-    );
+    return reveal(null);
   }
 
   if (!config) {
-    return (
+    return reveal(
       <div className={styles.state}>
         Trading unavailable: {error?.message}
         <button
@@ -109,7 +119,7 @@ function SecondaryBuySellPanel({
     );
   }
 
-  return (
+  return reveal(
     <BuySellContent
       key={`${asset.address}:${config.address}:${config.rwaTokenId}:${config.quoteTokenAddress}:${config.quoteTokenId}`}
       asset={asset}

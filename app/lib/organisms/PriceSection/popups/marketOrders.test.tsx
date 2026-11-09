@@ -133,19 +133,22 @@ vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
 vi.mock("~/templates/Alert/RAlert", () => ({
   RAlert: ({ children }: { children: ReactNode }) => <p>{children}</p>,
 }));
-vi.mock("~/lib/organisms/RCustomDropdown/RCustomDropdown", () => ({
-  RCustomDropdown: ({ children }: { children: ReactNode }) => <>{children}</>,
-  RDropdownBodyContent: ({ children }: { children: ReactNode }) => (
-    <>{children}</>
-  ),
-  RDropdownBodyContentItem: ({
-    children,
-    onClick,
+vi.mock("~/lib/molecules/RHoverSwitch/RHoverSwitch", () => ({
+  RHoverSwitch: ({
+    onChange,
+    options,
   }: {
-    children: ReactNode;
-    onClick: () => void;
-  }) => <button onClick={onClick}>{children}</button>,
-  RDropdownFaceContent: () => null,
+    onChange: (id: string) => void;
+    options: { id: string; label: string }[];
+  }) => (
+    <>
+      {options.map((option) => (
+        <button key={option.id} onClick={() => onChange(option.id)}>
+          {option.label}
+        </button>
+      ))}
+    </>
+  ),
 }));
 vi.mock("~/lib/organisms/TabSwitcherV2/TabSwitcherV2", () => ({
   TabSwitcherV2: () => null,
@@ -281,10 +284,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     "shares quantity for direct-input preview, estimate and submission at tick %s",
     async (tick, atoms, quantity, consideration) => {
       render(side, { quantityTickSize: tick });
-      change(
-        "Pay with",
-        side === BUY ? "29" : "0.966666"
-      );
+      change("Pay with", side === BUY ? "29" : "0.966666");
       expect(input("Receive").value).toBe(
         side === BUY ? quantity : consideration
       );
@@ -357,10 +357,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     "blocks estimation and submission: %s",
     async (_label, overrides, amount) => {
       render(side, overrides);
-      change(
-        "Pay with",
-        amount ?? (side === BUY ? "29" : "0.966666")
-      );
+      change("Pay with", amount ?? (side === BUY ? "29" : "0.966666"));
       await estimate();
       expect(submit().disabled).toBe(true);
       expect(mocks.estimateBuy).not.toHaveBeenCalled();

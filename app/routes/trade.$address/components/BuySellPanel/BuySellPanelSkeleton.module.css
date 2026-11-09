@@ -1,0 +1,215 @@
+@import "../../../../styles/breakpoints.css";
+
+/* Sizes follow BuySellContent (popups.module.css, BuySellForm.module.css and
+   FeesCard): 30px controls row, 116px balance cards, 42px slider, collapsed
+   Order Summary and a 45px button. */
+
+/* min-height + overflow: in the mobile slider the card has a fixed height
+   (the chart's) and the panel fits it; never give the card a scrollbar while
+   the skeleton is up */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Buy / Sell text tabs + "Market" dropdown, one row on every screen size.
+   Loaded row: 21px body-sm line + 8px tab padding + 1px underline = 30px */
+.controls {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--r-space-2);
+  box-sizing: border-box;
+  height: 30px;
+  margin-bottom: var(--r-space-4);
+  border-bottom: 1px solid var(--r-color-neutral-100);
+}
+
+.sideTabs {
+  display: flex;
+  gap: var(--r-space-2);
+}
+
+/* Tabs are min 36px wide ("Buy" / "Sell") */
+.sideTab {
+  width: 36px;
+  height: 21px;
+}
+
+/* "Market" label + chevron */
+.marketDropdown {
+  width: 66px;
+  height: 21px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+.row,
+.rowEnd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
+.rowEnd {
+  justify-content: flex-end;
+}
+
+/* White balance cards on the grey panel, as in the loaded form */
+.card,
+.summary {
+  display: flex;
+  flex-direction: column;
+  padding: var(--r-space-4);
+  border-radius: 12px;
+  background: var(--r-color-neutral-white);
+}
+
+/* 8px between the label, amount and value rows: 3 rows + 32px padding = 116px */
+.card {
+  gap: var(--r-space-2);
+}
+
+.cardLabel {
+  width: 48px;
+  height: 18px;
+}
+
+.cardBalance {
+  width: 114px;
+  height: 18px;
+}
+
+.assetPill {
+  width: 91px;
+  height: 32px;
+}
+
+.amount {
+  width: 56px;
+  height: 28px;
+}
+
+.cardValue {
+  width: 60px;
+  height: 18px;
+}
+
+/* Percentage stops: 16px track row + 22px labels, 4px below */
+.slider {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 38px;
+  margin-bottom: var(--r-space-1);
+}
+
+.sliderTrack {
+  width: 100%;
+  height: 5px;
+  margin-top: 6px;
+}
+
+.sliderLabels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sliderLabel {
+  width: 32px;
+  height: 14px;
+}
+
+.summary {
+  margin-top: var(--r-space-1);
+}
+
+.summaryLabel {
+  width: 105px;
+  height: 21px;
+}
+
+.summaryValue {
+  width: 64px;
+  height: 21px;
+}
+
+/* FeesCard starts collapsed on every screen size */
+.summaryDetails {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.summaryRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+/* Detail and Total rows keep the 21px body-sm line height */
+.summaryRows .row,
+.summaryDetails > .row {
+  height: 21px;
+}
+
+.detailLabel {
+  width: 120px;
+  height: 15px;
+}
+
+.detailValue {
+  width: 64px;
+  height: 15px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--r-color-neutral-100);
+}
+
+.totalLabel {
+  width: 40px;
+  height: 18px;
+}
+
+.totalValue {
+  width: 56px;
+  height: 18px;
+}
+
+.button {
+  width: 100%;
+  height: 45px;
+  margin-top: var(--r-space-4);
+}
+
+.mobileNotice {
+  display: none;
+  width: 200px;
+  height: 18px;
+  margin: var(--r-space-4) auto 0;
+}
+
+/* Mobile card (≤ 1000px): the button replaced by the view-only hint */
+@media (--media-tablet) {
+  .button {
+    display: none;
+  }
+
+  /* The loaded form content ends 12px below the collapsed summary, then the
+     notice's own 16px margin */
+  .mobileNotice {
+    display: block;
+    margin-top: calc(var(--r-space-4) + 12px);
+  }
+}
