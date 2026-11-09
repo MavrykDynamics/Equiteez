@@ -6,7 +6,7 @@ import mobileStyles from "../MobilePortfolio/styles.module.css";
 import welcomeStyles from "../WelcomeBlock/styles.module.css";
 import styles from "./PortfolioPageSkeleton.module.css";
 
-// Overview, Activity, Notifications, Profile
+// Overview, Activity, Notifications
 const TAB_WIDTHS = [97, 84, 118, 77];
 const METRICS_COUNT = 3;
 const TABLE_COLUMNS_COUNT = 6;
@@ -39,7 +39,6 @@ export type PortfolioPageSkeletonVariant =
   | "overview"
   | "activity"
   | "notifications"
-  | "profile"
   | "none";
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
@@ -213,39 +212,10 @@ function NotificationsSkeleton() {
   );
 }
 
-function ProfileSkeleton() {
-  return (
-    <div className={styles.content}>
-      <RSkeleton className={styles.profileCard} radius="md" variant="surface">
-        <div className={styles.profileSection}>
-          <RSkeleton radius="none" className={styles.profileSectionTitle} />
-          <div
-            className={`${styles.profileField} ${styles.profileWalletField}`}
-          >
-            <RSkeleton radius="none" className={styles.profileLabel} />
-            <RSkeleton className={styles.profileInput} radius="sm" />
-          </div>
-        </div>
-        <div className={styles.profileSection}>
-          <RSkeleton radius="none" className={styles.profileSectionTitle} />
-          <div className={styles.profileGasRow}>
-            <div className={styles.profileField}>
-              <RSkeleton radius="none" className={styles.profileLabel} />
-              <RSkeleton className={styles.profileInput} radius="sm" />
-            </div>
-            <RSkeleton height={47} radius="pill" width={83} />
-          </div>
-        </div>
-      </RSkeleton>
-    </div>
-  );
-}
-
 const BODY_SKELETONS: Record<PortfolioPageSkeletonVariant, ComponentType> = {
   overview: OverviewSkeleton,
   activity: ActivitySkeleton,
   notifications: NotificationsSkeleton,
-  profile: ProfileSkeleton,
   none: () => null,
 };
 

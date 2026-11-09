@@ -19,7 +19,6 @@ const SKELETON_VARIANTS: Record<string, PortfolioPageSkeletonVariant> = {
   [ROUTES.portfolio]: "overview",
   [ROUTES.portfolioActivity]: "activity",
   [ROUTES.portfolioNotifications]: "notifications",
-  [ROUTES.portfolioProfile]: "profile",
 };
 
 const getSkeletonVariant = (pathname: string) =>

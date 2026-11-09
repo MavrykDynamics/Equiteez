@@ -60,7 +60,6 @@ export function AssetsTableSkeletonRows() {
               <CellLines twoLine={twoLine} />
             </td>
           ))}
-          <td className={styles.actionCell} />
         </tr>
       ))}
     </>

@@ -26,8 +26,7 @@
 .statsCard,
 .assetsCard,
 .activityStats,
-.card,
-.profileCard {
+.card {
   border: var(--r-border-width-sm) solid transparent;
 }
 
@@ -245,7 +244,7 @@
   height: 36px;
 }
 
-/* Shared surface card for the activity history, notifications and profile */
+/* Shared surface card for the activity history and notifications */
 .card {
   display: flex;
   flex-direction: column;
@@ -360,74 +359,6 @@
   width: 106px;
   height: 17px;
   margin-bottom: 2px;
-}
-
-/* Profile */
-.profileCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-8);
-  width: 100%;
-  padding: var(--r-space-6);
-}
-
-.profileSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-6);
-}
-
-.profileSectionTitle {
-  width: 96px;
-  height: 24px;
-}
-
-.profileField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-1);
-  width: 488px;
-  max-width: 100%;
-}
-
-.profileLabel {
-  width: 110px;
-  height: 21px;
-}
-
-.profileInput {
-  width: 100%;
-  height: 45px;
-}
-
-/* Loaded wallet address box: one column of the 2-column grid, 47px tall */
-.profileWalletField {
-  width: calc((100% - var(--r-space-6)) / 2);
-  max-width: none;
-}
-
-.profileWalletField .profileInput {
-  height: 47px;
-}
-
-/* Loaded gas row: half width, dropdown grows, 83×47 Save button */
-.profileGasRow {
-  display: flex;
-  width: calc((100% - var(--r-space-6)) / 2);
-  align-items: flex-end;
-  gap: var(--r-space-3);
-}
-
-.profileGasRow .profileField {
-  flex: 1;
-  width: auto;
-}
-
-@media (max-width: 1024px) {
-  .profileWalletField,
-  .profileGasRow {
-    width: 100%;
-  }
 }
 
 @media (--media-tablet-max) {
