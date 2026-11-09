@@ -1,0 +1,412 @@
+@import "../../../../styles/breakpoints.css";
+
+/* Sizes follow the Portfolio Overview skeleton in Figma (node 7597:45506)
+   and the loaded WelcomeBlock, PortfolioGeneralStats and AssetsStats. */
+
+.welcomeTitle {
+  width: 285px;
+  max-width: 100%;
+  height: 32px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--r-space-2);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  padding-bottom: var(--r-space-18);
+}
+
+/* Loaded cards have a 1px border; keep it (transparent) so the insides line up */
+.statsCard,
+.assetsCard,
+.activityStats,
+.card {
+  border: var(--r-border-width-sm) solid transparent;
+}
+
+.statsCard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.valueSection {
+  display: flex;
+  align-items: center;
+  min-height: 219px;
+  padding: var(--r-space-6);
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.metrics > * + * {
+  border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.metric {
+  min-height: 137px;
+  padding: var(--r-space-6);
+}
+
+.valueGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+/* Total Portfolio Value spaces its lines 8px apart */
+.valueSection .valueGroup {
+  gap: var(--r-space-2);
+}
+
+.valueLabel {
+  width: 74px;
+  height: 18px;
+}
+
+.valueLabelLarge {
+  width: 116px;
+  height: 18px;
+}
+
+.valueLarge {
+  width: 258px;
+  max-width: 100%;
+  height: 58px;
+}
+
+/* The loaded metric value sits 1px lower than the 4px gap */
+.valueMedium {
+  width: 119px;
+  height: 44px;
+  margin-top: 1px;
+}
+
+.valueCaption {
+  width: 145px;
+  height: 18px;
+}
+
+.valueCaptionLarge {
+  width: 176px;
+  height: 21px;
+}
+
+.assetsCard {
+  display: grid;
+  grid-template-columns: minmax(0, 881px) minmax(263px, 1fr);
+  gap: var(--r-space-6);
+  padding: var(--r-space-6);
+}
+
+.tableSection {
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+  margin-bottom: var(--r-space-6);
+}
+
+.tableTitle {
+  width: 64px;
+  height: 24px;
+}
+
+.search {
+  width: 264px;
+  height: 42px;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Column widths follow the loaded table: Asset, 5 value columns, actions */
+.tableRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(5, 12.5%) 48px;
+  align-items: center;
+  height: 61px;
+}
+
+.tableRow > * {
+  padding: 0 var(--r-space-3);
+}
+
+.tableRow > :first-child {
+  padding-left: var(--r-space-2);
+}
+
+.tableRow:first-child {
+  height: 39px;
+}
+
+.headerCell {
+  width: 56px;
+  max-width: 100%;
+  height: 14px;
+}
+
+.assetCell {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.assetIcon {
+  width: 30px;
+  height: 30px;
+}
+
+.assetLines,
+.cellLines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.assetName {
+  width: 65px;
+  height: 18px;
+}
+
+.assetSymbol {
+  width: 80px;
+  height: 15px;
+}
+
+.line {
+  width: 60px;
+  max-width: 100%;
+  height: 15px;
+}
+
+.lineShort {
+  width: 32px;
+  max-width: 100%;
+  height: 15px;
+}
+
+.subLine {
+  width: 36px;
+  max-width: 100%;
+  height: 13px;
+}
+
+.chartPanel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: var(--r-space-6);
+  border-left: var(--r-border-width-sm) solid var(--r-color-neutral-200);
+}
+
+/* The loaded switcher is inline-flex, so its line box adds 4px on top */
+.chartTitle {
+  width: 187px;
+  height: 18px;
+  margin-top: 4px;
+  margin-bottom: var(--r-space-6);
+}
+
+.donut {
+  width: 263px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  height: auto;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  margin-top: var(--r-space-6);
+}
+
+.legendItem {
+  width: 183px;
+  max-width: 100%;
+  height: 36px;
+}
+
+/* Shared surface card for the activity history and notifications */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  width: 100%;
+  padding: var(--r-space-6);
+}
+
+/* Activity */
+.activityStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+}
+
+.activityStats > * + * {
+  border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.activityStats .metric {
+  min-height: 136px;
+}
+
+/* Activity stats: plain 4px gaps and the same 72px bar as the loaded tab */
+.activityStats .valueMedium {
+  width: 72px;
+  margin-top: 0;
+}
+
+/* The loaded RInput search is 47px tall, which also centres the pills lower */
+.card > .toolbar .search {
+  height: 47px;
+}
+
+/* History title → controls is 16px in the loaded card, controls → table 24px */
+.card > .toolbar {
+  margin: calc(var(--r-space-2) * -1) 0 0;
+}
+
+.pills {
+  display: flex;
+  gap: var(--r-space-2);
+}
+
+.activityHeaderRow,
+.activityRow {
+  display: grid;
+  grid-template-columns:
+    136px minmax(116px, 1fr) 159px minmax(116px, 1fr) minmax(132px, 1fr)
+    160px 136px minmax(128px, 1fr) 56px;
+  align-items: center;
+  height: 61px;
+}
+
+.activityHeaderRow {
+  height: 39px;
+}
+
+.activityHeaderRow > *,
+.activityRow > * {
+  padding: 0 var(--r-space-3);
+  min-width: 0;
+}
+
+.actionIcon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Notifications */
+.notificationsTitle {
+  width: 104px;
+  height: 24px;
+}
+
+/* Same scroll box as the loaded list, so the stable gutter matches */
+.notificationsList {
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* Loaded row: 8px padding, two 21px lines, 1px divider = 59px */
+.notification {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: var(--r-space-2) var(--r-space-3);
+  border-bottom: var(--r-border-width-sm) solid transparent;
+}
+
+.notification:last-child {
+  border-bottom: 0;
+}
+
+.notificationLines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.notificationTitle {
+  width: 187px;
+  max-width: 100%;
+  height: 17px;
+}
+
+.notificationDate {
+  flex-shrink: 0;
+  width: 106px;
+  height: 17px;
+  margin-bottom: 2px;
+}
+
+@media (--media-tablet-max) {
+  .assetsCard {
+    grid-template-columns: 1fr;
+  }
+
+  .chartPanel {
+    padding-top: var(--r-space-6);
+    padding-left: 0;
+    border-top: var(--r-border-width-sm) solid var(--r-color-neutral-200);
+    border-left: 0;
+  }
+}
+
+/* Mobile (≤ 820px, useIsMobileViewport) renders MobilePortfolio instead */
+.mobileOnly {
+  display: none;
+}
+
+@media (--media-tablet-min) {
+  .mobileOnly {
+    display: block;
+  }
+
+  .desktopOnly {
+    display: none;
+  }
+}
+
+/* MobilePortfolio lookup form: body-sm intro, label, 47px input, 44px button */
+.mobileIntro {
+  width: 100%;
+  height: 21px;
+}
+
+.mobileLabel {
+  width: 104px;
+  height: 21px;
+}
+
+.mobileInput {
+  width: 100%;
+  height: 47px;
+}
+
+.mobileButton {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+}

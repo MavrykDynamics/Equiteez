@@ -410,6 +410,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
           ? "Connect Wallet"
           : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
       </Button>
+      <p className={styles.mobileTradeNotice}>Open on desktop to trade.</p>
     </div>
   );
 };
