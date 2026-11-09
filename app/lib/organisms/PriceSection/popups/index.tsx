@@ -25,11 +25,9 @@ import {
 } from "~/lib/orderbook/orderbookConfig";
 import { BUY, OrderType, SELL } from "../consts";
 import {
-  RCustomDropdown,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-  RDropdownFaceContent,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
+  RHoverSwitch,
+  type RHoverSwitchOption,
+} from "~/lib/molecules/RHoverSwitch/RHoverSwitch";
 
 import {
   ContractActionToastProps,
@@ -85,6 +83,14 @@ import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvid
 import * as gtag from "app/utils/gtags.client";
 
 type MarketOrderMode = "market" | "limit";
+
+const MARKET_ORDER_MODE_OPTIONS = [
+  { id: "market", label: "Market" },
+  { id: "limit", label: "Limit" },
+] as const satisfies readonly [
+  RHoverSwitchOption<MarketOrderMode>,
+  RHoverSwitchOption<MarketOrderMode>,
+];
 
 type BuySellContentProps = {
   asset: AssetType;
@@ -281,25 +287,6 @@ const BuySellForm: FC<
     [setMarkettype]
   );
 
-  const marketTabs: TabType<MarketOrderMode>[] = useMemo(
-    () => [
-      {
-        id: "market",
-        label: "Market",
-        handleClick: handleMarketChange,
-      },
-      {
-        id: "limit",
-        label: "Limit",
-        handleClick: handleMarketChange,
-      },
-    ],
-    [handleMarketChange]
-  );
-  const selectedMarketTab = useMemo(
-    () => marketTabs.find((tab) => tab.id === marketType),
-    [marketTabs, marketType]
-  );
   const isOrderDataLoading = isMarketTypeMarket && isOrderbookDepthLoading;
 
   useEffect(() => {
@@ -1046,28 +1033,13 @@ const BuySellForm: FC<
             })}
           </div>
 
-          <RCustomDropdown className={styles.marketDropdown}>
-            <RDropdownFaceContent
-              aria-label="Order mode"
-              className={styles.marketDropdownTrigger}
-            >
-              {selectedMarketTab?.label ?? "Market"}
-            </RDropdownFaceContent>
-            <RDropdownBodyContent
-              align="right"
-              className={styles.marketDropdownMenu}
-            >
-              {marketTabs.map((tab) => (
-                <RDropdownBodyContentItem
-                  isSelected={tab.id === marketType}
-                  key={tab.id}
-                  onClick={() => handleMarketChange(tab.id)}
-                >
-                  {tab.label}
-                </RDropdownBodyContentItem>
-              ))}
-            </RDropdownBodyContent>
-          </RCustomDropdown>
+          <RHoverSwitch
+            aria-label="Order mode"
+            className={styles.marketDropdown}
+            onChange={handleMarketChange}
+            options={MARKET_ORDER_MODE_OPTIONS}
+            value={marketType}
+          />
         </div>
 
         {(activetabId === BUY || activetabId === SELL) &&

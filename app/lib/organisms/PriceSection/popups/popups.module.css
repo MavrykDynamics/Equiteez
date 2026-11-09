@@ -152,31 +152,6 @@
   width: auto;
 }
 
-.tradeControls .marketDropdownTrigger {
-  background: transparent;
-  border: 0;
-  border-radius: var(--r-radius-xs);
-  gap: var(--r-space-1);
-  height: var(--r-line-height-body-sm);
-  justify-content: flex-end;
-  min-height: 0;
-  padding: 0;
-}
-
-.tradeControls .marketDropdownTrigger:disabled {
-  background: transparent;
-}
-
-.marketDropdownTrigger :global(p),
-.marketDropdownTrigger :global(span) {
-  font-weight: var(--r-font-weight-medium);
-  white-space: nowrap;
-}
-
-.marketDropdownMenu {
-  z-index: 30;
-}
-
 .visuallyHidden {
   height: 1px;
   margin: -1px;
