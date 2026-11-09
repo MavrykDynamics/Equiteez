@@ -35,6 +35,14 @@
   justify-self: end;
 }
 
+/* RSkeletonReveal adds ::before/::after (display: table) to the wrapper while
+   it crossfades; in this flex row they'd become items and add two 8px gaps,
+   pushing the widget and the centred links 8px left until the fade ends */
+.inner .wallet::before,
+.inner .wallet::after {
+  display: none;
+}
+
 .notifications {
   position: relative;
 }
@@ -66,6 +74,47 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 150%;
+}
+
+/* Wallet skeleton: same boxes as the signed-in widget (78px Deposit button,
+   188px wallet pill with a 24px avatar, the address and a 24px chevron, and
+   the 32px bell button), 8px apart like .wallet */
+.depositSkeleton {
+  width: 78px;
+  height: 38px;
+}
+
+.walletPillSkeleton {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+  width: 188px;
+  height: 38px;
+  padding-left: 13px;
+}
+
+.avatarSkeleton {
+  width: 24px;
+  height: 24px;
+}
+
+.addressSkeleton {
+  width: 102px;
+  height: 14px;
+}
+
+/* 14px glyph centred in the chevron's 24px box */
+.chevronSkeleton {
+  width: 14px;
+  height: 14px;
+  margin: 0 5px;
+}
+
+.bellSkeleton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
 }
 
 @media (--media-tablet-max) {
