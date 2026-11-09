@@ -1,3 +1,5 @@
+import type { ComponentType } from "react";
+
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
 
 import welcomeStyles from "../WelcomeBlock/styles.module.css";
@@ -14,6 +16,30 @@ const LEGEND_ITEMS_COUNT = 10;
 
 // --r-radius-pill is a fixed radius, so circles need 50% inline to win over it
 const CIRCLE = { borderRadius: "50%" };
+
+const ACTIVITY_TAB_WIDTHS = [119, 163, 191];
+// Open Orders grid: date, 7 value columns, action icon
+const ACTIVITY_COLUMNS_COUNT = 8;
+const ACTIVITY_ROWS_COUNT = 5;
+const NOTIFICATION_DESCRIPTION_WIDTHS = [
+  "48%",
+  "36%",
+  "44%",
+  "32%",
+  "52%",
+  "40%",
+  "28%",
+  "46%",
+  "38%",
+  "42%",
+];
+
+export type PortfolioPageSkeletonVariant =
+  | "overview"
+  | "activity"
+  | "notifications"
+  | "profile"
+  | "none";
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
 
@@ -111,14 +137,125 @@ function OverviewSkeleton() {
   );
 }
 
+function ActivitySkeleton() {
+  return (
+    <div className={styles.content}>
+      <RSkeleton className={styles.activityStats} radius="lg" variant="surface">
+        {range(METRICS_COUNT).map((item) => (
+          <div className={styles.metric} key={item}>
+            <ValueSkeleton size="medium" />
+          </div>
+        ))}
+      </RSkeleton>
+
+      <RSkeleton className={styles.card} radius="lg" variant="surface">
+        <RSkeleton className={styles.tableTitle} radius="none" />
+        <div className={styles.toolbar}>
+          <div className={styles.pills}>
+            {ACTIVITY_TAB_WIDTHS.map((width) => (
+              <RSkeleton height={39} key={width} radius="pill" width={width} />
+            ))}
+          </div>
+          <RSkeleton className={styles.search} radius="sm" />
+        </div>
+        <div className={styles.table}>
+          {range(ACTIVITY_ROWS_COUNT + 1).map((row) => (
+            <div
+              className={row ? styles.activityRow : styles.activityHeaderRow}
+              key={row}
+            >
+              {range(ACTIVITY_COLUMNS_COUNT).map((cell) => (
+                <div key={cell}>
+                  {row === 0 ? (
+                    <RSkeleton className={styles.headerCell} radius="none" />
+                  ) : cell === 0 ? (
+                    <div className={styles.cellLines}>
+                      <RSkeleton className={styles.line} radius="none" />
+                      <RSkeleton className={styles.subLine} radius="none" />
+                    </div>
+                  ) : (
+                    <RSkeleton className={styles.lineShort} radius="none" />
+                  )}
+                </div>
+              ))}
+              <div>
+                {row ? (
+                  <RSkeleton className={styles.actionIcon} radius="none" />
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      </RSkeleton>
+    </div>
+  );
+}
+
+function NotificationsSkeleton() {
+  return (
+    <div className={styles.content}>
+      <RSkeleton className={styles.card} radius="md" variant="surface">
+        <RSkeleton className={styles.notificationsTitle} radius="none" />
+        <div>
+          {NOTIFICATION_DESCRIPTION_WIDTHS.map((width, index) => (
+            <div className={styles.notification} key={index}>
+              <div className={styles.notificationLines}>
+                <RSkeleton className={styles.notificationTitle} radius="none" />
+                <RSkeleton radius="none" style={{ width, height: 17 }} />
+              </div>
+              <RSkeleton className={styles.notificationDate} radius="none" />
+            </div>
+          ))}
+        </div>
+      </RSkeleton>
+    </div>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className={styles.content}>
+      <RSkeleton className={styles.profileCard} radius="md" variant="surface">
+        <div className={styles.profileSection}>
+          <RSkeleton className={styles.profileSectionTitle} radius="none" />
+          <div className={styles.profileField}>
+            <RSkeleton className={styles.profileLabel} radius="none" />
+            <RSkeleton className={styles.profileInput} radius="sm" />
+          </div>
+        </div>
+        <div className={styles.profileSection}>
+          <RSkeleton className={styles.profileSectionTitle} radius="none" />
+          <div className={styles.profileGasRow}>
+            <div className={styles.profileField}>
+              <RSkeleton className={styles.profileLabel} radius="none" />
+              <RSkeleton className={styles.profileInput} radius="sm" />
+            </div>
+            <RSkeleton height={45} radius="pill" width={77} />
+          </div>
+        </div>
+      </RSkeleton>
+    </div>
+  );
+}
+
+const BODY_SKELETONS: Record<PortfolioPageSkeletonVariant, ComponentType> = {
+  overview: OverviewSkeleton,
+  activity: ActivitySkeleton,
+  notifications: NotificationsSkeleton,
+  profile: ProfileSkeleton,
+  none: () => null,
+};
+
 // Shown while the stored auth session is being restored, so the page doesn't
-// flash the "Log Into Your Account" state with a spinner. The overview body is
-// only drawn on the overview tab — other tabs get just the shared header.
+// flash the "Log Into Your Account" state with a spinner. Every tab gets the
+// shared header plus a body that mirrors that tab's layout.
 export function PortfolioPageSkeleton({
-  withOverview,
+  variant,
 }: {
-  withOverview: boolean;
+  variant: PortfolioPageSkeletonVariant;
 }) {
+  const BodySkeleton = BODY_SKELETONS[variant];
+
   return (
     <div aria-busy="true" role="status">
       <div className={welcomeStyles.wrapper}>
@@ -151,7 +288,7 @@ export function PortfolioPageSkeleton({
           ))}
         </div>
       </div>
-      {withOverview ? <OverviewSkeleton /> : null}
+      <BodySkeleton />
     </div>
   );
 }

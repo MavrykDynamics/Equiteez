@@ -15,9 +15,48 @@ import { useNotifierChannel } from "~/providers/NotificationsProvider/hooks/useN
 import { mapNotificationItemToUserNotification } from "~/providers/NotificationsProvider/helpers/notifications.helpers";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 
+import { RSkeleton } from "~/lib/atoms/RSkeleton";
+
 import styles from "./styles.module.css";
 
 const NOTIFICATIONS_PAGE_SIZE = 10;
+// Description widths vary like real messages do
+const SKELETON_DESCRIPTION_WIDTHS = [
+  "48%",
+  "36%",
+  "44%",
+  "32%",
+  "52%",
+  "40%",
+  "28%",
+  "46%",
+  "38%",
+  "42%",
+];
+
+function NotificationsSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="Loading notifications" role="status">
+      {SKELETON_DESCRIPTION_WIDTHS.map((width, index) => (
+        <div aria-hidden="true" className={styles.notification} key={index}>
+          <span className={styles.notificationContent}>
+            <span className={styles.skeletonLines}>
+              <RSkeleton className={styles.skeletonTitle} variant="surface" />
+              <RSkeleton
+                className={styles.skeletonDescription}
+                style={{ width }}
+                variant="surface"
+              />
+            </span>
+          </span>
+          <span className={styles.meta}>
+            <RSkeleton className={styles.skeletonDate} variant="surface" />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const isNotificationsNotFoundError = (error: unknown) =>
   isAxiosError(error) && error.response?.status === 404;
@@ -160,6 +199,8 @@ export default function PortfolioNotifications() {
                 Unable to load notifications.
               </RText>
             </div>
+          ) : notificationsQuery.isPending ? (
+            <NotificationsSkeleton />
           ) : notifications.length ? (
             notifications.map((notification, index) => (
               <div
@@ -202,7 +243,9 @@ export default function PortfolioNotifications() {
               </RText>
             </div>
           ) : null}
-          {notificationsQuery.isFetching ? (
+          {/* Only while a reset list still shows the previous page — not on
+              the first load (skeleton) or the refetch after mark-as-read */}
+          {notificationsQuery.isPlaceholderData ? (
             <div
               aria-label="Loading notifications"
               className={styles.loadingOverlay}

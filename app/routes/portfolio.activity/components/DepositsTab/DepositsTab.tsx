@@ -21,6 +21,21 @@ import {
   type ServerSortKey,
 } from "./DepositsTab.types";
 import styles from "./styles.module.css";
+import {
+  ActivityTableSkeleton,
+  type ActivitySkeletonCell,
+} from "~/routes/portfolio.activity/components/ActivityTableSkeleton";
+
+// One entry per column of the tab's grid template
+const SKELETON_COLUMNS: ActivitySkeletonCell[] = [
+  "date",
+  "asset",
+  "text",
+  "text",
+  "text",
+  "text",
+  "badge",
+];
 
 const DEPOSITS_PER_PAGE = 10;
 
@@ -80,11 +95,11 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
 
   if (depositsQuery.isLoading && !depositsQuery.data) {
     return (
-      <div className={styles.state} aria-live="polite">
-        <RText color="neutral-600" size="body-sm">
-          Loading deposits...
-        </RText>
-      </div>
+      <ActivityTableSkeleton
+        ariaLabel="Loading deposits"
+        columns={SKELETON_COLUMNS}
+        styles={styles}
+      />
     );
   }
 
@@ -120,7 +135,7 @@ export function DepositsTab({ searchValue }: DepositsTabProps) {
   return (
     <div className={styles.content}>
       <div className={styles.viewport}>
-        {depositsQuery.isFetching ? (
+        {depositsQuery.isPlaceholderData ? (
           <div
             className={styles.loadingOverlay}
             role="status"
