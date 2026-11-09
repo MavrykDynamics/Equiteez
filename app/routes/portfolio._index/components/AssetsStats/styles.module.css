@@ -173,12 +173,20 @@
 }
 
 .tokenIcon {
+  flex: 0 0 30px;
+  overflow: hidden;
   background: var(--r-color-accent-green-500);
   color: var(--r-color-neutral-white);
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-s);
 }
 
+.assetText {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.assetSymbol,
 .assetName {
   display: block;
   overflow: hidden;
