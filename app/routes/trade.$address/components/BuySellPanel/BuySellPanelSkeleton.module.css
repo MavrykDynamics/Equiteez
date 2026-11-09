@@ -1,7 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
 /* Sizes follow BuySellContent (popups.module.css, BuySellForm.module.css and
-   FeesCard): 40px controls row, 108px balance cards, 42px slider, collapsed
+   FeesCard): 30px controls row, 116px balance cards, 42px slider, collapsed
    Order Summary and a 45px button. */
 
 /* min-height + overflow: in the mobile slider the card has a fixed height
@@ -15,28 +15,34 @@
   overflow: hidden;
 }
 
-/* Market dropdown + Buy / Sell tabs */
+/* Buy / Sell text tabs + "Market" dropdown, one row on every screen size.
+   Loaded row: 21px body-sm line + 8px tab padding + 1px underline = 30px */
 .controls {
-  display: grid;
-  grid-template-columns: 119px minmax(0, 1fr);
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: var(--r-space-2);
+  box-sizing: border-box;
+  height: 30px;
   margin-bottom: var(--r-space-4);
-}
-
-.marketDropdown {
-  width: 100%;
-  height: 40px;
+  border-bottom: 1px solid var(--r-color-neutral-100);
 }
 
 .sideTabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
   gap: var(--r-space-2);
 }
 
+/* Tabs are min 36px wide ("Buy" / "Sell") */
 .sideTab {
-  height: 37px;
+  width: 36px;
+  height: 21px;
+}
+
+/* "Market" label + chevron */
+.marketDropdown {
+  width: 66px;
+  height: 21px;
 }
 
 .fields {
@@ -67,8 +73,9 @@
   background: var(--r-color-neutral-white);
 }
 
+/* 8px between the label, amount and value rows: 3 rows + 32px padding = 116px */
 .card {
-  gap: var(--r-space-1);
+  gap: var(--r-space-2);
 }
 
 .cardLabel {
@@ -193,31 +200,16 @@
   margin: var(--r-space-4) auto 0;
 }
 
-/* The dropdown sits above the tabs until the mobile card layout kicks in */
-@media (--media-tablet-max) {
-  .controls {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Mobile card (≤ 1000px): controls share one row, balance rows 8px apart,
-   the button replaced by the view-only hint */
+/* Mobile card (≤ 1000px): the button replaced by the view-only hint */
 @media (--media-tablet) {
-  .controls {
-    grid-template-columns: 119px minmax(0, 1fr);
-  }
-
-  .card {
-    gap: var(--r-space-2);
-  }
-
   .button {
     display: none;
   }
 
-  /* The loaded form content ends 2px below the collapsed summary */
+  /* The loaded form content ends 12px below the collapsed summary, then the
+     notice's own 16px margin */
   .mobileNotice {
     display: block;
-    margin-top: calc(var(--r-space-4) + 2px);
+    margin-top: calc(var(--r-space-4) + 12px);
   }
 }

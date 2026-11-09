@@ -33,29 +33,19 @@ function BalanceCardSkeleton() {
 // Placeholder for the buy/sell (and primary purchase) panel while its own data
 // (orderbook config, primary purchase config) is still loading after the page
 // skeleton has already been replaced. Mirrors BuySellContent block by block:
-// Market dropdown + Buy/Sell tabs, two balance cards, the percentage slider,
+// Buy/Sell tabs + Market dropdown, two balance cards, the percentage slider,
 // the Order Summary card and the submit button (a view-only hint on mobile).
 export function BuySellPanelSkeleton() {
   return (
     <div aria-busy="true" className={styles.skeleton} role="status">
+      {/* Buy / Sell text tabs on the left, the "Market" dropdown on the right,
+          a divider line under the row */}
       <div className={styles.controls}>
-        <RSkeleton
-          className={styles.marketDropdown}
-          radius="pill"
-          variant="surface"
-        />
         <div className={styles.sideTabs}>
-          <RSkeleton
-            className={styles.sideTab}
-            radius="pill"
-            variant="surface"
-          />
-          <RSkeleton
-            className={styles.sideTab}
-            radius="pill"
-            variant="surface"
-          />
+          <RSkeleton className={styles.sideTab} variant="surface" />
+          <RSkeleton className={styles.sideTab} variant="surface" />
         </div>
+        <RSkeleton className={styles.marketDropdown} variant="surface" />
       </div>
 
       <div className={styles.fields}>
