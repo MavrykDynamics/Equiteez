@@ -11,22 +11,32 @@ import {
   RDropdownFaceContent,
 } from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
 import styles from "./ConnectWallet.module.css";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 export const ConnectWallet = () => {
-  const { changeUser, connect, isLoading, signOut, userAddress } =
-    useUserContext();
+  const { changeUser, isLoading, signOut, userAddress } = useUserContext();
+  const { identity } = useWalletContext();
+  const openConnectWallet = useConnectWallet();
+  const isEmailWallet = identity?.provider === "dynamic";
 
-  const handleConnect = () => {
-    // Opening the wallet popup should not trigger RButton's async loading state.
-    void Promise.resolve()
-      .then(connect)
-      .catch(() => {
-        console.error("Failed to connect wallet.");
-      });
+  // Opens the sign-in modal (or Mavryk Wallet directly without email wallets)
+  const handleConnect = () => openConnectWallet();
+
+  const handleChangeAccount = async () => {
+    if (!isEmailWallet) {
+      await changeUser();
+      return;
+    }
+
+    // Email wallet: sign out of this account, keep the Dynamic session, and
+    // let the user pick how to sign in again
+    await signOut({ keepProviderSession: true });
+    openConnectWallet();
   };
 
   return (
@@ -49,10 +59,12 @@ export const ConnectWallet = () => {
             <Link className={styles.profileLink} to={ROUTES.portfolio}>
               Portfolio
             </Link>
-            <RDropdownBodyContentItem onClick={changeUser}>
+            <RDropdownBodyContentItem
+              onClick={() => void handleChangeAccount()}
+            >
               Change account
             </RDropdownBodyContentItem>
-            <RDropdownBodyContentItem onClick={signOut}>
+            <RDropdownBodyContentItem onClick={() => void signOut()}>
               Sign out
             </RDropdownBodyContentItem>
           </RDropdownBodyContent>

@@ -9,6 +9,7 @@ import { WithdrawFunds } from "./WithdrawFunds";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { getTrimmedHash } from "~/lib/utils";
+import { WalletSwitcher } from "./WalletSwitcher";
 
 export function WelcomeBlock({
   activeTab,
@@ -46,9 +47,12 @@ export function WelcomeBlock({
   return (
     <div className={styles.wrapper}>
       <div className={styles.welcome}>
-        <RHeading weight="medium" size="h5">
-          Welcome, {getTrimmedHash(userAddress ?? "")}
-        </RHeading>
+        <div className={styles.identity}>
+          <RHeading weight="medium" size="h5">
+            Welcome, {getTrimmedHash(userAddress ?? "")}
+          </RHeading>
+          <WalletSwitcher />
+        </div>
         <div className={styles.actions}>
           <DepositFunds />
           <WithdrawFunds />

@@ -1,0 +1,150 @@
+/* Follows WithdrawFundsModal: same surface, spacing and close row */
+.modal,
+.sheet {
+  width: min(440px, 100%);
+  max-height: calc(100vh - var(--r-space-8));
+  padding: 0;
+  overflow: auto;
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border: 0;
+  border-radius: var(--r-radius-md);
+  box-shadow: 0 7px 25.781px rgba(1, 1, 1, 0.08);
+  outline: none;
+}
+
+/* Bottom sheet on phones */
+.sheet {
+  width: 100%;
+  border-radius: var(--r-radius-md) var(--r-radius-md) 0 0;
+}
+
+.closeRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--r-space-3) var(--r-space-4) var(--r-space-2);
+}
+
+.closeButton {
+  display: grid;
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  padding: 0;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  padding: 0 var(--r-space-8) var(--r-space-8);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.form > header {
+  margin-bottom: var(--r-space-2);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+  width: 100%;
+  padding: var(--r-space-4);
+  text-align: left;
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  cursor: pointer;
+  transition: border-color var(--r-transition-duration-fast) ease;
+}
+
+.option:hover {
+  border-color: var(--r-color-neutral-400);
+}
+
+.input {
+  width: 100%;
+}
+
+/* Beats RButton's own width: fit-content, which loads later */
+.form .primaryButton {
+  width: 100%;
+}
+
+.linkRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+}
+
+.textButton {
+  align-self: center;
+  padding: 0;
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  text-decoration: underline;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.textButton:disabled {
+  color: var(--r-color-neutral-400);
+  text-decoration: none;
+  cursor: default;
+}
+
+.working {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-3);
+  padding: var(--r-space-6) 0;
+  text-align: center;
+}
+
+.error {
+  margin: 0;
+  color: var(--r-color-red-500);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+}
+
+.closeButton:focus-visible,
+.option:focus-visible,
+.textButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+@media (--media-phone-max) {
+  .content {
+    padding: 0 var(--r-space-4) var(--r-space-6);
+  }
+}

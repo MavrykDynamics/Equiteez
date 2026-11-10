@@ -8,6 +8,7 @@ import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
 import { ZERO } from "~/lib/utils/numbers";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useTransactionWidget } from "~/providers/TransactionsProvider/TransactionWidgetProvider";
@@ -33,8 +34,8 @@ export function RDepositFundsModal({
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const releaseDeposit = useRef<(() => void) | null>(null);
-  const { userAddress, userTokensBalances, connect, isLoading } =
-    useUserContext();
+  const openConnectWallet = useConnectWallet();
+  const { userAddress, userTokensBalances, isLoading } = useUserContext();
   const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
   const { transactions, models, holdDeposit } = useTransactionWidget();
@@ -181,7 +182,7 @@ export function RDepositFundsModal({
               ethereumWallet={ethereumWallet}
               destinationMetadata={destinationMetadata}
               isMavrykBusy={isLoading}
-              onConnectMavryk={connect}
+              onConnectMavryk={() => openConnectWallet()}
               onDeposit={async () => {
                 if (depositAmount)
                   await ethereumWallet.bridge.submit(

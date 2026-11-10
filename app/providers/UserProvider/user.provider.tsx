@@ -140,22 +140,29 @@ export const UserProvider = ({ children }: Props) => {
 
   /**
    * Connects with `connectWallet` (e.g. the email wallet's code check), then
-   * signs in to RWA with the connected wallet.
+   * signs in to RWA with the connected wallet. A step that returns false did
+   * not connect (e.g. an email is needed first): no sign-in then.
    */
   const connectWithWallet = useCallback(
     (connectWallet: () => Promise<unknown>) =>
       runAuthFlow(async () => {
-        await connectWallet();
+        if ((await connectWallet()) === false) return;
         await login();
       }),
     [login, runAuthFlow]
   );
 
-  // The Sign out button: ends the wallet session (including Dynamic) and RWA
-  const disconnectAndLogout = useCallback(async () => {
-    await signOut();
-    await logout();
-  }, [logout, signOut]);
+  /**
+   * Signs out of the wallet and RWA. The Sign out button ends the Dynamic
+   * session too; switching wallets keeps it (keepProviderSession).
+   */
+  const disconnectAndLogout = useCallback(
+    async (options: { keepProviderSession?: boolean } = {}) => {
+      await signOut(options);
+      await logout();
+    },
+    [logout, signOut]
+  );
 
   // The wallet provider restores the previous session on load
   useEffect(() => {

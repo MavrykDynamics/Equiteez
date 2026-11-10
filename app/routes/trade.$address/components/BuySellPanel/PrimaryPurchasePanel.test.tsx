@@ -28,6 +28,9 @@ vi.mock("~/contracts/primaryPurchase.contract", () => ({
   primaryPurchase: mocks.purchase,
   estimatePrimaryPurchase: mocks.estimate,
 }));
+vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
+  useConnectWallet: () => vi.fn(),
+}));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ connect: vi.fn(), isKyced: mocks.isKyced }),
 }));

@@ -7,6 +7,7 @@ import { Button } from "~/lib/atoms/Button";
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { fromAssetSlug } from "~/lib/assets";
 
 // eslint-disable-next-line import/no-named-as-default
@@ -101,7 +102,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const openConnectWallet = useConnectWallet();
+  const { userTokensBalances, isKyced, userAddress } = useUserContext();
   const isDisconnected = !userAddress;
 
   // Read the balance of the orderbook's actual quote token, not a hardcoded
@@ -399,7 +401,9 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               : styles.sellSubmitButton,
           continueButtonClassName
         )}
-        onClick={isDisconnected ? connect : handleContinueClick}
+        onClick={
+          isDisconnected ? () => openConnectWallet() : handleContinueClick
+        }
         disabled={!isDisconnected && isBtnDisabled}
         isLoading={!isDisconnected && isLoading}
         size="custom"

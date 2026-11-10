@@ -40,7 +40,9 @@ export type DynamicWalletIdentity = MavrykKeys & {
   solAddress: string;
 };
 
-const SDK_READY_TIMEOUT_MS = 20_000;
+// The SDK does not always report a failed start (e.g. an origin missing from
+// the allowlist): give up after this and say the service is unavailable
+const SDK_READY_TIMEOUT_MS = 12_000;
 // How long to wait for a restored session's wallet list before deciding the
 // wallet is missing. An empty list while restoring is not "no wallet".
 const WALLETS_RESTORE_TIMEOUT_MS = 5_000;
@@ -239,7 +241,12 @@ export async function resolveDynamicWallet(
 
   if (savedWallet) return savedWallet;
   if (wallets.length > 1) {
-    throw new MultipleDynamicWalletsError(wallets.map((wallet) => wallet.id));
+    throw new MultipleDynamicWalletsError(
+      wallets.map((wallet) => ({
+        walletId: wallet.id,
+        address: deriveMavrykKeys(wallet.address).address,
+      }))
+    );
   }
   if (wallets.length === 0) return null;
 

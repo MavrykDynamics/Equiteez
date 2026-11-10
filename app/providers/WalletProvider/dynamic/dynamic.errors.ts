@@ -28,9 +28,15 @@ export class DynamicNotAuthenticatedError extends Error {
   }
 }
 
+export type DynamicWalletOption = {
+  walletId: string;
+  /** mv1 address, what the user recognizes */
+  address: string;
+};
+
 /** Several embedded wallets and none saved: the user has to pick one. */
 export class MultipleDynamicWalletsError extends Error {
-  constructor(public readonly walletIds: string[]) {
+  constructor(public readonly wallets: DynamicWalletOption[]) {
     super("Several wallets were found for this account.");
     this.name = "MultipleDynamicWalletsError";
   }

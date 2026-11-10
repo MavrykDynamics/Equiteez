@@ -21,6 +21,7 @@ import {
 } from "~/contracts/primaryPurchase.quote";
 import type { PrimaryPurchaseConfig } from "~/contracts/primaryPurchase.types";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
 import { STATUS_IDLE } from "~/lib/ui/use-status-flag";
 import { RButton } from "~/lib/atoms/RButton";
@@ -108,7 +109,8 @@ function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
 
 function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
   const query = usePrimaryPurchase(asset.address);
-  const { connect, isKyced } = useUserContext();
+  const openConnectWallet = useConnectWallet();
+  const { isKyced } = useUserContext();
   const config = query.data;
   const countdown = config?.countdown;
   const retry = () => {
@@ -134,7 +136,7 @@ function ConnectedPrimaryPurchasePanel({ asset }: { asset: AssetType }) {
               config?.unavailableReason ??
               "Primary purchases are temporarily unavailable."}
             {config && !config.wallet ? (
-              <button type="button" onClick={connect}>
+              <button type="button" onClick={() => openConnectWallet()}>
                 Connect wallet
               </button>
             ) : (

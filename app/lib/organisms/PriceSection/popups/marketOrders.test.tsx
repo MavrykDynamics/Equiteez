@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   balances: {} as Record<string, string>,
   toolkit: {},
   userAddress: "wallet",
-  connect: vi.fn(),
+  openConnectWallet: vi.fn(),
 }));
 vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookBuy: mocks.buy,
@@ -35,10 +35,12 @@ vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
     identity: { epoch: 1 },
   }),
 }));
+vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
+  useConnectWallet: () => mocks.openConnectWallet,
+}));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({
     userAddress: mocks.userAddress,
-    connect: mocks.connect,
     hasOrders: true,
     isKyced: true,
     userTokensBalances: mocks.balances,
@@ -198,7 +200,7 @@ const asset = {
 
 beforeEach(() => {
   mocks.userAddress = "wallet";
-  mocks.connect.mockReset();
+  mocks.openConnectWallet.mockReset();
   vi.clearAllMocks();
   vi.useFakeTimers();
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -259,7 +261,8 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     const button = submit();
     expect(button.textContent).toBe("Connect Wallet");
     expect(button.disabled).toBe(false);
-    expect(mocks.connect).toHaveBeenCalledOnce();
+    // Opens the sign-in modal (Mavryk Wallet or email wallet)
+    expect(mocks.openConnectWallet).toHaveBeenCalledOnce();
     expect(mocks.buy).not.toHaveBeenCalled();
     expect(mocks.sell).not.toHaveBeenCalled();
   });
@@ -378,7 +381,8 @@ describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
     const button = submit();
     expect(button.textContent).toBe("Connect Wallet");
     expect(button.disabled).toBe(false);
-    expect(mocks.connect).toHaveBeenCalledOnce();
+    // Opens the sign-in modal (Mavryk Wallet or email wallet)
+    expect(mocks.openConnectWallet).toHaveBeenCalledOnce();
     expect(mocks.buy).not.toHaveBeenCalled();
     expect(mocks.sell).not.toHaveBeenCalled();
   });
