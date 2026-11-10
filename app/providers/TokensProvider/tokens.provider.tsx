@@ -20,7 +20,12 @@ import {
   TokenMetadata,
 } from "~/lib/metadata";
 import { toTokenSlug } from "~/lib/assets";
-import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
+import {
+  PRIMARY_PURCHASE_QUOTE_TOKEN,
+  PRIMARY_PURCHASE_QUOTE_TOKEN_SLUG,
+  USDT_BRIDGE,
+  USDT_BRIDGE_DESTINATION_SLUG,
+} from "~/consts/usdtBridge";
 
 const tokensContext = createContext<TokensProviderCtx>(undefined!);
 
@@ -99,6 +104,10 @@ export const TokensProvider: FC<TokensProviderProps> = ({
           id: USDT_BRIDGE.destinationToken.id,
         })
         .concat({
+          contract: PRIMARY_PURCHASE_QUOTE_TOKEN.address,
+          id: PRIMARY_PURCHASE_QUOTE_TOKEN.id,
+        })
+        .concat({
           contract: MVRK_CONTRACT_ADDRESS,
           id: MVRK_METADATA.id,
         })
@@ -115,6 +124,7 @@ export const TokensProvider: FC<TokensProviderProps> = ({
 
       const nextTokensMetadata = {
         [USDT_BRIDGE_DESTINATION_SLUG]: USDT_BRIDGE.destinationToken,
+        [PRIMARY_PURCHASE_QUOTE_TOKEN_SLUG]: PRIMARY_PURCHASE_QUOTE_TOKEN,
         ...initialTokensMetadata,
         [MVRK_ASSET_SLUG]: MVRK_METADATA,
         [toTokenSlug(MVRK_CONTRACT_ADDRESS, 0)]: MVRK_METADATA,

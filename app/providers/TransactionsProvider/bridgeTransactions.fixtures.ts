@@ -48,5 +48,5 @@ export const signerEventSequence = [
   status,
   updated_at,
   amount: "1500000000000000000",
-  erc_token: "0xada0b668c6598559c5c816a8b633efe714c5b5f3",
+  erc_token: "0x5c05e82be66b19476bacb558e62e7d449b98635f",
 }));

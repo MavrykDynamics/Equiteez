@@ -1,5 +1,5 @@
 import { BigNumber } from "bignumber.js";
-import { sepolia } from "wagmi/chains";
+import { arbitrumSepolia } from "wagmi/chains";
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { getBridgeDepositId } from "~/lib/apis/rwa/bridge/bridge.schema";
 import {
@@ -189,8 +189,8 @@ export function toTransactionWidget(
     symbol,
     recipient: record.account,
     sourceExplorerUrl:
-      USDT_BRIDGE.chainId === sepolia.id
-        ? `${sepolia.blockExplorers.default.url}/tx/${event?.initial_tx_hash ?? backend?.evm_tx_hash ?? record.sourceHashes.at(-1)}`
+      USDT_BRIDGE.chainId === arbitrumSepolia.id
+        ? `${arbitrumSepolia.blockExplorers.default.url}/tx/${event?.initial_tx_hash ?? backend?.evm_tx_hash ?? record.sourceHashes.at(-1)}`
         : undefined,
     state,
     isTerminal: Boolean(event && state.status === "success"),

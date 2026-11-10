@@ -128,7 +128,7 @@ it("renders bridge targets, unknown signer thresholds, raw units and source link
   expect(html).toContain("Validators sign 1/?");
   expect(html).toContain("12345678901234567890 raw units");
   expect(html).toContain(
-    `href="https://sepolia.etherscan.io/tx/${deposit().evm_tx_hash}"`
+    `href="https://sepolia.arbiscan.io/tx/${deposit().evm_tx_hash}"`
   );
   expect(html).toContain('rel="noopener noreferrer"');
   expect(html).toContain('data-status="waiting"');

@@ -7,7 +7,7 @@ import {
 } from "react";
 import { BigNumber } from "bignumber.js";
 import type { AssetType } from "~/lib/apis/rwa/assets/assets.types";
-import { USDT_BRIDGE } from "~/consts/usdtBridge";
+import { PRIMARY_PURCHASE_QUOTE_TOKEN } from "~/consts/usdtBridge";
 import { toTokenSlug } from "~/lib/assets";
 import { createFallbackTokenMetadata } from "~/lib/metadata";
 import { BuySellScreen } from "~/lib/organisms/PriceSection/screens/BuySellScreen";
@@ -61,7 +61,7 @@ export function PrimaryPurchasePanel({
 function PrimaryPurchasePreview({ asset }: { asset: AssetType }) {
   const { prices } = useAssetsContext();
   const [amount, setAmount] = useState<BigNumber>();
-  const quoteToken = USDT_BRIDGE.destinationToken;
+  const quoteToken = PRIMARY_PURCHASE_QUOTE_TOKEN;
   const metadata = {
     baseTokenSlug: asset.address,
     baseTokenMetadata: createFallbackTokenMetadata({
@@ -204,12 +204,12 @@ function PrimaryPurchaseForm({
       }),
       quoteTokenSlug: toTokenSlug(option.tokenAddress, option.tokenId),
       quoteTokenMetadata: {
-        ...USDT_BRIDGE.destinationToken,
+        ...PRIMARY_PURCHASE_QUOTE_TOKEN,
         address: option.tokenAddress,
         id: option.tokenId,
       },
       baseTokenDecimals: asset.metadata.decimals,
-      quoteTokenDecimals: USDT_BRIDGE.destinationToken.decimals,
+      quoteTokenDecimals: PRIMARY_PURCHASE_QUOTE_TOKEN.decimals,
       isMetadataLoaded: true,
     }),
     [asset, config.assetTokenId, option.tokenAddress, option.tokenId]
