@@ -15,6 +15,20 @@ export type ActionSuccessReturnType = {
 
 export type ContractActionConfirmation = {
   level: number;
+  opHash?: string;
+};
+
+export type ContractActionSubmission = {
+  opHash: string;
+};
+
+/** How the current wallet executes direct (MVRK-paid) operations. */
+export type DirectExecutionOptions = {
+  /**
+   * Estimate fees/burn and check the MVRK balance before sending. Needed for
+   * embedded wallets, which show no fee review of their own.
+   */
+  checkNativeBudget?: boolean;
 };
 
 export type ContractActionSuccessMetadata = {
@@ -23,7 +37,8 @@ export type ContractActionSuccessMetadata = {
 
 export type ContractActionLifecycleCallbacks = {
   onTransactionConfirmed?: (confirmation: ContractActionConfirmation) => void;
-  onTransactionSubmitted?: () => void;
+  onTransactionSubmitted?: (submission?: ContractActionSubmission) => void;
+  execution?: DirectExecutionOptions;
 };
 
 // Stake | UnStake actions

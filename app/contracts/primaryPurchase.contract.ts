@@ -14,6 +14,11 @@ import type {
 } from "./primaryPurchase.types";
 import type { BatchOperationKindType } from "./types";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
+import { confirmWalletOperation } from "./execution";
+import {
+  assertNativeBalance,
+  summarizeNativeCost,
+} from "~/services/direct/nativeBudget";
 
 type PrimaryPurchaseFees = { gasFee: bigint };
 
@@ -142,11 +147,11 @@ export async function primaryPurchase(params: PurchaseParams) {
     // Estimate before the wallet prompt, surfacing token delivery/KYC failwiths.
     const estimates = await params.tezos.estimate.batch(batch);
     params.onEstimated?.(summarizePrimaryFees(estimates));
+    if (params.execution?.checkNativeBudget) {
+      await assertNativeBalance(params.tezos, summarizeNativeCost(estimates));
+    }
     const operation = await params.tezos.wallet.batch(batch).send();
-    params.onTransactionSubmitted?.();
-    const confirmation = await operation.confirmation(1);
-    const level = confirmation?.block.header.level;
-    if (typeof level === "number") params.onTransactionConfirmed?.({ level });
+    await confirmWalletOperation(operation, params, 1);
   } catch (error) {
     throw primaryPurchaseError(error);
   }

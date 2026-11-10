@@ -1,5 +1,9 @@
 /* eslint-disable no-useless-catch */
-import { MavrykToolkit, OpKind } from "@mavrykdynamics/taquito";
+import {
+  MavrykToolkit,
+  OpKind,
+  type TransferParams,
+} from "@mavrykdynamics/taquito";
 import BigNumber from "bignumber.js";
 import {
   getEstimationBatchResult,
@@ -13,6 +17,8 @@ import {
 } from "~/lib/utils/formaters";
 import { alignQuantityAtomsToTick } from "~/lib/orderbook/orderbookTick";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
+import { sendAndConfirmBatch } from "./execution";
+import { hasActiveOperator } from "./operators";
 import { BatchOperationKindType } from "./types";
 
 export type OrderbookBuyParams = {
@@ -170,6 +176,48 @@ const validateOrderRules = ({
   }
 };
 
+type WalletContract = Awaited<ReturnType<MavrykToolkit["wallet"]["at"]>>;
+
+/**
+ * The order, wrapped in a temporary operator grant only when the orderbook
+ * has none: an existing (persistent) grant is used as is and never removed.
+ */
+async function withOperatorGrant({
+  tokenContract,
+  owner,
+  operator,
+  tokenId,
+  order,
+}: {
+  tokenContract: WalletContract;
+  owner: string;
+  operator: string;
+  tokenId: string;
+  order: TransferParams;
+}): Promise<BatchOperationKindType> {
+  const hasGrant = await hasActiveOperator(tokenContract, {
+    owner,
+    operator,
+    tokenId,
+  });
+
+  if (hasGrant) return [{ kind: OpKind.TRANSACTION, ...order }];
+
+  const grant = { owner, operator, token_id: tokenId };
+  const addOperator = tokenContract.methodsObject["update_operators"]([
+    { add_operator: grant },
+  ]).toTransferParams();
+  const removeOperator = tokenContract.methodsObject["update_operators"]([
+    { remove_operator: grant },
+  ]).toTransferParams();
+
+  return [
+    { kind: OpKind.TRANSACTION, ...addOperator },
+    { kind: OpKind.TRANSACTION, ...order },
+    { kind: OpKind.TRANSACTION, ...removeOperator },
+  ];
+}
+
 export async function orderbookBuyBatch({
   tezos,
   orderbookContractAddress,
@@ -191,7 +239,6 @@ export async function orderbookBuyBatch({
     assertAddress(quoteTokenAddress, "Quote token address");
 
     const sender = await tezos.wallet.pkh();
-    const batch: BatchOperationKindType = [];
 
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
     const quoteTokenContract = await tezos.wallet.at(quoteTokenAddress);
@@ -214,36 +261,17 @@ export async function orderbookBuyBatch({
       minQuoteValue,
     });
 
-    const open_ops = quoteTokenContract.methodsObject["update_operators"]([
-      {
-        add_operator: {
-          owner: sender,
-          operator: orderbookContractAddress,
-          token_id: operatorTokenId,
-        },
-      },
-      // to avoid undefined values
-    ]).toTransferParams();
-
-    const buy_order = orderbookContract.methodsObject["placeBuyOrder"]([
+    const buyOrder = orderbookContract.methodsObject["placeBuyOrder"]([
       orderPayload,
     ]).toTransferParams();
 
-    const close_ops = quoteTokenContract.methodsObject["update_operators"]([
-      {
-        remove_operator: {
-          owner: sender,
-          operator: orderbookContractAddress,
-          token_id: operatorTokenId,
-        },
-      },
-    ]).toTransferParams();
-
-    batch.push({ kind: OpKind.TRANSACTION, ...open_ops });
-    batch.push({ kind: OpKind.TRANSACTION, ...buy_order });
-    batch.push({ kind: OpKind.TRANSACTION, ...close_ops });
-
-    return batch;
+    return await withOperatorGrant({
+      tokenContract: quoteTokenContract,
+      owner: sender,
+      operator: orderbookContractAddress,
+      tokenId: operatorTokenId,
+      order: buyOrder,
+    });
   } catch (e: unknown) {
     throw e;
   }
@@ -256,6 +284,7 @@ export async function orderbookBuy(params: OrderbookBuyParams) {
     await sendContractBatchOperation(params.tezos, batchArr, {
       onTransactionConfirmed: params.onTransactionConfirmed,
       onTransactionSubmitted: params.onTransactionSubmitted,
+      execution: params.execution,
     });
   } catch (e: unknown) {
     throw e;
@@ -283,7 +312,6 @@ export async function orderbookSellBatch({
     assertAddress(rwaTokenAddress, "RWA token address");
 
     const sender = await tezos.wallet.pkh();
-    const batch: BatchOperationKindType = [];
 
     const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
     const tokenContact = await tezos.wallet.at(rwaTokenAddress);
@@ -306,35 +334,17 @@ export async function orderbookSellBatch({
       minQuoteValue,
     });
 
-    const open_ops = tokenContact.methodsObject["update_operators"]([
-      {
-        add_operator: {
-          owner: sender,
-          operator: orderbookContractAddress,
-          token_id: operatorTokenId,
-        },
-      },
-    ]).toTransferParams();
-
-    const sell_order = orderbookContract.methodsObject["placeSellOrder"]([
+    const sellOrder = orderbookContract.methodsObject["placeSellOrder"]([
       orderPayload,
     ]).toTransferParams();
 
-    const close_ops = tokenContact.methodsObject["update_operators"]([
-      {
-        remove_operator: {
-          owner: sender,
-          operator: orderbookContractAddress,
-          token_id: operatorTokenId,
-        },
-      },
-    ]).toTransferParams();
-
-    batch.push({ kind: OpKind.TRANSACTION, ...open_ops });
-    batch.push({ kind: OpKind.TRANSACTION, ...sell_order });
-    batch.push({ kind: OpKind.TRANSACTION, ...close_ops });
-
-    return batch;
+    return await withOperatorGrant({
+      tokenContract: tokenContact,
+      owner: sender,
+      operator: orderbookContractAddress,
+      tokenId: operatorTokenId,
+      order: sellOrder,
+    });
   } catch (e: unknown) {
     throw e;
   }
@@ -347,6 +357,7 @@ export async function orderbookSell(params: OrderbookSellParams) {
     await sendContractBatchOperation(params.tezos, batchArr, {
       onTransactionConfirmed: params.onTransactionConfirmed,
       onTransactionSubmitted: params.onTransactionSubmitted,
+      execution: params.execution,
     });
   } catch (e: unknown) {
     throw e;
@@ -358,30 +369,23 @@ export async function orderbookCancelOrder({
   orderbookContractAddress,
   orderId,
   orderType,
-  onTransactionSubmitted,
-  onTransactionConfirmed,
+  ...callbacks
 }: OrderbookCancelOrderParams) {
-  try {
-    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+  const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+  const cancel = orderbookContract.methodsObject
+    .cancelOrders([
+      {
+        orderId: toNatString(orderId, "Order ID"),
+        orderType,
+      },
+    ])
+    .toTransferParams();
 
-    const rwaOrderbookOperation = await orderbookContract.methodsObject
-      .cancelOrders([
-        {
-          orderId: toNatString(orderId, "Order ID"),
-          orderType,
-        },
-      ])
-      .send();
-    onTransactionSubmitted?.();
-    const confirmation = await rwaOrderbookOperation.confirmation();
-    const level = confirmation?.block.header.level;
-
-    if (typeof level === "number") {
-      onTransactionConfirmed?.({ level });
-    }
-  } catch (e: unknown) {
-    throw e;
-  }
+  await sendAndConfirmBatch(
+    tezos,
+    [{ kind: OpKind.TRANSACTION, ...cancel }],
+    callbacks
+  );
 }
 
 export async function orderbookProcessRefund({
@@ -389,32 +393,25 @@ export async function orderbookProcessRefund({
   orderbookContractAddress,
   orderId,
   orderType,
-  onTransactionSubmitted,
-  onTransactionConfirmed,
+  ...callbacks
 }: OrderbookProcessRefundParams) {
-  try {
-    assertAddress(orderbookContractAddress, "Orderbook contract address");
+  assertAddress(orderbookContractAddress, "Orderbook contract address");
 
-    const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+  const orderbookContract = await tezos.wallet.at(orderbookContractAddress);
+  const refund = orderbookContract.methodsObject
+    .processRefund([
+      {
+        orderId: toNatString(orderId, "Order ID"),
+        orderType,
+      },
+    ])
+    .toTransferParams();
 
-    const rwaOrderbookOperation = await orderbookContract.methodsObject
-      .processRefund([
-        {
-          orderId: toNatString(orderId, "Order ID"),
-          orderType,
-        },
-      ])
-      .send();
-    onTransactionSubmitted?.();
-    const confirmation = await rwaOrderbookOperation.confirmation();
-    const level = confirmation?.block.header.level;
-
-    if (typeof level === "number") {
-      onTransactionConfirmed?.({ level });
-    }
-  } catch (e: unknown) {
-    throw e;
-  }
+  await sendAndConfirmBatch(
+    tezos,
+    [{ kind: OpKind.TRANSACTION, ...refund }],
+    callbacks
+  );
 }
 
 // Estimation functions

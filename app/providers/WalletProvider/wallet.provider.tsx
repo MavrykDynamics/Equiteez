@@ -1,9 +1,19 @@
 import { FC, createContext, useEffect, useState, useContext } from "react";
 import { dappClient } from "./WalletCore.client";
+import type { DirectExecutionOptions } from "~/contracts/actions.type";
+import type { AttemptTracking } from "~/services/direct/executor";
 
 type WalletContext = {
   dapp: ReturnType<typeof dappClient> | null;
   isLoading: boolean;
+  /**
+   * How contract actions of the connected wallet execute: attempt tracking
+   * and MVRK checks. Absent until a wallet identity is available.
+   */
+  directExecution?: {
+    options: DirectExecutionOptions;
+    tracking: AttemptTracking | null;
+  };
 };
 
 export const walletContext = createContext<WalletContext>(undefined!);

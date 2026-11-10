@@ -70,7 +70,7 @@ export function useOpenOrderAction({
             "Your cancellation transaction was confirmed. You'll receive a notification when the order is updated.",
         },
       },
-      { onSuccess: handleAfterAction }
+      { onSuccess: handleAfterAction, action: "orderbook.cancel" }
     );
   const { invokeAction: invokeRefundOrder, status: refundStatus } =
     useContractAction(
@@ -84,7 +84,7 @@ export function useOpenOrderAction({
             "Your refund transaction was confirmed. You'll receive a notification when the refund is processed.",
         },
       },
-      { onSuccess: handleAfterAction }
+      { onSuccess: handleAfterAction, action: "orderbook.refund" }
     );
 
   const isRefundAction = !order.can_cancel;

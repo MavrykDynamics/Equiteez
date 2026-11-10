@@ -43,7 +43,22 @@ function findContractCode(value: unknown, depth = 0): string | undefined {
   }
 }
 
+// Direct-execution outcomes keep their type: an unknown broadcast must not be
+// rewritten into a retryable "RPC unavailable" message
+const DIRECT_EXECUTION_ERRORS = new Set([
+  "InsufficientMvrkError",
+  "OperationFailedOnChainError",
+  "OperationOutcomeUnknownError",
+  "BroadcastOutcomeUnknownError",
+  "UnresolvedAttemptError",
+  "ActionInProgressError",
+]);
+
 export function primaryPurchaseError(error: unknown): Error {
+  if (error instanceof Error && DIRECT_EXECUTION_ERRORS.has(error.name)) {
+    return error;
+  }
+
   const code = findContractCode(error);
   if (!code && error && typeof error === "object") {
     const rpcError = error as Record<string, unknown>;

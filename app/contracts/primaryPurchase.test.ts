@@ -173,7 +173,16 @@ function fixture() {
   const confirmation = vi.fn(async () => ({
     block: { header: { level: 123 } },
   }));
-  const send = vi.fn(async () => ({ confirmation }));
+  const operationResults = vi.fn(
+    async (): Promise<unknown[]> => [
+      { metadata: { operation_result: { status: "applied" } } },
+    ]
+  );
+  const send = vi.fn(async () => ({
+    opHash: "ooPurchase",
+    confirmation,
+    operationResults,
+  }));
   const batch = vi.fn(() => ({ send }));
   const tezos = {
     rpc,
@@ -192,6 +201,7 @@ function fixture() {
       })),
     },
     estimate: { batch: vi.fn(async () => []) },
+    mv: { getBalance: vi.fn(async () => new BigNumber(0)) },
   } as unknown as MavrykToolkit;
   const read = () =>
     readPrimaryPurchaseConfig({
@@ -222,6 +232,7 @@ function fixture() {
     updateOperators,
     purchase,
     confirmation,
+    operationResults,
     send,
     batch,
     read,
@@ -435,8 +446,64 @@ describe("direct primary purchase batch", () => {
     expect(f.tezos.estimate.batch).toHaveBeenCalledOnce();
     expect(f.send).toHaveBeenCalledOnce();
     expect(f.confirmation).toHaveBeenCalledWith(1);
-    expect(submitted).toHaveBeenCalledOnce();
-    expect(confirmed).toHaveBeenCalledWith({ level: 123 });
+    expect(submitted).toHaveBeenCalledWith({ opHash: "ooPurchase" });
+    expect(confirmed).toHaveBeenCalledWith({
+      level: 123,
+      opHash: "ooPurchase",
+    });
+  });
+
+  it("does not report a purchase whose operation failed on chain", async () => {
+    const f = fixture();
+    f.operationResults.mockResolvedValue([
+      { metadata: { operation_result: { status: "applied" } } },
+      {
+        metadata: {
+          operation_result: {
+            status: "backtracked",
+          },
+          internal_operation_results: [
+            {
+              result: {
+                status: "failed",
+                errors: [{ id: "proto.michelson_v1.script_rejected" }],
+              },
+            },
+          ],
+        },
+      },
+    ]);
+    const confirmed = vi.fn();
+
+    await expect(
+      primaryPurchase({
+        tezos: f.tezos,
+        review: await f.review(),
+        onTransactionConfirmed: confirmed,
+      })
+    ).rejects.toMatchObject({ name: "OperationFailedOnChainError" });
+    expect(confirmed).not.toHaveBeenCalled();
+  });
+
+  it("checks the MVRK balance for embedded wallets before sending", async () => {
+    const f = fixture();
+    vi.mocked(f.tezos.estimate.batch).mockResolvedValue([
+      { suggestedFeeMumav: 1500, burnFeeMumav: 64250 },
+    ] as never);
+    vi.mocked(f.tezos.mv.getBalance).mockResolvedValue(new BigNumber(1000));
+
+    await expect(
+      primaryPurchase({
+        tezos: f.tezos,
+        review: await f.review(),
+        execution: { checkNativeBudget: true },
+      })
+    ).rejects.toMatchObject({ name: "InsufficientMvrkError" });
+    expect(f.send).not.toHaveBeenCalled();
+
+    // Extension wallets review fees themselves: no extra balance check
+    await primaryPurchase({ tezos: f.tezos, review: await f.review() });
+    expect(f.send).toHaveBeenCalledOnce();
   });
   it("reports RPC gateway failure separately and never submits after failed estimation", async () => {
     const f = fixture();

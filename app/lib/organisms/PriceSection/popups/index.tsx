@@ -788,13 +788,22 @@ const BuySellForm: FC<
     [handleSuccessfulTransaction]
   );
 
+  const buyActionOptions = useMemo(
+    () => ({ ...contractActionOptions, action: "orderbook.buy" }),
+    [contractActionOptions]
+  );
+  const sellActionOptions = useMemo(
+    () => ({ ...contractActionOptions, action: "orderbook.sell" }),
+    [contractActionOptions]
+  );
+
   const { invokeAction: handleMarketBuy, status: buyStatus } =
     useContractAction(
       orderbookBuy,
       marketBuyProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      buyActionOptions
     );
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
@@ -803,7 +812,7 @@ const BuySellForm: FC<
       marketSellProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      sellActionOptions
     );
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
@@ -812,7 +821,7 @@ const BuySellForm: FC<
       limitBuyProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      buyActionOptions
     );
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
@@ -821,7 +830,7 @@ const BuySellForm: FC<
       limitSellProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      sellActionOptions
     );
 
   // prop action to pass

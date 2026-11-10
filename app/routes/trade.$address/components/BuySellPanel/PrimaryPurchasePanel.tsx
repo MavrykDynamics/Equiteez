@@ -322,6 +322,7 @@ function PrimaryPurchaseForm({
       },
     },
     {
+      action: "primary.purchase",
       onSuccess: (metadata) => {
         setAmount(undefined);
         setActionError(undefined);
