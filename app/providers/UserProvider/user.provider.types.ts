@@ -29,6 +29,8 @@ export type UserContext = UserContextStateType & {
 
   // actions
   connect: () => void;
+  /** Connect with the given step (e.g. email code check), then sign in */
+  connectWithWallet: (connectWallet: () => Promise<unknown>) => Promise<void>;
   refetchUserAccountStatus: () => Promise<void>;
   signOut: () => void;
   changeUser: () => void;

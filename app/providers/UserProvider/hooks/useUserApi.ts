@@ -67,21 +67,33 @@ export const useUserApi = ({
   }, [connectMavrykWallet, disconnect, getIdentity]);
 
   /**
-   * disconnect user's wallet to DAPP & set context to no user state
+   * disconnect user's wallet to DAPP & set context to no user state.
+   * keepProviderSession: for automatic sign-outs (expired RWA session), so the
+   * email wallet signs back in without a new code.
    */
-  const signOut = useCallback(async () => {
-    try {
-      await tzktSocket?.stop();
+  const signOut = useCallback(
+    async ({
+      keepProviderSession = false,
+    }: { keepProviderSession?: boolean } = {}) => {
+      // A socket that fails to stop must not keep the wallet connected
+      try {
+        await tzktSocket?.stop();
+      } catch (e) {
+        console.error(`Failed to stop the tzkt socket: `, e);
+      }
       setTzktSocket(null);
 
-      await disconnect();
-
-      setUserCtxState(DEFAULT_USER);
-      setUserLoading(false);
-    } catch (e) {
-      console.error(`Failed to disconnect wallet: `, e);
-    }
-  }, [disconnect, setTzktSocket, setUserCtxState, setUserLoading, tzktSocket]);
+      try {
+        await disconnect({ keepProviderSession });
+      } catch (e) {
+        console.error(`Failed to disconnect wallet: `, e);
+      } finally {
+        setUserCtxState(DEFAULT_USER);
+        setUserLoading(false);
+      }
+    },
+    [disconnect, setTzktSocket, setUserCtxState, setUserLoading, tzktSocket]
+  );
 
   const returnValue = useMemo(
     () => ({

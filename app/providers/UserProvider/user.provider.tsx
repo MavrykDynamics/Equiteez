@@ -34,6 +34,7 @@ import {
   getHasOrdersForAddress,
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
+import { getSessionSyncAction } from "./helpers/sessionSync";
 import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
 export const userContext = React.createContext<UserContext>(undefined!);
@@ -48,7 +49,11 @@ type Props = {
  */
 export const UserProvider = ({ children }: Props) => {
   const wallet = useWalletContext();
-  const { identity: walletIdentity, isLoading: isWalletLoading } = wallet;
+  const {
+    identity: walletIdentity,
+    isLoading: isWalletLoading,
+    phase: walletPhase,
+  } = wallet;
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
 
@@ -74,7 +79,22 @@ export const UserProvider = ({ children }: Props) => {
     isAuthenticated && authenticatedWalletAddress
       ? authenticatedWalletAddress
       : null;
-  const isSwitchingAccountRef = useRef(false);
+  // connect → login or an account switch is running: the wallet may already
+  // be connected while the RWA session is not there yet
+  const [isAuthFlowActive, setIsAuthFlowActive] = useState(false);
+  const authFlowCountRef = useRef(0);
+
+  const runAuthFlow = useCallback(async (flow: () => Promise<void>) => {
+    authFlowCountRef.current += 1;
+    setIsAuthFlowActive(true);
+
+    try {
+      await flow();
+    } finally {
+      authFlowCountRef.current -= 1;
+      if (authFlowCountRef.current === 0) setIsAuthFlowActive(false);
+    }
+  }, []);
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
 
@@ -100,22 +120,38 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
     setTzktSocket,
   });
-  const switchAccount = useCallback(async () => {
-    isSwitchingAccountRef.current = true;
+  const switchAccount = useCallback(
+    () =>
+      runAuthFlow(async () => {
+        await changeUser();
+        await login();
+      }),
+    [changeUser, login, runAuthFlow]
+  );
 
-    try {
-      await changeUser();
-      await login();
-    } finally {
-      isSwitchingAccountRef.current = false;
-    }
-  }, [changeUser, login]);
+  const connectAndLogin = useCallback(
+    () =>
+      runAuthFlow(async () => {
+        await connect();
+        await login();
+      }),
+    [connect, login, runAuthFlow]
+  );
 
-  const connectAndLogin = useCallback(async () => {
-    await connect();
-    await login();
-  }, [connect, login]);
+  /**
+   * Connects with `connectWallet` (e.g. the email wallet's code check), then
+   * signs in to RWA with the connected wallet.
+   */
+  const connectWithWallet = useCallback(
+    (connectWallet: () => Promise<unknown>) =>
+      runAuthFlow(async () => {
+        await connectWallet();
+        await login();
+      }),
+    [login, runAuthFlow]
+  );
 
+  // The Sign out button: ends the wallet session (including Dynamic) and RWA
   const disconnectAndLogout = useCallback(async () => {
     await signOut();
     await logout();
@@ -232,8 +268,10 @@ export const UserProvider = ({ children }: Props) => {
   useEffect(() => {
     if (!IS_WEB) return;
 
+    // The RWA session ended (expired or signed out in another tab): drop the
+    // wallet here but keep the Dynamic session, so signing in needs no code
     const onAuthExpired = () => {
-      void signOut();
+      void signOut({ keepProviderSession: true });
     };
 
     window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
@@ -243,28 +281,23 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [IS_WEB, signOut]);
 
-  useEffect(() => {
-    if (!IS_WEB || isAuthLoading || isAuthenticated) return;
-    if (!accountAddress) return;
-
-    void signOut();
-  }, [IS_WEB, accountAddress, isAuthenticated, isAuthLoading, signOut]);
-
-  useEffect(() => {
-    if (!IS_WEB || isAuthLoading || !isAuthenticated) return;
-    if (isSwitchingAccountRef.current) return;
-    if (!accountAddress || !authenticatedWalletAddress) return;
-    if (accountAddress === authenticatedWalletAddress) return;
-
-    void logout();
-  }, [
-    IS_WEB,
+  const sessionSyncAction = getSessionSyncAction({
+    isWeb: IS_WEB,
+    isAuthLoading,
+    isAuthenticated,
+    isAuthFlowActive,
+    isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
     accountAddress,
     authenticatedWalletAddress,
-    isAuthenticated,
-    isAuthLoading,
-    logout,
-  ]);
+  });
+
+  useEffect(() => {
+    if (sessionSyncAction === "disconnect-wallet") {
+      void signOut({ keepProviderSession: true });
+    } else if (sessionSyncAction === "logout-rwa") {
+      void logout();
+    }
+  }, [logout, sessionSyncAction, signOut]);
 
   const providerValue = useMemo(() => {
     const isLoading =
@@ -280,6 +313,7 @@ export const UserProvider = ({ children }: Props) => {
       },
       isLoading,
       connect: connectAndLogin,
+      connectWithWallet,
       refetchUserAccountStatus,
       signOut: disconnectAndLogout,
       changeUser: switchAccount,
@@ -292,6 +326,7 @@ export const UserProvider = ({ children }: Props) => {
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
     connectAndLogin,
+    connectWithWallet,
     refetchUserAccountStatus,
     disconnectAndLogout,
     switchAccount,
