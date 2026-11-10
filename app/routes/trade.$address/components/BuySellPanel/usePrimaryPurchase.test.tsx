@@ -24,7 +24,10 @@ vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ userAddress: "wallet" }),
 }));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
-  useWalletContext: () => ({ dapp: { tezos: () => mocks.tezos } }),
+  useWalletContext: () => ({
+    getToolkit: () => mocks.tezos,
+    identity: { epoch: 1 },
+  }),
 }));
 vi.mock("~/lib/apis/rwa/freshness", () => ({
   FreshnessSource: { Chain: "chain" },

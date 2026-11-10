@@ -24,7 +24,6 @@ import {
 } from "./user.provider.types";
 import { useWalletContext } from "../WalletProvider/wallet.provider";
 import { useAppContext } from "../AppProvider/AppProvider";
-import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
@@ -48,16 +47,11 @@ type Props = {
  * 1. on changing user do not reopen socket, just update filter (invoke), currently hadn't found any example of it
  */
 export const UserProvider = ({ children }: Props) => {
-  const { dapp } = useWalletContext();
+  const wallet = useWalletContext();
+  const { identity: walletIdentity, isLoading: isWalletLoading } = wallet;
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
 
-  /**
-   * when undefined -> isLoading is true
-   * when null, there isn't active account -> isLoading false
-   * when active account was received -> isLoading false
-   */
-  const [account, setAccount] = useState<AccountInfo | null | undefined>();
   const [userCtxState, setUserCtxState] =
     useState<UserContextStateType>(DEFAULT_USER);
   const [userTzktTokens, setUserTzktTokens] = useState<UserTzKtTokenBalances>(
@@ -67,7 +61,8 @@ export const UserProvider = ({ children }: Props) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(true);
-  const accountAddress = account?.address ?? null;
+  // The connected wallet's mv1 (Mavryk Wallet or email wallet)
+  const accountAddress = walletIdentity?.address ?? null;
   const {
     authenticatedWalletAddress,
     logout,
@@ -99,7 +94,7 @@ export const UserProvider = ({ children }: Props) => {
   // returns methods to communicate with wallet and get data about account
   // as well as tzkt sockets
   const { connect, signOut, changeUser } = useUserApi({
-    DAPP_INSTANCE: dapp,
+    wallet,
     setUserLoading,
     setUserCtxState,
     tzktSocket,
@@ -126,28 +121,10 @@ export const UserProvider = ({ children }: Props) => {
     await logout();
   }, [logout, signOut]);
 
-  // Listening for active account changes with beacon
+  // The wallet provider restores the previous session on load
   useEffect(() => {
-    if (IS_WEB && dapp) {
-      let isMounted = true;
-
-      (async function () {
-        try {
-          await dapp.listenToActiveAccount((activeAccount) => {
-            if (isMounted) setAccount(activeAccount);
-          });
-        } catch (err) {
-          console.log(err);
-        } finally {
-          if (isMounted) setUserLoading(false);
-        }
-      })();
-
-      return () => {
-        isMounted = false;
-      };
-    }
-  }, [IS_WEB, dapp]);
+    setUserLoading(isWalletLoading);
+  }, [isWalletLoading]);
 
   useEffect(() => {
     if (isAuthLoading) return;

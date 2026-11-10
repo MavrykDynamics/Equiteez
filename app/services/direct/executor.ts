@@ -11,13 +11,15 @@ import type { AttemptStore } from "./attemptStore";
 import { fingerprintIntent, normalizeIntent } from "./fingerprint";
 import type { ActiveAttemptSlot } from "./guardedInjector";
 import { OperationFailedOnChainError } from "./operationResults";
-import { runDirectAttempt } from "./runDirectAttempt";
+import { runDirectAttempt, UnresolvedAttemptError } from "./runDirectAttempt";
 
 export type AttemptTracking = {
   identity: AttemptIdentity;
   store: AttemptStore;
   slot: ActiveAttemptSlot;
   isUserRejection?: (error: unknown) => boolean;
+  /** Re-reads receipts of unresolved attempts of this account */
+  reconcile?: () => Promise<void>;
 };
 
 export type AttemptHooks = {
@@ -51,32 +53,43 @@ export async function executeTrackedAction<T>({
   if (!tracking) return run(NO_HOOKS);
 
   const { store } = tracking;
-  const { result } = await runDirectAttempt({
-    ...tracking,
-    action,
-    intentFingerprint: intentFingerprintFor(action, intent),
-    execute: async ({ attempt, resolve }) => {
-      try {
-        return await run({
-          onSubmitted: (opHash) => {
-            // The guarded injector already recorded Dynamic broadcasts
-            if (store.get(attempt.attemptId)?.phase === "prepared") {
-              store.update(attempt.attemptId, {
-                phase: "injected",
-                ref: { mode: "mvrk", opHash },
-              });
-            }
-          },
-          onApplied: () => resolve("applied"),
-        });
-      } catch (error) {
-        if (error instanceof OperationFailedOnChainError) {
-          resolve("failed", error.message);
+  const runOnce = () =>
+    runDirectAttempt({
+      ...tracking,
+      action,
+      intentFingerprint: intentFingerprintFor(action, intent),
+      execute: async ({ attempt, resolve }) => {
+        try {
+          return await run({
+            onSubmitted: (opHash) => {
+              // The guarded injector already recorded Dynamic broadcasts
+              if (store.get(attempt.attemptId)?.phase === "prepared") {
+                store.update(attempt.attemptId, {
+                  phase: "injected",
+                  ref: { mode: "mvrk", opHash },
+                });
+              }
+            },
+            onApplied: () => resolve("applied"),
+          });
+        } catch (error) {
+          if (error instanceof OperationFailedOnChainError) {
+            resolve("failed", error.message);
+          }
+          throw error;
         }
-        throw error;
-      }
-    },
-  });
+      },
+    });
 
-  return result;
+  try {
+    return (await runOnce()).result;
+  } catch (error) {
+    // The blocking attempt may have resolved since: check its receipt once
+    if (!(error instanceof UnresolvedAttemptError) || !tracking.reconcile) {
+      throw error;
+    }
+
+    await tracking.reconcile();
+    return (await runOnce()).result;
+  }
 }

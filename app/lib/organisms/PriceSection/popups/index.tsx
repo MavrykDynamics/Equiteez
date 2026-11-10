@@ -138,10 +138,15 @@ const BuySellForm: FC<
   setIsOrderBookOpen,
   setOrderType,
 }) => {
-  const { dapp } = useWalletContext();
+  const { getToolkit, identity } = useWalletContext();
   const { hasOrders, userTokensBalances } = useUserContext();
 
-  const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
+  // A new toolkit whenever the connected wallet changes
+  const walletEpoch = identity?.epoch;
+  const mavrykToolkit = useMemo(
+    () => (walletEpoch === undefined ? undefined : (getToolkit() ?? undefined)),
+    [getToolkit, walletEpoch]
+  );
 
   const {
     error: depthError,

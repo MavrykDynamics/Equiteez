@@ -45,7 +45,9 @@ vi.mock("wagmi/actions", () => ({
   getAccount: () => ({ address: "0x1111111111111111111111111111111111111111" }),
 }));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
-  useWalletContext: () => ({}),
+  useWalletContext: () => ({
+    getIdentity: () => ({ address: mocks.account }),
+  }),
 }));
 vi.mock("~/contracts/usdtBridge.contract", () => ({
   executeUsdtBridge: mocks.execute,

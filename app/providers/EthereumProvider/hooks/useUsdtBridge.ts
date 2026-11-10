@@ -19,6 +19,7 @@ import {
   type UsdtBridgeProgress,
 } from "~/contracts/usdtBridge.contract";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { MavrykChainId } from "~/lib/mavryk/types";
 
 export type UsdtBridgeState = {
   operationId?: string;
@@ -42,7 +43,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
   scopeRef.current = session;
   const executionBusyRef = useRef(false);
   const recordRef = useRef<BridgeTransaction | null>(null);
-  const { dapp } = useWalletContext();
+  const { getIdentity } = useWalletContext();
   const [state, setState] = useState<UsdtBridgeState | null>(null);
   const stateRef = useRef<UsdtBridgeState | null>(null);
   const stateSessionRef = useRef(session);
@@ -142,11 +143,12 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
             throw new Error(
               "Your Ethereum account changed. Reconnect and try again."
             );
-          const [chainId, accounts, destinationAccount] = await Promise.all([
+          const [chainId, accounts] = await Promise.all([
             wallet.connector.getChainId(),
             wallet.connector.getAccounts(),
-            dapp?.getDAppClient().getActiveAccount(),
           ]);
+          // The connected Mavryk wallet: Mavryk Wallet or email wallet
+          const destination = getIdentity();
           assertCurrentRun();
           if (chainId !== USDT_BRIDGE.chainId)
             throw new Error("Switch your Ethereum wallet to Sepolia.");
@@ -154,13 +156,15 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
             throw new Error(
               "Your Ethereum account changed. Reconnect and try again."
             );
-          if (destinationAccount?.address !== recipient)
+          if (destination?.address !== recipient)
             throw new Error(
               "Your Mavryk account changed. Reconnect and try again."
             );
-          if (
-            destinationAccount.network.type !== USDT_BRIDGE.destinationNetwork
-          )
+          const isOnDestinationNetwork =
+            destination.provider === "dynamic"
+              ? destination.chainId === MavrykChainId.Basenet
+              : destination.walletNetwork === USDT_BRIDGE.destinationNetwork;
+          if (!isOnDestinationNetwork)
             throw new Error("Connect your Mavryk wallet on Basenet.");
         };
 
@@ -202,7 +206,7 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
     },
     [
       config,
-      dapp,
+      getIdentity,
       refreshBalance,
       updateState,
       trackingAccount,

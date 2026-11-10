@@ -30,7 +30,10 @@ vi.mock("~/contracts/hooks/useContractAction", () => ({
   }),
 }));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
-  useWalletContext: () => ({ dapp: { tezos: () => mocks.toolkit } }),
+  useWalletContext: () => ({
+    getToolkit: () => mocks.toolkit,
+    identity: { epoch: 1 },
+  }),
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({

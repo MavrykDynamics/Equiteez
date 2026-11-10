@@ -100,7 +100,7 @@ export function WithdrawFundsModal({
   const invalidateFreshQueries = useFreshQueryInvalidation();
   const { bug } = useToasterContext();
   const { userAddress } = usePortfolioContext();
-  const { dapp } = useWalletContext();
+  const { getToolkit } = useWalletContext();
   const { assets, isLoading: isAssetsLoading } = useWithdrawableAssets();
   const [step, setStep] = useState<WithdrawStep>("form");
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -243,7 +243,9 @@ export function WithdrawFundsModal({
     setIsRecipientTouched(true);
     setIsAmountTouched(true);
 
-    if (!selectedAsset || !userAddress || !dapp) {
+    const tezos = getToolkit();
+
+    if (!selectedAsset || !userAddress || !tezos) {
       if (!selectedAsset) {
         return;
       }
@@ -268,7 +270,6 @@ export function WithdrawFundsModal({
     }
 
     try {
-      const tezos = dapp.tezos();
       const tokenSlug =
         selectedAsset.metadata.address === MVRK_CONTRACT_ADDRESS
           ? MVRK_ASSET_SLUG

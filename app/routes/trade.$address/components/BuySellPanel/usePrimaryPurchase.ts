@@ -22,10 +22,13 @@ import { useLaunchChannel } from "~/providers/NotificationsProvider/hooks/useLau
 
 export function usePrimaryPurchaseConfig(assetAddress: string) {
   const { userAddress } = useUserContext();
-  const { dapp } = useWalletContext();
+  const { getToolkit, identity } = useWalletContext();
+  const walletEpoch = identity?.epoch;
   const tezos = useMemo(
-    () => dapp?.tezos() ?? new MavrykToolkit(basenetNetRpcnode),
-    [dapp]
+    () =>
+      (walletEpoch === undefined ? null : getToolkit()) ??
+      new MavrykToolkit(basenetNetRpcnode),
+    [getToolkit, walletEpoch]
   );
   const queryClient = useQueryClient();
   const queryKey = useMemo(

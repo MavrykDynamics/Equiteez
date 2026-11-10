@@ -71,7 +71,7 @@ export const useContractAction = <G extends object>(
   toastMessages: ContractActionToastProps | undefined = undefined,
   contractActionOptions: ContractActionOptions = {}
 ) => {
-  const { dapp, directExecution } = useWalletContext();
+  const { getToolkit, directExecution } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys, hidePopup } = usePopupContext();
   const { success, bug, loading, warning, hideToasterMessage } =
@@ -127,7 +127,7 @@ export const useContractAction = <G extends object>(
     confirmationRef.current = null;
 
     try {
-      const tezos = dapp?.tezos();
+      const tezos = getToolkit();
 
       if (!tezos) return;
 
@@ -234,8 +234,8 @@ export const useContractAction = <G extends object>(
     actionFn,
     args,
     bug,
-    dapp,
     directExecution,
+    getToolkit,
     dispatchIfMounted,
     hidePopup,
     hideToasterMessage,
