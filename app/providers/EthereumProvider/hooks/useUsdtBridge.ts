@@ -20,6 +20,8 @@ import {
 } from "~/contracts/usdtBridge.contract";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { MavrykChainId } from "~/lib/mavryk/types";
+import { getActionAvailability } from "~/providers/WalletProvider/capabilities";
+import { toCapabilityContext } from "~/providers/WalletProvider/useActionAvailability";
 
 export type UsdtBridgeState = {
   operationId?: string;
@@ -160,6 +162,11 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
             throw new Error(
               "Your Mavryk account changed. Reconnect and try again."
             );
+          const availability = getActionAvailability(
+            "bridge.deposit",
+            toCapabilityContext(destination)
+          );
+          if (!availability.isAllowed) throw new Error(availability.reason);
           const isOnDestinationNetwork =
             destination.provider === "dynamic"
               ? destination.chainId === MavrykChainId.Basenet

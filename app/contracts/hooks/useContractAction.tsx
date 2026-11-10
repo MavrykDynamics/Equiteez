@@ -20,6 +20,8 @@ import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForce
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { unknownToError } from "~/errors/error";
 import { executeTrackedAction } from "~/services/direct/executor";
+import { assertActionAvailable } from "~/providers/WalletProvider/capabilities";
+import { toCapabilityContext } from "~/providers/WalletProvider/useActionAvailability";
 import type {
   ContractActionConfirmation,
   ContractActionLifecycleCallbacks,
@@ -71,7 +73,7 @@ export const useContractAction = <G extends object>(
   toastMessages: ContractActionToastProps | undefined = undefined,
   contractActionOptions: ContractActionOptions = {}
 ) => {
-  const { getToolkit, directExecution } = useWalletContext();
+  const { getIdentity, getToolkit, directExecution } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys, hidePopup } = usePopupContext();
   const { success, bug, loading, warning, hideToasterMessage } =
@@ -131,6 +133,15 @@ export const useContractAction = <G extends object>(
 
       if (!tezos) return;
 
+      const actionName =
+        action ?? popupDetails?.key ?? (actionFn.name || "action");
+      const identity = getIdentity();
+
+      // Also enforced for a stale or forgotten control
+      if (identity) {
+        assertActionAvailable(actionName, toCapabilityContext(identity));
+      }
+
       dispatchIfMounted(STATUS_PENDING);
 
       const lifecycleCallbacks =
@@ -138,7 +149,7 @@ export const useContractAction = <G extends object>(
 
       await executeTrackedAction({
         tracking: directExecution?.tracking ?? null,
-        action: action ?? popupDetails?.key ?? (actionFn.name || "action"),
+        action: actionName,
         intent: args,
         run: (hooks) =>
           Promise.resolve(
@@ -235,6 +246,7 @@ export const useContractAction = <G extends object>(
     args,
     bug,
     directExecution,
+    getIdentity,
     getToolkit,
     dispatchIfMounted,
     hidePopup,

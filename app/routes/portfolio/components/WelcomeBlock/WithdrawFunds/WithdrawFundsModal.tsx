@@ -36,6 +36,8 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { getActionAvailability } from "~/providers/WalletProvider/capabilities";
+import { toCapabilityContext } from "~/providers/WalletProvider/useActionAvailability";
 import {
   NotifierChannel,
   NotifierWalletEvent,
@@ -100,7 +102,7 @@ export function WithdrawFundsModal({
   const invalidateFreshQueries = useFreshQueryInvalidation();
   const { bug } = useToasterContext();
   const { userAddress } = usePortfolioContext();
-  const { getToolkit } = useWalletContext();
+  const { getIdentity, getToolkit } = useWalletContext();
   const { assets, isLoading: isAssetsLoading } = useWithdrawableAssets();
   const [step, setStep] = useState<WithdrawStep>("form");
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -251,6 +253,16 @@ export function WithdrawFundsModal({
       }
 
       bug("Wallet or token data is unavailable. Please try again.");
+      return;
+    }
+
+    const identity = getIdentity();
+    const availability = identity
+      ? getActionAvailability("withdraw", toCapabilityContext(identity))
+      : null;
+
+    if (availability && !availability.isAllowed) {
+      bug(availability.reason);
       return;
     }
 

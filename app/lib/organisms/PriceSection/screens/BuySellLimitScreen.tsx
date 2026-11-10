@@ -8,6 +8,7 @@ import { Button } from "~/lib/atoms/Button";
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
+import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
 import { fromAssetSlug } from "~/lib/assets";
 
 // eslint-disable-next-line import/no-named-as-default
@@ -83,7 +84,7 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setLimitPrice,
   status,
   isOrderDataLoading = false,
-  validationMessage,
+  validationMessage: formValidationMessage,
 }) => {
   const { baseTokenSlug: slug } = metadata;
 
@@ -128,6 +129,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
+  const actionAvailability = useActionAvailability(
+    isBuyAction ? "orderbook.buy" : "orderbook.sell"
+  );
+  // A form problem first; otherwise why this wallet cannot trade here.
+  // || not ??: an empty form message must not hide the wallet's reason
+  const validationMessage =
+    formValidationMessage ||
+    (actionAvailability.isAllowed ? undefined : actionAvailability.reason);
   const displayTickSize = useMemo(
     () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
     [rawTickSize, stableCoinMetadata.decimals]

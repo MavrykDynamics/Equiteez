@@ -351,6 +351,7 @@ function PrimaryPurchaseForm({
         tokenAddress={asset.address}
         actionType={BUY}
         actionCb={invokeAction}
+        capabilityAction="primary.purchase"
         amount={paymentAmount}
         setAmount={setBudget}
         total={paymentAmount}

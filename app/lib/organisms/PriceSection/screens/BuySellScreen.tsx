@@ -7,6 +7,8 @@ import { Button } from "~/lib/atoms/Button";
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
+import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
+import type { WalletAction } from "~/providers/WalletProvider/capabilities";
 import { fromAssetSlug } from "~/lib/assets";
 
 // eslint-disable-next-line import/no-named-as-default
@@ -47,6 +49,8 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  /** Capability checked for the main action; defaults to orderbook buy/sell */
+  capabilityAction?: WalletAction;
   marketAmounts?: { quantity: BigNumber; consideration: BigNumber };
   primaryPurchase?: {
     receiveAmount: BigNumber | undefined;
@@ -71,7 +75,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   status,
   hasQuoteError = false,
   isOrderDataLoading = false,
-  validationMessage,
+  validationMessage: formValidationMessage,
+  capabilityAction,
   primaryPurchase,
   marketAmounts,
 }) => {
@@ -117,6 +122,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
+  const actionAvailability = useActionAvailability(
+    capabilityAction ?? (isBuyAction ? "orderbook.buy" : "orderbook.sell")
+  );
+  // A form problem first; otherwise why this wallet cannot trade here.
+  // || not ??: an empty form message must not hide the wallet's reason
+  const validationMessage =
+    formValidationMessage ||
+    (actionAvailability.isAllowed ? undefined : actionAvailability.reason);
   const hasTotalError = isBuyAction
     ? amount
       ? amount.gt(usdBalance)

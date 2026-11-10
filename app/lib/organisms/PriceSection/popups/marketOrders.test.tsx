@@ -32,7 +32,11 @@ vi.mock("~/contracts/hooks/useContractAction", () => ({
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
   useWalletContext: () => ({
     getToolkit: () => mocks.toolkit,
-    identity: { epoch: 1 },
+    identity: {
+      epoch: 1,
+      provider: "mavryk_extension",
+      chainId: "NetXJMfAoC7pZSW",
+    },
   }),
 }));
 vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
