@@ -37,6 +37,7 @@
     "@mavrykdynamics/beacon-dapp": "^4.2.3",
     "@mavrykdynamics/taquito": "^20.1.0",
     "@mavrykdynamics/taquito-beacon-wallet": "^20.1.0",
+    "@mavrykdynamics/taquito-local-forging": "20.1.0",
     "@mavrykdynamics/taquito-utils": "20.1.0",
     "@microsoft/signalr": "^8.0.0",
     "@noble/curves": "2.2.0",
