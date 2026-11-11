@@ -27,7 +27,10 @@ import { fetchGetOperationsByHash, isKnownChainId } from "~/lib/apis/tzkt/api";
 import type { AttemptIdentity } from "~/services/direct/attempt.types";
 import { getBrowserAttemptStore } from "~/services/direct/attemptStore";
 import type { AttemptTracking } from "~/services/direct/executor";
-import type { ActiveAttemptSlot } from "~/services/direct/guardedInjector";
+import {
+  describeError,
+  type ActiveAttemptSlot,
+} from "~/services/direct/guardedInjector";
 import { reconcileAttempts } from "~/services/direct/reconcile";
 
 import { dappClient, getRpcNode } from "./WalletCore.client";
@@ -299,7 +302,10 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
 
       if (session && !keepProviderSession) {
         const logoutError = await logoutDynamic(session.client);
-        if (logoutError) console.warn("Dynamic logout failed", logoutError);
+        // Name and message only: an SDK error may carry request details
+        if (logoutError) {
+          console.warn("Dynamic logout failed:", describeError(logoutError));
+        }
       }
     },
     [commit, startEpoch]
@@ -431,7 +437,10 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     if (!identity) return;
     reconcile().catch((reconcileError) =>
-      console.warn("Could not reconcile transactions", reconcileError)
+      console.warn(
+        "Could not reconcile transactions:",
+        describeError(reconcileError)
+      )
     );
   }, [identity, reconcile]);
 

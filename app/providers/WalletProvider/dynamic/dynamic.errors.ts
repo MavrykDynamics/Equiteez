@@ -43,8 +43,8 @@ export class MultipleDynamicWalletsError extends Error {
 }
 
 export class DynamicWalletNotFoundError extends Error {
-  constructor() {
-    super("Your email wallet could not be found.");
+  constructor(message = "Your email wallet could not be found.") {
+    super(message);
     this.name = "DynamicWalletNotFoundError";
   }
 }

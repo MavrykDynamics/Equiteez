@@ -15,7 +15,10 @@ import {
   verifyDigestSignature,
 } from "~/lib/mavryk/keys";
 
-import { getDynamicEnvironmentId } from "./dynamic.config";
+import {
+  getDynamicEnvironmentId,
+  isDynamicAutoCreateEnabled,
+} from "./dynamic.config";
 import {
   DynamicIdentityChangedError,
   DynamicInitError,
@@ -46,6 +49,9 @@ const SDK_READY_TIMEOUT_MS = 12_000;
 // How long to wait for a restored session's wallet list before deciding the
 // wallet is missing. An empty list while restoring is not "no wallet".
 const WALLETS_RESTORE_TIMEOUT_MS = 5_000;
+// With auto-create on, Dynamic creates the wallet right after sign-up; wait
+// this long for it before asking the user to try again
+const AUTO_CREATED_WALLET_TIMEOUT_MS = 30_000;
 const CREATE_WALLET_LOCK = "equiteez:dynamic-create-wallet";
 // Dynamic's chain id for the embedded ed25519 wallet
 const SOL_CHAIN = "SOL";
@@ -193,7 +199,10 @@ function getDynamicUserId(client: DynamicClient): string {
 /** Resolves once the embedded SOL wallets are known, or after the timeout. */
 function waitForEmbeddedSolWallets(
   client: DynamicClient,
-  timeoutMs: number
+  timeoutMs: number,
+  // false while Dynamic may still be creating the wallet: "none yet" is then
+  // not an answer
+  stopWhenMissing = true
 ): Promise<DynamicWallet[]> {
   const current = getEmbeddedSolWallets(client);
 
@@ -214,6 +223,9 @@ function waitForEmbeddedSolWallets(
     const timer = setTimeout(finish, timeoutMs);
 
     client.wallets.on("userWalletsChanged", onWalletsChanged);
+
+    if (!stopWhenMissing) return;
+
     // Dynamic answering "no embedded wallet" ends the wait early
     client.wallets.embedded.getWallet().then(
       (wallet) => {
@@ -230,10 +242,15 @@ function waitForEmbeddedSolWallets(
  */
 export async function resolveDynamicWallet(
   client: DynamicClient,
-  timeoutMs = WALLETS_RESTORE_TIMEOUT_MS
+  timeoutMs = WALLETS_RESTORE_TIMEOUT_MS,
+  stopWhenMissing = true
 ): Promise<DynamicWallet | null> {
   const userId = getDynamicUserId(client);
-  const wallets = await waitForEmbeddedSolWallets(client, timeoutMs);
+  const wallets = await waitForEmbeddedSolWallets(
+    client,
+    timeoutMs,
+    stopWhenMissing
+  );
   const savedWalletId = getSavedDynamicWalletId(userId);
   const savedWallet = savedWalletId
     ? wallets.find((wallet) => wallet.id === savedWalletId)
@@ -284,9 +301,28 @@ let ensureWalletPromise: Promise<DynamicWallet> | null = null;
  * creating a second key.
  */
 export function ensureDynamicWallet(
-  client: DynamicClient
+  client: DynamicClient,
+  { autoCreate = isDynamicAutoCreateEnabled() }: { autoCreate?: boolean } = {}
 ): Promise<DynamicWallet> {
   ensureWalletPromise ??= withCrossTabLock(CREATE_WALLET_LOCK, async () => {
+    if (autoCreate) {
+      // Dynamic creates the wallet on sign-up. Creating one here as well
+      // would make a second key with another mv1: only wait for it.
+      const autoCreated = await resolveDynamicWallet(
+        client,
+        AUTO_CREATED_WALLET_TIMEOUT_MS,
+        false
+      );
+
+      if (!autoCreated) {
+        throw new DynamicWalletNotFoundError(
+          "Your email wallet is still being set up. Please try again in a moment."
+        );
+      }
+
+      return autoCreated;
+    }
+
     const existing = await resolveDynamicWallet(client);
 
     if (existing) return existing;

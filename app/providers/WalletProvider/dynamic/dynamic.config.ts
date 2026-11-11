@@ -8,6 +8,9 @@
  *   withdrawals, bridge deposits) before they are marked tested:
  *   "true" for all of them, or a comma-separated list such as
  *   "orderbook.buy,orderbook.sell" to enable them one by one
+ * DYNAMIC_WALLET_AUTO_CREATE: "true" when the Dynamic environment creates
+ *   the embedded wallet on sign-up ("Auto-create wallet on signup" in the
+ *   Dynamic dashboard); the app then never creates one itself
  */
 const PLACEHOLDER_ENVIRONMENT_ID = "YOUR_DYNAMIC_ENVIRONMENT_ID";
 
@@ -37,4 +40,9 @@ export function isDynamicDirectEnabled(action: string): boolean {
     .split(",")
     .map((entry) => entry.trim())
     .includes(action);
+}
+
+/** Dynamic creates the wallet on sign-up: the app only waits for it. */
+export function isDynamicAutoCreateEnabled(): boolean {
+  return process.env.DYNAMIC_WALLET_AUTO_CREATE === "true";
 }

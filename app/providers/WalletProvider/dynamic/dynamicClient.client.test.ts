@@ -226,6 +226,35 @@ describe("ensureDynamicWallet", () => {
   });
 });
 
+describe("ensureDynamicWallet with auto-create on sign-up", () => {
+  it("waits for the wallet Dynamic creates and never creates a second one", async () => {
+    // Right after sign-up Dynamic reports no wallet yet, then adds it
+    const { client, fake, state, emit } = createFakeClient();
+
+    const pending = ensureDynamicWallet(client, { autoCreate: true });
+    await Promise.resolve();
+    state.wallets = [embeddedWallet("w1")];
+    emit("userWalletsChanged", state.wallets);
+
+    expect((await pending).id).toBe("w1");
+    expect(fake.wallets.embedded.createWallet).not.toHaveBeenCalled();
+  });
+
+  it("asks to try again when the wallet does not show up, still without creating one", async () => {
+    vi.useFakeTimers();
+    const { client, fake } = createFakeClient();
+
+    const pending = ensureDynamicWallet(client, { autoCreate: true });
+    const assertion = expect(pending).rejects.toThrow(
+      "Your email wallet is still being set up"
+    );
+    await vi.advanceTimersByTimeAsync(30_000);
+
+    await assertion;
+    expect(fake.wallets.embedded.createWallet).not.toHaveBeenCalled();
+  });
+});
+
 describe("signDigest32", () => {
   const signer = () =>
     new InMemorySigner(b58cencode(SEED, prefix[Prefix.EDSK2]));

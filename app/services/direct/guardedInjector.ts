@@ -171,10 +171,15 @@ export class GuardedInjector implements Injector {
   }
 }
 
+/**
+ * Short, safe text of an error for logs and stored attempts: long hex runs
+ * (operation bytes, signatures) are masked, the rest is truncated.
+ */
 export function describeError(error: unknown): string {
-  if (error instanceof Error)
-    return `${error.name}: ${error.message}`.slice(0, 300);
-  return String(error).slice(0, 300);
+  const text =
+    error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+
+  return text.replace(/[0-9a-f]{64,}/gi, "<hex>").slice(0, 300);
 }
 
 export function attachGuardedInjector(

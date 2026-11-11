@@ -22,6 +22,7 @@ import {
 import { fingerprintIntent } from "./fingerprint";
 import {
   BroadcastOutcomeUnknownError,
+  describeError,
   GuardedInjector,
   isDefiniteNodeRejection,
   UntrackedBroadcastError,
@@ -651,5 +652,17 @@ describe("fingerprintIntent", () => {
     expect(fingerprintIntent({ amount: "10" })).not.toBe(
       fingerprintIntent({ amount: "10.0" })
     );
+  });
+});
+
+describe("describeError", () => {
+  it("masks operation bytes and signatures and stays short", () => {
+    const signedBytes = "ab".repeat(200);
+    const text = describeError(
+      new Error(`Http error response: (500) ${signedBytes}`)
+    );
+
+    expect(text).toBe("Error: Http error response: (500) <hex>");
+    expect(describeError("x".repeat(500))).toHaveLength(300);
   });
 });
