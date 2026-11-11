@@ -10,6 +10,12 @@
 import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import type { ForgeParams } from "@mavrykdynamics/taquito-local-forging";
 
+import {
+  assertMatchesExpectedOperation,
+  getExpectedOperation,
+  OperationMismatchError,
+} from "~/services/direct/expectedOperation";
+
 import { DynamicMavrykSigner } from "./DynamicMavrykSigner";
 import {
   signDigest32,
@@ -60,7 +66,18 @@ export async function createDynamicToolkit({
       keys: identity,
       signDigest: (digest) =>
         signDigest32({ client, identity, digest, isStale }),
-      beforeSign,
+      // An embedded wallet shows no operation details: sign only what the
+      // app prepared and the user reviewed for this toolkit
+      beforeSign: async (operation) => {
+        const expected = getExpectedOperation(toolkit);
+
+        if (!expected) {
+          throw new OperationMismatchError("no reviewed transaction");
+        }
+
+        assertMatchesExpectedOperation(operation.contents, expected);
+        await beforeSign?.(operation);
+      },
     })
   );
 

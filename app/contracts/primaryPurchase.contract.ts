@@ -15,6 +15,7 @@ import type {
 import type { BatchOperationKindType } from "./types";
 import type { ContractActionLifecycleCallbacks } from "./actions.type";
 import { confirmWalletOperation } from "./execution";
+import { expectOperation } from "~/services/direct/expectedOperation";
 import {
   assertNativeBalance,
   summarizeNativeCost,
@@ -120,12 +121,17 @@ export async function primaryPurchaseBatch({
   return batch;
 }
 
+// Network cost the buyer pays: fees of every operation (a reveal included)
+// plus storage burn
 function summarizePrimaryFees(
-  estimates: { suggestedFeeMumav: number }[]
+  estimates: { suggestedFeeMumav: number; burnFeeMumav: number }[]
 ): PrimaryPurchaseFees {
   return estimates.reduce(
     (total, estimate) => ({
-      gasFee: total.gasFee + BigInt(estimate.suggestedFeeMumav),
+      gasFee:
+        total.gasFee +
+        BigInt(estimate.suggestedFeeMumav) +
+        BigInt(estimate.burnFeeMumav),
     }),
     { gasFee: 0n }
   );
@@ -150,8 +156,14 @@ export async function primaryPurchase(params: PurchaseParams) {
     if (params.execution?.checkNativeBudget) {
       await assertNativeBalance(params.tezos, summarizeNativeCost(estimates));
     }
-    const operation = await params.tezos.wallet.batch(batch).send();
-    await confirmWalletOperation(operation, params, 1);
+    // What an embedded signer checks the bytes against before signing
+    const release = expectOperation(params.tezos, batch);
+    try {
+      const operation = await params.tezos.wallet.batch(batch).send();
+      await confirmWalletOperation(operation, params, 1);
+    } finally {
+      release();
+    }
   } catch (error) {
     throw primaryPurchaseError(error);
   }

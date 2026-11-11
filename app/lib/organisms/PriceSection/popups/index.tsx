@@ -8,6 +8,10 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+  formatMvrk,
+  summarizeNativeCost,
+} from "~/services/direct/nativeBudget";
 
 //screens
 import { BuySellScreen } from "../screens/BuySellScreen";
@@ -83,6 +87,12 @@ import { TOASTER_UPDATE_DATA_AFTER_ACTION_DATA } from "~/providers/ToasterProvid
 import * as gtag from "app/utils/gtags.client";
 
 type MarketOrderMode = "market" | "limit";
+
+type NetworkFeeState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; costMumav: BigNumber; balanceMumav?: BigNumber }
+  | { status: "error" };
 
 const MARKET_ORDER_MODE_OPTIONS = [
   { id: "market", label: "Market" },
@@ -171,8 +181,22 @@ const BuySellForm: FC<
       ? asset.orderbook?.buy_order_fee
       : asset.orderbook?.sell_order_fee;
 
-  // Gas fee estimation state --------------------------------------------
-  const [gasFee, setGasFee] = useState<BigNumber>(ZERO);
+  // Network fee estimation state ------------------------------------------
+  // costMumav: fees of every operation (reveal included) + storage burn.
+  // balanceMumav: read for email wallets, which show no fee review of their
+  // own; Mavryk Wallet reviews fees in the extension.
+  const [networkFee, setNetworkFee] = useState<NetworkFeeState>({
+    status: "idle",
+  });
+  const networkFeeRef = useRef(networkFee);
+  networkFeeRef.current = networkFee;
+  // Unavailable is shown as "-", never as a zero fee
+  const gasFee =
+    networkFee.status === "ready"
+      ? networkFee.costMumav.dividedBy(MILLION)
+      : networkFee.status === "error"
+        ? undefined
+        : ZERO;
 
   // --------------------------------------------
 
@@ -689,6 +713,8 @@ const BuySellForm: FC<
       minOrderValidationMessage ||
       marketBuyBudgetValidationMessage;
 
+  const isEmailWallet = identity?.provider === "dynamic";
+
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
     if (
@@ -699,11 +725,12 @@ const BuySellForm: FC<
       hasLimitPriceTickError ||
       orderValidationMessage
     ) {
-      setGasFee(ZERO);
+      setNetworkFee({ status: "idle" });
       return;
     }
 
     let cancelled = false;
+    setNetworkFee({ status: "loading" });
 
     const t = window.setTimeout(async () => {
       try {
@@ -725,16 +752,34 @@ const BuySellForm: FC<
 
         if (cancelled) return;
 
-        if (res.actionSuccess) {
-          setGasFee(
-            new BigNumber(res.data.totalSuggestedFeeMutez).dividedBy(MILLION)
-          );
-        } else {
-          setGasFee(ZERO);
+        if (!res.actionSuccess) {
+          setNetworkFee({ status: "error" });
+          return;
+        }
+
+        const { totalMumav } = summarizeNativeCost(
+          res.data.batchOperations ?? []
+        );
+        const balanceMumav = isEmailWallet
+          ? new BigNumber(
+              (
+                await mavrykToolkit.mv.getBalance(
+                  await mavrykToolkit.wallet.pkh()
+                )
+              ).toString()
+            )
+          : undefined;
+
+        if (!cancelled) {
+          setNetworkFee({
+            status: "ready",
+            costMumav: totalMumav,
+            balanceMumav,
+          });
         }
       } catch (e) {
         if (!cancelled) {
-          setGasFee(ZERO);
+          setNetworkFee({ status: "error" });
         }
       }
     }, 400);
@@ -745,6 +790,7 @@ const BuySellForm: FC<
     };
   }, [
     hasLimitPriceTickError,
+    isEmailWallet,
     isOrderDataLoading,
     isMarketTypeMarket,
     limitBuyProps,
@@ -756,6 +802,31 @@ const BuySellForm: FC<
     orderValidationMessage,
     total,
   ]);
+
+  // Email wallets cannot review the fee in a wallet window: the panel is the
+  // review, so trading waits for a known fee the balance covers
+  const networkFeeValidationMessage = (() => {
+    if (!isEmailWallet || orderValidationMessage || isOrderDataLoading) {
+      return undefined;
+    }
+
+    switch (networkFee.status) {
+      case "loading":
+        return "Estimating the network fee…";
+      case "error":
+        return "Couldn't estimate the network fee. Try again.";
+      case "ready":
+        return networkFee.balanceMumav?.lt(networkFee.costMumav)
+          ? `Not enough MVRK for the network fee: ${formatMvrk(
+              networkFee.costMumav
+            )} MVRK needed, ${formatMvrk(networkFee.balanceMumav)} available.`
+          : undefined;
+      default:
+        return undefined;
+    }
+  })();
+  const tradeValidationMessage =
+    orderValidationMessage || networkFeeValidationMessage;
 
   // actual contract calls and their handlers ---------------
 
@@ -779,18 +850,28 @@ const BuySellForm: FC<
       setTotal(undefined);
       setLimitPrice(undefined);
       setOrderExpiryPeriodId(null);
-      setGasFee(ZERO);
+      setNetworkFee({ status: "idle" });
       setIsOrderBookOpen(false);
       onSuccessfulTransaction?.(metadata);
     },
     [onSuccessfulTransaction, orderType, setIsOrderBookOpen]
   );
 
+  // The fee shown when the user clicks is the one they approved
+  const getExecutionOverrides = useCallback(() => {
+    const fee = networkFeeRef.current;
+
+    return fee.status === "ready"
+      ? { approvedNetworkCostMumav: fee.costMumav.toFixed() }
+      : {};
+  }, []);
+
   const contractActionOptions = useMemo(
     () => ({
       onSuccess: handleSuccessfulTransaction,
+      getExecutionOverrides,
     }),
-    [handleSuccessfulTransaction]
+    [getExecutionOverrides, handleSuccessfulTransaction]
   );
 
   const buyActionOptions = useMemo(
@@ -859,7 +940,7 @@ const BuySellForm: FC<
   }, []);
 
   const handleConfirmedBuySellAction = useCallback(() => {
-    if (isOrderDataLoading || orderValidationMessage || hasLimitPriceTickError)
+    if (isOrderDataLoading || tradeValidationMessage || hasLimitPriceTickError)
       return;
     buySellActionCb();
 
@@ -889,7 +970,7 @@ const BuySellForm: FC<
     isMarketTypeMarket,
     orderType,
     isOrderDataLoading,
-    orderValidationMessage,
+    tradeValidationMessage,
     hasLimitPriceTickError,
   ]);
 
@@ -1073,7 +1154,7 @@ const BuySellForm: FC<
               orderbookFee={orderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading}
-              validationMessage={orderValidationMessage}
+              validationMessage={tradeValidationMessage}
             />
           ) : (
             <BuySellLimitScreen
@@ -1096,7 +1177,7 @@ const BuySellForm: FC<
               orderbookFee={orderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading}
-              validationMessage={orderValidationMessage}
+              validationMessage={tradeValidationMessage}
             />
           ))}
       </div>

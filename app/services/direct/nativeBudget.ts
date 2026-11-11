@@ -84,14 +84,74 @@ export async function assertNativeBalance(
   }
 }
 
-/** Estimates the batch (with reveal if needed) and checks the MVRK balance. */
+// How far the cost at signing may exceed the cost the user reviewed: 20%, or
+// at least 0.01 MVRK, since Basenet fees are small enough for a percentage
+// alone to trip on noise
+export const FEE_INCREASE_TOLERANCE_RATIO = 0.2;
+export const MIN_FEE_INCREASE_TOLERANCE_MUMAV = 10_000;
+
+/** The network cost grew past what the user reviewed: nothing was sent. */
+export class NetworkFeeChangedError extends Error {
+  constructor(
+    public readonly approvedMumav: BigNumber,
+    public readonly actualMumav: BigNumber
+  ) {
+    super(
+      `The network fee changed from ${formatMvrk(
+        approvedMumav
+      )} to ${formatMvrk(actualMumav)} MVRK. Check it and try again.`
+    );
+    this.name = "NetworkFeeChangedError";
+  }
+}
+
+export function isWithinApprovedCost(
+  actualMumav: BigNumber.Value,
+  approvedMumav: BigNumber.Value
+): boolean {
+  const approved = new BigNumber(approvedMumav);
+  const allowance = BigNumber.max(
+    approved.times(FEE_INCREASE_TOLERANCE_RATIO),
+    MIN_FEE_INCREASE_TOLERANCE_MUMAV
+  );
+
+  return new BigNumber(actualMumav).lte(approved.plus(allowance));
+}
+
+/**
+ * Throws NetworkFeeChangedError when fees + burn grew past the reviewed
+ * network cost. A native amount is the user's own input, not a fee, and is
+ * left out on both sides.
+ */
+export function assertWithinApprovedCost(
+  cost: NativeCost,
+  approvedMumav: BigNumber.Value | undefined
+) {
+  if (approvedMumav === undefined) return;
+
+  const networkCostMumav = cost.feeMumav.plus(cost.burnMumav);
+
+  if (!isWithinApprovedCost(networkCostMumav, approvedMumav)) {
+    throw new NetworkFeeChangedError(
+      new BigNumber(approvedMumav),
+      networkCostMumav
+    );
+  }
+}
+
+/**
+ * Estimates the batch (with reveal if needed), checks it against the cost
+ * the user reviewed, then checks the MVRK balance.
+ */
 export async function assertNativeBudget(
   tezos: Pick<MavrykToolkit, "mv" | "wallet" | "estimate">,
-  batch: Parameters<MavrykToolkit["estimate"]["batch"]>[0]
+  batch: Parameters<MavrykToolkit["estimate"]["batch"]>[0],
+  approvedMumav?: BigNumber.Value
 ): Promise<NativeCost> {
   const estimates = await tezos.estimate.batch(batch);
   const cost = summarizeNativeCost(estimates, batch as NativeTransfer[]);
 
+  assertWithinApprovedCost(cost, approvedMumav);
   await assertNativeBalance(tezos, cost);
   return cost;
 }

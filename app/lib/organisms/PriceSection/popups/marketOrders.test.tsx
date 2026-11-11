@@ -13,9 +13,14 @@ const mocks = vi.hoisted(() => ({
   estimateBuy: vi.fn(),
   estimateSell: vi.fn(),
   balances: {} as Record<string, string>,
-  toolkit: {},
+  toolkit: {} as Record<string, unknown>,
   userAddress: "wallet",
   openConnectWallet: vi.fn(),
+  walletProvider: "mavryk_extension",
+  isDirectEnabled: true,
+  lastActionOptions: undefined as
+    | { getExecutionOverrides?: () => Record<string, unknown> }
+    | undefined,
 }));
 vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookBuy: mocks.buy,
@@ -24,20 +29,33 @@ vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookSellEstimation: mocks.estimateSell,
 }));
 vi.mock("~/contracts/hooks/useContractAction", () => ({
-  useContractAction: (action: (props: unknown) => void, props: unknown) => ({
-    invokeAction: () => action(props),
-    status: "idle",
-  }),
+  useContractAction: (
+    action: (props: unknown) => void,
+    props: unknown,
+    _popup: unknown,
+    _toasts: unknown,
+    options: typeof mocks.lastActionOptions
+  ) => {
+    mocks.lastActionOptions = options;
+    return {
+      invokeAction: () => action(props),
+      status: "idle",
+    };
+  },
 }));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
   useWalletContext: () => ({
     getToolkit: () => mocks.toolkit,
     identity: {
       epoch: 1,
-      provider: "mavryk_extension",
+      provider: mocks.walletProvider,
       chainId: "NetXJMfAoC7pZSW",
     },
   }),
+}));
+vi.mock("~/providers/WalletProvider/dynamic/dynamic.config", () => ({
+  // Email wallets may trade in these tests, so fee checks are what is seen
+  isDynamicDirectEnabled: () => mocks.isDirectEnabled,
 }));
 vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
   useConnectWallet: () => mocks.openConnectWallet,
@@ -134,7 +152,10 @@ vi.mock("../components/FeesCard/FeesCard", () => ({
   }) => (
     <>
       <output data-total>{totalAmount.toFixed()}</output>
-      <output data-gas-fee>{gasFee.toFixed()}</output>
+      {/* Like FeesCard: an unavailable fee is "-", never zero */}
+      <output data-gas-fee>
+        {gasFee === undefined ? "-" : gasFee.toFixed()}
+      </output>
     </>
   ),
 }));
@@ -204,6 +225,9 @@ const asset = {
 
 beforeEach(() => {
   mocks.userAddress = "wallet";
+  mocks.walletProvider = "mavryk_extension";
+  mocks.isDirectEnabled = true;
+  mocks.toolkit = {};
   mocks.openConnectWallet.mockReset();
   vi.clearAllMocks();
   vi.useFakeTimers();
@@ -271,11 +295,18 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     expect(mocks.sell).not.toHaveBeenCalled();
   });
 
-  it("uses the suggested gas fee and clears it after a failed estimate", async () => {
+  it("shows fees plus storage burn, and no fee after a failed estimate", async () => {
     const estimateMock = side === BUY ? mocks.estimateBuy : mocks.estimateSell;
     estimateMock.mockResolvedValueOnce({
       actionSuccess: true,
-      data: { totalSuggestedFeeMutez: 444, totalCost: 1154 },
+      data: {
+        totalSuggestedFeeMutez: 444,
+        totalCost: 1154,
+        batchOperations: [
+          { suggestedFeeMumav: 400, burnFeeMumav: 0 },
+          { suggestedFeeMumav: 44, burnFeeMumav: 0 },
+        ],
+      },
     });
     render(side);
     change("Pay with", side === BUY ? "29" : "0.96");
@@ -285,7 +316,8 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     );
     change("Pay with", side === BUY ? "28" : "0.95");
     await estimate();
-    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("0");
+    // Unavailable, not free
+    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("-");
   });
   it.each([
     ["10000", "960000", "0.96", "28.8"],
@@ -479,5 +511,96 @@ describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
     expect(submit().disabled).toBe(true);
     expect(mocks.estimateBuy).not.toHaveBeenCalled();
     expect(mocks.estimateSell).not.toHaveBeenCalled();
+  });
+});
+
+describe("Network fee for email wallets", () => {
+  const estimateWithFee = (feeMumav: number, burnMumav = 0) =>
+    mocks.estimateBuy.mockResolvedValue({
+      actionSuccess: true,
+      data: {
+        batchOperations: [
+          { suggestedFeeMumav: feeMumav, burnFeeMumav: burnMumav },
+        ],
+      },
+    });
+  const withMvrkBalance = (mumav: number) => {
+    mocks.walletProvider = "dynamic";
+    mocks.toolkit = {
+      mv: { getBalance: vi.fn(async () => new BigNumber(mumav)) },
+      wallet: { pkh: vi.fn(async () => "mv1email") },
+    };
+  };
+  const text = () => container.textContent ?? "";
+
+  it("waits for the fee before the email wallet can trade", async () => {
+    withMvrkBalance(1_000_000);
+    estimateWithFee(1_000);
+    render(BUY);
+    change("Pay with", "29");
+
+    expect(text()).toContain("Estimating the network fee…");
+    expect(submit().disabled).toBe(true);
+    expect(mocks.buy).not.toHaveBeenCalled();
+  });
+
+  it("blocks trading without enough MVRK for fee and burn", async () => {
+    withMvrkBalance(1_000);
+    estimateWithFee(1_000, 500);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain(
+      "Not enough MVRK for the network fee: 0.001500 MVRK needed, 0.001000 available."
+    );
+    expect(submit().disabled).toBe(true);
+    expect(mocks.buy).not.toHaveBeenCalled();
+  });
+
+  it("blocks trading when the fee cannot be estimated", async () => {
+    withMvrkBalance(1_000_000);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain("Couldn't estimate the network fee. Try again.");
+    expect(submit().disabled).toBe(true);
+  });
+
+  it("trades with the shown fee as the approved budget", async () => {
+    withMvrkBalance(1_000_000);
+    estimateWithFee(1_000, 500);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(submit().disabled).toBe(false);
+    expect(mocks.buy).toHaveBeenCalledOnce();
+    expect(mocks.lastActionOptions?.getExecutionOverrides?.()).toEqual({
+      approvedNetworkCostMumav: "1500",
+    });
+  });
+
+  it("says the action is unavailable before any fee message while it is gated", async () => {
+    withMvrkBalance(1_000);
+    estimateWithFee(1_000, 500);
+    mocks.isDirectEnabled = false;
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain("Not available for email wallets yet.");
+    expect(text()).not.toContain("Not enough MVRK");
+    expect(submit().disabled).toBe(true);
+  });
+
+  it("leaves Mavryk Wallet without these checks: the extension reviews fees", async () => {
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).not.toContain("network fee");
+    expect(submit().disabled).toBe(false);
   });
 });

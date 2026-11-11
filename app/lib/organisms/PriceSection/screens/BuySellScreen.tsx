@@ -125,11 +125,11 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   const actionAvailability = useActionAvailability(
     capabilityAction ?? (isBuyAction ? "orderbook.buy" : "orderbook.sell")
   );
-  // A form problem first; otherwise why this wallet cannot trade here.
-  // || not ??: an empty form message must not hide the wallet's reason
+  // Why this wallet cannot trade here comes first (fee or form problems are
+  // moot then); || not ??, so an empty message hides nothing
   const validationMessage =
-    formValidationMessage ||
-    (actionAvailability.isAllowed ? undefined : actionAvailability.reason);
+    (actionAvailability.isAllowed ? undefined : actionAvailability.reason) ||
+    formValidationMessage;
   const hasTotalError = isBuyAction
     ? amount
       ? amount.gt(usdBalance)

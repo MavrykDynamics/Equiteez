@@ -26,6 +26,7 @@ import type {
   ContractActionConfirmation,
   ContractActionLifecycleCallbacks,
   ContractActionSuccessMetadata,
+  DirectExecutionOptions,
 } from "../actions.type";
 import { classifyContractActionError } from "./contractActionError";
 
@@ -64,6 +65,11 @@ type ContractActionOptions = {
    * same action with the same arguments is one intent.
    */
   action?: string;
+  /**
+   * Read when the action starts, e.g. the network cost shown to the user.
+   * Kept out of the action's arguments, so it does not change the intent.
+   */
+  getExecutionOverrides?: () => Partial<DirectExecutionOptions>;
 };
 
 export const useContractAction = <G extends object>(
@@ -78,7 +84,7 @@ export const useContractAction = <G extends object>(
   const { showPopup, popupKeys, hidePopup } = usePopupContext();
   const { success, bug, loading, warning, hideToasterMessage } =
     useToasterContext();
-  const { onSuccess, action } = contractActionOptions;
+  const { onSuccess, action, getExecutionOverrides } = contractActionOptions;
   const hasSubmittedRef = useRef(false);
   const confirmationRef = useRef<ContractActionConfirmation | null>(null);
   const isMountedRef = useRef(true);
@@ -156,7 +162,10 @@ export const useContractAction = <G extends object>(
             actionFn({
               ...args,
               tezos,
-              execution: directExecution?.options,
+              execution: directExecution && {
+                ...directExecution.options,
+                ...getExecutionOverrides?.(),
+              },
               onTransactionSubmitted: (submission) => {
                 if (submission) hooks.onSubmitted(submission.opHash);
                 lifecycleCallbacks.onTransactionSubmitted?.(submission);
@@ -246,6 +255,7 @@ export const useContractAction = <G extends object>(
     args,
     bug,
     directExecution,
+    getExecutionOverrides,
     getIdentity,
     getToolkit,
     dispatchIfMounted,

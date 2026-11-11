@@ -29,6 +29,11 @@ export type DirectExecutionOptions = {
    * embedded wallets, which show no fee review of their own.
    */
   checkNativeBudget?: boolean;
+  /**
+   * Network cost (fees + burn, mumav) the user saw before confirming. The
+   * action stops if the cost at sending grew past it.
+   */
+  approvedNetworkCostMumav?: string;
 };
 
 export type ContractActionSuccessMetadata = {

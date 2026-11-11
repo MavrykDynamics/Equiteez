@@ -15,6 +15,11 @@ import {
   UnsupportedSigningDomainError,
 } from "./DynamicMavrykSigner";
 import {
+  expectOperation,
+  OperationMismatchError,
+} from "~/services/direct/expectedOperation";
+
+import {
   createDynamicToolkit,
   WrongNetworkError,
 } from "./dynamicToolkit.client";
@@ -203,6 +208,31 @@ describe("createDynamicToolkit", () => {
     expect(await toolkit.signer.publicKeyHash()).toBe(KEYS.address);
     // The default wallet provider forwards to this signer, not Beacon
     expect(await toolkit.wallet.pkh()).toBe(KEYS.address);
+  });
+
+  it("signs only the operation the app registered as reviewed", async () => {
+    const toolkit = await createDynamicToolkit({
+      client,
+      identity,
+      rpcUrl: "https://rpc.test",
+      expectedChainId: MavrykChainId.Basenet,
+      createToolkit: toolkitOnChain(MavrykChainId.Basenet),
+    });
+    const forged = await revealAndTransfer();
+
+    // Nothing reviewed for this toolkit: refused before the wallet is asked
+    await expect(
+      toolkit.signer.sign(forged, new Uint8Array([3]))
+    ).rejects.toBeInstanceOf(OperationMismatchError);
+
+    // Reviewed something else: refused too
+    const release = expectOperation(toolkit, [
+      { to: OTHER.address, amount: "0.002" },
+    ]);
+    await expect(
+      toolkit.signer.sign(forged, new Uint8Array([3]))
+    ).rejects.toBeInstanceOf(OperationMismatchError);
+    release();
   });
 
   it("refuses a node on another network before attaching a signer", async () => {

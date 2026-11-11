@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { BigNumber } from "bignumber.js";
 import type { MavrykToolkit } from "@mavrykdynamics/taquito";
 
+import { getExpectedOperation } from "~/services/direct/expectedOperation";
+
 import { confirmWalletOperation, sendAndConfirmBatch } from "./execution";
 import { classifyContractActionError } from "./hooks/contractActionError";
 
@@ -132,6 +134,59 @@ describe("sendAndConfirmBatch", () => {
       execution: { checkNativeBudget: true },
     });
     expect(enough.send).toHaveBeenCalledOnce();
+  });
+
+  it("stops when the fee grew past the one the user approved", async () => {
+    // Estimate: 65_750 mumav; approved 50_000 + 20% = 60_000
+    const rich = toolkit({ balanceMumav: 10 ** 9 });
+
+    await expect(
+      sendAndConfirmBatch(rich.tezos, batch, {
+        execution: {
+          checkNativeBudget: true,
+          approvedNetworkCostMumav: "50000",
+        },
+      })
+    ).rejects.toMatchObject({ name: "NetworkFeeChangedError" });
+    expect(rich.send).not.toHaveBeenCalled();
+
+    await sendAndConfirmBatch(rich.tezos, batch, {
+      execution: {
+        checkNativeBudget: true,
+        approvedNetworkCostMumav: "60000",
+      },
+    });
+    expect(rich.send).toHaveBeenCalledOnce();
+  });
+
+  it("compares the approved cost with fees and burn, not the amount sent", async () => {
+    const { tezos, send } = toolkit({ balanceMumav: 10 ** 9 });
+    const sendMvrk = [
+      { kind: "transaction", to: "mv1recipient", amount: 5 },
+    ] as never;
+
+    // 65_750 mumav of fees + burn; 5 MVRK sent is the user's own amount
+    await sendAndConfirmBatch(tezos, sendMvrk, {
+      execution: {
+        checkNativeBudget: true,
+        approvedNetworkCostMumav: "65750",
+      },
+    });
+    expect(send).toHaveBeenCalledOnce();
+  });
+
+  it("exposes the reviewed batch to the signer only while sending", async () => {
+    const { tezos, send } = toolkit({ balanceMumav: 10 ** 9 });
+    let expectedDuringSend: unknown;
+    send.mockImplementationOnce(async () => {
+      expectedDuringSend = getExpectedOperation(tezos);
+      return sentOperation();
+    });
+
+    await sendAndConfirmBatch(tezos, batch);
+
+    expect(expectedDuringSend).toBe(batch);
+    expect(getExpectedOperation(tezos)).toBeNull();
   });
 
   it("treats a failed estimate as an error, not as zero cost", async () => {

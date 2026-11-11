@@ -47,6 +47,8 @@ function findContractCode(value: unknown, depth = 0): string | undefined {
 // rewritten into a retryable "RPC unavailable" message
 const DIRECT_EXECUTION_ERRORS = new Set([
   "InsufficientMvrkError",
+  "NetworkFeeChangedError",
+  "OperationMismatchError",
   "OperationFailedOnChainError",
   "OperationOutcomeUnknownError",
   "BroadcastOutcomeUnknownError",

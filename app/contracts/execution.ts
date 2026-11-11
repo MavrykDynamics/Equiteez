@@ -4,6 +4,7 @@
  */
 import type { MavrykToolkit } from "@mavrykdynamics/taquito";
 
+import { expectOperation } from "~/services/direct/expectedOperation";
 import { assertNativeBudget } from "~/services/direct/nativeBudget";
 import {
   inspectOperationResults,
@@ -66,10 +67,21 @@ export async function sendAndConfirmBatch(
   confirmations?: number
 ) {
   if (callbacks.execution?.checkNativeBudget) {
-    await assertNativeBudget(tezos, batch);
+    await assertNativeBudget(
+      tezos,
+      batch,
+      callbacks.execution.approvedNetworkCostMumav
+    );
   }
 
-  const operation = await tezos.wallet.batch(batch).send();
+  // What an embedded signer checks the bytes against before signing
+  const release = expectOperation(tezos, batch);
 
-  return confirmWalletOperation(operation, callbacks, confirmations);
+  try {
+    const operation = await tezos.wallet.batch(batch).send();
+
+    return await confirmWalletOperation(operation, callbacks, confirmations);
+  } finally {
+    release();
+  }
 }
