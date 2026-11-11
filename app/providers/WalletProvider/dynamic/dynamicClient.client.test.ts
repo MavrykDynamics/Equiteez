@@ -387,6 +387,17 @@ describe("Session", () => {
     await assertion;
   });
 
+  it("gives up on a logout that never answers", async () => {
+    vi.useFakeTimers();
+    const { client, fake } = createFakeClient();
+    fake.auth.logout.mockImplementationOnce(() => new Promise(() => {}));
+
+    const pending = logoutDynamic(client, 1_000);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(await pending).toBeInstanceOf(Error);
+  });
+
   it("surfaces an SDK load error as an init error", async () => {
     const { client, state } = createFakeClient();
     state.loaded = false;

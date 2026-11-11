@@ -108,6 +108,8 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   const connectSeqRef = useRef(0);
   const dappRef = useRef<Dapp | null>(null);
   const dynamicSessionRef = useRef<DynamicSession | null>(null);
+  // Dynamic logout still running after Sign out; the next connect waits for it
+  const pendingLogoutRef = useRef<Promise<void> | null>(null);
   // The wallet the user chose: Beacon events are ignored while it is Dynamic
   const chosenProviderRef = useRef<WalletProviderKind | null>(null);
   // Attempt slot of the current identity; the Dynamic injector reads it
@@ -301,12 +303,21 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         }
       }
 
+      // Sign out does not wait for Dynamic's own logout (its iframe can be
+      // slow): the app is signed out already. A new connect waits for it, so
+      // it never finds the old session and skips the code.
       if (session && !keepProviderSession) {
-        const logoutError = await logoutDynamic(session.client);
-        // Name and message only: an SDK error may carry request details
-        if (logoutError) {
-          console.warn("Dynamic logout failed:", describeError(logoutError));
-        }
+        const pending = logoutDynamic(session.client).then((logoutError) => {
+          // Name and message only: an SDK error may carry request details
+          if (logoutError) {
+            console.warn("Dynamic logout failed:", describeError(logoutError));
+          }
+          if (pendingLogoutRef.current === pending) {
+            pendingLogoutRef.current = null;
+          }
+        });
+
+        pendingLogoutRef.current = pending;
       }
     },
     [commit, startEpoch]
@@ -333,6 +344,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
     if (!isDynamicWalletEnabled()) return null;
 
     const readyClient = async () => {
+      await pendingLogoutRef.current;
       const client = await loadDynamicClient();
       await waitForDynamicReady(client);
       return client;

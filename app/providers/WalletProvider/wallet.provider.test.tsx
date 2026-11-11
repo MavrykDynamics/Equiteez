@@ -398,6 +398,46 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
+  it("signs out at once while Dynamic's logout is still running, and connects only after it", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    await renderProvider();
+
+    let finishLogout!: () => void;
+    mocks.logoutDynamic.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishLogout = () => resolve(null);
+        })
+    );
+
+    await act(async () => {
+      await wallet.disconnect();
+    });
+    expect(wallet.identity).toBeNull();
+    expect(wallet.phase).toBe("disconnected");
+
+    const calls = mocks.openDynamicSession.mock.calls.length;
+    let started = false;
+    let starting!: Promise<unknown>;
+    act(() => {
+      starting = wallet.dynamic!.start().then(() => {
+        started = true;
+      });
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(started).toBe(false);
+    expect(mocks.openDynamicSession.mock.calls.length).toBe(calls);
+
+    await act(async () => {
+      finishLogout();
+      await starting;
+    });
+    expect(started).toBe(true);
+  });
+
   it("clears the wallet locally even when the remote logout fails", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
     mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };

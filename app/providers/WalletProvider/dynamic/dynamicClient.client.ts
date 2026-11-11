@@ -55,6 +55,8 @@ const AUTO_CREATED_WALLET_TIMEOUT_MS = 30_000;
 // verifyOTP resolves before the signed-in user reaches the client's state
 // (it comes from the iframe as a separate message): wait this long for it
 const AUTHENTICATED_USER_TIMEOUT_MS = 10_000;
+// Dynamic's logout can hang in its iframe; a new sign-in waits at most this
+const LOGOUT_TIMEOUT_MS = 10_000;
 const CREATE_WALLET_LOCK = "equiteez:dynamic-create-wallet";
 // Dynamic's chain id for the embedded ed25519 wallet
 const SOL_CHAIN = "SOL";
@@ -200,13 +202,26 @@ export async function resendEmailOtp(client: DynamicClient) {
 
 /** Ends the Dynamic session. Never throws: local cleanup must always run. */
 export async function logoutDynamic(
-  client: DynamicClient
+  client: DynamicClient,
+  timeoutMs = LOGOUT_TIMEOUT_MS
 ): Promise<unknown | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
   try {
-    await client.auth.logout();
+    await Promise.race([
+      client.auth.logout(),
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("Dynamic logout timed out")),
+          timeoutMs
+        );
+      }),
+    ]);
     return null;
   } catch (error) {
     return error;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
