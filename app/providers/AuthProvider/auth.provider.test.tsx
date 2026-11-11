@@ -61,7 +61,7 @@ const DYNAMIC_IDENTITY: WalletIdentity = {
   providerWalletId: "dyn-wallet",
   address: "mv1Dynamic",
   publicKey: "edpkDynamic",
-  chainId: "NetXJMfAoC7pZSW",
+  chainId: "NetXmtMsNf69w1w",
   environment: "dev",
   epoch: 3,
 };

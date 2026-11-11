@@ -156,7 +156,7 @@ describe("WalletProvider: Mavryk Wallet", () => {
       provider: "mavryk_extension",
       address: "mv1Beacon",
       publicKey: "edpkBeacon",
-      chainId: "NetXJMfAoC7pZSW",
+      chainId: "NetXmtMsNf69w1w",
     });
     expect(wallet.getToolkit()).toBe(mocks.beacon.toolkit);
     // Extension wallets review fees themselves

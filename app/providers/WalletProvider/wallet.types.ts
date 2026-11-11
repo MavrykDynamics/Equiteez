@@ -53,8 +53,12 @@ export type DynamicConnectApi = {
   start: () => Promise<DynamicConnectResult>;
   sendOtp: (email: string) => Promise<"sent" | "already-authenticated">;
   resendOtp: () => Promise<void>;
-  /** Verifies the code, then restores or creates the wallet */
-  verifyOtp: (code: string) => Promise<void>;
+  /**
+   * Verifies the code, then restores or creates the wallet. `onAccepted` runs
+   * once Dynamic accepts the code: the code is used up from then on, and a
+   * later failure is retried with start(), not with the same code.
+   */
+  verifyOtp: (code: string, onAccepted?: () => void) => Promise<void>;
   /** After MultipleDynamicWalletsError: connect the chosen wallet */
   selectWallet: (walletId: string) => Promise<void>;
 };

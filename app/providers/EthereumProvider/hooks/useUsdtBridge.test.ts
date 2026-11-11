@@ -259,7 +259,7 @@ it("re-checks the destination Mavryk wallet before every bridge step", async () 
   mocks.identity = {
     address: "recipient",
     provider: "mavryk_extension",
-    chainId: "NetXJMfAoC7pZSW",
+    chainId: "NetXmtMsNf69w1w",
     walletNetwork: "basenet",
   };
   mocks.execute.mockImplementation(() => new Promise(() => undefined));
@@ -279,7 +279,7 @@ it("re-checks the destination Mavryk wallet before every bridge step", async () 
   mocks.identity = {
     address: "recipient",
     provider: "dynamic",
-    chainId: "NetXJMfAoC7pZSW",
+    chainId: "NetXmtMsNf69w1w",
   };
   await expect(assertWallets()).rejects.toThrow(
     "Not available for email wallets yet."

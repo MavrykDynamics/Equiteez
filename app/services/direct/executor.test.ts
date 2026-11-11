@@ -9,7 +9,7 @@ import { UnresolvedAttemptError } from "./runDirectAttempt";
 
 const identity: AttemptIdentity = {
   environment: "dev",
-  chainId: "NetXJMfAoC7pZSW",
+  chainId: "NetXmtMsNf69w1w",
   address: "mv1source",
   provider: "mavryk_extension",
   walletId: "beacon",

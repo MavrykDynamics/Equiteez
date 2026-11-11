@@ -46,7 +46,7 @@ const addressOf = (fill: number) =>
 const SOURCE = addressOf(1);
 const IDENTITY: AttemptIdentity = {
   environment: "dev",
-  chainId: "NetXJMfAoC7pZSW",
+  chainId: "NetXmtMsNf69w1w",
   address: SOURCE,
   provider: "dynamic",
   walletId: "w1",

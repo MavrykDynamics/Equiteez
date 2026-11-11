@@ -362,8 +362,9 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       },
       sendOtp: async (email) => sendEmailOtp(await readyClient(), email),
       resendOtp: async () => resendEmailOtp(await readyClient()),
-      verifyOtp: async (code) => {
+      verifyOtp: async (code, onAccepted) => {
         await verifyEmailOtp(await readyClient(), code);
+        onAccepted?.();
         await establishOrThrow({ mode: "ensure" });
       },
       selectWallet: (walletId) =>

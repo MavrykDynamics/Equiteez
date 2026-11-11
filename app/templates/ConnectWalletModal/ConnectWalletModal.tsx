@@ -86,7 +86,8 @@ export function ConnectWalletModal({
       onError,
     }: {
       connectStep: () => Promise<unknown>;
-      stage: ConnectStage;
+      /** Read on failure: a step can move on, e.g. once a code is accepted */
+      stage: ConnectStage | (() => ConnectStage);
       label: string;
       onError: (message: string) => Step;
     }) => {
@@ -108,7 +109,10 @@ export function ConnectWalletModal({
       } catch (error) {
         if (!isCurrent(run)) return;
 
-        const view = describeConnectError(error, stage);
+        const view = describeConnectError(
+          error,
+          typeof stage === "function" ? stage() : stage
+        );
 
         setStep(
           view.kind === "select-wallet"
@@ -207,11 +211,22 @@ export function ConnectWalletModal({
     event.preventDefault();
     if (!dynamic || !code.trim()) return;
 
+    // Dynamic accepts a code once. A failure after that (network, wallet,
+    // RWA sign-in) must not send the user back to re-enter a used-up code:
+    // "Try again" reopens the wallet from the live session instead.
+    let codeAccepted = false;
+
     void connectAndSignIn({
-      connectStep: () => dynamic.verifyOtp(code),
-      stage: "code",
+      connectStep: () =>
+        dynamic.verifyOtp(code, () => {
+          codeAccepted = true;
+        }),
+      stage: () => (codeAccepted ? "connect" : "code"),
       label: "Checking your code…",
-      onError: (message) => ({ name: "code", error: message }),
+      onError: (message) =>
+        codeAccepted
+          ? { name: "failed", message }
+          : { name: "code", error: message },
     });
   };
 

@@ -49,7 +49,7 @@ vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
     identity: {
       epoch: 1,
       provider: mocks.walletProvider,
-      chainId: "NetXJMfAoC7pZSW",
+      chainId: "NetXmtMsNf69w1w",
     },
   }),
 }));

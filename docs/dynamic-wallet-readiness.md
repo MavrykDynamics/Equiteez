@@ -2,7 +2,7 @@
 
 Branch `MAV-4111-dynamic-wallet`, November 11, 2026. Covers DYN-FE-01…04, 09, 10, 13, 14 and 15 for the MVRK-paid (direct) route. Gasless (DYN-FE-05/07/08/11) and Dynamic KYC (DYN-FE-12) are out of this release.
 
-Everything below is proven by unit and component tests and a local browser check of the UI. Nothing has yet been signed by a real Dynamic wallet or executed on Basenet: that is the live checklist at the end.
+Everything below is proven by unit and component tests and a local browser check of the UI. A real Dynamic wallet has signed in to RWA (live checklist item 1); nothing has been executed on Basenet yet: that is the rest of the live checklist at the end.
 
 ## 1. What a user gets
 
@@ -84,7 +84,7 @@ Move an action from `gated` to `tested` only after its live check below passes.
 
 | Owner | Needed | Status |
 | --- | --- | --- |
-| Backend (DYN-BE-01) | `/auth/verify` accepts `walletProvider: "dynamic"` with `edpk`/`edsig` for a never-revealed `mv1` | not confirmed yet |
+| Backend (DYN-BE-01) | `/auth/verify` accepts `walletProvider: "dynamic"` with `edpk`/`edsig` for a never-revealed `mv1` | works in Sandbox (live sign-in, November 11) |
 | Backend / product | Live Dynamic environment and production origin | not started |
 | Backend (DYN-BE-02/03) | Dynamic KYC onboarding and eligibility | not started |
 
@@ -92,7 +92,7 @@ Move an action from `gated` to `tested` only after its live check below passes.
 
 Record public evidence only: SDK version, operation hashes, receipts. Never OTPs, JWTs or signatures.
 
-1. New email → code → wallet created once (no second wallet after reload or double click) → `mv1` shown → RWA sign-in succeeds.
+1. **Passed** (localhost, Sandbox). New email → code → wallet created once (no second wallet after reload or double click) → `mv1` shown → RWA sign-in succeeds.
 2. Reload: session and the same `mv1` restored. Switch to Mavryk Wallet and back: same `mv1`, no new code (the Dynamic session is kept). Sign out, then sign in with the same email: a code is needed (Sign out ends the Dynamic session), same `mv1`.
 3. Another device or browser: same email gives the same `mv1`.
 4. Fund the `mv1` with MVRK (faucet) and USDT (bridge or transfer); the bridge deposit lands on the email wallet.

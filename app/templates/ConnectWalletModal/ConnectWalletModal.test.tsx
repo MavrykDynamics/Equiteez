@@ -146,7 +146,10 @@ describe("ConnectWalletModal", () => {
     await type("Verification code", "123456");
     await submit();
 
-    expect(mocks.dynamic.verifyOtp).toHaveBeenCalledWith("123456");
+    expect(mocks.dynamic.verifyOtp).toHaveBeenCalledWith(
+      "123456",
+      expect.any(Function)
+    );
     expect(mocks.login).toHaveBeenCalledOnce();
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
@@ -185,6 +188,34 @@ describe("ConnectWalletModal", () => {
     expect(text()).toContain("Enter your code");
     expect(mocks.login).not.toHaveBeenCalled();
     expect(mocks.onClose).not.toHaveBeenCalled();
+  });
+
+  it("does not ask for the used-up code again when a later step fails", async () => {
+    // Dynamic accepted the code, then the wallet could not be opened
+    mocks.dynamic.verifyOtp.mockImplementation(
+      async (_code: string, onAccepted?: () => void) => {
+        onAccepted?.();
+        throw Object.assign(new Error("chain"), { name: "WrongNetworkError" });
+      }
+    );
+    mocks.dynamic.start.mockResolvedValueOnce("needs-email");
+    await render("email");
+    await type("Email", "a@b.co");
+    await submit();
+    await type("Verification code", "123456");
+    await submit();
+
+    expect(text()).toContain("Couldn't sign in");
+    expect(text()).toContain(CONNECT_ERROR_MESSAGES.network);
+    expect(text()).not.toContain(CONNECT_ERROR_MESSAGES.invalidCode);
+
+    // Try again reopens the wallet from the live session, without a code
+    mocks.dynamic.start.mockResolvedValueOnce("connected");
+    await click("Try again");
+
+    expect(mocks.dynamic.verifyOtp).toHaveBeenCalledOnce();
+    expect(mocks.login).toHaveBeenCalledOnce();
+    expect(mocks.onClose).toHaveBeenCalledOnce();
   });
 
   it("starts the resend countdown after sending a code", async () => {
