@@ -55,6 +55,17 @@ import { AssetIcon } from "~/templates/AssetIcon";
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import { USER_ACCOUNT_STATUS_QUERY } from "~/providers/UserProvider/queries/user.query";
 import { getIsKycedForAddress } from "~/providers/UserProvider/helpers/userStatus.helpers";
+import { sendAndConfirmBatch } from "~/contracts/execution";
+import { classifyContractActionError } from "~/contracts/hooks/contractActionError";
+import { executeTrackedAction } from "~/services/direct/executor";
+import {
+  formatMvrk,
+  summarizeNativeCost,
+} from "~/services/direct/nativeBudget";
+
+import { OpKind } from "@mavrykdynamics/taquito";
+
+import { buildWithdrawalBatch, nativeMaxAmount } from "./withdrawal";
 
 type WithdrawStep = "form" | "processing" | "success";
 
@@ -63,46 +74,15 @@ type WithdrawFundsModalProps = {
   onClose: () => void;
 };
 
-const getOperationHash = (operation: unknown) => {
-  if (!operation || typeof operation !== "object") return "";
-
-  if ("opHash" in operation && typeof operation.opHash === "string") {
-    return operation.opHash;
-  }
-
-  if ("hash" in operation && typeof operation.hash === "string") {
-    return operation.hash;
-  }
-
-  return "";
-};
-
-const getConfirmationLevel = (confirmation: unknown) => {
-  if (!confirmation || typeof confirmation !== "object") return undefined;
-  if (!("block" in confirmation)) return undefined;
-
-  const { block } = confirmation;
-  if (!block || typeof block !== "object" || !("header" in block)) {
-    return undefined;
-  }
-
-  const { header } = block;
-  if (!header || typeof header !== "object" || !("level" in header)) {
-    return undefined;
-  }
-
-  return typeof header.level === "number" ? header.level : undefined;
-};
-
 export function WithdrawFundsModal({
   isOpen,
   onClose,
 }: WithdrawFundsModalProps) {
   const queryClient = useQueryClient();
   const invalidateFreshQueries = useFreshQueryInvalidation();
-  const { bug } = useToasterContext();
+  const { bug, warning } = useToasterContext();
   const { userAddress } = usePortfolioContext();
-  const { getIdentity, getToolkit } = useWalletContext();
+  const { getIdentity, getToolkit, directExecution } = useWalletContext();
   const { assets, isLoading: isAssetsLoading } = useWithdrawableAssets();
   const [step, setStep] = useState<WithdrawStep>("form");
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -281,11 +261,40 @@ export function WithdrawFundsModal({
       return;
     }
 
+    const isNative = selectedAsset.metadata.address === MVRK_CONTRACT_ADDRESS;
+    const tokenSlug = isNative ? MVRK_ASSET_SLUG : selectedAsset.tokenSlug;
+    let submittedHash = "";
+
+    const refreshAfterConfirmation = async (
+      operationHash: string,
+      level: number
+    ) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["rwa-wallet"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["rwa-wallet-portfolio"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["rwa-wallet-portfolio-history"],
+        }),
+        invalidateFreshQueries("fetchWalletTransferHistory", {
+          level,
+          source: FreshnessSource.Chain,
+        }),
+        invalidateFreshQueries("fetchWalletActivitySummary", {
+          level,
+          source: FreshnessSource.Chain,
+        }),
+      ]);
+
+      if (activeOperationHashRef.current === operationHash) {
+        setIsWalletConfirmed(true);
+      }
+    };
+
     try {
-      const tokenSlug =
-        selectedAsset.metadata.address === MVRK_CONTRACT_ADDRESS
-          ? MVRK_ASSET_SLUG
-          : selectedAsset.tokenSlug;
+      setIsSubmitting(true);
+
       const transferParams = await toTransferParams(
         tezos,
         tokenSlug,
@@ -294,61 +303,82 @@ export function WithdrawFundsModal({
         normalizedRecipientAddress,
         requestedAmount
       );
+      const batch = buildWithdrawalBatch(
+        isKTAddress(selectedAsset.metadata.address)
+          ? {
+              kind: "token",
+              params: (
+                await loadContract(tezos, selectedAsset.metadata.address)
+              ).methodsObject
+                .transfer(transferParams)
+                .toTransferParams(),
+            }
+          : {
+              kind: "native",
+              to: normalizedRecipientAddress,
+              amount: requestedAmount,
+            }
+      );
 
-      setIsSubmitting(true);
+      // Shared direct send: MVRK budget and reviewed-operation checks for
+      // email wallets, every result checked, duplicates blocked
+      await executeTrackedAction({
+        tracking: directExecution?.tracking ?? null,
+        action: "withdraw",
+        intent: {
+          asset: tokenSlug,
+          recipient: normalizedRecipientAddress,
+          amount: requestedAmount.toFixed(),
+        },
+        run: (hooks) =>
+          sendAndConfirmBatch(tezos, batch, {
+            execution: directExecution?.options,
+            onTransactionSubmitted: (submission) => {
+              if (!submission) return;
 
-      const operation = isKTAddress(selectedAsset.metadata.address)
-        ? await (
-            await loadContract(tezos, selectedAsset.metadata.address)
-          ).methodsObject
-            .transfer(transferParams)
-            .send()
-        : await tezos.wallet
-            .transfer(
-              transferParams as Parameters<typeof tezos.wallet.transfer>[0]
-            )
-            .send();
-
-      const operationHash = getOperationHash(operation);
-      activeOperationHashRef.current = operationHash;
-      setTransactionHash(operationHash);
-      setIsWalletConfirmed(false);
-      setIsFallbackDelayElapsed(false);
-      setStep("processing");
-
-      void (async () => {
-        try {
-          const confirmation = await operation.confirmation();
-          const level = getConfirmationLevel(confirmation);
-
-          await Promise.all([
-            queryClient.invalidateQueries({ queryKey: ["rwa-wallet"] }),
-            queryClient.invalidateQueries({
-              queryKey: ["rwa-wallet-portfolio"],
-            }),
-            queryClient.invalidateQueries({
-              queryKey: ["rwa-wallet-portfolio-history"],
-            }),
-            invalidateFreshQueries("fetchWalletTransferHistory", {
-              level,
-              source: FreshnessSource.Chain,
-            }),
-            invalidateFreshQueries("fetchWalletActivitySummary", {
-              level,
-              source: FreshnessSource.Chain,
-            }),
-          ]);
-
-          if (activeOperationHashRef.current === operationHash) {
-            setIsWalletConfirmed(true);
-          }
-        } catch (error) {
-          console.warn("Withdrawal confirmation failed", error);
-        }
-      })();
+              hooks.onSubmitted(submission.opHash);
+              submittedHash = submission.opHash;
+              // The form is done; confirmation continues in the background
+              setIsSubmitting(false);
+              activeOperationHashRef.current = submission.opHash;
+              setTransactionHash(submission.opHash);
+              setIsWalletConfirmed(false);
+              setIsFallbackDelayElapsed(false);
+              setStep("processing");
+            },
+            onTransactionConfirmed: ({ level, opHash }) => {
+              hooks.onApplied();
+              void refreshAfterConfirmation(opHash ?? submittedHash, level);
+            },
+          }),
+      });
     } catch (error) {
-      if (error instanceof Error && error.message === "Declined") {
+      const errorKind = classifyContractActionError(error, {
+        hasSubmitted: Boolean(submittedHash),
+      });
+      const isCurrent =
+        !submittedHash || activeOperationHashRef.current === submittedHash;
+
+      // Another tab is sending the same withdrawal
+      if (errorKind === "in-progress" || !isCurrent) return;
+
+      if (
+        errorKind === "abort" ||
+        (error instanceof Error && error.message === "Declined")
+      ) {
         setStep("form");
+        return;
+      }
+
+      // Sent, result not known yet: keep showing it as processing
+      if (errorKind === "still-processing") {
+        warning(
+          "Withdrawal is still processing",
+          error instanceof Error
+            ? error.message
+            : "Check its status before trying again."
+        );
+        if (!submittedHash) setStep("form");
         return;
       }
 
@@ -360,6 +390,57 @@ export function WithdrawFundsModal({
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  /**
+   * "Max" for MVRK leaves the network fee and burn in the wallet: sending the
+   * whole balance could never pay for itself.
+   */
+  const handleMax = async () => {
+    if (!selectedAsset) return;
+
+    if (selectedAsset.metadata.address !== MVRK_CONTRACT_ADDRESS) {
+      setAmount(selectedAsset.availableBalance.toFixed());
+      return;
+    }
+
+    const tezos = getToolkit();
+
+    if (!tezos || !userAddress) return;
+
+    try {
+      // Fee and burn barely depend on the amount; a recipient that is not
+      // allocated yet adds an allocation burn, so estimate for it when known.
+      // estimate.batch, unlike estimate.transfer, keeps the reveal a new
+      // account pays for on its first operation.
+      const estimates = await tezos.estimate.batch([
+        {
+          kind: OpKind.TRANSACTION,
+          to: isRecipientValid ? normalizedRecipientAddress : userAddress,
+          amount: 1,
+          mumav: true,
+        },
+      ]);
+      const { feeMumav, burnMumav } = summarizeNativeCost(estimates);
+      const { amount: maxAmount, reserveMumav } = nativeMaxAmount({
+        balanceMvrk: selectedAsset.availableBalance,
+        feeMumav,
+        burnMumav,
+      });
+
+      if (!maxAmount) {
+        bug(
+          `Not enough MVRK to pay the network fee of about ${formatMvrk(
+            reserveMumav
+          )} MVRK.`
+        );
+        return;
+      }
+
+      setAmount(maxAmount);
+    } catch {
+      bug("Couldn't estimate the network fee. Please try again.");
     }
   };
 
@@ -558,11 +639,7 @@ export function WithdrawFundsModal({
                     <button
                       className={styles.maxButton}
                       disabled={!selectedAsset}
-                      onClick={() =>
-                        setAmount(
-                          selectedAsset?.availableBalance.toFixed() ?? ""
-                        )
-                      }
+                      onClick={() => void handleMax()}
                       type="button"
                     >
                       Max
