@@ -14,6 +14,7 @@ import {
   sendEmailOtp,
   signDigest32,
   toDynamicWalletIdentity,
+  waitForAuthenticatedUser,
   waitForDynamicReady,
   type DynamicClient,
   type DynamicWallet,
@@ -85,6 +86,8 @@ function createFakeClient({
       get authenticatedUser() {
         return state.user;
       },
+      on,
+      off,
       logout: vi.fn(async () => {
         state.user = null;
       }),
@@ -360,6 +363,28 @@ describe("Session", () => {
     fake.auth.logout.mockRejectedValueOnce(new Error("network"));
 
     expect(await logoutDynamic(client)).toBeInstanceOf(Error);
+  });
+
+  it("waits for the signed-in user that arrives after the code is verified", async () => {
+    const { client, state, emit } = createFakeClient({ user: null });
+
+    const pending = waitForAuthenticatedUser(client, 5_000);
+    state.user = { userId: "user-1", email: "a@b.co" };
+    emit("authenticatedUserChanged", state.user);
+
+    await expect(pending).resolves.toBeUndefined();
+  });
+
+  it("says to sign in again when the user never arrives", async () => {
+    vi.useFakeTimers();
+    const { client } = createFakeClient({ user: null });
+
+    const assertion = expect(
+      waitForAuthenticatedUser(client, 1_000)
+    ).rejects.toThrow("Sign in with your email first.");
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await assertion;
   });
 
   it("surfaces an SDK load error as an init error", async () => {

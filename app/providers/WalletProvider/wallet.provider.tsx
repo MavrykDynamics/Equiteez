@@ -41,6 +41,7 @@ import {
   resendEmailOtp,
   sendEmailOtp,
   verifyEmailOtp,
+  waitForAuthenticatedUser,
   waitForDynamicReady,
   type DynamicClient,
 } from "./dynamic/dynamicClient.client";
@@ -363,8 +364,11 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       sendOtp: async (email) => sendEmailOtp(await readyClient(), email),
       resendOtp: async () => resendEmailOtp(await readyClient()),
       verifyOtp: async (code, onAccepted) => {
-        await verifyEmailOtp(await readyClient(), code);
+        const client = await readyClient();
+
+        await verifyEmailOtp(client, code);
         onAccepted?.();
+        await waitForAuthenticatedUser(client);
         await establishOrThrow({ mode: "ensure" });
       },
       selectWallet: (walletId) =>

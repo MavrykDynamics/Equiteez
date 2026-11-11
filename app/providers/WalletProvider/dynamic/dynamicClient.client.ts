@@ -52,6 +52,9 @@ const WALLETS_RESTORE_TIMEOUT_MS = 5_000;
 // With auto-create on, Dynamic creates the wallet right after sign-up; wait
 // this long for it before asking the user to try again
 const AUTO_CREATED_WALLET_TIMEOUT_MS = 30_000;
+// verifyOTP resolves before the signed-in user reaches the client's state
+// (it comes from the iframe as a separate message): wait this long for it
+const AUTHENTICATED_USER_TIMEOUT_MS = 10_000;
 const CREATE_WALLET_LOCK = "equiteez:dynamic-create-wallet";
 // Dynamic's chain id for the embedded ed25519 wallet
 const SOL_CHAIN = "SOL";
@@ -159,6 +162,36 @@ export async function sendEmailOtp(
 
 export async function verifyEmailOtp(client: DynamicClient, code: string) {
   await client.auth.email.verifyOTP(code.trim());
+}
+
+/**
+ * Resolves once the client knows the signed-in user. Right after a code is
+ * verified the user may not be there yet, and opening the wallet then would
+ * find no session.
+ */
+export function waitForAuthenticatedUser(
+  client: DynamicClient,
+  timeoutMs = AUTHENTICATED_USER_TIMEOUT_MS
+): Promise<void> {
+  if (client.auth.authenticatedUser) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      clearTimeout(timer);
+      client.auth.off("authenticatedUserChanged", onUserChanged);
+    };
+    const onUserChanged = () => {
+      if (!client.auth.authenticatedUser) return;
+      cleanup();
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new DynamicNotAuthenticatedError());
+    }, timeoutMs);
+
+    client.auth.on("authenticatedUserChanged", onUserChanged);
+  });
 }
 
 export async function resendEmailOtp(client: DynamicClient) {
