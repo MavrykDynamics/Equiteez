@@ -92,7 +92,9 @@ type NetworkFeeState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "ready"; costMumav: BigNumber; balanceMumav?: BigNumber }
-  | { status: "error" };
+  // The node cannot even simulate an operation from an empty account, so a
+  // failed estimate with no MVRK means "fund the wallet", not "try again"
+  | { status: "error"; balanceMumav?: BigNumber };
 
 const MARKET_ORDER_MODE_OPTIONS = [
   { id: "market", label: "Market" },
@@ -753,8 +755,7 @@ const BuySellForm: FC<
         if (cancelled) return;
 
         if (!res.actionSuccess) {
-          setNetworkFee({ status: "error" });
-          return;
+          throw new Error("Network fee estimate failed");
         }
 
         const { totalMumav } = summarizeNativeCost(
@@ -777,10 +778,18 @@ const BuySellForm: FC<
             balanceMumav,
           });
         }
-      } catch (e) {
-        if (!cancelled) {
-          setNetworkFee({ status: "error" });
-        }
+      } catch {
+        if (cancelled) return;
+
+        const balanceMumav = isEmailWallet
+          ? await mavrykToolkit.wallet
+              .pkh()
+              .then((address) => mavrykToolkit.mv.getBalance(address))
+              .then((balance) => new BigNumber(balance.toString()))
+              .catch(() => undefined)
+          : undefined;
+
+        if (!cancelled) setNetworkFee({ status: "error", balanceMumav });
       }
     }, 400);
 
@@ -814,7 +823,9 @@ const BuySellForm: FC<
       case "loading":
         return "Estimating the network fee…";
       case "error":
-        return "Couldn't estimate the network fee. Try again.";
+        return networkFee.balanceMumav?.isZero()
+          ? "You need MVRK to pay the network fee. Your wallet has 0 MVRK: add some, then try again."
+          : "Couldn't estimate the network fee. Try again.";
       case "ready":
         return networkFee.balanceMumav?.lt(networkFee.costMumav)
           ? `Not enough MVRK for the network fee: ${formatMvrk(

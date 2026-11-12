@@ -568,6 +568,19 @@ describe("Network fee for email wallets", () => {
     expect(submit().disabled).toBe(true);
   });
 
+  it("asks to add MVRK when an empty wallet cannot be estimated", async () => {
+    // A node cannot simulate an operation from an account with 0 MVRK
+    withMvrkBalance(0);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain(
+      "You need MVRK to pay the network fee. Your wallet has 0 MVRK"
+    );
+    expect(submit().disabled).toBe(true);
+  });
+
   it("trades with the shown fee as the approved budget", async () => {
     withMvrkBalance(1_000_000);
     estimateWithFee(1_000, 500);
