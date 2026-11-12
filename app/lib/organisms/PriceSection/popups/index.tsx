@@ -717,12 +717,28 @@ const BuySellForm: FC<
 
   const isEmailWallet = identity?.provider === "dynamic";
 
+  // The order the fee is estimated for. Orderbook depth is refetched every
+  // 10 s with a new generated_at, which rebuilds these objects with the same
+  // values: the estimate reruns only when a value changes, not on each poll.
+  const estimateParams = isMarketTypeMarket
+    ? orderType === BUY
+      ? marketBuyProps
+      : marketSellProps
+    : orderType === BUY
+      ? limitBuyProps
+      : limitSellProps;
+  const estimateParamsKey = JSON.stringify(estimateParams);
+  const estimateParamsRef = useRef(estimateParams);
+  estimateParamsRef.current = estimateParams;
+  // total is recomputed on each poll too: compare it by value
+  const totalKey = total?.toFixed();
+
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
     if (
       !mavrykToolkit ||
-      !total ||
-      total.lte(0) ||
+      !totalKey ||
+      new BigNumber(totalKey).lte(0) ||
       isOrderDataLoading ||
       hasLimitPriceTickError ||
       orderValidationMessage
@@ -738,13 +754,7 @@ const BuySellForm: FC<
       try {
         const estimateFnToUse =
           orderType === BUY ? orderbookBuyEstimation : orderbookSellEstimation;
-        const paramsToUse = isMarketTypeMarket
-          ? orderType === BUY
-            ? marketBuyProps
-            : marketSellProps
-          : orderType === BUY
-            ? limitBuyProps
-            : limitSellProps;
+        const paramsToUse = estimateParamsRef.current;
 
         // @ts-expect-error // amount is defined
         const res = await estimateFnToUse({
@@ -798,18 +808,14 @@ const BuySellForm: FC<
       window.clearTimeout(t);
     };
   }, [
+    estimateParamsKey,
     hasLimitPriceTickError,
     isEmailWallet,
     isOrderDataLoading,
-    isMarketTypeMarket,
-    limitBuyProps,
-    limitSellProps,
     mavrykToolkit,
-    marketBuyProps,
-    marketSellProps,
     orderType,
     orderValidationMessage,
-    total,
+    totalKey,
   ]);
 
   // Email wallets cannot review the fee in a wallet window: the panel is the

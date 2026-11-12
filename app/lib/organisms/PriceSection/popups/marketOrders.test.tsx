@@ -8,6 +8,7 @@ import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.t
 import { BUY, SELL } from "../consts";
 
 const mocks = vi.hoisted(() => ({
+  pollDepth: () => {},
   buy: vi.fn(),
   sell: vi.fn(),
   estimateBuy: vi.fn(),
@@ -79,7 +80,23 @@ vi.mock("~/lib/apis/rwa", () => {
       best_bid: 30,
     },
   };
-  return { MAX_ORDERBOOK_DEPTH_LIMIT: 100, useOrderbookDepth: () => result };
+  // pollDepth() mimics the 10 s refetch: a new object with a new
+  // generated_at and the same levels, kept until the next poll
+  let current = result;
+  let poll = 0;
+  mocks.pollDepth = () => {
+    current = {
+      ...result,
+      orderbookDepth: {
+        ...result.orderbookDepth,
+        generated_at: String((poll += 1)),
+      } as typeof result.orderbookDepth,
+    };
+  };
+  return {
+    MAX_ORDERBOOK_DEPTH_LIMIT: 100,
+    useOrderbookDepth: () => current,
+  };
 });
 vi.mock("../hooks/useOrderbookTokenMetadata", () => ({
   useOrderbookTokenMetadata: () => ({
@@ -566,6 +583,25 @@ describe("Network fee for email wallets", () => {
 
     expect(text()).toContain("Couldn't estimate the network fee. Try again.");
     expect(submit().disabled).toBe(true);
+  });
+
+  it("does not estimate again when only the polled orderbook object changes", async () => {
+    withMvrkBalance(1_000_000);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+    expect(mocks.estimateBuy).toHaveBeenCalledOnce();
+    expect(text()).toContain("Couldn't estimate the network fee. Try again.");
+
+    // Polls and re-renders bring new depth and config objects, same values
+    mocks.pollDepth();
+    render(BUY);
+    await estimate();
+    mocks.pollDepth();
+    render(BUY);
+    await estimate();
+
+    expect(mocks.estimateBuy).toHaveBeenCalledOnce();
   });
 
   it("asks to add MVRK when an empty wallet cannot be estimated", async () => {
