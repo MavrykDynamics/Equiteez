@@ -556,7 +556,9 @@ describe("Network fee for email wallets", () => {
     render(BUY);
     change("Pay with", "29");
 
-    expect(text()).toContain("Estimating the network fee…");
+    // A loader on the button, not an "Order Cannot Be Submitted" alert
+    expect(submit().textContent).toBe("Estimating fee…");
+    expect(text()).not.toContain("Order Cannot Be Submitted");
     expect(submit().disabled).toBe(true);
     expect(mocks.buy).not.toHaveBeenCalled();
   });

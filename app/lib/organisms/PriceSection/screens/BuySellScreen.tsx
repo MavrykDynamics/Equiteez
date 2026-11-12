@@ -28,6 +28,7 @@ import {
 } from "~/lib/ui/use-status-flag";
 
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
+import { EstimatingFeeLabel } from "./EstimatingFeeLabel";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
@@ -49,6 +50,8 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  /** The network fee is being estimated: the button waits with a loader */
+  isEstimatingFee?: boolean;
   /** Capability checked for the main action; defaults to orderbook buy/sell */
   capabilityAction?: WalletAction;
   marketAmounts?: { quantity: BigNumber; consideration: BigNumber };
@@ -76,6 +79,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   hasQuoteError = false,
   isOrderDataLoading = false,
   validationMessage: formValidationMessage,
+  isEstimatingFee = false,
   capabilityAction,
   primaryPurchase,
   marketAmounts,
@@ -411,15 +415,19 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
         onClick={
           isDisconnected ? () => openConnectWallet() : handleContinueClick
         }
-        disabled={!isDisconnected && isContinueDisabled}
+        disabled={!isDisconnected && (isContinueDisabled || isEstimatingFee)}
         isLoading={!isDisconnected && isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {isDisconnected
-          ? "Connect Wallet"
-          : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+        {isDisconnected ? (
+          "Connect Wallet"
+        ) : isEstimatingFee && !isLoading ? (
+          <EstimatingFeeLabel />
+        ) : (
+          getStatusLabel(status, isBuyAction ? "Buy" : "Sell")
+        )}
       </Button>
       <p className={styles.mobileTradeNotice}>Open on desktop to trade.</p>
     </div>

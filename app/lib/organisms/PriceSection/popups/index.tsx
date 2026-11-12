@@ -820,14 +820,15 @@ const BuySellForm: FC<
 
   // Email wallets cannot review the fee in a wallet window: the panel is the
   // review, so trading waits for a known fee the balance covers
+  const isCheckingNetworkFee =
+    isEmailWallet && !orderValidationMessage && !isOrderDataLoading;
+  // A pending estimate is not an error: the button shows a loader instead
+  const isEstimatingFee =
+    isCheckingNetworkFee && networkFee.status === "loading";
   const networkFeeValidationMessage = (() => {
-    if (!isEmailWallet || orderValidationMessage || isOrderDataLoading) {
-      return undefined;
-    }
+    if (!isCheckingNetworkFee) return undefined;
 
     switch (networkFee.status) {
-      case "loading":
-        return "Estimating the network fee…";
       case "error":
         return networkFee.balanceMumav?.isZero()
           ? "You need MVRK to pay the network fee. Your wallet has 0 MVRK: add some, then try again."
@@ -957,7 +958,12 @@ const BuySellForm: FC<
   }, []);
 
   const handleConfirmedBuySellAction = useCallback(() => {
-    if (isOrderDataLoading || tradeValidationMessage || hasLimitPriceTickError)
+    if (
+      isOrderDataLoading ||
+      isEstimatingFee ||
+      tradeValidationMessage ||
+      hasLimitPriceTickError
+    )
       return;
     buySellActionCb();
 
@@ -987,6 +993,7 @@ const BuySellForm: FC<
     isMarketTypeMarket,
     orderType,
     isOrderDataLoading,
+    isEstimatingFee,
     tradeValidationMessage,
     hasLimitPriceTickError,
   ]);
@@ -1172,6 +1179,7 @@ const BuySellForm: FC<
               status={status}
               isOrderDataLoading={isOrderDataLoading}
               validationMessage={tradeValidationMessage}
+              isEstimatingFee={isEstimatingFee}
             />
           ) : (
             <BuySellLimitScreen
@@ -1195,6 +1203,7 @@ const BuySellForm: FC<
               status={status}
               isOrderDataLoading={isOrderDataLoading}
               validationMessage={tradeValidationMessage}
+              isEstimatingFee={isEstimatingFee}
             />
           ))}
       </div>
