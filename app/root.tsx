@@ -26,7 +26,7 @@ import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
-import { AppGlobalLoader } from "./providers/AppGlobalLoader";
+import { ConnectWalletModalProvider } from "./templates/ConnectWalletModal/connectWalletModal.context";
 import { CurrencyProvider } from "./providers/CurrencyProvider/currency.provider";
 import {
   fetchTokensData,
@@ -158,13 +158,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                   <EthereumProvider>
                                     <TransactionWidgetProvider>
                                       <RTransactionWidgetHost />
-                                      <AppGlobalLoader>
-                                        <PopupProvider>
+                                      <PopupProvider>
+                                        <ConnectWalletModalProvider>
                                           <PageLayout includeContainer={false}>
                                             {children}
                                           </PageLayout>
-                                        </PopupProvider>
-                                      </AppGlobalLoader>
+                                        </ConnectWalletModalProvider>
+                                      </PopupProvider>
                                     </TransactionWidgetProvider>
                                   </EthereumProvider>
                                 </TransactionsProvider>

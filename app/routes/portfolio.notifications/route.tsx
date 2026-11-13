@@ -15,9 +15,57 @@ import { useNotifierChannel } from "~/providers/NotificationsProvider/hooks/useN
 import { mapNotificationItemToUserNotification } from "~/providers/NotificationsProvider/helpers/notifications.helpers";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
+
 import styles from "./styles.module.css";
 
 const NOTIFICATIONS_PAGE_SIZE = 10;
+// Description widths vary like real messages do
+const SKELETON_DESCRIPTION_WIDTHS = [
+  "48%",
+  "36%",
+  "44%",
+  "32%",
+  "52%",
+  "40%",
+  "28%",
+  "46%",
+  "38%",
+  "42%",
+];
+
+function NotificationsSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="Loading notifications" role="status">
+      {SKELETON_DESCRIPTION_WIDTHS.map((width, index) => (
+        <div aria-hidden="true" className={styles.notification} key={index}>
+          <span className={styles.notificationContent}>
+            <span className={styles.skeletonLines}>
+              <RSkeleton
+                radius="none"
+                className={styles.skeletonTitle}
+                variant="surface"
+              />
+              <RSkeleton
+                radius="none"
+                className={styles.skeletonDescription}
+                style={{ width }}
+                variant="surface"
+              />
+            </span>
+          </span>
+          <span className={styles.meta}>
+            <RSkeleton
+              radius="none"
+              className={styles.skeletonDate}
+              variant="surface"
+            />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const isNotificationsNotFoundError = (error: unknown) =>
   isAxiosError(error) && error.response?.status === 404;
@@ -148,61 +196,72 @@ export default function PortfolioNotifications() {
         </div>
 
         <div className={styles.list} ref={listRef}>
-          {isDisabled ? (
-            <div className={styles.empty}>
-              <RText color="neutral-700" size="body-m">
-                No notifications yet
-              </RText>
-            </div>
-          ) : notificationsQuery.isError ? (
-            <div className={styles.empty}>
-              <RText color="neutral-700" size="body-m">
-                Unable to load notifications.
-              </RText>
-            </div>
-          ) : notifications.length ? (
-            notifications.map((notification, index) => (
-              <div
-                className={clsx(
-                  styles.notification,
-                  !notification.isRead && styles.unread
-                )}
-                key={
-                  notification.id ||
-                  `${notification.date}-${notification.title}-${index}`
-                }
-              >
-                <span className={styles.notificationContent}>
-                  <span className={styles.titleLine}>
-                    <RText size="body-sm" weight="medium">
-                      {notification.title}
-                    </RText>
-                    {!notification.isRead ? (
-                      <span
-                        aria-label="Unread"
-                        className={styles.unreadIndicator}
-                      />
-                    ) : null}
-                  </span>
-                  <RText color="neutral-500" size="body-sm">
-                    {notification.description}
-                  </RText>
-                </span>
-                <span className={styles.meta}>
-                  <RText color="neutral-500" size="body-sm">
-                    {formatNotificationDate(notification.date)}
-                  </RText>
-                </span>
+          <RSkeletonReveal
+            isLoading={
+              !isDisabled &&
+              !notificationsQuery.isError &&
+              notificationsQuery.isPending
+            }
+            skeleton={<NotificationsSkeleton />}
+          >
+            {isDisabled ? (
+              <div className={styles.empty}>
+                <RText color="neutral-700" size="body-m">
+                  No notifications yet
+                </RText>
               </div>
-            ))
-          ) : !notificationsQuery.isFetching ? (
-            <div className={styles.empty}>
-              <RText color="neutral-700" size="body-m">
-                No notifications yet
-              </RText>
-            </div>
-          ) : null}
-          {notificationsQuery.isFetching ? (
+            ) : notificationsQuery.isError ? (
+              <div className={styles.empty}>
+                <RText color="neutral-700" size="body-m">
+                  Unable to load notifications.
+                </RText>
+              </div>
+            ) : notifications.length ? (
+              notifications.map((notification, index) => (
+                <div
+                  className={clsx(
+                    styles.notification,
+                    !notification.isRead && styles.unread
+                  )}
+                  key={
+                    notification.id ||
+                    `${notification.date}-${notification.title}-${index}`
+                  }
+                >
+                  <span className={styles.notificationContent}>
+                    <span className={styles.titleLine}>
+                      <RText size="body-sm" weight="medium">
+                        {notification.title}
+                      </RText>
+                      {!notification.isRead ? (
+                        <span
+                          aria-label="Unread"
+                          className={styles.unreadIndicator}
+                        />
+                      ) : null}
+                    </span>
+                    <RText color="neutral-500" size="body-sm">
+                      {notification.description}
+                    </RText>
+                  </span>
+                  <span className={styles.meta}>
+                    <RText color="neutral-500" size="body-sm">
+                      {formatNotificationDate(notification.date)}
+                    </RText>
+                  </span>
+                </div>
+              ))
+            ) : !notificationsQuery.isFetching ? (
+              <div className={styles.empty}>
+                <RText color="neutral-700" size="body-m">
+                  No notifications yet
+                </RText>
+              </div>
+            ) : null}
+          </RSkeletonReveal>
+          {/* Only while a reset list still shows the previous page — not on
+              the first load (skeleton) or the refetch after mark-as-read */}
+          {notificationsQuery.isPlaceholderData ? (
             <div
               aria-label="Loading notifications"
               className={styles.loadingOverlay}

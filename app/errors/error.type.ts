@@ -50,6 +50,8 @@ export type EstimatedOperation = {
   minimalFeeMumav: number;
   storageLimit: number;
   suggestedFeeMumav: number;
+  /** Storage/allocation burn of the operation */
+  burnFeeMumav: number;
   totalCost: number;
   usingBaseFeeMumav: number;
   error?: WalletErrorPayload;

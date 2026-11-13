@@ -73,6 +73,7 @@ export const estimateExecution = async (
     minimalFeeMumav: 0,
     storageLimit: 0,
     suggestedFeeMumav: 0,
+    burnFeeMumav: 0,
     totalCost: 0,
     usingBaseFeeMumav: 0,
   };
@@ -122,7 +123,8 @@ export const estimateBatchOperation = async (
         acc.totalSuggestedFeeMutez += estimateData.suggestedFeeMumav;
         return acc;
       },
-      { ...defaultEstimatedBatchCalls }
+      // Each estimate is kept: callers sum fees and storage burn from them
+      { ...defaultEstimatedBatchCalls, batchOperations: [] }
     );
 
     return estimatedBatchCalls;

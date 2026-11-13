@@ -24,6 +24,12 @@ const mocks = vi.hoisted(() => ({
   account: "recipient",
   refs: [] as Array<{ current: unknown }>,
   refIndex: 0,
+  ethereumWallet: {
+    address: "0x1111111111111111111111111111111111111111",
+  } as Record<string, unknown>,
+  // The connected Mavryk wallet, when a test sets one
+  identity: null as Record<string, unknown> | null,
+  isDirectEnabled: false,
 }));
 vi.mock("react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react")>()),
@@ -42,10 +48,15 @@ vi.mock("~/providers/TransactionsProvider/TransactionsProvider", () => ({
 }));
 vi.mock("wagmi", () => ({ useConfig: () => ({}) }));
 vi.mock("wagmi/actions", () => ({
-  getAccount: () => ({ address: "0x1111111111111111111111111111111111111111" }),
+  getAccount: () => mocks.ethereumWallet,
+}));
+vi.mock("~/providers/WalletProvider/dynamic/dynamic.config", () => ({
+  isDynamicDirectEnabled: () => mocks.isDirectEnabled,
 }));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
-  useWalletContext: () => ({}),
+  useWalletContext: () => ({
+    getIdentity: () => mocks.identity ?? { address: mocks.account },
+  }),
 }));
 vi.mock("~/contracts/usdtBridge.contract", () => ({
   executeUsdtBridge: mocks.execute,
@@ -67,6 +78,11 @@ let memory: Map<string, string>;
 let store: BridgeTransactions;
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.ethereumWallet = {
+    address: "0x1111111111111111111111111111111111111111",
+  };
+  mocks.identity = null;
+  mocks.isDirectEnabled = false;
   memory = new Map();
   mocks.refs = [];
   mocks.account = "recipient";
@@ -228,4 +244,46 @@ it("registers popup visibility before publication and persists the opt-in across
   expect(record.operationId).toBe(hold.mock.calls[0][0]);
   expect(record.isWidgetRequested).toBe(true);
   expect(record.sourceHashes).toEqual([hash, replacementHash]);
+});
+
+it("re-checks the destination Mavryk wallet before every bridge step", async () => {
+  const sender = "0x1111111111111111111111111111111111111111";
+  mocks.ethereumWallet = {
+    address: sender,
+    isConnected: true,
+    connector: {
+      getChainId: async () => 11155111,
+      getAccounts: async () => [sender],
+    },
+  };
+  mocks.identity = {
+    address: "recipient",
+    provider: "mavryk_extension",
+    chainId: "NetXmtMsNf69w1w",
+    walletNetwork: "basenet",
+  };
+  mocks.execute.mockImplementation(() => new Promise(() => undefined));
+  const bridge = setup();
+  void bridge.submit(new BigNumber(1), "recipient");
+  const { assertWallets } = mocks.execute.mock.calls[0][0] as Parameters<
+    typeof executeUsdtBridge
+  >[0];
+
+  await expect(assertWallets()).resolves.toBeUndefined();
+
+  // Switched to another account mid-deposit: stop
+  mocks.identity = { ...mocks.identity, address: "other" };
+  await expect(assertWallets()).rejects.toThrow("Your Mavryk account changed");
+
+  // An email wallet receives deposits only once they are enabled for it
+  mocks.identity = {
+    address: "recipient",
+    provider: "dynamic",
+    chainId: "NetXmtMsNf69w1w",
+  };
+  await expect(assertWallets()).rejects.toThrow(
+    "Not available for email wallets yet."
+  );
+  mocks.isDirectEnabled = true;
+  await expect(assertWallets()).resolves.toBeUndefined();
 });

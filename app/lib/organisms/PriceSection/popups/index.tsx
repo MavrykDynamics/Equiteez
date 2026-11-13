@@ -8,6 +8,10 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+  formatMvrk,
+  summarizeNativeCost,
+} from "~/services/direct/nativeBudget";
 
 //screens
 import { BuySellScreen } from "../screens/BuySellScreen";
@@ -24,13 +28,10 @@ import {
   normalizeTick,
 } from "~/lib/orderbook/orderbookConfig";
 import { BUY, OrderType, SELL } from "../consts";
-import { TabSwitcherV2 } from "~/lib/organisms/TabSwitcherV2/TabSwitcherV2";
 import {
-  RCustomDropdown,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-  RDropdownFaceContent,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
+  RHoverSwitch,
+  type RHoverSwitchOption,
+} from "~/lib/molecules/RHoverSwitch/RHoverSwitch";
 
 import {
   ContractActionToastProps,
@@ -87,6 +88,22 @@ import * as gtag from "app/utils/gtags.client";
 
 type MarketOrderMode = "market" | "limit";
 
+type NetworkFeeState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; costMumav: BigNumber; balanceMumav?: BigNumber }
+  // The node cannot even simulate an operation from an empty account, so a
+  // failed estimate with no MVRK means "fund the wallet", not "try again"
+  | { status: "error"; balanceMumav?: BigNumber };
+
+const MARKET_ORDER_MODE_OPTIONS = [
+  { id: "market", label: "Market" },
+  { id: "limit", label: "Limit" },
+] as const satisfies readonly [
+  RHoverSwitchOption<MarketOrderMode>,
+  RHoverSwitchOption<MarketOrderMode>,
+];
+
 type BuySellContentProps = {
   asset: AssetType;
   orderbookConfig: OrderbookExecutionConfig;
@@ -133,10 +150,15 @@ const BuySellForm: FC<
   setIsOrderBookOpen,
   setOrderType,
 }) => {
-  const { dapp } = useWalletContext();
+  const { getToolkit, identity } = useWalletContext();
   const { hasOrders, userTokensBalances } = useUserContext();
 
-  const mavrykToolkit = useMemo(() => dapp?.tezos(), [dapp]);
+  // A new toolkit whenever the connected wallet changes
+  const walletEpoch = identity?.epoch;
+  const mavrykToolkit = useMemo(
+    () => (walletEpoch === undefined ? undefined : (getToolkit() ?? undefined)),
+    [getToolkit, walletEpoch]
+  );
 
   const {
     error: depthError,
@@ -161,8 +183,22 @@ const BuySellForm: FC<
       ? asset.orderbook?.buy_order_fee
       : asset.orderbook?.sell_order_fee;
 
-  // Gas fee estimation state --------------------------------------------
-  const [gasFee, setGasFee] = useState<BigNumber>(ZERO);
+  // Network fee estimation state ------------------------------------------
+  // costMumav: fees of every operation (reveal included) + storage burn.
+  // balanceMumav: read for email wallets, which show no fee review of their
+  // own; Mavryk Wallet reviews fees in the extension.
+  const [networkFee, setNetworkFee] = useState<NetworkFeeState>({
+    status: "idle",
+  });
+  const networkFeeRef = useRef(networkFee);
+  networkFeeRef.current = networkFee;
+  // Unavailable is shown as "-", never as a zero fee
+  const gasFee =
+    networkFee.status === "ready"
+      ? networkFee.costMumav.dividedBy(MILLION)
+      : networkFee.status === "error"
+        ? undefined
+        : ZERO;
 
   // --------------------------------------------
 
@@ -282,25 +318,6 @@ const BuySellForm: FC<
     [setMarkettype]
   );
 
-  const marketTabs: TabType<MarketOrderMode>[] = useMemo(
-    () => [
-      {
-        id: "market",
-        label: "Market",
-        handleClick: handleMarketChange,
-      },
-      {
-        id: "limit",
-        label: "Limit",
-        handleClick: handleMarketChange,
-      },
-    ],
-    [handleMarketChange]
-  );
-  const selectedMarketTab = useMemo(
-    () => marketTabs.find((tab) => tab.id === marketType),
-    [marketTabs, marketType]
-  );
   const isOrderDataLoading = isMarketTypeMarket && isOrderbookDepthLoading;
 
   useEffect(() => {
@@ -698,33 +715,46 @@ const BuySellForm: FC<
       minOrderValidationMessage ||
       marketBuyBudgetValidationMessage;
 
+  const isEmailWallet = identity?.provider === "dynamic";
+
+  // The order the fee is estimated for. Orderbook depth is refetched every
+  // 10 s with a new generated_at, which rebuilds these objects with the same
+  // values: the estimate reruns only when a value changes, not on each poll.
+  const estimateParams = isMarketTypeMarket
+    ? orderType === BUY
+      ? marketBuyProps
+      : marketSellProps
+    : orderType === BUY
+      ? limitBuyProps
+      : limitSellProps;
+  const estimateParamsKey = JSON.stringify(estimateParams);
+  const estimateParamsRef = useRef(estimateParams);
+  estimateParamsRef.current = estimateParams;
+  // total is recomputed on each poll too: compare it by value
+  const totalKey = total?.toFixed();
+
   // Operation estimation effect -------------------------------------------
   useEffect(() => {
     if (
       !mavrykToolkit ||
-      !total ||
-      total.lte(0) ||
+      !totalKey ||
+      new BigNumber(totalKey).lte(0) ||
       isOrderDataLoading ||
       hasLimitPriceTickError ||
       orderValidationMessage
     ) {
-      setGasFee(ZERO);
+      setNetworkFee({ status: "idle" });
       return;
     }
 
     let cancelled = false;
+    setNetworkFee({ status: "loading" });
 
     const t = window.setTimeout(async () => {
       try {
         const estimateFnToUse =
           orderType === BUY ? orderbookBuyEstimation : orderbookSellEstimation;
-        const paramsToUse = isMarketTypeMarket
-          ? orderType === BUY
-            ? marketBuyProps
-            : marketSellProps
-          : orderType === BUY
-            ? limitBuyProps
-            : limitSellProps;
+        const paramsToUse = estimateParamsRef.current;
 
         // @ts-expect-error // amount is defined
         const res = await estimateFnToUse({
@@ -734,17 +764,42 @@ const BuySellForm: FC<
 
         if (cancelled) return;
 
-        if (res.actionSuccess) {
-          setGasFee(
-            new BigNumber(res.data.totalSuggestedFeeMutez).dividedBy(MILLION)
-          );
-        } else {
-          setGasFee(ZERO);
+        if (!res.actionSuccess) {
+          throw new Error("Network fee estimate failed");
         }
-      } catch (e) {
+
+        const { totalMumav } = summarizeNativeCost(
+          res.data.batchOperations ?? []
+        );
+        const balanceMumav = isEmailWallet
+          ? new BigNumber(
+              (
+                await mavrykToolkit.mv.getBalance(
+                  await mavrykToolkit.wallet.pkh()
+                )
+              ).toString()
+            )
+          : undefined;
+
         if (!cancelled) {
-          setGasFee(ZERO);
+          setNetworkFee({
+            status: "ready",
+            costMumav: totalMumav,
+            balanceMumav,
+          });
         }
+      } catch {
+        if (cancelled) return;
+
+        const balanceMumav = isEmailWallet
+          ? await mavrykToolkit.wallet
+              .pkh()
+              .then((address) => mavrykToolkit.mv.getBalance(address))
+              .then((balance) => new BigNumber(balance.toString()))
+              .catch(() => undefined)
+          : undefined;
+
+        if (!cancelled) setNetworkFee({ status: "error", balanceMumav });
       }
     }, 400);
 
@@ -753,18 +808,43 @@ const BuySellForm: FC<
       window.clearTimeout(t);
     };
   }, [
+    estimateParamsKey,
     hasLimitPriceTickError,
+    isEmailWallet,
     isOrderDataLoading,
-    isMarketTypeMarket,
-    limitBuyProps,
-    limitSellProps,
     mavrykToolkit,
-    marketBuyProps,
-    marketSellProps,
     orderType,
     orderValidationMessage,
-    total,
+    totalKey,
   ]);
+
+  // Email wallets cannot review the fee in a wallet window: the panel is the
+  // review, so trading waits for a known fee the balance covers
+  const isCheckingNetworkFee =
+    isEmailWallet && !orderValidationMessage && !isOrderDataLoading;
+  // A pending estimate is not an error: the button shows a loader instead
+  const isEstimatingFee =
+    isCheckingNetworkFee && networkFee.status === "loading";
+  const networkFeeValidationMessage = (() => {
+    if (!isCheckingNetworkFee) return undefined;
+
+    switch (networkFee.status) {
+      case "error":
+        return networkFee.balanceMumav?.isZero()
+          ? "You need MVRK to pay the network fee. Your wallet has 0 MVRK: add some, then try again."
+          : "Couldn't estimate the network fee. Try again.";
+      case "ready":
+        return networkFee.balanceMumav?.lt(networkFee.costMumav)
+          ? `Not enough MVRK for the network fee: ${formatMvrk(
+              networkFee.costMumav
+            )} MVRK needed, ${formatMvrk(networkFee.balanceMumav)} available.`
+          : undefined;
+      default:
+        return undefined;
+    }
+  })();
+  const tradeValidationMessage =
+    orderValidationMessage || networkFeeValidationMessage;
 
   // actual contract calls and their handlers ---------------
 
@@ -788,18 +868,37 @@ const BuySellForm: FC<
       setTotal(undefined);
       setLimitPrice(undefined);
       setOrderExpiryPeriodId(null);
-      setGasFee(ZERO);
+      setNetworkFee({ status: "idle" });
       setIsOrderBookOpen(false);
       onSuccessfulTransaction?.(metadata);
     },
     [onSuccessfulTransaction, orderType, setIsOrderBookOpen]
   );
 
+  // The fee shown when the user clicks is the one they approved
+  const getExecutionOverrides = useCallback(() => {
+    const fee = networkFeeRef.current;
+
+    return fee.status === "ready"
+      ? { approvedNetworkCostMumav: fee.costMumav.toFixed() }
+      : {};
+  }, []);
+
   const contractActionOptions = useMemo(
     () => ({
       onSuccess: handleSuccessfulTransaction,
+      getExecutionOverrides,
     }),
-    [handleSuccessfulTransaction]
+    [getExecutionOverrides, handleSuccessfulTransaction]
+  );
+
+  const buyActionOptions = useMemo(
+    () => ({ ...contractActionOptions, action: "orderbook.buy" }),
+    [contractActionOptions]
+  );
+  const sellActionOptions = useMemo(
+    () => ({ ...contractActionOptions, action: "orderbook.sell" }),
+    [contractActionOptions]
   );
 
   const { invokeAction: handleMarketBuy, status: buyStatus } =
@@ -808,7 +907,7 @@ const BuySellForm: FC<
       marketBuyProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      buyActionOptions
     );
 
   const { invokeAction: handleMarketSell, status: sellStatus } =
@@ -817,7 +916,7 @@ const BuySellForm: FC<
       marketSellProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      sellActionOptions
     );
 
   const { invokeAction: handleLimitBuy, status: limitBuyStatus } =
@@ -826,7 +925,7 @@ const BuySellForm: FC<
       limitBuyProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      buyActionOptions
     );
 
   const { invokeAction: handleLimitSell, status: limitSellStatus } =
@@ -835,7 +934,7 @@ const BuySellForm: FC<
       limitSellProps,
       undefined,
       memoizedToastProps,
-      contractActionOptions
+      sellActionOptions
     );
 
   // prop action to pass
@@ -859,7 +958,12 @@ const BuySellForm: FC<
   }, []);
 
   const handleConfirmedBuySellAction = useCallback(() => {
-    if (isOrderDataLoading || orderValidationMessage || hasLimitPriceTickError)
+    if (
+      isOrderDataLoading ||
+      isEstimatingFee ||
+      tradeValidationMessage ||
+      hasLimitPriceTickError
+    )
       return;
     buySellActionCb();
 
@@ -889,7 +993,8 @@ const BuySellForm: FC<
     isMarketTypeMarket,
     orderType,
     isOrderDataLoading,
-    orderValidationMessage,
+    isEstimatingFee,
+    tradeValidationMessage,
     hasLimitPriceTickError,
   ]);
 
@@ -1021,36 +1126,38 @@ const BuySellForm: FC<
           </button>
         )}
         <div className={styles.tradeControls}>
-          <RCustomDropdown className={styles.marketDropdown}>
-            <RDropdownFaceContent
-              aria-label="Order mode"
-              className={styles.marketDropdownTrigger}
-            >
-              {selectedMarketTab?.label ?? "Market"}
-            </RDropdownFaceContent>
-            <RDropdownBodyContent
-              align="left"
-              className={styles.marketDropdownMenu}
-            >
-              {marketTabs.map((tab) => (
-                <RDropdownBodyContentItem
-                  isSelected={tab.id === marketType}
+          <div
+            aria-label="Order side"
+            className={styles.sideTabs}
+            role="tablist"
+          >
+            {tabs.map((tab) => {
+              const isActive = tab.id === activetabId;
+
+              return (
+                <button
+                  aria-selected={isActive}
+                  className={clsx(
+                    styles.sideTab,
+                    isActive && styles.sideTabActive
+                  )}
                   key={tab.id}
-                  onClick={() => handleMarketChange(tab.id)}
+                  onClick={() => tab.handleClick?.(tab.id)}
+                  role="tab"
+                  type="button"
                 >
                   {tab.label}
-                </RDropdownBodyContentItem>
-              ))}
-            </RDropdownBodyContent>
-          </RCustomDropdown>
+                </button>
+              );
+            })}
+          </div>
 
-          <TabSwitcherV2
-            activeClassName={styles.sideTabActive}
-            activeTabId={activetabId}
-            className={styles.sideTabs}
-            // @ts-expect-error // OrderType is string
-            tabs={tabs}
-            tabClassName={styles.sideTab}
+          <RHoverSwitch
+            aria-label="Order mode"
+            className={styles.marketDropdown}
+            onChange={handleMarketChange}
+            options={MARKET_ORDER_MODE_OPTIONS}
+            value={marketType}
           />
         </div>
 
@@ -1071,7 +1178,8 @@ const BuySellForm: FC<
               orderbookFee={orderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading}
-              validationMessage={orderValidationMessage}
+              validationMessage={tradeValidationMessage}
+              isEstimatingFee={isEstimatingFee}
             />
           ) : (
             <BuySellLimitScreen
@@ -1094,7 +1202,8 @@ const BuySellForm: FC<
               orderbookFee={orderbookFee}
               status={status}
               isOrderDataLoading={isOrderDataLoading}
-              validationMessage={orderValidationMessage}
+              validationMessage={tradeValidationMessage}
+              isEstimatingFee={isEstimatingFee}
             />
           ))}
       </div>

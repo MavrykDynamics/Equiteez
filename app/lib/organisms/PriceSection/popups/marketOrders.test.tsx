@@ -8,14 +8,20 @@ import type { OrderbookExecutionConfig } from "~/lib/orderbook/orderbookConfig.t
 import { BUY, SELL } from "../consts";
 
 const mocks = vi.hoisted(() => ({
+  pollDepth: () => {},
   buy: vi.fn(),
   sell: vi.fn(),
   estimateBuy: vi.fn(),
   estimateSell: vi.fn(),
   balances: {} as Record<string, string>,
-  toolkit: {},
+  toolkit: {} as Record<string, unknown>,
   userAddress: "wallet",
-  connect: vi.fn(),
+  openConnectWallet: vi.fn(),
+  walletProvider: "mavryk_extension",
+  isDirectEnabled: true,
+  lastActionOptions: undefined as
+    | { getExecutionOverrides?: () => Record<string, unknown> }
+    | undefined,
 }));
 vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookBuy: mocks.buy,
@@ -24,18 +30,40 @@ vi.mock("~/contracts/orderbook.contract", () => ({
   orderbookSellEstimation: mocks.estimateSell,
 }));
 vi.mock("~/contracts/hooks/useContractAction", () => ({
-  useContractAction: (action: (props: unknown) => void, props: unknown) => ({
-    invokeAction: () => action(props),
-    status: "idle",
-  }),
+  useContractAction: (
+    action: (props: unknown) => void,
+    props: unknown,
+    _popup: unknown,
+    _toasts: unknown,
+    options: typeof mocks.lastActionOptions
+  ) => {
+    mocks.lastActionOptions = options;
+    return {
+      invokeAction: () => action(props),
+      status: "idle",
+    };
+  },
 }));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
-  useWalletContext: () => ({ dapp: { tezos: () => mocks.toolkit } }),
+  useWalletContext: () => ({
+    getToolkit: () => mocks.toolkit,
+    identity: {
+      epoch: 1,
+      provider: mocks.walletProvider,
+      chainId: "NetXmtMsNf69w1w",
+    },
+  }),
+}));
+vi.mock("~/providers/WalletProvider/dynamic/dynamic.config", () => ({
+  // Email wallets may trade in these tests, so fee checks are what is seen
+  isDynamicDirectEnabled: () => mocks.isDirectEnabled,
+}));
+vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
+  useConnectWallet: () => mocks.openConnectWallet,
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({
     userAddress: mocks.userAddress,
-    connect: mocks.connect,
     hasOrders: true,
     isKyced: true,
     userTokensBalances: mocks.balances,
@@ -52,7 +80,23 @@ vi.mock("~/lib/apis/rwa", () => {
       best_bid: 30,
     },
   };
-  return { MAX_ORDERBOOK_DEPTH_LIMIT: 100, useOrderbookDepth: () => result };
+  // pollDepth() mimics the 10 s refetch: a new object with a new
+  // generated_at and the same levels, kept until the next poll
+  let current = result;
+  let poll = 0;
+  mocks.pollDepth = () => {
+    current = {
+      ...result,
+      orderbookDepth: {
+        ...result.orderbookDepth,
+        generated_at: String((poll += 1)),
+      } as typeof result.orderbookDepth,
+    };
+  };
+  return {
+    MAX_ORDERBOOK_DEPTH_LIMIT: 100,
+    useOrderbookDepth: () => current,
+  };
 });
 vi.mock("../hooks/useOrderbookTokenMetadata", () => ({
   useOrderbookTokenMetadata: () => ({
@@ -125,7 +169,10 @@ vi.mock("../components/FeesCard/FeesCard", () => ({
   }) => (
     <>
       <output data-total>{totalAmount.toFixed()}</output>
-      <output data-gas-fee>{gasFee.toFixed()}</output>
+      {/* Like FeesCard: an unavailable fee is "-", never zero */}
+      <output data-gas-fee>
+        {gasFee === undefined ? "-" : gasFee.toFixed()}
+      </output>
     </>
   ),
 }));
@@ -133,19 +180,22 @@ vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
 vi.mock("~/templates/Alert/RAlert", () => ({
   RAlert: ({ children }: { children: ReactNode }) => <p>{children}</p>,
 }));
-vi.mock("~/lib/organisms/RCustomDropdown/RCustomDropdown", () => ({
-  RCustomDropdown: ({ children }: { children: ReactNode }) => <>{children}</>,
-  RDropdownBodyContent: ({ children }: { children: ReactNode }) => (
-    <>{children}</>
-  ),
-  RDropdownBodyContentItem: ({
-    children,
-    onClick,
+vi.mock("~/lib/molecules/RHoverSwitch/RHoverSwitch", () => ({
+  RHoverSwitch: ({
+    onChange,
+    options,
   }: {
-    children: ReactNode;
-    onClick: () => void;
-  }) => <button onClick={onClick}>{children}</button>,
-  RDropdownFaceContent: () => null,
+    onChange: (id: string) => void;
+    options: { id: string; label: string }[];
+  }) => (
+    <>
+      {options.map((option) => (
+        <button key={option.id} onClick={() => onChange(option.id)}>
+          {option.label}
+        </button>
+      ))}
+    </>
+  ),
 }));
 vi.mock("~/lib/organisms/TabSwitcherV2/TabSwitcherV2", () => ({
   TabSwitcherV2: () => null,
@@ -192,7 +242,10 @@ const asset = {
 
 beforeEach(() => {
   mocks.userAddress = "wallet";
-  mocks.connect.mockReset();
+  mocks.walletProvider = "mavryk_extension";
+  mocks.isDirectEnabled = true;
+  mocks.toolkit = {};
+  mocks.openConnectWallet.mockReset();
   vi.clearAllMocks();
   vi.useFakeTimers();
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -253,16 +306,24 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     const button = submit();
     expect(button.textContent).toBe("Connect Wallet");
     expect(button.disabled).toBe(false);
-    expect(mocks.connect).toHaveBeenCalledOnce();
+    // Opens the sign-in modal (Mavryk Wallet or email wallet)
+    expect(mocks.openConnectWallet).toHaveBeenCalledOnce();
     expect(mocks.buy).not.toHaveBeenCalled();
     expect(mocks.sell).not.toHaveBeenCalled();
   });
 
-  it("uses the suggested gas fee and clears it after a failed estimate", async () => {
+  it("shows fees plus storage burn, and no fee after a failed estimate", async () => {
     const estimateMock = side === BUY ? mocks.estimateBuy : mocks.estimateSell;
     estimateMock.mockResolvedValueOnce({
       actionSuccess: true,
-      data: { totalSuggestedFeeMutez: 444, totalCost: 1154 },
+      data: {
+        totalSuggestedFeeMutez: 444,
+        totalCost: 1154,
+        batchOperations: [
+          { suggestedFeeMumav: 400, burnFeeMumav: 0 },
+          { suggestedFeeMumav: 44, burnFeeMumav: 0 },
+        ],
+      },
     });
     render(side);
     change("Pay with", side === BUY ? "29" : "0.96");
@@ -272,7 +333,8 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     );
     change("Pay with", side === BUY ? "28" : "0.95");
     await estimate();
-    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("0");
+    // Unavailable, not free
+    expect(container.querySelector("[data-gas-fee]")?.textContent).toBe("-");
   });
   it.each([
     ["10000", "960000", "0.96", "28.8"],
@@ -281,10 +343,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     "shares quantity for direct-input preview, estimate and submission at tick %s",
     async (tick, atoms, quantity, consideration) => {
       render(side, { quantityTickSize: tick });
-      change(
-        "Pay with",
-        side === BUY ? "29" : "0.966666"
-      );
+      change("Pay with", side === BUY ? "29" : "0.966666");
       expect(input("Receive").value).toBe(
         side === BUY ? quantity : consideration
       );
@@ -357,10 +416,7 @@ describe.each([BUY, SELL] as const)("Market %s form", (side) => {
     "blocks estimation and submission: %s",
     async (_label, overrides, amount) => {
       render(side, overrides);
-      change(
-        "Pay with",
-        amount ?? (side === BUY ? "29" : "0.966666")
-      );
+      change("Pay with", amount ?? (side === BUY ? "29" : "0.966666"));
       await estimate();
       expect(submit().disabled).toBe(true);
       expect(mocks.estimateBuy).not.toHaveBeenCalled();
@@ -378,7 +434,8 @@ describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
     const button = submit();
     expect(button.textContent).toBe("Connect Wallet");
     expect(button.disabled).toBe(false);
-    expect(mocks.connect).toHaveBeenCalledOnce();
+    // Opens the sign-in modal (Mavryk Wallet or email wallet)
+    expect(mocks.openConnectWallet).toHaveBeenCalledOnce();
     expect(mocks.buy).not.toHaveBeenCalled();
     expect(mocks.sell).not.toHaveBeenCalled();
   });
@@ -471,5 +528,130 @@ describe.each([BUY, SELL] as const)("Limit %s form", (side) => {
     expect(submit().disabled).toBe(true);
     expect(mocks.estimateBuy).not.toHaveBeenCalled();
     expect(mocks.estimateSell).not.toHaveBeenCalled();
+  });
+});
+
+describe("Network fee for email wallets", () => {
+  const estimateWithFee = (feeMumav: number, burnMumav = 0) =>
+    mocks.estimateBuy.mockResolvedValue({
+      actionSuccess: true,
+      data: {
+        batchOperations: [
+          { suggestedFeeMumav: feeMumav, burnFeeMumav: burnMumav },
+        ],
+      },
+    });
+  const withMvrkBalance = (mumav: number) => {
+    mocks.walletProvider = "dynamic";
+    mocks.toolkit = {
+      mv: { getBalance: vi.fn(async () => new BigNumber(mumav)) },
+      wallet: { pkh: vi.fn(async () => "mv1email") },
+    };
+  };
+  const text = () => container.textContent ?? "";
+
+  it("waits for the fee before the email wallet can trade", async () => {
+    withMvrkBalance(1_000_000);
+    estimateWithFee(1_000);
+    render(BUY);
+    change("Pay with", "29");
+
+    // A loader on the button, not an "Order Cannot Be Submitted" alert
+    expect(submit().textContent).toBe("Estimating fee…");
+    expect(text()).not.toContain("Order Cannot Be Submitted");
+    expect(submit().disabled).toBe(true);
+    expect(mocks.buy).not.toHaveBeenCalled();
+  });
+
+  it("blocks trading without enough MVRK for fee and burn", async () => {
+    withMvrkBalance(1_000);
+    estimateWithFee(1_000, 500);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain(
+      "Not enough MVRK for the network fee: 0.001500 MVRK needed, 0.001000 available."
+    );
+    expect(submit().disabled).toBe(true);
+    expect(mocks.buy).not.toHaveBeenCalled();
+  });
+
+  it("blocks trading when the fee cannot be estimated", async () => {
+    withMvrkBalance(1_000_000);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain("Couldn't estimate the network fee. Try again.");
+    expect(submit().disabled).toBe(true);
+  });
+
+  it("does not estimate again when only the polled orderbook object changes", async () => {
+    withMvrkBalance(1_000_000);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+    expect(mocks.estimateBuy).toHaveBeenCalledOnce();
+    expect(text()).toContain("Couldn't estimate the network fee. Try again.");
+
+    // Polls and re-renders bring new depth and config objects, same values
+    mocks.pollDepth();
+    render(BUY);
+    await estimate();
+    mocks.pollDepth();
+    render(BUY);
+    await estimate();
+
+    expect(mocks.estimateBuy).toHaveBeenCalledOnce();
+  });
+
+  it("asks to add MVRK when an empty wallet cannot be estimated", async () => {
+    // A node cannot simulate an operation from an account with 0 MVRK
+    withMvrkBalance(0);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain(
+      "You need MVRK to pay the network fee. Your wallet has 0 MVRK"
+    );
+    expect(submit().disabled).toBe(true);
+  });
+
+  it("trades with the shown fee as the approved budget", async () => {
+    withMvrkBalance(1_000_000);
+    estimateWithFee(1_000, 500);
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(submit().disabled).toBe(false);
+    expect(mocks.buy).toHaveBeenCalledOnce();
+    expect(mocks.lastActionOptions?.getExecutionOverrides?.()).toEqual({
+      approvedNetworkCostMumav: "1500",
+    });
+  });
+
+  it("says the action is unavailable before any fee message while it is gated", async () => {
+    withMvrkBalance(1_000);
+    estimateWithFee(1_000, 500);
+    mocks.isDirectEnabled = false;
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).toContain("Not available for email wallets yet.");
+    expect(text()).not.toContain("Not enough MVRK");
+    expect(submit().disabled).toBe(true);
+  });
+
+  it("leaves Mavryk Wallet without these checks: the extension reviews fees", async () => {
+    render(BUY);
+    change("Pay with", "29");
+    await estimate();
+
+    expect(text()).not.toContain("network fee");
+    expect(submit().disabled).toBe(false);
   });
 });

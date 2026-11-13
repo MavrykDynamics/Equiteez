@@ -7,6 +7,8 @@ import { Button } from "~/lib/atoms/Button";
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
+import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
 import { fromAssetSlug } from "~/lib/assets";
 
 // eslint-disable-next-line import/no-named-as-default
@@ -34,6 +36,7 @@ import {
 } from "../components/OrderExpiryBlock/OrderExpiryBlock";
 
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
+import { EstimatingFeeLabel } from "./EstimatingFeeLabel";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
@@ -60,6 +63,8 @@ type BuySellLimitScreenProps = {
   status: StatusFlag;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  /** The network fee is being estimated: the button waits with a loader */
+  isEstimatingFee?: boolean;
 };
 
 export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
@@ -82,7 +87,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   setLimitPrice,
   status,
   isOrderDataLoading = false,
-  validationMessage,
+  validationMessage: formValidationMessage,
+  isEstimatingFee = false,
 }) => {
   const { baseTokenSlug: slug } = metadata;
 
@@ -101,7 +107,8 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } = useUserContext();
+  const openConnectWallet = useConnectWallet();
+  const { userTokensBalances, isKyced, userAddress } = useUserContext();
   const isDisconnected = !userAddress;
 
   // Read the balance of the orderbook's actual quote token, not a hardcoded
@@ -126,6 +133,14 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
+  const actionAvailability = useActionAvailability(
+    isBuyAction ? "orderbook.buy" : "orderbook.sell"
+  );
+  // Why this wallet cannot trade here comes first (fee or form problems are
+  // moot then); || not ??, so an empty message hides nothing
+  const validationMessage =
+    (actionAvailability.isAllowed ? undefined : actionAvailability.reason) ||
+    formValidationMessage;
   const displayTickSize = useMemo(
     () => getDisplayTickSize(rawTickSize, stableCoinMetadata.decimals),
     [rawTickSize, stableCoinMetadata.decimals]
@@ -399,17 +414,24 @@ export const BuySellLimitScreen: FC<BuySellLimitScreenProps> = ({
               : styles.sellSubmitButton,
           continueButtonClassName
         )}
-        onClick={isDisconnected ? connect : handleContinueClick}
-        disabled={!isDisconnected && isBtnDisabled}
+        onClick={
+          isDisconnected ? () => openConnectWallet() : handleContinueClick
+        }
+        disabled={!isDisconnected && (isBtnDisabled || isEstimatingFee)}
         isLoading={!isDisconnected && isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {isDisconnected
-          ? "Connect Wallet"
-          : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+        {isDisconnected ? (
+          "Connect Wallet"
+        ) : isEstimatingFee && !isLoading ? (
+          <EstimatingFeeLabel />
+        ) : (
+          getStatusLabel(status, isBuyAction ? "Buy" : "Sell")
+        )}
       </Button>
+      <p className={styles.mobileTradeNotice}>Open on desktop to trade.</p>
     </div>
   );
 };

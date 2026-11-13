@@ -28,13 +28,15 @@ vi.mock("~/contracts/primaryPurchase.contract", () => ({
   primaryPurchase: mocks.purchase,
   estimatePrimaryPurchase: mocks.estimate,
 }));
+vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
+  useConnectWallet: () => vi.fn(),
+}));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ connect: vi.fn(), isKyced: mocks.isKyced }),
 }));
 vi.mock("~/lib/metadata", () => ({
   createFallbackTokenMetadata: (value: unknown) => value,
 }));
-vi.mock("~/lib/atoms/Spinner", () => ({ Spinner: () => <div>Loading</div> }));
 vi.mock("~/providers/ToasterProvider/toaster.provider.const", () => ({
   TOASTER_UPDATE_DATA_AFTER_ACTION_DATA: {},
 }));

@@ -6,6 +6,9 @@ import { Button } from "~/lib/atoms/Button";
 // icons
 import { BUY, OrderType } from "../consts";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
+import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
+import type { WalletAction } from "~/providers/WalletProvider/capabilities";
 import { fromAssetSlug } from "~/lib/assets";
 
 // eslint-disable-next-line import/no-named-as-default
@@ -25,6 +28,7 @@ import {
 } from "~/lib/ui/use-status-flag";
 
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
+import { EstimatingFeeLabel } from "./EstimatingFeeLabel";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
 
@@ -46,6 +50,10 @@ type BuySellScreenProps = {
   hasQuoteError?: boolean;
   isOrderDataLoading?: boolean;
   validationMessage?: string;
+  /** The network fee is being estimated: the button waits with a loader */
+  isEstimatingFee?: boolean;
+  /** Capability checked for the main action; defaults to orderbook buy/sell */
+  capabilityAction?: WalletAction;
   marketAmounts?: { quantity: BigNumber; consideration: BigNumber };
   primaryPurchase?: {
     receiveAmount: BigNumber | undefined;
@@ -70,7 +78,9 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   status,
   hasQuoteError = false,
   isOrderDataLoading = false,
-  validationMessage,
+  validationMessage: formValidationMessage,
+  isEstimatingFee = false,
+  capabilityAction,
   primaryPurchase,
   marketAmounts,
 }) => {
@@ -85,8 +95,8 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
     null
   );
 
-  const { userTokensBalances, isKyced, userAddress, connect } =
-    useUserContext();
+  const openConnectWallet = useConnectWallet();
+  const { userTokensBalances, isKyced, userAddress } = useUserContext();
   const isDisconnected = !userAddress;
   const canPurchase = primaryPurchase?.isEligible ?? isKyced;
 
@@ -116,6 +126,14 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
   );
 
   const isBuyAction = actionType === BUY;
+  const actionAvailability = useActionAvailability(
+    capabilityAction ?? (isBuyAction ? "orderbook.buy" : "orderbook.sell")
+  );
+  // Why this wallet cannot trade here comes first (fee or form problems are
+  // moot then); || not ??, so an empty message hides nothing
+  const validationMessage =
+    (actionAvailability.isAllowed ? undefined : actionAvailability.reason) ||
+    formValidationMessage;
   const hasTotalError = isBuyAction
     ? amount
       ? amount.gt(usdBalance)
@@ -394,17 +412,24 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
               : styles.sellSubmitButton,
           continueButtonClassName
         )}
-        onClick={isDisconnected ? connect : handleContinueClick}
-        disabled={!isDisconnected && isContinueDisabled}
+        onClick={
+          isDisconnected ? () => openConnectWallet() : handleContinueClick
+        }
+        disabled={!isDisconnected && (isContinueDisabled || isEstimatingFee)}
         isLoading={!isDisconnected && isLoading}
         size="custom"
         textVariant="caption"
         variant="custom"
       >
-        {isDisconnected
-          ? "Connect Wallet"
-          : getStatusLabel(status, isBuyAction ? "Buy" : "Sell")}
+        {isDisconnected ? (
+          "Connect Wallet"
+        ) : isEstimatingFee && !isLoading ? (
+          <EstimatingFeeLabel />
+        ) : (
+          getStatusLabel(status, isBuyAction ? "Buy" : "Sell")
+        )}
       </Button>
+      <p className={styles.mobileTradeNotice}>Open on desktop to trade.</p>
     </div>
   );
 };

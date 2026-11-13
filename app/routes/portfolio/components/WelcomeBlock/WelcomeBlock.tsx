@@ -10,11 +10,7 @@ import { useNotificationsContext } from "~/providers/NotificationsProvider/Notif
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { getTrimmedHash } from "~/lib/utils";
 
-export function WelcomeBlock({
-  activeTab,
-}: {
-  activeTab: string;
-}) {
+export function WelcomeBlock({ activeTab }: { activeTab: string }) {
   const navigate = useNavigate();
   const { userAddress } = useUserContext();
   const { unreadNotificationsCount } = useNotificationsContext();

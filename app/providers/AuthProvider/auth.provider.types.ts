@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { WalletProviderKind } from "~/services/direct/attempt.types";
 import {
   AuthChallengeResponseSchema,
   AuthRefreshResponseSchema,
@@ -25,7 +26,7 @@ export type AuthVerifyRequest = {
   signature: string;
   publicKey: string;
   walletAddress: string;
-  walletProvider?: "mavryk_extension";
+  walletProvider?: WalletProviderKind;
 };
 
 export type AuthRefreshRequest = {

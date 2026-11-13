@@ -29,8 +29,13 @@ export type UserContext = UserContextStateType & {
 
   // actions
   connect: () => void;
+  /**
+   * Connect with the given step (e.g. email code check), then sign in. A step
+   * resolving to false did not connect, and no sign-in follows.
+   */
+  connectWithWallet: (connectWallet: () => Promise<unknown>) => Promise<void>;
   refetchUserAccountStatus: () => Promise<void>;
-  signOut: () => void;
+  signOut: (options?: { keepProviderSession?: boolean }) => Promise<void>;
   changeUser: () => void;
 };
 
