@@ -53,6 +53,11 @@
   align-items: center;
 }
 
+.icon {
+  display: flex;
+  align-self: center;
+}
+
 .notification .count {
   width: 18px;
   border-radius: var(--r-radius-pill);

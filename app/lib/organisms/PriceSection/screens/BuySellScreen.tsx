@@ -31,6 +31,7 @@ import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
 import { EstimatingFeeLabel } from "./EstimatingFeeLabel";
 import styles from "./BuySellForm.module.css";
 import { RAlert } from "~/templates/Alert/RAlert";
+import { KycRequiredAlert } from "~/templates/Alert/KycRequiredAlert";
 
 type BuySellScreenProps = {
   metadata: OrderbookTokenMetadata;
@@ -369,11 +370,7 @@ export const BuySellScreen: FC<BuySellScreenProps> = ({
 
       {!isDisconnected && !canPurchase && (
         <div className={styles.alertBlock}>
-          <RAlert type="warning" header="Verify with Mavryk Pro to Trade">
-            Trading on Equiteez requires the Mavryk Pro wallet for enhanced
-            security and regulatory compliance. Upgrade to Mavryk Pro inside
-            your Mavryk Wallet.
-          </RAlert>
+          <KycRequiredAlert />
         </div>
       )}
 

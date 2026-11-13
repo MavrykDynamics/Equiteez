@@ -1,0 +1,88 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--r-space-18);
+}
+
+/* Figma "Portfolio - Profile": bordered card, 24px sides, 32px bottom */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-8);
+  padding: var(--r-space-6) var(--r-space-6) var(--r-space-8);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.kyc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+}
+
+.message {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  border-radius: var(--r-radius-12);
+}
+
+.warning {
+  background: var(--r-surface-warning);
+}
+
+.success {
+  background: #def1e7;
+}
+
+.neutral {
+  background: var(--r-color-neutral-50);
+}
+
+.messageIcon {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.messageText {
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.messageText p {
+  margin: 0;
+}
+
+.link {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.error {
+  margin: 0;
+  color: var(--r-color-red-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
