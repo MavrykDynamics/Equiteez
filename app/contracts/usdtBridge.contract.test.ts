@@ -1,8 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BigNumber } from "bignumber.js";
-import { encodeFunctionData, hexToString, type Address, type Hash } from "viem";
+import {
+  encodeFunctionData,
+  hexToString,
+  parseGwei,
+  type Address,
+  type Hash,
+} from "viem";
 import { createConfig, http } from "wagmi";
-import { sepolia } from "wagmi/chains";
+import { arbitrumSepolia } from "wagmi/chains";
 
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import {
@@ -15,6 +21,7 @@ import {
 } from "./usdtBridge.contract";
 
 const actions = vi.hoisted(() => ({
+  estimateFeesPerGas: vi.fn(),
   getTransactionConfirmations: vi.fn(),
   readContract: vi.fn(),
   simulateContract: vi.fn(),
@@ -24,8 +31,8 @@ const actions = vi.hoisted(() => ({
 vi.mock("wagmi/actions", () => actions);
 
 const config = createConfig({
-  chains: [sepolia],
-  transports: { [sepolia.id]: http() },
+  chains: [arbitrumSepolia],
+  transports: { [arbitrumSepolia.id]: http() },
 });
 const account: Address = "0x1111111111111111111111111111111111111111";
 const recipient = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
@@ -64,6 +71,10 @@ beforeEach(() => {
     async (_config: unknown, request: unknown) => ({ request, result: true })
   );
   actions.writeContract.mockResolvedValue(hash);
+  actions.estimateFeesPerGas.mockResolvedValue({
+    maxFeePerGas: parseGwei("0.02"),
+    maxPriorityFeePerGas: 0n,
+  });
   actions.getTransactionConfirmations.mockResolvedValue(3n);
   actions.waitForTransactionReceipt.mockResolvedValue({
     status: "success",
@@ -74,8 +85,8 @@ beforeEach(() => {
 describe("USDT bridge amount and deployed call", () => {
   it("encodes the deployed selector, exact 18-decimal amount, and UTF-8 Mavryk recipient", () => {
     const call = buildUsdtWrapCall(amount, ` ${recipient} `);
-    expect(call.address).toBe("0x476a30d098eD197c2b109abaBbf5135D49df0967");
-    expect(call.args[0]).toBe("0xada0b668c6598559c5c816a8b633efe714c5b5f3");
+    expect(call.address).toBe("0x856c1E8aaFD4FA4586b8B299941f79a593de40a6");
+    expect(call.args[0]).toBe("0x5c05e82be66b19476bacb558e62e7d449b98635f");
     expect(call.args[1]).toBe(rawAmount);
     expect(hexToString(call.args[2])).toBe(recipient);
     expect(encodeFunctionData(call).slice(0, 10)).toBe("0xeb093ee8");
@@ -136,7 +147,7 @@ describe("USDT approval and lock execution", () => {
       requests.every(
         (request) =>
           request.value === undefined &&
-          request.chainId === sepolia.id &&
+          request.chainId === arbitrumSepolia.id &&
           request.account === account
       )
     ).toBe(true);
@@ -331,4 +342,29 @@ describe("receipt recovery", () => {
       );
     }
   );
+});
+
+describe("USDT bridge fees", () => {
+  it("raises the max fee to the bridge chain minimum", async () => {
+    await execute();
+    for (const [, request] of actions.simulateContract.mock.calls)
+      expect(request).toMatchObject({
+        maxFeePerGas: USDT_BRIDGE.minMaxFeePerGas,
+        maxPriorityFeePerGas: 0n,
+      });
+    expect(USDT_BRIDGE.minMaxFeePerGas).toBe(parseGwei("0.025"));
+  });
+
+  it("keeps a higher network max fee", async () => {
+    actions.estimateFeesPerGas.mockResolvedValue({
+      maxFeePerGas: parseGwei("0.1"),
+      maxPriorityFeePerGas: parseGwei("0.01"),
+    });
+    await execute();
+    for (const [, request] of actions.simulateContract.mock.calls)
+      expect(request).toMatchObject({
+        maxFeePerGas: parseGwei("0.1"),
+        maxPriorityFeePerGas: parseGwei("0.01"),
+      });
+  });
 });

@@ -281,7 +281,7 @@ export function BridgeTransactionLink({ state }: { state: UsdtBridgeState }) {
   return state.progress?.hash ? (
     <RButton
       as="a"
-      href={`https://sepolia.etherscan.io/tx/${state.progress.hash}`}
+      href={`https://sepolia.arbiscan.io/tx/${state.progress.hash}`}
       target="_blank"
       rel="noopener noreferrer"
       size="small"

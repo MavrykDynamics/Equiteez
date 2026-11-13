@@ -197,7 +197,7 @@ export function BridgeView({
         {balanceStatus === "disconnected"
           ? "Connect wallet to view balance"
           : balanceStatus === "wrongNetwork"
-            ? "Switch to Sepolia to view balance"
+            ? `Switch to ${USDT_BRIDGE.chainName} to view balance`
             : balanceStatus === "loading"
               ? "Loading balance…"
               : "Balance unavailable"}
@@ -256,7 +256,7 @@ export function BridgeView({
               Max
             </button>
           }
-          label="Send from Ethereum • Sepolia"
+          label={`Send from ${USDT_BRIDGE.chainName}`}
           onChange={onDepositAmountChange}
           balance={tokenBalance ?? ZERO}
           assetIconSrc={UsdtToken}
@@ -283,7 +283,7 @@ export function BridgeView({
           <RText color="neutral-700" size="body-s">
             <span
               className="flex gap-3 items-center"
-              title="Time estimates Ethereum confirmations only, assuming 1–3 blocks per transaction. Wallet signing and delivery to Mavryk take additional time. Fee estimates Sepolia network costs including required approvals; the final wallet fee may differ. Unavailable means the RPC could not provide a reliable estimate."
+              title="Time estimates Ethereum confirmations only, assuming 1–3 blocks per transaction. Wallet signing and delivery to Mavryk take additional time. Fee estimates Arbitrum Sepolia network costs including required approvals; the final wallet fee may differ. Unavailable means the RPC could not provide a reliable estimate."
             >
               <span>
                 {" "}
@@ -315,7 +315,7 @@ export function BridgeView({
       {isWrongNetwork && (
         <div className={styles.walletNotice}>
           <RText size="body-s">
-            Switch your Ethereum wallet to Sepolia to continue.
+            Switch your wallet to {USDT_BRIDGE.chainName} to continue.
           </RText>
           <RButton
             isLoading={isBusy}
@@ -324,7 +324,7 @@ export function BridgeView({
             tone="black"
             variant="secondary"
           >
-            Switch to Sepolia
+            Switch to {USDT_BRIDGE.chainName}
           </RButton>
         </div>
       )}
