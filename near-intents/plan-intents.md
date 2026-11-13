@@ -231,13 +231,13 @@ Rules:
 - [x] Tests: native and ERC-20 call shapes, rejection, unknown broadcast never resends, modal close during the prompt.
 
 ### EQ-FE-04: Progress and global widget (3d)
-- [ ] `intentOperations.ts` store: validated restore, scoped key, monotonic merge, storage-error exposure (same pattern as `bridgeTransactions.ts`, kept as a separate module).
-- [ ] `TransactionsProvider`: hold the intent map next to the bridge map and expose `intents`, `publishIntent`, `refreshIntent`. The existing context fields stay unchanged.
-- [ ] Tracker: for each open (non-terminal) operation, poll `GET /operations/:id` with backoff (for example 5s, rising to 30s, paused while the tab is hidden, resumed on focus/online/pageshow), one request in flight per operation, abortable. If the backend publishes operation updates on the existing notifier channel, add a `useNotifierEvent` adapter and slow the polling down. No new socket.
-- [ ] `RTransactionWidget`: accept an optional `steps` labels prop (default = current bridge labels, so existing behavior is unchanged). Update the redesign registry if the props change.
-- [ ] `TransactionWidgetProvider`: map intent records to `TransactionWidgetModel` (`kind: "intent"`, composite ID `intent:<operationId>`). Reuse holds, discovery, removal and expiry (`widgetRemovals` keyed by the composite ID).
-- [ ] Modal: after funding, show the submitted view → `IntentsStatusView` (same model as the widget). Minimize/close releases the hold and the card appears in the host. Reopening the modal while an operation is active shows its details instead of a new form (one canonical operation).
-- [ ] Tests: minimize/reopen, route navigation, reload in every `fundingState`, duplicate/out-of-order snapshots, account switch isolation, existing bridge widget tests still pass.
+- [x] `intentOperations.ts` store: validated restore, scoped key, monotonic merge, storage-error exposure (same pattern as `bridgeTransactions.ts`, kept as a separate module).
+- [x] `TransactionsProvider`: hold the intent map next to the bridge map and expose `intents`, `publishIntent`, `refreshIntent`. The existing context fields stay unchanged.
+- [x] Tracker: for each open (non-terminal) operation, poll `GET /operations/:id` with backoff (for example 5s, rising to 30s, paused while the tab is hidden, resumed on focus/online/pageshow), one request in flight per operation, abortable. If the backend publishes operation updates on the existing notifier channel, add a `useNotifierEvent` adapter and slow the polling down. No new socket. _(Polling only for now: no notifier event exists for operations yet, see open question 5.)_
+- [x] `RTransactionWidget`: accept an optional `steps` labels prop (default = current bridge labels, so existing behavior is unchanged). Update the redesign registry if the props change.
+- [x] `TransactionWidgetProvider`: map intent records to `TransactionWidgetModel` (`kind: "intent"`, composite ID `intent:<operationId>`). Reuse holds, discovery, removal and expiry (`widgetRemovals` keyed by the composite ID).
+- [x] Modal: after funding, show the submitted view → `IntentsStatusView` (same model as the widget). Minimize/close releases the hold and the card appears in the host. Reopening the modal while an operation is active shows its details instead of a new form (one canonical operation).
+- [x] Tests: minimize/reopen, route navigation, reload in every `fundingState`, duplicate/out-of-order snapshots, account switch isolation, existing bridge widget tests still pass.
 
 ### EQ-FE-05: Receipt, balances and activity (2d)
 - [ ] Destination token check: route `destination` must match `TokensProvider` metadata (address/id/decimals). On a mismatch, disable the route.

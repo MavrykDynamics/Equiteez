@@ -44,6 +44,7 @@ import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.prov
 import { useIntentSourceBalance } from "~/providers/EthereumProvider/hooks/useIntentSourceBalance";
 import { useIntentsFunding } from "~/providers/EthereumProvider/hooks/useIntentsFunding";
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
+import { toIntentWidget } from "~/providers/TransactionsProvider/intentWidget";
 import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
 
 type Params = {
@@ -74,7 +75,9 @@ export type IntentsReview =
       preview: IntentQuote;
       localId: string;
       operation: IntentOperation;
-    });
+    })
+  /** A committed operation shown in the modal (same model as the widget). */
+  | { phase: "tracking"; session: IntentOperations; localId: string };
 
 const noRecords: ReadonlyMap<string, IntentRecord> = new Map();
 const noSubscribe = () => () => {};
@@ -90,7 +93,7 @@ const toApiError = (error: unknown) =>
 /** Orchestrates the 1Click deposit inside Deposit Funds. */
 export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   const catalog = useIntentsRoutes();
-  const { account, intentSession } = useTransactionsContext();
+  const { account, intentSession, refreshIntent } = useTransactionsContext();
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [amount, setAmount] = useState<BigNumber | undefined>();
   const [networkError, setNetworkError] = useState<string | null>(null);
@@ -213,6 +216,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       );
       return;
     }
+    if (review.phase === "tracking") return;
     if (review.key === quoteKey || hasFundingStarted) return;
     resetReview(
       "The quote was cleared because your account, wallet or amount changed."
@@ -220,7 +224,30 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   }, [quoteKey, intentSession, review, resetReview, hasFundingStarted]);
 
   // Countdown clock for quote expiry while a quote is on screen.
-  const hasQuote = review.phase !== "form" && review.phase !== "quoting";
+  // Once the wallet returned (or a reload left the prompt open), the modal
+  // follows the operation instead of the quote.
+  const isPrompting = Boolean(funding.busyId);
+  useEffect(() => {
+    if (review.phase !== "ready" || !activeRecord) return;
+    const { fundingState } = activeRecord;
+    if (
+      fundingState === "broadcast" ||
+      fundingState === "confirmed" ||
+      fundingState === "unknown" ||
+      fundingState === "reverted" ||
+      (fundingState === "prompted" && !isPrompting)
+    )
+      setReview({
+        phase: "tracking",
+        session: review.session,
+        localId: review.localId,
+      });
+  }, [review, activeRecord, isPrompting]);
+
+  const hasQuote =
+    review.phase !== "form" &&
+    review.phase !== "quoting" &&
+    review.phase !== "tracking";
   useEffect(() => {
     if (!hasQuote) return;
     setNow(Date.now());
@@ -414,6 +441,35 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     [api]
   );
 
+  /**
+   * Reopening Deposit Funds shows the newest committed, unfinished operation
+   * of this account instead of a new form. Returns whether one was found.
+   */
+  const resumeActive = useCallback(() => {
+    if (!intentSession) return false;
+    const current = reviewRef.current;
+    if (current.phase !== "form") return current.phase === "tracking";
+    const active = [...intentSession.getSnapshot().records.values()]
+      .filter((record) => {
+        const model = toIntentWidget(record);
+        return model && !model.isTerminal;
+      })
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (!active) return false;
+    setReview({
+      phase: "tracking",
+      session: intentSession,
+      localId: active.localId,
+    });
+    refreshIntent?.(active.localId);
+    return true;
+  }, [intentSession, refreshIntent]);
+
+  const trackedModel = useMemo(
+    () => (activeRecord ? toIntentWidget(activeRecord) : null),
+    [activeRecord]
+  );
+
   const acceptUpdatedQuote = useCallback(() => {
     setReview((current) =>
       current.phase === "reconfirm" ? { ...current, phase: "ready" } : current
@@ -475,7 +531,9 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     acceptUpdatedQuote,
     cancelReview: resetReview,
     activeRecord,
+    trackedModel,
     hasFundingStarted,
+    resumeActive,
     fund,
     simulateFunding,
     isFunding: Boolean(funding.busyId),

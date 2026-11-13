@@ -25,6 +25,8 @@ const mocks = vi.hoisted(() => ({
   submit: vi.fn(),
   intentsEnabled: false,
   resetIntents: vi.fn(),
+  resumeIntent: vi.fn(() => false),
+  intentsReview: { phase: "form" } as { phase: string; localId?: string },
 }));
 
 vi.mock("~/consts/intents", () => ({
@@ -35,11 +37,18 @@ vi.mock("~/consts/intents", () => ({
 vi.mock("~/hooks/useIntentsDeposit", () => ({
   useIntentsDeposit: () => ({
     resetForm: mocks.resetIntents,
-    review: { phase: "form" },
+    review: mocks.intentsReview,
+    resumeActive: mocks.resumeIntent,
+    activeRecord: mocks.intentsReview.phase === "tracking" ? {} : undefined,
+    hasFundingStarted: mocks.intentsReview.phase === "tracking",
+    cancelReview: vi.fn(),
   }),
 }));
 vi.mock("./components/IntentsView", () => ({
   IntentsView: () => <p>Intents form</p>,
+}));
+vi.mock("./components/IntentsStatusView", () => ({
+  IntentsStatusView: () => <p>Intents status</p>,
 }));
 
 vi.mock("~/providers/TransactionsProvider/TransactionWidgetProvider", () => ({
@@ -101,6 +110,8 @@ beforeEach(() => {
   mocks.holdDeposit.mockReturnValue(mocks.releaseDeposit);
   mocks.transactions.clear();
   mocks.intentsEnabled = false;
+  mocks.intentsReview = { phase: "form" };
+  mocks.resumeIntent.mockReturnValue(false);
   mocks.state = {
     amount: "1",
     recipient: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt",
@@ -419,6 +430,32 @@ describe("1Click deposit method", () => {
       expect(mocks.resetIntents).toHaveBeenCalled();
       await render(true);
       expect(element.textContent).toContain("Set amount");
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+  it("reopens on the active operation and holds its widget card", async () => {
+    mocks.intentsEnabled = true;
+    mocks.resumeIntent.mockImplementation(() => {
+      mocks.intentsReview = { phase: "tracking", localId: "local-1" };
+      return true;
+    });
+    const { element, root, render } = await renderForm();
+    try {
+      await render();
+      expect(element.textContent).toContain("Intents status");
+      expect(mocks.holdDeposit).toHaveBeenCalledWith("intent:local-1");
+      await render(false);
+      expect(mocks.releaseDeposit).toHaveBeenCalled();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("does not resume while the feature flag is off", async () => {
+    const { root } = await renderForm();
+    try {
+      expect(mocks.resumeIntent).not.toHaveBeenCalled();
     } finally {
       await act(async () => root.unmount());
     }

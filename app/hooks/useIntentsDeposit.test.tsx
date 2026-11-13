@@ -327,7 +327,7 @@ describe("funding hand-off", () => {
     signIn(accountA, sourceB);
     mocks.ctx.intentSession = session;
     await render();
-    expect(mocks.result.review.phase).toBe("ready");
+    expect(mocks.result.review.phase).toBe("tracking");
     expect(mocks.result.activeRecord?.fundingState).toBe("broadcast");
 
     signIn(accountB);
@@ -335,6 +335,65 @@ describe("funding hand-off", () => {
     expect(mocks.result.review.phase).toBe("form");
     expect(mocks.result.reviewError).toBeNull();
     expect(session.get(record.localId)?.fundingState).toBe("broadcast");
+  });
+});
+
+describe("operation tracking in the modal", () => {
+  it("follows the operation once the wallet returned a hash", async () => {
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmQuote());
+    const [record] = store().getSnapshot().records.values();
+    await act(async () => {
+      store().upsert({
+        ...store().get(record.localId)!,
+        fundingState: "broadcast",
+        sourceHashes: [`0x${"a".repeat(64)}`],
+        sequence: store().get(record.localId)!.sequence + 1,
+      });
+    });
+    expect(mocks.result.review).toMatchObject({
+      phase: "tracking",
+      localId: record.localId,
+    });
+    expect(mocks.result.trackedModel?.operationId).toBe(
+      `intent:${record.localId}`
+    );
+  });
+
+  it("resumes the newest unfinished committed operation, never an unfunded one", async () => {
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmQuote());
+    const [unfunded] = store().getSnapshot().records.values();
+    await act(async () => mocks.result.cancelReview());
+    let found = false;
+    await act(async () => {
+      found = mocks.result.resumeActive();
+    });
+    expect(found).toBe(false);
+
+    await act(async () => mocks.result.setAmount(new BigNumber(3)));
+    await act(async () => mocks.result.requestPreview());
+    await act(async () => mocks.result.confirmQuote());
+    const funded = [...store().getSnapshot().records.values()].find(
+      (item) => item.localId !== unfunded.localId
+    )!;
+    store().upsert({
+      ...store().get(funded.localId)!,
+      fundingState: "unknown",
+      sourceHashes: [`0x${"a".repeat(64)}`],
+      sequence: store().get(funded.localId)!.sequence + 1,
+    });
+    await act(async () => mocks.result.cancelReview());
+    await act(async () => {
+      found = mocks.result.resumeActive();
+    });
+    expect(found).toBe(true);
+    expect(mocks.result.review).toMatchObject({
+      phase: "tracking",
+      localId: funded.localId,
+    });
   });
 });
 

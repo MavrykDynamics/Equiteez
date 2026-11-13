@@ -12,7 +12,10 @@ import { formatRawAmount } from "~/lib/intents/intentRoute";
 import styles from "../RDepositFundsModal.module.css";
 import intentsStyles from "./IntentsView.module.css";
 
-type QuoteReview = Exclude<IntentsReview, { phase: "form" | "quoting" }>;
+type QuoteReview = Exclude<
+  IntentsReview,
+  { phase: "form" | "quoting" | "tracking" }
+>;
 
 type IntentsQuoteViewProps = {
   review: QuoteReview;

@@ -41,6 +41,10 @@ export type RTransactionWidgetProps = {
   state: RTransactionWidgetState;
   sourceExplorerUrl?: string;
   className?: string;
+  /** Four step labels; defaults to the direct bridge labels. */
+  steps?: readonly string[];
+  /** Accessible name of the card. */
+  label?: string;
   /** Supplied only when WSS confirms a terminal transaction. */
   onDismiss?: () => void;
 };
@@ -63,11 +67,13 @@ export function RTransactionWidget({
   recipient,
   state,
   className,
+  steps = transactionWidgetStepLabels,
+  label = "Bridge transaction",
   onDismiss,
 }: RTransactionWidgetProps) {
   return (
     <section
-      aria-label="Bridge transaction"
+      aria-label={label}
       className={clsx(styles.widget, className)}
       data-status={state.status}
     >
@@ -116,7 +122,7 @@ export function RTransactionWidget({
       <div role="status" aria-live="polite" aria-atomic="true">
         {state.status === "progress" ? (
           <ol className={styles.steps} aria-label="Bridge progress">
-            {transactionWidgetStepLabels.map((defaultLabel, index) => {
+            {steps.map((defaultLabel, index) => {
               const step = index + 1;
               const isCurrent = step === state.step;
               const label = isCurrent

@@ -13,12 +13,14 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provider";
 import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import { useTransactionWidget } from "~/providers/TransactionsProvider/TransactionWidgetProvider";
+import { getIntentWidgetId } from "~/providers/TransactionsProvider/intentWidget";
 
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
 import { ConfirmedView } from "./components/ConfirmedView";
 import { IntentsFundingPanel } from "./components/IntentsFundingPanel";
 import { IntentsQuoteView } from "./components/IntentsQuoteView";
+import { IntentsStatusView } from "./components/IntentsStatusView";
 import { IntentsView } from "./components/IntentsView";
 import { ReceiveView } from "./components/ReceiveView";
 import styles from "./RDepositFundsModal.module.css";
@@ -76,11 +78,28 @@ export function RDepositFundsModal({
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
   const resetIntentsForm = intents.resetForm;
   const intentsReview = intents.review;
+  const isIntentsTab = INTENTS_DEPOSIT_ENABLED && activeTab === "intents";
   const isIntentsReviewOpen =
-    INTENTS_DEPOSIT_ENABLED &&
-    activeTab === "intents" &&
+    isIntentsTab &&
     intentsReview.phase !== "form" &&
-    intentsReview.phase !== "quoting";
+    intentsReview.phase !== "quoting" &&
+    intentsReview.phase !== "tracking";
+  const trackedIntent =
+    isIntentsTab && intentsReview.phase === "tracking"
+      ? intents.activeRecord
+      : undefined;
+  // While the modal shows a committed operation, its widget card is held.
+  const heldIntentId =
+    isOpen &&
+    "localId" in intentsReview &&
+    (intentsReview.phase === "tracking" || intents.hasFundingStarted)
+      ? getIntentWidgetId(intentsReview)
+      : null;
+  useEffect(
+    () => (heldIntentId ? holdDeposit(heldIntentId) : undefined),
+    [heldIntentId, holdDeposit]
+  );
+  const resumeIntent = intents.resumeActive;
   const wasOpen = useRef(isOpen);
   const resetModal = useCallback(() => {
     releaseDeposit.current?.();
@@ -93,10 +112,20 @@ export function RDepositFundsModal({
     setIsDetailsOpen(false);
   }, [resetBridge, resetIntentsForm, closeWalletSelection]);
 
+  const wasOpened = useRef(false);
   useEffect(() => {
     if (wasOpen.current && !isOpen) resetModal();
+    // Reopening shows the active 1Click operation rather than a new form.
+    if (
+      isOpen &&
+      !wasOpened.current &&
+      INTENTS_DEPOSIT_ENABLED &&
+      resumeIntent()
+    )
+      setActiveTab("intents");
+    wasOpened.current = isOpen;
     wasOpen.current = isOpen;
-  }, [isOpen, resetModal]);
+  }, [isOpen, resetModal, resumeIntent]);
 
   useEffect(
     () => () => {
@@ -156,6 +185,13 @@ export function RDepositFundsModal({
           onCheckConfirmation={ethereumWallet.bridge.checkConfirmation}
           onReset={resetModal}
           onClose={handleClose}
+        />
+      ) : trackedIntent ? (
+        <IntentsStatusView
+          record={trackedIntent}
+          model={intents.trackedModel}
+          onClose={handleClose}
+          onStartNew={() => intents.cancelReview()}
         />
       ) : isIntentsReviewOpen ? (
         <IntentsQuoteView

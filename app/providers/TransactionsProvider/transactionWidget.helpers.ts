@@ -10,6 +10,8 @@ import type { BridgeTransaction } from "./bridgeTransactions";
 import type { RTransactionWidgetState } from "./components/RTransactionWidget/RTransactionWidget";
 
 export type TransactionWidgetModel = {
+  /** Absent for direct bridge deposits. */
+  kind?: "bridge" | "intent";
   operationId: string;
   /** Popup waiting cards retain their identity when the first event supplies a log ID. */
   presentationId?: string;
@@ -19,6 +21,8 @@ export type TransactionWidgetModel = {
   recipient: string;
   sourceExplorerUrl?: string;
   state: RTransactionWidgetState;
+  /** Four step labels; defaults to the direct bridge labels. */
+  steps?: readonly string[];
   isHistorical: boolean;
   /** Only confirmed WSS terminal states can enable dismissal/expiry. */
   isTerminal: boolean;

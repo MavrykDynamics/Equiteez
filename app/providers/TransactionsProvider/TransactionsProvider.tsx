@@ -23,7 +23,9 @@ import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider"
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
 import { INTENTS_DEPOSIT_ENABLED, INTENTS_ENV } from "~/consts/intents";
 import type { IntentRecord } from "~/lib/intents/intentOperation";
+import { getIntentsApi } from "~/lib/apis/intents";
 import { IntentOperations, type IntentSnapshot } from "./intentOperations";
+import { IntentOperationsTracker } from "./intentOperationsTracker";
 import { recoverBridgeWidgets } from "./bridgeWidgetRecovery";
 import { BridgeReconciler } from "./bridgeReconciler";
 import {
@@ -58,6 +60,7 @@ type TransactionsContext = TransactionSnapshot & {
   /** Write target captured by intent flows; null when signed out/flag off. */
   intentSession: IntentOperations | null;
   intentStorageError: string | null;
+  refreshIntent: (localId?: string) => void;
 };
 const context = createContext<TransactionsContext | null>(null);
 const settlementQueryPrefixes = [
@@ -97,7 +100,19 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         : null,
     [account]
   );
-  useEffect(() => intentStore?.restore(), [intentStore]);
+  const currentIntentStore = useRef(intentStore);
+  currentIntentStore.current = intentStore;
+  const intentTracker = useMemo(
+    () =>
+      intentStore
+        ? new IntentOperationsTracker(
+            intentStore,
+            getIntentsApi(),
+            () => currentIntentStore.current === intentStore
+          )
+        : null,
+    [intentStore]
+  );
   const intentSnapshot = useSyncExternalStore(
     intentStore?.subscribe ?? emptySubscribe,
     intentStore?.getSnapshot ?? getEmptyIntentSnapshot,
@@ -159,12 +174,20 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     currentStore.current = store;
-    if (document.visibilityState !== "hidden") reconciler?.start();
+    intentStore?.restore();
+    if (document.visibilityState !== "hidden") {
+      reconciler?.start();
+      intentTracker?.start();
+    }
     const handleForeground = () => {
-      if (document.visibilityState === "hidden") reconciler?.stop();
-      else {
+      if (document.visibilityState === "hidden") {
+        reconciler?.stop();
+        intentTracker?.stop();
+      } else {
         reconciler?.stop();
         reconciler?.start();
+        intentTracker?.stop();
+        intentTracker?.start();
       }
     };
     document.addEventListener("visibilitychange", handleForeground);
@@ -173,11 +196,12 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     return () => {
       currentStore.current = null;
       reconciler?.stop();
+      intentTracker?.stop();
       document.removeEventListener("visibilitychange", handleForeground);
       window.removeEventListener("online", handleForeground);
       window.removeEventListener("pageshow", handleForeground);
     };
-  }, [reconciler, store]);
+  }, [reconciler, store, intentStore, intentTracker]);
   useEffect(() => {
     reconciler?.setConnected(
       status === NotifierConnectionStatus.Connected && wallet === account
@@ -210,6 +234,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       intents,
       intentSession: intentStore,
       intentStorageError: intentSnapshot.storageError,
+      refreshIntent: (localId?: string) => intentTracker?.refresh(localId),
       refresh: () => reconciler?.refresh(),
       publish: (record: BridgeTransaction) => {
         if (!store || currentStore.current !== store) return;
@@ -232,6 +257,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       reconciler,
       intents,
       intentStore,
+      intentTracker,
       intentSnapshot.storageError,
     ]
   );

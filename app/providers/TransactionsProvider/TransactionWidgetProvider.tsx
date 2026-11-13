@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useTransactionsContext } from "./TransactionsProvider";
 import { WidgetRemovals } from "./widgetRemovals";
+import { INTENTS_SOURCE_CHAINS } from "~/consts/intents";
+import { toIntentWidget } from "./intentWidget";
 
 import {
   createWidgetPresentation,
@@ -27,6 +29,7 @@ function useWidgetState() {
     reconciliationError,
     lastCheckedAt,
     refresh,
+    intents = [],
   } = useTransactionsContext();
   const removals = useMemo(
     () => new WidgetRemovals(account, network, () => window.localStorage),
@@ -49,8 +52,8 @@ function useWidgetState() {
   }, [removals]);
   const records = useMemo(() => [...transactions.values()], [transactions]);
   const models = useMemo(
-    () =>
-      records.flatMap((record) => {
+    () => [
+      ...records.flatMap((record) => {
         if (
           record.widgetRecovery === "pending" ||
           record.widgetRecovery === "suppressed"
@@ -72,7 +75,28 @@ function useWidgetState() {
           ];
         return [model];
       }),
-    [records, removalState.entries]
+      // 1Click operations share the stack, holds and removals under a
+      // composite `intent:<localId>` identity.
+      ...intents.flatMap((record) => {
+        const model = toIntentWidget(
+          record,
+          INTENTS_SOURCE_CHAINS.find(
+            (chain) => chain.id === record.source.chainId
+          )?.blockExplorers?.default.url
+        );
+        if (!model) return [];
+        if (removalState.entries.get(model.backendId!) != null)
+          return [
+            {
+              ...model,
+              isTerminal: true,
+              state: { status: "success" as const },
+            },
+          ];
+        return [model];
+      }),
+    ],
+    [records, intents, removalState.entries]
   );
   const [presentation, setPresentation] = useState(
     createWidgetPresentation(session)

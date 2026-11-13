@@ -33,7 +33,12 @@ const base = {
 const render = (review: IntentsReview, at = now) =>
   renderToString(
     <IntentsQuoteView
-      review={review as Exclude<IntentsReview, { phase: "form" | "quoting" }>}
+      review={
+        review as Exclude<
+          IntentsReview,
+          { phase: "form" | "quoting" | "tracking" }
+        >
+      }
       now={at}
       error={null}
       onConfirm={vi.fn()}
