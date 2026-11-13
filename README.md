@@ -54,7 +54,7 @@ for its transitive `pino` dependency.
 
 ## 1Click (NEAR Intents) deposits
 
-Behind a build-time flag; off by default. Design and lifecycle: [`near-intents/plan-intents.md`](near-intents/plan-intents.md).
+Behind a build-time flag; off by default. Lifecycle, contract and limitations: [`docs/intents-deposits.md`](docs/intents-deposits.md); plan: [`near-intents/plan-intents.md`](near-intents/plan-intents.md).
 
 - `INTENTS_DEPOSIT_ENABLED=true` adds the **Swap From Any Chain** tab to Deposit Funds.
 - `INTENTS_API` is the shared 1Click backend origin (requests go to `<origin>/v1/...`).

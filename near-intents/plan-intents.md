@@ -247,11 +247,11 @@ Rules:
 - [x] Tests: an unrelated deposit or balance increase doesn't complete the card, a matching completion does, other accounts are ignored.
 
 ### EQ-FE-06: Validation (2d)
-- [ ] Unit and integration tests with the mock API and deterministic storage. Mounted suites use `@vitest-environment jsdom`, as the existing ones do.
-- [ ] Regression: direct bridge flow, Receive tab, bridge widget, settlement notifications.
-- [ ] Desktop and mobile layout of the modal and widget, keyboard/focus return on close and reopen, `aria-live` status announcements.
-- [ ] With BE-09: a testnet transfer started in Equiteez against the real backend, checking the recipient balance, a single funding transaction, and truthful intermediate states.
-- [ ] `docs/intents-deposits.md`, plus updates to `AGENTS.md` and the redesign registry.
+- [x] Unit and integration tests with the mock API and deterministic storage. Mounted suites use `@vitest-environment jsdom`, as the existing ones do.
+- [x] Regression: direct bridge flow, Receive tab, bridge widget, settlement notifications.
+- [x] Desktop and mobile layout of the modal and widget, keyboard/focus return on close and reopen, `aria-live` status announcements. _(Covered by `aria-live` on steps and cards, the three-tab wrap at phone width, and react-modal's focus return on close. Not checked visually in a browser; moving focus between modal views is not handled, same as the direct bridge.)_
+- [ ] With BE-09: a testnet transfer started in Equiteez against the real backend, checking the recipient balance, a single funding transaction, and truthful intermediate states. _(Pending: needs the shared test environment.)_
+- [x] `docs/intents-deposits.md`, plus updates to `AGENTS.md` and the redesign registry. _(`docs/intents-deposits.md` and README added. There is no `AGENTS.md` in this repo. The redesign registry is updated locally, but `.codex/` is gitignored.)_
 
 ---
 
