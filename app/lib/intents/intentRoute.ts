@@ -6,7 +6,8 @@ export type IntentRouteAvailability =
   | "available"
   | "disabled"
   | "unsupported_chain"
-  | "unsupported_destination";
+  | "unsupported_destination"
+  | "token_mismatch";
 
 /**
  * A catalog route is usable only when the backend enabled it, Equiteez has a
@@ -16,11 +17,19 @@ export type IntentRouteAvailability =
 export function getIntentRouteAvailability(
   route: IntentRoute,
   supportedChainIds: readonly number[],
-  destinationNetwork: string
+  destinationNetwork: string,
+  /** Equiteez metadata for the destination token, when known. */
+  destinationMetadata?: { decimals: number }
 ): IntentRouteAvailability {
   if (!route.enabled) return "disabled";
   if (route.destination.network !== destinationNetwork)
     return "unsupported_destination";
+  // Balances use Equiteez metadata; a decimals mismatch would misreport receipt.
+  if (
+    destinationMetadata &&
+    destinationMetadata.decimals !== route.destination.decimals
+  )
+    return "token_mismatch";
   if (!supportedChainIds.includes(route.source.chainId))
     return "unsupported_chain";
   return "available";
@@ -33,6 +42,8 @@ export const intentRouteAvailabilityCopy: Record<
   disabled: "This route is temporarily unavailable.",
   unsupported_chain: "This source network is not supported in Equiteez yet.",
   unsupported_destination: "This route does not deliver to Mavryk Basenet.",
+  token_mismatch:
+    "This route's Mavryk token does not match Equiteez token data, so it is disabled.",
 };
 
 /** Raw integer units, or null when the amount has more decimals than the token. */

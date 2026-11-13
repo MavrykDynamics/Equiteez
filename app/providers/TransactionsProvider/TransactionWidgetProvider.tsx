@@ -12,6 +12,9 @@ import { useTransactionsContext } from "./TransactionsProvider";
 import { WidgetRemovals } from "./widgetRemovals";
 import { INTENTS_SOURCE_CHAINS } from "~/consts/intents";
 import { toIntentWidget } from "./intentWidget";
+import { isIntentOwnedBridgeRecord } from "./intentReceipts";
+
+const noForwardIds: ReadonlyMap<string, string> = new Map();
 
 import {
   createWidgetPresentation,
@@ -30,6 +33,7 @@ function useWidgetState() {
     lastCheckedAt,
     refresh,
     intents = [],
+    intentForwardIds = noForwardIds,
   } = useTransactionsContext();
   const removals = useMemo(
     () => new WidgetRemovals(account, network, () => window.localStorage),
@@ -54,6 +58,8 @@ function useWidgetState() {
   const models = useMemo(
     () => [
       ...records.flatMap((record) => {
+        // The forwarded deposit of a 1Click operation is shown on its card.
+        if (isIntentOwnedBridgeRecord(record, intentForwardIds)) return [];
         if (
           record.widgetRecovery === "pending" ||
           record.widgetRecovery === "suppressed"
@@ -96,7 +102,7 @@ function useWidgetState() {
         return [model];
       }),
     ],
-    [records, intents, removalState.entries]
+    [records, intents, intentForwardIds, removalState.entries]
   );
   const [presentation, setPresentation] = useState(
     createWidgetPresentation(session)

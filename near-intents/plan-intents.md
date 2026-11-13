@@ -240,11 +240,11 @@ Rules:
 - [x] Tests: minimize/reopen, route navigation, reload in every `fundingState`, duplicate/out-of-order snapshots, account switch isolation, existing bridge widget tests still pass.
 
 ### EQ-FE-05: Receipt, balances and activity (2d)
-- [ ] Destination token check: route `destination` must match `TokensProvider` metadata (address/id/decimals). On a mismatch, disable the route.
-- [ ] Correlation per §3.4 (forward hash + log index → existing bridge event/notification/backend row).
-- [ ] When the operation reaches `wrapped` (and again on correlated completion), trigger the existing `UserProvider` balance refresh and the activity/portfolio query invalidation.
-- [ ] Neutral fallback copy when there's no correlation. Persisted `announced` marker deduplicates the arrival toast across reconnects and tabs where possible.
-- [ ] Tests: an unrelated deposit or balance increase doesn't complete the card, a matching completion does, other accounts are ignored.
+- [x] Destination token check: route `destination` must match `TokensProvider` metadata (address/id/decimals). On a mismatch, disable the route.
+- [x] Correlation per §3.4 (forward hash + log index → existing bridge event/notification/backend row).
+- [x] When the operation reaches `wrapped` (and again on correlated completion), trigger the existing `UserProvider` balance refresh and the activity/portfolio query invalidation.
+- [x] Neutral fallback copy when there's no correlation. Persisted `announced` marker deduplicates the arrival toast across reconnects and tabs where possible.
+- [x] Tests: an unrelated deposit or balance increase doesn't complete the card, a matching completion does, other accounts are ignored.
 
 ### EQ-FE-06: Validation (2d)
 - [ ] Unit and integration tests with the mock API and deterministic storage. Mounted suites use `@vitest-environment jsdom`, as the existing ones do.

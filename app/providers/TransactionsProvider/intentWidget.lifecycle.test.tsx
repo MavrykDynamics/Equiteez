@@ -13,7 +13,11 @@ import { createIntentRecord } from "~/lib/intents/intentOperation";
 import { memoryStorage } from "~/lib/intents/intents.fixtures";
 import { NotifierConnectionStatus } from "../NotificationsProvider/notifications.const";
 import { RTransactionWidgetHost } from "./components/RTransactionWidget/RTransactionWidgetHost";
-import { TransactionsProvider } from "./TransactionsProvider";
+import {
+  TransactionsProvider,
+  useTransactionsContext,
+} from "./TransactionsProvider";
+import { deposit } from "./bridgeTransactions.fixtures";
 import {
   TransactionWidgetProvider,
   useTransactionWidget,
@@ -22,6 +26,8 @@ import {
 const mocks = vi.hoisted(() => ({
   account: "wallet-a" as string | null,
   api: null as unknown as IntentsApi,
+  fetchDeposits: vi.fn(),
+  success: vi.fn(),
 }));
 vi.mock("~/consts/intents", async (original) => ({
   ...(await original<typeof import("~/consts/intents")>()),
@@ -46,14 +52,14 @@ vi.mock("~/providers/NotificationsProvider/NotificationsProvider", () => ({
   }),
 }));
 vi.mock("~/providers/ToasterProvider/toaster.provider", () => ({
-  useToasterContext: () => ({ success: vi.fn(), warning: vi.fn() }),
+  useToasterContext: () => toaster,
 }));
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
   useQueryClient: () => queryClient,
 }));
 vi.mock("~/lib/apis/rwa/bridge/bridge", () => ({
-  fetchBridgeDeposits: vi.fn().mockResolvedValue({ deposits: [] }),
+  fetchBridgeDeposits: (...args: unknown[]) => mocks.fetchDeposits(...args),
 }));
 vi.mock("~/lib/apis/rwa/notifications/notifications", () => ({
   fetchWalletNotifications: vi.fn(),
@@ -68,8 +74,11 @@ let queryClient: QueryClient;
 let root: Root;
 let element: HTMLDivElement;
 let widgets!: ReturnType<typeof useTransactionWidget>;
+let transactions!: ReturnType<typeof useTransactionsContext>;
+const toaster = { success: mocks.success, warning: vi.fn() };
 function Probe() {
   widgets = useTransactionWidget();
+  transactions = useTransactionsContext();
   return null;
 }
 const render = () =>
@@ -146,6 +155,8 @@ beforeEach(() => {
   vi.setSystemTime(Date.parse("2026-11-13T10:00:00.000Z"));
   localStorage.clear();
   mocks.account = "wallet-a";
+  mocks.success.mockReset();
+  mocks.fetchDeposits.mockReset().mockResolvedValue([]);
   mocks.api = createIntentsMockApi({
     storage: () => memoryStorage(),
     latencyMs: 0,
@@ -235,5 +246,66 @@ describe("1Click operations in the global widget", () => {
     expect(cards()).toHaveLength(0);
     await render();
     expect(cards()).toHaveLength(0);
+  });
+
+  const storedRecord = () =>
+    JSON.parse(localStorage.getItem("equiteez:intents:v1:mock:wallet-a")!)
+      .records[0];
+
+  it("completes and announces once from verified settlement of the forward identity", async () => {
+    await seedFundedOperation();
+    await render();
+    await act(async () => vi.advanceTimersByTimeAsync(90_000));
+    const { forwardTxHash, forwardLogIndex } = storedRecord().backend;
+    expect(forwardTxHash).not.toBe(storedRecord().sourceHashes[0]);
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    mocks.fetchDeposits.mockResolvedValue([
+      deposit({
+        evm_tx_hash: forwardTxHash,
+        log_index: forwardLogIndex,
+        status: "executed",
+      }),
+    ]);
+    await act(async () => transactions.refresh());
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(intentModels()[0].state).toEqual({ status: "success" });
+    expect(storedRecord()).toMatchObject({
+      receipt: "correlated",
+      announced: true,
+    });
+    expect(mocks.success).toHaveBeenCalledOnce();
+    expect(mocks.success).toHaveBeenCalledWith(
+      "Deposit arrived",
+      expect.any(String)
+    );
+    expect(invalidate).toHaveBeenCalled();
+    // The forwarded bridge deposit is not a second card.
+    expect(
+      widgets.models.filter((model) => model.kind !== "intent")
+    ).toHaveLength(0);
+
+    // Reconnect/remount: no second announcement.
+    await act(async () => root.unmount());
+    root = createRoot(element);
+    await render();
+    await act(async () => transactions.refresh());
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(mocks.success).toHaveBeenCalledOnce();
+  });
+
+  it("is not completed by an unrelated executed deposit", async () => {
+    await seedFundedOperation();
+    await render();
+    await act(async () => vi.advanceTimersByTimeAsync(90_000));
+    mocks.fetchDeposits.mockResolvedValue([
+      deposit({ evm_tx_hash: `0x${"e".repeat(64)}`, status: "executed" }),
+    ]);
+    await act(async () => transactions.refresh());
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(intentModels()[0].state).toMatchObject({
+      status: "progress",
+      step: 4,
+    });
+    expect(mocks.success).not.toHaveBeenCalled();
   });
 });

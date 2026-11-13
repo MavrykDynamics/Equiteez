@@ -8,6 +8,7 @@ import {
   INTENTS_SOURCE_CHAINS,
 } from "~/consts/intents";
 import { getIntentsApi, type IntentRoute } from "~/lib/apis/intents";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 import {
   getIntentRouteAvailability,
   type IntentRouteAvailability,
@@ -22,6 +23,7 @@ export type IntentRouteOption = {
 export function useIntentsRoutes(enabled = INTENTS_DEPOSIT_ENABLED) {
   const api = getIntentsApi();
   const { chains } = useConfig();
+  const { tokensMetadata } = useTokensContext();
   const query = useQuery({
     queryKey: ["intents", "routes", api.env],
     enabled,
@@ -43,10 +45,13 @@ export function useIntentsRoutes(enabled = INTENTS_DEPOSIT_ENABLED) {
         availability: getIntentRouteAvailability(
           route,
           supportedChainIds,
-          INTENTS_DESTINATION_NETWORK
+          INTENTS_DESTINATION_NETWORK,
+          tokensMetadata[
+            `${route.destination.tokenAddress}_${route.destination.tokenId}`
+          ]
         ),
       })),
-    [query.data, supportedChainIds]
+    [query.data, supportedChainIds, tokensMetadata]
   );
 
   return {

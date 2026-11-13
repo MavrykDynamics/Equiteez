@@ -27,6 +27,16 @@ describe("route availability", () => {
   });
 });
 
+it("disables a route whose destination decimals differ from Equiteez metadata", () => {
+  const supported = [421614, 11155111];
+  expect(
+    getIntentRouteAvailability(usdt, supported, "basenet", { decimals: 6 })
+  ).toBe("available");
+  expect(
+    getIntentRouteAvailability(usdt, supported, "basenet", { decimals: 18 })
+  ).toBe("token_mismatch");
+});
+
 describe("amount validation", () => {
   it.each([
     [undefined, undefined, "Enter an amount."],
