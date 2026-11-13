@@ -11,12 +11,6 @@
   width: 100%;
 }
 
-.identity {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-2);
-}
-
 .actions {
   display: flex;
   gap: var(--r-space-3);

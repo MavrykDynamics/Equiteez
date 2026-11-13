@@ -21,7 +21,7 @@ export const CONNECT_ERROR_MESSAGES = {
     "Email sign-in is unavailable right now. Please try again later or use Mavryk Wallet.",
   cancelled: "Signing was cancelled. Try again when you're ready.",
   rateLimited: "Too many attempts. Wait a minute and try again.",
-  invalidCode: "That code didn't work. Check it or request a new one.",
+  invalidCode: "That code didn't work or has expired. Check it or resend.",
   invalidEmail: "Enter a valid email address.",
   network: "The Mavryk network is unavailable right now. Please try again.",
   generic: "Something went wrong. Please try again.",

@@ -7,7 +7,7 @@ Everything below is proven by unit and component tests and a local browser check
 ## 1. What a user gets
 
 - **Sign in with email**: the Connect Wallet modal offers Mavryk Wallet (extension) or "Continue with email" (email → code → wallet → RWA sign-in). A live Dynamic session signs in without a code.
-- **One active wallet**: the Portfolio switcher (Wallet: Mavryk Wallet | Email) signs out of one and into the other. They are separate accounts: assets, orders and KYC do not move between them.
+- **One active wallet**: Change account in the header signs out and opens sign-in again. With `WALLET_CHOICE_ENABLED` the modal offers Mavryk Wallet and email; without it (production) it opens on the email wallet. They are separate accounts: assets, orders and KYC do not move between them.
 - **MVRK-paid actions**: buy, sell, cancel, refund, primary purchase and withdraw run through the selected wallet's toolkit; email wallets sign with Dynamic, gas is paid in MVRK.
 
 ## 2. Configuration
@@ -18,6 +18,7 @@ Everything below is proven by unit and component tests and a local browser check
 | `DYNAMIC_WALLET_ENABLED` | Offer email sign-in (`true`) | `true` | `true` | not set (off) |
 | `DYNAMIC_WALLET_AUTO_CREATE` | The environment creates the wallet on sign-up; the app then never creates one | `true` | `true` | not set |
 | `DYNAMIC_DIRECT_ENABLED` | Email-wallet actions allowed before they are marked tested: `true` for all, or a list such as `orderbook.buy,orderbook.sell,withdraw` | `true` | `true` | not set (all gated) |
+| `WALLET_CHOICE_ENABLED` | Sign-in offers Mavryk Wallet next to email (`true`); otherwise it opens on the email wallet | set `true` to see the choice | `true` | `false` (email only) |
 
 Without `DYNAMIC_WALLET_ENABLED` and an environment id the app behaves exactly as before: no email option, Connect Wallet opens Mavryk Wallet.
 
@@ -77,7 +78,6 @@ Move an action from `gated` to `tested` only after its live check below passes.
 - **KYC**: a new email wallet has no KYC, so trading stays blocked until the Dynamic KYC flow (DYN-BE-02/03, DYN-FE-12) exists.
 - **Approved fee for withdraw and primary purchase**: the withdraw summary shows a fixed fee constant and primary purchase estimates only after the click, so neither has a fee budget to compare against (balance is still checked).
 - **MVRK withdrawal**: supported in code, but the withdraw asset list comes from the RWA portfolio; whether MVRK appears there is unverified.
-- **Mobile Portfolio** has no wallet switcher; switching on mobile goes through Change account in the header.
 - **Development only**: the first email sign-in triggers a one-time Vite dependency reload.
 
 ## 7. Open dependencies
@@ -100,7 +100,7 @@ Record public evidence only: SDK version, operation hashes, receipts. Never OTPs
 6. Cancel and refund an order; withdraw a token; withdraw MVRK with Max (if listed).
 7. Not enough MVRK: blocked with the needed amount; reject or close signing: nothing sent.
 8. Reload during a pending trade: no duplicate; the result resolves from the receipt.
-9. Switch Mavryk Wallet ↔ Email in Portfolio: separate accounts, no data mixed.
+9. Switch Mavryk Wallet ↔ Email through Change account (preview, with the wallet choice): separate accounts, no data mixed.
 10. Full Mavryk Wallet regression: sign-in, trade, cancel, refund, withdraw, bridge.
 
 ## 9. Commits

@@ -48,15 +48,11 @@ import { ConnectWalletModal } from "./ConnectWalletModal";
 let container: HTMLDivElement;
 let root: Root;
 
-const render = async (initialMethod?: "email") => {
+/** "email": sign-in without the wallet choice, as in production */
+const render = async (mode: "choice" | "email" = "choice") => {
+  vi.stubEnv("WALLET_CHOICE_ENABLED", mode === "choice" ? "true" : "false");
   await act(async () => {
-    root.render(
-      <ConnectWalletModal
-        initialMethod={initialMethod}
-        isOpen
-        onClose={mocks.onClose}
-      />
-    );
+    root.render(<ConnectWalletModal isOpen onClose={mocks.onClose} />);
   });
 };
 
@@ -117,6 +113,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => root.unmount());
+  vi.unstubAllEnvs();
 });
 
 describe("ConnectWalletModal", () => {
@@ -134,14 +131,14 @@ describe("ConnectWalletModal", () => {
     await render();
 
     await click("Continue with email");
-    expect(text()).toContain("Sign in with email");
+    expect(text()).toContain("Sign In To Your Wallet");
     // No live session: no RWA sign-in yet
     expect(mocks.login).not.toHaveBeenCalled();
 
     await type("Email", "Name@Example.com");
     await submit();
     expect(mocks.dynamic.sendOtp).toHaveBeenCalledWith("Name@Example.com");
-    expect(text()).toContain("We sent a code to Name@Example.com.");
+    expect(text()).toContain("We sent a 6-digit code to Name@Example.com");
 
     await type("Verification code", "123456");
     await submit();
@@ -185,7 +182,7 @@ describe("ConnectWalletModal", () => {
     await submit();
 
     expect(text()).toContain(CONNECT_ERROR_MESSAGES.invalidCode);
-    expect(text()).toContain("Enter your code");
+    expect(text()).toContain("Enter Your Code");
     expect(mocks.login).not.toHaveBeenCalled();
     expect(mocks.onClose).not.toHaveBeenCalled();
   });
@@ -263,7 +260,7 @@ describe("ConnectWalletModal", () => {
 
     await click("Try again");
     expect(mocks.dynamic.start).toHaveBeenCalledTimes(2);
-    expect(text()).toContain("Sign in with email");
+    expect(text()).toContain("Sign In To Your Wallet");
   });
 
   it("ignores a result that arrives after the modal was closed", async () => {
@@ -284,10 +281,51 @@ describe("ConnectWalletModal", () => {
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
 
-  it("opens straight on the email wallet when asked", async () => {
+  it("opens straight on the email wallet without the wallet choice", async () => {
     await render("email");
 
     expect(mocks.dynamic.start).toHaveBeenCalledOnce();
-    expect(text()).toContain("Sign in with email");
+    expect(text()).toContain("Sign In To Your Wallet");
+    expect(text()).not.toContain("Mavryk Wallet");
+    // Nothing to go back to
+    expect(container.querySelector('button[aria-label="Back"]')).toBeNull();
+  });
+
+  it("goes back from the email step to the wallet choice", async () => {
+    await render();
+    await click("Continue with email");
+
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>('button[aria-label="Back"]')!
+        .click()
+    );
+
+    expect(text()).toContain("Mavryk Wallet");
+  });
+
+  it("keeps the digits of a pasted code and waits for all six", async () => {
+    await render("email");
+    await type("Email", "a@b.co");
+    await submit();
+
+    await type("Verification code", "12 3");
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[aria-label="Verification code"]'
+      )!.value
+    ).toBe("123");
+    expect(button("Verify").disabled).toBe(true);
+
+    await type("Verification code", "123-456");
+    expect(button("Verify").disabled).toBe(false);
+  });
+
+  it("shows the resend countdown as minutes and seconds", async () => {
+    await render("email");
+    await type("Email", "a@b.co");
+    await submit();
+
+    expect(button("Resend code in").textContent).toBe("Resend code in 0:30");
   });
 });

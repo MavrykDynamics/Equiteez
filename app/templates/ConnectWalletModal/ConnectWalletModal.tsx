@@ -1,16 +1,21 @@
 /**
  * Sign-in modal: Mavryk Wallet (extension) or an email wallet (Dynamic).
- * Functional first, in the app's current style; the designer refines it.
+ * The choice between them shows only with WALLET_CHOICE_ENABLED; otherwise
+ * the modal opens on the email wallet. Email and code steps follow the
+ * Figma "Sign-in, restore, expired" designs.
  *
  * Email flow: email → code → wallet set-up → RWA sign-in, each step with a
  * recoverable error. Closing the modal never deletes a wallet.
  */
+import clsx from "clsx";
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type FormEvent,
+  type ReactNode,
 } from "react";
 
 import { HashShortView } from "~/lib/atoms/HashShortView";
@@ -22,6 +27,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { isWalletChoiceEnabled } from "~/providers/WalletProvider/dynamic/dynamic.config";
 import type { DynamicWalletOption } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
@@ -30,11 +36,10 @@ import {
   isValidEmail,
   type ConnectStage,
 } from "./connectWalletErrors";
+import { CodeInput, CODE_LENGTH } from "./CodeInput";
 import styles from "./ConnectWalletModal.module.css";
 
 const RESEND_COOLDOWN_MS = 30_000;
-
-export type ConnectMethod = "email";
 
 type Step =
   | { name: "choose" }
@@ -46,19 +51,18 @@ type Step =
 
 type ConnectWalletModalProps = {
   isOpen: boolean;
-  /** Skip the chooser and go straight to the email wallet */
-  initialMethod?: ConnectMethod;
   onClose: () => void;
 };
 
 export function ConnectWalletModal({
   isOpen,
-  initialMethod,
   onClose,
 }: ConnectWalletModalProps) {
   const { dynamic, phase, identity } = useWalletContext();
   const { connect, connectWithWallet } = useUserContext();
   const isMobile = useIsMobileViewport();
+  const canChooseWallet = isWalletChoiceEnabled();
+  const emailInputId = useId();
 
   const [step, setStep] = useState<Step>({ name: "choose" });
   const [email, setEmail] = useState("");
@@ -143,10 +147,10 @@ export function ConnectWalletModal({
 
     setCode("");
     setStep({ name: "choose" });
-    if (initialMethod === "email") startEmail();
+    if (!canChooseWallet) startEmail();
     // Only on open: startEmail changes with wallet state
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, initialMethod]);
+  }, [isOpen]);
 
   // Move focus to the field of the email and code steps
   useEffect(() => {
@@ -209,7 +213,7 @@ export function ConnectWalletModal({
 
   const submitCode = (event: FormEvent) => {
     event.preventDefault();
-    if (!dynamic || !code.trim()) return;
+    if (!dynamic || code.length < CODE_LENGTH) return;
 
     // Dynamic accepts a code once. A failure after that (network, wallet,
     // RWA sign-in) must not send the user back to re-enter a used-up code:
@@ -276,6 +280,13 @@ export function ConnectWalletModal({
     Math.ceil((resendAvailableAt - now) / 1000)
   );
 
+  const back =
+    step.name === "code"
+      ? () => setStep({ name: "email" })
+      : step.name === "email" && canChooseWallet
+        ? () => setStep({ name: "choose" })
+        : undefined;
+
   return (
     <CustomPopup
       className={isMobile ? styles.sheet : styles.modal}
@@ -284,10 +295,20 @@ export function ConnectWalletModal({
       isOpen={isOpen}
       onRequestClose={close}
     >
-      <div className={styles.closeRow}>
+      <div className={styles.topRow}>
+        {back && (
+          <button
+            aria-label="Back"
+            className={styles.iconButton}
+            onClick={back}
+            type="button"
+          >
+            <RIcon name="arrow-long-left" size="medium" />
+          </button>
+        )}
         <button
           aria-label="Close"
-          className={styles.closeButton}
+          className={clsx(styles.iconButton, styles.closeButton)}
           onClick={close}
           type="button"
         >
@@ -322,72 +343,89 @@ export function ConnectWalletModal({
         {step.name === "email" && (
           <form className={styles.form} noValidate onSubmit={submitEmail}>
             <Header
-              title="Sign in with email"
-              description="We'll send you a code. Your wallet is created on first sign-in."
+              title="Sign In To Your Wallet"
+              description="We'll email you a 6-digit code. If you already have a wallet, we'll restore it."
             />
-            <RInput
-              aria-label="Email"
-              autoComplete="email"
-              className={styles.input}
-              inputMode="email"
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              type="email"
-              value={email}
-            />
-            <ErrorText message={step.error} />
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor={emailInputId}>
+                Email
+              </label>
+              <RInput
+                aria-invalid={Boolean(step.error)}
+                aria-label="Email"
+                autoComplete="email"
+                className={clsx(styles.input, step.error && styles.inputError)}
+                id={emailInputId}
+                inputMode="email"
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@company.com"
+                type="email"
+                value={email}
+              />
+              <ErrorText message={step.error} />
+            </div>
             <RButton
               className={styles.primaryButton}
               disabled={!email.trim()}
-              size="medium"
+              size="large"
               tone="black"
               type="submit"
               variant="primary"
             >
-              Send code
+              Email Me A Code
             </RButton>
-            <TextButton onClick={() => setStep({ name: "choose" })}>
-              Back
-            </TextButton>
+            <Note>
+              Sign-in and keys are secured by Dynamic. Equiteez never holds your
+              key.
+            </Note>
           </form>
         )}
 
         {step.name === "code" && (
           <form className={styles.form} noValidate onSubmit={submitCode}>
             <Header
-              title="Enter your code"
-              description={`We sent a code to ${email.trim()}.`}
+              title="Enter Your Code"
+              description={
+                <>
+                  We sent a 6-digit code to{" "}
+                  <span className={styles.emphasis}>{email.trim()}</span>
+                </>
+              }
             />
-            <RInput
-              aria-label="Verification code"
-              autoComplete="one-time-code"
-              className={styles.input}
-              inputMode="numeric"
-              onChange={(event) => setCode(event.target.value)}
-              placeholder="123456"
-              value={code}
-            />
-            <ErrorText message={step.error} />
-            <RButton
-              className={styles.primaryButton}
-              disabled={!code.trim()}
-              size="medium"
-              tone="black"
-              type="submit"
-              variant="primary"
-            >
-              Continue
-            </RButton>
-            <div className={styles.linkRow}>
-              <TextButton disabled={resendSeconds > 0} onClick={resendCode}>
-                {resendSeconds > 0
-                  ? `Resend code in ${resendSeconds}s`
-                  : "Resend code"}
-              </TextButton>
-              <TextButton onClick={() => setStep({ name: "email" })}>
-                Change email
-              </TextButton>
+            <div className={styles.codeBlock}>
+              <CodeInput
+                invalid={Boolean(step.error)}
+                onChange={setCode}
+                value={code}
+              />
+              <ErrorText centered message={step.error} />
             </div>
+            <div className={styles.actions}>
+              <RButton
+                className={styles.primaryButton}
+                disabled={code.length < CODE_LENGTH}
+                size="large"
+                tone="black"
+                type="submit"
+                variant="primary"
+              >
+                Verify
+              </RButton>
+              <div className={styles.linkRow}>
+                <TextButton disabled={resendSeconds > 0} onClick={resendCode}>
+                  {resendSeconds > 0
+                    ? `Resend code in ${formatCountdown(resendSeconds)}`
+                    : "Resend code"}
+                </TextButton>
+                <TextButton onClick={() => setStep({ name: "email" })}>
+                  Use a different email
+                </TextButton>
+              </div>
+            </div>
+            <Note>
+              Can&apos;t find it? Check spam. After 3 tries, wait a few minutes
+              before the next one.
+            </Note>
           </form>
         )}
 
@@ -423,15 +461,17 @@ export function ConnectWalletModal({
             <RButton
               className={styles.primaryButton}
               onClick={startEmail}
-              size="medium"
+              size="large"
               tone="black"
               variant="primary"
             >
               Try again
             </RButton>
-            <TextButton onClick={() => setStep({ name: "choose" })}>
-              Use another way
-            </TextButton>
+            {canChooseWallet && (
+              <TextButton onClick={() => setStep({ name: "choose" })}>
+                Use another way
+              </TextButton>
+            )}
           </div>
         )}
       </div>
@@ -439,12 +479,20 @@ export function ConnectWalletModal({
   );
 }
 
+/** 24 → "0:24", 90 → "1:30" */
+function formatCountdown(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
 function Header({
   title,
   description,
 }: {
   title: string;
-  description: string;
+  description: ReactNode;
 }) {
   return (
     <header className={styles.header}>
@@ -463,7 +511,7 @@ function OptionButton({
   description,
   onClick,
 }: {
-  title: React.ReactNode;
+  title: ReactNode;
   description?: string;
   onClick: () => void;
 }) {
@@ -486,7 +534,7 @@ function TextButton({
   disabled,
   onClick,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   disabled?: boolean;
   onClick: () => void;
 }) {
@@ -502,11 +550,29 @@ function TextButton({
   );
 }
 
-function ErrorText({ message }: { message?: string }) {
+function Note({ children }: { children: ReactNode }) {
+  return (
+    <RText className={styles.note} color="neutral-700" size="body-sm">
+      {children}
+    </RText>
+  );
+}
+
+function ErrorText({
+  message,
+  centered,
+}: {
+  message?: string;
+  centered?: boolean;
+}) {
   if (!message) return null;
 
   return (
-    <p className={styles.error} role="alert">
+    <p
+      className={clsx(styles.error, centered && styles.errorCentered)}
+      role="alert"
+    >
+      <span aria-hidden className={styles.errorDot} />
       {message}
     </p>
   );

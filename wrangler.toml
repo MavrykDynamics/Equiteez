@@ -24,6 +24,8 @@ DYNAMIC_ENVIRONMENT_ID="1187d7b8-07cf-4a24-998a-f0262b7fa808"
 DYNAMIC_WALLET_ENABLED="true"
 DYNAMIC_WALLET_AUTO_CREATE="true"
 DYNAMIC_DIRECT_ENABLED="true"
+# Sign-in offers Mavryk Wallet and the email wallet; production uses the email wallet only
+WALLET_CHOICE_ENABLED="true"
 
 [env.production.vars]
 RPC_NODE_URL="https://basenet.rpc.mavryk.network"
@@ -38,3 +40,6 @@ GRAPHQL_WSS_API="wss:/basenet.api.equiteez.com/v1/graphql"
 NODE_VERSION="22.11.0"
 RWA_API="https://api.rwa.equiteez.com/api/v1"
 RWA_SERVICES_API="https://services.api.mavryk.network/v1/rwa"
+# Sign-in opens the email wallet without the Mavryk Wallet choice (until Dynamic
+# is configured here, Connect Wallet still opens Mavryk Wallet)
+WALLET_CHOICE_ENABLED="false"

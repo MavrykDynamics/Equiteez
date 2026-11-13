@@ -1,7 +1,7 @@
 /**
- * Opens the sign-in modal from anywhere (header button, Portfolio wallet
- * switcher). Without email wallets it connects Mavryk Wallet directly, as
- * before the modal existed.
+ * Opens the sign-in modal from anywhere (header button, trade panels).
+ * Without email wallets it connects Mavryk Wallet directly, as before the
+ * modal existed.
  */
 import {
   createContext,
@@ -15,9 +15,9 @@ import {
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
-import { ConnectWalletModal, type ConnectMethod } from "./ConnectWalletModal";
+import { ConnectWalletModal } from "./ConnectWalletModal";
 
-type OpenConnectWallet = (options?: { method?: ConnectMethod }) => void;
+type OpenConnectWallet = () => void;
 
 const connectWalletModalContext = createContext<OpenConnectWallet | null>(null);
 
@@ -28,39 +28,27 @@ export function ConnectWalletModalProvider({
 }) {
   const { dynamic } = useWalletContext();
   const { connect } = useUserContext();
-  const [modal, setModal] = useState<{
-    isOpen: boolean;
-    method?: ConnectMethod;
-  }>({ isOpen: false });
+  const [isOpen, setIsOpen] = useState(false);
 
-  const openConnectWallet = useCallback<OpenConnectWallet>(
-    (options = {}) => {
-      if (!dynamic) {
-        // Opening the extension popup must not wait for the caller
-        void Promise.resolve()
-          .then(connect)
-          .catch(() => console.error("Failed to connect wallet."));
-        return;
-      }
+  const openConnectWallet = useCallback<OpenConnectWallet>(() => {
+    if (!dynamic) {
+      // Opening the extension popup must not wait for the caller
+      void Promise.resolve()
+        .then(connect)
+        .catch(() => console.error("Failed to connect wallet."));
+      return;
+    }
 
-      setModal({ isOpen: true, method: options.method });
-    },
-    [connect, dynamic]
-  );
+    setIsOpen(true);
+  }, [connect, dynamic]);
 
-  const close = useCallback(() => setModal({ isOpen: false }), []);
+  const close = useCallback(() => setIsOpen(false), []);
   const value = useMemo(() => openConnectWallet, [openConnectWallet]);
 
   return (
     <connectWalletModalContext.Provider value={value}>
       {children}
-      {dynamic && (
-        <ConnectWalletModal
-          initialMethod={modal.method}
-          isOpen={modal.isOpen}
-          onClose={close}
-        />
-      )}
+      {dynamic && <ConnectWalletModal isOpen={isOpen} onClose={close} />}
     </connectWalletModalContext.Provider>
   );
 }

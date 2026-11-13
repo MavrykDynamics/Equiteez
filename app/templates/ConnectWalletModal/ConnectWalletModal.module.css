@@ -1,7 +1,7 @@
-/* Follows WithdrawFundsModal: same surface, spacing and close row */
+/* Figma "Sign-in, restore, expired": 588px card, 44px side padding */
 .modal,
 .sheet {
-  width: min(440px, 100%);
+  width: min(588px, 100%);
   max-height: calc(100vh - var(--r-space-8));
   padding: 0;
   overflow: auto;
@@ -19,13 +19,14 @@
   border-radius: var(--r-radius-md) var(--r-radius-md) 0 0;
 }
 
-.closeRow {
+/* Back (left) and close (right) */
+.topRow {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   padding: var(--r-space-3) var(--r-space-4) var(--r-space-2);
 }
 
-.closeButton {
+.iconButton {
   display: grid;
   width: var(--r-size-icon-medium);
   height: var(--r-size-icon-medium);
@@ -37,28 +38,73 @@
   cursor: pointer;
 }
 
+.closeButton {
+  margin-left: auto;
+}
+
 .content {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);
-  padding: 0 var(--r-space-8) var(--r-space-8);
+  padding: var(--r-space-4) var(--r-space-11) var(--r-space-8);
 }
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-2);
+  gap: var(--r-space-4);
   text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.emphasis {
+  color: var(--r-color-neutral-black);
+  font-weight: var(--r-font-weight-medium);
 }
 
 .form {
   display: flex;
   flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+.label {
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.input {
+  width: 100%;
+}
+
+/* Two classes: beats RInput's own focus border */
+.input.inputError,
+.input.inputError:focus-within {
+  border-color: var(--r-color-red-500);
+}
+
+/* Button with the links under it */
+.actions {
+  display: flex;
+  flex-direction: column;
   gap: var(--r-space-4);
 }
 
-.form > header {
-  margin-bottom: var(--r-space-2);
+/* Beats RButton's own width: fit-content, which loads later */
+.form .primaryButton {
+  width: 100%;
+}
+
+.note {
+  text-align: center;
 }
 
 .options {
@@ -85,15 +131,6 @@
   border-color: var(--r-color-neutral-400);
 }
 
-.input {
-  width: 100%;
-}
-
-/* Beats RButton's own width: fit-content, which loads later */
-.form .primaryButton {
-  width: 100%;
-}
-
 .linkRow {
   display: flex;
   justify-content: space-between;
@@ -101,20 +138,28 @@
 }
 
 .textButton {
-  align-self: center;
   padding: 0;
-  color: var(--r-color-neutral-700);
+  color: var(--r-color-neutral-black);
   font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-s);
-  line-height: var(--r-line-height-body-s);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
   text-decoration: underline;
   background: transparent;
   border: 0;
   cursor: pointer;
 }
 
+/* "Cancel" and "Use another way" stand alone under their step */
+.working .textButton,
+.form > .textButton {
+  align-self: center;
+}
+
+/* The resend countdown reads as plain text */
 .textButton:disabled {
-  color: var(--r-color-neutral-400);
+  color: var(--r-color-neutral-700);
+  font-weight: var(--r-font-weight-regular);
   text-decoration: none;
   cursor: default;
 }
@@ -128,15 +173,91 @@
   text-align: center;
 }
 
-.error {
-  margin: 0;
-  color: var(--r-color-red-500);
-  font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-s);
-  line-height: var(--r-line-height-body-s);
+/* Verification code: six 52×60 cells over one real input */
+.codeBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
-.closeButton:focus-visible,
+.codeField {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: calc(52px * 6 + var(--r-space-2) * 5);
+  gap: var(--r-space-2);
+}
+
+.codeInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  /* 16px keeps iOS from zooming in on focus */
+  font-size: 16px;
+  color: transparent;
+  caret-color: transparent;
+  background: transparent;
+  border: 0;
+  outline: none;
+  opacity: 0;
+  cursor: text;
+}
+
+.codeCell {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 52px;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-heading-h5);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-heading-h5);
+  letter-spacing: 0.24px;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  transition: border-color var(--r-transition-duration-fast) ease;
+}
+
+.codeCellActive {
+  border-color: var(--r-color-neutral-black);
+}
+
+.codeCellError {
+  border-color: var(--r-color-red-500);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--r-color-red-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.errorCentered {
+  justify-content: center;
+  text-align: center;
+}
+
+.errorDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--r-color-red-500);
+  border-radius: 50%;
+}
+
+.iconButton:focus-visible,
 .option:focus-visible,
 .textButton:focus-visible {
   outline: none;
@@ -145,6 +266,6 @@
 
 @media (--media-phone-max) {
   .content {
-    padding: 0 var(--r-space-4) var(--r-space-6);
+    padding: var(--r-space-2) var(--r-space-4) var(--r-space-6);
   }
 }

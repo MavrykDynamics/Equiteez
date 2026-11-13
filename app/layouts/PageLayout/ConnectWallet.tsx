@@ -11,6 +11,7 @@ import {
   RDropdownFaceContent,
 } from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { isWalletChoiceEnabled } from "~/providers/WalletProvider/dynamic/dynamic.config";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { CustomSuspense } from "~/templates/CustomSuspense";
@@ -33,9 +34,12 @@ export const ConnectWallet = () => {
       return;
     }
 
-    // Email wallet: sign out of this account, keep the Dynamic session, and
-    // let the user pick how to sign in again
-    await signOut({ keepProviderSession: true });
+    // Email wallet: sign out of this account and open sign-in again. With the
+    // wallet choice the Dynamic session is kept (picking email again needs no
+    // code); email-only sign-in ends it so another email can be entered
+    await signOut(
+      isWalletChoiceEnabled() ? { keepProviderSession: true } : undefined
+    );
     openConnectWallet();
   };
 

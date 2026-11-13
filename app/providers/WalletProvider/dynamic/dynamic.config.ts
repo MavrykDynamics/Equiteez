@@ -11,6 +11,10 @@
  * DYNAMIC_WALLET_AUTO_CREATE: "true" when the Dynamic environment creates
  *   the embedded wallet on sign-up ("Auto-create wallet on signup" in the
  *   Dynamic dashboard); the app then never creates one itself
+ * WALLET_CHOICE_ENABLED: "true" to let the user choose between Mavryk Wallet
+ *   and the email wallet when signing in; otherwise sign-in opens the email
+ *   wallet straight away (Mavryk Wallet stays the only option while email
+ *   wallets are off)
  */
 const PLACEHOLDER_ENVIRONMENT_ID = "YOUR_DYNAMIC_ENVIRONMENT_ID";
 
@@ -45,4 +49,9 @@ export function isDynamicDirectEnabled(action: string): boolean {
 /** Dynamic creates the wallet on sign-up: the app only waits for it. */
 export function isDynamicAutoCreateEnabled(): boolean {
   return process.env.DYNAMIC_WALLET_AUTO_CREATE === "true";
+}
+
+/** Sign-in offers Mavryk Wallet next to the email wallet. */
+export function isWalletChoiceEnabled(): boolean {
+  return process.env.WALLET_CHOICE_ENABLED === "true";
 }
