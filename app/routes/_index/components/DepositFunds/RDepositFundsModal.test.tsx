@@ -3,7 +3,7 @@ import { BigNumber } from "bignumber.js";
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
 import { type BridgeTransaction } from "~/providers/TransactionsProvider/bridgeTransactions";
@@ -23,6 +23,20 @@ const mocks = vi.hoisted(() => ({
   reset: vi.fn(),
   closeWallet: vi.fn(),
   submit: vi.fn(),
+  intentsEnabled: false,
+  resetIntents: vi.fn(),
+}));
+
+vi.mock("~/consts/intents", () => ({
+  get INTENTS_DEPOSIT_ENABLED() {
+    return mocks.intentsEnabled;
+  },
+}));
+vi.mock("~/hooks/useIntentsDeposit", () => ({
+  useIntentsDeposit: () => ({ resetForm: mocks.resetIntents }),
+}));
+vi.mock("./components/IntentsView", () => ({
+  IntentsView: () => <p>Intents form</p>,
 }));
 
 vi.mock("~/providers/TransactionsProvider/TransactionWidgetProvider", () => ({
@@ -72,7 +86,9 @@ vi.mock("./components/BridgeView", () => ({
     </>
   ),
 }));
-vi.mock("./components/ReceiveView", () => ({ ReceiveView: () => null }));
+vi.mock("./components/ReceiveView", () => ({
+  ReceiveView: () => <p>Receive view</p>,
+}));
 vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
 vi.mock("~/lib/molecules/HashChip", () => ({ HashChip: () => null }));
 
@@ -81,6 +97,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.holdDeposit.mockReturnValue(mocks.releaseDeposit);
   mocks.transactions.clear();
+  mocks.intentsEnabled = false;
   mocks.state = {
     amount: "1",
     recipient: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt",
@@ -348,4 +365,59 @@ it("keeps the clicked deposit button loading through initial submission", async 
     await act(async () => finishSubmission());
     await act(async () => root.unmount());
   }
+});
+
+describe("1Click deposit method", () => {
+  async function renderForm() {
+    mocks.state = null;
+    const element = document.createElement("div");
+    const root = createRoot(element);
+    const onClose = vi.fn();
+    const render = (isOpen = true) =>
+      act(async () =>
+        root.render(<RDepositFundsModal isOpen={isOpen} onClose={onClose} />)
+      );
+    const tab = (label: string) =>
+      [...element.querySelectorAll("[role=tab]")].find(
+        (item) => item.textContent === label
+      ) as HTMLButtonElement | undefined;
+    await render();
+    return { element, root, render, tab };
+  }
+
+  it("is hidden while the feature flag is off", async () => {
+    const { root, tab } = await renderForm();
+    try {
+      expect(tab("Swap From Any Chain")).toBeUndefined();
+      expect(tab("Bridge From Ethereum")).toBeDefined();
+      expect(tab("Receive On Mavryk")).toBeDefined();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("adds a third tab without replacing the existing methods", async () => {
+    mocks.intentsEnabled = true;
+    const { element, root, render, tab } = await renderForm();
+    try {
+      expect(element.textContent).toContain("Set amount");
+      await act(async () => tab("Swap From Any Chain")!.click());
+      expect(element.textContent).toContain("Intents form");
+      expect(tab("Swap From Any Chain")!.getAttribute("aria-selected")).toBe(
+        "true"
+      );
+      await act(async () => tab("Receive On Mavryk")!.click());
+      expect(element.textContent).toContain("Receive view");
+      await act(async () => tab("Bridge From Ethereum")!.click());
+      expect(element.textContent).toContain("Set amount");
+
+      await act(async () => tab("Swap From Any Chain")!.click());
+      await render(false);
+      expect(mocks.resetIntents).toHaveBeenCalled();
+      await render(true);
+      expect(element.textContent).toContain("Set amount");
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
 });

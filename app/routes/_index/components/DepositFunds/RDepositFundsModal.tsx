@@ -4,7 +4,9 @@ import type { BigNumber } from "bignumber.js";
 
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
+import { INTENTS_DEPOSIT_ENABLED } from "~/consts/intents";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
+import { useIntentsDeposit } from "~/hooks/useIntentsDeposit";
 import { ZERO } from "~/lib/utils/numbers";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
@@ -15,10 +17,11 @@ import { useTransactionWidget } from "~/providers/TransactionsProvider/Transacti
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
 import { ConfirmedView } from "./components/ConfirmedView";
+import { IntentsView } from "./components/IntentsView";
 import { ReceiveView } from "./components/ReceiveView";
 import styles from "./RDepositFundsModal.module.css";
 
-type DepositTab = "bridge" | "receive";
+type DepositTab = "bridge" | "intents" | "receive";
 
 type RDepositFundsModalProps = {
   isOpen: boolean;
@@ -37,6 +40,10 @@ export function RDepositFundsModal({
     useUserContext();
   const { tokensMetadata } = useTokensContext();
   const ethereumWallet = useEthereumContext();
+  const intents = useIntentsDeposit({
+    recipient: userAddress,
+    ethereumWallet,
+  });
   const { transactions, models, holdDeposit } = useTransactionWidget();
   const { chains } = useConfig();
   const explorer = chains.find((chain) => chain.id === USDT_BRIDGE.chainId)
@@ -65,16 +72,18 @@ export function RDepositFundsModal({
 
   const resetBridge = ethereumWallet.bridge.reset;
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
+  const resetIntentsForm = intents.resetForm;
   const wasOpen = useRef(isOpen);
   const resetModal = useCallback(() => {
     releaseDeposit.current?.();
     releaseDeposit.current = null;
     resetBridge();
+    resetIntentsForm();
     closeWalletSelection();
     setDepositAmount(undefined);
     setActiveTab("bridge");
     setIsDetailsOpen(false);
-  }, [resetBridge, closeWalletSelection]);
+  }, [resetBridge, resetIntentsForm, closeWalletSelection]);
 
   useEffect(() => {
     if (wasOpen.current && !isOpen) resetModal();
@@ -149,6 +158,7 @@ export function RDepositFundsModal({
             <div
               aria-label="Deposit method"
               className={styles.tabs}
+              data-count={INTENTS_DEPOSIT_ENABLED ? 3 : 2}
               role="tablist"
             >
               <button
@@ -161,6 +171,18 @@ export function RDepositFundsModal({
               >
                 Bridge From Ethereum
               </button>
+              {INTENTS_DEPOSIT_ENABLED && (
+                <button
+                  aria-selected={activeTab === "intents"}
+                  className={styles.tab}
+                  data-active={activeTab === "intents"}
+                  onClick={() => setActiveTab("intents")}
+                  role="tab"
+                  type="button"
+                >
+                  Swap From Any Chain
+                </button>
+              )}
               <button
                 aria-selected={activeTab === "receive"}
                 className={styles.tab}
@@ -195,6 +217,14 @@ export function RDepositFundsModal({
               }}
               onDepositAmountChange={setDepositAmount}
               usdtBalance={usdtBalance}
+            />
+          ) : activeTab === "intents" && INTENTS_DEPOSIT_ENABLED ? (
+            <IntentsView
+              deposit={intents}
+              ethereumWallet={ethereumWallet}
+              isMavrykBusy={isLoading}
+              onConnectMavryk={connect}
+              onReview={() => undefined}
             />
           ) : (
             <ReceiveView mavrykAddress={mavrykAddress} />

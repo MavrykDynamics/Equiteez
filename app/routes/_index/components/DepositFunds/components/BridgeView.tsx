@@ -50,7 +50,7 @@ const depositInputClassNames = {
   sectionClassName: styles.depositInputCard,
 };
 
-function AddressButton({
+export function AddressButton({
   address,
   disabled,
   onClick,
@@ -94,7 +94,7 @@ function AddressButton({
   );
 }
 
-function DepositAmountField({
+export function DepositAmountField({
   additionalTopRightBlock,
   additionalBottomLeftBlock,
   amount,

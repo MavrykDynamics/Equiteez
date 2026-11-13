@@ -52,6 +52,18 @@ for its transitive `pino` dependency.
   Arbitrum Sepolia RPC (`https://sepolia-rollup.arbitrum.io/rpc`); `WALLETCONNECT_PROJECT_ID` overrides the temporarily shared bridge
   project ID. The WalletConnect project must allow the deployed Equiteez origin.
 
+## 1Click (NEAR Intents) deposits
+
+Behind a build-time flag; off by default. Design and lifecycle: [`near-intents/plan-intents.md`](near-intents/plan-intents.md).
+
+- `INTENTS_DEPOSIT_ENABLED=true` adds the **Swap From Any Chain** tab to Deposit Funds.
+- `INTENTS_API` is the shared 1Click backend origin (requests go to `<origin>/v1/...`).
+  The Equiteez RWA token is not forwarded to it.
+- `INTENTS_API_MODE=mock` uses the in-browser simulator (`app/lib/apis/intents/intents.mock.ts`)
+  instead of `INTENTS_API`. Force branches with `?intentsMock=refund|expire|busy|sponsorship|fail|below`.
+  `INTENTS_MOCK_DEPOSIT_ADDRESS` sets the testnet address the mock asks the wallet to fund.
+- `INTENTS_SEPOLIA_RPC_URL` optionally overrides the public Sepolia RPC used for that source chain.
+
 ## USDT bridge deposits
 
 `app/consts/usdtBridge.ts` contains the single Arbitrum Sepolia → Basenet pair from

@@ -203,16 +203,16 @@ Rules:
 
 ### Step 0: Preparation (part of EQ-FE-01, about 0.5 day)
 - [ ] Confirm the open questions in §6 that block contracts (route list, chains, auth adapter).
-- [ ] Add `app/consts/intents.ts` and env vars `INTENTS_API`, `INTENTS_API_MODE`, `INTENTS_DEPOSIT_ENABLED`. Add them to `.env.example` if it exists.
-- [ ] Write `intents.schema.ts` and `intents.types.ts` from §3.1, then `intents.mock.ts` and `intents.http.ts`, with schema and mock tests.
+- [x] Add `app/consts/intents.ts` and env vars `INTENTS_API`, `INTENTS_API_MODE`, `INTENTS_DEPOSIT_ENABLED`. Add them to `.env.example` if it exists.
+- [x] Write `intents.schema.ts` and `intents.types.ts` from §3.1, then `intents.mock.ts` and `intents.http.ts`, with schema and mock tests.
 
 ### EQ-FE-01: Entry and route selection (2d)
-- [ ] `useIntentsRoutes` (React Query, keyed by env). Show it only when the flag is on and the catalog loaded. Handle catalog errors with a usable unavailable state.
-- [ ] Add a third method to `RDepositFundsModal`'s tablist (working name **"Swap From Any Chain"**; final copy from EQ-D-02). Keep `bridge` and `receive` unchanged. The modal state stays a small `activeTab` union.
-- [ ] `IntentsView`: source chain/token select, amount input (reuse the BridgeView input pattern), source balance read through wagmi for the selected chain/token, min/max validation in raw units with BigNumber, wrong-network state plus a switch button, and a recipient row showing the active Mavryk address (read-only, copyable). Show "Connect Mavryk wallet" when there is no account.
-- [ ] Extend the wagmi config `chains`/`transports` with the configured source chains. The direct bridge keeps using `USDT_BRIDGE.chainId`, so the existing `isWrongNetwork` logic must stay scoped to the direct bridge.
-- [ ] Access adapter in `intents.http.ts`: header strategy decided in §6 item 3. Drop responses whose request account/session no longer matches.
-- [ ] Tests: the tab renders behind the flag, the existing tabs still work (extend `RDepositFundsModal.test.tsx`), and every validation state.
+- [x] `useIntentsRoutes` (React Query, keyed by env). Show it only when the flag is on and the catalog loaded. Handle catalog errors with a usable unavailable state.
+- [x] Add a third method to `RDepositFundsModal`'s tablist (working name **"Swap From Any Chain"**; final copy from EQ-D-02). Keep `bridge` and `receive` unchanged. The modal state stays a small `activeTab` union.
+- [x] `IntentsView`: source chain/token select, amount input (reuse the BridgeView input pattern), source balance read through wagmi for the selected chain/token, min/max validation in raw units with BigNumber, wrong-network state plus a switch button, and a recipient row showing the active Mavryk address (read-only, copyable). Show "Connect Mavryk wallet" when there is no account.
+- [x] Extend the wagmi config `chains`/`transports` with the configured source chains. The direct bridge keeps using `USDT_BRIDGE.chainId`, so the existing `isWrongNetwork` logic must stay scoped to the direct bridge.
+- [x] Access adapter in `intents.http.ts`: header strategy decided in §6 item 3. Drop responses whose request account/session no longer matches.
+- [x] Tests: the tab renders behind the flag, the existing tabs still work (extend `RDepositFundsModal.test.tsx`), and every validation state.
 
 ### EQ-FE-02: Quote review and persisted operation (2d)
 - [ ] Optional preview: debounced `POST /quotes` as the amount changes, for an estimated output.

@@ -3,10 +3,15 @@ import {
   createStorage,
   http,
   type CreateConnectorFn,
+  type Transport,
 } from "wagmi";
 import { arbitrumSepolia } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
 
+import {
+  INTENTS_SOURCE_CHAINS,
+  INTENTS_SOURCE_RPC_URLS,
+} from "~/consts/intents";
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 
 export const ETHEREUM_CHAIN = arbitrumSepolia;
@@ -42,14 +47,27 @@ export function createEthereumConfig() {
     );
   }
 
+  // The direct bridge chain stays first (default); 1Click source chains follow.
+  // Wrong-network checks for the direct bridge still compare to ETHEREUM_CHAIN.
+  const intentChains = INTENTS_SOURCE_CHAINS.filter(
+    (chain) => chain.id !== arbitrumSepolia.id
+  );
   return createConfig({
-    chains: [arbitrumSepolia],
+    chains: [arbitrumSepolia, ...intentChains],
     connectors,
     ssr: true,
     storage: createStorage({
       key: "equiteez.ethereum",
       storage: typeof window !== "undefined" ? window.localStorage : undefined,
     }),
-    transports: { [arbitrumSepolia.id]: http(ETHEREUM_RPC_URL) },
+    transports: {
+      [arbitrumSepolia.id]: http(ETHEREUM_RPC_URL),
+      ...(Object.fromEntries(
+        intentChains.map((chain) => [
+          chain.id,
+          http(INTENTS_SOURCE_RPC_URLS[chain.id]),
+        ])
+      ) as Record<(typeof intentChains)[number]["id"], Transport>),
+    },
   });
 }

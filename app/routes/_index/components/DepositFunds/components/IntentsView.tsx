@@ -1,0 +1,280 @@
+import { BigNumber } from "bignumber.js";
+import clsx from "clsx";
+
+import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
+import EthereumLogo from "~/icons/ethereum-logo.svg";
+import { RButton } from "~/lib/atoms/RButton";
+import { RText } from "~/lib/atoms/RTypography/RText";
+import { HashChip } from "~/lib/molecules/HashChip";
+import { REthereumWalletDropdown } from "~/lib/organisms/REthereumWalletDropdown";
+import { ZERO } from "~/lib/utils/numbers";
+import type { IntentsDepositController } from "~/hooks/useIntentsDeposit";
+import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
+
+import styles from "../RDepositFundsModal.module.css";
+import intentsStyles from "./IntentsView.module.css";
+import { DepositAmountField } from "./BridgeView";
+
+type IntentsViewProps = {
+  deposit: IntentsDepositController;
+  ethereumWallet: EthereumContext;
+  isMavrykBusy: boolean;
+  onConnectMavryk: () => Promise<void> | void;
+  onReview: () => Promise<void> | void;
+  isReviewing?: boolean;
+  reviewError?: string | null;
+};
+
+export function IntentsView({
+  deposit,
+  ethereumWallet,
+  isMavrykBusy,
+  onConnectMavryk,
+  onReview,
+  isReviewing = false,
+  reviewError,
+}: IntentsViewProps) {
+  const {
+    catalog,
+    selected,
+    route,
+    routeError,
+    recipient,
+    sourceBalance,
+    amount,
+    setAmount,
+    amountError,
+    canReview,
+    isWrongNetwork,
+    isSwitching,
+    networkError,
+    selectRoute,
+    switchToSource,
+  } = deposit;
+
+  if (catalog.status === "loading")
+    return (
+      <div className={styles.bridgePanel} role="tabpanel">
+        <RText color="neutral-700" role="status" size="body-sm">
+          Loading deposit routes…
+        </RText>
+      </div>
+    );
+
+  if (catalog.status !== "ready" || !route || !selected)
+    return (
+      <div className={styles.bridgePanel} role="tabpanel">
+        <div className={clsx(styles.notice, styles.warning)} role="alert">
+          <RText color="neutral-700" size="body-sm">
+            {catalog.status === "error"
+              ? "The cross-chain deposit service is unavailable right now. Bridge From Ethereum and Receive On Mavryk still work."
+              : "No cross-chain deposit routes are available right now."}
+          </RText>
+        </div>
+        {catalog.status === "error" && (
+          <RButton
+            className={styles.connectButton}
+            onClick={() => void catalog.refetch()}
+            size="medium"
+            tone="black"
+            variant="secondary"
+          >
+            Try Again
+          </RButton>
+        )}
+      </div>
+    );
+
+  const { token, chainName } = route.source;
+  const isBusy =
+    ethereumWallet.isConnecting ||
+    ethereumWallet.isReconnecting ||
+    isMavrykBusy ||
+    isReviewing;
+  const balanceNotice =
+    sourceBalance.status === "ready" ? undefined : (
+      <span role="status">
+        {sourceBalance.status === "disconnected"
+          ? "Connect wallet to view balance"
+          : sourceBalance.status === "unsupported"
+            ? "Balance unavailable for this route"
+            : sourceBalance.status === "loading"
+              ? "Loading balance…"
+              : "Balance unavailable"}
+        {sourceBalance.status === "error" && (
+          <>
+            {" "}
+            <button
+              className={styles.maxButton}
+              onClick={() => void sourceBalance.refetch()}
+              type="button"
+            >
+              Retry
+            </button>
+          </>
+        )}
+      </span>
+    );
+
+  const handlePrimaryAction = async () => {
+    if (!ethereumWallet.isConnected) return ethereumWallet.connect();
+    if (!recipient) return onConnectMavryk();
+    if (canReview && !isBusy) await onReview();
+  };
+
+  return (
+    <div
+      aria-label="Swap from any chain"
+      className={styles.bridgePanel}
+      role="tabpanel"
+    >
+      <label className={intentsStyles.routeField}>
+        <RText color="neutral-700" size="body-s">
+          Pay with
+        </RText>
+        <select
+          className={intentsStyles.routeSelect}
+          disabled={isBusy}
+          onChange={(event) => selectRoute(event.target.value)}
+          value={route.id}
+        >
+          {catalog.options.map(({ route: option, availability }) => (
+            <option key={option.id} value={option.id}>
+              {`${option.source.token.symbol} on ${option.source.chainName}${
+                availability === "available" ? "" : " (unavailable)"
+              }`}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className={styles.amountFields}>
+        <DepositAmountField
+          additionalTopRightBlock={
+            <REthereumWalletDropdown triggerClassName={styles.addressButton} />
+          }
+          additionalBottomLeftBlock={balanceNotice}
+          amount={amount}
+          amountInputDisabled={isBusy || Boolean(routeError)}
+          balanceSuffix={
+            <button
+              aria-label={`Use maximum ${token.symbol} balance`}
+              className={styles.maxButton}
+              disabled={sourceBalance.status !== "ready" || isBusy}
+              onClick={() =>
+                setAmount(
+                  sourceBalance.balance?.decimalPlaces(
+                    Math.min(token.decimals, 8),
+                    BigNumber.ROUND_DOWN
+                  )
+                )
+              }
+              type="button"
+            >
+              Max
+            </button>
+          }
+          label={`Send from ${chainName}`}
+          onChange={setAmount}
+          balance={sourceBalance.balance ?? ZERO}
+          assetIconSrc={token.address === "native" ? EthereumLogo : UsdtToken}
+          secondaryAssetIconSrc={
+            ethereumWallet.isConnected ? EthereumLogo : undefined
+          }
+          metadata={{
+            name: token.name ?? token.symbol,
+            symbol: token.symbol,
+            decimals: token.decimals,
+          }}
+          assetSlug={`eip155:${route.source.chainId}:${token.address}`}
+        />
+      </div>
+
+      <div className={intentsStyles.recipientRow}>
+        <div className={intentsStyles.recipientCopy}>
+          <RText color="neutral-700" size="body-s">
+            Recipient: your Equiteez account
+          </RText>
+          <RText size="body-s">
+            Receive {route.destination.symbol} on Mavryk • Basenet
+          </RText>
+        </div>
+        {recipient ? (
+          <HashChip
+            aria-label={`Copy recipient address ${recipient}`}
+            className={intentsStyles.recipientAddress}
+            firstCharsCount={8}
+            hash={recipient}
+            lastCharsCount={4}
+            type="link"
+          />
+        ) : (
+          <RButton
+            disabled={isBusy}
+            onClick={onConnectMavryk}
+            size="small"
+            tone="black"
+            variant="secondary"
+          >
+            Connect Mavryk Wallet
+          </RButton>
+        )}
+      </div>
+
+      <RText color="neutral-700" size="body-s">
+        The exact amount you receive is quoted on the next step. Forwarding to
+        the bridge is sponsored: you sign one transaction on {chainName}.
+      </RText>
+
+      {routeError && (
+        <RText color="red-500" role="alert" size="body-s">
+          {routeError}
+        </RText>
+      )}
+      {!routeError && amount && amountError && (
+        <RText color="red-500" role="alert" size="body-s">
+          {amountError}
+        </RText>
+      )}
+      {isWrongNetwork && !routeError && (
+        <div className={styles.walletNotice}>
+          <RText size="body-s">
+            Your wallet is on another network. Switch to {chainName} to send{" "}
+            {token.symbol}.
+          </RText>
+          <RButton
+            isLoading={isSwitching}
+            onClick={switchToSource}
+            size="small"
+            tone="black"
+            variant="secondary"
+          >
+            Switch to {chainName}
+          </RButton>
+        </div>
+      )}
+      {(networkError || reviewError || ethereumWallet.error) && (
+        <RText color="red-500" role="alert" size="body-s">
+          {reviewError ?? networkError ?? ethereumWallet.error}
+        </RText>
+      )}
+      <RButton
+        className={styles.connectButton}
+        disabled={
+          Boolean(routeError) ||
+          (ethereumWallet.isConnected && Boolean(recipient) && !canReview)
+        }
+        isLoading={isBusy}
+        onClick={handlePrimaryAction}
+        size="medium"
+        tone="black"
+      >
+        {!ethereumWallet.isConnected
+          ? "Connect Ethereum Wallet"
+          : !recipient
+            ? "Connect Mavryk Wallet"
+            : "Review Deposit"}
+      </RButton>
+    </div>
+  );
+}
