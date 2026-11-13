@@ -4,7 +4,6 @@ import type { BigNumber } from "bignumber.js";
 
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RText } from "~/lib/atoms/RTypography/RText";
 import { INTENTS_DEPOSIT_ENABLED } from "~/consts/intents";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
 import { useIntentsDeposit } from "~/hooks/useIntentsDeposit";
@@ -18,6 +17,7 @@ import { useTransactionWidget } from "~/providers/TransactionsProvider/Transacti
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
 import { ConfirmedView } from "./components/ConfirmedView";
+import { IntentsFundingPanel } from "./components/IntentsFundingPanel";
 import { IntentsQuoteView } from "./components/IntentsQuoteView";
 import { IntentsView } from "./components/IntentsView";
 import { ReceiveView } from "./components/ReceiveView";
@@ -166,10 +166,21 @@ export function RDepositFundsModal({
           onRefresh={intents.requestPreview}
           onAcceptUpdate={intents.acceptUpdatedQuote}
           onBack={() => intents.cancelReview()}
+          isBackDisabled={intents.isFunding}
           fundingSlot={
-            <RText color="neutral-700" role="status" size="body-sm">
-              Deposit operation saved.
-            </RText>
+            <IntentsFundingPanel
+              record={intents.activeRecord}
+              isFunding={intents.isFunding}
+              error={intents.fundingError}
+              isWrongNetwork={intents.isWrongNetwork}
+              explorerUrl={
+                chains.find(
+                  (chain) => chain.id === intents.activeRecord?.funding?.chainId
+                )?.blockExplorers?.default.url
+              }
+              onFund={intents.fund}
+              onSimulate={intents.simulateFunding}
+            />
           }
         />
       ) : (

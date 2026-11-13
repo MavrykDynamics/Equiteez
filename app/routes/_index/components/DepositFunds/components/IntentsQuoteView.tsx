@@ -22,6 +22,7 @@ type IntentsQuoteViewProps = {
   onRefresh: () => Promise<void> | void;
   onAcceptUpdate: () => void;
   onBack: () => void;
+  isBackDisabled?: boolean;
   /** Funding action (EQ-FE-03); shown once the operation is persisted. */
   fundingSlot?: ReactNode;
 };
@@ -52,6 +53,7 @@ export function IntentsQuoteView({
   onRefresh,
   onAcceptUpdate,
   onBack,
+  isBackDisabled = false,
   fundingSlot,
 }: IntentsQuoteViewProps) {
   const { route, preview } = review;
@@ -162,7 +164,7 @@ export function IntentsQuoteView({
 
       <RButton
         className={styles.statusCloseButton}
-        disabled={review.phase === "creating"}
+        disabled={review.phase === "creating" || isBackDisabled}
         onClick={onBack}
         size="medium"
         tone="black"

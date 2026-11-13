@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => ({
   ctx: { account: null as string | null, intentSession: null as unknown },
   wallet: null as unknown as EthereumContext,
   result: null as unknown as ReturnType<typeof useIntentsDeposit>,
+  fund: vi.fn(),
 }));
 
 vi.mock("~/lib/apis/intents", async (original) => ({
@@ -46,6 +47,14 @@ vi.mock("~/providers/EthereumProvider/hooks/useIntentSourceBalance", () => ({
     balance: new BigNumber(100),
     status: "ready",
     refetch: vi.fn(),
+  }),
+}));
+vi.mock("~/providers/EthereumProvider/hooks/useIntentsFunding", () => ({
+  useIntentsFunding: () => ({
+    fund: mocks.fund,
+    busyId: null,
+    error: null,
+    clearError: vi.fn(),
   }),
 }));
 vi.mock("wagmi", () => ({
@@ -274,6 +283,58 @@ describe("quote review and persisted operation", () => {
     );
     expect(mocks.result.canReview).toBe(false);
     expect(mocks.result.sessionError).toMatch(/session is not ready/);
+  });
+});
+
+describe("funding hand-off", () => {
+  async function reachReady() {
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmQuote());
+    expect(mocks.result.review.phase).toBe("ready");
+    const [record] = store().getSnapshot().records.values();
+    return record;
+  }
+
+  it("funds the captured session and reports staleness after an account change", async () => {
+    const record = await reachReady();
+    const session = store();
+    await act(async () => mocks.result.fund());
+    expect(mocks.fund).toHaveBeenCalledWith(
+      session,
+      record.localId,
+      expect.any(Function)
+    );
+    const isCurrent = mocks.fund.mock.calls[0][2] as () => boolean;
+    expect(isCurrent()).toBe(true);
+    signIn(accountB);
+    await render();
+    expect(isCurrent()).toBe(false);
+    expect(mocks.result.review.phase).toBe("form");
+  });
+
+  it("keeps a funded operation when quote inputs change, but not across accounts", async () => {
+    const record = await reachReady();
+    const session = store();
+    session.upsert({
+      ...session.get(record.localId)!,
+      fundingState: "broadcast",
+      sourceHashes: [`0x${"a".repeat(64)}`],
+      sequence: session.get(record.localId)!.sequence + 1,
+    });
+    await render();
+    expect(mocks.result.hasFundingStarted).toBe(true);
+    signIn(accountA, sourceB);
+    mocks.ctx.intentSession = session;
+    await render();
+    expect(mocks.result.review.phase).toBe("ready");
+    expect(mocks.result.activeRecord?.fundingState).toBe("broadcast");
+
+    signIn(accountB);
+    await render();
+    expect(mocks.result.review.phase).toBe("form");
+    expect(mocks.result.reviewError).toBeNull();
+    expect(session.get(record.localId)?.fundingState).toBe("broadcast");
   });
 });
 

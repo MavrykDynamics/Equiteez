@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { BigNumber } from "bignumber.js";
 import { v4 as uuid } from "uuid";
 import { useSwitchChain } from "wagmi";
@@ -15,7 +22,12 @@ import {
 import {
   createIntentRecord,
   getOperationMismatch,
+  type IntentRecord,
 } from "~/lib/intents/intentOperation";
+import {
+  canRequestIntentFunding,
+  simulateIntentFunding,
+} from "~/contracts/intentsFunding.contract";
 import {
   getIntentErrorCopy,
   getIntentQuoteKey,
@@ -30,6 +42,7 @@ import {
 } from "~/lib/intents/intentRoute";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { useIntentSourceBalance } from "~/providers/EthereumProvider/hooks/useIntentSourceBalance";
+import { useIntentsFunding } from "~/providers/EthereumProvider/hooks/useIntentsFunding";
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
 
@@ -63,6 +76,9 @@ export type IntentsReview =
       operation: IntentOperation;
     });
 
+const noRecords: ReadonlyMap<string, IntentRecord> = new Map();
+const noSubscribe = () => () => {};
+
 const toApiError = (error: unknown) =>
   isIntentsApiError(error)
     ? error
@@ -84,6 +100,22 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   const { switchChainAsync, isPending: isSwitching } = useSwitchChain();
   const runRef = useRef(0);
   const busyRef = useRef(false);
+  const funding = useIntentsFunding();
+  const records = useSyncExternalStore(
+    intentSession?.subscribe ?? noSubscribe,
+    () => intentSession?.getSnapshot().records ?? noRecords,
+    () => noRecords
+  );
+  const activeRecord =
+    "localId" in review && review.session === intentSession
+      ? records.get(review.localId)
+      : undefined;
+  // Once a wallet request was made, the operation outlives quote inputs.
+  const hasFundingStarted = Boolean(
+    activeRecord &&
+      activeRecord.fundingState !== "abandoned" &&
+      !canRequestIntentFunding(activeRecord.fundingState)
+  );
 
   const selected = useMemo(
     () =>
@@ -165,13 +197,27 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
 
   // Invalidate the quote when the account, session, source wallet, route or
   // amount changes before funding starts.
+  // A changed Equiteez session always leaves the view (never show another
+  // account's operation); other changes only matter before funding starts.
   useEffect(() => {
     if (review.phase === "form") return;
-    if (review.key === quoteKey && review.session === intentSession) return;
+    if (review.session !== intentSession) {
+      const old =
+        "localId" in review ? review.session.get(review.localId) : undefined;
+      const wasFunded =
+        old &&
+        old.fundingState !== "abandoned" &&
+        !canRequestIntentFunding(old.fundingState);
+      resetReview(
+        wasFunded ? null : "The quote was cleared because your account changed."
+      );
+      return;
+    }
+    if (review.key === quoteKey || hasFundingStarted) return;
     resetReview(
       "The quote was cleared because your account, wallet or amount changed."
     );
-  }, [quoteKey, intentSession, review, resetReview]);
+  }, [quoteKey, intentSession, review, resetReview, hasFundingStarted]);
 
   // Countdown clock for quote expiry while a quote is on screen.
   const hasQuote = review.phase !== "form" && review.phase !== "quoting";
@@ -340,6 +386,34 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     }
   }, [abandon, review]);
 
+  /** The single user signature: fund the 1Click deposit address. */
+  const fund = useCallback(async () => {
+    const current = reviewRef.current;
+    if (current.phase !== "ready") return;
+    const { session, localId } = current;
+    await funding.fund(
+      session,
+      localId,
+      () =>
+        sessionRef.current === session &&
+        "localId" in reviewRef.current &&
+        reviewRef.current.localId === localId
+    );
+  }, [funding]);
+
+  const api = getIntentsApi();
+  const simulateFunding = useMemo(
+    () =>
+      api.env === "mock"
+        ? () => {
+            const current = reviewRef.current;
+            if (current.phase === "ready")
+              simulateIntentFunding(api, current.session, current.localId);
+          }
+        : undefined,
+    [api]
+  );
+
   const acceptUpdatedQuote = useCallback(() => {
     setReview((current) =>
       current.phase === "reconfirm" ? { ...current, phase: "ready" } : current
@@ -400,6 +474,12 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     confirmQuote,
     acceptUpdatedQuote,
     cancelReview: resetReview,
+    activeRecord,
+    hasFundingStarted,
+    fund,
+    simulateFunding,
+    isFunding: Boolean(funding.busyId),
+    fundingError: funding.error,
   };
 }
 

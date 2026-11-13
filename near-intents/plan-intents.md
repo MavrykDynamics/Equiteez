@@ -223,12 +223,12 @@ Rules:
 - [x] Tests: idempotent retry returns the same operation, a stale account response is rejected, and no funding prompt appears before the operation is persisted.
 
 ### EQ-FE-03: Fund the 1Click deposit (2d)
-- [ ] `useIntentsFunding`: switch to `funding.chainId`, then native `sendTransaction({to: depositAddress, value})` or ERC-20 `writeContract(transfer(depositAddress, amount))`. Values come exactly from `funding` and are never recalculated. Pre-check the balance and gas estimate.
-- [ ] Set `fundingState = "prompted"` before the wallet call. Save the hash when the wallet returns it (`broadcast`), then wait for the receipt (same bounded wait as the direct bridge). Handle replacement hashes the same way: add them to `sourceHashes`.
-- [ ] Send the hint `POST /operations/:id/deposit` with retries. Failures are shown as non-blocking.
-- [ ] Errors: user rejected (`rejected`, a retry of the same funding is allowed because nothing was broadcast), network mismatch, disconnect, unknown result (`unknown`, no automatic retry), late responses after the account changed (dropped).
-- [ ] Reuse `ethereumErrors.ts` and wallet-selection UI. Don't touch `useUsdtBridge` or `usdtBridge.contract.ts`.
-- [ ] Tests: native and ERC-20 call shapes, rejection, unknown broadcast never resends, modal close during the prompt.
+- [x] `useIntentsFunding`: switch to `funding.chainId`, then native `sendTransaction({to: depositAddress, value})` or ERC-20 `writeContract(transfer(depositAddress, amount))`. Values come exactly from `funding` and are never recalculated. Pre-check the balance and gas estimate.
+- [x] Set `fundingState = "prompted"` before the wallet call. Save the hash when the wallet returns it (`broadcast`), then wait for the receipt (same bounded wait as the direct bridge). Handle replacement hashes the same way: add them to `sourceHashes`.
+- [x] Send the hint `POST /operations/:id/deposit` with retries. Failures are shown as non-blocking.
+- [x] Errors: user rejected (`rejected`, a retry of the same funding is allowed because nothing was broadcast), network mismatch, disconnect, unknown result (`unknown`, no automatic retry), late responses after the account changed (dropped).
+- [x] Reuse `ethereumErrors.ts` and wallet-selection UI. Don't touch `useUsdtBridge` or `usdtBridge.contract.ts`. _(Wallet selection is reused through `REthereumWalletDropdown`. `ethereumErrors.ts` only covers connect/switch, so funding errors use their own viem-based classification in `intentFunding.ts`.)_
+- [x] Tests: native and ERC-20 call shapes, rejection, unknown broadcast never resends, modal close during the prompt.
 
 ### EQ-FE-04: Progress and global widget (3d)
 - [ ] `intentOperations.ts` store: validated restore, scoped key, monotonic merge, storage-error exposure (same pattern as `bridgeTransactions.ts`, kept as a separate module).
