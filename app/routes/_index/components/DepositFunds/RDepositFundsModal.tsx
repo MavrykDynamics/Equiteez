@@ -4,6 +4,7 @@ import type { BigNumber } from "bignumber.js";
 
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
+import { RText } from "~/lib/atoms/RTypography/RText";
 import { INTENTS_DEPOSIT_ENABLED } from "~/consts/intents";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
 import { useIntentsDeposit } from "~/hooks/useIntentsDeposit";
@@ -17,6 +18,7 @@ import { useTransactionWidget } from "~/providers/TransactionsProvider/Transacti
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
 import { ConfirmedView } from "./components/ConfirmedView";
+import { IntentsQuoteView } from "./components/IntentsQuoteView";
 import { IntentsView } from "./components/IntentsView";
 import { ReceiveView } from "./components/ReceiveView";
 import styles from "./RDepositFundsModal.module.css";
@@ -73,6 +75,12 @@ export function RDepositFundsModal({
   const resetBridge = ethereumWallet.bridge.reset;
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
   const resetIntentsForm = intents.resetForm;
+  const intentsReview = intents.review;
+  const isIntentsReviewOpen =
+    INTENTS_DEPOSIT_ENABLED &&
+    activeTab === "intents" &&
+    intentsReview.phase !== "form" &&
+    intentsReview.phase !== "quoting";
   const wasOpen = useRef(isOpen);
   const resetModal = useCallback(() => {
     releaseDeposit.current?.();
@@ -149,6 +157,21 @@ export function RDepositFundsModal({
           onReset={resetModal}
           onClose={handleClose}
         />
+      ) : isIntentsReviewOpen ? (
+        <IntentsQuoteView
+          review={intentsReview}
+          now={intents.now}
+          error={intents.reviewError}
+          onConfirm={intents.confirmQuote}
+          onRefresh={intents.requestPreview}
+          onAcceptUpdate={intents.acceptUpdatedQuote}
+          onBack={() => intents.cancelReview()}
+          fundingSlot={
+            <RText color="neutral-700" role="status" size="body-sm">
+              Deposit operation saved.
+            </RText>
+          }
+        />
       ) : (
         <div className={styles.content}>
           <div className={styles.header}>
@@ -224,7 +247,9 @@ export function RDepositFundsModal({
               ethereumWallet={ethereumWallet}
               isMavrykBusy={isLoading}
               onConnectMavryk={connect}
-              onReview={() => undefined}
+              onReview={intents.requestPreview}
+              isReviewing={intents.review.phase === "quoting"}
+              reviewError={intents.reviewError ?? intents.sessionError}
             />
           ) : (
             <ReceiveView mavrykAddress={mavrykAddress} />

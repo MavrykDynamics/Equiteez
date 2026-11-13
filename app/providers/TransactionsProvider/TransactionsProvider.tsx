@@ -21,6 +21,9 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
+import { INTENTS_DEPOSIT_ENABLED, INTENTS_ENV } from "~/consts/intents";
+import type { IntentRecord } from "~/lib/intents/intentOperation";
+import { IntentOperations, type IntentSnapshot } from "./intentOperations";
 import { recoverBridgeWidgets } from "./bridgeWidgetRecovery";
 import { BridgeReconciler } from "./bridgeReconciler";
 import {
@@ -39,12 +42,22 @@ const emptySnapshot: TransactionSnapshot = {
 };
 const emptySubscribe = () => () => {};
 const getEmptySnapshot = () => emptySnapshot;
+const emptyIntentSnapshot: IntentSnapshot = {
+  records: new Map(),
+  storageError: null,
+};
+const getEmptyIntentSnapshot = () => emptyIntentSnapshot;
 type TransactionsContext = TransactionSnapshot & {
   account: string | null;
   network: string;
   session: object | null;
   publish: (record: BridgeTransaction) => void;
   refresh: () => void;
+  /** 1Click operations of this account/environment (EQ-FE-02+). */
+  intents: readonly IntentRecord[];
+  /** Write target captured by intent flows; null when signed out/flag off. */
+  intentSession: IntentOperations | null;
+  intentStorageError: string | null;
 };
 const context = createContext<TransactionsContext | null>(null);
 const settlementQueryPrefixes = [
@@ -77,6 +90,23 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   );
   const currentStore = useRef(store);
   currentStore.current = store;
+  const intentStore = useMemo(
+    () =>
+      account && INTENTS_DEPOSIT_ENABLED
+        ? new IntentOperations(account, INTENTS_ENV, () => window.localStorage)
+        : null,
+    [account]
+  );
+  useEffect(() => intentStore?.restore(), [intentStore]);
+  const intentSnapshot = useSyncExternalStore(
+    intentStore?.subscribe ?? emptySubscribe,
+    intentStore?.getSnapshot ?? getEmptyIntentSnapshot,
+    getEmptyIntentSnapshot
+  );
+  const intents = useMemo(
+    () => [...intentSnapshot.records.values()],
+    [intentSnapshot.records]
+  );
   const settlementHandler = useRef<(records: BridgeSettlementUpdate[]) => void>(
     () => {}
   );
@@ -177,6 +207,9 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       account,
       network: bridgeNetwork,
       session: store,
+      intents,
+      intentSession: intentStore,
+      intentStorageError: intentSnapshot.storageError,
       refresh: () => reconciler?.refresh(),
       publish: (record: BridgeTransaction) => {
         if (!store || currentStore.current !== store) return;
@@ -192,7 +225,15 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
           reconciler?.refresh();
       },
     }),
-    [account, snapshot, store, reconciler]
+    [
+      account,
+      snapshot,
+      store,
+      reconciler,
+      intents,
+      intentStore,
+      intentSnapshot.storageError,
+    ]
   );
   return <context.Provider value={value}>{children}</context.Provider>;
 }

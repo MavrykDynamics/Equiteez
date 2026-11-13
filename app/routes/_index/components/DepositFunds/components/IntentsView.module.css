@@ -47,3 +47,26 @@
 .recipientAddress {
   max-width: 100%;
 }
+
+.quoteList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+  margin: 0;
+  padding: var(--r-space-4);
+  border: 1px solid var(--r-color-neutral-200);
+  border-radius: var(--r-radius-sm);
+}
+
+.quoteRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--r-space-2) var(--r-space-4);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.quoteRow dd {
+  margin: 0;
+  text-align: right;
+}

@@ -33,7 +33,10 @@ vi.mock("~/consts/intents", () => ({
   },
 }));
 vi.mock("~/hooks/useIntentsDeposit", () => ({
-  useIntentsDeposit: () => ({ resetForm: mocks.resetIntents }),
+  useIntentsDeposit: () => ({
+    resetForm: mocks.resetIntents,
+    review: { phase: "form" },
+  }),
 }));
 vi.mock("./components/IntentsView", () => ({
   IntentsView: () => <p>Intents form</p>,

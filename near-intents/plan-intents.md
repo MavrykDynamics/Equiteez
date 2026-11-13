@@ -215,12 +215,12 @@ Rules:
 - [x] Tests: the tab renders behind the flag, the existing tabs still work (extend `RDepositFundsModal.test.tsx`), and every validation state.
 
 ### EQ-FE-02: Quote review and persisted operation (2d)
-- [ ] Optional preview: debounced `POST /quotes` as the amount changes, for an estimated output.
-- [ ] "Review" → `IntentsQuoteView`: amount in, expected and minimum out (destination decimals), recipient, expiry countdown, route. Confirm button.
-- [ ] Confirm: create `localId` (uuid) and persist it → `POST /operations` with `Idempotency-Key: localId` → persist the returned operation → only then move to funding. Double clicks are blocked by a busy ref and by idempotency.
-- [ ] Invalidate the quote and go back to the form when the Mavryk account, source wallet, chain, token or amount changes, or when the quote expires. If the backend returns material changes (amountOut / minOut differ), the user confirms again.
-- [ ] Error mapping: `sponsorship_unavailable`, `destination_busy` (someone else's operation is in progress for this recipient, so try later), `quote_expired`, `below_minimum`, `route_disabled`, network/5xx.
-- [ ] Tests: idempotent retry returns the same operation, a stale account response is rejected, and no funding prompt appears before the operation is persisted.
+- [ ] Optional preview: debounced `POST /quotes` as the amount changes, for an estimated output. _(Preview is requested on "Review" instead; no as-you-type quote yet.)_
+- [x] "Review" → `IntentsQuoteView`: amount in, expected and minimum out (destination decimals), recipient, expiry countdown, route. Confirm button.
+- [x] Confirm: create `localId` (uuid) and persist it → `POST /operations` with `Idempotency-Key: localId` → persist the returned operation → only then move to funding. Double clicks are blocked by a busy ref and by idempotency.
+- [x] Invalidate the quote and go back to the form when the Mavryk account, source wallet, chain, token or amount changes, or when the quote expires. If the backend returns material changes (amountOut / minOut differ), the user confirms again.
+- [x] Error mapping: `sponsorship_unavailable`, `destination_busy` (someone else's operation is in progress for this recipient, so try later), `quote_expired`, `below_minimum`, `route_disabled`, network/5xx.
+- [x] Tests: idempotent retry returns the same operation, a stale account response is rejected, and no funding prompt appears before the operation is persisted.
 
 ### EQ-FE-03: Fund the 1Click deposit (2d)
 - [ ] `useIntentsFunding`: switch to `funding.chainId`, then native `sendTransaction({to: depositAddress, value})` or ERC-20 `writeContract(transfer(depositAddress, amount))`. Values come exactly from `funding` and are never recalculated. Pre-check the balance and gas estimate.
