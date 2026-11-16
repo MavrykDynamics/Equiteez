@@ -6,7 +6,7 @@ import mobileStyles from "../MobilePortfolio/styles.module.css";
 import welcomeStyles from "../WelcomeBlock/styles.module.css";
 import styles from "./PortfolioPageSkeleton.module.css";
 
-// Overview, Activity, Notifications
+// Overview, Activity, Notifications, Profile
 const TAB_WIDTHS = [97, 84, 118, 77];
 const METRICS_COUNT = 3;
 const TABLE_COLUMNS_COUNT = 6;
@@ -39,6 +39,7 @@ export type PortfolioPageSkeletonVariant =
   | "overview"
   | "activity"
   | "notifications"
+  | "profile"
   | "none";
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
@@ -212,10 +213,23 @@ function NotificationsSkeleton() {
   );
 }
 
+// Profile: the "KYC Info" card with its one-line status message
+function ProfileSkeleton() {
+  return (
+    <div className={styles.content}>
+      <RSkeleton className={styles.profileCard} radius="md" variant="surface">
+        <RSkeleton radius="none" className={styles.profileTitle} />
+        <RSkeleton radius="12" className={styles.profileMessage} />
+      </RSkeleton>
+    </div>
+  );
+}
+
 const BODY_SKELETONS: Record<PortfolioPageSkeletonVariant, ComponentType> = {
   overview: OverviewSkeleton,
   activity: ActivitySkeleton,
   notifications: NotificationsSkeleton,
+  profile: ProfileSkeleton,
   none: () => null,
 };
 
@@ -258,11 +272,19 @@ export function PortfolioPageSkeleton({
       <div className={styles.desktopOnly}>
         <div className={welcomeStyles.wrapper}>
           <div className={welcomeStyles.welcome}>
-            <RSkeleton
-              radius="none"
-              className={styles.welcomeTitle}
-              variant="surface"
-            />
+            <div className={welcomeStyles.identity}>
+              <RSkeleton
+                radius="none"
+                className={styles.welcomeTitle}
+                variant="surface"
+              />
+              {/* VERIFIED / NOT VERIFIED badge */}
+              <RSkeleton
+                className={styles.kycBadge}
+                radius="pill"
+                variant="surface"
+              />
+            </div>
             <div className={welcomeStyles.actions}>
               <RSkeleton
                 height={45}
