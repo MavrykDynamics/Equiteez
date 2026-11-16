@@ -96,7 +96,11 @@ function useWidgetState() {
             {
               ...model,
               isTerminal: true,
-              state: { status: "success" as const },
+              // Keep the card's own success copy (received amount).
+              state:
+                model.state.status === "success"
+                  ? model.state
+                  : { status: "success" as const },
             },
           ];
         return [model];

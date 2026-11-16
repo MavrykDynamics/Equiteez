@@ -62,7 +62,8 @@ function Identity({
 /**
  * Details of one 1Click operation; shares its model with the widget card so
  * minimize/reopen show the same progress. The identifiers stay separate: the
- * funding hash is not the bridge forward hash.
+ * funding hash, the 1Click delivery transfers, the sponsored forward and its
+ * ERC20WrapAsked events, and the Mavryk mint are different transactions.
  */
 export function IntentsStatusView({
   record,
@@ -84,7 +85,7 @@ export function IntentsStatusView({
     <div className={styles.statusContent}>
       <div className={styles.statusHeader}>
         <RHeading className={styles.statusAmount} size="h6" weight="medium">
-          {formatRawAmount(record.amountIn, record.source.decimals)}{" "}
+          {formatRawAmount(record.request.amountIn, record.source.decimals)}{" "}
           {record.source.symbol}
         </RHeading>
         <RText
@@ -117,7 +118,7 @@ export function IntentsStatusView({
         </div>
         <RText className={styles.statusNoticeText} size="body-sm">
           {state?.status === "success"
-            ? "Arrived in your Mavryk account."
+            ? (state.description ?? "Arrived in your Mavryk account.")
             : state &&
                 "title" in state &&
                 state.title &&
@@ -139,18 +140,29 @@ export function IntentsStatusView({
             label={`${record.source.chainName} funding`}
           />
         )}
-        {backend?.deliveryTxHash && (
-          <Identity hash={backend.deliveryTxHash} label="1Click delivery" />
-        )}
-        {backend?.forwardTxHash && (
+        {backend?.delivery.transactionHashes.map((hash) => (
+          <Identity hash={hash} key={hash} label="1Click delivery" />
+        ))}
+        {backend?.forwarding.transactionHash && (
           <Identity
-            hash={`${backend.forwardTxHash}${backend.forwardLogIndex === undefined ? "" : `:${backend.forwardLogIndex}`}`}
-            label="Bridge forward"
+            hash={backend.forwarding.transactionHash}
+            label="Sponsored forward"
           />
         )}
-        {backend?.refund?.txHash && (
-          <Identity hash={backend.refund.txHash} label="Refund" />
-        )}
+        {backend?.forwarding.bridgeEvents.map((event) => (
+          <Identity
+            hash={`${event.transactionHash}:${event.logIndex}`}
+            key={`${event.transactionHash}:${event.logIndex}`}
+            label="Bridge wrap event"
+          />
+        ))}
+        {backend?.settlement.mints.map((mint) => (
+          <Identity
+            hash={mint.operationHash}
+            key={mint.operationHash}
+            label="Mavryk mint"
+          />
+        ))}
       </dl>
 
       {isFinished && (

@@ -1,19 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import type { IntentStatus } from "~/lib/apis/intents";
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
-import {
-  createIntentRecord,
-  type IntentFundingState,
-  type IntentRecord,
+import type { IntentOperation } from "~/lib/apis/intents";
+import type {
+  IntentFundingState,
+  IntentRecord,
 } from "~/lib/intents/intentOperation";
 import {
+  fixtureOperationId,
   fixtureRecipient,
-  fixtureSource,
   operation,
+  record as fixtureRecord,
+  wrappedOperation,
 } from "~/lib/intents/intents.fixtures";
 import {
   getIntentWidgetId,
+  getIntentWidgetState,
   intentWidgetStepLabels,
   toIntentWidget,
 } from "./intentWidget";
@@ -21,108 +22,232 @@ import {
 const hash = `0x${"b".repeat(64)}` as const;
 function record(
   fundingState: IntentFundingState,
-  status?: IntentStatus,
+  backend?: Partial<IntentOperation> | IntentOperation,
   extra: Partial<IntentRecord> = {}
 ): IntentRecord {
-  return {
-    ...createIntentRecord({
-      localId: "local-1",
-      account: fixtureRecipient,
-      env: "mock",
-      route: mockIntentRoutes[0],
-      amountIn: "2000000000000000000",
-      sourceAddress: fixtureSource,
-    }),
-    operationId: "op-1",
+  return fixtureRecord({
+    operationId: fixtureOperationId,
     fundingState,
     sourceHashes: fundingState === "not_started" ? [] : [hash],
-    backend: status ? operation({ status }) : undefined,
+    backend: backend ? operation(backend) : undefined,
     ...extra,
-  };
+  });
 }
+const state = (item: IntentRecord) => getIntentWidgetState(item).state;
 
 describe("intent widget model", () => {
   it.each([
     ["not_started", undefined],
     ["rejected", undefined],
     ["abandoned", undefined],
-    ["not_started", "expired"],
-    ["abandoned", "awaiting_deposit"],
-  ] as const)("hides uncommitted operations: %s/%s", (funding, status) => {
-    expect(toIntentWidget(record(funding, status))).toBeNull();
+    ["not_started", { fundingStatus: "EXPIRED", fundingInstructions: null }],
+    ["abandoned", { phase: "PREPARING_QUOTE" }],
+  ] as const)("is hidden for %s / %o", (fundingState, backend) => {
+    expect(
+      toIntentWidget(record(fundingState, backend as Partial<IntentOperation>))
+    ).toBeNull();
   });
 
-  it("uses a composite identity distinct from bridge hash/log IDs", () => {
-    const model = toIntentWidget(record("broadcast"))!;
-    expect(model.operationId).toBe("intent:local-1");
-    expect(model.backendId).toBe(getIntentWidgetId({ localId: "local-1" }));
-    expect(model.backendId).not.toContain(hash);
+  it("appears once the backend saw funds, even for an abandoned quote", () => {
+    expect(
+      toIntentWidget(record("abandoned", { fundingStatus: "OBSERVED" }))
+    ).not.toBeNull();
+  });
+
+  it("uses a composite identity, the source amount and its own steps", () => {
+    const model = toIntentWidget(record("broadcast"), "https://arbiscan.test/");
     expect(model).toMatchObject({
       kind: "intent",
+      operationId: getIntentWidgetId({ localId: "local-1" }),
+      backendId: "intent:local-1",
       amount: "2",
       symbol: "USDT",
       recipient: fixtureRecipient,
+      sourceExplorerUrl: `https://arbiscan.test/tx/${hash}`,
       steps: intentWidgetStepLabels,
     });
   });
 
   it.each([
-    ["broadcast", undefined, 1],
-    ["confirmed", "awaiting_deposit", 1],
-    ["confirmed", "deposit_detected", 2],
-    ["confirmed", "swapping", 2],
-    ["confirmed", "delivered", 3],
-    ["confirmed", "forwarding", 3],
-  ] as const)("maps %s/%s to step %i", (funding, status, step) => {
-    const model = toIntentWidget(record(funding, status))!;
-    expect(model.state).toMatchObject({ status: "progress", step });
-    expect(model.isTerminal).toBe(false);
+    ["broadcast", {}, 1],
+    ["confirmed", { fundingStatus: "OBSERVED", fundingInstructions: null }, 2],
+    [
+      "confirmed",
+      { phase: "SWAP_IN_PROGRESS", providerStatus: "PROCESSING" },
+      2,
+    ],
+    [
+      "confirmed",
+      { phase: "VERIFYING_DELIVERY", providerStatus: "SUCCESS" },
+      3,
+    ],
+    ["confirmed", { phase: "DELIVERY_VERIFIED" }, 3],
+    ["confirmed", { phase: "FORWARDING" }, 3],
+  ] as const)("maps %s / %o to step %i", (fundingState, backend, step) => {
+    const item = record(fundingState, backend as Partial<IntentOperation>);
+    expect(state(item)).toMatchObject({ status: "progress", step });
+    expect(getIntentWidgetState(item).isTerminal).toBe(false);
   });
 
-  it("shows EVM WRAPPED as neutral bridge processing, never success", () => {
-    const model = toIntentWidget(record("confirmed", "wrapped"))!;
-    expect(model.state).toMatchObject({ status: "progress", step: 4 });
-    expect(model.state.status).not.toBe("success");
-    expect(model.isTerminal).toBe(true);
+  it("never shows 1Click SUCCESS or EVM WRAPPED as success", () => {
+    const pending = record("confirmed", wrappedOperation("PENDING"));
+    expect(state(pending)).toMatchObject({
+      status: "progress",
+      step: 4,
+      description: expect.stringMatching(/Waiting for Mavryk confirmation/),
+    });
+    expect(getIntentWidgetState(pending).isTerminal).toBe(false);
+    const untracked = record("confirmed", wrappedOperation("NOT_TRACKED"));
+    expect(state(untracked)).toMatchObject({ status: "progress", step: 4 });
+    // Neutral and dismissible: the service does not track this settlement.
+    expect(getIntentWidgetState(untracked).isTerminal).toBe(true);
   });
 
-  it("completes only after a correlated receipt", () => {
+  it("completes on a confirmed settlement for the expected token", () => {
+    const done = record("confirmed", wrappedOperation("CONFIRMED"));
+    expect(getIntentWidgetState(done)).toEqual({
+      state: {
+        status: "success",
+        description: "1.994 wUSDT arrived in your Mavryk account.",
+      },
+      isTerminal: true,
+    });
+  });
+
+  it("completes on a correlated bridge receipt", () => {
     expect(
-      toIntentWidget(record("confirmed", "wrapped", { receipt: "correlated" }))!
-        .state
-    ).toEqual({ status: "success" });
+      state(
+        record("confirmed", wrappedOperation("NOT_TRACKED"), {
+          receipt: "correlated",
+        })
+      ).status
+    ).toBe("success");
+  });
+
+  it("warns, never succeeds, on a mint for an unexpected token", () => {
+    const backend = wrappedOperation("CONFIRMED");
+    backend.settlement = { ...backend.settlement, tokenAddress: "KT1Other" };
+    expect(state(record("confirmed", backend))).toMatchObject({
+      status: "warning",
+      title: "Check your Mavryk balance",
+    });
   });
 
   it.each([
-    ["refunded", "Deposit refunded"],
-    ["expired", "Deposit expired"],
-    ["failed", "Deposit failed"],
-  ] as const)("shows %s as a dismissible warning", (status, title) => {
-    const model = toIntentWidget(record("confirmed", status))!;
-    expect(model.state).toMatchObject({ status: "warning", title });
-    expect(model.isTerminal).toBe(true);
-  });
-
-  it.each([
-    ["prompted", "Check your wallet"],
-    ["unknown", "Transfer outcome unknown"],
-    ["reverted", "Transfer failed"],
+    [
+      "MANUAL_REVIEW",
+      { attention: "MANUAL_REVIEW", phase: "DELIVERY_VERIFIED" },
+    ],
+    [
+      "RECONCILE_REQUIRED",
+      { attention: "RECONCILE_REQUIRED", phase: "FORWARDING" },
+    ],
+    [
+      "ambiguous delivery",
+      {
+        phase: "VERIFYING_DELIVERY",
+        delivery: { ...operation().delivery, status: "AMBIGUOUS" },
+      },
+    ],
   ] as const)(
-    "asks the user to check before anything else: %s",
-    (funding, title) => {
-      expect(toIntentWidget(record(funding))!.state).toMatchObject({
+    "shows %s as a review warning with the operation ID",
+    (_, backend) => {
+      const item = record("confirmed", backend as Partial<IntentOperation>);
+      expect(state(item)).toMatchObject({
         status: "warning",
-        title,
+        title: "Deposit under review",
+        description: expect.stringContaining(fixtureOperationId),
+      });
+      expect(state(item)).toMatchObject({
+        description: expect.stringMatching(/Do not send another deposit/),
       });
     }
   );
 
-  it("shows backend progress even for an abandoned quote that was funded", () => {
+  it("shows an incomplete deposit without inviting a top-up", () => {
     expect(
-      toIntentWidget(record("abandoned", "swapping"))!.state
+      state(
+        record("confirmed", {
+          fundingStatus: "OBSERVED",
+          providerStatus: "INCOMPLETE_DEPOSIT",
+          attention: "DEPOSIT_INCOMPLETE",
+        })
+      )
+    ).toMatchObject({ status: "warning", title: "Incomplete deposit" });
+  });
+
+  it("presents a refund as a provider report", () => {
+    const item = record("confirmed", {
+      fundingStatus: "OBSERVED",
+      providerStatus: "REFUNDED",
+      refund: {
+        status: "REPORTED",
+        amount: "2000000000000000000",
+        asset: "mock:arb-sepolia:usdt",
+        recipient: "0x1111111111111111111111111111111111111111",
+      },
+    });
+    expect(state(item)).toMatchObject({
+      status: "warning",
+      title: "Refund reported",
+      description: expect.stringMatching(/2 USDT.*provider's report/),
+    });
+    expect(getIntentWidgetState(item).isTerminal).toBe(true);
+  });
+
+  it("adds non-blocking attention copy to progress", () => {
+    expect(
+      state(
+        record("confirmed", {
+          phase: "SWAP_IN_PROGRESS",
+          attention: "PROVIDER_UNAVAILABLE",
+        })
+      )
     ).toMatchObject({
       status: "progress",
       step: 2,
+      description: expect.stringMatching(/1Click is temporarily unavailable/),
     });
+  });
+
+  it("falls back to a warning for unknown backend values", () => {
+    expect(
+      state(
+        record("confirmed", { phase: "UNKNOWN", fundingStatus: "OBSERVED" })
+      )
+    ).toMatchObject({ status: "warning", title: "Status not recognised" });
+  });
+
+  it.each([
+    ["prompted", "Check your wallet", false],
+    ["unknown", "Transfer outcome unknown", false],
+    ["reverted", "Transfer failed", true],
+  ] as const)(
+    "shows %s funding as a warning",
+    (fundingState, title, isTerminal) => {
+      const item = record(fundingState, {});
+      expect(state(item)).toMatchObject({ status: "warning", title });
+      expect(getIntentWidgetState(item).isTerminal).toBe(isTerminal);
+    }
+  );
+
+  it("does not suggest resending when the quote expired after a send", () => {
+    expect(
+      state(
+        record("confirmed", {
+          fundingStatus: "EXPIRED",
+          fundingInstructions: null,
+        })
+      )
+    ).toMatchObject({
+      status: "warning",
+      description: expect.stringMatching(/do not send it again/),
+    });
+  });
+
+  it("explains lost access and stays dismissible", () => {
+    const item = record("confirmed", {}, { access: "lost" });
+    expect(state(item)).toMatchObject({ title: "Status unavailable" });
+    expect(getIntentWidgetState(item).isTerminal).toBe(true);
   });
 });

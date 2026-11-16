@@ -3,13 +3,17 @@ import { z } from "zod";
 import type { IntentOperation } from "~/lib/apis/intents";
 import {
   intentRecordSchema,
-  isTerminalIntentStatus,
+  isIntentClosed,
   mergeIntentSnapshot,
   type IntentRecord,
 } from "~/lib/intents/intentOperation";
 
+/**
+ * v2: real backend contract (capability, idempotency key, exact request).
+ * v1 records came from the draft contract and are not migrated.
+ */
 const recoverySchema = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   records: z.array(intentRecordSchema),
 });
 
@@ -32,6 +36,11 @@ const unionHashes = (a: readonly string[], b: readonly string[]) =>
  * direct bridge store (`equiteez:bridge:v1:…`): different identity, different
  * lifecycle. Writes are synchronous so state survives modal close or reload
  * immediately after a wallet response.
+ *
+ * Records hold each operation's capability: the only way to read it again
+ * (there is no capability recovery or list-by-wallet endpoint). The store is
+ * application-managed localStorage scoped to this origin, account and
+ * backend; capabilities never leave it except as the bearer header.
  */
 export class IntentOperations {
   private snapshot: IntentSnapshot = { records: new Map(), storageError: null };
@@ -47,7 +56,7 @@ export class IntentOperations {
   ) {}
 
   get key() {
-    return `equiteez:intents:v1:${encodeURIComponent(this.env)}:${encodeURIComponent(this.account)}`;
+    return `equiteez:intents:v2:${encodeURIComponent(this.env)}:${encodeURIComponent(this.account)}`;
   }
 
   getSnapshot = () => this.snapshot;
@@ -115,13 +124,13 @@ export class IntentOperations {
         const isSettled =
           record.fundingState === "abandoned" ||
           record.fundingState === "rejected" ||
-          (record.backend && isTerminalIntentStatus(record.backend.status));
+          isIntentClosed(record);
         if (isSettled && record.createdAt < cutoff) records.delete(id);
       }
       this.snapshot = { ...this.snapshot, records };
       this.storage().setItem(
         this.key,
-        JSON.stringify({ version: 1, records: [...records.values()] })
+        JSON.stringify({ version: 2, records: [...records.values()] })
       );
       this.snapshot = { ...this.snapshot, storageError: null };
     } catch {
@@ -162,15 +171,17 @@ export class IntentOperations {
     )
       return false;
     const backend = mergeIntentSnapshot(previous.backend, operation);
-    if (backend === previous.backend) return false;
+    // A successful read clears the 404 counter even without new data.
+    const resetsNotFound = Boolean(previous.notFoundCount);
+    if (backend === previous.backend && !resetsNotFound) return false;
     const records = new Map(this.snapshot.records);
     records.set(localId, {
       ...previous,
       operationId: operation.id,
       backend,
-      sourceHashes: backend.sourceTxHash
-        ? unionHashes(previous.sourceHashes, [backend.sourceTxHash])
-        : previous.sourceHashes,
+      lastInstructions:
+        backend.fundingInstructions ?? previous.lastInstructions,
+      notFoundCount: undefined,
     });
     this.snapshot = { ...this.snapshot, records };
     this.persist();
@@ -178,13 +189,17 @@ export class IntentOperations {
     return true;
   }
 
-  /** Small field updates owned by the tracker (hints, receipt, announcements). */
+  /** Small field updates owned by the tracker (receipt, access, announcements). */
   patch(
     localId: string,
     patch: Partial<
       Pick<
         IntentRecord,
-        "hintState" | "receipt" | "announced" | "isWidgetRequested"
+        | "receipt"
+        | "announced"
+        | "isWidgetRequested"
+        | "notFoundCount"
+        | "access"
       >
     >
   ) {
@@ -219,8 +234,10 @@ function merge(previous: IntentRecord, next: IntentRecord): IntentRecord {
     ...next,
     operationId: next.operationId ?? previous.operationId,
     backend,
+    lastInstructions: next.lastInstructions ?? previous.lastInstructions,
     sourceHashes: unionHashes(previous.sourceHashes, next.sourceHashes),
     receipt: previous.receipt === "correlated" ? "correlated" : next.receipt,
     announced: previous.announced || next.announced,
+    access: previous.access === "lost" ? "lost" : next.access,
   };
 }

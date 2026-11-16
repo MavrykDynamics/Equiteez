@@ -1,26 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
-import { memoryStorage, operation } from "~/lib/intents/intents.fixtures";
-import { createIntentRecord } from "~/lib/intents/intentOperation";
+import {
+  fixtureCapability,
+  fixtureOperationId,
+  fixtureRecipient as account,
+  instructions,
+  memoryStorage,
+  operation,
+  record as fixtureRecord,
+} from "~/lib/intents/intents.fixtures";
 import { IntentOperations } from "./intentOperations";
 
-const account = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
-const source = "0x1111111111111111111111111111111111111111";
-
 const record = (localId = "local-1", target = account) =>
-  createIntentRecord({
-    localId,
-    account: target,
-    env: "mock",
-    route: mockIntentRoutes[0],
-    amountIn: "2000000000000000000",
-    sourceAddress: source,
-    now: Date.now(),
-  });
+  fixtureRecord({ localId, account: target, createdAt: Date.now() });
 
 describe("intent operation store", () => {
-  it("persists synchronously under an account/environment-scoped key", () => {
+  it("persists synchronously under an account/environment-scoped v2 key", () => {
     const storage = memoryStorage();
     const store = new IntentOperations(
       account,
@@ -29,9 +24,28 @@ describe("intent operation store", () => {
     );
     store.upsert({ ...record(), env: "https://a.test" });
     expect(store.key).toBe(
-      `equiteez:intents:v1:${encodeURIComponent("https://a.test")}:${account}`
+      `equiteez:intents:v2:${encodeURIComponent("https://a.test")}:${account}`
     );
-    expect(JSON.parse(storage.data.get(store.key)!).records).toHaveLength(1);
+    const saved = JSON.parse(storage.data.get(store.key)!);
+    expect(saved.version).toBe(2);
+    // The capability is persisted with the request before any POST.
+    expect(saved.records[0]).toMatchObject({
+      capability: fixtureCapability,
+      idempotencyKey: "idem-key-1",
+      request: { amountIn: "2000000000000000000" },
+    });
+  });
+
+  it("ignores draft-contract v1 data", () => {
+    const storage = memoryStorage();
+    const store = new IntentOperations(account, "mock", () => storage);
+    storage.data.set(
+      `equiteez:intents:v1:mock:${account}`,
+      JSON.stringify({ version: 1, records: [{ kind: "intent" }] })
+    );
+    store.restore();
+    expect(store.getSnapshot()).toMatchObject({ storageError: null });
+    expect(store.getSnapshot().records.size).toBe(0);
   });
 
   it("restores only its own scope and never another account's records", () => {
@@ -54,46 +68,60 @@ describe("intent operation store", () => {
     expect(store.get("local-1")?.fundingState).toBe("broadcast");
   });
 
-  it("merges backend snapshots monotonically and keeps local funding state", () => {
+  it("merges backend snapshots by revision and keeps local funding state", () => {
     const store = new IntentOperations(account, "mock", () => memoryStorage());
     store.upsert({ ...record(), fundingState: "broadcast", sequence: 1 });
-    const hash = `0x${"a".repeat(64)}` as const;
     store.applyBackend(
       "local-1",
-      operation({
-        version: 2,
-        updatedAt: "2026-11-13T10:02:00.000Z",
-        status: "swapping",
-        sourceTxHash: hash,
-      })
+      operation({ revision: 4, phase: "SWAP_IN_PROGRESS" })
+    );
+    expect(store.applyBackend("local-1", operation({ revision: 3 }))).toBe(
+      false
     );
     expect(
       store.applyBackend(
         "local-1",
-        operation({
-          version: 1,
-          updatedAt: "2026-11-13T10:03:00.000Z",
-          status: "deposit_detected",
-        })
+        operation({ id: "00000000-0000-4000-8000-000000000000", revision: 9 })
       )
-    ).toBe(false);
-    expect(
-      store.applyBackend("local-1", operation({ id: "op-2", version: 9 }))
     ).toBe(false);
     const current = store.get("local-1")!;
     expect(current).toMatchObject({
-      operationId: "op-1",
+      operationId: fixtureOperationId,
       fundingState: "broadcast",
-      sourceHashes: [hash],
     });
-    expect(current.backend?.status).toBe("swapping");
+    expect(current.backend?.phase).toBe("SWAP_IN_PROGRESS");
     // A later local write with an older backend copy cannot regress it.
     store.upsert({
       ...current,
-      backend: operation(),
+      backend: operation({ revision: 2 }),
       sequence: current.sequence + 1,
     });
-    expect(store.get("local-1")?.backend?.status).toBe("swapping");
+    expect(store.get("local-1")?.backend?.phase).toBe("SWAP_IN_PROGRESS");
+  });
+
+  it("keeps the last published instructions after the API hides them", () => {
+    const store = new IntentOperations(account, "mock", () => memoryStorage());
+    store.upsert(record());
+    store.applyBackend("local-1", operation());
+    store.applyBackend(
+      "local-1",
+      operation({
+        revision: 3,
+        fundingStatus: "OBSERVED",
+        fundingInstructions: null,
+      })
+    );
+    expect(store.get("local-1")?.lastInstructions).toEqual(instructions());
+    expect(store.get("local-1")?.backend?.fundingInstructions).toBeNull();
+  });
+
+  it("clears the 404 counter on a successful read", () => {
+    const store = new IntentOperations(account, "mock", () => memoryStorage());
+    store.upsert(record());
+    store.applyBackend("local-1", operation());
+    store.patch("local-1", { notFoundCount: 2 });
+    expect(store.applyBackend("local-1", operation())).toBe(true);
+    expect(store.get("local-1")?.notFoundCount).toBeUndefined();
   });
 
   it("preserves unreadable recovery data instead of overwriting it", () => {

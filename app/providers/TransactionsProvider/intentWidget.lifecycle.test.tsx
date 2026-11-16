@@ -7,10 +7,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IntentsApi } from "~/lib/apis/intents";
 import {
   createIntentsMockApi,
-  mockIntentRoutes,
+  type IntentsMockScenario,
 } from "~/lib/apis/intents/intents.mock";
-import { createIntentRecord } from "~/lib/intents/intentOperation";
-import { memoryStorage } from "~/lib/intents/intents.fixtures";
+import {
+  newIdempotencyKey,
+  newOperationCapability,
+} from "~/lib/intents/intentCapability";
+import {
+  fixtureRecipient,
+  memoryStorage,
+  record as fixtureRecord,
+  request,
+} from "~/lib/intents/intents.fixtures";
 import { NotifierConnectionStatus } from "../NotificationsProvider/notifications.const";
 import { RTransactionWidgetHost } from "./components/RTransactionWidget/RTransactionWidgetHost";
 import {
@@ -24,7 +32,8 @@ import {
 } from "./TransactionWidgetProvider";
 
 const mocks = vi.hoisted(() => ({
-  account: "wallet-a" as string | null,
+  account: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt" as string | null,
+  scenario: null as IntentsMockScenario | null,
   api: null as unknown as IntentsApi,
   fetchDeposits: vi.fn(),
   success: vi.fn(),
@@ -106,40 +115,41 @@ const cards = () => [
 const intentModels = () =>
   widgets.models.filter((model) => model.kind === "intent");
 
+const accountA = fixtureRecipient;
+const accountB = `mv1${"2".repeat(33)}`;
+
 /** A funded operation persisted by an earlier page load. */
-async function seedFundedOperation(account = "wallet-a") {
-  const route = mockIntentRoutes[0];
-  const operation = await mocks.api.createOperation({
-    routeId: route.id,
-    amountIn: "2000000000000000000",
-    recipient: account,
-    sourceAddress: "0x1111111111111111111111111111111111111111",
-    idempotencyKey: `local-${account}`,
-  });
+async function seedFundedOperation(account = accountA) {
+  const credentials = {
+    capability: newOperationCapability(),
+    idempotencyKey: newIdempotencyKey(),
+  };
+  const body = request({ recipient: account });
+  const { operation } = await mocks.api.createOperation(credentials, body);
+  vi.setSystemTime(Date.now() + 1_500);
+  await mocks.api.getOperation(credentials.capability, operation.id);
+  await mocks.api.simulateDeposit!(credentials.capability, operation.id);
   const hash = `0x${"a".repeat(64)}` as const;
-  await mocks.api.submitDeposit(operation.id, hash);
-  const record = {
-    ...createIntentRecord({
-      localId: `local-${account}`,
-      account,
-      env: "mock",
-      route,
-      amountIn: operation.amountIn,
-      sourceAddress: operation.sourceAddress,
-    }),
+  const record = fixtureRecord({
+    localId: `local-${account}`,
+    account,
+    env: "mock",
+    ...credentials,
+    request: body,
     operationId: operation.id,
-    funding: operation.funding,
-    fundingState: "confirmed" as const,
+    fundingState: "confirmed",
     sourceHashes: [hash],
-    hintState: "sent" as const,
     isWidgetRequested: true,
     sequence: 3,
-  };
+  });
   localStorage.setItem(
-    `equiteez:intents:v1:mock:${account}`,
-    JSON.stringify({ version: 1, records: [record] })
+    `equiteez:intents:v2:mock:${account}`,
+    JSON.stringify({ version: 2, records: [record] })
   );
 }
+const storedRecord = (account = accountA) =>
+  JSON.parse(localStorage.getItem(`equiteez:intents:v2:mock:${account}`)!)
+    .records[0];
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -154,14 +164,15 @@ beforeEach(() => {
   });
   vi.setSystemTime(Date.parse("2026-11-13T10:00:00.000Z"));
   localStorage.clear();
-  mocks.account = "wallet-a";
+  mocks.account = accountA;
+  mocks.scenario = null;
   mocks.success.mockReset();
   mocks.fetchDeposits.mockReset().mockResolvedValue([]);
   mocks.api = createIntentsMockApi({
     storage: () => memoryStorage(),
     latencyMs: 0,
     depositAddress: "0x2222222222222222222222222222222222222222",
-    getScenario: () => null,
+    getScenario: () => mocks.scenario,
   });
   queryClient = new QueryClient();
   element = document.createElement("div");
@@ -174,45 +185,63 @@ afterEach(async () => {
 });
 
 describe("1Click operations in the global widget", () => {
-  it("recovers after reload and follows the backend to neutral bridge processing", async () => {
+  it("recovers after reload, never presents WRAPPED as receipt, and announces settlement once", async () => {
     await seedFundedOperation();
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(0));
     expect(cards()).toHaveLength(1);
     expect(element.textContent).toContain("Send Funds");
 
-    await act(async () => vi.advanceTimersByTimeAsync(12_000));
+    await act(async () => vi.advanceTimersByTimeAsync(6_000));
     expect(intentModels()[0].state).toMatchObject({
       status: "progress",
       step: 2,
     });
 
-    await act(async () => vi.advanceTimersByTimeAsync(60_000));
+    await act(async () => vi.advanceTimersByTimeAsync(20_000));
     expect(intentModels()[0].state).toMatchObject({
       status: "progress",
       step: 4,
+      description: expect.stringMatching(/Waiting for Mavryk confirmation/),
     });
-    expect(element.textContent).toContain("arrival is not confirmed yet");
-    expect(element.textContent).not.toContain("Successfully transferred");
-    expect(cards()).toHaveLength(1);
-    expect(
-      cards()[0].querySelector('button[aria-label="Dismiss transaction"]')
-    ).not.toBeNull();
+    expect(intentModels()[0].isTerminal).toBe(false);
+    expect(mocks.success).not.toHaveBeenCalled();
+
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    await act(async () => vi.advanceTimersByTimeAsync(15_000));
+    expect(intentModels()[0].state).toEqual({
+      status: "success",
+      description: "1.994 wUSDT arrived in your Mavryk account.",
+    });
+    expect(mocks.success).toHaveBeenCalledOnce();
+    expect(mocks.success).toHaveBeenCalledWith(
+      "Deposit arrived",
+      "1.994 wUSDT arrived in your Mavryk account."
+    );
+    expect(invalidate).toHaveBeenCalled();
+    expect(storedRecord()).toMatchObject({ announced: true });
+
+    // Reconnect/remount: no second announcement.
+    await act(async () => root.unmount());
+    root = createRoot(element);
+    await render();
+    await act(async () => vi.advanceTimersByTimeAsync(5_000));
+    expect(mocks.success).toHaveBeenCalledOnce();
   });
 
   it("never shows another account's operation and does not duplicate on return", async () => {
-    await seedFundedOperation("wallet-a");
+    await seedFundedOperation(accountA);
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(0));
     expect(intentModels()).toHaveLength(1);
 
-    mocks.account = "wallet-b";
+    mocks.account = accountB;
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(0));
     expect(intentModels()).toHaveLength(0);
     expect(cards()).toHaveLength(0);
 
-    mocks.account = "wallet-a";
+    mocks.account = accountA;
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(0));
     expect(intentModels()).toHaveLength(1);
@@ -225,7 +254,7 @@ describe("1Click operations in the global widget", () => {
     await act(async () => vi.advanceTimersByTimeAsync(0));
     let release!: () => void;
     await act(async () => {
-      release = widgets.holdDeposit("intent:local-wallet-a");
+      release = widgets.holdDeposit(`intent:local-${accountA}`);
     });
     await act(async () => vi.advanceTimersByTimeAsync(400)); // exit animation
     expect(widgets.visibleModels).toHaveLength(0);
@@ -235,11 +264,14 @@ describe("1Click operations in the global widget", () => {
     expect(cards()).toHaveLength(1);
   });
 
-  it("dismisses a finished card for good", async () => {
+  it("lets an untracked settlement be dismissed for good", async () => {
+    mocks.scenario = "untracked";
     await seedFundedOperation();
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(90_000));
     const model = intentModels()[0];
+    expect(model.state).toMatchObject({ status: "progress", step: 4 });
+    expect(element.textContent).toContain("arrival is not confirmed yet");
     expect(model.isTerminal).toBe(true);
     await act(async () => widgets.dismiss(model.backendId!));
     await act(async () => vi.advanceTimersByTimeAsync(400)); // exit animation
@@ -248,52 +280,36 @@ describe("1Click operations in the global widget", () => {
     expect(cards()).toHaveLength(0);
   });
 
-  const storedRecord = () =>
-    JSON.parse(localStorage.getItem("equiteez:intents:v1:mock:wallet-a")!)
-      .records[0];
-
-  it("completes and announces once from verified settlement of the forward identity", async () => {
+  it("completes an untracked settlement from verified bridge data on the wrap identity", async () => {
+    mocks.scenario = "untracked";
     await seedFundedOperation();
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(90_000));
-    const { forwardTxHash, forwardLogIndex } = storedRecord().backend;
-    expect(forwardTxHash).not.toBe(storedRecord().sourceHashes[0]);
-    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    const [event] = storedRecord().backend.forwarding.bridgeEvents;
+    expect(event.transactionHash).not.toBe(storedRecord().sourceHashes[0]);
     mocks.fetchDeposits.mockResolvedValue([
       deposit({
-        evm_tx_hash: forwardTxHash,
-        log_index: forwardLogIndex,
+        evm_tx_hash: event.transactionHash,
+        log_index: event.logIndex,
         status: "executed",
       }),
     ]);
     await act(async () => transactions.refresh());
     await act(async () => vi.advanceTimersByTimeAsync(0));
-    expect(intentModels()[0].state).toEqual({ status: "success" });
+    expect(intentModels()[0].state).toMatchObject({ status: "success" });
     expect(storedRecord()).toMatchObject({
       receipt: "correlated",
       announced: true,
     });
     expect(mocks.success).toHaveBeenCalledOnce();
-    expect(mocks.success).toHaveBeenCalledWith(
-      "Deposit arrived",
-      expect.any(String)
-    );
-    expect(invalidate).toHaveBeenCalled();
-    // The forwarded bridge deposit is not a second card.
+    // The forwarded bridge deposit is not a second card or toast.
     expect(
       widgets.models.filter((model) => model.kind !== "intent")
     ).toHaveLength(0);
-
-    // Reconnect/remount: no second announcement.
-    await act(async () => root.unmount());
-    root = createRoot(element);
-    await render();
-    await act(async () => transactions.refresh());
-    await act(async () => vi.advanceTimersByTimeAsync(0));
-    expect(mocks.success).toHaveBeenCalledOnce();
   });
 
   it("is not completed by an unrelated executed deposit", async () => {
+    mocks.scenario = "untracked";
     await seedFundedOperation();
     await render();
     await act(async () => vi.advanceTimersByTimeAsync(90_000));

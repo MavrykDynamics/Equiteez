@@ -1,36 +1,53 @@
-import { INTENTS_POLL_INTERVALS } from "~/consts/intents";
-import { isIntentsApiError, type IntentsApi } from "~/lib/apis/intents";
-import { sendIntentHint } from "~/lib/intents/intentHints";
 import {
-  isTerminalIntentStatus,
+  INTENTS_NOT_FOUND_LIMIT,
+  INTENTS_POLL_INTERVALS,
+  INTENTS_UNTRACKED_SETTLEMENT_POLL_MS,
+} from "~/consts/intents";
+import { isIntentsApiError, type IntentsApi } from "~/lib/apis/intents";
+import {
+  hasIntentFundsObserved,
+  isIntentClosed,
   type IntentRecord,
 } from "~/lib/intents/intentOperation";
 import type { IntentOperations } from "./intentOperations";
 
-type Schedule = { nextAt: number; delay: number; version?: number };
+type Schedule = { nextAt: number; errorDelay: number };
 
-/** Operations the user committed to whose backend state is still moving. */
-export function isIntentTrackable(record: IntentRecord) {
-  if (!record.operationId) return false;
-  if (record.backend && isTerminalIntentStatus(record.backend.status))
-    return false;
+/**
+ * Operations whose backend state is still worth reading. Unfunded operations
+ * are polled only while the modal can still use their instructions; an
+ * operation the modal dropped is polled only if the backend saw funds.
+ */
+export function isIntentTrackable(record: IntentRecord, now = Date.now()) {
+  if (!record.operationId || isIntentClosed(record)) return false;
+  const backend = record.backend;
+  if (record.fundingState === "abandoned")
+    return hasIntentFundsObserved(backend);
   if (
-    record.fundingState === "abandoned" ||
-    record.fundingState === "not_started" ||
-    record.fundingState === "rejected"
+    backend?.phase === "WRAPPED" &&
+    backend.settlement.status === "NOT_TRACKED"
   )
-    // Still poll if the backend already saw funds for it.
-    return Boolean(
-      record.backend && record.backend.status !== "awaiting_deposit"
+    // Settlement observation is optional; stop once it is clearly not coming.
+    return (
+      Date.parse(backend.updatedAt) + INTENTS_UNTRACKED_SETTLEMENT_POLL_MS > now
     );
   return true;
 }
 
+const jitter = (ms: number) => Math.round(ms * (0.9 + Math.random() * 0.2));
+const clamp = (ms: number) =>
+  Math.min(
+    INTENTS_POLL_INTERVALS.maxMs,
+    Math.max(INTENTS_POLL_INTERVALS.minMs, ms)
+  );
+
 /**
- * Polls GET /operations/:id for open operations of one session with backoff
- * (5s rising to 30s, reset on progress), one request in flight per operation,
- * and retries failed deposit hints. The owner pauses it while the tab is
- * hidden. No socket of its own: NotificationsProvider stays the only socket.
+ * Polls `GET /v1/operations/:id` (read-only: never signs, sends or requotes)
+ * for open operations of one session. The interval follows the operation's
+ * `retryAfterMs` with jitter; errors back off exponentially, and 429/503
+ * honour `Retry-After`. One request in flight per operation. The owner
+ * pauses it while the tab is hidden. There is no webhook/WebSocket in this
+ * backend release and NotificationsProvider stays the only socket.
  */
 export class IntentOperationsTracker {
   private schedules = new Map<string, Schedule>();
@@ -45,7 +62,7 @@ export class IntentOperationsTracker {
     private readonly api: IntentsApi,
     private readonly isCurrent: () => boolean,
     private readonly now: () => number = Date.now,
-    private readonly sendHint: typeof sendIntentHint = sendIntentHint
+    private readonly random: (ms: number) => number = jitter
   ) {}
 
   start() {
@@ -78,9 +95,14 @@ export class IntentOperationsTracker {
   }
 
   private open() {
-    return [...this.store.getSnapshot().records.values()].filter(
-      isIntentTrackable
+    const at = this.now();
+    return [...this.store.getSnapshot().records.values()].filter((record) =>
+      isIntentTrackable(record, at)
     );
+  }
+
+  private newSchedule(): Schedule {
+    return { nextAt: 0, errorDelay: INTENTS_POLL_INTERVALS.errorInitialMs };
   }
 
   private schedule() {
@@ -89,10 +111,7 @@ export class IntentOperationsTracker {
     const open = this.open();
     for (const record of open)
       if (!this.schedules.has(record.localId))
-        this.schedules.set(record.localId, {
-          nextAt: 0,
-          delay: INTENTS_POLL_INTERVALS.initialMs,
-        });
+        this.schedules.set(record.localId, this.newSchedule());
     const ids = new Set(open.map((record) => record.localId));
     for (const id of this.schedules.keys())
       if (!ids.has(id)) this.schedules.delete(id);
@@ -109,14 +128,8 @@ export class IntentOperationsTracker {
   private async tick() {
     if (!this.isRunning || !this.isCurrent()) return;
     const at = this.now();
-    const open = this.open();
-    for (const record of open) {
-      if (record.hintState === "failed" || record.hintState === "pending")
-        void this.sendHint(this.api, this.store, record.localId);
-      const schedule = this.schedules.get(record.localId) ?? {
-        nextAt: 0,
-        delay: INTENTS_POLL_INTERVALS.initialMs,
-      };
+    for (const record of this.open()) {
+      const schedule = this.schedules.get(record.localId) ?? this.newSchedule();
       this.schedules.set(record.localId, schedule);
       if (schedule.nextAt > at || this.inFlight.has(record.localId)) continue;
       void this.poll(record, schedule);
@@ -127,26 +140,42 @@ export class IntentOperationsTracker {
   private async poll(record: IntentRecord, schedule: Schedule) {
     const signal = this.controller?.signal;
     this.inFlight.add(record.localId);
+    let delay: number = INTENTS_POLL_INTERVALS.defaultMs;
     try {
-      const operation = await this.api.getOperation(record.operationId!, {
-        signal,
-      });
+      const operation = await this.api.getOperation(
+        record.capability,
+        record.operationId!,
+        { signal }
+      );
       if (signal?.aborted || !this.isCurrent()) return;
       this.store.applyBackend(record.localId, operation);
-      const progressed = operation.version !== schedule.version;
-      schedule.version = operation.version;
-      schedule.delay = progressed
-        ? INTENTS_POLL_INTERVALS.initialMs
-        : Math.min(schedule.delay * 2, INTENTS_POLL_INTERVALS.maxMs);
+      schedule.errorDelay = INTENTS_POLL_INTERVALS.errorInitialMs;
+      delay = this.random(clamp(operation.retryAfterMs || delay));
     } catch (error) {
-      if (signal?.aborted) return;
-      schedule.delay =
-        isIntentsApiError(error) && error.code === "not_found"
-          ? INTENTS_POLL_INTERVALS.maxMs * 4
-          : Math.min(schedule.delay * 2, INTENTS_POLL_INTERVALS.maxMs);
+      if (signal?.aborted || !this.isCurrent()) return;
+      const apiError = isIntentsApiError(error) ? error : undefined;
+      if (
+        apiError?.code === "NOT_FOUND" ||
+        apiError?.code === "OPERATION_NOT_FOUND"
+      ) {
+        // Missing/invalid capability or a reset backend. Keep the record for
+        // support; stop after a few confirmations.
+        const count = (this.store.get(record.localId)?.notFoundCount ?? 0) + 1;
+        this.store.patch(
+          record.localId,
+          count >= INTENTS_NOT_FOUND_LIMIT
+            ? { notFoundCount: count, access: "lost" }
+            : { notFoundCount: count }
+        );
+      }
+      delay = this.random(clamp(apiError?.retryAfterMs ?? schedule.errorDelay));
+      schedule.errorDelay = Math.min(
+        schedule.errorDelay * 2,
+        INTENTS_POLL_INTERVALS.maxMs
+      );
     } finally {
       this.inFlight.delete(record.localId);
-      schedule.nextAt = this.now() + schedule.delay;
+      schedule.nextAt = this.now() + delay;
       this.schedule();
     }
   }

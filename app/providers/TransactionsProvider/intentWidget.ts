@@ -1,8 +1,12 @@
+import type { IntentAttention } from "~/lib/apis/intents";
 import {
-  isFailedIntentStatus,
+  getIntentSettlementReceipt,
+  hasIntentArrived,
+  hasIntentFundingStarted,
+  hasIntentFundsObserved,
   type IntentRecord,
 } from "~/lib/intents/intentOperation";
-import { fromRawAmount } from "~/lib/intents/intentRoute";
+import { formatRawAmount, fromRawAmount } from "~/lib/intents/intentRoute";
 import type { RTransactionWidgetState } from "./components/RTransactionWidget/RTransactionWidget";
 import type { TransactionWidgetModel } from "./transactionWidget.helpers";
 
@@ -19,93 +23,203 @@ export const getIntentWidgetId = (record: Pick<IntentRecord, "localId">) =>
 
 /**
  * A record joins the widget stack once the user committed to it in the
- * wallet, or the backend saw a deposit. Unfunded, declined or abandoned
+ * wallet, or the backend saw funds. Unfunded, declined or abandoned
  * operations stay in the modal only.
  */
 export function isIntentWidgetVisible(record: IntentRecord) {
   if (!record.operationId) return false;
-  const status = record.backend?.status;
-  // The backend saw funds (even if the modal had abandoned the quote).
-  if (status && status !== "awaiting_deposit" && status !== "expired")
-    return true;
-  return ["prompted", "broadcast", "confirmed", "unknown", "reverted"].includes(
-    record.fundingState
+  return (
+    hasIntentFundingStarted(record) || hasIntentFundsObserved(record.backend)
   );
 }
 
 const withChain = (record: IntentRecord, text: string) =>
-  text.replace("{chain}", record.source.chainName);
+  text.replaceAll("{chain}", record.source.chainName);
+
+const support = (record: IntentRecord) =>
+  record.operationId
+    ? ` Contact support with operation ID ${record.operationId}.`
+    : "";
+
+/** Attention overlays that need a person: never encourage a second deposit. */
+const reviewAttention = new Set<IntentAttention>([
+  "MANUAL_REVIEW",
+  "RECONCILE_REQUIRED",
+]);
+
+/** Extra copy for non-blocking attention overlays (backend.md §6). */
+const attentionCopy: Partial<Record<IntentAttention, string>> = {
+  RETRYING: "A step is being retried automatically.",
+  ROUTE_PAUSED:
+    "The route is paused. Your deposit is preserved and continues when it resumes.",
+  PROVIDER_UNAVAILABLE:
+    "1Click is temporarily unavailable. Processing continues when it recovers.",
+  REFUND_PENDING: "1Click is preparing a refund to your source wallet.",
+};
+
+const withAttention = (record: IntentRecord, description: string) => {
+  const extra = record.backend && attentionCopy[record.backend.attention];
+  return extra ? `${description} ${extra}` : description;
+};
+
+const destinationAmount = (record: IntentRecord) => {
+  const settlement = record.backend?.settlement;
+  return settlement && settlement.confirmedAmount !== "0"
+    ? `${formatRawAmount(settlement.confirmedAmount, record.destination.decimals)} ${record.destination.symbol}`
+    : record.destination.symbol;
+};
 
 /**
- * Truthful stages. EVM WRAPPED (backend authority ends) is shown as the
- * neutral last step, never as success: only a verified forward-event
- * correlation (EQ-FE-05) completes the card.
+ * Truthful stages. 1Click SUCCESS, EVM WRAPPED and signer votes are never
+ * shown as success: only a confirmed backend settlement for the expected
+ * Mavryk token, or verified bridge data on the forward identity, completes
+ * the card. `isTerminal` means the card may be dismissed.
  */
 export function getIntentWidgetState(record: IntentRecord): {
   state: RTransactionWidgetState;
   isTerminal: boolean;
 } {
   const backend = record.backend;
-  const status = backend?.status;
-  if (status && status !== "awaiting_deposit") {
-    if (status === "wrapped")
-      return record.receipt === "correlated"
-        ? { state: { status: "success" }, isTerminal: true }
-        : {
-            state: {
-              status: "progress",
-              step: 4,
-              description:
-                "Handed to the Mavryk bridge. Tokens will appear in your balance shortly; arrival is not confirmed yet.",
-            },
-            // Backend authority ended; the card may be dismissed.
-            isTerminal: true,
-          };
-    if (isFailedIntentStatus(status))
+
+  if (hasIntentArrived(record))
+    return {
+      state: {
+        status: "success",
+        description: `${destinationAmount(record)} arrived in your Mavryk account.`,
+      },
+      isTerminal: true,
+    };
+  if (record.access === "lost")
+    return {
+      isTerminal: true,
+      state: {
+        status: "warning",
+        title: "Status unavailable",
+        description: `This deposit's status can no longer be read from the deposit service. Do not send it again.${support(record)}`,
+      },
+    };
+
+  if (backend && hasIntentFundsObserved(backend)) {
+    if (getIntentSettlementReceipt(record) === "mismatch")
       return {
         isTerminal: true,
         state: {
           status: "warning",
-          title:
-            status === "refunded"
-              ? "Deposit refunded"
-              : status === "expired"
-                ? "Deposit expired"
-                : "Deposit failed",
-          description:
-            status === "refunded"
-              ? withChain(
-                  record,
-                  `${backend.refund?.reason ? `${backend.refund.reason} ` : ""}Funds are returned to your wallet on {chain}.`
-                )
-              : status === "expired"
-                ? "The deposit was not received before the quote expired. Anything sent late is refunded by 1Click."
-                : (backend.error?.message ??
-                  "The deposit could not be completed. Contact support with the operation ID."),
+          title: "Check your Mavryk balance",
+          description: `The bridge reported a mint that could not be matched to ${record.destination.symbol}.${support(record)}`,
         },
       };
-    return {
-      isTerminal: false,
-      state:
-        status === "deposit_detected" || status === "swapping"
+    if (backend.refund)
+      return {
+        isTerminal: true,
+        state: {
+          status: "warning",
+          title: "Refund reported",
+          description: withChain(
+            record,
+            `1Click reported a refund of ${formatRawAmount(backend.refund.amount, record.source.decimals)} ${record.source.symbol} to ${backend.refund.recipient} on {chain}. This is the provider's report; check your wallet to confirm it arrived.`
+          ),
+        },
+      };
+    if (
+      reviewAttention.has(backend.attention) ||
+      backend.delivery.status === "AMBIGUOUS" ||
+      backend.delivery.status === "RECONCILE_REQUIRED" ||
+      backend.forwarding.status === "RECONCILE_REQUIRED" ||
+      backend.settlement.status === "RECONCILE_REQUIRED"
+    )
+      return {
+        isTerminal: false,
+        state: {
+          status: "warning",
+          title: "Deposit under review",
+          description: `Your deposit needs a manual check. Do not send another deposit.${support(record)}`,
+        },
+      };
+    if (backend.attention === "DEPOSIT_INCOMPLETE")
+      return {
+        isTerminal: false,
+        state: {
+          status: "warning",
+          title: "Incomplete deposit",
+          description: `1Click received less than the quoted amount. Do not send another deposit.${support(record)}`,
+        },
+      };
+    if (
+      backend.phase === "UNKNOWN" ||
+      backend.attention === "UNKNOWN" ||
+      backend.settlement.status === "UNKNOWN"
+    )
+      return {
+        isTerminal: false,
+        state: {
+          status: "warning",
+          title: "Status not recognised",
+          description: `The deposit service reported a status this app does not recognise. Do not send another deposit.${support(record)}`,
+        },
+      };
+
+    switch (backend.phase) {
+      case "WRAPPED":
+        return backend.settlement.status === "NOT_TRACKED"
           ? {
-              status: "progress",
-              step: 2,
-              description:
-                status === "deposit_detected"
-                  ? "Deposit received by 1Click. Starting the swap."
-                  : "1Click is swapping your funds.",
+              state: {
+                status: "progress",
+                step: 4,
+                description:
+                  "Handed to the Mavryk bridge. Tokens will appear in your balance shortly; arrival is not confirmed yet.",
+              },
+              // Settlement is not observed for this operation; dismissible.
+              isTerminal: true,
             }
           : {
-              status: "progress",
-              step: 3,
-              description:
-                status === "delivered"
-                  ? "Swap delivered. Waiting for the sponsored forward to the bridge."
-                  : "Forwarding to the bridge. The gas is sponsored.",
-            },
-    };
+              state: {
+                status: "progress",
+                step: 4,
+                description: withAttention(
+                  record,
+                  "Waiting for Mavryk confirmation."
+                ),
+              },
+              isTerminal: false,
+            };
+      case "VERIFYING_DELIVERY":
+      case "DELIVERY_VERIFIED":
+      case "FORWARDING":
+        return {
+          isTerminal: false,
+          state: {
+            status: "progress",
+            step: 3,
+            description: withAttention(
+              record,
+              backend.phase === "FORWARDING"
+                ? "Forwarding to the bridge. The gas is sponsored."
+                : backend.phase === "DELIVERY_VERIFIED"
+                  ? "Swap delivery verified. Preparing the sponsored forward to the bridge."
+                  : "Verifying the swap delivery on the bridge network."
+            ),
+          },
+        };
+      default:
+        return {
+          isTerminal: false,
+          state: {
+            status: "progress",
+            step: 2,
+            description: withAttention(
+              record,
+              backend.providerStatus === "SUCCESS"
+                ? "Swap reported complete. Verifying the delivery."
+                : backend.providerStatus === "PROCESSING"
+                  ? "1Click is swapping your funds."
+                  : "Deposit seen by 1Click. Starting the swap."
+            ),
+          },
+        };
+    }
   }
+
   switch (record.fundingState) {
     case "prompted":
       return {
@@ -142,16 +256,26 @@ export function getIntentWidgetState(record: IntentRecord): {
     default:
       return {
         isTerminal: false,
-        state: {
-          status: "progress",
-          step: 1,
-          description: withChain(
-            record,
-            record.fundingState === "confirmed"
-              ? "Transfer confirmed on {chain}. Waiting for 1Click to detect it."
-              : "Waiting for {chain} confirmation."
-          ),
-        },
+        state:
+          backend?.fundingStatus === "EXPIRED"
+            ? {
+                status: "warning",
+                title: "Waiting for 1Click",
+                description: `The quote expired before 1Click saw your transfer. A late deposit is reconciled by the service; do not send it again.${support(record)}`,
+              }
+            : {
+                status: "progress",
+                step: 1,
+                description: withAttention(
+                  record,
+                  withChain(
+                    record,
+                    record.fundingState === "confirmed"
+                      ? "Transfer confirmed on {chain}. Waiting for 1Click to detect it."
+                      : "Waiting for {chain} confirmation."
+                  )
+                ),
+              },
       };
   }
 }
@@ -169,9 +293,12 @@ export function toIntentWidget(
     operationId: id,
     presentationId: id,
     backendId: id,
-    amount: fromRawAmount(record.amountIn, record.source.decimals).toFixed(),
+    amount: fromRawAmount(
+      record.request.amountIn,
+      record.source.decimals
+    ).toFixed(),
     symbol: record.source.symbol,
-    recipient: record.recipient,
+    recipient: record.request.recipient,
     sourceExplorerUrl:
       explorerUrl && hash
         ? `${explorerUrl.replace(/\/$/, "")}/tx/${hash}`
