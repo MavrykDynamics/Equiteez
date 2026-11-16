@@ -1,14 +1,11 @@
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
+import type { IntentFundingState } from "~/lib/intents/intentOperation";
 import {
-  createIntentRecord,
-  type IntentFundingState,
-} from "~/lib/intents/intentOperation";
-import {
-  fixtureRecipient,
-  fixtureSource,
+  fixtureOperationId,
+  operation,
+  record as fixtureRecord,
 } from "~/lib/intents/intents.fixtures";
 import { IntentsFundingPanel } from "./IntentsFundingPanel";
 
@@ -16,25 +13,13 @@ const hash = `0x${"b".repeat(64)}` as const;
 const record = (
   fundingState: IntentFundingState,
   hashes: `0x${string}`[] = []
-) => ({
-  ...createIntentRecord({
-    localId: "local-1",
-    account: fixtureRecipient,
-    env: "mock",
-    route: mockIntentRoutes[0],
-    amountIn: "2000000000000000000",
-    sourceAddress: fixtureSource,
-  }),
-  operationId: "op-1",
-  funding: {
-    chainId: 421614,
-    depositAddress: "0x2222222222222222222222222222222222222222" as const,
-    token: mockIntentRoutes[0].source.token.address,
-    amount: "2000000000000000000",
-  },
-  fundingState,
-  sourceHashes: hashes,
-});
+) =>
+  fixtureRecord({
+    operationId: fixtureOperationId,
+    backend: operation(),
+    fundingState,
+    sourceHashes: hashes,
+  });
 
 const render = (
   state: IntentFundingState,

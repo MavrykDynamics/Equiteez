@@ -7,27 +7,36 @@ import {
   UserRejectedRequestError,
 } from "viem";
 
-import type { IntentFunding } from "~/lib/apis/intents";
+import type { IntentFundingInstructions } from "~/lib/apis/intents";
+import type { IntentRecord } from "./intentOperation";
 
 /**
- * Exact funding call from the backend's executable instructions. Values are
- * passed through unchanged, never recalculated.
+ * Exact funding call from the backend's published instructions. The amount
+ * and destination are passed through unchanged, never recalculated. Funds go
+ * to `depositAddress` (1Click's source deposit address), never to
+ * `forwarderAddress`, which the backend resolves and verifies itself. The
+ * token contract comes from the approved product config for the route's
+ * `originAsset`; callers check the instructions match it first.
  */
-export function buildIntentFundingCall(funding: IntentFunding) {
-  return funding.token === "native"
+export function buildIntentFundingCall(
+  source: IntentRecord["source"],
+  instructions: IntentFundingInstructions
+) {
+  const amount = BigInt(instructions.amount);
+  return source.token === "native"
     ? ({
         kind: "native",
-        chainId: funding.chainId,
-        to: funding.depositAddress,
-        value: BigInt(funding.amount),
+        chainId: source.chainId,
+        to: instructions.depositAddress,
+        value: amount,
       } as const)
     : ({
         kind: "erc20",
-        chainId: funding.chainId,
-        address: funding.token,
+        chainId: source.chainId,
+        address: source.token,
         abi: erc20Abi,
         functionName: "transfer",
-        args: [funding.depositAddress, BigInt(funding.amount)],
+        args: [instructions.depositAddress, amount],
       } as const);
 }
 

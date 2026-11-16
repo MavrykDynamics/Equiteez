@@ -12,20 +12,29 @@ import {
 
 import {
   INTENTS_FUNDING_CONFIRMATIONS,
+  INTENTS_FUNDING_SAFETY_MS,
   INTENTS_FUNDING_TIMEOUT_MS,
 } from "~/consts/intents";
-import type { IntentsApi } from "~/lib/apis/intents";
+import {
+  isIntentsApiError,
+  type IntentFundingInstructions,
+  type IntentsApi,
+} from "~/lib/apis/intents";
 import {
   buildIntentFundingCall,
   classifyIntentFundingError,
   getIntentFundingErrorMessage,
 } from "~/lib/intents/intentFunding";
-import { sendIntentHint } from "~/lib/intents/intentHints";
-import type {
-  IntentFundingState,
-  IntentRecord,
+import {
+  getInstructionsMismatch,
+  getOperationMismatch,
+  type IntentFundingState,
+  type IntentRecord,
 } from "~/lib/intents/intentOperation";
-import { isIntentQuoteExpired } from "~/lib/intents/intentQuote";
+import {
+  getIntentErrorCopy,
+  isIntentInstructionsExpired,
+} from "~/lib/intents/intentQuote";
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 
 /** States that allow (another) wallet request: nothing was broadcast. */
@@ -40,24 +49,94 @@ type FundingParams = {
   /** Captured at start: late wallet responses still land in this scope. */
   session: IntentOperations;
   localId: string;
+  /** Quote the user reviewed; a different one needs a new confirmation. */
+  reviewedQuoteId: string;
   /** False once the Equiteez account/session or modal run changed. */
   isCurrent: () => boolean;
-  sendHint?: typeof sendIntentHint;
+  now?: () => number;
 };
+
+/**
+ * Re-reads the operation and returns its instructions only if they can be
+ * sent right now: AVAILABLE, open, echoing the confirmed request, matching
+ * the route, the quote the user reviewed, and not about to expire
+ * (backend.md §7.4).
+ */
+async function readFundableInstructions(
+  api: IntentsApi,
+  session: IntentOperations,
+  record: IntentRecord,
+  reviewedQuoteId: string,
+  now: number
+): Promise<IntentFundingInstructions> {
+  let operation;
+  try {
+    operation = await api.getOperation(record.capability, record.operationId!);
+  } catch (error) {
+    throw new IntentFundingBlockedError(
+      isIntentsApiError(error)
+        ? `Unable to confirm the quote before sending. ${getIntentErrorCopy(error)}`
+        : "Unable to confirm the quote before sending."
+    );
+  }
+  session.applyBackend(record.localId, operation);
+  const instructions = operation.fundingInstructions;
+  if (getOperationMismatch(record, operation))
+    throw new IntentFundingBlockedError(
+      "The deposit service returned an operation that does not match your request. Nothing was sent."
+    );
+  if (operation.closure !== "OPEN")
+    throw new IntentFundingBlockedError(
+      "This quote was rejected. Start a new deposit."
+    );
+  if (operation.fundingStatus !== "AVAILABLE" || !instructions)
+    throw new IntentFundingBlockedError(
+      operation.fundingStatus === "EXPIRED"
+        ? "The quote expired before funding. Start a new deposit."
+        : operation.fundingStatus === "PAUSED"
+          ? "Funding is paused for this route. Nothing was sent; try again later."
+          : operation.fundingStatus === "OBSERVED"
+            ? "A deposit was already observed for this operation. It will not be requested again."
+            : "The quote is not ready for funding yet."
+    );
+  if (instructions.quoteId !== reviewedQuoteId)
+    throw new IntentFundingBlockedError(
+      "The quote changed. Review the new amounts and confirm again."
+    );
+  const mismatch = getInstructionsMismatch(record, instructions);
+  if (mismatch)
+    throw new IntentFundingBlockedError(
+      `The funding instructions do not match your request (${mismatch}). Nothing was sent.`
+    );
+  if (
+    isIntentInstructionsExpired(
+      instructions.fundingExpiresAt,
+      now,
+      INTENTS_FUNDING_SAFETY_MS
+    )
+  )
+    throw new IntentFundingBlockedError(
+      "The quote is about to expire. Start a new deposit."
+    );
+  return instructions;
+}
 
 /**
  * Funds the 1Click source deposit address with the connected source wallet.
  * This is the only user signature in the flow; it is distinct from the direct
  * bridge's approve/wrapToken path. Persisted before the wallet call so a
  * reload, modal close or late response can never prompt a second transfer.
+ * There is no hash-registration API: the hash is kept locally for support
+ * and the backend observes the deposit on its own.
  */
 export async function executeIntentFunding({
   config,
   api,
   session,
   localId,
+  reviewedQuoteId,
   isCurrent,
-  sendHint = sendIntentHint,
+  now = Date.now,
 }: FundingParams): Promise<IntentFundingState> {
   const read = () => {
     const record = session.get(localId);
@@ -76,45 +155,45 @@ export async function executeIntentFunding({
   };
 
   const record = read();
-  const { funding, operationId } = record;
-  if (!funding || !operationId)
+  if (!record.operationId)
     throw new IntentFundingBlockedError("The deposit operation is not ready.");
   if (!canRequestIntentFunding(record.fundingState))
     throw new IntentFundingBlockedError(
       "This deposit was already sent to your wallet. It will not be requested again."
     );
-  if (record.quoteExpiresAt && isIntentQuoteExpired(record.quoteExpiresAt))
-    throw new IntentFundingBlockedError(
-      "The quote expired before funding. Start a new deposit."
-    );
 
+  let instructions: IntentFundingInstructions;
   try {
     assertCurrent();
     const wallet = getAccount(config);
     if (
       !wallet.isConnected ||
-      wallet.address?.toLowerCase() !== record.sourceAddress.toLowerCase()
+      wallet.address?.toLowerCase() !==
+        record.request.sourceAddress.toLowerCase()
     )
       throw new IntentFundingBlockedError(
-        "Your source wallet changed. Reconnect the wallet you reviewed the quote with."
+        "Your source wallet changed. Reconnect the wallet you reviewed the deposit with."
       );
-    if (wallet.chainId !== funding.chainId)
-      await switchChain(config, { chainId: funding.chainId });
-    const amount = BigInt(funding.amount);
+    instructions = await readFundableInstructions(
+      api,
+      session,
+      record,
+      reviewedQuoteId,
+      now()
+    );
+    assertCurrent();
+    const { chainId } = record.source;
+    if (wallet.chainId !== chainId) await switchChain(config, { chainId });
+    const amount = BigInt(instructions.amount);
     const balance =
-      funding.token === "native"
-        ? (
-            await getBalance(config, {
-              address: wallet.address,
-              chainId: funding.chainId,
-            })
-          ).value
+      record.source.token === "native"
+        ? (await getBalance(config, { address: wallet.address, chainId })).value
         : await readContract(config, {
-            address: funding.token,
+            address: record.source.token,
             abi: erc20Abi,
             functionName: "balanceOf",
             args: [wallet.address],
-            chainId: funding.chainId,
+            chainId,
           });
     if (balance < amount)
       throw new IntentFundingBlockedError(
@@ -123,11 +202,22 @@ export async function executeIntentFunding({
     assertCurrent();
     const after = getAccount(config);
     if (
-      after.address?.toLowerCase() !== record.sourceAddress.toLowerCase() ||
-      after.chainId !== funding.chainId
+      after.address?.toLowerCase() !==
+        record.request.sourceAddress.toLowerCase() ||
+      after.chainId !== chainId
     )
       throw new IntentFundingBlockedError(
         `Keep your wallet connected to ${record.source.chainName} with the same account.`
+      );
+    if (
+      isIntentInstructionsExpired(
+        instructions.fundingExpiresAt,
+        now(),
+        INTENTS_FUNDING_SAFETY_MS
+      )
+    )
+      throw new IntentFundingBlockedError(
+        "The quote is about to expire. Start a new deposit."
       );
   } catch (error) {
     write({
@@ -140,20 +230,25 @@ export async function executeIntentFunding({
   }
 
   // Persisted before the wallet request (rule: persist before irreversible steps).
-  write({ fundingState: "prompted", fundingError: undefined });
-  const call = buildIntentFundingCall(funding);
+  write({
+    fundingState: "prompted",
+    fundingError: undefined,
+    lastInstructions: instructions,
+  });
+  const call = buildIntentFundingCall(record.source, instructions);
+  const account = record.request.sourceAddress;
   let hash: Hash;
   try {
     hash =
       call.kind === "native"
         ? await sendTransaction(config, {
-            account: record.sourceAddress as `0x${string}`,
+            account,
             chainId: call.chainId,
             to: call.to,
             value: call.value,
           })
         : await writeContract(config, {
-            account: record.sourceAddress as `0x${string}`,
+            account,
             chainId: call.chainId,
             address: call.address,
             abi: call.abi,
@@ -183,17 +278,16 @@ export async function executeIntentFunding({
   write({
     fundingState: "broadcast",
     sourceHashes: [...read().sourceHashes, hash.toLowerCase() as `0x${string}`],
-    hintState: "pending",
     isWidgetRequested: true,
   });
-  void sendHint(api, session, localId);
+  void api.simulateDeposit?.(record.capability, record.operationId);
 
   // Only a repriced replacement is the same transfer; a cancel or a different
   // transaction leaves the funding outcome unknown.
   let replacementReason: string | undefined;
   try {
     const receipt = await waitForTransactionReceipt(config, {
-      chainId: funding.chainId,
+      chainId: record.source.chainId,
       hash,
       confirmations: INTENTS_FUNDING_CONFIRMATIONS,
       timeout: INTENTS_FUNDING_TIMEOUT_MS,
@@ -205,9 +299,7 @@ export async function executeIntentFunding({
             ...read().sourceHashes,
             replacement.transaction.hash.toLowerCase() as `0x${string}`,
           ],
-          hintState: "pending",
         });
-        void sendHint(api, session, localId);
       },
     });
     write(
@@ -240,13 +332,16 @@ export async function executeIntentFunding({
 export function simulateIntentFunding(
   api: IntentsApi,
   session: IntentOperations,
-  localId: string,
-  sendHint: typeof sendIntentHint = sendIntentHint
+  localId: string
 ) {
-  if (api.env !== "mock")
+  if (api.env !== "mock" || !api.simulateDeposit)
     throw new Error("Simulation is only available in mock mode.");
   const record = session.get(localId);
-  if (!record?.operationId || !canRequestIntentFunding(record.fundingState))
+  if (
+    !record?.operationId ||
+    !canRequestIntentFunding(record.fundingState) ||
+    record.backend?.fundingStatus !== "AVAILABLE"
+  )
     return;
   const hash = `0x${Array.from({ length: 64 }, () =>
     Math.floor(Math.random() * 16).toString(16)
@@ -255,10 +350,10 @@ export function simulateIntentFunding(
     ...record,
     fundingState: "confirmed",
     fundingError: undefined,
+    lastInstructions: record.backend.fundingInstructions ?? undefined,
     sourceHashes: [...record.sourceHashes, hash],
-    hintState: "pending",
     isWidgetRequested: true,
     sequence: record.sequence + 1,
   });
-  void sendHint(api, session, localId);
+  void api.simulateDeposit(record.capability, record.operationId);
 }

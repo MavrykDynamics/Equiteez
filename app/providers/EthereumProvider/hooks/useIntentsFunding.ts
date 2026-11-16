@@ -20,6 +20,7 @@ export function useIntentsFunding() {
     async (
       session: IntentOperations,
       localId: string,
+      reviewedQuoteId: string,
       isCurrent: () => boolean
     ) => {
       if (busyRef.current) return;
@@ -32,6 +33,7 @@ export function useIntentsFunding() {
           api: getIntentsApi(),
           session,
           localId,
+          reviewedQuoteId,
           isCurrent,
         });
       } catch (failure) {

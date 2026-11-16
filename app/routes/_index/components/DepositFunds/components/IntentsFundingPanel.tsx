@@ -23,7 +23,9 @@ const explorerLink = (base: string | undefined, path: string) =>
 
 /**
  * The only wallet action in the 1Click flow. Once the wallet was asked, this
- * panel never offers to send the same operation again.
+ * panel never offers to send the same operation again. The funding hash is
+ * kept locally for support: this backend release has no endpoint to register
+ * it, and it observes the deposit on its own.
  */
 export function IntentsFundingPanel({
   record,
@@ -34,14 +36,17 @@ export function IntentsFundingPanel({
   onFund,
   onSimulate,
 }: IntentsFundingPanelProps) {
-  if (!record?.funding) return null;
-  const amount = `${formatRawAmount(record.funding.amount, record.source.decimals)} ${record.source.symbol}`;
+  if (!record?.operationId) return null;
+  const amount = `${formatRawAmount(record.request.amountIn, record.source.decimals)} ${record.source.symbol}`;
   const hash = record.sourceHashes.at(-1);
   const txUrl = hash ? explorerLink(explorerUrl, `tx/${hash}`) : undefined;
-  const depositUrl = explorerLink(
-    explorerUrl,
-    `address/${record.funding.depositAddress}`
-  );
+  // Historical instructions: display/support only, never permission to send.
+  const depositAddress = (
+    record.backend?.fundingInstructions ?? record.lastInstructions
+  )?.depositAddress;
+  const depositUrl = depositAddress
+    ? explorerLink(explorerUrl, `address/${depositAddress}`)
+    : undefined;
   const message = (text: string, tone: "info" | "warning" = "info") => (
     <div
       className={clsx(styles.notice, tone === "warning" && styles.warning)}
