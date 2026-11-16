@@ -82,7 +82,6 @@ export function RDepositFundsModal({
   const isIntentsReviewOpen =
     isIntentsTab &&
     intentsReview.phase !== "form" &&
-    intentsReview.phase !== "quoting" &&
     intentsReview.phase !== "tracking";
   const trackedIntent =
     isIntentsTab && intentsReview.phase === "tracking"
@@ -196,11 +195,11 @@ export function RDepositFundsModal({
       ) : isIntentsReviewOpen ? (
         <IntentsQuoteView
           review={intentsReview}
+          record={intents.activeRecord}
+          operationView={intents.operationView}
           now={intents.now}
           error={intents.reviewError}
-          onConfirm={intents.confirmQuote}
-          onRefresh={intents.requestPreview}
-          onAcceptUpdate={intents.acceptUpdatedQuote}
+          onConfirm={intents.confirmRequest}
           onBack={() => intents.cancelReview()}
           isBackDisabled={intents.isFunding}
           fundingSlot={
@@ -211,7 +210,7 @@ export function RDepositFundsModal({
               isWrongNetwork={intents.isWrongNetwork}
               explorerUrl={
                 chains.find(
-                  (chain) => chain.id === intents.activeRecord?.funding?.chainId
+                  (chain) => chain.id === intents.activeRecord?.source.chainId
                 )?.blockExplorers?.default.url
               }
               onFund={intents.fund}
@@ -294,8 +293,7 @@ export function RDepositFundsModal({
               ethereumWallet={ethereumWallet}
               isMavrykBusy={isLoading}
               onConnectMavryk={connect}
-              onReview={intents.requestPreview}
-              isReviewing={intents.review.phase === "quoting"}
+              onReview={intents.startReview}
               reviewError={intents.reviewError ?? intents.sessionError}
             />
           ) : (

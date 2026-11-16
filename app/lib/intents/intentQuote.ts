@@ -1,86 +1,133 @@
 import { BigNumber } from "bignumber.js";
 
-import type {
-  IntentErrorCode,
-  IntentOperation,
-  IntentQuote,
-  IntentsApiError,
-} from "~/lib/apis/intents";
+import type { IntentSourceAsset } from "~/consts/intents";
+import type { IntentErrorCode, IntentsApiError } from "~/lib/apis/intents";
 
 /**
- * Inputs a quote depends on. Any change (account, source wallet, route, which
- * also fixes network and token, or amount) invalidates the quote.
+ * Inputs an operation request depends on. Any change (account, source
+ * wallet, route, which also fixes network and token, amount or slippage)
+ * invalidates an unfunded review/quote.
  */
-export function getIntentQuoteKey(inputs: {
+export function getIntentRequestKey(inputs: {
   account: string | null;
   sourceAddress: string | null;
   routeId: string | undefined;
+  routeVersion: number | undefined;
   amountIn: string | null;
+  slippageBps: number;
 }) {
   return [
     inputs.account ?? "",
     inputs.sourceAddress?.toLowerCase() ?? "",
     inputs.routeId ?? "",
+    inputs.routeVersion ?? "",
     inputs.amountIn ?? "",
+    inputs.slippageBps,
   ].join("|");
 }
 
-export const isIntentQuoteExpired = (expiresAt: string, now = Date.now()) =>
-  Date.parse(expiresAt) <= now;
-
-export const secondsUntil = (expiresAt: string, now = Date.now()) =>
-  Math.max(0, Math.ceil((Date.parse(expiresAt) - now) / 1000));
-
 /**
- * Lower expected or minimum output, or different inputs, between the preview
- * and the executable quote need a fresh confirmation.
+ * Minimum output the user explicitly accepts, in settlement ERC-20 units.
+ * There is no quote-preview endpoint, so it is estimated from the approved
+ * price reference, minus the asset's fee allowance and the chosen slippage,
+ * then rounded DOWN to a value the six-decimal FA2 can represent. The
+ * backend never lowers it; a quote below it is rejected (closure
+ * QUOTE_REJECTED) before any funding is possible.
  */
-export function hasMaterialQuoteChange(
-  preview: IntentQuote,
-  operation: IntentOperation
-) {
-  return (
-    preview.amountIn !== operation.amountIn ||
-    preview.recipient !== operation.recipient ||
-    new BigNumber(operation.amountOut).lt(preview.amountOut) ||
-    new BigNumber(operation.minAmountOut).lt(preview.minAmountOut)
+export function estimateAcceptedMinAmountOut({
+  amountIn,
+  sourceDecimals,
+  settlementDecimals,
+  destinationDecimals,
+  pricing,
+  feeAllowanceBps,
+  slippageBps,
+}: {
+  amountIn: string;
+  sourceDecimals: number;
+  settlementDecimals: number;
+  destinationDecimals: number;
+  pricing: IntentSourceAsset["pricing"];
+  feeAllowanceBps: number;
+  slippageBps: number;
+}): { expected: string; minimum: string } | null {
+  const rate = pricing.kind === "parity" ? 1 : new BigNumber(pricing.rate);
+  const expected = new BigNumber(amountIn)
+    .shiftedBy(-sourceDecimals)
+    .times(rate)
+    .shiftedBy(settlementDecimals)
+    .integerValue(BigNumber.ROUND_DOWN);
+  const step = new BigNumber(10).pow(
+    Math.max(0, settlementDecimals - destinationDecimals)
   );
+  const minimum = expected
+    .times(10_000 - feeAllowanceBps)
+    .div(10_000)
+    .times(10_000 - slippageBps)
+    .div(10_000)
+    .div(step)
+    .integerValue(BigNumber.ROUND_DOWN)
+    .times(step);
+  if (!expected.isFinite() || minimum.lte(0)) return null;
+  return { expected: expected.toFixed(), minimum: minimum.toFixed() };
 }
 
-const errorCopy: Record<
-  IntentErrorCode | "network" | "invalid_response",
-  string
-> = {
-  sponsorship_unavailable:
-    "Sponsored forwarding is temporarily unavailable. Try again later, or use Bridge From Ethereum.",
-  destination_busy:
-    "Another deposit to your account is still being forwarded. Wait for it to finish, then try again.",
-  quote_expired: "The quote expired. Refresh it to continue.",
-  below_minimum:
-    "This amount is below the minimum the route can deliver. Enter a larger amount.",
-  route_disabled: "This route is temporarily unavailable. Choose another one.",
-  unauthorized: "The deposit service declined this request.",
-  rate_limited: "Too many requests. Wait a moment and try again.",
-  not_found: "The deposit operation was not found.",
-  internal: "The deposit service returned an error. Try again.",
-  network:
-    "The deposit service is unreachable. Check your connection and try again.",
-  invalid_response: "The deposit service returned an unexpected response.",
+export const isIntentInstructionsExpired = (
+  fundingExpiresAt: string,
+  now = Date.now(),
+  marginMs = 0
+) => Date.parse(fundingExpiresAt) - marginMs <= now;
+
+export const secondsUntil = (at: string, now = Date.now()) =>
+  Math.max(0, Math.ceil((Date.parse(at) - now) / 1000));
+
+const errorCopy: Record<IntentErrorCode, string> = {
+  VALIDATION_ERROR:
+    "The deposit service rejected the request. Check the amount and wallets, then try again.",
+  AMOUNT_OUT_OF_RANGE:
+    "This amount is outside the route's limits. Enter a different amount.",
+  SLIPPAGE_OUT_OF_RANGE:
+    "This slippage tolerance is not allowed for the route. Choose a lower one.",
+  MIN_OUTPUT_TOO_LOW:
+    "The minimum you would receive is below the route's limit. Enter a larger amount or lower the slippage.",
+  NOT_FOUND: "This deposit operation can no longer be read.",
+  OPERATION_NOT_FOUND: "This deposit operation can no longer be read.",
+  IDEMPOTENCY_CONFLICT:
+    "This deposit request conflicts with an earlier one. Start a new deposit.",
+  ROUTE_UNAVAILABLE:
+    "This route is unavailable right now. Refresh the routes or try again later.",
+  PAYLOAD_TOO_LARGE: "The deposit request was too large.",
+  UNSUPPORTED_MEDIA_TYPE: "The deposit request was not accepted.",
+  RATE_LIMITED: "Too many requests. Wait a moment and try again.",
+  INTERNAL_ERROR:
+    "The deposit service had a problem. Try again: your request is kept and will not be duplicated.",
+  DEPENDENCY_UNAVAILABLE:
+    "The deposit service is temporarily unavailable. Try again: your request is kept and will not be duplicated.",
+  REHEARSAL_SCOPE_MISMATCH:
+    "This test environment only accepts the approved rehearsal transfer.",
+  NETWORK:
+    "The deposit service is unreachable. Try again: your request is kept and will not be duplicated.",
+  INVALID_RESPONSE: "The deposit service returned an unexpected response.",
+  UNKNOWN: "The deposit service returned an error. Try again.",
 };
 
+/** User copy, with the server request ID for support when available. */
 export const getIntentErrorCopy = (error: IntentsApiError) =>
-  errorCopy[error.code] ?? errorCopy.internal;
+  `${errorCopy[error.code] ?? errorCopy.UNKNOWN}${
+    error.requestId ? ` (Request ID: ${error.requestId})` : ""
+  }`;
 
 /**
- * Codes after which the backend definitely did not create the operation, so
- * a later attempt must use a new idempotency key.
+ * Failures after which a POST may already have been committed: retry with the
+ * SAME capability, key and body; never generate a new key just because the
+ * response was lost (backend.md §2).
  */
-export const isDefinitiveIntentRejection = (error: IntentsApiError) =>
+export const isRetryableIntentError = (error: IntentsApiError) =>
   [
-    "sponsorship_unavailable",
-    "destination_busy",
-    "quote_expired",
-    "below_minimum",
-    "route_disabled",
-    "unauthorized",
+    "NETWORK",
+    "INVALID_RESPONSE",
+    "INTERNAL_ERROR",
+    "DEPENDENCY_UNAVAILABLE",
+    "RATE_LIMITED",
+    "UNKNOWN",
   ].includes(error.code);

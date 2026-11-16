@@ -1,195 +1,234 @@
 import { describe, expect, it } from "vitest";
 
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
 import {
-  createIntentRecord,
+  fixtureOperationId,
+  instructions,
+  operation,
+  record,
+  wrappedOperation,
+} from "./intents.fixtures";
+import {
+  getInstructionsMismatch,
+  getIntentSettlementReceipt,
   getOperationMismatch,
+  hasIntentArrived,
+  hasIntentFundsObserved,
+  intentRecordSchema,
+  isIntentClosed,
   mergeIntentSnapshot,
 } from "./intentOperation";
-import {
-  getIntentQuoteKey,
-  hasMaterialQuoteChange,
-  isDefinitiveIntentRejection,
-  isIntentQuoteExpired,
-  secondsUntil,
-} from "./intentQuote";
-import { IntentsApiError } from "~/lib/apis/intents";
-import { operation } from "./intents.fixtures";
 
-const [usdt, eth] = mockIntentRoutes;
-const recipient = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
-const source = "0x1111111111111111111111111111111111111111" as const;
+describe("mergeIntentSnapshot", () => {
+  it("ignores older revisions and accepts same-revision evidence", () => {
+    const current = operation({ revision: 3 });
+    expect(mergeIntentSnapshot(current, operation({ revision: 2 }))).toBe(
+      current
+    );
+    const evidence = operation({
+      revision: 3,
+      settlement: { ...current.settlement, status: "PENDING" },
+    });
+    expect(mergeIntentSnapshot(current, evidence)).toEqual(evidence);
+  });
 
-describe("monotonic backend merge", () => {
-  const at = (minute: number) =>
-    `2026-11-13T10:${String(minute).padStart(2, "0")}:00.000Z`;
+  it("returns the previous object when nothing changed", () => {
+    const current = operation();
+    expect(mergeIntentSnapshot(current, operation())).toBe(current);
+  });
 
-  it("accepts newer versions and keeps identity fields", () => {
-    const delivered = operation({
-      version: 3,
-      updatedAt: at(3),
-      status: "delivered",
-      deliveryTxHash: `0x${"d".repeat(64)}`,
-    });
-    const forwarding = operation({
-      version: 4,
-      updatedAt: at(4),
-      status: "forwarding",
-    });
-    expect(mergeIntentSnapshot(delivered, forwarding)).toMatchObject({
-      status: "forwarding",
-      deliveryTxHash: `0x${"d".repeat(64)}`,
-    });
+  it("never moves the phase back within a revision", () => {
+    const current = operation({ phase: "FORWARDING", revision: 5 });
+    expect(
+      mergeIntentSnapshot(
+        current,
+        operation({ phase: "SWAP_IN_PROGRESS", revision: 5 })
+      )
+    ).toBe(current);
+  });
+
+  it("never undoes a confirmed settlement", () => {
+    const confirmed = wrappedOperation("CONFIRMED");
+    const merged = mergeIntentSnapshot(
+      confirmed,
+      wrappedOperation("PENDING", { revision: 9 })
+    );
+    expect(merged.revision).toBe(9);
+    expect(merged.settlement.status).toBe("CONFIRMED");
+  });
+
+  it("ignores other operations", () => {
+    const current = operation();
+    expect(
+      mergeIntentSnapshot(
+        current,
+        operation({ id: "00000000-0000-4000-8000-000000000000" })
+      )
+    ).toBe(current);
+  });
+});
+
+describe("lifecycle rules", () => {
+  it("treats only provider/chain activity as observed funds", () => {
+    expect(hasIntentFundsObserved(operation())).toBe(false);
+    expect(
+      hasIntentFundsObserved(operation({ fundingStatus: "OBSERVED" }))
+    ).toBe(true);
+    expect(
+      hasIntentFundsObserved(operation({ providerStatus: "KNOWN_DEPOSIT_TX" }))
+    ).toBe(true);
+    expect(
+      hasIntentFundsObserved(operation({ phase: "SWAP_IN_PROGRESS" }))
+    ).toBe(true);
+  });
+
+  it("confirms receipt only for the expected destination token", () => {
+    expect(
+      getIntentSettlementReceipt(
+        record({ backend: wrappedOperation("CONFIRMED") })
+      )
+    ).toBe("confirmed");
+    const wrong = wrappedOperation("CONFIRMED");
+    wrong.settlement = { ...wrong.settlement, tokenAddress: "KT1Other" };
+    expect(getIntentSettlementReceipt(record({ backend: wrong }))).toBe(
+      "mismatch"
+    );
+    const empty = wrappedOperation("CONFIRMED");
+    empty.settlement = { ...empty.settlement, mints: [] };
+    expect(getIntentSettlementReceipt(record({ backend: empty }))).toBe(
+      "mismatch"
+    );
+    // WRAPPED and 1Click SUCCESS are not receipt.
+    expect(
+      hasIntentArrived(record({ backend: wrappedOperation("PENDING") }))
+    ).toBe(false);
   });
 
   it.each([
+    ["confirmed settlement", { backend: wrappedOperation("CONFIRMED") }, true],
     [
-      "older version",
-      operation({ version: 1, updatedAt: at(9), status: "swapping" }),
+      "quote rejection",
+      {
+        backend: operation({
+          closure: "QUOTE_REJECTED",
+          fundingInstructions: null,
+        }),
+      },
+      true,
     ],
     [
-      "same version, not newer",
-      operation({ version: 3, updatedAt: at(3), status: "forwarding" }),
+      "reported refund",
+      {
+        backend: operation({
+          refund: {
+            status: "REPORTED",
+            amount: "1",
+            asset: "a",
+            recipient: "0x1111111111111111111111111111111111111111",
+          },
+        }),
+      },
+      true,
+    ],
+    ["lost access", { access: "lost" as const }, true],
+    [
+      "unfunded expiry",
+      {
+        backend: operation({
+          fundingStatus: "EXPIRED",
+          fundingInstructions: null,
+        }),
+      },
+      true,
     ],
     [
-      "backward status",
-      operation({ version: 9, updatedAt: at(9), status: "swapping" }),
+      "expiry after the wallet sent funds",
+      {
+        fundingState: "broadcast" as const,
+        backend: operation({
+          fundingStatus: "EXPIRED",
+          fundingInstructions: null,
+        }),
+      },
+      false,
     ],
     [
-      "another operation",
-      operation({ id: "op-2", version: 9, updatedAt: at(9) }),
+      "wrapped, settlement pending",
+      { backend: wrappedOperation("PENDING") },
+      false,
     ],
-  ])("ignores %s", (_name, next) => {
-    const current = operation({
-      version: 3,
-      updatedAt: at(3),
-      status: "delivered",
-    });
-    expect(mergeIntentSnapshot(current, next)).toBe(current);
+  ])("closed after %s: %s", (_, patch, closed) => {
+    expect(isIntentClosed(record(patch))).toBe(closed);
   });
-
-  it.each(["wrapped", "refunded", "expired", "failed"] as const)(
-    "keeps terminal %s final",
-    (status) => {
-      const current = operation({ version: 5, updatedAt: at(5), status });
-      expect(
-        mergeIntentSnapshot(
-          current,
-          operation({ version: 9, updatedAt: at(9), status: "failed" })
-        )
-      ).toBe(current);
-    }
-  );
 });
 
-describe("executable operation checks", () => {
-  const record = () =>
-    createIntentRecord({
-      localId: "local-1",
-      account: recipient,
-      env: "mock",
-      route: usdt,
-      amountIn: "2000000000000000000",
-      sourceAddress: source,
-    });
+describe("mismatch checks", () => {
+  const saved = record({ operationId: fixtureOperationId });
 
-  it("accepts the confirmed request, case-insensitively for addresses", () => {
+  it("requires the backend to echo the exact request", () => {
+    expect(getOperationMismatch(saved, operation())).toBeNull();
+    // Addresses are normalized to lowercase by the backend.
     expect(
       getOperationMismatch(
-        record(),
-        operation({
-          sourceAddress: source
-            .toUpperCase()
-            .replace("0X", "0x") as `0x${string}`,
+        record({
+          request: {
+            ...saved.request,
+            sourceAddress: "0xAbCdEf0000000000000000000000000000000001",
+          },
         }),
-        usdt
+        operation({
+          sourceAddress: "0xabcdef0000000000000000000000000000000001",
+        })
       )
     ).toBeNull();
+    expect(
+      getOperationMismatch(
+        saved,
+        operation({
+          refundAddress: "0x9999999999999999999999999999999999999999",
+        })
+      )
+    ).toBe("refund");
+    expect(getOperationMismatch(saved, operation({ recipient: "mv1x" }))).toBe(
+      "recipient"
+    );
+    expect(getOperationMismatch(saved, operation({ slippageBps: 10 }))).toBe(
+      "slippage"
+    );
+    expect(
+      getOperationMismatch(saved, operation({ acceptedMinAmountOut: "1" }))
+    ).toBe("minimum output");
   });
 
-  it.each([
-    ["recipient", { recipient: "mv1other" }],
-    ["route", { routeId: eth.id }],
-    ["amount", { amountIn: "1" }],
-    [
-      "source",
-      { sourceAddress: "0x3333333333333333333333333333333333333333" as const },
-    ],
-    ["chain", { funding: { ...operation().funding, chainId: 1 } }],
-    ["funding amount", { funding: { ...operation().funding, amount: "1" } }],
-    [
-      "token",
-      { funding: { ...operation().funding, token: "native" as const } },
-    ],
-  ])("rejects a different %s", (field, overrides) => {
-    expect(getOperationMismatch(record(), operation(overrides), usdt)).toBe(
-      field
+  it("checks published instructions against the route and accepted minimum", () => {
+    expect(getInstructionsMismatch(saved, instructions())).toBeNull();
+    expect(
+      getInstructionsMismatch(saved, instructions({ sourceChainId: "1" }))
+    ).toBe("network");
+    expect(
+      getInstructionsMismatch(saved, instructions({ originAsset: "x" }))
+    ).toBe("asset");
+    expect(getInstructionsMismatch(saved, instructions({ amount: "1" }))).toBe(
+      "amount"
     );
+    expect(
+      getInstructionsMismatch(saved, instructions({ depositMemo: "memo" }))
+    ).toBe("memo");
+    expect(
+      getInstructionsMismatch(
+        saved,
+        instructions({ bridgeableMinAmountOut: "1" })
+      )
+    ).toBe("minimum output");
   });
 });
 
-describe("quote rules", () => {
-  const preview = {
-    routeId: usdt.id,
-    amountIn: "2000000000000000000",
-    amountOut: "1994000",
-    minAmountOut: "1974060",
-    expiresAt: "2026-11-13T10:01:00.000Z",
-    recipient,
-  };
-
-  it("keys quotes by account, source wallet, route and amount", () => {
-    const base = {
-      account: recipient,
-      sourceAddress: source,
-      routeId: usdt.id,
-      amountIn: "1",
-    };
-    const key = getIntentQuoteKey(base);
-    expect(
-      getIntentQuoteKey({ ...base, sourceAddress: source.toUpperCase() })
-    ).toBe(key);
-    for (const change of [
-      { account: "mv1other" },
-      { sourceAddress: "0x3333333333333333333333333333333333333333" },
-      { routeId: eth.id },
-      { amountIn: "2" },
-    ])
-      expect(getIntentQuoteKey({ ...base, ...change })).not.toBe(key);
+it("round-trips records through the persisted schema", () => {
+  const value = record({
+    operationId: fixtureOperationId,
+    backend: wrappedOperation("CONFIRMED"),
+    lastInstructions: instructions(),
   });
-
-  it("requires reconfirmation only for worse or different terms", () => {
-    expect(hasMaterialQuoteChange(preview, operation())).toBe(false);
-    expect(
-      hasMaterialQuoteChange(preview, operation({ amountOut: "1995000" }))
-    ).toBe(false);
-    expect(
-      hasMaterialQuoteChange(preview, operation({ amountOut: "1993999" }))
-    ).toBe(true);
-    expect(
-      hasMaterialQuoteChange(preview, operation({ minAmountOut: "1" }))
-    ).toBe(true);
-    expect(
-      hasMaterialQuoteChange(preview, operation({ recipient: "mv1other" }))
-    ).toBe(true);
-  });
-
-  it("counts down to expiry", () => {
-    const now = Date.parse("2026-11-13T10:00:30.500Z");
-    expect(secondsUntil(preview.expiresAt, now)).toBe(30);
-    expect(isIntentQuoteExpired(preview.expiresAt, now)).toBe(false);
-    expect(isIntentQuoteExpired(preview.expiresAt, now + 30_000)).toBe(true);
-  });
-
-  it("treats only definitive rejections as needing a new idempotency key", () => {
-    expect(
-      isDefinitiveIntentRejection(new IntentsApiError("destination_busy", ""))
-    ).toBe(true);
-    expect(
-      isDefinitiveIntentRejection(new IntentsApiError("network", ""))
-    ).toBe(false);
-    expect(
-      isDefinitiveIntentRejection(new IntentsApiError("internal", ""))
-    ).toBe(false);
-  });
+  expect(intentRecordSchema.parse(JSON.parse(JSON.stringify(value)))).toEqual(
+    value
+  );
 });

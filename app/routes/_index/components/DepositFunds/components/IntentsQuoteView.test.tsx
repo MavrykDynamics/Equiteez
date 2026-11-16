@@ -1,9 +1,20 @@
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import type { IntentsReview } from "~/hooks/useIntentsDeposit";
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
-import { fixtureRecipient, operation } from "~/lib/intents/intents.fixtures";
+import type {
+  IntentsOperationView,
+  IntentsReview,
+} from "~/hooks/useIntentsDeposit";
+import {
+  fixtureDeposit,
+  fixtureOperationId,
+  fixtureOption,
+  fixtureRecipient,
+  fixtureSource,
+  operation,
+  record,
+  request,
+} from "~/lib/intents/intents.fixtures";
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { IntentsQuoteView } from "./IntentsQuoteView";
 
@@ -11,77 +22,94 @@ vi.mock("~/lib/molecules/HashChip", () => ({
   HashChip: ({ hash }: { hash: string }) => <span>{hash}</span>,
 }));
 
-const now = Date.parse("2026-11-13T10:00:00.000Z");
-const preview = {
-  routeId: "arb-sepolia-usdt",
-  amountIn: "2000000000000000000",
-  amountOut: "1994000",
-  minAmountOut: "1974060",
-  expiresAt: "2026-11-13T10:01:05.000Z",
-  recipient: fixtureRecipient,
-};
+const now = Date.parse("2026-11-13T10:08:55.000Z");
 const base = {
   key: "k",
   session: {} as IntentOperations,
-  route: mockIntentRoutes[0],
-  amountIn: preview.amountIn,
-  sourceAddress: "0x1111111111111111111111111111111111111111" as const,
-  preview,
+  option: fixtureOption,
+  request: request(),
+  expectedAmountOut: "2000000000000000000",
   localId: "local-1",
 };
+type QuoteReview = Extract<
+  IntentsReview,
+  { phase: "review" | "creating" | "operation" }
+>;
+const saved = record({ operationId: fixtureOperationId, backend: operation() });
 
-const render = (review: IntentsReview, at = now) =>
+const render = (
+  review: QuoteReview,
+  view: IntentsOperationView | null = null,
+  error: string | null = null
+) =>
   renderToString(
     <IntentsQuoteView
-      review={
-        review as Exclude<
-          IntentsReview,
-          { phase: "form" | "quoting" | "tracking" }
-        >
-      }
-      now={at}
-      error={null}
+      review={review}
+      record={review.phase === "operation" ? saved : undefined}
+      operationView={view}
+      now={now}
+      error={error}
       onConfirm={vi.fn()}
-      onRefresh={vi.fn()}
-      onAcceptUpdate={vi.fn()}
       onBack={vi.fn()}
       fundingSlot={<button>Send funds</button>}
     />
   ).replace(/<!-- -->/g, "");
 
 describe("IntentsQuoteView", () => {
-  it("shows amounts, minimum output, recipient and expiry", () => {
+  it("reviews the request with the accepted minimum before anything is sent", () => {
     const html = render({ ...base, phase: "review" });
     expect(html).toContain("2 USDT on Arbitrum Sepolia");
-    expect(html).toContain("1.994 wUSDT");
-    expect(html).toContain("1.97406 wUSDT");
+    expect(html).toContain("Minimum you accept");
+    expect(html).toContain("1.98005 wUSDT");
+    expect(html).toContain("0.5%");
     expect(html).toContain(fixtureRecipient);
+    expect(html).toContain(fixtureSource);
+    expect(html).toContain("Confirm Deposit");
+    expect(html).toContain("only after the exact quote is ready");
+    expect(html).not.toContain("Send funds");
+  });
+
+  it("waits for the quote without a funding action", () => {
+    const html = render(
+      { ...base, phase: "operation" },
+      { status: "preparing" }
+    );
+    expect(html).toContain("Preparing your quote");
+    expect(html).not.toContain("Send funds");
+    expect(html).not.toContain("Confirm Deposit");
+  });
+
+  it.each([
+    [{ status: "paused" } as const, "Funding is paused"],
+    [
+      { status: "mismatch", detail: "amount" } as const,
+      "(amount). Nothing will be sent.",
+    ],
+  ])("explains %o without a funding action", (view, text) => {
+    const html = render({ ...base, phase: "operation" }, view);
+    expect(html).toContain(text);
+    expect(html).not.toContain("Send funds");
+  });
+
+  it("shows the executable quote, deposit address and countdown with the funding action", () => {
+    const html = render({ ...base, phase: "operation" }, { status: "ready" });
+    expect(html).toContain("You send exactly");
+    expect(html).toContain("2 USDT on Arbitrum Sepolia");
+    expect(html).toContain("To 1Click deposit address");
+    expect(html).toContain(fixtureDeposit);
+    // The forwarder is resolved by the backend and never shown as a target.
+    expect(html).not.toContain("0x3333333333333333333333333333333333333333");
+    expect(html).toContain("Expected to receive");
+    expect(html).toContain("1.994 wUSDT");
+    expect(html).toContain("1.99003 wUSDT");
     expect(html).toContain("1:05");
-    expect(html).toContain("Confirm Quote");
-  });
-
-  it("asks for a refresh once the preview expired", () => {
-    const html = render({ ...base, phase: "review" }, now + 70_000);
-    expect(html).toContain("Expired");
-    expect(html).toContain("Refresh Quote");
-    expect(html).not.toContain("Confirm Quote");
-  });
-
-  it("explains a changed executable quote", () => {
-    const html = render({
-      ...base,
-      phase: "reconfirm",
-      operation: operation({ amountOut: "1900000", minAmountOut: "1880000" }),
-    });
-    expect(html).toContain("The final quote changed.");
-    expect(html).toContain("1.994 wUSDT → 1.9 wUSDT");
-    expect(html).toContain("Accept Updated Quote");
-  });
-
-  it("offers funding only once the operation is ready", () => {
-    expect(render({ ...base, phase: "review" })).not.toContain("Send funds");
-    const html = render({ ...base, phase: "ready", operation: operation() });
+    expect(html).toContain(fixtureOperationId);
     expect(html).toContain("Send funds");
-    expect(html).toContain("Send funds within");
+  });
+
+  it("surfaces errors with the support request ID", () => {
+    expect(
+      render({ ...base, phase: "review" }, null, "Busy (Request ID: req-1)")
+    ).toContain("Request ID: req-1");
   });
 });

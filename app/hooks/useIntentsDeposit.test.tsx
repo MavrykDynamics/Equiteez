@@ -6,42 +6,65 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   IntentsApiError,
+  type IntentCredentials,
   type IntentOperationRequest,
   type IntentsApi,
 } from "~/lib/apis/intents";
 import {
   createIntentsMockApi,
-  mockIntentRoutes,
+  type IntentsMockScenario,
 } from "~/lib/apis/intents/intents.mock";
-import { memoryStorage } from "~/lib/intents/intents.fixtures";
+import { isOperationCapability } from "~/lib/intents/intentCapability";
+import { fixtureOption, memoryStorage } from "~/lib/intents/intents.fixtures";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { useIntentsDeposit } from "./useIntentsDeposit";
 
 const accountA = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
-const accountB = "mv1Fy1xTnD9s3xK3Uz2rNMhKgG5Jt5AKE8vj";
+const accountB = `mv1${"2".repeat(33)}`;
 const sourceA = "0x1111111111111111111111111111111111111111" as const;
 const sourceB = "0x4444444444444444444444444444444444444444" as const;
+const rehearsal = {
+  capability: "R".repeat(42) + "A",
+  idempotencyKey: "rehearsal-key-1",
+};
 
 const mocks = vi.hoisted(() => ({
   api: null as unknown as IntentsApi,
-  ctx: { account: null as string | null, intentSession: null as unknown },
+  ctx: {
+    account: null as string | null,
+    intentSession: null as unknown,
+    refreshIntent: (() => {}) as (localId?: string) => void,
+  },
   wallet: null as unknown as EthereumContext,
   result: null as unknown as ReturnType<typeof useIntentsDeposit>,
   fund: vi.fn(),
+  rehearsal: null as null | { capability: string; idempotencyKey: string },
 }));
 
+vi.mock("~/consts/intents", async (original) => {
+  const actual = await original<typeof import("~/consts/intents")>();
+  return {
+    ...actual,
+    get INTENTS_REHEARSAL() {
+      return mocks.rehearsal;
+    },
+  };
+});
 vi.mock("~/lib/apis/intents", async (original) => ({
   ...(await original<typeof import("~/lib/apis/intents")>()),
   getIntentsApi: () => mocks.api,
 }));
-vi.mock("~/hooks/useIntentsRoutes", () => ({
-  useIntentsRoutes: () => ({
-    status: "ready",
-    options: [{ route: mockIntentRoutes[0], availability: "available" }],
-    refetch: vi.fn(),
-  }),
-}));
+vi.mock("~/hooks/useIntentsRoutes", async () => {
+  const fixtures = await import("~/lib/intents/intents.fixtures");
+  return {
+    useIntentsRoutes: () => ({
+      status: "ready",
+      options: [fixtures.fixtureOption],
+      refetch: () => {},
+    }),
+  };
+});
 vi.mock("~/providers/EthereumProvider/hooks/useIntentSourceBalance", () => ({
   useIntentSourceBalance: () => ({
     balance: new BigNumber(100),
@@ -73,22 +96,22 @@ function Harness() {
 }
 
 let root: Root;
+let clock = 0;
+let scenario: IntentsMockScenario | null = null;
 const render = () => act(async () => root.render(<Harness />));
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
-  let reject!: (error: unknown) => void;
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
+  const promise = new Promise<T>((res) => (resolve = res));
+  return { promise, resolve };
 };
+type Created = Awaited<ReturnType<IntentsApi["createOperation"]>>;
 
-function session(account: string) {
-  return new IntentOperations(account, "mock", () => memoryStorage());
-}
 function signIn(account: string, source: `0x${string}` = sourceA) {
-  mocks.ctx = { account, intentSession: session(account) };
+  mocks.ctx = {
+    account,
+    intentSession: new IntentOperations(account, "mock", () => memoryStorage()),
+    refreshIntent: vi.fn(),
+  };
   mocks.wallet = {
     userAddress: source,
     isConnected: true,
@@ -96,20 +119,48 @@ function signIn(account: string, source: `0x${string}` = sourceA) {
   } as unknown as EthereumContext;
 }
 const store = () => mocks.ctx.intentSession as IntentOperations;
+const records = () => [...store().getSnapshot().records.values()];
 
-async function reachReview() {
-  await act(async () => mocks.result.setAmount(new BigNumber(2)));
-  await act(async () => mocks.result.requestPreview());
+async function reachReview(amount = 2) {
+  await act(async () => mocks.result.setAmount(new BigNumber(amount)));
+  await act(async () => mocks.result.startReview());
   expect(mocks.result.review.phase).toBe("review");
+}
+/** Plays the tracker: lets the mock prepare the quote and applies the GET. */
+async function publishQuote(advanceMs = 1_500) {
+  clock += advanceMs;
+  const record = records().find((item) => item.operationId)!;
+  const operation = await mocks.api.getOperation(
+    record.capability,
+    record.operationId!
+  );
+  await act(async () => {
+    store().applyBackend(record.localId, operation);
+  });
+  return store().get(record.localId)!;
+}
+async function reachReady() {
+  await render();
+  await reachReview();
+  await act(async () => mocks.result.confirmRequest());
+  expect(mocks.result.review.phase).toBe("operation");
+  const record = await publishQuote();
+  expect(mocks.result.operationView).toEqual({ status: "ready" });
+  return record;
 }
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  clock = Date.now();
+  scenario = null;
+  mocks.rehearsal = null;
+  mocks.fund.mockReset();
   mocks.api = createIntentsMockApi({
     storage: () => memoryStorage(),
+    now: () => clock,
     latencyMs: 0,
     depositAddress: "0x2222222222222222222222222222222222222222",
-    getScenario: () => null,
+    getScenario: () => scenario,
   });
   signIn(accountA);
   root = createRoot(document.createElement("div"));
@@ -119,165 +170,52 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-describe("quote review and persisted operation", () => {
-  it("reuses one idempotency key across double clicks and transport retries", async () => {
-    const create = mocks.api.createOperation.bind(mocks.api);
-    const calls: IntentOperationRequest[] = [];
-    let attempt = 0;
-    mocks.api.createOperation = async (request) => {
-      calls.push(request);
-      if (attempt++ === 0) throw new IntentsApiError("network", "offline");
-      return create(request);
-    };
+describe("form and local review", () => {
+  it("builds the exact request with an accepted minimum and the source wallet as refund address", async () => {
     await render();
     await reachReview();
-    await act(async () => {
-      void mocks.result.confirmQuote();
-      void mocks.result.confirmQuote();
+    const review = mocks.result.review as Extract<
+      typeof mocks.result.review,
+      { phase: "review" | "creating" }
+    >;
+    expect(review.request).toEqual({
+      routeId: fixtureOption.route.id,
+      routeVersion: 1,
+      sourceAddress: sourceA,
+      recipient: accountA,
+      refundAddress: sourceA,
+      amountIn: "2000000000000000000",
+      slippageBps: 50,
+      acceptedMinAmountOut: "1980050000000000000",
     });
-    expect(calls).toHaveLength(1);
-    expect(mocks.result.review.phase).toBe("review");
-    expect(mocks.result.reviewError).toMatch(/unreachable/);
-    await act(async () => mocks.result.confirmQuote());
-    expect(calls).toHaveLength(2);
-    expect(calls[1].idempotencyKey).toBe(calls[0].idempotencyKey);
-    expect(mocks.result.review.phase).toBe("ready");
+    // Nothing was persisted or sent yet.
+    expect(records()).toHaveLength(0);
   });
 
-  it("persists locally before the request and offers funding only after the backend operation", async () => {
-    const pending =
-      deferred<Awaited<ReturnType<IntentsApi["createOperation"]>>>();
-    const create = mocks.api.createOperation.bind(mocks.api);
-    let created!: Promise<Awaited<ReturnType<IntentsApi["createOperation"]>>>;
-    mocks.api.createOperation = (request) => {
-      created = create(request);
-      return pending.promise;
-    };
-    const release = async () => pending.resolve(await created);
+  it("clears the review when the slippage or source wallet changes", async () => {
     await render();
     await reachReview();
-    let confirm!: Promise<void>;
-    await act(async () => {
-      confirm = mocks.result.confirmQuote();
-    });
-    expect(mocks.result.review.phase).toBe("creating");
-    const [local] = store().getSnapshot().records.values();
-    expect(local.operationId).toBeUndefined();
-    expect(local.fundingState).toBe("not_started");
-    await act(async () => {
-      await release();
-      await confirm;
-    });
-    expect(mocks.result.review.phase).toBe("ready");
-    const saved = store().get(local.localId)!;
-    expect(saved.operationId).toMatch(/^mock-/);
-    expect(saved.funding?.depositAddress).toBe(
-      "0x2222222222222222222222222222222222222222"
-    );
-  });
-
-  it("drops a late response after the Equiteez account changes", async () => {
-    const pending =
-      deferred<Awaited<ReturnType<IntentsApi["createOperation"]>>>();
-    const create = mocks.api.createOperation.bind(mocks.api);
-    let created!: Promise<Awaited<ReturnType<IntentsApi["createOperation"]>>>;
-    mocks.api.createOperation = (request) => {
-      created = create(request);
-      return pending.promise;
-    };
-    const release = async () => pending.resolve(await created);
-    await render();
-    await reachReview();
-    const oldSession = store();
-    let confirm!: Promise<void>;
-    await act(async () => {
-      confirm = mocks.result.confirmQuote();
-    });
-    expect(mocks.result.review.phase).toBe("creating");
-    signIn(accountB);
-    await render();
-    await act(async () => {
-      await release();
-      await confirm;
-    });
+    await act(async () => mocks.result.setSlippageBps(100));
     expect(mocks.result.review.phase).toBe("form");
-    const [old] = oldSession.getSnapshot().records.values();
-    expect(old.fundingState).toBe("abandoned");
-    expect(store().getSnapshot().records.size).toBe(0);
-  });
-
-  it("clears the quote when the source wallet changes", async () => {
-    await render();
+    expect(mocks.result.reviewError).toMatch(/slippage changed/);
     await reachReview();
     const current = mocks.ctx.intentSession;
     signIn(accountA, sourceB);
-    mocks.ctx.intentSession = current; // same session, different source wallet
+    mocks.ctx.intentSession = current;
     await render();
     expect(mocks.result.review.phase).toBe("form");
-    expect(mocks.result.reviewError).toMatch(/quote was cleared/);
   });
 
-  it("asks again when the executable quote is worse than the preview", async () => {
-    const create = mocks.api.createOperation.bind(mocks.api);
-    mocks.api.createOperation = async (request) => ({
-      ...(await create(request)),
-      amountOut: "1",
-      minAmountOut: "1",
-    });
+  it("only allows mv1 recipients", async () => {
+    signIn(`mv2${"2".repeat(33)}`);
     await render();
-    await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    expect(mocks.result.review.phase).toBe("reconfirm");
-    await act(async () => mocks.result.acceptUpdatedQuote());
-    expect(mocks.result.review.phase).toBe("ready");
-  });
-
-  it("uses a new key after a definitive rejection such as a busy destination", async () => {
-    const create = mocks.api.createOperation.bind(mocks.api);
-    const keys: string[] = [];
-    mocks.api.createOperation = async (request) => {
-      keys.push(request.idempotencyKey);
-      if (keys.length === 1)
-        throw new IntentsApiError("destination_busy", "busy");
-      return create(request);
-    };
-    await render();
-    await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    expect(mocks.result.reviewError).toMatch(/still being forwarded/);
-    expect(store().get(keys[0])?.fundingState).toBe("abandoned");
-    await act(async () => mocks.result.confirmQuote());
-    expect(keys[1]).not.toBe(keys[0]);
-    expect(mocks.result.review.phase).toBe("ready");
-  });
-
-  it("refuses to fund an operation that differs from the request", async () => {
-    const create = mocks.api.createOperation.bind(mocks.api);
-    mocks.api.createOperation = async (request) => ({
-      ...(await create(request)),
-      recipient: accountB,
-    });
-    await render();
-    await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    expect(mocks.result.review.phase).toBe("form");
-    expect(mocks.result.reviewError).toMatch(/does not match/);
-    const [record] = store().getSnapshot().records.values();
-    expect(record.fundingState).toBe("abandoned");
-  });
-
-  it("abandons an unfunded operation when the review is cancelled", async () => {
-    await render();
-    await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    await act(async () => mocks.result.cancelReview());
-    const [record] = store().getSnapshot().records.values();
-    expect(record.fundingState).toBe("abandoned");
-    expect(mocks.result.review.phase).toBe("form");
+    await act(async () => mocks.result.setAmount(new BigNumber(2)));
+    expect(mocks.result.canReview).toBe(false);
+    expect(mocks.result.sessionError).toMatch(/only deliver to mv1/);
   });
 
   it("blocks review without an authenticated tracking session", async () => {
-    mocks.ctx = { account: null, intentSession: null };
+    mocks.ctx = { account: null, intentSession: null, refreshIntent: vi.fn() };
     await act(async () =>
       root.render(<HarnessWithRecipient recipient={accountA} />)
     );
@@ -286,26 +224,191 @@ describe("quote review and persisted operation", () => {
   });
 });
 
-describe("funding hand-off", () => {
-  async function reachReady() {
+describe("persisted operation", () => {
+  it("persists capability, key and request before the POST; funding needs published instructions", async () => {
+    const pending = deferred<Created>();
+    const create = mocks.api.createOperation.bind(mocks.api);
+    let created!: Promise<Created>;
+    mocks.api.createOperation = (credentials, body) => {
+      created = create(credentials, body);
+      return pending.promise;
+    };
     await render();
     await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    expect(mocks.result.review.phase).toBe("ready");
-    const [record] = store().getSnapshot().records.values();
-    return record;
-  }
+    let confirm!: Promise<void>;
+    await act(async () => {
+      confirm = mocks.result.confirmRequest();
+    });
+    expect(mocks.result.review.phase).toBe("creating");
+    const [local] = records();
+    expect(isOperationCapability(local.capability)).toBe(true);
+    expect(local.idempotencyKey).toMatch(/^[!-~]{8,128}$/);
+    expect(local.request.amountIn).toBe("2000000000000000000");
+    expect(local.operationId).toBeUndefined();
+    await act(async () => {
+      pending.resolve(await created);
+      await confirm;
+    });
+    expect(mocks.result.review.phase).toBe("operation");
+    expect(mocks.result.operationView).toEqual({ status: "preparing" });
+    expect(mocks.ctx.refreshIntent).toHaveBeenCalledWith(local.localId);
+    const ready = await publishQuote();
+    expect(mocks.result.operationView).toEqual({ status: "ready" });
+    expect(ready.backend?.fundingInstructions?.depositAddress).toBe(
+      "0x2222222222222222222222222222222222222222"
+    );
+  });
 
-  it("funds the captured session and reports staleness after an account change", async () => {
+  it("reuses the same capability, key and body across double clicks and lost responses", async () => {
+    const create = mocks.api.createOperation.bind(mocks.api);
+    const calls: [IntentCredentials, IntentOperationRequest][] = [];
+    mocks.api.createOperation = async (credentials, body) => {
+      calls.push([credentials, body]);
+      // Committed, but the response is lost.
+      const result = await create(credentials, body);
+      if (calls.length === 1) throw new IntentsApiError("NETWORK", "offline");
+      return result;
+    };
+    await render();
+    await reachReview();
+    await act(async () => {
+      void mocks.result.confirmRequest();
+      void mocks.result.confirmRequest();
+    });
+    expect(calls).toHaveLength(1);
+    expect(mocks.result.review.phase).toBe("review");
+    expect(mocks.result.reviewError).toMatch(/will not be duplicated/);
+    await act(async () => mocks.result.confirmRequest());
+    expect(calls).toHaveLength(2);
+    expect(calls[1]).toEqual(calls[0]);
+    expect(records()).toHaveLength(1);
+    expect(mocks.result.review.phase).toBe("operation");
+  });
+
+  it("uses a fresh scope after a definitive rejection", async () => {
+    const create = mocks.api.createOperation.bind(mocks.api);
+    const scopes: IntentCredentials[] = [];
+    mocks.api.createOperation = async (credentials, body) => {
+      scopes.push(credentials);
+      if (scopes.length === 1)
+        throw new IntentsApiError("ROUTE_UNAVAILABLE", "paused", 409, "req-9");
+      return create(credentials, body);
+    };
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmRequest());
+    expect(mocks.result.reviewError).toMatch(/route is unavailable.*req-9/);
+    expect(records()[0].fundingState).toBe("abandoned");
+    await act(async () => mocks.result.confirmRequest());
+    expect(scopes[1].capability).not.toBe(scopes[0].capability);
+    expect(scopes[1].idempotencyKey).not.toBe(scopes[0].idempotencyKey);
+    expect(mocks.result.review.phase).toBe("operation");
+  });
+
+  it("drops a late response after the Equiteez account changes", async () => {
+    const pending = deferred<Created>();
+    const create = mocks.api.createOperation.bind(mocks.api);
+    let created!: Promise<Created>;
+    mocks.api.createOperation = (credentials, body) => {
+      created = create(credentials, body);
+      return pending.promise;
+    };
+    await render();
+    await reachReview();
+    const oldSession = store();
+    let confirm!: Promise<void>;
+    await act(async () => {
+      confirm = mocks.result.confirmRequest();
+    });
+    signIn(accountB);
+    await render();
+    await act(async () => {
+      pending.resolve(await created);
+      await confirm;
+    });
+    expect(mocks.result.review.phase).toBe("form");
+    const [old] = oldSession.getSnapshot().records.values();
+    expect(old.fundingState).toBe("abandoned");
+    expect(records()).toHaveLength(0);
+  });
+
+  it("refuses to continue with an operation that differs from the request", async () => {
+    const create = mocks.api.createOperation.bind(mocks.api);
+    mocks.api.createOperation = async (credentials, body) => {
+      const result = await create(credentials, body);
+      return {
+        ...result,
+        operation: { ...result.operation, recipient: accountB },
+      };
+    };
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmRequest());
+    expect(mocks.result.review.phase).toBe("form");
+    expect(mocks.result.reviewError).toMatch(/does not match/);
+    expect(records()[0].fundingState).toBe("abandoned");
+  });
+
+  it("returns to the form when no quote meets the accepted minimum", async () => {
+    scenario = "reject";
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmRequest());
+    await publishQuote();
+    expect(mocks.result.review.phase).toBe("form");
+    expect(mocks.result.reviewError).toMatch(/No quote met your minimum/);
+  });
+
+  it("returns to the form when instructions expire before funding", async () => {
+    scenario = "expire";
+    await reachReady();
+    await publishQuote(21_000);
+    expect(mocks.result.review.phase).toBe("form");
+    expect(mocks.result.reviewError).toMatch(/expired before funding/);
+  });
+
+  it("shows paused funding without a send action", async () => {
+    scenario = "paused";
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmRequest());
+    await publishQuote();
+    expect(mocks.result.operationView).toEqual({ status: "paused" });
+  });
+
+  it("abandons an unfunded operation when the review is cancelled", async () => {
+    await reachReady();
+    await act(async () => mocks.result.cancelReview());
+    expect(records()[0].fundingState).toBe("abandoned");
+    expect(mocks.result.review.phase).toBe("form");
+  });
+
+  it("uses the pre-approved rehearsal scope once", async () => {
+    mocks.rehearsal = rehearsal;
+    await reachReady();
+    expect(records()[0]).toMatchObject(rehearsal);
+    await act(async () => mocks.result.cancelReview());
+    await reachReview(3);
+    await act(async () => mocks.result.confirmRequest());
+    const second = records().find(
+      (item) => item.request.amountIn !== records()[0].request.amountIn
+    )!;
+    expect(second.capability).not.toBe(rehearsal.capability);
+  });
+});
+
+describe("funding hand-off", () => {
+  it("funds the captured session with the reviewed quote and reports staleness", async () => {
     const record = await reachReady();
     const session = store();
     await act(async () => mocks.result.fund());
     expect(mocks.fund).toHaveBeenCalledWith(
       session,
       record.localId,
+      record.backend!.fundingInstructions!.quoteId,
       expect.any(Function)
     );
-    const isCurrent = mocks.fund.mock.calls[0][2] as () => boolean;
+    const isCurrent = mocks.fund.mock.calls[0][3] as () => boolean;
     expect(isCurrent()).toBe(true);
     signIn(accountB);
     await render();
@@ -313,7 +416,7 @@ describe("funding hand-off", () => {
     expect(mocks.result.review.phase).toBe("form");
   });
 
-  it("keeps a funded operation when quote inputs change, but not across accounts", async () => {
+  it("keeps a funded operation when inputs change, but not across accounts", async () => {
     const record = await reachReady();
     const session = store();
     session.upsert({
@@ -324,48 +427,32 @@ describe("funding hand-off", () => {
     });
     await render();
     expect(mocks.result.hasFundingStarted).toBe(true);
+    expect(mocks.result.review.phase).toBe("tracking");
     signIn(accountA, sourceB);
     mocks.ctx.intentSession = session;
     await render();
     expect(mocks.result.review.phase).toBe("tracking");
-    expect(mocks.result.activeRecord?.fundingState).toBe("broadcast");
-
     signIn(accountB);
     await render();
     expect(mocks.result.review.phase).toBe("form");
     expect(mocks.result.reviewError).toBeNull();
     expect(session.get(record.localId)?.fundingState).toBe("broadcast");
   });
-});
 
-describe("operation tracking in the modal", () => {
-  it("follows the operation once the wallet returned a hash", async () => {
-    await render();
-    await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    const [record] = store().getSnapshot().records.values();
-    await act(async () => {
-      store().upsert({
-        ...store().get(record.localId)!,
-        fundingState: "broadcast",
-        sourceHashes: [`0x${"a".repeat(64)}`],
-        sequence: store().get(record.localId)!.sequence + 1,
-      });
-    });
+  it("follows the operation when the backend saw funds", async () => {
+    const record = await reachReady();
+    await mocks.api.simulateDeposit!(record.capability, record.operationId!);
+    await publishQuote(0);
     expect(mocks.result.review).toMatchObject({
       phase: "tracking",
       localId: record.localId,
     });
-    expect(mocks.result.trackedModel?.operationId).toBe(
-      `intent:${record.localId}`
-    );
   });
+});
 
+describe("resume", () => {
   it("resumes the newest unfinished committed operation, never an unfunded one", async () => {
-    await render();
-    await reachReview();
-    await act(async () => mocks.result.confirmQuote());
-    const [unfunded] = store().getSnapshot().records.values();
+    const unfunded = await reachReady();
     await act(async () => mocks.result.cancelReview());
     let found = false;
     await act(async () => {
@@ -373,18 +460,16 @@ describe("operation tracking in the modal", () => {
     });
     expect(found).toBe(false);
 
-    await act(async () => mocks.result.setAmount(new BigNumber(3)));
-    await act(async () => mocks.result.requestPreview());
-    await act(async () => mocks.result.confirmQuote());
-    const funded = [...store().getSnapshot().records.values()].find(
-      (item) => item.localId !== unfunded.localId
-    )!;
+    await reachReview(3);
+    await act(async () => mocks.result.confirmRequest());
+    const funded = records().find((item) => item.localId !== unfunded.localId)!;
     store().upsert({
       ...store().get(funded.localId)!,
       fundingState: "unknown",
       sourceHashes: [`0x${"a".repeat(64)}`],
       sequence: store().get(funded.localId)!.sequence + 1,
     });
+    await render();
     await act(async () => mocks.result.cancelReview());
     await act(async () => {
       found = mocks.result.resumeActive();

@@ -6,39 +6,50 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { BigNumber } from "bignumber.js";
-import { v4 as uuid } from "uuid";
+import { BigNumber } from "bignumber.js";
 import { useSwitchChain } from "wagmi";
 
+import {
+  INTENTS_DEFAULT_SLIPPAGE_BPS,
+  INTENTS_REHEARSAL,
+} from "~/consts/intents";
 import { useIntentsRoutes } from "~/hooks/useIntentsRoutes";
 import {
   getIntentsApi,
   IntentsApiError,
   isIntentsApiError,
-  type IntentOperation,
-  type IntentQuote,
-  type IntentRoute,
+  type IntentOperationRequest,
 } from "~/lib/apis/intents";
-import {
-  createIntentRecord,
-  getOperationMismatch,
-  type IntentRecord,
-} from "~/lib/intents/intentOperation";
 import {
   canRequestIntentFunding,
   simulateIntentFunding,
 } from "~/contracts/intentsFunding.contract";
 import {
+  newIdempotencyKey,
+  newOperationCapability,
+} from "~/lib/intents/intentCapability";
+import {
+  createIntentRecord,
+  getInstructionsMismatch,
+  getOperationMismatch,
+  hasIntentFundsObserved,
+  type IntentRecord,
+} from "~/lib/intents/intentOperation";
+import {
+  estimateAcceptedMinAmountOut,
   getIntentErrorCopy,
-  getIntentQuoteKey,
-  hasMaterialQuoteChange,
-  isDefinitiveIntentRejection,
-  isIntentQuoteExpired,
+  getIntentRequestKey,
+  isIntentInstructionsExpired,
+  isRetryableIntentError,
 } from "~/lib/intents/intentQuote";
 import {
+  formatRawAmount,
   getIntentAmountError,
+  getIntentSlippageError,
   intentRouteAvailabilityCopy,
+  isIntentRecipient,
   toRawAmount,
+  type IntentRouteOption,
 } from "~/lib/intents/intentRoute";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { useIntentSourceBalance } from "~/providers/EthereumProvider/hooks/useIntentSourceBalance";
@@ -54,30 +65,34 @@ type Params = {
 };
 
 type ReviewBase = {
-  /** Inputs the quote was requested for; a different key invalidates it. */
+  /** Inputs the request was built from; a different key invalidates it. */
   key: string;
   session: IntentOperations;
-  route: IntentRoute;
-  amountIn: string;
-  sourceAddress: `0x${string}`;
+  option: IntentRouteOption;
+  /** Exact body for POST /v1/operations. */
+  request: IntentOperationRequest;
+  /** Estimated output before slippage (settlement units), display only. */
+  expectedAmountOut: string;
+  /** Local identity; its record holds the capability and idempotency key. */
+  localId: string;
 };
 export type IntentsReview =
   | { phase: "form" }
-  | (ReviewBase & { phase: "quoting" })
-  | (ReviewBase & {
-      phase: "review" | "creating";
-      preview: IntentQuote;
-      /** Idempotency key for this confirmation; reused on retry. */
-      localId: string;
-    })
-  | (ReviewBase & {
-      phase: "reconfirm" | "ready";
-      preview: IntentQuote;
-      localId: string;
-      operation: IntentOperation;
-    })
+  /** Local review of the request; nothing sent yet. */
+  | (ReviewBase & { phase: "review" | "creating" })
+  /** Persisted operation: preparing the quote, then showing instructions. */
+  | (ReviewBase & { phase: "operation" })
   /** A committed operation shown in the modal (same model as the widget). */
   | { phase: "tracking"; session: IntentOperations; localId: string };
+
+/** What the operation step can show, derived from the backend snapshot. */
+export type IntentsOperationView =
+  | { status: "preparing" }
+  | { status: "ready" }
+  | { status: "paused" }
+  | { status: "expired" }
+  | { status: "rejected" }
+  | { status: "mismatch"; detail: string };
 
 const noRecords: ReadonlyMap<string, IntentRecord> = new Map();
 const noSubscribe = () => () => {};
@@ -86,9 +101,40 @@ const toApiError = (error: unknown) =>
   isIntentsApiError(error)
     ? error
     : new IntentsApiError(
-        "internal",
+        "UNKNOWN",
         error instanceof Error ? error.message : "Unexpected error."
       );
+
+export function getIntentsOperationView(
+  record: IntentRecord | undefined,
+  now: number
+): IntentsOperationView {
+  const backend = record?.backend;
+  if (!record || !backend) return { status: "preparing" };
+  const mismatch = getOperationMismatch(record, backend);
+  if (mismatch) return { status: "mismatch", detail: mismatch };
+  if (backend.closure !== "OPEN") return { status: "rejected" };
+  switch (backend.fundingStatus) {
+    case "AVAILABLE": {
+      const instructions = backend.fundingInstructions;
+      if (!instructions) return { status: "preparing" };
+      const detail = getInstructionsMismatch(record, instructions);
+      if (detail) return { status: "mismatch", detail };
+      return isIntentInstructionsExpired(instructions.fundingExpiresAt, now)
+        ? { status: "expired" }
+        : { status: "ready" };
+    }
+    case "PAUSED":
+      return { status: "paused" };
+    case "EXPIRED":
+      return { status: "expired" };
+    case "NOT_READY":
+      return { status: "preparing" };
+    default:
+      // OBSERVED is handled by tracking; UNKNOWN never enables funding.
+      return { status: "mismatch", detail: "funding status" };
+  }
+}
 
 /** Orchestrates the 1Click deposit inside Deposit Funds. */
 export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
@@ -96,6 +142,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   const { account, intentSession, refreshIntent } = useTransactionsContext();
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [amount, setAmount] = useState<BigNumber | undefined>();
+  const [slippageBps, setSlippageBps] = useState(INTENTS_DEFAULT_SLIPPAGE_BPS);
   const [networkError, setNetworkError] = useState<string | null>(null);
   const [review, setReview] = useState<IntentsReview>({ phase: "form" });
   const [reviewError, setReviewError] = useState<string | null>(null);
@@ -113,7 +160,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     "localId" in review && review.session === intentSession
       ? records.get(review.localId)
       : undefined;
-  // Once a wallet request was made, the operation outlives quote inputs.
+  // Once a wallet request was made, the operation outlives the inputs.
   const hasFundingStarted = Boolean(
     activeRecord &&
       activeRecord.fundingState !== "abandoned" &&
@@ -128,49 +175,82 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     [catalog.options, selectedRouteId]
   );
   const route = selected?.route;
+  const source = selected?.source;
   const isRouteAvailable = selected?.availability === "available";
   const sourceAddress = ethereumWallet.userAddress;
   const sourceBalance = useIntentSourceBalance(
-    route,
+    source,
     sourceAddress,
     isRouteAvailable
   );
   const isWrongNetwork = Boolean(
-    route &&
+    source &&
       ethereumWallet.isConnected &&
-      ethereumWallet.chainId !== route.source.chainId
+      ethereumWallet.chainId !== source.chainId
   );
   const routeError =
     selected && selected.availability !== "available"
       ? intentRouteAvailabilityCopy[selected.availability]
       : null;
-  const amountError = route
-    ? getIntentAmountError(route, amount, sourceBalance.balance)
-    : null;
   const amountIn =
-    route && amount ? toRawAmount(amount, route.source.token.decimals) : null;
+    route && amount ? toRawAmount(amount, route.sourceDecimals) : null;
+  const estimate = useMemo(
+    () =>
+      selected?.source && selected.destination && amountIn && amountIn !== "0"
+        ? estimateAcceptedMinAmountOut({
+            amountIn,
+            sourceDecimals: selected.route.sourceDecimals,
+            settlementDecimals: selected.route.settlementDecimals,
+            destinationDecimals: selected.destination.decimals,
+            pricing: selected.source.pricing,
+            feeAllowanceBps: selected.source.feeAllowanceBps,
+            slippageBps,
+          })
+        : null,
+    [amountIn, selected, slippageBps]
+  );
+  const slippageError = selected
+    ? getIntentSlippageError(selected, slippageBps)
+    : null;
+  const amountError = selected
+    ? (getIntentAmountError(selected, amount, sourceBalance.balance) ??
+      (amountIn && route && selected.destination
+        ? !estimate || new BigNumber(estimate.minimum).lt(route.minAmountOut)
+          ? `The minimum you would receive must be at least ${formatRawAmount(
+              route.minAmountOut,
+              route.settlementDecimals
+            )} ${selected.destination.symbol}. Enter a larger amount or lower the slippage.`
+          : null
+        : null))
+    : null;
   // The connected Mavryk wallet must be the authenticated tracking account.
   const sessionError =
     recipient && (!intentSession || account !== recipient)
       ? "Your Equiteez session is not ready. Reconnect your Mavryk wallet to continue."
-      : null;
+      : recipient && !isIntentRecipient(recipient)
+        ? "This route can only deliver to mv1 Mavryk accounts. Use Bridge From Ethereum or Receive On Mavryk instead."
+        : null;
   const canReview = Boolean(
     route &&
       isRouteAvailable &&
       recipient &&
       sourceAddress &&
+      estimate &&
       !amountError &&
+      !slippageError &&
       !sessionError &&
       sourceBalance.status === "ready"
   );
-  const quoteKey = getIntentQuoteKey({
+  const requestKey = getIntentRequestKey({
     account,
     sourceAddress,
     routeId: route?.id,
+    routeVersion: route?.version,
     amountIn,
+    slippageBps,
   });
-  const keyRef = useRef(quoteKey);
-  keyRef.current = quoteKey;
+  const keyRef = useRef(requestKey);
+  keyRef.current = requestKey;
   const sessionRef = useRef(intentSession);
   sessionRef.current = intentSession;
 
@@ -198,44 +278,43 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     [abandon]
   );
 
-  // Invalidate the quote when the account, session, source wallet, route or
-  // amount changes before funding starts.
   // A changed Equiteez session always leaves the view (never show another
-  // account's operation); other changes only matter before funding starts.
+  // account's operation); other input changes only matter before funding.
   useEffect(() => {
     if (review.phase === "form") return;
     if (review.session !== intentSession) {
-      const old =
-        "localId" in review ? review.session.get(review.localId) : undefined;
+      const old = review.session.get(review.localId);
       const wasFunded =
         old &&
         old.fundingState !== "abandoned" &&
         !canRequestIntentFunding(old.fundingState);
       resetReview(
-        wasFunded ? null : "The quote was cleared because your account changed."
+        wasFunded
+          ? null
+          : "The deposit was cleared because your account changed."
       );
       return;
     }
     if (review.phase === "tracking") return;
-    if (review.key === quoteKey || hasFundingStarted) return;
+    if (review.key === requestKey || hasFundingStarted) return;
     resetReview(
-      "The quote was cleared because your account, wallet or amount changed."
+      "The deposit was cleared because your account, wallet, amount or slippage changed."
     );
-  }, [quoteKey, intentSession, review, resetReview, hasFundingStarted]);
+  }, [requestKey, intentSession, review, resetReview, hasFundingStarted]);
 
-  // Countdown clock for quote expiry while a quote is on screen.
-  // Once the wallet returned (or a reload left the prompt open), the modal
-  // follows the operation instead of the quote.
+  // Once the wallet returned (or a reload left the prompt open), or the
+  // backend saw funds, the modal follows the operation instead of the quote.
   const isPrompting = Boolean(funding.busyId);
   useEffect(() => {
-    if (review.phase !== "ready" || !activeRecord) return;
+    if (review.phase !== "operation" || !activeRecord) return;
     const { fundingState } = activeRecord;
     if (
       fundingState === "broadcast" ||
       fundingState === "confirmed" ||
       fundingState === "unknown" ||
       fundingState === "reverted" ||
-      (fundingState === "prompted" && !isPrompting)
+      (fundingState === "prompted" && !isPrompting) ||
+      hasIntentFundsObserved(activeRecord.backend)
     )
       setReview({
         phase: "tracking",
@@ -244,137 +323,157 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       });
   }, [review, activeRecord, isPrompting]);
 
-  const hasQuote =
-    review.phase !== "form" &&
-    review.phase !== "quoting" &&
-    review.phase !== "tracking";
+  // Countdown clock while instructions may be on screen.
+  const isOperationOpen = review.phase === "operation";
   useEffect(() => {
-    if (!hasQuote) return;
+    if (!isOperationOpen) return;
     setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(timer);
-  }, [hasQuote]);
+  }, [isOperationOpen]);
 
-  // An executable quote that expires before funding is dropped.
+  const operationView = useMemo(
+    () =>
+      review.phase === "operation"
+        ? getIntentsOperationView(activeRecord, now)
+        : null,
+    [activeRecord, now, review.phase]
+  );
+
+  // A rejected quote (no executable quote met the accepted minimum) or one
+  // that expired before funding goes back to the form; nothing was sent.
   useEffect(() => {
-    if (
-      (review.phase === "ready" || review.phase === "reconfirm") &&
-      isIntentQuoteExpired(review.operation.quoteExpiresAt, now)
-    ) {
-      const record = review.session.get(review.localId);
-      if (record?.fundingState === "not_started")
-        resetReview("The quote expired before funding. Start a new deposit.");
-    }
-  }, [now, review, resetReview]);
+    if (review.phase !== "operation" || !activeRecord) return;
+    if (activeRecord.fundingState !== "not_started") return;
+    if (operationView?.status === "rejected")
+      resetReview(
+        "No quote met your minimum. Try a higher slippage tolerance or a different amount."
+      );
+    else if (operationView?.status === "expired")
+      resetReview(
+        "The quote expired before funding. Review again for a new quote."
+      );
+  }, [activeRecord, operationView, resetReview, review.phase]);
 
-  const requestPreview = useCallback(async () => {
+  /** Local review: builds the exact request. Nothing is sent yet. */
+  const startReview = useCallback(() => {
     if (
       !canReview ||
+      !selected ||
       !route ||
       !amountIn ||
+      !estimate ||
       !account ||
       !sourceAddress ||
       !intentSession
     )
       return;
-    const runId = ++runRef.current;
-    const base: ReviewBase = {
-      key: quoteKey,
-      session: intentSession,
-      route,
-      amountIn,
-      sourceAddress,
-    };
+    runRef.current += 1;
+    const wallet = sourceAddress.toLowerCase() as `0x${string}`;
     setReviewError(null);
-    setReview({ ...base, phase: "quoting" });
-    try {
-      const preview = await getIntentsApi().getQuote({
+    setReview({
+      phase: "review",
+      key: requestKey,
+      session: intentSession,
+      option: selected,
+      request: {
         routeId: route.id,
-        amountIn,
+        routeVersion: route.version,
+        sourceAddress: wallet,
         recipient: account,
-      });
-      if (runId !== runRef.current) return; // stale response
-      if (
-        preview.recipient !== account ||
-        preview.amountIn !== amountIn ||
-        preview.routeId !== route.id
-      )
-        throw new IntentsApiError(
-          "invalid_response",
-          "The quote does not match your request."
-        );
-      setReview({ ...base, phase: "review", preview, localId: uuid() });
-    } catch (error) {
-      if (runId !== runRef.current) return;
-      setReview({ phase: "form" });
-      setReviewError(getIntentErrorCopy(toApiError(error)));
-    }
+        // 1Click refunds go back to the funding wallet on the source chain.
+        refundAddress: wallet,
+        amountIn,
+        slippageBps,
+        acceptedMinAmountOut: estimate.minimum,
+      },
+      expectedAmountOut: estimate.expected,
+      localId: newIdempotencyKey(),
+    });
   }, [
     account,
     amountIn,
     canReview,
+    estimate,
     intentSession,
-    quoteKey,
+    requestKey,
     route,
+    selected,
+    slippageBps,
     sourceAddress,
   ]);
 
-  /** Persist locally, then ask the backend to persist the executable operation. */
-  const confirmQuote = useCallback(async () => {
+  /**
+   * Persist capability + idempotency key + exact request, then POST. A lost
+   * response is retried with the same three; only a definitive rejection
+   * needs a fresh scope (backend.md §2).
+   */
+  const confirmRequest = useCallback(async () => {
     if (busyRef.current || review.phase !== "review") return;
-    if (isIntentQuoteExpired(review.preview.expiresAt)) {
-      setReviewError("The quote expired. Refresh it to continue.");
-      return;
-    }
     busyRef.current = true;
     const runId = ++runRef.current;
     const current = review;
-    const { session, localId, route: quotedRoute } = current;
+    const { session, localId } = current;
     const isCurrent = () =>
       runId === runRef.current &&
       sessionRef.current === session &&
       keyRef.current === current.key;
     setReviewError(null);
-    if (!session.get(localId))
-      session.upsert(
-        createIntentRecord({
+    try {
+      let record = session.get(localId);
+      if (!record) {
+        // The rehearsal admits one pre-approved scope. It is reused only
+        // while no operation was created with it (a definitive rejection
+        // created nothing); afterwards new intents get random scopes.
+        const rehearsal = INTENTS_REHEARSAL;
+        const usesRehearsal =
+          rehearsal &&
+          ![...session.getSnapshot().records.values()].some(
+            (item) =>
+              item.idempotencyKey === rehearsal.idempotencyKey &&
+              (item.operationId || item.fundingState !== "abandoned")
+          );
+        record = createIntentRecord({
           localId,
           account: session.account,
           env: session.env,
-          route: quotedRoute,
-          amountIn: current.amountIn,
-          sourceAddress: current.sourceAddress,
-        })
+          option: current.option,
+          request: current.request,
+          expectedAmountOut: current.expectedAmountOut,
+          credentials: usesRehearsal
+            ? rehearsal
+            : {
+                capability: newOperationCapability(),
+                idempotencyKey: newIdempotencyKey(),
+              },
+        });
+        // Persisted before the first POST; never regenerated for retries.
+        if (!session.upsert(record) || !session.get(localId))
+          throw new Error("Deposit recovery data could not be saved.");
+      }
+      setReview({ ...current, phase: "creating" });
+      const { operation } = await getIntentsApi().createOperation(
+        {
+          capability: record.capability,
+          idempotencyKey: record.idempotencyKey,
+        },
+        record.request
       );
-    setReview({ ...current, phase: "creating" });
-    try {
-      const operation = await getIntentsApi().createOperation({
-        routeId: quotedRoute.id,
-        amountIn: current.amountIn,
-        recipient: session.account,
-        sourceAddress: current.sourceAddress,
-        idempotencyKey: localId,
-      });
       session.applyBackend(localId, operation);
-      const record = session.get(localId);
-      if (!record) throw new Error("Deposit record is unavailable.");
-      const mismatch = getOperationMismatch(record, operation, quotedRoute);
+      const saved = session.get(localId);
+      if (!saved) throw new Error("Deposit record is unavailable.");
+      const mismatch = getOperationMismatch(saved, operation);
       const isStale = !isCurrent();
-      // Persisted before any funding prompt can be shown.
-      session.upsert({
-        ...record,
-        operationId: operation.id,
-        amountOut: operation.amountOut,
-        minAmountOut: operation.minAmountOut,
-        quoteExpiresAt: operation.quoteExpiresAt,
-        funding: operation.funding,
-        fundingState: mismatch || isStale ? "abandoned" : "not_started",
-        fundingError: mismatch
-          ? `Backend operation ${mismatch} does not match the request.`
-          : undefined,
-        sequence: record.sequence + 1,
-      });
-      if (isStale) return; // Late response for an old account/quote.
+      if (mismatch || isStale)
+        session.upsert({
+          ...saved,
+          fundingState: "abandoned",
+          fundingError: mismatch
+            ? `Backend operation ${mismatch} does not match the request.`
+            : undefined,
+          sequence: saved.sequence + 1,
+        });
+      if (isStale) return; // Late response for an old account/request.
       if (mismatch) {
         setReview({ phase: "form" });
         setReviewError(
@@ -382,45 +481,43 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
         );
         return;
       }
-      if (isIntentQuoteExpired(operation.quoteExpiresAt)) {
-        abandon(session, localId);
-        setReview({ ...current, phase: "review", localId: uuid() });
-        setReviewError("The quote expired. Refresh it to continue.");
-        return;
-      }
-      setReview({
-        ...current,
-        phase: hasMaterialQuoteChange(current.preview, operation)
-          ? "reconfirm"
-          : "ready",
-        operation,
-      });
+      // Durable, but no quote yet: the tracker polls for instructions.
+      setReview({ ...current, phase: "operation" });
+      refreshIntent?.(localId);
     } catch (error) {
       if (!isCurrent()) return;
       const apiError = toApiError(error);
       // A definitive rejection created nothing; the next attempt needs a new
-      // key. Transport errors keep the key so a retry returns the same operation.
-      const isDefinitive = isDefinitiveIntentRejection(apiError);
-      if (isDefinitive) abandon(session, localId);
+      // scope. Lost responses keep it so a retry replays the same operation.
+      const isRetryable =
+        isRetryableIntentError(apiError) && Boolean(session.get(localId));
+      if (!isRetryable) abandon(session, localId);
       setReview({
         ...current,
         phase: "review",
-        localId: isDefinitive ? uuid() : localId,
+        localId: isRetryable ? localId : newIdempotencyKey(),
       });
-      setReviewError(getIntentErrorCopy(apiError));
+      setReviewError(
+        isIntentsApiError(error)
+          ? getIntentErrorCopy(apiError)
+          : (error as Error).message
+      );
     } finally {
       busyRef.current = false;
     }
-  }, [abandon, review]);
+  }, [abandon, refreshIntent, review]);
 
   /** The single user signature: fund the 1Click deposit address. */
   const fund = useCallback(async () => {
     const current = reviewRef.current;
-    if (current.phase !== "ready") return;
+    if (current.phase !== "operation") return;
     const { session, localId } = current;
+    const quoteId = session.get(localId)?.backend?.fundingInstructions?.quoteId;
+    if (!quoteId) return;
     await funding.fund(
       session,
       localId,
+      quoteId,
       () =>
         sessionRef.current === session &&
         "localId" in reviewRef.current &&
@@ -431,10 +528,10 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   const api = getIntentsApi();
   const simulateFunding = useMemo(
     () =>
-      api.env === "mock"
+      api.env === "mock" && api.simulateDeposit
         ? () => {
             const current = reviewRef.current;
-            if (current.phase === "ready")
+            if (current.phase === "operation")
               simulateIntentFunding(api, current.session, current.localId);
           }
         : undefined,
@@ -470,12 +567,6 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     [activeRecord]
   );
 
-  const acceptUpdatedQuote = useCallback(() => {
-    setReview((current) =>
-      current.phase === "reconfirm" ? { ...current, phase: "ready" } : current
-    );
-  }, []);
-
   const selectRoute = useCallback(
     (routeId: string) => {
       resetReview();
@@ -487,16 +578,16 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   );
 
   const switchToSource = useCallback(async () => {
-    if (!route) return;
+    if (!source) return;
     setNetworkError(null);
     try {
-      await switchChainAsync({ chainId: route.source.chainId });
+      await switchChainAsync({ chainId: source.chainId });
     } catch {
       setNetworkError(
-        `Unable to switch networks. Select ${route.source.chainName} in your wallet and try again.`
+        `Unable to switch networks. Select ${source.chainName} in your wallet and try again.`
       );
     }
-  }, [route, switchChainAsync]);
+  }, [source, switchChainAsync]);
 
   const resetForm = useCallback(() => {
     resetReview();
@@ -508,6 +599,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     catalog,
     selected,
     route,
+    source,
     routeError,
     recipient,
     sourceAddress,
@@ -515,6 +607,10 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     amount,
     setAmount,
     amountError,
+    slippageBps,
+    setSlippageBps,
+    slippageError,
+    estimate,
     canReview,
     isWrongNetwork,
     isSwitching,
@@ -526,9 +622,9 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     review,
     reviewError,
     now,
-    requestPreview,
-    confirmQuote,
-    acceptUpdatedQuote,
+    startReview,
+    confirmRequest,
+    operationView,
     cancelReview: resetReview,
     activeRecord,
     trackedModel,
