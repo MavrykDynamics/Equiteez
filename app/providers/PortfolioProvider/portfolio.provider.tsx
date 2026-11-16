@@ -49,9 +49,11 @@ export function PortfolioProvider({ children }: PortfolioProviderProps) {
       // so background refetches keep showing the previous data
       isWalletLoading: walletQuery.isPending,
       isPortfolioLoading: portfolioQuery.isPending,
+      portfolioUpdatedAt: portfolioQuery.dataUpdatedAt,
     }),
     [
       portfolioQuery.data,
+      portfolioQuery.dataUpdatedAt,
       portfolioQuery.isFetching,
       portfolioQuery.isLoading,
       portfolioQuery.isPending,

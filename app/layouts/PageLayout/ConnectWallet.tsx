@@ -1,26 +1,16 @@
-import { Link } from "@remix-run/react";
-
-import { ROUTES } from "~/consts/routes";
 import { RButton } from "~/lib/atoms/RButton";
-import { HashShortView } from "~/lib/atoms/HashShortView";
-import IdentIcon from "~/lib/organisms/IdenIcon";
-import {
-  RCustomDropdown,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-  RDropdownFaceContent,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
-import { isWalletChoiceEnabled } from "~/providers/WalletProvider/dynamic/dynamic.config";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
 import styles from "./ConnectWallet.module.css";
+import { DynamicWalletMenu } from "./WalletMenu/DynamicWalletMenu/DynamicWalletMenu";
+import { MavrykWalletMenu } from "./WalletMenu/MavrykWalletMenu";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 export const ConnectWallet = () => {
-  const { changeUser, isLoading, signOut, userAddress } = useUserContext();
+  const { isLoading, userAddress } = useUserContext();
   const { identity } = useWalletContext();
   const openConnectWallet = useConnectWallet();
   const isEmailWallet = identity?.provider === "dynamic";
@@ -28,51 +18,14 @@ export const ConnectWallet = () => {
   // Opens the sign-in modal (or Mavryk Wallet directly without email wallets)
   const handleConnect = () => openConnectWallet();
 
-  const handleChangeAccount = async () => {
-    if (!isEmailWallet) {
-      await changeUser();
-      return;
-    }
-
-    // Email wallet: sign out of this account and open sign-in again. With the
-    // wallet choice the Dynamic session is kept (picking email again needs no
-    // code); email-only sign-in ends it so another email can be entered
-    await signOut(
-      isWalletChoiceEnabled() ? { keepProviderSession: true } : undefined
-    );
-    openConnectWallet();
-  };
-
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
-        <RCustomDropdown className={styles.dropdown}>
-          <RDropdownFaceContent className={styles.trigger}>
-            <IdentIcon
-              className={styles.identIcon}
-              hash={userAddress}
-              size={24}
-              type="bottts"
-            />
-            <RText size="body-sm" className={styles.address}>
-              <HashShortView hash={userAddress} />
-            </RText>
-          </RDropdownFaceContent>
-
-          <RDropdownBodyContent align="right" className={styles.menu}>
-            <Link className={styles.profileLink} to={ROUTES.portfolio}>
-              Portfolio
-            </Link>
-            <RDropdownBodyContentItem
-              onClick={() => void handleChangeAccount()}
-            >
-              Change account
-            </RDropdownBodyContentItem>
-            <RDropdownBodyContentItem onClick={() => void signOut()}>
-              Sign out
-            </RDropdownBodyContentItem>
-          </RDropdownBodyContent>
-        </RCustomDropdown>
+        isEmailWallet ? (
+          <DynamicWalletMenu address={userAddress} />
+        ) : (
+          <MavrykWalletMenu address={userAddress} />
+        )
       ) : (
         <RButton
           onClick={handleConnect}

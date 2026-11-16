@@ -590,3 +590,10 @@
   width: 100%;
   border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
+
+/* The header wallet panel already pads its content: no modal padding */
+.panel .content,
+.panel .statusContent {
+  gap: var(--r-space-4);
+  padding: 0;
+}
