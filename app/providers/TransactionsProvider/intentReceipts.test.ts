@@ -1,51 +1,40 @@
 import { describe, expect, it } from "vitest";
 
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
+import type { IntentOperation } from "~/lib/apis/intents";
+import type { IntentRecord } from "~/lib/intents/intentOperation";
 import {
-  createIntentRecord,
-  type IntentRecord,
-} from "~/lib/intents/intentOperation";
-import { memoryStorage, operation } from "~/lib/intents/intents.fixtures";
+  fixtureOperationId,
+  fixtureWrapHash as forward,
+  memoryStorage,
+  operation,
+  record,
+  wrappedOperation,
+} from "~/lib/intents/intents.fixtures";
 import { BridgeTransactions, bridgeNetwork } from "./bridgeTransactions";
 import { deposit, signerEventSequence } from "./bridgeTransactions.fixtures";
 import {
   findCorrelatedIntentReceipts,
-  getIntentForwardId,
-  isIntentOwnedBridgeRecord,
+  getIntentForwardIdMap,
   getIntentForwardIds,
+  isIntentOwnedBridgeRecord,
 } from "./intentReceipts";
 
-const forward = `0x${"f".repeat(64)}` as const;
 const funding = `0x${"a".repeat(64)}` as const;
+const delivery = `0x${"d".repeat(64)}` as const;
 
 function intent(
-  overrides: Partial<IntentRecord["backend"]> = {}
+  backend: IntentOperation = wrappedOperation("PENDING")
 ): IntentRecord {
-  return {
-    ...createIntentRecord({
-      localId: "local-1",
-      account: "wallet-a",
-      env: "mock",
-      route: mockIntentRoutes[0],
-      amountIn: "1",
-      sourceAddress: "0x1111111111111111111111111111111111111111",
-    }),
-    operationId: "op-1",
+  return record({
+    operationId: fixtureOperationId,
     fundingState: "confirmed",
     sourceHashes: [funding],
-    backend: operation({
-      recipient: "wallet-a",
-      status: "wrapped",
-      sourceTxHash: funding,
-      forwardTxHash: forward,
-      forwardLogIndex: 4,
-      ...overrides,
-    }),
-  };
+    backend,
+  });
 }
 const bridge = () =>
   new BridgeTransactions("wallet-a", bridgeNetwork, () => memoryStorage());
-const signer = (index: number, hash = forward, logIndex = 4) => ({
+const signer = (index: number, hash: string = forward, logIndex = 3) => ({
   ...signerEventSequence[index],
   initial_tx_hash: hash,
   initial_log_index: logIndex,
@@ -53,23 +42,22 @@ const signer = (index: number, hash = forward, logIndex = 4) => ({
 const records = (store: BridgeTransactions) =>
   store.getSnapshot().transactions.values();
 
-describe("forward identity", () => {
-  it("exists only once the backend reports WRAPPED with hash and log index", () => {
-    expect(getIntentForwardId(intent())).toBe(`${forward}:4`);
-    expect(
-      getIntentForwardId(intent({ status: "forwarding" }))
-    ).toBeUndefined();
-    expect(
-      getIntentForwardId(intent({ forwardLogIndex: undefined }))
-    ).toBeUndefined();
+describe("forward identities", () => {
+  it("come only from ERC20WrapAsked events and mint wrap identities", () => {
+    expect([...getIntentForwardIds(intent())]).toEqual([`${forward}:3`]);
+    expect([...getIntentForwardIds(intent(operation()))]).toEqual([]);
+    // The funding and delivery hashes are never identities.
+    const ids = getIntentForwardIds(intent());
+    expect([...ids].some((id) => id.startsWith(funding))).toBe(false);
+    expect([...ids].some((id) => id.startsWith(delivery))).toBe(false);
   });
 });
 
-describe("receipt correlation", () => {
-  it("matches an executed wallet-API row for the forward hash and log index", () => {
+describe("receipt correlation (fallback without backend settlement)", () => {
+  it("matches an executed wallet-API row for the wrap hash and log index", () => {
     const store = bridge();
     store.reconcile([
-      deposit({ evm_tx_hash: forward, log_index: 4, status: "executed" }),
+      deposit({ evm_tx_hash: forward, log_index: 3, status: "executed" }),
     ]);
     expect(findCorrelatedIntentReceipts([intent()], records(store))).toEqual([
       "local-1",
@@ -88,10 +76,40 @@ describe("receipt correlation", () => {
     ]);
   });
 
+  it("requires every wrap allocation to be verified", () => {
+    const base = wrappedOperation("PENDING");
+    const second = `0x${"9".repeat(64)}` as const;
+    const split = {
+      ...base,
+      forwarding: {
+        ...base.forwarding,
+        bridgeEvents: [
+          ...base.forwarding.bridgeEvents,
+          { transactionHash: second, logIndex: 0, amount: "1" },
+        ],
+      },
+    };
+    const store = bridge();
+    store.reconcile([
+      deposit({ evm_tx_hash: forward, log_index: 3, status: "executed" }),
+    ]);
+    expect(
+      findCorrelatedIntentReceipts([intent(split)], records(store))
+    ).toEqual([]);
+    store.reconcile([
+      deposit({ evm_tx_hash: forward, log_index: 3, status: "executed" }),
+      deposit({ evm_tx_hash: second, log_index: 0, status: "executed" }),
+    ]);
+    expect(
+      findCorrelatedIntentReceipts([intent(split)], records(store))
+    ).toEqual(["local-1"]);
+  });
+
   it.each([
     ["another deposit", signer(5, `0x${"e".repeat(64)}`)],
     ["the same hash with another log", signer(5, forward, 5)],
     ["the 1Click funding hash", signer(5, funding)],
+    ["the 1Click delivery hash", signer(5, delivery)],
   ])("ignores %s", (_name, completion) => {
     const store = bridge();
     store.observeEvent({ ...signer(4), ...completion, signatory: "signer-b" });
@@ -101,15 +119,18 @@ describe("receipt correlation", () => {
     );
   });
 
-  it("ignores operations that are not WRAPPED or already correlated", () => {
+  it("ignores operations not WRAPPED, already settled or under reconciliation", () => {
     const store = bridge();
     store.reconcile([
-      deposit({ evm_tx_hash: forward, log_index: 4, status: "executed" }),
+      deposit({ evm_tx_hash: forward, log_index: 3, status: "executed" }),
     ]);
+    const forwarding = wrappedOperation("PENDING", { phase: "FORWARDING" });
     expect(
       findCorrelatedIntentReceipts(
         [
-          intent({ status: "forwarding" }),
+          intent(forwarding),
+          intent(wrappedOperation("CONFIRMED")),
+          intent(wrappedOperation("RECONCILE_REQUIRED")),
           { ...intent(), receipt: "correlated" },
         ],
         records(store)
@@ -121,9 +142,9 @@ describe("receipt correlation", () => {
     const store = bridge();
     store.observeEvent(signer(0));
     store.observeEvent(signer(0, `0x${"e".repeat(64)}`));
-    const ids = getIntentForwardIds([intent()]);
-    const owned = [...records(store)].map((record) =>
-      isIntentOwnedBridgeRecord(record, ids)
+    const ids = getIntentForwardIdMap([intent()]);
+    const owned = [...records(store)].map((item) =>
+      isIntentOwnedBridgeRecord(item, ids)
     );
     expect(owned.sort()).toEqual([false, true]);
   });

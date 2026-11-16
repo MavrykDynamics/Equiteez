@@ -22,13 +22,17 @@ import {
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
 import { INTENTS_DEPOSIT_ENABLED, INTENTS_ENV } from "~/consts/intents";
-import type { IntentRecord } from "~/lib/intents/intentOperation";
+import {
+  hasIntentArrived,
+  type IntentRecord,
+} from "~/lib/intents/intentOperation";
+import { formatRawAmount } from "~/lib/intents/intentRoute";
 import { getIntentsApi } from "~/lib/apis/intents";
 import { IntentOperations, type IntentSnapshot } from "./intentOperations";
 import { IntentOperationsTracker } from "./intentOperationsTracker";
 import {
   findCorrelatedIntentReceipts,
-  getIntentForwardIds,
+  getIntentForwardIdMap,
   isIntentOwnedBridgeRecord,
 } from "./intentReceipts";
 import { recoverBridgeWidgets } from "./bridgeWidgetRecovery";
@@ -133,7 +137,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     () => {}
   );
   const intentForwardIds = useMemo(
-    () => getIntentForwardIds(intents),
+    () => getIntentForwardIdMap(intents),
     [intents]
   );
   const invalidateSettlementData = useCallback(
@@ -190,9 +194,10 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     getEmptySnapshot
   );
 
-  // EQ-FE-05: complete a 1Click operation only from verified settlement of
-  // its forward identity; refresh balances/activity when the bridge takes
-  // over (WRAPPED) and again on arrival; announce arrival exactly once.
+  // EQ-FE-05: a 1Click operation completes from the backend's confirmed
+  // settlement for the expected token, or (fallback) verified bridge data on
+  // every forward identity. Balances/activity refresh when the bridge takes
+  // over (WRAPPED) and again on arrival; arrival is announced exactly once.
   const refreshedIntents = useRef(new Set<string>());
   useEffect(() => {
     if (!intentStore || currentIntentStore.current !== intentStore) return;
@@ -204,7 +209,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     for (const record of intents) {
       const key = `${intentStore.key}:${record.localId}`;
       if (
-        record.backend?.status === "wrapped" &&
+        record.backend?.phase === "WRAPPED" &&
         !refreshedIntents.current.has(key)
       ) {
         refreshedIntents.current.add(key);
@@ -212,13 +217,16 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       }
       // The persisted marker dedupes across reloads, reconnects and Strict Mode.
       if (
-        record.receipt === "correlated" &&
+        hasIntentArrived(record) &&
         !intentStore.get(record.localId)?.announced &&
         intentStore.patch(record.localId, { announced: true })
       ) {
+        const settled = record.backend?.settlement.confirmedAmount;
         toaster.success(
           "Deposit arrived",
-          "Your cross-chain deposit has arrived on Mavryk."
+          settled && settled !== "0"
+            ? `${formatRawAmount(settled, record.destination.decimals)} ${record.destination.symbol} arrived in your Mavryk account.`
+            : "Your cross-chain deposit has arrived on Mavryk."
         );
         invalidateSettlementData();
       }

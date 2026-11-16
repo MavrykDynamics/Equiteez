@@ -1,5 +1,9 @@
 import { getBridgeDepositId } from "~/lib/apis/rwa/bridge/bridge.schema";
-import type { IntentRecord } from "~/lib/intents/intentOperation";
+import {
+  getForwardIdentity,
+  getIntentSettlementReceipt,
+  type IntentRecord,
+} from "~/lib/intents/intentOperation";
 import {
   getBridgeEventId,
   hasCompletedBridgeSigners,
@@ -7,19 +11,21 @@ import {
 import type { BridgeTransaction } from "./bridgeTransactions";
 
 /**
- * Join key between a 1Click operation and the existing bridge settlement
- * data: the ERC20WrapAsked emitted by the sponsored forward (hash + log
- * index). The 1Click funding and delivery hashes are never used here.
+ * Join keys between a 1Click operation and the existing bridge settlement
+ * data: the ERC20WrapAsked logs of the sponsored forward
+ * (`forwarding.bridgeEvents`, plus `settlement.mints` wrap identities).
+ * One operation can wrap in several allocations. The 1Click funding hash and
+ * the delivery hashes are never used here.
  */
-export function getIntentForwardId(record: IntentRecord) {
+export function getIntentForwardIds(record: IntentRecord) {
   const backend = record.backend;
-  if (
-    backend?.status !== "wrapped" ||
-    !backend.forwardTxHash ||
-    backend.forwardLogIndex === undefined
-  )
-    return undefined;
-  return `${backend.forwardTxHash.toLowerCase()}:${backend.forwardLogIndex}`;
+  const ids = new Set<string>();
+  if (!backend) return ids;
+  for (const event of backend.forwarding.bridgeEvents)
+    ids.add(getForwardIdentity(event.transactionHash, event.logIndex));
+  for (const mint of backend.settlement.mints)
+    ids.add(getForwardIdentity(mint.wrapTransactionHash, mint.wrapLogIndex));
+  return ids;
 }
 
 /** Every hash/log identity a bridge record is known under. */
@@ -42,12 +48,10 @@ const hasVerifiedReceipt = (record: BridgeTransaction) =>
   hasCompletedBridgeSigners(record.signerEvents);
 
 /** Forward identity → intent localId, for operations the bridge may report. */
-export function getIntentForwardIds(intents: readonly IntentRecord[]) {
+export function getIntentForwardIdMap(intents: readonly IntentRecord[]) {
   const ids = new Map<string, string>();
-  for (const record of intents) {
-    const id = getIntentForwardId(record);
-    if (id) ids.set(id, record.localId);
-  }
+  for (const record of intents)
+    for (const id of getIntentForwardIds(record)) ids.set(id, record.localId);
   return ids;
 }
 
@@ -58,24 +62,31 @@ export const isIntentOwnedBridgeRecord = (
 ) => [...getBridgeRecordIds(record)].some((id) => forwardIds.has(id));
 
 /**
- * localIds whose forward identity matches a bridge record with verified
- * receipt evidence. Both stores are scoped to the same Equiteez account.
+ * Fallback when the backend does not (yet) confirm settlement: localIds whose
+ * EVERY forward identity matches a bridge record with verified receipt
+ * evidence. Both stores are scoped to the same Equiteez account. A partial
+ * match (one of several allocations) does not complete the operation.
  */
 export function findCorrelatedIntentReceipts(
   intents: readonly IntentRecord[],
   bridgeRecords: Iterable<BridgeTransaction>
 ) {
-  const forwardIds = getIntentForwardIds(
-    intents.filter((record) => record.receipt !== "correlated")
+  const pending = intents.filter(
+    (record) =>
+      record.receipt !== "correlated" &&
+      getIntentSettlementReceipt(record) === null &&
+      record.backend?.phase === "WRAPPED" &&
+      record.backend.settlement.status !== "RECONCILE_REQUIRED"
   );
-  if (!forwardIds.size) return [];
-  const matched = new Set<string>();
-  for (const record of bridgeRecords) {
-    if (!hasVerifiedReceipt(record)) continue;
-    for (const id of getBridgeRecordIds(record)) {
-      const localId = forwardIds.get(id);
-      if (localId) matched.add(localId);
-    }
-  }
-  return [...matched];
+  if (!pending.length) return [];
+  const verified = new Set<string>();
+  for (const record of bridgeRecords)
+    if (hasVerifiedReceipt(record))
+      for (const id of getBridgeRecordIds(record)) verified.add(id);
+  return pending
+    .filter((record) => {
+      const ids = getIntentForwardIds(record);
+      return ids.size > 0 && [...ids].every((id) => verified.has(id));
+    })
+    .map((record) => record.localId);
 }
