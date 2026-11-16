@@ -96,6 +96,8 @@ Design rules (from AGENTS.md): use CSS Modules with `--r-*` tokens and the `new-
 
 ### 3.1 API contract we code against (draft, to be confirmed with BE-02/BE-03)
 
+> **Superseded (2026-11-16)** by `near-intents/backend.md` (runtime v0.0.2, API schema 0.1.0) and the live `GET /openapi.json`. The code now follows that contract: per-operation bearer capability, no quote preview, no deposit-hint endpoint, `phase`/`attention`/`closure`/`fundingStatus` and backend-verified `settlement`. See `docs/intents-deposits.md` and `near-intents/summary.md`. The draft below is kept for history.
+
 All responses are validated with zod at the boundary. If the real API differs, only `intents.schema.ts` and `intents.http.ts` should need changes.
 
 ```ts
@@ -266,6 +268,8 @@ Rules:
 ---
 
 ## 6. Open questions / dependencies
+
+> Answered by `backend.md`: 3 (auth: client-generated capability, no RWA token), 4 (final contract), 5 (polling only, no webhook/WebSocket), 6 (the backend returns `forwarding.bridgeEvents` and verifies `settlement` itself), 8 (refund address is a required request field; Equiteez sends the source wallet). Still open: 1, 2, 7, 9, plus the new items in `near-intents/summary.md`.
 
 1. **Networks.** Is the bridge chain for 1Click delivery Arbitrum Sepolia (the new `updated-bridge-contracts.md` deployment)? Does the direct "Bridge From Ethereum" flow also move to Arb Sepolia with the new wUSDT (`KT1Wewg18…`), or does it stay on Sepolia (`KT1Pn5Zp…`)? If they differ, users see two different "USDT" balances.
 2. **Testnet support for 1Click.** 1Click mostly runs on mainnet chains. Which source routes and chains will test/staging actually support? This decides what the mock catalog should copy.

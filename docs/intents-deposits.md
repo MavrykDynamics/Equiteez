@@ -3,12 +3,14 @@
 "Swap From Any Chain" in Deposit Funds lets an Equiteez user pay from a
 configured source chain/token and receive wUSDT on Mavryk Basenet. The user
 signs **one** transaction: funding the 1Click deposit address. The shared
-backend then sponsors the forward into the existing bridge, and the bridge
-signers mint on Mavryk. It runs entirely inside Equiteez; nothing links to
-the standalone bridge.
+Mavryk Bridge ETH backend then sponsors the forward into the existing
+WrapBridge, the bridge signers mint on Mavryk, and the backend verifies the
+mint. Everything happens inside Equiteez; nothing links to the standalone
+bridge.
 
-Spec and tickets: [`near-intents/`](../near-intents/) (`plan-intents.md`,
-`task-1.md` … `task-6.md`). The direct bridge is documented in
+Contract: [`near-intents/backend.md`](../near-intents/backend.md) (runtime
+v0.0.2, API schema 0.1.0, prefix `/v1`, also `GET /openapi.json`). Tickets:
+`near-intents/task-1.md` … `task-6.md`. The direct bridge is documented in
 [`bridge-tracking.md`](bridge-tracking.md) and is unchanged by this feature.
 
 ## Configuration
@@ -16,153 +18,171 @@ Spec and tickets: [`near-intents/`](../near-intents/) (`plan-intents.md`,
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `INTENTS_DEPOSIT_ENABLED` | off | `true` shows the tab and starts tracking. |
-| `INTENTS_API` | — | Backend origin; requests go to `<origin>/v1/...`. |
+| `INTENTS_API` | — | Backend origin (`https://basenet.bridge-api.mavryk.network`) or `/intents-api` with the dev proxy. |
+| `INTENTS_API_PROXY_TARGET` | — | Dev only: Vite proxies `/intents-api/*` here (the Gateway CORS allowlist has no localhost). |
+| `INTENTS_ENV` | origin of the API | Scope of persisted operations; override only if two URLs are the same backend. |
 | `INTENTS_API_MODE` | `http` | `mock` uses the in-browser simulator. |
+| `INTENTS_SOURCE_ASSETS` | `[]` (mock: built-in) | JSON array of approved source assets, see below. |
+| `INTENTS_REHEARSAL_CAPABILITY`, `INTENTS_REHEARSAL_IDEMPOTENCY_KEY` | — | Pre-approved Basenet rehearsal scope. Local/test builds only. |
 | `INTENTS_MOCK_DEPOSIT_ADDRESS` | `0x…dEaD` | Testnet address the mock asks the wallet to fund. |
 | `INTENTS_SEPOLIA_RPC_URL` | public | RPC for the Sepolia source chain. |
 
-Source chains with a funding adapter: `INTENTS_SOURCE_CHAINS` in
-`app/consts/intents.ts` (Arbitrum Sepolia, Sepolia). They are added to the
-wagmi config after the direct bridge chain, which stays the default and the
-only chain the direct bridge's wrong-network check accepts.
+### Approved product configuration
+
+`GET /v1/routes` returns only provider identifiers (`originAsset`,
+`destinationAsset`), chain IDs, the settlement token, decimals and limits.
+It has no ticker, token contract or price. A route is enabled only when:
+
+1. its `originAsset` + `sourceChainId` match an entry in
+   `INTENTS_SOURCE_ASSETS` (token contract or `native`, symbol, decimals,
+   pricing reference, fee allowance);
+2. its `settlementChainId` + `bridgeAddress` + `settlementToken` match a pair
+   in `INTENTS_BRIDGE_PAIRS` (today: Arbitrum Sepolia mock USDT → Basenet
+   wUSDT `KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE`), with matching decimals;
+3. the source chain has a wagmi funding adapter (`INTENTS_SOURCE_CHAINS`).
+
+Example for the Basenet rehearsal route once its `originAsset` is known:
+
+```bash
+INTENTS_SOURCE_ASSETS='[{"originAsset":"<from /v1/routes>","chainId":421614,"token":"0x5C05e82bE66B19476bAcb558E62e7d449b98635F","symbol":"USDT","name":"Mock USDT","decimals":18,"pricing":{"kind":"parity"},"feeAllowanceBps":50}]'
+```
 
 ### Mock backend
 
-`app/lib/apis/intents/intents.mock.ts` implements the same `IntentsApi`
-interface: a static catalog (Arbitrum Sepolia USDT, Sepolia ETH, and an
-unsupported Base Sepolia USDC route), idempotent `POST /operations`, and a
-time-based lifecycle after the deposit hint (detected +4s, swapping +10s,
-delivered +18s, forwarding +24s, wrapped +32s), kept in `sessionStorage` so
-reloads can be tested. Force branches with
-`?intentsMock=refund|expire|busy|sponsorship|fail|below`. In mock mode the
-funding panel also offers **Simulate Funding**, which records a fake hash
-without a wallet request.
+`app/lib/apis/intents/intents.mock.ts` implements the same contract: three
+routes (Arbitrum Sepolia USDT, Sepolia ETH, and Base Sepolia USDC, which is
+not approved), capability-scoped idempotent `POST /operations` (replay,
+`IDEMPOTENCY_CONFLICT`, foreign capability → 404), `PREPARING_QUOTE` →
+published instructions after 1.5s, and after the deposit: OBSERVED +0s,
+SWAP_IN_PROGRESS +3s, VERIFYING_DELIVERY +8s, DELIVERY_VERIFIED +12s,
+FORWARDING +16s, WRAPPED (settlement PENDING) +22s, settlement CONFIRMED +32s.
+State is kept in `sessionStorage`. Force branches with
+`?intentsMock=reject|expire|paused|unavailable|refund|incomplete|review|untracked`.
+In mock mode the funding step also offers **Simulate Funding**.
 
 ## Code map
 
 | Concern | Location |
 | --- | --- |
-| Contract (zod), HTTP client, access adapter, mock | `app/lib/apis/intents/` |
-| Route availability, amount checks (raw units) | `app/lib/intents/intentRoute.ts` |
-| Quote key, expiry, material change, error copy | `app/lib/intents/intentQuote.ts` |
-| Record model, monotonic merge, mismatch check | `app/lib/intents/intentOperation.ts` |
+| Contract (zod), HTTP client, mock | `app/lib/apis/intents/` |
+| Capability + idempotency key generation | `app/lib/intents/intentCapability.ts` |
+| Route resolution, amount/slippage/recipient checks | `app/lib/intents/intentRoute.ts` |
+| Accepted-minimum estimate, request key, error copy | `app/lib/intents/intentQuote.ts` |
+| Record model, merge, closure/receipt/mismatch rules | `app/lib/intents/intentOperation.ts` |
 | Funding call shape and error classification | `app/lib/intents/intentFunding.ts` |
-| Deposit hint with retries | `app/lib/intents/intentHints.ts` |
-| Wallet funding (wagmi actions) | `app/contracts/intentsFunding.contract.ts`, `useIntentsFunding` |
+| Wallet funding (re-read + wagmi actions) | `app/contracts/intentsFunding.contract.ts`, `useIntentsFunding` |
 | Persisted store, tracker, widget mapping, receipts | `app/providers/TransactionsProvider/intent*.ts` |
 | Modal orchestration | `app/hooks/useIntentsDeposit.ts`, `useIntentsRoutes.ts` |
 | Views | `DepositFunds/components/Intents{View,QuoteView,FundingPanel,StatusView}.tsx` |
 
-## Backend contract (draft v1)
+## Access
 
-Validated at the boundary in `intents.schema.ts`; if BE-02/BE-03 differ, only
-the schema and `intents.http.ts` should change.
-
-- `GET /v1/routes` → `{ routes: IntentRoute[] }`.
-- `POST /v1/quotes` → preview quote (not executable).
-- `POST /v1/operations` with `Idempotency-Key` → executable operation with
-  `funding { chainId, depositAddress, token, amount }`. The backend resolves
-  the forwarder; the UI never looks it up.
-- `POST /v1/operations/:id/deposit { txHash }` → reconciliation hint.
-- `GET /v1/operations/:id` → current snapshot (`version`, `updatedAt`,
-  `status`, `sourceTxHash`, `deliveryTxHash`, `forwardTxHash`,
-  `forwardLogIndex`, `refund`, `error`).
-- Errors: `{ error: { code, message } }` with `sponsorship_unavailable`,
-  `destination_busy`, `quote_expired`, `below_minimum`, `route_disabled`,
-  `unauthorized`, `rate_limited`, `not_found`, `internal`.
-
-**Access.** The Equiteez RWA bearer token is not sent. The default adapter
-(`originAllowlistAccess`) sends `X-Intents-Client: equiteez` without
-credentials and relies on the backend's origin allowlist. Swap the adapter
-once the authorization contract is agreed.
+- Routes are public. Operation calls send
+  `Authorization: Bearer <capability>`: 32 random bytes, base64url without
+  padding, generated per transfer intent. The RWA token and cookies are never
+  sent. Only `Authorization`, `Content-Type` and `Idempotency-Key` are sent,
+  which is what the Gateway allows.
+- The capability, `Idempotency-Key` (UUID) and the exact request body are
+  persisted **before** the first POST and reused for every retry. Only a
+  definitive 4xx (nothing created) leads to a fresh scope.
+- The capability is the only way to read the operation again. It lives in
+  the account/backend-scoped localStorage record and is never logged,
+  put in URLs or shown. Axios errors are never rethrown (their config holds
+  the header).
 
 ## Lifecycle
 
-1. **Form.** Route, amount (validated in raw units against min/max/balance),
-   and the active Equiteez Mavryk account as the fixed recipient. Requires
-   the authenticated tracking session.
-2. **Review.** Preview quote with expected/minimum output, recipient and an
-   expiry countdown.
-3. **Confirm.** A local record (`localId` = idempotency key) is saved before
-   `POST /operations`. The response must match the request (recipient,
-   route, amount, source, chain, token, funding amount) or it is never funded.
-   A worse executable quote needs another confirmation. Transport errors keep
-   the key; definitive rejections use a new one.
-4. **Fund.** `fundingState = "prompted"` is saved before the wallet call;
-   then the native transfer or ERC-20 `transfer` goes to `depositAddress` with
-   the backend's exact amount. The hash is saved even if the account changed
-   meanwhile (it belongs to that account's scope), and the hint is sent.
-5. **Track.** The modal switches to the status view; the global widget shows
-   the same model. Minimize releases the modal's hold and the card appears.
-
-Quote invalidation: account, source wallet, route (network + token) or
-amount changes drop an unfunded quote and mark its record `abandoned`. After
-the wallet was asked, only an Equiteez account change leaves the view, and
-the operation keeps being tracked in its own scope.
+1. **Form.** Route, amount (raw units against inclusive min/max and balance),
+   slippage (choices up to the route's `maxSlippageBps`), the active Equiteez
+   account as the fixed recipient (`mv1` only), and the source wallet as the
+   refund address.
+2. **Review (local).** Shows the request, including the **minimum you
+   accept**. There is no quote preview: it is estimated as
+   `amountIn × rate × (1 − feeAllowance) × (1 − slippage)`, rounded down to
+   six-decimal FA2 precision, and must be at least the route's
+   `minAmountOut`.
+3. **Confirm.** Save the record, then `POST /v1/operations` → 202. The
+   response must echo the request or it is never funded. The operation starts
+   at `PREPARING_QUOTE` with no instructions.
+4. **Quote.** The tracker polls `GET /v1/operations/:id`. Funding is offered
+   only for `fundingStatus: AVAILABLE` with instructions that match the route
+   (chain, `originAsset`, exact amount, no memo,
+   `bridgeableMinAmountOut ≥ acceptedMinAmountOut`). `QUOTE_REJECTED` or
+   expiry before funding returns to the form; `PAUSED` shows a notice.
+5. **Fund.** Re-read the operation right before signing; the quote must be
+   the one shown (same `quoteId`) and at least 15s from `fundingExpiresAt`.
+   `fundingState = "prompted"` is saved before the wallet call; then a native
+   transfer or ERC-20 `transfer` goes to `depositAddress` (never
+   `forwarderAddress`) for the exact amount. The hash is stored locally for
+   support: this release has **no hash-registration endpoint**.
+6. **Track.** The modal switches to the status view; the global widget shows
+   the same model.
 
 ### Never sending twice
 
 Only `not_started` and `rejected` (declined in the wallet) allow a wallet
-request. `prompted`, `broadcast`, `confirmed`, `unknown` (RPC error, timeout,
-cancelled/replaced transaction) and `reverted` never prompt again. Only an
-explicit new deposit creates a new operation. Hint failures never block or
-resend; the tracker retries them.
+request. `prompted`, `broadcast`, `confirmed`, `unknown` and `reverted` never
+prompt again, and `fundingStatus: OBSERVED` hides the send action. Only an
+explicit new deposit creates a new operation with a new capability and key.
+
+### Polling
+
+Interval = the operation's `retryAfterMs`, clamped to 1.5–60s with ±10%
+jitter. Errors back off from 5s; 429/503 honour `Retry-After`. Three 404s in
+a row mark the operation's access as lost (the record is kept for support).
+Polling stops on arrival, quote rejection, a reported refund, settlement for
+an unexpected token, unfunded expiry, or 2h after WRAPPED with
+`settlement: NOT_TRACKED`. It is paused while the tab is hidden.
 
 ### Persistence and isolation
 
-`localStorage` key `equiteez:intents:v1:<env>:<account>`; `<env>` is the
-backend origin (or `mock`). Writes are synchronous. Unreadable data is kept
-and tracking falls back to the session. Other tabs' records are merged.
-Settled records older than 14 days are pruned. There is no cross-device
-discovery: that needs an authenticated list endpoint.
+`localStorage` key `equiteez:intents:v2:<env>:<account>`. v1 records (draft
+contract, mock only) are ignored. Unreadable data is kept and tracking falls
+back to the session. Records from other tabs are merged. Settled records
+older than 14 days are pruned. There is no cross-device or cross-client
+discovery: the backend has no list endpoint.
 
 ## Progress mapping
 
-| Backend / funding state | Widget |
+| Backend | Widget |
 | --- | --- |
-| broadcast/confirmed, `awaiting_deposit` | Step 1 Send Funds |
-| `deposit_detected`, `swapping` | Step 2 Swap |
-| `delivered`, `forwarding` | Step 3 Forward To Bridge |
-| `wrapped` | Step 4 Bridge To Mavryk, neutral, dismissible, **not success** |
-| `wrapped` + correlated receipt | Success (auto-expires like bridge cards) |
-| `refunded` / `expired` / `failed` | Final warning |
+| wallet broadcast/confirmed, `AWAITING_DEPOSIT` | Step 1 Send Funds |
+| `fundingStatus: OBSERVED`, `SWAP_IN_PROGRESS` | Step 2 Swap |
+| `VERIFYING_DELIVERY`, `DELIVERY_VERIFIED`, `FORWARDING` | Step 3 Forward To Bridge |
+| `WRAPPED` + settlement `PENDING` | Step 4 "Waiting for Mavryk confirmation" |
+| `WRAPPED` + settlement `NOT_TRACKED` | Step 4, neutral, dismissible |
+| settlement `CONFIRMED` for the expected FA2, or correlated bridge data | Success with the minted amount |
+| attention `RETRYING`, `ROUTE_PAUSED`, `PROVIDER_UNAVAILABLE`, `REFUND_PENDING` | Extra copy on the current step |
+| attention `MANUAL_REVIEW`/`RECONCILE_REQUIRED`, delivery `AMBIGUOUS`/`RECONCILE_REQUIRED`, forwarding/settlement `RECONCILE_REQUIRED` | "Deposit under review" warning with the operation ID |
+| attention `DEPOSIT_INCOMPLETE` | "Incomplete deposit" warning, no top-up |
+| `refund` reported | Final "Refund reported" warning (provider report) |
+| unknown enum values | "Status not recognised" warning |
 | `prompted` (after reload) / `unknown` / `reverted` | "Check your wallet" warnings |
 
-Cards use the composite identity `intent:<localId>` and share the existing
-holds, discovery, dismissal and removal persistence.
+1Click `SUCCESS`, EVM `WRAPPED` and signer votes are never success.
 
-## Receipt correlation
+## Receipt
 
-The only join key is the sponsored forward's `ERC20WrapAsked` identity:
-`forwardTxHash:forwardLogIndex`. Evidence is the wallet API's `executed`
-deposit row or two distinct `COMPLETED` signers on that identity. The
-funding and delivery hashes are never passed to the bridge store. A bridge
-record matching a forward identity is owned by the operation: no second
-card and no duplicate "Bridge deposit arrived" toast. On correlation the
-card completes, the existing wallet/portfolio/activity/notification queries
-are invalidated, and one "Deposit arrived" toast is shown, guarded by a
-persisted `announced` marker. Balances/activity are also refreshed once
-when the backend reports `wrapped`. Without correlation the card stays on
-neutral step 4 and balances update through the existing data flows.
+Primary: `settlement.status === "CONFIRMED"` with at least one mint and
+`tokenAddress`/`tokenId` equal to the bridge pair's FA2. A confirmed mint on
+another token is a warning, never success.
 
-## Open dependencies
+Fallback for `NOT_TRACKED`: the join keys are the ERC20WrapAsked identities
+`forwarding.bridgeEvents[].transactionHash:logIndex` (and the
+`settlement.mints[]` wrap identities). Every identity must have the wallet
+API's `executed` row or two distinct `COMPLETED` signers. The funding and
+delivery hashes are never passed to the bridge store. A bridge record that
+matches an identity belongs to the operation: no second card and no
+duplicate "Bridge deposit arrived" toast.
 
-See `near-intents/plan-intents.md` §6. Blocking for production:
-
-- Final API contract and access adapter (BE-02/BE-03).
-- Which testnet routes 1Click supports.
-- Whether the backend returns `forwardTxHash` + `forwardLogIndex`, and
-  whether the RWA bridge API/notifier indexes the new WrapBridge deposits.
-  Without that, the receipt stays neutral by design.
-- Operation updates over the existing notifier channel (polling only today).
-- Design handoff (EQ-D-02/03/04) for copy, the tab name and step labels.
-- BE-09 smoke test against the shared environment.
+On arrival the existing wallet/portfolio/activity/notification queries are
+invalidated (also once on WRAPPED), and one "Deposit arrived" toast is shown,
+guarded by a persisted `announced` marker.
 
 ## Tests
 
 `npx vitest run app/lib/apis/intents app/lib/intents app/contracts/intentsFunding.contract.test.ts app/hooks app/providers/TransactionsProvider app/routes/_index`
 
 `app/hooks/useIntentsDeposit.integration.test.tsx` runs a full deposit
-(double-clicked confirm and fund, modal close/reopen, reload, account
-switch, refund, outage) against the mock backend and the real tracking
-providers, with wagmi mocked at the action boundary.
+against the mock backend and the real tracking providers, with wagmi mocked
+at the action boundary.

@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
- * EQ-FE-06: one 1Click deposit from quote to verified receipt, inside
- * Equiteez, against the mock backend and real tracking providers. Wallet
- * calls are mocked at the wagmi action boundary.
+ * EQ-FE-06: one 1Click deposit from request to verified receipt, inside
+ * Equiteez, against the mock backend (API 0.1.0 contract) and the real
+ * tracking providers. Wallet calls are mocked at the wagmi action boundary.
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BigNumber } from "bignumber.js";
@@ -12,7 +12,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { arbitrumSepolia, sepolia } from "wagmi/chains";
 
 import type { IntentsApi } from "~/lib/apis/intents";
-import { createIntentsMockApi } from "~/lib/apis/intents/intents.mock";
+import {
+  createIntentsMockApi,
+  type IntentsMockScenario,
+} from "~/lib/apis/intents/intents.mock";
 import { memoryStorage } from "~/lib/intents/intents.fixtures";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { NotifierConnectionStatus } from "~/providers/NotificationsProvider/notifications.const";
@@ -33,6 +36,7 @@ const fundingHash = `0x${"b".repeat(64)}` as const;
 
 const mocks = vi.hoisted(() => ({
   account: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt" as string | null,
+  scenario: null as IntentsMockScenario | null,
   api: null as unknown as IntentsApi,
   fetchDeposits: vi.fn(),
   success: vi.fn(),
@@ -47,11 +51,15 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("~/consts/intents", async (original) => ({
-  ...(await original<typeof import("~/consts/intents")>()),
-  INTENTS_DEPOSIT_ENABLED: true,
-  INTENTS_ENV: "mock",
-}));
+vi.mock("~/consts/intents", async (original) => {
+  const actual = await original<typeof import("~/consts/intents")>();
+  return {
+    ...actual,
+    INTENTS_DEPOSIT_ENABLED: true,
+    INTENTS_ENV: "mock",
+    INTENTS_SOURCE_ASSETS: actual.MOCK_INTENT_SOURCE_ASSETS,
+  };
+});
 vi.mock("~/lib/apis/intents", async (original) => ({
   ...(await original<typeof import("~/lib/apis/intents")>()),
   getIntentsApi: () => mocks.api,
@@ -151,6 +159,7 @@ beforeEach(() => {
   vi.setSystemTime(Date.parse("2026-11-13T10:00:00.000Z"));
   localStorage.clear();
   mocks.account = account;
+  mocks.scenario = null;
   mocks.success.mockReset();
   mocks.fetchDeposits.mockReset().mockResolvedValue([]);
   for (const action of Object.values(mocks.actions)) action.mockReset();
@@ -169,7 +178,7 @@ beforeEach(() => {
     storage: () => memoryStorage(),
     latencyMs: 0,
     depositAddress: "0x2222222222222222222222222222222222222222",
-    getScenario: () => null,
+    getScenario: () => mocks.scenario,
   });
   queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -182,18 +191,29 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-async function startDeposit() {
+async function requestQuote() {
   await render();
   await flush();
   expect(deposit$.catalog.status).toBe("ready");
+  expect(deposit$.selected?.availability).toBe("available");
   await act(async () => deposit$.setAmount(new BigNumber(2)));
-  await act(async () => deposit$.requestPreview());
+  await act(async () => deposit$.startReview());
   await act(async () => {
-    void deposit$.confirmQuote();
-    void deposit$.confirmQuote();
+    void deposit$.confirmRequest();
+    void deposit$.confirmRequest();
   });
   await flush();
-  expect(deposit$.review.phase).toBe("ready");
+  // Durable, but no quote yet: no funding prompt is possible.
+  expect(deposit$.review.phase).toBe("operation");
+  expect(deposit$.operationView).toEqual({ status: "preparing" });
+  // The tracker polls GET (retryAfterMs ± jitter) until the backend
+  // publishes instructions.
+  await flush(5_000);
+}
+
+async function startDeposit() {
+  await requestQuote();
+  expect(deposit$.operationView).toEqual({ status: "ready" });
   await act(async () => {
     void deposit$.fund();
     void deposit$.fund();
@@ -202,9 +222,12 @@ async function startDeposit() {
 }
 
 describe("1Click deposit inside Equiteez", () => {
-  it("runs from one source funding action to a verified receipt", async () => {
+  it("runs from one source funding action to a verified Mavryk settlement", async () => {
     await startDeposit();
     expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
+    expect(mocks.actions.writeContract.mock.calls[0][1].args[0]).toBe(
+      "0x2222222222222222222222222222222222222222"
+    );
     expect(mocks.actions.sendTransaction).not.toHaveBeenCalled();
     expect(deposit$.review.phase).toBe("tracking");
     expect(intentCards()).toHaveLength(1);
@@ -213,7 +236,7 @@ describe("1Click deposit inside Equiteez", () => {
     const localId = deposit$.activeRecord!.localId;
     await act(async () => deposit$.resetForm());
     expect(deposit$.review.phase).toBe("form");
-    await flush(15_000);
+    await flush(8_000);
     let resumed = false;
     await act(async () => {
       resumed = deposit$.resumeActive();
@@ -222,36 +245,68 @@ describe("1Click deposit inside Equiteez", () => {
     expect(deposit$.review).toMatchObject({ phase: "tracking", localId });
     expect(deposit$.trackedModel?.state).toMatchObject({ status: "progress" });
 
-    // Bridge processing: neutral, not success.
-    await flush(60_000);
-    expect(deposit$.trackedModel?.state).toMatchObject({ step: 4 });
+    // WRAPPED with settlement PENDING: neutral, not success.
+    await flush(18_000);
+    expect(deposit$.trackedModel?.state).toMatchObject({
+      status: "progress",
+      step: 4,
+    });
     expect(mocks.success).not.toHaveBeenCalled();
 
-    // Existing settlement data reports the forwarded deposit as executed.
-    const backend = deposit$.activeRecord!.backend!;
-    mocks.fetchDeposits.mockResolvedValue([
-      deposit({
-        evm_tx_hash: backend.forwardTxHash!,
-        log_index: backend.forwardLogIndex!,
-        status: "executed",
-      }),
-    ]);
-    await act(async () => transactions.refresh());
-    await flush();
-    expect(deposit$.trackedModel?.state).toEqual({ status: "success" });
+    // The backend confirms the mint on the expected FA2.
+    await flush(15_000);
+    expect(deposit$.trackedModel?.state).toEqual({
+      status: "success",
+      description: "1.994 wUSDT arrived in your Mavryk account.",
+    });
     expect(mocks.success).toHaveBeenCalledOnce();
 
     // Reload: nothing is resent or announced again, one card at most.
     await act(async () => root.unmount());
     root = createRoot(document.createElement("div"));
     await render();
-    await act(async () => transactions.refresh());
-    await flush();
+    await flush(5_000);
     expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
     expect(mocks.success).toHaveBeenCalledOnce();
     expect(
       widgets.models.filter((model) => model.kind === "intent").length
     ).toBeLessThanOrEqual(1);
+  });
+
+  it("completes an untracked settlement only from verified bridge data on the wrap identity", async () => {
+    mocks.scenario = "untracked";
+    await startDeposit();
+    await flush(60_000);
+    expect(deposit$.trackedModel?.state).toMatchObject({ step: 4 });
+    expect(mocks.success).not.toHaveBeenCalled();
+    const [event] = deposit$.activeRecord!.backend!.forwarding.bridgeEvents;
+    // A completion for the 1Click funding hash proves nothing.
+    mocks.fetchDeposits.mockResolvedValue([
+      deposit({ evm_tx_hash: fundingHash, log_index: 0, status: "executed" }),
+    ]);
+    await act(async () => transactions.refresh());
+    await flush();
+    expect(deposit$.trackedModel?.state).toMatchObject({ step: 4 });
+    mocks.fetchDeposits.mockResolvedValue([
+      deposit({
+        evm_tx_hash: event.transactionHash,
+        log_index: event.logIndex,
+        status: "executed",
+      }),
+    ]);
+    await act(async () => transactions.refresh());
+    await flush();
+    expect(deposit$.trackedModel?.state).toMatchObject({ status: "success" });
+    expect(mocks.success).toHaveBeenCalledOnce();
+  });
+
+  it("never prompts the wallet when no quote meets the accepted minimum", async () => {
+    mocks.scenario = "reject";
+    await requestQuote();
+    expect(deposit$.review.phase).toBe("form");
+    expect(deposit$.reviewError).toMatch(/No quote met your minimum/);
+    expect(mocks.actions.writeContract).not.toHaveBeenCalled();
+    expect(intentCards()).toHaveLength(0);
   });
 
   it("recovers an unknown broadcast after reload without prompting again", async () => {
@@ -268,9 +323,9 @@ describe("1Click deposit inside Equiteez", () => {
       resumed = deposit$.resumeActive();
     });
     expect(resumed).toBe(true);
-    await act(async () => deposit$.fund()); // not "ready": no-op
+    await act(async () => deposit$.fund()); // tracking, not a quote: no-op
     expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
-    // The hint already reached the backend, which keeps progressing.
+    // The backend observes the deposit on its own and keeps progressing.
     await flush(20_000);
     expect(deposit$.trackedModel?.state).toMatchObject({ status: "progress" });
   });
@@ -278,7 +333,7 @@ describe("1Click deposit inside Equiteez", () => {
   it("isolates operations when the Equiteez account changes", async () => {
     await startDeposit();
     expect(intentCards()).toHaveLength(1);
-    mocks.account = "mv1Fy1xTnD9s3xK3Uz2rNMhKgG5Jt5AKE8vj";
+    mocks.account = `mv1${"2".repeat(33)}`;
     await render();
     await flush();
     expect(deposit$.review.phase).toBe("form");
@@ -292,18 +347,13 @@ describe("1Click deposit inside Equiteez", () => {
     expect(resumed).toBe(false);
   });
 
-  it("shows a refund as a final warning without asking for anything", async () => {
-    mocks.api = createIntentsMockApi({
-      storage: () => memoryStorage(),
-      latencyMs: 0,
-      depositAddress: "0x2222222222222222222222222222222222222222",
-      getScenario: () => "refund",
-    });
+  it("shows a reported refund as a final warning without asking for anything", async () => {
+    mocks.scenario = "refund";
     await startDeposit();
     await flush(60_000);
     expect(deposit$.trackedModel).toMatchObject({
       isTerminal: true,
-      state: { status: "warning", title: "Deposit refunded" },
+      state: { status: "warning", title: "Refund reported" },
     });
     expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
   });
