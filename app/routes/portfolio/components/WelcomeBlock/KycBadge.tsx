@@ -16,7 +16,7 @@ export function KycBadge({ status }: { status: KycStatus }) {
         status.isKyced ? styles.verified : styles.notVerified
       )}
     >
-      <RIcon name={status.isKyced ? "check" : "info"} size="small" />
+      <RIcon name={status.isKyced ? "check" : "info-circle"} size="small" />
       {status.isKyced ? "Verified" : "Not verified"}
     </span>
   );
@@ -26,7 +26,7 @@ export function KycBadge({ status }: { status: KycStatus }) {
 export function KycTabMark() {
   return (
     <span aria-label="Not verified" className={styles.tabMark} role="img">
-      <RIcon name="info" size="small" />
+      <RIcon name="info-circle" size="small" />
     </span>
   );
 }

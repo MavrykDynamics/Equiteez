@@ -26,6 +26,7 @@ export type RIconName =
   | "house"
   | "grid"
   | "info"
+  | "info-circle"
   | "image"
   | "link"
   | "list"
@@ -44,6 +45,7 @@ export type RIconName =
   | "trending-down"
   | "trending-up"
   | "upload"
+  | "warning"
   | "nav-discovery"
   | "nav-portfolio"
   | "nav-trade"
@@ -163,6 +165,10 @@ const rIconPaths: Record<RIconName, ReactNode> = {
         strokeLinejoin="round"
       />
     </>
+  ),
+  /** Full-size info circle (Figma 16px icon), used by the KYC status UI */
+  "info-circle": (
+    <path d="M12 8.45V12.45M12 21C7.029 21 3 16.971 3 12S7.029 3 12 3s9 4.029 9 9-4.029 9-9 9ZM12.05 15.45V15.55L11.95 15.548V15.45H12.05Z" />
   ),
   image: (
     <>
@@ -297,6 +303,9 @@ const rIconPaths: Record<RIconName, ReactNode> = {
         strokeLinejoin="round"
       />
     </>
+  ),
+  warning: (
+    <path d="M12 9V13M4.379 15.2C3.47 16.775 3.015 17.563 3.083 18.209C3.142 18.773 3.438 19.285 3.896 19.618C4.422 20 5.331 20 7.149 20H16.851C18.669 20 19.578 20 20.103 19.618C20.562 19.285 20.858 18.773 20.917 18.209C20.985 17.563 20.531 16.775 19.621 15.2L14.771 6.8C13.862 5.225 13.407 4.437 12.813 4.173C12.296 3.942 11.704 3.942 11.186 4.173C10.593 4.437 10.138 5.225 9.229 6.798L4.379 15.2ZM12.051 16V16.1L11.95 16.1V16H12.051Z" />
   ),
   "nav-discovery": (
     <>

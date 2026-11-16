@@ -28,7 +28,7 @@ export function KycInfo() {
 
   if (status.hasError) {
     return (
-      <Message icon="info" tone="neutral">
+      <Message icon="info-circle" tone="neutral">
         We couldn&apos;t load your verification status. Refresh the page to try
         again.
       </Message>
@@ -71,7 +71,7 @@ export function KycInfo() {
 
   if (state.name === "processing") {
     return (
-      <Message icon="info" tone="warning">
+      <Message icon="info-circle" tone="warning">
         Verification is still processing. Check back in a minute.
       </Message>
     );
@@ -79,7 +79,7 @@ export function KycInfo() {
 
   if (!isKycSelfServiceEnabled()) {
     return (
-      <Message icon="info" tone="warning">
+      <Message icon="warning" tone="warning">
         Complete verification to unlock all platform features. Upgrade to Mavryk
         Pro inside your Mavryk Wallet.
       </Message>
@@ -88,7 +88,7 @@ export function KycInfo() {
 
   return (
     <div className={styles.kyc}>
-      <Message icon="info" tone="warning">
+      <Message icon="warning" tone="warning">
         Complete verification to unlock all platform features. It&apos;s quick
         and secure.{" "}
         <button
