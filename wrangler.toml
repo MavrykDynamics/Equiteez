@@ -24,13 +24,9 @@ DYNAMIC_ENVIRONMENT_ID="1187d7b8-07cf-4a24-998a-f0262b7fa808"
 DYNAMIC_WALLET_ENABLED="true"
 DYNAMIC_WALLET_AUTO_CREATE="true"
 DYNAMIC_DIRECT_ENABLED="true"
-# Sign-in offers Mavryk Wallet and the email wallet; production uses the email wallet only
 WALLET_CHOICE_ENABLED="true"
-# Self-service KYC (Portfolio → Profile → Start KYC, POST /api/kyc). The registrar
-# key is a runtime secret, never a var here: wrangler pages secret put KYC_REGISTRAR_PRIVATE_KEY
 KYC_SELF_SERVICE_ENABLED="true"
-# Basenet KYC contract the registrar writes to (TODO: address from the backend)
-KYC_CONTRACT=""
+KYC_CONTRACT="KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL"
 
 [env.production.vars]
 RPC_NODE_URL="https://basenet.rpc.mavryk.network"
@@ -49,3 +45,4 @@ RWA_SERVICES_API="https://services.api.mavryk.network/v1/rwa"
 # is configured here, Connect Wallet still opens Mavryk Wallet)
 WALLET_CHOICE_ENABLED="false"
 KYC_SELF_SERVICE_ENABLED="false"
+KYC_CONTRACT=""
