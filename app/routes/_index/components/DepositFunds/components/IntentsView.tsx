@@ -2,6 +2,7 @@ import { BigNumber } from "bignumber.js";
 import clsx from "clsx";
 
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
+import { INTENTS_SLIPPAGE_OPTIONS_BPS } from "~/consts/intents";
 import EthereumLogo from "~/icons/ethereum-logo.svg";
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -9,6 +10,11 @@ import { HashChip } from "~/lib/molecules/HashChip";
 import { REthereumWalletDropdown } from "~/lib/organisms/REthereumWalletDropdown";
 import { ZERO } from "~/lib/utils/numbers";
 import type { IntentsDepositController } from "~/hooks/useIntentsDeposit";
+import {
+  formatBps,
+  formatRawAmount,
+  getIntentRouteLabel,
+} from "~/lib/intents/intentRoute";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 
 import styles from "../RDepositFundsModal.module.css";
@@ -21,7 +27,6 @@ type IntentsViewProps = {
   isMavrykBusy: boolean;
   onConnectMavryk: () => Promise<void> | void;
   onReview: () => Promise<void> | void;
-  isReviewing?: boolean;
   reviewError?: string | null;
 };
 
@@ -31,19 +36,24 @@ export function IntentsView({
   isMavrykBusy,
   onConnectMavryk,
   onReview,
-  isReviewing = false,
   reviewError,
 }: IntentsViewProps) {
   const {
     catalog,
     selected,
     route,
+    source,
     routeError,
     recipient,
+    sourceAddress,
     sourceBalance,
     amount,
     setAmount,
     amountError,
+    slippageBps,
+    setSlippageBps,
+    slippageError,
+    estimate,
     canReview,
     isWrongNetwork,
     isSwitching,
@@ -68,7 +78,7 @@ export function IntentsView({
           <RText color="neutral-700" size="body-sm">
             {catalog.status === "error"
               ? "The cross-chain deposit service is unavailable right now. Bridge From Ethereum and Receive On Mavryk still work."
-              : "No cross-chain deposit routes are available right now."}
+              : "No cross-chain deposit routes are available right now. Bridge From Ethereum and Receive On Mavryk still work."}
           </RText>
         </div>
         {catalog.status === "error" && (
@@ -85,12 +95,23 @@ export function IntentsView({
       </div>
     );
 
-  const { token, chainName } = route.source;
+  const destination = selected.destination;
+  const symbol = source?.symbol ?? "Token";
+  const chainName = source?.chainName ?? `chain ${route.sourceChainId}`;
   const isBusy =
     ethereumWallet.isConnecting ||
     ethereumWallet.isReconnecting ||
-    isMavrykBusy ||
-    isReviewing;
+    isMavrykBusy;
+  // Choices above the route's maximum are hidden; a route stricter than the
+  // smallest choice offers its own maximum.
+  const allowedChoices = INTENTS_SLIPPAGE_OPTIONS_BPS.filter(
+    (bps) => bps <= route.maxSlippageBps
+  );
+  const slippageChoices: number[] = allowedChoices.length
+    ? allowedChoices
+    : [route.maxSlippageBps];
+  const settlementAmount = (raw: string) =>
+    `${formatRawAmount(raw, route.settlementDecimals)} ${destination?.symbol ?? ""}`.trim();
   const balanceNotice =
     sourceBalance.status === "ready" ? undefined : (
       <span role="status">
@@ -138,10 +159,10 @@ export function IntentsView({
           onChange={(event) => selectRoute(event.target.value)}
           value={route.id}
         >
-          {catalog.options.map(({ route: option, availability }) => (
-            <option key={option.id} value={option.id}>
-              {`${option.source.token.symbol} on ${option.source.chainName}${
-                availability === "available" ? "" : " (unavailable)"
+          {catalog.options.map((option) => (
+            <option key={option.route.id} value={option.route.id}>
+              {`${getIntentRouteLabel(option)}${
+                option.availability === "available" ? "" : " (unavailable)"
               }`}
             </option>
           ))}
@@ -158,13 +179,13 @@ export function IntentsView({
           amountInputDisabled={isBusy || Boolean(routeError)}
           balanceSuffix={
             <button
-              aria-label={`Use maximum ${token.symbol} balance`}
+              aria-label={`Use maximum ${symbol} balance`}
               className={styles.maxButton}
               disabled={sourceBalance.status !== "ready" || isBusy}
               onClick={() =>
                 setAmount(
                   sourceBalance.balance?.decimalPlaces(
-                    Math.min(token.decimals, 8),
+                    Math.min(route.sourceDecimals, 8),
                     BigNumber.ROUND_DOWN
                   )
                 )
@@ -177,17 +198,43 @@ export function IntentsView({
           label={`Send from ${chainName}`}
           onChange={setAmount}
           balance={sourceBalance.balance ?? ZERO}
-          assetIconSrc={token.address === "native" ? EthereumLogo : UsdtToken}
+          assetIconSrc={source?.token === "native" ? EthereumLogo : UsdtToken}
           secondaryAssetIconSrc={
             ethereumWallet.isConnected ? EthereumLogo : undefined
           }
           metadata={{
-            name: token.name ?? token.symbol,
-            symbol: token.symbol,
-            decimals: token.decimals,
+            name: source?.name ?? symbol,
+            symbol,
+            decimals: route.sourceDecimals,
           }}
-          assetSlug={`eip155:${route.source.chainId}:${token.address}`}
+          assetSlug={`eip155:${route.sourceChainId}:${source?.token ?? route.originAsset}`}
         />
+      </div>
+
+      <div
+        aria-label="Slippage tolerance"
+        className={intentsStyles.slippageRow}
+        role="radiogroup"
+      >
+        <RText color="neutral-700" size="body-s">
+          Slippage tolerance
+        </RText>
+        <div className={intentsStyles.slippageOptions}>
+          {slippageChoices.map((bps) => (
+            <button
+              aria-checked={slippageBps === bps}
+              className={intentsStyles.slippageOption}
+              data-active={slippageBps === bps}
+              disabled={isBusy || Boolean(routeError)}
+              key={bps}
+              onClick={() => setSlippageBps(bps)}
+              role="radio"
+              type="button"
+            >
+              {formatBps(bps)}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className={intentsStyles.recipientRow}>
@@ -196,7 +243,7 @@ export function IntentsView({
             Recipient: your Equiteez account
           </RText>
           <RText size="body-s">
-            Receive {route.destination.symbol} on Mavryk • Basenet
+            Receive {destination?.symbol ?? "tokens"} on Mavryk • Basenet
           </RText>
         </div>
         {recipient ? (
@@ -221,9 +268,43 @@ export function IntentsView({
         )}
       </div>
 
+      {estimate && !amountError && destination && (
+        <dl className={intentsStyles.quoteList} aria-label="Estimate">
+          <div className={intentsStyles.quoteRow}>
+            <dt>
+              <RText color="neutral-700" size="body-s">
+                Minimum you accept
+              </RText>
+            </dt>
+            <dd>
+              <RText size="body-s">{settlementAmount(estimate.minimum)}</RText>
+            </dd>
+          </div>
+          {sourceAddress && (
+            <div className={intentsStyles.quoteRow}>
+              <dt>
+                <RText color="neutral-700" size="body-s">
+                  Refunds go to
+                </RText>
+              </dt>
+              <dd>
+                <HashChip
+                  aria-label={`Copy refund address ${sourceAddress}`}
+                  firstCharsCount={6}
+                  hash={sourceAddress}
+                  lastCharsCount={4}
+                  type="link"
+                />
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
+
       <RText color="neutral-700" size="body-s">
-        The exact amount you receive is quoted on the next step. Forwarding to
-        the bridge is sponsored: you sign one transaction on {chainName}.
+        After you confirm, the exact quote is prepared and shown before your
+        wallet is asked to sign. Forwarding to the bridge is sponsored: you sign
+        one transaction on {chainName}.
       </RText>
 
       {routeError && (
@@ -236,11 +317,16 @@ export function IntentsView({
           {amountError}
         </RText>
       )}
+      {!routeError && slippageError && (
+        <RText color="red-500" role="alert" size="body-s">
+          {slippageError}
+        </RText>
+      )}
       {isWrongNetwork && !routeError && (
         <div className={styles.walletNotice}>
           <RText size="body-s">
             Your wallet is on another network. Switch to {chainName} to send{" "}
-            {token.symbol}.
+            {symbol}.
           </RText>
           <RButton
             isLoading={isSwitching}

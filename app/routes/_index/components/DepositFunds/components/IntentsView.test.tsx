@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { IntentsDepositController } from "~/hooks/useIntentsDeposit";
 import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
+import { fixtureOption, resolveOption } from "~/lib/intents/intents.fixtures";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { IntentsView } from "./IntentsView";
 
@@ -18,7 +19,7 @@ vi.mock("~/lib/molecules/HashChip", () => ({
 }));
 
 const recipient = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
-const [usdt, , usdc] = mockIntentRoutes;
+const usdc = resolveOption(mockIntentRoutes[2]);
 
 function controller(
   overrides: Partial<IntentsDepositController> = {}
@@ -26,14 +27,12 @@ function controller(
   return {
     catalog: {
       status: "ready",
-      options: [
-        { route: usdt, availability: "available" },
-        { route: usdc, availability: "unsupported_chain" },
-      ],
+      options: [fixtureOption, usdc],
       refetch: vi.fn(),
     },
-    selected: { route: usdt, availability: "available" },
-    route: usdt,
+    selected: fixtureOption,
+    route: fixtureOption.route,
+    source: fixtureOption.source,
     routeError: null,
     recipient,
     sourceAddress: "0x1111111111111111111111111111111111111111",
@@ -46,6 +45,13 @@ function controller(
     amount: new BigNumber(2),
     setAmount: vi.fn(),
     amountError: null,
+    slippageBps: 50,
+    setSlippageBps: vi.fn(),
+    slippageError: null,
+    estimate: {
+      expected: "2000000000000000000",
+      minimum: "1980050000000000000",
+    },
     canReview: true,
     isWrongNetwork: false,
     isSwitching: false,
@@ -85,9 +91,22 @@ describe("IntentsView", () => {
   it("shows the route, source and the fixed Equiteez recipient", () => {
     const html = render();
     expect(html).toContain("Send from Arbitrum Sepolia");
-    expect(html).toContain("USDC on Base Sepolia (unavailable)");
+    expect(html).toContain("USDT on Arbitrum Sepolia");
+    // Not approved in product config: never labelled with a guessed ticker.
+    expect(html).toContain("Route mock-base-sepolia-usdc (unavailable)");
     expect(html).toContain(recipient);
     expect(html).toContain("Review Deposit");
+  });
+
+  it("shows slippage choices within the route maximum, the accepted minimum and the refund wallet", () => {
+    const html = render();
+    expect(html).toMatch(/aria-checked="true"[^>]*>0.5%/);
+    expect(html).toContain("1%");
+    expect(html).toContain("Minimum you accept");
+    expect(html).toContain("1.98005 wUSDT");
+    expect(html).toContain("Refunds go to");
+    expect(html).toContain("0x1111111111111111111111111111111111111111");
+    expect(html).toContain("exact quote is prepared");
   });
 
   it("asks for the Mavryk account before review", () => {
@@ -123,13 +142,14 @@ describe("IntentsView", () => {
   it("explains an unsupported route and blocks review", () => {
     const html = render(
       controller({
-        selected: { route: usdc, availability: "unsupported_chain" },
-        route: usdc,
-        routeError: "This source network is not supported in Equiteez yet.",
+        selected: usdc,
+        route: usdc.route,
+        source: undefined,
+        routeError: "This route is not enabled in Equiteez yet.",
         canReview: false,
       })
     );
-    expect(html).toContain("not supported in Equiteez yet");
+    expect(html).toContain("not enabled in Equiteez yet");
     expect(html).toMatch(/<button[^>]*disabled[^>]*>.*Review Deposit/s);
   });
 

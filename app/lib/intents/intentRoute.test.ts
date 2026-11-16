@@ -1,73 +1,134 @@
 import { BigNumber } from "bignumber.js";
 import { describe, expect, it } from "vitest";
+import { arbitrumSepolia, sepolia } from "wagmi/chains";
 
+import {
+  INTENTS_BRIDGE_PAIRS,
+  MOCK_INTENT_SOURCE_ASSETS,
+} from "~/consts/intents";
 import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
+import { fixtureOption, fixtureRoute } from "./intents.fixtures";
 import {
   getIntentAmountError,
-  getIntentRouteAvailability,
+  getIntentRouteLabel,
+  getIntentSlippageError,
+  isIntentRecipient,
+  resolveIntentRoute,
   toRawAmount,
 } from "./intentRoute";
 
-const [usdt, eth, usdc] = mockIntentRoutes;
+const resolve = (
+  route = fixtureRoute,
+  extra: Partial<Parameters<typeof resolveIntentRoute>[1]> = {}
+) =>
+  resolveIntentRoute(route, {
+    sourceAssets: MOCK_INTENT_SOURCE_ASSETS,
+    bridgePairs: INTENTS_BRIDGE_PAIRS,
+    chains: [arbitrumSepolia, sepolia],
+    ...extra,
+  });
 
-describe("route availability", () => {
+describe("resolveIntentRoute", () => {
+  it("joins the catalog with approved source assets and the bridge pair", () => {
+    expect(fixtureOption.availability).toBe("available");
+    expect(fixtureOption.source).toMatchObject({
+      symbol: "USDT",
+      token: "0x5C05e82bE66B19476bAcb558E62e7d449b98635F",
+      chainName: "Arbitrum Sepolia",
+    });
+    expect(fixtureOption.destination).toMatchObject({
+      tokenAddress: "KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE",
+      tokenId: "0",
+      symbol: "wUSDT",
+      decimals: 6,
+    });
+    expect(getIntentRouteLabel(fixtureOption)).toBe("USDT on Arbitrum Sepolia");
+  });
+
+  it("never guesses a source asset that is not approved", () => {
+    const option = resolve(mockIntentRoutes[2]);
+    expect(option.availability).toBe("not_configured");
+    expect(option.source).toBeUndefined();
+    expect(getIntentRouteLabel(option)).toBe("Route mock-base-sepolia-usdc");
+  });
+
   it.each([
-    [usdt, "available"],
-    [eth, "available"],
-    [usdc, "unsupported_chain"],
-    [{ ...usdt, enabled: false }, "disabled"],
+    ["disabled", { enabled: false }],
     [
-      { ...usdt, destination: { ...usdt.destination, network: "mainnet" } },
       "unsupported_destination",
+      { bridgeAddress: "0x9999999999999999999999999999999999999999" },
     ],
-  ] as const)("%#: %s", (route, expected) => {
+    ["unsupported_destination", { settlementChainId: "1" }],
+    ["token_mismatch", { settlementDecimals: 6 }],
+    ["token_mismatch", { sourceDecimals: 6 }],
+  ] as const)("is %s for %o", (availability, patch) => {
     expect(
-      getIntentRouteAvailability(route, [421614, 11155111], "basenet")
-    ).toBe(expected);
+      resolve({ ...fixtureRoute, ...(patch as object) }).availability
+    ).toBe(availability);
+  });
+
+  it("is unsupported without a funding adapter for the chain", () => {
+    expect(resolve(fixtureRoute, { chains: [sepolia] }).availability).toBe(
+      "unsupported_chain"
+    );
+  });
+
+  it("is disabled when Equiteez token metadata disagrees on decimals", () => {
+    expect(
+      resolve(fixtureRoute, {
+        getDestinationMetadata: () => ({ decimals: 18 }),
+      }).availability
+    ).toBe("token_mismatch");
   });
 });
 
-it("disables a route whose destination decimals differ from Equiteez metadata", () => {
-  const supported = [421614, 11155111];
-  expect(
-    getIntentRouteAvailability(usdt, supported, "basenet", { decimals: 6 })
-  ).toBe("available");
-  expect(
-    getIntentRouteAvailability(usdt, supported, "basenet", { decimals: 18 })
-  ).toBe("token_mismatch");
-});
-
-describe("amount validation", () => {
-  it.each([
-    [undefined, undefined, "Enter an amount."],
-    ["0", undefined, "Enter an amount."],
-    ["0.5", undefined, "Minimum deposit is 1 USDT."],
-    ["10001", undefined, "Maximum deposit is 10,000 USDT."],
-    ["5", "4", "Insufficient USDT balance."],
-    ["5", "5", null],
-    ["1", undefined, null],
-  ])("%s with balance %s", (amount, balance, error) => {
+describe("amounts and inputs", () => {
+  it("validates in raw units against inclusive bounds", () => {
+    expect(getIntentAmountError(fixtureOption, new BigNumber(1))).toBeNull();
+    expect(
+      getIntentAmountError(fixtureOption, new BigNumber(10_000))
+    ).toBeNull();
+    expect(getIntentAmountError(fixtureOption, new BigNumber(0.5))).toMatch(
+      /Minimum deposit is 1 USDT/
+    );
     expect(
       getIntentAmountError(
-        usdt,
-        amount === undefined ? undefined : new BigNumber(amount),
-        balance === undefined ? undefined : new BigNumber(balance)
+        fixtureOption,
+        new BigNumber("10000.000000000000000001")
       )
-    ).toBe(error);
-  });
-
-  it("rejects more decimals than the source token supports", () => {
-    expect(getIntentAmountError(usdc, new BigNumber("1.0000001"))).toBe(
-      "USDC supports up to 6 decimal places."
-    );
-    expect(toRawAmount(new BigNumber("1.0000001"), 6)).toBeNull();
-  });
-
-  it("compares limits in raw units without float rounding", () => {
-    expect(toRawAmount(new BigNumber("0.1"), 18)).toBe("100000000000000000");
-    expect(getIntentAmountError(eth, new BigNumber("0.001"))).toBeNull();
+    ).toMatch(/Maximum deposit/);
     expect(
-      getIntentAmountError(eth, new BigNumber("0.000999999999999999"))
-    ).toBe("Minimum deposit is 0.001 ETH.");
+      getIntentAmountError(fixtureOption, new BigNumber(5), new BigNumber(4))
+    ).toBe("Insufficient USDT balance.");
+    expect(
+      getIntentAmountError(
+        fixtureOption,
+        new BigNumber("1.0000000000000000001")
+      )
+    ).toMatch(/18 decimal places/);
+  });
+
+  it("converts without floating point", () => {
+    expect(toRawAmount(new BigNumber("1.000000000000000001"), 18)).toBe(
+      "1000000000000000001"
+    );
+  });
+
+  it("accepts only canonical mv1 recipients", () => {
+    expect(isIntentRecipient("mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt")).toBe(
+      true
+    );
+    expect(isIntentRecipient("mv29MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt")).toBe(
+      false
+    );
+    expect(isIntentRecipient("mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGW0")).toBe(
+      false
+    );
+    expect(isIntentRecipient(null)).toBe(false);
+  });
+
+  it("limits slippage to the route maximum", () => {
+    expect(getIntentSlippageError(fixtureOption, 300)).toBeNull();
+    expect(getIntentSlippageError(fixtureOption, 301)).toMatch(/at most 3%/);
   });
 });

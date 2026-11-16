@@ -60,4 +60,18 @@ export default defineConfig({
     }),
   ],
   define: { "process.env": process.env },
+  // 1Click backend Gateway CORS allows only the Equiteez production/preview
+  // origins. Locally, set INTENTS_API=/intents-api and
+  // INTENTS_API_PROXY_TARGET=https://basenet.bridge-api.mavryk.network.
+  server: process.env.INTENTS_API_PROXY_TARGET
+    ? {
+        proxy: {
+          "/intents-api": {
+            target: process.env.INTENTS_API_PROXY_TARGET,
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/intents-api/, ""),
+          },
+        },
+      }
+    : undefined,
 });

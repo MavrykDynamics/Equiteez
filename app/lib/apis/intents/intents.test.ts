@@ -1,45 +1,27 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createIntentsHttpApi } from "./intents.http";
+import {
+  fixtureCapability,
+  fixtureOperationId,
+  fixtureRoute,
+  memoryStorage,
+  operation,
+  request,
+} from "~/lib/intents/intents.fixtures";
+import { createIntentsHttpApi, parseRetryAfter } from "./intents.http";
 import { createIntentsMockApi, type IntentsMockScenario } from "./intents.mock";
 import { IntentsApiError } from "./intents.types";
 
-const recipient = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
-const source = "0x1111111111111111111111111111111111111111" as const;
-const deposit = "0x2222222222222222222222222222222222222222" as const;
-const hash = `0x${"a".repeat(64)}` as const;
-
-const operation = {
-  id: "op-1",
-  version: 0,
-  updatedAt: "2026-11-13T10:00:00.000Z",
-  routeId: "arb-sepolia-usdt",
-  recipient,
-  sourceAddress: source,
-  amountIn: "1000000000000000000",
-  amountOut: "997000",
-  minAmountOut: "987030",
-  quoteExpiresAt: "2026-11-13T10:10:00.000Z",
-  funding: {
-    chainId: 421614,
-    depositAddress: deposit,
-    token: "0x5C05e82bE66B19476bAcb558E62e7d449b98635F",
-    amount: "1000000000000000000",
-  },
-  status: "awaiting_deposit",
+const credentials = {
+  capability: fixtureCapability,
+  idempotencyKey: "key-0001",
 };
 
-function memoryStorage() {
-  const data = new Map<string, string>();
-  return {
-    getItem: (key: string) => data.get(key) ?? null,
-    setItem: (key: string, value: string) => void data.set(key, value),
-  };
-}
-
 describe("HTTP client", () => {
-  type Reply = { status: number; data: unknown } | "offline";
+  type Reply =
+    | { status: number; data: unknown; headers?: Record<string, string> }
+    | "offline";
   function client(reply: Reply) {
     const requests: InternalAxiosRequestConfig[] = [];
     const instance = axios.create({
@@ -51,7 +33,7 @@ describe("HTTP client", () => {
           data: reply.data,
           status: reply.status,
           statusText: "",
-          headers: {},
+          headers: reply.headers ?? {},
           config,
         };
         if (reply.status >= 400)
@@ -66,194 +48,360 @@ describe("HTTP client", () => {
       },
     });
     return {
-      api: createIntentsHttpApi(
-        "https://intents.test/",
-        "env",
-        undefined,
-        instance
-      ),
+      api: createIntentsHttpApi("https://intents.test/", "env", instance),
       requests,
     };
   }
+  const headerNames = (config: InternalAxiosRequestConfig) =>
+    Object.keys(config.headers.toJSON()).map((name) => name.toLowerCase());
 
-  it("sends the idempotency key and never the Equiteez RWA token", async () => {
-    const { api, requests } = client({ status: 200, data: operation });
-    const result = await api.createOperation({
-      routeId: "arb-sepolia-usdt",
-      amountIn: "1",
-      recipient,
-      sourceAddress: source,
-      idempotencyKey: "local-1",
+  it("lists routes without credentials or custom headers and drops invalid entries", async () => {
+    const { api, requests } = client({
+      status: 200,
+      data: { routes: [fixtureRoute, { ...fixtureRoute, id: "" }] },
     });
-    expect(result.id).toBe("op-1");
-    expect(requests[0].url).toBe("https://intents.test/v1/operations");
-    expect(requests[0].headers["Idempotency-Key"]).toBe("local-1");
-    expect(requests[0].headers.Authorization).toBeUndefined();
+    await expect(api.getRoutes()).resolves.toEqual([fixtureRoute]);
+    expect(requests[0].url).toBe("https://intents.test/v1/routes");
+    expect(requests[0].method).toBe("get");
     expect(requests[0].withCredentials).toBe(false);
-    expect(JSON.parse(requests[0].data)).not.toHaveProperty("idempotencyKey");
+    // Only CORS-allowed headers; the Equiteez RWA token is never sent.
+    expect(headerNames(requests[0])).not.toContain("authorization");
+    expect(headerNames(requests[0])).not.toContain("x-intents-client");
   });
 
-  it.each([
-    [
-      {
-        status: 409,
-        data: { error: { code: "destination_busy", message: "Busy" } },
+  it("creates an operation with the capability, idempotency key and exact body", async () => {
+    const { api, requests } = client({
+      status: 202,
+      data: operation({ phase: "PREPARING_QUOTE", fundingInstructions: null }),
+      headers: { "idempotency-replayed": "true" },
+    });
+    const body = request();
+    const result = await api.createOperation(credentials, body);
+    expect(result.replayed).toBe(true);
+    expect(result.operation.id).toBe(fixtureOperationId);
+    const [sent] = requests;
+    expect(sent.url).toBe("https://intents.test/v1/operations");
+    expect(sent.headers.Authorization).toBe(`Bearer ${fixtureCapability}`);
+    expect(sent.headers["Idempotency-Key"]).toBe("key-0001");
+    expect(sent.headers["Content-Type"]).toBe("application/json");
+    expect(JSON.parse(sent.data as string)).toEqual(body);
+    expect(headerNames(sent).sort()).toEqual(
+      ["accept", "authorization", "content-type", "idempotency-key"].sort()
+    );
+  });
+
+  it("reads an operation with the bearer capability and rejects non-UUID ids locally", async () => {
+    const { api, requests } = client({ status: 200, data: operation() });
+    await api.getOperation(fixtureCapability, fixtureOperationId);
+    expect(requests[0].url).toBe(
+      `https://intents.test/v1/operations/${fixtureOperationId}`
+    );
+    expect(requests[0].headers.Authorization).toBe(
+      `Bearer ${fixtureCapability}`
+    );
+    await expect(
+      api.getOperation(fixtureCapability, "../routes")
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(requests).toHaveLength(1);
+  });
+
+  it("maps documented error bodies with request IDs and Retry-After", async () => {
+    const { api } = client({
+      status: 429,
+      data: {
+        error: { code: "RATE_LIMITED", message: "slow", requestId: "req-1" },
       },
-      "destination_busy",
-    ],
-    [{ status: 403, data: "<html>" }, "unauthorized"],
-    [{ status: 429, data: {} }, "rate_limited"],
-    [{ status: 503, data: {} }, "internal"],
-    ["offline", "network"],
-    [
-      { status: 200, data: { ...operation, status: "minted" } },
-      "invalid_response",
-    ],
-  ] as const)("maps %j to %s", async (reply, code) => {
-    const { api } = client(reply as Reply);
-    await expect(api.getOperation("op-1")).rejects.toMatchObject({ code });
+      headers: { "retry-after": "7" },
+    });
+    await expect(api.getRoutes()).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+      status: 429,
+      requestId: "req-1",
+      retryAfterMs: 7_000,
+    });
   });
 
-  it("lowercases hashes and rejects malformed routes", async () => {
-    const upper = `0x${"A".repeat(64)}`;
+  it("falls back to the HTTP status for unknown codes and bodies", async () => {
+    await expect(
+      client({
+        status: 503,
+        data: { error: { code: "NEW_CODE", message: "x", requestId: "r" } },
+      }).api.getRoutes()
+    ).rejects.toMatchObject({ code: "DEPENDENCY_UNAVAILABLE", requestId: "r" });
+    await expect(
+      client({ status: 404, data: "<html>" }).api.getOperation(
+        fixtureCapability,
+        fixtureOperationId
+      )
+    ).rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
+  });
+
+  it("reports network failures and contract mismatches distinctly", async () => {
+    await expect(client("offline").api.getRoutes()).rejects.toMatchObject({
+      code: "NETWORK",
+    });
+    await expect(
+      client({
+        status: 200,
+        data: { ...operation(), revision: "2" },
+      }).api.getOperation(fixtureCapability, fixtureOperationId)
+    ).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+  });
+
+  it("keeps operations with unknown enum values instead of failing", async () => {
     const { api } = client({
       status: 200,
-      data: { ...operation, sourceTxHash: upper },
+      data: { ...operation(), phase: "SETTLED_SOMEHOW", attention: "NEW" },
     });
-    expect((await api.getOperation("op-1")).sourceTxHash).toBe(
-      upper.toLowerCase()
+    const result = await api.getOperation(
+      fixtureCapability,
+      fixtureOperationId
     );
-    const bad = client({ status: 200, data: { routes: [{ id: "x" }] } });
-    await expect(bad.api.getRoutes()).rejects.toBeInstanceOf(IntentsApiError);
+    expect(result.phase).toBe("UNKNOWN");
+    expect(result.attention).toBe("UNKNOWN");
   });
 
-  it("reports an unconfigured service as unavailable", async () => {
-    const api = createIntentsHttpApi("", "unconfigured");
-    await expect(api.getRoutes()).rejects.toMatchObject({ code: "network" });
+  it("never wraps the axios error, whose config holds the capability", async () => {
+    const failure = await client("offline")
+      .api.getOperation(fixtureCapability, fixtureOperationId)
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(IntentsApiError);
+    expect(JSON.stringify(failure)).not.toContain(fixtureCapability);
+    expect(String((failure as Error).stack)).not.toContain(fixtureCapability);
+  });
+
+  it("parses Retry-After seconds and HTTP dates", () => {
+    expect(parseRetryAfter("3")).toBe(3_000);
+    expect(
+      parseRetryAfter(
+        "Fri, 13 Nov 2026 10:00:10 GMT",
+        Date.parse("2026-11-13T10:00:00Z")
+      )
+    ).toBe(10_000);
+    expect(parseRetryAfter(undefined)).toBeUndefined();
   });
 });
 
-describe("mock backend", () => {
-  let now = Date.parse("2026-11-13T10:00:00.000Z");
+describe("mock API", () => {
+  let clock = 0;
   let scenario: IntentsMockScenario | null = null;
-  let storage = memoryStorage();
-  const api = () =>
+  const create = () =>
     createIntentsMockApi({
       storage: () => storage,
-      now: () => now,
+      now: () => clock,
       latencyMs: 0,
-      depositAddress: deposit,
+      depositAddress: "0x000000000000000000000000000000000000dEaD",
       getScenario: () => scenario,
     });
-  const request = {
-    routeId: "arb-sepolia-usdt",
-    amountIn: "2000000000000000000",
-    recipient,
-    sourceAddress: source,
-    idempotencyKey: "local-1",
-  };
-
+  let storage = memoryStorage();
   beforeEach(() => {
-    now = Date.parse("2026-11-13T10:00:00.000Z");
+    clock = Date.parse("2026-11-13T10:00:00Z");
     scenario = null;
     storage = memoryStorage();
   });
 
-  it("returns the same operation for the same idempotency key, across reloads", async () => {
-    const first = await api().createOperation(request);
-    const second = await api().createOperation(request);
-    expect(second).toEqual(first);
-    expect(first.funding).toMatchObject({
-      depositAddress: deposit,
-      amount: request.amountIn,
-      chainId: 421614,
+  it("replays the same scope and rejects a changed request for it", async () => {
+    const api = create();
+    const first = await api.createOperation(credentials, request());
+    expect(first.replayed).toBe(false);
+    expect(first.operation).toMatchObject({
+      phase: "PREPARING_QUOTE",
+      fundingStatus: "NOT_READY",
+      fundingInstructions: null,
+      revision: 1,
     });
-    expect(first.amountOut).toBe("1994000");
+    const again = await api.createOperation(credentials, request());
+    expect(again).toMatchObject({ replayed: true });
+    expect(again.operation.id).toBe(first.operation.id);
+    await expect(
+      api.createOperation(
+        credentials,
+        request({ amountIn: "3000000000000000000" })
+      )
+    ).rejects.toMatchObject({ code: "IDEMPOTENCY_CONFLICT", status: 409 });
+    // Same key under another capability is a separate scope.
+    const other = await api.createOperation(
+      { ...credentials, capability: "B".repeat(42) + "A" },
+      request()
+    );
+    expect(other.operation.id).not.toBe(first.operation.id);
   });
 
-  it("advances monotonically only after a deposit hint", async () => {
-    const mock = api();
-    const { id } = await mock.createOperation(request);
-    now += 60_000;
-    expect((await mock.getOperation(id)).status).toBe("awaiting_deposit");
-    await mock.submitDeposit(id, hash);
-    await mock.submitDeposit(id, hash); // retry-safe
-    const seen: string[] = [];
-    let version = -1;
-    for (let step = 0; step < 10; step++) {
-      now += 4_000;
-      const snapshot = await mock.getOperation(id);
-      expect(snapshot.version).toBeGreaterThanOrEqual(version);
-      version = snapshot.version;
-      seen.push(snapshot.status);
-    }
-    expect(seen.at(-1)).toBe("wrapped");
-    const wrapped = await mock.getOperation(id);
-    expect(wrapped.sourceTxHash).toBe(hash);
-    expect(wrapped.deliveryTxHash).toMatch(/^0x[0-9a-f]{64}$/);
-    expect(wrapped.forwardTxHash).not.toBe(wrapped.sourceTxHash);
-    expect(wrapped.forwardLogIndex).toBe(0);
+  it("hides foreign operations behind 404", async () => {
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request()
+    );
+    await expect(
+      api.getOperation("B".repeat(42) + "A", created.id)
+    ).rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
   });
 
-  it("expires an unfunded quote", async () => {
+  it("publishes exact instructions after quote preparation", async () => {
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request()
+    );
+    clock += 1_500;
+    const ready = await api.getOperation(fixtureCapability, created.id);
+    expect(ready).toMatchObject({
+      phase: "AWAITING_DEPOSIT",
+      fundingStatus: "AVAILABLE",
+      revision: 2,
+    });
+    expect(ready.fundingInstructions).toMatchObject({
+      amount: request().amountIn,
+      sourceChainId: fixtureRoute.sourceChainId,
+      originAsset: fixtureRoute.originAsset,
+      depositMemo: null,
+    });
+    // Rounded down to six-decimal FA2 precision, still 18-decimal units.
+    expect(ready.fundingInstructions!.bridgeableMinAmountOut).toMatch(
+      /000000000000$/
+    );
+  });
+
+  it("rejects quotes below the accepted minimum and validates admission", async () => {
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request({ acceptedMinAmountOut: "1999000000000000000" })
+    );
+    clock += 1_500;
+    await expect(
+      api.getOperation(fixtureCapability, created.id)
+    ).resolves.toMatchObject({
+      closure: "QUOTE_REJECTED",
+      fundingInstructions: null,
+    });
+    const fresh = { ...credentials, idempotencyKey: "key-0002" };
+    await expect(
+      api.createOperation(fresh, request({ amountIn: "1" }))
+    ).rejects.toMatchObject({ code: "AMOUNT_OUT_OF_RANGE" });
+    await expect(
+      api.createOperation(fresh, request({ slippageBps: 301 }))
+    ).rejects.toMatchObject({ code: "SLIPPAGE_OUT_OF_RANGE" });
+    await expect(
+      api.createOperation(fresh, request({ acceptedMinAmountOut: "1" }))
+    ).rejects.toMatchObject({ code: "MIN_OUTPUT_TOO_LOW" });
+    scenario = "unavailable";
+    await expect(api.createOperation(fresh, request())).rejects.toMatchObject({
+      code: "DEPENDENCY_UNAVAILABLE",
+      status: 503,
+    });
+  });
+
+  it("expires unfunded instructions without replacing the address", async () => {
     scenario = "expire";
-    const mock = api();
-    const { id } = await mock.createOperation(request);
-    now += 16_000;
-    expect((await mock.getOperation(id)).status).toBe("expired");
-  });
-
-  it.each([
-    ["sponsorship", "sponsorship_unavailable"],
-    ["busy", "destination_busy"],
-    ["below", "below_minimum"],
-  ] as const)("rejects creation for %s", async (name, code) => {
-    scenario = name;
-    await expect(api().createOperation(request)).rejects.toMatchObject({
-      code,
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request()
+    );
+    clock += 1_500 + 20_000;
+    await expect(
+      api.getOperation(fixtureCapability, created.id)
+    ).resolves.toMatchObject({
+      fundingStatus: "EXPIRED",
+      fundingInstructions: null,
     });
   });
 
-  it("blocks a second funded operation to the same recipient", async () => {
-    const mock = api();
-    const { id } = await mock.createOperation(request);
-    await mock.submitDeposit(id, hash);
-    await expect(
-      mock.createOperation({ ...request, idempotencyKey: "local-2" })
-    ).rejects.toMatchObject({ code: "destination_busy" });
+  it("runs the lifecycle to a confirmed settlement on the expected token", async () => {
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request()
+    );
+    clock += 1_500;
+    await api.getOperation(fixtureCapability, created.id);
+    await api.simulateDeposit!(fixtureCapability, created.id);
+    const seen = [];
+    for (const step of [0, 3_000, 5_000, 4_000, 4_000, 6_000, 10_000]) {
+      clock += step;
+      seen.push(await api.getOperation(fixtureCapability, created.id));
+    }
+    expect(seen.map((item) => item.phase)).toEqual([
+      "AWAITING_DEPOSIT",
+      "SWAP_IN_PROGRESS",
+      "VERIFYING_DELIVERY",
+      "DELIVERY_VERIFIED",
+      "FORWARDING",
+      "WRAPPED",
+      "WRAPPED",
+    ]);
+    expect(seen[0].fundingStatus).toBe("OBSERVED");
+    expect(seen[5].settlement.status).toBe("PENDING");
+    const done = seen[6];
+    expect(done.settlement).toMatchObject({
+      status: "CONFIRMED",
+      tokenAddress: "KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE",
+      tokenId: "0",
+      confirmedAmount: "1994000",
+    });
+    expect(done.settlement.mints[0]).toMatchObject({
+      wrapTransactionHash: done.forwarding.bridgeEvents[0].transactionHash,
+      wrapLogIndex: 0,
+    });
+    // Revisions only grow.
+    expect(seen.map((item) => item.revision)).toEqual(
+      [...seen.map((item) => item.revision)].sort((a, b) => a - b)
+    );
   });
 
   it.each([
-    ["refund", "refunded"],
-    ["fail", "failed"],
-  ] as const)("ends the %s scenario as %s", async (name, status) => {
-    scenario = name;
-    const mock = api();
-    const { id } = await mock.createOperation(request);
-    await mock.submitDeposit(id, hash);
-    now += 60_000;
-    const result = await mock.getOperation(id);
-    expect(result.status).toBe(status);
-    expect(result.forwardTxHash).toBeUndefined();
+    ["refund", "REFUNDED"],
+    ["incomplete", "INCOMPLETE_DEPOSIT"],
+  ] as const)(
+    "halts the %s scenario at the provider report",
+    async (name, status) => {
+      scenario = name;
+      const api = create();
+      const { operation: created } = await api.createOperation(
+        credentials,
+        request()
+      );
+      clock += 1_500;
+      await api.getOperation(fixtureCapability, created.id);
+      await api.simulateDeposit!(fixtureCapability, created.id);
+      clock += 60_000;
+      const result = await api.getOperation(fixtureCapability, created.id);
+      expect(result.providerStatus).toBe(status);
+      expect(result.phase).not.toBe("WRAPPED");
+      if (name === "refund")
+        expect(result.refund).toMatchObject({ status: "REPORTED" });
+    }
+  );
+
+  it("keeps settlement NOT_TRACKED in the untracked scenario", async () => {
+    scenario = "untracked";
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request()
+    );
+    clock += 1_500;
+    await api.getOperation(fixtureCapability, created.id);
+    await api.simulateDeposit!(fixtureCapability, created.id);
+    clock += 120_000;
+    const result = await api.getOperation(fixtureCapability, created.id);
+    expect(result.phase).toBe("WRAPPED");
+    expect(result.settlement.status).toBe("NOT_TRACKED");
+    expect(result.forwarding.bridgeEvents).toHaveLength(1);
   });
 
-  it("rejects amounts below the route minimum", async () => {
-    await expect(
-      api().getQuote({ ...request, amountIn: "1" })
-    ).rejects.toMatchObject({ code: "below_minimum" });
-  });
-
-  it("keeps working when storage is blocked", async () => {
-    storage = {
-      getItem: vi.fn(() => {
-        throw new Error("blocked");
-      }),
-      setItem: vi.fn(() => {
-        throw new Error("blocked");
-      }),
-    };
-    const mock = api();
-    const { id } = await mock.createOperation(request);
-    expect((await mock.getOperation(id)).id).toBe(id);
+  it("ignores a simulated deposit when funding is not available", async () => {
+    const api = create();
+    const { operation: created } = await api.createOperation(
+      credentials,
+      request()
+    );
+    await api.simulateDeposit!(fixtureCapability, created.id);
+    clock += 60_000;
+    const result = await api.getOperation(fixtureCapability, created.id);
+    expect(result.fundingStatus).not.toBe("OBSERVED");
+    vi.restoreAllMocks();
   });
 });

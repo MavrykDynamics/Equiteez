@@ -3,23 +3,25 @@ import { useQuery } from "@tanstack/react-query";
 import { useConfig } from "wagmi";
 
 import {
+  INTENTS_BRIDGE_PAIRS,
   INTENTS_DEPOSIT_ENABLED,
-  INTENTS_DESTINATION_NETWORK,
+  INTENTS_SOURCE_ASSETS,
   INTENTS_SOURCE_CHAINS,
 } from "~/consts/intents";
-import { getIntentsApi, type IntentRoute } from "~/lib/apis/intents";
-import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
+import { getIntentsApi } from "~/lib/apis/intents";
 import {
-  getIntentRouteAvailability,
-  type IntentRouteAvailability,
+  resolveIntentRoute,
+  type IntentRouteOption,
 } from "~/lib/intents/intentRoute";
+import { useTokensContext } from "~/providers/TokensProvider/tokens.provider";
 
-export type IntentRouteOption = {
-  route: IntentRoute;
-  availability: IntentRouteAvailability;
-};
+export type { IntentRouteOption } from "~/lib/intents/intentRoute";
 
-/** Backend-approved route catalog, gated by the feature flag. */
+/**
+ * Backend-approved route catalog (`GET /v1/routes`), gated by the feature
+ * flag and resolved against the approved Equiteez product configuration.
+ * An empty list is not an error: it disables new transfers (backend.md §4.2).
+ */
 export function useIntentsRoutes(enabled = INTENTS_DEPOSIT_ENABLED) {
   const api = getIntentsApi();
   const { chains } = useConfig();
@@ -31,27 +33,25 @@ export function useIntentsRoutes(enabled = INTENTS_DEPOSIT_ENABLED) {
     retry: 1,
     queryFn: ({ signal }) => api.getRoutes({ signal }),
   });
-  const supportedChainIds = useMemo(
+  const supportedChains = useMemo(
     () =>
-      INTENTS_SOURCE_CHAINS.map((chain) => chain.id).filter((id) =>
-        chains.some((chain) => chain.id === id)
+      INTENTS_SOURCE_CHAINS.filter((chain) =>
+        chains.some((item) => item.id === chain.id)
       ),
     [chains]
   );
   const options = useMemo<IntentRouteOption[]>(
     () =>
-      (query.data ?? []).map((route) => ({
-        route,
-        availability: getIntentRouteAvailability(
-          route,
-          supportedChainIds,
-          INTENTS_DESTINATION_NETWORK,
-          tokensMetadata[
-            `${route.destination.tokenAddress}_${route.destination.tokenId}`
-          ]
-        ),
-      })),
-    [query.data, supportedChainIds, tokensMetadata]
+      (query.data ?? []).map((route) =>
+        resolveIntentRoute(route, {
+          sourceAssets: INTENTS_SOURCE_ASSETS,
+          bridgePairs: INTENTS_BRIDGE_PAIRS,
+          chains: supportedChains,
+          getDestinationMetadata: (address, tokenId) =>
+            tokensMetadata[`${address}_${tokenId}`],
+        })
+      ),
+    [query.data, supportedChains, tokensMetadata]
   );
 
   return {

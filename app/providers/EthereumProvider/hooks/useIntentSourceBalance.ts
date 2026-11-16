@@ -4,7 +4,7 @@ import { BigNumber } from "bignumber.js";
 import { erc20Abi, type Address } from "viem";
 import { usePublicClient } from "wagmi";
 
-import type { IntentRoute } from "~/lib/apis/intents";
+import type { IntentRouteSource } from "~/lib/intents/intentRoute";
 
 export type IntentSourceBalanceStatus =
   | "disconnected"
@@ -18,14 +18,14 @@ export type IntentSourceBalanceStatus =
  * so the wallet does not need to switch networks just to display it.
  */
 export function useIntentSourceBalance(
-  route: IntentRoute | undefined,
+  source: IntentRouteSource | undefined,
   owner: Address | null,
   isRouteSupported: boolean
 ) {
-  const chainId = route?.source.chainId;
+  const chainId = source?.chainId;
   const client = usePublicClient({ chainId });
-  const token = route?.source.token.address;
-  const enabled = Boolean(route && owner && isRouteSupported && client);
+  const token = source?.token;
+  const enabled = Boolean(source && owner && isRouteSupported && client);
 
   const query = useQuery({
     queryKey: ["ethereum", "balance", chainId, token, owner],
@@ -57,7 +57,7 @@ export function useIntentSourceBalance(
         : query.isPending
           ? "loading"
           : "ready";
-  const decimals = route?.source.token.decimals ?? 18;
+  const decimals = source?.decimals ?? 18;
   const balance = useMemo(
     () =>
       status === "ready" && query.data !== undefined
