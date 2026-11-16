@@ -122,6 +122,9 @@ export function getActionAvailability(
   };
 }
 
+/** The reason as a button label: "Not available for email wallets yet" */
+export const toUnavailableLabel = (reason: string) => reason.replace(/\.$/, "");
+
 /** The action is not available for the connected wallet. */
 export class ActionUnavailableError extends Error {
   constructor(reason: string) {

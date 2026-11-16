@@ -19,6 +19,7 @@ import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.prov
 import { useUsdtBridgeEstimate } from "~/providers/EthereumProvider/hooks/useUsdtBridgeEstimate";
 
 import styles from "../RDepositFundsModal.module.css";
+import { toUnavailableLabel } from "~/providers/WalletProvider/capabilities";
 import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
 
 type BridgeViewProps = {
@@ -335,9 +336,9 @@ export function BridgeView({
           </RButton>
         </div>
       )}
-      {(error || depositUnavailableReason) && (
+      {error && (
         <RText role="alert" color="red-500" size="body-s">
-          {error || depositUnavailableReason}
+          {error}
         </RText>
       )}
       <RButton
@@ -352,11 +353,13 @@ export function BridgeView({
         size="medium"
         tone="black"
       >
-        {!isConnected
-          ? "Connect Ethereum Wallet"
-          : !mavrykAddress
-            ? "Connect Mavryk Wallet"
-            : "Deposit Funds"}
+        {depositUnavailableReason
+          ? toUnavailableLabel(depositUnavailableReason)
+          : !isConnected
+            ? "Connect Ethereum Wallet"
+            : !mavrykAddress
+              ? "Connect Mavryk Wallet"
+              : "Deposit Funds"}
       </RButton>
     </div>
   );

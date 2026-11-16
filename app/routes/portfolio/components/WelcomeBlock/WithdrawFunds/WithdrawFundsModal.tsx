@@ -36,8 +36,14 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-import { getActionAvailability } from "~/providers/WalletProvider/capabilities";
-import { toCapabilityContext } from "~/providers/WalletProvider/useActionAvailability";
+import {
+  getActionAvailability,
+  toUnavailableLabel,
+} from "~/providers/WalletProvider/capabilities";
+import {
+  toCapabilityContext,
+  useActionAvailability,
+} from "~/providers/WalletProvider/useActionAvailability";
 import {
   NotifierChannel,
   NotifierWalletEvent,
@@ -84,6 +90,8 @@ export function WithdrawFundsModal({
   const { userAddress } = usePortfolioContext();
   const { getIdentity, getToolkit, directExecution } = useWalletContext();
   const { assets, isLoading: isAssetsLoading } = useWithdrawableAssets();
+  // Email wallets may not withdraw yet: the button says so instead
+  const withdrawAvailability = useActionAvailability("withdraw");
   const [step, setStep] = useState<WithdrawStep>("form");
   const [recipientAddress, setRecipientAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -172,11 +180,7 @@ export function WithdrawFundsModal({
   }, [step]);
 
   useEffect(() => {
-    if (
-      step === "processing" &&
-      isWalletConfirmed &&
-      isFallbackDelayElapsed
-    ) {
+    if (step === "processing" && isWalletConfirmed && isFallbackDelayElapsed) {
       setStep("success");
     }
   }, [isFallbackDelayElapsed, isWalletConfirmed, step]);
@@ -672,6 +676,7 @@ export function WithdrawFundsModal({
           <RButton
             className={styles.submitButton}
             disabled={
+              !withdrawAvailability.isAllowed ||
               !selectedAsset ||
               isAssetsLoading ||
               !isRecipientValid ||
@@ -684,7 +689,9 @@ export function WithdrawFundsModal({
             type="submit"
             size="medium"
           >
-            Withdraw Funds
+            {withdrawAvailability.isAllowed
+              ? "Withdraw Funds"
+              : toUnavailableLabel(withdrawAvailability.reason)}
           </RButton>
         </form>
       ) : step === "processing" ? (
