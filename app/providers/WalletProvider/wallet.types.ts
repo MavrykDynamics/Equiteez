@@ -63,6 +63,12 @@ export type DynamicConnectApi = {
   verifyOtp: (code: string, onAccepted?: () => void) => Promise<void>;
   /** After MultipleDynamicWalletsError: connect the chosen wallet */
   selectWallet: (walletId: string) => Promise<void>;
+  /**
+   * Opens Dynamic's own secure window with the connected wallet's private
+   * key: the key stays in Dynamic's iframe and never reaches the app. False
+   * when the user cancels Dynamic's "confirm it's you" step.
+   */
+  revealPrivateKey: () => Promise<boolean>;
 };
 
 export type WalletContextValue = {

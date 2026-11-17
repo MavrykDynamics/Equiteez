@@ -24,6 +24,7 @@ import {
   DynamicInitError,
   DynamicNotAuthenticatedError,
   DynamicNotConfiguredError,
+  DynamicSessionExpiredError,
   DynamicWalletNotFoundError,
   LocalSignatureVerificationError,
   MultipleDynamicWalletsError,
@@ -456,4 +457,69 @@ export async function signDigest32({
   }
 
   return sig64;
+}
+
+type StepUpScope = Parameters<
+  DynamicClient["stepUpAuth"]["isStepUpRequired"]
+>[0]["scope"];
+
+/** Dynamic's TokenScope.Walletexport */
+const WALLET_EXPORT_SCOPE = "wallet:export" as StepUpScope;
+
+/**
+ * Opens Dynamic's own window with the private key of `walletId`. The key stays
+ * in Dynamic's iframe. Returns false when the user cancels re-verification.
+ *
+ * - Dynamic reveals the primary wallet, and its first wallet is the EVM one:
+ *   make the Mavryk (SOL) wallet primary first, or it exports the EVM key.
+ * - Export needs a fresh "wallet:export" token (the API answers 403 without
+ *   it): Dynamic asks the user to confirm it's them, e.g. with an email code.
+ * - An expired Dynamic session fails every step with 401:
+ *   DynamicSessionExpiredError.
+ */
+/** Seconds since epoch from a JWT's `exp`, or null when unreadable. */
+function getTokenExpiry(token: string | null): number | null {
+  try {
+    const payload = token?.split(".")[1];
+    if (!payload) return null;
+
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const { exp } = JSON.parse(json) as { exp?: unknown };
+
+    return typeof exp === "number" ? exp : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function revealDynamicPrivateKey(
+  client: DynamicClient,
+  walletId: string
+): Promise<boolean> {
+  // The user stays remembered after the token expires, and Dynamic then
+  // answers 401 to every step: say so instead of a generic failure
+  const expiry = getTokenExpiry(client.auth.token);
+
+  if (!expiry || expiry * 1000 <= Date.now()) {
+    throw new DynamicSessionExpiredError();
+  }
+
+  if (client.wallets.primary?.id !== walletId) {
+    await client.wallets.setPrimary({ walletId });
+  }
+
+  const needsStepUp = await client.stepUpAuth.isStepUpRequired({
+    scope: WALLET_EXPORT_SCOPE,
+  });
+
+  if (needsStepUp) {
+    const token = await client.stepUpAuth.promptStepUpAuth({
+      requestedScopes: [WALLET_EXPORT_SCOPE],
+    });
+
+    if (!token) return false;
+  }
+
+  await client.ui.wallets.revealEmbeddedWalletKey({ type: "private-key" });
+  return true;
 }

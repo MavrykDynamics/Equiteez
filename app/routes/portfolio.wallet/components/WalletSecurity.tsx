@@ -1,13 +1,18 @@
 /**
- * Security, Backup and Export private key for email wallets: the Figma copy
- * as is (mock). None of it is wired to Dynamic yet, so the statuses are the
- * design's and the buttons do nothing.
+ * Security, Backup and Export private key for email wallets. Export private
+ * key is live: a confirmation, then Dynamic's own window with the key.
+ * Security and Backup are still the Figma copy as is (mock): their statuses
+ * are the design's and their buttons do nothing.
  */
+import { useState } from "react";
+
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
+import { ExportKeyModal } from "./ExportKeyModal";
 import styles from "../styles.module.css";
 
 type SecurityRow = {
@@ -93,6 +98,9 @@ export function WalletSecurity() {
 }
 
 export function WalletBackupAndExport() {
+  const { dynamic } = useWalletContext();
+  const [isExportOpen, setIsExportOpen] = useState(false);
+
   return (
     <div className={styles.columns}>
       <section className={`${styles.section} ${styles.column}`}>
@@ -130,6 +138,8 @@ export function WalletBackupAndExport() {
         <div className={styles.spacer} />
         <RButton
           className={styles.fullButton}
+          disabled={!dynamic}
+          onClick={() => setIsExportOpen(true)}
           size="medium"
           tone="black"
           variant="secondary"
@@ -137,6 +147,14 @@ export function WalletBackupAndExport() {
           Export private key
         </RButton>
       </section>
+
+      {dynamic ? (
+        <ExportKeyModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
+          onContinue={dynamic.revealPrivateKey}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,0 +1,146 @@
+.overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--r-space-4);
+  background: rgba(1, 1, 1, 0.6);
+}
+
+/* Figma 8229:76438: 588px, 16px radius */
+.modal {
+  width: min(588px, 100%);
+  max-height: calc(100vh - var(--r-space-8));
+  padding: 0;
+  overflow: auto;
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border: 0;
+  border-radius: var(--r-radius-md);
+  box-shadow: 0 7px 25.781px rgba(1, 1, 1, 0.08);
+  outline: none;
+}
+
+.closeRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--r-space-3) var(--r-space-4) var(--r-space-2);
+}
+
+.closeButton {
+  display: grid;
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  padding: 0;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.closeButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+  border-radius: var(--r-radius-xs);
+}
+
+/* 16px top, 44px sides, 32px bottom; blocks 24px apart */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  padding: var(--r-space-4) 44px var(--r-space-8);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-6);
+  text-align: center;
+}
+
+.heroIcon {
+  display: flex;
+  padding: var(--r-space-3);
+  background: rgba(242, 209, 107, 0.25);
+  border-radius: var(--r-radius-pill);
+}
+
+.heroIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.title {
+  letter-spacing: 0.2px;
+}
+
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  background: var(--r-surface-warning);
+  border-radius: var(--r-radius-12);
+}
+
+.warningIcon {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.warningText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+/* 24px box, 10px to the text */
+.confirm {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.confirmInput {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-radius-xs);
+}
+
+.confirmInput:focus-visible + .checkbox {
+  box-shadow: var(--r-focus-ring);
+}
+
+.error {
+  color: var(--r-color-red-700);
+}
+
+.actions {
+  display: flex;
+  gap: var(--r-space-3);
+}
+
+.action {
+  flex: 1 1 0;
+  min-width: 0;
+}

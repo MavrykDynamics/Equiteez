@@ -35,9 +35,11 @@ import { reconcileAttempts } from "~/services/direct/reconcile";
 
 import { dappClient, getRpcNode } from "./WalletCore.client";
 import { isDynamicWalletEnabled } from "./dynamic/dynamic.config";
+import { DynamicNotAuthenticatedError } from "./dynamic/dynamic.errors";
 import {
   loadDynamicClient,
   logoutDynamic,
+  revealDynamicPrivateKey,
   resendEmailOtp,
   sendEmailOtp,
   verifyEmailOtp,
@@ -386,6 +388,13 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       },
       selectWallet: (walletId) =>
         establishOrThrow({ mode: "select", walletId }),
+      revealPrivateKey: async () => {
+        const session = dynamicSessionRef.current;
+
+        if (!session) throw new DynamicNotAuthenticatedError();
+
+        return revealDynamicPrivateKey(session.client, session.wallet.walletId);
+      },
     };
   }, [connecting, disconnect, establishDynamic]);
 

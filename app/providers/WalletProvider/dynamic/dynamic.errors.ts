@@ -28,6 +28,16 @@ export class DynamicNotAuthenticatedError extends Error {
   }
 }
 
+/** Dynamic still remembers the user, but its session token has expired. */
+export class DynamicSessionExpiredError extends Error {
+  constructor() {
+    super(
+      "Your email sign-in has expired. Sign out and sign in again, then export your key."
+    );
+    this.name = "DynamicSessionExpiredError";
+  }
+}
+
 export type DynamicWalletOption = {
   walletId: string;
   /** mv1 address, what the user recognizes */
