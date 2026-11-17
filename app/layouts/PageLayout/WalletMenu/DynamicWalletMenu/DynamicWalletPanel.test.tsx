@@ -224,7 +224,7 @@ describe("DynamicWalletPanel", () => {
     expect(text()).toContain("Asset Contract");
     expect(text()).toContain("$10.00 per token");
 
-    await click("Send");
+    await click("Withdraw");
 
     expect(text()).toContain("Withdraw form");
     expect(mocks.withdrawProps).toHaveBeenLastCalledWith(

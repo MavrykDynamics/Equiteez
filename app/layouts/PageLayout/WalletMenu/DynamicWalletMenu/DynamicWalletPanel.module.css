@@ -39,7 +39,8 @@
 .iconButton:focus-visible,
 .assetRow:focus-visible,
 .footerLink:focus-visible,
-.addressAction:focus-visible {
+.addressCopy:focus-visible,
+.addressLink:focus-visible {
   outline: none;
   box-shadow: var(--r-focus-ring);
 }
@@ -128,20 +129,49 @@
   white-space: nowrap;
 }
 
-.addressActions {
+/* Address · copy · Nexus: the TX HASH hover of the transaction history. The
+   negative margins keep the hover padding from moving anything. */
+.address {
   display: inline-flex;
-  flex-shrink: 0;
+  min-width: 0;
   align-items: center;
   gap: var(--r-space-2);
 }
 
-.addressAction {
+.addressCopy,
+.addressLink {
   display: inline-flex;
-  padding: 0;
+  align-items: center;
   color: var(--r-color-neutral-black);
   background: transparent;
   border: 0;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.addressCopy {
+  min-width: 0;
+  gap: var(--r-space-1);
+  margin: -2px -2px -2px -4px;
+  padding: 2px 2px 2px 4px;
+  font: inherit;
+  text-align: left;
+}
+
+.addressLink {
+  flex-shrink: 0;
+  margin: -2px;
+  padding: 2px;
+}
+
+.addressCopy:hover,
+.addressLink:hover {
+  background: var(--r-color-neutral-100);
+}
+
+.addressCopy svg {
+  flex-shrink: 0;
 }
 
 /* Deposit · Withdraw, Receive · Send */
@@ -154,6 +184,13 @@
 .actionButton {
   flex: 1 1 0;
   min-width: 0;
+}
+
+/* Figma "wallet/panel actions": 16px before the icon, 24px after the label
+   (RButton medium with an icon pads 20px); repeated to outrank its
+   two-class rule whatever the stylesheet order */
+.actionButton.actionButton.actionButton {
+  padding-left: var(--r-space-4);
 }
 
 /* Home: assets */

@@ -11,7 +11,7 @@ import { AssetIcon } from "~/templates/AssetIcon";
 
 import type { WalletPanelView } from "./DynamicWalletPanel";
 import {
-  AddressActions,
+  AddressWithActions,
   AssetBadge,
   hasPrice,
   HIDDEN_VALUE,
@@ -120,10 +120,11 @@ export function HomeView({
           </div>
         </div>
         <div className={styles.addressRow}>
-          <RText className={styles.fullAddress} size="body-s">
-            {address}
-          </RText>
-          <AddressActions address={address} />
+          <AddressWithActions address={address}>
+            <RText className={styles.fullAddress} size="body-s">
+              {address}
+            </RText>
+          </AddressWithActions>
         </div>
       </div>
 

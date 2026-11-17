@@ -1,8 +1,15 @@
 /** Small pieces shared by the wallet panel's home and asset views. */
-import { useCallback, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import clsx from "clsx";
 
-import { CopyButton } from "~/lib/atoms/CopyButton";
 import { RIcon } from "~/lib/atoms/RIcon";
+import useTippy from "~/lib/ui/useTippy";
 import { NEXUS_LINK } from "~/consts/links.const";
 
 import type {
@@ -17,22 +24,56 @@ export const NETWORK_LABEL = "Mavryk Basenet";
 export const getNexusUrl = (address: string) =>
   `${NEXUS_LINK}/explorer/${address.startsWith("KT") ? "contract" : "account"}/${address}`;
 
-/** Copy and "open in Nexus" for an address or contract */
-export function AddressActions({ address }: { address: string }) {
+const tooltip = (content: string) => ({
+  animation: "shift-away-subtle",
+  content,
+  hideOnClick: false,
+  placement: "top" as const,
+  theme: "operation-hash",
+  trigger: "mouseenter focus",
+});
+
+type AddressWithActionsProps = {
+  address: string;
+  /** The address as shown: full or shortened */
+  children: ReactNode;
+  className?: string;
+};
+
+/**
+ * The wallet address on the home card: copy and "open in Nexus" behave like
+ * the TX HASH cell of the transaction history (OperationHash, used as is on
+ * the asset sheet), with the card's black icons from Figma.
+ */
+export function AddressWithActions({
+  address,
+  children,
+  className,
+}: AddressWithActionsProps) {
+  const copyTooltipRef = useTippy<HTMLButtonElement>(
+    useMemo(() => tooltip("Copy address"), [])
+  );
+  const nexusTooltipRef = useTippy<HTMLAnchorElement>(
+    useMemo(() => tooltip("Open on Nexus"), [])
+  );
+
   return (
-    <span className={styles.addressActions}>
-      <CopyButton
+    <span className={clsx(styles.address, className)}>
+      <button
         aria-label="Copy address"
-        className={styles.addressAction}
-        text={address}
-        type="link"
+        className={styles.addressCopy}
+        onClick={() => void navigator.clipboard?.writeText(address)}
+        ref={copyTooltipRef}
+        type="button"
       >
+        {children}
         <RIcon aria-hidden="true" name="copy" size="small" />
-      </CopyButton>
+      </button>
       <a
         aria-label="View in Nexus"
-        className={styles.addressAction}
+        className={styles.addressLink}
         href={getNexusUrl(address)}
+        ref={nexusTooltipRef}
         rel="noreferrer"
         target="_blank"
       >

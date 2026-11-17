@@ -1,20 +1,14 @@
 import type { ReactNode } from "react";
 
-import { HashShortView } from "~/lib/atoms/HashShortView";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { OperationHash } from "~/routes/portfolio.activity/components/TransactionHistoryTab/OperationHash";
 import { AssetIcon } from "~/templates/AssetIcon";
 
 import { PanelHeader, type WalletPanelView } from "./DynamicWalletPanel";
-import {
-  AddressActions,
-  AssetBadge,
-  hasPrice,
-  HIDDEN_VALUE,
-  NETWORK_LABEL,
-} from "./parts";
+import { AssetBadge, hasPrice, HIDDEN_VALUE, NETWORK_LABEL } from "./parts";
 import { useWalletPanelAssets } from "./useWalletPanelAssets";
 import styles from "./DynamicWalletPanel.module.css";
 
@@ -123,15 +117,16 @@ export function AssetView({
             </Detail>
             <Detail label="Network">{NETWORK_LABEL}</Detail>
             <Detail label="Held At">
-              <HashShortView hash={address} />
-              <AddressActions address={address} />
+              <OperationHash copyLabel="Copy address" operationHash={address} />
             </Detail>
           </>
         ) : (
           <>
             <Detail label="Asset Contract">
-              <HashShortView hash={metadata.address} />
-              <AddressActions address={metadata.address} />
+              <OperationHash
+                copyLabel="Copy address"
+                operationHash={metadata.address}
+              />
             </Detail>
             <Detail label="Standard">
               {metadata.standard?.toUpperCase() ?? "—"}
@@ -150,9 +145,8 @@ export function AssetView({
           onClick={() => onNavigate({ name: "deposit", back })}
           size="medium"
           tone="black"
-          variant="secondary"
         >
-          Receive
+          Deposit
         </RButton>
         <RButton
           className={styles.actionButton}
@@ -162,7 +156,7 @@ export function AssetView({
           tone="black"
           variant="secondary"
         >
-          Send
+          Withdraw
         </RButton>
       </div>
     </div>
