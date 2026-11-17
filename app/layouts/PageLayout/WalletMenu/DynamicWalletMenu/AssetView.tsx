@@ -8,12 +8,19 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { AssetIcon } from "~/templates/AssetIcon";
 
 import { PanelHeader, type WalletPanelView } from "./DynamicWalletPanel";
-import { AddressActions, AssetBadge, hasPrice, NETWORK_LABEL } from "./parts";
+import {
+  AddressActions,
+  AssetBadge,
+  hasPrice,
+  HIDDEN_VALUE,
+  NETWORK_LABEL,
+} from "./parts";
 import { useWalletPanelAssets } from "./useWalletPanelAssets";
 import styles from "./DynamicWalletPanel.module.css";
 
 type AssetViewProps = {
   address: string;
+  isValueHidden: boolean;
   tokenSlug: string;
   onBack: () => void;
   onClose: () => void;
@@ -22,6 +29,7 @@ type AssetViewProps = {
 
 export function AssetView({
   address,
+  isValueHidden,
   tokenSlug,
   onBack,
   onClose,
@@ -74,7 +82,12 @@ export function AssetView({
           Balance
         </RText>
         <span className={styles.balanceValue}>
-          <Money tooltip={false}>{asset.balance}</Money> {metadata.symbol}
+          {isValueHidden ? (
+            HIDDEN_VALUE
+          ) : (
+            <Money tooltip={false}>{asset.balance}</Money>
+          )}{" "}
+          {metadata.symbol}
         </span>
         <RText color="neutral-700" size="body-s">
           {hasPrice(asset) && asset.priceUsd ? (

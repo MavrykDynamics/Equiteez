@@ -14,6 +14,7 @@ import { WithdrawFlow } from "~/routes/portfolio/components/WelcomeBlock/Withdra
 
 import { AssetView } from "./AssetView";
 import { HomeView } from "./HomeView";
+import { useHiddenValues } from "./parts";
 import styles from "./DynamicWalletPanel.module.css";
 
 export type WalletPanelView =
@@ -36,6 +37,7 @@ export function DynamicWalletPanel({
   onSignOut,
 }: DynamicWalletPanelProps) {
   const [view, setView] = useState<WalletPanelView>(HOME);
+  const [isValueHidden, toggleValueHidden] = useHiddenValues(address);
 
   return (
     <div aria-label="Wallet" className={styles.panel} role="dialog">
@@ -45,13 +47,16 @@ export function DynamicWalletPanel({
         {view.name === "home" ? (
           <HomeView
             address={address}
+            isValueHidden={isValueHidden}
             onNavigate={setView}
             onClose={onClose}
             onSignOut={onSignOut}
+            onToggleValueHidden={toggleValueHidden}
           />
         ) : view.name === "asset" ? (
           <AssetView
             address={address}
+            isValueHidden={isValueHidden}
             onBack={() => setView(HOME)}
             onClose={onClose}
             onNavigate={setView}

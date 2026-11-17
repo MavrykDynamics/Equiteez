@@ -146,6 +146,7 @@ beforeEach(() => {
   };
   mocks.withdrawProps.mockReset();
   onSignOut.mockReset();
+  localStorage.clear();
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -175,9 +176,44 @@ describe("DynamicWalletPanel", () => {
 
     await click("Hide portfolio value");
     expect(text()).not.toContain("12,450");
-    expect(text()).toContain("$••••••");
+    expect(text()).toContain("$******");
 
     await click("Show portfolio value");
+    expect(text()).toContain("12,450");
+  });
+
+  it("hides every token amount, remembers it per wallet address", async () => {
+    await render();
+    await click("Hide portfolio value");
+
+    expect(text()).not.toContain("2,450");
+    expect(text()).not.toContain("1,204");
+    expect(
+      localStorage.getItem("equiteez:wallet-panel:hide-values:mv1Owner")
+    ).toBe("true");
+
+    // Reopened panel: still hidden, the asset sheet too
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render();
+    expect(text()).toContain("$******");
+
+    await click(/^VGRT/);
+    expect(text()).toContain("**** VGRT");
+    expect(text()).not.toContain("1,000");
+
+    // Another wallet keeps its own choice
+    act(() => root.unmount());
+    root = createRoot(container);
+    await act(async () =>
+      root.render(
+        <DynamicWalletPanel
+          address="mv1Other"
+          onClose={vi.fn()}
+          onSignOut={onSignOut}
+        />
+      )
+    );
     expect(text()).toContain("12,450");
   });
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "@remix-run/react";
 
 import Money from "~/lib/atoms/Money";
@@ -11,7 +10,13 @@ import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.pro
 import { AssetIcon } from "~/templates/AssetIcon";
 
 import type { WalletPanelView } from "./DynamicWalletPanel";
-import { AddressActions, AssetBadge, hasPrice, NETWORK_LABEL } from "./parts";
+import {
+  AddressActions,
+  AssetBadge,
+  hasPrice,
+  HIDDEN_VALUE,
+  NETWORK_LABEL,
+} from "./parts";
 import {
   useWalletPanelAssets,
   type WalletPanelAsset,
@@ -30,21 +35,24 @@ const formatTime = (timestamp: number) =>
 
 type HomeViewProps = {
   address: string;
+  isValueHidden: boolean;
   onClose: () => void;
   onNavigate: (view: WalletPanelView) => void;
   onSignOut: () => void;
+  onToggleValueHidden: () => void;
 };
 
 export function HomeView({
   address,
+  isValueHidden,
   onClose,
   onNavigate,
   onSignOut,
+  onToggleValueHidden,
 }: HomeViewProps) {
   const { portfolio, wallet, isPortfolioLoading, portfolioUpdatedAt } =
     usePortfolioContext();
   const { assets, isLoading } = useWalletPanelAssets();
-  const [isValueHidden, setIsValueHidden] = useState(false);
   const totalValue = portfolio?.total_value ?? wallet?.account_value ?? 0;
   const home: WalletPanelView = { name: "home" };
 
@@ -83,7 +91,7 @@ export function HomeView({
             ) : (
               <span className={styles.portfolioValue}>
                 {isValueHidden ? (
-                  "$••••••"
+                  "$******"
                 ) : (
                   <>
                     $
@@ -100,7 +108,7 @@ export function HomeView({
               }
               aria-pressed={isValueHidden}
               className={styles.iconButton}
-              onClick={() => setIsValueHidden((isHidden) => !isHidden)}
+              onClick={onToggleValueHidden}
               type="button"
             >
               <RIcon
@@ -165,6 +173,7 @@ export function HomeView({
               <li key={asset.tokenSlug}>
                 <AssetRow
                   asset={asset}
+                  isValueHidden={isValueHidden}
                   onOpen={() =>
                     onNavigate({ name: "asset", tokenSlug: asset.tokenSlug })
                   }
@@ -199,9 +208,11 @@ export function HomeView({
 
 function AssetRow({
   asset,
+  isValueHidden,
   onOpen,
 }: {
   asset: WalletPanelAsset;
+  isValueHidden: boolean;
   onOpen: () => void;
 }) {
   const { metadata } = asset;
@@ -226,10 +237,16 @@ function AssetRow({
       </span>
       <span className={styles.assetAmounts}>
         <RText size="body-sm" weight="medium">
-          <Money tooltip={false}>{asset.balance}</Money>
+          {isValueHidden ? (
+            HIDDEN_VALUE
+          ) : (
+            <Money tooltip={false}>{asset.balance}</Money>
+          )}
         </RText>
         <RText color="neutral-700" size="body-s">
-          {hasPrice(asset) && asset.valueUsd ? (
+          {isValueHidden ? (
+            `$${HIDDEN_VALUE}`
+          ) : hasPrice(asset) && asset.valueUsd ? (
             <>
               $
               <Money fiat tooltip={false}>

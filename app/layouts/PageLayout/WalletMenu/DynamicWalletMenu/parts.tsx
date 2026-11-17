@@ -1,4 +1,6 @@
 /** Small pieces shared by the wallet panel's home and asset views. */
+import { useCallback, useEffect, useState } from "react";
+
 import { CopyButton } from "~/lib/atoms/CopyButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { NEXUS_LINK } from "~/consts/links.const";
@@ -58,3 +60,39 @@ export function AssetBadge({ kind }: { kind: WalletPanelAssetKind }) {
 /** A zero or missing price means no price source, not a worthless asset */
 export const hasPrice = (asset: WalletPanelAsset) =>
   Boolean(asset.priceUsd?.gt(0) || asset.valueUsd?.gt(0));
+
+/** What a hidden amount shows instead of the number */
+export const HIDDEN_VALUE = "****";
+
+const hiddenValuesKey = (address: string) =>
+  `equiteez:wallet-panel:hide-values:${address}`;
+
+const readHiddenValues = (address: string) => {
+  try {
+    return localStorage.getItem(hiddenValuesKey(address)) === "true";
+  } catch {
+    return false;
+  }
+};
+
+/** "Hide values" per wallet address, remembered in localStorage */
+export function useHiddenValues(address: string) {
+  const [isHidden, setIsHidden] = useState(() => readHiddenValues(address));
+
+  // Another wallet while the panel is mounted: read that wallet's choice
+  useEffect(() => setIsHidden(readHiddenValues(address)), [address]);
+
+  const toggle = useCallback(() => {
+    setIsHidden((wasHidden) => {
+      const nextHidden = !wasHidden;
+      try {
+        localStorage.setItem(hiddenValuesKey(address), String(nextHidden));
+      } catch {
+        // Storage blocked: the choice lasts until the panel closes
+      }
+      return nextHidden;
+    });
+  }, [address]);
+
+  return [isHidden, toggle] as const;
+}
