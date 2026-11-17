@@ -205,8 +205,10 @@
   width: 100%;
 }
 .assetTrigger {
+  box-sizing: border-box;
+  height: var(--r-size-control-medium);
   min-height: var(--r-size-control-medium);
-  padding: 10px var(--r-space-3);
+  padding: 0 var(--r-space-3);
   border-radius: var(--r-radius-sm);
 }
 .assetFace {
@@ -215,7 +217,7 @@
   align-items: center;
   min-width: 0;
 }
-.modal .assetFaceImage {
+.assetFace .assetFaceImage {
   display: block;
   width: 24px !important;
   height: 24px !important;
