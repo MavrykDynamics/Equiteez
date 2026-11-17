@@ -192,7 +192,7 @@
   cursor: pointer;
 }
 
-.assetRow:hover .assetMain > :first-child {
+.assetRow:hover .assetTitle > :first-child {
   text-decoration: underline;
 }
 
