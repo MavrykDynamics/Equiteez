@@ -599,3 +599,11 @@
   gap: var(--r-space-4);
   padding: 0;
 }
+
+/* No room below the asset select in the header panel: open the menu upwards */
+.panel .assetMenu {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: var(--r-space-2);
+}
