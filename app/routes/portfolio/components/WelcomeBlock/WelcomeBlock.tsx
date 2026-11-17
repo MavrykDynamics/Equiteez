@@ -40,8 +40,8 @@ export function WelcomeBlock({ activeTab }: { activeTab: string }) {
         type: "notification" as const,
       },
       {
-        id: ROUTES.portfolioProfile,
-        label: "Profile",
+        id: ROUTES.portfolioWallet,
+        label: "Wallet",
         icon: isKycMissing ? <KycTabMark /> : undefined,
       },
     ],

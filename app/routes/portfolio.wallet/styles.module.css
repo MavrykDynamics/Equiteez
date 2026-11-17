@@ -1,0 +1,247 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--r-space-18);
+}
+
+/* Figma "Settings and key export" (8131:518): cards 24px apart */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+/* Bordered card with 24px padding: Signing key, Security, Backup, Export */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+  padding: var(--r-space-6);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
+.sectionTitle {
+  letter-spacing: 0.2px;
+}
+
+.sectionIntro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+/* Status: an 8px dot before the text */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status::before {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  content: "";
+  background: var(--r-color-neutral-300);
+  border-radius: 50%;
+}
+
+.status[data-tone="success"]::before {
+  background: var(--r-color-green-500);
+}
+
+.status[data-tone="warning"]::before {
+  background: var(--r-color-yellow-500);
+}
+
+.statusLarge {
+  gap: var(--r-space-2);
+}
+
+.statusInfo {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  color: var(--r-color-neutral-700);
+}
+
+/* Signing key: 180px labels, 24px to the value, rows 8px apart */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  margin: 0;
+}
+
+.detail {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-6);
+}
+
+.detail dt {
+  flex-shrink: 0;
+  width: 180px;
+}
+
+.detail dd {
+  min-width: 0;
+  margin: 0;
+}
+
+.sectionFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--r-space-4);
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+/* Security: rows 14px top and bottom, divided */
+.securityList {
+  display: flex;
+  flex-direction: column;
+}
+
+.securityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+  padding: 14px 0;
+}
+
+.securityRow:not(:last-child) {
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.securityRow > div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Backup · Export private key: two equal cards, 12px inside */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--r-space-6);
+}
+
+.column {
+  gap: var(--r-space-3);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.fullButton {
+  width: 100%;
+}
+
+.infoMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  background: var(--r-color-neutral-50);
+  border-radius: var(--r-radius-12);
+}
+
+.infoMessage > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* KYC Info: 24px / 24px / 32px, 24px under the title */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  padding: var(--r-space-6) var(--r-space-6) var(--r-space-8);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+}
+
+.kyc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+}
+
+.kycRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+}
+
+.kycRow > button {
+  flex-shrink: 0;
+}
+
+.message {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  border-radius: var(--r-radius-12);
+}
+
+.warning {
+  background: var(--r-surface-warning);
+}
+
+.success {
+  background: #def1e7;
+}
+
+.neutral {
+  background: var(--r-color-neutral-50);
+}
+
+.messageIcon {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.messageText {
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.messageText p {
+  margin: 0;
+}
+
+.error {
+  margin: 0;
+  color: var(--r-color-red-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+@media (--media-tablet-max) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  .detail {
+    flex-direction: column;
+    gap: 0;
+  }
+}

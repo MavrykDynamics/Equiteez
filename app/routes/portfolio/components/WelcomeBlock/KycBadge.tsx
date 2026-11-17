@@ -22,7 +22,7 @@ export function KycBadge({ status }: { status: KycStatus }) {
   );
 }
 
-/** The mark on the Profile tab while KYC is missing. */
+/** The mark on the Wallet tab while KYC is missing. */
 export function KycTabMark() {
   return (
     <span aria-label="Not verified" className={styles.tabMark} role="img">

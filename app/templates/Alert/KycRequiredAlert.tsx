@@ -1,6 +1,6 @@
 /**
  * Trading needs KYC. With self-service KYC the user verifies in Portfolio →
- * Profile; otherwise through Mavryk Pro in Mavryk Wallet, as before.
+ * Wallet; otherwise through Mavryk Pro in Mavryk Wallet, as before.
  */
 import { Link } from "@remix-run/react";
 
@@ -24,10 +24,10 @@ export function KycRequiredAlert() {
   return (
     <RAlert type="warning" header="Verify Your Wallet to Trade">
       Trading on Equiteez requires KYC verification.{" "}
-      <Link className={styles.link} to={ROUTES.portfolioProfile}>
+      <Link className={styles.link} to={ROUTES.portfolioWallet}>
         Start KYC
       </Link>{" "}
-      in your profile.
+      in your wallet settings.
     </RAlert>
   );
 }

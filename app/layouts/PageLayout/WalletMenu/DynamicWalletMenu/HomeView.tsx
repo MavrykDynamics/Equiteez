@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 
+import { ROUTES } from "~/consts";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -23,8 +24,6 @@ import {
 } from "./useWalletPanelAssets";
 import styles from "./DynamicWalletPanel.module.css";
 
-/** The wallet settings page, added later */
-const WALLET_SETTINGS_PATH = "/portfolio/wallet";
 const SKELETON_ROWS = 3;
 
 const formatTime = (timestamp: number) =>
@@ -193,7 +192,7 @@ export function HomeView({
         <Link
           className={styles.footerLink}
           onClick={onClose}
-          to={WALLET_SETTINGS_PATH}
+          to={ROUTES.portfolioWallet}
         >
           <RIcon aria-hidden="true" name="settings" size="small" />
           Wallet settings

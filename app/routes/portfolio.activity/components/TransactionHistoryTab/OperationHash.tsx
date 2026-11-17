@@ -14,6 +14,8 @@ type OperationHashProps = {
   copyLabel?: string;
   display?: "full" | "short";
   operationHash: string;
+  /** False for values Nexus has no page for, such as a public key */
+  withNexusLink?: boolean;
 };
 
 function getShortHash(hash: string) {
@@ -37,6 +39,7 @@ export function OperationHash({
   copyLabel = "Copy hash",
   display = "short",
   operationHash,
+  withNexusLink = true,
 }: OperationHashProps) {
   const nexusEntityPath = getNexusEntityPath(operationHash);
   const copyTooltipRef = useTippy<HTMLDivElement>(
@@ -92,21 +95,23 @@ export function OperationHash({
         </span>
       </div>
 
-      <a
-        aria-label={
-          nexusEntityPath === "operation"
-            ? "View transaction in Nexus"
-            : "View in Nexus"
-        }
-        className={styles.actionLink}
-        href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
-        onClick={handleActionClick}
-        ref={nexusTooltipRef}
-        rel="noreferrer"
-        target="_blank"
-      >
-        <RIcon name="arrow-long-up-right" size="small" />
-      </a>
+      {withNexusLink && (
+        <a
+          aria-label={
+            nexusEntityPath === "operation"
+              ? "View transaction in Nexus"
+              : "View in Nexus"
+          }
+          className={styles.actionLink}
+          href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
+          onClick={handleActionClick}
+          ref={nexusTooltipRef}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <RIcon name="arrow-long-up-right" size="small" />
+        </a>
+      )}
     </span>
   );
 }

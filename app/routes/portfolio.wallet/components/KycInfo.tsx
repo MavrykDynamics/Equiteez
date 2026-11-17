@@ -2,6 +2,7 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
+import { RButton } from "~/lib/atoms/RButton";
 import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { isKycSelfServiceEnabled } from "~/lib/kyc/kyc.config";
 import { useKycRegistration } from "~/lib/kyc/useKycRegistration";
@@ -86,19 +87,18 @@ export function KycInfo() {
     );
   }
 
+  // Figma "KYC Info": the message on the left, "Start KYC" on the right
   return (
     <div className={styles.kyc}>
-      <Message icon="warning" tone="warning">
-        Complete verification to unlock all platform features. It&apos;s quick
-        and secure.{" "}
-        <button
-          className={styles.link}
-          onClick={() => void start()}
-          type="button"
-        >
+      <div className={styles.kycRow}>
+        <Message icon="warning" tone="warning">
+          Complete verification to unlock all platform features. It&apos;s quick
+          and secure.
+        </Message>
+        <RButton onClick={() => void start()} size="small" tone="black">
           {state.name === "failed" ? "Try again" : "Start KYC"}
-        </button>
-      </Message>
+        </RButton>
+      </div>
       {state.name === "failed" && (
         <p className={styles.error} role="alert">
           {state.message}

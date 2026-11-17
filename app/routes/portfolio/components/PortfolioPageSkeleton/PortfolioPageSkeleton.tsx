@@ -6,7 +6,7 @@ import mobileStyles from "../MobilePortfolio/styles.module.css";
 import welcomeStyles from "../WelcomeBlock/styles.module.css";
 import styles from "./PortfolioPageSkeleton.module.css";
 
-// Overview, Activity, Notifications, Profile
+// Overview, Activity, Notifications, Wallet
 const TAB_WIDTHS = [97, 84, 118, 77];
 const METRICS_COUNT = 3;
 const TABLE_COLUMNS_COUNT = 6;
@@ -39,7 +39,7 @@ export type PortfolioPageSkeletonVariant =
   | "overview"
   | "activity"
   | "notifications"
-  | "profile"
+  | "wallet"
   | "none";
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
@@ -213,10 +213,18 @@ function NotificationsSkeleton() {
   );
 }
 
-// Profile: the "KYC Info" card with its one-line status message
-function ProfileSkeleton() {
+// Wallet: the "Signing key" card (title and its six rows) over "KYC Info"
+function WalletSkeleton() {
   return (
     <div className={styles.content}>
+      <RSkeleton className={styles.walletCard} radius="md" variant="surface">
+        <RSkeleton radius="none" className={styles.walletTitle} />
+        <div className={styles.walletRows}>
+          {range(6).map((index) => (
+            <RSkeleton key={index} radius="none" className={styles.walletRow} />
+          ))}
+        </div>
+      </RSkeleton>
       <RSkeleton className={styles.profileCard} radius="md" variant="surface">
         <RSkeleton radius="none" className={styles.profileTitle} />
         <RSkeleton radius="12" className={styles.profileMessage} />
@@ -229,7 +237,7 @@ const BODY_SKELETONS: Record<PortfolioPageSkeletonVariant, ComponentType> = {
   overview: OverviewSkeleton,
   activity: ActivitySkeleton,
   notifications: NotificationsSkeleton,
-  profile: ProfileSkeleton,
+  wallet: WalletSkeleton,
   none: () => null,
 };
 

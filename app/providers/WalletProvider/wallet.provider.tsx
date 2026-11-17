@@ -215,6 +215,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
           providerWalletId: session.wallet.walletId,
           address: session.wallet.address,
           publicKey: session.wallet.publicKey,
+          email: session.client.auth.authenticatedUser?.email ?? undefined,
         },
         sessionEpoch,
         slot

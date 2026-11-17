@@ -18,6 +18,8 @@ export type WalletIdentity = {
   address: string;
   /** edpk public key */
   publicKey: string;
+  /** Dynamic: the email the user signed in with */
+  email?: string;
   /** Network of the app's RPC node, which the toolkit signs for */
   chainId: string;
   /**
