@@ -2,7 +2,6 @@ import { BigNumber } from "bignumber.js";
 import clsx from "clsx";
 
 import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
-import { INTENTS_SLIPPAGE_OPTIONS_BPS } from "~/consts/intents";
 import EthereumLogo from "~/icons/ethereum-logo.svg";
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -14,6 +13,7 @@ import {
   formatBps,
   formatRawAmount,
   getIntentRouteLabel,
+  getIntentSlippageChoices,
 } from "~/lib/intents/intentRoute";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 
@@ -102,14 +102,7 @@ export function IntentsView({
     ethereumWallet.isConnecting ||
     ethereumWallet.isReconnecting ||
     isMavrykBusy;
-  // Choices above the route's maximum are hidden; a route stricter than the
-  // smallest choice offers its own maximum.
-  const allowedChoices = INTENTS_SLIPPAGE_OPTIONS_BPS.filter(
-    (bps) => bps <= route.maxSlippageBps
-  );
-  const slippageChoices: number[] = allowedChoices.length
-    ? allowedChoices
-    : [route.maxSlippageBps];
+  const slippageChoices = getIntentSlippageChoices(route.maxSlippageBps);
   const settlementAmount = (raw: string) =>
     `${formatRawAmount(raw, route.settlementDecimals)} ${destination?.symbol ?? ""}`.trim();
   const balanceNotice =

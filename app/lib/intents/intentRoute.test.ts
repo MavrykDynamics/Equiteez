@@ -11,6 +11,7 @@ import { fixtureOption, fixtureRoute } from "./intents.fixtures";
 import {
   getIntentAmountError,
   getIntentRouteLabel,
+  getIntentSlippageChoices,
   getIntentSlippageError,
   isIntentRecipient,
   resolveIntentRoute,
@@ -130,5 +131,16 @@ describe("amounts and inputs", () => {
   it("limits slippage to the route maximum", () => {
     expect(getIntentSlippageError(fixtureOption, 300)).toBeNull();
     expect(getIntentSlippageError(fixtureOption, 301)).toMatch(/at most 3%/);
+  });
+});
+
+describe("getIntentSlippageChoices", () => {
+  it("hides choices above the route maximum", () => {
+    expect(getIntentSlippageChoices(100)).toEqual([10, 50, 100]);
+    expect(getIntentSlippageChoices(50)).toEqual([10, 50]);
+  });
+
+  it("offers the route maximum when it is below every choice", () => {
+    expect(getIntentSlippageChoices(5)).toEqual([5]);
   });
 });

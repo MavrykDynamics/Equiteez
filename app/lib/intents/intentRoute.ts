@@ -1,6 +1,10 @@
 import { BigNumber } from "bignumber.js";
 
-import type { IntentBridgePair, IntentSourceAsset } from "~/consts/intents";
+import {
+  INTENTS_SLIPPAGE_OPTIONS_BPS,
+  type IntentBridgePair,
+  type IntentSourceAsset,
+} from "~/consts/intents";
 import type { IntentRoute } from "~/lib/apis/intents";
 import { mavrykRecipientSchema } from "~/lib/apis/intents/intents.schema";
 
@@ -178,3 +182,14 @@ export const getIntentSlippageError = (
 
 export const formatBps = (bps: number) =>
   `${new BigNumber(bps).div(100).toFormat()}%`;
+
+/**
+ * Slippage choices for a route: options above its maximum are hidden, and a
+ * route stricter than the smallest option offers its own maximum.
+ */
+export function getIntentSlippageChoices(maxSlippageBps: number): number[] {
+  const allowed = INTENTS_SLIPPAGE_OPTIONS_BPS.filter(
+    (bps) => bps <= maxSlippageBps
+  );
+  return allowed.length ? allowed : [maxSlippageBps];
+}

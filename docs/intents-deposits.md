@@ -74,6 +74,7 @@ In mock mode the funding step also offers **Simulate Funding**.
 | Persisted store, tracker, widget mapping, receipts | `app/providers/TransactionsProvider/intent*.ts` |
 | Modal orchestration | `app/hooks/useIntentsDeposit.ts`, `useIntentsRoutes.ts` |
 | Views | `DepositFunds/components/Intents{View,QuoteView,FundingPanel,StatusView}.tsx` |
+| Test page (`/universal-send`, header **Universal Send**) | `app/routes/universal-send/`: same hook and quote/funding/status views on a page; temporary layout until the design is ready |
 
 ## Access
 
