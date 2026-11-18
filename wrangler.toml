@@ -19,7 +19,7 @@ GRAPHQL_WSS_API="wss:/basenet.api.equiteez.com/v1/graphql"
 NODE_VERSION="22.11.0"
 RWA_API="https://test-api.rwa.equiteez.com/api/v1"
 RWA_SERVICES_API="https://services.api.mavryk.network/v1/rwa"
-INTENTS_DEPOSIT_ENABLED=true
+INTENTS_DEPOSIT_ENABLED="true"
 INTENTS_API="https://basenet.bridge-api.mavryk.network"
 
 [env.production.vars]
@@ -35,5 +35,5 @@ GRAPHQL_WSS_API="wss:/basenet.api.equiteez.com/v1/graphql"
 NODE_VERSION="22.11.0"
 RWA_API="https://api.rwa.equiteez.com/api/v1"
 RWA_SERVICES_API="https://services.api.mavryk.network/v1/rwa"
-INTENTS_DEPOSIT_ENABLED=true
+INTENTS_DEPOSIT_ENABLED="true"
 INTENTS_API="https://basenet.bridge-api.mavryk.network"
