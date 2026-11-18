@@ -3,6 +3,7 @@ import {
   AccountInfo,
   BeaconEvent,
   NetworkType,
+  SigningType,
 } from "@mavrykdynamics/beacon-dapp";
 import { MavrykToolkit } from "@mavrykdynamics/taquito";
 import type { BeaconWallet as BeaconWalletType } from "@mavrykdynamics/taquito-beacon-wallet";
@@ -26,7 +27,7 @@ const DAPP_METADATA = {
   preferredNetwork: WALLET_NETWORK,
 };
 
-const getRpcNode = (): RPCNodeType => {
+export const getRpcNode = (): RPCNodeType => {
   const rpcNode =
     getItemFromStorage<RPCNodeType>(RPC_NODE, rpcNodeSchema) ??
     basenetNetRpcnode;
@@ -103,6 +104,31 @@ export function dappClient() {
     return Tezos;
   }
 
+  /**
+   * Signs complete PACK bytes (starting with 05) with the active account.
+   * MICHELINE, not RAW: RAW makes the extension add its own envelope.
+   */
+  async function signMichelinePayload(payload: string) {
+    const client = getDAppClient();
+    const account = await client.getActiveAccount();
+
+    if (!account?.address || !account.publicKey) {
+      throw new Error("No active account");
+    }
+
+    const { signature } = await client.requestSignPayload({
+      payload,
+      sourceAddress: account.address,
+      signingType: SigningType.MICHELINE,
+    });
+
+    return {
+      address: account.address,
+      publicKey: account.publicKey,
+      signature,
+    };
+  }
+
   async function disconnectWallet() {
     try {
       const wallet = getDAppClientWallet();
@@ -120,6 +146,7 @@ export function dappClient() {
     getDAppClient,
     connectAccount,
     tezos,
+    signMichelinePayload,
     disconnectWallet,
   };
 }

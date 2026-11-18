@@ -1,7 +1,7 @@
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./styles.module.css";
-import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { RButton } from "~/lib/atoms/RButton";
 
 export function OpenOrdersConnectWalletState({
@@ -11,7 +11,7 @@ export function OpenOrdersConnectWalletState({
   title?: string;
   description?: string;
 }) {
-  const { connect } = useUserContext();
+  const openConnectWallet = useConnectWallet();
 
   return (
     <section className={styles.state}>
@@ -25,7 +25,12 @@ export function OpenOrdersConnectWalletState({
       >
         {description}
       </RText>
-      <RButton onClick={connect} size="medium" tone="black" variant="primary">
+      <RButton
+        onClick={() => openConnectWallet()}
+        size="medium"
+        tone="black"
+        variant="primary"
+      >
         <RText size="body-s" weight="medium" color="neutral-white">
           Connect Wallet
         </RText>

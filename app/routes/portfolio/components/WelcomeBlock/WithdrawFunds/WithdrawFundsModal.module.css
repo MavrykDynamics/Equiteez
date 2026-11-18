@@ -205,8 +205,10 @@
   width: 100%;
 }
 .assetTrigger {
+  box-sizing: border-box;
+  height: var(--r-size-control-medium);
   min-height: var(--r-size-control-medium);
-  padding: 10px var(--r-space-3);
+  padding: 0 var(--r-space-3);
   border-radius: var(--r-radius-sm);
 }
 .assetFace {
@@ -215,7 +217,7 @@
   align-items: center;
   min-width: 0;
 }
-.modal .assetFaceImage {
+.assetFace .assetFaceImage {
   display: block;
   width: 24px !important;
   height: 24px !important;
@@ -589,4 +591,19 @@
 .successDivider {
   width: 100%;
   border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+/* The header wallet panel already pads its content: no modal padding */
+.panel .content,
+.panel .statusContent {
+  gap: var(--r-space-4);
+  padding: 0;
+}
+
+/* No room below the asset select in the header panel: open the menu upwards */
+.panel .assetMenu {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: var(--r-space-2);
 }

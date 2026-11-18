@@ -2,11 +2,12 @@ import { useState } from "react";
 
 import type { WalletPortfolioAssetType } from "~/lib/apis/rwa/wallet/wallet.types";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import { Spinner } from "~/lib/atoms/Spinner";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
 import { AssetClassChartView } from "./AssetClassChartView";
 import { WalletChartView } from "./WalletChartView";
+import { AssetsChartSkeleton } from "./AssetsStatsSkeleton";
 import styles from "./styles.module.css";
 
 type AllAssetsChartProps = {
@@ -17,7 +18,7 @@ type AllAssetsChartProps = {
 type AssetsChartView = "wallet" | "asset-class";
 
 export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
-  const { isLoading } = usePortfolioContext();
+  const { isPortfolioLoading } = usePortfolioContext();
   const [chartView, setChartView] = useState<AssetsChartView>("wallet");
 
   return (
@@ -40,15 +41,19 @@ export function AssetsChart({ assets, portfolioTotal }: AllAssetsChartProps) {
         </button>
         <RText size="body-s">By Asset Class</RText>
       </div>
-      {isLoading ? (
-        <div className={styles.chartSectionLoader} role="status" aria-live="polite">
-          <Spinner size={32} />
-        </div>
-      ) : chartView === "wallet" ? (
-        <WalletChartView assets={assets} portfolioTotal={portfolioTotal} />
-      ) : (
-        <AssetClassChartView assets={assets} portfolioTotal={portfolioTotal} />
-      )}
+      <RSkeletonReveal
+        isLoading={isPortfolioLoading}
+        skeleton={<AssetsChartSkeleton />}
+      >
+        {chartView === "wallet" ? (
+          <WalletChartView assets={assets} portfolioTotal={portfolioTotal} />
+        ) : (
+          <AssetClassChartView
+            assets={assets}
+            portfolioTotal={portfolioTotal}
+          />
+        )}
+      </RSkeletonReveal>
     </aside>
   );
 }

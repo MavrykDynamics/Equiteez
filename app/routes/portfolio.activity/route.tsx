@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { fetchWalletActivitySummary } from "~/lib/apis/rwa";
 import { useFreshQuery } from "~/lib/apis/rwa/freshness";
 import styles from "./styles.module.css";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import Money from "~/lib/atoms/Money";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -57,6 +58,8 @@ export default function PortfolioActivity() {
     [activitySummaryQuery.data?.open_orders]
   );
 
+  // First load only; freshness polling keeps the previous counts on screen
+  const isSummaryLoading = activitySummaryQuery.isPending;
   const onChainActivity = activitySummaryQuery.data?.onchain_events ?? null;
   const openOrders = activitySummaryQuery.data?.open_orders ?? null;
   const transfers = activitySummaryQuery.data?.transfers ?? null;
@@ -82,13 +85,24 @@ export default function PortfolioActivity() {
             <RText color="neutral-700" size="body-s" weight="medium">
               On-chain Activity
             </RText>
-            <RHeading color="neutral-black" size="h4" weight="medium">
-              {onChainActivity === null ? (
-                "—"
-              ) : (
-                <Money tooltip={false}>{onChainActivity}</Money>
-              )}
-            </RHeading>
+            <RSkeletonReveal
+              isLoading={isSummaryLoading}
+              skeleton={
+                <RSkeleton
+                  radius="none"
+                  className={styles.statValueSkeleton}
+                  variant="surface"
+                />
+              }
+            >
+              <RHeading color="neutral-black" size="h4" weight="medium">
+                {onChainActivity === null ? (
+                  "—"
+                ) : (
+                  <Money tooltip={false}>{onChainActivity}</Money>
+                )}
+              </RHeading>
+            </RSkeletonReveal>
             <RText color="neutral-700" size="body-s">
               Events recorded across portfolio
             </RText>
@@ -98,13 +112,24 @@ export default function PortfolioActivity() {
             <RText color="neutral-700" size="body-s" weight="medium">
               Open Orders
             </RText>
-            <RHeading color="neutral-black" size="h4" weight="medium">
-              {openOrders === null ? (
-                "—"
-              ) : (
-                <Money tooltip={false}>{openOrders}</Money>
-              )}
-            </RHeading>
+            <RSkeletonReveal
+              isLoading={isSummaryLoading}
+              skeleton={
+                <RSkeleton
+                  radius="none"
+                  className={styles.statValueSkeleton}
+                  variant="surface"
+                />
+              }
+            >
+              <RHeading color="neutral-black" size="h4" weight="medium">
+                {openOrders === null ? (
+                  "—"
+                ) : (
+                  <Money tooltip={false}>{openOrders}</Money>
+                )}
+              </RHeading>
+            </RSkeletonReveal>
             <RText color="neutral-700" size="body-s">
               Resting on the book
             </RText>
@@ -114,13 +139,24 @@ export default function PortfolioActivity() {
             <RText color="neutral-700" size="body-s" weight="medium">
               Transfers
             </RText>
-            <RHeading color="neutral-black" size="h4" weight="medium">
-              {transfers === null ? (
-                "—"
-              ) : (
-                <Money tooltip={false}>{transfers}</Money>
-              )}
-            </RHeading>
+            <RSkeletonReveal
+              isLoading={isSummaryLoading}
+              skeleton={
+                <RSkeleton
+                  radius="none"
+                  className={styles.statValueSkeleton}
+                  variant="surface"
+                />
+              }
+            >
+              <RHeading color="neutral-black" size="h4" weight="medium">
+                {transfers === null ? (
+                  "—"
+                ) : (
+                  <Money tooltip={false}>{transfers}</Money>
+                )}
+              </RHeading>
+            </RSkeletonReveal>
             <RText color="neutral-700" size="body-s">
               Deposits & withdrawals
             </RText>

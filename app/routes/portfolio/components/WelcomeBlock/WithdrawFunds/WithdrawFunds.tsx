@@ -11,6 +11,8 @@ export function WithdrawFunds() {
 
   return (
     <>
+      {/* Always opens: when the wallet may not withdraw, the modal's submit
+          button is disabled and says why */}
       <RButton
         className={styles.withdrawButton}
         iconLeft={<RIcon aria-hidden="true" name="arrow-long-up" />}

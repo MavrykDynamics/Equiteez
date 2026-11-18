@@ -15,7 +15,7 @@ import { AssetIcon } from "~/templates/AssetIcon";
 
 import { RTransferTypeIcon } from "./RTransferTypeIcon";
 import styles from "./DepositDetailsModal.module.css";
-import { getTypeLabel } from "~/routes/portfolio.activity/components/DepositsTab/DepositsTableRow";
+import { getTypeLabel } from "./depositTypeLabel";
 
 type DepositDetailsModalProps = {
   deposit: TransferHistoryItemType;
@@ -104,7 +104,11 @@ export function DepositDetailsModal({
           </Detail>
           <Detail label="Network Commission">-</Detail>
           <Detail label="Sender">
-            {deposit.from ? <OperationHash operationHash={deposit.from} /> : "-"}
+            {deposit.from ? (
+              <OperationHash operationHash={deposit.from} />
+            ) : (
+              "-"
+            )}
           </Detail>
           <Detail label="TxID">
             <OperationHash operationHash={deposit.operation_hash} />

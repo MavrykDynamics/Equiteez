@@ -1,62 +1,31 @@
-import { Link } from "@remix-run/react";
-
-import { ROUTES } from "~/consts/routes";
 import { RButton } from "~/lib/atoms/RButton";
-import { HashShortView } from "~/lib/atoms/HashShortView";
-import IdentIcon from "~/lib/organisms/IdenIcon";
-import {
-  RCustomDropdown,
-  RDropdownBodyContent,
-  RDropdownBodyContentItem,
-  RDropdownFaceContent,
-} from "~/lib/organisms/RCustomDropdown/RCustomDropdown";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
+import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
 import styles from "./ConnectWallet.module.css";
+import { DynamicWalletMenu } from "./WalletMenu/DynamicWalletMenu/DynamicWalletMenu";
+import { MavrykWalletMenu } from "./WalletMenu/MavrykWalletMenu";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 export const ConnectWallet = () => {
-  const { changeUser, connect, isLoading, signOut, userAddress } =
-    useUserContext();
+  const { isLoading, userAddress } = useUserContext();
+  const { identity } = useWalletContext();
+  const openConnectWallet = useConnectWallet();
+  const isEmailWallet = identity?.provider === "dynamic";
 
-  const handleConnect = () => {
-    // Opening the wallet popup should not trigger RButton's async loading state.
-    void Promise.resolve()
-      .then(connect)
-      .catch(() => {
-        console.error("Failed to connect wallet.");
-      });
-  };
+  // Opens the sign-in modal (or Mavryk Wallet directly without email wallets)
+  const handleConnect = () => openConnectWallet();
 
   return (
     <CustomSuspense loading={isLoading}>
       {userAddress ? (
-        <RCustomDropdown className={styles.dropdown}>
-          <RDropdownFaceContent className={styles.trigger}>
-            <IdentIcon
-              className={styles.identIcon}
-              hash={userAddress}
-              size={24}
-              type="bottts"
-            />
-            <RText size="body-sm" className={styles.address}>
-              <HashShortView hash={userAddress} />
-            </RText>
-          </RDropdownFaceContent>
-
-          <RDropdownBodyContent align="right" className={styles.menu}>
-            <Link className={styles.profileLink} to={ROUTES.portfolio}>
-              Portfolio
-            </Link>
-            <RDropdownBodyContentItem onClick={changeUser}>
-              Change account
-            </RDropdownBodyContentItem>
-            <RDropdownBodyContentItem onClick={signOut}>
-              Sign out
-            </RDropdownBodyContentItem>
-          </RDropdownBodyContent>
-        </RCustomDropdown>
+        isEmailWallet ? (
+          <DynamicWalletMenu address={userAddress} />
+        ) : (
+          <MavrykWalletMenu address={userAddress} />
+        )
       ) : (
         <RButton
           onClick={handleConnect}

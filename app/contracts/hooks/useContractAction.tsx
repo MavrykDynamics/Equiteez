@@ -18,12 +18,17 @@ import { txTemplates } from "~/providers/PopupProvider/consts";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { forcedUpdateProxy } from "~/providers/ApolloProvider/utils/observeForcedUpdate";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
-import { checkWhetherWalletAbortError, unknownToError } from "~/errors/error";
+import { unknownToError } from "~/errors/error";
+import { executeTrackedAction } from "~/services/direct/executor";
+import { assertActionAvailable } from "~/providers/WalletProvider/capabilities";
+import { toCapabilityContext } from "~/providers/WalletProvider/useActionAvailability";
 import type {
   ContractActionConfirmation,
   ContractActionLifecycleCallbacks,
   ContractActionSuccessMetadata,
+  DirectExecutionOptions,
 } from "../actions.type";
+import { classifyContractActionError } from "./contractActionError";
 
 // Simplified version to handle operation calls
 
@@ -55,32 +60,16 @@ type ContractActionFn<G extends object> = (
 
 type ContractActionOptions = {
   onSuccess?: (metadata: ContractActionSuccessMetadata) => void;
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const getStringField = (value: Record<string, unknown>, key: string) => {
-  const field = value[key];
-
-  return typeof field === "string" ? field : "";
-};
-
-const isWalletAbortActionError = (rawError: unknown) => {
-  if (checkWhetherWalletAbortError(rawError)) return true;
-
-  if (!isRecord(rawError)) return false;
-
-  const name = getStringField(rawError, "name");
-  const title = getStringField(rawError, "title");
-  const message = getStringField(rawError, "message").toLowerCase();
-
-  return (
-    name === "AbortError" ||
-    name === "AbortedBeaconError" ||
-    title === "Aborted" ||
-    message.includes("aborted")
-  );
+  /**
+   * Names the action for duplicate protection, e.g. "orderbook.buy". The
+   * same action with the same arguments is one intent.
+   */
+  action?: string;
+  /**
+   * Read when the action starts, e.g. the network cost shown to the user.
+   * Kept out of the action's arguments, so it does not change the intent.
+   */
+  getExecutionOverrides?: () => Partial<DirectExecutionOptions>;
 };
 
 export const useContractAction = <G extends object>(
@@ -90,14 +79,18 @@ export const useContractAction = <G extends object>(
   toastMessages: ContractActionToastProps | undefined = undefined,
   contractActionOptions: ContractActionOptions = {}
 ) => {
-  const { dapp } = useWalletContext();
+  const { getIdentity, getToolkit, directExecution } = useWalletContext();
   const { status, dispatch, isLoading } = useStatusFlag();
   const { showPopup, popupKeys, hidePopup } = usePopupContext();
-  const { success, bug, loading, hideToasterMessage } = useToasterContext();
-  const { onSuccess } = contractActionOptions;
+  const { success, bug, loading, warning, hideToasterMessage } =
+    useToasterContext();
+  const { onSuccess, action, getExecutionOverrides } = contractActionOptions;
   const hasSubmittedRef = useRef(false);
   const confirmationRef = useRef<ContractActionConfirmation | null>(null);
   const isMountedRef = useRef(true);
+  // One invocation at a time per hook: a second click must not reset the
+  // refs or status of the transaction already in flight
+  const isInFlightRef = useRef(false);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -126,6 +119,9 @@ export const useContractAction = <G extends object>(
   }, [popupDetails, popupKeys, showPopup]);
 
   const invokeAction = useCallback(async () => {
+    if (isInFlightRef.current) return;
+    isInFlightRef.current = true;
+
     let pendingToastId: string | undefined;
 
     const hidePendingToast = () => {
@@ -139,35 +135,58 @@ export const useContractAction = <G extends object>(
     confirmationRef.current = null;
 
     try {
-      const tezos = dapp?.tezos();
+      const tezos = getToolkit();
 
       if (!tezos) return;
+
+      const actionName =
+        action ?? popupDetails?.key ?? (actionFn.name || "action");
+      const identity = getIdentity();
+
+      // Also enforced for a stale or forgotten control
+      if (identity) {
+        assertActionAvailable(actionName, toCapabilityContext(identity));
+      }
 
       dispatchIfMounted(STATUS_PENDING);
 
       const lifecycleCallbacks =
         args as Partial<ContractActionLifecycleCallbacks>;
 
-      await actionFn({
-        ...args,
-        tezos,
-        onTransactionSubmitted: () => {
-          lifecycleCallbacks.onTransactionSubmitted?.();
-          hasSubmittedRef.current = true;
-          dispatchIfMounted(STATUS_CONFIRMING);
-          showTransactionPopup();
-          if (toastMessages?.pending && !pendingToastId) {
-            pendingToastId = loading(
-              toastMessages.pending.title,
-              toastMessages.pending.message,
-              false
-            );
-          }
-        },
-        onTransactionConfirmed: (confirmation) => {
-          confirmationRef.current = confirmation;
-          lifecycleCallbacks.onTransactionConfirmed?.(confirmation);
-        },
+      await executeTrackedAction({
+        tracking: directExecution?.tracking ?? null,
+        action: actionName,
+        intent: args,
+        run: (hooks) =>
+          Promise.resolve(
+            actionFn({
+              ...args,
+              tezos,
+              execution: directExecution && {
+                ...directExecution.options,
+                ...getExecutionOverrides?.(),
+              },
+              onTransactionSubmitted: (submission) => {
+                if (submission) hooks.onSubmitted(submission.opHash);
+                lifecycleCallbacks.onTransactionSubmitted?.(submission);
+                hasSubmittedRef.current = true;
+                dispatchIfMounted(STATUS_CONFIRMING);
+                showTransactionPopup();
+                if (toastMessages?.pending && !pendingToastId) {
+                  pendingToastId = loading(
+                    toastMessages.pending.title,
+                    toastMessages.pending.message,
+                    false
+                  );
+                }
+              },
+              onTransactionConfirmed: (confirmation) => {
+                hooks.onApplied();
+                confirmationRef.current = confirmation;
+                lifecycleCallbacks.onTransactionConfirmed?.(confirmation);
+              },
+            })
+          ),
       });
 
       hidePendingToast();
@@ -196,9 +215,26 @@ export const useContractAction = <G extends object>(
         await hidePopup(popupKeys[popupDetails.key]);
       }
 
-      if (!hasTransactionSubmitted && isWalletAbortActionError(e)) {
+      const errorKind = classifyContractActionError(e, {
+        hasSubmitted: hasTransactionSubmitted,
+      });
+
+      // Another tab is submitting the same action: leave the status alone
+      if (errorKind === "in-progress") return;
+
+      if (errorKind === "abort") {
         dispatchIfMounted(STATUS_ERROR);
         await sleep(2000);
+        dispatchIfMounted(STATUS_IDLE);
+        return;
+      }
+
+      if (errorKind === "still-processing") {
+        warning(
+          "Transaction is still processing",
+          unknownToError(e)?.message ||
+            "Your transaction was sent. Check its status before trying again."
+        );
         dispatchIfMounted(STATUS_IDLE);
         return;
       }
@@ -210,12 +246,18 @@ export const useContractAction = <G extends object>(
       await sleep(2000);
 
       dispatchIfMounted(STATUS_IDLE);
+    } finally {
+      isInFlightRef.current = false;
     }
   }, [
+    action,
     actionFn,
     args,
     bug,
-    dapp,
+    directExecution,
+    getExecutionOverrides,
+    getIdentity,
+    getToolkit,
     dispatchIfMounted,
     hidePopup,
     hideToasterMessage,
@@ -228,6 +270,7 @@ export const useContractAction = <G extends object>(
     toastMessages?.pending,
     toastMessages?.success?.message,
     toastMessages?.success?.title,
+    warning,
   ]);
 
   return { invokeAction, isLoading, status };

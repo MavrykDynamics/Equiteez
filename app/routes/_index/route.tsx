@@ -1,25 +1,23 @@
 import { Container } from "~/lib/atoms/Container/Container";
-import { Reveal } from "~/lib/atoms/Reveal/Reveal";
 import { Highlights } from "~/routes/_index/components/Highlights/Highlights";
 import { ExploreAssets } from "~/routes/_index/components/ExploreAssets/ExploreAssets";
 import { BannerBlock } from "~/routes/_index/components/BannerBlock/BannerBlock";
 
+// Blocks are not wrapped in <Reveal>: it renders hidden on the server, which
+// would hide the skeletons until hydration. Each block reveals itself instead.
 export default function DiscoverOverview() {
   return (
     <>
-      <Reveal as="section" preset="image">
+      <section>
         <BannerBlock />
-      </Reveal>
-      <Reveal as="section" delay={0.08}>
+      </section>
+      <section>
         <Highlights />
-      </Reveal>
+      </section>
       <Container>
-        <Reveal
-          as="section"
-          viewport={{ amount: 0.1, margin: "0px 0px 40% 0px", once: true }}
-        >
+        <section>
           <ExploreAssets />
-        </Reveal>
+        </section>
       </Container>
     </>
   );

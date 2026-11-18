@@ -60,6 +60,7 @@ export function OrderItem({
     actionLabel,
     handleClosePopup,
     handleOpenPopup,
+    unavailableReason,
     handleOrderAction,
     isPopupOpen,
     popupDescription,
@@ -114,10 +115,15 @@ export function OrderItem({
             {renderNullableFiatValue(order.quote_token.total, "USDT")}
           </RText>
         </td>
-        <td className={styles.actions} data-label="Actions">
+        <td
+          className={styles.actions}
+          data-label="Actions"
+          title={unavailableReason}
+        >
           <button
             aria-label={actionLabel}
             className={styles.actionsButton}
+            disabled={Boolean(unavailableReason)}
             type="button"
             onClick={handleOpenPopup}
           >

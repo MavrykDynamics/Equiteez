@@ -15,7 +15,7 @@ import {
   AuthVerifyRequest,
   AuthVerifyResponse,
 } from "~/providers/AuthProvider/auth.provider.types";
-import { signAuthChallenge } from "~/providers/AuthProvider/helpers/utils";
+import { buildAuthPayloadHex } from "~/providers/AuthProvider/helpers/utils";
 import { rwaApi } from "~/lib/apis/rwa/client";
 import {
   getAuthTokensFromStorage,
@@ -51,7 +51,7 @@ const getAuthenticatedWalletAddress = (accessToken?: string | null) =>
   getAuthJwtWalletAddress(accessToken);
 
 export const AuthProvider = ({ children }: Props) => {
-  const { dapp } = useWalletContext();
+  const { getIdentity, signAuthPayload } = useWalletContext();
   const { IS_WEB } = useAppContext();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authenticatedWalletAddress, setAuthenticatedWalletAddress] = useState<
@@ -173,10 +173,10 @@ export const AuthProvider = ({ children }: Props) => {
     setIsAuthLoading(true);
 
     try {
-      if (IS_WEB && dapp) {
-        const activeAccount = await dapp.getDAppClient().getActiveAccount();
+      if (IS_WEB) {
+        const identity = getIdentity();
 
-        if (!activeAccount?.address) {
+        if (!identity?.address) {
           await clearAuthSession();
           setIsAuthenticated(false);
           setAuthenticatedWalletAddress(null);
@@ -184,18 +184,23 @@ export const AuthProvider = ({ children }: Props) => {
         }
 
         const { nonce, challenge } = await requestAuthChallenge({
-          walletAddress: activeAccount.address,
+          walletAddress: identity.address,
         });
-        const signedChallenge = await signAuthChallenge(challenge);
+        const signedChallenge = await signAuthPayload(
+          buildAuthPayloadHex(challenge)
+        );
+
+        // The signature proves this exact account: never send it for another
+        if (getIdentity()?.epoch !== identity.epoch) {
+          throw new Error("Your wallet changed while signing in.");
+        }
 
         const authResponse = await verifyAuthSignature({
           nonce,
           signature: signedChallenge.signature,
           publicKey: signedChallenge.publicKey,
-          // @ts-expect-error Beacon signer format is narrowed by wallet provider.
-          format: signedChallenge.format,
-          walletAddress: activeAccount.address,
-          // @ts-expect-error Beacon wallet provider is narrowed by signer.
+          format: "micheline_string",
+          walletAddress: identity.address,
           walletProvider: signedChallenge.walletProvider,
         });
         setAuthenticatedWalletAddress(
@@ -216,7 +221,13 @@ export const AuthProvider = ({ children }: Props) => {
     } finally {
       setIsAuthLoading(false);
     }
-  }, [IS_WEB, dapp, requestAuthChallenge, verifyAuthSignature]);
+  }, [
+    IS_WEB,
+    getIdentity,
+    requestAuthChallenge,
+    signAuthPayload,
+    verifyAuthSignature,
+  ]);
 
   const providerValue = useMemo(
     () => ({
@@ -226,13 +237,7 @@ export const AuthProvider = ({ children }: Props) => {
       isAuthenticated,
       isAuthLoading,
     }),
-    [
-      logout,
-      login,
-      authenticatedWalletAddress,
-      isAuthenticated,
-      isAuthLoading,
-    ]
+    [logout, login, authenticatedWalletAddress, isAuthenticated, isAuthLoading]
   );
 
   return (

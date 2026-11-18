@@ -24,14 +24,19 @@ export function AssetsTableRow({ asset }: AllAssetsTableRowProps) {
             assetSlug={toTokenSlug(asset.token_address)}
             className={styles.tokenIcon}
           />
-          <span>
-            <RText className={styles.blockText} size="body-sm" weight="medium">
+          <span className={styles.assetText}>
+            <RText
+              className={styles.assetSymbol}
+              size="body-sm"
+              weight="medium"
+            >
               {asset.symbol.toUpperCase()}
             </RText>
             <RText
               className={styles.assetName}
               color="neutral-700"
               size="body-s"
+              title={asset.name}
             >
               {asset.name}
             </RText>

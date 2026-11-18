@@ -10,8 +10,12 @@ import styles from "./OperationHash.module.css";
 
 type OperationHashProps = {
   className?: string;
+  /** The copy tooltip: "Copy address" when the hash is an address */
+  copyLabel?: string;
   display?: "full" | "short";
   operationHash: string;
+  /** False for values Nexus has no page for, such as a public key */
+  withNexusLink?: boolean;
 };
 
 function getShortHash(hash: string) {
@@ -32,21 +36,23 @@ function getNexusEntityPath(operationHash: string) {
 
 export function OperationHash({
   className,
+  copyLabel = "Copy hash",
   display = "short",
   operationHash,
+  withNexusLink = true,
 }: OperationHashProps) {
   const nexusEntityPath = getNexusEntityPath(operationHash);
   const copyTooltipRef = useTippy<HTMLDivElement>(
     useMemo(
       () => ({
         animation: "shift-away-subtle",
-        content: "Copy hash",
+        content: copyLabel,
         hideOnClick: false,
         placement: "top" as const,
         theme: "operation-hash",
         trigger: "mouseenter focus",
       }),
-      []
+      [copyLabel]
     )
   );
   const nexusTooltipRef = useTippy<HTMLAnchorElement>(
@@ -89,17 +95,23 @@ export function OperationHash({
         </span>
       </div>
 
-      <a
-        aria-label="View transaction in Nexus"
-        className={styles.actionLink}
-        href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
-        onClick={handleActionClick}
-        ref={nexusTooltipRef}
-        rel="noreferrer"
-        target="_blank"
-      >
-        <RIcon name="arrow-long-up-right" size="small" />
-      </a>
+      {withNexusLink && (
+        <a
+          aria-label={
+            nexusEntityPath === "operation"
+              ? "View transaction in Nexus"
+              : "View in Nexus"
+          }
+          className={styles.actionLink}
+          href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
+          onClick={handleActionClick}
+          ref={nexusTooltipRef}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <RIcon name="arrow-long-up-right" size="small" />
+        </a>
+      )}
     </span>
   );
 }

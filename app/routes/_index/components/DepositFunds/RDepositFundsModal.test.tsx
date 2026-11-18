@@ -36,6 +36,9 @@ vi.mock("~/providers/TransactionsProvider/TransactionWidgetProvider", () => ({
   }),
 }));
 vi.mock("wagmi", () => ({ useConfig: () => ({ chains: [] }) }));
+vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
+  useConnectWallet: () => vi.fn(),
+}));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ userTokensBalances: {} }),
 }));

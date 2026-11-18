@@ -1,7 +1,7 @@
 @import "../../../../styles/breakpoints.css";
 
 .wrapper {
-  --chart-height: 406px;
+  --chart-height: 412px;
 
   container-type: inline-size;
   display: flex;
@@ -459,7 +459,7 @@
   }
 
   .wrapper {
-    --chart-height: 328px;
+    --chart-height: 356px;
     width: 100%;
   }
 
@@ -470,7 +470,7 @@
 
   .chartHeader {
     flex-direction: column;
-    gap: var(--r-space-2);
+    gap: var(--r-space-3);
   }
 
   .currentPrice {

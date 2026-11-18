@@ -9,15 +9,15 @@ import { WithdrawFunds } from "./WithdrawFunds";
 import { useNotificationsContext } from "~/providers/NotificationsProvider/NotificationsProvider";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { getTrimmedHash } from "~/lib/utils";
+import { useKycStatus } from "~/lib/kyc/useKycStatus";
+import { KycBadge, KycTabMark } from "./KycBadge";
 
-export function WelcomeBlock({
-  activeTab,
-}: {
-  activeTab: string;
-}) {
+export function WelcomeBlock({ activeTab }: { activeTab: string }) {
   const navigate = useNavigate();
   const { userAddress } = useUserContext();
   const { unreadNotificationsCount } = useNotificationsContext();
+  const kycStatus = useKycStatus();
+  const isKycMissing = kycStatus.isLoaded && !kycStatus.isKyced;
 
   const tabs = useMemo(
     () => [
@@ -39,16 +39,24 @@ export function WelcomeBlock({
         count: unreadNotificationsCount || undefined,
         type: "notification" as const,
       },
+      {
+        id: ROUTES.portfolioWallet,
+        label: "Wallet",
+        icon: isKycMissing ? <KycTabMark /> : undefined,
+      },
     ],
-    [unreadNotificationsCount]
+    [isKycMissing, unreadNotificationsCount]
   );
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.welcome}>
-        <RHeading weight="medium" size="h5">
-          Welcome, {getTrimmedHash(userAddress ?? "")}
-        </RHeading>
+        <div className={styles.identity}>
+          <RHeading weight="medium" size="h5">
+            Welcome, {getTrimmedHash(userAddress ?? "")}
+          </RHeading>
+          <KycBadge status={kycStatus} />
+        </div>
         <div className={styles.actions}>
           <DepositFunds />
           <WithdrawFunds />

@@ -2,6 +2,7 @@ import {
   type AnchorHTMLAttributes,
   useState,
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   type MouseEvent,
   type ReactNode,
 } from "react";
@@ -55,10 +56,20 @@ export type RButtonAnchorProps = Omit<
     href: string;
   };
 
+/** Visual-only button for use inside another interactive element (e.g. a card link). */
+export type RButtonSpanProps = Omit<
+  HTMLAttributes<HTMLSpanElement>,
+  "children" | "className"
+> &
+  RButtonBaseProps & {
+    as: "span";
+  };
+
 export type RButtonProps =
   | RButtonButtonProps
   | RButtonLinkProps
-  | RButtonAnchorProps;
+  | RButtonAnchorProps
+  | RButtonSpanProps;
 
 const rButtonToneClassNames: Record<
   RButtonVariant,
@@ -221,6 +232,19 @@ export function RButton(props: RButtonProps) {
       >
         {content}
       </Link>
+    );
+  }
+
+  if (props.as === "span") {
+    const spanProps = omitRButtonOwnProps(props) as Omit<
+      HTMLAttributes<HTMLSpanElement>,
+      "children" | "className"
+    >;
+
+    return (
+      <span {...spanProps} className={buttonClassName}>
+        {content}
+      </span>
     );
   }
 

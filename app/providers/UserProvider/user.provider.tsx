@@ -24,7 +24,6 @@ import {
 } from "./user.provider.types";
 import { useWalletContext } from "../WalletProvider/wallet.provider";
 import { useAppContext } from "../AppProvider/AppProvider";
-import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
@@ -35,6 +34,7 @@ import {
   getHasOrdersForAddress,
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
+import { getSessionSyncAction } from "./helpers/sessionSync";
 import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
 export const userContext = React.createContext<UserContext>(undefined!);
@@ -48,16 +48,15 @@ type Props = {
  * 1. on changing user do not reopen socket, just update filter (invoke), currently hadn't found any example of it
  */
 export const UserProvider = ({ children }: Props) => {
-  const { dapp } = useWalletContext();
+  const wallet = useWalletContext();
+  const {
+    identity: walletIdentity,
+    isLoading: isWalletLoading,
+    phase: walletPhase,
+  } = wallet;
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
 
-  /**
-   * when undefined -> isLoading is true
-   * when null, there isn't active account -> isLoading false
-   * when active account was received -> isLoading false
-   */
-  const [account, setAccount] = useState<AccountInfo | null | undefined>();
   const [userCtxState, setUserCtxState] =
     useState<UserContextStateType>(DEFAULT_USER);
   const [userTzktTokens, setUserTzktTokens] = useState<UserTzKtTokenBalances>(
@@ -67,7 +66,8 @@ export const UserProvider = ({ children }: Props) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(true);
-  const accountAddress = account?.address ?? null;
+  // The connected wallet's mv1 (Mavryk Wallet or email wallet)
+  const accountAddress = walletIdentity?.address ?? null;
   const {
     authenticatedWalletAddress,
     logout,
@@ -79,7 +79,22 @@ export const UserProvider = ({ children }: Props) => {
     isAuthenticated && authenticatedWalletAddress
       ? authenticatedWalletAddress
       : null;
-  const isSwitchingAccountRef = useRef(false);
+  // connect → login or an account switch is running: the wallet may already
+  // be connected while the RWA session is not there yet
+  const [isAuthFlowActive, setIsAuthFlowActive] = useState(false);
+  const authFlowCountRef = useRef(0);
+
+  const runAuthFlow = useCallback(async (flow: () => Promise<void>) => {
+    authFlowCountRef.current += 1;
+    setIsAuthFlowActive(true);
+
+    try {
+      await flow();
+    } finally {
+      authFlowCountRef.current -= 1;
+      if (authFlowCountRef.current === 0) setIsAuthFlowActive(false);
+    }
+  }, []);
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
 
@@ -99,55 +114,60 @@ export const UserProvider = ({ children }: Props) => {
   // returns methods to communicate with wallet and get data about account
   // as well as tzkt sockets
   const { connect, signOut, changeUser } = useUserApi({
-    DAPP_INSTANCE: dapp,
+    wallet,
     setUserLoading,
     setUserCtxState,
     tzktSocket,
     setTzktSocket,
   });
-  const switchAccount = useCallback(async () => {
-    isSwitchingAccountRef.current = true;
+  const switchAccount = useCallback(
+    () =>
+      runAuthFlow(async () => {
+        await changeUser();
+        await login();
+      }),
+    [changeUser, login, runAuthFlow]
+  );
 
-    try {
-      await changeUser();
-      await login();
-    } finally {
-      isSwitchingAccountRef.current = false;
-    }
-  }, [changeUser, login]);
+  const connectAndLogin = useCallback(
+    () =>
+      runAuthFlow(async () => {
+        await connect();
+        await login();
+      }),
+    [connect, login, runAuthFlow]
+  );
 
-  const connectAndLogin = useCallback(async () => {
-    await connect();
-    await login();
-  }, [connect, login]);
+  /**
+   * Connects with `connectWallet` (e.g. the email wallet's code check), then
+   * signs in to RWA with the connected wallet. A step that returns false did
+   * not connect (e.g. an email is needed first): no sign-in then.
+   */
+  const connectWithWallet = useCallback(
+    (connectWallet: () => Promise<unknown>) =>
+      runAuthFlow(async () => {
+        if ((await connectWallet()) === false) return;
+        await login();
+      }),
+    [login, runAuthFlow]
+  );
 
-  const disconnectAndLogout = useCallback(async () => {
-    await signOut();
-    await logout();
-  }, [logout, signOut]);
+  /**
+   * Signs out of the wallet and RWA. The Sign out button ends the Dynamic
+   * session too; switching wallets keeps it (keepProviderSession).
+   */
+  const disconnectAndLogout = useCallback(
+    async (options: { keepProviderSession?: boolean } = {}) => {
+      await signOut(options);
+      await logout();
+    },
+    [logout, signOut]
+  );
 
-  // Listening for active account changes with beacon
+  // The wallet provider restores the previous session on load
   useEffect(() => {
-    if (IS_WEB && dapp) {
-      let isMounted = true;
-
-      (async function () {
-        try {
-          await dapp.listenToActiveAccount((activeAccount) => {
-            if (isMounted) setAccount(activeAccount);
-          });
-        } catch (err) {
-          console.log(err);
-        } finally {
-          if (isMounted) setUserLoading(false);
-        }
-      })();
-
-      return () => {
-        isMounted = false;
-      };
-    }
-  }, [IS_WEB, dapp]);
+    setUserLoading(isWalletLoading);
+  }, [isWalletLoading]);
 
   useEffect(() => {
     if (isAuthLoading) return;
@@ -255,8 +275,10 @@ export const UserProvider = ({ children }: Props) => {
   useEffect(() => {
     if (!IS_WEB) return;
 
+    // The RWA session ended (expired or signed out in another tab): drop the
+    // wallet here but keep the Dynamic session, so signing in needs no code
     const onAuthExpired = () => {
-      void signOut();
+      void signOut({ keepProviderSession: true });
     };
 
     window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
@@ -266,28 +288,23 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [IS_WEB, signOut]);
 
-  useEffect(() => {
-    if (!IS_WEB || isAuthLoading || isAuthenticated) return;
-    if (!accountAddress) return;
-
-    void signOut();
-  }, [IS_WEB, accountAddress, isAuthenticated, isAuthLoading, signOut]);
-
-  useEffect(() => {
-    if (!IS_WEB || isAuthLoading || !isAuthenticated) return;
-    if (isSwitchingAccountRef.current) return;
-    if (!accountAddress || !authenticatedWalletAddress) return;
-    if (accountAddress === authenticatedWalletAddress) return;
-
-    void logout();
-  }, [
-    IS_WEB,
+  const sessionSyncAction = getSessionSyncAction({
+    isWeb: IS_WEB,
+    isAuthLoading,
+    isAuthenticated,
+    isAuthFlowActive,
+    isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
     accountAddress,
     authenticatedWalletAddress,
-    isAuthenticated,
-    isAuthLoading,
-    logout,
-  ]);
+  });
+
+  useEffect(() => {
+    if (sessionSyncAction === "disconnect-wallet") {
+      void signOut({ keepProviderSession: true });
+    } else if (sessionSyncAction === "logout-rwa") {
+      void logout();
+    }
+  }, [logout, sessionSyncAction, signOut]);
 
   const providerValue = useMemo(() => {
     const isLoading =
@@ -303,6 +320,7 @@ export const UserProvider = ({ children }: Props) => {
       },
       isLoading,
       connect: connectAndLogin,
+      connectWithWallet,
       refetchUserAccountStatus,
       signOut: disconnectAndLogout,
       changeUser: switchAccount,
@@ -315,6 +333,7 @@ export const UserProvider = ({ children }: Props) => {
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
     connectAndLogin,
+    connectWithWallet,
     refetchUserAccountStatus,
     disconnectAndLogout,
     switchAccount,

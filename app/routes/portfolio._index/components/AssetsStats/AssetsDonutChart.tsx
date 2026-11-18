@@ -127,7 +127,10 @@ export function AssetsDonutChart({
         className={styles.donutSvg}
         onMouseLeave={() => setActiveTokenAddress(undefined)}
         role="group"
-        viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
+        // Padded by the hover growth so nothing draws outside the SVG box
+        viewBox={`${-HOVER_RADIUS_INCREASE} ${-HOVER_RADIUS_INCREASE} ${
+          DONUT_SIZE + HOVER_RADIUS_INCREASE * 2
+        } ${DONUT_SIZE + HOVER_RADIUS_INCREASE * 2}`}
       >
         <circle
           cx={DONUT_SIZE / 2}

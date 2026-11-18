@@ -1,3 +1,12 @@
+/* RSkeletonReveal wrapper: keeps the panel a flex column filling the
+   .buySellContainer card, as if the wrapper weren't there */
+.revealFill {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .state {
   display: flex;
   align-items: center;

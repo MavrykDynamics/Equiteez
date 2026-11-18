@@ -1,0 +1,145 @@
+/* Shimmer follows Motion UI's <Skeleton>: a gradient band as wide as the
+   placeholder slides across it left → right, 2s linear, infinite.
+   The band sits under children, so nested elements keep their own sweep. */
+.skeleton {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--skeleton-base);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(
+    90deg,
+    var(--skeleton-base) 0%,
+    var(--skeleton-mid) 35%,
+    var(--skeleton-highlight) 50%,
+    var(--skeleton-mid) 65%,
+    var(--skeleton-base) 100%
+  );
+  transform: translateX(-100%);
+  animation: skeletonShimmer 2s linear infinite;
+  pointer-events: none;
+}
+
+.surface {
+  --skeleton-base: #e6e6e6;
+  --skeleton-mid: #eeeeee;
+  --skeleton-highlight: #f5f5f5;
+}
+
+.element {
+  --skeleton-base: #cccccc;
+  --skeleton-mid: #d8d8d8;
+  --skeleton-highlight: #e6e6e6;
+}
+
+.radius-none {
+  border-radius: 0;
+}
+
+.radius-xs {
+  border-radius: var(--r-radius-xs);
+}
+
+.radius-sm {
+  border-radius: var(--r-radius-sm);
+}
+
+.radius-12 {
+  border-radius: var(--r-radius-12);
+}
+
+.radius-md {
+  border-radius: var(--r-radius-md);
+}
+
+.radius-lg {
+  border-radius: var(--r-radius-lg);
+}
+
+.radius-pill {
+  border-radius: var(--r-radius-pill);
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Crossfade (popLayout): the content takes over the layout at once and the
+   skeleton is popped into an overlay on top of it. The overlay is painted on
+   the page background, so fading it out is a true crossfade from the
+   skeleton to the content - no frame shows neither, nothing dips. */
+.reveal {
+  position: relative;
+}
+
+/* Keep the content's top/bottom margins inside the wrapper while the overlay
+   is up: a first child's margin-top otherwise collapses through it, the
+   wrapper (and the inset: 0 overlay) start below that margin, and the
+   skeleton - which keeps its own margin in the overlay - sits that much lower
+   than the content (16px on the mobile portfolio). Visually nothing moves. */
+.reveal::before,
+.reveal::after {
+  content: "";
+  display: table;
+}
+
+/* Grid stretches the skeleton to the content's box, so a skeleton that centres
+   or spaces its parts (flex / justify-content) keeps them where they were */
+.revealSkeleton {
+  display: grid;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(
+    --r-skeleton-reveal-bg,
+    var(--r-color-neutral-white, #ffffff)
+  );
+  will-change: opacity;
+}
+
+/* A grid item never shrinks below its content (min-width: auto), which would
+   stop a skeleton part sized with max-width: 100% (the portfolio donut) from
+   fitting a narrower column, so it grew and shifted everything below it */
+.revealSkeleton > * {
+  min-width: 0;
+}
+
+/* Added once the content has been painted (see RSkeletonReveal), so a slow
+   mount can't eat the start of the fade */
+.revealSkeletonFading {
+  animation: skeletonOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes skeletonOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+    display: none;
+  }
+
+  .revealSkeleton {
+    display: none;
+  }
+}

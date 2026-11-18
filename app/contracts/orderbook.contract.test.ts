@@ -8,8 +8,14 @@ const createTransfer = (to: string) => ({
   to,
 });
 
-const createMockTezos = (): MavrykToolkit => {
+const createMockTezos = ({
+  hasOperatorGrant = false,
+}: { hasOperatorGrant?: boolean } = {}): MavrykToolkit => {
+  const operatorsGet = vi.fn(async () =>
+    hasOperatorGrant ? Symbol("unit") : undefined
+  );
   const contract = {
+    storage: vi.fn(async () => ({ operators: { get: operatorsGet } })),
     methodsObject: {
       update_operators: vi.fn(() => ({
         toTransferParams: () => createTransfer("KT1operator"),
@@ -208,5 +214,75 @@ describe.each([
         minQuoteValue: "28900000",
       })
     ).rejects.toThrow("quote value is below");
+  });
+});
+
+describe("operator grants", () => {
+  const owner = "tz1sender";
+
+  it.each(["Buy", "Sell"] as const)(
+    "%s keeps an existing grant: the batch is the order alone",
+    async (side) => {
+      const tezos = createMockTezos({ hasOperatorGrant: true });
+      const contract = await tezos.wallet.at("KT1any");
+      const params = {
+        isMarketOrder: true,
+        tezos,
+      };
+      const batch =
+        side === "Buy"
+          ? await orderbookBuyBatch({ ...baseBuyParams, ...params })
+          : await orderbookSellBatch({ ...baseSellParams, ...params });
+
+      expect(batch).toHaveLength(1);
+      expect(batch[0].to).toBe(side === "Buy" ? "KT1buy" : "KT1sell");
+      expect(contract.methodsObject.update_operators).not.toHaveBeenCalled();
+    }
+  );
+
+  it("wraps the order in a temporary grant when none exists", async () => {
+    const tezos = createMockTezos({ hasOperatorGrant: false });
+    const contract = await tezos.wallet.at("KT1any");
+
+    const batch = await orderbookBuyBatch({
+      ...baseBuyParams,
+      isMarketOrder: true,
+      tezos,
+    });
+
+    expect(batch.map((operation) => operation.to)).toEqual([
+      "KT1operator",
+      "KT1buy",
+      "KT1operator",
+    ]);
+    expect(contract.storage).toHaveBeenCalled();
+    expect(contract.methodsObject.update_operators).toHaveBeenNthCalledWith(1, [
+      {
+        add_operator: {
+          owner,
+          operator: "KT1orderbook",
+          token_id: "0",
+        },
+      },
+    ]);
+    expect(contract.methodsObject.update_operators).toHaveBeenNthCalledWith(2, [
+      {
+        remove_operator: {
+          owner,
+          operator: "KT1orderbook",
+          token_id: "0",
+        },
+      },
+    ]);
+  });
+
+  it("does not guess when the grant cannot be read", async () => {
+    const tezos = createMockTezos();
+    const contract = await tezos.wallet.at("KT1any");
+    vi.mocked(contract.storage).mockRejectedValue(new Error("RPC down"));
+
+    await expect(
+      orderbookSellBatch({ ...baseSellParams, isMarketOrder: true, tezos })
+    ).rejects.toMatchObject({ name: "OperatorReadError" });
   });
 });

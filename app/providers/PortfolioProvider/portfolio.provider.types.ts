@@ -12,4 +12,8 @@ export type PortfolioContextType = {
   portfolio?: WalletPortfolioResponseType;
   wallet?: WalletResponseType;
   isLoading: boolean;
+  isWalletLoading: boolean;
+  isPortfolioLoading: boolean;
+  /** When the portfolio was last fetched (ms since epoch), 0 before that */
+  portfolioUpdatedAt: number;
 };

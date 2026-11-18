@@ -19,6 +19,22 @@ export const getIsKycedForAddress = (
   return Boolean(getUserForAddress(data, address));
 };
 
+/** When the address became a KYC member and when that expires, if known. */
+export const getKycDatesForAddress = (
+  data: UserAccountStatusData | undefined,
+  address: string | null
+): { verifiedAt: string | null; expiresAt: string | null } => {
+  const member =
+    data && address
+      ? data.kyc_member.find((item) => item.user?.address === address)
+      : undefined;
+
+  return {
+    verifiedAt: (member?.updated_at as string | null | undefined) ?? null,
+    expiresAt: (member?.expire_at as string | null | undefined) ?? null,
+  };
+};
+
 export const getHasOrdersForAddress = (
   data: UserAccountStatusData | undefined,
   address: string | null
