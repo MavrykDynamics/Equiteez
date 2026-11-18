@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Mavryk Bridge ETH backend, API schema 0.1.0 (`GET /openapi.json`,
+ * Mavryk Bridge ETH backend v0.0.6, API schema 0.1.0 (`GET /docs`,
  * `near-intents/backend.md`). Every response is validated here; contract
  * changes should only touch this file and `intents.http.ts`.
  *
@@ -66,6 +66,60 @@ export const intentRouteSchema = z.object({
 /** Entries are validated one by one so one bad route does not hide the rest. */
 export const intentRoutesEnvelopeSchema = z.object({
   routes: z.array(z.unknown()),
+});
+
+/**
+ * `GET /v1/metadata` (backend.md §4.2a): approved asset identities per route
+ * version. The only source of the token the wallet transfers; a route
+ * without metadata is never inferred from a ticker.
+ */
+export const intentMetadataAssetSchema = z.object({
+  /** Same identifier as the route's `originAsset` / `destinationAsset`. */
+  assetId: z.string().min(1),
+  chainId: chainIdSchema,
+  kind: withUnknown(["erc20", "native"]),
+  contractAddress: evmAddressSchema.nullish(),
+  symbol: z.string().min(1),
+  decimals: z.number().int().min(0).max(36),
+});
+export const intentMetadataRouteSchema = z.object({
+  routeId: routeIdSchema,
+  routeVersion: z.number().int().min(1).max(2147483647),
+  /** "rehearsal" on Basenet; anything else is a provider (1Click) route. */
+  mode: z.string().min(1),
+  previewSupported: z.boolean(),
+  sourceAsset: intentMetadataAssetSchema,
+  settlementAsset: intentMetadataAssetSchema,
+  destinationAsset: z.object({
+    chainId: z.string().min(1),
+    kind: z.string().min(1),
+    contractAddress: z.string().min(1),
+    tokenId: amountSchema,
+    decimals: z.number().int().min(0).max(36),
+  }),
+  limits: z.object({
+    minAmountIn: positiveAmountSchema,
+    maxAmountIn: positiveAmountSchema,
+    minAmountOut: positiveAmountSchema,
+    maxSlippageBps: z.number().int().min(0).max(9999),
+  }),
+  /** Connected-wallet hash registration (§4.5): only literal `true` enables it. */
+  depositRegistrationSupported: z
+    .unknown()
+    .transform((value) => value === true),
+});
+/** Routes are validated one by one so one bad entry does not hide the rest. */
+export const intentMetadataEnvelopeSchema = z.object({
+  schemaVersion: z.number().int(),
+  admissionPaused: z.boolean(),
+  routes: z.array(z.unknown()),
+});
+
+/** `POST /v1/operations/{id}/deposit` → 200 (also for a replay). */
+export const intentDepositRegistrationSchema = z.object({
+  operationId: uuidSchema,
+  transactionHash: evmHashSchema,
+  replayed: z.boolean(),
 });
 
 export const intentOperationRequestSchema = z.object({
@@ -247,6 +301,11 @@ export const intentErrorCodes = [
   "INTERNAL_ERROR",
   "DEPENDENCY_UNAVAILABLE",
   "REHEARSAL_SCOPE_MISMATCH",
+  "REHEARSAL_QUOTE_NOT_PUBLISHED",
+  "REHEARSAL_RECEIPT_PENDING",
+  "REHEARSAL_DELIVERY_MISMATCH",
+  "REHEARSAL_DELIVERY_CONFLICT",
+  "REHEARSAL_RPC_UNAVAILABLE",
 ] as const;
 
 export const intentErrorBodySchema = z.object({

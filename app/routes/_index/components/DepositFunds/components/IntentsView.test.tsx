@@ -99,7 +99,10 @@ describe("IntentsView", () => {
   });
 
   it("shows slippage choices within the route maximum, the accepted minimum and the refund wallet", () => {
-    const html = render();
+    const route = { ...fixtureOption.route, maxSlippageBps: 300 };
+    const html = render(
+      controller({ route, selected: { ...fixtureOption, route } })
+    );
     expect(html).toMatch(/aria-checked="true"[^>]*>0.5%/);
     expect(html).toContain("1%");
     expect(html).toContain("Minimum you accept");
@@ -107,6 +110,21 @@ describe("IntentsView", () => {
     expect(html).toContain("Refunds go to");
     expect(html).toContain("0x1111111111111111111111111111111111111111");
     expect(html).toContain("exact quote is prepared");
+  });
+
+  it("locks a fixed amount and zero slippage on the rehearsal route", () => {
+    const html = render(
+      controller({
+        amount: new BigNumber(1),
+        isAmountFixed: true,
+        slippageBps: 0,
+        isSlippageFixed: true,
+      })
+    );
+    expect(html).toContain("The amount is fixed by this route.");
+    expect(html).toContain("0% (fixed)");
+    expect(html).not.toContain('role="radiogroup"');
+    expect(html).not.toContain("Use maximum");
   });
 
   it("asks for the Mavryk account before review", () => {

@@ -75,9 +75,11 @@ export function UniversalSendForm({
     sourceBalance,
     amount,
     setAmount,
+    isAmountFixed,
     amountError,
     slippageBps,
     setSlippageBps,
+    isSlippageFixed,
     slippageError,
     estimate,
     canReview,
@@ -224,6 +226,7 @@ export function UniversalSendForm({
                 setAmount(value ? new BigNumber(value) : undefined)
               }
               placeholder="0"
+              readOnly={isAmountFixed}
               size={Math.max(amount?.toFixed().length ?? 1, 1)}
               style={{ padding: 0, border: 0, borderRadius: 0 }}
               value={amount?.toFixed()}
@@ -238,6 +241,11 @@ export function UniversalSendForm({
                 )} ${destination.symbol}`
               : `You receive ${destination?.symbol ?? "tokens"} on Mavryk`}
           </RText>
+          {isAmountFixed && (
+            <RText color="neutral-500" size="body-xs">
+              Fixed by this route
+            </RText>
+          )}
         </div>
 
         <div className={styles.divider}>
@@ -282,7 +290,7 @@ export function UniversalSendForm({
             >
               Retry
             </button>
-          ) : (
+          ) : isAmountFixed ? null : (
             <button
               aria-label={`Use maximum ${symbol} balance`}
               className={styles.maxButton}
@@ -296,31 +304,40 @@ export function UniversalSendForm({
         </div>
       </div>
 
-      <div
-        aria-label="Slippage tolerance"
-        className={styles.slippageRow}
-        role="radiogroup"
-      >
-        <RText color="neutral-700" size="body-s">
-          Slippage tolerance
-        </RText>
-        <div className={styles.slippageOptions}>
-          {slippageChoices.map((bps) => (
-            <button
-              aria-checked={slippageBps === bps}
-              className={styles.slippageOption}
-              data-active={slippageBps === bps}
-              disabled={isInputDisabled}
-              key={bps}
-              onClick={() => setSlippageBps(bps)}
-              role="radio"
-              type="button"
-            >
-              {formatBps(bps)}
-            </button>
-          ))}
+      {isSlippageFixed ? (
+        <div className={styles.slippageRow}>
+          <RText color="neutral-700" size="body-s">
+            Slippage tolerance
+          </RText>
+          <RText size="body-s">{`${formatBps(slippageBps)} (fixed)`}</RText>
         </div>
-      </div>
+      ) : (
+        <div
+          aria-label="Slippage tolerance"
+          className={styles.slippageRow}
+          role="radiogroup"
+        >
+          <RText color="neutral-700" size="body-s">
+            Slippage tolerance
+          </RText>
+          <div className={styles.slippageOptions}>
+            {slippageChoices.map((bps) => (
+              <button
+                aria-checked={slippageBps === bps}
+                className={styles.slippageOption}
+                data-active={slippageBps === bps}
+                disabled={isInputDisabled}
+                key={bps}
+                onClick={() => setSlippageBps(bps)}
+                role="radio"
+                type="button"
+              >
+                {formatBps(bps)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={clsx(styles.notice, styles.warning)}>
         <RIcon aria-hidden="true" name="info" size="small" />

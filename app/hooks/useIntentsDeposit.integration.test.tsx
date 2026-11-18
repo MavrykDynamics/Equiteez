@@ -57,7 +57,6 @@ vi.mock("~/consts/intents", async (original) => {
     ...actual,
     INTENTS_DEPOSIT_ENABLED: true,
     INTENTS_ENV: "mock",
-    INTENTS_SOURCE_ASSETS: actual.MOCK_INTENT_SOURCE_ASSETS,
   };
 });
 vi.mock("~/lib/apis/intents", async (original) => ({
@@ -196,7 +195,8 @@ async function requestQuote() {
   await flush();
   expect(deposit$.catalog.status).toBe("ready");
   expect(deposit$.selected?.availability).toBe("available");
-  await act(async () => deposit$.setAmount(new BigNumber(2)));
+  // The rehearsal route fixes the amount (1 Mock USDT) and slippage (0).
+  expect(deposit$.amount?.toFixed()).toBe("1");
   await act(async () => deposit$.startReview());
   await act(async () => {
     void deposit$.confirmRequest();
@@ -223,7 +223,20 @@ async function startDeposit() {
 
 describe("1Click deposit inside Equiteez", () => {
   it("runs from one source funding action to a verified Mavryk settlement", async () => {
+    const register = vi.spyOn(mocks.api, "registerDeposit");
     await startDeposit();
+    // The hash is registered at once; the mock answers RECEIPT_PENDING.
+    expect(register).toHaveBeenCalledTimes(1);
+    expect(register.mock.calls[0][2]).toBe(fundingHash);
+    expect(deposit$.activeRecord?.registration).toMatchObject({
+      status: "pending",
+      code: "REHEARSAL_RECEIPT_PENDING",
+    });
+    expect(deposit$.trackedModel?.state).toMatchObject({
+      status: "progress",
+      step: 1,
+      description: expect.stringMatching(/Confirming your transfer/),
+    });
     expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
     expect(mocks.actions.writeContract.mock.calls[0][1].args[0]).toBe(
       "0x2222222222222222222222222222222222222222"
@@ -244,9 +257,14 @@ describe("1Click deposit inside Equiteez", () => {
     expect(resumed).toBe(true);
     expect(deposit$.review).toMatchObject({ phase: "tracking", localId });
     expect(deposit$.trackedModel?.state).toMatchObject({ status: "progress" });
+    // The same hash was resent (HTTP only) and accepted.
+    expect(register).toHaveBeenCalledTimes(2);
+    expect(register.mock.calls[1][2]).toBe(fundingHash);
+    expect(deposit$.activeRecord?.registration?.status).toBe("accepted");
 
-    // WRAPPED with settlement PENDING: neutral, not success.
-    await flush(18_000);
+    // WRAPPED with settlement PENDING: neutral, not success. (The mock's
+    // lifecycle starts when the registration is accepted, ~3s in.)
+    await flush(22_000);
     expect(deposit$.trackedModel?.state).toMatchObject({
       status: "progress",
       step: 4,
@@ -257,7 +275,7 @@ describe("1Click deposit inside Equiteez", () => {
     await flush(15_000);
     expect(deposit$.trackedModel?.state).toEqual({
       status: "success",
-      description: "1.994 wUSDT arrived in your Mavryk account.",
+      description: "1 wUSDT arrived in your Mavryk account.",
     });
     expect(mocks.success).toHaveBeenCalledOnce();
 
@@ -325,9 +343,29 @@ describe("1Click deposit inside Equiteez", () => {
     expect(resumed).toBe(true);
     await act(async () => deposit$.fund()); // tracking, not a quote: no-op
     expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
-    // The backend observes the deposit on its own and keeps progressing.
+    // The saved hash is registered without the wallet and the deposit
+    // keeps progressing.
     await flush(20_000);
+    expect(deposit$.activeRecord?.registration?.status).toBe("accepted");
     expect(deposit$.trackedModel?.state).toMatchObject({ status: "progress" });
+  });
+
+  it("stops registration on a conflict and shows the deposit under review", async () => {
+    mocks.scenario = "registrationConflict";
+    const register = vi.spyOn(mocks.api, "registerDeposit");
+    await startDeposit();
+    await flush(5 * 60_000);
+    expect(register).toHaveBeenCalledOnce();
+    expect(deposit$.activeRecord?.registration).toMatchObject({
+      status: "stopped",
+      code: "REHEARSAL_DELIVERY_CONFLICT",
+    });
+    expect(deposit$.trackedModel?.state).toMatchObject({
+      status: "warning",
+      title: "Deposit under review",
+      description: expect.stringContaining(fundingHash),
+    });
+    expect(mocks.actions.writeContract).toHaveBeenCalledOnce();
   });
 
   it("isolates operations when the Equiteez account changes", async () => {

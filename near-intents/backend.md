@@ -1,4 +1,5 @@
-**Runtime release:** v0.0.2
+**Service:** Mavryk Bridge ETH Backend
+**Runtime release:** v0.0.6
 **API schema version:** 0.1.0; URL prefix `/v1`**Protocol:** HTTP REST + JSON; asynchronous processing with client polling
 
 ---
@@ -11,11 +12,14 @@
 4. Endpoints
    - 4.1 Service and schema
    - 4.2 Approved routes
+   - 4.2a Asset metadata and quote previews
    - 4.3 Create an operation
    - 4.4 Read an operation
+   - 4.5 Register a Basenet funding transaction
 5. Errors
 6. Data structures and state interpretation
 7. Frontend integration recommendations
+   - 7.1 Connected-wallet Basenet walkthrough
 8. Architecture, security and recovery
 9. Deployment, monitoring and production readiness
 
@@ -25,9 +29,9 @@
 
 The service coordinates a 1Click swap whose output is delivered to an EVM WrapForwarder, sponsors forwarding into WrapBridge, and independently verifies mint execution on Mavryk. Both Bridge UI and Equiteez use the same API contract. This is a separate backend codebase deployed alongside the corresponding bridge in its existing Helm chart and namespace.
 
-v0.0.2 adds a bounded Arbitrum Sepolia → Mavryk Basenet rehearsal. Only the 1Click quote/status adapter is replaced. Test delivery registration is durable in PostgreSQL; EVM delivery proof, forwarding, gas sponsorship, existing Bridge Signers and Mavryk mint verification remain real. The normal worker still uses real 1Click. The PostgreSQL operation, queue and relayer journals already existed before this release.
+In v0.0.6, Equiteez and Bridge UI can run a connected-wallet transfer on Arbitrum Sepolia → Mavryk Basenet. The rehearsal adapter supplies the quote and uses the registered transaction hash for provider status. The ERC-20 transfer, sponsored forward, bridge signatures and FA2 mint run on their respective test networks.
 
-Image tags, package/API versions and database migration versions are separate identifiers. The runtime image is v0.0.2; OpenAPI currently reports 0.1.0; readiness requires migration 011 and the required pg-boss queues. No claim is made here that the latest chart configuration has already reconciled in the live cluster.
+OpenAPI version `0.1.0` uses the URL prefix `/v1`. Readiness requires PostgreSQL migration `013-connected-basenet` and the required pg-boss queues.
 
 ## 1. Overview
 
@@ -51,21 +55,22 @@ The user does not call the factory or pay forwarding gas on the bridge's EVM cha
 | Environment        | API / behavior                                                                                                                                                                                      |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Basenet deployment | `https://basenet.bridge-api.mavryk.network`; public routes depend on operator activation.                                                                                                           |
+| Local development  | Usually `http://127.0.0.1:8080`; local fixture routes are not live deployment instructions.                                                                                                         |
 | Mainnet            | Requires approved real 1Click assets, verified/pinned deployments, explicit route activation, funded sponsor and production release checks. No mainnet API deployment is asserted by this document. |
 
-The prepared Basenet rehearsal allows one approved sender, recipient, capability hash, idempotency key and exactly 1 mock USDT. It is not a public testnet swap service. The test adapter publishes its verified forwarder as the deposit address; the operator registers the real transfer hash instead of receiving 1Click's status report. Normal mode publishes 1Click's source-chain deposit address, which is distinct from the settlement forwarder.
+On the connected-wallet route, each operation binds its own EVM sender and Basenet recipient. The worker verifies the deterministic forwarder for that recipient before publishing funding instructions. A single schema-2 installation serves multiple wallets. The older schema-1 rehearsal retains its pre-approved wallets and operator hash registration for existing runs. In real 1Click mode the published funding address is the provider’s source-chain deposit address.
 
 ### Supported integration boundary
 
 The current public funding contract accepts EVM source/refund addresses and an `mv1` destination. Routes are provisioned server-side. Clients cannot supply arbitrary factories, RPC URLs, token contracts or finality policies. The current settlement policy accepts approved 6- or 18-decimal ERC-20s with six-decimal destination FA2 accounting. It is not a generic interface for every network supported by 1Click.
 
-There is no public quote-preview endpoint, token catalog, wallet-wide history, cancellation, retry-forwarding, claim, refund-submission, administrative registration, webhook or WebSocket API in this release. Use only the endpoints below. Do not create executable operations on every amount-field keystroke.
+Discovery exposes approved route and asset metadata. Real 1Click routes can offer an indicative quote when preview is enabled. Create an executable operation only after the user accepts the terms. Clients track operations individually by polling.
 
 ## 2. Authorization
 
 ### Operation capability
 
-`POST /v1/operations` and `GET /v1/operations/{id}` require:
+`POST /v1/operations`, `GET /v1/operations/{id}` and the Basenet `POST /v1/operations/{id}/deposit` require:
 
 ```
 Authorization: Bearer <operation-capability>
@@ -103,7 +108,7 @@ Idempotency-Key: <8–128 visible ASCII characters without whitespace>
 - A timeout, dropped connection or `503` can occur after commit. Retry the original capability, key and body; never generate a new key just because the response was lost.
 - Existing admissions remain replayable after route pause. Recovery mode overrides normal creation/replay admission and suppresses funding; use the operation GET while recovery is active.
 
-The 1Click Partner JWT stays in the server's Secret and is used only by the real provider worker. Frontends must never receive it. Operator commands use separately restricted PostgreSQL credentials; they are not HTTP endpoints.
+The real 1Click worker and the optional real quote-preview service use a server-side provider credential. Connected-wallet Basenet uses its configured Sepolia RPC. Operator commands use separate PostgreSQL credentials.
 
 ## 3. Common conventions
 
@@ -131,11 +136,15 @@ The 1Click Partner JWT stays in the server's Secret and is used only by the real
 
 ### 4.1 Service and schema
 
-| Method and path     | Authorization | Result                                                                                                 | Exposure                           |
-| ------------------- | ------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| `GET /openapi.json` | None          | Generated OpenAPI 3.0.3 document, API schema version 0.1.0.                                            | Public.                            |
-| `GET /healthz`      | None          | `200 {"status":"ok"}` for process liveness.                                                            | Internal; no public Gateway route. |
-| `GET /readyz`       | None          | 200 when required migrations, tables and queues are available; otherwise `503 DEPENDENCY_UNAVAILABLE`. | Internal; no public Gateway route. |
+| Method and path           | Authorization | Result                                                                                                 | Exposure                           |
+| ------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| `GET /docs`, `GET /docs/` | None          | Interactive Swagger UI, with all assets served from the same API origin.                               | Public.                            |
+| `GET /healthz`            | None          | `200 {"status":"ok"}` for process liveness.                                                            | Internal; no public Gateway route. |
+| `GET /readyz`             | None          | 200 when required migrations, tables and queues are available; otherwise `503 DEPENDENCY_UNAVAILABLE`. | Internal; no public Gateway route. |
+
+Open `/docs` for the interactive reference. Its generated OpenAPI schema is embedded in the page; there is no separate `/openapi.json` endpoint in the new version. The UI does not persist capabilities across reloads, load scripts from a CDN, contact an external validator or execute operations on page load. Use Authorize to supply an operation capability for an explicitly initiated request; no 1Click/Partner token belongs in this UI.
+
+Prometheus uses a separate private listener on port 9090. `/metrics` is not registered on the public API listener. Process readiness is not a guarantee of route activation, a funded sponsor, successful 1Click execution, signer liveness, or destination minting.
 
 ### 4.2 Approved routes
 
@@ -157,7 +166,17 @@ No capability required. Returns `200 {"routes":[...]}` with enabled route versio
 | `minAmountOut`                         | Minimum accepted output in settlement ERC-20 units.                 |
 | `maxSlippageBps`                       | Maximum permitted slippage.                                         |
 
-Finality policy, internal deployment pins and provider credentials are not returned. Route availability is rechecked at admission/publication: a route can be paused after the list was fetched. The list does not currently provide a destination FA2 display catalog or a guaranteed market quote; frontend asset metadata must come from the approved product configuration.
+Finality policy, internal deployment pins and provider credentials are not returned. Route availability is rechecked at admission/publication: a route can be paused after the list was fetched. The list remains the technical route contract. Use the optional `GET /v1/metadata` for asset identities and `POST /v1/quotes/preview` for an indicative quote. Neither activates a route or creates a payment.
+
+### 4.2a Asset metadata and quote previews
+
+Discovery and indicative quotes are independently configurable, with metadata required for preview. Additional examples are available in the discovery guide.
+
+`GET /v1/metadata` has no parameters or capability. It returns `{schemaVersion:1, admissionPaused, routes:[...]}` with enabled route versions, source/settlement asset IDs, chain IDs, kind, contract, symbol and decimals; destination chain/FA2/tokenId/decimals; limits; mode and `previewSupported`. The public metadata envelope uses `schemaVersion: 1`. The internal Basenet installation uses `schemaVersion: 2`. Clients detect connected-wallet support by checking the route’s optional `depositRegistrationSupported` field for literal `true`. A missing flag disables that flow. No metadata means no inferred asset. Basenet rehearsal is explicitly marked and cannot use real 1Click preview.
+
+`POST /v1/quotes/preview` has the same seven input fields as operation creation, excluding `acceptedMinAmountOut`. It requires no capability or idempotency key. The backend fixes `dry:true`, validates the signed response and returns `kind:"indicative", executable:false`, amounts, rounded bridgeable amounts, six-decimal destination amounts, freshness and optional provider fee/time estimates. It does not expose a deposit address or create operations, quotes, jobs or sponsor reservations. Route revisions and recovery are checked again after external work.
+
+After user confirmation, submit a normal operation with an explicit accepted minimum in settlement units (typically the displayed `bridgeableMinAmountOut`). The worker requests a separate `dry:false` quote and independently enforces the accepted minimum after rounding. A preview is not a guaranteed rate, funding deadline or permission to send tokens. The frontend never passes `dry` to any backend route; `/v1/routes?dry=true` is invalid.
 
 ### 4.3 Create an operation
 
@@ -183,7 +202,7 @@ Every field is required:
 }
 ```
 
-This is a structural local-fixture example, **not** an executable Basenet/mainnet request. Select a live enabled route and the user's actual wallets. The bounded rehearsal requires the pre-approved run values instead.
+This is a structural local-fixture example, **not** an executable Basenet/mainnet request. Select a live enabled route and the user's actual wallets. Section 7.1 gives the exact request for the connected-wallet Basenet route.
 
 `routeId`: 1–128 characters, first alphanumeric, followed by alphanumeric/underscore/dot/colon/hyphen. `routeVersion`: positive integer up to 2147483647. `sourceAddress` identifies the funding wallet; `refundAddress` is the provider refund destination on the source chain. `acceptedMinAmountOut` is the user's explicitly accepted lower bound in settlement ERC-20 units, subject to route limits and destination precision. It is not automatically a quote or an FA2 amount.
 
@@ -208,6 +227,30 @@ Returns 200 with the Operation object. No idempotency header or query parameters
 
 There is no list-by-wallet endpoint. Each frontend must retain its own operation IDs and capabilities. A user switching between Bridge UI and Equiteez does not automatically share this local history.
 
+### 4.5 Register a Basenet funding transaction
+
+After the source wallet returns a transaction hash, persist it with the operation ID. Use the same operation capability used at creation. This endpoint is enabled for connected-wallet rehearsal outside recovery mode. The request body contains only the hash. Registration is idempotent without an `Idempotency-Key` header.
+
+```
+POST /v1/operations/{id}/deposit
+Authorization: Bearer <saved-capability>
+Content-Type: application/json
+
+{"transactionHash":"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+```
+
+Example first response, HTTP 200:
+
+```json
+{
+  "operationId": "e770b30e-23cb-43f5-8174-65dc81ef617e",
+  "transactionHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "replayed": false
+}
+```
+
+The API verifies the successful canonical Sepolia receipt against the published quote, including confirmations, token, sender, forwarder, exact amount and funding window. It stores the normalized hash in PostgreSQL. A repeat for the same operation and hash returns 200 with `replayed: true`, including after a lost response. A conflicting binding returns 409. An accepted registration lets the worker independently verify delivery. Keep polling the operation through settlement.
+
 ## 5. Errors
 
 ```json
@@ -222,29 +265,33 @@ There is no list-by-wallet endpoint. Each frontend must retain its own operation
 
 Branch on `code` and HTTP status, not the message text. Keep `requestId` for support. Database/provider exception details and secrets are not part of the response.
 
-| HTTP / code                             | Client action                                                                                                                                        |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400 `VALIDATION_ERROR`                  | Fix shape, address, key or integer encoding before retrying.                                                                                         |
-| 400 `AMOUNT_OUT_OF_RANGE`               | Respect the selected route's source amount bounds.                                                                                                   |
-| 400 `SLIPPAGE_OUT_OF_RANGE`             | Respect the route's maximum slippage.                                                                                                                |
-| 400 `MIN_OUTPUT_TOO_LOW`                | Accepted output is below route policy; obtain explicit user acceptance of valid parameters.                                                          |
-| 404 `NOT_FOUND` / `OPERATION_NOT_FOUND` | Invalid/missing capability, unknown operation or foreign scope. Recover locally saved credentials; do not enumerate wallet addresses.                |
-| 409 `IDEMPOTENCY_CONFLICT`              | The key already binds another request. Recover the original operation; a deliberate new intent needs its own capability/key.                         |
-| 409 `ROUTE_UNAVAILABLE`                 | Refresh routes; do not silently substitute another route. Existing operations remain readable.                                                       |
-| 413 `PAYLOAD_TOO_LARGE`                 | Reduce the request; maximum body is 16 KiB.                                                                                                          |
-| 415 `UNSUPPORTED_MEDIA_TYPE`            | Send JSON with the correct content type.                                                                                                             |
-| 429 `RATE_LIMITED`                      | Respect `Retry-After` when supplied, add jitter and reduce polling.                                                                                  |
-| 500 `INTERNAL_ERROR`                    | Retain request ID, back off; creation retries preserve the exact idempotency scope.                                                                  |
-| 503 `DEPENDENCY_UNAVAILABLE`            | Database/queue/readiness failure or intentional recovery admission pause. Back off, keep the same scope, and use GET to track an existing operation. |
-| 409 `REHEARSAL_SCOPE_MISMATCH`          | Test-adapter request does not match the fixed run. Use the approved test scope; do not treat it as a generic swap route.                             |
+| HTTP / code                                                       | Client action                                                                                                                                        |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400 `VALIDATION_ERROR`                                            | Fix shape, address, key or integer encoding before retrying.                                                                                         |
+| 400 `AMOUNT_OUT_OF_RANGE`                                         | Respect the selected route's source amount bounds.                                                                                                   |
+| 400 `SLIPPAGE_OUT_OF_RANGE`                                       | Respect the route's maximum slippage.                                                                                                                |
+| 400 `MIN_OUTPUT_TOO_LOW`                                          | Accepted output is below route policy; obtain explicit user acceptance of valid parameters.                                                          |
+| 404 `NOT_FOUND` / `OPERATION_NOT_FOUND`                           | Invalid/missing capability, unknown operation or foreign scope. Recover locally saved credentials; do not enumerate wallet addresses.                |
+| 409 `IDEMPOTENCY_CONFLICT`                                        | The key already binds another request. Recover the original operation; a deliberate new intent needs its own capability/key.                         |
+| 409 `ROUTE_UNAVAILABLE`                                           | Refresh routes; do not silently substitute another route. Existing operations remain readable.                                                       |
+| 413 `PAYLOAD_TOO_LARGE`                                           | Reduce the request; maximum body is 16 KiB.                                                                                                          |
+| 415 `UNSUPPORTED_MEDIA_TYPE`                                      | Send JSON with the correct content type.                                                                                                             |
+| 429 `RATE_LIMITED`                                                | Respect `Retry-After` when supplied, add jitter and reduce polling.                                                                                  |
+| 500 `INTERNAL_ERROR`                                              | Retain request ID, back off; creation retries preserve the exact idempotency scope.                                                                  |
+| 503 `DEPENDENCY_UNAVAILABLE`                                      | Database/queue/readiness failure or intentional recovery admission pause. Back off, keep the same scope, and use GET to track an existing operation. |
+| 409 `REHEARSAL_SCOPE_MISMATCH`                                    | Check route ID/version, sender/refund equality, exact amounts and zero slippage. Legacy runs also require their assigned scope.                      |
+| 409 `REHEARSAL_QUOTE_NOT_PUBLISHED`                               | Poll the operation for published funding instructions before prompting the wallet.                                                                   |
+| 409 `REHEARSAL_RECEIPT_PENDING`                                   | Receipt or confirmations pending. Retry registration with the saved hash after 10–30 seconds, with backoff.                                          |
+| 409 `REHEARSAL_DELIVERY_MISMATCH` / `REHEARSAL_DELIVERY_CONFLICT` | Stop registration retries. Preserve the operation ID and hash for investigation.                                                                     |
+| 503 `REHEARSAL_RPC_UNAVAILABLE`                                   | Retry the same registration with backoff. A 429 or lost response also uses the same hash.                                                            |
 
-The rehearsal also rejects requests outside its fixed test scope; that is not a public mainnet contract. Asynchronous quote rejection, provider unavailability, delivery ambiguity and mint incidents generally arrive in the Operation state, not as a synchronous HTTP error. Keep an unknown-code/state fallback that preserves the operation and stops funding when interpretation is uncertain.
+Asynchronous quote rejection, provider unavailability, delivery ambiguity and mint incidents generally arrive in the Operation state, not as a synchronous HTTP error. Keep an unknown-code/state fallback that preserves the operation and stops funding when interpretation is uncertain.
 
 ## 6. Data structures and state interpretation
 
 ### Operation
 
-The object includes all nine immutable request fields plus:
+The object includes all eight immutable request fields plus:
 
 | Field                          | Type / meaning                                                                                      |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- |
@@ -349,12 +396,34 @@ Each mint contains `wrapTransactionHash`, `wrapLogIndex`, `operationHash`, `bloc
 2. Generate and persist one random capability, one idempotency key and the immutable request. POST once; retries reuse all three.
 3. Persist the operation ID and poll GET. Render phases and attention states separately. Follow `retryAfterMs`; back off with jitter on rate limits/network failures.
 4. Enable source funding only with fresh `AVAILABLE` instructions. Re-read before asking the wallet to sign; validate the chain, asset, exact amount and cut-off. In real 1Click mode send to `depositAddress`, not `forwarderAddress`.
-5. After wallet submission, disable duplicate funding locally immediately. Persist the submitted source transaction hash locally for support. There is no public hash-registration API to call in normal mode. A lost wallet response must be resolved with the wallet/chain before offering a second send.
+5. After wallet submission, disable duplicate funding locally immediately. Persist the source transaction hash. When the route advertises connected-wallet registration, submit it as described in section 4.5. In real 1Click mode the provider reports swap status. A lost wallet response must be resolved with the wallet/chain before offering a second send.
 6. Continue polling after reload using the saved capability. Once funding is observed, do not show the original full-deposit button, including for incomplete deposits. This release does not publish safe automatic top-up instructions.
 7. Show EVM delivery, sponsored forwarding and Mavryk settlement as separate asynchronous stages. The backend sponsor pays forwarding gas; the frontend submits no bridge-chain factory transaction or Mavryk claim.
 8. Show received tokens only when destination evidence is confirmed; refresh the actual Equiteez/Bridge UI balance source independently. Never equate job completion, 1Click SUCCESS, WRAPPED or a signer vote with final receipt.
 9. For review/reconciliation, preserve the operation and show support context using operation ID/request ID. Exclude capabilities and keys from support logs or analytics.
 10. Prevent accidental new intents after an expired/pending transfer. A deliberately new operation needs a fresh capability/key and valid route; a published old address must not be silently replaced or reused as a new quote.
+
+### 7.1 Connected-wallet Basenet walkthrough
+
+1. Fetch `GET /v1/metadata`. Select enabled route `basenet-rehearsal-k8s` from the current catalog. Require `admissionPaused: false` and `depositRegistrationSupported: true`. This route advertises `mode: "rehearsal"` and `previewSupported: false`. Use the returned source asset for the selector and wallet balance. Its asset ID is `basenet-rehearsal:0x5c05e82be66b19476bacb558e62e7d449b98635f`, on Arbitrum Sepolia (`421614`, 18 decimals). The sender needs 1 mock USDT plus Sepolia ETH for the source transfer.
+2. Generate a fresh capability and idempotency key as described in section 2. Persist them with the exact body. Set both EVM address fields to the connected sender and `recipient` to the selected Basenet account. The following JavaScript constructs the JSON body for `POST /v1/operations` using those wallet values and the route returned by metadata.
+
+```jsx
+const request = {
+  routeId: route.routeId,
+  routeVersion: route.routeVersion,
+  sourceAddress: connectedEvmAddress,
+  refundAddress: connectedEvmAddress,
+  recipient: connectedBasenetAddress,
+  amountIn: "1000000000000000000",
+  slippageBps: 0,
+  acceptedMinAmountOut: "1000000000000000000",
+};
+```
+
+1. Save the ID from the 202 response and poll `GET /v1/operations/{id}` with the saved bearer. Wait for `fundingStatus: AVAILABLE`. Recheck the connected wallet, chain, token, amount and expiry. Submit one ERC-20 `transfer` to `fundingInstructions.depositAddress`, the verified forwarder for this recipient. Funding windows for the same deterministic address cannot overlap.
+2. Save the wallet’s transaction hash immediately and register it using section 4.5. After a reload or timeout, resume with the saved operation and hash. A pending receipt prompts another HTTP request, never another wallet transfer.
+3. Follow delivery verification, sponsored forwarding and Mavryk settlement through the operation GET. Display receipt when `settlement.status: CONFIRMED` and the recipient and asset match. For this route the expected `settlement.confirmedAmount` is `"1000000"`, or 1 wUSDT on Basenet (FA2 `KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE`, token ID `"0"`, 6 decimals). Refresh the wallet balance. Receiving requires no signature or gas from the recipient.
 
 ### Browser access
 
@@ -388,4 +457,4 @@ async function createOperation(baseUrl, savedIntent) {
 }
 ```
 
-Generate types from `/openapi.json` and validate the actual response at the client boundary. Wallet transaction construction, secure capability storage and UI error/recovery behavior remain frontend responsibilities. Never embed provider or sponsor secrets in either frontend bundle.
+For type generation, export the generated schema with `app.swagger()` locally; validate actual responses at the client boundary. Wallet transaction construction, secure capability storage and UI error/recovery behavior remain frontend responsibilities. Never embed provider or sponsor secrets in either frontend bundle.

@@ -14,6 +14,7 @@ import {
 import {
   IntentsApiError,
   type IntentErrorCode,
+  type IntentMetadata,
   type IntentOperation,
   type IntentRoute,
   type IntentsApi,
@@ -33,6 +34,14 @@ import {
  * - `incomplete`  attention DEPOSIT_INCOMPLETE after the deposit
  * - `review`      attention MANUAL_REVIEW after delivery
  * - `untracked`   WRAPPED with settlement NOT_TRACKED (bridge data only)
+ * - `registrationConflict` hash registration fails with
+ *                 REHEARSAL_DELIVERY_CONFLICT (no progress, under review)
+ *
+ * Like Basenet, the USDT route is a fixed 1-token rehearsal with
+ * connected-wallet hash registration: the first registration answers
+ * REHEARSAL_RECEIPT_PENDING, the next one is accepted and starts the
+ * lifecycle. The ETH route needs a quote preview and the Base USDC route has
+ * no metadata, so both show as unavailable.
  */
 export const intentsMockScenarios = [
   "reject",
@@ -43,6 +52,7 @@ export const intentsMockScenarios = [
   "incomplete",
   "review",
   "untracked",
+  "registrationConflict",
 ] as const;
 export type IntentsMockScenario = (typeof intentsMockScenarios)[number];
 
@@ -51,7 +61,6 @@ const MOCK_FACTORY = "0x00000000000000000000000000000000000fac70" as const;
 const units = (amount: number, decimals: number) =>
   new BigNumber(amount).shiftedBy(decimals).toFixed();
 
-/** Mirrors `MOCK_INTENT_SOURCE_ASSETS` in `~/consts/intents`. */
 export const mockIntentRoutes: IntentRoute[] = [
   {
     id: "mock-arb-sepolia-usdt",
@@ -66,10 +75,11 @@ export const mockIntentRoutes: IntentRoute[] = [
     bridgeAddress: USDT_BRIDGE.address,
     sourceDecimals: 18,
     settlementDecimals: USDT_BRIDGE.sourceToken.decimals,
+    // Fixed 1-token rehearsal, like basenet-rehearsal-k8s.
     minAmountIn: units(1, 18),
-    maxAmountIn: units(10_000, 18),
-    minAmountOut: units(0.5, 18),
-    maxSlippageBps: 300,
+    maxAmountIn: units(1, 18),
+    minAmountOut: units(1, USDT_BRIDGE.sourceToken.decimals),
+    maxSlippageBps: 0,
   },
   {
     id: "mock-sepolia-eth",
@@ -110,6 +120,68 @@ export const mockIntentRoutes: IntentRoute[] = [
   },
 ];
 
+const mockDestinationAsset = {
+  chainId: "NetXbasenetMock",
+  kind: "fa2",
+  contractAddress: USDT_BRIDGE.destinationToken.address,
+  tokenId: USDT_BRIDGE.destinationToken.id,
+  decimals: USDT_BRIDGE.destinationToken.decimals,
+};
+const mockSettlementAsset = {
+  assetId: "mock:arb-sepolia:usdt",
+  chainId: String(USDT_BRIDGE.chainId),
+  kind: "erc20" as const,
+  contractAddress: USDT_BRIDGE.sourceToken.address,
+  symbol: "Mock USDT",
+  decimals: USDT_BRIDGE.sourceToken.decimals,
+};
+const limitsOf = (route: IntentRoute) => ({
+  minAmountIn: route.minAmountIn,
+  maxAmountIn: route.maxAmountIn,
+  minAmountOut: route.minAmountOut,
+  maxSlippageBps: route.maxSlippageBps,
+});
+
+/** `GET /v1/metadata`; the Base USDC route is deliberately not described. */
+export const mockIntentMetadata: IntentMetadata = {
+  admissionPaused: false,
+  routes: [
+    {
+      routeId: mockIntentRoutes[0].id,
+      routeVersion: mockIntentRoutes[0].version,
+      mode: "rehearsal",
+      previewSupported: false,
+      sourceAsset: mockSettlementAsset,
+      settlementAsset: mockSettlementAsset,
+      destinationAsset: mockDestinationAsset,
+      limits: limitsOf(mockIntentRoutes[0]),
+      depositRegistrationSupported: true,
+    },
+    {
+      routeId: mockIntentRoutes[1].id,
+      routeVersion: mockIntentRoutes[1].version,
+      mode: "real",
+      previewSupported: false,
+      sourceAsset: {
+        assetId: "mock:sepolia:eth",
+        chainId: "11155111",
+        kind: "native",
+        contractAddress: null,
+        symbol: "ETH",
+        decimals: 18,
+      },
+      settlementAsset: mockSettlementAsset,
+      destinationAsset: mockDestinationAsset,
+      limits: limitsOf(mockIntentRoutes[1]),
+      depositRegistrationSupported: false,
+    },
+  ],
+};
+const isRehearsal = (routeId: string) =>
+  mockIntentMetadata.routes.some(
+    (item) => item.routeId === routeId && item.mode === "rehearsal"
+  );
+
 /** Settlement tokens per source token, before the 0.3% simulated fee. */
 const rates: Record<string, number> = {
   "mock:arb-sepolia:usdt": 1,
@@ -132,6 +204,9 @@ const storedSchema = z.object({
   quotedAmountOut: z.string().optional(),
   /** Index of the last applied timeline stage. */
   stage: z.number().int().optional(),
+  /** Hash bound by POST /deposit, and attempts seen before acceptance. */
+  registeredHash: z.string().optional(),
+  registrationAttempts: z.number().int().optional(),
   scenario: z.string().optional(),
 });
 type Stored = z.infer<typeof storedSchema>;
@@ -227,7 +302,8 @@ export function createIntentsMockApi({
         const amountOut = new BigNumber(op.amountIn)
           .shiftedBy(-route.sourceDecimals)
           .times(rates[route.originAsset] ?? 1)
-          .times(0.997)
+          // The rehearsal settles 1:1; provider routes charge a fee.
+          .times(isRehearsal(route.id) ? 1 : 0.997)
           .shiftedBy(route.settlementDecimals)
           .integerValue(BigNumber.ROUND_DOWN);
         const minAmountOut = amountOut
@@ -465,6 +541,10 @@ export function createIntentsMockApi({
       await delay(options?.signal);
       return mockIntentRoutes;
     },
+    async getMetadata(options) {
+      await delay(options?.signal);
+      return mockIntentMetadata;
+    },
     async createOperation({ capability, idempotencyKey }, input, options) {
       await delay(options?.signal);
       if (!isOperationCapability(capability))
@@ -510,6 +590,18 @@ export function createIntentsMockApi({
         throw fail("SLIPPAGE_OUT_OF_RANGE", 400, "Slippage too high.");
       if (new BigNumber(request.acceptedMinAmountOut).lt(route.minAmountOut))
         throw fail("MIN_OUTPUT_TOO_LOW", 400, "Accepted output too low.");
+      if (
+        isRehearsal(route.id) &&
+        (request.sourceAddress.toLowerCase() !==
+          request.refundAddress.toLowerCase() ||
+          request.slippageBps !== 0 ||
+          request.acceptedMinAmountOut !== route.minAmountOut)
+      )
+        throw fail(
+          "REHEARSAL_SCOPE_MISMATCH",
+          409,
+          "The rehearsal accepts only its fixed transfer."
+        );
       const createdAt = now();
       const operation: IntentOperation = {
         ...(JSON.parse(body) as typeof request),
@@ -569,18 +661,55 @@ export function createIntentsMockApi({
       await delay(options?.signal);
       return find(capability, id).stored.operation;
     },
-    async simulateDeposit(capability, id) {
+    async registerDeposit(capability, id, transactionHash, options) {
+      await delay(options?.signal);
       const { operations, stored } = find(capability, id);
-      if (
-        stored.depositedAt !== undefined ||
-        stored.operation.fundingStatus !== "AVAILABLE"
-      )
-        return;
+      const hash = transactionHash.toLowerCase();
+      if (!/^0x[0-9a-f]{64}$/.test(hash))
+        throw fail("VALIDATION_ERROR", 400, "Invalid transaction hash.");
+      if (stored.registeredHash) {
+        if (stored.registeredHash !== hash)
+          throw fail(
+            "REHEARSAL_DELIVERY_CONFLICT",
+            409,
+            "The operation is bound to another transaction."
+          );
+        return { replayed: true };
+      }
+      if (stored.scenario === "registrationConflict")
+        throw fail(
+          "REHEARSAL_DELIVERY_CONFLICT",
+          409,
+          "The forwarder already holds a delivery for another operation."
+        );
+      if (stored.operation.fundingStatus !== "AVAILABLE")
+        throw fail(
+          "REHEARSAL_QUOTE_NOT_PUBLISHED",
+          409,
+          "No published funding instructions."
+        );
+      const attempts = (stored.registrationAttempts ?? 0) + 1;
+      if (attempts === 1) {
+        write(
+          operations.map((item) =>
+            item === stored ? { ...item, registrationAttempts: attempts } : item
+          )
+        );
+        throw new IntentsApiError(
+          "REHEARSAL_RECEIPT_PENDING",
+          "Receipt or confirmations pending.",
+          409,
+          uuid(),
+          3_000
+        );
+      }
       write(
         operations.map((item) =>
           item === stored
             ? advance({
                 ...item,
+                registeredHash: hash,
+                registrationAttempts: attempts,
                 depositedAt: now(),
                 quotedAmountOut:
                   item.operation.fundingInstructions?.bridgeableAmountOut,
@@ -588,6 +717,7 @@ export function createIntentsMockApi({
             : item
         )
       );
+      return { replayed: false };
     },
   };
 }

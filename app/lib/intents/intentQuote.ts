@@ -1,6 +1,5 @@
 import { BigNumber } from "bignumber.js";
 
-import type { IntentSourceAsset } from "~/consts/intents";
 import type { IntentErrorCode, IntentsApiError } from "~/lib/apis/intents";
 
 /**
@@ -28,41 +27,32 @@ export function getIntentRequestKey(inputs: {
 
 /**
  * Minimum output the user explicitly accepts, in settlement ERC-20 units.
- * There is no quote-preview endpoint, so it is estimated from the approved
- * price reference, minus the asset's fee allowance and the chosen slippage,
- * then rounded DOWN to a value the six-decimal FA2 can represent. The
- * backend never lowers it; a quote below it is rejected (closure
- * QUOTE_REJECTED) before any funding is possible.
+ * Only exact-parity routes (the Basenet rehearsal) are priced without a
+ * quote preview: the amount is converted 1:1 to settlement units, reduced by
+ * the chosen slippage, then rounded DOWN to a value the six-decimal FA2 can
+ * represent. The backend never lowers it; a quote below it is rejected
+ * (closure QUOTE_REJECTED) before any funding is possible.
  */
 export function estimateAcceptedMinAmountOut({
   amountIn,
   sourceDecimals,
   settlementDecimals,
   destinationDecimals,
-  pricing,
-  feeAllowanceBps,
   slippageBps,
 }: {
   amountIn: string;
   sourceDecimals: number;
   settlementDecimals: number;
   destinationDecimals: number;
-  pricing: IntentSourceAsset["pricing"];
-  feeAllowanceBps: number;
   slippageBps: number;
 }): { expected: string; minimum: string } | null {
-  const rate = pricing.kind === "parity" ? 1 : new BigNumber(pricing.rate);
   const expected = new BigNumber(amountIn)
-    .shiftedBy(-sourceDecimals)
-    .times(rate)
-    .shiftedBy(settlementDecimals)
+    .shiftedBy(settlementDecimals - sourceDecimals)
     .integerValue(BigNumber.ROUND_DOWN);
   const step = new BigNumber(10).pow(
     Math.max(0, settlementDecimals - destinationDecimals)
   );
   const minimum = expected
-    .times(10_000 - feeAllowanceBps)
-    .div(10_000)
     .times(10_000 - slippageBps)
     .div(10_000)
     .div(step)
@@ -104,7 +94,17 @@ const errorCopy: Record<IntentErrorCode, string> = {
   DEPENDENCY_UNAVAILABLE:
     "The deposit service is temporarily unavailable. Try again: your request is kept and will not be duplicated.",
   REHEARSAL_SCOPE_MISMATCH:
-    "This test environment only accepts the approved rehearsal transfer.",
+    "This test route only accepts its fixed transfer: the exact amount, zero slippage and the same wallet as sender and refund address.",
+  REHEARSAL_QUOTE_NOT_PUBLISHED:
+    "The quote is not published yet. Wait for the funding instructions.",
+  REHEARSAL_RECEIPT_PENDING:
+    "Your transfer is still being confirmed. It is checked again automatically.",
+  REHEARSAL_DELIVERY_MISMATCH:
+    "Your transfer does not match the quote, so it was not accepted automatically.",
+  REHEARSAL_DELIVERY_CONFLICT:
+    "This operation is already bound to a different transfer.",
+  REHEARSAL_RPC_UNAVAILABLE:
+    "The deposit service cannot reach the source network right now. It is checked again automatically.",
   NETWORK:
     "The deposit service is unreachable. Try again: your request is kept and will not be duplicated.",
   INVALID_RESPONSE: "The deposit service returned an unexpected response.",

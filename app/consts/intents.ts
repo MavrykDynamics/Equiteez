@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { arbitrumSepolia, sepolia } from "wagmi/chains";
 
 import { USDT_BRIDGE } from "./usdtBridge";
@@ -54,18 +53,6 @@ export const INTENTS_ENV =
       "unconfigured");
 
 /**
- * Bounded Basenet rehearsal (backend.md §1): the backend admits exactly one
- * pre-approved capability hash + idempotency key. When both are set, the next
- * new operation uses them instead of fresh random values. Local/test builds
- * only: never set these for a production build.
- */
-export const INTENTS_REHEARSAL = (() => {
-  const capability = env("INTENTS_REHEARSAL_CAPABILITY");
-  const idempotencyKey = env("INTENTS_REHEARSAL_IDEMPOTENCY_KEY");
-  return capability && idempotencyKey ? { capability, idempotencyKey } : null;
-})();
-
-/**
  * Source chains the funding adapters can sign on. A catalog route on any other
  * chain is shown as unsupported. The direct USDT bridge keeps its own chain.
  */
@@ -75,92 +62,12 @@ export const INTENTS_SOURCE_RPC_URLS: Partial<Record<number, string>> = {
 };
 
 /**
- * Approved product configuration for a provider source asset. The route
- * catalog only carries the provider's `originAsset` identifier and decimals;
- * the token contract the wallet transfers, its ticker and the price reference
- * come from here (backend.md §4.2: "frontend asset metadata must come from
- * the approved product configuration"). A route whose `originAsset` is not
- * listed is shown as unavailable, never guessed from a ticker.
+ * Route modes Equiteez can price without a quote preview. The Basenet
+ * rehearsal settles 1:1 with zero slippage, so the accepted minimum is the
+ * amount itself. Provider (1Click) routes stay unavailable until
+ * `POST /v1/quotes/preview` is integrated.
  */
-const sourceAssetSchema = z.object({
-  originAsset: z.string().min(1),
-  chainId: z.number().int().positive(),
-  token: z.union([
-    z.literal("native"),
-    z
-      .string()
-      .regex(/^0x[0-9a-fA-F]{40}$/)
-      .transform((value) => value as `0x${string}`),
-  ]),
-  symbol: z.string().min(1),
-  name: z.string().min(1),
-  decimals: z.number().int().min(0).max(36),
-  /**
-   * How the form estimates the minimum output the user accepts before the
-   * backend prepares the executable quote (there is no quote-preview
-   * endpoint). `parity`: 1 source token ≈ 1 settlement token (stablecoins).
-   * `reference`: settlement tokens per source token; testnet/mock only.
-   */
-  pricing: z.discriminatedUnion("kind", [
-    z.object({ kind: z.literal("parity") }),
-    z.object({
-      kind: z.literal("reference"),
-      rate: z.string().regex(/^\d+(\.\d+)?$/),
-    }),
-  ]),
-  /**
-   * Headroom for provider/route fees, applied before slippage. A quote's
-   * minimum is its fee-adjusted output minus slippage, so an estimate
-   * without fee headroom would be rejected (QUOTE_REJECTED) every time.
-   */
-  feeAllowanceBps: z.number().int().min(0).max(5000),
-});
-export type IntentSourceAsset = z.infer<typeof sourceAssetSchema>;
-
-/** Source assets of the in-browser simulator (`INTENTS_API_MODE=mock`). */
-export const MOCK_INTENT_SOURCE_ASSETS: IntentSourceAsset[] = [
-  {
-    originAsset: "mock:arb-sepolia:usdt",
-    chainId: arbitrumSepolia.id,
-    token: USDT_BRIDGE.sourceToken.address,
-    symbol: "USDT",
-    name: "Mock USDT",
-    decimals: USDT_BRIDGE.sourceToken.decimals,
-    pricing: { kind: "parity" },
-    feeAllowanceBps: 50,
-  },
-  {
-    originAsset: "mock:sepolia:eth",
-    chainId: sepolia.id,
-    token: "native",
-    symbol: "ETH",
-    name: "Ether",
-    decimals: 18,
-    pricing: { kind: "reference", rate: "3000" },
-    feeAllowanceBps: 100,
-  },
-];
-
-function readSourceAssets(): IntentSourceAsset[] {
-  const raw = env("INTENTS_SOURCE_ASSETS");
-  if (!raw) return INTENTS_API_MODE === "mock" ? MOCK_INTENT_SOURCE_ASSETS : [];
-  try {
-    return z.array(sourceAssetSchema).parse(JSON.parse(raw));
-  } catch {
-    console.warn(
-      "INTENTS_SOURCE_ASSETS is not valid; no 1Click route is enabled."
-    );
-    return [];
-  }
-}
-
-/**
- * `INTENTS_SOURCE_ASSETS` (JSON array of IntentSourceAsset) overrides the
- * defaults, e.g. for the Basenet rehearsal route once its `originAsset` is
- * known. HTTP mode has no default: every route stays disabled until its
- * source asset is approved here.
- */
-export const INTENTS_SOURCE_ASSETS = readSourceAssets();
+export const INTENTS_EXACT_PARITY_MODES: readonly string[] = ["rehearsal"];
 
 /**
  * Settlement-chain ERC-20 → Mavryk FA2 pairs of the existing bridge
@@ -191,6 +98,15 @@ export const INTENTS_POLL_INTERVALS = {
   maxMs: 60_000,
   /** Network/5xx backoff starts here and doubles up to maxMs. */
   errorInitialMs: 5_000,
+} as const;
+/**
+ * Funding-hash registration retries (backend.md §4.5/§5): a pending receipt,
+ * RPC outage, 429 or lost response sends the same hash again after 10–30s,
+ * backing off to the cap. There is no attempt limit.
+ */
+export const INTENTS_REGISTRATION_RETRY = {
+  initialMs: 15_000,
+  maxMs: 60_000,
 } as const;
 /** Consecutive 404s before an operation is treated as no longer readable. */
 export const INTENTS_NOT_FOUND_LIMIT = 3;

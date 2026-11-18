@@ -49,9 +49,11 @@ export function IntentsView({
     sourceBalance,
     amount,
     setAmount,
+    isAmountFixed,
     amountError,
     slippageBps,
     setSlippageBps,
+    isSlippageFixed,
     slippageError,
     estimate,
     canReview,
@@ -169,24 +171,26 @@ export function IntentsView({
           }
           additionalBottomLeftBlock={balanceNotice}
           amount={amount}
-          amountInputDisabled={isBusy || Boolean(routeError)}
+          amountInputDisabled={isBusy || Boolean(routeError) || isAmountFixed}
           balanceSuffix={
-            <button
-              aria-label={`Use maximum ${symbol} balance`}
-              className={styles.maxButton}
-              disabled={sourceBalance.status !== "ready" || isBusy}
-              onClick={() =>
-                setAmount(
-                  sourceBalance.balance?.decimalPlaces(
-                    Math.min(route.sourceDecimals, 8),
-                    BigNumber.ROUND_DOWN
+            isAmountFixed ? undefined : (
+              <button
+                aria-label={`Use maximum ${symbol} balance`}
+                className={styles.maxButton}
+                disabled={sourceBalance.status !== "ready" || isBusy}
+                onClick={() =>
+                  setAmount(
+                    sourceBalance.balance?.decimalPlaces(
+                      Math.min(route.sourceDecimals, 8),
+                      BigNumber.ROUND_DOWN
+                    )
                   )
-                )
-              }
-              type="button"
-            >
-              Max
-            </button>
+                }
+                type="button"
+              >
+                Max
+              </button>
+            )
           }
           label={`Send from ${chainName}`}
           onChange={setAmount}
@@ -196,7 +200,7 @@ export function IntentsView({
             ethereumWallet.isConnected ? EthereumLogo : undefined
           }
           metadata={{
-            name: source?.name ?? symbol,
+            name: symbol,
             symbol,
             decimals: route.sourceDecimals,
           }}
@@ -204,31 +208,46 @@ export function IntentsView({
         />
       </div>
 
-      <div
-        aria-label="Slippage tolerance"
-        className={intentsStyles.slippageRow}
-        role="radiogroup"
-      >
-        <RText color="neutral-700" size="body-s">
-          Slippage tolerance
+      {isAmountFixed && (
+        <RText color="neutral-500" size="body-xs">
+          The amount is fixed by this route.
         </RText>
-        <div className={intentsStyles.slippageOptions}>
-          {slippageChoices.map((bps) => (
-            <button
-              aria-checked={slippageBps === bps}
-              className={intentsStyles.slippageOption}
-              data-active={slippageBps === bps}
-              disabled={isBusy || Boolean(routeError)}
-              key={bps}
-              onClick={() => setSlippageBps(bps)}
-              role="radio"
-              type="button"
-            >
-              {formatBps(bps)}
-            </button>
-          ))}
+      )}
+
+      {isSlippageFixed ? (
+        <div className={intentsStyles.slippageRow}>
+          <RText color="neutral-700" size="body-s">
+            Slippage tolerance
+          </RText>
+          <RText size="body-s">{`${formatBps(slippageBps)} (fixed)`}</RText>
         </div>
-      </div>
+      ) : (
+        <div
+          aria-label="Slippage tolerance"
+          className={intentsStyles.slippageRow}
+          role="radiogroup"
+        >
+          <RText color="neutral-700" size="body-s">
+            Slippage tolerance
+          </RText>
+          <div className={intentsStyles.slippageOptions}>
+            {slippageChoices.map((bps) => (
+              <button
+                aria-checked={slippageBps === bps}
+                className={intentsStyles.slippageOption}
+                data-active={slippageBps === bps}
+                disabled={isBusy || Boolean(routeError)}
+                key={bps}
+                onClick={() => setSlippageBps(bps)}
+                role="radio"
+                type="button"
+              >
+                {formatBps(bps)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={intentsStyles.recipientRow}>
         <div className={intentsStyles.recipientCopy}>

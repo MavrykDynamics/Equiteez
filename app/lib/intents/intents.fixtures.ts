@@ -1,15 +1,15 @@
 import { arbitrumSepolia, sepolia } from "wagmi/chains";
 
-import {
-  INTENTS_BRIDGE_PAIRS,
-  MOCK_INTENT_SOURCE_ASSETS,
-} from "~/consts/intents";
+import { INTENTS_BRIDGE_PAIRS } from "~/consts/intents";
 import type {
   IntentFundingInstructions,
   IntentOperation,
   IntentOperationRequest,
 } from "~/lib/apis/intents";
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
+import {
+  mockIntentMetadata,
+  mockIntentRoutes,
+} from "~/lib/apis/intents/intents.mock";
 import { createIntentRecord, type IntentRecord } from "./intentOperation";
 import { resolveIntentRoute } from "./intentRoute";
 
@@ -24,10 +24,11 @@ export const fixtureQuoteId = "5d0c3a9e-7b21-4f6a-8c44-1e9b2d3f4a55";
 export const fixtureRoute = mockIntentRoutes[0];
 export const fixtureNativeRoute = mockIntentRoutes[1];
 export const fixtureWrapHash = `0x${"c".repeat(64)}` as const;
+export const fixtureFundingHash = `0x${"a".repeat(64)}` as const;
 
 export const resolveOption = (route = fixtureRoute) =>
   resolveIntentRoute(route, {
-    sourceAssets: MOCK_INTENT_SOURCE_ASSETS,
+    metadata: mockIntentMetadata,
     bridgePairs: INTENTS_BRIDGE_PAIRS,
     chains: [arbitrumSepolia, sepolia],
   });

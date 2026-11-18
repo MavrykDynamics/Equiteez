@@ -61,7 +61,7 @@ describe("intent widget model", () => {
       operationId: getIntentWidgetId({ localId: "local-1" }),
       backendId: "intent:local-1",
       amount: "2",
-      symbol: "USDT",
+      symbol: "Mock USDT",
       recipient: fixtureRecipient,
       sourceExplorerUrl: `https://arbiscan.test/tx/${hash}`,
       steps: intentWidgetStepLabels,
@@ -190,7 +190,7 @@ describe("intent widget model", () => {
     expect(state(item)).toMatchObject({
       status: "warning",
       title: "Refund reported",
-      description: expect.stringMatching(/2 USDT.*provider's report/),
+      description: expect.stringMatching(/2 Mock USDT.*provider's report/),
     });
     expect(getIntentWidgetState(item).isTerminal).toBe(true);
   });

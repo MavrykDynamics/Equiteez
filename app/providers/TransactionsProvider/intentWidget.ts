@@ -220,6 +220,20 @@ export function getIntentWidgetState(record: IntentRecord): {
     }
   }
 
+  const registration = record.registration;
+  if (
+    registration?.status === "stopped" &&
+    (record.fundingState === "broadcast" || record.fundingState === "confirmed")
+  )
+    return {
+      isTerminal: false,
+      state: {
+        status: "warning",
+        title: "Deposit under review",
+        description: `${registration.error ?? "The deposit service could not accept your transfer automatically."} Do not send another deposit.${support(record)} Transfer: ${registration.hash}.`,
+      },
+    };
+
   switch (record.fundingState) {
     case "prompted":
       return {
@@ -270,9 +284,13 @@ export function getIntentWidgetState(record: IntentRecord): {
                   record,
                   withChain(
                     record,
-                    record.fundingState === "confirmed"
-                      ? "Transfer confirmed on {chain}. Waiting for 1Click to detect it."
-                      : "Waiting for {chain} confirmation."
+                    registration?.status === "pending"
+                      ? "Confirming your transfer on {chain} with the deposit service…"
+                      : registration?.status === "accepted"
+                        ? "Transfer accepted. Verifying the delivery."
+                        : record.fundingState === "confirmed"
+                          ? "Transfer confirmed on {chain}. Waiting for 1Click to detect it."
+                          : "Waiting for {chain} confirmation."
                   )
                 ),
               },

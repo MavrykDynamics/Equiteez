@@ -24,10 +24,7 @@ const accountA = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
 const accountB = `mv1${"2".repeat(33)}`;
 const sourceA = "0x1111111111111111111111111111111111111111" as const;
 const sourceB = "0x4444444444444444444444444444444444444444" as const;
-const rehearsal = {
-  capability: "R".repeat(42) + "A",
-  idempotencyKey: "rehearsal-key-1",
-};
+const ONE = "1000000000000000000";
 
 const mocks = vi.hoisted(() => ({
   api: null as unknown as IntentsApi,
@@ -39,18 +36,8 @@ const mocks = vi.hoisted(() => ({
   wallet: null as unknown as EthereumContext,
   result: null as unknown as ReturnType<typeof useIntentsDeposit>,
   fund: vi.fn(),
-  rehearsal: null as null | { capability: string; idempotencyKey: string },
 }));
 
-vi.mock("~/consts/intents", async (original) => {
-  const actual = await original<typeof import("~/consts/intents")>();
-  return {
-    ...actual,
-    get INTENTS_REHEARSAL() {
-      return mocks.rehearsal;
-    },
-  };
-});
 vi.mock("~/lib/apis/intents", async (original) => ({
   ...(await original<typeof import("~/lib/apis/intents")>()),
   getIntentsApi: () => mocks.api,
@@ -121,7 +108,7 @@ function signIn(account: string, source: `0x${string}` = sourceA) {
 const store = () => mocks.ctx.intentSession as IntentOperations;
 const records = () => [...store().getSnapshot().records.values()];
 
-async function reachReview(amount = 2) {
+async function reachReview(amount = 1) {
   await act(async () => mocks.result.setAmount(new BigNumber(amount)));
   await act(async () => mocks.result.startReview());
   expect(mocks.result.review.phase).toBe("review");
@@ -153,7 +140,6 @@ beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   clock = Date.now();
   scenario = null;
-  mocks.rehearsal = null;
   mocks.fund.mockReset();
   mocks.api = createIntentsMockApi({
     storage: () => memoryStorage(),
@@ -171,9 +157,22 @@ afterEach(async () => {
 });
 
 describe("form and local review", () => {
+  it("prefills the fixed amount and clamps slippage to the route maximum", async () => {
+    await render();
+    // basenet-rehearsal-style route: exactly 1 token, 0 slippage.
+    expect(mocks.result.isAmountFixed).toBe(true);
+    expect(mocks.result.isSlippageFixed).toBe(true);
+    expect(mocks.result.amount?.toFixed()).toBe("1");
+    expect(mocks.result.slippageBps).toBe(0);
+    expect(mocks.result.estimate).toEqual({ expected: ONE, minimum: ONE });
+    expect(mocks.result.canReview).toBe(true);
+    await act(async () => mocks.result.setAmount(new BigNumber(2)));
+    expect(mocks.result.amount?.toFixed()).toBe("1");
+  });
+
   it("builds the exact request with an accepted minimum and the source wallet as refund address", async () => {
     await render();
-    await reachReview();
+    await act(async () => mocks.result.startReview());
     const review = mocks.result.review as Extract<
       typeof mocks.result.review,
       { phase: "review" | "creating" }
@@ -184,20 +183,16 @@ describe("form and local review", () => {
       sourceAddress: sourceA,
       recipient: accountA,
       refundAddress: sourceA,
-      amountIn: "2000000000000000000",
-      slippageBps: 50,
-      acceptedMinAmountOut: "1980050000000000000",
+      amountIn: ONE,
+      slippageBps: 0,
+      acceptedMinAmountOut: ONE,
     });
     // Nothing was persisted or sent yet.
     expect(records()).toHaveLength(0);
   });
 
-  it("clears the review when the slippage or source wallet changes", async () => {
+  it("clears the review when the source wallet changes", async () => {
     await render();
-    await reachReview();
-    await act(async () => mocks.result.setSlippageBps(100));
-    expect(mocks.result.review.phase).toBe("form");
-    expect(mocks.result.reviewError).toMatch(/slippage changed/);
     await reachReview();
     const current = mocks.ctx.intentSession;
     signIn(accountA, sourceB);
@@ -243,7 +238,7 @@ describe("persisted operation", () => {
     const [local] = records();
     expect(isOperationCapability(local.capability)).toBe(true);
     expect(local.idempotencyKey).toMatch(/^[!-~]{8,128}$/);
-    expect(local.request.amountIn).toBe("2000000000000000000");
+    expect(local.request.amountIn).toBe(ONE);
     expect(local.operationId).toBeUndefined();
     await act(async () => {
       pending.resolve(await created);
@@ -383,17 +378,16 @@ describe("persisted operation", () => {
     expect(mocks.result.review.phase).toBe("form");
   });
 
-  it("uses the pre-approved rehearsal scope once", async () => {
-    mocks.rehearsal = rehearsal;
+  it("generates a fresh capability and idempotency key for every operation", async () => {
     await reachReady();
-    expect(records()[0]).toMatchObject(rehearsal);
     await act(async () => mocks.result.cancelReview());
-    await reachReview(3);
+    await reachReview();
     await act(async () => mocks.result.confirmRequest());
-    const second = records().find(
-      (item) => item.request.amountIn !== records()[0].request.amountIn
-    )!;
-    expect(second.capability).not.toBe(rehearsal.capability);
+    const [first, second] = records();
+    expect(records()).toHaveLength(2);
+    expect(isOperationCapability(second.capability)).toBe(true);
+    expect(second.capability).not.toBe(first.capability);
+    expect(second.idempotencyKey).not.toBe(first.idempotencyKey);
   });
 });
 
@@ -441,7 +435,16 @@ describe("funding hand-off", () => {
 
   it("follows the operation when the backend saw funds", async () => {
     const record = await reachReady();
-    await mocks.api.simulateDeposit!(record.capability, record.operationId!);
+    const hash = `0x${"a".repeat(64)}` as const;
+    // The mock answers REHEARSAL_RECEIPT_PENDING once, then accepts.
+    await expect(
+      mocks.api.registerDeposit(record.capability, record.operationId!, hash)
+    ).rejects.toMatchObject({ code: "REHEARSAL_RECEIPT_PENDING" });
+    await mocks.api.registerDeposit(
+      record.capability,
+      record.operationId!,
+      hash
+    );
     await publishQuote(0);
     expect(mocks.result.review).toMatchObject({
       phase: "tracking",
@@ -460,7 +463,7 @@ describe("resume", () => {
     });
     expect(found).toBe(false);
 
-    await reachReview(3);
+    await reachReview();
     await act(async () => mocks.result.confirmRequest());
     const funded = records().find((item) => item.localId !== unfunded.localId)!;
     store().upsert({

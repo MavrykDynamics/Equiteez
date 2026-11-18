@@ -9,10 +9,7 @@ import {
 import { BigNumber } from "bignumber.js";
 import { useSwitchChain } from "wagmi";
 
-import {
-  INTENTS_DEFAULT_SLIPPAGE_BPS,
-  INTENTS_REHEARSAL,
-} from "~/consts/intents";
+import { INTENTS_DEFAULT_SLIPPAGE_BPS } from "~/consts/intents";
 import { useIntentsRoutes } from "~/hooks/useIntentsRoutes";
 import {
   getIntentsApi,
@@ -44,6 +41,7 @@ import {
 } from "~/lib/intents/intentQuote";
 import {
   formatRawAmount,
+  fromRawAmount,
   getIntentAmountError,
   getIntentSlippageError,
   intentRouteAvailabilityCopy,
@@ -192,6 +190,26 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     selected && selected.availability !== "available"
       ? intentRouteAvailabilityCopy[selected.availability]
       : null;
+  // Routes with a single admissible amount or no slippage fix the input.
+  const fixedAmount = useMemo(
+    () =>
+      route && route.minAmountIn === route.maxAmountIn
+        ? fromRawAmount(route.minAmountIn, route.sourceDecimals)
+        : null,
+    [route]
+  );
+  const isSlippageFixed = route?.maxSlippageBps === 0;
+  useEffect(() => {
+    if (fixedAmount && !amount?.eq(fixedAmount)) setAmount(fixedAmount);
+  }, [amount, fixedAmount]);
+  useEffect(() => {
+    if (route && slippageBps > route.maxSlippageBps)
+      setSlippageBps(
+        route.maxSlippageBps === 0
+          ? 0
+          : Math.min(INTENTS_DEFAULT_SLIPPAGE_BPS, route.maxSlippageBps)
+      );
+  }, [route, slippageBps]);
   const amountIn =
     route && amount ? toRawAmount(amount, route.sourceDecimals) : null;
   const estimate = useMemo(
@@ -202,8 +220,6 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
             sourceDecimals: selected.route.sourceDecimals,
             settlementDecimals: selected.route.settlementDecimals,
             destinationDecimals: selected.destination.decimals,
-            pricing: selected.source.pricing,
-            feeAllowanceBps: selected.source.feeAllowanceBps,
             slippageBps,
           })
         : null,
@@ -422,17 +438,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     try {
       let record = session.get(localId);
       if (!record) {
-        // The rehearsal admits one pre-approved scope. It is reused only
-        // while no operation was created with it (a definitive rejection
-        // created nothing); afterwards new intents get random scopes.
-        const rehearsal = INTENTS_REHEARSAL;
-        const usesRehearsal =
-          rehearsal &&
-          ![...session.getSnapshot().records.values()].some(
-            (item) =>
-              item.idempotencyKey === rehearsal.idempotencyKey &&
-              (item.operationId || item.fundingState !== "abandoned")
-          );
+        // Every new transfer intent gets its own random scope.
         record = createIntentRecord({
           localId,
           account: session.account,
@@ -440,12 +446,10 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
           option: current.option,
           request: current.request,
           expectedAmountOut: current.expectedAmountOut,
-          credentials: usesRehearsal
-            ? rehearsal
-            : {
-                capability: newOperationCapability(),
-                idempotencyKey: newIdempotencyKey(),
-              },
+          credentials: {
+            capability: newOperationCapability(),
+            idempotencyKey: newIdempotencyKey(),
+          },
         });
         // Persisted before the first POST; never regenerated for retries.
         if (!session.upsert(record) || !session.get(localId))
@@ -528,7 +532,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   const api = getIntentsApi();
   const simulateFunding = useMemo(
     () =>
-      api.env === "mock" && api.simulateDeposit
+      api.env === "mock"
         ? () => {
             const current = reviewRef.current;
             if (current.phase === "operation")
@@ -606,9 +610,11 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     sourceBalance,
     amount,
     setAmount,
+    isAmountFixed: Boolean(fixedAmount),
     amountError,
     slippageBps,
     setSlippageBps,
+    isSlippageFixed,
     slippageError,
     estimate,
     canReview,

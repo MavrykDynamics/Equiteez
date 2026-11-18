@@ -39,6 +39,27 @@ export const intentFundingStateSchema = z.enum([
 ]);
 export type IntentFundingState = z.infer<typeof intentFundingStateSchema>;
 
+/**
+ * Funding-hash registration (`POST /v1/operations/:id/deposit`, backend.md
+ * §4.5) on routes that need it. Only ever an HTTP retry with the saved hash:
+ * a pending receipt never asks the wallet again.
+ */
+export const intentRegistrationSchema = z.object({
+  /**
+   * `pending`: (re)send `hash` until the backend accepts it. `accepted`: the
+   * backend bound it. `stopped`: rejected for good (mismatch/conflict) or
+   * the wallet replaced the transfer; kept for support.
+   */
+  status: z.enum(["pending", "accepted", "stopped"]),
+  /** Newest funding hash; a repriced replacement takes over while pending. */
+  hash: evmHashSchema,
+  /** Why it stopped (user copy), last backend code and request ID. */
+  error: z.string().optional(),
+  code: z.string().optional(),
+  requestId: z.string().optional(),
+});
+export type IntentRegistration = z.infer<typeof intentRegistrationSchema>;
+
 export const intentRecordSchema = z.object({
   kind: z.literal("intent"),
   /** Local identity (widget/composite IDs). */
@@ -87,6 +108,9 @@ export const intentRecordSchema = z.object({
   lastInstructions: intentFundingInstructionsSchema.optional(),
   /** Funding hash plus wallet replacements, kept locally for support. */
   sourceHashes: z.array(evmHashSchema),
+  /** The route requires registering the funding hash (metadata flag). */
+  hasDepositRegistration: z.boolean().optional(),
+  registration: intentRegistrationSchema.optional(),
   backend: intentOperationSchema.optional(),
   /** "correlated" only from verified bridge data on a forward identity. */
   receipt: z.enum(["none", "correlated"]),
@@ -224,7 +248,7 @@ export function createIntentRecord({
   expectedAmountOut?: string;
   now?: number;
 }): IntentRecord {
-  const { source, destination, route } = option;
+  const { source, destination, route, hasDepositRegistration } = option;
   if (!source || !destination)
     throw new Error("The route is not configured for Equiteez.");
   return {
@@ -253,6 +277,7 @@ export function createIntentRecord({
     expectedAmountOut,
     fundingState: "not_started",
     sourceHashes: [],
+    hasDepositRegistration,
     receipt: "none",
     createdAt: now,
     sequence: 0,
@@ -306,6 +331,18 @@ export function getInstructionsMismatch(
     return "minimum output";
   return null;
 }
+
+/**
+ * The saved funding hash still has to be (re)sent to the backend: the route
+ * needs registration, it is pending, a transfer exists that did not revert,
+ * and the backend has not already seen the funds.
+ */
+export const needsIntentRegistration = (record: IntentRecord) =>
+  record.registration?.status === "pending" &&
+  Boolean(record.operationId) &&
+  ["broadcast", "confirmed", "unknown"].includes(record.fundingState) &&
+  !hasIntentFundsObserved(record.backend) &&
+  !isIntentClosed(record);
 
 /** Forward-event identity `hash:logIndex`, the bridge join key. */
 export const getForwardIdentity = (hash: string, logIndex: number) =>

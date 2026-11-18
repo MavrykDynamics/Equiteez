@@ -5,6 +5,7 @@ import type {
   intentErrorCodes,
   intentFundingInstructionsSchema,
   intentFundingStatusSchema,
+  intentMetadataRouteSchema,
   intentOperationRequestSchema,
   intentOperationSchema,
   intentPhaseSchema,
@@ -13,6 +14,12 @@ import type {
 } from "./intents.schema";
 
 export type IntentRoute = z.infer<typeof intentRouteSchema>;
+export type IntentMetadataRoute = z.infer<typeof intentMetadataRouteSchema>;
+/** `GET /v1/metadata`; `null` when the deployment does not expose it. */
+export type IntentMetadata = {
+  admissionPaused: boolean;
+  routes: IntentMetadataRoute[];
+};
 export type IntentOperationRequest = z.infer<
   typeof intentOperationRequestSchema
 >;
@@ -69,10 +76,23 @@ export interface IntentsApi {
     options?: RequestOptions
   ): Promise<IntentOperation>;
   /**
-   * Mock only: pretend 1Click observed the source deposit. The real backend
-   * has no hash-registration endpoint (backend.md §7.5).
+   * `GET /v1/metadata`; no capability. Asset identities per route version.
+   * `null` when the endpoint is not deployed (no asset is inferred then).
+   * Invalid entries are dropped.
    */
-  simulateDeposit?(capability: string, operationId: string): Promise<void>;
+  getMetadata(options?: RequestOptions): Promise<IntentMetadata | null>;
+  /**
+   * `POST /v1/operations/:id/deposit` (backend.md §4.5): binds the wallet's
+   * funding transaction to the operation. Idempotent for the same hash
+   * (`replayed: true`). `REHEARSAL_RECEIPT_PENDING` means: send the same hash
+   * again later, never ask the wallet again.
+   */
+  registerDeposit(
+    capability: string,
+    operationId: string,
+    transactionHash: `0x${string}`,
+    options?: RequestOptions
+  ): Promise<{ replayed: boolean }>;
 }
 
 /** Typed failure. Branch on `code`/`status`, never on the message. */

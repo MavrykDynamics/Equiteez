@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   INTENTS_POLL_INTERVALS,
+  INTENTS_REGISTRATION_RETRY,
   INTENTS_UNTRACKED_SETTLEMENT_POLL_MS,
 } from "~/consts/intents";
 import {
@@ -26,6 +27,7 @@ import {
 
 let store: IntentOperations;
 let getOperation: ReturnType<typeof vi.fn>;
+let registerDeposit: ReturnType<typeof vi.fn>;
 let current = true;
 const idFor = (localId: string) =>
   `00000000-0000-4000-8000-${localId
@@ -53,7 +55,7 @@ const reply = (localId: string, patch: Partial<IntentOperation> = {}) =>
 const tracker = () =>
   new IntentOperationsTracker(
     store,
-    { env: "mock", getOperation } as unknown as IntentsApi,
+    { env: "mock", getOperation, registerDeposit } as unknown as IntentsApi,
     () => current,
     Date.now,
     (ms) => ms // no jitter
@@ -65,6 +67,7 @@ beforeEach(() => {
   current = true;
   store = new IntentOperations(fixtureRecipient, "mock", () => memoryStorage());
   getOperation = vi.fn();
+  registerDeposit = vi.fn();
 });
 afterEach(() => vi.useRealTimers());
 
@@ -214,5 +217,159 @@ describe("intent tracker", () => {
     expect(store.get("a")?.backend).toBeUndefined();
     instance.stop();
     expect(getOperation.mock.calls[0][2].signal.aborted).toBe(true);
+  });
+});
+
+describe("funding-hash registration", () => {
+  const fundingHash = `0x${"a".repeat(64)}` as const;
+  const pending = (
+    localId: string,
+    fundingState: IntentFundingState = "broadcast"
+  ) => {
+    seed(localId, fundingState, {});
+    const saved = store.get(localId)!;
+    store.upsert({
+      ...saved,
+      hasDepositRegistration: true,
+      registration: { status: "pending", hash: fundingHash },
+      sequence: saved.sequence + 1,
+    });
+  };
+  const receiptPending = () =>
+    new IntentsApiError("REHEARSAL_RECEIPT_PENDING", "", 409, "req-p");
+
+  it("sends the saved hash, retries a pending receipt with backoff, then refreshes on acceptance", async () => {
+    pending("a");
+    getOperation.mockResolvedValue(reply("a", { retryAfterMs: 60_000 }));
+    registerDeposit
+      .mockRejectedValueOnce(receiptPending())
+      .mockRejectedValueOnce(receiptPending())
+      .mockResolvedValueOnce({ replayed: false });
+    const instance = tracker();
+    instance.start();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(registerDeposit).toHaveBeenCalledTimes(1);
+    expect(registerDeposit.mock.calls[0].slice(0, 3)).toEqual([
+      fixtureCapability,
+      idFor("a"),
+      fundingHash,
+    ]);
+    expect(store.get("a")?.registration).toMatchObject({
+      status: "pending",
+      code: "REHEARSAL_RECEIPT_PENDING",
+      requestId: "req-p",
+    });
+    await vi.advanceTimersByTimeAsync(INTENTS_REGISTRATION_RETRY.initialMs - 1);
+    expect(registerDeposit).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(registerDeposit).toHaveBeenCalledTimes(2);
+    const reads = getOperation.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(INTENTS_REGISTRATION_RETRY.initialMs * 2);
+    expect(registerDeposit).toHaveBeenCalledTimes(3);
+    // The refresh timer is armed once the accepted response has settled.
+    await vi.advanceTimersByTimeAsync(1);
+    // Same hash every time; acceptance triggers an immediate GET.
+    expect(new Set(registerDeposit.mock.calls.map((call) => call[2]))).toEqual(
+      new Set([fundingHash])
+    );
+    expect(store.get("a")?.registration?.status).toBe("accepted");
+    expect(getOperation.mock.calls.length).toBe(reads + 1);
+    await vi.advanceTimersByTimeAsync(INTENTS_REGISTRATION_RETRY.maxMs * 4);
+    expect(registerDeposit).toHaveBeenCalledTimes(3);
+    instance.stop();
+  });
+
+  it("honours Retry-After and caps the backoff without giving up", async () => {
+    pending("a");
+    getOperation.mockResolvedValue(reply("a", { retryAfterMs: 60_000 }));
+    registerDeposit
+      .mockRejectedValueOnce(
+        new IntentsApiError("REHEARSAL_RPC_UNAVAILABLE", "", 503, "r", 3_000)
+      )
+      .mockRejectedValue(new IntentsApiError("NETWORK", ""));
+    const instance = tracker();
+    instance.start();
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(registerDeposit).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    // 30s, 60s, then every 60s: still retrying.
+    expect(registerDeposit.mock.calls.length).toBeGreaterThan(8);
+    expect(store.get("a")?.registration?.status).toBe("pending");
+    instance.stop();
+  });
+
+  it.each([
+    "REHEARSAL_DELIVERY_MISMATCH",
+    "REHEARSAL_DELIVERY_CONFLICT",
+    "IDEMPOTENCY_CONFLICT",
+  ] as const)("stops for good on %s", async (code) => {
+    pending("a");
+    getOperation.mockResolvedValue(reply("a", { retryAfterMs: 60_000 }));
+    registerDeposit.mockRejectedValue(
+      new IntentsApiError(code, "", 409, "req-stop")
+    );
+    const instance = tracker();
+    instance.start();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.get("a")?.registration).toMatchObject({
+      status: "stopped",
+      code,
+      requestId: "req-stop",
+    });
+    expect(store.get("a")?.registration?.error).toMatch(/Request ID: req-stop/);
+    await vi.advanceTimersByTimeAsync(INTENTS_REGISTRATION_RETRY.maxMs * 4);
+    expect(registerDeposit).toHaveBeenCalledTimes(1);
+    instance.stop();
+  });
+
+  it("does not register reverted transfers, observed funds or routes without registration", async () => {
+    pending("reverted", "reverted");
+    pending("observed");
+    store.applyBackend(
+      "observed",
+      reply("observed", { fundingStatus: "OBSERVED", revision: 5 })
+    );
+    seed("plain", "broadcast", {});
+    getOperation.mockImplementation(async (_capability, id) =>
+      operation({ id, retryAfterMs: 60_000 })
+    );
+    const instance = tracker();
+    instance.start();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(registerDeposit).not.toHaveBeenCalled();
+    instance.stop();
+  });
+
+  it("ignores an outcome for a hash that was replaced meanwhile", async () => {
+    pending("a");
+    getOperation.mockResolvedValue(reply("a", { retryAfterMs: 60_000 }));
+    const replacement = `0x${"e".repeat(64)}` as const;
+    registerDeposit.mockImplementationOnce(async () => {
+      const saved = store.get("a")!;
+      store.upsert({
+        ...saved,
+        registration: { status: "pending", hash: replacement },
+        sequence: saved.sequence + 1,
+      });
+      return { replayed: false };
+    });
+    registerDeposit.mockResolvedValue({ replayed: false });
+    const instance = tracker();
+    instance.start();
+    await vi.advanceTimersByTimeAsync(0);
+    // The old hash's acceptance was dropped; the replacement was sent next.
+    expect(registerDeposit).toHaveBeenCalledTimes(2);
+    expect(store.get("a")?.registration).toMatchObject({
+      status: "accepted",
+      hash: replacement,
+    });
+    expect(registerDeposit).toHaveBeenLastCalledWith(
+      fixtureCapability,
+      idFor("a"),
+      replacement,
+      expect.anything()
+    );
+    instance.stop();
   });
 });

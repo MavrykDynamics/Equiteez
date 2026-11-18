@@ -4,6 +4,38 @@ Branch `MAV-4112/near-intents`. Date: 2026-11-16.
 
 The first implementation (commits `4fe294a0` … `9c4819c5`) was built against a draft contract (`plan-intents.md` §3.1) and a mock. `backend.md` and the live `GET https://basenet.bridge-api.mavryk.network/openapi.json` (schema 0.1.0) describe a different API. This branch moves all six tickets to the real contract.
 
+## 0. Update for backend v0.0.6 (2026-11-18)
+
+Backend v0.0.6 lets Equiteez run a connected-wallet transfer on Arbitrum
+Sepolia → Mavryk Basenet (`basenet-rehearsal-k8s`). Requested changes and
+what was done:
+
+| Request | Change |
+| --- | --- |
+| Source token from `/v1/metadata` | `getMetadata()` in the HTTP client/mock; `useIntentsRoutes` fetches `/v1/routes` + `/v1/metadata` and joins them on `routeId` + `routeVersion`. The token the wallet transfers (contract or native, symbol, decimals) comes only from metadata; settlement and destination FA2 are cross-checked against the route and `INTENTS_BRIDGE_PAIRS`. `INTENTS_SOURCE_ASSETS` is removed. New availability states: `paused` (`admissionPaused`), `preview_required` (non-rehearsal modes until `/v1/quotes/preview` is integrated), `registration_unsupported`. |
+| New capability + unique idempotency key per operation | The pre-approved scope (`INTENTS_REHEARSAL_CAPABILITY` / `_IDEMPOTENCY_KEY`) is removed; every new operation generates both. |
+| Register the deposit hash via `POST /v1/operations/{id}/deposit` | `registerDeposit()` (capability, body `{transactionHash}`, no idempotency key, response checked). Funding saves `registration: pending` in the same write as the broadcast hash; the tracker sends it, also after reload. |
+| Resubmit the same hash on `REHEARSAL_RECEIPT_PENDING` | Pending receipt, RPC outage, 429, 5xx and lost responses resend the same hash after `Retry-After` or 15s → 60s, no cap, never another wallet prompt. Mismatch/conflict stop with "Deposit under review" (operation ID, Request ID, hash). Repriced replacements take over; cancellations stop registration. |
+
+Also:
+
+- Accepted minimum is exact on rehearsal routes (1:1, 0 fee); the old 50 bps
+  fee allowance would have blocked the only allowed amount (0.995e18 <
+  `minAmountOut` 1e18). `pricing`/`feeAllowanceBps` are removed.
+- A route with `minAmountIn = maxAmountIn` prefills and locks the amount;
+  `maxSlippageBps: 0` shows "0% (fixed)" (Universal Send and the modal).
+- The mock mirrors Basenet (fixed 1-token rehearsal with registration,
+  `RECEIPT_PENDING` once, `?intentsMock=registrationConflict`);
+  `simulateDeposit` is gone and Simulate Funding goes through registration.
+- Tracker fix: in-flight requests no longer keep a 0 ms timer spinning until
+  they settle (affected the existing GET polling too).
+- Verified: intents suites 358 passed / 1 pre-existing failure; full suite 744
+  passed / the same 3 pre-existing failures; `tsc` no new errors; ESLint no
+  errors; `remix vite:build` succeeds. The real client resolves the live
+  `basenet-rehearsal-k8s` route as available with an exact 1e18 minimum.
+- **Not done yet:** the 1 test USDT transfer on Basenet (needs the deployed
+  preview, see §4.3).
+
 ## 1. Commits
 
 | Ticket | Commit | What changed |
@@ -86,31 +118,41 @@ npx vitest run app/lib/apis/intents app/lib/intents app/contracts/intentsFunding
 9. Regression: Bridge From Ethereum and Receive On Mavryk behave as before, and existing bridge cards/toasts are unchanged.
 10. Layout: modal and widget at phone width; slippage buttons and long addresses wrap; Tab reaches the slippage radios.
 
-### 4.3 Against Basenet (BE-09 smoke test)
+### 4.3 Against Basenet (connected-wallet test, v0.0.6)
 
-1. Ask backend/ops to activate the rehearsal route and send: its `originAsset`, the **raw** rehearsal capability (not the hash), the idempotency key, and the approved sender/recipient (see §5).
-2. `.env` (local only; never in a production build):
+1. No route or rehearsal values are needed: the route and its token come from
+   `/v1/metadata`, and every operation gets a fresh capability and key.
+2. Deployed preview (`*.equiteez-app.pages.dev`): `wrangler.toml`
+   `[env.preview.vars]` already sets `INTENTS_DEPOSIT_ENABLED=true` and
+   `INTENTS_API=https://basenet.bridge-api.mavryk.network`. Locally use the
+   proxy instead (the Gateway CORS allowlist has no localhost):
    ```bash
    INTENTS_DEPOSIT_ENABLED=true
    INTENTS_API=/intents-api
    INTENTS_API_PROXY_TARGET=https://basenet.bridge-api.mavryk.network
-   INTENTS_SOURCE_ASSETS='[{"originAsset":"<from /v1/routes>","chainId":421614,"token":"0x5C05e82bE66B19476bAcb558E62e7d449b98635F","symbol":"USDT","name":"Mock USDT","decimals":18,"pricing":{"kind":"parity"},"feeAllowanceBps":50}]'
-   INTENTS_REHEARSAL_CAPABILITY=<raw 43-char capability>
-   INTENTS_REHEARSAL_IDEMPOTENCY_KEY=<approved key>
    ```
-   On a deployed preview (`*.equiteez-app.pages.dev`) use `INTENTS_API=https://basenet.bridge-api.mavryk.network` without the proxy.
-3. Connect the approved EVM sender (Arbitrum Sepolia, holding ≥1 mock USDT) and sign in to Equiteez with the approved `mv1` recipient.
-4. Deposit exactly **1** USDT. Confirm, wait for the instructions, then send. In the rehearsal, `depositAddress` equals the forwarder; that is expected.
-5. Give the operator the funding hash from the status view (the test adapter needs it registered manually).
-6. Expect: progress through WRAPPED → settlement CONFIRMED, the wUSDT balance (`KT1Wewg18…`) going up by about 1, one toast, and no second wallet prompt after reload.
+3. Connect an EVM wallet on Arbitrum Sepolia with ≥1 Mock USDT
+   (`0x5c05e82b…`) and some Sepolia ETH, and sign in to Equiteez with an `mv1`
+   account.
+4. Open **Universal Send**. "Mock USDT on Arbitrum Sepolia" is selected with
+   the amount locked at 1, slippage "0% (fixed)", minimum you accept 1 wUSDT.
+5. **Review Send → Confirm**, wait for the instructions, then **Send**. One
+   ERC-20 `transfer` goes to `depositAddress` (the recipient's forwarder).
+6. Step 1 shows "Confirming your transfer…" while the backend waits for
+   confirmations (`REHEARSAL_RECEIPT_PENDING` → automatic resend of the same
+   hash), then progresses. No operator step and no second wallet prompt, also
+   after a reload.
+7. Expect: delivery verified → sponsored forward → WRAPPED → settlement
+   CONFIRMED with `confirmedAmount: "1000000"` on `KT1Wewg18…` token 0, the
+   wUSDT balance going up by 1, and one toast.
 
 ## 5. Needed from backend / ops
 
 Blocking for a real test:
 
-1. **Activate a route.** `GET /v1/routes` currently returns `[]` on Basenet.
-2. **Rehearsal values.** The raw capability, the idempotency key, the approved sender/recipient, and whether `slippageBps`/`acceptedMinAmountOut` are also fixed. Any mismatch gives `409 REHEARSAL_SCOPE_MISMATCH`.
-3. **`originAsset` of each route** to approve in `INTENTS_SOURCE_ASSETS`. Better: add source token metadata to `/v1/routes` (`token` contract or `native`, `symbol`). Today the frontend can't map `originAsset` to the ERC-20 it must transfer without a hand-maintained list.
+1. ~~**Activate a route.**~~ Done: `basenet-rehearsal-k8s` is live (2026-11-18). Originally: `GET /v1/routes` returned `[]` on Basenet.
+2. ~~**Rehearsal values.**~~ No longer needed in v0.0.6 (per-operation scope, connected wallet). Originally: The raw capability, the idempotency key, the approved sender/recipient, and whether `slippageBps`/`acceptedMinAmountOut` are also fixed. Any mismatch gives `409 REHEARSAL_SCOPE_MISMATCH`.
+3. ~~**`originAsset` of each route**~~ Answered in v0.0.6: `/v1/metadata` carries the source asset. Originally: `originAsset` of each route to approve in `INTENTS_SOURCE_ASSETS`. Better: add source token metadata to `/v1/routes` (`token` contract or `native`, `symbol`). Today the frontend can't map `originAsset` to the ERC-20 it must transfer without a hand-maintained list.
 4. **CORS for development.** The allowlist has no `http://localhost:*`. We use the Vite proxy for now; please add localhost or a staging origin if proxying isn't acceptable.
 
 Contract gaps and questions:
@@ -118,9 +160,9 @@ Contract gaps and questions:
 5. **No quote preview.** Users accept a minimum before any quote exists. We estimate it as parity (stablecoins) × a 0.5% fee allowance × slippage. Non-stable routes (e.g. ETH) need a price reference. Options: a non-executable preview endpoint, or `expectedFeeBps` / an indicative rate in `/v1/routes`.
 6. **Which minimum is compared?** Please confirm `acceptedMinAmountOut` is compared with the quote's `minAmountOut` (or `bridgeableMinAmountOut`), and whether it must already be representable in FA2 precision. We round it down to a multiple of 10^(settlementDecimals − 6).
 7. **`mv1` only.** Recipients must match `^mv1…$`, so Equiteez accounts on `mv2`/`mv3` keys can't use this route. Confirm this is intended.
-8. **Hash registration.** There is no public endpoint in normal mode, and the rehearsal needs a manual operator step. If a reconciliation hint is wanted (EQ-FE-03 scope), please expose an idempotent `POST /v1/operations/:id/deposit`.
+8. ~~**Hash registration.**~~ Answered in v0.0.6: `POST /v1/operations/{id}/deposit` (connected-wallet routes). Originally: There is no public endpoint in normal mode, and the rehearsal needs a manual operator step. If a reconciliation hint is wanted (EQ-FE-03 scope), please expose an idempotent `POST /v1/operations/:id/deposit`.
 9. **Settlement observation.** OpenAPI calls it "optional … requires explicit deployment enablement". Please confirm it's enabled on Basenet. Otherwise cards end on a neutral step 4 unless the RWA bridge API/notifier indexes deposits from WrapBridge `0x856c1E8a…` (fallback correlation).
-10. **`mavrykChainId`.** Please share the expected Basenet value so the frontend can also check it (today: token address and ID only).
+10. ~~**`mavrykChainId`.**~~ Answered in v0.0.6: metadata `destinationAsset.chainId` (`NetXmtMsNf69w1w` on Basenet); not yet checked against settlement. Originally: Please share the expected Basenet value so the frontend can also check it (today: token address and ID only).
 11. **"Nine immutable request fields"** in backend.md §6, but the schema has eight. Please clarify.
 12. **`depositMemo`** is typed as `{}` in OpenAPI and documented as null. The frontend refuses to fund when it's non-null.
 13. **No list/recovery endpoint.** Operations are visible only in the browser that created them; clearing site data loses status access (funds are still delivered). Cross-device recovery needs an authenticated list endpoint.

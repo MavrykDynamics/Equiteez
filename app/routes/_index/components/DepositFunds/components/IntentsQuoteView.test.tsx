@@ -58,7 +58,7 @@ const render = (
 describe("IntentsQuoteView", () => {
   it("reviews the request with the accepted minimum before anything is sent", () => {
     const html = render({ ...base, phase: "review" });
-    expect(html).toContain("2 USDT on Arbitrum Sepolia");
+    expect(html).toContain("2 Mock USDT on Arbitrum Sepolia");
     expect(html).toContain("Minimum you accept");
     expect(html).toContain("1.98005 wUSDT");
     expect(html).toContain("0.5%");
@@ -94,7 +94,7 @@ describe("IntentsQuoteView", () => {
   it("shows the executable quote, deposit address and countdown with the funding action", () => {
     const html = render({ ...base, phase: "operation" }, { status: "ready" });
     expect(html).toContain("You send exactly");
-    expect(html).toContain("2 USDT on Arbitrum Sepolia");
+    expect(html).toContain("2 Mock USDT on Arbitrum Sepolia");
     expect(html).toContain("To 1Click deposit address");
     expect(html).toContain(fixtureDeposit);
     // The forwarder is resolved by the backend and never shown as a target.

@@ -17,20 +17,31 @@ import {
 
 describe("estimateAcceptedMinAmountOut", () => {
   const base = {
-    amountIn: "2000000000000000000",
+    amountIn: "1000000000000000000",
     sourceDecimals: 18,
     settlementDecimals: 18,
     destinationDecimals: 6,
-    pricing: { kind: "parity" } as const,
-    feeAllowanceBps: 50,
-    slippageBps: 50,
+    slippageBps: 0,
   };
 
-  it("applies fee headroom and slippage, rounded down to FA2 precision", () => {
+  it("accepts exactly the amount on a zero-slippage parity route", () => {
+    // basenet-rehearsal-k8s: amountIn = acceptedMinAmountOut = 1e18.
     expect(estimateAcceptedMinAmountOut(base)).toEqual({
+      expected: "1000000000000000000",
+      minimum: "1000000000000000000",
+    });
+  });
+
+  it("applies slippage, rounded down to FA2 precision", () => {
+    expect(
+      estimateAcceptedMinAmountOut({
+        ...base,
+        amountIn: "2000000000000000000",
+        slippageBps: 50,
+      })
+    ).toEqual({
       expected: "2000000000000000000",
-      // 2 × 0.995 × 0.995 = 1.98005
-      minimum: "1980050000000000000",
+      minimum: "1990000000000000000",
     });
   });
 
@@ -38,26 +49,21 @@ describe("estimateAcceptedMinAmountOut", () => {
     const result = estimateAcceptedMinAmountOut({
       ...base,
       amountIn: "1000000000000000001",
-      feeAllowanceBps: 0,
-      slippageBps: 0,
     });
     expect(result?.expected).toBe("1000000000000000001");
     expect(result?.minimum).toBe("1000000000000000000");
   });
 
-  it("converts decimals and applies a reference rate", () => {
+  it("converts between source and settlement decimals", () => {
     expect(
       estimateAcceptedMinAmountOut({
         ...base,
         amountIn: "1000000", // 1 token with 6 decimals
         sourceDecimals: 6,
-        pricing: { kind: "reference", rate: "3000" },
-        feeAllowanceBps: 0,
-        slippageBps: 100,
       })
     ).toEqual({
-      expected: "3000000000000000000000",
-      minimum: "2970000000000000000000",
+      expected: "1000000000000000000",
+      minimum: "1000000000000000000",
     });
   });
 

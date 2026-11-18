@@ -124,12 +124,22 @@ async function seedFundedOperation(account = accountA) {
     capability: newOperationCapability(),
     idempotencyKey: newIdempotencyKey(),
   };
-  const body = request({ recipient: account });
+  // The mock route is the fixed 1-token, zero-slippage rehearsal.
+  const body = request({
+    recipient: account,
+    amountIn: "1000000000000000000",
+    slippageBps: 0,
+    acceptedMinAmountOut: "1000000000000000000",
+  });
   const { operation } = await mocks.api.createOperation(credentials, body);
   vi.setSystemTime(Date.now() + 1_500);
   await mocks.api.getOperation(credentials.capability, operation.id);
-  await mocks.api.simulateDeposit!(credentials.capability, operation.id);
   const hash = `0x${"a".repeat(64)}` as const;
+  // First answer is REHEARSAL_RECEIPT_PENDING; the retry is accepted.
+  await mocks.api
+    .registerDeposit(credentials.capability, operation.id, hash)
+    .catch(() => {});
+  await mocks.api.registerDeposit(credentials.capability, operation.id, hash);
   const record = fixtureRecord({
     localId: `local-${account}`,
     account,
@@ -139,6 +149,8 @@ async function seedFundedOperation(account = accountA) {
     operationId: operation.id,
     fundingState: "confirmed",
     sourceHashes: [hash],
+    hasDepositRegistration: true,
+    registration: { status: "accepted", hash },
     isWidgetRequested: true,
     sequence: 3,
   });
@@ -211,12 +223,12 @@ describe("1Click operations in the global widget", () => {
     await act(async () => vi.advanceTimersByTimeAsync(15_000));
     expect(intentModels()[0].state).toEqual({
       status: "success",
-      description: "1.994 wUSDT arrived in your Mavryk account.",
+      description: "1 wUSDT arrived in your Mavryk account.",
     });
     expect(mocks.success).toHaveBeenCalledOnce();
     expect(mocks.success).toHaveBeenCalledWith(
       "Deposit arrived",
-      "1.994 wUSDT arrived in your Mavryk account."
+      "1 wUSDT arrived in your Mavryk account."
     );
     expect(invalidate).toHaveBeenCalled();
     expect(storedRecord()).toMatchObject({ announced: true });

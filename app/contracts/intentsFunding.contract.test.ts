@@ -44,7 +44,7 @@ let session: IntentOperations;
 let snapshot: IntentOperation;
 let api: IntentsApi & {
   getOperation: ReturnType<typeof vi.fn>;
-  simulateDeposit: ReturnType<typeof vi.fn>;
+  registerDeposit: ReturnType<typeof vi.fn>;
 };
 
 const nativeOption = resolveOption(fixtureNativeRoute);
@@ -110,8 +110,9 @@ beforeEach(() => {
     env: "http",
     getRoutes: vi.fn(),
     createOperation: vi.fn(),
+    getMetadata: vi.fn(),
     getOperation: vi.fn(async () => snapshot),
-    simulateDeposit: vi.fn(async () => {}),
+    registerDeposit: vi.fn(async () => ({ replayed: false })),
   };
   actions.getBalance.mockResolvedValue({ value: 10n ** 20n });
   actions.readContract.mockResolvedValue(10n ** 20n);
@@ -273,6 +274,8 @@ describe("executeIntentFunding", () => {
       }
     );
     await expect(fund()).resolves.toBe("unknown");
+    // The cancelled hash will never be mined: nothing left to register.
+    expect(current().registration).toMatchObject({ status: "stopped", hash });
     prepare();
     actions.waitForTransactionReceipt.mockResolvedValueOnce({
       status: "reverted",
@@ -291,14 +294,29 @@ describe("executeIntentFunding", () => {
     const result = await fund();
     expect(result).toBe("confirmed");
     expect(current().sourceHashes).toEqual([hash, replacement]);
+    // Only the mined replacement can be registered.
+    expect(current().registration).toEqual({
+      status: "pending",
+      hash: replacement,
+    });
   });
 
-  it("tells only the mock backend about the deposit", async () => {
+  it("queues the hash for registration in the same write that saves it", async () => {
+    let atReceipt: unknown;
+    actions.waitForTransactionReceipt.mockImplementationOnce(async () => {
+      atReceipt = current().registration;
+      return { status: "success" };
+    });
     await fund();
-    expect(api.simulateDeposit).toHaveBeenCalledWith(
-      fixtureCapability,
-      fixtureOperationId
-    );
+    expect(atReceipt).toEqual({ status: "pending", hash });
+    // Registration is the tracker's job; funding never calls it.
+    expect(api.registerDeposit).not.toHaveBeenCalled();
+  });
+
+  it("does not queue registration on routes without it", async () => {
+    prepare("native");
+    await fund();
+    expect(current().registration).toBeUndefined();
   });
 });
 
@@ -309,13 +327,16 @@ describe("simulateIntentFunding", () => {
     );
   });
 
-  it("records a fake hash and notifies the mock when funding is available", () => {
+  it("records a fake hash once and queues it for registration", () => {
     const mock = { ...api, env: "mock" };
     simulateIntentFunding(mock, session, "local-1");
     expect(current()).toMatchObject({ fundingState: "confirmed" });
     expect(current().sourceHashes).toHaveLength(1);
-    expect(api.simulateDeposit).toHaveBeenCalledTimes(1);
+    expect(current().registration).toEqual({
+      status: "pending",
+      hash: current().sourceHashes[0],
+    });
     simulateIntentFunding(mock, session, "local-1");
-    expect(api.simulateDeposit).toHaveBeenCalledTimes(1);
+    expect(current().sourceHashes).toHaveLength(1);
   });
 });

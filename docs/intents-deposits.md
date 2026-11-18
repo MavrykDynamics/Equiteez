@@ -9,7 +9,8 @@ mint. Everything happens inside Equiteez; nothing links to the standalone
 bridge.
 
 Contract: [`near-intents/backend.md`](../near-intents/backend.md) (runtime
-v0.0.2, API schema 0.1.0, prefix `/v1`, also `GET /openapi.json`). Tickets:
+v0.0.6, API schema 0.1.0, prefix `/v1`; interactive reference at `GET /docs`,
+there is no `/openapi.json` any more). Tickets:
 `near-intents/task-1.md` … `task-6.md`. The direct bridge is documented in
 [`bridge-tracking.md`](bridge-tracking.md) and is unchanged by this feature.
 
@@ -22,43 +23,57 @@ v0.0.2, API schema 0.1.0, prefix `/v1`, also `GET /openapi.json`). Tickets:
 | `INTENTS_API_PROXY_TARGET` | — | Dev only: Vite proxies `/intents-api/*` here (the Gateway CORS allowlist has no localhost). |
 | `INTENTS_ENV` | origin of the API | Scope of persisted operations; override only if two URLs are the same backend. |
 | `INTENTS_API_MODE` | `http` | `mock` uses the in-browser simulator. |
-| `INTENTS_SOURCE_ASSETS` | `[]` (mock: built-in) | JSON array of approved source assets, see below. |
-| `INTENTS_REHEARSAL_CAPABILITY`, `INTENTS_REHEARSAL_IDEMPOTENCY_KEY` | — | Pre-approved Basenet rehearsal scope. Local/test builds only. |
 | `INTENTS_MOCK_DEPOSIT_ADDRESS` | `0x…dEaD` | Testnet address the mock asks the wallet to fund. |
 | `INTENTS_SEPOLIA_RPC_URL` | public | RPC for the Sepolia source chain. |
 
-### Approved product configuration
+### Routes and asset metadata
 
-`GET /v1/routes` returns only provider identifiers (`originAsset`,
-`destinationAsset`), chain IDs, the settlement token, decimals and limits.
-It has no ticker, token contract or price. A route is enabled only when:
+`GET /v1/routes` is the technical route contract (limits, decimals, bridge
+and factory). `GET /v1/metadata` describes each route version's assets: the
+source token the wallet transfers (`kind`, `contractAddress`, `symbol`,
+`decimals`), the settlement ERC-20, the destination FA2, the `mode` and
+whether connected-wallet hash registration is supported. Both are fetched
+together and joined on `routeId` + `routeVersion`. There is no hand-written
+source-asset list: a route without metadata is never guessed from a ticker.
 
-1. its `originAsset` + `sourceChainId` match an entry in
-   `INTENTS_SOURCE_ASSETS` (token contract or `native`, symbol, decimals,
-   pricing reference, fee allowance);
+A route is enabled only when:
+
+1. it is `enabled` and metadata has `admissionPaused: false`;
 2. its `settlementChainId` + `bridgeAddress` + `settlementToken` match a pair
    in `INTENTS_BRIDGE_PAIRS` (today: Arbitrum Sepolia mock USDT → Basenet
    wUSDT `KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE`), with matching decimals;
-3. the source chain has a wagmi funding adapter (`INTENTS_SOURCE_CHAINS`).
+3. its metadata source asset matches `originAsset`, chain and decimals, and
+   the metadata settlement/destination assets match the route and the pair;
+4. its `mode` is one Equiteez can price without a quote preview
+   (`INTENTS_EXACT_PARITY_MODES`, today only `rehearsal`). Provider routes
+   show "Quotes for this route are not available" until
+   `POST /v1/quotes/preview` is integrated;
+5. a rehearsal route has `depositRegistrationSupported: true` (literal);
+6. the source chain has a wagmi funding adapter (`INTENTS_SOURCE_CHAINS`).
 
-Example for the Basenet rehearsal route once its `originAsset` is known:
-
-```bash
-INTENTS_SOURCE_ASSETS='[{"originAsset":"<from /v1/routes>","chainId":421614,"token":"0x5C05e82bE66B19476bAcb558E62e7d449b98635F","symbol":"USDT","name":"Mock USDT","decimals":18,"pricing":{"kind":"parity"},"feeAllowanceBps":50}]'
-```
+On Basenet this is `basenet-rehearsal-k8s`: exactly 1 Mock USDT
+(`0x5c05e82b…`, 18 decimals) on Arbitrum Sepolia, 0 slippage, accepted
+minimum 1e18, 1 wUSDT minted. A route with `minAmountIn = maxAmountIn`
+prefills and locks the amount; `maxSlippageBps: 0` shows "0% (fixed)".
 
 ### Mock backend
 
 `app/lib/apis/intents/intents.mock.ts` implements the same contract: three
-routes (Arbitrum Sepolia USDT, Sepolia ETH, and Base Sepolia USDC, which is
-not approved), capability-scoped idempotent `POST /operations` (replay,
-`IDEMPOTENCY_CONFLICT`, foreign capability → 404), `PREPARING_QUOTE` →
-published instructions after 1.5s, and after the deposit: OBSERVED +0s,
+routes with metadata mirroring Basenet (Arbitrum Sepolia USDT as a fixed
+1-token `rehearsal` with registration; Sepolia ETH as a provider route, shown
+as needing a preview; Base Sepolia USDC without metadata), capability-scoped
+idempotent `POST /operations` (replay, `IDEMPOTENCY_CONFLICT`, foreign
+capability → 404, `REHEARSAL_SCOPE_MISMATCH`), `PREPARING_QUOTE` → published
+1:1 instructions after 1.5s, `POST /operations/:id/deposit` (first call
+`REHEARSAL_RECEIPT_PENDING` with `Retry-After: 3s`, then accepted; replay;
+another hash → `REHEARSAL_DELIVERY_CONFLICT`), and after the accepted
+registration: OBSERVED +0s,
 SWAP_IN_PROGRESS +3s, VERIFYING_DELIVERY +8s, DELIVERY_VERIFIED +12s,
 FORWARDING +16s, WRAPPED (settlement PENDING) +22s, settlement CONFIRMED +32s.
 State is kept in `sessionStorage`. Force branches with
-`?intentsMock=reject|expire|paused|unavailable|refund|incomplete|review|untracked`.
-In mock mode the funding step also offers **Simulate Funding**.
+`?intentsMock=reject|expire|paused|unavailable|refund|incomplete|review|untracked|registrationConflict`.
+In mock mode the funding step also offers **Simulate Funding** (a fake hash
+that goes through registration like a real one).
 
 ## Code map
 
@@ -66,21 +81,22 @@ In mock mode the funding step also offers **Simulate Funding**.
 | --- | --- |
 | Contract (zod), HTTP client, mock | `app/lib/apis/intents/` |
 | Capability + idempotency key generation | `app/lib/intents/intentCapability.ts` |
-| Route resolution, amount/slippage/recipient checks | `app/lib/intents/intentRoute.ts` |
+| Route + metadata resolution, amount/slippage/recipient checks | `app/lib/intents/intentRoute.ts` |
 | Accepted-minimum estimate, request key, error copy | `app/lib/intents/intentQuote.ts` |
 | Record model, merge, closure/receipt/mismatch rules | `app/lib/intents/intentOperation.ts` |
 | Funding call shape and error classification | `app/lib/intents/intentFunding.ts` |
 | Wallet funding (re-read + wagmi actions) | `app/contracts/intentsFunding.contract.ts`, `useIntentsFunding` |
-| Persisted store, tracker, widget mapping, receipts | `app/providers/TransactionsProvider/intent*.ts` |
+| Persisted store, tracker (GET polling + hash registration), widget mapping, receipts | `app/providers/TransactionsProvider/intent*.ts` |
 | Modal orchestration | `app/hooks/useIntentsDeposit.ts`, `useIntentsRoutes.ts` |
 | Views | `DepositFunds/components/Intents{View,QuoteView,FundingPanel,StatusView}.tsx` |
 | Test page (`/universal-send`, header **Universal Send**) | `app/routes/universal-send/`: same hook and quote/funding/status views on a page; temporary layout until the design is ready |
 
 ## Access
 
-- Routes are public. Operation calls send
+- Routes and metadata are public. Operation calls (create, read, register) send
   `Authorization: Bearer <capability>`: 32 random bytes, base64url without
-  padding, generated per transfer intent. The RWA token and cookies are never
+  padding, generated for every new operation (there is no pre-approved
+  scope any more). The RWA token and cookies are never
   sent. Only `Authorization`, `Content-Type` and `Idempotency-Key` are sent,
   which is what the Gateway allows.
 - The capability, `Idempotency-Key` (UUID) and the exact request body are
@@ -98,10 +114,10 @@ In mock mode the funding step also offers **Simulate Funding**.
    account as the fixed recipient (`mv1` only), and the source wallet as the
    refund address.
 2. **Review (local).** Shows the request, including the **minimum you
-   accept**. There is no quote preview: it is estimated as
-   `amountIn × rate × (1 − feeAllowance) × (1 − slippage)`, rounded down to
-   six-decimal FA2 precision, and must be at least the route's
-   `minAmountOut`.
+   accept**. There is no quote preview: on exact-parity (rehearsal) routes it
+   is `amountIn` converted 1:1 to settlement units × (1 − slippage), rounded
+   down to six-decimal FA2 precision, and must be at least the route's
+   `minAmountOut` (on Basenet: exactly 1e18).
 3. **Confirm.** Save the record, then `POST /v1/operations` → 202. The
    response must echo the request or it is never funded. The operation starts
    at `PREPARING_QUOTE` with no instructions.
@@ -114,9 +130,20 @@ In mock mode the funding step also offers **Simulate Funding**.
    the one shown (same `quoteId`) and at least 15s from `fundingExpiresAt`.
    `fundingState = "prompted"` is saved before the wallet call; then a native
    transfer or ERC-20 `transfer` goes to `depositAddress` (never
-   `forwarderAddress`) for the exact amount. The hash is stored locally for
-   support: this release has **no hash-registration endpoint**.
-6. **Track.** The modal switches to the status view; the global widget shows
+   `forwarderAddress`; in the rehearsal it is the recipient's verified
+   forwarder) for the exact amount.
+6. **Register.** On routes with `depositRegistrationSupported`, the hash is
+   saved as `registration: pending` in the same write as the broadcast. The
+   tracker sends `POST /v1/operations/:id/deposit {transactionHash}` with the
+   capability (no idempotency key) right away and after every reload.
+   `REHEARSAL_RECEIPT_PENDING`, `REHEARSAL_RPC_UNAVAILABLE`, 429, 5xx, network
+   errors and lost responses resend the **same hash** after
+   `Retry-After` or 15s, doubling to 60s, with no attempt limit; the wallet is
+   never asked again. A repriced replacement takes over while pending; a
+   cancelled one stops registration. `REHEARSAL_DELIVERY_MISMATCH`,
+   `REHEARSAL_DELIVERY_CONFLICT`, a generic 409 or a 4xx validation error
+   stop it for good. Acceptance triggers an immediate GET.
+7. **Track.** The modal switches to the status view; the global widget shows
    the same model.
 
 ### Never sending twice
@@ -148,6 +175,8 @@ discovery: the backend has no list endpoint.
 | Backend | Widget |
 | --- | --- |
 | wallet broadcast/confirmed, `AWAITING_DEPOSIT` | Step 1 Send Funds |
+| registration `pending` / `accepted` | Step 1 "Confirming your transfer … with the deposit service" / "Transfer accepted. Verifying the delivery." |
+| registration `stopped` (mismatch/conflict) | "Deposit under review" warning with the operation ID, Request ID and funding hash |
 | `fundingStatus: OBSERVED`, `SWAP_IN_PROGRESS` | Step 2 Swap |
 | `VERIFYING_DELIVERY`, `DELIVERY_VERIFIED`, `FORWARDING` | Step 3 Forward To Bridge |
 | `WRAPPED` + settlement `PENDING` | Step 4 "Waiting for Mavryk confirmation" |

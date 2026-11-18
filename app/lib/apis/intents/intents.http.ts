@@ -2,16 +2,19 @@ import axios, { isAxiosError, type AxiosInstance } from "axios";
 import type { z } from "zod";
 
 import {
+  intentDepositRegistrationSchema,
   intentErrorBodySchema,
   intentErrorCodes,
+  intentMetadataEnvelopeSchema,
+  intentMetadataRouteSchema,
   intentOperationSchema,
   intentRouteSchema,
   intentRoutesEnvelopeSchema,
 } from "./intents.schema";
 import {
   IntentsApiError,
+  isIntentsApiError,
   type IntentErrorCode,
-  type IntentRoute,
   type IntentsApi,
 } from "./intents.types";
 
@@ -110,6 +113,24 @@ function parse<T extends z.ZodTypeAny>(schema: T, data: unknown): z.output<T> {
   return result.data;
 }
 
+/** Validates entries one by one so one bad entry does not hide the rest. */
+function parseEach<T extends z.ZodTypeAny>(
+  schema: T,
+  entries: unknown[],
+  label: string
+): z.output<T>[] {
+  const valid: z.output<T>[] = [];
+  for (const entry of entries) {
+    const result = schema.safeParse(entry);
+    if (result.success) valid.push(result.data);
+  }
+  if (valid.length < entries.length)
+    console.warn(
+      `Ignored ${entries.length - valid.length} 1Click ${label} that do not match the API contract.`
+    );
+  return valid;
+}
+
 export function createIntentsHttpApi(
   baseUrl: string,
   env: string,
@@ -152,16 +173,29 @@ export function createIntentsHttpApi(
         ...options,
       });
       const { routes } = parse(intentRoutesEnvelopeSchema, response.data);
-      const valid: IntentRoute[] = [];
-      for (const entry of routes) {
-        const route = intentRouteSchema.safeParse(entry);
-        if (route.success) valid.push(route.data);
+      return parseEach(intentRouteSchema, routes, "route(s)");
+    },
+    async getMetadata(options) {
+      let response;
+      try {
+        response = await send({ method: "GET", path: "/metadata", ...options });
+      } catch (error) {
+        // Optional endpoint: without it no source asset is inferred.
+        if (isIntentsApiError(error) && error.status === 404) return null;
+        throw error;
       }
-      if (valid.length < routes.length)
-        console.warn(
-          `Ignored ${routes.length - valid.length} 1Click route(s) that do not match the API contract.`
-        );
-      return valid;
+      const { admissionPaused, routes } = parse(
+        intentMetadataEnvelopeSchema,
+        response.data
+      );
+      return {
+        admissionPaused,
+        routes: parseEach(
+          intentMetadataRouteSchema,
+          routes,
+          "metadata route(s)"
+        ),
+      };
     },
     async createOperation({ capability, idempotencyKey }, request, options) {
       const response = await send({
@@ -191,6 +225,32 @@ export function createIntentsHttpApi(
         ...options,
       });
       return parse(intentOperationSchema, response.data);
+    },
+    async registerDeposit(capability, operationId, transactionHash, options) {
+      if (!UUID.test(operationId))
+        throw new IntentsApiError("NOT_FOUND", "Unknown operation.", 404);
+      const hash = transactionHash.toLowerCase();
+      const response = await send({
+        method: "POST",
+        path: `/operations/${operationId}/deposit`,
+        // The body holds only the hash; no Idempotency-Key (backend.md §4.5).
+        data: { transactionHash: hash },
+        headers: {
+          ...capabilityHeaders(capability),
+          "Content-Type": "application/json",
+        },
+        ...options,
+      });
+      const body = parse(intentDepositRegistrationSchema, response.data);
+      if (
+        body.operationId.toLowerCase() !== operationId.toLowerCase() ||
+        body.transactionHash !== hash
+      )
+        throw new IntentsApiError(
+          "INVALID_RESPONSE",
+          "The deposit service registered a different transfer."
+        );
+      return { replayed: body.replayed };
     },
   };
 }

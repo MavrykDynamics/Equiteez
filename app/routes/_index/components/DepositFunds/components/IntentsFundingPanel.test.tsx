@@ -40,7 +40,7 @@ const render = (
 describe("IntentsFundingPanel", () => {
   it("offers exactly one send action before funding", () => {
     const html = render("not_started", { isWrongNetwork: true });
-    expect(html).toContain("Send 2 USDT");
+    expect(html).toContain("Send 2 Mock USDT");
     expect(html).toContain("switch to Arbitrum Sepolia");
     expect(html).not.toContain("Simulate");
   });
@@ -60,13 +60,13 @@ describe("IntentsFundingPanel", () => {
   ] as const)("never offers to resend in %s", (state, text) => {
     const html = render(state);
     expect(html).toContain(text);
-    expect(html).not.toContain("Send 2 USDT");
+    expect(html).not.toContain("Send 2 Mock USDT");
     expect(html).toContain(`https://sepolia.arbiscan.io/tx/${hash}`);
   });
 
   it("asks the user to confirm in the wallet while prompting", () => {
     expect(render("prompted", { isFunding: true })).toContain(
-      "Confirm the 2 USDT transfer in your wallet."
+      "Confirm the 2 Mock USDT transfer in your wallet."
     );
   });
 });

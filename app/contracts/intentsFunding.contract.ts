@@ -126,8 +126,9 @@ async function readFundableInstructions(
  * This is the only user signature in the flow; it is distinct from the direct
  * bridge's approve/wrapToken path. Persisted before the wallet call so a
  * reload, modal close or late response can never prompt a second transfer.
- * There is no hash-registration API: the hash is kept locally for support
- * and the backend observes the deposit on its own.
+ * Routes with connected-wallet registration (backend.md §4.5) get the hash
+ * queued as `registration: pending` in the same write that saves it; the
+ * tracker sends it to the backend and retries without the wallet.
  */
 export async function executeIntentFunding({
   config,
@@ -275,12 +276,19 @@ export async function executeIntentFunding({
   }
 
   // Saved even if the account changed meanwhile: the transfer exists.
+  const sentHash = hash.toLowerCase() as `0x${string}`;
   write({
     fundingState: "broadcast",
-    sourceHashes: [...read().sourceHashes, hash.toLowerCase() as `0x${string}`],
+    sourceHashes: [...read().sourceHashes, sentHash],
     isWidgetRequested: true,
+    registration: record.hasDepositRegistration
+      ? { status: "pending", hash: sentHash }
+      : undefined,
   });
-  void api.simulateDeposit?.(record.capability, record.operationId);
+  const pendingRegistration = () => {
+    const current = read().registration;
+    return current?.status === "pending" ? current : undefined;
+  };
 
   // Only a repriced replacement is the same transfer; a cancel or a different
   // transaction leaves the funding outcome unknown.
@@ -294,20 +302,33 @@ export async function executeIntentFunding({
       onReplaced: (replacement) => {
         replacementReason = replacement.reason;
         if (replacement.reason !== "repriced") return;
+        const replacementHash =
+          replacement.transaction.hash.toLowerCase() as `0x${string}`;
+        const registration = pendingRegistration();
         write({
-          sourceHashes: [
-            ...read().sourceHashes,
-            replacement.transaction.hash.toLowerCase() as `0x${string}`,
-          ],
+          sourceHashes: [...read().sourceHashes, replacementHash],
+          // Only the mined transaction can be registered.
+          ...(registration && {
+            registration: { ...registration, hash: replacementHash },
+          }),
         });
       },
     });
+    const registration = pendingRegistration();
     write(
       replacementReason && replacementReason !== "repriced"
         ? {
             fundingState: "unknown",
             fundingError:
               "The transfer was replaced or cancelled in your wallet. Check it before sending anything else.",
+            // The saved hash will never be mined; nothing to register.
+            ...(registration && {
+              registration: {
+                ...registration,
+                status: "stopped" as const,
+                error: "The transfer was replaced or cancelled in the wallet.",
+              },
+            }),
           }
         : receipt.status === "success"
           ? { fundingState: "confirmed" }
@@ -327,14 +348,15 @@ export async function executeIntentFunding({
 
 /**
  * Mock mode only: records a fake funding hash without a wallet request so the
- * UI can be exercised without testnet funds. Never available with the HTTP API.
+ * UI can be exercised without testnet funds. The tracker registers it like a
+ * real one. Never available with the HTTP API.
  */
 export function simulateIntentFunding(
   api: IntentsApi,
   session: IntentOperations,
   localId: string
 ) {
-  if (api.env !== "mock" || !api.simulateDeposit)
+  if (api.env !== "mock")
     throw new Error("Simulation is only available in mock mode.");
   const record = session.get(localId);
   if (
@@ -352,8 +374,10 @@ export function simulateIntentFunding(
     fundingError: undefined,
     lastInstructions: record.backend.fundingInstructions ?? undefined,
     sourceHashes: [...record.sourceHashes, hash],
+    registration: record.hasDepositRegistration
+      ? { status: "pending", hash }
+      : undefined,
     isWidgetRequested: true,
     sequence: record.sequence + 1,
   });
-  void api.simulateDeposit(record.capability, record.operationId);
 }

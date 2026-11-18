@@ -1,26 +1,43 @@
 import { BigNumber } from "bignumber.js";
 
 import {
+  INTENTS_EXACT_PARITY_MODES,
   INTENTS_SLIPPAGE_OPTIONS_BPS,
   type IntentBridgePair,
-  type IntentSourceAsset,
 } from "~/consts/intents";
-import type { IntentRoute } from "~/lib/apis/intents";
+import type {
+  IntentMetadata,
+  IntentMetadataRoute,
+  IntentRoute,
+} from "~/lib/apis/intents";
 import { mavrykRecipientSchema } from "~/lib/apis/intents/intents.schema";
 
 export type IntentRouteAvailability =
   | "available"
   | "disabled"
-  /** originAsset is not in the approved Equiteez product configuration. */
+  /** `admissionPaused` in metadata: no new operations for now. */
+  | "paused"
+  /** No `/v1/metadata` entry with a usable source asset for this route. */
   | "not_configured"
+  /** Needs an indicative quote (`/v1/quotes/preview`), not integrated yet. */
+  | "preview_required"
+  /** Rehearsal route without connected-wallet hash registration. */
+  | "registration_unsupported"
   | "unsupported_chain"
   /** Does not settle through a known bridge pair (chain, bridge, token). */
   | "unsupported_destination"
-  /** Decimals disagree between catalog, product config or token metadata. */
+  /** Decimals or token identity disagree between catalog, metadata or pair. */
   | "token_mismatch";
 
-/** Funding/display metadata resolved from the approved product config. */
-export type IntentRouteSource = IntentSourceAsset & { chainName: string };
+/** Token the wallet transfers, from `/v1/metadata` (never a ticker guess). */
+export type IntentRouteSource = {
+  originAsset: string;
+  chainId: number;
+  chainName: string;
+  token: "native" | `0x${string}`;
+  symbol: string;
+  decimals: number;
+};
 export type IntentRouteDestination = {
   tokenAddress: string;
   tokenId: string;
@@ -34,24 +51,59 @@ export type IntentRouteOption = {
   availability: IntentRouteAvailability;
   source?: IntentRouteSource;
   destination?: IntentRouteDestination;
+  /** The wallet's funding hash must be registered (backend.md §4.5). */
+  hasDepositRegistration: boolean;
 };
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
+/** Source token from metadata, when it is coherent with the route. */
+function toSource(
+  route: IntentRoute,
+  meta: IntentMetadataRoute | undefined,
+  chainName: string | undefined
+): IntentRouteSource | undefined {
+  const asset = meta?.sourceAsset;
+  if (
+    !asset ||
+    asset.assetId !== route.originAsset ||
+    asset.chainId !== route.sourceChainId
+  )
+    return undefined;
+  const token =
+    asset.kind === "native"
+      ? ("native" as const)
+      : asset.kind === "erc20"
+        ? asset.contractAddress
+        : undefined;
+  if (!token) return undefined;
+  const chainId = Number(asset.chainId);
+  return {
+    originAsset: asset.assetId,
+    chainId,
+    chainName: chainName ?? `Chain ${chainId}`,
+    token,
+    symbol: asset.symbol,
+    decimals: asset.decimals,
+  };
+}
+
 /**
- * A catalog route is usable only when the backend enabled it, it settles
- * through a known bridge pair with matching decimals, its source asset is
- * approved for Equiteez, and a funding adapter exists for its chain.
+ * A catalog route (`/v1/routes`, the technical contract) is usable only when
+ * the backend enabled it and admission is open, it settles through a known
+ * bridge pair with matching decimals, `/v1/metadata` supplies its source
+ * token and the same destination FA2, Equiteez can price it, and a funding
+ * adapter exists for its chain.
  */
 export function resolveIntentRoute(
   route: IntentRoute,
   {
-    sourceAssets,
+    metadata,
     bridgePairs,
     chains,
     getDestinationMetadata,
   }: {
-    sourceAssets: readonly IntentSourceAsset[];
+    metadata: IntentMetadata | null;
     bridgePairs: readonly IntentBridgePair[];
     /** Chains configured in wagmi that have a funding adapter. */
     chains: readonly { id: number; name: string }[];
@@ -62,21 +114,17 @@ export function resolveIntentRoute(
     ) => { decimals: number } | undefined;
   }
 ): IntentRouteOption {
-  const asset = sourceAssets.find(
-    (item) =>
-      item.originAsset === route.originAsset &&
-      String(item.chainId) === route.sourceChainId
+  const meta = metadata?.routes.find(
+    (item) => item.routeId === route.id && item.routeVersion === route.version
   );
-  const chain = asset && chains.find((item) => item.id === asset.chainId);
+  const chain = chains.find((item) => String(item.id) === route.sourceChainId);
+  const source = toSource(route, meta, chain?.name);
   const pair = bridgePairs.find(
     (item) =>
       item.settlementChainId === route.settlementChainId &&
       same(item.bridgeAddress, route.bridgeAddress) &&
       same(item.settlementToken, route.settlementToken)
   );
-  const source = asset
-    ? { ...asset, chainName: chain?.name ?? `Chain ${asset.chainId}` }
-    : undefined;
   const destination = pair
     ? {
         tokenAddress: pair.destination.address,
@@ -86,25 +134,43 @@ export function resolveIntentRoute(
         decimals: pair.destination.decimals,
       }
     : undefined;
-  const option = { route, source, destination };
+  const option = {
+    route,
+    source,
+    destination,
+    hasDepositRegistration: Boolean(meta?.depositRegistrationSupported),
+  };
 
   if (!route.enabled) return { ...option, availability: "disabled" };
+  if (metadata?.admissionPaused) return { ...option, availability: "paused" };
   if (!pair || !destination)
     return { ...option, availability: "unsupported_destination" };
-  const metadata = getDestinationMetadata?.(
+  const tokenMetadata = getDestinationMetadata?.(
     destination.tokenAddress,
     destination.tokenId
   );
   if (
     pair.settlementDecimals !== route.settlementDecimals ||
     // Balances use Equiteez metadata; a mismatch would misreport receipt.
-    (metadata && metadata.decimals !== destination.decimals) ||
+    (tokenMetadata && tokenMetadata.decimals !== destination.decimals) ||
     route.settlementDecimals < destination.decimals
   )
     return { ...option, availability: "token_mismatch" };
-  if (!asset) return { ...option, availability: "not_configured" };
-  if (asset.decimals !== route.sourceDecimals)
+  if (!meta || !source) return { ...option, availability: "not_configured" };
+  if (
+    source.decimals !== route.sourceDecimals ||
+    !meta.settlementAsset.contractAddress ||
+    !same(meta.settlementAsset.contractAddress, route.settlementToken) ||
+    meta.settlementAsset.decimals !== route.settlementDecimals ||
+    meta.destinationAsset.contractAddress !== destination.tokenAddress ||
+    meta.destinationAsset.tokenId !== destination.tokenId ||
+    meta.destinationAsset.decimals !== destination.decimals
+  )
     return { ...option, availability: "token_mismatch" };
+  if (!INTENTS_EXACT_PARITY_MODES.includes(meta.mode))
+    return { ...option, availability: "preview_required" };
+  if (!meta.depositRegistrationSupported)
+    return { ...option, availability: "registration_unsupported" };
   if (!chain) return { ...option, availability: "unsupported_chain" };
   return { ...option, availability: "available" };
 }
@@ -114,7 +180,12 @@ export const intentRouteAvailabilityCopy: Record<
   string
 > = {
   disabled: "This route is temporarily unavailable.",
+  paused:
+    "The deposit service is not accepting new transfers right now. Try again later.",
   not_configured: "This route is not enabled in Equiteez yet.",
+  preview_required: "Quotes for this route are not available in Equiteez yet.",
+  registration_unsupported:
+    "This test route does not accept connected-wallet transfers yet.",
   unsupported_chain: "This source network is not supported in Equiteez yet.",
   unsupported_destination:
     "This route does not settle through a supported Mavryk bridge pair.",

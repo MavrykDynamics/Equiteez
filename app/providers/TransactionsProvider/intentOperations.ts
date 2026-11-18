@@ -200,6 +200,7 @@ export class IntentOperations {
         | "isWidgetRequested"
         | "notFoundCount"
         | "access"
+        | "registration"
       >
     >
   ) {
@@ -239,5 +240,13 @@ function merge(previous: IntentRecord, next: IntentRecord): IntentRecord {
     receipt: previous.receipt === "correlated" ? "correlated" : next.receipt,
     announced: previous.announced || next.announced,
     access: previous.access === "lost" ? "lost" : next.access,
+    // A settled registration of the same hash never goes back to pending.
+    registration:
+      previous.registration &&
+      previous.registration.status !== "pending" &&
+      next.registration?.status === "pending" &&
+      next.registration.hash === previous.registration.hash
+        ? previous.registration
+        : next.registration,
   };
 }
