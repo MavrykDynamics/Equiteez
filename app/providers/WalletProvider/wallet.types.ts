@@ -7,6 +7,7 @@ import type { MavrykToolkit } from "@mavrykdynamics/taquito";
 import type { DirectExecutionOptions } from "~/contracts/actions.type";
 import type { AttemptTracking } from "~/services/direct/executor";
 import type { WalletProviderKind } from "~/services/direct/attempt.types";
+import type { DynamicPasskey } from "./dynamic/dynamicClient.client";
 
 export type { WalletProviderKind };
 
@@ -69,6 +70,11 @@ export type DynamicConnectApi = {
    * when the user cancels Dynamic's "confirm it's you" step.
    */
   revealPrivateKey: () => Promise<boolean>;
+  /** Passkeys on the user's Dynamic account */
+  getPasskeys: () => Promise<DynamicPasskey[]>;
+  /** Shows the browser's passkey prompt, then registers the new passkey */
+  addPasskey: () => Promise<void>;
+  removePasskey: (passkeyId: string) => Promise<void>;
 };
 
 export type WalletContextValue = {

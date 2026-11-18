@@ -15,7 +15,7 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { DynamicSessionExpiredError } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
-import styles from "./ExportKeyModal.module.css";
+import styles from "./WalletModal.module.css";
 
 type ExportKeyModalProps = {
   isOpen: boolean;

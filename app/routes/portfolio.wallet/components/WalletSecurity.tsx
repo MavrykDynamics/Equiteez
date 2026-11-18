@@ -1,8 +1,9 @@
 /**
- * Security, Backup and Export private key for email wallets. Export private
- * key is live: a confirmation, then Dynamic's own window with the key.
- * Security and Backup are still the Figma copy as is (mock): their statuses
- * are the design's and their buttons do nothing.
+ * Security, Backup and Export private key for email wallets. Live: Passkeys
+ * (list, add, remove through Dynamic) and Export private key (a confirmation,
+ * then Dynamic's own window with the key). Wallet password, Authenticator app,
+ * Trusted devices and Backup are still the Figma copy as is (mock): their
+ * statuses are the design's and their buttons do nothing.
  */
 import { useState } from "react";
 
@@ -13,6 +14,8 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 import { ExportKeyModal } from "./ExportKeyModal";
+import { PasskeysModal } from "./PasskeysModal";
+import { describePasskeys, usePasskeys } from "./usePasskeys";
 import styles from "../styles.module.css";
 
 type SecurityRow = {
@@ -21,9 +24,11 @@ type SecurityRow = {
   tone?: "success" | "warning";
   action: string;
   isPrimary?: boolean;
+  onAction?: () => void;
 };
 
-const SECURITY_ROWS: SecurityRow[] = [
+/** Mock rows around the live Passkeys row, in the Figma order */
+const MOCK_ROWS_BEFORE: SecurityRow[] = [
   {
     title: "Wallet password",
     status: "Set. You need it to restore your wallet on a new device.",
@@ -37,11 +42,9 @@ const SECURITY_ROWS: SecurityRow[] = [
     action: "Set up",
     isPrimary: true,
   },
-  {
-    title: "Passkeys",
-    status: "1 passkey: MacBook Pro, added 2 Nov 2026",
-    action: "Manage",
-  },
+];
+
+const MOCK_ROWS_AFTER: SecurityRow[] = [
   {
     title: "Trusted devices",
     status: "2 devices, including this one. Revoking all signs you out.",
@@ -58,6 +61,20 @@ function SectionTitle({ children }: { children: string }) {
 }
 
 export function WalletSecurity() {
+  const passkeys = usePasskeys();
+  const [isPasskeysOpen, setIsPasskeysOpen] = useState(false);
+
+  const rows: SecurityRow[] = [
+    ...MOCK_ROWS_BEFORE,
+    {
+      title: "Passkeys",
+      status: describePasskeys(passkeys.passkeys, Boolean(passkeys.error)),
+      action: "Manage",
+      onAction: () => setIsPasskeysOpen(true),
+    },
+    ...MOCK_ROWS_AFTER,
+  ];
+
   return (
     <section className={styles.section}>
       <div className={styles.sectionIntro}>
@@ -68,7 +85,7 @@ export function WalletSecurity() {
       </div>
 
       <div className={styles.securityList}>
-        {SECURITY_ROWS.map((row) => (
+        {rows.map((row) => (
           <div className={styles.securityRow} key={row.title}>
             <div>
               <RText size="body-sm" weight="medium">
@@ -84,6 +101,7 @@ export function WalletSecurity() {
               </RText>
             </div>
             <RButton
+              onClick={row.onAction}
               size="small"
               tone="black"
               variant={row.isPrimary ? "primary" : "secondary"}
@@ -93,6 +111,12 @@ export function WalletSecurity() {
           </div>
         ))}
       </div>
+
+      <PasskeysModal
+        {...passkeys}
+        isOpen={isPasskeysOpen}
+        onClose={() => setIsPasskeysOpen(false)}
+      />
     </section>
   );
 }

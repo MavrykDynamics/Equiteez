@@ -492,17 +492,23 @@ function getTokenExpiry(token: string | null): number | null {
   }
 }
 
-export async function revealDynamicPrivateKey(
-  client: DynamicClient,
-  walletId: string
-): Promise<boolean> {
-  // The user stays remembered after the token expires, and Dynamic then
-  // answers 401 to every step: say so instead of a generic failure
+/**
+ * The user stays remembered after the session token expires, and Dynamic then
+ * answers 401 to every request: say so instead of a generic failure.
+ */
+function assertDynamicSession(client: DynamicClient) {
   const expiry = getTokenExpiry(client.auth.token);
 
   if (!expiry || expiry * 1000 <= Date.now()) {
     throw new DynamicSessionExpiredError();
   }
+}
+
+export async function revealDynamicPrivateKey(
+  client: DynamicClient,
+  walletId: string
+): Promise<boolean> {
+  assertDynamicSession(client);
 
   if (client.wallets.primary?.id !== walletId) {
     await client.wallets.setPrimary({ walletId });
@@ -522,4 +528,40 @@ export async function revealDynamicPrivateKey(
 
   await client.ui.wallets.revealEmbeddedWalletKey({ type: "private-key" });
   return true;
+}
+
+/** A passkey on the user's Dynamic account, as the Wallet page lists it. */
+export type DynamicPasskey = {
+  id: string;
+  /** The user's alias, else the passkey manager (e.g. "iCloud Keychain") */
+  name: string | null;
+  createdAt: Date;
+};
+
+export async function getDynamicPasskeys(
+  client: DynamicClient
+): Promise<DynamicPasskey[]> {
+  assertDynamicSession(client);
+
+  const passkeys = await client.passkeys.get();
+
+  return passkeys.map((passkey) => ({
+    id: passkey.id,
+    name: passkey.alias || passkey.storage?.name || null,
+    createdAt: new Date(passkey.createdAt),
+  }));
+}
+
+/** Runs the browser's passkey prompt (Touch ID, Face ID…) and registers it. */
+export async function addDynamicPasskey(client: DynamicClient) {
+  assertDynamicSession(client);
+  await client.passkeys.register();
+}
+
+export async function removeDynamicPasskey(
+  client: DynamicClient,
+  passkeyId: string
+) {
+  assertDynamicSession(client);
+  await client.passkeys.delete({ passkeyId });
 }

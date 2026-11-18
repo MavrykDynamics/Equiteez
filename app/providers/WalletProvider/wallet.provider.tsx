@@ -38,7 +38,10 @@ import { isDynamicWalletEnabled } from "./dynamic/dynamic.config";
 import { DynamicNotAuthenticatedError } from "./dynamic/dynamic.errors";
 import {
   loadDynamicClient,
+  addDynamicPasskey,
+  getDynamicPasskeys,
   logoutDynamic,
+  removeDynamicPasskey,
   revealDynamicPrivateKey,
   resendEmailOtp,
   sendEmailOtp,
@@ -353,6 +356,15 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       return client;
     };
 
+    /** The signed-in email wallet's client */
+    const currentDynamicClient = () => {
+      const session = dynamicSessionRef.current;
+
+      if (!session) throw new DynamicNotAuthenticatedError();
+
+      return session.client;
+    };
+
     const establishOrThrow = async (choice: WalletChoice) => {
       const client = await readyClient();
 
@@ -395,6 +407,11 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
 
         return revealDynamicPrivateKey(session.client, session.wallet.walletId);
       },
+      // async: a missing session rejects instead of throwing synchronously
+      getPasskeys: async () => getDynamicPasskeys(currentDynamicClient()),
+      addPasskey: async () => addDynamicPasskey(currentDynamicClient()),
+      removePasskey: async (passkeyId) =>
+        removeDynamicPasskey(currentDynamicClient(), passkeyId),
     };
   }, [connecting, disconnect, establishDynamic]);
 

@@ -6,7 +6,7 @@
   background: rgba(1, 1, 1, 0.6);
 }
 
-/* Figma 8229:76438: 588px, 16px radius */
+/* Wallet page modals (Figma 8229:76438): 588px, 16px radius */
 .modal {
   width: min(588px, 100%);
   max-height: calc(100vh - var(--r-space-8));
@@ -143,4 +143,39 @@
 .action {
   flex: 1 1 0;
   min-width: 0;
+}
+
+/* Passkeys: one row per passkey, divided */
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+  padding: var(--r-space-3) 0;
+}
+
+.listItem:not(:last-child) {
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.listItem > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.listItem button {
+  flex-shrink: 0;
+}
+
+.empty {
+  text-align: center;
 }
