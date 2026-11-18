@@ -40,30 +40,48 @@ reference bridge. Run `npm install` to install them and update `package-lock.jso
 The scoped `@walletconnect/logger` override follows Wagmi's connector guidance
 for its transitive `pino` dependency.
 
-- Network: Ethereum Sepolia (chain ID `11155111`).
+- Network: Arbitrum Sepolia (chain ID `421614`).
 - Deposit asset: the bridge's Mock USDT test token at
-  `0x0111C65C13b3Ee07662340692CBA957B29572F27`. Metadata comes from the contract;
+  `0x5C05e82bE66B19476bAcb558E62e7d449b98635F`. Metadata comes from the contract;
   balances refresh every 15 seconds while the app is visible. `Max` uses the
   token balance rounded down to six decimals, the precision available on Mavryk.
 - Wallets: installed Ethereum wallets and WalletConnect QR/mobile connections.
   Approved sessions reconnect on page reload. A wrong network requires a
-  switch to Sepolia before continuing.
+  switch to Arbitrum Sepolia before continuing.
 - Optional build-time configuration: `ETHEREUM_RPC_URL` overrides the public
-  Sepolia RPC; `WALLETCONNECT_PROJECT_ID` overrides the temporarily shared bridge
+  Arbitrum Sepolia RPC (`https://sepolia-rollup.arbitrum.io/rpc`); `WALLETCONNECT_PROJECT_ID` overrides the temporarily shared bridge
   project ID. The WalletConnect project must allow the deployed Equiteez origin.
+
+## 1Click (NEAR Intents) deposits
+
+Behind a build-time flag; off by default. Lifecycle, contract and limitations: [`docs/intents-deposits.md`](docs/intents-deposits.md); plan: [`near-intents/plan-intents.md`](near-intents/plan-intents.md).
+
+- `INTENTS_DEPOSIT_ENABLED=true` adds the **Swap From Any Chain** tab to Deposit Funds.
+- `INTENTS_API` is the shared 1Click backend origin (requests go to `<origin>/v1/...`).
+  The Equiteez RWA token is not forwarded to it.
+- `INTENTS_API_MODE=mock` uses the in-browser simulator (`app/lib/apis/intents/intents.mock.ts`)
+  instead of `INTENTS_API`. Force branches with `?intentsMock=refund|expire|busy|sponsorship|fail|below`.
+  `INTENTS_MOCK_DEPOSIT_ADDRESS` sets the testnet address the mock asks the wallet to fund.
+- `INTENTS_SEPOLIA_RPC_URL` optionally overrides the public Sepolia RPC used for that source chain.
 
 ## USDT bridge deposits
 
-`app/consts/usdtBridge.ts` contains the single Sepolia → Basenet pair ported from
-`mavryk-bridge` (`ETH_ERC20_1` → `MAV_WRAPPED_ERC20`). The reference repo's static
-ERC1 labels are stale: live Ethereum metadata reports **Mock USDT / USDT**, with
-18 decimals. The destination reports **Tether USDT / wUSDT**, with 6 decimals.
+`app/consts/usdtBridge.ts` contains the single Arbitrum Sepolia → Basenet pair from
+the Bridge Basenet/ArbSep deployment. Live source metadata reports **Mock USDT / USDT**,
+with 18 decimals. The destination reports **Tether USDT / wUSDT**, with 6 decimals.
 
-- Ethereum wrap bridge: `0x476a30d098eD197c2b109abaBbf5135D49df0967`.
-- Mavryk destination: `KT1J8yjtFGY6fiqjSNLpUjDnX2bj2HsUizAi`, FA2 token ID `0`.
-- Mavryk minter mapping: `KT1QgGZLNv8tB512woJLDfL32gE8J6PcjWzP`, wrapped-token
-  ledger `3523`. This maps the source ERC20 to the destination above; it is not
-  called by the frontend. No other bridge contracts or token pairs are imported.
+- Arbitrum Sepolia wrap bridge: `0x856c1E8aaFD4FA4586b8B299941f79a593de40a6`.
+- Mavryk destination: `KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE`, FA2 token ID `0`.
+- Mavryk minter bridge: `KT1N8K4w9CRDzFpX5XHZY9ASjeMnAFcNZkmc`. It maps the source
+  ERC20 to the destination above; it is not called by the frontend. No other
+  bridge contracts or token pairs are imported.
+- Primary purchases still quote in the launchpad's previous wUSDT
+  (`KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v`, `PRIMARY_PURCHASE_QUOTE_TOKEN`) until
+  the launchpad is migrated.
+
+Arbitrum Sepolia's base fee sits around 0.02 gwei, so approvals and `wrapToken`
+are submitted with a max fee of at least `USDT_BRIDGE.minMaxFeePerGas`
+(0.025 gwei); a higher network estimate is kept unchanged.
 
 `Deposit Funds` requires both connected wallets. The source wallet must use
 Sepolia; the receiving Beacon account must use Basenet. The provider checks the

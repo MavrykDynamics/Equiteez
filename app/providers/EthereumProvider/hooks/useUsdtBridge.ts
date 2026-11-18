@@ -149,7 +149,9 @@ export function useUsdtBridge(refreshBalance: () => Promise<void>) {
           ]);
           assertCurrentRun();
           if (chainId !== USDT_BRIDGE.chainId)
-            throw new Error("Switch your Ethereum wallet to Sepolia.");
+            throw new Error(
+              `Switch your wallet to ${USDT_BRIDGE.chainName}.`
+            );
           if (accounts[0]?.toLowerCase() !== account.toLowerCase())
             throw new Error(
               "Your Ethereum account changed. Reconnect and try again."

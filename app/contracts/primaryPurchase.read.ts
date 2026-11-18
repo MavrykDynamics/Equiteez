@@ -1,5 +1,5 @@
 import type { MavrykToolkit } from "@mavrykdynamics/taquito";
-import { USDT_BRIDGE } from "~/consts/usdtBridge";
+import { PRIMARY_PURCHASE_QUOTE_TOKEN } from "~/consts/usdtBridge";
 import { toNatString, toPositiveNatString } from "~/lib/utils/formaters";
 import { getPrimaryDeployment } from "./primaryPurchase.config";
 import type {
@@ -152,8 +152,8 @@ export async function readPrimaryPurchaseConfig({
       // another currency as wUSDT, or borrow the secondary orderbook's currency.
       if (
         !fa2 ||
-        fa2.tokenContractAddress !== USDT_BRIDGE.destinationToken.address ||
-        toNatString(fa2.tokenId) !== USDT_BRIDGE.destinationToken.id
+        fa2.tokenContractAddress !== PRIMARY_PURCHASE_QUOTE_TOKEN.address ||
+        toNatString(fa2.tokenId) !== PRIMARY_PURCHASE_QUOTE_TOKEN.id
       )
         continue;
       options.push({

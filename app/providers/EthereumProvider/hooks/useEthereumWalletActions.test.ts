@@ -17,7 +17,7 @@ vi.mock("wagmi", () => ({
   useDisconnect: () => ({ disconnectAsync: vi.fn() }),
   useSwitchChain: () => ({ switchChainAsync: mocks.switchChainAsync }),
 }));
-vi.mock("../ethereum.config", () => ({ ETHEREUM_CHAIN: { id: 11155111 } }));
+vi.mock("../ethereum.config", () => ({ ETHEREUM_CHAIN: { id: 421614 } }));
 vi.mock("../helpers/ethereumErrors", () => ({
   getEthereumErrorMessage: (error: Error) => error.message,
 }));

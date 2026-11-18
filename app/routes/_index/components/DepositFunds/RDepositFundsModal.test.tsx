@@ -3,7 +3,7 @@ import { BigNumber } from "bignumber.js";
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
 import { type BridgeTransaction } from "~/providers/TransactionsProvider/bridgeTransactions";
@@ -23,6 +23,32 @@ const mocks = vi.hoisted(() => ({
   reset: vi.fn(),
   closeWallet: vi.fn(),
   submit: vi.fn(),
+  intentsEnabled: false,
+  resetIntents: vi.fn(),
+  resumeIntent: vi.fn(() => false),
+  intentsReview: { phase: "form" } as { phase: string; localId?: string },
+}));
+
+vi.mock("~/consts/intents", () => ({
+  get INTENTS_DEPOSIT_ENABLED() {
+    return mocks.intentsEnabled;
+  },
+}));
+vi.mock("~/hooks/useIntentsDeposit", () => ({
+  useIntentsDeposit: () => ({
+    resetForm: mocks.resetIntents,
+    review: mocks.intentsReview,
+    resumeActive: mocks.resumeIntent,
+    activeRecord: mocks.intentsReview.phase === "tracking" ? {} : undefined,
+    hasFundingStarted: mocks.intentsReview.phase === "tracking",
+    cancelReview: vi.fn(),
+  }),
+}));
+vi.mock("./components/IntentsView", () => ({
+  IntentsView: () => <p>Intents form</p>,
+}));
+vi.mock("./components/IntentsStatusView", () => ({
+  IntentsStatusView: () => <p>Intents status</p>,
 }));
 
 vi.mock("~/providers/TransactionsProvider/TransactionWidgetProvider", () => ({
@@ -72,7 +98,9 @@ vi.mock("./components/BridgeView", () => ({
     </>
   ),
 }));
-vi.mock("./components/ReceiveView", () => ({ ReceiveView: () => null }));
+vi.mock("./components/ReceiveView", () => ({
+  ReceiveView: () => <p>Receive view</p>,
+}));
 vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
 vi.mock("~/lib/molecules/HashChip", () => ({ HashChip: () => null }));
 
@@ -81,6 +109,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.holdDeposit.mockReturnValue(mocks.releaseDeposit);
   mocks.transactions.clear();
+  mocks.intentsEnabled = false;
+  mocks.intentsReview = { phase: "form" };
+  mocks.resumeIntent.mockReturnValue(false);
   mocks.state = {
     amount: "1",
     recipient: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt",
@@ -348,4 +379,85 @@ it("keeps the clicked deposit button loading through initial submission", async 
     await act(async () => finishSubmission());
     await act(async () => root.unmount());
   }
+});
+
+describe("1Click deposit method", () => {
+  async function renderForm() {
+    mocks.state = null;
+    const element = document.createElement("div");
+    const root = createRoot(element);
+    const onClose = vi.fn();
+    const render = (isOpen = true) =>
+      act(async () =>
+        root.render(<RDepositFundsModal isOpen={isOpen} onClose={onClose} />)
+      );
+    const tab = (label: string) =>
+      [...element.querySelectorAll("[role=tab]")].find(
+        (item) => item.textContent === label
+      ) as HTMLButtonElement | undefined;
+    await render();
+    return { element, root, render, tab };
+  }
+
+  it("is hidden while the feature flag is off", async () => {
+    const { root, tab } = await renderForm();
+    try {
+      expect(tab("Swap From Any Chain")).toBeUndefined();
+      expect(tab("Bridge From Ethereum")).toBeDefined();
+      expect(tab("Receive On Mavryk")).toBeDefined();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("adds a third tab without replacing the existing methods", async () => {
+    mocks.intentsEnabled = true;
+    const { element, root, render, tab } = await renderForm();
+    try {
+      expect(element.textContent).toContain("Set amount");
+      await act(async () => tab("Swap From Any Chain")!.click());
+      expect(element.textContent).toContain("Intents form");
+      expect(tab("Swap From Any Chain")!.getAttribute("aria-selected")).toBe(
+        "true"
+      );
+      await act(async () => tab("Receive On Mavryk")!.click());
+      expect(element.textContent).toContain("Receive view");
+      await act(async () => tab("Bridge From Ethereum")!.click());
+      expect(element.textContent).toContain("Set amount");
+
+      await act(async () => tab("Swap From Any Chain")!.click());
+      await render(false);
+      expect(mocks.resetIntents).toHaveBeenCalled();
+      await render(true);
+      expect(element.textContent).toContain("Set amount");
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+  it("reopens on the active operation and holds its widget card", async () => {
+    mocks.intentsEnabled = true;
+    mocks.resumeIntent.mockImplementation(() => {
+      mocks.intentsReview = { phase: "tracking", localId: "local-1" };
+      return true;
+    });
+    const { element, root, render } = await renderForm();
+    try {
+      await render();
+      expect(element.textContent).toContain("Intents status");
+      expect(mocks.holdDeposit).toHaveBeenCalledWith("intent:local-1");
+      await render(false);
+      expect(mocks.releaseDeposit).toHaveBeenCalled();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("does not resume while the feature flag is off", async () => {
+    const { root } = await renderForm();
+    try {
+      expect(mocks.resumeIntent).not.toHaveBeenCalled();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
 });

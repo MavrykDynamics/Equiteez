@@ -10,6 +10,11 @@ import {
 } from "react";
 import { useTransactionsContext } from "./TransactionsProvider";
 import { WidgetRemovals } from "./widgetRemovals";
+import { INTENTS_SOURCE_CHAINS } from "~/consts/intents";
+import { toIntentWidget } from "./intentWidget";
+import { isIntentOwnedBridgeRecord } from "./intentReceipts";
+
+const noForwardIds: ReadonlyMap<string, string> = new Map();
 
 import {
   createWidgetPresentation,
@@ -27,6 +32,8 @@ function useWidgetState() {
     reconciliationError,
     lastCheckedAt,
     refresh,
+    intents = [],
+    intentForwardIds = noForwardIds,
   } = useTransactionsContext();
   const removals = useMemo(
     () => new WidgetRemovals(account, network, () => window.localStorage),
@@ -49,8 +56,10 @@ function useWidgetState() {
   }, [removals]);
   const records = useMemo(() => [...transactions.values()], [transactions]);
   const models = useMemo(
-    () =>
-      records.flatMap((record) => {
+    () => [
+      ...records.flatMap((record) => {
+        // The forwarded deposit of a 1Click operation is shown on its card.
+        if (isIntentOwnedBridgeRecord(record, intentForwardIds)) return [];
         if (
           record.widgetRecovery === "pending" ||
           record.widgetRecovery === "suppressed"
@@ -72,7 +81,32 @@ function useWidgetState() {
           ];
         return [model];
       }),
-    [records, removalState.entries]
+      // 1Click operations share the stack, holds and removals under a
+      // composite `intent:<localId>` identity.
+      ...intents.flatMap((record) => {
+        const model = toIntentWidget(
+          record,
+          INTENTS_SOURCE_CHAINS.find(
+            (chain) => chain.id === record.source.chainId
+          )?.blockExplorers?.default.url
+        );
+        if (!model) return [];
+        if (removalState.entries.get(model.backendId!) != null)
+          return [
+            {
+              ...model,
+              isTerminal: true,
+              // Keep the card's own success copy (received amount).
+              state:
+                model.state.status === "success"
+                  ? model.state
+                  : { status: "success" as const },
+            },
+          ];
+        return [model];
+      }),
+    ],
+    [records, intents, intentForwardIds, removalState.entries]
   );
   const [presentation, setPresentation] = useState(
     createWidgetPresentation(session)

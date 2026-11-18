@@ -21,6 +21,20 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
+import { INTENTS_DEPOSIT_ENABLED, INTENTS_ENV } from "~/consts/intents";
+import {
+  hasIntentArrived,
+  type IntentRecord,
+} from "~/lib/intents/intentOperation";
+import { formatRawAmount } from "~/lib/intents/intentRoute";
+import { getIntentsApi } from "~/lib/apis/intents";
+import { IntentOperations, type IntentSnapshot } from "./intentOperations";
+import { IntentOperationsTracker } from "./intentOperationsTracker";
+import {
+  findCorrelatedIntentReceipts,
+  getIntentForwardIdMap,
+  isIntentOwnedBridgeRecord,
+} from "./intentReceipts";
 import { recoverBridgeWidgets } from "./bridgeWidgetRecovery";
 import { BridgeReconciler } from "./bridgeReconciler";
 import {
@@ -39,12 +53,25 @@ const emptySnapshot: TransactionSnapshot = {
 };
 const emptySubscribe = () => () => {};
 const getEmptySnapshot = () => emptySnapshot;
+const emptyIntentSnapshot: IntentSnapshot = {
+  records: new Map(),
+  storageError: null,
+};
+const getEmptyIntentSnapshot = () => emptyIntentSnapshot;
 type TransactionsContext = TransactionSnapshot & {
   account: string | null;
   network: string;
   session: object | null;
   publish: (record: BridgeTransaction) => void;
   refresh: () => void;
+  /** 1Click operations of this account/environment (EQ-FE-02+). */
+  intents: readonly IntentRecord[];
+  /** Write target captured by intent flows; null when signed out/flag off. */
+  intentSession: IntentOperations | null;
+  intentStorageError: string | null;
+  refreshIntent: (localId?: string) => void;
+  /** Forward hash:log → intent localId; such bridge records render on the intent card. */
+  intentForwardIds: ReadonlyMap<string, string>;
 };
 const context = createContext<TransactionsContext | null>(null);
 const settlementQueryPrefixes = [
@@ -77,13 +104,59 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   );
   const currentStore = useRef(store);
   currentStore.current = store;
+  const intentStore = useMemo(
+    () =>
+      account && INTENTS_DEPOSIT_ENABLED
+        ? new IntentOperations(account, INTENTS_ENV, () => window.localStorage)
+        : null,
+    [account]
+  );
+  const currentIntentStore = useRef(intentStore);
+  currentIntentStore.current = intentStore;
+  const intentTracker = useMemo(
+    () =>
+      intentStore
+        ? new IntentOperationsTracker(
+            intentStore,
+            getIntentsApi(),
+            () => currentIntentStore.current === intentStore
+          )
+        : null,
+    [intentStore]
+  );
+  const intentSnapshot = useSyncExternalStore(
+    intentStore?.subscribe ?? emptySubscribe,
+    intentStore?.getSnapshot ?? getEmptyIntentSnapshot,
+    getEmptyIntentSnapshot
+  );
+  const intents = useMemo(
+    () => [...intentSnapshot.records.values()],
+    [intentSnapshot.records]
+  );
   const settlementHandler = useRef<(records: BridgeSettlementUpdate[]) => void>(
     () => {}
+  );
+  const intentForwardIds = useMemo(
+    () => getIntentForwardIdMap(intents),
+    [intents]
+  );
+  const invalidateSettlementData = useCallback(
+    () =>
+      void queryClient
+        .invalidateQueries({
+          predicate: (query) =>
+            settlementQueryPrefixes.includes(String(query.queryKey[0])) &&
+            query.queryKey[1] === account,
+        })
+        .catch(() => console.warn("Bridge settlement data refresh failed")),
+    [account, queryClient]
   );
   settlementHandler.current = (records) => {
     if (!store || currentStore.current !== store) return;
     for (const { record, shouldNotify } of records) {
       if (!shouldNotify) continue;
+      // A 1Click operation announces its own arrival once (below).
+      if (isIntentOwnedBridgeRecord(record, intentForwardIds)) continue;
       if (record.settlement === "executed")
         toaster.success(
           "Bridge deposit arrived",
@@ -98,13 +171,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     }
     if (records.some(({ record }) => record.settlement === "executed")) {
       // API retired these caches on mint. No chain-based freshness mark is needed.
-      void queryClient
-        .invalidateQueries({
-          predicate: (query) =>
-            settlementQueryPrefixes.includes(String(query.queryKey[0])) &&
-            query.queryKey[1] === account,
-        })
-        .catch(() => console.warn("Bridge settlement data refresh failed"));
+      invalidateSettlementData();
     }
   };
   const reconciler = useMemo(
@@ -127,14 +194,67 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     getEmptySnapshot
   );
 
+  // EQ-FE-05: a 1Click operation completes from the backend's confirmed
+  // settlement for the expected token, or (fallback) verified bridge data on
+  // every forward identity. Balances/activity refresh when the bridge takes
+  // over (WRAPPED) and again on arrival; arrival is announced exactly once.
+  const refreshedIntents = useRef(new Set<string>());
+  useEffect(() => {
+    if (!intentStore || currentIntentStore.current !== intentStore) return;
+    for (const localId of findCorrelatedIntentReceipts(
+      intents,
+      snapshot.transactions.values()
+    ))
+      intentStore.patch(localId, { receipt: "correlated" });
+    for (const record of intents) {
+      const key = `${intentStore.key}:${record.localId}`;
+      if (
+        record.backend?.phase === "WRAPPED" &&
+        !refreshedIntents.current.has(key)
+      ) {
+        refreshedIntents.current.add(key);
+        invalidateSettlementData();
+      }
+      // The persisted marker dedupes across reloads, reconnects and Strict Mode.
+      if (
+        hasIntentArrived(record) &&
+        !intentStore.get(record.localId)?.announced &&
+        intentStore.patch(record.localId, { announced: true })
+      ) {
+        const settled = record.backend?.settlement.confirmedAmount;
+        toaster.success(
+          "Deposit arrived",
+          settled && settled !== "0"
+            ? `${formatRawAmount(settled, record.destination.decimals)} ${record.destination.symbol} arrived in your Mavryk account.`
+            : "Your cross-chain deposit has arrived on Mavryk."
+        );
+        invalidateSettlementData();
+      }
+    }
+  }, [
+    intents,
+    intentStore,
+    invalidateSettlementData,
+    snapshot.transactions,
+    toaster,
+  ]);
+
   useEffect(() => {
     currentStore.current = store;
-    if (document.visibilityState !== "hidden") reconciler?.start();
+    intentStore?.restore();
+    if (document.visibilityState !== "hidden") {
+      reconciler?.start();
+      intentTracker?.start();
+    }
     const handleForeground = () => {
-      if (document.visibilityState === "hidden") reconciler?.stop();
-      else {
+      if (document.visibilityState === "hidden") {
+        reconciler?.stop();
+        intentTracker?.stop();
+      } else {
         reconciler?.stop();
         reconciler?.start();
+        intentTracker?.stop();
+        intentTracker?.start();
       }
     };
     document.addEventListener("visibilitychange", handleForeground);
@@ -143,11 +263,12 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     return () => {
       currentStore.current = null;
       reconciler?.stop();
+      intentTracker?.stop();
       document.removeEventListener("visibilitychange", handleForeground);
       window.removeEventListener("online", handleForeground);
       window.removeEventListener("pageshow", handleForeground);
     };
-  }, [reconciler, store]);
+  }, [reconciler, store, intentStore, intentTracker]);
   useEffect(() => {
     reconciler?.setConnected(
       status === NotifierConnectionStatus.Connected && wallet === account
@@ -177,6 +298,11 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       account,
       network: bridgeNetwork,
       session: store,
+      intents,
+      intentSession: intentStore,
+      intentStorageError: intentSnapshot.storageError,
+      refreshIntent: (localId?: string) => intentTracker?.refresh(localId),
+      intentForwardIds,
       refresh: () => reconciler?.refresh(),
       publish: (record: BridgeTransaction) => {
         if (!store || currentStore.current !== store) return;
@@ -192,7 +318,17 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
           reconciler?.refresh();
       },
     }),
-    [account, snapshot, store, reconciler]
+    [
+      account,
+      snapshot,
+      store,
+      reconciler,
+      intents,
+      intentStore,
+      intentTracker,
+      intentForwardIds,
+      intentSnapshot.storageError,
+    ]
   );
   return <context.Provider value={value}>{children}</context.Provider>;
 }

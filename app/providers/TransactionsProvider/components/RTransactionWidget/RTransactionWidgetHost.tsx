@@ -91,6 +91,12 @@ export function RTransactionWidgetHost() {
                         recipient={model.recipient}
                         sourceExplorerUrl={model.sourceExplorerUrl}
                         state={model.state}
+                        steps={model.steps}
+                        label={
+                          model.kind === "intent"
+                            ? "Cross-chain deposit"
+                            : undefined
+                        }
                         onDismiss={
                           model.isTerminal
                             ? () =>

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { BigNumber } from "bignumber.js";
 import type { MavrykToolkit } from "@mavrykdynamics/taquito";
 import { basenetNetRpcnode } from "~/consts/rpcNodes";
-import { USDT_BRIDGE } from "~/consts/usdtBridge";
+import { PRIMARY_PURCHASE_QUOTE_TOKEN } from "~/consts/usdtBridge";
 import { getPrimaryDeployment } from "./primaryPurchase.config";
 import { readPrimaryPurchaseConfig } from "./primaryPurchase.read";
 import {
@@ -28,7 +28,7 @@ const option: PrimaryPurchaseOption = {
   price: "30000000",
   feeBps: "100",
   discountBps: "0",
-  tokenAddress: USDT_BRIDGE.destinationToken.address,
+  tokenAddress: PRIMARY_PURCHASE_QUOTE_TOKEN.address,
   tokenId: "0",
   minAmount: "1",
   maxAmount: "9999999999999999999999",

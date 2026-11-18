@@ -79,10 +79,11 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
 }
 
 // Presentation mapping only: the provider owns all event/status decisions.
-function getDepositSteps({
-  state,
-}: TransactionWidgetModel): BridgeStatusStep[] {
-  return transactionWidgetStepLabels.map((title, index) => {
+export function getDepositSteps(
+  { state, steps = transactionWidgetStepLabels }: TransactionWidgetModel,
+  pendingDescription = "Waiting for bridge updates"
+): BridgeStatusStep[] {
+  return steps.map((title, index) => {
     const isCurrent =
       (state.status === "progress" && state.step === index + 1) ||
       (state.status === "waiting" && index === 0);
@@ -104,7 +105,7 @@ function getDepositSteps({
           ? "Complete"
           : isCurrent
             ? (state.description ?? "In progress")
-            : "Waiting for bridge updates",
+            : pendingDescription,
     };
   });
 }
@@ -144,7 +145,7 @@ function BridgeStatusIndicator({
   );
 }
 
-function BridgeStatusListItem({
+export function BridgeStatusListItem({
   index,
   step,
 }: {
@@ -281,7 +282,7 @@ export function BridgeTransactionLink({ state }: { state: UsdtBridgeState }) {
   return state.progress?.hash ? (
     <RButton
       as="a"
-      href={`https://sepolia.etherscan.io/tx/${state.progress.hash}`}
+      href={`https://sepolia.arbiscan.io/tx/${state.progress.hash}`}
       target="_blank"
       rel="noopener noreferrer"
       size="small"
