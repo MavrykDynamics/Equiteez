@@ -8,6 +8,7 @@ import { decodeHex, operationDigest } from "~/lib/mavryk/keys";
 import {
   ensureDynamicWallet,
   getEmbeddedSolWallets,
+  hasLiveDynamicSession,
   logoutDynamic,
   resolveDynamicWallet,
   selectDynamicWallet,
@@ -48,6 +49,16 @@ const embeddedWallet = (
 
 type Listener = (...args: unknown[]) => void;
 
+/** An unsigned JWT that expires `secondsFromNow` from now. */
+const jwtExpiringIn = (secondsFromNow: number) =>
+  [
+    "e30",
+    btoa(
+      JSON.stringify({ exp: Math.floor(Date.now() / 1000) + secondsFromNow })
+    ).replace(/=+$/, ""),
+    "sig",
+  ].join(".");
+
 /** Just enough of the Dynamic client for the wallet flow. */
 function createFakeClient({
   wallets = [] as DynamicWallet[],
@@ -56,6 +67,7 @@ function createFakeClient({
     email?: string;
   } | null,
   embeddedWalletFromDynamic = null as DynamicWallet | null,
+  token = jwtExpiringIn(3600) as string | null,
   seedsByWalletId = { w1: SEED, w2: OTHER_SEED } as Record<string, Uint8Array>,
 } = {}) {
   const listeners = new Map<string, Set<Listener>>();
@@ -68,7 +80,13 @@ function createFakeClient({
   const off = (name: string, listener: Listener) =>
     listeners.get(name)?.delete(listener);
 
-  const state = { wallets, user, loaded: true, error: null as Error | null };
+  const state = {
+    wallets,
+    user,
+    token,
+    loaded: true,
+    error: null as Error | null,
+  };
 
   const client = {
     sdk: {
@@ -85,6 +103,9 @@ function createFakeClient({
     auth: {
       get authenticatedUser() {
         return state.user;
+      },
+      get token() {
+        return state.token;
       },
       on,
       off,
@@ -356,6 +377,29 @@ describe("Session", () => {
 
     expect(await sendEmailOtp(client, "A@b.co")).toBe("already-authenticated");
     expect(fake.auth.email.sendOTP).not.toHaveBeenCalled();
+  });
+
+  it("sends a new code when the signed-in session has expired", async () => {
+    const { client, fake } = createFakeClient({ token: jwtExpiringIn(-60) });
+
+    expect(await sendEmailOtp(client, "A@b.co")).toBe("sent");
+    expect(fake.auth.logout).toHaveBeenCalledTimes(1);
+    expect(fake.auth.email.sendOTP).toHaveBeenCalledWith("a@b.co");
+  });
+
+  it("treats a remembered user with an expired or missing token as signed out", () => {
+    expect(hasLiveDynamicSession(createFakeClient().client)).toBe(true);
+    expect(
+      hasLiveDynamicSession(
+        createFakeClient({ token: jwtExpiringIn(-60) }).client
+      )
+    ).toBe(false);
+    expect(
+      hasLiveDynamicSession(createFakeClient({ token: null }).client)
+    ).toBe(false);
+    expect(
+      hasLiveDynamicSession(createFakeClient({ user: null }).client)
+    ).toBe(false);
   });
 
   it("reports a failed remote logout instead of throwing", async () => {

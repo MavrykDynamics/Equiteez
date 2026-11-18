@@ -16,6 +16,7 @@ import {
 import { LocalSignatureVerificationError } from "./dynamic.errors";
 import {
   ensureDynamicWallet,
+  hasLiveDynamicSession,
   resolveDynamicWallet,
   selectDynamicWallet,
   signDigest32,
@@ -71,6 +72,11 @@ export async function openDynamicSession(
   await waitForDynamicReady(client);
 
   if (!client.auth.authenticatedUser) return null;
+  // After a long break Dynamic still remembers the user and the wallets, but
+  // the session token has expired and every request (signing, export, the
+  // wallet UI) fails: restoring that would show a signed-in wallet that does
+  // not work. Stay signed out; the user signs in with a code again.
+  if (choice.mode === "restore" && !hasLiveDynamicSession(client)) return null;
 
   const selected = await pickWallet(client, choice);
 

@@ -74,6 +74,8 @@ vi.mock("./dynamic/dynamic.config", () => ({
 vi.mock("./dynamic/dynamicClient.client", () => ({
   loadDynamicClient: async () => mocks.dynamicClient,
   waitForDynamicReady: async () => undefined,
+  hasLiveDynamicSession: (client: typeof mocks.dynamicClient) =>
+    !!client.auth.authenticatedUser,
   logoutDynamic: mocks.logoutDynamic,
   sendEmailOtp: vi.fn(async () => "sent"),
   resendEmailOtp: vi.fn(async () => undefined),

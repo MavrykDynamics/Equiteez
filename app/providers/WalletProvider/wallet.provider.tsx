@@ -40,6 +40,7 @@ import {
   loadDynamicClient,
   addDynamicPasskey,
   getDynamicPasskeys,
+  hasLiveDynamicSession,
   logoutDynamic,
   removeDynamicPasskey,
   revealDynamicPrivateKey,
@@ -383,7 +384,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       start: async () => {
         const client = await readyClient();
 
-        if (!client.auth.authenticatedUser) return "needs-email";
+        if (!hasLiveDynamicSession(client)) return "needs-email";
 
         await establishOrThrow({ mode: "ensure" });
         return "connected";

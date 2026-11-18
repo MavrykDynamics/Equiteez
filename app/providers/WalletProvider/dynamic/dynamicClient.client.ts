@@ -139,6 +139,43 @@ export async function waitForDynamicReady(
 }
 
 // ---------------------------------------------------------------------------
+// Session token
+// ---------------------------------------------------------------------------
+
+/** Seconds since epoch from a JWT's `exp`, or null when unreadable. */
+function getTokenExpiry(token: string | null): number | null {
+  try {
+    const payload = token?.split(".")[1];
+    if (!payload) return null;
+
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const { exp } = JSON.parse(json) as { exp?: unknown };
+
+    return typeof exp === "number" ? exp : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * True when Dynamic has a signed-in user whose session token is still valid.
+ * After the token expires Dynamic keeps the user and its wallets in state but
+ * answers 401 to every request, so `authenticatedUser` alone is not enough.
+ */
+export function hasLiveDynamicSession(client: DynamicClient): boolean {
+  if (!client.auth.authenticatedUser) return false;
+
+  const expiry = getTokenExpiry(client.auth.token);
+
+  return !!expiry && expiry * 1000 > Date.now();
+}
+
+/** Throws DynamicSessionExpiredError unless the session token is valid. */
+function assertDynamicSession(client: DynamicClient) {
+  if (!hasLiveDynamicSession(client)) throw new DynamicSessionExpiredError();
+}
+
+// ---------------------------------------------------------------------------
 // Email OTP
 // ---------------------------------------------------------------------------
 
@@ -155,8 +192,14 @@ export async function sendEmailOtp(
   const currentEmail = client.auth.authenticatedUser?.email?.toLowerCase();
 
   if (client.auth.authenticatedUser) {
-    if (currentEmail === normalizedEmail) return "already-authenticated";
-    await client.auth.logout();
+    if (hasLiveDynamicSession(client)) {
+      if (currentEmail === normalizedEmail) return "already-authenticated";
+      await client.auth.logout();
+    } else {
+      // Expired: signed in only on paper. Its logout may fail; the new code
+      // signs in afresh either way
+      await logoutDynamic(client);
+    }
   }
 
   await client.auth.email.sendOTP(normalizedEmail);
@@ -477,33 +520,6 @@ const WALLET_EXPORT_SCOPE = "wallet:export" as StepUpScope;
  * - An expired Dynamic session fails every step with 401:
  *   DynamicSessionExpiredError.
  */
-/** Seconds since epoch from a JWT's `exp`, or null when unreadable. */
-function getTokenExpiry(token: string | null): number | null {
-  try {
-    const payload = token?.split(".")[1];
-    if (!payload) return null;
-
-    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    const { exp } = JSON.parse(json) as { exp?: unknown };
-
-    return typeof exp === "number" ? exp : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * The user stays remembered after the session token expires, and Dynamic then
- * answers 401 to every request: say so instead of a generic failure.
- */
-function assertDynamicSession(client: DynamicClient) {
-  const expiry = getTokenExpiry(client.auth.token);
-
-  if (!expiry || expiry * 1000 <= Date.now()) {
-    throw new DynamicSessionExpiredError();
-  }
-}
-
 export async function revealDynamicPrivateKey(
   client: DynamicClient,
   walletId: string
