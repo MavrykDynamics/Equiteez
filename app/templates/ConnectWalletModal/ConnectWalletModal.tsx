@@ -12,6 +12,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
@@ -40,6 +41,11 @@ import { CodeInput, CODE_LENGTH } from "./CodeInput";
 import styles from "./ConnectWalletModal.module.css";
 
 const RESEND_COOLDOWN_MS = 30_000;
+
+// Height of the last email/code step. The loading step keeps it, so the
+// modal does not shrink and jump while a code is sent or checked. Kept across
+// opens: a modal that opens straight on loading reuses it too.
+let lastFormHeight = 0;
 
 type Step =
   | { name: "choose" }
@@ -151,6 +157,14 @@ export function ConnectWalletModal({
     // Only on open: startEmail changes with wallet state
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  useLayoutEffect(() => {
+    if (step.name !== "email" && step.name !== "code") return;
+
+    const height = contentRef.current?.getBoundingClientRect().height;
+
+    if (height) lastFormHeight = height;
+  });
 
   // Move focus to the field of the email and code steps
   useEffect(() => {
@@ -316,7 +330,15 @@ export function ConnectWalletModal({
         </button>
       </div>
 
-      <div className={styles.content} ref={contentRef}>
+      <div
+        className={styles.content}
+        ref={contentRef}
+        style={
+          step.name === "working" && lastFormHeight
+            ? { minHeight: lastFormHeight }
+            : undefined
+        }
+      >
         {step.name === "choose" && (
           <>
             <Header

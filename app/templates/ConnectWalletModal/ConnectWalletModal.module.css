@@ -43,6 +43,7 @@
 }
 
 .content {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);
@@ -164,11 +165,17 @@
   cursor: default;
 }
 
+/* Fills the height kept from the email/code step, centred in it. The
+   min-height is the email step's height for a first open with nothing
+   measured yet. */
 .working {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--r-space-3);
+  min-height: 280px;
   padding: var(--r-space-6) 0;
   text-align: center;
 }
