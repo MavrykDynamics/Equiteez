@@ -276,8 +276,9 @@ button.addressButton:focus-visible,
   text-overflow: ellipsis;
 }
 
-.exchangeDetails {
-  margin-bottom: var(--r-space-3);
+/* Panel gap (12px) + margin (12px) = 24px on each side, without stacking. */
+.testnetWarning {
+  margin-block: var(--r-space-3);
 }
 
 .networkDetails {
