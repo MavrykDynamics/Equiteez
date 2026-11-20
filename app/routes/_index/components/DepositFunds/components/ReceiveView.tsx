@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import QRCode from "react-qr-code";
 
 import { Icon } from "~/lib/atoms/Icon";
@@ -7,6 +6,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "../RDepositFundsModal.module.css";
+import { WarningNotice } from "./WarningNotice";
 
 type ReceiveViewProps = {
   mavrykAddress: string;
@@ -49,17 +49,12 @@ export function ReceiveView({ mavrykAddress }: ReceiveViewProps) {
           />
         </CopyButton>
       </div>
-      <div className={clsx(styles.notice, styles.warning)}>
-        <div className="flex items-start justify-center mt-1">
-          <Icon className="w-4 h-4" icon="warning" />
-        </div>
-        <RText color="neutral-700" size="body-sm">
-          <strong>Send only Mavryk assets to this address.</strong>
-          <br />
-          Sending assets straight from Ethereum or another chain to this address
-          will lose them. Use the bridge for anything on Ethereum.
-        </RText>
-      </div>
+      <WarningNotice icon={<Icon className="w-4 h-4" icon="warning" />}>
+        <strong>Send only Mavryk assets to this address.</strong>
+        <br />
+        Sending assets straight from Ethereum or another chain to this address
+        will lose them. Use the bridge for anything on Ethereum.
+      </WarningNotice>
     </div>
   );
 }

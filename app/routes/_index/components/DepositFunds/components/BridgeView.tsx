@@ -5,6 +5,7 @@ import UsdtToken from "~/assets/redesign/deposit/UsdtToken.png";
 import EthereumLogo from "~/icons/ethereum-logo.svg";
 import MavenIcon from "~/icons/maven-icon.svg";
 import WalletBalanceIcon from "~/icons/wallet-balance.svg?react";
+import WarningTriangleIcon from "~/icons/warning-triangle.svg?react";
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -19,6 +20,7 @@ import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.prov
 import { useUsdtBridgeEstimate } from "~/providers/EthereumProvider/hooks/useUsdtBridgeEstimate";
 
 import styles from "../RDepositFundsModal.module.css";
+import { WarningNotice } from "./WarningNotice";
 
 type BridgeViewProps = {
   depositAmount: BigNumber | undefined;
@@ -333,6 +335,14 @@ export function BridgeView({
           {error}
         </RText>
       )}
+      <WarningNotice
+        className={styles.testnetWarning}
+        icon={<WarningTriangleIcon aria-hidden="true" height={16} width={16} />}
+      >
+        <strong>
+          Equiteez is currently on testnet. Please do not deposit real funds.
+        </strong>
+      </WarningNotice>
       <RButton
         className={styles.connectButton}
         disabled={
