@@ -9,6 +9,7 @@ import {
 } from "viem";
 import type { Config } from "wagmi";
 import {
+  estimateFeesPerGas,
   getTransactionConfirmations,
   readContract,
   simulateContract,
@@ -19,7 +20,7 @@ import {
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 import { isAddressValid } from "~/lib/utils/helpers";
 
-// Only the deployed wrap entrypoint is needed for Ethereum -> Mavryk.
+// Only the deployed wrap entrypoint is needed for EVM -> Mavryk.
 export const USDT_WRAP_ABI = [
   {
     type: "function",
@@ -79,6 +80,24 @@ export function buildUsdtWrapCall(amount: BigNumber, recipient: string) {
       stringToHex(destination),
     ],
   } as const;
+}
+
+/** EIP-1559 fees with the bridge chain's minimum max fee applied. */
+export async function getUsdtBridgeFees(config: Config) {
+  const fees = await estimateFeesPerGas(config, {
+    chainId: USDT_BRIDGE.chainId,
+  });
+  const maxFeePerGas =
+    fees.maxFeePerGas > USDT_BRIDGE.minMaxFeePerGas
+      ? fees.maxFeePerGas
+      : USDT_BRIDGE.minMaxFeePerGas;
+  return {
+    maxFeePerGas,
+    maxPriorityFeePerGas:
+      fees.maxPriorityFeePerGas < maxFeePerGas
+        ? fees.maxPriorityFeePerGas
+        : maxFeePerGas,
+  };
 }
 
 export async function confirmUsdtBridgeTransaction(
@@ -198,6 +217,7 @@ export async function executeUsdtBridge({
     await assertWallets();
     const { request, result } = await simulateContract(config, {
       ...token,
+      ...(await getUsdtBridgeFees(config)),
       account,
       functionName: "approve",
       args: [USDT_BRIDGE.address, value],
@@ -220,6 +240,7 @@ export async function executeUsdtBridge({
   await assertWallets();
   const { request, result } = await simulateContract(config, {
     ...wrapCall,
+    ...(await getUsdtBridgeFees(config)),
     chainId: USDT_BRIDGE.chainId,
     account,
   });

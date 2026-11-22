@@ -275,9 +275,9 @@ it("links to the authoritative hash or latest local replacement on the configure
   expect(
     model({ sourceHashes: [localRecord().sourceHashes[0], replacement] })
       .sourceExplorerUrl
-  ).toBe(`https://sepolia.etherscan.io/tx/${replacement}`);
+  ).toBe(`https://sepolia.arbiscan.io/tx/${replacement}`);
   expect(model({ backend: deposit() }).sourceExplorerUrl).toBe(
-    `https://sepolia.etherscan.io/tx/${deposit().evm_tx_hash}`
+    `https://sepolia.arbiscan.io/tx/${deposit().evm_tx_hash}`
   );
 });
 

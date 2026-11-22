@@ -99,6 +99,12 @@
   cursor: pointer;
 }
 
+/* Three methods do not fit on one line at phone width. */
+.tabs[data-count="3"] .tab {
+  padding-inline: var(--r-space-3);
+  white-space: normal;
+}
+
 .tab[data-active="true"] {
   color: var(--r-color-neutral-white);
   background: var(--r-color-neutral-black);

@@ -59,14 +59,17 @@ export async function estimateUsdtBridge(
       blockNumber: latest.number > 10n ? latest.number - 10n : 0n,
     }),
   ]);
+  // Execution submits at least USDT_BRIDGE.minMaxFeePerGas (see getUsdtBridgeFees).
+  const maxFeePerGas =
+    fees.maxFeePerGas > USDT_BRIDGE.minMaxFeePerGas
+      ? fees.maxFeePerGas
+      : USDT_BRIDGE.minMaxFeePerGas;
   const effectiveGasPrice =
     latest.baseFeePerGas === null
-      ? fees.maxFeePerGas
+      ? maxFeePerGas
       : latest.baseFeePerGas + fees.maxPriorityFeePerGas;
   const gasPrice =
-    effectiveGasPrice < fees.maxFeePerGas
-      ? effectiveGasPrice
-      : fees.maxFeePerGas;
+    effectiveGasPrice < maxFeePerGas ? effectiveGasPrice : maxFeePerGas;
   const blockSeconds =
     previous.status === "fulfilled" && latest.number > previous.value.number
       ? Number(latest.timestamp - previous.value.timestamp) /

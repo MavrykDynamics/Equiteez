@@ -20,8 +20,8 @@ export function getEthereumErrorMessage(
 
   if (action === "switchNetwork") {
     return isRejected
-      ? "Network switch was declined. Switch to Sepolia to continue."
-      : "Unable to switch networks. Select Sepolia in your wallet and try again.";
+      ? "Network switch was declined. Switch to Arbitrum Sepolia to continue."
+      : "Unable to switch networks. Select Arbitrum Sepolia in your wallet and try again.";
   }
 
   if (action === "disconnect")
