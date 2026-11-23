@@ -72,7 +72,10 @@ import {
   type DynamicSession,
   type WalletChoice,
 } from "./dynamic/dynamicSession.client";
-import { hasPendingGoogleSignIn } from "./dynamic/dynamicSocialReturn";
+import {
+  forgetGoogleSignIn,
+  hasPendingGoogleSignIn,
+} from "./dynamic/dynamicSocialReturn";
 import type {
   DynamicConnectApi,
   WalletContextValue,
@@ -426,6 +429,9 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       signInWithGoogle: async () => startGoogleSignIn(await readyClient()),
       hasPendingGoogleSignIn,
       finishGoogleSignIn: async () => {
+        // First: if the SDK fails to load, the note must not keep the tab
+        // from restoring sessions and reopening this step on every load
+        forgetGoogleSignIn();
         const client = await readyClient();
 
         await finishGoogleSignIn(client);

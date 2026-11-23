@@ -6,6 +6,9 @@
  * Dynamic.
  */
 const GOOGLE_SIGN_IN_KEY = "equiteez:dynamic-google-sign-in";
+// A trip to Google takes a minute or two; a note older than this is left
+// over from a trip that never finished and is ignored
+const GOOGLE_SIGN_IN_TTL_MS = 10 * 60_000;
 // Dynamic's return parameters (removeDynamicOauthParamsFromUrl in the SDK)
 const OAUTH_RETURN_PARAMS = ["dynamicOauthState", "dynamicOauthCode"];
 
@@ -26,9 +29,19 @@ export function forgetGoogleSignIn() {
   getSessionStorage()?.removeItem(GOOGLE_SIGN_IN_KEY);
 }
 
-/** True when this tab left for Google and has not finished the sign-in. */
-export function hasPendingGoogleSignIn() {
-  return getSessionStorage()?.getItem(GOOGLE_SIGN_IN_KEY) != null;
+/**
+ * True when this tab left for Google in the last few minutes and has not
+ * finished the sign-in. A stale note is removed.
+ */
+export function hasPendingGoogleSignIn(now = Date.now()) {
+  const storage = getSessionStorage();
+  const leftAt = Number(storage?.getItem(GOOGLE_SIGN_IN_KEY));
+
+  if (!leftAt) return false;
+  if (now - leftAt <= GOOGLE_SIGN_IN_TTL_MS) return true;
+
+  storage?.removeItem(GOOGLE_SIGN_IN_KEY);
+  return false;
 }
 
 /** True when the page URL carries Dynamic's return from Google. */
