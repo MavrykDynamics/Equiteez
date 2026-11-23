@@ -70,6 +70,7 @@ export function UniversalSendFlow() {
           error={intents.reviewError}
           onConfirm={intents.confirmRequest}
           onBack={() => intents.cancelReview()}
+          onClose={() => navigate(ROUTES.home)}
           isBackDisabled={intents.isFunding}
           fundingSlot={
             <IntentsFundingPanel

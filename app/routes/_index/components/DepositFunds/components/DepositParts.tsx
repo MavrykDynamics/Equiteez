@@ -63,9 +63,7 @@ export function AccountAvatar({
 }: {
   size?: "large" | "xlarge";
 }) {
-  return (
-    <span aria-hidden="true" className={styles.avatar} data-size={size} />
-  );
+  return <span aria-hidden="true" className={styles.avatar} data-size={size} />;
 }
 
 /** Green dot + "Connected". */

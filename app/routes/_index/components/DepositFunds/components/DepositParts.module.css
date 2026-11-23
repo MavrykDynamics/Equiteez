@@ -1,6 +1,8 @@
 .header {
   display: grid;
-  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(--r-size-icon-medium);
+  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(
+      --r-size-icon-medium
+    );
   align-items: center;
   gap: var(--r-space-3);
   min-height: 28px;

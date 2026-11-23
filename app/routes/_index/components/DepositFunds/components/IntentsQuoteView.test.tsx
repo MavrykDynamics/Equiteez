@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -18,8 +19,11 @@ import {
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { IntentsQuoteView } from "./IntentsQuoteView";
 
-vi.mock("~/lib/molecules/HashChip", () => ({
-  HashChip: ({ hash }: { hash: string }) => <span>{hash}</span>,
+vi.mock("~/lib/atoms/CopyButton", () => ({
+  CopyButton: ({ text }: { text: string }) => <button>{text}</button>,
+}));
+vi.mock("~/lib/atoms/RTooltip/RTooltip", () => ({
+  RTooltip: ({ children }: { children: ReactNode }) => children,
 }));
 
 const now = Date.parse("2026-11-13T10:08:55.000Z");
@@ -51,6 +55,7 @@ const render = (
       error={error}
       onConfirm={vi.fn()}
       onBack={vi.fn()}
+      onClose={vi.fn()}
       fundingSlot={<button>Send funds</button>}
     />
   ).replace(/<!-- -->/g, "");
@@ -58,14 +63,17 @@ const render = (
 describe("IntentsQuoteView", () => {
   it("reviews the request with the accepted minimum before anything is sent", () => {
     const html = render({ ...base, phase: "review" });
-    expect(html).toContain("2 Mock USDT on Arbitrum Sepolia");
-    expect(html).toContain("Minimum you accept");
+    expect(html).toContain("Review deposit");
+    expect(html).toContain("2 Mock USDT");
+    expect(html).toContain("on Arbitrum Sepolia");
+    expect(html).toContain("Minimum received");
     expect(html).toContain("1.98005 wUSDT");
+    expect(html).toContain("≈ 2 wUSDT");
     expect(html).toContain("0.5%");
     expect(html).toContain(fixtureRecipient);
     expect(html).toContain(fixtureSource);
-    expect(html).toContain("Confirm Deposit");
-    expect(html).toContain("only after the exact quote is ready");
+    expect(html).toContain("Confirm deposit");
+    expect(html).toContain("Nothing is sent until the exact quote is ready");
     expect(html).not.toContain("Send funds");
   });
 
@@ -76,7 +84,7 @@ describe("IntentsQuoteView", () => {
     );
     expect(html).toContain("Preparing your quote");
     expect(html).not.toContain("Send funds");
-    expect(html).not.toContain("Confirm Deposit");
+    expect(html).not.toContain("Confirm deposit");
   });
 
   it.each([
@@ -94,13 +102,12 @@ describe("IntentsQuoteView", () => {
   it("shows the executable quote, deposit address and countdown with the funding action", () => {
     const html = render({ ...base, phase: "operation" }, { status: "ready" });
     expect(html).toContain("You send exactly");
-    expect(html).toContain("2 Mock USDT on Arbitrum Sepolia");
-    expect(html).toContain("To 1Click deposit address");
+    expect(html).toContain("2 Mock USDT");
+    expect(html).toContain("1Click deposit address");
     expect(html).toContain(fixtureDeposit);
     // The forwarder is resolved by the backend and never shown as a target.
     expect(html).not.toContain("0x3333333333333333333333333333333333333333");
-    expect(html).toContain("Expected to receive");
-    expect(html).toContain("1.994 wUSDT");
+    expect(html).toContain("≈ 1.994 wUSDT");
     expect(html).toContain("1.99003 wUSDT");
     expect(html).toContain("1:05");
     expect(html).toContain(fixtureOperationId);

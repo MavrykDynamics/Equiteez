@@ -149,7 +149,7 @@ export function RDepositFundsModal({
       onRequestClose={handleClose}
       overlayClassName={styles.overlay}
     >
-      {!trackedIntent && (
+      {!trackedIntent && !isIntentsReviewOpen && (
         <div className={styles.closeRow}>
           <button
             aria-label="Close deposit funds"
@@ -203,6 +203,7 @@ export function RDepositFundsModal({
           error={intents.reviewError}
           onConfirm={intents.confirmRequest}
           onBack={() => intents.cancelReview()}
+          onClose={handleClose}
           isBackDisabled={intents.isFunding}
           fundingSlot={
             <IntentsFundingPanel

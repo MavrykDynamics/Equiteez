@@ -40,8 +40,9 @@ const render = (
 describe("IntentsFundingPanel", () => {
   it("offers exactly one send action before funding", () => {
     const html = render("not_started", { isWrongNetwork: true });
-    expect(html).toContain("Send 2 Mock USDT");
+    expect(html).toContain('aria-label="Send 2 Mock USDT"');
     expect(html).toContain("switch to Arbitrum Sepolia");
+    expect(html).toContain("Transfers are irreversible.");
     expect(html).not.toContain("Simulate");
   });
 
@@ -65,8 +66,8 @@ describe("IntentsFundingPanel", () => {
   });
 
   it("asks the user to confirm in the wallet while prompting", () => {
-    expect(render("prompted", { isFunding: true })).toContain(
-      "Confirm the 2 Mock USDT transfer in your wallet."
-    );
+    const html = render("prompted", { isFunding: true });
+    expect(html).toContain("Confirm in your wallet");
+    expect(html).toContain("Approve the 2 Mock USDT transfer in your wallet.");
   });
 });

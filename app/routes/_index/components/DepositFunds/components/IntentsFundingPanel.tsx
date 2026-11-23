@@ -1,11 +1,12 @@
-import clsx from "clsx";
+import type { ReactNode } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
-import { RText } from "~/lib/atoms/RTypography/RText";
 import type { IntentRecord } from "~/lib/intents/intentOperation";
 import { formatRawAmount } from "~/lib/intents/intentRoute";
+import { RAlert } from "~/templates/Alert/RAlert";
 
-import styles from "../RDepositFundsModal.module.css";
+import { DotsLoader } from "./DepositParts";
+import styles from "./IntentsQuoteView.module.css";
 
 type IntentsFundingPanelProps = {
   record: IntentRecord | undefined;
@@ -23,9 +24,7 @@ const explorerLink = (base: string | undefined, path: string) =>
 
 /**
  * The only wallet action in the 1Click flow. Once the wallet was asked, this
- * panel never offers to send the same operation again. The funding hash is
- * kept locally for support: this backend release has no endpoint to register
- * it, and it observes the deposit on its own.
+ * panel never offers to send the same operation again.
  */
 export function IntentsFundingPanel({
   record,
@@ -47,24 +46,37 @@ export function IntentsFundingPanel({
   const depositUrl = depositAddress
     ? explorerLink(explorerUrl, `address/${depositAddress}`)
     : undefined;
-  const message = (text: string, tone: "info" | "warning" = "info") => (
-    <div
-      className={clsx(styles.notice, tone === "warning" && styles.warning)}
-      role={tone === "warning" ? "alert" : "status"}
-    >
-      <RText color="neutral-700" size="body-sm">
-        {text}{" "}
-        {txUrl ? (
-          <a href={txUrl} rel="noopener noreferrer" target="_blank">
-            View transaction
-          </a>
-        ) : depositUrl && tone === "warning" ? (
-          <a href={depositUrl} rel="noopener noreferrer" target="_blank">
-            View deposit address
-          </a>
-        ) : null}
-      </RText>
-    </div>
+  const link = (isWarning: boolean): ReactNode =>
+    txUrl ? (
+      <a href={txUrl} rel="noopener noreferrer" target="_blank">
+        View transaction
+      </a>
+    ) : depositUrl && isWarning ? (
+      <a href={depositUrl} rel="noopener noreferrer" target="_blank">
+        View deposit address
+      </a>
+    ) : null;
+  const waiting = (label: ReactNode, caption: ReactNode) => (
+    <>
+      <RButton
+        aria-busy="true"
+        className={styles.action}
+        disabled
+        iconLeft={<DotsLoader />}
+        size="large"
+        tone="black"
+      >
+        {label}
+      </RButton>
+      <p className={styles.caption} role="status">
+        {caption}
+      </p>
+    </>
+  );
+  const warning = (header: string, text: string) => (
+    <RAlert header={header} role="alert">
+      {text} {link(true)}
+    </RAlert>
   );
 
   switch (record.fundingState) {
@@ -73,63 +85,82 @@ export function IntentsFundingPanel({
       return (
         <>
           {(error || record.fundingError) && (
-            <RText color="red-500" role="alert" size="body-s">
+            <RAlert header="Transfer not sent" role="alert" type="error">
               {error ?? record.fundingError}
-            </RText>
-          )}
-          {isWrongNetwork && (
-            <RText color="neutral-700" size="body-s">
-              Your wallet will be asked to switch to {record.source.chainName}.
-            </RText>
+            </RAlert>
           )}
           <RButton
-            className={styles.statusCloseButton}
+            aria-label={`Send ${amount}`}
+            className={styles.action}
             isLoading={isFunding}
             onClick={onFund}
-            size="medium"
+            size="large"
             tone="black"
           >
-            Send {amount}
+            Send
           </RButton>
           {onSimulate && (
             <RButton
-              className={styles.statusCloseButton}
+              className={styles.action}
               disabled={isFunding}
               onClick={onSimulate}
-              size="medium"
+              size="large"
               tone="black"
               variant="secondary"
             >
               Simulate Funding (mock API)
             </RButton>
           )}
+          <p className={styles.caption}>
+            {isWrongNetwork && (
+              <>
+                Your wallet will be asked to switch to {record.source.chainName}
+                .
+                <br />
+              </>
+            )}
+            Transfers are irreversible.
+            <br />
+            Tokens arrive in your Equiteez wallet automatically.
+          </p>
         </>
       );
     case "prompted":
       return isFunding
-        ? message(`Confirm the ${amount} transfer in your wallet.`)
-        : message(
-            "Check your wallet: this transfer was already requested. Do not send it again; if you sent it, tracking picks it up automatically.",
-            "warning"
+        ? waiting(
+            "Confirm in your wallet",
+            `Approve the ${amount} transfer in your wallet.`
+          )
+        : warning(
+            "Check your wallet",
+            "This transfer was already requested. Do not send it again; if you sent it, tracking picks it up automatically."
           );
     case "broadcast":
-      return message(
-        `Transfer of ${amount} sent. Waiting for ${record.source.chainName} confirmation.`
+      return waiting(
+        "Sending",
+        <>
+          Transfer of {amount} sent. Waiting for {record.source.chainName}{" "}
+          confirmation. {link(false)}
+        </>
       );
     case "confirmed":
-      return message(
-        `Transfer of ${amount} confirmed on ${record.source.chainName}.`
+      return waiting(
+        "Sending",
+        <>
+          Transfer of {amount} confirmed on {record.source.chainName}.{" "}
+          {link(false)}
+        </>
       );
     case "unknown":
-      return message(
+      return warning(
+        "Transfer outcome unknown",
         record.fundingError ??
-          "The transfer outcome is unknown. Check your wallet before doing anything else.",
-        "warning"
+          "The transfer outcome is unknown. Check your wallet before doing anything else."
       );
     case "reverted":
-      return message(
-        record.fundingError ?? "The transfer failed. Start a new deposit.",
-        "warning"
+      return warning(
+        "Transfer failed",
+        record.fundingError ?? "The transfer failed. Start a new deposit."
       );
     default:
       return null;

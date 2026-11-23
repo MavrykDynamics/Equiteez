@@ -1,0 +1,38 @@
+.screen {
+  composes: screen from "./DepositScreen.module.css";
+}
+
+.divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+  margin: 0;
+}
+
+.fee {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+  cursor: help;
+}
+
+.actions {
+  composes: actions from "./DepositScreen.module.css";
+  gap: var(--r-space-3);
+  margin-top: var(--r-space-1);
+}
+
+.action {
+  composes: action from "./DepositScreen.module.css";
+}
+
+.caption {
+  composes: caption from "./DepositScreen.module.css";
+}
