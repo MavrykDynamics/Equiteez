@@ -127,11 +127,10 @@ export type DynamicConnectApi = {
   getAuthenticator: () => Promise<DynamicAuthenticator | null>;
   /** After "Confirm it's you": the QR code data for a new authenticator */
   startAuthenticatorSetup: () => Promise<AuthenticatorSetup>;
-  /** Turns it on with its first code; resolves with the recovery codes */
-  verifyAuthenticatorSetup: (
-    deviceId: string,
-    code: string
-  ) => Promise<string[]>;
+  /** Turns it on with its first code */
+  verifyAuthenticatorSetup: (deviceId: string, code: string) => Promise<void>;
+  /** One-time codes to save, for when the authenticator app is unavailable */
+  getRecoveryCodes: () => Promise<string[]>;
   /** The user saved the recovery codes */
   acknowledgeRecoveryCodes: () => Promise<void>;
   /** Removes the authenticator; a current code from it is the check */

@@ -14,6 +14,7 @@ import {
   ensureDynamicWallet,
   finishGoogleSignIn,
   getDynamicAuthenticator,
+  getDynamicRecoveryCodes,
   passDynamicSecondFactor,
   removeDynamicAuthenticator,
   startDynamicAuthenticatorSetup,
@@ -1051,18 +1052,24 @@ describe("Authenticator app", () => {
     expect(fake.checkStepUp).toHaveBeenCalledWith("credential:link");
   });
 
-  it("turns it on with the first code and hands back the recovery codes", async () => {
+  it("turns it on with the first code", async () => {
     const { client, fake } = createFakeClient();
 
-    expect(
-      await verifyDynamicAuthenticatorSetup(client, "totp-1", " 123456 ")
-    ).toEqual(["aaaa-1111", "bbbb-2222"]);
-    expect(fake.verifyAuthenticator).toHaveBeenCalledWith("totp-1", "123456");
+    await verifyDynamicAuthenticatorSetup(client, "totp-1", " 123456 ");
 
-    fake.getRecoveryCodes.mockRejectedValueOnce(new Error("disabled"));
-    expect(
-      await verifyDynamicAuthenticatorSetup(client, "totp-1", "123456")
-    ).toEqual([]);
+    expect(fake.verifyAuthenticator).toHaveBeenCalledWith("totp-1", "123456");
+  });
+
+  it("hands back the recovery codes, and says when they can't be loaded", async () => {
+    const { client, fake } = createFakeClient();
+
+    expect(await getDynamicRecoveryCodes(client)).toEqual([
+      "aaaa-1111",
+      "bbbb-2222",
+    ]);
+
+    fake.getRecoveryCodes.mockRejectedValueOnce(new Error("network"));
+    await expect(getDynamicRecoveryCodes(client)).rejects.toThrow("network");
   });
 
   it("says when a code is wrong, setting up or removing", async () => {

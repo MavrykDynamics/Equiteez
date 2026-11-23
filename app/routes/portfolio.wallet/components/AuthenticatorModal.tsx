@@ -66,13 +66,15 @@ const toMessage = (error: unknown, fallback: string) =>
 type Step =
   | { name: "starting" }
   | { name: "scan"; setup: AuthenticatorSetup }
-  | { name: "recovery-codes"; codes: string[] }
+  /** codes: null while loading or after a failed load */
+  | { name: "recovery-codes"; codes: string[] | null }
   | { name: "manage" };
 
 function AuthenticatorContent({
   authenticator,
   startSetup,
   verifySetup,
+  getRecoveryCodes,
   acknowledgeRecoveryCodes,
   remove,
   onClose,
@@ -130,12 +132,34 @@ function AuthenticatorContent({
     if (step.name !== "scan" || code.length < CODE_LENGTH) return;
 
     void run(async () => {
-      const codes = await verifySetup(step.setup.deviceId, code);
-
+      await verifySetup(step.setup.deviceId, code);
       setCode("");
-      if (codes.length) setStep({ name: "recovery-codes", codes });
-      else onClose();
+      setStep({ name: "recovery-codes", codes: null });
+      await loadRecoveryCodes();
     }, "We couldn't turn on the authenticator app. Try again.");
+  };
+
+  /**
+   * The app is on by now: a failed load keeps this step with "Try again"
+   * rather than closing, so the codes are not lost unseen
+   */
+  const loadRecoveryCodes = async () => {
+    setError(null);
+
+    try {
+      const codes = await getRecoveryCodes();
+
+      if (codes.length) setStep({ name: "recovery-codes", codes });
+      // The project has recovery codes off: nothing to save
+      else onClose();
+    } catch (loadError) {
+      setError(
+        toMessage(
+          loadError,
+          "Your authenticator app is on, but we couldn't load your recovery codes. Try again."
+        )
+      );
+    }
   };
 
   const handleSavedCodes = () =>
@@ -285,7 +309,34 @@ function AuthenticatorContent({
           </form>
         ) : null}
 
-        {step.name === "recovery-codes" ? (
+        {step.name === "recovery-codes" && !step.codes ? (
+          <>
+            {error ? null : (
+              <RText
+                className={styles.empty}
+                color="neutral-700"
+                size="body-sm"
+              >
+                Loading your recovery codes…
+              </RText>
+            )}
+            {errorText}
+            {error ? (
+              <RButton
+                className={styles.action}
+                disabled={isWorking}
+                isLoading={isWorking}
+                onClick={() => void run(loadRecoveryCodes, "Try again.")}
+                size="medium"
+                tone="black"
+              >
+                Try Again
+              </RButton>
+            ) : null}
+          </>
+        ) : null}
+
+        {step.name === "recovery-codes" && step.codes ? (
           <>
             <ul className={styles.recoveryCodes}>
               {step.codes.map((recoveryCode) => (

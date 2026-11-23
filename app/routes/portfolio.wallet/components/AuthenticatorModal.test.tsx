@@ -42,8 +42,8 @@ const SETUP: AuthenticatorSetup = {
 let container: HTMLDivElement;
 let root: Root;
 const startSetup = vi.fn<() => Promise<AuthenticatorSetup>>();
-const verifySetup =
-  vi.fn<(deviceId: string, code: string) => Promise<string[]>>();
+const verifySetup = vi.fn<(deviceId: string, code: string) => Promise<void>>();
+const getRecoveryCodes = vi.fn<() => Promise<string[]>>();
 const acknowledgeRecoveryCodes = vi.fn<() => Promise<void>>();
 const remove = vi.fn<(code: string) => Promise<void>>();
 const onClose = vi.fn();
@@ -54,6 +54,7 @@ const render = (authenticator: DynamicAuthenticator | null = null) =>
       <AuthenticatorModal
         acknowledgeRecoveryCodes={acknowledgeRecoveryCodes}
         authenticator={authenticator}
+        getRecoveryCodes={getRecoveryCodes}
         isOpen
         onClose={onClose}
         remove={remove}
@@ -84,7 +85,8 @@ beforeEach(() => {
     globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
   ).IS_REACT_ACT_ENVIRONMENT = true;
   startSetup.mockReset().mockResolvedValue(SETUP);
-  verifySetup.mockReset().mockResolvedValue(["aaaa-1111", "bbbb-2222"]);
+  verifySetup.mockReset().mockResolvedValue(undefined);
+  getRecoveryCodes.mockReset().mockResolvedValue(["aaaa-1111", "bbbb-2222"]);
   acknowledgeRecoveryCodes.mockReset().mockResolvedValue(undefined);
   remove.mockReset().mockResolvedValue(undefined);
   onClose.mockReset();
@@ -115,6 +117,29 @@ describe("AuthenticatorModal", () => {
     await act(async () => button("I've Saved These Codes").click());
 
     expect(acknowledgeRecoveryCodes).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the step with Try again when the recovery codes can't be loaded", async () => {
+    getRecoveryCodes.mockRejectedValueOnce(new Error("network"));
+    await render();
+    await typeCode("123456");
+    await act(async () => button("Turn On").click());
+
+    expect(text()).toContain("couldn't load your recovery codes");
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => button("Try Again").click());
+
+    expect(text()).toContain("aaaa-1111");
+  });
+
+  it("closes when the project has no recovery codes", async () => {
+    getRecoveryCodes.mockResolvedValueOnce([]);
+    await render();
+    await typeCode("123456");
+    await act(async () => button("Turn On").click());
+
     expect(onClose).toHaveBeenCalledOnce();
   });
 

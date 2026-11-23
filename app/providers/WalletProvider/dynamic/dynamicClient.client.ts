@@ -664,29 +664,29 @@ export async function startDynamicAuthenticatorSetup(
   return { deviceId: id, uri, secret };
 }
 
-/**
- * Turns the new authenticator on with its first code and returns the
- * recovery codes to save (none when the project has them off).
- */
+/** Turns the new authenticator on with its first code. */
 export async function verifyDynamicAuthenticatorSetup(
   client: DynamicClient,
   deviceId: string,
   code: string
-): Promise<string[]> {
+) {
   try {
     await client.verifyAuthenticator(deviceId, code.trim());
   } catch (error) {
-    if (client.isInvalidCodeError(error))
+    if (client.isInvalidCodeError(error)) {
       throw new DynamicWrongCodeError(error);
+    }
     throw error;
   }
+}
 
-  try {
-    return await client.getRecoveryCodes();
-  } catch {
-    // Recovery codes are optional per project: carry on without them
-    return [];
-  }
+/**
+ * The recovery codes to save after turning the authenticator on. Rejects on
+ * failure: losing them silently could lock the user out later.
+ */
+export async function getDynamicRecoveryCodes(client: DynamicClient) {
+  assertDynamicSession(client);
+  return client.getRecoveryCodes();
 }
 
 export async function acknowledgeDynamicRecoveryCodes(client: DynamicClient) {

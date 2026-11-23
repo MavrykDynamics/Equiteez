@@ -141,6 +141,7 @@ function WalletSecurity({
       <AuthenticatorModal
         acknowledgeRecoveryCodes={authenticator.acknowledgeRecoveryCodes}
         authenticator={authenticator.authenticator}
+        getRecoveryCodes={authenticator.getRecoveryCodes}
         isOpen={isAuthenticatorOpen}
         onClose={() => setIsAuthenticatorOpen(false)}
         remove={authenticator.remove}

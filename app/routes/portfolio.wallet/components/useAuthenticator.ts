@@ -43,25 +43,26 @@ export function useAuthenticator() {
     return dynamic.startAuthenticatorSetup();
   }, [dynamic]);
 
-  /** Turns the app on; resolves with the recovery codes to save */
+  /** Turns the app on */
   const verifySetup = useCallback(
     async (deviceId: string, code: string) => {
-      if (!dynamic) return [];
+      if (!dynamic) return;
 
-      const recoveryCodes = await dynamic.verifyAuthenticatorSetup(
-        deviceId,
-        code
-      );
-
+      await dynamic.verifyAuthenticatorSetup(deviceId, code);
       await reload();
       success(
         "Authenticator app is on",
         "We'll ask for a code from it to confirm it's you."
       );
-      return recoveryCodes;
     },
     [dynamic, reload, success]
   );
+
+  /** The recovery codes to save; rejects when they can't be loaded */
+  const getRecoveryCodes = useCallback(async () => {
+    if (!dynamic) throw new Error("Email wallet is not available.");
+    return dynamic.getRecoveryCodes();
+  }, [dynamic]);
 
   const acknowledgeRecoveryCodes = useCallback(async () => {
     await dynamic?.acknowledgeRecoveryCodes();
@@ -83,6 +84,7 @@ export function useAuthenticator() {
     hasError,
     startSetup,
     verifySetup,
+    getRecoveryCodes,
     acknowledgeRecoveryCodes,
     remove,
   };

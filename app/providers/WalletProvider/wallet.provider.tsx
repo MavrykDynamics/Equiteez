@@ -45,6 +45,7 @@ import {
   finishGoogleSignIn,
   getDynamicAuthenticator,
   getDynamicPasskeys,
+  getDynamicRecoveryCodes,
   getGoogleDriveAccessSource,
   hasDynamicWalletPassword,
   isDynamicWalletBackedUp,
@@ -503,6 +504,8 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         startDynamicAuthenticatorSetup(currentDynamicClient()),
       verifyAuthenticatorSetup: async (deviceId, code) =>
         verifyDynamicAuthenticatorSetup(currentDynamicClient(), deviceId, code),
+      getRecoveryCodes: async () =>
+        getDynamicRecoveryCodes(currentDynamicClient()),
       acknowledgeRecoveryCodes: async () =>
         acknowledgeDynamicRecoveryCodes(currentDynamicClient()),
       removeAuthenticator: async (deviceId, code) =>
