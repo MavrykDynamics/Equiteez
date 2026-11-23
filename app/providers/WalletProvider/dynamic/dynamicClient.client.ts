@@ -44,6 +44,7 @@ import {
   getSavedDynamicWalletId,
   saveDynamicWalletId,
 } from "./dynamicWalletStorage";
+import { GoogleDriveAccessError } from "./googleDriveToken";
 import {
   forgetGoogleSignIn,
   getSocialRedirectUrl,
@@ -548,6 +549,86 @@ export async function changeDynamicWalletPassword(
   } catch (error) {
     if (isWrongPasswordError(error)) throw new DynamicWrongPasswordError(error);
     throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Google Drive backup
+// ---------------------------------------------------------------------------
+
+/**
+ * True when the wallet has a key share backed up to Google Drive. The JS SDK
+ * has no call for this: the wallet's credential lists its key shares and
+ * where each is backed up.
+ */
+export function isDynamicWalletBackedUp(
+  client: DynamicClient,
+  walletId: string
+) {
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+  const credential = client.user?.verifiedCredentials?.find(
+    (candidate) => candidate.id === wallet?.verifiedCredentialId
+  );
+
+  return Boolean(
+    credential?.walletProperties?.keyShares?.some(
+      (keyShare) => keyShare.backupLocation === "googleDrive"
+    )
+  );
+}
+
+/**
+ * Where the Drive access comes from: "stored" when the user's Google sign-in
+ * already granted Drive access, so Dynamic uses its own token; otherwise
+ * "popup", Google's consent popup (googleDriveToken.ts). A backup reshares
+ * the wallet, so this is checked before starting one.
+ */
+export async function getGoogleDriveAccessSource(
+  client: DynamicClient
+): Promise<"stored" | "popup"> {
+  assertDynamicSession(client);
+
+  if (!client.hasGoogleAccount()) return "popup";
+
+  try {
+    return (await client.isGoogleDriveReady()) ? "stored" : "popup";
+  } catch {
+    // Unknown: asking Google is the safe way
+    return "popup";
+  }
+}
+
+/**
+ * Backs the wallet's key share up to Google Drive, then re-reads the user so
+ * the backup shows. `password` is needed when the wallet has one.
+ */
+export async function backupDynamicWallet(
+  client: DynamicClient,
+  walletId: string,
+  options: { googleDriveAccessToken?: string; password?: string }
+) {
+  const wallet = getConnectedWallet(client, walletId);
+
+  try {
+    await client.backupToGoogleDrive(wallet, options);
+  } catch (error) {
+    if (client.isGoogleDriveAccessError(error)) {
+      throw new GoogleDriveAccessError(
+        "Google didn't give access to your Drive. Tick both Google Drive boxes, then try again."
+      );
+    }
+    if (options.password && isWrongPasswordError(error)) {
+      throw new DynamicWrongPasswordError(error);
+    }
+    throw error;
+  }
+
+  try {
+    await client.refreshUser();
+  } catch {
+    // The backup is done; the status catches up on the next sign-in
   }
 }
 

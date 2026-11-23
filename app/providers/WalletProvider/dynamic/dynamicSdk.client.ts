@@ -19,10 +19,14 @@ import {
   createDynamicClient as createSdkClient,
   deletePasskey,
   detectSocialRedirectUrl,
+  getGoogleDriveBackupReadiness,
   getPasskeys,
+  getUserSocialAccounts,
   getWalletAccounts,
   initializeClient,
+  isInsufficientGoogleDriveScopesError,
   logout,
+  refreshUser,
   onEvent,
   registerPasskey,
   sendEmailOTP,
@@ -34,6 +38,7 @@ import {
   type WalletAccount,
 } from "@dynamic-labs-sdk/client";
 import {
+  backupWaasKeySharesToGoogleDrive,
   createWaasWalletAccounts,
   exportWaasPrivateKey,
   getWalletRecoveryState,
@@ -178,6 +183,43 @@ export function createDynamicClient(environmentId: string) {
 
       return answered.some((state) => state.value.isPasswordEncrypted);
     },
+    /** The user signed in with (or linked) a Google account */
+    hasGoogleAccount: () =>
+      getUserSocialAccounts(sdk).some(
+        (account) => `${account.provider}` === "google"
+      ),
+    /**
+     * Whether Dynamic's stored Google token already has the Drive scopes, so
+     * a backup can run without asking Google again
+     */
+    isGoogleDriveReady: async () =>
+      (await getGoogleDriveBackupReadiness(sdk)).status === "ready",
+    /**
+     * Reshares the wallet and uploads the extra key share to the user's
+     * Drive. Without `googleDriveAccessToken` the stored Google token is used.
+     */
+    backupToGoogleDrive: (
+      walletAccount: WalletAccount,
+      {
+        googleDriveAccessToken,
+        password,
+      }: { googleDriveAccessToken?: string; password?: string }
+    ) =>
+      backupWaasKeySharesToGoogleDrive(
+        {
+          walletAccount,
+          ...(googleDriveAccessToken ? { googleDriveAccessToken } : {}),
+          ...(password ? { password } : {}),
+        },
+        sdk
+      ),
+    isGoogleDriveAccessError: (error: unknown) =>
+      isInsufficientGoogleDriveScopesError(error),
+    /** Re-reads the user, e.g. its wallets' backups after a backup */
+    refreshUser: async () => {
+      await refreshUser(sdk);
+    },
+
     /** Protects all of the user's wallets with a new password */
     setWalletPassword: (walletAccount: WalletAccount, password: string) =>
       setWaasWalletAccountPassword({ walletAccount, password }, sdk),

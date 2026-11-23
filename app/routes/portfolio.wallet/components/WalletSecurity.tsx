@@ -1,9 +1,10 @@
 /**
  * Security, Backup and Export private key for email wallets. Live: Wallet
- * password (set or change), Passkeys (list, add, remove through Dynamic) and
- * Export private key (a confirmation, "Confirm it's you", then the key in
- * Dynamic's frame). Authenticator app and Backup are still the Figma copy as
- * is (mock): their statuses are the design's and their buttons do nothing.
+ * password (set or change), Passkeys (list, add, remove through Dynamic),
+ * Backup to Google Drive and Export private key (a confirmation, "Confirm
+ * it's you", then the key in Dynamic's frame). Authenticator app is still the
+ * Figma copy as is (mock): its status is the design's and its button does
+ * nothing.
  * Trusted devices are not offered: device registration is off for Equiteez.
  */
 import { useState } from "react";
@@ -15,8 +16,10 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 import { ExportKeyModal } from "./ExportKeyModal";
+import { GoogleDriveBackupModal } from "./GoogleDriveBackupModal";
 import { PasskeysModal } from "./PasskeysModal";
 import { describePasskeys, usePasskeys } from "./usePasskeys";
+import { useGoogleDriveBackup } from "./useGoogleDriveBackup";
 import { describeWalletPassword, useWalletPassword } from "./useWalletPassword";
 import { WalletPasswordModal } from "./WalletPasswordModal";
 import styles from "../styles.module.css";
@@ -144,7 +147,9 @@ function WalletSecurity({
 
 function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
   const { dynamic } = useWalletContext();
+  const backup = useGoogleDriveBackup();
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
 
   return (
     <div className={styles.columns}>
@@ -152,10 +157,10 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
         <SectionTitle>Backup</SectionTitle>
         <span
           className={`${styles.status} ${styles.statusLarge}`}
-          data-tone="warning"
+          data-tone={backup.isBackedUp ? "success" : "warning"}
         >
           <RText size="body-sm" weight="medium">
-            Not backed up
+            {backup.isBackedUp ? "Backed up to Google Drive" : "Not backed up"}
           </RText>
         </span>
         <RText color="neutral-700" size="body-sm">
@@ -165,12 +170,19 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
         <div className={styles.infoMessage}>
           <RIcon aria-hidden="true" name="info-circle" size="small" />
           <RText size="body-sm">
-            Google will ask you to allow one file in your Drive, then bring you
-            back here to finish.
+            Google will ask you to allow one file in your Drive. Tick both
+            Google Drive boxes.
           </RText>
         </div>
-        <RButton className={styles.fullButton} size="medium" tone="black">
-          Back up to Google Drive
+        <RButton
+          className={styles.fullButton}
+          disabled={!dynamic}
+          onClick={() => setIsBackupOpen(true)}
+          size="medium"
+          tone="black"
+          variant={backup.isBackedUp ? "secondary" : "primary"}
+        >
+          {backup.isBackedUp ? "Back up again" : "Back up to Google Drive"}
         </RButton>
       </section>
 
@@ -192,6 +204,16 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
           Export private key
         </RButton>
       </section>
+
+      <GoogleDriveBackupModal
+        accessSource={backup.accessSource}
+        backUp={backup.backUp}
+        hasPassword={hasPassword}
+        isAvailable={backup.isAvailable}
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+        prepare={backup.prepare}
+      />
 
       {dynamic ? (
         <ExportKeyModal

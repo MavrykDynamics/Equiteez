@@ -39,10 +39,13 @@ import { DynamicNotAuthenticatedError } from "./dynamic/dynamic.errors";
 import {
   loadDynamicClient,
   addDynamicPasskey,
+  backupDynamicWallet,
   changeDynamicWalletPassword,
   finishGoogleSignIn,
   getDynamicPasskeys,
+  getGoogleDriveAccessSource,
   hasDynamicWalletPassword,
+  isDynamicWalletBackedUp,
   hasLiveDynamicSession,
   logoutDynamic,
   removeDynamicPasskey,
@@ -458,6 +461,24 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
           session.wallet.walletId,
           currentPassword,
           newPassword
+        );
+      },
+      isWalletBackedUp: () => {
+        const session = dynamicSessionRef.current;
+
+        return session
+          ? isDynamicWalletBackedUp(session.client, session.wallet.walletId)
+          : false;
+      },
+      getGoogleDriveAccessSource: async () =>
+        getGoogleDriveAccessSource(currentDynamicClient()),
+      backupToGoogleDrive: async (options) => {
+        const session = currentDynamicSession();
+
+        await backupDynamicWallet(
+          session.client,
+          session.wallet.walletId,
+          options
         );
       },
       // async: a missing session rejects instead of throwing synchronously

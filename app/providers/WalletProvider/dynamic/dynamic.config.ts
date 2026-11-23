@@ -8,6 +8,9 @@
  *   withdrawals, bridge deposits) before they are marked tested:
  *   "true" for all of them, or a comma-separated list such as
  *   "orderbook.buy,orderbook.sell" to enable them one by one
+ * GOOGLE_CLIENT_ID: public Google OAuth client id that asks Google for Drive
+ *   access when an email-wallet user backs up to Google Drive (the app's
+ *   origins under "Authorized JavaScript origins", Google Drive API enabled)
  * WALLET_CHOICE_ENABLED: "true" to let the user choose between Mavryk Wallet
  *   and the email wallet when signing in; otherwise sign-in opens the email
  *   wallet straight away (Mavryk Wallet stays the only option while email
@@ -41,6 +44,11 @@ export function isDynamicDirectEnabled(action: string): boolean {
     .split(",")
     .map((entry) => entry.trim())
     .includes(action);
+}
+
+/** Google OAuth client id for the Drive backup token, or null if unset. */
+export function getGoogleClientId(): string | null {
+  return process.env.GOOGLE_CLIENT_ID?.trim() || null;
 }
 
 /** Sign-in offers Mavryk Wallet next to the email wallet. */

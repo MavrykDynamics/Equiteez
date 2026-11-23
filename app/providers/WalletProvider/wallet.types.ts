@@ -101,6 +101,18 @@ export type DynamicConnectApi = {
     currentPassword: string,
     newPassword: string
   ) => Promise<void>;
+  /** The wallet has a key share backed up to Google Drive */
+  isWalletBackedUp: () => boolean;
+  /**
+   * "stored": the Google sign-in already gave Drive access; "popup": Google's
+   * consent popup has to give a token first
+   */
+  getGoogleDriveAccessSource: () => Promise<"stored" | "popup">;
+  /** Backs the wallet up to Google Drive (a reshare of the wallet) */
+  backupToGoogleDrive: (options: {
+    googleDriveAccessToken?: string;
+    password?: string;
+  }) => Promise<void>;
   /** Passkeys on the user's Dynamic account */
   getPasskeys: () => Promise<DynamicPasskey[]>;
   /**

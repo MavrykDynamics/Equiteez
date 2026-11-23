@@ -8,9 +8,12 @@ import { decodeHex, operationDigest } from "~/lib/mavryk/keys";
 import {
   addDynamicPasskey,
   assertDynamicWalletUnlocked,
+  backupDynamicWallet,
   changeDynamicWalletPassword,
   ensureDynamicWallet,
   finishGoogleSignIn,
+  getGoogleDriveAccessSource,
+  isDynamicWalletBackedUp,
   getEmbeddedSolWallets,
   hasLiveDynamicSession,
   logoutDynamic,
@@ -44,6 +47,7 @@ import {
   MultipleDynamicWalletsError,
 } from "./dynamic.errors";
 import { hasPendingGoogleSignIn } from "./dynamicSocialReturn";
+import { GoogleDriveAccessError } from "./googleDriveToken";
 import { getPendingIdentityCheck } from "./identityCheck";
 
 // Public test keys: never hold funds
@@ -70,7 +74,12 @@ type Listener = () => void;
 type FakeUser = {
   id: string;
   email?: string;
-  verifiedCredentials?: { id: string; format: string; email?: string }[];
+  verifiedCredentials?: {
+    id: string;
+    format: string;
+    email?: string;
+    walletProperties?: { keyShares?: { backupLocation: string }[] };
+  }[];
 };
 type StepUpCheck = {
   isRequired: boolean;
@@ -157,6 +166,18 @@ function createFakeClient({
       (wallet: DynamicWallet, password: string) => Promise<void>
     >(async () => undefined),
     hasWalletPassword: vi.fn(async () => false),
+    hasGoogleAccount: vi.fn(() => false),
+    isGoogleDriveReady: vi.fn(async () => true),
+    backupToGoogleDrive: vi.fn<
+      (
+        wallet: DynamicWallet,
+        options: { googleDriveAccessToken?: string; password?: string }
+      ) => Promise<void>
+    >(async () => undefined),
+    isGoogleDriveAccessError: (error: unknown) =>
+      error instanceof Error &&
+      error.message.includes("Google Drive access denied"),
+    refreshUser: vi.fn(async () => undefined),
     setWalletPassword: vi.fn<
       (wallet: DynamicWallet, password: string) => Promise<void>
     >(async () => undefined),
@@ -846,5 +867,96 @@ describe("Wallet password settings", () => {
       container,
       "long-enough"
     );
+  });
+});
+
+describe("Google Drive backup", () => {
+  const userWithShares = (backupLocations: string[]): FakeUser => ({
+    id: "user-1",
+    email: "a@b.co",
+    verifiedCredentials: [
+      {
+        id: "vc-w1",
+        format: "blockchain",
+        walletProperties: {
+          keyShares: backupLocations.map((backupLocation) => ({
+            backupLocation,
+          })),
+        },
+      },
+    ],
+  });
+
+  it("reads the backup from the wallet's key shares", () => {
+    const wallets = [embeddedWallet("w1")];
+
+    expect(
+      isDynamicWalletBackedUp(
+        createFakeClient({
+          wallets,
+          user: userWithShares(["dynamic", "googleDrive"]),
+        }).client,
+        "w1"
+      )
+    ).toBe(true);
+    expect(
+      isDynamicWalletBackedUp(
+        createFakeClient({ wallets, user: userWithShares(["dynamic"]) }).client,
+        "w1"
+      )
+    ).toBe(false);
+  });
+
+  it("uses the Google sign-in's access when it covers Drive, else Google's popup", async () => {
+    const { client, fake } = createFakeClient();
+
+    expect(await getGoogleDriveAccessSource(client)).toBe("popup");
+
+    fake.hasGoogleAccount.mockReturnValue(true);
+    expect(await getGoogleDriveAccessSource(client)).toBe("stored");
+
+    fake.isGoogleDriveReady.mockResolvedValueOnce(false);
+    expect(await getGoogleDriveAccessSource(client)).toBe("popup");
+
+    fake.isGoogleDriveReady.mockRejectedValueOnce(new Error("network"));
+    expect(await getGoogleDriveAccessSource(client)).toBe("popup");
+  });
+
+  it("backs up with the token and password, then re-reads the user", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+
+    await backupDynamicWallet(client, "w1", {
+      googleDriveAccessToken: "drive-token",
+      password: "long-enough",
+    });
+
+    expect(fake.backupToGoogleDrive).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "w1" }),
+      { googleDriveAccessToken: "drive-token", password: "long-enough" }
+    );
+    expect(fake.refreshUser).toHaveBeenCalledOnce();
+  });
+
+  it("explains missing Drive access and a wrong password", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    fake.backupToGoogleDrive.mockRejectedValueOnce(
+      new Error("Error: Google Drive access denied (401)")
+    );
+
+    await expect(backupDynamicWallet(client, "w1", {})).rejects.toBeInstanceOf(
+      GoogleDriveAccessError
+    );
+
+    fake.backupToGoogleDrive.mockRejectedValueOnce(
+      new Error("Failed to decrypt key share")
+    );
+    await expect(
+      backupDynamicWallet(client, "w1", { password: "wrong" })
+    ).rejects.toBeInstanceOf(DynamicWrongPasswordError);
+    expect(fake.refreshUser).not.toHaveBeenCalled();
   });
 });

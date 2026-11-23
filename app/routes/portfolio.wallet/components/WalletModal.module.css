@@ -256,3 +256,18 @@
 .fieldInput {
   width: 100%;
 }
+
+/* Grey info line, as on the Wallet page's Backup section */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  background: var(--r-color-neutral-50);
+  border-radius: var(--r-radius-12);
+}
+
+.notice > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
