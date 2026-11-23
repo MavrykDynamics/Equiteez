@@ -1,5 +1,14 @@
 # Durable deposit tracking
 
+> **UI status:** Deposit Funds no longer offers the direct "Bridge From
+> Ethereum" flow; deposits use NEAR Intents
+> ([`intents-deposits.md`](intents-deposits.md)). `BridgeView`,
+> `BridgeStatusView` and `ConfirmedView` were removed. The execution and
+> tracking logic described here (`useUsdtBridge`, the bridge contract,
+> `bridgeTransactions`, widget cards) is kept so existing deposits keep
+> tracking; removing it is a planned follow-up. Popup behaviour below that
+> refers to the removed views is historical.
+
 ## Contract and scope
 
 The API contract is documented in [`notific.md`](../notific.md); the received signer event sequence is captured in [`events.md`](../events.md). This implementation covers Ethereum → Mavryk deposits, including backend-discovered returning MAV-origin tokens. It includes the production deposit widget; withdrawals are not implemented.

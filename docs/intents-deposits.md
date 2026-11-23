@@ -1,7 +1,9 @@
 # 1Click (NEAR Intents) deposits
 
-"Swap From Any Chain" in Deposit Funds lets an Equiteez user pay from a
-configured source chain/token and receive wUSDT on Mavryk Basenet. The user
+"Send From Any Network" is the deposit flow of Deposit Funds (next to
+"Receive On Mavryk"; the direct "Bridge From Ethereum" UI was removed). It
+lets an Equiteez user pay from a configured source chain/token and receive
+wUSDT on Mavryk Basenet. The user
 signs **one** transaction: funding the 1Click deposit address. The shared
 Mavryk Bridge ETH backend then sponsors the forward into the existing
 WrapBridge, the bridge signers mint on Mavryk, and the backend verifies the
@@ -18,8 +20,7 @@ there is no `/openapi.json` any more). Tickets:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `INTENTS_DEPOSIT_ENABLED` | off | `true` shows the tab and starts tracking. |
-| `INTENTS_API` | — | Backend origin (`https://basenet.bridge-api.mavryk.network`) or `/intents-api` with the dev proxy. |
+| `INTENTS_API` | — | Required. Backend origin (`https://basenet.bridge-api.mavryk.network`) or `/intents-api` with the dev proxy. |
 | `INTENTS_API_PROXY_TARGET` | — | Dev only: Vite proxies `/intents-api/*` here (the Gateway CORS allowlist has no localhost). |
 | `INTENTS_ENV` | origin of the API | Scope of persisted operations; override only if two URLs are the same backend. |
 | `INTENTS_API_MODE` | `http` | `mock` uses the in-browser simulator. |
@@ -88,8 +89,25 @@ that goes through registration like a real one).
 | Wallet funding (re-read + wagmi actions) | `app/contracts/intentsFunding.contract.ts`, `useIntentsFunding` |
 | Persisted store, tracker (GET polling + hash registration), widget mapping, receipts | `app/providers/TransactionsProvider/intent*.ts` |
 | Modal orchestration | `app/hooks/useIntentsDeposit.ts`, `useIntentsRoutes.ts` |
-| Views | `DepositFunds/components/Intents{View,QuoteView,FundingPanel,StatusView}.tsx` |
-| Test page (`/universal-send`, header **Universal Send**) | `app/routes/universal-send/`: same hook and quote/funding/status views on a page; temporary layout until the design is ready |
+| Modal shell, step and picker state | `DepositFunds/RDepositFundsModal.tsx` |
+| Views | `DepositFunds/components/Intents{View,WalletsStep,DetailsStep,PickerView,QuoteView,FundingPanel,StatusView}.tsx` |
+| Network/token grouping for the pickers | `DepositFunds/components/intentPickers.ts` |
+| Shared screen parts (header, transfer summary, rows, dots loader) | `DepositFunds/components/DepositParts.tsx`, `depositSteps.ts` |
+| Network/token logos (lettered fallback otherwise) | `app/lib/intents/intentAssetIcon.ts` |
+| Shared redesign components | `RAmountInput`, `RSelectField`, `RSelectList`, `RTokenIcon` |
+
+## Screens
+
+The UI follows the Figma "NEAR Intents · Send flow — Variant B". It changes
+presentation only; every phase and funding state below keeps its logic.
+
+| Screen | Shows |
+| --- | --- |
+| Wallets (step 1) | External wallet (connect via `REthereumWalletDropdown`, or Disconnect) and the Equiteez account; Continue needs both. Always shown first. |
+| Deposit details (step 2) | From → To, "Token to receive" (display-only while there is one destination), Network, amount (`RAmountInput`), estimate card (You receive ≈, Minimum received, network fee tooltip, slippage chips from `getIntentSlippageChoices`; no custom value, no estimated time). |
+| Network / token pickers | Replace the modal content. Networks are the catalog grouped by `sourceChainId`; tokens are that chain's routes with per-route wallet balances. Unavailable routes are listed with their reason. No USD values or network totals (no price source). |
+| Review | One layout for `review`, `creating`, preparing the quote and the funding instructions (deposit address, "Send within" countdown, operation ID). Funding states map to Send / "Confirm in your wallet" / Sending; paused, mismatch, unknown and reverted are alerts. |
+| Status | The four widget steps as a vertical stepper, alerts for warning/error states, identifiers under "Transaction details", View on explorer, New deposit (while running) or Done. |
 
 ## Access
 
