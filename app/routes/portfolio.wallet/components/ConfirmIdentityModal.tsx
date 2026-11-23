@@ -5,7 +5,7 @@
  * the recommended one first, the others one click away. No Figma for this
  * window yet: it follows the Wallet page modals and the sign-in code step.
  */
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -40,6 +40,10 @@ export function ConfirmIdentityModal() {
     getPendingIdentityCheck,
     getServerSnapshot
   );
+
+  // Leaving the page mid-check cancels it: a check left open would block
+  // every later one, and finishing it on return would resume a stale action
+  useEffect(() => () => getPendingIdentityCheck()?.cancel(), []);
 
   return (
     <CustomPopup

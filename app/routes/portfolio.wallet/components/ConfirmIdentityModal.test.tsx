@@ -133,4 +133,13 @@ describe("ConfirmIdentityModal", () => {
     expect(email.send).toHaveBeenCalledOnce();
     expect(text()).toContain("We sent a 6-digit code to a@b.co");
   });
+  it("cancels an open check when the page goes away", async () => {
+    const { pending } = await open([emailMethod()]);
+
+    act(() => root.unmount());
+    root = createRoot(container);
+
+    await expect(pending).rejects.toBeInstanceOf(IdentityCheckCancelledError);
+    expect(getPendingIdentityCheck()).toBeNull();
+  });
 });
