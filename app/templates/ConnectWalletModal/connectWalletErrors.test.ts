@@ -25,6 +25,27 @@ describe("describeConnectError", () => {
     ).toEqual({ kind: "select-wallet", wallets });
   });
 
+  it("does not claim a wrong password for an unrecognized unlock failure", () => {
+    expect(
+      describeConnectError(new Error("Invalid session"), "unlock")
+    ).toEqual({
+      kind: "message",
+      message: CONNECT_ERROR_MESSAGES.unlockFailed,
+    });
+    expect(
+      describeConnectError(
+        named(
+          "DynamicWrongPasswordError",
+          "That password didn't work. Check it and try again."
+        ),
+        "unlock"
+      )
+    ).toEqual({
+      kind: "message",
+      message: "That password didn't work. Check it and try again.",
+    });
+  });
+
   it.each<[unknown, ConnectStage, string]>([
     [named("DynamicInitError"), "connect", CONNECT_ERROR_MESSAGES.unavailable],
     [

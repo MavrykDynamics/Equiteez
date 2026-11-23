@@ -463,10 +463,18 @@ export async function assertDynamicWalletUnlocked(
   });
 }
 
-/** Dynamic's answer for a password that does not decrypt the key share */
+/**
+ * Dynamic's answer for a password that does not decrypt the key share. The
+ * decryption runs in Dynamic's frame and the SDK has no error class for it,
+ * so only messages that clearly name a wrong password or a failed decryption
+ * count; anything else ("Invalid session", "Invalid access token") is passed
+ * on as is.
+ */
+const WRONG_PASSWORD_PATTERN =
+  /\b(?:wrong|incorrect|invalid|bad)\s+(?:password|passphrase|passcode)\b|\b(?:password|passphrase|passcode)\s+(?:is\s+)?(?:wrong|incorrect|invalid)\b|\b(?:failed to|unable to|could not|cannot) decrypt\b|\bdecryption failed\b|\bbad decrypt\b/i;
+
 const isWrongPasswordError = (error: unknown) =>
-  error instanceof Error &&
-  /password|decrypt|passphrase|incorrect|invalid/i.test(error.message);
+  error instanceof Error && WRONG_PASSWORD_PATTERN.test(error.message);
 
 /** Unlocks the password-protected wallet `walletId` in this browser. */
 export async function unlockDynamicWallet(

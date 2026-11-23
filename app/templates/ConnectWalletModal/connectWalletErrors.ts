@@ -37,6 +37,8 @@ export const CONNECT_ERROR_MESSAGES = {
   rateLimited: "Too many attempts. Wait a minute and try again.",
   invalidCode: "That code didn't work or has expired. Check it or resend.",
   invalidEmail: "Enter a valid email address.",
+  unlockFailed:
+    "We couldn't unlock your account. Check your password and try again.",
   network: "The Mavryk network is unavailable right now. Please try again.",
   generic: "Something went wrong. Please try again.",
 };
@@ -102,6 +104,10 @@ export function describeConnectError(
   }
   if (stage === "code") {
     return message(CONNECT_ERROR_MESSAGES.invalidCode);
+  }
+  // Not recognized as a wrong password: say what may be wrong, not that it is
+  if (stage === "unlock") {
+    return message(CONNECT_ERROR_MESSAGES.unlockFailed);
   }
   if (stage === "email" && /email/i.test(text)) {
     return message(CONNECT_ERROR_MESSAGES.invalidEmail);

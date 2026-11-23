@@ -860,6 +860,19 @@ describe("Password-protected wallet", () => {
     await expect(unlockDynamicWallet(client, "w1", "x")).rejects.toThrow(
       "network down"
     );
+
+    // "Invalid" alone is not about the password
+    for (const message of ["Invalid session", "Invalid access token"]) {
+      fake.unlockWallet.mockRejectedValueOnce(new Error(message));
+      await expect(
+        unlockDynamicWallet(client, "w1", "x")
+      ).rejects.not.toBeInstanceOf(DynamicWrongPasswordError);
+    }
+
+    fake.unlockWallet.mockRejectedValueOnce(new Error("Incorrect password"));
+    await expect(unlockDynamicWallet(client, "w1", "x")).rejects.toBeInstanceOf(
+      DynamicWrongPasswordError
+    );
   });
 });
 
