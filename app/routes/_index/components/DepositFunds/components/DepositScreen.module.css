@@ -1,0 +1,36 @@
+@import "../../../../../styles/breakpoints.css";
+
+/* Shared layout of every deposit screen: 44px side gutters as in Figma. */
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+  padding: var(--r-space-6) var(--r-space-11) var(--r-space-8);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+}
+
+/* Outrank RButton defaults without relying on CSS chunk order. */
+.actions .action {
+  width: 100%;
+}
+
+.caption {
+  margin: 0;
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  text-align: center;
+}
+
+@media (--media-phone) {
+  .screen {
+    padding-right: var(--r-space-4);
+    padding-left: var(--r-space-4);
+  }
+}

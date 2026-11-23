@@ -1,0 +1,170 @@
+.screen {
+  composes: screen from "./DepositScreen.module.css";
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+  padding: var(--r-space-5);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-12);
+}
+
+.divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-3);
+}
+
+/* Connector to the next step: black once this step is complete. */
+.step:not(:last-child)::after {
+  position: absolute;
+  top: 22px;
+  left: 9px;
+  width: 2px;
+  height: calc(100% - 20px + var(--r-space-6) - 4px);
+  content: "";
+  background: var(--r-color-neutral-200);
+  border-radius: 1px;
+}
+
+.step[data-status="success"]:not(:last-child)::after {
+  background: var(--r-color-neutral-black);
+}
+
+.indicator {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  margin-top: 2px;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border: 1.5px solid var(--r-color-neutral-300);
+  border-radius: 50%;
+}
+
+.indicator[data-status="success"] {
+  color: var(--r-color-neutral-white);
+  background: var(--r-color-green-500);
+  border-color: var(--r-color-green-500);
+}
+
+.indicator[data-status="loading"] {
+  border-color: transparent;
+}
+
+.indicator[data-status="error"] {
+  color: var(--r-color-neutral-white);
+  background: var(--r-color-red-500);
+  border-color: var(--r-color-red-500);
+}
+
+.indicator svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
+
+.stepCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepTitle {
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-m);
+  letter-spacing: var(--r-letter-spacing-body);
+  line-height: var(--r-line-height-body-m);
+}
+
+.step[data-status="pending"] .stepTitle {
+  color: var(--r-color-neutral-600);
+}
+
+.stepDescription,
+.notice {
+  margin: 0;
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+}
+
+.notice {
+  color: var(--r-color-green-500);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.details {
+  padding: 0 var(--r-space-1);
+}
+
+.detailsSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  list-style: none;
+  cursor: pointer;
+}
+
+.detailsSummary::-webkit-details-marker {
+  display: none;
+}
+
+.details[open] .detailsSummary svg {
+  transform: rotate(180deg);
+}
+
+.detailsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+  margin: var(--r-space-3) 0 0;
+}
+
+.link {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.actions {
+  composes: actions from "./DepositScreen.module.css";
+}
+
+.action {
+  composes: action from "./DepositScreen.module.css";
+}
+
+.caption {
+  composes: caption from "./DepositScreen.module.css";
+}

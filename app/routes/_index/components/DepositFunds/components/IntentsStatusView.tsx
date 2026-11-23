@@ -1,18 +1,22 @@
-import clsx from "clsx";
-
 import { INTENTS_SOURCE_CHAINS } from "~/consts/intents";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RText } from "~/lib/atoms/RTypography/RText";
+import { RTokenIcon } from "~/lib/atoms/RTokenIcon";
 import { HashChip } from "~/lib/molecules/HashChip";
+import { getIntentTokenIcon } from "~/lib/intents/intentAssetIcon";
 import type { IntentRecord } from "~/lib/intents/intentOperation";
 import { formatRawAmount } from "~/lib/intents/intentRoute";
+import { RAlert } from "~/templates/Alert/RAlert";
 import type { TransactionWidgetModel } from "~/providers/TransactionsProvider/transactionWidget.helpers";
 
-import styles from "../RDepositFundsModal.module.css";
-import { BridgeStatusListItem, getDepositSteps } from "./BridgeStatusView";
-import intentsStyles from "./IntentsView.module.css";
+import { getDepositSteps, type BridgeStatusStep } from "./depositSteps";
+import {
+  DepositModalHeader,
+  DetailRow,
+  DotsLoader,
+  TransferSummary,
+} from "./DepositParts";
+import styles from "./IntentsStatusView.module.css";
 
 type IntentsStatusViewProps = {
   record: IntentRecord;
@@ -32,30 +36,40 @@ function Identity({
   href?: string;
 }) {
   return (
-    <div className={intentsStyles.quoteRow}>
-      <dt>
-        <RText color="neutral-700" size="body-s">
-          {label}
-        </RText>
-      </dt>
-      <dd>
-        {href ? (
-          <a href={href} rel="noopener noreferrer" target="_blank">
-            <RText size="body-s">
-              {hash.slice(0, 10)}…{hash.slice(-6)}
-            </RText>
-          </a>
-        ) : (
-          <HashChip
-            aria-label={`Copy ${label}`}
-            firstCharsCount={10}
-            hash={hash}
-            lastCharsCount={6}
-            type="link"
-          />
-        )}
-      </dd>
-    </div>
+    <DetailRow label={label}>
+      {href ? (
+        <a
+          className={styles.link}
+          href={href}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {hash.slice(0, 10)}…{hash.slice(-6)}
+        </a>
+      ) : (
+        <HashChip
+          aria-label={`Copy ${label}`}
+          firstCharsCount={10}
+          hash={hash}
+          lastCharsCount={6}
+          type="link"
+        />
+      )}
+    </DetailRow>
+  );
+}
+
+function StepIndicator({ status }: { status: BridgeStatusStep["status"] }) {
+  return (
+    <span className={styles.indicator} data-status={status}>
+      {status === "success" ? (
+        <RIcon name="check" size="small" />
+      ) : status === "loading" ? (
+        <DotsLoader />
+      ) : status === "error" ? (
+        <RIcon name="cross" size="small" />
+      ) : null}
+    </span>
   );
 }
 
@@ -80,110 +94,174 @@ export function IntentsStatusView({
   const state = model?.state;
   const backend = record.backend;
   const isFinished = !model || model.isTerminal;
+  const fundingHash = record.sourceHashes.at(-1);
+  const fundingUrl = fundingHash ? txUrl(fundingHash) : undefined;
+  const { destination } = record;
+  const confirmedAmount = backend?.settlement.confirmedAmount;
+  const recipientCaption =
+    confirmedAmount && confirmedAmount !== "0"
+      ? `Received ${formatRawAmount(confirmedAmount, destination.decimals)} ${destination.symbol}`
+      : record.expectedAmountOut
+        ? `Your Equiteez wallet · ≈ ${formatRawAmount(record.expectedAmountOut, record.settlementDecimals)} ${destination.symbol}`
+        : "Your Equiteez wallet";
+  const alert =
+    state && (state.status === "warning" || state.status === "error")
+      ? state
+      : null;
+  const notice =
+    state?.status === "success"
+      ? (state.description ?? "Arrived in your Mavryk account.")
+      : null;
+  const hasIdentifiers = Boolean(
+    record.operationId ||
+      fundingHash ||
+      backend?.delivery.transactionHashes.length ||
+      backend?.forwarding.transactionHash ||
+      backend?.forwarding.bridgeEvents.length ||
+      backend?.settlement.mints.length
+  );
 
   return (
-    <div className={styles.statusContent}>
-      <div className={styles.statusHeader}>
-        <RHeading className={styles.statusAmount} size="h6" weight="medium">
-          {formatRawAmount(record.request.amountIn, record.source.decimals)}{" "}
-          {record.source.symbol}
-        </RHeading>
-        <RText
-          className={styles.statusDescription}
-          color="neutral-700"
-          size="body-sm"
-        >
-          Depositing from {record.source.chainName} to your Mavryk account
-        </RText>
-      </div>
-      <ol aria-live="polite" className={styles.statusList}>
-        {steps.map((step, index) => (
-          <BridgeStatusListItem
-            index={index + 1}
-            key={step.title}
-            step={step}
-          />
-        ))}
-      </ol>
-      <div
-        className={clsx(
-          styles.notice,
-          styles.statusNotice,
-          state?.status === "warning" && styles.warning
-        )}
-        role="status"
-      >
-        <div className={styles.statusNoticeIcon}>
-          <RIcon aria-hidden="true" name="info" size="small" />
-        </div>
-        <RText className={styles.statusNoticeText} size="body-sm">
-          {state?.status === "success"
-            ? (state.description ?? "Arrived in your Mavryk account.")
-            : state &&
-                "title" in state &&
-                state.title &&
-                state.status !== "progress"
-              ? `${state.title}. ${state.description}`
-              : (state?.description ??
-                "You can close this window. Tracking continues in the background.")}
-        </RText>
-      </div>
+    <div className={styles.screen}>
+      <DepositModalHeader onClose={onClose} title="Deposit Funds" />
 
-      <dl className={intentsStyles.quoteList} aria-label="Deposit identifiers">
-        {record.operationId && (
-          <Identity hash={record.operationId} label="Operation ID" />
+      <section className={styles.card}>
+        <TransferSummary
+          amount={`${formatRawAmount(record.request.amountIn, record.source.decimals)} ${record.source.symbol}`}
+          amountCaption={`on ${record.source.chainName}`}
+          recipient={record.request.recipient}
+          recipientCaption={recipientCaption}
+          tokenIcon={
+            <RTokenIcon
+              label={record.source.symbol}
+              size="xlarge"
+              src={getIntentTokenIcon(record.source.symbol)}
+            />
+          }
+        />
+        <hr className={styles.divider} />
+        <ol aria-live="polite" className={styles.steps}>
+          {steps.map((step, index) => (
+            <li
+              aria-current={step.status === "loading" ? "step" : undefined}
+              className={styles.step}
+              data-status={step.status}
+              key={`${index}-${steps.length}`}
+            >
+              <StepIndicator status={step.status} />
+              <span className={styles.stepCopy}>
+                <span className={styles.stepTitle}>{step.title}</span>
+                {step.status === "loading" && (
+                  <span className={styles.stepDescription}>
+                    {step.description}
+                  </span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ol>
+        {alert && (
+          <RAlert
+            header={alert.title ?? "Check your deposit"}
+            role="alert"
+            type={alert.status === "error" ? "error" : "warning"}
+          >
+            {alert.description}
+          </RAlert>
         )}
-        {record.sourceHashes.length > 0 && (
-          <Identity
-            hash={record.sourceHashes.at(-1)!}
-            href={txUrl(record.sourceHashes.at(-1)!)}
-            label={`${record.source.chainName} funding`}
-          />
+        {notice && (
+          <p className={styles.notice} role="status">
+            {notice}
+          </p>
         )}
-        {backend?.delivery.transactionHashes.map((hash) => (
-          <Identity hash={hash} key={hash} label="1Click delivery" />
-        ))}
-        {backend?.forwarding.transactionHash && (
-          <Identity
-            hash={backend.forwarding.transactionHash}
-            label="Sponsored forward"
-          />
-        )}
-        {backend?.forwarding.bridgeEvents.map((event) => (
-          <Identity
-            hash={`${event.transactionHash}:${event.logIndex}`}
-            key={`${event.transactionHash}:${event.logIndex}`}
-            label="Bridge wrap event"
-          />
-        ))}
-        {backend?.settlement.mints.map((mint) => (
-          <Identity
-            hash={mint.operationHash}
-            key={mint.operationHash}
-            label="Mavryk mint"
-          />
-        ))}
-      </dl>
+      </section>
 
-      {isFinished && (
-        <RButton
-          className={styles.statusCloseButton}
-          onClick={onStartNew}
-          size="medium"
-          tone="black"
-        >
-          Start New Deposit
-        </RButton>
+      {hasIdentifiers && (
+        <details className={styles.details}>
+          <summary className={styles.detailsSummary}>
+            Transaction details
+            <RIcon name="arrow-short-down" size="small" />
+          </summary>
+          <dl aria-label="Deposit identifiers" className={styles.detailsList}>
+            {record.operationId && (
+              <Identity hash={record.operationId} label="Operation ID" />
+            )}
+            {fundingHash && (
+              <Identity
+                hash={fundingHash}
+                href={fundingUrl}
+                label={`${record.source.chainName} funding`}
+              />
+            )}
+            {backend?.delivery.transactionHashes.map((hash) => (
+              <Identity hash={hash} key={hash} label="1Click delivery" />
+            ))}
+            {backend?.forwarding.transactionHash && (
+              <Identity
+                hash={backend.forwarding.transactionHash}
+                label="Sponsored forward"
+              />
+            )}
+            {backend?.forwarding.bridgeEvents.map((event) => (
+              <Identity
+                hash={`${event.transactionHash}:${event.logIndex}`}
+                key={`${event.transactionHash}:${event.logIndex}`}
+                label="Bridge wrap event"
+              />
+            ))}
+            {backend?.settlement.mints.map((mint) => (
+              <Identity
+                hash={mint.operationHash}
+                key={mint.operationHash}
+                label="Mavryk mint"
+              />
+            ))}
+          </dl>
+        </details>
       )}
-      <RButton
-        className={styles.statusCloseButton}
-        onClick={onClose}
-        size="medium"
-        tone="black"
-        variant={isFinished ? "secondary" : "primary"}
-      >
-        {isFinished ? "Close" : "Minimize And Continue Browsing"}
-      </RButton>
+
+      <div className={styles.actions}>
+        {fundingUrl && (
+          <RButton
+            as="a"
+            className={styles.action}
+            href={fundingUrl}
+            rel="noopener noreferrer"
+            size="large"
+            target="_blank"
+            tone="black"
+            variant="secondary"
+          >
+            View on explorer
+          </RButton>
+        )}
+        {isFinished ? (
+          <RButton
+            className={styles.action}
+            onClick={onClose}
+            size="large"
+            tone="black"
+          >
+            Done
+          </RButton>
+        ) : (
+          <RButton
+            className={styles.action}
+            onClick={onStartNew}
+            size="large"
+            tone="black"
+            variant="secondary"
+          >
+            New deposit
+          </RButton>
+        )}
+      </div>
+
+      {!isFinished && (
+        <p className={styles.caption}>
+          You can close this window — your deposit continues.
+        </p>
+      )}
     </div>
   );
 }

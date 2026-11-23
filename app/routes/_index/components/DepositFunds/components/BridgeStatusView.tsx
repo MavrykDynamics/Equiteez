@@ -8,21 +8,17 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 import Money from "~/lib/atoms/Money";
 import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
 import type { TransactionWidgetModel } from "~/providers/TransactionsProvider/transactionWidget.helpers";
-import { transactionWidgetStepLabels } from "~/providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidget";
 
 import styles from "../RDepositFundsModal.module.css";
-
-export type BridgeProcessStatus = "loading" | "success" | "error";
-type BridgeStepStatus = BridgeProcessStatus | "pending";
+import {
+  getDepositSteps,
+  type BridgeProcessStatus,
+  type BridgeStatusStep,
+  type BridgeStepStatus,
+} from "./depositSteps";
 
 const trackingNotice =
   "You can close this window. The bridge keeps running and the funds will appear in your portfolio once process completes.";
-
-export type BridgeStatusStep = {
-  description: string;
-  status: BridgeStepStatus;
-  title: string;
-};
 
 type BridgeStatusViewProps = {
   state: UsdtBridgeState;
@@ -76,38 +72,6 @@ function getBridgeStatusSteps(state: UsdtBridgeState): BridgeStatusStep[] {
       description: "Waiting for bridge updates",
     },
   ];
-}
-
-// Presentation mapping only: the provider owns all event/status decisions.
-export function getDepositSteps(
-  { state, steps = transactionWidgetStepLabels }: TransactionWidgetModel,
-  pendingDescription = "Waiting for bridge updates"
-): BridgeStatusStep[] {
-  return steps.map((title, index) => {
-    const isCurrent =
-      (state.status === "progress" && state.step === index + 1) ||
-      (state.status === "waiting" && index === 0);
-    const status: BridgeStepStatus =
-      state.status === "success" ||
-      (state.status === "progress" && index + 1 < state.step)
-        ? "success"
-        : isCurrent
-          ? "loading"
-          : "pending";
-    return {
-      title:
-        isCurrent && state.status === "progress"
-          ? (state.title ?? title)
-          : title,
-      status,
-      description:
-        status === "success"
-          ? "Complete"
-          : isCurrent
-            ? (state.description ?? "In progress")
-            : pendingDescription,
-    };
-  });
 }
 
 const statusIcons: Record<BridgeProcessStatus, RIconName> = {

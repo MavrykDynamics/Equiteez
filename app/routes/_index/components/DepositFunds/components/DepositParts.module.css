@@ -1,0 +1,212 @@
+.header {
+  display: grid;
+  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(--r-size-icon-medium);
+  align-items: center;
+  gap: var(--r-space-3);
+  min-height: 28px;
+}
+
+.headerTitle {
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerButton {
+  display: inline-grid;
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  padding: 0;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.headerButton:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.headerButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.avatar {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--r-space-8);
+  height: var(--r-space-8);
+  /* Figma account avatar; the palette has no violet token. */
+  background: linear-gradient(
+    135deg,
+    var(--r-color-blue-500) 0%,
+    #8b5cf6 55%,
+    #ddd6fe 100%
+  );
+  border-radius: 50%;
+}
+
+.avatar[data-size="xlarge"] {
+  width: var(--r-space-10);
+  height: var(--r-space-10);
+}
+
+.connected {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+  color: var(--r-color-green-500);
+}
+
+.connectedDot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  background: var(--r-color-green-500);
+  border-radius: 50%;
+}
+
+.copyable {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.copyButton {
+  display: inline-grid;
+  padding: 0;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.copyButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.transfer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+}
+
+.transferRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--r-space-3);
+}
+
+.transferCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.transferTitle {
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-heading);
+  font-size: var(--r-font-size-heading-h6);
+  font-weight: var(--r-font-weight-medium);
+  letter-spacing: var(--r-letter-spacing-heading);
+  line-height: var(--r-line-height-heading-h6);
+}
+
+.transferCaption {
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+}
+
+.transferArrow {
+  margin-left: 12px;
+  color: var(--r-color-neutral-black);
+}
+
+.detailRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  letter-spacing: var(--r-letter-spacing-body);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.detailRow dt {
+  min-width: 0;
+  flex: 0 1 auto;
+  color: var(--r-color-neutral-700);
+}
+
+.detailRow dd {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  margin: 0;
+  color: var(--r-color-neutral-black);
+  font-weight: var(--r-font-weight-medium);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.valueWithIcon {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--r-space-1);
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dots span {
+  width: 3px;
+  height: 3px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: dot 1.2s ease-in-out infinite;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots span {
+    animation: none;
+    opacity: 1;
+  }
+}

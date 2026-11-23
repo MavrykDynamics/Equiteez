@@ -149,16 +149,18 @@ export function RDepositFundsModal({
       onRequestClose={handleClose}
       overlayClassName={styles.overlay}
     >
-      <div className={styles.closeRow}>
-        <button
-          aria-label="Close deposit funds"
-          className={styles.closeButton}
-          onClick={handleClose}
-          type="button"
-        >
-          <RIcon name="close" size="medium" />
-        </button>
-      </div>
+      {!trackedIntent && (
+        <div className={styles.closeRow}>
+          <button
+            aria-label="Close deposit funds"
+            className={styles.closeButton}
+            onClick={handleClose}
+            type="button"
+          >
+            <RIcon name="close" size="medium" />
+          </button>
+        </div>
+      )}
 
       {transactionHash && ethereumWallet.bridge.state && !isDetailsOpen ? (
         <ConfirmedView

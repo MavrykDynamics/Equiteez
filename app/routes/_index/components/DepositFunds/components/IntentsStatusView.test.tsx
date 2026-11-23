@@ -14,6 +14,9 @@ import { toIntentWidget } from "~/providers/TransactionsProvider/intentWidget";
 import { IntentsStatusView } from "./IntentsStatusView";
 
 vi.mock("~/lib/atoms/RIcon", () => ({ RIcon: () => null }));
+vi.mock("~/lib/atoms/CopyButton", () => ({
+  CopyButton: ({ text }: { text: string }) => <button>{text}</button>,
+}));
 vi.mock("~/lib/molecules/HashChip", () => ({
   HashChip: ({ hash }: { hash: string }) => <span>{hash}</span>,
 }));
@@ -57,20 +60,25 @@ describe("IntentsStatusView", () => {
   it("shows the confirmed amount and the Mavryk mint", () => {
     const html = render(wrappedOperation("CONFIRMED"));
     expect(html).toContain("1.994 wUSDT arrived in your Mavryk account.");
+    expect(html).toContain("Received 1.994 wUSDT");
     expect(html).toContain("Mavryk mint");
     expect(html).toContain("ooMint");
-    expect(html).toContain("Start New Deposit");
+    expect(html).toContain("View on explorer");
+    expect(html).toContain(">Done<");
+    expect(html).not.toContain("New deposit");
   });
 
-  it("offers minimize while the operation is moving", () => {
+  it("offers a new deposit while the operation keeps moving", () => {
     const html = render(
       operation({ phase: "SWAP_IN_PROGRESS", fundingStatus: "OBSERVED" })
     );
-    expect(html).toContain("Minimize And Continue Browsing");
-    expect(html).not.toContain("Start New Deposit");
+    expect(html).toContain("New deposit");
+    expect(html).toContain("your deposit continues");
+    expect(html).toContain('aria-current="step"');
+    expect(html).not.toContain(">Done<");
   });
 
-  it("offers a new deposit once a refund was reported", () => {
+  it("shows a reported refund as an alert and finishes with Done", () => {
     const html = render(
       operation({
         fundingStatus: "OBSERVED",
@@ -84,6 +92,7 @@ describe("IntentsStatusView", () => {
       })
     );
     expect(html).toContain("Refund reported");
-    expect(html).toContain("Start New Deposit");
+    expect(html).toContain('role="alert"');
+    expect(html).toContain(">Done<");
   });
 });
