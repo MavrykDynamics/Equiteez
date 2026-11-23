@@ -61,7 +61,10 @@ vi.mock("~/providers/TransactionsProvider/TransactionWidgetProvider", () => ({
     holdDeposit: mocks.holdDeposit,
   }),
 }));
-vi.mock("wagmi", () => ({ useConfig: () => ({ chains: [] }) }));
+vi.mock("wagmi", () => ({
+  useAccount: () => ({ connector: undefined }),
+  useConfig: () => ({ chains: [] }),
+}));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
   useUserContext: () => ({ userTokensBalances: {} }),
 }));
@@ -402,7 +405,7 @@ describe("1Click deposit method", () => {
   it("is hidden while the feature flag is off", async () => {
     const { root, tab } = await renderForm();
     try {
-      expect(tab("Swap From Any Chain")).toBeUndefined();
+      expect(tab("Send From Any Network")).toBeUndefined();
       expect(tab("Bridge From Ethereum")).toBeDefined();
       expect(tab("Receive On Mavryk")).toBeDefined();
     } finally {
@@ -415,9 +418,9 @@ describe("1Click deposit method", () => {
     const { element, root, render, tab } = await renderForm();
     try {
       expect(element.textContent).toContain("Set amount");
-      await act(async () => tab("Swap From Any Chain")!.click());
+      await act(async () => tab("Send From Any Network")!.click());
       expect(element.textContent).toContain("Intents form");
-      expect(tab("Swap From Any Chain")!.getAttribute("aria-selected")).toBe(
+      expect(tab("Send From Any Network")!.getAttribute("aria-selected")).toBe(
         "true"
       );
       await act(async () => tab("Receive On Mavryk")!.click());
@@ -425,7 +428,7 @@ describe("1Click deposit method", () => {
       await act(async () => tab("Bridge From Ethereum")!.click());
       expect(element.textContent).toContain("Set amount");
 
-      await act(async () => tab("Swap From Any Chain")!.click());
+      await act(async () => tab("Send From Any Network")!.click());
       await render(false);
       expect(mocks.resetIntents).toHaveBeenCalled();
       await render(true);

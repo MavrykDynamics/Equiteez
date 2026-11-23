@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
+import WalletBalanceIcon from "~/icons/wallet-balance.svg";
 import { CopyButton } from "~/lib/atoms/CopyButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
@@ -187,5 +188,18 @@ export function DotsLoader({ className }: { className?: string }) {
       <span />
       <span />
     </span>
+  );
+}
+
+/** 16px wallet glyph used by the wallet cards and the balance slot. */
+export function WalletGlyph({ label }: { label?: string }) {
+  return (
+    <img
+      alt={label ?? ""}
+      aria-hidden={label ? undefined : true}
+      height={16}
+      src={WalletBalanceIcon}
+      width={16}
+    />
   );
 }

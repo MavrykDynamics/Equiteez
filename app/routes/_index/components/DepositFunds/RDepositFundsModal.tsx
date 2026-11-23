@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useConfig } from "wagmi";
+import { useAccount, useConfig } from "wagmi";
 import type { BigNumber } from "bignumber.js";
 
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { INTENTS_DEPOSIT_ENABLED } from "~/consts/intents";
 import { USDT_BRIDGE, USDT_BRIDGE_DESTINATION_SLUG } from "~/consts/usdtBridge";
 import { useIntentsDeposit } from "~/hooks/useIntentsDeposit";
@@ -18,10 +17,15 @@ import { getIntentWidgetId } from "~/providers/TransactionsProvider/intentWidget
 import { BridgeStatusView } from "./components/BridgeStatusView";
 import { BridgeView } from "./components/BridgeView";
 import { ConfirmedView } from "./components/ConfirmedView";
+import { DepositModalHeader, shortenHash } from "./components/DepositParts";
 import { IntentsFundingPanel } from "./components/IntentsFundingPanel";
 import { IntentsQuoteView } from "./components/IntentsQuoteView";
 import { IntentsStatusView } from "./components/IntentsStatusView";
-import { IntentsView } from "./components/IntentsView";
+import {
+  IntentsPickerView,
+  type IntentsPickerKind,
+} from "./components/IntentsPickerView";
+import { IntentsView, type IntentsFormStep } from "./components/IntentsView";
 import { ReceiveView } from "./components/ReceiveView";
 import styles from "./RDepositFundsModal.module.css";
 
@@ -39,6 +43,9 @@ export function RDepositFundsModal({
   const [activeTab, setActiveTab] = useState<DepositTab>("bridge");
   const [depositAmount, setDepositAmount] = useState<BigNumber | undefined>();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [intentsStep, setIntentsStep] = useState<IntentsFormStep>("wallets");
+  const [picker, setPicker] = useState<IntentsPickerKind | null>(null);
+  const { connector } = useAccount();
   const releaseDeposit = useRef<(() => void) | null>(null);
   const { userAddress, userTokensBalances, connect, isLoading } =
     useUserContext();
@@ -109,6 +116,8 @@ export function RDepositFundsModal({
     setDepositAmount(undefined);
     setActiveTab("bridge");
     setIsDetailsOpen(false);
+    setIntentsStep("wallets");
+    setPicker(null);
   }, [resetBridge, resetIntentsForm, closeWalletSelection]);
 
   const wasOpened = useRef(false);
@@ -134,6 +143,17 @@ export function RDepositFundsModal({
     []
   );
 
+  const handleTabChange = (tab: DepositTab) => {
+    setActiveTab(tab);
+    setPicker(null);
+  };
+  const walletLabel = [
+    connector?.name,
+    ethereumWallet.userAddress && shortenHash(ethereumWallet.userAddress),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const handleClose = () => {
     resetModal();
     wasOpen.current = false;
@@ -149,18 +169,22 @@ export function RDepositFundsModal({
       onRequestClose={handleClose}
       overlayClassName={styles.overlay}
     >
-      {!trackedIntent && !isIntentsReviewOpen && (
-        <div className={styles.closeRow}>
-          <button
-            aria-label="Close deposit funds"
-            className={styles.closeButton}
-            onClick={handleClose}
-            type="button"
-          >
-            <RIcon name="close" size="medium" />
-          </button>
-        </div>
-      )}
+      {ethereumWallet.bridge.state &&
+        (transactionHash ||
+          isDetailsOpen ||
+          bridgeState?.error ||
+          bridgeState?.isConfirmationUnknown) && (
+          <div className={styles.closeRow}>
+            <button
+              aria-label="Close deposit funds"
+              className={styles.closeButton}
+              onClick={handleClose}
+              type="button"
+            >
+              <RIcon name="close" size="medium" />
+            </button>
+          </div>
+        )}
 
       {transactionHash && ethereumWallet.bridge.state && !isDetailsOpen ? (
         <ConfirmedView
@@ -221,12 +245,26 @@ export function RDepositFundsModal({
             />
           }
         />
+      ) : isIntentsTab && picker ? (
+        <IntentsPickerView
+          deposit={intents}
+          kind={picker}
+          onClose={handleClose}
+          onDone={() => setPicker(null)}
+          walletLabel={walletLabel}
+        />
       ) : (
         <div className={styles.content}>
+          <DepositModalHeader
+            onBack={
+              isIntentsTab && intentsStep === "details"
+                ? () => setIntentsStep("wallets")
+                : undefined
+            }
+            onClose={handleClose}
+            title="Deposit Funds"
+          />
           <div className={styles.header}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              Deposit Funds
-            </RHeading>
             <div
               aria-label="Deposit method"
               className={styles.tabs}
@@ -237,7 +275,7 @@ export function RDepositFundsModal({
                 aria-selected={activeTab === "bridge"}
                 className={styles.tab}
                 data-active={activeTab === "bridge"}
-                onClick={() => setActiveTab("bridge")}
+                onClick={() => handleTabChange("bridge")}
                 role="tab"
                 type="button"
               >
@@ -248,18 +286,18 @@ export function RDepositFundsModal({
                   aria-selected={activeTab === "intents"}
                   className={styles.tab}
                   data-active={activeTab === "intents"}
-                  onClick={() => setActiveTab("intents")}
+                  onClick={() => handleTabChange("intents")}
                   role="tab"
                   type="button"
                 >
-                  Swap From Any Chain
+                  Send From Any Network
                 </button>
               )}
               <button
                 aria-selected={activeTab === "receive"}
                 className={styles.tab}
                 data-active={activeTab === "receive"}
-                onClick={() => setActiveTab("receive")}
+                onClick={() => handleTabChange("receive")}
                 role="tab"
                 type="button"
               >
@@ -296,8 +334,12 @@ export function RDepositFundsModal({
               ethereumWallet={ethereumWallet}
               isMavrykBusy={isLoading}
               onConnectMavryk={connect}
+              onOpenPicker={setPicker}
               onReview={intents.startReview}
+              onStepChange={setIntentsStep}
               reviewError={intents.reviewError ?? intents.sessionError}
+              step={intentsStep}
+              walletName={connector?.name}
             />
           ) : (
             <ReceiveView mavrykAddress={mavrykAddress} />
