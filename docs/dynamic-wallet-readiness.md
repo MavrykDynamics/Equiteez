@@ -17,7 +17,7 @@ Everything below is proven by unit and component tests and a local browser check
 | `DYNAMIC_ENVIRONMENT_ID` | Public id of the Dynamic environment | Sandbox id | Sandbox id | not set |
 | `DYNAMIC_WALLET_ENABLED` | Offer email sign-in (`true`) | `true` | `true` | not set (off) |
 | `DYNAMIC_DIRECT_ENABLED` | Email-wallet actions allowed before they are marked tested: `true` for all, or a list such as `orderbook.buy,orderbook.sell,withdraw` | `true` | `true` | not set (all gated) |
-| `GOOGLE_CLIENT_ID` | Public Google OAuth client id for the Drive backup popup of email sign-ins (origins under "Authorized JavaScript origins", Google Drive API on, `drive.appdata` + `drive.file` scopes). Users signed in with Google use Dynamic's own token when its Google provider has the Drive scopes | not set | not set | not set |
+| `GOOGLE_CLIENT_ID` | Public Google OAuth client id for the Drive backup popup of email sign-ins (origins under "Authorized JavaScript origins", Google Drive API on, `drive.appdata` + `drive.file` scopes). Users signed in with Google use Dynamic's own token when its Google provider has the Drive scopes | set | set | not set |
 | `WALLET_CHOICE_ENABLED` | Sign-in offers Mavryk Wallet next to email (`true`); otherwise it opens on the email wallet | set `true` to see the choice | `true` | `false` (email only) |
 
 Without `DYNAMIC_WALLET_ENABLED` and an environment id the app behaves exactly as before: no email option, Connect Wallet opens Mavryk Wallet.

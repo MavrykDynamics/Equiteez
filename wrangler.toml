@@ -23,6 +23,8 @@ RWA_SERVICES_API="https://services.api.mavryk.network/v1/rwa"
 DYNAMIC_ENVIRONMENT_ID="1187d7b8-07cf-4a24-998a-f0262b7fa808"
 DYNAMIC_WALLET_ENABLED="true"
 DYNAMIC_DIRECT_ENABLED="true"
+# Google OAuth client for the Drive wallet backup (public id)
+GOOGLE_CLIENT_ID="254522200081-cr8oe58k3bq8qs18868up1g65o4op9h1.apps.googleusercontent.com"
 WALLET_CHOICE_ENABLED="true"
 KYC_SELF_SERVICE_ENABLED="true"
 KYC_CONTRACT="KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL"
