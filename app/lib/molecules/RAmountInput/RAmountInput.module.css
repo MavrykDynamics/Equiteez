@@ -1,0 +1,137 @@
+.card {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  padding: var(--r-space-4);
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-12);
+  transition: border-color var(--r-transition-duration-fast) ease;
+}
+
+.card:focus-within {
+  border-color: var(--r-color-neutral-300);
+}
+
+.disabled {
+  opacity: 0.5;
+}
+
+.header,
+.body,
+.footer {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+}
+
+.label,
+.balance,
+.footer {
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  letter-spacing: var(--r-letter-spacing-body);
+  line-height: var(--r-line-height-body-s);
+}
+
+.balance {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--r-space-1);
+  text-align: right;
+}
+
+.footer {
+  justify-content: flex-end;
+}
+
+.pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--r-space-2);
+  padding: var(--r-space-1) 10px var(--r-space-1) 6px;
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-50);
+  border: 0;
+  border-radius: var(--r-radius-pill);
+  font: inherit;
+}
+
+.pillButton {
+  cursor: pointer;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.pillButton:hover:not(:disabled) {
+  background: var(--r-color-neutral-100);
+}
+
+.pillButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.pillButton:disabled {
+  cursor: default;
+}
+
+.emptyIcon {
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  background: var(--r-color-neutral-200);
+  border-radius: 50%;
+}
+
+.pillLabel {
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  letter-spacing: var(--r-letter-spacing-body);
+  line-height: var(--r-line-height-body-sm);
+  white-space: nowrap;
+}
+
+.pillChevron {
+  margin-left: calc(var(--r-space-1) * -1);
+}
+
+.inputContainer {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Outrank the legacy FormField utilities applied by AssetField. */
+.input.input {
+  width: 100%;
+  min-width: 0;
+  color: var(--r-color-neutral-black);
+  text-align: right;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-l);
+  font-weight: var(--r-font-weight-medium);
+  letter-spacing: var(--r-letter-spacing-body);
+  line-height: var(--r-line-height-body-l);
+}
+
+.input.input::placeholder {
+  color: var(--r-color-neutral-500);
+  opacity: 1;
+}
+
+.input.input:disabled {
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  opacity: 1;
+}
