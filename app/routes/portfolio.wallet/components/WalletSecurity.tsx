@@ -42,7 +42,7 @@ export function EmailWalletSettings() {
   return (
     <>
       <WalletSecurity password={password} />
-      <WalletBackupAndExport hasPassword={password.hasPassword === true} />
+      <WalletBackupAndExport hasPassword={password.hasPassword} />
     </>
   );
 }
@@ -159,9 +159,17 @@ function WalletSecurity({
   );
 }
 
-function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
+function WalletBackupAndExport({
+  hasPassword,
+}: {
+  /** null until known: both actions need it, a protected wallet its password */
+  hasPassword: boolean | null;
+}) {
   const { dynamic } = useWalletContext();
   const backup = useGoogleDriveBackup();
+  // Until the password status is known the modals can't tell whether to ask
+  // for it, and a protected wallet fails without it
+  const canUseWallet = Boolean(dynamic) && hasPassword !== null;
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isBackupOpen, setIsBackupOpen] = useState(false);
 
@@ -190,7 +198,7 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
         </div>
         <RButton
           className={styles.fullButton}
-          disabled={!dynamic}
+          disabled={!canUseWallet}
           onClick={() => setIsBackupOpen(true)}
           size="medium"
           tone="black"
@@ -209,7 +217,7 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
         <div className={styles.spacer} />
         <RButton
           className={styles.fullButton}
-          disabled={!dynamic}
+          disabled={!canUseWallet}
           onClick={() => setIsExportOpen(true)}
           size="medium"
           tone="black"
@@ -222,7 +230,7 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
       <GoogleDriveBackupModal
         accessSource={backup.accessSource}
         backUp={backup.backUp}
-        hasPassword={hasPassword}
+        hasPassword={hasPassword === true}
         isAvailable={backup.isAvailable}
         isOpen={isBackupOpen}
         onClose={() => setIsBackupOpen(false)}
@@ -231,7 +239,7 @@ function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
 
       {dynamic ? (
         <ExportKeyModal
-          hasPassword={hasPassword}
+          hasPassword={hasPassword === true}
           isOpen={isExportOpen}
           onClose={() => setIsExportOpen(false)}
           onContinue={dynamic.revealPrivateKey}
