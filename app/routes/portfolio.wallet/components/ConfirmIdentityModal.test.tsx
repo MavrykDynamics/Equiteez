@@ -8,7 +8,11 @@ vi.mock("~/lib/organisms/CustomPopup/CustomPopup", () => ({
     isOpen ? <div>{children}</div> : null,
 }));
 
-import { IdentityCheckCancelledError } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import {
+  DynamicSessionExpiredError,
+  DynamicWrongCodeError,
+  IdentityCheckCancelledError,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import {
   askToConfirmIdentity,
   getPendingIdentityCheck,
@@ -98,7 +102,7 @@ describe("ConfirmIdentityModal", () => {
   it("keeps the dialog open with an error for a wrong code", async () => {
     const method = emailMethod(
       vi.fn(async () => {
-        throw new Error("invalid");
+        throw new DynamicWrongCodeError();
       })
     );
     await open([method]);
@@ -107,6 +111,33 @@ describe("ConfirmIdentityModal", () => {
 
     expect(text()).toContain("That code didn't work");
     expect(getPendingIdentityCheck()).not.toBeNull();
+  });
+
+  it("does not blame the code for other failures", async () => {
+    const method = emailMethod(
+      vi.fn(async () => {
+        throw new Error("Failed to fetch");
+      })
+    );
+    await open([method]);
+    await typeCode("123456");
+    await act(async () => button("Confirm")!.click());
+
+    expect(text()).toContain("We couldn't check the code");
+    expect(text()).not.toContain("That code didn't work");
+  });
+
+  it("asks to sign in again when the session expired", async () => {
+    const method = emailMethod(
+      vi.fn(async () => {
+        throw new DynamicSessionExpiredError();
+      })
+    );
+    await open([method]);
+    await typeCode("123456");
+    await act(async () => button("Confirm")!.click());
+
+    expect(text()).toContain("Your email sign-in has expired");
   });
 
   it("cancels the check when the user closes it", async () => {

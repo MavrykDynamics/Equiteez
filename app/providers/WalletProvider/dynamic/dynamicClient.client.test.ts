@@ -695,6 +695,39 @@ describe("Confirm it's you", () => {
     expect(fake.sendStepUpEmailCode).not.toHaveBeenCalled();
   });
 
+  it("names why a code failed: wrong code, expired session, or as is", async () => {
+    const { client, fake } = createFakeClient({
+      user: emailUser,
+      stepUp: emailCheck,
+    });
+    const apiError = (status: number) =>
+      Object.assign(new Error(`status ${status}`), {
+        name: "APIError",
+        status,
+      });
+
+    void verifyDynamicIdentity(client, "wallet:export").catch(() => undefined);
+    await flush();
+
+    const [method] = getPendingIdentityCheck()!.methods;
+    if (method.kind !== "code") throw new Error("expected a code method");
+
+    fake.verifyStepUpEmailCode.mockRejectedValueOnce(apiError(422));
+    await expect(method.verify("000000")).rejects.toBeInstanceOf(
+      DynamicWrongCodeError
+    );
+
+    fake.verifyStepUpEmailCode.mockRejectedValueOnce(apiError(401));
+    await expect(method.verify("000000")).rejects.toBeInstanceOf(
+      DynamicSessionExpiredError
+    );
+
+    fake.verifyStepUpEmailCode.mockRejectedValueOnce(
+      new Error("Failed to fetch")
+    );
+    await expect(method.verify("000000")).rejects.toThrow("Failed to fetch");
+  });
+
   it("rejects with a cancelled error when the user closes the dialog", async () => {
     const { client } = createFakeClient({
       user: emailUser,

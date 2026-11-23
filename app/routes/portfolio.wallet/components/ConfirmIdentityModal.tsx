@@ -13,6 +13,10 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
+  DynamicSessionExpiredError,
+  DynamicWrongCodeError,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import {
   getPendingIdentityCheck,
   subscribeToIdentityCheck,
   type IdentityMethod,
@@ -45,18 +49,29 @@ export function ConfirmIdentityModal() {
   // every later one, and finishing it on return would resume a stale action
   useEffect(() => () => getPendingIdentityCheck()?.cancel(), []);
 
+  // While a code or passkey is being checked, the overlay and Escape don't
+  // close the dialog (the close button is off too)
+  const [isBusy, setIsBusy] = useState(false);
+
   return (
     <CustomPopup
       className={styles.modal}
       contentLabel="Confirm it's you"
       contentPosition="center"
       isOpen={Boolean(check)}
-      onRequestClose={() => check?.cancel()}
+      onRequestClose={() => {
+        if (!isBusy) check?.cancel();
+      }}
       overlayClassName={styles.overlay}
     >
       {/* Keyed by the request: every check starts on its first way */}
       {check ? (
-        <ConfirmIdentityContent check={check} key={methodsKey(check)} />
+        <ConfirmIdentityContent
+          check={check}
+          isBusy={isBusy}
+          key={methodsKey(check)}
+          onBusy={setIsBusy}
+        />
       ) : null}
     </CustomPopup>
   );
@@ -65,9 +80,19 @@ export function ConfirmIdentityModal() {
 const methodsKey = (check: PendingIdentityCheck) =>
   check.methods.map((method) => method.id).join("|");
 
-function ConfirmIdentityContent({ check }: { check: PendingIdentityCheck }) {
+function ConfirmIdentityContent({
+  check,
+  isBusy,
+  onBusy,
+}: {
+  check: PendingIdentityCheck;
+  isBusy: boolean;
+  onBusy: (isBusy: boolean) => void;
+}) {
   const [activeId, setActiveId] = useState(check.methods[0]?.id);
-  const [isBusy, setIsBusy] = useState(false);
+
+  // A check that ends mid-way leaves the dialog free for the next one
+  useEffect(() => () => onBusy(false), [onBusy]);
   const active =
     check.methods.find((method) => method.id === activeId) ?? check.methods[0];
   const others = check.methods.filter((method) => method.id !== active?.id);
@@ -102,7 +127,7 @@ function ConfirmIdentityContent({ check }: { check: PendingIdentityCheck }) {
           <CodeMethod
             key={active.id}
             method={active}
-            onBusy={setIsBusy}
+            onBusy={onBusy}
             onCancel={check.cancel}
             onDone={check.done}
           />
@@ -111,7 +136,7 @@ function ConfirmIdentityContent({ check }: { check: PendingIdentityCheck }) {
           <PasskeyMethod
             key={active.id}
             method={active}
-            onBusy={setIsBusy}
+            onBusy={onBusy}
             onCancel={check.cancel}
             onDone={check.done}
           />
@@ -159,8 +184,15 @@ function CodeMethod({ method, onBusy, onCancel, onDone }: MethodProps<"code">) {
 
     try {
       await task();
-    } catch {
-      setError(fallback);
+    } catch (taskError) {
+      // A wrong code and an expired sign-in say so; anything else (e.g. no
+      // connection) is not blamed on the code
+      setError(
+        taskError instanceof DynamicWrongCodeError ||
+          taskError instanceof DynamicSessionExpiredError
+          ? taskError.message
+          : fallback
+      );
     } finally {
       setIsWorking(false);
       onBusy(false);
@@ -178,7 +210,7 @@ function CodeMethod({ method, onBusy, onCancel, onDone }: MethodProps<"code">) {
     run(async () => {
       await method.verify(code);
       onDone();
-    }, "That code didn't work. Check it and try again.");
+    }, "We couldn't check the code. Please try again.");
 
   if (!isSent) {
     return (

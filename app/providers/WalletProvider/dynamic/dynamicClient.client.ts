@@ -901,6 +901,40 @@ export async function signDigest32({
 // Identity check (step-up)
 // ---------------------------------------------------------------------------
 
+/** HTTP status of a Dynamic API error, or null for any other failure */
+const getApiErrorStatus = (error: unknown): number | null => {
+  if (!(error instanceof Error) || error.name !== "APIError") return null;
+
+  const { status } = error as Error & { status?: unknown };
+
+  return typeof status === "number" ? status : null;
+};
+
+/**
+ * Checks a "Confirm it's you" code and names why it failed: a wrong or used
+ * code (Dynamic answers 4xx about the code), an expired session (401), or
+ * anything else as is, e.g. no connection.
+ */
+async function checkStepUpCode(
+  client: DynamicClient,
+  verify: () => Promise<void>
+) {
+  try {
+    await verify();
+  } catch (error) {
+    const status = getApiErrorStatus(error);
+
+    if (status === 401) throw new DynamicSessionExpiredError();
+    if (
+      client.isInvalidCodeError(error) ||
+      (status !== null && status >= 400 && status < 500 && status !== 429)
+    ) {
+      throw new DynamicWrongCodeError(error);
+    }
+    throw error;
+  }
+}
+
 /** The ways the dialog can offer for the credentials Dynamic accepts */
 function toIdentityMethods(
   client: DynamicClient,
@@ -940,7 +974,9 @@ function toIdentityMethods(
           label: "Use my authenticator app",
           sentTo: null,
           verify: (code) =>
-            client.confirmWithAuthenticator(credential.id, code.trim(), scope),
+            checkStepUpCode(client, () =>
+              client.confirmWithAuthenticator(credential.id, code.trim(), scope)
+            ),
         });
         break;
 
@@ -963,7 +999,12 @@ function toIdentityMethods(
           },
           verify: async (code) => {
             if (!sent) throw new Error("Ask for a code first.");
-            await client.verifyStepUpEmailCode(sent, code.trim(), scope);
+
+            const otp = sent;
+
+            await checkStepUpCode(client, () =>
+              client.verifyStepUpEmailCode(otp, code.trim(), scope)
+            );
           },
         });
         break;
