@@ -25,9 +25,11 @@ import {
   DynamicNotAuthenticatedError,
   DynamicNotConfiguredError,
   DynamicPasswordAlreadySetError,
+  DynamicSecondFactorRequiredError,
   DynamicSessionExpiredError,
   DynamicWalletLockedError,
   DynamicWalletNotFoundError,
+  DynamicWrongCodeError,
   DynamicWrongPasswordError,
   GoogleSignInError,
   IdentityCheckUnavailableError,
@@ -548,6 +550,147 @@ export async function changeDynamicWalletPassword(
     );
   } catch (error) {
     if (isWrongPasswordError(error)) throw new DynamicWrongPasswordError(error);
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Second factor at sign-in
+// ---------------------------------------------------------------------------
+
+/** The user's second factors; the authenticator app when unknown */
+async function getSecondFactorMethods(client: DynamicClient) {
+  try {
+    return await client.getSecondFactorMethods();
+  } catch {
+    // Dynamic asks for a second factor only when there is one: the
+    // authenticator app is the usual one, with recovery codes as a fallback
+    return { hasAuthenticator: true, hasPasskey: false };
+  }
+}
+
+/**
+ * Throws DynamicSecondFactorRequiredError while the sign-in still owes
+ * Dynamic a second factor (the user has an authenticator app or a passkey).
+ */
+export async function assertDynamicSecondFactorPassed(client: DynamicClient) {
+  if (!client.needsSecondFactor()) return;
+
+  throw new DynamicSecondFactorRequiredError(
+    await getSecondFactorMethods(client)
+  );
+}
+
+export type SecondFactor =
+  | { kind: "authenticator"; code: string }
+  | { kind: "recovery-code"; code: string }
+  | { kind: "passkey" };
+
+/** Completes the sign-in with the second factor. */
+export async function passDynamicSecondFactor(
+  client: DynamicClient,
+  factor: SecondFactor
+) {
+  try {
+    if (factor.kind === "passkey") {
+      await client.passSecondFactorWithPasskey();
+    } else if (factor.kind === "authenticator") {
+      await client.passSecondFactorWithCode(factor.code.trim());
+    } else {
+      await client.passSecondFactorWithRecoveryCode(factor.code.trim());
+    }
+  } catch (error) {
+    if (factor.kind !== "passkey" && client.isInvalidCodeError(error)) {
+      throw new DynamicWrongCodeError(error);
+    }
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Authenticator app
+// ---------------------------------------------------------------------------
+
+export type DynamicAuthenticator = { id: string; addedAt: Date | null };
+
+/** The user's turned-on authenticator app, or null */
+export async function getDynamicAuthenticator(
+  client: DynamicClient
+): Promise<DynamicAuthenticator | null> {
+  assertDynamicSession(client);
+
+  const device = (await client.getAuthenticators()).find(
+    (candidate) => candidate.verified === true
+  );
+
+  if (!device?.id) return null;
+
+  const addedAt = device.verifiedAt ?? device.createdAt ?? null;
+
+  return { id: device.id, addedAt: addedAt ? new Date(addedAt) : null };
+}
+
+export type AuthenticatorSetup = {
+  deviceId: string;
+  /** otpauth:// URI for the QR code */
+  uri: string;
+  /** The key to type in when the QR code can't be scanned */
+  secret: string;
+};
+
+/** After "Confirm it's you", starts adding an authenticator app. */
+export async function startDynamicAuthenticatorSetup(
+  client: DynamicClient
+): Promise<AuthenticatorSetup> {
+  await verifyDynamicIdentity(client, "credential:link");
+
+  const { id, uri, secret } = await client.registerAuthenticator();
+
+  return { deviceId: id, uri, secret };
+}
+
+/**
+ * Turns the new authenticator on with its first code and returns the
+ * recovery codes to save (none when the project has them off).
+ */
+export async function verifyDynamicAuthenticatorSetup(
+  client: DynamicClient,
+  deviceId: string,
+  code: string
+): Promise<string[]> {
+  try {
+    await client.verifyAuthenticator(deviceId, code.trim());
+  } catch (error) {
+    if (client.isInvalidCodeError(error))
+      throw new DynamicWrongCodeError(error);
+    throw error;
+  }
+
+  try {
+    return await client.getRecoveryCodes();
+  } catch {
+    // Recovery codes are optional per project: carry on without them
+    return [];
+  }
+}
+
+export async function acknowledgeDynamicRecoveryCodes(client: DynamicClient) {
+  await client.acknowledgeRecoveryCodes();
+}
+
+/** Removes the authenticator; a current code from it is the check. */
+export async function removeDynamicAuthenticator(
+  client: DynamicClient,
+  deviceId: string,
+  code: string
+) {
+  assertDynamicSession(client);
+
+  try {
+    await client.removeAuthenticator(deviceId, code.trim());
+  } catch (error) {
+    if (client.isInvalidCodeError(error))
+      throw new DynamicWrongCodeError(error);
     throw error;
   }
 }

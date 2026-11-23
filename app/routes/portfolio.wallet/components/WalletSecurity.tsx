@@ -1,10 +1,9 @@
 /**
- * Security, Backup and Export private key for email wallets. Live: Wallet
- * password (set or change), Passkeys (list, add, remove through Dynamic),
- * Backup to Google Drive and Export private key (a confirmation, "Confirm
- * it's you", then the key in Dynamic's frame). Authenticator app is still the
- * Figma copy as is (mock): its status is the design's and its button does
- * nothing.
+ * Security, Backup and Export private key for email wallets: Wallet password
+ * (set or change), Authenticator app (set up with a QR code, remove with a
+ * code), Passkeys (list, add, remove through Dynamic), Backup to Google Drive
+ * and Export private key (a confirmation, "Confirm it's you", then the key in
+ * Dynamic's frame).
  * Trusted devices are not offered: device registration is off for Equiteez.
  */
 import { useState } from "react";
@@ -15,9 +14,11 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
+import { AuthenticatorModal } from "./AuthenticatorModal";
 import { ExportKeyModal } from "./ExportKeyModal";
 import { GoogleDriveBackupModal } from "./GoogleDriveBackupModal";
 import { PasskeysModal } from "./PasskeysModal";
+import { describeAuthenticator, useAuthenticator } from "./useAuthenticator";
 import { describePasskeys, usePasskeys } from "./usePasskeys";
 import { useGoogleDriveBackup } from "./useGoogleDriveBackup";
 import { describeWalletPassword, useWalletPassword } from "./useWalletPassword";
@@ -32,15 +33,6 @@ type SecurityRow = {
   isPrimary?: boolean;
   isDisabled?: boolean;
   onAction?: () => void;
-};
-
-/** Mock row between the live ones, in the Figma order */
-const MOCK_AUTHENTICATOR_ROW: SecurityRow = {
-  title: "Authenticator app",
-  status: "Not set up",
-  tone: "warning",
-  action: "Set up",
-  isPrimary: true,
 };
 
 /** Security, Backup and Export: they share the wallet password state */
@@ -69,7 +61,9 @@ function WalletSecurity({
   password: ReturnType<typeof useWalletPassword>;
 }) {
   const passkeys = usePasskeys();
+  const authenticator = useAuthenticator();
   const [isPasskeysOpen, setIsPasskeysOpen] = useState(false);
+  const [isAuthenticatorOpen, setIsAuthenticatorOpen] = useState(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const hasPassword = password.hasPassword === true;
 
@@ -82,7 +76,17 @@ function WalletSecurity({
       isDisabled: password.hasPassword === null,
       onAction: () => setIsPasswordOpen(true),
     },
-    MOCK_AUTHENTICATOR_ROW,
+    {
+      title: "Authenticator app",
+      ...describeAuthenticator(
+        authenticator.authenticator,
+        authenticator.hasError
+      ),
+      action: authenticator.authenticator ? "Manage" : "Set up",
+      isPrimary: authenticator.authenticator === null,
+      isDisabled: authenticator.authenticator === undefined,
+      onAction: () => setIsAuthenticatorOpen(true),
+    },
     {
       title: "Passkeys",
       status: describePasskeys(passkeys.passkeys, Boolean(passkeys.error)),
@@ -133,6 +137,15 @@ function WalletSecurity({
         {...passkeys}
         isOpen={isPasskeysOpen}
         onClose={() => setIsPasskeysOpen(false)}
+      />
+      <AuthenticatorModal
+        acknowledgeRecoveryCodes={authenticator.acknowledgeRecoveryCodes}
+        authenticator={authenticator.authenticator}
+        isOpen={isAuthenticatorOpen}
+        onClose={() => setIsAuthenticatorOpen(false)}
+        remove={authenticator.remove}
+        startSetup={authenticator.startSetup}
+        verifySetup={authenticator.verifySetup}
       />
       <WalletPasswordModal
         hasPassword={hasPassword}

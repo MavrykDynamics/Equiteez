@@ -103,6 +103,27 @@ export class DynamicPasswordAlreadySetError extends Error {
   }
 }
 
+/**
+ * The sign-in owes Dynamic a second factor: the user has an authenticator
+ * app or a passkey, and Dynamic wants it before the session is complete.
+ */
+export class DynamicSecondFactorRequiredError extends Error {
+  constructor(
+    public readonly methods: { hasAuthenticator: boolean; hasPasskey: boolean }
+  ) {
+    super("Confirm your sign-in with your authenticator app.");
+    this.name = "DynamicSecondFactorRequiredError";
+  }
+}
+
+/** A code from the authenticator app (or a recovery code) was not accepted. */
+export class DynamicWrongCodeError extends Error {
+  constructor(cause?: unknown) {
+    super("That code didn't work. Check it and try again.", { cause });
+    this.name = "DynamicWrongCodeError";
+  }
+}
+
 /** The return from Google did not sign the user in. */
 export class GoogleSignInError extends Error {
   constructor(

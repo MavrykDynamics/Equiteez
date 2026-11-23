@@ -15,6 +15,7 @@ import {
 
 import { LocalSignatureVerificationError } from "./dynamic.errors";
 import {
+  assertDynamicSecondFactorPassed,
   assertDynamicWalletUnlocked,
   ensureDynamicWallet,
   hasLiveDynamicSession,
@@ -77,6 +78,15 @@ export async function openDynamicSession(
   // it would show a signed-in wallet that does not work. Stay signed out; the
   // user signs in with a code again.
   if (choice.mode === "restore" && !hasLiveDynamicSession(client)) return null;
+
+  // The sign-in owes a second factor: a restore stays signed out, the
+  // sign-in flow asks for it
+  try {
+    await assertDynamicSecondFactorPassed(client);
+  } catch (error) {
+    if (choice.mode === "restore") return null;
+    throw error;
+  }
 
   const selected = await pickWallet(client, choice);
 

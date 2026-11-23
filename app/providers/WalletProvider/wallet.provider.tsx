@@ -38,23 +38,29 @@ import { isDynamicWalletEnabled } from "./dynamic/dynamic.config";
 import { DynamicNotAuthenticatedError } from "./dynamic/dynamic.errors";
 import {
   loadDynamicClient,
+  acknowledgeDynamicRecoveryCodes,
   addDynamicPasskey,
   backupDynamicWallet,
   changeDynamicWalletPassword,
   finishGoogleSignIn,
+  getDynamicAuthenticator,
   getDynamicPasskeys,
   getGoogleDriveAccessSource,
   hasDynamicWalletPassword,
   isDynamicWalletBackedUp,
   hasLiveDynamicSession,
   logoutDynamic,
+  passDynamicSecondFactor,
+  removeDynamicAuthenticator,
   removeDynamicPasskey,
   revealDynamicPrivateKey,
   resendEmailOtp,
   sendEmailOtp,
   setDynamicWalletPassword,
+  startDynamicAuthenticatorSetup,
   startGoogleSignIn,
   unlockDynamicWallet,
+  verifyDynamicAuthenticatorSetup,
   verifyEmailOtp,
   waitForAuthenticatedUser,
   waitForDynamicReady,
@@ -426,6 +432,10 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         await waitForAuthenticatedUser(client);
         await establishOrThrow({ mode: "ensure" });
       },
+      passSecondFactor: async (factor) => {
+        await passDynamicSecondFactor(await readyClient(), factor);
+        await establishOrThrow({ mode: "ensure" });
+      },
       unlockWallet: async (walletId, password) => {
         await unlockDynamicWallet(await readyClient(), walletId, password);
         await establishOrThrow({ mode: "select", walletId });
@@ -481,6 +491,16 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
           options
         );
       },
+      getAuthenticator: async () =>
+        getDynamicAuthenticator(currentDynamicClient()),
+      startAuthenticatorSetup: async () =>
+        startDynamicAuthenticatorSetup(currentDynamicClient()),
+      verifyAuthenticatorSetup: async (deviceId, code) =>
+        verifyDynamicAuthenticatorSetup(currentDynamicClient(), deviceId, code),
+      acknowledgeRecoveryCodes: async () =>
+        acknowledgeDynamicRecoveryCodes(currentDynamicClient()),
+      removeAuthenticator: async (deviceId, code) =>
+        removeDynamicAuthenticator(currentDynamicClient(), deviceId, code),
       // async: a missing session rejects instead of throwing synchronously
       getPasskeys: async () => getDynamicPasskeys(currentDynamicClient()),
       addPasskey: async () => addDynamicPasskey(currentDynamicClient()),

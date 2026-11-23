@@ -11,24 +11,33 @@
  * SOL chain).
  */
 import {
+  acknowledgeRecoveryCodes,
+  authenticateMfaRecoveryCode,
   authenticatePasskeyMFA,
   authenticateTotpMfaDevice,
   checkStepUpAuth,
   clearSocialRedirectParams,
   completeSocialRedirect,
   createDynamicClient as createSdkClient,
+  deleteMfaDevice,
   deletePasskey,
   detectSocialRedirectUrl,
   getGoogleDriveBackupReadiness,
+  getMfaDevices,
+  getMfaMethods,
+  getMfaRecoveryCodes,
   getPasskeys,
   getUserSocialAccounts,
   getWalletAccounts,
   initializeClient,
   isInsufficientGoogleDriveScopesError,
+  isUserMissingMfaAuth,
   logout,
-  refreshUser,
+  MfaInvalidOtpError,
   onEvent,
+  refreshUser,
   registerPasskey,
+  registerTotpMfaDevice,
   sendEmailOTP,
   signInWithSocialRedirect,
   signMessage,
@@ -237,6 +246,74 @@ export function createDynamicClient(environmentId: string) {
     },
     /** Needs a "credential:unlink" check */
     deletePasskey: (passkeyId: string) => deletePasskey({ passkeyId }, sdk),
+
+    /** Authenticator app (TOTP) devices on the user's account */
+    getAuthenticators: async () =>
+      (await getMfaDevices(sdk)).filter(
+        (device) => `${device.type}` === "totp" && Boolean(device.id)
+      ),
+    /**
+     * Starts adding an authenticator app: the otpauth:// URI for the QR code
+     * and the key to type in. Needs a "credential:link" check.
+     */
+    registerAuthenticator: () => registerTotpMfaDevice(sdk),
+    /** The first code from the app turns the new authenticator on */
+    verifyAuthenticator: async (deviceId: string, code: string) => {
+      await authenticateTotpMfaDevice({ code, deviceId }, sdk);
+    },
+    /** One-time codes for when the authenticator app is unavailable */
+    getRecoveryCodes: async () =>
+      (await getMfaRecoveryCodes(sdk)).recoveryCodes,
+    acknowledgeRecoveryCodes: async () => {
+      await acknowledgeRecoveryCodes(sdk);
+    },
+    /**
+     * Removes the authenticator. A current code from it is the check: one
+     * call earns both the "credential:unlink" token (kept by the SDK) and the
+     * MFA token the delete takes, as in the backend's demo.
+     */
+    removeAuthenticator: async (deviceId: string, code: string) => {
+      await authenticateTotpMfaDevice(
+        {
+          code,
+          deviceId,
+          createMfaTokenOptions: { singleUse: true },
+          requestedScopes: [TokenScope.Credentialunlink],
+        },
+        sdk
+      );
+      await deleteMfaDevice(
+        { deviceId, ...(sdk.mfaToken ? { mfaAuthToken: sdk.mfaToken } : {}) },
+        sdk
+      );
+    },
+    /**
+     * The second factors the user has. Read from Dynamic's MFA API: an
+     * authenticator app is not among the user's verified credentials.
+     */
+    getSecondFactorMethods: async () => {
+      const { devices, passkeys } = await getMfaMethods(sdk);
+
+      return {
+        hasAuthenticator: devices.some(
+          (device) => `${device.type}` === "totp" && device.verified === true
+        ),
+        hasPasskey: passkeys.length > 0,
+      };
+    },
+    /** Dynamic did not accept a code from the authenticator or a recovery code */
+    isInvalidCodeError: (error: unknown) => error instanceof MfaInvalidOtpError,
+    /** The sign-in still owes Dynamic a second factor (authenticator, passkey) */
+    needsSecondFactor: () => Boolean(sdk.user) && isUserMissingMfaAuth(sdk),
+    passSecondFactorWithCode: async (code: string) => {
+      await authenticateTotpMfaDevice({ code }, sdk);
+    },
+    passSecondFactorWithRecoveryCode: async (code: string) => {
+      await authenticateMfaRecoveryCode({ code }, sdk);
+    },
+    passSecondFactorWithPasskey: async () => {
+      await authenticatePasskeyMFA({}, sdk);
+    },
 
     /** Whether `scope` needs a fresh check, and the credentials that pass it */
     checkStepUp: (scope: StepUpScope) =>

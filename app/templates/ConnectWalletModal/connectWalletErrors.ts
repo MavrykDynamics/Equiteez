@@ -4,17 +4,25 @@
  */
 import { isWalletAbortActionError } from "~/contracts/hooks/contractActionError";
 import type {
+  DynamicSecondFactorRequiredError,
   DynamicWalletLockedError,
   DynamicWalletOption,
 } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
 export type LockedWallet = DynamicWalletLockedError["wallet"];
+export type SecondFactorMethods = DynamicSecondFactorRequiredError["methods"];
 
-export type ConnectStage = "email" | "code" | "connect" | "unlock";
+export type ConnectStage =
+  | "email"
+  | "code"
+  | "connect"
+  | "unlock"
+  | "second-factor";
 
 export type ConnectErrorView =
   | { kind: "select-wallet"; wallets: DynamicWalletOption[] }
   | { kind: "unlock"; wallet: LockedWallet }
+  | { kind: "second-factor"; methods: SecondFactorMethods }
   | { kind: "message"; message: string };
 
 const message = (text: string): ConnectErrorView => ({
@@ -65,7 +73,18 @@ export function describeConnectError(
   }
 
   // Our own errors with messages written for this modal
-  if (name === "GoogleSignInError" || name === "DynamicWrongPasswordError") {
+  if (name === "DynamicSecondFactorRequiredError") {
+    return {
+      kind: "second-factor",
+      methods: (error as DynamicSecondFactorRequiredError).methods,
+    };
+  }
+
+  if (
+    name === "GoogleSignInError" ||
+    name === "DynamicWrongPasswordError" ||
+    name === "DynamicWrongCodeError"
+  ) {
     return message(text);
   }
 

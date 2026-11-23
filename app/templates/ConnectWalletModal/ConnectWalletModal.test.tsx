@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
     hasPendingGoogleSignIn: vi.fn(),
     finishGoogleSignIn: vi.fn(),
     unlockWallet: vi.fn(),
+    passSecondFactor: vi.fn(),
   },
   connect: vi.fn(),
   login: vi.fn(),
@@ -114,6 +115,7 @@ beforeEach(() => {
   mocks.dynamic.hasPendingGoogleSignIn.mockReturnValue(false);
   mocks.dynamic.finishGoogleSignIn.mockResolvedValue(undefined);
   mocks.dynamic.unlockWallet.mockResolvedValue(undefined);
+  mocks.dynamic.passSecondFactor.mockResolvedValue(undefined);
   mocks.login.mockResolvedValue(undefined);
   container = document.createElement("div");
   root = createRoot(container);
@@ -458,5 +460,61 @@ describe("ConnectWalletModal", () => {
 
     await click("Use a different email");
     expect(text()).toContain("Email Me A Code");
+  });
+  it("confirms the sign-in with the authenticator app, or a recovery code", async () => {
+    mocks.dynamic.start.mockResolvedValue("connected");
+    mocks.dynamic.start.mockRejectedValueOnce(
+      Object.assign(new Error("second factor"), {
+        name: "DynamicSecondFactorRequiredError",
+        methods: { hasAuthenticator: true, hasPasskey: true },
+      })
+    );
+    mocks.dynamic.passSecondFactor.mockRejectedValueOnce(
+      Object.assign(
+        new Error("That code didn't work. Check it and try again."),
+        { name: "DynamicWrongCodeError" }
+      )
+    );
+    await render("email");
+
+    expect(text()).toContain("Confirm Your Sign-In");
+    expect(text()).toContain("Use A Passkey");
+
+    await type("Verification code", "000000");
+    await submit();
+    expect(mocks.dynamic.passSecondFactor).toHaveBeenCalledWith({
+      kind: "authenticator",
+      code: "000000",
+    });
+    expect(text()).toContain("That code didn't work");
+
+    await click("Use a recovery code");
+    await type("Recovery code", "aaaa-1111");
+    await submit();
+
+    expect(mocks.dynamic.passSecondFactor).toHaveBeenLastCalledWith({
+      kind: "recovery-code",
+      code: "aaaa-1111",
+    });
+    expect(mocks.login).toHaveBeenCalledOnce();
+    expect(mocks.onClose).toHaveBeenCalledOnce();
+  });
+
+  it("offers only the passkey to an account without an authenticator", async () => {
+    mocks.dynamic.start.mockRejectedValueOnce(
+      Object.assign(new Error("second factor"), {
+        name: "DynamicSecondFactorRequiredError",
+        methods: { hasAuthenticator: false, hasPasskey: true },
+      })
+    );
+    await render("email");
+
+    expect(text()).toContain("Use the passkey saved for this account.");
+    expect(container.querySelector("input")).toBeNull();
+
+    await click("Use A Passkey");
+    expect(mocks.dynamic.passSecondFactor).toHaveBeenCalledWith({
+      kind: "passkey",
+    });
   });
 });

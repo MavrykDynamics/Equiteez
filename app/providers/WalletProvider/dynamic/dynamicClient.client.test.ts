@@ -7,11 +7,17 @@ import bs58 from "bs58";
 import { decodeHex, operationDigest } from "~/lib/mavryk/keys";
 import {
   addDynamicPasskey,
+  assertDynamicSecondFactorPassed,
   assertDynamicWalletUnlocked,
   backupDynamicWallet,
   changeDynamicWalletPassword,
   ensureDynamicWallet,
   finishGoogleSignIn,
+  getDynamicAuthenticator,
+  passDynamicSecondFactor,
+  removeDynamicAuthenticator,
+  startDynamicAuthenticatorSetup,
+  verifyDynamicAuthenticatorSetup,
   getGoogleDriveAccessSource,
   isDynamicWalletBackedUp,
   getEmbeddedSolWallets,
@@ -37,8 +43,10 @@ import {
   DynamicIdentityChangedError,
   DynamicInitError,
   DynamicPasswordAlreadySetError,
+  DynamicSecondFactorRequiredError,
   DynamicSessionExpiredError,
   DynamicWalletLockedError,
+  DynamicWrongCodeError,
   DynamicWrongPasswordError,
   GoogleSignInError,
   IdentityCheckCancelledError,
@@ -166,6 +174,47 @@ function createFakeClient({
       (wallet: DynamicWallet, password: string) => Promise<void>
     >(async () => undefined),
     hasWalletPassword: vi.fn(async () => false),
+    getAuthenticators: vi.fn<
+      () => Promise<
+        {
+          id?: string;
+          verified?: boolean;
+          createdAt?: Date;
+          verifiedAt?: Date;
+        }[]
+      >
+    >(async () => []),
+    registerAuthenticator: vi.fn(async () => ({
+      id: "totp-1",
+      type: "totp",
+      secret: "JBSWY3DPEHPK3PXP",
+      uri: "otpauth://totp/Equiteez:a@b.co?secret=JBSWY3DPEHPK3PXP",
+    })),
+    verifyAuthenticator: vi.fn<
+      (deviceId: string, code: string) => Promise<void>
+    >(async () => undefined),
+    getRecoveryCodes: vi.fn<() => Promise<string[]>>(async () => [
+      "aaaa-1111",
+      "bbbb-2222",
+    ]),
+    acknowledgeRecoveryCodes: vi.fn(async () => undefined),
+    removeAuthenticator: vi.fn<
+      (deviceId: string, code: string) => Promise<void>
+    >(async () => undefined),
+    needsSecondFactor: vi.fn(() => false),
+    getSecondFactorMethods: vi.fn(async () => ({
+      hasAuthenticator: false,
+      hasPasskey: false,
+    })),
+    isInvalidCodeError: (error: unknown) =>
+      error instanceof Error && error.name === "MfaInvalidOtpError",
+    passSecondFactorWithCode: vi.fn<(code: string) => Promise<void>>(
+      async () => undefined
+    ),
+    passSecondFactorWithRecoveryCode: vi.fn<(code: string) => Promise<void>>(
+      async () => undefined
+    ),
+    passSecondFactorWithPasskey: vi.fn(async () => undefined),
     hasGoogleAccount: vi.fn(() => false),
     isGoogleDriveReady: vi.fn(async () => true),
     backupToGoogleDrive: vi.fn<
@@ -958,5 +1007,140 @@ describe("Google Drive backup", () => {
       backupDynamicWallet(client, "w1", { password: "wrong" })
     ).rejects.toBeInstanceOf(DynamicWrongPasswordError);
     expect(fake.refreshUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("Authenticator app", () => {
+  it("reports only a turned-on authenticator", async () => {
+    const { client, fake } = createFakeClient();
+    const addedAt = new Date(2026, 10, 2);
+
+    expect(await getDynamicAuthenticator(client)).toBeNull();
+
+    fake.getAuthenticators.mockResolvedValueOnce([
+      { id: "draft", verified: false },
+      { id: "totp-1", verified: true, verifiedAt: addedAt },
+    ]);
+    expect(await getDynamicAuthenticator(client)).toEqual({
+      id: "totp-1",
+      addedAt,
+    });
+  });
+
+  it("checks for linking before showing the QR code", async () => {
+    const { client, fake } = createFakeClient();
+
+    expect(await startDynamicAuthenticatorSetup(client)).toEqual({
+      deviceId: "totp-1",
+      uri: expect.stringContaining("otpauth://"),
+      secret: "JBSWY3DPEHPK3PXP",
+    });
+    expect(fake.checkStepUp).toHaveBeenCalledWith("credential:link");
+  });
+
+  it("turns it on with the first code and hands back the recovery codes", async () => {
+    const { client, fake } = createFakeClient();
+
+    expect(
+      await verifyDynamicAuthenticatorSetup(client, "totp-1", " 123456 ")
+    ).toEqual(["aaaa-1111", "bbbb-2222"]);
+    expect(fake.verifyAuthenticator).toHaveBeenCalledWith("totp-1", "123456");
+
+    fake.getRecoveryCodes.mockRejectedValueOnce(new Error("disabled"));
+    expect(
+      await verifyDynamicAuthenticatorSetup(client, "totp-1", "123456")
+    ).toEqual([]);
+  });
+
+  it("says when a code is wrong, setting up or removing", async () => {
+    const { client, fake } = createFakeClient();
+    fake.verifyAuthenticator.mockRejectedValueOnce(
+      Object.assign(new Error("Invalid code"), { name: "MfaInvalidOtpError" })
+    );
+    fake.removeAuthenticator.mockRejectedValueOnce(
+      Object.assign(new Error("Invalid code"), { name: "MfaInvalidOtpError" })
+    );
+
+    await expect(
+      verifyDynamicAuthenticatorSetup(client, "totp-1", "000000")
+    ).rejects.toBeInstanceOf(DynamicWrongCodeError);
+    await expect(
+      removeDynamicAuthenticator(client, "totp-1", "000000")
+    ).rejects.toBeInstanceOf(DynamicWrongCodeError);
+  });
+
+  it("removes it with a current code", async () => {
+    const { client, fake } = createFakeClient();
+
+    await removeDynamicAuthenticator(client, "totp-1", "123456");
+
+    expect(fake.removeAuthenticator).toHaveBeenCalledWith("totp-1", "123456");
+  });
+});
+
+describe("Second factor at sign-in", () => {
+  it("asks for the user's second factors from Dynamic's MFA list", async () => {
+    const { client, fake } = createFakeClient();
+
+    await expect(
+      assertDynamicSecondFactorPassed(client)
+    ).resolves.toBeUndefined();
+
+    fake.needsSecondFactor.mockReturnValue(true);
+    fake.getSecondFactorMethods.mockResolvedValueOnce({
+      hasAuthenticator: true,
+      hasPasskey: true,
+    });
+    const error = await assertDynamicSecondFactorPassed(client).catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(DynamicSecondFactorRequiredError);
+    expect((error as DynamicSecondFactorRequiredError).methods).toEqual({
+      hasAuthenticator: true,
+      hasPasskey: true,
+    });
+  });
+
+  it("falls back to the authenticator app when the MFA list can't be read", async () => {
+    const { client, fake } = createFakeClient();
+    fake.needsSecondFactor.mockReturnValue(true);
+    fake.getSecondFactorMethods.mockRejectedValueOnce(new Error("network"));
+
+    const error = await assertDynamicSecondFactorPassed(client).catch(
+      (caught: unknown) => caught
+    );
+
+    expect((error as DynamicSecondFactorRequiredError).methods).toEqual({
+      hasAuthenticator: true,
+      hasPasskey: false,
+    });
+  });
+
+  it("passes it with the app, a recovery code or a passkey", async () => {
+    const { client, fake } = createFakeClient();
+
+    await passDynamicSecondFactor(client, {
+      kind: "authenticator",
+      code: " 123456 ",
+    });
+    await passDynamicSecondFactor(client, {
+      kind: "recovery-code",
+      code: "aaaa-1111",
+    });
+    await passDynamicSecondFactor(client, { kind: "passkey" });
+
+    expect(fake.passSecondFactorWithCode).toHaveBeenCalledWith("123456");
+    expect(fake.passSecondFactorWithRecoveryCode).toHaveBeenCalledWith(
+      "aaaa-1111"
+    );
+    expect(fake.passSecondFactorWithPasskey).toHaveBeenCalledOnce();
+
+    fake.passSecondFactorWithCode.mockRejectedValueOnce(
+      Object.assign(new Error("Invalid code"), { name: "MfaInvalidOtpError" })
+    );
+    await expect(
+      passDynamicSecondFactor(client, { kind: "authenticator", code: "000000" })
+    ).rejects.toBeInstanceOf(DynamicWrongCodeError);
   });
 });

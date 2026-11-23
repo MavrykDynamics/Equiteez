@@ -7,7 +7,12 @@ import type { MavrykToolkit } from "@mavrykdynamics/taquito";
 import type { DirectExecutionOptions } from "~/contracts/actions.type";
 import type { AttemptTracking } from "~/services/direct/executor";
 import type { WalletProviderKind } from "~/services/direct/attempt.types";
-import type { DynamicPasskey } from "./dynamic/dynamicClient.client";
+import type {
+  AuthenticatorSetup,
+  DynamicAuthenticator,
+  DynamicPasskey,
+  SecondFactor,
+} from "./dynamic/dynamicClient.client";
 
 export type { WalletProviderKind };
 
@@ -74,6 +79,11 @@ export type DynamicConnectApi = {
   /** Completes the Google sign-in, then restores or creates the wallet */
   finishGoogleSignIn: () => Promise<void>;
   /**
+   * After DynamicSecondFactorRequiredError: completes the sign-in with the
+   * authenticator app, a recovery code or a passkey, then opens the wallet
+   */
+  passSecondFactor: (factor: SecondFactor) => Promise<void>;
+  /**
    * After DynamicWalletLockedError: unlocks the password-protected wallet in
    * this browser and connects it
    */
@@ -113,6 +123,19 @@ export type DynamicConnectApi = {
     googleDriveAccessToken?: string;
     password?: string;
   }) => Promise<void>;
+  /** The turned-on authenticator app, or null */
+  getAuthenticator: () => Promise<DynamicAuthenticator | null>;
+  /** After "Confirm it's you": the QR code data for a new authenticator */
+  startAuthenticatorSetup: () => Promise<AuthenticatorSetup>;
+  /** Turns it on with its first code; resolves with the recovery codes */
+  verifyAuthenticatorSetup: (
+    deviceId: string,
+    code: string
+  ) => Promise<string[]>;
+  /** The user saved the recovery codes */
+  acknowledgeRecoveryCodes: () => Promise<void>;
+  /** Removes the authenticator; a current code from it is the check */
+  removeAuthenticator: (deviceId: string, code: string) => Promise<void>;
   /** Passkeys on the user's Dynamic account */
   getPasskeys: () => Promise<DynamicPasskey[]>;
   /**

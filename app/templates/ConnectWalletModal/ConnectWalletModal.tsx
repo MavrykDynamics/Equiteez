@@ -8,6 +8,8 @@
  * recoverable error. "Continue with Google" leaves for Google; on return the
  * modal reopens and finishes the sign-in. A password-protected wallet that
  * comes locked asks for the password ("Unlock Your Account On This Device").
+ * An account with an authenticator app (or passkey) confirms the sign-in with
+ * it first ("Confirm Your Sign-In", no Figma yet).
  * Closing the modal never deletes a wallet.
  */
 import clsx from "clsx";
@@ -33,6 +35,7 @@ import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPop
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { isWalletChoiceEnabled } from "~/providers/WalletProvider/dynamic/dynamic.config";
 import type { DynamicWalletOption } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import type { SecondFactor } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 import {
@@ -40,6 +43,7 @@ import {
   isValidEmail,
   type ConnectStage,
   type LockedWallet,
+  type SecondFactorMethods,
 } from "./connectWalletErrors";
 import { CodeInput, CODE_LENGTH } from "./CodeInput";
 import { RGoogleIcon } from "./RGoogleIcon";
@@ -59,11 +63,21 @@ type Step =
   | { name: "working"; label: string }
   | { name: "select-wallet"; wallets: DynamicWalletOption[] }
   | { name: "unlock"; wallet: LockedWallet; error?: string }
+  | {
+      name: "second-factor";
+      methods: SecondFactorMethods;
+      /** A recovery code instead of the app's code */
+      isRecoveryCode?: boolean;
+      error?: string;
+    }
   | { name: "failed"; message: string };
 
 /** Steps with a form: the loading step keeps their height */
 const isFormStep = (name: Step["name"]) =>
-  name === "email" || name === "code" || name === "unlock";
+  name === "email" ||
+  name === "code" ||
+  name === "unlock" ||
+  name === "second-factor";
 
 type ConnectWalletModalProps = {
   isOpen: boolean;
@@ -85,6 +99,7 @@ export function ConnectWalletModal({
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
+  const [secondFactorCode, setSecondFactorCode] = useState("");
   const [resendAvailableAt, setResendAvailableAt] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   // Results of a step started before the modal closed or moved on are ignored
@@ -141,7 +156,9 @@ export function ConnectWalletModal({
             ? { name: "select-wallet", wallets: view.wallets }
             : view.kind === "unlock"
               ? { name: "unlock", wallet: view.wallet }
-              : onError(view.message)
+              : view.kind === "second-factor"
+                ? { name: "second-factor", methods: view.methods }
+                : onError(view.message)
         );
       }
     },
@@ -331,6 +348,51 @@ export function ConnectWalletModal({
     });
   };
 
+  const passSecondFactor = (factor: SecondFactor) => {
+    if (!dynamic || step.name !== "second-factor") return;
+
+    const { methods, isRecoveryCode } = step;
+
+    void connectAndSignIn({
+      connectStep: () => dynamic.passSecondFactor(factor),
+      stage: "second-factor",
+      label: "Confirming your sign-in…",
+      onError: (message) => ({
+        name: "second-factor",
+        methods,
+        isRecoveryCode,
+        error: message,
+      }),
+    });
+  };
+
+  const submitSecondFactor = (event: FormEvent) => {
+    event.preventDefault();
+    if (step.name !== "second-factor") return;
+
+    const code = secondFactorCode.trim();
+
+    if (step.isRecoveryCode ? !code : code.length < CODE_LENGTH) return;
+
+    setSecondFactorCode("");
+    passSecondFactor(
+      step.isRecoveryCode
+        ? { kind: "recovery-code", code }
+        : { kind: "authenticator", code }
+    );
+  };
+
+  const toggleRecoveryCode = () => {
+    if (step.name !== "second-factor") return;
+
+    setSecondFactorCode("");
+    setStep({
+      ...step,
+      isRecoveryCode: !step.isRecoveryCode,
+      error: undefined,
+    });
+  };
+
   const handleUseDifferentEmail = () => {
     setPassword("");
     setStep({ name: "email" });
@@ -362,7 +424,9 @@ export function ConnectWalletModal({
   );
 
   const back =
-    step.name === "code" || step.name === "unlock"
+    step.name === "code" ||
+    step.name === "unlock" ||
+    step.name === "second-factor"
       ? handleUseDifferentEmail
       : step.name === "email" && canChooseWallet
         ? () => setStep({ name: "choose" })
@@ -482,6 +546,98 @@ export function ConnectWalletModal({
               <br />
               Equiteez never holds your keys.
             </Note>
+          </form>
+        )}
+
+        {step.name === "second-factor" && (
+          <form
+            className={styles.form}
+            noValidate
+            onSubmit={submitSecondFactor}
+          >
+            <div className={styles.heroBlock}>
+              <span className={styles.heroIcon}>
+                <RIcon aria-hidden name="lock" size="medium" />
+              </span>
+              <Header
+                title="Confirm Your Sign-In"
+                description={
+                  !step.methods.hasAuthenticator
+                    ? "Use the passkey saved for this account."
+                    : step.isRecoveryCode
+                      ? "Enter one of the recovery codes you saved when you set up your authenticator app."
+                      : "Enter the 6-digit code from your authenticator app."
+                }
+              />
+            </div>
+            {step.methods.hasAuthenticator ? (
+              <>
+                {step.isRecoveryCode ? (
+                  <div className={styles.field}>
+                    <RInput
+                      aria-invalid={Boolean(step.error)}
+                      aria-label="Recovery code"
+                      autoComplete="off"
+                      className={clsx(
+                        styles.input,
+                        step.error && styles.inputError
+                      )}
+                      onChange={(event) =>
+                        setSecondFactorCode(event.target.value)
+                      }
+                      value={secondFactorCode}
+                    />
+                    <ErrorText message={step.error} />
+                  </div>
+                ) : (
+                  <div className={styles.codeBlock}>
+                    <CodeInput
+                      invalid={Boolean(step.error)}
+                      onChange={setSecondFactorCode}
+                      value={secondFactorCode}
+                    />
+                    <ErrorText centered message={step.error} />
+                  </div>
+                )}
+                <div className={styles.actions}>
+                  <RButton
+                    className={styles.primaryButton}
+                    disabled={
+                      step.isRecoveryCode
+                        ? !secondFactorCode.trim()
+                        : secondFactorCode.length < CODE_LENGTH
+                    }
+                    size="large"
+                    tone="black"
+                    type="submit"
+                    variant="primary"
+                  >
+                    Confirm
+                  </RButton>
+                  <TextButton onClick={toggleRecoveryCode}>
+                    {step.isRecoveryCode
+                      ? "Use the authenticator app"
+                      : "Use a recovery code"}
+                  </TextButton>
+                </div>
+              </>
+            ) : (
+              <ErrorText centered message={step.error} />
+            )}
+            {step.methods.hasPasskey ? (
+              <RButton
+                className={styles.primaryButton}
+                onClick={() => passSecondFactor({ kind: "passkey" })}
+                size="large"
+                tone="black"
+                type="button"
+                variant={
+                  step.methods.hasAuthenticator ? "secondary" : "primary"
+                }
+              >
+                Use A Passkey
+              </RButton>
+            ) : null}
           </form>
         )}
 
