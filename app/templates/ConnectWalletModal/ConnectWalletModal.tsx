@@ -72,6 +72,14 @@ type Step =
     }
   | { name: "failed"; message: string };
 
+/**
+ * The code field shows unless a passkey is the only way: with nothing named,
+ * it still takes the app's code or a recovery code, so the step never ends up
+ * with nothing to do.
+ */
+const hasCodeFactor = (methods: SecondFactorMethods) =>
+  methods.hasAuthenticator || !methods.hasPasskey;
+
 /** Steps with a form: the loading step keeps their height */
 const isFormStep = (name: Step["name"]) =>
   name === "email" ||
@@ -562,7 +570,7 @@ export function ConnectWalletModal({
               <Header
                 title="Confirm Your Sign-In"
                 description={
-                  !step.methods.hasAuthenticator
+                  !hasCodeFactor(step.methods)
                     ? "Use the passkey saved for this account."
                     : step.isRecoveryCode
                       ? "Enter one of the recovery codes you saved when you set up your authenticator app."
@@ -570,7 +578,7 @@ export function ConnectWalletModal({
                 }
               />
             </div>
-            {step.methods.hasAuthenticator ? (
+            {hasCodeFactor(step.methods) ? (
               <>
                 {step.isRecoveryCode ? (
                   <div className={styles.field}>
@@ -631,9 +639,7 @@ export function ConnectWalletModal({
                 size="large"
                 tone="black"
                 type="button"
-                variant={
-                  step.methods.hasAuthenticator ? "secondary" : "primary"
-                }
+                variant={hasCodeFactor(step.methods) ? "secondary" : "primary"}
               >
                 Use A Passkey
               </RButton>

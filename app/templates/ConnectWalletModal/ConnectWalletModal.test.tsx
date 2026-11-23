@@ -517,4 +517,19 @@ describe("ConnectWalletModal", () => {
       kind: "passkey",
     });
   });
+  it("still offers the code field when Dynamic names no second factor", async () => {
+    mocks.dynamic.start.mockRejectedValueOnce(
+      Object.assign(new Error("second factor"), {
+        name: "DynamicSecondFactorRequiredError",
+        methods: { hasAuthenticator: false, hasPasskey: false },
+      })
+    );
+    await render("email");
+
+    expect(text()).toContain(
+      "Enter the 6-digit code from your authenticator app."
+    );
+    expect(text()).toContain("Use a recovery code");
+    expect(text()).not.toContain("Use A Passkey");
+  });
 });

@@ -566,14 +566,21 @@ export async function changeDynamicWalletPassword(
 // Second factor at sign-in
 // ---------------------------------------------------------------------------
 
-/** The user's second factors; the authenticator app when unknown */
+/**
+ * The user's second factors. When Dynamic's list is unreadable or names
+ * neither (e.g. only recovery codes are left), the code field is offered:
+ * it takes the app's code and, one click away, a recovery code, so the
+ * sign-in always has a way forward.
+ */
 async function getSecondFactorMethods(client: DynamicClient) {
+  const codeOnly = { hasAuthenticator: true, hasPasskey: false };
+
   try {
-    return await client.getSecondFactorMethods();
+    const methods = await client.getSecondFactorMethods();
+
+    return methods.hasAuthenticator || methods.hasPasskey ? methods : codeOnly;
   } catch {
-    // Dynamic asks for a second factor only when there is one: the
-    // authenticator app is the usual one, with recovery codes as a fallback
-    return { hasAuthenticator: true, hasPasskey: false };
+    return codeOnly;
   }
 }
 

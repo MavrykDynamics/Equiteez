@@ -1115,6 +1115,20 @@ describe("Second factor at sign-in", () => {
     });
   });
 
+  it("offers the code field when Dynamic names no second factor", async () => {
+    const { client, fake } = createFakeClient();
+    fake.needsSecondFactor.mockReturnValue(true);
+
+    const error = await assertDynamicSecondFactorPassed(client).catch(
+      (caught: unknown) => caught
+    );
+
+    expect((error as DynamicSecondFactorRequiredError).methods).toEqual({
+      hasAuthenticator: true,
+      hasPasskey: false,
+    });
+  });
+
   it("falls back to the authenticator app when the MFA list can't be read", async () => {
     const { client, fake } = createFakeClient();
     fake.needsSecondFactor.mockReturnValue(true);
