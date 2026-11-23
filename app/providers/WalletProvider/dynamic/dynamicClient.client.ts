@@ -69,6 +69,8 @@ export type DynamicWalletIdentity = MavrykKeys & {
 const SDK_READY_TIMEOUT_MS = 12_000;
 // How long to wait for a new wallet to reach the wallet list
 const CREATED_WALLET_TIMEOUT_MS = 10_000;
+// How long to wait for a wallet the account has but the list does not show
+const LISTED_WALLET_TIMEOUT_MS = 5_000;
 // verifyOTP resolves before the signed-in user may reach the client's state:
 // wait this long for it
 const AUTHENTICATED_USER_TIMEOUT_MS = 10_000;
@@ -410,6 +412,16 @@ function withCrossTabLock<T>(name: string, task: () => Promise<T>) {
   return locks?.request ? locks.request(name, task) : task();
 }
 
+/** The account's credentials name a SOL wallet; unknown counts as no */
+function hasSolWalletOnAccount(client: DynamicClient) {
+  try {
+    return client.hasSolWalletOnAccount();
+  } catch {
+    // Project settings not loaded: the wallet list is the only answer
+    return false;
+  }
+}
+
 let ensureWalletPromise: Promise<DynamicWallet> | null = null;
 
 /**
@@ -426,6 +438,22 @@ export function ensureDynamicWallet(
     const existing = await resolveDynamicWallet(client);
 
     if (existing) return existing;
+
+    // The account has a wallet the list does not show yet: wait for it.
+    // Creating one here would make a second key with another mv1.
+    if (hasSolWalletOnAccount(client)) {
+      const listed = pickDynamicWallet(
+        client,
+        await waitForEmbeddedSolWallets(client, LISTED_WALLET_TIMEOUT_MS)
+      );
+
+      if (!listed) {
+        throw new DynamicWalletNotFoundError(
+          "Your email wallet is still loading. Please try again in a moment."
+        );
+      }
+      return listed;
+    }
 
     await client.createSolWallet();
 

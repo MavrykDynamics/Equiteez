@@ -50,6 +50,7 @@ import {
   backupWaasKeySharesToGoogleDrive,
   createWaasWalletAccounts,
   exportWaasPrivateKey,
+  getChainsMissingWaasWalletAccounts,
   getWalletRecoveryState,
   isWaasWalletAccount,
   setWaasWalletAccountPassword,
@@ -159,6 +160,14 @@ export function createDynamicClient(environmentId: string) {
     isEmbeddedWallet: (walletAccount: WalletAccount) =>
       isWaasWalletAccount({ walletAccount }),
     createSolWallet: () => createWaasWalletAccounts({ chains: ["SOL"] }, sdk),
+    /**
+     * True when the user's account already has an embedded SOL wallet, read
+     * from the account's credentials. The wallet list can lag behind them
+     * (it is built once the wallet provider can read the credential), so this
+     * is what decides whether a wallet may be created.
+     */
+    hasSolWalletOnAccount: () =>
+      !getChainsMissingWaasWalletAccounts(sdk).includes("SOL"),
     signMessage: async (walletAccount: WalletAccount, message: string) =>
       (await signMessage({ walletAccount, message }, sdk)).signature,
     /**

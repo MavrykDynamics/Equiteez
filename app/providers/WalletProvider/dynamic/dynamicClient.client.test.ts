@@ -154,6 +154,7 @@ function createFakeClient({
     getWalletAccounts: () => state.wallets,
     isEmbeddedWallet: (wallet: DynamicWallet) =>
       /^dynamicwaas/i.test(wallet.walletProviderKey),
+    hasSolWalletOnAccount: vi.fn(() => false),
     createSolWallet: vi.fn(async () => {
       seedsByWalletId.created = SEED;
       state.wallets = [...state.wallets, embeddedWallet("created")];
@@ -365,6 +366,34 @@ describe("ensureDynamicWallet", () => {
     });
 
     expect((await ensureDynamicWallet(client)).id).toBe("w1");
+    expect(fake.createSolWallet).not.toHaveBeenCalled();
+  });
+
+  it("never creates a second wallet when the account has one the list doesn't show yet", async () => {
+    const { client, fake, state, emit } = createFakeClient();
+    fake.hasSolWalletOnAccount.mockReturnValue(true);
+
+    const pending = ensureDynamicWallet(client);
+    setTimeout(() => {
+      state.wallets = [embeddedWallet("w1")];
+      emit("walletAccountsChanged");
+    }, 0);
+
+    expect((await pending).id).toBe("w1");
+    expect(fake.createSolWallet).not.toHaveBeenCalled();
+  });
+
+  it("asks to try again when that wallet never shows, still without creating one", async () => {
+    vi.useFakeTimers();
+    const { client, fake } = createFakeClient();
+    fake.hasSolWalletOnAccount.mockReturnValue(true);
+
+    const assertion = expect(ensureDynamicWallet(client)).rejects.toThrow(
+      "still loading"
+    );
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    await assertion;
     expect(fake.createSolWallet).not.toHaveBeenCalled();
   });
 
