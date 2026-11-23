@@ -9,7 +9,9 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 
-import { formatPasskeyDate, type usePasskeys } from "./usePasskeys";
+import { formatDayMonthYear } from "~/lib/utils/date";
+
+import type { usePasskeys } from "./usePasskeys";
 import styles from "./WalletModal.module.css";
 
 type PasskeysModalProps = ReturnType<typeof usePasskeys> & {
@@ -77,7 +79,7 @@ export function PasskeysModal({
                     {passkey.name ?? "Passkey"}
                   </RText>
                   <RText color="neutral-700" size="body-s">
-                    Added {formatPasskeyDate(passkey.createdAt)}
+                    Added {formatDayMonthYear(passkey.createdAt)}
                   </RText>
                 </div>
                 <RButton

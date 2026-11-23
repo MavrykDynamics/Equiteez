@@ -31,6 +31,7 @@ import { RInput } from "~/lib/atoms/RInput/RInput";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { formatDayMonthYear } from "~/lib/utils/date";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { isWalletChoiceEnabled } from "~/providers/WalletProvider/dynamic/dynamic.config";
@@ -876,18 +877,10 @@ function Divider() {
   );
 }
 
-/** "9 Nov 2026" */
-const formatLastUsed = (date: Date) =>
-  date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
 /** The account being restored: its address and when it was last used */
 function AccountCard({ wallet }: { wallet: LockedWallet }) {
   const detail = wallet.lastUsedAt
-    ? `Last used ${formatLastUsed(wallet.lastUsedAt)}`
+    ? `Last used ${formatDayMonthYear(wallet.lastUsedAt)}`
     : wallet.email;
 
   return (

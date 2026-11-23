@@ -1,30 +1,17 @@
 /** The email wallet's passkeys from Dynamic, with add and remove. */
 import { useCallback, useEffect, useState } from "react";
 
+import { formatDayMonthYear } from "~/lib/utils/date";
 import {
   DynamicSessionExpiredError,
   IdentityCheckCancelledError,
   IdentityCheckUnavailableError,
+  isPasskeyPromptDismissed,
 } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import type { DynamicPasskey } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 export type { DynamicPasskey };
-
-/** "2 Nov 2026" */
-export const formatPasskeyDate = (date: Date) =>
-  date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
-/** The browser's passkey prompt closed or timed out: not an error to show */
-const isPromptDismissed = (error: unknown) =>
-  error instanceof Error &&
-  /NotAllowedError|AbortError|not allowed|cancel|timed out/i.test(
-    `${error.name} ${error.message}`
-  );
 
 /** Dynamic's answer while passkeys are off in its dashboard */
 const isPasskeysDisabled = (error: unknown) =>
@@ -33,7 +20,8 @@ const isPasskeysDisabled = (error: unknown) =>
 
 /** Closing the prompt or "Confirm it's you" changes nothing: no error */
 const isCancelled = (error: unknown) =>
-  error instanceof IdentityCheckCancelledError || isPromptDismissed(error);
+  error instanceof IdentityCheckCancelledError ||
+  isPasskeyPromptDismissed(error);
 
 const toMessage = (error: unknown, fallback: string) => {
   if (
@@ -132,7 +120,7 @@ export function describePasskeys(
   const latest = passkeys.reduce((last, passkey) =>
     passkey.createdAt > last.createdAt ? passkey : last
   );
-  const added = formatPasskeyDate(latest.createdAt);
+  const added = formatDayMonthYear(latest.createdAt);
 
   return passkeys.length === 1
     ? `1 passkey: ${latest.name ?? "Passkey"}, added ${added}`

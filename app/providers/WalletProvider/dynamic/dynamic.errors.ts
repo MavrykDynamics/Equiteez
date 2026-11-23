@@ -1,5 +1,15 @@
 /** Errors of the Dynamic wallet flow, each mapped to its own UI state. */
 
+/**
+ * The browser's passkey prompt (Touch ID, Face ID, screen lock) was closed
+ * or timed out: the user changed their mind, not an error to show.
+ */
+export const isPasskeyPromptDismissed = (error: unknown) =>
+  error instanceof Error &&
+  /NotAllowedError|AbortError|not allowed|cancel|timed out/i.test(
+    `${error.name} ${error.message}`
+  );
+
 export class DynamicNotConfiguredError extends Error {
   constructor() {
     super("Email wallets are not configured for this environment.");

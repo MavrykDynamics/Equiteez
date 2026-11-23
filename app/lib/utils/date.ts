@@ -27,3 +27,12 @@ export function formatTime(inputDate: string) {
     second: "2-digit",
   }).format(date);
 }
+
+/** "2 Nov 2026": a calendar day without the time, in the app's en-GB style */
+export function formatDayMonthYear(date: Date) {
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}

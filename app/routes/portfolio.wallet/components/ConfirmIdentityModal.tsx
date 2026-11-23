@@ -15,6 +15,7 @@ import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   DynamicSessionExpiredError,
   DynamicWrongCodeError,
+  isPasskeyPromptDismissed,
 } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import {
   getPendingIdentityCheck,
@@ -30,13 +31,6 @@ import {
 import styles from "./WalletModal.module.css";
 
 const getServerSnapshot = () => null;
-
-/** The browser's passkey prompt closed or timed out: not an error to show */
-const isPromptDismissed = (error: unknown) =>
-  error instanceof Error &&
-  /NotAllowedError|AbortError|not allowed|cancel|timed out/i.test(
-    `${error.name} ${error.message}`
-  );
 
 export function ConfirmIdentityModal() {
   const check = useSyncExternalStore(
@@ -297,7 +291,7 @@ function PasskeyMethod({
       await method.run();
       onDone();
     } catch (runError) {
-      if (!isPromptDismissed(runError)) {
+      if (!isPasskeyPromptDismissed(runError)) {
         setError("We couldn't check your passkey. Please try again.");
       }
     } finally {

@@ -1,17 +1,10 @@
 /** The email wallet's authenticator app (TOTP): status, set up and remove. */
 import { useCallback, useEffect, useState } from "react";
 
+import { formatDayMonthYear } from "~/lib/utils/date";
 import type { DynamicAuthenticator } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-
-/** "2 Nov 2026" */
-const formatAddedDate = (date: Date) =>
-  date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 
 export function useAuthenticator() {
   const { dynamic } = useWalletContext();
@@ -107,7 +100,7 @@ export function describeAuthenticator(
 
   return {
     status: authenticator.addedAt
-      ? `Set up, added ${formatAddedDate(authenticator.addedAt)}`
+      ? `Set up, added ${formatDayMonthYear(authenticator.addedAt)}`
       : "Set up",
     tone: "success",
   };
