@@ -30,7 +30,7 @@ import styles from "./WalletModal.module.css";
 
 type AuthenticatorModalProps = Omit<
   ReturnType<typeof useAuthenticator>,
-  "hasError"
+  "hasError" | "reload"
 > & {
   isOpen: boolean;
   onClose: () => void;

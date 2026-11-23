@@ -25,9 +25,11 @@ export function useAuthenticator() {
   const reload = useCallback(async () => {
     if (!dynamic) return;
 
+    // "Checking…" again while a retry runs
+    setHasError(false);
+
     try {
       setAuthenticator(await dynamic.getAuthenticator());
-      setHasError(false);
     } catch {
       setHasError(true);
     }
@@ -82,6 +84,7 @@ export function useAuthenticator() {
   return {
     authenticator,
     hasError,
+    reload,
     startSetup,
     verifySetup,
     getRecoveryCodes,

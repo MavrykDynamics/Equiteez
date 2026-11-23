@@ -60,6 +60,7 @@ beforeEach(() => {
   ).IS_REACT_ACT_ENVIRONMENT = true;
   mocks.password.hasPassword = null;
   mocks.password.hasError = false;
+  mocks.password.reload.mockReset().mockResolvedValue(undefined);
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -80,5 +81,18 @@ describe("EmailWalletSettings", () => {
 
     expect(button("Export private key").disabled).toBe(false);
     expect(button("Back up to Google Drive").disabled).toBe(false);
+  });
+
+  it("offers Try again when the password status failed to load", async () => {
+    mocks.password.hasError = true;
+    await render();
+
+    expect(container.textContent).toContain(
+      "Couldn't check your wallet password"
+    );
+
+    await act(async () => button("Try again").click());
+
+    expect(mocks.password.reload).toHaveBeenCalledOnce();
   });
 });

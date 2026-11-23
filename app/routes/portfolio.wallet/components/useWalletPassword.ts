@@ -14,9 +14,11 @@ export function useWalletPassword() {
   const reload = useCallback(async () => {
     if (!dynamic) return;
 
+    // "Checking…" again while a retry runs
+    setHasError(false);
+
     try {
       setHasPassword(await dynamic.hasWalletPassword());
-      setHasError(false);
     } catch {
       setHasError(true);
     }
@@ -59,7 +61,7 @@ export function useWalletPassword() {
   /** Dynamic found a password the status check missed: switch to "change" */
   const markPasswordSet = useCallback(() => setHasPassword(true), []);
 
-  return { hasPassword, hasError, save, markPasswordSet };
+  return { hasPassword, hasError, reload, save, markPasswordSet };
 }
 
 /** The Security row's line for the wallet password */

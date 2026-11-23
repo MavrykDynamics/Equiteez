@@ -47,6 +47,12 @@ export function EmailWalletSettings() {
   );
 }
 
+/** A status that failed to load: the row's button asks again */
+const retryAction = (reload: () => Promise<void>) => ({
+  action: "Try again",
+  onAction: () => void reload(),
+});
+
 function SectionTitle({ children }: { children: string }) {
   return (
     <RHeading as="h2" className={styles.sectionTitle} size="h6" weight="medium">
@@ -66,15 +72,22 @@ function WalletSecurity({
   const [isAuthenticatorOpen, setIsAuthenticatorOpen] = useState(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const hasPassword = password.hasPassword === true;
+  const hasPasswordFailed = password.hasPassword === null && password.hasError;
+  const hasAuthenticatorFailed =
+    authenticator.authenticator === undefined && authenticator.hasError;
 
   const rows: SecurityRow[] = [
     {
       title: "Wallet password",
       ...describeWalletPassword(password.hasPassword, password.hasError),
-      action: hasPassword ? "Change" : "Set up",
-      isPrimary: password.hasPassword === false,
-      isDisabled: password.hasPassword === null,
-      onAction: () => setIsPasswordOpen(true),
+      ...(hasPasswordFailed
+        ? retryAction(password.reload)
+        : {
+            action: hasPassword ? "Change" : "Set up",
+            isPrimary: password.hasPassword === false,
+            isDisabled: password.hasPassword === null,
+            onAction: () => setIsPasswordOpen(true),
+          }),
     },
     {
       title: "Authenticator app",
@@ -82,10 +95,14 @@ function WalletSecurity({
         authenticator.authenticator,
         authenticator.hasError
       ),
-      action: authenticator.authenticator ? "Manage" : "Set up",
-      isPrimary: authenticator.authenticator === null,
-      isDisabled: authenticator.authenticator === undefined,
-      onAction: () => setIsAuthenticatorOpen(true),
+      ...(hasAuthenticatorFailed
+        ? retryAction(authenticator.reload)
+        : {
+            action: authenticator.authenticator ? "Manage" : "Set up",
+            isPrimary: authenticator.authenticator === null,
+            isDisabled: authenticator.authenticator === undefined,
+            onAction: () => setIsAuthenticatorOpen(true),
+          }),
     },
     {
       title: "Passkeys",
