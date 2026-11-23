@@ -65,12 +65,42 @@ export type DynamicConnectApi = {
   /** After MultipleDynamicWalletsError: connect the chosen wallet */
   selectWallet: (walletId: string) => Promise<void>;
   /**
+   * Sends the browser to Google to sign in. The page reloads on return;
+   * finishGoogleSignIn completes it there.
+   */
+  signInWithGoogle: () => Promise<void>;
+  /** True on the page Google returned to, until finishGoogleSignIn runs */
+  hasPendingGoogleSignIn: () => boolean;
+  /** Completes the Google sign-in, then restores or creates the wallet */
+  finishGoogleSignIn: () => Promise<void>;
+  /**
+   * After DynamicWalletLockedError: unlocks the password-protected wallet in
+   * this browser and connects it
+   */
+  unlockWallet: (walletId: string, password: string) => Promise<void>;
+  /**
    * After "Confirm it's you", shows the connected wallet's private key in an
    * isolated frame Dynamic injects into `displayContainer`: the key never
    * reaches the app. Rejects with IdentityCheckCancelledError when the user
    * closes the check.
    */
-  revealPrivateKey: (displayContainer: HTMLElement) => Promise<void>;
+  revealPrivateKey: (
+    displayContainer: HTMLElement,
+    /** The wallet password, when the wallet has one */
+    password?: string
+  ) => Promise<void>;
+  /** Whether the wallet is protected by a password */
+  hasWalletPassword: () => Promise<boolean>;
+  /**
+   * Protects the wallet with a password; rejects with
+   * DynamicPasswordAlreadySetError when there already is one
+   */
+  setWalletPassword: (password: string) => Promise<void>;
+  /** Rejects with DynamicWrongPasswordError for a wrong current password */
+  changeWalletPassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
   /** Passkeys on the user's Dynamic account */
   getPasskeys: () => Promise<DynamicPasskey[]>;
   /**

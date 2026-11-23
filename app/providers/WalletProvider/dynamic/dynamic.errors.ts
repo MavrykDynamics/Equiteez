@@ -67,6 +67,53 @@ export class DynamicIdentityChangedError extends Error {
   }
 }
 
+/**
+ * The wallet is protected by a password and comes locked in this browser
+ * (a new device or session): it must be unlocked before it can sign.
+ */
+export class DynamicWalletLockedError extends Error {
+  constructor(
+    public readonly wallet: DynamicWalletOption & {
+      /** When the wallet was last selected, if Dynamic knows */
+      lastUsedAt: Date | null;
+      email: string | null;
+    }
+  ) {
+    super("Enter your account password to restore your account here.");
+    this.name = "DynamicWalletLockedError";
+  }
+}
+
+/** The password did not unlock the wallet. */
+export class DynamicWrongPasswordError extends Error {
+  constructor(cause?: unknown) {
+    super("That password didn't work. Check it and try again.", { cause });
+    this.name = "DynamicWrongPasswordError";
+  }
+}
+
+/** "Set" found a password already there: the user has to change it. */
+export class DynamicPasswordAlreadySetError extends Error {
+  constructor(cause?: unknown) {
+    super(
+      "Your wallet already has a password. Enter the current one to change it.",
+      { cause }
+    );
+    this.name = "DynamicPasswordAlreadySetError";
+  }
+}
+
+/** The return from Google did not sign the user in. */
+export class GoogleSignInError extends Error {
+  constructor(
+    message = "Google sign-in didn't finish. Please try again.",
+    cause?: unknown
+  ) {
+    super(message, { cause });
+    this.name = "GoogleSignInError";
+  }
+}
+
 /** The user closed "Confirm it's you": nothing was changed. */
 export class IdentityCheckCancelledError extends Error {
   constructor() {

@@ -15,6 +15,7 @@ import {
 
 import { LocalSignatureVerificationError } from "./dynamic.errors";
 import {
+  assertDynamicWalletUnlocked,
   ensureDynamicWallet,
   hasLiveDynamicSession,
   resolveDynamicWallet,
@@ -80,6 +81,15 @@ export async function openDynamicSession(
   const selected = await pickWallet(client, choice);
 
   if (!selected) return null;
+
+  // A password-protected wallet comes locked on a new device or session. A
+  // restore stays signed out; the sign-in flow asks for the password.
+  try {
+    await assertDynamicWalletUnlocked(client, selected);
+  } catch (error) {
+    if (choice.mode === "restore") return null;
+    throw error;
+  }
 
   const wallet = toDynamicWalletIdentity(selected);
   const toolkit = await createDynamicToolkit({

@@ -1,10 +1,10 @@
 /**
- * Security, Backup and Export private key for email wallets. Live: Passkeys
- * (list, add, remove through Dynamic) and Export private key (a confirmation,
- * "Confirm it's you", then the key in Dynamic's frame). Wallet password,
- * Authenticator app and Backup are still the Figma copy as is (mock): their
- * statuses are the design's and their buttons do nothing. Trusted devices are
- * not offered: device registration is off for Equiteez.
+ * Security, Backup and Export private key for email wallets. Live: Wallet
+ * password (set or change), Passkeys (list, add, remove through Dynamic) and
+ * Export private key (a confirmation, "Confirm it's you", then the key in
+ * Dynamic's frame). Authenticator app and Backup are still the Figma copy as
+ * is (mock): their statuses are the design's and their buttons do nothing.
+ * Trusted devices are not offered: device registration is off for Equiteez.
  */
 import { useState } from "react";
 
@@ -17,6 +17,8 @@ import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { ExportKeyModal } from "./ExportKeyModal";
 import { PasskeysModal } from "./PasskeysModal";
 import { describePasskeys, usePasskeys } from "./usePasskeys";
+import { describeWalletPassword, useWalletPassword } from "./useWalletPassword";
+import { WalletPasswordModal } from "./WalletPasswordModal";
 import styles from "../styles.module.css";
 
 type SecurityRow = {
@@ -25,25 +27,30 @@ type SecurityRow = {
   tone?: "success" | "warning";
   action: string;
   isPrimary?: boolean;
+  isDisabled?: boolean;
   onAction?: () => void;
 };
 
-/** Mock rows before the live Passkeys row, in the Figma order */
-const MOCK_ROWS_BEFORE: SecurityRow[] = [
-  {
-    title: "Wallet password",
-    status: "Set. You need it to restore your wallet on a new device.",
-    tone: "success",
-    action: "Change",
-  },
-  {
-    title: "Authenticator app",
-    status: "Not set up",
-    tone: "warning",
-    action: "Set up",
-    isPrimary: true,
-  },
-];
+/** Mock row between the live ones, in the Figma order */
+const MOCK_AUTHENTICATOR_ROW: SecurityRow = {
+  title: "Authenticator app",
+  status: "Not set up",
+  tone: "warning",
+  action: "Set up",
+  isPrimary: true,
+};
+
+/** Security, Backup and Export: they share the wallet password state */
+export function EmailWalletSettings() {
+  const password = useWalletPassword();
+
+  return (
+    <>
+      <WalletSecurity password={password} />
+      <WalletBackupAndExport hasPassword={password.hasPassword === true} />
+    </>
+  );
+}
 
 function SectionTitle({ children }: { children: string }) {
   return (
@@ -53,12 +60,26 @@ function SectionTitle({ children }: { children: string }) {
   );
 }
 
-export function WalletSecurity() {
+function WalletSecurity({
+  password,
+}: {
+  password: ReturnType<typeof useWalletPassword>;
+}) {
   const passkeys = usePasskeys();
   const [isPasskeysOpen, setIsPasskeysOpen] = useState(false);
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const hasPassword = password.hasPassword === true;
 
   const rows: SecurityRow[] = [
-    ...MOCK_ROWS_BEFORE,
+    {
+      title: "Wallet password",
+      ...describeWalletPassword(password.hasPassword, password.hasError),
+      action: hasPassword ? "Change" : "Set up",
+      isPrimary: password.hasPassword === false,
+      isDisabled: password.hasPassword === null,
+      onAction: () => setIsPasswordOpen(true),
+    },
+    MOCK_AUTHENTICATOR_ROW,
     {
       title: "Passkeys",
       status: describePasskeys(passkeys.passkeys, Boolean(passkeys.error)),
@@ -93,6 +114,7 @@ export function WalletSecurity() {
               </RText>
             </div>
             <RButton
+              disabled={row.isDisabled}
               onClick={row.onAction}
               size="small"
               tone="black"
@@ -109,11 +131,18 @@ export function WalletSecurity() {
         isOpen={isPasskeysOpen}
         onClose={() => setIsPasskeysOpen(false)}
       />
+      <WalletPasswordModal
+        hasPassword={hasPassword}
+        isOpen={isPasswordOpen}
+        markPasswordSet={password.markPasswordSet}
+        onClose={() => setIsPasswordOpen(false)}
+        save={password.save}
+      />
     </section>
   );
 }
 
-export function WalletBackupAndExport() {
+function WalletBackupAndExport({ hasPassword }: { hasPassword: boolean }) {
   const { dynamic } = useWalletContext();
   const [isExportOpen, setIsExportOpen] = useState(false);
 
@@ -166,6 +195,7 @@ export function WalletBackupAndExport() {
 
       {dynamic ? (
         <ExportKeyModal
+          hasPassword={hasPassword}
           isOpen={isExportOpen}
           onClose={() => setIsExportOpen(false)}
           onContinue={dynamic.revealPrivateKey}

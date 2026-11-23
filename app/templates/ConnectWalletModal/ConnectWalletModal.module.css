@@ -276,3 +276,77 @@
     padding: var(--r-space-2) var(--r-space-4) var(--r-space-6);
   }
 }
+
+/* Email step: the code button, "or", then Google; 16px apart */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.form .buttons .primaryButton {
+  width: 100%;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-3);
+}
+
+.dividerLine {
+  flex: 1 0 0;
+  height: 1px;
+  background: var(--r-color-neutral-100);
+}
+
+/* Unlock: lock badge over the heading */
+.heroBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-6);
+}
+
+.heroIcon {
+  display: flex;
+  padding: var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  background: rgba(204, 204, 204, 0.25);
+  border-radius: var(--r-radius-pill);
+}
+
+.accountCard {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-3);
+  padding: var(--r-space-3);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-12);
+}
+
+/* Figma's account avatar: a fixed gradient circle */
+.avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%);
+  border-radius: var(--r-radius-pill);
+}
+
+.accountText {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.switchAccount {
+  margin: 0;
+  color: var(--r-color-neutral-700);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  text-align: center;
+}

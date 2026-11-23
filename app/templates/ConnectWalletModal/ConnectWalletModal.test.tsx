@@ -12,6 +12,10 @@ const mocks = vi.hoisted(() => ({
     resendOtp: vi.fn(),
     verifyOtp: vi.fn(),
     selectWallet: vi.fn(),
+    signInWithGoogle: vi.fn(),
+    hasPendingGoogleSignIn: vi.fn(),
+    finishGoogleSignIn: vi.fn(),
+    unlockWallet: vi.fn(),
   },
   connect: vi.fn(),
   login: vi.fn(),
@@ -106,6 +110,10 @@ beforeEach(() => {
   mocks.dynamic.verifyOtp.mockResolvedValue(undefined);
   mocks.dynamic.resendOtp.mockResolvedValue(undefined);
   mocks.dynamic.selectWallet.mockResolvedValue(undefined);
+  mocks.dynamic.signInWithGoogle.mockReturnValue(new Promise(() => {}));
+  mocks.dynamic.hasPendingGoogleSignIn.mockReturnValue(false);
+  mocks.dynamic.finishGoogleSignIn.mockResolvedValue(undefined);
+  mocks.dynamic.unlockWallet.mockResolvedValue(undefined);
   mocks.login.mockResolvedValue(undefined);
   container = document.createElement("div");
   root = createRoot(container);
@@ -131,7 +139,9 @@ describe("ConnectWalletModal", () => {
     await render();
 
     await click("Continue with email");
-    expect(text()).toContain("Sign In To Your Wallet");
+    expect(text()).toContain(
+      "New here? We’ll create your account automatically."
+    );
     // No live session: no RWA sign-in yet
     expect(mocks.login).not.toHaveBeenCalled();
 
@@ -260,7 +270,9 @@ describe("ConnectWalletModal", () => {
 
     await click("Try again");
     expect(mocks.dynamic.start).toHaveBeenCalledTimes(2);
-    expect(text()).toContain("Sign In To Your Wallet");
+    expect(text()).toContain(
+      "New here? We’ll create your account automatically."
+    );
   });
 
   it("ignores a result that arrives after the modal was closed", async () => {
@@ -285,7 +297,9 @@ describe("ConnectWalletModal", () => {
     await render("email");
 
     expect(mocks.dynamic.start).toHaveBeenCalledOnce();
-    expect(text()).toContain("Sign In To Your Wallet");
+    expect(text()).toContain(
+      "New here? We’ll create your account automatically."
+    );
     expect(text()).not.toContain("Mavryk Wallet");
     // Nothing to go back to
     expect(container.querySelector('button[aria-label="Back"]')).toBeNull();
@@ -327,5 +341,122 @@ describe("ConnectWalletModal", () => {
     await submit();
 
     expect(button("Resend code in").textContent).toBe("Resend code in 0:30");
+  });
+  it("sends the browser to Google from the email step", async () => {
+    await render("email");
+
+    await click("Continue With Google");
+
+    expect(mocks.dynamic.signInWithGoogle).toHaveBeenCalledOnce();
+    expect(text()).toContain("Opening Google…");
+  });
+
+  it("finishes the Google sign-in when the page comes back from Google", async () => {
+    mocks.dynamic.hasPendingGoogleSignIn.mockReturnValue(true);
+    await render("email");
+    await flush();
+
+    expect(mocks.dynamic.finishGoogleSignIn).toHaveBeenCalledOnce();
+    expect(mocks.dynamic.start).not.toHaveBeenCalled();
+    expect(mocks.login).toHaveBeenCalledOnce();
+    expect(mocks.onClose).toHaveBeenCalledOnce();
+  });
+
+  it("returns to the email step with the reason when Google sign-in fails", async () => {
+    mocks.dynamic.hasPendingGoogleSignIn.mockReturnValue(true);
+    mocks.dynamic.finishGoogleSignIn.mockRejectedValue(
+      Object.assign(
+        new Error("Google sign-in was cancelled. Try again when you're ready."),
+        { name: "GoogleSignInError" }
+      )
+    );
+    await render("email");
+    await flush();
+
+    expect(text()).toContain("Continue With Google");
+    expect(text()).toContain("Google sign-in was cancelled");
+    expect(mocks.login).not.toHaveBeenCalled();
+  });
+
+  it("asks for the password of a locked wallet and restores it", async () => {
+    mocks.dynamic.start.mockResolvedValue("connected");
+    mocks.dynamic.start.mockRejectedValueOnce(
+      Object.assign(new Error("locked"), {
+        name: "DynamicWalletLockedError",
+        wallet: {
+          walletId: "w1",
+          address: "mv1KSqAAAAAAAAAAAAAAAAAAAAAAAAAA9pSX",
+          lastUsedAt: new Date(2026, 10, 9),
+          email: "a@b.co",
+        },
+      })
+    );
+    await render("email");
+
+    expect(text()).toContain("Unlock Your Account On This Device");
+    expect(text()).toContain("mv1KSq");
+    expect(text()).toContain("Last used 9 Nov 2026");
+    expect(button("Restore Account").disabled).toBe(true);
+
+    await act(async () => {
+      const input = container.querySelector<HTMLInputElement>(
+        "input[type=password]"
+      )!;
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )!.set!.call(input, "secret-pass");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await submit();
+
+    expect(mocks.dynamic.unlockWallet).toHaveBeenCalledWith(
+      "w1",
+      "secret-pass"
+    );
+    expect(mocks.login).toHaveBeenCalledOnce();
+    expect(mocks.onClose).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the unlock step with the reason after a wrong password", async () => {
+    mocks.dynamic.start.mockRejectedValue(
+      Object.assign(new Error("locked"), {
+        name: "DynamicWalletLockedError",
+        wallet: {
+          walletId: "w1",
+          address: "mv1KSqAAAAAAAAAAAAAAAAAAAAAAAAAA9pSX",
+          lastUsedAt: null,
+          email: "a@b.co",
+        },
+      })
+    );
+    mocks.dynamic.unlockWallet.mockRejectedValue(
+      Object.assign(
+        new Error("That password didn't work. Check it and try again."),
+        { name: "DynamicWrongPasswordError" }
+      )
+    );
+    await render("email");
+    // No last-used date: the email identifies the account
+    expect(text()).toContain("a@b.co");
+
+    await act(async () => {
+      const input = container.querySelector<HTMLInputElement>(
+        "input[type=password]"
+      )!;
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )!.set!.call(input, "wrong");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await submit();
+
+    expect(text()).toContain("That password didn't work");
+    expect(text()).toContain("Unlock Your Account On This Device");
+    expect(mocks.login).not.toHaveBeenCalled();
+
+    await click("Use a different email");
+    expect(text()).toContain("Email Me A Code");
   });
 });

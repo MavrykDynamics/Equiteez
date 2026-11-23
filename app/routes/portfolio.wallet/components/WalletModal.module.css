@@ -232,3 +232,27 @@
   color: var(--r-color-neutral-700);
   cursor: default;
 }
+
+/* Password fields: label over the input, 16px apart */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+}
+
+.fieldLabel {
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.fieldInput {
+  width: 100%;
+}

@@ -7,6 +7,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -41,6 +42,11 @@ export function ConnectWalletModalProvider({
 
     setIsOpen(true);
   }, [connect, dynamic]);
+
+  // Back from "Continue with Google": the modal finishes the sign-in
+  useEffect(() => {
+    if (dynamic?.hasPendingGoogleSignIn()) setIsOpen(true);
+  }, [dynamic]);
 
   const close = useCallback(() => setIsOpen(false), []);
   const value = useMemo(() => openConnectWallet, [openConnectWallet]);

@@ -39,13 +39,19 @@ import { DynamicNotAuthenticatedError } from "./dynamic/dynamic.errors";
 import {
   loadDynamicClient,
   addDynamicPasskey,
+  changeDynamicWalletPassword,
+  finishGoogleSignIn,
   getDynamicPasskeys,
+  hasDynamicWalletPassword,
   hasLiveDynamicSession,
   logoutDynamic,
   removeDynamicPasskey,
   revealDynamicPrivateKey,
   resendEmailOtp,
   sendEmailOtp,
+  setDynamicWalletPassword,
+  startGoogleSignIn,
+  unlockDynamicWallet,
   verifyEmailOtp,
   waitForAuthenticatedUser,
   waitForDynamicReady,
@@ -57,6 +63,7 @@ import {
   type DynamicSession,
   type WalletChoice,
 } from "./dynamic/dynamicSession.client";
+import { hasPendingGoogleSignIn } from "./dynamic/dynamicSocialReturn";
 import type {
   DynamicConnectApi,
   WalletContextValue,
@@ -263,7 +270,12 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       // they stay signed out rather than silently getting a leftover Mavryk
       // Wallet account. The choice changes only on an explicit connect or
       // sign-out.
-      if (saved === "dynamic" && isDynamicWalletEnabled()) {
+      // Back from Google: the sign-in modal finishes it and opens the wallet
+      if (
+        saved === "dynamic" &&
+        isDynamicWalletEnabled() &&
+        !hasPendingGoogleSignIn()
+      ) {
         try {
           // Restore only: a missing wallet is created in the connect flow
           await establishDynamic({ mode: "restore" });
@@ -357,14 +369,15 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       return client;
     };
 
-    /** The signed-in email wallet's client */
-    const currentDynamicClient = () => {
+    /** The signed-in email wallet's session */
+    const currentDynamicSession = () => {
       const session = dynamicSessionRef.current;
 
       if (!session) throw new DynamicNotAuthenticatedError();
 
-      return session.client;
+      return session;
     };
+    const currentDynamicClient = () => currentDynamicSession().client;
 
     const establishOrThrow = async (choice: WalletChoice) => {
       const client = await readyClient();
@@ -401,7 +414,20 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       },
       selectWallet: (walletId) =>
         establishOrThrow({ mode: "select", walletId }),
-      revealPrivateKey: async (displayContainer) => {
+      signInWithGoogle: async () => startGoogleSignIn(await readyClient()),
+      hasPendingGoogleSignIn,
+      finishGoogleSignIn: async () => {
+        const client = await readyClient();
+
+        await finishGoogleSignIn(client);
+        await waitForAuthenticatedUser(client);
+        await establishOrThrow({ mode: "ensure" });
+      },
+      unlockWallet: async (walletId, password) => {
+        await unlockDynamicWallet(await readyClient(), walletId, password);
+        await establishOrThrow({ mode: "select", walletId });
+      },
+      revealPrivateKey: async (displayContainer, password) => {
         const session = dynamicSessionRef.current;
 
         if (!session) throw new DynamicNotAuthenticatedError();
@@ -409,7 +435,29 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         await revealDynamicPrivateKey(
           session.client,
           session.wallet.walletId,
-          displayContainer
+          displayContainer,
+          password
+        );
+      },
+      hasWalletPassword: async () =>
+        hasDynamicWalletPassword(currentDynamicClient()),
+      setWalletPassword: async (password) => {
+        const session = currentDynamicSession();
+
+        await setDynamicWalletPassword(
+          session.client,
+          session.wallet.walletId,
+          password
+        );
+      },
+      changeWalletPassword: async (currentPassword, newPassword) => {
+        const session = currentDynamicSession();
+
+        await changeDynamicWalletPassword(
+          session.client,
+          session.wallet.walletId,
+          currentPassword,
+          newPassword
         );
       },
       // async: a missing session rejects instead of throwing synchronously

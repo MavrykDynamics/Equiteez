@@ -24,8 +24,12 @@ import {
   DynamicInitError,
   DynamicNotAuthenticatedError,
   DynamicNotConfiguredError,
+  DynamicPasswordAlreadySetError,
   DynamicSessionExpiredError,
+  DynamicWalletLockedError,
   DynamicWalletNotFoundError,
+  DynamicWrongPasswordError,
+  GoogleSignInError,
   IdentityCheckUnavailableError,
   LocalSignatureVerificationError,
   MultipleDynamicWalletsError,
@@ -40,6 +44,12 @@ import {
   getSavedDynamicWalletId,
   saveDynamicWalletId,
 } from "./dynamicWalletStorage";
+import {
+  forgetGoogleSignIn,
+  getSocialRedirectUrl,
+  hasOAuthReturnParams,
+  rememberGoogleSignIn,
+} from "./dynamicSocialReturn";
 import { askToConfirmIdentity, type IdentityMethod } from "./identityCheck";
 
 export type { DynamicClient, DynamicWallet };
@@ -246,6 +256,57 @@ export async function logoutDynamic(
 }
 
 // ---------------------------------------------------------------------------
+// Google sign-in
+// ---------------------------------------------------------------------------
+
+/**
+ * Sends the browser to Google. Ends a current Dynamic session first: a
+ * signed-in user going to Google would link it to that account instead of
+ * signing in with it. The page reloads on return; finishGoogleSignIn then
+ * completes the sign-in.
+ */
+export async function startGoogleSignIn(client: DynamicClient) {
+  if (client.user) await logoutDynamic(client);
+
+  rememberGoogleSignIn();
+
+  try {
+    await client.signInWithGoogle(getSocialRedirectUrl());
+  } catch (error) {
+    forgetGoogleSignIn();
+    throw new GoogleSignInError(undefined, error);
+  }
+}
+
+/** Completes the sign-in on the page Google returned to. */
+export async function finishGoogleSignIn(client: DynamicClient) {
+  forgetGoogleSignIn();
+
+  // Back without Dynamic's parameters: the user cancelled on Google's page
+  if (!hasOAuthReturnParams()) {
+    throw new GoogleSignInError(
+      "Google sign-in was cancelled. Try again when you're ready."
+    );
+  }
+
+  let isCompleted: boolean;
+
+  try {
+    isCompleted = await client.completeGoogleRedirect(
+      new URL(window.location.href)
+    );
+  } catch (error) {
+    throw new GoogleSignInError(undefined, error);
+  }
+
+  if (!isCompleted) {
+    throw new GoogleSignInError(
+      "The link back from Google is no longer valid. Please try again."
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Wallet selection and creation
 // ---------------------------------------------------------------------------
 
@@ -379,6 +440,115 @@ export function ensureDynamicWallet(
   });
 
   return ensureWalletPromise;
+}
+
+/**
+ * Throws DynamicWalletLockedError when the wallet is password-protected and
+ * still locked in this browser, so the user can unlock it.
+ */
+export async function assertDynamicWalletUnlocked(
+  client: DynamicClient,
+  wallet: DynamicWallet
+) {
+  if (!(await client.isWalletLocked(wallet))) return;
+
+  throw new DynamicWalletLockedError({
+    walletId: wallet.id,
+    address: deriveMavrykKeys(wallet.address).address,
+    lastUsedAt: wallet.lastSelectedAt,
+    email: client.user?.email ?? null,
+  });
+}
+
+/** Dynamic's answer for a password that does not decrypt the key share */
+const isWrongPasswordError = (error: unknown) =>
+  error instanceof Error &&
+  /password|decrypt|passphrase|incorrect|invalid/i.test(error.message);
+
+/** Unlocks the password-protected wallet `walletId` in this browser. */
+export async function unlockDynamicWallet(
+  client: DynamicClient,
+  walletId: string,
+  password: string
+) {
+  assertDynamicSession(client);
+
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+
+  if (!wallet) throw new DynamicWalletNotFoundError();
+
+  try {
+    await client.unlockWallet(wallet, password);
+  } catch (error) {
+    if (isWrongPasswordError(error)) throw new DynamicWrongPasswordError(error);
+    throw error;
+  }
+}
+
+/** The connected wallet, for the password calls (any embedded one works) */
+function getConnectedWallet(client: DynamicClient, walletId: string) {
+  assertDynamicSession(client);
+
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+
+  if (!wallet) throw new DynamicWalletNotFoundError();
+  return wallet;
+}
+
+export async function hasDynamicWalletPassword(client: DynamicClient) {
+  assertDynamicSession(client);
+  return client.hasWalletPassword();
+}
+
+/** Dynamic's answer when a password exists: "use updatePassword" */
+const isPasswordAlreadySetError = (error: unknown) =>
+  error instanceof Error &&
+  /already password-encrypted|already has a password|updatePassword/i.test(
+    error.message
+  );
+
+/**
+ * Protects the user's wallets with `password`. Dynamic never sees it and
+ * cannot reset it; the wallet then comes locked on a new device or session.
+ */
+export async function setDynamicWalletPassword(
+  client: DynamicClient,
+  walletId: string,
+  password: string
+) {
+  try {
+    await client.setWalletPassword(
+      getConnectedWallet(client, walletId),
+      password
+    );
+  } catch (error) {
+    if (isPasswordAlreadySetError(error)) {
+      throw new DynamicPasswordAlreadySetError(error);
+    }
+    throw error;
+  }
+}
+
+export async function changeDynamicWalletPassword(
+  client: DynamicClient,
+  walletId: string,
+  currentPassword: string,
+  newPassword: string
+) {
+  try {
+    await client.changeWalletPassword(
+      getConnectedWallet(client, walletId),
+      currentPassword,
+      newPassword
+    );
+  } catch (error) {
+    if (isWrongPasswordError(error)) throw new DynamicWrongPasswordError(error);
+    throw error;
+  }
 }
 
 export function toDynamicWalletIdentity(
@@ -575,7 +745,9 @@ export async function verifyDynamicIdentity(
 export async function revealDynamicPrivateKey(
   client: DynamicClient,
   walletId: string,
-  displayContainer: HTMLElement
+  displayContainer: HTMLElement,
+  /** The wallet password, when the wallet has one */
+  password?: string
 ): Promise<void> {
   assertDynamicSession(client);
 
@@ -586,7 +758,15 @@ export async function revealDynamicPrivateKey(
   if (!wallet) throw new DynamicWalletNotFoundError();
 
   await verifyDynamicIdentity(client, "wallet:export");
-  await client.exportPrivateKey(wallet, displayContainer);
+
+  try {
+    await client.exportPrivateKey(wallet, displayContainer, password);
+  } catch (error) {
+    if (password && isWrongPasswordError(error)) {
+      throw new DynamicWrongPasswordError(error);
+    }
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------

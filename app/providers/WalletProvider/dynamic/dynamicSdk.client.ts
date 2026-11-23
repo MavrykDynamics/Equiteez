@@ -14,8 +14,11 @@ import {
   authenticatePasskeyMFA,
   authenticateTotpMfaDevice,
   checkStepUpAuth,
+  clearSocialRedirectParams,
+  completeSocialRedirect,
   createDynamicClient as createSdkClient,
   deletePasskey,
+  detectSocialRedirectUrl,
   getPasskeys,
   getWalletAccounts,
   initializeClient,
@@ -23,6 +26,7 @@ import {
   onEvent,
   registerPasskey,
   sendEmailOTP,
+  signInWithSocialRedirect,
   signMessage,
   TokenScope,
   verifyOTP,
@@ -32,7 +36,11 @@ import {
 import {
   createWaasWalletAccounts,
   exportWaasPrivateKey,
+  getWalletRecoveryState,
   isWaasWalletAccount,
+  setWaasWalletAccountPassword,
+  unlockWallet,
+  updateWaasPassword,
 } from "@dynamic-labs-sdk/client/waas";
 import { addWaasSolanaExtension } from "@dynamic-labs-sdk/solana/waas";
 
@@ -115,12 +123,70 @@ export function createDynamicClient(environmentId: string) {
       await logout(sdk);
     },
 
+    /** Sends the browser to Google; it comes back to `redirectUrl` */
+    signInWithGoogle: (redirectUrl: string) =>
+      signInWithSocialRedirect({ provider: "google", redirectUrl }, sdk),
+    /**
+     * Finishes the return from Google at `url`. False when the URL is not a
+     * return this browser started (an old link, another tab). Removes the
+     * one-time parameters from the address bar either way.
+     */
+    completeGoogleRedirect: async (url: URL) => {
+      try {
+        if (!(await detectSocialRedirectUrl({ url }, sdk))) return false;
+        await completeSocialRedirect({ url }, sdk);
+        return true;
+      } finally {
+        clearSocialRedirectParams();
+      }
+    },
+
     getWalletAccounts: () => getWalletAccounts(sdk),
     isEmbeddedWallet: (walletAccount: WalletAccount) =>
       isWaasWalletAccount({ walletAccount }),
     createSolWallet: () => createWaasWalletAccounts({ chains: ["SOL"] }, sdk),
     signMessage: async (walletAccount: WalletAccount, message: string) =>
       (await signMessage({ walletAccount, message }, sdk)).signature,
+    /**
+     * True when the wallet is protected by a password and not unlocked in
+     * this browser yet: it cannot sign until unlockWallet
+     */
+    isWalletLocked: async (walletAccount: WalletAccount) =>
+      (await getWalletRecoveryState({ walletAccount }, sdk))
+        .walletReadyState === "encrypted",
+    unlockWallet: async (walletAccount: WalletAccount, password: string) => {
+      await unlockWallet({ walletAccount, password }, sdk);
+    },
+    /**
+     * Whether the user's wallets are protected by a password. The password is
+     * per user: one wallet (e.g. the EVM one Dynamic creates alongside) can
+     * report it while another does not yet, so every embedded wallet is asked.
+     */
+    hasWalletPassword: async () => {
+      const states = await Promise.allSettled(
+        getWalletAccounts(sdk)
+          .filter((walletAccount) => isWaasWalletAccount({ walletAccount }))
+          .map((walletAccount) =>
+            getWalletRecoveryState({ walletAccount }, sdk)
+          )
+      );
+      const answered = states.filter((state) => state.status === "fulfilled");
+
+      if (!answered.length && states.length) {
+        throw (states[0] as PromiseRejectedResult).reason;
+      }
+
+      return answered.some((state) => state.value.isPasswordEncrypted);
+    },
+    /** Protects all of the user's wallets with a new password */
+    setWalletPassword: (walletAccount: WalletAccount, password: string) =>
+      setWaasWalletAccountPassword({ walletAccount, password }, sdk),
+    changeWalletPassword: (
+      walletAccount: WalletAccount,
+      currentPassword: string,
+      newPassword: string
+    ) =>
+      updateWaasPassword({ walletAccount, currentPassword, newPassword }, sdk),
 
     getPasskeys: () => getPasskeys(sdk),
     /** Runs the browser's passkey prompt; needs a "credential:link" check */
@@ -174,8 +240,18 @@ export function createDynamicClient(environmentId: string) {
      */
     exportPrivateKey: (
       walletAccount: WalletAccount,
-      displayContainer: HTMLElement
-    ) => exportWaasPrivateKey({ walletAccount, displayContainer }, sdk),
+      displayContainer: HTMLElement,
+      /** Needed when the wallet is protected by a password */
+      password?: string
+    ) =>
+      exportWaasPrivateKey(
+        {
+          walletAccount,
+          displayContainer,
+          ...(password ? { password } : {}),
+        },
+        sdk
+      ),
   };
 }
 

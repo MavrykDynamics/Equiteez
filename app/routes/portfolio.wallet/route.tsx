@@ -12,10 +12,7 @@ import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/Welcome
 import { ConfirmIdentityModal } from "./components/ConfirmIdentityModal";
 import { KycInfo } from "./components/KycInfo";
 import { SigningKey } from "./components/SigningKey";
-import {
-  WalletBackupAndExport,
-  WalletSecurity,
-} from "./components/WalletSecurity";
+import { EmailWalletSettings } from "./components/WalletSecurity";
 
 import styles from "./styles.module.css";
 
@@ -39,8 +36,7 @@ export default function PortfolioWallet() {
 
         {isEmailWallet ? (
           <>
-            <WalletSecurity />
-            <WalletBackupAndExport />
+            <EmailWalletSettings />
             <ConfirmIdentityModal />
           </>
         ) : null}

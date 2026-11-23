@@ -7,7 +7,10 @@ import bs58 from "bs58";
 import { decodeHex, operationDigest } from "~/lib/mavryk/keys";
 import {
   addDynamicPasskey,
+  assertDynamicWalletUnlocked,
+  changeDynamicWalletPassword,
   ensureDynamicWallet,
+  finishGoogleSignIn,
   getEmbeddedSolWallets,
   hasLiveDynamicSession,
   logoutDynamic,
@@ -16,8 +19,11 @@ import {
   revealDynamicPrivateKey,
   selectDynamicWallet,
   sendEmailOtp,
+  setDynamicWalletPassword,
   signDigest32,
+  startGoogleSignIn,
   toDynamicWalletIdentity,
+  unlockDynamicWallet,
   verifyDynamicIdentity,
   waitForAuthenticatedUser,
   waitForDynamicReady,
@@ -27,12 +33,17 @@ import {
 import {
   DynamicIdentityChangedError,
   DynamicInitError,
+  DynamicPasswordAlreadySetError,
   DynamicSessionExpiredError,
+  DynamicWalletLockedError,
+  DynamicWrongPasswordError,
+  GoogleSignInError,
   IdentityCheckCancelledError,
   IdentityCheckUnavailableError,
   LocalSignatureVerificationError,
   MultipleDynamicWalletsError,
 } from "./dynamic.errors";
+import { hasPendingGoogleSignIn } from "./dynamicSocialReturn";
 import { getPendingIdentityCheck } from "./identityCheck";
 
 // Public test keys: never hold funds
@@ -133,6 +144,25 @@ function createFakeClient({
     signMessage: vi.fn(async (wallet: DynamicWallet, message: string) =>
       bs58.encode(ed25519.sign(decodeHex(message), seedsByWalletId[wallet.id]))
     ),
+    signInWithGoogle: vi.fn<(redirectUrl: string) => Promise<void>>(
+      async () => undefined
+    ),
+    completeGoogleRedirect: vi.fn<(url: URL) => Promise<boolean>>(
+      async () => true
+    ),
+    isWalletLocked: vi.fn<(wallet: DynamicWallet) => Promise<boolean>>(
+      async () => false
+    ),
+    unlockWallet: vi.fn<
+      (wallet: DynamicWallet, password: string) => Promise<void>
+    >(async () => undefined),
+    hasWalletPassword: vi.fn(async () => false),
+    setWalletPassword: vi.fn<
+      (wallet: DynamicWallet, password: string) => Promise<void>
+    >(async () => undefined),
+    changeWalletPassword: vi.fn<
+      (wallet: DynamicWallet, current: string, next: string) => Promise<void>
+    >(async () => undefined),
     getPasskeys: vi.fn(async () => []),
     registerPasskey: vi.fn(async () => undefined),
     deletePasskey: vi.fn<(passkeyId: string) => Promise<void>>(
@@ -155,7 +185,11 @@ function createFakeClient({
       (deviceId: string, code: string, scope: string) => Promise<void>
     >(async () => undefined),
     exportPrivateKey: vi.fn<
-      (wallet: DynamicWallet, container: HTMLElement) => Promise<void>
+      (
+        wallet: DynamicWallet,
+        container: HTMLElement,
+        password?: string
+      ) => Promise<void>
     >(async () => undefined),
   };
 
@@ -170,13 +204,23 @@ function createFakeClient({
 /** Lets the pending promise chain reach the dialog */
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-beforeEach(() => {
+const memoryStorage = () => {
   const storage = new Map<string, string>();
+
+  return {
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => void storage.set(key, value),
+    removeItem: (key: string) => void storage.delete(key),
+  };
+};
+
+const APP_URL = "https://app.equiteez.com/portfolio?tab=wallet";
+
+beforeEach(() => {
   vi.stubGlobal("window", {
-    localStorage: {
-      getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => storage.set(key, value),
-    },
+    localStorage: memoryStorage(),
+    sessionStorage: memoryStorage(),
+    location: { href: APP_URL },
   });
 });
 
@@ -601,7 +645,8 @@ describe("Actions behind the check", () => {
     expect(fake.checkStepUp).toHaveBeenCalledWith("wallet:export");
     expect(fake.exportPrivateKey).toHaveBeenCalledWith(
       expect.objectContaining({ id: "w1" }),
-      container
+      container,
+      undefined
     );
   });
 
@@ -634,5 +679,172 @@ describe("Actions behind the check", () => {
     ]);
     expect(fake.registerPasskey).toHaveBeenCalledOnce();
     expect(fake.deletePasskey).toHaveBeenCalledWith("pk-1");
+  });
+});
+
+describe("Google sign-in", () => {
+  it("signs out a current user, notes the trip and returns to this page", async () => {
+    const { client, fake } = createFakeClient();
+
+    await startGoogleSignIn(client);
+
+    expect(fake.logout).toHaveBeenCalledOnce();
+    expect(fake.signInWithGoogle).toHaveBeenCalledWith(APP_URL);
+    expect(hasPendingGoogleSignIn()).toBe(true);
+  });
+
+  it("forgets the trip when Google cannot be opened", async () => {
+    const { client, fake } = createFakeClient({ user: null });
+    fake.signInWithGoogle.mockRejectedValueOnce(new Error("network"));
+
+    await expect(startGoogleSignIn(client)).rejects.toBeInstanceOf(
+      GoogleSignInError
+    );
+    expect(hasPendingGoogleSignIn()).toBe(false);
+  });
+
+  it("completes the return from Google", async () => {
+    const { client, fake } = createFakeClient({ user: null });
+    window.location.href = `${APP_URL}&dynamicOauthState=s&dynamicOauthCode=c`;
+
+    await finishGoogleSignIn(client);
+
+    expect(fake.completeGoogleRedirect).toHaveBeenCalledWith(
+      new URL(window.location.href)
+    );
+  });
+
+  it("says the sign-in was cancelled when Google sends the user back empty-handed", async () => {
+    const { client, fake } = createFakeClient({ user: null });
+
+    await expect(finishGoogleSignIn(client)).rejects.toThrow(
+      "Google sign-in was cancelled"
+    );
+    expect(fake.completeGoogleRedirect).not.toHaveBeenCalled();
+  });
+
+  it("refuses a return this browser did not start", async () => {
+    const { client, fake } = createFakeClient({ user: null });
+    window.location.href = `${APP_URL}&dynamicOauthState=s&dynamicOauthCode=c`;
+    fake.completeGoogleRedirect.mockResolvedValueOnce(false);
+
+    await expect(finishGoogleSignIn(client)).rejects.toThrow("no longer valid");
+  });
+});
+
+describe("Password-protected wallet", () => {
+  it("reports a locked wallet with what the unlock screen shows", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    fake.isWalletLocked.mockResolvedValueOnce(true);
+
+    const error = await assertDynamicWalletUnlocked(
+      client,
+      embeddedWallet("w1")
+    ).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(DynamicWalletLockedError);
+    expect((error as DynamicWalletLockedError).wallet).toEqual({
+      walletId: "w1",
+      address: toDynamicWalletIdentity(embeddedWallet("w1")).address,
+      lastUsedAt: null,
+      email: "a@b.co",
+    });
+  });
+
+  it("lets an unlocked wallet through", async () => {
+    const { client } = createFakeClient();
+
+    await expect(
+      assertDynamicWalletUnlocked(client, embeddedWallet("w1"))
+    ).resolves.toBeUndefined();
+  });
+
+  it("unlocks the wallet with the password", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+
+    await unlockDynamicWallet(client, "w1", "secret-pass");
+
+    expect(fake.unlockWallet).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "w1" }),
+      "secret-pass"
+    );
+  });
+
+  it("says when the password is wrong, and passes other failures on", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    fake.unlockWallet.mockRejectedValueOnce(
+      new Error("Failed to decrypt key share")
+    );
+
+    await expect(
+      unlockDynamicWallet(client, "w1", "wrong")
+    ).rejects.toBeInstanceOf(DynamicWrongPasswordError);
+
+    fake.unlockWallet.mockRejectedValueOnce(new Error("network down"));
+    await expect(unlockDynamicWallet(client, "w1", "x")).rejects.toThrow(
+      "network down"
+    );
+  });
+});
+
+describe("Wallet password settings", () => {
+  it("sets the password on the connected wallet", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+
+    await setDynamicWalletPassword(client, "w1", "long-enough");
+
+    expect(fake.setWalletPassword).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "w1" }),
+      "long-enough"
+    );
+  });
+
+  it("says when a password is already there", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    fake.setWalletPassword.mockRejectedValueOnce(
+      new Error("Wallet is already password-encrypted, use updatePassword")
+    );
+
+    await expect(
+      setDynamicWalletPassword(client, "w1", "long-enough")
+    ).rejects.toBeInstanceOf(DynamicPasswordAlreadySetError);
+  });
+
+  it("says when the current password is wrong", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    fake.changeWalletPassword.mockRejectedValueOnce(
+      new Error("Failed to decrypt key share")
+    );
+
+    await expect(
+      changeDynamicWalletPassword(client, "w1", "wrong", "new-password")
+    ).rejects.toBeInstanceOf(DynamicWrongPasswordError);
+  });
+
+  it("passes the wallet password to the key export", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    const container = {} as HTMLElement;
+
+    await revealDynamicPrivateKey(client, "w1", container, "long-enough");
+
+    expect(fake.exportPrivateKey).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "w1" }),
+      container,
+      "long-enough"
+    );
   });
 });

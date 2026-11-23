@@ -5,7 +5,10 @@
  * Figma "Sign-in, restore, expired" designs.
  *
  * Email flow: email → code → wallet set-up → RWA sign-in, each step with a
- * recoverable error. Closing the modal never deletes a wallet.
+ * recoverable error. "Continue with Google" leaves for Google; on return the
+ * modal reopens and finishes the sign-in. A password-protected wallet that
+ * comes locked asks for the password ("Unlock Your Account On This Device").
+ * Closing the modal never deletes a wallet.
  */
 import clsx from "clsx";
 import {
@@ -36,8 +39,10 @@ import {
   describeConnectError,
   isValidEmail,
   type ConnectStage,
+  type LockedWallet,
 } from "./connectWalletErrors";
 import { CodeInput, CODE_LENGTH } from "./CodeInput";
+import { RGoogleIcon } from "./RGoogleIcon";
 import styles from "./ConnectWalletModal.module.css";
 
 const RESEND_COOLDOWN_MS = 30_000;
@@ -53,7 +58,12 @@ type Step =
   | { name: "code"; error?: string }
   | { name: "working"; label: string }
   | { name: "select-wallet"; wallets: DynamicWalletOption[] }
+  | { name: "unlock"; wallet: LockedWallet; error?: string }
   | { name: "failed"; message: string };
+
+/** Steps with a form: the loading step keeps their height */
+const isFormStep = (name: Step["name"]) =>
+  name === "email" || name === "code" || name === "unlock";
 
 type ConnectWalletModalProps = {
   isOpen: boolean;
@@ -69,10 +79,12 @@ export function ConnectWalletModal({
   const isMobile = useIsMobileViewport();
   const canChooseWallet = isWalletChoiceEnabled();
   const emailInputId = useId();
+  const passwordInputId = useId();
 
   const [step, setStep] = useState<Step>({ name: "choose" });
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [resendAvailableAt, setResendAvailableAt] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   // Results of a step started before the modal closed or moved on are ignored
@@ -127,7 +139,9 @@ export function ConnectWalletModal({
         setStep(
           view.kind === "select-wallet"
             ? { name: "select-wallet", wallets: view.wallets }
-            : onError(view.message)
+            : view.kind === "unlock"
+              ? { name: "unlock", wallet: view.wallet }
+              : onError(view.message)
         );
       }
     },
@@ -147,28 +161,42 @@ export function ConnectWalletModal({
     });
   }, [connectAndSignIn, dynamic]);
 
+  /** Back from Google: completes the sign-in and opens the wallet */
+  const finishGoogle = useCallback(() => {
+    if (!dynamic) return;
+
+    void connectAndSignIn({
+      connectStep: () => dynamic.finishGoogleSignIn(),
+      stage: "connect",
+      label: "Signing you in with Google…",
+      onError: (message) => ({ name: "email", error: message }),
+    });
+  }, [connectAndSignIn, dynamic]);
+
   // Fresh state every time the modal opens
   useEffect(() => {
     if (!isOpen) return;
 
     setCode("");
+    setPassword("");
     setStep({ name: "choose" });
-    if (!canChooseWallet) startEmail();
+    if (dynamic?.hasPendingGoogleSignIn()) finishGoogle();
+    else if (!canChooseWallet) startEmail();
     // Only on open: startEmail changes with wallet state
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   useLayoutEffect(() => {
-    if (step.name !== "email" && step.name !== "code") return;
+    if (!isFormStep(step.name)) return;
 
     const height = contentRef.current?.getBoundingClientRect().height;
 
     if (height) lastFormHeight = height;
   });
 
-  // Move focus to the field of the email and code steps
+  // Move focus to the field of the email, code and password steps
   useEffect(() => {
-    if (step.name === "email" || step.name === "code") {
+    if (isFormStep(step.name)) {
       contentRef.current?.querySelector("input")?.focus();
     }
   }, [step.name]);
@@ -269,6 +297,45 @@ export function ConnectWalletModal({
     }
   };
 
+  const continueWithGoogle = async () => {
+    if (!dynamic) return;
+
+    const run = nextRun();
+    setStep({ name: "working", label: "Opening Google…" });
+
+    try {
+      // Leaves the page; the modal finishes the sign-in on return
+      await dynamic.signInWithGoogle();
+    } catch (error) {
+      if (!isCurrent(run)) return;
+
+      const view = describeConnectError(error, "connect");
+      setStep({
+        name: "email",
+        error: view.kind === "message" ? view.message : undefined,
+      });
+    }
+  };
+
+  const submitPassword = (event: FormEvent) => {
+    event.preventDefault();
+    if (!dynamic || step.name !== "unlock" || !password) return;
+
+    const { wallet } = step;
+
+    void connectAndSignIn({
+      connectStep: () => dynamic.unlockWallet(wallet.walletId, password),
+      stage: "unlock",
+      label: "Restoring your account…",
+      onError: (message) => ({ name: "unlock", wallet, error: message }),
+    });
+  };
+
+  const handleUseDifferentEmail = () => {
+    setPassword("");
+    setStep({ name: "email" });
+  };
+
   const selectWallet = (walletId: string) => {
     if (!dynamic) return;
 
@@ -295,8 +362,8 @@ export function ConnectWalletModal({
   );
 
   const back =
-    step.name === "code"
-      ? () => setStep({ name: "email" })
+    step.name === "code" || step.name === "unlock"
+      ? handleUseDifferentEmail
       : step.name === "email" && canChooseWallet
         ? () => setStep({ name: "choose" })
         : undefined;
@@ -365,8 +432,8 @@ export function ConnectWalletModal({
         {step.name === "email" && (
           <form className={styles.form} noValidate onSubmit={submitEmail}>
             <Header
-              title="Sign In To Your Wallet"
-              description="We'll email you a 6-digit code. If you already have a wallet, we'll restore it."
+              title="Sign In"
+              description="Enter your email and we’ll send you a 6-digit code. New here? We’ll create your account automatically."
             />
             <div className={styles.field}>
               <label className={styles.label} htmlFor={emailInputId}>
@@ -380,26 +447,87 @@ export function ConnectWalletModal({
                 id={emailInputId}
                 inputMode="email"
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="name@company.com"
+                placeholder="name@mail.com"
                 type="email"
                 value={email}
               />
               <ErrorText message={step.error} />
             </div>
+            <div className={styles.buttons}>
+              <RButton
+                className={styles.primaryButton}
+                disabled={!email.trim()}
+                size="large"
+                tone="black"
+                type="submit"
+                variant="primary"
+              >
+                Email Me A Code
+              </RButton>
+              <Divider />
+              <RButton
+                className={styles.primaryButton}
+                iconLeft={<RGoogleIcon />}
+                onClick={continueWithGoogle}
+                size="large"
+                tone="black"
+                type="button"
+                variant="secondary"
+              >
+                Continue With Google
+              </RButton>
+            </div>
+            <Note>
+              Your sign-in and keys are secured by Dynamic.
+              <br />
+              Equiteez never holds your keys.
+            </Note>
+          </form>
+        )}
+
+        {step.name === "unlock" && (
+          <form className={styles.form} noValidate onSubmit={submitPassword}>
+            <div className={styles.heroBlock}>
+              <span className={styles.heroIcon}>
+                <RIcon aria-hidden name="lock" size="medium" />
+              </span>
+              <Header
+                title="Unlock Your Account On This Device"
+                description="This is your first time signing in on this device. Enter your account password to restore your account here."
+              />
+            </div>
+            <AccountCard wallet={step.wallet} />
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor={passwordInputId}>
+                Account Password
+              </label>
+              <RInput
+                aria-invalid={Boolean(step.error)}
+                autoComplete="current-password"
+                className={clsx(styles.input, step.error && styles.inputError)}
+                id={passwordInputId}
+                onChange={(event) => setPassword(event.target.value)}
+                type="password"
+                value={password}
+              />
+              <ErrorText message={step.error} />
+            </div>
             <RButton
               className={styles.primaryButton}
-              disabled={!email.trim()}
+              disabled={!password}
               size="large"
               tone="black"
               type="submit"
               variant="primary"
             >
-              Email Me A Code
+              Restore Account
             </RButton>
-            <Note>
-              Sign-in and keys are secured by Dynamic. Equiteez never holds your
-              key.
-            </Note>
+            <p className={styles.switchAccount}>
+              Not your account?{" "}
+              <TextButton onClick={handleUseDifferentEmail}>
+                Use a different email
+              </TextButton>
+            </p>
           </form>
         )}
 
@@ -470,7 +598,9 @@ export function ConnectWalletModal({
                 <OptionButton
                   key={wallet.walletId}
                   onClick={() => selectWallet(wallet.walletId)}
-                  title={<HashShortView hash={wallet.address} />}
+                  title={
+                    <HashShortView firstCharsCount={6} hash={wallet.address} />
+                  }
                 />
               ))}
             </div>
@@ -569,6 +699,49 @@ function TextButton({
     >
       {children}
     </button>
+  );
+}
+
+function Divider() {
+  return (
+    <div className={styles.divider}>
+      <span aria-hidden className={styles.dividerLine} />
+      <RText color="neutral-700" size="body-sm">
+        or
+      </RText>
+      <span aria-hidden className={styles.dividerLine} />
+    </div>
+  );
+}
+
+/** "9 Nov 2026" */
+const formatLastUsed = (date: Date) =>
+  date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+/** The account being restored: its address and when it was last used */
+function AccountCard({ wallet }: { wallet: LockedWallet }) {
+  const detail = wallet.lastUsedAt
+    ? `Last used ${formatLastUsed(wallet.lastUsedAt)}`
+    : wallet.email;
+
+  return (
+    <div className={styles.accountCard}>
+      <span aria-hidden className={styles.avatar} />
+      <div className={styles.accountText}>
+        <RText size="body-sm" weight="medium">
+          <HashShortView firstCharsCount={6} hash={wallet.address} />
+        </RText>
+        {detail ? (
+          <RText color="neutral-700" size="body-s">
+            {detail}
+          </RText>
+        ) : null}
+      </div>
+    </div>
   );
 }
 

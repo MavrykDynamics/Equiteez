@@ -4,18 +4,20 @@
  * private key in an isolated frame Dynamic injects into this modal: Equiteez
  * never sees it.
  */
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import CheckboxChecked from "app/icons/checkbox-checked.svg?react";
 import CheckboxUnchecked from "app/icons/checkbox-unchecked.svg?react";
 import ExportKeyIcon from "app/icons/export-key.svg?react";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
+import { RInput } from "~/lib/atoms/RInput/RInput";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   DynamicSessionExpiredError,
+  DynamicWrongPasswordError,
   IdentityCheckCancelledError,
   IdentityCheckUnavailableError,
 } from "~/providers/WalletProvider/dynamic/dynamic.errors";
@@ -25,12 +27,18 @@ import styles from "./WalletModal.module.css";
 type ExportKeyModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** The wallet has a password: Dynamic needs it to show the key */
+  hasPassword?: boolean;
   /** Shows the key in Dynamic's frame inside `displayContainer` */
-  onContinue: (displayContainer: HTMLElement) => Promise<void>;
+  onContinue: (
+    displayContainer: HTMLElement,
+    password?: string
+  ) => Promise<void>;
 };
 
 export function ExportKeyModal({
   isOpen,
+  hasPassword = false,
   onClose,
   onContinue,
 }: ExportKeyModalProps) {
@@ -44,15 +52,22 @@ export function ExportKeyModal({
       overlayClassName={styles.overlay}
     >
       {/* Mounted only while open: every opening starts unconfirmed */}
-      <ExportKeyContent onClose={onClose} onContinue={onContinue} />
+      <ExportKeyContent
+        hasPassword={hasPassword}
+        onClose={onClose}
+        onContinue={onContinue}
+      />
     </CustomPopup>
   );
 }
 
 function ExportKeyContent({
+  hasPassword,
   onClose,
   onContinue,
 }: Omit<ExportKeyModalProps, "isOpen">) {
+  const passwordId = useId();
+  const [password, setPassword] = useState("");
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [isKeyShown, setIsKeyShown] = useState(false);
@@ -71,7 +86,8 @@ function ExportKeyContent({
 
     try {
       keyFrame.replaceChildren();
-      await onContinue(keyFrame);
+      await onContinue(keyFrame, hasPassword ? password : undefined);
+      setPassword("");
       setIsKeyShown(true);
     } catch (openError) {
       keyFrame.replaceChildren();
@@ -79,6 +95,7 @@ function ExportKeyContent({
       if (!(openError instanceof IdentityCheckCancelledError)) {
         setError(
           openError instanceof DynamicSessionExpiredError ||
+            openError instanceof DynamicWrongPasswordError ||
             openError instanceof IdentityCheckUnavailableError
             ? openError.message
             : "Couldn't show your key. Please try again."
@@ -161,6 +178,22 @@ function ExportKeyContent({
               </RText>
             </label>
 
+            {hasPassword ? (
+              <div className={styles.field}>
+                <label className={styles.fieldLabel} htmlFor={passwordId}>
+                  Wallet Password
+                </label>
+                <RInput
+                  autoComplete="current-password"
+                  className={styles.fieldInput}
+                  id={passwordId}
+                  onChange={(event) => setPassword(event.target.value)}
+                  type="password"
+                  value={password}
+                />
+              </div>
+            ) : null}
+
             <RText color="neutral-700" size="body-sm">
               Next you&apos;ll confirm it&apos;s you. The key then appears here
               in a secure frame from Dynamic; Equiteez never sees it.
@@ -184,7 +217,9 @@ function ExportKeyContent({
               </RButton>
               <RButton
                 className={styles.action}
-                disabled={!isConfirmed || isOpening}
+                disabled={
+                  !isConfirmed || isOpening || (hasPassword && !password)
+                }
                 onClick={() => void handleContinue()}
                 size="medium"
                 tone="black"

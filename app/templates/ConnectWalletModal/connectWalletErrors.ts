@@ -1,14 +1,20 @@
 /**
  * What the connect modal shows for a failed step. Dynamic's own errors have
- * no stable codes in SDK 4.84, so OTP problems are recognized by message.
+ * no stable codes, so OTP problems are recognized by message.
  */
 import { isWalletAbortActionError } from "~/contracts/hooks/contractActionError";
-import type { DynamicWalletOption } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import type {
+  DynamicWalletLockedError,
+  DynamicWalletOption,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
-export type ConnectStage = "email" | "code" | "connect";
+export type LockedWallet = DynamicWalletLockedError["wallet"];
+
+export type ConnectStage = "email" | "code" | "connect" | "unlock";
 
 export type ConnectErrorView =
   | { kind: "select-wallet"; wallets: DynamicWalletOption[] }
+  | { kind: "unlock"; wallet: LockedWallet }
   | { kind: "message"; message: string };
 
 const message = (text: string): ConnectErrorView => ({
@@ -49,6 +55,18 @@ export function describeConnectError(
       kind: "select-wallet",
       wallets: (error as { wallets: DynamicWalletOption[] }).wallets,
     };
+  }
+
+  if (name === "DynamicWalletLockedError") {
+    return {
+      kind: "unlock",
+      wallet: (error as DynamicWalletLockedError).wallet,
+    };
+  }
+
+  // Our own errors with messages written for this modal
+  if (name === "GoogleSignInError" || name === "DynamicWrongPasswordError") {
+    return message(text);
   }
 
   if (name === "DynamicInitError" || name === "DynamicNotConfiguredError") {

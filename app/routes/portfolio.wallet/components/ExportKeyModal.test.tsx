@@ -26,7 +26,8 @@ import { ExportKeyModal } from "./ExportKeyModal";
 let container: HTMLDivElement;
 let root: Root;
 const onClose = vi.fn();
-const onContinue = vi.fn<(displayContainer: HTMLElement) => Promise<void>>();
+const onContinue =
+  vi.fn<(displayContainer: HTMLElement, password?: string) => Promise<void>>();
 
 const render = () =>
   act(async () =>
@@ -114,5 +115,36 @@ describe("ExportKeyModal", () => {
 
     expect(onClose).toHaveBeenCalledOnce();
     expect(onContinue).not.toHaveBeenCalled();
+  });
+  it("asks for the wallet password when the wallet has one", async () => {
+    await act(async () =>
+      root.render(
+        <ExportKeyModal
+          hasPassword
+          isOpen
+          onClose={onClose}
+          onContinue={onContinue}
+        />
+      )
+    );
+    await confirm();
+    expect(button("Continue").disabled).toBe(true);
+
+    await act(async () => {
+      const input = container.querySelector<HTMLInputElement>(
+        "input[type=password]"
+      )!;
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )!.set!.call(input, "long-enough");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => button("Continue").click());
+
+    expect(onContinue).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      "long-enough"
+    );
   });
 });
