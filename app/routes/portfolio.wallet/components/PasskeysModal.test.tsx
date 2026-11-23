@@ -3,7 +3,10 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DynamicSessionExpiredError } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import {
+  DynamicSessionExpiredError,
+  IdentityCheckCancelledError,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import type { DynamicPasskey } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
 
 const mocks = vi.hoisted(() => ({
@@ -120,6 +123,16 @@ describe("Passkeys", () => {
     );
     await render();
     await click("Add passkey");
+
+    expect(container.querySelector("[role=alert]")).toBeNull();
+  });
+
+  it("stays quiet when the user closes Confirm it's you", async () => {
+    mocks.addPasskey.mockRejectedValue(new IdentityCheckCancelledError());
+    mocks.removePasskey.mockRejectedValue(new IdentityCheckCancelledError());
+    await render();
+    await click("Add passkey");
+    await click("Remove");
 
     expect(container.querySelector("[role=alert]")).toBeNull();
   });

@@ -71,11 +71,10 @@ export async function openDynamicSession(
 ): Promise<DynamicSession | null> {
   await waitForDynamicReady(client);
 
-  if (!client.auth.authenticatedUser) return null;
-  // After a long break Dynamic still remembers the user and the wallets, but
-  // the session token has expired and every request (signing, export, the
-  // wallet UI) fails: restoring that would show a signed-in wallet that does
-  // not work. Stay signed out; the user signs in with a code again.
+  if (!client.user) return null;
+  // A session past its expiry fails every request (signing, export): restoring
+  // it would show a signed-in wallet that does not work. Stay signed out; the
+  // user signs in with a code again.
   if (choice.mode === "restore" && !hasLiveDynamicSession(client)) return null;
 
   const selected = await pickWallet(client, choice);

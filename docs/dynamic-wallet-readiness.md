@@ -16,7 +16,6 @@ Everything below is proven by unit and component tests and a local browser check
 | --- | --- | --- | --- | --- |
 | `DYNAMIC_ENVIRONMENT_ID` | Public id of the Dynamic environment | Sandbox id | Sandbox id | not set |
 | `DYNAMIC_WALLET_ENABLED` | Offer email sign-in (`true`) | `true` | `true` | not set (off) |
-| `DYNAMIC_WALLET_AUTO_CREATE` | The environment creates the wallet on sign-up; the app then never creates one | `true` | `true` | not set |
 | `DYNAMIC_DIRECT_ENABLED` | Email-wallet actions allowed before they are marked tested: `true` for all, or a list such as `orderbook.buy,orderbook.sell,withdraw` | `true` | `true` | not set (all gated) |
 | `WALLET_CHOICE_ENABLED` | Sign-in offers Mavryk Wallet next to email (`true`); otherwise it opens on the email wallet | set `true` to see the choice | `true` | `false` (email only) |
 
@@ -29,7 +28,7 @@ The client reads these at build time (`define: { "process.env": process.env }` i
 ### Dynamic dashboard (app.dynamic.xyz, project `equiteez-app`, Sandbox)
 
 - Solana enabled (Devnet), Solana embedded wallets enabled. The Solana network does not matter: only the ed25519 key is used, to derive the Mavryk `mv1`; the Mavryk network comes from the app's RPC node (Basenet).
-- Auto-create wallet on signup: **on**, matched by `DYNAMIC_WALLET_AUTO_CREATE=true`: the app waits up to 30 s for the wallet Dynamic creates and never creates one itself. If the setting is turned off, set the variable to `false` so the app creates the wallet; the two must agree, or a second wallet with another `mv1` could be created. A user created while auto-create was off and left without a wallet cannot sign in under `true`.
+- Auto-create wallet on signup: does not apply to Dynamic's JavaScript SDK, which never creates a wallet on its own: the app creates the embedded SOL wallet right after sign-up when the user has none (under a cross-tab lock, re-reading the list first). `waas.allowMultipleWaasWalletsPerChain` is off, so Dynamic refuses a second SOL wallet anyway.
 - Email OTP login enabled.
 - CORS origins: `http://localhost:5173`, `https://*.equiteez-app.pages.dev`. Production (`https://app.equiteez.com`) is **not** listed: production needs its own (Live) environment and origin before enabling.
 
@@ -37,8 +36,7 @@ The client reads these at build time (`define: { "process.env": process.env }` i
 
 | Package | Version | Why |
 | --- | --- | --- |
-| `@dynamic-labs/client`, `web-extension`, `solana-extension`, `react-hooks` | 4.84.0 (exact) | Baseline proven by the demo; no SDK-generation mix |
-| `@solana/web3.js` | 1.98.1 (exact) | Exact peer of the Solana extension |
+| `@dynamic-labs-sdk/client`, `@dynamic-labs-sdk/solana` | 1.54.1 (exact) | Dynamic's JavaScript SDK, as in the backend demo; replaced the legacy `@dynamic-labs/*` 4.84.0 client (its Google re-check hung on desktop). `@solana/web3.js` 1.98.1 comes with `@dynamic-labs-sdk/solana` |
 | `@mavrykdynamics/taquito`, `taquito-utils`, `taquito-local-forging` | 20.1.0 | Existing toolkit family; utils and forger declared explicitly |
 | `@noble/curves`, `@noble/hashes` | 2.2.0 | ed25519 verification of a 32-byte digest, BLAKE2b |
 | `bs58` | 6.0.0 | Plain base58 of the Solana-style key |

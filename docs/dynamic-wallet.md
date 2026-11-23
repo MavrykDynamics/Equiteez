@@ -77,6 +77,8 @@ Resolve capabilities by provider, payment mode and tested action. Dynamic can si
 
 ### 3.1. Choose one SDK generation
 
+> **Decision (2026-11-23):** the app runs on Dynamic's JavaScript SDK, `@dynamic-labs-sdk/client` + `@dynamic-labs-sdk/solana` 1.54.1, like the backend demo. The legacy 4.84.0 client was removed: Dynamic calls it legacy, and its Google identity re-check hung on desktop. `dynamicSdk.client.ts` binds the SDK functions to one client (lazy-loaded, browser-only); the JavaScript SDK draws no screens, so "Confirm it's you" (step-up) is the app's own dialog (`identityCheck.ts` + `ConfirmIdentityModal`) and the exported key is shown in Dynamic's frame inside `ExportKeyModal`. The SDK never auto-creates the wallet: the app creates it after sign-up when the user has none. The rest of this section is the original analysis, kept for reference.
+
 Both examined playgrounds use the `4.84.0` package family: `@dynamic-labs/client`, `@dynamic-labs/web-extension`, and `@dynamic-labs/solana-extension`. The demo example has a lockfile with exact resolved versions. The official Mavryk guide already uses **`@dynamic-labs-sdk/client`** and a different API:
 
 - Earlier API: `client.wallets.signMessage({ wallet, message })` → `signedMessage`.

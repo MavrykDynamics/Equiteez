@@ -221,7 +221,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
           providerWalletId: session.wallet.walletId,
           address: session.wallet.address,
           publicKey: session.wallet.publicKey,
-          email: session.client.auth.authenticatedUser?.email ?? undefined,
+          email: session.client.user?.email ?? undefined,
         },
         sessionEpoch,
         slot
@@ -401,12 +401,16 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       },
       selectWallet: (walletId) =>
         establishOrThrow({ mode: "select", walletId }),
-      revealPrivateKey: async () => {
+      revealPrivateKey: async (displayContainer) => {
         const session = dynamicSessionRef.current;
 
         if (!session) throw new DynamicNotAuthenticatedError();
 
-        return revealDynamicPrivateKey(session.client, session.wallet.walletId);
+        await revealDynamicPrivateKey(
+          session.client,
+          session.wallet.walletId,
+          displayContainer
+        );
       },
       // async: a missing session rejects instead of throwing synchronously
       getPasskeys: async () => getDynamicPasskeys(currentDynamicClient()),

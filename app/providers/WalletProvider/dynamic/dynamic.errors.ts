@@ -67,6 +67,27 @@ export class DynamicIdentityChangedError extends Error {
   }
 }
 
+/** The user closed "Confirm it's you": nothing was changed. */
+export class IdentityCheckCancelledError extends Error {
+  constructor() {
+    super("Verification was cancelled, so nothing was changed.");
+    this.name = "IdentityCheckCancelledError";
+  }
+}
+
+/**
+ * Dynamic wants a fresh check but none of the user's credentials is one the
+ * app can confirm with (e.g. only a social account, not offered yet).
+ */
+export class IdentityCheckUnavailableError extends Error {
+  constructor() {
+    super(
+      "We can't confirm it's you on this account yet. Please contact support."
+    );
+    this.name = "IdentityCheckUnavailableError";
+  }
+}
+
 /** The SDK returned a signature that does not verify: never submit it. */
 export class LocalSignatureVerificationError extends Error {
   constructor() {

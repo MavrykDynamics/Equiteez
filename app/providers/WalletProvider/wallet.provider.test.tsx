@@ -35,7 +35,7 @@ const mocks = vi.hoisted(() => {
   };
 
   const dynamicClient = {
-    auth: { authenticatedUser: null as { email: string } | null },
+    user: null as { email: string } | null,
   };
   const dynamicSession = {
     client: dynamicClient,
@@ -74,8 +74,7 @@ vi.mock("./dynamic/dynamic.config", () => ({
 vi.mock("./dynamic/dynamicClient.client", () => ({
   loadDynamicClient: async () => mocks.dynamicClient,
   waitForDynamicReady: async () => undefined,
-  hasLiveDynamicSession: (client: typeof mocks.dynamicClient) =>
-    !!client.auth.authenticatedUser,
+  hasLiveDynamicSession: (client: typeof mocks.dynamicClient) => !!client.user,
   logoutDynamic: mocks.logoutDynamic,
   sendEmailOtp: vi.fn(async () => "sent"),
   resendEmailOtp: vi.fn(async () => undefined),
@@ -134,10 +133,10 @@ beforeEach(() => {
     signature: "edsigBeacon",
   };
   mocks.dynamicEnabled = true;
-  mocks.dynamicClient.auth.authenticatedUser = null;
+  mocks.dynamicClient.user = null;
   mocks.openDynamicSession.mockReset();
   mocks.openDynamicSession.mockImplementation(async () =>
-    mocks.dynamicClient.auth.authenticatedUser ? mocks.dynamicSession : null
+    mocks.dynamicClient.user ? mocks.dynamicSession : null
   );
   vi.clearAllMocks();
   container = document.createElement("div");
@@ -241,7 +240,7 @@ describe("WalletProvider: Mavryk Wallet", () => {
 describe("WalletProvider: email wallet (Dynamic)", () => {
   it("restores a live Dynamic session and ignores Beacon", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     mocks.beacon.account = BEACON_ACCOUNT;
     await renderProvider();
 
@@ -290,7 +289,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
     await act(async () => {
       expect(await wallet.dynamic!.start()).toBe("needs-email");
-      mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+      mocks.dynamicClient.user = { email: "a@b.co" };
       await wallet.dynamic!.verifyOtp("123456");
     });
 
@@ -310,7 +309,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
   it("signs auth payloads with the Dynamic session", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     await renderProvider();
 
     await expect(wallet.signAuthPayload("05aa")).resolves.toMatchObject({
@@ -326,7 +325,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
   it("switches accounts without ending the Dynamic session, signs out fully otherwise", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     await renderProvider();
     const epoch = wallet.identity!.epoch;
 
@@ -351,7 +350,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
   it("keeps the connected wallet usable when another connect attempt fails", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     await renderProvider();
     const before = wallet.identity;
 
@@ -379,7 +378,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
   it("drops a pending connect when the user signs out meanwhile", async () => {
     await renderProvider();
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     let finishOpen!: (session: unknown) => void;
     mocks.openDynamicSession.mockImplementationOnce(
       () => new Promise((resolve) => (finishOpen = resolve))
@@ -402,7 +401,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
   it("signs out at once while Dynamic's logout is still running, and connects only after it", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     await renderProvider();
 
     let finishLogout!: () => void;
@@ -442,7 +441,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
 
   it("clears the wallet locally even when the remote logout fails", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
-    mocks.dynamicClient.auth.authenticatedUser = { email: "a@b.co" };
+    mocks.dynamicClient.user = { email: "a@b.co" };
     mocks.logoutDynamic.mockResolvedValueOnce(new Error("network") as never);
     await renderProvider();
 

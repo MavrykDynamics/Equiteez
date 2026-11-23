@@ -1,9 +1,10 @@
 /**
  * Security, Backup and Export private key for email wallets. Live: Passkeys
  * (list, add, remove through Dynamic) and Export private key (a confirmation,
- * then Dynamic's own window with the key). Wallet password, Authenticator app,
- * Trusted devices and Backup are still the Figma copy as is (mock): their
- * statuses are the design's and their buttons do nothing.
+ * "Confirm it's you", then the key in Dynamic's frame). Wallet password,
+ * Authenticator app and Backup are still the Figma copy as is (mock): their
+ * statuses are the design's and their buttons do nothing. Trusted devices are
+ * not offered: device registration is off for Equiteez.
  */
 import { useState } from "react";
 
@@ -27,7 +28,7 @@ type SecurityRow = {
   onAction?: () => void;
 };
 
-/** Mock rows around the live Passkeys row, in the Figma order */
+/** Mock rows before the live Passkeys row, in the Figma order */
 const MOCK_ROWS_BEFORE: SecurityRow[] = [
   {
     title: "Wallet password",
@@ -41,14 +42,6 @@ const MOCK_ROWS_BEFORE: SecurityRow[] = [
     tone: "warning",
     action: "Set up",
     isPrimary: true,
-  },
-];
-
-const MOCK_ROWS_AFTER: SecurityRow[] = [
-  {
-    title: "Trusted devices",
-    status: "2 devices, including this one. Revoking all signs you out.",
-    action: "Manage",
   },
 ];
 
@@ -72,7 +65,6 @@ export function WalletSecurity() {
       action: "Manage",
       onAction: () => setIsPasskeysOpen(true),
     },
-    ...MOCK_ROWS_AFTER,
   ];
 
   return (

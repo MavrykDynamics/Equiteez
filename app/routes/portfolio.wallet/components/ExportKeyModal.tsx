@@ -1,9 +1,10 @@
 /**
  * "Before You Export Your Key" (Figma 8229:76438). Continue, once the user
- * takes responsibility for the key, opens Dynamic's own secure window with
- * the private key: Equiteez never sees it.
+ * takes responsibility for the key, runs "Confirm it's you" and then shows the
+ * private key in an isolated frame Dynamic injects into this modal: Equiteez
+ * never sees it.
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import CheckboxChecked from "app/icons/checkbox-checked.svg?react";
 import CheckboxUnchecked from "app/icons/checkbox-unchecked.svg?react";
@@ -13,15 +14,19 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
-import { DynamicSessionExpiredError } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import {
+  DynamicSessionExpiredError,
+  IdentityCheckCancelledError,
+  IdentityCheckUnavailableError,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
 import styles from "./WalletModal.module.css";
 
 type ExportKeyModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  /** Opens Dynamic's key window; false when the user cancels Dynamic's check */
-  onContinue: () => Promise<boolean>;
+  /** Shows the key in Dynamic's frame inside `displayContainer` */
+  onContinue: (displayContainer: HTMLElement) => Promise<void>;
 };
 
 export function ExportKeyModal({
@@ -50,22 +55,36 @@ function ExportKeyContent({
 }: Omit<ExportKeyModalProps, "isOpen">) {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
+  const [isKeyShown, setIsKeyShown] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Dynamic injects the frame with the key here; mounted from the start so
+  // the same node is there when the key arrives
+  const keyFrameRef = useRef<HTMLDivElement>(null);
 
   const handleContinue = async () => {
+    const keyFrame = keyFrameRef.current;
+
+    if (!keyFrame) return;
+
     setIsOpening(true);
     setError(null);
 
     try {
-      // Cancelled "confirm it's you": stay here, ready to try again
-      if (await onContinue()) onClose();
-      else setIsOpening(false);
+      keyFrame.replaceChildren();
+      await onContinue(keyFrame);
+      setIsKeyShown(true);
     } catch (openError) {
-      setError(
-        openError instanceof DynamicSessionExpiredError
-          ? openError.message
-          : "Couldn't open the secure window. Please try again."
-      );
+      keyFrame.replaceChildren();
+      // Cancelled "Confirm it's you": stay here, ready to try again
+      if (!(openError instanceof IdentityCheckCancelledError)) {
+        setError(
+          openError instanceof DynamicSessionExpiredError ||
+            openError instanceof IdentityCheckUnavailableError
+            ? openError.message
+            : "Couldn't show your key. Please try again."
+        );
+      }
+    } finally {
       setIsOpening(false);
     }
   };
@@ -98,73 +117,106 @@ function ExportKeyContent({
           </div>
         </header>
 
-        <div className={styles.warning}>
-          <RIcon
-            aria-hidden="true"
-            className={styles.warningIcon}
-            name="warning"
-            size="small"
-          />
-          <div className={styles.warningText}>
-            <RText size="body-sm">
-              Anyone with this key controls your Mavryk address and everything
-              in it.
-            </RText>
+        {isKeyShown ? null : (
+          <>
+            <div className={styles.warning}>
+              <RIcon
+                aria-hidden="true"
+                className={styles.warningIcon}
+                name="warning"
+                size="small"
+              />
+              <div className={styles.warningText}>
+                <RText size="body-sm">
+                  Anyone with this key controls your Mavryk address and
+                  everything in it.
+                </RText>
+                <RText color="neutral-700" size="body-sm">
+                  Equiteez will never ask for it. Anyone who asks is trying to
+                  take your funds.
+                </RText>
+              </div>
+            </div>
+
+            <label className={styles.confirm}>
+              <input
+                checked={isConfirmed}
+                className={styles.confirmInput}
+                onChange={(event) => setIsConfirmed(event.target.checked)}
+                type="checkbox"
+              />
+              {isConfirmed ? (
+                <CheckboxChecked
+                  aria-hidden="true"
+                  className={styles.checkbox}
+                />
+              ) : (
+                <CheckboxUnchecked
+                  aria-hidden="true"
+                  className={styles.checkbox}
+                />
+              )}
+              <RText size="body-sm">
+                I&apos;m responsible for keeping this key safe and private.
+              </RText>
+            </label>
+
             <RText color="neutral-700" size="body-sm">
-              Equiteez will never ask for it. Anyone who asks is trying to take
-              your funds.
+              Next you&apos;ll confirm it&apos;s you. The key then appears here
+              in a secure frame from Dynamic; Equiteez never sees it.
             </RText>
-          </div>
-        </div>
 
-        <label className={styles.confirm}>
-          <input
-            checked={isConfirmed}
-            className={styles.confirmInput}
-            onChange={(event) => setIsConfirmed(event.target.checked)}
-            type="checkbox"
-          />
-          {isConfirmed ? (
-            <CheckboxChecked aria-hidden="true" className={styles.checkbox} />
-          ) : (
-            <CheckboxUnchecked aria-hidden="true" className={styles.checkbox} />
-          )}
-          <RText size="body-sm">
-            I&apos;m responsible for keeping this key safe and private.
-          </RText>
-        </label>
+            {error ? (
+              <RText className={styles.error} role="alert" size="body-sm">
+                {error}
+              </RText>
+            ) : null}
 
-        <RText color="neutral-700" size="body-sm">
-          Next you&apos;ll confirm it&apos;s you. The key then opens in a secure
-          window from Dynamic; Equiteez never sees it.
-        </RText>
+            <div className={styles.actions}>
+              <RButton
+                className={styles.action}
+                onClick={onClose}
+                size="medium"
+                tone="black"
+                variant="secondary"
+              >
+                Cancel
+              </RButton>
+              <RButton
+                className={styles.action}
+                disabled={!isConfirmed || isOpening}
+                onClick={() => void handleContinue()}
+                size="medium"
+                tone="black"
+              >
+                Continue
+              </RButton>
+            </div>
+          </>
+        )}
 
-        {error ? (
-          <RText className={styles.error} role="alert" size="body-sm">
-            {error}
-          </RText>
+        <div
+          className={isKeyShown ? styles.keyFrame : undefined}
+          hidden={!isKeyShown}
+          ref={keyFrameRef}
+        />
+
+        {isKeyShown ? (
+          <>
+            <RText color="neutral-700" size="body-sm">
+              This key is in Solana format. Store it somewhere only you can
+              reach, then close this window.
+            </RText>
+            <RButton
+              className={styles.action}
+              onClick={onClose}
+              size="medium"
+              tone="black"
+            >
+              Done
+            </RButton>
+          </>
         ) : null}
-
-        <div className={styles.actions}>
-          <RButton
-            className={styles.action}
-            onClick={onClose}
-            size="medium"
-            tone="black"
-            variant="secondary"
-          >
-            Cancel
-          </RButton>
-          <RButton
-            className={styles.action}
-            disabled={!isConfirmed || isOpening}
-            onClick={() => void handleContinue()}
-            size="medium"
-            tone="black"
-          >
-            Continue
-          </RButton>
-        </div>
       </div>
     </>
   );

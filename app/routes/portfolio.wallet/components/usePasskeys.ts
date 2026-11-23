@@ -1,7 +1,11 @@
 /** The email wallet's passkeys from Dynamic, with add and remove. */
 import { useCallback, useEffect, useState } from "react";
 
-import { DynamicSessionExpiredError } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import {
+  DynamicSessionExpiredError,
+  IdentityCheckCancelledError,
+  IdentityCheckUnavailableError,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import type { DynamicPasskey } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
@@ -27,8 +31,17 @@ const isPasskeysDisabled = (error: unknown) =>
   error instanceof Error &&
   /passkey authenticator is not enabled/i.test(error.message);
 
+/** Closing the prompt or "Confirm it's you" changes nothing: no error */
+const isCancelled = (error: unknown) =>
+  error instanceof IdentityCheckCancelledError || isPromptDismissed(error);
+
 const toMessage = (error: unknown, fallback: string) => {
-  if (error instanceof DynamicSessionExpiredError) return error.message;
+  if (
+    error instanceof DynamicSessionExpiredError ||
+    error instanceof IdentityCheckUnavailableError
+  ) {
+    return error.message;
+  }
   if (isPasskeysDisabled(error)) {
     return "Passkeys aren't turned on for Equiteez yet.";
   }
@@ -68,7 +81,7 @@ export function usePasskeys() {
       await dynamic.addPasskey();
       await reload();
     } catch (addError) {
-      if (!isPromptDismissed(addError)) {
+      if (!isCancelled(addError)) {
         setError(toMessage(addError, "We couldn't add the passkey."));
       }
     } finally {
@@ -87,7 +100,9 @@ export function usePasskeys() {
         await dynamic.removePasskey(passkeyId);
         await reload();
       } catch (removeError) {
-        setError(toMessage(removeError, "We couldn't remove the passkey."));
+        if (!isCancelled(removeError)) {
+          setError(toMessage(removeError, "We couldn't remove the passkey."));
+        }
       } finally {
         setRemovingId(null);
       }

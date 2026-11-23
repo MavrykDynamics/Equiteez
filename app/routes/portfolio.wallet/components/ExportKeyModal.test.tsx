@@ -16,14 +16,17 @@ vi.mock("~/lib/organisms/CustomPopup/CustomPopup", () => ({
     isOpen ? <div>{children}</div> : null,
 }));
 
-import { DynamicSessionExpiredError } from "~/providers/WalletProvider/dynamic/dynamic.errors";
+import {
+  DynamicSessionExpiredError,
+  IdentityCheckCancelledError,
+} from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
 import { ExportKeyModal } from "./ExportKeyModal";
 
 let container: HTMLDivElement;
 let root: Root;
 const onClose = vi.fn();
-const onContinue = vi.fn<() => Promise<boolean>>();
+const onContinue = vi.fn<(displayContainer: HTMLElement) => Promise<void>>();
 
 const render = () =>
   act(async () =>
@@ -43,7 +46,7 @@ beforeEach(() => {
     globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
   ).IS_REACT_ACT_ENVIRONMENT = true;
   onClose.mockReset();
-  onContinue.mockReset().mockResolvedValue(true);
+  onContinue.mockReset().mockResolvedValue(undefined);
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -53,7 +56,7 @@ afterEach(() => {
 });
 
 describe("ExportKeyModal", () => {
-  it("opens Dynamic's key window only after the user takes responsibility", async () => {
+  it("shows the key in Dynamic's frame only after the user takes responsibility", async () => {
     await render();
 
     expect(container.textContent).toContain("Before You Export Your Key");
@@ -62,17 +65,24 @@ describe("ExportKeyModal", () => {
     await confirm();
     await act(async () => button("Continue").click());
 
-    expect(onContinue).toHaveBeenCalledOnce();
+    // The key frame is a box inside this modal, shown once the key is there
+    const keyFrame = onContinue.mock.calls[0][0];
+    expect(container.contains(keyFrame)).toBe(true);
+    expect(keyFrame.hidden).toBe(false);
+    expect(button("Continue")).toBeUndefined();
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => button("Done").click());
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it("stays open with an error when the window cannot open", async () => {
+  it("stays open with an error when the key cannot be shown", async () => {
     onContinue.mockRejectedValue(new Error("iframe"));
     await render();
     await confirm();
     await act(async () => button("Continue").click());
 
-    expect(container.textContent).toContain("Couldn't open the secure window");
+    expect(container.textContent).toContain("Couldn't show your key");
     expect(onClose).not.toHaveBeenCalled();
     expect(button("Continue").disabled).toBe(false);
   });
@@ -87,13 +97,14 @@ describe("ExportKeyModal", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it("stays open when the user cancels Dynamic's check", async () => {
-    onContinue.mockResolvedValue(false);
+  it("stays open without an error when the user cancels the check", async () => {
+    onContinue.mockRejectedValue(new IdentityCheckCancelledError());
     await render();
     await confirm();
     await act(async () => button("Continue").click());
 
     expect(onClose).not.toHaveBeenCalled();
+    expect(container.querySelector("[role=alert]")).toBeNull();
     expect(button("Continue").disabled).toBe(false);
   });
 

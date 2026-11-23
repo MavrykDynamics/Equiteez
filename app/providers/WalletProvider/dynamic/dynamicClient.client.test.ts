@@ -6,15 +6,19 @@ import bs58 from "bs58";
 
 import { decodeHex, operationDigest } from "~/lib/mavryk/keys";
 import {
+  addDynamicPasskey,
   ensureDynamicWallet,
   getEmbeddedSolWallets,
   hasLiveDynamicSession,
   logoutDynamic,
+  removeDynamicPasskey,
   resolveDynamicWallet,
+  revealDynamicPrivateKey,
   selectDynamicWallet,
   sendEmailOtp,
   signDigest32,
   toDynamicWalletIdentity,
+  verifyDynamicIdentity,
   waitForAuthenticatedUser,
   waitForDynamicReady,
   type DynamicClient,
@@ -23,9 +27,13 @@ import {
 import {
   DynamicIdentityChangedError,
   DynamicInitError,
+  DynamicSessionExpiredError,
+  IdentityCheckCancelledError,
+  IdentityCheckUnavailableError,
   LocalSignatureVerificationError,
   MultipleDynamicWalletsError,
 } from "./dynamic.errors";
+import { getPendingIdentityCheck } from "./identityCheck";
 
 // Public test keys: never hold funds
 const SEED = Uint8Array.from({ length: 32 }, (_, index) => index + 1);
@@ -36,127 +44,131 @@ const solAddressOf = (seed: Uint8Array) =>
 const embeddedWallet = (
   id: string,
   seed = SEED,
-  key = "dynamicwaas"
+  walletProviderKey = "dynamicwaas"
 ): DynamicWallet =>
   ({
     id,
-    key,
+    walletProviderKey,
     chain: "SOL",
     address: solAddressOf(seed),
-    additionalAddresses: [],
-    isAuthenticated: true,
-  }) as DynamicWallet;
+    lastSelectedAt: null,
+    verifiedCredentialId: `vc-${id}`,
+  }) as unknown as DynamicWallet;
 
-type Listener = (...args: unknown[]) => void;
+type Listener = () => void;
+type FakeUser = {
+  id: string;
+  email?: string;
+  verifiedCredentials?: { id: string; format: string; email?: string }[];
+};
+type StepUpCheck = {
+  isRequired: boolean;
+  credentials: { id: string; format: string }[];
+  defaultCredentialId?: string;
+};
 
-/** An unsigned JWT that expires `secondsFromNow` from now. */
-const jwtExpiringIn = (secondsFromNow: number) =>
-  [
-    "e30",
-    btoa(
-      JSON.stringify({ exp: Math.floor(Date.now() / 1000) + secondsFromNow })
-    ).replace(/=+$/, ""),
-    "sig",
-  ].join(".");
+const inAnHour = () => new Date(Date.now() + 3_600_000);
 
-/** Just enough of the Dynamic client for the wallet flow. */
+/** Just enough of the Dynamic client adapter for the wallet flow. */
 function createFakeClient({
   wallets = [] as DynamicWallet[],
-  user = { userId: "user-1", email: "a@b.co" } as {
-    userId?: string;
-    email?: string;
-  } | null,
-  embeddedWalletFromDynamic = null as DynamicWallet | null,
-  token = jwtExpiringIn(3600) as string | null,
+  user = { id: "user-1", email: "a@b.co" } as FakeUser | null,
+  sessionExpiresAt = inAnHour() as Date | null,
   seedsByWalletId = { w1: SEED, w2: OTHER_SEED } as Record<string, Uint8Array>,
+  stepUp = { isRequired: false, credentials: [] } as StepUpCheck,
 } = {}) {
   const listeners = new Map<string, Set<Listener>>();
-  const emit = (name: string, ...args: unknown[]) =>
-    listeners.get(name)?.forEach((listener) => listener(...args));
-  const on = (name: string, listener: Listener) => {
+  const emit = (name: string) =>
+    listeners.get(name)?.forEach((listener) => listener());
+  const on = (name: string) => (listener: Listener) => {
     if (!listeners.has(name)) listeners.set(name, new Set());
     listeners.get(name)!.add(listener);
+    return () => {
+      listeners.get(name)?.delete(listener);
+    };
   };
-  const off = (name: string, listener: Listener) =>
-    listeners.get(name)?.delete(listener);
 
   const state = {
     wallets,
     user,
-    token,
-    loaded: true,
-    error: null as Error | null,
+    sessionExpiresAt,
+    initStatus: "finished",
+    initError: null as Error | null,
   };
 
-  const client = {
-    sdk: {
-      get loaded() {
-        return state.loaded;
-      },
-      get error() {
-        return state.error;
-      },
-      on,
-      off,
-      waitForReady: vi.fn(() => Promise.resolve()),
+  const fake = {
+    get initStatus() {
+      return state.initStatus;
     },
-    auth: {
-      get authenticatedUser() {
-        return state.user;
-      },
-      get token() {
-        return state.token;
-      },
-      on,
-      off,
-      logout: vi.fn(async () => {
-        state.user = null;
-      }),
-      email: {
-        sendOTP: vi.fn(async () => undefined),
-        verifyOTP: vi.fn(async () => undefined),
-        resendOTP: vi.fn(async () => undefined),
-      },
+    get initError() {
+      return state.initError;
     },
-    wallets: {
-      get userWallets() {
-        return state.wallets;
-      },
-      on,
-      off,
-      embedded: {
-        getWallet: vi.fn(async () => embeddedWalletFromDynamic),
-        createWallet: vi.fn(async () => {
-          const created = embeddedWallet("created");
-          seedsByWalletId.created = SEED;
-          state.wallets = [...state.wallets, created];
-          emit("userWalletsChanged", state.wallets);
-          return created;
-        }),
-      },
-      signMessage: vi.fn(
-        async ({
-          wallet,
-          message,
-        }: {
-          wallet: DynamicWallet;
-          message: string;
-        }) => ({
-          signedMessage: bs58.encode(
-            ed25519.sign(decodeHex(message), seedsByWalletId[wallet.id])
-          ),
-        })
-      ),
+    get user() {
+      return state.user;
     },
+    get sessionExpiresAt() {
+      return state.sessionExpiresAt;
+    },
+    waitForInit: vi.fn(() => Promise.resolve()),
+    onUserChanged: on("userChanged"),
+    onWalletAccountsChanged: on("walletAccountsChanged"),
+    sendEmailOtp: vi.fn<(email: string) => Promise<void>>(
+      async () => undefined
+    ),
+    resendEmailOtp: vi.fn(async () => undefined),
+    verifyEmailOtp: vi.fn<(code: string) => Promise<void>>(
+      async () => undefined
+    ),
+    logout: vi.fn(async () => {
+      state.user = null;
+    }),
+    getWalletAccounts: () => state.wallets,
+    isEmbeddedWallet: (wallet: DynamicWallet) =>
+      /^dynamicwaas/i.test(wallet.walletProviderKey),
+    createSolWallet: vi.fn(async () => {
+      seedsByWalletId.created = SEED;
+      state.wallets = [...state.wallets, embeddedWallet("created")];
+      emit("walletAccountsChanged");
+    }),
+    signMessage: vi.fn(async (wallet: DynamicWallet, message: string) =>
+      bs58.encode(ed25519.sign(decodeHex(message), seedsByWalletId[wallet.id]))
+    ),
+    getPasskeys: vi.fn(async () => []),
+    registerPasskey: vi.fn(async () => undefined),
+    deletePasskey: vi.fn<(passkeyId: string) => Promise<void>>(
+      async () => undefined
+    ),
+    checkStepUp: vi.fn<(scope: string) => Promise<StepUpCheck>>(
+      async () => stepUp
+    ),
+    sendStepUpEmailCode: vi.fn(async (email: string) => ({
+      email,
+      verificationUUID: "otp-1",
+    })),
+    verifyStepUpEmailCode: vi.fn<
+      (otp: unknown, code: string, scope: string) => Promise<void>
+    >(async () => undefined),
+    confirmWithPasskey: vi.fn<(scope: string) => Promise<void>>(
+      async () => undefined
+    ),
+    confirmWithAuthenticator: vi.fn<
+      (deviceId: string, code: string, scope: string) => Promise<void>
+    >(async () => undefined),
+    exportPrivateKey: vi.fn<
+      (wallet: DynamicWallet, container: HTMLElement) => Promise<void>
+    >(async () => undefined),
   };
 
   return {
-    client: client as unknown as DynamicClient,
-    fake: client,
+    client: fake as unknown as DynamicClient,
+    fake,
     state,
     emit,
   };
 }
+
+/** Lets the pending promise chain reach the dialog */
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 beforeEach(() => {
   const storage = new Map<string, string>();
@@ -169,6 +181,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  getPendingIdentityCheck()?.cancel();
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
@@ -178,15 +191,16 @@ describe("Embedded wallet discovery", () => {
     const { client } = createFakeClient({
       wallets: [
         embeddedWallet("w1"),
-        embeddedWallet("legacy", SEED, "turnkeyhd"),
-        embeddedWallet("phantom", SEED, "phantom"),
-        { ...embeddedWallet("evm"), chain: "EVM" } as DynamicWallet,
+        embeddedWallet("phantom", SEED, "phantomsol"),
+        {
+          ...embeddedWallet("evm"),
+          chain: "EVM",
+        } as unknown as DynamicWallet,
       ],
     });
 
     expect(getEmbeddedSolWallets(client).map((wallet) => wallet.id)).toEqual([
       "w1",
-      "legacy",
     ]);
   });
 
@@ -209,22 +223,15 @@ describe("Embedded wallet discovery", () => {
     expect((await resolveDynamicWallet(client))?.id).toBe("w2");
   });
 
-  it("waits for a restoring wallet list instead of reporting it missing", async () => {
-    const wallet = embeddedWallet("w1");
-    const { client, state, emit } = createFakeClient({
-      embeddedWalletFromDynamic: wallet,
-    });
+  it("reports no wallet for a user who has none", async () => {
+    const { client } = createFakeClient();
 
-    const resolved = resolveDynamicWallet(client, 5_000);
-    state.wallets = [wallet];
-    emit("userWalletsChanged", state.wallets);
-
-    expect((await resolved)?.id).toBe("w1");
+    expect(await resolveDynamicWallet(client)).toBeNull();
   });
 });
 
 describe("ensureDynamicWallet", () => {
-  it("creates one wallet when Dynamic confirms there is none, even on double click", async () => {
+  it("creates one wallet when the user has none, even on double click", async () => {
     const { client, fake } = createFakeClient();
 
     const [first, second] = await Promise.all([
@@ -234,10 +241,7 @@ describe("ensureDynamicWallet", () => {
 
     expect(first.id).toBe("created");
     expect(second.id).toBe("created");
-    expect(fake.wallets.embedded.createWallet).toHaveBeenCalledTimes(1);
-    expect(fake.wallets.embedded.createWallet).toHaveBeenCalledWith({
-      chain: "Sol",
-    });
+    expect(fake.createSolWallet).toHaveBeenCalledTimes(1);
   });
 
   it("reuses an existing wallet", async () => {
@@ -246,36 +250,19 @@ describe("ensureDynamicWallet", () => {
     });
 
     expect((await ensureDynamicWallet(client)).id).toBe("w1");
-    expect(fake.wallets.embedded.createWallet).not.toHaveBeenCalled();
+    expect(fake.createSolWallet).not.toHaveBeenCalled();
   });
-});
 
-describe("ensureDynamicWallet with auto-create on sign-up", () => {
-  it("waits for the wallet Dynamic creates and never creates a second one", async () => {
-    // Right after sign-up Dynamic reports no wallet yet, then adds it
+  it("waits for a created wallet that reaches the list later", async () => {
     const { client, fake, state, emit } = createFakeClient();
+    fake.createSolWallet.mockImplementationOnce(async () => {
+      setTimeout(() => {
+        state.wallets = [embeddedWallet("w1")];
+        emit("walletAccountsChanged");
+      }, 0);
+    });
 
-    const pending = ensureDynamicWallet(client, { autoCreate: true });
-    await Promise.resolve();
-    state.wallets = [embeddedWallet("w1")];
-    emit("userWalletsChanged", state.wallets);
-
-    expect((await pending).id).toBe("w1");
-    expect(fake.wallets.embedded.createWallet).not.toHaveBeenCalled();
-  });
-
-  it("asks to try again when the wallet does not show up, still without creating one", async () => {
-    vi.useFakeTimers();
-    const { client, fake } = createFakeClient();
-
-    const pending = ensureDynamicWallet(client, { autoCreate: true });
-    const assertion = expect(pending).rejects.toThrow(
-      "Your email wallet is still being set up"
-    );
-    await vi.advanceTimersByTimeAsync(30_000);
-
-    await assertion;
-    expect(fake.wallets.embedded.createWallet).not.toHaveBeenCalled();
+    expect((await ensureDynamicWallet(client)).id).toBe("w1");
   });
 });
 
@@ -297,9 +284,28 @@ describe("signDigest32", () => {
     expect(identity.address).toBe(await signer().publicKeyHash());
     expect(b58cencode(sig64, prefix[Prefix.EDSIG])).toBe(reference.prefixSig);
     // The digest goes to Dynamic as hex of the 32 bytes, hashed nowhere else
-    expect(fake.wallets.signMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ message: Buffer.from(digest).toString("hex") })
+    expect(fake.signMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "w1" }),
+      Buffer.from(digest).toString("hex")
     );
+  });
+
+  it("accepts a hex signature as well as base58", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    const digest = operationDigest(forgedHex);
+    fake.signMessage.mockResolvedValueOnce(
+      Buffer.from(ed25519.sign(digest, SEED)).toString("hex")
+    );
+
+    await expect(
+      signDigest32({
+        client,
+        identity: toDynamicWalletIdentity(embeddedWallet("w1")),
+        digest,
+      })
+    ).resolves.toHaveLength(64);
   });
 
   it("refuses a digest that is not 32 bytes without calling the SDK", async () => {
@@ -314,7 +320,7 @@ describe("signDigest32", () => {
         digest: new Uint8Array(31),
       })
     ).rejects.toThrow();
-    expect(fake.wallets.signMessage).not.toHaveBeenCalled();
+    expect(fake.signMessage).not.toHaveBeenCalled();
   });
 
   it("rejects a signature made by another key", async () => {
@@ -336,9 +342,9 @@ describe("signDigest32", () => {
     const { client, fake, state } = createFakeClient({
       wallets: [embeddedWallet("w1")],
     });
-    const original = fake.wallets.signMessage.getMockImplementation()!;
-    fake.wallets.signMessage.mockImplementationOnce(async (params) => {
-      const result = await original(params);
+    const original = fake.signMessage.getMockImplementation()!;
+    fake.signMessage.mockImplementationOnce(async (wallet, message) => {
+      const result = await original(wallet, message);
       state.wallets = [];
       return result;
     });
@@ -368,43 +374,46 @@ describe("Session", () => {
     const { client, fake } = createFakeClient();
 
     expect(await sendEmailOtp(client, "  OTHER@b.co ")).toBe("sent");
-    expect(fake.auth.logout).toHaveBeenCalledTimes(1);
-    expect(fake.auth.email.sendOTP).toHaveBeenCalledWith("other@b.co");
+    expect(fake.logout).toHaveBeenCalledTimes(1);
+    expect(fake.sendEmailOtp).toHaveBeenCalledWith("other@b.co");
   });
 
   it("does not send a code to the email that is already signed in", async () => {
     const { client, fake } = createFakeClient();
 
     expect(await sendEmailOtp(client, "A@b.co")).toBe("already-authenticated");
-    expect(fake.auth.email.sendOTP).not.toHaveBeenCalled();
+    expect(fake.sendEmailOtp).not.toHaveBeenCalled();
   });
 
   it("sends a new code when the signed-in session has expired", async () => {
-    const { client, fake } = createFakeClient({ token: jwtExpiringIn(-60) });
+    const { client, fake } = createFakeClient({
+      sessionExpiresAt: new Date(Date.now() - 60_000),
+    });
 
     expect(await sendEmailOtp(client, "A@b.co")).toBe("sent");
-    expect(fake.auth.logout).toHaveBeenCalledTimes(1);
-    expect(fake.auth.email.sendOTP).toHaveBeenCalledWith("a@b.co");
+    expect(fake.logout).toHaveBeenCalledTimes(1);
+    expect(fake.sendEmailOtp).toHaveBeenCalledWith("a@b.co");
   });
 
-  it("treats a remembered user with an expired or missing token as signed out", () => {
+  it("treats a remembered user with an expired or missing session as signed out", () => {
     expect(hasLiveDynamicSession(createFakeClient().client)).toBe(true);
     expect(
       hasLiveDynamicSession(
-        createFakeClient({ token: jwtExpiringIn(-60) }).client
+        createFakeClient({ sessionExpiresAt: new Date(Date.now() - 60_000) })
+          .client
       )
     ).toBe(false);
     expect(
-      hasLiveDynamicSession(createFakeClient({ token: null }).client)
+      hasLiveDynamicSession(createFakeClient({ sessionExpiresAt: null }).client)
     ).toBe(false);
-    expect(
-      hasLiveDynamicSession(createFakeClient({ user: null }).client)
-    ).toBe(false);
+    expect(hasLiveDynamicSession(createFakeClient({ user: null }).client)).toBe(
+      false
+    );
   });
 
   it("reports a failed remote logout instead of throwing", async () => {
     const { client, fake } = createFakeClient();
-    fake.auth.logout.mockRejectedValueOnce(new Error("network"));
+    fake.logout.mockRejectedValueOnce(new Error("network"));
 
     expect(await logoutDynamic(client)).toBeInstanceOf(Error);
   });
@@ -413,8 +422,8 @@ describe("Session", () => {
     const { client, state, emit } = createFakeClient({ user: null });
 
     const pending = waitForAuthenticatedUser(client, 5_000);
-    state.user = { userId: "user-1", email: "a@b.co" };
-    emit("authenticatedUserChanged", state.user);
+    state.user = { id: "user-1", email: "a@b.co" };
+    emit("userChanged");
 
     await expect(pending).resolves.toBeUndefined();
   });
@@ -434,7 +443,7 @@ describe("Session", () => {
   it("gives up on a logout that never answers", async () => {
     vi.useFakeTimers();
     const { client, fake } = createFakeClient();
-    fake.auth.logout.mockImplementationOnce(() => new Promise(() => {}));
+    fake.logout.mockImplementationOnce(() => new Promise(() => {}));
 
     const pending = logoutDynamic(client, 1_000);
     await vi.advanceTimersByTimeAsync(1_000);
@@ -442,13 +451,188 @@ describe("Session", () => {
     expect(await pending).toBeInstanceOf(Error);
   });
 
-  it("surfaces an SDK load error as an init error", async () => {
+  it("surfaces an SDK start failure as an init error", async () => {
     const { client, state } = createFakeClient();
-    state.loaded = false;
-    state.error = new Error("frame blocked");
+    state.initStatus = "failed";
+    state.initError = new Error("frame blocked");
 
     await expect(waitForDynamicReady(client)).rejects.toBeInstanceOf(
       DynamicInitError
     );
+  });
+
+  it("gives up on an SDK that never starts", async () => {
+    vi.useFakeTimers();
+    const { client, fake, state } = createFakeClient();
+    state.initStatus = "in-progress";
+    fake.waitForInit.mockImplementationOnce(() => new Promise(() => {}));
+
+    const assertion = expect(
+      waitForDynamicReady(client, 1_000)
+    ).rejects.toBeInstanceOf(DynamicInitError);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await assertion;
+  });
+});
+
+describe("Confirm it's you", () => {
+  const emailUser: FakeUser = {
+    id: "user-1",
+    email: "a@b.co",
+    verifiedCredentials: [{ id: "vc-email", format: "email", email: "a@b.co" }],
+  };
+  const emailCheck: StepUpCheck = {
+    isRequired: true,
+    credentials: [{ id: "vc-email", format: "email" }],
+  };
+
+  it("goes straight on when Dynamic needs no fresh check", async () => {
+    const { client, fake } = createFakeClient();
+
+    await verifyDynamicIdentity(client, "credential:link");
+
+    expect(fake.checkStepUp).toHaveBeenCalledWith("credential:link");
+    expect(getPendingIdentityCheck()).toBeNull();
+  });
+
+  it("emails a code first, then finishes once the code is accepted", async () => {
+    const { client, fake } = createFakeClient({
+      user: emailUser,
+      stepUp: emailCheck,
+    });
+
+    const pending = verifyDynamicIdentity(client, "wallet:export");
+    await flush();
+
+    const check = getPendingIdentityCheck()!;
+    const [method] = check.methods;
+
+    expect(fake.sendStepUpEmailCode).toHaveBeenCalledWith(
+      "a@b.co",
+      "wallet:export"
+    );
+    expect(method).toMatchObject({ kind: "code", sentTo: "a@b.co" });
+
+    if (method.kind !== "code") throw new Error("expected a code method");
+    await method.verify(" 123456 ");
+    check.done();
+
+    await expect(pending).resolves.toBeUndefined();
+    expect(fake.verifyStepUpEmailCode).toHaveBeenCalledWith(
+      expect.objectContaining({ verificationUUID: "otp-1" }),
+      "123456",
+      "wallet:export"
+    );
+  });
+
+  it("offers the passkey first when Dynamic recommends it", async () => {
+    const { client, fake } = createFakeClient({
+      user: emailUser,
+      stepUp: {
+        isRequired: true,
+        credentials: [
+          { id: "vc-email", format: "email" },
+          { id: "vc-passkey", format: "passkey" },
+        ],
+        defaultCredentialId: "vc-passkey",
+      },
+    });
+
+    void verifyDynamicIdentity(client, "credential:unlink").catch(
+      () => undefined
+    );
+    await flush();
+
+    const methods = getPendingIdentityCheck()!.methods;
+
+    expect(methods.map((method) => method.kind)).toEqual(["passkey", "code"]);
+    // The email is not sent until the user picks it
+    expect(fake.sendStepUpEmailCode).not.toHaveBeenCalled();
+  });
+
+  it("rejects with a cancelled error when the user closes the dialog", async () => {
+    const { client } = createFakeClient({
+      user: emailUser,
+      stepUp: emailCheck,
+    });
+
+    const pending = verifyDynamicIdentity(client, "credential:link");
+    await flush();
+    getPendingIdentityCheck()!.cancel();
+
+    await expect(pending).rejects.toBeInstanceOf(IdentityCheckCancelledError);
+  });
+
+  it("says so when the account has no way the app can confirm with", async () => {
+    const { client } = createFakeClient({
+      stepUp: {
+        isRequired: true,
+        credentials: [{ id: "vc-google", format: "oauth" }],
+      },
+    });
+
+    await expect(
+      verifyDynamicIdentity(client, "wallet:export")
+    ).rejects.toBeInstanceOf(IdentityCheckUnavailableError);
+  });
+
+  it("refuses an expired session before asking anything", async () => {
+    const { client, fake } = createFakeClient({
+      sessionExpiresAt: new Date(Date.now() - 60_000),
+    });
+
+    await expect(
+      verifyDynamicIdentity(client, "wallet:export")
+    ).rejects.toBeInstanceOf(DynamicSessionExpiredError);
+    expect(fake.checkStepUp).not.toHaveBeenCalled();
+  });
+});
+
+describe("Actions behind the check", () => {
+  it("shows the Mavryk wallet's key in the container after the check", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+    });
+    const container = {} as HTMLElement;
+
+    await revealDynamicPrivateKey(client, "w1", container);
+
+    expect(fake.checkStepUp).toHaveBeenCalledWith("wallet:export");
+    expect(fake.exportPrivateKey).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "w1" }),
+      container
+    );
+  });
+
+  it("shows no key when the check is cancelled", async () => {
+    const { client, fake } = createFakeClient({
+      wallets: [embeddedWallet("w1")],
+      stepUp: {
+        isRequired: true,
+        credentials: [{ id: "vc-email", format: "email" }],
+      },
+    });
+
+    const pending = revealDynamicPrivateKey(client, "w1", {} as HTMLElement);
+    await flush();
+    getPendingIdentityCheck()!.cancel();
+
+    await expect(pending).rejects.toBeInstanceOf(IdentityCheckCancelledError);
+    expect(fake.exportPrivateKey).not.toHaveBeenCalled();
+  });
+
+  it("checks for linking before adding and unlinking before removing a passkey", async () => {
+    const { client, fake } = createFakeClient();
+
+    await addDynamicPasskey(client);
+    await removeDynamicPasskey(client, "pk-1");
+
+    expect(fake.checkStepUp.mock.calls.map(([scope]) => scope)).toEqual([
+      "credential:link",
+      "credential:unlink",
+    ]);
+    expect(fake.registerPasskey).toHaveBeenCalledOnce();
+    expect(fake.deletePasskey).toHaveBeenCalledWith("pk-1");
   });
 });

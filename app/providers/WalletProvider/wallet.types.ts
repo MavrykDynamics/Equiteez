@@ -65,15 +65,20 @@ export type DynamicConnectApi = {
   /** After MultipleDynamicWalletsError: connect the chosen wallet */
   selectWallet: (walletId: string) => Promise<void>;
   /**
-   * Opens Dynamic's own secure window with the connected wallet's private
-   * key: the key stays in Dynamic's iframe and never reaches the app. False
-   * when the user cancels Dynamic's "confirm it's you" step.
+   * After "Confirm it's you", shows the connected wallet's private key in an
+   * isolated frame Dynamic injects into `displayContainer`: the key never
+   * reaches the app. Rejects with IdentityCheckCancelledError when the user
+   * closes the check.
    */
-  revealPrivateKey: () => Promise<boolean>;
+  revealPrivateKey: (displayContainer: HTMLElement) => Promise<void>;
   /** Passkeys on the user's Dynamic account */
   getPasskeys: () => Promise<DynamicPasskey[]>;
-  /** Shows the browser's passkey prompt, then registers the new passkey */
+  /**
+   * After "Confirm it's you", shows the browser's passkey prompt, then
+   * registers the new passkey
+   */
   addPasskey: () => Promise<void>;
+  /** After "Confirm it's you" */
   removePasskey: (passkeyId: string) => Promise<void>;
 };
 

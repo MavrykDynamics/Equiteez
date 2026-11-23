@@ -179,3 +179,56 @@
 .empty {
   text-align: center;
 }
+
+/* Export: Dynamic's frame with the key, injected into this box */
+.keyFrame {
+  min-height: 120px;
+  overflow: hidden;
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-12);
+}
+
+.keyFrame iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+/* Confirm it's you: the code step and the other ways under it */
+.codeForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.codeBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.otherWays {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--r-space-4);
+}
+
+.textButton {
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  text-decoration: underline;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.textButton:disabled {
+  color: var(--r-color-neutral-700);
+  cursor: default;
+}

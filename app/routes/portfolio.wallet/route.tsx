@@ -1,13 +1,15 @@
 /**
  * Portfolio → Wallet (Figma "Settings and key export", 8131:518): the signing
  * key and KYC Info from live data; for email wallets also Security, Backup and
- * Export private key, which are the design's mock until Dynamic backs them.
+ * Export private key (partly the design's mock until Dynamic backs them) and
+ * the "Confirm it's you" dialog their Dynamic actions open.
  */
 import { ROUTES } from "~/consts";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { WelcomeBlock } from "~/routes/portfolio/components/WelcomeBlock/WelcomeBlock";
 
+import { ConfirmIdentityModal } from "./components/ConfirmIdentityModal";
 import { KycInfo } from "./components/KycInfo";
 import { SigningKey } from "./components/SigningKey";
 import {
@@ -39,6 +41,7 @@ export default function PortfolioWallet() {
           <>
             <WalletSecurity />
             <WalletBackupAndExport />
+            <ConfirmIdentityModal />
           </>
         ) : null}
       </div>
