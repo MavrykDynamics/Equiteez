@@ -21,8 +21,8 @@ export function ReceiveView({ mavrykAddress }: ReceiveViewProps) {
         size="body-sm"
       >
         Send USDT from another Mavryk Wallet straight to this address. This is
-        for assets already on Mavryk. To move funds from Ethereum, use the
-        Bridge tab.
+        for assets already on Mavryk. To move funds from another network, use
+        Send From Any Network.
       </RText>
       <div className={styles.addressBlock}>
         <div className={styles.qrCode}>
@@ -57,7 +57,8 @@ export function ReceiveView({ mavrykAddress }: ReceiveViewProps) {
           <strong>Send only Mavryk assets to this address.</strong>
           <br />
           Sending assets straight from Ethereum or another chain to this address
-          will lose them. Use the bridge for anything on Ethereum.
+          will lose them. Use Send From Any Network for anything on another
+          chain.
         </RText>
       </div>
     </div>

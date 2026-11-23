@@ -40,7 +40,6 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("~/consts/intents", async (original) => ({
   ...(await original<typeof import("~/consts/intents")>()),
-  INTENTS_DEPOSIT_ENABLED: true,
   INTENTS_ENV: "mock",
 }));
 vi.mock("~/lib/apis/intents", async (original) => ({

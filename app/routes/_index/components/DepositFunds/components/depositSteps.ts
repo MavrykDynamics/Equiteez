@@ -1,12 +1,12 @@
 import type { TransactionWidgetModel } from "~/providers/TransactionsProvider/transactionWidget.helpers";
 import { transactionWidgetStepLabels } from "~/providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidget";
 
-export type BridgeProcessStatus = "loading" | "success" | "error";
-export type BridgeStepStatus = BridgeProcessStatus | "pending";
+export type DepositProcessStatus = "loading" | "success" | "error";
+export type DepositStepStatus = DepositProcessStatus | "pending";
 
-export type BridgeStatusStep = {
+export type DepositStatusStep = {
   description: string;
-  status: BridgeStepStatus;
+  status: DepositStepStatus;
   title: string;
 };
 
@@ -14,12 +14,12 @@ export type BridgeStatusStep = {
 export function getDepositSteps(
   { state, steps = transactionWidgetStepLabels }: TransactionWidgetModel,
   pendingDescription = "Waiting for bridge updates"
-): BridgeStatusStep[] {
+): DepositStatusStep[] {
   return steps.map((title, index) => {
     const isCurrent =
       (state.status === "progress" && state.step === index + 1) ||
       (state.status === "waiting" && index === 0);
-    const status: BridgeStepStatus =
+    const status: DepositStepStatus =
       state.status === "success" ||
       (state.status === "progress" && index + 1 < state.step)
         ? "success"

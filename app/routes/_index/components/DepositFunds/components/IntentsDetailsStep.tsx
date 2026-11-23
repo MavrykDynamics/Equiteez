@@ -89,8 +89,8 @@ export function IntentsDetailsStep({
       <div className={styles.step}>
         <RAlert header="Deposits are unavailable" role="alert">
           {catalog.status === "error"
-            ? "The cross-chain deposit service is unavailable right now. Bridge From Ethereum and Receive On Mavryk still work."
-            : "No cross-chain deposit routes are available right now. Bridge From Ethereum and Receive On Mavryk still work."}
+            ? "The cross-chain deposit service is unavailable right now. Receive On Mavryk still works."
+            : "No cross-chain deposit routes are available right now. Receive On Mavryk still works."}
         </RAlert>
         {catalog.status === "error" && (
           <RButton

@@ -17,8 +17,6 @@ import { useNotificationsContext } from "~/providers/NotificationsProvider/Notif
 import BellIcon from "app/icons/notification-bell.svg?react";
 import BellIconEmpty from "app/icons/notification-bell-empty.svg?react";
 import { NotificationsPanel } from "./NotificationsPanel";
-import { ROUTES } from "~/consts/routes";
-import { INTENTS_DEPOSIT_ENABLED } from "~/consts/intents";
 
 /** Desktop application header from the Equiteez 2.0 design system. */
 export function RHeader() {
@@ -67,19 +65,6 @@ export function RHeader() {
               onClick={() => setIsDepositModalOpen(true)}
             >
               Deposit
-            </RButton>
-          )}
-
-          {isAuthenticated && INTENTS_DEPOSIT_ENABLED && (
-            <RButton
-              as="link"
-              className={styles.depositButton}
-              size="medium"
-              to={ROUTES.universalSend}
-              tone="black"
-              variant="secondary"
-            >
-              Universal Send
             </RButton>
           )}
 

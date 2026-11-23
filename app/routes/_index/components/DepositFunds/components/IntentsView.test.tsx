@@ -178,10 +178,7 @@ describe("IntentsView details step", () => {
 
   it.each([
     ["loading", "Loading deposit routes"],
-    [
-      "error",
-      "unavailable right now. Bridge From Ethereum and Receive On Mavryk still work.",
-    ],
+    ["error", "unavailable right now. Receive On Mavryk still works."],
   ] as const)("renders the %s catalog state", (status, text) => {
     const html = render({
       deposit: controller({

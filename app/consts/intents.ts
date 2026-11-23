@@ -6,8 +6,8 @@ import { USDT_BRIDGE } from "./usdtBridge";
  * 1Click (NEAR Intents) sponsored deposits against the shared Mavryk Bridge
  * ETH backend (`near-intents/backend.md`, API schema 0.1.0, prefix `/v1`).
  *
- * The feature is off unless `INTENTS_DEPOSIT_ENABLED=true` is set at build time.
- * `INTENTS_API_MODE=mock` swaps the HTTP client for the in-browser simulator in
+ * It is the Deposit Funds "Send From Any Network" flow and is always on;
+ * `INTENTS_API` must be set at build time. `INTENTS_API_MODE=mock` swaps the HTTP client for the in-browser simulator in
  * `~/lib/apis/intents/intents.mock.ts`; production defaults to `http`.
  */
 // Vite `define`s `process.env`, as for ETHEREUM_RPC_URL in ethereum.config.ts.
@@ -22,8 +22,6 @@ const originOf = (value: string | undefined) => {
   }
 };
 
-export const INTENTS_DEPOSIT_ENABLED =
-  env("INTENTS_DEPOSIT_ENABLED") === "true";
 export const INTENTS_API_MODE: "mock" | "http" =
   env("INTENTS_API_MODE") === "mock" ? "mock" : "http";
 /**

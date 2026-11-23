@@ -55,7 +55,6 @@ vi.mock("~/consts/intents", async (original) => {
   const actual = await original<typeof import("~/consts/intents")>();
   return {
     ...actual,
-    INTENTS_DEPOSIT_ENABLED: true,
     INTENTS_ENV: "mock",
   };
 });

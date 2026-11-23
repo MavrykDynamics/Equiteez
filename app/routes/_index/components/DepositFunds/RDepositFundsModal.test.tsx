@@ -1,39 +1,22 @@
 // @vitest-environment jsdom
-import { BigNumber } from "bignumber.js";
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { UsdtBridgeState } from "~/providers/EthereumProvider/hooks/useUsdtBridge";
-import { type BridgeTransaction } from "~/providers/TransactionsProvider/bridgeTransactions";
-import {
-  localRecord,
-  signerEventSequence,
-} from "~/providers/TransactionsProvider/bridgeTransactions.fixtures";
-import { toTransactionWidget } from "~/providers/TransactionsProvider/transactionWidget.helpers";
-import { RButton } from "~/lib/atoms/RButton";
+import type { IntentsPickerKind } from "./components/IntentsPickerView";
+import type { IntentsFormStep } from "./components/IntentsView";
 import { RDepositFundsModal } from "./RDepositFundsModal";
 
 const mocks = vi.hoisted(() => ({
-  state: null as UsdtBridgeState | null,
-  transactions: new Map<string, BridgeTransaction>(),
   holdDeposit: vi.fn(),
   releaseDeposit: vi.fn(),
-  reset: vi.fn(),
   closeWallet: vi.fn(),
-  submit: vi.fn(),
-  intentsEnabled: false,
   resetIntents: vi.fn(),
+  cancelReview: vi.fn(),
   resumeIntent: vi.fn(() => false),
   intentsReview: { phase: "form" } as { phase: string; localId?: string },
 }));
 
-vi.mock("~/consts/intents", () => ({
-  get INTENTS_DEPOSIT_ENABLED() {
-    return mocks.intentsEnabled;
-  },
-}));
 vi.mock("~/hooks/useIntentsDeposit", () => ({
   useIntentsDeposit: () => ({
     resetForm: mocks.resetIntents,
@@ -41,39 +24,57 @@ vi.mock("~/hooks/useIntentsDeposit", () => ({
     resumeActive: mocks.resumeIntent,
     activeRecord: mocks.intentsReview.phase === "tracking" ? {} : undefined,
     hasFundingStarted: mocks.intentsReview.phase === "tracking",
-    cancelReview: vi.fn(),
+    cancelReview: mocks.cancelReview,
   }),
 }));
 vi.mock("./components/IntentsView", () => ({
-  IntentsView: () => <p>Intents form</p>,
+  IntentsView: ({
+    step,
+    onStepChange,
+    onOpenPicker,
+  }: {
+    step: IntentsFormStep;
+    onStepChange: (step: IntentsFormStep) => void;
+    onOpenPicker: (kind: IntentsPickerKind) => void;
+  }) => (
+    <>
+      <p>Intents {step}</p>
+      <button onClick={() => onStepChange("details")}>Continue</button>
+      <button onClick={() => onOpenPicker("network")}>Open network</button>
+    </>
+  ),
+}));
+vi.mock("./components/IntentsPickerView", () => ({
+  IntentsPickerView: ({
+    kind,
+    onDone,
+  }: {
+    kind: IntentsPickerKind;
+    onDone: () => void;
+  }) => <button onClick={onDone}>Picker {kind}</button>,
+}));
+vi.mock("./components/IntentsQuoteView", () => ({
+  IntentsQuoteView: () => <p>Intents review</p>,
 }));
 vi.mock("./components/IntentsStatusView", () => ({
   IntentsStatusView: () => <p>Intents status</p>,
 }));
-
+vi.mock("./components/ReceiveView", () => ({
+  ReceiveView: () => <p>Receive view</p>,
+}));
 vi.mock("~/providers/TransactionsProvider/TransactionWidgetProvider", () => ({
-  useTransactionWidget: () => ({
-    transactions: [...mocks.transactions.values()],
-    models: [...mocks.transactions.values()].flatMap((record) => {
-      const model = toTransactionWidget(record);
-      return model ? [model] : [];
-    }),
-    holdDeposit: mocks.holdDeposit,
-  }),
+  useTransactionWidget: () => ({ holdDeposit: mocks.holdDeposit }),
 }));
 vi.mock("wagmi", () => ({
   useAccount: () => ({ connector: undefined }),
   useConfig: () => ({ chains: [] }),
 }));
 vi.mock("~/providers/UserProvider/user.provider", () => ({
-  useUserContext: () => ({ userTokensBalances: {} }),
-}));
-vi.mock("~/providers/TokensProvider/tokens.provider", () => ({
-  useTokensContext: () => ({ tokensMetadata: {} }),
+  useUserContext: () => ({}),
 }));
 vi.mock("~/providers/EthereumProvider/ethereum.provider", () => ({
   useEthereumContext: () => ({
-    bridge: { state: mocks.state, reset: mocks.reset, submit: mocks.submit },
+    userAddress: null,
     walletSelection: { onClose: mocks.closeWallet },
   }),
 }));
@@ -85,380 +86,122 @@ vi.mock("~/lib/atoms/RIcon", () => ({ RIcon: () => null }));
 vi.mock("~/lib/atoms/RTypography/RHeading", () => ({
   RHeading: ({ children }: { children: ReactNode }) => children,
 }));
-vi.mock("./components/BridgeView", () => ({
-  BridgeView: ({
-    onDeposit,
-    onDepositAmountChange,
-  }: {
-    onDeposit: () => Promise<void>;
-    onDepositAmountChange: (value: BigNumber) => void;
-  }) => (
-    <>
-      <button onClick={() => onDepositAmountChange(new BigNumber(1))}>
-        Set amount
-      </button>
-      <RButton onClick={onDeposit}>Deposit Funds</RButton>
-    </>
-  ),
-}));
-vi.mock("./components/ReceiveView", () => ({
-  ReceiveView: () => <p>Receive view</p>,
-}));
-vi.mock("~/lib/atoms/Money", () => ({ default: () => null }));
-vi.mock("~/lib/molecules/HashChip", () => ({ HashChip: () => null }));
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.clearAllMocks();
   mocks.holdDeposit.mockReturnValue(mocks.releaseDeposit);
-  mocks.transactions.clear();
-  mocks.intentsEnabled = false;
   mocks.intentsReview = { phase: "form" };
   mocks.resumeIntent.mockReturnValue(false);
-  mocks.state = {
-    amount: "1",
-    recipient: "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt",
-    sender: null,
-    progress: {
-      step: "lock",
-      status: "confirming",
-      hash: `0x${"1".repeat(64)}`,
-    },
-    isBusy: false,
-    isConfirmationUnknown: false,
-    error: null,
-  };
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function renderSubmittedModal() {
-  const element = document.createElement("div");
-  const root = createRoot(element);
-  try {
-    await act(async () =>
-      root.render(<RDepositFundsModal isOpen onClose={vi.fn()} />)
-    );
-    return element.innerHTML;
-  } finally {
-    await act(async () => root.unmount());
-  }
-}
-
-function renderModal() {
-  return renderToString(<RDepositFundsModal isOpen onClose={vi.fn()} />);
-}
-
-it("shows the submitted screen while a broadcast lock is being tracked", async () => {
-  expect(await renderSubmittedModal()).toContain("Transaction Submitted");
-});
-
-it.each([
-  "The bridge lock transaction reverted.",
-  "The transaction was replaced or cancelled in your wallet.",
-])("exposes the failure after broadcast: %s", (error) => {
-  mocks.state!.error = error;
-  const html = renderModal();
-  expect(html).toContain(error);
-  expect(html).not.toContain("Transaction Submitted");
-});
-
-it("exposes confirmation recovery even though a lock hash exists", () => {
-  mocks.state!.isConfirmationUnknown = true;
-  const html = renderModal();
-  expect(html).toContain("Check Confirmation");
-  expect(html).not.toContain("Transaction Submitted");
-});
-
-it("returns to the submitted screen after successful confirmation recovery", async () => {
-  mocks.state!.isConfirmationUnknown = true;
-  expect(renderModal()).toContain("Check Confirmation");
-  mocks.state!.isConfirmationUnknown = false;
-  mocks.state!.progress!.status = "confirmed";
-  expect(await renderSubmittedModal()).toContain("Transaction Submitted");
-});
-
-it("keeps the submitted screen open when matching events arrive", async () => {
-  mocks.transactions.set("operation-1", {
-    ...localRecord(),
-    sourceHashes: [mocks.state!.progress!.hash!],
-    signerEvents: [
-      { ...signerEventSequence[0], direction: "in", status: "PENDING" },
-    ],
-  });
-  expect(await renderSubmittedModal()).toContain("Transaction Submitted");
-});
-
-it("shows shared event progress in details without closing the popup", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+async function renderModal() {
   const element = document.createElement("div");
   const root = createRoot(element);
   const onClose = vi.fn();
-  const render = () =>
+  const render = (isOpen = true) =>
     act(async () =>
-      root.render(<RDepositFundsModal isOpen onClose={onClose} />)
+      root.render(<RDepositFundsModal isOpen={isOpen} onClose={onClose} />)
     );
-  const record: BridgeTransaction = {
-    ...localRecord(),
-    sourceHashes: [mocks.state!.progress!.hash!],
-    isWidgetRequested: true,
-    signerEvents: [],
-  };
-  mocks.transactions.set(record.operationId, record);
-  try {
-    await render();
-    const details = [...element.querySelectorAll("button")].find(
-      (button) => button.textContent === "View Details"
-    )!;
-    await act(async () => details.click());
-    expect(element.textContent).not.toContain("Transaction Submitted");
-    expect(element.textContent).toContain("Validators Sign");
-    expect(element.querySelectorAll("li[data-status=pending]")).toHaveLength(3);
-    expect(element.querySelector("li")?.getAttribute("data-status")).toBe(
-      "loading"
-    );
-    for (const [index, payload] of signerEventSequence.entries()) {
-      record.signerEvents!.push({
-        ...payload,
-        direction: "in",
-        status: payload.status as "PENDING" | "PROCESSING" | "COMPLETED",
-      });
-      await render();
-      if (index < 5) {
-        expect(
-          [...element.querySelectorAll("li")].findIndex(
-            (step) => step.getAttribute("data-status") === "loading"
-          )
-        ).toBe(Math.min(index, 3));
-      } else {
-        expect(
-          element.querySelectorAll("li[data-status=success]")
-        ).toHaveLength(4);
-        expect(element.textContent).toContain("Successfully transferred");
-      }
-      expect(onClose).not.toHaveBeenCalled();
-    }
-  } finally {
-    await act(async () => root.unmount());
-    vi.unstubAllGlobals();
-  }
-});
+  const button = (label: string) =>
+    [...element.querySelectorAll("button")].find(
+      (item) =>
+        item.textContent === label || item.getAttribute("aria-label") === label
+    ) as HTMLButtonElement | undefined;
+  await render();
+  return { element, root, render, button, onClose };
+}
 
-it.each(["minimize", "close", "external close", "unmount"])(
-  "releases only the submitted deposit on %s",
-  async (action) => {
-    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-    const element = document.createElement("div");
-    const root = createRoot(element);
-    const onClose = vi.fn();
-    const submitted = mocks.state;
-    mocks.state = null;
-    mocks.submit.mockImplementation(
-      async (_amount, _recipient, onTrackDeposit) => {
-        onTrackDeposit("operation-1");
-        mocks.state = submitted;
-      }
-    );
-    const render = (isOpen = true) =>
-      act(async () =>
-        root.render(<RDepositFundsModal isOpen={isOpen} onClose={onClose} />)
-      );
-    const click = (label: string) =>
-      act(async () => {
-        [...element.querySelectorAll("button")]
-          .find(
-            (button) =>
-              button.textContent === label ||
-              button.getAttribute("aria-label") === label
-          )!
-          .click();
-      });
-    let isUnmounted = false;
+describe("RDepositFundsModal", () => {
+  it("offers Send From Any Network and Receive On Mavryk only", async () => {
+    const { element, root, button } = await renderModal();
     try {
-      await render();
-      await click("Set amount");
-      await click("Deposit Funds");
-      await render();
-      expect(mocks.holdDeposit).toHaveBeenCalledOnce();
-      expect(mocks.holdDeposit).toHaveBeenCalledWith("operation-1");
-      expect(mocks.releaseDeposit).not.toHaveBeenCalled();
-      expect(element.textContent).toContain("Transaction Submitted");
-      if (action === "minimize") await click("Minimize And Continue Browsing");
-      if (action === "close") await click("Close deposit funds");
-      if (action === "external close") await render(false);
-      if (action === "unmount") {
-        await act(async () => root.unmount());
-        isUnmounted = true;
-      }
-      expect(mocks.releaseDeposit).toHaveBeenCalledOnce();
-    } finally {
-      if (!isUnmounted) await act(async () => root.unmount());
-      vi.unstubAllGlobals();
-    }
-  }
-);
-
-it.each([
-  undefined,
-  { step: "approve", status: "signature" },
-  { step: "approve", status: "confirming", hash: "0xapproval" },
-  { step: "approve", status: "confirmed", hash: "0xapproval" },
-  { step: "lock", status: "signature" },
-] as const)(
-  "keeps the deposit form mounted before lock submission: %j",
-  (progress) => {
-    mocks.state!.progress = progress;
-    mocks.state!.isBusy = true;
-    const html = renderModal();
-    expect(html).toContain("Set amount");
-    expect(html).not.toContain("Bridging from Ethereum");
-    expect(html).not.toContain("Transaction Submitted");
-  }
-);
-
-it("switches directly from the deposit form to success when the lock hash arrives", async () => {
-  const element = document.createElement("div");
-  const root = createRoot(element);
-  const submittedProgress = mocks.state!.progress;
-  mocks.state!.progress = { step: "lock", status: "signature" };
-  mocks.state!.isBusy = true;
-  const render = () =>
-    act(async () =>
-      root.render(<RDepositFundsModal isOpen onClose={vi.fn()} />)
-    );
-  try {
-    await render();
-    expect(element.textContent).toContain("Set amount");
-    expect(element.textContent).not.toContain("Bridging from Ethereum");
-    mocks.state!.progress = submittedProgress;
-    await render();
-    expect(element.textContent).toContain("Transaction Submitted");
-    expect(element.textContent).not.toContain("Set amount");
-    expect(element.textContent).not.toContain("Bridging from Ethereum");
-  } finally {
-    await act(async () => root.unmount());
-  }
-});
-
-it("keeps the clicked deposit button loading through initial submission", async () => {
-  const element = document.createElement("div");
-  const root = createRoot(element);
-  const submitted = mocks.state;
-  mocks.state = null;
-  let finishSubmission!: () => void;
-  const submission = new Promise<void>((resolve) => {
-    finishSubmission = resolve;
-  });
-  mocks.submit.mockImplementation(() => {
-    mocks.state = { ...submitted!, progress: undefined, isBusy: true };
-    return submission;
-  });
-  const render = () =>
-    act(async () =>
-      root.render(<RDepositFundsModal isOpen onClose={vi.fn()} />)
-    );
-  try {
-    await render();
-    await act(async () => {
-      [...element.querySelectorAll("button")]
-        .find((button) => button.textContent === "Set amount")!
-        .click();
-    });
-    const button = [...element.querySelectorAll("button")].find(
-      (button) => button.textContent === "Deposit Funds"
-    )!;
-    await act(async () => button.click());
-    await render();
-    expect(element.contains(button)).toBe(true);
-    expect(button.getAttribute("aria-busy")).toBe("true");
-    expect(button.disabled).toBe(true);
-    expect(element.textContent).not.toContain("Bridging from Ethereum");
-    mocks.state = submitted;
-    await render();
-    expect(element.textContent).toContain("Transaction Submitted");
-  } finally {
-    await act(async () => finishSubmission());
-    await act(async () => root.unmount());
-  }
-});
-
-describe("1Click deposit method", () => {
-  async function renderForm() {
-    mocks.state = null;
-    const element = document.createElement("div");
-    const root = createRoot(element);
-    const onClose = vi.fn();
-    const render = (isOpen = true) =>
-      act(async () =>
-        root.render(<RDepositFundsModal isOpen={isOpen} onClose={onClose} />)
+      const tabs = [...element.querySelectorAll("[role=tab]")].map(
+        (tab) => tab.textContent
       );
-    const tab = (label: string) =>
-      [...element.querySelectorAll("[role=tab]")].find(
-        (item) => item.textContent === label
-      ) as HTMLButtonElement | undefined;
-    await render();
-    return { element, root, render, tab };
-  }
+      expect(tabs).toEqual(["Send From Any Network", "Receive On Mavryk"]);
+      expect(
+        button("Send From Any Network")!.getAttribute("aria-selected")
+      ).toBe("true");
+      expect(element.textContent).toContain("Intents wallets");
+      expect(element.textContent).not.toContain("Bridge From Ethereum");
 
-  it("is hidden while the feature flag is off", async () => {
-    const { root, tab } = await renderForm();
-    try {
-      expect(tab("Send From Any Network")).toBeUndefined();
-      expect(tab("Bridge From Ethereum")).toBeDefined();
-      expect(tab("Receive On Mavryk")).toBeDefined();
-    } finally {
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("adds a third tab without replacing the existing methods", async () => {
-    mocks.intentsEnabled = true;
-    const { element, root, render, tab } = await renderForm();
-    try {
-      expect(element.textContent).toContain("Set amount");
-      await act(async () => tab("Send From Any Network")!.click());
-      expect(element.textContent).toContain("Intents form");
-      expect(tab("Send From Any Network")!.getAttribute("aria-selected")).toBe(
-        "true"
-      );
-      await act(async () => tab("Receive On Mavryk")!.click());
+      await act(async () => button("Receive On Mavryk")!.click());
       expect(element.textContent).toContain("Receive view");
-      await act(async () => tab("Bridge From Ethereum")!.click());
-      expect(element.textContent).toContain("Set amount");
-
-      await act(async () => tab("Send From Any Network")!.click());
-      await render(false);
-      expect(mocks.resetIntents).toHaveBeenCalled();
-      await render(true);
-      expect(element.textContent).toContain("Set amount");
     } finally {
       await act(async () => root.unmount());
     }
   });
+
+  it("goes from wallets to details and back with the header arrow", async () => {
+    const { element, root, button } = await renderModal();
+    try {
+      expect(button("Back")).toBeUndefined();
+      await act(async () => button("Continue")!.click());
+      expect(element.textContent).toContain("Intents details");
+      await act(async () => button("Back")!.click());
+      expect(element.textContent).toContain("Intents wallets");
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("shows a picker in place of the form and returns from it", async () => {
+    const { element, root, button } = await renderModal();
+    try {
+      await act(async () => button("Open network")!.click());
+      expect(element.textContent).toContain("Picker network");
+      expect(element.querySelector("[role=tablist]")).toBeNull();
+      await act(async () => button("Picker network")!.click());
+      expect(element.querySelector("[role=tablist]")).not.toBeNull();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("shows the review screen while a request is reviewed", async () => {
+    mocks.intentsReview = { phase: "review", localId: "local-1" };
+    const { element, root } = await renderModal();
+    try {
+      expect(element.textContent).toContain("Intents review");
+      expect(element.querySelector("[role=tablist]")).toBeNull();
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it("resets the flow when closed and reopens on the first step", async () => {
+    const { element, root, render, button, onClose } = await renderModal();
+    try {
+      await act(async () => button("Continue")!.click());
+      await act(async () => button("Close deposit funds")!.click());
+      expect(onClose).toHaveBeenCalled();
+      expect(mocks.resetIntents).toHaveBeenCalled();
+      expect(mocks.closeWallet).toHaveBeenCalled();
+      await render(false);
+      await render(true);
+      expect(element.textContent).toContain("Intents wallets");
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
   it("reopens on the active operation and holds its widget card", async () => {
-    mocks.intentsEnabled = true;
     mocks.resumeIntent.mockImplementation(() => {
       mocks.intentsReview = { phase: "tracking", localId: "local-1" };
       return true;
     });
-    const { element, root, render } = await renderForm();
+    const { element, root, render } = await renderModal();
     try {
       await render();
       expect(element.textContent).toContain("Intents status");
       expect(mocks.holdDeposit).toHaveBeenCalledWith("intent:local-1");
       await render(false);
       expect(mocks.releaseDeposit).toHaveBeenCalled();
-    } finally {
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("does not resume while the feature flag is off", async () => {
-    const { root } = await renderForm();
-    try {
-      expect(mocks.resumeIntent).not.toHaveBeenCalled();
     } finally {
       await act(async () => root.unmount());
     }

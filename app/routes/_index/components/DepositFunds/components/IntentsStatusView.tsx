@@ -9,7 +9,7 @@ import { formatRawAmount } from "~/lib/intents/intentRoute";
 import { RAlert } from "~/templates/Alert/RAlert";
 import type { TransactionWidgetModel } from "~/providers/TransactionsProvider/transactionWidget.helpers";
 
-import { getDepositSteps, type BridgeStatusStep } from "./depositSteps";
+import { getDepositSteps, type DepositStatusStep } from "./depositSteps";
 import {
   DepositModalHeader,
   DetailRow,
@@ -59,7 +59,7 @@ function Identity({
   );
 }
 
-function StepIndicator({ status }: { status: BridgeStatusStep["status"] }) {
+function StepIndicator({ status }: { status: DepositStatusStep["status"] }) {
   return (
     <span className={styles.indicator} data-status={status}>
       {status === "success" ? (

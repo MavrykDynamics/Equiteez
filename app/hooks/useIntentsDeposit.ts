@@ -244,7 +244,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     recipient && (!intentSession || account !== recipient)
       ? "Your Equiteez session is not ready. Reconnect your Mavryk wallet to continue."
       : recipient && !isIntentRecipient(recipient)
-        ? "This route can only deliver to mv1 Mavryk accounts. Use Bridge From Ethereum or Receive On Mavryk instead."
+        ? "This route can only deliver to mv1 Mavryk accounts. Use Receive On Mavryk instead."
         : null;
   const canReview = Boolean(
     route &&

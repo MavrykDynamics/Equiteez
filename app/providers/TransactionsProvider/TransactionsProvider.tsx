@@ -21,7 +21,7 @@ import {
 } from "~/providers/NotificationsProvider/notifications.const";
 import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { fetchBridgeDeposits } from "~/lib/apis/rwa/bridge/bridge";
-import { INTENTS_DEPOSIT_ENABLED, INTENTS_ENV } from "~/consts/intents";
+import { INTENTS_ENV } from "~/consts/intents";
 import {
   hasIntentArrived,
   type IntentRecord,
@@ -106,7 +106,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   currentStore.current = store;
   const intentStore = useMemo(
     () =>
-      account && INTENTS_DEPOSIT_ENABLED
+      account
         ? new IntentOperations(account, INTENTS_ENV, () => window.localStorage)
         : null,
     [account]
