@@ -17,6 +17,7 @@ import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 import { ConnectWalletModal } from "./ConnectWalletModal";
+import { describeError } from "~/services/direct/guardedInjector";
 
 type OpenConnectWallet = () => void;
 
@@ -36,7 +37,10 @@ export function ConnectWalletModalProvider({
       // Opening the extension popup must not wait for the caller
       void Promise.resolve()
         .then(connect)
-        .catch(() => console.error("Failed to connect wallet."));
+        .catch((error: unknown) =>
+          // Name and message only: an error may carry request details
+          console.error("Failed to connect wallet:", describeError(error))
+        );
       return;
     }
 

@@ -49,6 +49,7 @@ import {
 import { CodeInput, CODE_LENGTH } from "./CodeInput";
 import { RGoogleIcon } from "./RGoogleIcon";
 import styles from "./ConnectWalletModal.module.css";
+import { describeError } from "~/services/direct/guardedInjector";
 
 const RESEND_COOLDOWN_MS = 30_000;
 
@@ -245,7 +246,10 @@ export function ConnectWalletModal({
     // Opening the extension must not wait for this modal
     void Promise.resolve()
       .then(connect)
-      .catch(() => console.error("Failed to connect wallet."));
+      .catch((error: unknown) =>
+        // Name and message only: an error may carry request details
+        console.error("Failed to connect wallet:", describeError(error))
+      );
   };
 
   const submitEmail = async (event: FormEvent) => {
