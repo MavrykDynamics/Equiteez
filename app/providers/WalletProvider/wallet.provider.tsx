@@ -35,7 +35,11 @@ import { reconcileAttempts } from "~/services/direct/reconcile";
 
 import { dappClient, getRpcNode } from "./WalletCore.client";
 import { isDynamicWalletEnabled } from "./dynamic/dynamic.config";
-import { DynamicNotAuthenticatedError } from "./dynamic/dynamic.errors";
+import {
+  DynamicNotAuthenticatedError,
+  DynamicSignInInterruptedError,
+  DynamicTabOutdatedError,
+} from "./dynamic/dynamic.errors";
 import {
   loadDynamicClient,
   acknowledgeDynamicRecoveryCodes,
@@ -73,6 +77,12 @@ import {
   type DynamicSession,
   type WalletChoice,
 } from "./dynamic/dynamicSession.client";
+import {
+  areDynamicKeysStale,
+  isDynamicTabOutdated,
+  markDynamicKeysFresh,
+  reloadOutdatedTab,
+} from "./dynamic/dynamicTabSync";
 import {
   forgetGoogleSignIn,
   hasPendingGoogleSignIn,
@@ -401,10 +411,54 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
     if (!isDynamicWalletEnabled()) return null;
 
     const readyClient = async () => {
+      // Another tab signed in: this tab's SDK still has the old session and
+      // key. Reloading picks up the live session, so the user lands signed in.
+      if (isDynamicTabOutdated()) {
+        reloadOutdatedTab();
+        throw new DynamicTabOutdatedError();
+      }
       await pendingLogoutRef.current;
       const client = await loadDynamicClient();
       await waitForDynamicReady(client);
       return client;
+    };
+
+    /**
+     * Before a new sign-in: if another tab replaced the shared signing key,
+     * signing out here makes the SDK create a fresh one (and drops a session
+     * that no longer works), so the sign-in is not refused midway.
+     */
+    const refreshStaleKeys = async (client: DynamicClient) => {
+      if (!areDynamicKeysStale()) return;
+
+      const logoutError = await logoutDynamic(client);
+
+      if (logoutError) {
+        console.warn("Dynamic logout failed:", describeError(logoutError));
+      }
+      markDynamicKeysFresh();
+    };
+
+    /**
+     * Runs a sign-in step. When Dynamic ended the session during the step
+     * (another tab replaced its key), its error is usually a bare
+     * "Forbidden": say what happened instead.
+     */
+    const signInStep = async <T,>(
+      step: (client: DynamicClient) => Promise<T>
+    ) => {
+      const client = await readyClient();
+      const hadUser = Boolean(client.user);
+
+      try {
+        return await step(client);
+      } catch (error) {
+        if (isDynamicTabOutdated()) throw new DynamicTabOutdatedError(error);
+        if (hadUser && !client.user) {
+          throw new DynamicSignInInterruptedError(error);
+        }
+        throw error;
+      }
     };
 
     /** The signed-in email wallet's session */
@@ -432,46 +486,57 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
     };
 
     return {
-      start: async () => {
+      start: () =>
+        signInStep(async (client) => {
+          await refreshStaleKeys(client);
+          if (!hasLiveDynamicSession(client)) return "needs-email" as const;
+
+          await establishOrThrow({ mode: "ensure" });
+          return "connected" as const;
+        }),
+      sendOtp: async (email) => {
         const client = await readyClient();
 
-        if (!hasLiveDynamicSession(client)) return "needs-email";
-
-        await establishOrThrow({ mode: "ensure" });
-        return "connected";
+        await refreshStaleKeys(client);
+        return sendEmailOtp(client, email);
       },
-      sendOtp: async (email) => sendEmailOtp(await readyClient(), email),
       resendOtp: async () => resendEmailOtp(await readyClient()),
-      verifyOtp: async (code, onAccepted) => {
+      verifyOtp: (code, onAccepted) =>
+        signInStep(async (client) => {
+          await verifyEmailOtp(client, code);
+          onAccepted?.();
+          await waitForAuthenticatedUser(client);
+          await establishOrThrow({ mode: "ensure" });
+        }),
+      selectWallet: (walletId) =>
+        signInStep(() => establishOrThrow({ mode: "select", walletId })),
+      signInWithGoogle: async () => {
         const client = await readyClient();
 
-        await verifyEmailOtp(client, code);
-        onAccepted?.();
-        await waitForAuthenticatedUser(client);
-        await establishOrThrow({ mode: "ensure" });
+        await refreshStaleKeys(client);
+        return startGoogleSignIn(client);
       },
-      selectWallet: (walletId) =>
-        establishOrThrow({ mode: "select", walletId }),
-      signInWithGoogle: async () => startGoogleSignIn(await readyClient()),
       hasPendingGoogleSignIn,
       finishGoogleSignIn: async () => {
         // First: if the SDK fails to load, the note must not keep the tab
         // from restoring sessions and reopening this step on every load
         forgetGoogleSignIn();
-        const client = await readyClient();
-
-        await finishGoogleSignIn(client);
-        await waitForAuthenticatedUser(client);
-        await establishOrThrow({ mode: "ensure" });
+        await signInStep(async (client) => {
+          await finishGoogleSignIn(client);
+          await waitForAuthenticatedUser(client);
+          await establishOrThrow({ mode: "ensure" });
+        });
       },
-      passSecondFactor: async (factor) => {
-        await passDynamicSecondFactor(await readyClient(), factor);
-        await establishOrThrow({ mode: "ensure" });
-      },
-      unlockWallet: async (walletId, password) => {
-        await unlockDynamicWallet(await readyClient(), walletId, password);
-        await establishOrThrow({ mode: "select", walletId });
-      },
+      passSecondFactor: (factor) =>
+        signInStep(async (client) => {
+          await passDynamicSecondFactor(client, factor);
+          await establishOrThrow({ mode: "ensure" });
+        }),
+      unlockWallet: (walletId, password) =>
+        signInStep(async (client) => {
+          await unlockDynamicWallet(client, walletId, password);
+          await establishOrThrow({ mode: "select", walletId });
+        }),
       revealPrivateKey: async (displayContainer, password) => {
         const session = dynamicSessionRef.current;
 

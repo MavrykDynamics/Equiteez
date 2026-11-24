@@ -25,6 +25,31 @@ describe("describeConnectError", () => {
     ).toEqual({ kind: "select-wallet", wallets });
   });
 
+  it("starts over from the email step when Dynamic ended the session midway", () => {
+    const error = new Error(
+      "Your sign-in was interrupted. Please sign in again."
+    );
+    error.name = "DynamicSignInInterruptedError";
+
+    expect(describeConnectError(error, "second-factor")).toEqual({
+      kind: "message",
+      message: "Your sign-in was interrupted. Please sign in again.",
+      shouldRestart: true,
+    });
+  });
+
+  it("says the page reloads when another tab signed in", () => {
+    const error = new Error(
+      "You signed in in another tab. Reloading this page to continue…"
+    );
+    error.name = "DynamicTabOutdatedError";
+
+    expect(describeConnectError(error, "email")).toEqual({
+      kind: "message",
+      message: "You signed in in another tab. Reloading this page to continue…",
+    });
+  });
+
   it("does not claim a wrong password for an unrecognized unlock failure", () => {
     expect(
       describeConnectError(new Error("Invalid session"), "unlock")

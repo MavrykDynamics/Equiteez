@@ -23,7 +23,12 @@ export type ConnectErrorView =
   | { kind: "select-wallet"; wallets: DynamicWalletOption[] }
   | { kind: "unlock"; wallet: LockedWallet }
   | { kind: "second-factor"; methods: SecondFactorMethods }
-  | { kind: "message"; message: string };
+  | {
+      kind: "message";
+      message: string;
+      /** The sign-in has to start over from the email step */
+      shouldRestart?: boolean;
+    };
 
 const message = (text: string): ConnectErrorView => ({
   kind: "message",
@@ -82,7 +87,14 @@ export function describeConnectError(
     };
   }
 
+  // The session ended midway (e.g. another tab replaced its key): the steps
+  // already done no longer count
+  if (name === "DynamicSignInInterruptedError") {
+    return { kind: "message", message: text, shouldRestart: true };
+  }
+
   if (
+    name === "DynamicTabOutdatedError" ||
     name === "GoogleSignInError" ||
     name === "DynamicWrongPasswordError" ||
     name === "DynamicWrongCodeError"

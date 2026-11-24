@@ -48,6 +48,30 @@ export class DynamicSessionExpiredError extends Error {
   }
 }
 
+/**
+ * Another tab signed in, so this tab's Dynamic session is out of date
+ * (dynamicTabSync.ts). The page reloads to pick up the current one.
+ */
+export class DynamicTabOutdatedError extends Error {
+  constructor(cause?: unknown) {
+    super("You signed in in another tab. Reloading this page to continue…", {
+      cause,
+    });
+    this.name = "DynamicTabOutdatedError";
+  }
+}
+
+/**
+ * Dynamic ended the session during a sign-in step, e.g. another tab replaced
+ * its signing key. The step's own error (often "Forbidden") is the cause.
+ */
+export class DynamicSignInInterruptedError extends Error {
+  constructor(cause?: unknown) {
+    super("Your sign-in was interrupted. Please sign in again.", { cause });
+    this.name = "DynamicSignInInterruptedError";
+  }
+}
+
 export type DynamicWalletOption = {
   walletId: string;
   /** mv1 address, what the user recognizes */

@@ -66,6 +66,11 @@ const mocks = vi.hoisted(() => {
     logoutListeners,
     dynamicSession,
     dynamicEnabled: true,
+    isTabOutdated: false,
+    areKeysStale: false,
+    reloadOutdatedTab: vi.fn(),
+    markDynamicKeysFresh: vi.fn(),
+    passDynamicSecondFactor: vi.fn(async () => undefined),
     openDynamicSession: vi.fn(),
     logoutDynamic: vi.fn(async () => null),
     verifyEmailOtp: vi.fn(async () => undefined),
@@ -93,6 +98,13 @@ vi.mock("./dynamic/dynamicClient.client", () => ({
   resendEmailOtp: vi.fn(async () => undefined),
   verifyEmailOtp: mocks.verifyEmailOtp,
   waitForAuthenticatedUser: async () => undefined,
+  passDynamicSecondFactor: mocks.passDynamicSecondFactor,
+}));
+vi.mock("./dynamic/dynamicTabSync", () => ({
+  isDynamicTabOutdated: () => mocks.isTabOutdated,
+  areDynamicKeysStale: () => mocks.areKeysStale,
+  markDynamicKeysFresh: mocks.markDynamicKeysFresh,
+  reloadOutdatedTab: mocks.reloadOutdatedTab,
 }));
 vi.mock("./dynamic/dynamicSession.client", () => ({
   openDynamicSession: mocks.openDynamicSession,
@@ -146,6 +158,8 @@ beforeEach(() => {
     signature: "edsigBeacon",
   };
   mocks.dynamicEnabled = true;
+  mocks.isTabOutdated = false;
+  mocks.areKeysStale = false;
   mocks.dynamicClient.user = null;
   mocks.logoutListeners.clear();
   mocks.openDynamicSession.mockReset();
@@ -349,6 +363,79 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     expect(mocks.dapp.disconnectWallet).toHaveBeenCalled();
     expect(wallet.identity?.provider).toBe("dynamic");
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe("dynamic");
+  });
+
+  it("reloads instead of signing in when another tab signed in", async () => {
+    await renderProvider();
+    mocks.isTabOutdated = true;
+
+    await expect(wallet.dynamic!.start()).rejects.toMatchObject({
+      name: "DynamicTabOutdatedError",
+    });
+    // Reloading picks up the other tab's session
+    expect(mocks.reloadOutdatedTab).toHaveBeenCalled();
+    expect(mocks.openDynamicSession).not.toHaveBeenCalled();
+  });
+
+  it("gets a fresh key before a new sign-in when another tab replaced it", async () => {
+    await renderProvider();
+    // Another tab signed out: this tab still "has" the session it killed
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    mocks.areKeysStale = true;
+    mocks.logoutDynamic.mockImplementationOnce(async () => {
+      mocks.dynamicClient.user = null;
+      return null;
+    });
+
+    await act(async () => {
+      expect(await wallet.dynamic!.start()).toBe("needs-email");
+    });
+
+    expect(mocks.logoutDynamic).toHaveBeenCalledWith(mocks.dynamicClient);
+    expect(mocks.markDynamicKeysFresh).toHaveBeenCalled();
+    expect(mocks.openDynamicSession).not.toHaveBeenCalled();
+  });
+
+  it("keeps the key when no other tab replaced it", async () => {
+    await renderProvider();
+
+    await act(async () => {
+      await wallet.dynamic!.sendOtp("a@b.co");
+    });
+
+    expect(mocks.logoutDynamic).not.toHaveBeenCalled();
+  });
+
+  it("reports a sign-in that Dynamic ended midway instead of its bare error", async () => {
+    await renderProvider();
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    // Another tab replaced the key: the SDK signs out and the step fails
+    mocks.openDynamicSession.mockImplementationOnce(async () => {
+      mocks.dynamicClient.user = null;
+      throw Object.assign(new Error("Forbidden"), { name: "WalletApiError" });
+    });
+
+    await act(async () => {
+      await expect(
+        wallet.dynamic!.passSecondFactor({
+          kind: "authenticator",
+          code: "123456",
+        })
+      ).rejects.toMatchObject({ name: "DynamicSignInInterruptedError" });
+    });
+    expect(wallet.identity).toBeNull();
+  });
+
+  it("passes on a failed step's own error while the session is intact", async () => {
+    await renderProvider();
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    mocks.passDynamicSecondFactor.mockRejectedValueOnce(
+      Object.assign(new Error("Wrong code"), { name: "DynamicWrongCodeError" })
+    );
+
+    await expect(
+      wallet.dynamic!.passSecondFactor({ kind: "authenticator", code: "1" })
+    ).rejects.toMatchObject({ name: "DynamicWrongCodeError" });
   });
 
   it("signs auth payloads with the Dynamic session", async () => {

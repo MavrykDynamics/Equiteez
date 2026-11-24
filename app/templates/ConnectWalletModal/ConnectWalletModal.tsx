@@ -160,6 +160,11 @@ export function ConnectWalletModal({
           typeof stage === "function" ? stage() : stage
         );
 
+        if (view.kind === "message" && view.shouldRestart) {
+          setStep({ name: "email", error: view.message });
+          return;
+        }
+
         setStep(
           view.kind === "select-wallet"
             ? { name: "select-wallet", wallets: view.wallets }

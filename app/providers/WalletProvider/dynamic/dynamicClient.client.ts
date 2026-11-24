@@ -17,6 +17,7 @@ import {
   type MavrykKeys,
   verifyDigestSignature,
 } from "~/lib/mavryk/keys";
+import { reloadWhenHidden } from "~/lib/utils/reloadWhenHidden";
 
 import { getDynamicEnvironmentId } from "./dynamic.config";
 import {
@@ -36,6 +37,11 @@ import {
   LocalSignatureVerificationError,
   MultipleDynamicWalletsError,
 } from "./dynamic.errors";
+import {
+  announceDynamicSession,
+  doesLogoutReplaceSharedKey,
+  watchOtherTabsDynamicSessions,
+} from "./dynamicTabSync";
 import type {
   DynamicClient,
   DynamicWallet,
@@ -104,13 +110,41 @@ export function loadDynamicClient(): Promise<DynamicClient> {
   }
 
   clientPromise ??= import("./dynamicSdk.client")
-    .then(({ createDynamicClient }) => createDynamicClient(environmentId))
+    .then(({ createDynamicClient }) => {
+      const client = createDynamicClient(environmentId);
+
+      syncWithOtherTabs(client);
+      return client;
+    })
     .catch((error: unknown) => {
       clientPromise = null;
       throw new DynamicInitError(undefined, error);
     });
 
   return clientPromise;
+}
+
+/**
+ * Tells the other tabs whenever this tab's session changes (start, sign-in,
+ * sign-out), and reloads this tab unseen once another tab's change leaves it
+ * outdated (dynamicTabSync.ts).
+ */
+function syncWithOtherTabs(client: DynamicClient) {
+  const ownSessionExpiresAt = () => client.sessionExpiresAt?.getTime() ?? null;
+  const announce = () => announceDynamicSession(ownSessionExpiresAt());
+
+  client.waitForInit().then(announce, () => undefined);
+  client.onUserChanged(announce);
+  client.onLogout((reason) => {
+    if (doesLogoutReplaceSharedKey(reason)) announceDynamicSession(null);
+  });
+  watchOtherTabsDynamicSessions({
+    getOwnSessionExpiresAt: ownSessionExpiresAt,
+    isReady: () => client.initStatus === "finished",
+    onOutdated: () => {
+      reloadWhenHidden();
+    },
+  });
 }
 
 export async function waitForDynamicReady(
