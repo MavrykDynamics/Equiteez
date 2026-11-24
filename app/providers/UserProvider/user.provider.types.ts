@@ -9,6 +9,7 @@ import {
   userTzktWSAccountSchema,
 } from "./helpers/user.schemes";
 import BigNumber from "bignumber.js";
+import type { DisconnectOptions } from "~/providers/WalletProvider/wallet.types";
 
 // User tokens types
 export type UserTzktTokensBalancesType = z.infer<
@@ -35,7 +36,7 @@ export type UserContext = UserContextStateType & {
    */
   connectWithWallet: (connectWallet: () => Promise<unknown>) => Promise<void>;
   refetchUserAccountStatus: () => Promise<void>;
-  signOut: (options?: { keepProviderSession?: boolean }) => Promise<void>;
+  signOut: (options?: DisconnectOptions) => Promise<void>;
   changeUser: () => void;
 };
 

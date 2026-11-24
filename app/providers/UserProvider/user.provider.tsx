@@ -38,6 +38,7 @@ import { reloadWhenHidden } from "~/lib/utils/reloadWhenHidden";
 import {
   getSessionSyncAction,
   isSessionSyncSettled,
+  type SessionSyncSnapshot,
 } from "./helpers/sessionSync";
 import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
@@ -285,7 +286,12 @@ export const UserProvider = ({ children }: Props) => {
     // The RWA session ended (expired or signed out in another tab): drop the
     // wallet here but keep the Dynamic session, so signing in needs no code
     const onAuthExpired = () => {
-      void signOut({ keepProviderSession: true });
+      // A sign-in running here makes a new session: another tab's sign-out
+      // (e.g. it lost the wallet this sign-in replaces) must not undo it
+      if (authFlowCountRef.current > 0) return;
+      // Shared state (Mavryk Wallet's active account, the saved wallet
+      // choice) is left alone: clearing it would sign out every other tab
+      void signOut({ keepProviderSession: true, keepSharedState: true });
     };
 
     window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
@@ -295,8 +301,8 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [IS_WEB, signOut]);
 
-  // Whether this tab had a wallet at the previous settled sync check
-  const hadWalletRef = useRef<boolean | null>(null);
+  // This tab's state at the previous settled sync check
+  const previousSyncRef = useRef<SessionSyncSnapshot | null>(null);
   // Another tab signed in while this one had no wallet: reload unseen to
   // pick it up
   const [shouldReloadForOtherTab, setShouldReloadForOtherTab] = useState(false);
@@ -310,17 +316,24 @@ export const UserProvider = ({ children }: Props) => {
       isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
       accountAddress,
       authenticatedWalletAddress,
-      hadWallet: hadWalletRef.current,
+      previous: previousSyncRef.current,
     };
 
     if (!isSessionSyncSettled(input)) return;
 
     const action = getSessionSyncAction(input);
-    hadWalletRef.current = Boolean(accountAddress);
+    // A released wallet counts as gone already: the next check then reloads
+    // instead of logging out the other tab's session
+    previousSyncRef.current = {
+      accountAddress: action === "release-wallet" ? null : accountAddress,
+      authenticatedWalletAddress,
+    };
     setShouldReloadForOtherTab(action === "reload-tab");
 
-    if (action === "disconnect-wallet") {
-      void signOut({ keepProviderSession: true });
+    if (action === "release-wallet") {
+      void signOut({ keepProviderSession: true, keepSharedState: true });
+    } else if (action === "disconnect-wallet") {
+      void signOut({ keepProviderSession: true, keepSharedState: true });
     } else if (action === "logout-rwa") {
       void logout();
     }

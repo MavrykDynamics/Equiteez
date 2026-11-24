@@ -4,7 +4,12 @@
  *
  * - A wallet without an RWA session is disconnected, so connecting again
  *   signs in.
- * - An RWA session of another address is logged out.
+ * - A wallet and an RWA session of different addresses: when only one of
+ *   them changed while no sign-in runs here, another tab did it (tokens and
+ *   Mavryk Wallet's active account are shared), e.g. it switched accounts.
+ *   This tab lets its wallet go without touching the shared state and
+ *   reloads to pick up the other tab's. Otherwise (found on load, or both
+ *   changed at once) the RWA session is logged out.
  * - An RWA session without a wallet is logged out when this tab lost the
  *   wallet: the restore on load could not reopen it (e.g. the email wallet's
  *   session expired) or it went away (e.g. Dynamic signed out).
@@ -26,17 +31,24 @@ export type SessionSyncInput = {
   accountAddress: string | null;
   authenticatedWalletAddress: string | null;
   /**
-   * Whether this tab had a wallet at the previous settled check; null before
-   * the first one, i.e. right after the restore on load
+   * This tab's state at the previous settled check; null before the first
+   * one, i.e. right after the restore on load
    */
-  hadWallet: boolean | null;
+  previous: SessionSyncSnapshot | null;
 };
+
+export type SessionSyncSnapshot = Pick<
+  SessionSyncInput,
+  "accountAddress" | "authenticatedWalletAddress"
+>;
 
 export type SessionSyncAction =
   | "none"
   | "disconnect-wallet"
   | "logout-rwa"
-  | "reload-tab";
+  | "reload-tab"
+  /** Disconnect locally, keeping shared state, then reload-tab */
+  | "release-wallet";
 
 /** False while a check would act on a state that is still changing. */
 export function isSessionSyncSettled({
@@ -59,7 +71,7 @@ export function getSessionSyncAction({
   isWalletBusy,
   accountAddress,
   authenticatedWalletAddress,
-  hadWallet,
+  previous,
 }: SessionSyncInput): SessionSyncAction {
   if (
     !isSessionSyncSettled({
@@ -75,6 +87,8 @@ export function getSessionSyncAction({
   if (!accountAddress) {
     if (!isAuthenticated) return "none";
 
+    const hadWallet = previous ? Boolean(previous.accountAddress) : null;
+
     return hadWallet === false ? "reload-tab" : "logout-rwa";
   }
   if (!isAuthenticated) return "disconnect-wallet";
@@ -83,7 +97,12 @@ export function getSessionSyncAction({
     authenticatedWalletAddress &&
     accountAddress !== authenticatedWalletAddress
   ) {
-    return "logout-rwa";
+    const isChangedElsewhere =
+      previous !== null &&
+      (previous.accountAddress === accountAddress ||
+        previous.authenticatedWalletAddress === authenticatedWalletAddress);
+
+    return isChangedElsewhere ? "release-wallet" : "logout-rwa";
   }
 
   return "none";

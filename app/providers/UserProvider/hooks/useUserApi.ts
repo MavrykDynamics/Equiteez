@@ -6,7 +6,10 @@ import { DEFAULT_USER } from "../helpers/user.consts";
 // types
 import { UserContextStateType } from "../user.provider.types";
 
-import type { WalletContextValue } from "~/providers/WalletProvider/wallet.types";
+import type {
+  DisconnectOptions,
+  WalletContextValue,
+} from "~/providers/WalletProvider/wallet.types";
 import { HubConnection } from "@microsoft/signalr";
 
 type UseUserApiType = {
@@ -74,7 +77,8 @@ export const useUserApi = ({
   const signOut = useCallback(
     async ({
       keepProviderSession = false,
-    }: { keepProviderSession?: boolean } = {}) => {
+      keepSharedState = false,
+    }: DisconnectOptions = {}) => {
       // A socket that fails to stop must not keep the wallet connected
       try {
         await tzktSocket?.stop();
@@ -84,7 +88,7 @@ export const useUserApi = ({
       setTzktSocket(null);
 
       try {
-        await disconnect({ keepProviderSession });
+        await disconnect({ keepProviderSession, keepSharedState });
       } catch (e) {
         console.error(`Failed to disconnect wallet: `, e);
       } finally {

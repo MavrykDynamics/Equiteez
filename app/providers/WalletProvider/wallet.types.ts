@@ -146,6 +146,11 @@ export type DynamicConnectApi = {
   removePasskey: (passkeyId: string) => Promise<void>;
 };
 
+export type DisconnectOptions = {
+  keepProviderSession?: boolean;
+  keepSharedState?: boolean;
+};
+
 export type WalletContextValue = {
   phase: WalletPhase;
   /** True until a previous session has been restored or ruled out */
@@ -157,9 +162,11 @@ export type WalletContextValue = {
   connectMavrykWallet: () => Promise<void>;
   /**
    * keepProviderSession: switch accounts without ending the Dynamic session,
-   * so signing back in needs no new code
+   * so signing back in needs no new code.
+   * keepSharedState: another tab signed in and owns the state tabs share
+   * (the saved wallet choice, Mavryk Wallet's active account): leave it.
    */
-  disconnect: (options?: { keepProviderSession?: boolean }) => Promise<void>;
+  disconnect: (options?: DisconnectOptions) => Promise<void>;
   /** Toolkit that signs with the connected wallet; null when disconnected */
   getToolkit: () => MavrykToolkit | null;
   signAuthPayload: (packedHex: string) => Promise<AuthPayloadSignature>;

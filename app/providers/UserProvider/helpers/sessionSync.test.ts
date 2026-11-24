@@ -10,7 +10,7 @@ const signedIn: SessionSyncInput = {
   isWalletBusy: false,
   accountAddress: "mv1A",
   authenticatedWalletAddress: "mv1A",
-  hadWallet: true,
+  previous: { accountAddress: "mv1A", authenticatedWalletAddress: "mv1A" },
 };
 
 describe("getSessionSyncAction", () => {
@@ -28,10 +28,38 @@ describe("getSessionSyncAction", () => {
     ).toBe("disconnect-wallet");
   });
 
-  it("logs out an RWA session of another address", () => {
+  it("lets its wallet go when another tab switched the shared Mavryk Wallet account", () => {
+    // Beacon's active account is shared: the other tab signs the new one in
     expect(getSessionSyncAction({ ...signedIn, accountAddress: "mv1B" })).toBe(
-      "logout-rwa"
+      "release-wallet"
     );
+  });
+
+  it("lets its wallet go when another tab signed in with another one", () => {
+    // The session changed while this tab's wallet stayed the same
+    expect(
+      getSessionSyncAction({ ...signedIn, authenticatedWalletAddress: "mv1B" })
+    ).toBe("release-wallet");
+  });
+
+  it("logs out a mismatch found by the restore on load", () => {
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        authenticatedWalletAddress: "mv1B",
+        previous: null,
+      })
+    ).toBe("logout-rwa");
+  });
+
+  it("logs out when the wallet and the session changed together", () => {
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: "mv1B",
+        authenticatedWalletAddress: "mv1C",
+      })
+    ).toBe("logout-rwa");
   });
 
   it.each<[string, Partial<SessionSyncInput>]>([
@@ -64,7 +92,7 @@ describe("getSessionSyncAction", () => {
       getSessionSyncAction({
         ...signedIn,
         accountAddress: null,
-        hadWallet: null,
+        previous: null,
       })
     ).toBe("logout-rwa");
   });
@@ -75,7 +103,10 @@ describe("getSessionSyncAction", () => {
       getSessionSyncAction({
         ...signedIn,
         accountAddress: null,
-        hadWallet: true,
+        previous: {
+          accountAddress: "mv1A",
+          authenticatedWalletAddress: "mv1A",
+        },
       })
     ).toBe("logout-rwa");
   });
@@ -86,7 +117,7 @@ describe("getSessionSyncAction", () => {
       getSessionSyncAction({
         ...signedIn,
         accountAddress: null,
-        hadWallet: false,
+        previous: { accountAddress: null, authenticatedWalletAddress: null },
       })
     ).toBe("reload-tab");
   });

@@ -570,6 +570,26 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     expect(started).toBe(true);
   });
 
+  it("leaves the shared wallet state to the tab that signed in elsewhere", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    await renderProvider();
+    // The other tab chose Mavryk Wallet and owns its active account
+    window.localStorage.setItem(STORAGE_KEY, "mavryk_extension");
+
+    await act(async () => {
+      await wallet.disconnect({
+        keepProviderSession: true,
+        keepSharedState: true,
+      });
+    });
+
+    expect(wallet.identity).toBeNull();
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe("mavryk_extension");
+    expect(mocks.dapp.disconnectWallet).not.toHaveBeenCalled();
+    expect(mocks.logoutDynamic).not.toHaveBeenCalled();
+  });
+
   it("clears the wallet locally even when the remote logout fails", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
     mocks.dynamicClient.user = { email: "a@b.co" };

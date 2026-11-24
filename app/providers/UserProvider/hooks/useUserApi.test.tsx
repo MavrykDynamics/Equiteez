@@ -52,6 +52,7 @@ describe("useUserApi", () => {
 
     expect(wallet.disconnect).toHaveBeenCalledWith({
       keepProviderSession: false,
+      keepSharedState: false,
     });
     expect(setUserCtxState).toHaveBeenCalledWith(DEFAULT_USER);
   });
@@ -61,6 +62,18 @@ describe("useUserApi", () => {
 
     expect(wallet.disconnect).toHaveBeenCalledWith({
       keepProviderSession: true,
+      keepSharedState: false,
+    });
+  });
+
+  it("leaves the shared state to the tab that signed in elsewhere", async () => {
+    await act(() =>
+      api.signOut({ keepProviderSession: true, keepSharedState: true })
+    );
+
+    expect(wallet.disconnect).toHaveBeenCalledWith({
+      keepProviderSession: true,
+      keepSharedState: true,
     });
   });
 

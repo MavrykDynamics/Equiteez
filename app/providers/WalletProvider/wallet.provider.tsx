@@ -221,7 +221,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   // --- Sign out ------------------------------------------------------------
 
   const disconnect = useCallback<WalletContextValue["disconnect"]>(
-    async ({ keepProviderSession = false } = {}) => {
+    async ({ keepProviderSession = false, keepSharedState = false } = {}) => {
       const current = identityRef.current;
       const session = dynamicSessionRef.current;
 
@@ -231,6 +231,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       commit(null, startEpoch());
       dynamicSessionRef.current = null;
       chosenProviderRef.current = null;
+      if (keepSharedState) return;
       saveWalletProvider(null);
 
       // Local state is cleared above even if a remote logout fails
