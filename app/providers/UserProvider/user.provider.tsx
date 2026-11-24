@@ -34,6 +34,7 @@ import {
   getHasOrdersForAddress,
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
+import { reloadWhenHidden } from "~/lib/utils/reloadWhenHidden";
 import {
   getSessionSyncAction,
   isSessionSyncSettled,
@@ -296,6 +297,9 @@ export const UserProvider = ({ children }: Props) => {
 
   // Whether this tab had a wallet at the previous settled sync check
   const hadWalletRef = useRef<boolean | null>(null);
+  // Another tab signed in while this one had no wallet: reload unseen to
+  // pick it up
+  const [shouldReloadForOtherTab, setShouldReloadForOtherTab] = useState(false);
 
   useEffect(() => {
     const input = {
@@ -313,6 +317,7 @@ export const UserProvider = ({ children }: Props) => {
 
     const action = getSessionSyncAction(input);
     hadWalletRef.current = Boolean(accountAddress);
+    setShouldReloadForOtherTab(action === "reload-tab");
 
     if (action === "disconnect-wallet") {
       void signOut({ keepProviderSession: true });
@@ -330,6 +335,12 @@ export const UserProvider = ({ children }: Props) => {
     signOut,
     walletPhase,
   ]);
+
+  useEffect(() => {
+    if (!shouldReloadForOtherTab) return;
+
+    return reloadWhenHidden();
+  }, [shouldReloadForOtherTab]);
 
   const providerValue = useMemo(() => {
     const isLoading =

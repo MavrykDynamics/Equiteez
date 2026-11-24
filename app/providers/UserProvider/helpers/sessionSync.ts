@@ -9,8 +9,9 @@
  *   wallet: the restore on load could not reopen it (e.g. the email wallet's
  *   session expired) or it went away (e.g. Dynamic signed out).
  * - A session that another tab signed in while this tab had no wallet is
- *   kept: tokens are shared, so logging it out would end the other tab's
- *   sign-in.
+ *   kept (tokens are shared: logging it out would end the other tab's
+ *   sign-in) and this tab reloads to pick up the wallet: Dynamic and Beacon
+ *   read their sessions from storage only when they start.
  * - Nothing happens while a wallet is connecting or a sign-in is running:
  *   the wallet appears before login() finishes, and that is not a mismatch.
  */
@@ -31,7 +32,11 @@ export type SessionSyncInput = {
   hadWallet: boolean | null;
 };
 
-export type SessionSyncAction = "none" | "disconnect-wallet" | "logout-rwa";
+export type SessionSyncAction =
+  | "none"
+  | "disconnect-wallet"
+  | "logout-rwa"
+  | "reload-tab";
 
 /** False while a check would act on a state that is still changing. */
 export function isSessionSyncSettled({
@@ -70,7 +75,7 @@ export function getSessionSyncAction({
   if (!accountAddress) {
     if (!isAuthenticated) return "none";
 
-    return hadWallet === false ? "none" : "logout-rwa";
+    return hadWallet === false ? "reload-tab" : "logout-rwa";
   }
   if (!isAuthenticated) return "disconnect-wallet";
 

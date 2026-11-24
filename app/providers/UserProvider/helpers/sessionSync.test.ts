@@ -80,7 +80,7 @@ describe("getSessionSyncAction", () => {
     ).toBe("logout-rwa");
   });
 
-  it("keeps an RWA session another tab signed in while this tab had no wallet", () => {
+  it("reloads to pick up the wallet when another tab signed in while this tab had none", () => {
     // Tokens are shared: logging out here would end the other tab's sign-in
     expect(
       getSessionSyncAction({
@@ -88,7 +88,7 @@ describe("getSessionSyncAction", () => {
         accountAddress: null,
         hadWallet: false,
       })
-    ).toBe("none");
+    ).toBe("reload-tab");
   });
 
   it("does nothing without a wallet or an RWA session", () => {
