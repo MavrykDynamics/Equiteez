@@ -134,6 +134,8 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   const connectSeqRef = useRef(0);
   const dappRef = useRef<Dapp | null>(null);
   const dynamicSessionRef = useRef<DynamicSession | null>(null);
+  // Stops listening for the SDK's own logout of the active Dynamic session
+  const stopWatchingDynamicLogoutRef = useRef<(() => void) | null>(null);
   // Dynamic logout still running after Sign out; the next connect waits for it
   const pendingLogoutRef = useRef<Promise<void> | null>(null);
   // The wallet the user chose: Beacon events are ignored while it is Dynamic
@@ -206,6 +208,50 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
     [commit, startEpoch]
   );
 
+  // --- Sign out ------------------------------------------------------------
+
+  const disconnect = useCallback<WalletContextValue["disconnect"]>(
+    async ({ keepProviderSession = false } = {}) => {
+      const current = identityRef.current;
+      const session = dynamicSessionRef.current;
+
+      connectSeqRef.current += 1;
+      stopWatchingDynamicLogoutRef.current?.();
+      stopWatchingDynamicLogoutRef.current = null;
+      commit(null, startEpoch());
+      dynamicSessionRef.current = null;
+      chosenProviderRef.current = null;
+      saveWalletProvider(null);
+
+      // Local state is cleared above even if a remote logout fails
+      if (current?.provider !== "dynamic") {
+        try {
+          await dappRef.current?.disconnectWallet();
+        } catch (disconnectError) {
+          console.log("disconnectWallet error:", disconnectError);
+        }
+      }
+
+      // Sign out does not wait for Dynamic's own logout (its iframe can be
+      // slow): the app is signed out already. A new connect waits for it, so
+      // it never finds the old session and skips the code.
+      if (session && !keepProviderSession) {
+        const pending = logoutDynamic(session.client).then((logoutError) => {
+          // Name and message only: an SDK error may carry request details
+          if (logoutError) {
+            console.warn("Dynamic logout failed:", describeError(logoutError));
+          }
+          if (pendingLogoutRef.current === pending) {
+            pendingLogoutRef.current = null;
+          }
+        });
+
+        pendingLogoutRef.current = pending;
+      }
+    },
+    [commit, startEpoch]
+  );
+
   // --- Dynamic -------------------------------------------------------------
 
   /**
@@ -233,6 +279,17 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
 
       sessionEpoch = startEpoch();
       dynamicSessionRef.current = session;
+      // The SDK signs out by itself while the tab is open (session expiry, a
+      // revoked device): the wallet can no longer sign, so the app signs out
+      // too. The Dynamic session is already gone, nothing to log out there.
+      stopWatchingDynamicLogoutRef.current?.();
+      stopWatchingDynamicLogoutRef.current = session.client.onLogout(
+        (reason) => {
+          if (dynamicSessionRef.current !== session) return;
+          console.warn("Dynamic signed out:", reason ?? "unknown reason");
+          void disconnect({ keepProviderSession: true });
+        }
+      );
       chosenProviderRef.current = "dynamic";
       saveWalletProvider("dynamic");
       commit(
@@ -249,7 +306,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
 
       return true;
     },
-    [commit, startEpoch]
+    [commit, disconnect, startEpoch]
   );
 
   /** Runs a connect step, keeping the previous phase if it fails. */
@@ -267,6 +324,14 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   // --- Restore on load -----------------------------------------------------
+
+  useEffect(
+    () => () => {
+      stopWatchingDynamicLogoutRef.current?.();
+      stopWatchingDynamicLogoutRef.current = null;
+    },
+    []
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -314,46 +379,6 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   }, [establishDynamic, onBeaconAccount]);
 
   // --- Actions -------------------------------------------------------------
-
-  const disconnect = useCallback<WalletContextValue["disconnect"]>(
-    async ({ keepProviderSession = false } = {}) => {
-      const current = identityRef.current;
-      const session = dynamicSessionRef.current;
-
-      connectSeqRef.current += 1;
-      commit(null, startEpoch());
-      dynamicSessionRef.current = null;
-      chosenProviderRef.current = null;
-      saveWalletProvider(null);
-
-      // Local state is cleared above even if a remote logout fails
-      if (current?.provider !== "dynamic") {
-        try {
-          await dappRef.current?.disconnectWallet();
-        } catch (disconnectError) {
-          console.log("disconnectWallet error:", disconnectError);
-        }
-      }
-
-      // Sign out does not wait for Dynamic's own logout (its iframe can be
-      // slow): the app is signed out already. A new connect waits for it, so
-      // it never finds the old session and skips the code.
-      if (session && !keepProviderSession) {
-        const pending = logoutDynamic(session.client).then((logoutError) => {
-          // Name and message only: an SDK error may carry request details
-          if (logoutError) {
-            console.warn("Dynamic logout failed:", describeError(logoutError));
-          }
-          if (pendingLogoutRef.current === pending) {
-            pendingLogoutRef.current = null;
-          }
-        });
-
-        pendingLogoutRef.current = pending;
-      }
-    },
-    [commit, startEpoch]
-  );
 
   const connectMavrykWallet = useCallback(async () => {
     if (identityRef.current?.provider === "dynamic") {

@@ -43,6 +43,7 @@ import {
   signMessage,
   TokenScope,
   verifyOTP,
+  type LogoutReason,
   type OTPVerification,
   type WalletAccount,
 } from "@dynamic-labs-sdk/client";
@@ -115,6 +116,18 @@ export function createDynamicClient(environmentId: string) {
       onEvent({ event: "userChanged", listener }, sdk),
     onWalletAccountsChanged: (listener: () => void) =>
       onEvent({ event: "walletAccountsChanged", listener }, sdk),
+    /**
+     * Every logout, including the SDK's own: at session expiry
+     * ("token-expired"), a revoked device or a failed refresh
+     */
+    onLogout: (listener: (reason: LogoutReason | null) => void) =>
+      onEvent(
+        {
+          event: "logout",
+          listener: (metadata) => listener(metadata?.reason ?? null),
+        },
+        sdk
+      ),
 
     sendEmailOtp: async (email: string) => {
       pendingOtp = await sendEmailOTP({ email }, sdk);

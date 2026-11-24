@@ -34,8 +34,20 @@ const mocks = vi.hoisted(() => {
     }),
   };
 
+  const logoutListeners = new Set<(reason: string | null) => void>();
   const dynamicClient = {
     user: null as { email: string } | null,
+    onLogout: vi.fn((listener: (reason: string | null) => void) => {
+      logoutListeners.add(listener);
+      return () => {
+        logoutListeners.delete(listener);
+      };
+    }),
+    /** The SDK logging out by itself, e.g. at session expiry */
+    emitLogout: (reason: string | null) => {
+      dynamicClient.user = null;
+      logoutListeners.forEach((listener) => listener(reason));
+    },
   };
   const dynamicSession = {
     client: dynamicClient,
@@ -51,6 +63,7 @@ const mocks = vi.hoisted(() => {
     beacon,
     dapp,
     dynamicClient,
+    logoutListeners,
     dynamicSession,
     dynamicEnabled: true,
     openDynamicSession: vi.fn(),
@@ -134,6 +147,7 @@ beforeEach(() => {
   };
   mocks.dynamicEnabled = true;
   mocks.dynamicClient.user = null;
+  mocks.logoutListeners.clear();
   mocks.openDynamicSession.mockReset();
   mocks.openDynamicSession.mockImplementation(async () =>
     mocks.dynamicClient.user ? mocks.dynamicSession : null
@@ -261,6 +275,36 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
       mocks.beacon.listener?.({ address: "mv1Other", publicKey: "edpkOther" });
     });
     expect(wallet.identity?.provider).toBe("dynamic");
+  });
+
+  it("signs out when the Dynamic session ends while the tab is open", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    await renderProvider();
+    expect(wallet.identity?.provider).toBe("dynamic");
+
+    await act(async () => {
+      mocks.dynamicClient.emitLogout("token-expired");
+    });
+
+    expect(wallet.identity).toBeNull();
+    expect(wallet.phase).toBe("disconnected");
+    expect(wallet.getToolkit()).toBeNull();
+    // The SDK has already ended its session: no second logout
+    expect(mocks.logoutDynamic).not.toHaveBeenCalled();
+    expect(mocks.logoutListeners.size).toBe(0);
+  });
+
+  it("stops listening for Dynamic's logout after Sign out", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    await renderProvider();
+
+    await act(async () => {
+      await wallet.disconnect();
+    });
+
+    expect(mocks.logoutListeners.size).toBe(0);
   });
 
   it("does not fall back to a leftover Beacon account when Dynamic cannot be restored", async () => {
