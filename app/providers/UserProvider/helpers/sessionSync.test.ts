@@ -10,6 +10,7 @@ const signedIn: SessionSyncInput = {
   isWalletBusy: false,
   accountAddress: "mv1A",
   authenticatedWalletAddress: "mv1A",
+  hadWallet: true,
 };
 
 describe("getSessionSyncAction", () => {
@@ -57,7 +58,40 @@ describe("getSessionSyncAction", () => {
     ).toBe("none");
   });
 
-  it("does nothing without a connected wallet", () => {
+  it("logs out an RWA session when the restore on load reopened no wallet", () => {
+    // E.g. the email wallet's session expired
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: null,
+        hadWallet: null,
+      })
+    ).toBe("logout-rwa");
+  });
+
+  it("logs out an RWA session when this tab loses its wallet", () => {
+    // E.g. Dynamic signed out while the tab was open
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: null,
+        hadWallet: true,
+      })
+    ).toBe("logout-rwa");
+  });
+
+  it("keeps an RWA session another tab signed in while this tab had no wallet", () => {
+    // Tokens are shared: logging out here would end the other tab's sign-in
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: null,
+        hadWallet: false,
+      })
+    ).toBe("none");
+  });
+
+  it("does nothing without a wallet or an RWA session", () => {
     expect(
       getSessionSyncAction({
         ...signedIn,

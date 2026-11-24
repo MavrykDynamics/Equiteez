@@ -34,7 +34,10 @@ import {
   getHasOrdersForAddress,
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
-import { getSessionSyncAction } from "./helpers/sessionSync";
+import {
+  getSessionSyncAction,
+  isSessionSyncSettled,
+} from "./helpers/sessionSync";
 import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
 export const userContext = React.createContext<UserContext>(undefined!);
@@ -157,11 +160,14 @@ export const UserProvider = ({ children }: Props) => {
    * session too; switching wallets keeps it (keepProviderSession).
    */
   const disconnectAndLogout = useCallback(
-    async (options: { keepProviderSession?: boolean } = {}) => {
-      await signOut(options);
-      await logout();
-    },
-    [logout, signOut]
+    (options: { keepProviderSession?: boolean } = {}) =>
+      // As an auth flow: between the two steps the RWA session has no wallet,
+      // and the session sync must not log it out a second time
+      runAuthFlow(async () => {
+        await signOut(options);
+        await logout();
+      }),
+    [logout, runAuthFlow, signOut]
   );
 
   // The wallet provider restores the previous session on load
@@ -288,23 +294,42 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [IS_WEB, signOut]);
 
-  const sessionSyncAction = getSessionSyncAction({
-    isWeb: IS_WEB,
-    isAuthLoading,
-    isAuthenticated,
-    isAuthFlowActive,
-    isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
-    accountAddress,
-    authenticatedWalletAddress,
-  });
+  // Whether this tab had a wallet at the previous settled sync check
+  const hadWalletRef = useRef<boolean | null>(null);
 
   useEffect(() => {
-    if (sessionSyncAction === "disconnect-wallet") {
+    const input = {
+      isWeb: IS_WEB,
+      isAuthLoading,
+      isAuthenticated,
+      isAuthFlowActive,
+      isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
+      accountAddress,
+      authenticatedWalletAddress,
+      hadWallet: hadWalletRef.current,
+    };
+
+    if (!isSessionSyncSettled(input)) return;
+
+    const action = getSessionSyncAction(input);
+    hadWalletRef.current = Boolean(accountAddress);
+
+    if (action === "disconnect-wallet") {
       void signOut({ keepProviderSession: true });
-    } else if (sessionSyncAction === "logout-rwa") {
+    } else if (action === "logout-rwa") {
       void logout();
     }
-  }, [logout, sessionSyncAction, signOut]);
+  }, [
+    IS_WEB,
+    accountAddress,
+    authenticatedWalletAddress,
+    isAuthFlowActive,
+    isAuthLoading,
+    isAuthenticated,
+    logout,
+    signOut,
+    walletPhase,
+  ]);
 
   const providerValue = useMemo(() => {
     const isLoading =
