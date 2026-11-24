@@ -24,6 +24,10 @@ To reproduce each read-only simulation, POST to `{rpc}/chains/main/blocks/{block
 
 This is simulation only; do not inject these authorizations. The block and explicit simulation time keep the tests reproducible after their deadlines expire. No API authentication is required for the public RPC simulation.
 
+## Golden vectors
+
+`golden-vectors.json` comes from the contracts repo, `MavrykDynamics/rwa-marketplace`, where `src/contracts/test/vectors/generatePermitVectors.ts` generates it. Copy it here unchanged. It covers every permit variant of an orderbook, a base token, the quote token and the KYC contract on basenet, with the top-up signed on all three curves and its deadline written three ways. Every byte is the node's `pack_data` output. Each signature at the signer's stored counter passed the deployed contract's signature check in `run_code` at the pinned block, and the same call signed over the next counter failed with `ERROR_PERMIT_MISSIGNED`. Its keys were unfunded and discarded, and every deadline is an hour after that block. `app/contracts/permitGoldenVectors.test.ts` checks `encodePermit` and `verifyPermitSignature` against all of them. The gas station checks its encoder against the same file.
+
 ## Limits
 
 No wallet extension integration or successful authenticated relay mutation was tested. The supplied authentication signatures are not permit vectors and are not stored here. The latest authenticated reads returned HTTP 401; earlier Cloudflare denials remain historical evidence in the other fixture bundle.

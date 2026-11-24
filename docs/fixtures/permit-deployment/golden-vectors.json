@@ -1,0 +1,4514 @@
+{
+  "version": 1,
+  "generator": "src/contracts/test/vectors/generatePermitVectors.ts, MavrykDynamics/rwa-marketplace",
+  "provenance": "Generated with fresh, unfunded keys whose private halves were discarded. Every byte is the node's pack_data output, and every signature at the signer's stored counter passed the deployed contract's signature check in RPC run_code at the pinned block, with a control signed over the next counter failing with ERROR_PERMIT_MISSIGNED. Simulation only: nothing was injected, and every deadline is an hour after the block.",
+  "rpc": "https://basenet.rpc.mavryk.network",
+  "chainId": "NetXmtMsNf69w1w",
+  "block": "BL44Zyhxcpnp6vnX7nBr6Qkfsni7bd12WUPs3mTDzQnTewgPnnx",
+  "blockTimestamp": "2026-11-23T14:26:13Z",
+  "runCodeNow": "1795443973",
+  "payloadType": {
+    "prim": "pair",
+    "args": [
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "chain_id"
+          },
+          {
+            "prim": "address"
+          }
+        ]
+      },
+      {
+        "prim": "pair",
+        "args": [
+          {
+            "prim": "nat"
+          },
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "bytes"
+              },
+              {
+                "prim": "timestamp"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "contracts": {
+    "orderbook": {
+      "address": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "scriptSha256": "e070c602218e525f732320a9960d9b206ea23b52b90018ee559f4b15fbfe7138",
+      "entrypointType": {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "key",
+                "annots": [
+                  "%userPublicKey"
+                ]
+              },
+              {
+                "prim": "signature",
+                "annots": [
+                  "%userSignature"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%rwaTokenAmount"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%pricePerRwaToken"
+                            ]
+                          },
+                          {
+                            "prim": "string",
+                            "annots": [
+                              "%currency"
+                            ]
+                          },
+                          {
+                            "prim": "option",
+                            "args": [
+                              {
+                                "prim": "timestamp"
+                              }
+                            ],
+                            "annots": [
+                              "%orderExpiry"
+                            ]
+                          },
+                          {
+                            "prim": "bool",
+                            "annots": [
+                              "%isMarketOrder"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitPlaceBuyOrder"
+                    ]
+                  },
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%rwaTokenAmount"
+                                ]
+                              },
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%pricePerRwaToken"
+                                ]
+                              },
+                              {
+                                "prim": "string",
+                                "annots": [
+                                  "%currency"
+                                ]
+                              },
+                              {
+                                "prim": "option",
+                                "args": [
+                                  {
+                                    "prim": "timestamp"
+                                  }
+                                ],
+                                "annots": [
+                                  "%orderExpiry"
+                                ]
+                              },
+                              {
+                                "prim": "bool",
+                                "annots": [
+                                  "%isMarketOrder"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitPlaceSellOrder"
+                        ]
+                      },
+                      {
+                        "prim": "or",
+                        "args": [
+                          {
+                            "prim": "list",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%orderId"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "string",
+                                    "annots": [
+                                      "%orderType"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%permitCancelOrders"
+                            ]
+                          },
+                          {
+                            "prim": "or",
+                            "args": [
+                              {
+                                "prim": "list",
+                                "args": [
+                                  {
+                                    "prim": "pair",
+                                    "args": [
+                                      {
+                                        "prim": "nat",
+                                        "annots": [
+                                          "%orderId"
+                                        ]
+                                      },
+                                      {
+                                        "prim": "string",
+                                        "annots": [
+                                          "%orderType"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%permitProcessRefund"
+                                ]
+                              },
+                              {
+                                "prim": "list",
+                                "args": [
+                                  {
+                                    "prim": "pair",
+                                    "args": [
+                                      {
+                                        "prim": "address",
+                                        "annots": [
+                                          "%userAddress"
+                                        ]
+                                      },
+                                      {
+                                        "prim": "nat",
+                                        "annots": [
+                                          "%expirySeconds"
+                                        ]
+                                      },
+                                      {
+                                        "prim": "option",
+                                        "args": [
+                                          {
+                                            "prim": "bytes"
+                                          }
+                                        ],
+                                        "annots": [
+                                          "%permitHash"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%permitSetPermitExpiry"
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%action"
+                ]
+              },
+              {
+                "prim": "timestamp",
+                "annots": [
+                  "%deadline"
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%permitAndExecute"
+        ]
+      },
+      "actionType": {
+        "prim": "or",
+        "args": [
+          {
+            "prim": "list",
+            "args": [
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "nat",
+                    "annots": [
+                      "%rwaTokenAmount"
+                    ]
+                  },
+                  {
+                    "prim": "nat",
+                    "annots": [
+                      "%pricePerRwaToken"
+                    ]
+                  },
+                  {
+                    "prim": "string",
+                    "annots": [
+                      "%currency"
+                    ]
+                  },
+                  {
+                    "prim": "option",
+                    "args": [
+                      {
+                        "prim": "timestamp"
+                      }
+                    ],
+                    "annots": [
+                      "%orderExpiry"
+                    ]
+                  },
+                  {
+                    "prim": "bool",
+                    "annots": [
+                      "%isMarketOrder"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "annots": [
+              "%permitPlaceBuyOrder"
+            ]
+          },
+          {
+            "prim": "or",
+            "args": [
+              {
+                "prim": "list",
+                "args": [
+                  {
+                    "prim": "pair",
+                    "args": [
+                      {
+                        "prim": "nat",
+                        "annots": [
+                          "%rwaTokenAmount"
+                        ]
+                      },
+                      {
+                        "prim": "nat",
+                        "annots": [
+                          "%pricePerRwaToken"
+                        ]
+                      },
+                      {
+                        "prim": "string",
+                        "annots": [
+                          "%currency"
+                        ]
+                      },
+                      {
+                        "prim": "option",
+                        "args": [
+                          {
+                            "prim": "timestamp"
+                          }
+                        ],
+                        "annots": [
+                          "%orderExpiry"
+                        ]
+                      },
+                      {
+                        "prim": "bool",
+                        "annots": [
+                          "%isMarketOrder"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%permitPlaceSellOrder"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%orderId"
+                            ]
+                          },
+                          {
+                            "prim": "string",
+                            "annots": [
+                              "%orderType"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitCancelOrders"
+                    ]
+                  },
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%orderId"
+                                ]
+                              },
+                              {
+                                "prim": "string",
+                                "annots": [
+                                  "%orderType"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitProcessRefund"
+                        ]
+                      },
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "address",
+                                "annots": [
+                                  "%userAddress"
+                                ]
+                              },
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%expirySeconds"
+                                ]
+                              },
+                              {
+                                "prim": "option",
+                                "args": [
+                                  {
+                                    "prim": "bytes"
+                                  }
+                                ],
+                                "annots": [
+                                  "%permitHash"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitSetPermitExpiry"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%action"
+        ]
+      }
+    },
+    "base_token": {
+      "address": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+      "scriptSha256": "0ee994ee6f6263623b3fb44058c67ce735b9c37673ed662f31d2ea31c56ab05d",
+      "entrypointType": {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "key",
+                "annots": [
+                  "%userPublicKey"
+                ]
+              },
+              {
+                "prim": "signature",
+                "annots": [
+                  "%userSignature"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%from_"
+                            ]
+                          },
+                          {
+                            "prim": "list",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%to_"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%token_id"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%amount"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%txs"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitTransfer"
+                    ]
+                  },
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "or",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%owner"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%operator"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%token_id"
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%add_operator"
+                                ]
+                              },
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%owner"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%operator"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%token_id"
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%remove_operator"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitUpdateOperators"
+                        ]
+                      },
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "address",
+                                "annots": [
+                                  "%userAddress"
+                                ]
+                              },
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%expirySeconds"
+                                ]
+                              },
+                              {
+                                "prim": "option",
+                                "args": [
+                                  {
+                                    "prim": "bytes"
+                                  }
+                                ],
+                                "annots": [
+                                  "%permitHash"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitSetPermitExpiry"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%action"
+                ]
+              },
+              {
+                "prim": "timestamp",
+                "annots": [
+                  "%deadline"
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%permitAndExecute"
+        ]
+      },
+      "actionType": {
+        "prim": "or",
+        "args": [
+          {
+            "prim": "list",
+            "args": [
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "address",
+                    "annots": [
+                      "%from_"
+                    ]
+                  },
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%to_"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%token_id"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%amount"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%txs"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "annots": [
+              "%permitTransfer"
+            ]
+          },
+          {
+            "prim": "or",
+            "args": [
+              {
+                "prim": "list",
+                "args": [
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%owner"
+                            ]
+                          },
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%operator"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%token_id"
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%add_operator"
+                        ]
+                      },
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%owner"
+                            ]
+                          },
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%operator"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%token_id"
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%remove_operator"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%permitUpdateOperators"
+                ]
+              },
+              {
+                "prim": "list",
+                "args": [
+                  {
+                    "prim": "pair",
+                    "args": [
+                      {
+                        "prim": "address",
+                        "annots": [
+                          "%userAddress"
+                        ]
+                      },
+                      {
+                        "prim": "nat",
+                        "annots": [
+                          "%expirySeconds"
+                        ]
+                      },
+                      {
+                        "prim": "option",
+                        "args": [
+                          {
+                            "prim": "bytes"
+                          }
+                        ],
+                        "annots": [
+                          "%permitHash"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%permitSetPermitExpiry"
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%action"
+        ]
+      }
+    },
+    "quote_token": {
+      "address": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "scriptSha256": "4d985c664f0961d1c8c857be4e01826b6e9f6e78ee6715ecbf35931d3b7c6b7a",
+      "entrypointType": {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "key",
+                "annots": [
+                  "%userPublicKey"
+                ]
+              },
+              {
+                "prim": "signature",
+                "annots": [
+                  "%userSignature"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%from_"
+                            ]
+                          },
+                          {
+                            "prim": "list",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%to_"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%token_id"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%amount"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%txs"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitTransfer"
+                    ]
+                  },
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "or",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%owner"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%operator"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%token_id"
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%add_operator"
+                                ]
+                              },
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%owner"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%operator"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%token_id"
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%remove_operator"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitUpdateOperators"
+                        ]
+                      },
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "address",
+                                "annots": [
+                                  "%userAddress"
+                                ]
+                              },
+                              {
+                                "prim": "nat",
+                                "annots": [
+                                  "%expirySeconds"
+                                ]
+                              },
+                              {
+                                "prim": "option",
+                                "args": [
+                                  {
+                                    "prim": "bytes"
+                                  }
+                                ],
+                                "annots": [
+                                  "%permitHash"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitSetPermitExpiry"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%action"
+                ]
+              },
+              {
+                "prim": "timestamp",
+                "annots": [
+                  "%deadline"
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%permitAndExecute"
+        ]
+      },
+      "actionType": {
+        "prim": "or",
+        "args": [
+          {
+            "prim": "list",
+            "args": [
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "address",
+                    "annots": [
+                      "%from_"
+                    ]
+                  },
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%to_"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%token_id"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%amount"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%txs"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "annots": [
+              "%permitTransfer"
+            ]
+          },
+          {
+            "prim": "or",
+            "args": [
+              {
+                "prim": "list",
+                "args": [
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%owner"
+                            ]
+                          },
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%operator"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%token_id"
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%add_operator"
+                        ]
+                      },
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%owner"
+                            ]
+                          },
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%operator"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%token_id"
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%remove_operator"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%permitUpdateOperators"
+                ]
+              },
+              {
+                "prim": "list",
+                "args": [
+                  {
+                    "prim": "pair",
+                    "args": [
+                      {
+                        "prim": "address",
+                        "annots": [
+                          "%userAddress"
+                        ]
+                      },
+                      {
+                        "prim": "nat",
+                        "annots": [
+                          "%expirySeconds"
+                        ]
+                      },
+                      {
+                        "prim": "option",
+                        "args": [
+                          {
+                            "prim": "bytes"
+                          }
+                        ],
+                        "annots": [
+                          "%permitHash"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%permitSetPermitExpiry"
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%action"
+        ]
+      }
+    },
+    "kyc": {
+      "address": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+      "scriptSha256": "ce698d5b1a821c6eecf1fea781bc92be87c66694058a55ff326e58bae2a30685",
+      "entrypointType": {
+        "prim": "list",
+        "args": [
+          {
+            "prim": "pair",
+            "args": [
+              {
+                "prim": "key",
+                "annots": [
+                  "%userPublicKey"
+                ]
+              },
+              {
+                "prim": "signature",
+                "annots": [
+                  "%userSignature"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "string",
+                            "annots": [
+                              "%updateType"
+                            ]
+                          },
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%memberAddress"
+                            ]
+                          },
+                          {
+                            "prim": "string",
+                            "annots": [
+                              "%membershipTier"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitSetMember"
+                    ]
+                  },
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "or",
+                            "args": [
+                              {
+                                "prim": "list",
+                                "args": [
+                                  {
+                                    "prim": "pair",
+                                    "args": [
+                                      {
+                                        "prim": "address",
+                                        "annots": [
+                                          "%memberAddress"
+                                        ]
+                                      },
+                                      {
+                                        "prim": "string",
+                                        "annots": [
+                                          "%country"
+                                        ]
+                                      },
+                                      {
+                                        "prim": "string",
+                                        "annots": [
+                                          "%region"
+                                        ]
+                                      },
+                                      {
+                                        "prim": "string",
+                                        "annots": [
+                                          "%investorType"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "annots": [
+                                  "%addMemberKyc"
+                                ]
+                              },
+                              {
+                                "prim": "or",
+                                "args": [
+                                  {
+                                    "prim": "list",
+                                    "args": [
+                                      {
+                                        "prim": "pair",
+                                        "args": [
+                                          {
+                                            "prim": "address",
+                                            "annots": [
+                                              "%memberAddress"
+                                            ]
+                                          },
+                                          {
+                                            "prim": "option",
+                                            "args": [
+                                              {
+                                                "prim": "string"
+                                              }
+                                            ],
+                                            "annots": [
+                                              "%country"
+                                            ]
+                                          },
+                                          {
+                                            "prim": "option",
+                                            "args": [
+                                              {
+                                                "prim": "string"
+                                              }
+                                            ],
+                                            "annots": [
+                                              "%region"
+                                            ]
+                                          },
+                                          {
+                                            "prim": "option",
+                                            "args": [
+                                              {
+                                                "prim": "string"
+                                              }
+                                            ],
+                                            "annots": [
+                                              "%investorType"
+                                            ]
+                                          },
+                                          {
+                                            "prim": "option",
+                                            "args": [
+                                              {
+                                                "prim": "timestamp"
+                                              }
+                                            ],
+                                            "annots": [
+                                              "%expireAt"
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%updateMemberKyc"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "list",
+                                    "args": [
+                                      {
+                                        "prim": "address"
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%removeMemberKyc"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%setMemberKycAction"
+                            ]
+                          },
+                          {
+                            "prim": "unit",
+                            "annots": [
+                              "%_unit"
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%permitSetMemberKyc"
+                        ]
+                      },
+                      {
+                        "prim": "or",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "list",
+                                "args": [
+                                  {
+                                    "prim": "address"
+                                  }
+                                ],
+                                "annots": [
+                                  "%memberAddressList"
+                                ]
+                              },
+                              {
+                                "prim": "bool",
+                                "annots": [
+                                  "%freeze"
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%permitFreezeMember"
+                            ]
+                          },
+                          {
+                            "prim": "list",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%userAddress"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "nat",
+                                    "annots": [
+                                      "%expirySeconds"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "option",
+                                    "args": [
+                                      {
+                                        "prim": "bytes"
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%permitHash"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%permitSetPermitExpiry"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%action"
+                ]
+              },
+              {
+                "prim": "timestamp",
+                "annots": [
+                  "%deadline"
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%permitAndExecute"
+        ]
+      },
+      "actionType": {
+        "prim": "or",
+        "args": [
+          {
+            "prim": "list",
+            "args": [
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "string",
+                    "annots": [
+                      "%updateType"
+                    ]
+                  },
+                  {
+                    "prim": "address",
+                    "annots": [
+                      "%memberAddress"
+                    ]
+                  },
+                  {
+                    "prim": "string",
+                    "annots": [
+                      "%membershipTier"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "annots": [
+              "%permitSetMember"
+            ]
+          },
+          {
+            "prim": "or",
+            "args": [
+              {
+                "prim": "pair",
+                "args": [
+                  {
+                    "prim": "or",
+                    "args": [
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "pair",
+                            "args": [
+                              {
+                                "prim": "address",
+                                "annots": [
+                                  "%memberAddress"
+                                ]
+                              },
+                              {
+                                "prim": "string",
+                                "annots": [
+                                  "%country"
+                                ]
+                              },
+                              {
+                                "prim": "string",
+                                "annots": [
+                                  "%region"
+                                ]
+                              },
+                              {
+                                "prim": "string",
+                                "annots": [
+                                  "%investorType"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "annots": [
+                          "%addMemberKyc"
+                        ]
+                      },
+                      {
+                        "prim": "or",
+                        "args": [
+                          {
+                            "prim": "list",
+                            "args": [
+                              {
+                                "prim": "pair",
+                                "args": [
+                                  {
+                                    "prim": "address",
+                                    "annots": [
+                                      "%memberAddress"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "option",
+                                    "args": [
+                                      {
+                                        "prim": "string"
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%country"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "option",
+                                    "args": [
+                                      {
+                                        "prim": "string"
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%region"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "option",
+                                    "args": [
+                                      {
+                                        "prim": "string"
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%investorType"
+                                    ]
+                                  },
+                                  {
+                                    "prim": "option",
+                                    "args": [
+                                      {
+                                        "prim": "timestamp"
+                                      }
+                                    ],
+                                    "annots": [
+                                      "%expireAt"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "annots": [
+                              "%updateMemberKyc"
+                            ]
+                          },
+                          {
+                            "prim": "list",
+                            "args": [
+                              {
+                                "prim": "address"
+                              }
+                            ],
+                            "annots": [
+                              "%removeMemberKyc"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%setMemberKycAction"
+                    ]
+                  },
+                  {
+                    "prim": "unit",
+                    "annots": [
+                      "%_unit"
+                    ]
+                  }
+                ],
+                "annots": [
+                  "%permitSetMemberKyc"
+                ]
+              },
+              {
+                "prim": "or",
+                "args": [
+                  {
+                    "prim": "pair",
+                    "args": [
+                      {
+                        "prim": "list",
+                        "args": [
+                          {
+                            "prim": "address"
+                          }
+                        ],
+                        "annots": [
+                          "%memberAddressList"
+                        ]
+                      },
+                      {
+                        "prim": "bool",
+                        "annots": [
+                          "%freeze"
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitFreezeMember"
+                    ]
+                  },
+                  {
+                    "prim": "list",
+                    "args": [
+                      {
+                        "prim": "pair",
+                        "args": [
+                          {
+                            "prim": "address",
+                            "annots": [
+                              "%userAddress"
+                            ]
+                          },
+                          {
+                            "prim": "nat",
+                            "annots": [
+                              "%expirySeconds"
+                            ]
+                          },
+                          {
+                            "prim": "option",
+                            "args": [
+                              {
+                                "prim": "bytes"
+                              }
+                            ],
+                            "annots": [
+                              "%permitHash"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "annots": [
+                      "%permitSetPermitExpiry"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "annots": [
+          "%action"
+        ]
+      }
+    }
+  },
+  "vectors": [
+    {
+      "name": "orderbook permitPlaceBuyOrder",
+      "kind": "orderbook",
+      "variant": "permitPlaceBuyOrder",
+      "contract": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkvJECysNbzNcLZgYMoHxhT8uFRCZgCX1E5Wuc7h3EZRgnwPrdBU",
+      "wallet": "mv19H6n1vHx3LTzmVVaLgbdbwGphhBm6iFcw",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitPlaceBuyOrder": [
+          {
+            "rwaTokenAmount": 1000000,
+            "pricePerRwaToken": 1000000,
+            "currency": "USDT",
+            "orderExpiry": null,
+            "isMarketOrder": false
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "int": "1000000"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "int": "1000000"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "string": "USDT"
+                        },
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "prim": "None"
+                            },
+                            {
+                              "prim": "False"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000001d07070080897a07070080897a0707010000000455534454070703060303",
+      "actionHash": "34897c52c7053459113be6d3171044b39ca926b232e1ab20bd4ac6e97591d374",
+      "payload": "05070707070a00000004acb171020a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000707000007070a0000002034897c52c7053459113be6d3171044b39ca926b232e1ab20bd4ac6e97591d3740095eca2b00d",
+      "signature": "edsigu1T9CdNXYbmbDioonXPEHjzxJPb5NknwMp6U4u7X4gs9aSnnyzSVkj84o5yxZuHS3QZHoW3i9UWo8Xhcse5bk3aHFt598K",
+      "operation": {
+        "to": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkvJECysNbzNcLZgYMoHxhT8uFRCZgCX1E5Wuc7h3EZRgnwPrdBU"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigu1T9CdNXYbmbDioonXPEHjzxJPb5NknwMp6U4u7X4gs9aSnnyzSVkj84o5yxZuHS3QZHoW3i9UWo8Xhcse5bk3aHFt598K"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "int": "1000000"
+                                  },
+                                  {
+                                    "prim": "Pair",
+                                    "args": [
+                                      {
+                                        "int": "1000000"
+                                      },
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "USDT"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "prim": "None"
+                                              },
+                                              {
+                                                "prim": "False"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_MEMBER_KYC_RECORD_NOT_FOUND",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "orderbook permitPlaceSellOrder, with an order expiry",
+      "kind": "orderbook",
+      "variant": "permitPlaceSellOrder",
+      "contract": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkvTP8L7W21Q6fMKeHGtWQr86d7KPs9nViu4dKRECVa3qAZcf8Bc",
+      "wallet": "mv1FCDn7SG78TeNq3tFZtQbzdPS7n8sw18Hd",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitPlaceSellOrder": [
+          {
+            "rwaTokenAmount": 1000000,
+            "pricePerRwaToken": 1000000,
+            "currency": "USDT",
+            "orderExpiry": "2027-01-01T00:00:00Z",
+            "isMarketOrder": false
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Left",
+            "args": [
+              [
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "int": "1000000"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "int": "1000000"
+                        },
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "string": "USDT"
+                            },
+                            {
+                              "prim": "Pair",
+                              "args": [
+                                {
+                                  "prim": "Some",
+                                  "args": [
+                                    {
+                                      "string": "2027-01-01T00:00:00Z"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "prim": "False"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "actionBytes": "0505080505020000002307070080897a07070080897a0707010000000455534454070705090080b2b7b30d0303",
+      "actionHash": "c1742302b60e268ee19126e2e496d369732ed67f27fa72ee3e7b8d72ba3b8506",
+      "payload": "05070707070a00000004acb171020a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000707000007070a00000020c1742302b60e268ee19126e2e496d369732ed67f27fa72ee3e7b8d72ba3b85060095eca2b00d",
+      "signature": "edsigtc18gCsm9aVAvyWoTanSrqkA73b8mP6jdVhCHnMXfDWr5HSz8Km8wxyCMapVDRwD1t5916GunbKpSDnzUbVPaYy5xKgVwD",
+      "operation": {
+        "to": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkvTP8L7W21Q6fMKeHGtWQr86d7KPs9nViu4dKRECVa3qAZcf8Bc"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtc18gCsm9aVAvyWoTanSrqkA73b8mP6jdVhCHnMXfDWr5HSz8Km8wxyCMapVDRwD1t5916GunbKpSDnzUbVPaYy5xKgVwD"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Pair",
+                                    "args": [
+                                      {
+                                        "int": "1000000"
+                                      },
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "int": "1000000"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "USDT"
+                                              },
+                                              {
+                                                "prim": "Pair",
+                                                "args": [
+                                                  {
+                                                    "prim": "Some",
+                                                    "args": [
+                                                      {
+                                                        "string": "2027-01-01T00:00:00Z"
+                                                      }
+                                                    ]
+                                                  },
+                                                  {
+                                                    "prim": "False"
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_MEMBER_KYC_RECORD_NOT_FOUND",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "orderbook permitCancelOrders",
+      "kind": "orderbook",
+      "variant": "permitCancelOrders",
+      "contract": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkvPX5cQsy1vGzsCwCn1nAb9RtRRYQPW64DCyLHKMvjbu5ZTy2n2",
+      "wallet": "mv1XBepapLfya1uDWXS4mqrDpNDMZEGyVAKS",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitCancelOrders": [
+          {
+            "orderId": 1,
+            "orderType": "BUY"
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              {
+                "prim": "Left",
+                "args": [
+                  [
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "int": "1"
+                        },
+                        {
+                          "string": "BUY"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "actionBytes": "05050805080505020000000c070700010100000003425559",
+      "actionHash": "7a7bacd7de1dccab6b02c7764ccc1d92ed5714d777683d9195fd07aaa7ad48f0",
+      "payload": "05070707070a00000004acb171020a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000707000007070a000000207a7bacd7de1dccab6b02c7764ccc1d92ed5714d777683d9195fd07aaa7ad48f00095eca2b00d",
+      "signature": "edsigu2NRMACw5S1CMhpH6cYQebJMVJzTmFFYyUwzkQ7rB5Mnj6mRM7LqEdVFkHSDgSMoSVmAPgxCtaoVfFosQZy6XF6ZS911Dv",
+      "operation": {
+        "to": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkvPX5cQsy1vGzsCwCn1nAb9RtRRYQPW64DCyLHKMvjbu5ZTy2n2"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigu2NRMACw5S1CMhpH6cYQebJMVJzTmFFYyUwzkQ7rB5Mnj6mRM7LqEdVFkHSDgSMoSVmAPgxCtaoVfFosQZy6XF6ZS911Dv"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Left",
+                                  "args": [
+                                    [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "int": "1"
+                                          },
+                                          {
+                                            "string": "BUY"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_NOT_INITIATOR",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "orderbook permitProcessRefund",
+      "kind": "orderbook",
+      "variant": "permitProcessRefund",
+      "contract": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkv9BpQVrLKkkdDqhXLifdtiCLYg3NifEo8KXKJ2auRtqo4TxZwi",
+      "wallet": "mv1TqwTkysZaBgGxpTHY474gTnbuqjqiVAw4",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitProcessRefund": [
+          {
+            "orderId": 1,
+            "orderType": "SELL"
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              {
+                "prim": "Right",
+                "args": [
+                  {
+                    "prim": "Left",
+                    "args": [
+                      [
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "int": "1"
+                            },
+                            {
+                              "string": "SELL"
+                            }
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "actionBytes": "050508050805080505020000000d07070001010000000453454c4c",
+      "actionHash": "9486f8af765c4e28d98a4b4bd9fb55fd0390c6c892ac61884a12e30debf87531",
+      "payload": "05070707070a00000004acb171020a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000707000007070a000000209486f8af765c4e28d98a4b4bd9fb55fd0390c6c892ac61884a12e30debf875310095eca2b00d",
+      "signature": "edsigtzCphBN3wGXiL9VJCjNQtsBQf8ZxtiqA4kixRXho3ASgaejwkucDPinonwx2uwCnb3dLUWNRpSTqejaAw5P8zWL647kX8f",
+      "operation": {
+        "to": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkv9BpQVrLKkkdDqhXLifdtiCLYg3NifEo8KXKJ2auRtqo4TxZwi"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtzCphBN3wGXiL9VJCjNQtsBQf8ZxtiqA4kixRXho3ASgaejwkucDPinonwx2uwCnb3dLUWNRpSTqejaAw5P8zWL647kX8f"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Right",
+                                  "args": [
+                                    {
+                                      "prim": "Left",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "int": "1"
+                                              },
+                                              {
+                                                "string": "SELL"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_NOT_INITIATOR",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "orderbook permitSetPermitExpiry",
+      "kind": "orderbook",
+      "variant": "permitSetPermitExpiry",
+      "contract": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkueThs84grzPdWwCCwRiGNe36PUcgLcT36sGDW5TubdzxuiU3fQ",
+      "wallet": "mv1NxN3hv2R1yvgT9uhHoNRvsLDJCi9r7tZx",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitSetPermitExpiry": [
+          {
+            "userAddress": "mv1NxN3hv2R1yvgT9uhHoNRvsLDJCi9r7tZx",
+            "expirySeconds": 3600,
+            "permitHash": null
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              {
+                "prim": "Right",
+                "args": [
+                  {
+                    "prim": "Right",
+                    "args": [
+                      [
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "string": "mv1NxN3hv2R1yvgT9uhHoNRvsLDJCi9r7tZx"
+                            },
+                            {
+                              "prim": "Pair",
+                              "args": [
+                                {
+                                  "int": "3600"
+                                },
+                                {
+                                  "prim": "None"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "actionBytes": "050508050805080508020000002407070a000000160000a3f20100c7e04f32654e9307086f7fccb7eec8dd07070090380306",
+      "actionHash": "1aacf8d6f498cf48b1001ddf0567332b45d5799cbe33bf378818a81e86053af4",
+      "payload": "05070707070a00000004acb171020a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000707000007070a000000201aacf8d6f498cf48b1001ddf0567332b45d5799cbe33bf378818a81e86053af40095eca2b00d",
+      "signature": "edsigtrpLMXoeMqbr2aFZVacM6drxuCPuXg3PkAGYehoUdvjwjPS4C4W6pp1RoSz3XL7vN1tLoR82hH8UyE2MT8b3uXrvX84D64",
+      "operation": {
+        "to": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkueThs84grzPdWwCCwRiGNe36PUcgLcT36sGDW5TubdzxuiU3fQ"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtrpLMXoeMqbr2aFZVacM6drxuCPuXg3PkAGYehoUdvjwjPS4C4W6pp1RoSz3XL7vN1tLoR82hH8UyE2MT8b3uXrvX84D64"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Right",
+                                  "args": [
+                                    {
+                                      "prim": "Right",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "mv1NxN3hv2R1yvgT9uhHoNRvsLDJCi9r7tZx"
+                                              },
+                                              {
+                                                "prim": "Pair",
+                                                "args": [
+                                                  {
+                                                    "int": "3600"
+                                                  },
+                                                  {
+                                                    "prim": "None"
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "accepted",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "base token permitTransfer",
+      "kind": "base_token",
+      "variant": "permitTransfer",
+      "contract": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkteqAm3ohwdBkcns15M5KozXQD4uAvGPE362hXLqvFw9HD5BJCG",
+      "wallet": "mv1Hr3MmmfCvy3ee7TteBXygncxg6wqQTY5z",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv1Hr3MmmfCvy3ee7TteBXygncxg6wqQTY5z",
+            "txs": [
+              {
+                "to_": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+                "token_id": 0,
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv1Hr3MmmfCvy3ee7TteBXygncxg6wqQTY5z"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "1"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004507070a0000001600006be74762821bba2b460975c5edc8637c5c80e7f0020000002307070a0000001601229cf43f69ebdd97ab171980d00cc086757db69a00070700000001",
+      "actionHash": "2f9847406c51e96965c6d327d3827578b573bd111817f4c5b046a40a4a712a0e",
+      "payload": "05070707070a00000004acb171020a0000001601de3b2034431eede06026b2b97af61006d69f8462000707000007070a000000202f9847406c51e96965c6d327d3827578b573bd111817f4c5b046a40a4a712a0e0095eca2b00d",
+      "signature": "edsigteGANM6dueBD6HJPeRb7wY7KQK4VheWDKq31eadxeCiRV31kfUG6jdKmTtuL9p2ahDkUU2nTu4U98vZC6AjACfeNBNEDT6",
+      "operation": {
+        "to": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkteqAm3ohwdBkcns15M5KozXQD4uAvGPE362hXLqvFw9HD5BJCG"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigteGANM6dueBD6HJPeRb7wY7KQK4VheWDKq31eadxeCiRV31kfUG6jdKmTtuL9p2ahDkUU2nTu4U98vZC6AjACfeNBNEDT6"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv1Hr3MmmfCvy3ee7TteBXygncxg6wqQTY5z"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "1"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_INSUFFICIENT_BALANCE",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "base token permitUpdateOperators",
+      "kind": "base_token",
+      "variant": "permitUpdateOperators",
+      "contract": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpktgW5gAoiWsfN1zzSC8ruVSzmbbGNsah2Cb2wppRfb9PEPSuWwi",
+      "wallet": "mv1VvDbnPREPaB5QWxTT289pJDBNQpcpfiNF",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitUpdateOperators": [
+          {
+            "add_operator": {
+              "owner": "mv1VvDbnPREPaB5QWxTT289pJDBNQpcpfiNF",
+              "operator": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+              "token_id": 0
+            }
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Left",
+            "args": [
+              [
+                {
+                  "prim": "Left",
+                  "args": [
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "string": "mv1VvDbnPREPaB5QWxTT289pJDBNQpcpfiNF"
+                        },
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "string": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh"
+                            },
+                            {
+                              "int": "0"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "actionBytes": "0505080505020000003e050507070a000000160000f0530056da40a6693e172b4d49e76de5ee9cb98707070a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000000",
+      "actionHash": "ceec4c5b790a795a120cb3522f4a0fa99d39a0c9b0c9728c33a8d544e50ab59a",
+      "payload": "05070707070a00000004acb171020a0000001601de3b2034431eede06026b2b97af61006d69f8462000707000007070a00000020ceec4c5b790a795a120cb3522f4a0fa99d39a0c9b0c9728c33a8d544e50ab59a0095eca2b00d",
+      "signature": "edsigu49tFbrLexbk4f4Q8VFCXXMQUgevtTDmnuoR2nhis6eJxMVv4sx1ZK8HQ8KUNeiYTQWs7PCCbCkHoWDg3wTSRZuQQXmnTU",
+      "operation": {
+        "to": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpktgW5gAoiWsfN1zzSC8ruVSzmbbGNsah2Cb2wppRfb9PEPSuWwi"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigu49tFbrLexbk4f4Q8VFCXXMQUgevtTDmnuoR2nhis6eJxMVv4sx1ZK8HQ8KUNeiYTQWs7PCCbCkHoWDg3wTSRZuQQXmnTU"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Left",
+                                    "args": [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "mv1VvDbnPREPaB5QWxTT289pJDBNQpcpfiNF"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh"
+                                              },
+                                              {
+                                                "int": "0"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "accepted",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "base token permitSetPermitExpiry, for one permit",
+      "kind": "base_token",
+      "variant": "permitSetPermitExpiry",
+      "contract": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuJesNvcBdttHG3tQUTKiFZZ9RsLjWD8nD9tWghR81aobv6MeB2",
+      "wallet": "mv1EnHeBMPHD4NnrAMyoJdMswom7N5jCNix6",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitSetPermitExpiry": [
+          {
+            "userAddress": "mv1EnHeBMPHD4NnrAMyoJdMswom7N5jCNix6",
+            "expirySeconds": 3600,
+            "permitHash": "abababababababababababababababababababababababababababababababab"
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              [
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "mv1EnHeBMPHD4NnrAMyoJdMswom7N5jCNix6"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "int": "3600"
+                        },
+                        {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "bytes": "abababababababababababababababababababababababababababababababab"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "actionBytes": "0505080508020000004907070a0000001600004a49290f49812914e4697897f093231f132aa9f6070700903805090a00000020abababababababababababababababababababababababababababababababab",
+      "actionHash": "e95a4769d6a5a5e032b1992a8461f25155ab426e0c01ab1e7868f59cb42c6a79",
+      "payload": "05070707070a00000004acb171020a0000001601de3b2034431eede06026b2b97af61006d69f8462000707000007070a00000020e95a4769d6a5a5e032b1992a8461f25155ab426e0c01ab1e7868f59cb42c6a790095eca2b00d",
+      "signature": "edsigtikinwcMrRWygPg1BVnBT78ttuhBUA36vVSqJf2rwyjMk47TBkf5FKBV3bWJLt3wqU8VfLLLb3Yp4QWQhmQzFHQV1uu9zQ",
+      "operation": {
+        "to": "KT1UqpQV34HZ2iGBxHtPKtdriwenu83Zy7mS",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuJesNvcBdttHG3tQUTKiFZZ9RsLjWD8nD9tWghR81aobv6MeB2"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtikinwcMrRWygPg1BVnBT78ttuhBUA36vVSqJf2rwyjMk47TBkf5FKBV3bWJLt3wqU8VfLLLb3Yp4QWQhmQzFHQV1uu9zQ"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Pair",
+                                    "args": [
+                                      {
+                                        "string": "mv1EnHeBMPHD4NnrAMyoJdMswom7N5jCNix6"
+                                      },
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "int": "3600"
+                                          },
+                                          {
+                                            "prim": "Some",
+                                            "args": [
+                                              {
+                                                "bytes": "abababababababababababababababababababababababababababababababab"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_PERMIT_NOT_FOUND",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitTransfer to the fee collector",
+      "kind": "quote_token",
+      "variant": "permitTransfer",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuGYLWZ8kvG9sag9Biuv8oiKBUzVcCzuuVR8qb3o9RdZpxygYji",
+      "wallet": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh",
+            "txs": [
+              {
+                "to_": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+                "token_id": 0,
+                "amount": 5000000
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "5000000"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004807070a0000001600005fe7708c617ea75fa9d60936af1ae778684d0bdd020000002607070a00000016015cdbeccfaf63b1f7f477b0cfd5addf9df8dafc2500070700000080ade204",
+      "actionHash": "bd3dcc7b823fde4febc98910ae00998da8141333a8a8096b4c89e0c677cd29e0",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020bd3dcc7b823fde4febc98910ae00998da8141333a8a8096b4c89e0c677cd29e00095eca2b00d",
+      "signature": "edsigtdW9JAcpSsSnfFqCF9dLtkLksa65hjJGGMvbJJgSzEceA9FMLwZYpn8FDAxLiuJ2EpxeH6gnshEEDfETJnGdj95JzEsuvK",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuGYLWZ8kvG9sag9Biuv8oiKBUzVcCzuuVR8qb3o9RdZpxygYji"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtdW9JAcpSsSnfFqCF9dLtkLksa65hjJGGMvbJJgSzEceA9FMLwZYpn8FDAxLiuJ2EpxeH6gnshEEDfETJnGdj95JzEsuvK"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "5000000"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with FA2_INSUFFICIENT_BALANCE",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitTransfer to the fee collector, secp256k1",
+      "kind": "quote_token",
+      "variant": "permitTransfer",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "sppk",
+      "publicKey": "sppk7d3oFfmZHBjdQzDKAxnwuQ6nb9cmrEGJFRXzX3XAU8dkEFxwcW7",
+      "wallet": "mv2NS6hjvJFWentMXyNzVPhepsvqhztEnNwZ",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv2NS6hjvJFWentMXyNzVPhepsvqhztEnNwZ",
+            "txs": [
+              {
+                "to_": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+                "token_id": 0,
+                "amount": 5000000
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv2NS6hjvJFWentMXyNzVPhepsvqhztEnNwZ"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "5000000"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004807070a0000001600011a70030596fb20b278903c2b7ea25b300e18626d020000002607070a00000016015cdbeccfaf63b1f7f477b0cfd5addf9df8dafc2500070700000080ade204",
+      "actionHash": "77b766c65da25991119dfea35d68485e41335c7c461a402135ee54cace58d61e",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a0000002077b766c65da25991119dfea35d68485e41335c7c461a402135ee54cace58d61e0095eca2b00d",
+      "signature": "spsig1ZATZYDS1f1rxPaP2u7Ky5XMZaa18tCBJriQHM6368TjZU467iGZdkQLemBveFU9nG8necKUuS2DrjUphsg38E8RSKKwT2",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "sppk7d3oFfmZHBjdQzDKAxnwuQ6nb9cmrEGJFRXzX3XAU8dkEFxwcW7"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "spsig1ZATZYDS1f1rxPaP2u7Ky5XMZaa18tCBJriQHM6368TjZU467iGZdkQLemBveFU9nG8necKUuS2DrjUphsg38E8RSKKwT2"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv2NS6hjvJFWentMXyNzVPhepsvqhztEnNwZ"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "5000000"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with FA2_INSUFFICIENT_BALANCE",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitTransfer to the fee collector, P-256",
+      "kind": "quote_token",
+      "variant": "permitTransfer",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "p2pk",
+      "publicKey": "p2pk66w5h1ZXaNREf8dfcuTiNAa3DFmvVXn6Kb5oRgPLieqDfmZf2VW",
+      "wallet": "mv3KjnyzBrXJfu5Y3b6eC9DrD3uu5D2t7Djh",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv3KjnyzBrXJfu5Y3b6eC9DrD3uu5D2t7Djh",
+            "txs": [
+              {
+                "to_": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+                "token_id": 0,
+                "amount": 5000000
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv3KjnyzBrXJfu5Y3b6eC9DrD3uu5D2t7Djh"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "5000000"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004807070a0000001600027917a01a2bd810e5e592d9a1ae615a8a0fc6153b020000002607070a00000016015cdbeccfaf63b1f7f477b0cfd5addf9df8dafc2500070700000080ade204",
+      "actionHash": "359ce0ed337dd7f0e24cb02feec682b66b3a6d2ef9a449919677ec0cabe02a10",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020359ce0ed337dd7f0e24cb02feec682b66b3a6d2ef9a449919677ec0cabe02a100095eca2b00d",
+      "signature": "p2sighciPqrdzBmhPggWAJUgxucCHjFTGKYZhv5L4aZNhZLdWpMQ1oCtokmPTnzsscF2hMYHWVje8MJDphWfTsVQFFSDjYtCSL",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "p2pk66w5h1ZXaNREf8dfcuTiNAa3DFmvVXn6Kb5oRgPLieqDfmZf2VW"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "p2sighciPqrdzBmhPggWAJUgxucCHjFTGKYZhv5L4aZNhZLdWpMQ1oCtokmPTnzsscF2hMYHWVje8MJDphWfTsVQFFSDjYtCSL"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv3KjnyzBrXJfu5Y3b6eC9DrD3uu5D2t7Djh"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "5000000"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with FA2_INSUFFICIENT_BALANCE",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitTransfer to the fee collector, the deadline with an offset",
+      "kind": "quote_token",
+      "variant": "permitTransfer",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuGYLWZ8kvG9sag9Biuv8oiKBUzVcCzuuVR8qb3o9RdZpxygYji",
+      "wallet": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh",
+      "counter": "0",
+      "deadline": "2026-11-23T17:26:13+02:00",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh",
+            "txs": [
+              {
+                "to_": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+                "token_id": 0,
+                "amount": 5000000
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "5000000"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004807070a0000001600005fe7708c617ea75fa9d60936af1ae778684d0bdd020000002607070a00000016015cdbeccfaf63b1f7f477b0cfd5addf9df8dafc2500070700000080ade204",
+      "actionHash": "bd3dcc7b823fde4febc98910ae00998da8141333a8a8096b4c89e0c677cd29e0",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020bd3dcc7b823fde4febc98910ae00998da8141333a8a8096b4c89e0c677cd29e00095eca2b00d",
+      "signature": "edsigtdW9JAcpSsSnfFqCF9dLtkLksa65hjJGGMvbJJgSzEceA9FMLwZYpn8FDAxLiuJ2EpxeH6gnshEEDfETJnGdj95JzEsuvK",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuGYLWZ8kvG9sag9Biuv8oiKBUzVcCzuuVR8qb3o9RdZpxygYji"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtdW9JAcpSsSnfFqCF9dLtkLksa65hjJGGMvbJJgSzEceA9FMLwZYpn8FDAxLiuJ2EpxeH6gnshEEDfETJnGdj95JzEsuvK"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "5000000"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T17:26:13+02:00"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with FA2_INSUFFICIENT_BALANCE",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitTransfer to the fee collector, the deadline with milliseconds",
+      "kind": "quote_token",
+      "variant": "permitTransfer",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuGYLWZ8kvG9sag9Biuv8oiKBUzVcCzuuVR8qb3o9RdZpxygYji",
+      "wallet": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13.250Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh",
+            "txs": [
+              {
+                "to_": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+                "token_id": 0,
+                "amount": 5000000
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "5000000"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004807070a0000001600005fe7708c617ea75fa9d60936af1ae778684d0bdd020000002607070a00000016015cdbeccfaf63b1f7f477b0cfd5addf9df8dafc2500070700000080ade204",
+      "actionHash": "bd3dcc7b823fde4febc98910ae00998da8141333a8a8096b4c89e0c677cd29e0",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020bd3dcc7b823fde4febc98910ae00998da8141333a8a8096b4c89e0c677cd29e00095eca2b00d",
+      "signature": "edsigtdW9JAcpSsSnfFqCF9dLtkLksa65hjJGGMvbJJgSzEceA9FMLwZYpn8FDAxLiuJ2EpxeH6gnshEEDfETJnGdj95JzEsuvK",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuGYLWZ8kvG9sag9Biuv8oiKBUzVcCzuuVR8qb3o9RdZpxygYji"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtdW9JAcpSsSnfFqCF9dLtkLksa65hjJGGMvbJJgSzEceA9FMLwZYpn8FDAxLiuJ2EpxeH6gnshEEDfETJnGdj95JzEsuvK"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv1GkbSeFHCZL6wEB7hhYr5Uq8vbxxzpXjRh"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "5000000"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13.250Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with FA2_INSUFFICIENT_BALANCE",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitTransfer to the fee collector, at counter 7",
+      "kind": "quote_token",
+      "variant": "permitTransfer",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuv9q5QVmyksGs1ktFJUUDaYpdNo1zukaCWgRYFU8qB1THfdEUs",
+      "wallet": "mv1QJz6kiUBW25gWtQUWXsJehyjbkfjfSdEQ",
+      "counter": "7",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitTransfer": [
+          {
+            "from_": "mv1QJz6kiUBW25gWtQUWXsJehyjbkfjfSdEQ",
+            "txs": [
+              {
+                "to_": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH",
+                "token_id": 0,
+                "amount": 5000000
+              }
+            ]
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "mv1QJz6kiUBW25gWtQUWXsJehyjbkfjfSdEQ"
+                },
+                [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "0"
+                          },
+                          {
+                            "int": "5000000"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "050505020000004807070a000000160000b2d08b49e83d65cc8f9dc385d4771cf220cecfc3020000002607070a00000016015cdbeccfaf63b1f7f477b0cfd5addf9df8dafc2500070700000080ade204",
+      "actionHash": "1ce74a3bb9f2fb3ebe3e75ab2f76c550ae0929a8c5d3e03e5d6ae5f2c83d2e53",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000707070a000000201ce74a3bb9f2fb3ebe3e75ab2f76c550ae0929a8c5d3e03e5d6ae5f2c83d2e530095eca2b00d",
+      "signature": "edsigtxWYWBt1c4YaD5pSx7N3u5GmTkdvtebEc8eZBoHDmkwt37mUYQ61XwWYn4v3Bczw3Q4MoYNauAn1WFgWZpN44kXw2iPnUJ",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuv9q5QVmyksGs1ktFJUUDaYpdNo1zukaCWgRYFU8qB1THfdEUs"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtxWYWBt1c4YaD5pSx7N3u5GmTkdvtebEc8eZBoHDmkwt37mUYQ61XwWYn4v3Bczw3Q4MoYNauAn1WFgWZpN44kXw2iPnUJ"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "mv1QJz6kiUBW25gWtQUWXsJehyjbkfjfSdEQ"
+                                  },
+                                  [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        {
+                                          "string": "KT1H3mC5EMNdFNPjZMBMVLFmhwLgja8JohsH"
+                                        },
+                                        {
+                                          "prim": "Pair",
+                                          "args": [
+                                            {
+                                              "int": "0"
+                                            },
+                                            {
+                                              "int": "5000000"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "not run: the contract accepts only the signer's stored counter, 0"
+      }
+    },
+    {
+      "name": "quote token permitUpdateOperators",
+      "kind": "quote_token",
+      "variant": "permitUpdateOperators",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkvMcBzxdQSKootnmEGNPtxtB1PgXsbJLoLZS4ogSPzk5dJUVzpZ",
+      "wallet": "mv1FJuVyRbuMUdZn4PEajmbVbPg6f74k2Arb",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitUpdateOperators": [
+          {
+            "remove_operator": {
+              "owner": "mv1FJuVyRbuMUdZn4PEajmbVbPg6f74k2Arb",
+              "operator": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh",
+              "token_id": 0
+            }
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Left",
+            "args": [
+              [
+                {
+                  "prim": "Right",
+                  "args": [
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "string": "mv1FJuVyRbuMUdZn4PEajmbVbPg6f74k2Arb"
+                        },
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "string": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh"
+                            },
+                            {
+                              "int": "0"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "actionBytes": "0505080505020000003e050807070a0000001600005013928ad839009aeed22ed98f94060424d3c4be07070a0000001601229cf43f69ebdd97ab171980d00cc086757db69a000000",
+      "actionHash": "adffd954494ad3c51b6191ac34ce25c02db76193a520eea796b9eaf0abd3d98e",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a00000020adffd954494ad3c51b6191ac34ce25c02db76193a520eea796b9eaf0abd3d98e0095eca2b00d",
+      "signature": "edsigu4MBq8J2mgL1x9A2XQSBkCRd1kcx28Y4g7iTAnKbir7aaf86uCRCBPGMv9RogY4pmqvYJ1afJT65moTqjuU9U3HiJaAVLN",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkvMcBzxdQSKootnmEGNPtxtB1PgXsbJLoLZS4ogSPzk5dJUVzpZ"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigu4MBq8J2mgL1x9A2XQSBkCRd1kcx28Y4g7iTAnKbir7aaf86uCRCBPGMv9RogY4pmqvYJ1afJT65moTqjuU9U3HiJaAVLN"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Right",
+                                    "args": [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "mv1FJuVyRbuMUdZn4PEajmbVbPg6f74k2Arb"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "KT1BjnZec6FGSm3g2ZnDmL7dGfBQTj4yy4yh"
+                                              },
+                                              {
+                                                "int": "0"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "accepted",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "quote token permitSetPermitExpiry",
+      "kind": "quote_token",
+      "variant": "permitSetPermitExpiry",
+      "contract": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpktjrCkX5RGPPjxtEtb9FL8SCrhiLS87bXeiQnF4Jsro6hsDAmN2",
+      "wallet": "mv1J84wh6YXqcBFf3gWtyxkgjzv1qfntSvwA",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitSetPermitExpiry": [
+          {
+            "userAddress": "mv1J84wh6YXqcBFf3gWtyxkgjzv1qfntSvwA",
+            "expirySeconds": 86400,
+            "permitHash": null
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              [
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "mv1J84wh6YXqcBFf3gWtyxkgjzv1qfntSvwA"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "int": "86400"
+                        },
+                        {
+                          "prim": "None"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "actionBytes": "0505080508020000002507070a0000001600006eef41d62e8a5b2b51006deb9b02259c45d795f307070080c60a0306",
+      "actionHash": "6a37643f6cc6f2bad36b0a37c4ddadb7760f1a0ce65b2f9e8ae8ce8cfe44f515",
+      "payload": "05070707070a00000004acb171020a0000001601a6ad7d26d11a135d931ae8ed28e95e5f16969ed4000707000007070a000000206a37643f6cc6f2bad36b0a37c4ddadb7760f1a0ce65b2f9e8ae8ce8cfe44f5150095eca2b00d",
+      "signature": "edsigtsvq78rBZXxx4BnUkAvpgovwNzf3os3bvGX51x4XThv755yC5ndV8zBUXMi4VBjuiztDRKpkWDRjXx9atrtWGShxSZnRAE",
+      "operation": {
+        "to": "KT1Pn5Zpx1bJx5H51btk92pfwvUMCKtp2Q2v",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpktjrCkX5RGPPjxtEtb9FL8SCrhiLS87bXeiQnF4Jsro6hsDAmN2"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtsvq78rBZXxx4BnUkAvpgovwNzf3os3bvGX51x4XThv755yC5ndV8zBUXMi4VBjuiztDRKpkWDRjXx9atrtWGShxSZnRAE"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                [
+                                  {
+                                    "prim": "Pair",
+                                    "args": [
+                                      {
+                                        "string": "mv1J84wh6YXqcBFf3gWtyxkgjzv1qfntSvwA"
+                                      },
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "int": "86400"
+                                          },
+                                          {
+                                            "prim": "None"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "accepted",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "kyc permitSetMember",
+      "kind": "kyc",
+      "variant": "permitSetMember",
+      "contract": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuFwkmCAQETCQ5aBgun3ZybqNTLBQRwH1kmkKGdWQHaDfj2yqXz",
+      "wallet": "mv1A6c81PySM5Cw6jXJYwg8tsGyKUyyQ8GQH",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitSetMember": [
+          {
+            "updateType": "add",
+            "memberAddress": "mv1A6c81PySM5Cw6jXJYwg8tsGyKUyyQ8GQH",
+            "membershipTier": "standard"
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Left",
+        "args": [
+          [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "add"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "mv1A6c81PySM5Cw6jXJYwg8tsGyKUyyQ8GQH"
+                    },
+                    {
+                      "string": "standard"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
+      },
+      "actionBytes": "05050502000000340707010000000361646407070a00000016000016e771e7be698db6be2e05b84ccb57890dd04f2401000000087374616e64617264",
+      "actionHash": "c3dd8b2ca620b1fb315a241d76de9ef0b70db075b2e6ff76e0febb91c1f39064",
+      "payload": "05070707070a00000004acb171020a0000001601d6214ccfdde02f752897a9cda6487fd9d506be95000707000007070a00000020c3dd8b2ca620b1fb315a241d76de9ef0b70db075b2e6ff76e0febb91c1f390640095eca2b00d",
+      "signature": "edsigtzq8uZ3bZEmpetBsb8riEMD3uPqB2767jJ1WWkNZtFgVgJ583XeoV8DokfAoJ9y3rTMpbmvFDGKpNXKf2CihNEFHtUS49Y",
+      "operation": {
+        "to": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuFwkmCAQETCQ5aBgun3ZybqNTLBQRwH1kmkKGdWQHaDfj2yqXz"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtzq8uZ3bZEmpetBsb8riEMD3uPqB2767jJ1WWkNZtFgVgJ583XeoV8DokfAoJ9y3rTMpbmvFDGKpNXKf2CihNEFHtUS49Y"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Left",
+                          "args": [
+                            [
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "string": "add"
+                                  },
+                                  {
+                                    "prim": "Pair",
+                                    "args": [
+                                      {
+                                        "string": "mv1A6c81PySM5Cw6jXJYwg8tsGyKUyyQ8GQH"
+                                      },
+                                      {
+                                        "string": "standard"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_ONLY_KYC_REGISTRAR_OR_KYC_ADMIN_ALLOWED",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "kyc permitSetMemberKyc",
+      "kind": "kyc",
+      "variant": "permitSetMemberKyc",
+      "contract": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuu91PKByJ6HNhkwDft9P75pgDNXaq9fzvi3dujzH41X1z9pBme",
+      "wallet": "mv1CzsenW233vyCoK4LzysoY7QPkgcqfEU7a",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitSetMemberKyc": {
+          "setMemberKycAction": {
+            "addMemberKyc": [
+              {
+                "memberAddress": "mv1CzsenW233vyCoK4LzysoY7QPkgcqfEU7a",
+                "country": "FR",
+                "region": "EU",
+                "investorType": "retail"
+              }
+            ]
+          },
+          "_unit": null
+        }
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Left",
+            "args": [
+              {
+                "prim": "Pair",
+                "args": [
+                  {
+                    "prim": "Left",
+                    "args": [
+                      [
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "string": "mv1CzsenW233vyCoK4LzysoY7QPkgcqfEU7a"
+                            },
+                            {
+                              "prim": "Pair",
+                              "args": [
+                                {
+                                  "string": "FR"
+                                },
+                                {
+                                  "prim": "Pair",
+                                  "args": [
+                                    {
+                                      "string": "EU"
+                                    },
+                                    {
+                                      "string": "retail"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "prim": "Unit"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "actionBytes": "050508050507070505020000003a07070a00000016000036ba4a758c128d330861a3d34b86d2cf2dcd201f070701000000024652070701000000024555010000000672657461696c030b",
+      "actionHash": "d675df99f2cad6cbb427948def6edf01a1528b50279dcffd9569e1c774de79de",
+      "payload": "05070707070a00000004acb171020a0000001601d6214ccfdde02f752897a9cda6487fd9d506be95000707000007070a00000020d675df99f2cad6cbb427948def6edf01a1528b50279dcffd9569e1c774de79de0095eca2b00d",
+      "signature": "edsigtgiQH5tw7MQ2pT8dzYXZYSBkpmDj2UiM2CKvP3955t8J1qAkUHAQ7fjHHCMCUigotnf8FjGPkxzg4VJWLMU3EyKK1Hgb6E",
+      "operation": {
+        "to": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuu91PKByJ6HNhkwDft9P75pgDNXaq9fzvi3dujzH41X1z9pBme"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtgiQH5tw7MQ2pT8dzYXZYSBkpmDj2UiM2CKvP3955t8J1qAkUHAQ7fjHHCMCUigotnf8FjGPkxzg4VJWLMU3EyKK1Hgb6E"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Left",
+                              "args": [
+                                {
+                                  "prim": "Pair",
+                                  "args": [
+                                    {
+                                      "prim": "Left",
+                                      "args": [
+                                        [
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "string": "mv1CzsenW233vyCoK4LzysoY7QPkgcqfEU7a"
+                                              },
+                                              {
+                                                "prim": "Pair",
+                                                "args": [
+                                                  {
+                                                    "string": "FR"
+                                                  },
+                                                  {
+                                                    "prim": "Pair",
+                                                    "args": [
+                                                      {
+                                                        "string": "EU"
+                                                      },
+                                                      {
+                                                        "string": "retail"
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "prim": "Unit"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_ONLY_KYC_REGISTRAR_OR_KYC_ADMIN_ALLOWED",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "kyc permitFreezeMember",
+      "kind": "kyc",
+      "variant": "permitFreezeMember",
+      "contract": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkuaEpenF7aLaETvMi4So9q6B3Xorc3kf7F8dfZw4imPumN77E9n",
+      "wallet": "mv1AhZYu7t5mcXP1v8DHrffXsYBHLNctraRb",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitFreezeMember": {
+          "memberAddressList": [
+            "mv1AhZYu7t5mcXP1v8DHrffXsYBHLNctraRb"
+          ],
+          "freeze": true
+        }
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              {
+                "prim": "Left",
+                "args": [
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      [
+                        {
+                          "string": "mv1AhZYu7t5mcXP1v8DHrffXsYBHLNctraRb"
+                        }
+                      ],
+                      {
+                        "prim": "True"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "actionBytes": "050508050805050707020000001b0a0000001600001d83db8a8d09daf3759fabf3c1872e4f77284d56030a",
+      "actionHash": "a5f7b3160740cae5b0bafab048fa1030b93a9b98aced7341cd0b1d51fc0788d1",
+      "payload": "05070707070a00000004acb171020a0000001601d6214ccfdde02f752897a9cda6487fd9d506be95000707000007070a00000020a5f7b3160740cae5b0bafab048fa1030b93a9b98aced7341cd0b1d51fc0788d10095eca2b00d",
+      "signature": "edsigtj2wrySmiy8RcmpjosvYbZxbQuRB36dBc5uxK7cUW1Vtr7YnMtPxywfBYftRWYEBY2NRMS9VzXDhmpDQhvVUPoKWH69RQ9",
+      "operation": {
+        "to": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkuaEpenF7aLaETvMi4So9q6B3Xorc3kf7F8dfZw4imPumN77E9n"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtj2wrySmiy8RcmpjosvYbZxbQuRB36dBc5uxK7cUW1Vtr7YnMtPxywfBYftRWYEBY2NRMS9VzXDhmpDQhvVUPoKWH69RQ9"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Left",
+                                  "args": [
+                                    {
+                                      "prim": "Pair",
+                                      "args": [
+                                        [
+                                          {
+                                            "string": "mv1AhZYu7t5mcXP1v8DHrffXsYBHLNctraRb"
+                                          }
+                                        ],
+                                        {
+                                          "prim": "True"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "past the signature check, then failed with ERROR_ONLY_KYC_REGISTRAR_OR_KYC_ADMIN_ALLOWED",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    },
+    {
+      "name": "kyc permitSetPermitExpiry",
+      "kind": "kyc",
+      "variant": "permitSetPermitExpiry",
+      "contract": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+      "chainId": "NetXmtMsNf69w1w",
+      "curve": "edpk",
+      "publicKey": "edpkvYPeLKHthjKPYV9gUFMyXM4K5aNFKngZzDMEMUrubQrENQsSpT",
+      "wallet": "mv1J5TFzG42Yav1hHHZBomFpxV2VKcBbfkTM",
+      "counter": "0",
+      "deadline": "2026-11-23T15:26:13Z",
+      "deadlineSeconds": "1795447573",
+      "action": {
+        "permitSetPermitExpiry": [
+          {
+            "userAddress": "mv1J5TFzG42Yav1hHHZBomFpxV2VKcBbfkTM",
+            "expirySeconds": 3600,
+            "permitHash": null
+          }
+        ]
+      },
+      "actionMichelson": {
+        "prim": "Right",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              {
+                "prim": "Right",
+                "args": [
+                  [
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "string": "mv1J5TFzG42Yav1hHHZBomFpxV2VKcBbfkTM"
+                        },
+                        {
+                          "prim": "Pair",
+                          "args": [
+                            {
+                              "int": "3600"
+                            },
+                            {
+                              "prim": "None"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "actionBytes": "05050805080508020000002407070a0000001600006e70a3252f688bc91b770e0dbffc5244b8b229ec07070090380306",
+      "actionHash": "e3356278c020e77d2c4a805b498146df5f5fda5f3073b0166405c6ea48d58352",
+      "payload": "05070707070a00000004acb171020a0000001601d6214ccfdde02f752897a9cda6487fd9d506be95000707000007070a00000020e3356278c020e77d2c4a805b498146df5f5fda5f3073b0166405c6ea48d583520095eca2b00d",
+      "signature": "edsigtipUSnLJia6HhV6Ud2Y8z6FwJhyxnKoEUD9QMhYswKdKE46ygo4v9ELCEFBGqcyiwLyHabkrQ6qQzobqfEC33QdddhtCcq",
+      "operation": {
+        "to": "KT1U6z4YZPswGHcw7xAJsGZn4Wb7CZUKN1HL",
+        "amount": 0,
+        "parameter": {
+          "entrypoint": "permitAndExecute",
+          "value": [
+            {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "edpkvYPeLKHthjKPYV9gUFMyXM4K5aNFKngZzDMEMUrubQrENQsSpT"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "edsigtipUSnLJia6HhV6Ud2Y8z6FwJhyxnKoEUD9QMhYswKdKE46ygo4v9ELCEFBGqcyiwLyHabkrQ6qQzobqfEC33QdddhtCcq"
+                    },
+                    {
+                      "prim": "Pair",
+                      "args": [
+                        {
+                          "prim": "Right",
+                          "args": [
+                            {
+                              "prim": "Right",
+                              "args": [
+                                {
+                                  "prim": "Right",
+                                  "args": [
+                                    [
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          {
+                                            "string": "mv1J5TFzG42Yav1hHHZBomFpxV2VKcBbfkTM"
+                                          },
+                                          {
+                                            "prim": "Pair",
+                                            "args": [
+                                              {
+                                                "int": "3600"
+                                              },
+                                              {
+                                                "prim": "None"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "string": "2026-11-23T15:26:13Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "runCode": {
+        "result": "accepted",
+        "control": "ERROR_PERMIT_MISSIGNED, signed over counter 1"
+      }
+    }
+  ]
+}
