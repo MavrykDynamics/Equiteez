@@ -25,10 +25,20 @@ type SessionMessage = {
   sessionExpiresAt: number | null;
 };
 
-const TAB_ID =
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random()}`;
+let tabId: string | null = null;
+
+/**
+ * This tab's id, made on first use: Cloudflare Workers refuse random values
+ * in global scope, and this module is part of the server bundle too.
+ */
+function getTabId() {
+  tabId ??=
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
+  return tabId;
+}
 
 let isOutdated = false;
 let isKeyStale = false;
@@ -70,7 +80,7 @@ export function announceDynamicSession(sessionExpiresAt: number | null) {
   if (!channel) return;
 
   channel.postMessage({
-    tabId: TAB_ID,
+    tabId: getTabId(),
     sessionExpiresAt,
   } satisfies SessionMessage);
   channel.close();
@@ -128,7 +138,7 @@ export function watchOtherTabsDynamicSessions({
   channel.onmessage = (event: MessageEvent<unknown>) => {
     const message = event.data;
 
-    if (!isSessionMessage(message) || message.tabId === TAB_ID) return;
+    if (!isSessionMessage(message) || message.tabId === getTabId()) return;
 
     if (isReady) handleMessage(message);
     else pendingMessage = message;
