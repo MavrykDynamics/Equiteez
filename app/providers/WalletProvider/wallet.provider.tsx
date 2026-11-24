@@ -78,9 +78,9 @@ import {
   type WalletChoice,
 } from "./dynamic/dynamicSession.client";
 import {
-  areDynamicKeysStale,
+  isDynamicKeyStale,
   isDynamicTabOutdated,
-  markDynamicKeysFresh,
+  markDynamicKeyFresh,
   reloadOutdatedTab,
 } from "./dynamic/dynamicTabSync";
 import {
@@ -430,14 +430,14 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
      * that no longer works), so the sign-in is not refused midway.
      */
     const refreshStaleKeys = async (client: DynamicClient) => {
-      if (!areDynamicKeysStale()) return;
+      if (!isDynamicKeyStale()) return;
 
       const logoutError = await logoutDynamic(client);
 
       if (logoutError) {
         console.warn("Dynamic logout failed:", describeError(logoutError));
       }
-      markDynamicKeysFresh();
+      markDynamicKeyFresh();
     };
 
     /**
@@ -449,13 +449,16 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       step: (client: DynamicClient) => Promise<T>
     ) => {
       const client = await readyClient();
-      const hadUser = Boolean(client.user);
+      const hasUserBefore = Boolean(client.user);
 
       try {
         return await step(client);
       } catch (error) {
-        if (isDynamicTabOutdated()) throw new DynamicTabOutdatedError(error);
-        if (hadUser && !client.user) {
+        if (isDynamicTabOutdated()) {
+          reloadOutdatedTab();
+          throw new DynamicTabOutdatedError(error);
+        }
+        if (hasUserBefore && !client.user) {
           throw new DynamicSignInInterruptedError(error);
         }
         throw error;

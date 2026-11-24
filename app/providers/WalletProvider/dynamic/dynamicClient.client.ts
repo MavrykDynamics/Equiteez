@@ -134,13 +134,17 @@ function syncWithOtherTabs(client: DynamicClient) {
   const announce = () => announceDynamicSession(ownSessionExpiresAt());
 
   client.waitForInit().then(announce, () => undefined);
-  client.onUserChanged(announce);
+  // A sign-in or a restored session; a sign-out is onLogout's to announce,
+  // since some logouts leave the key to another tab
+  client.onUserChanged(() => {
+    if (client.user) announce();
+  });
   client.onLogout((reason) => {
     if (doesLogoutReplaceSharedKey(reason)) announceDynamicSession(null);
   });
   watchOtherTabsDynamicSessions({
     getOwnSessionExpiresAt: ownSessionExpiresAt,
-    isReady: () => client.initStatus === "finished",
+    ready: client.waitForInit(),
     onOutdated: () => {
       reloadWhenHidden();
     },

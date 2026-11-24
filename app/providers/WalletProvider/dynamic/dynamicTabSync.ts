@@ -31,17 +31,17 @@ const TAB_ID =
     : `${Date.now()}-${Math.random()}`;
 
 let isOutdated = false;
-let areKeysStale = false;
+let isKeyStale = false;
 
 /** Another tab has a live session this tab does not: reload to use it. */
 export const isDynamicTabOutdated = () => isOutdated;
 
 /** Another tab replaced the signing key: sign-ins here need a fresh one. */
-export const areDynamicKeysStale = () => areKeysStale;
+export const isDynamicKeyStale = () => isKeyStale;
 
 /** This tab got a fresh key (its SDK signed out and made one). */
-export const markDynamicKeysFresh = () => {
-  areKeysStale = false;
+export const markDynamicKeyFresh = () => {
+  isKeyStale = false;
 };
 
 /** Reloads now: used when the user starts a sign-in in an outdated tab */
@@ -86,30 +86,29 @@ export const doesLogoutReplaceSharedKey = (reason: string | null) =>
  */
 export function watchOtherTabsDynamicSessions({
   getOwnSessionExpiresAt,
-  isReady,
+  ready,
   onOutdated,
 }: {
   getOwnSessionExpiresAt: () => number | null;
-  /** False while this tab's SDK is still reading its own session */
-  isReady: () => boolean;
+  /** Settles once this tab's SDK has read its own session */
+  ready: Promise<unknown>;
   onOutdated: () => void;
 }): () => void {
   const channel = openChannel();
 
   if (!channel) return () => undefined;
 
-  channel.onmessage = (event: MessageEvent<unknown>) => {
-    const message = event.data;
+  let isReady = false;
+  // The latest announcement heard while this tab's SDK was starting
+  let pendingMessage: SessionMessage | null = null;
 
-    if (!isSessionMessage(message) || message.tabId === TAB_ID) return;
-    if (!isReady()) return;
-
+  const handleMessage = (message: SessionMessage) => {
     const own = getOwnSessionExpiresAt();
 
     if (own !== null && own === message.sessionExpiresAt) return;
 
     if (message.sessionExpiresAt === null) {
-      areKeysStale = true;
+      isKeyStale = true;
       return;
     }
 
@@ -118,10 +117,27 @@ export function watchOtherTabsDynamicSessions({
     onOutdated();
   };
 
+  const settle = () => {
+    isReady = true;
+    if (pendingMessage) handleMessage(pendingMessage);
+    pendingMessage = null;
+  };
+
+  ready.then(settle, settle);
+
+  channel.onmessage = (event: MessageEvent<unknown>) => {
+    const message = event.data;
+
+    if (!isSessionMessage(message) || message.tabId === TAB_ID) return;
+
+    if (isReady) handleMessage(message);
+    else pendingMessage = message;
+  };
+
   return () => channel.close();
 }
 
 export function resetDynamicTabSyncForTests() {
   isOutdated = false;
-  areKeysStale = false;
+  isKeyStale = false;
 }

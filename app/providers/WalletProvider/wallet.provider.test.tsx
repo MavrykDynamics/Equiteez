@@ -67,9 +67,9 @@ const mocks = vi.hoisted(() => {
     dynamicSession,
     dynamicEnabled: true,
     isTabOutdated: false,
-    areKeysStale: false,
+    isKeyStale: false,
     reloadOutdatedTab: vi.fn(),
-    markDynamicKeysFresh: vi.fn(),
+    markDynamicKeyFresh: vi.fn(),
     passDynamicSecondFactor: vi.fn(async () => undefined),
     openDynamicSession: vi.fn(),
     logoutDynamic: vi.fn(async () => null),
@@ -102,8 +102,8 @@ vi.mock("./dynamic/dynamicClient.client", () => ({
 }));
 vi.mock("./dynamic/dynamicTabSync", () => ({
   isDynamicTabOutdated: () => mocks.isTabOutdated,
-  areDynamicKeysStale: () => mocks.areKeysStale,
-  markDynamicKeysFresh: mocks.markDynamicKeysFresh,
+  isDynamicKeyStale: () => mocks.isKeyStale,
+  markDynamicKeyFresh: mocks.markDynamicKeyFresh,
   reloadOutdatedTab: mocks.reloadOutdatedTab,
 }));
 vi.mock("./dynamic/dynamicSession.client", () => ({
@@ -159,7 +159,7 @@ beforeEach(() => {
   };
   mocks.dynamicEnabled = true;
   mocks.isTabOutdated = false;
-  mocks.areKeysStale = false;
+  mocks.isKeyStale = false;
   mocks.dynamicClient.user = null;
   mocks.logoutListeners.clear();
   mocks.openDynamicSession.mockReset();
@@ -321,6 +321,25 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     expect(mocks.logoutListeners.size).toBe(0);
   });
 
+  it("reloads when another tab signs in during a sign-in step", async () => {
+    await renderProvider();
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    mocks.openDynamicSession.mockImplementationOnce(async () => {
+      mocks.isTabOutdated = true;
+      throw new Error("Forbidden");
+    });
+
+    await act(async () => {
+      await expect(
+        wallet.dynamic!.passSecondFactor({
+          kind: "authenticator",
+          code: "123456",
+        })
+      ).rejects.toMatchObject({ name: "DynamicTabOutdatedError" });
+    });
+    expect(mocks.reloadOutdatedTab).toHaveBeenCalled();
+  });
+
   it("does not fall back to a leftover Beacon account when Dynamic cannot be restored", async () => {
     window.localStorage.setItem(STORAGE_KEY, "dynamic");
     mocks.beacon.account = BEACON_ACCOUNT;
@@ -381,7 +400,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     await renderProvider();
     // Another tab signed out: this tab still "has" the session it killed
     mocks.dynamicClient.user = { email: "a@b.co" };
-    mocks.areKeysStale = true;
+    mocks.isKeyStale = true;
     mocks.logoutDynamic.mockImplementationOnce(async () => {
       mocks.dynamicClient.user = null;
       return null;
@@ -392,7 +411,7 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     });
 
     expect(mocks.logoutDynamic).toHaveBeenCalledWith(mocks.dynamicClient);
-    expect(mocks.markDynamicKeysFresh).toHaveBeenCalled();
+    expect(mocks.markDynamicKeyFresh).toHaveBeenCalled();
     expect(mocks.openDynamicSession).not.toHaveBeenCalled();
   });
 
