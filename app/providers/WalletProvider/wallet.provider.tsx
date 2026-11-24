@@ -78,6 +78,7 @@ import {
   type WalletChoice,
 } from "./dynamic/dynamicSession.client";
 import {
+  doesLogoutReplaceSharedKey,
   isDynamicKeyStale,
   isDynamicTabOutdated,
   markDynamicKeyFresh,
@@ -89,6 +90,7 @@ import {
 } from "./dynamic/dynamicSocialReturn";
 import type {
   DynamicConnectApi,
+  NoWalletReason,
   WalletContextValue,
   WalletIdentity,
   WalletPhase,
@@ -135,6 +137,9 @@ export const walletContext = createContext<WalletContextValue>(undefined!);
 export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
   const [phase, setPhase] = useState<WalletPhase>("restoring");
   const [identity, setIdentity] = useState<WalletIdentity | null>(null);
+  const [noWalletReason, setNoWalletReason] = useState<NoWalletReason | null>(
+    null
+  );
   const [error, setError] = useState<Error | null>(null);
 
   const identityRef = useRef<WalletIdentity | null>(null);
@@ -159,7 +164,8 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
     (
       account: ConnectedAccount | null,
       epoch: number,
-      slot: ActiveAttemptSlot = { current: null }
+      slot: ActiveAttemptSlot = { current: null },
+      reason: NoWalletReason = "signed-out"
     ) => {
       const next = account
         ? {
@@ -173,6 +179,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       identityRef.current = next;
       slotRef.current = slot;
       setIdentity(next);
+      setNoWalletReason(next ? null : reason);
       setPhase(next ? "wallet-ready" : "disconnected");
     },
     []
@@ -187,8 +194,11 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       const current = identityRef.current;
 
       if (!account?.address || !account.publicKey) {
+        // Not this tab's sign-out (that clears the wallet first): another
+        // tab cleared the active account Beacon shares, e.g. it switched to
+        // the email wallet
         if (current?.provider === "mavryk_extension") {
-          commit(null, startEpoch());
+          commit(null, startEpoch(), undefined, "other-tab");
         }
         return;
       }
@@ -228,7 +238,12 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       connectSeqRef.current += 1;
       stopWatchingDynamicLogoutRef.current?.();
       stopWatchingDynamicLogoutRef.current = null;
-      commit(null, startEpoch());
+      commit(
+        null,
+        startEpoch(),
+        undefined,
+        keepSharedState ? "other-tab" : "signed-out"
+      );
       dynamicSessionRef.current = null;
       chosenProviderRef.current = null;
       if (keepSharedState) return;
@@ -298,7 +313,12 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         (reason) => {
           if (dynamicSessionRef.current !== session) return;
           console.warn("Dynamic signed out:", reason ?? "unknown reason");
-          void disconnect({ keepProviderSession: true });
+          // Another tab replaced the key and owns the session now: leave the
+          // state the tabs share to it
+          void disconnect({
+            keepProviderSession: true,
+            keepSharedState: !doesLogoutReplaceSharedKey(reason),
+          });
         }
       );
       chosenProviderRef.current = "dynamic";
@@ -355,6 +375,9 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       saved === "dynamic" && !isDynamicWalletEnabled() ? null : saved;
 
     (async () => {
+      // Why no wallet came back, for the session sync
+      let restoreReason: NoWalletReason = "signed-out";
+
       // The user chose the email wallet last time: if it cannot be restored
       // they stay signed out rather than silently getting a leftover Mavryk
       // Wallet account. The choice changes only on an explicit connect or
@@ -367,10 +390,21 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       ) {
         try {
           // Restore only: a missing wallet is created in the connect flow
-          await establishDynamic({ mode: "restore" });
+          if (!(await establishDynamic({ mode: "restore" }))) {
+            // A live session that did not reopen (it needs unlocking or a
+            // second factor): its end is not certain
+            const client = await loadDynamicClient();
+            restoreReason = hasLiveDynamicSession(client)
+              ? "unknown"
+              : "signed-out";
+          }
         } catch (restoreError) {
+          restoreReason = "unknown";
           if (!cancelled) setError(restoreError as Error);
         }
+      } else if (saved === "dynamic" && hasPendingGoogleSignIn()) {
+        // The sign-in modal finishes it
+        restoreReason = "unknown";
       }
 
       try {
@@ -379,9 +413,13 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         });
       } catch (listenError) {
         console.log(listenError);
+        if (saved !== "dynamic") restoreReason = "unknown";
       }
 
-      if (!cancelled && !identityRef.current) setPhase("disconnected");
+      if (!cancelled && !identityRef.current) {
+        setNoWalletReason(restoreReason);
+        setPhase("disconnected");
+      }
     })();
 
     return () => {
@@ -709,6 +747,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       isLoading: phase === "restoring",
       error,
       identity,
+      noWalletReason,
       getIdentity,
       connectMavrykWallet,
       disconnect,
@@ -721,6 +760,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       phase,
       error,
       identity,
+      noWalletReason,
       getIdentity,
       connectMavrykWallet,
       disconnect,

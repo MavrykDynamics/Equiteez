@@ -146,6 +146,17 @@ export type DynamicConnectApi = {
   removePasskey: (passkeyId: string) => Promise<void>;
 };
 
+/**
+ * Why there is no wallet:
+ * - signed-out: its session ended (the restore found none, the user signed
+ *   out, Dynamic signed out)
+ * - other-tab: another tab owns the wallet now (it signed in, switched
+ *   accounts or replaced the email wallet's key)
+ * - unknown: the restore could not tell (an error, or the wallet needs
+ *   unlocking or a second factor)
+ */
+export type NoWalletReason = "signed-out" | "other-tab" | "unknown";
+
 export type DisconnectOptions = {
   keepProviderSession?: boolean;
   keepSharedState?: boolean;
@@ -157,6 +168,8 @@ export type WalletContextValue = {
   isLoading: boolean;
   error: Error | null;
   identity: WalletIdentity | null;
+  /** Why there is no wallet; null while there is one or it is restoring */
+  noWalletReason: NoWalletReason | null;
   /** Latest identity, safe to read right after an await */
   getIdentity: () => WalletIdentity | null;
   connectMavrykWallet: () => Promise<void>;

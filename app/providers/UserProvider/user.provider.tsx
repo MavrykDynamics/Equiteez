@@ -58,6 +58,7 @@ export const UserProvider = ({ children }: Props) => {
     identity: walletIdentity,
     isLoading: isWalletLoading,
     phase: walletPhase,
+    noWalletReason,
   } = wallet;
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
@@ -125,22 +126,36 @@ export const UserProvider = ({ children }: Props) => {
     tzktSocket,
     setTzktSocket,
   });
+  /**
+   * Signs in to RWA with the wallet this tab just connected. If that fails
+   * (e.g. the signature was declined), the wallet goes too, shared state
+   * included, so it is not restored on every load without a session.
+   */
+  const loginOrDropWallet = useCallback(async () => {
+    try {
+      await login();
+    } catch (error) {
+      await signOut({ keepProviderSession: true });
+      throw error;
+    }
+  }, [login, signOut]);
+
   const switchAccount = useCallback(
     () =>
       runAuthFlow(async () => {
         await changeUser();
-        await login();
+        await loginOrDropWallet();
       }),
-    [changeUser, login, runAuthFlow]
+    [changeUser, loginOrDropWallet, runAuthFlow]
   );
 
   const connectAndLogin = useCallback(
     () =>
       runAuthFlow(async () => {
         await connect();
-        await login();
+        await loginOrDropWallet();
       }),
-    [connect, login, runAuthFlow]
+    [connect, loginOrDropWallet, runAuthFlow]
   );
 
   /**
@@ -152,9 +167,9 @@ export const UserProvider = ({ children }: Props) => {
     (connectWallet: () => Promise<unknown>) =>
       runAuthFlow(async () => {
         if ((await connectWallet()) === false) return;
-        await login();
+        await loginOrDropWallet();
       }),
-    [login, runAuthFlow]
+    [loginOrDropWallet, runAuthFlow]
   );
 
   /**
@@ -316,23 +331,31 @@ export const UserProvider = ({ children }: Props) => {
       isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
       accountAddress,
       authenticatedWalletAddress,
+      noWalletReason,
       previous: previousSyncRef.current,
     };
 
     if (!isSessionSyncSettled(input)) return;
 
     const action = getSessionSyncAction(input);
-    // A released wallet counts as gone already: the next check then reloads
-    // instead of logging out the other tab's session
+    // A released wallet counts as gone already, so the next check does not
+    // take its absence for a lost wallet
     previousSyncRef.current = {
       accountAddress: action === "release-wallet" ? null : accountAddress,
       authenticatedWalletAddress,
     };
-    setShouldReloadForOtherTab(action === "reload-tab");
+    // Once due, the reload stays due: whatever happens meanwhile, the reload
+    // reads the current state
+    if (action === "reload-tab" || action === "release-wallet") {
+      setShouldReloadForOtherTab(true);
+    }
 
     if (action === "release-wallet") {
       void signOut({ keepProviderSession: true, keepSharedState: true });
     } else if (action === "disconnect-wallet") {
+      // The wallet may have come from another tab mid sign-in (Beacon's
+      // active account is shared): drop it here only. A failed sign-in in
+      // this tab clears the shared state itself (loginOrDropWallet).
       void signOut({ keepProviderSession: true, keepSharedState: true });
     } else if (action === "logout-rwa") {
       void logout();
@@ -345,6 +368,7 @@ export const UserProvider = ({ children }: Props) => {
     isAuthLoading,
     isAuthenticated,
     logout,
+    noWalletReason,
     signOut,
     walletPhase,
   ]);

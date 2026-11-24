@@ -10,6 +10,7 @@ const signedIn: SessionSyncInput = {
   isWalletBusy: false,
   accountAddress: "mv1A",
   authenticatedWalletAddress: "mv1A",
+  noWalletReason: null,
   previous: { accountAddress: "mv1A", authenticatedWalletAddress: "mv1A" },
 };
 
@@ -86,29 +87,51 @@ describe("getSessionSyncAction", () => {
     ).toBe("none");
   });
 
-  it("logs out an RWA session when the restore on load reopened no wallet", () => {
+  it("logs out an RWA session when the restore on load found its wallet's session ended", () => {
     // E.g. the email wallet's session expired
     expect(
       getSessionSyncAction({
         ...signedIn,
         accountAddress: null,
+        noWalletReason: "signed-out",
         previous: null,
       })
     ).toBe("logout-rwa");
   });
 
-  it("logs out an RWA session when this tab loses its wallet", () => {
-    // E.g. Dynamic signed out while the tab was open
+  it("keeps the RWA session when the restore on load could not tell", () => {
+    // A network error or a locked wallet: tokens are shared, so a logout
+    // here would sign out every tab
     expect(
       getSessionSyncAction({
         ...signedIn,
         accountAddress: null,
-        previous: {
-          accountAddress: "mv1A",
-          authenticatedWalletAddress: "mv1A",
-        },
+        noWalletReason: "unknown",
+        previous: null,
+      })
+    ).toBe("none");
+  });
+
+  it("logs out an RWA session when this tab's wallet session ends", () => {
+    // E.g. Dynamic signed out at session expiry while the tab was open
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: null,
+        noWalletReason: "signed-out",
       })
     ).toBe("logout-rwa");
+  });
+
+  it("reloads instead of logging out when another tab took the wallet", () => {
+    // E.g. it replaced the email wallet's key or cleared Beacon's account
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: null,
+        noWalletReason: "other-tab",
+      })
+    ).toBe("reload-tab");
   });
 
   it("reloads to pick up the wallet when another tab signed in while this tab had none", () => {
@@ -117,9 +140,22 @@ describe("getSessionSyncAction", () => {
       getSessionSyncAction({
         ...signedIn,
         accountAddress: null,
+        noWalletReason: "signed-out",
         previous: { accountAddress: null, authenticatedWalletAddress: null },
       })
     ).toBe("reload-tab");
+  });
+
+  it("does not act again while this tab still has no wallet and the same session", () => {
+    // E.g. after letting the wallet go, or a restore that could not tell
+    expect(
+      getSessionSyncAction({
+        ...signedIn,
+        accountAddress: null,
+        noWalletReason: "signed-out",
+        previous: { accountAddress: null, authenticatedWalletAddress: "mv1A" },
+      })
+    ).toBe("none");
   });
 
   it("does nothing without a wallet or an RWA session", () => {

@@ -105,6 +105,8 @@ vi.mock("./dynamic/dynamicTabSync", () => ({
   isDynamicKeyStale: () => mocks.isKeyStale,
   markDynamicKeyFresh: mocks.markDynamicKeyFresh,
   reloadOutdatedTab: mocks.reloadOutdatedTab,
+  doesLogoutReplaceSharedKey: (reason: string | null) =>
+    reason !== "keychain-session-key-mismatch",
 }));
 vi.mock("./dynamic/dynamicSession.client", () => ({
   openDynamicSession: mocks.openDynamicSession,
@@ -200,6 +202,18 @@ describe("WalletProvider: Mavryk Wallet", () => {
     expect(wallet.identity).toBeNull();
     expect(wallet.getToolkit()).toBeNull();
     expect(wallet.directExecution).toBeUndefined();
+  });
+
+  it("says another tab took the wallet when Beacon's shared account is cleared", async () => {
+    mocks.beacon.account = BEACON_ACCOUNT;
+    await renderProvider();
+
+    await act(async () => {
+      mocks.beacon.listener?.(null);
+    });
+
+    expect(wallet.identity).toBeNull();
+    expect(wallet.noWalletReason).toBe("other-tab");
   });
 
   it("starts a new epoch when the account changes in the extension", async () => {
@@ -319,6 +333,61 @@ describe("WalletProvider: email wallet (Dynamic)", () => {
     });
 
     expect(mocks.logoutListeners.size).toBe(0);
+  });
+
+  it("says the session ended when the email wallet's session is gone on load", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    await renderProvider();
+
+    expect(wallet.identity).toBeNull();
+    expect(wallet.noWalletReason).toBe("signed-out");
+  });
+
+  it("cannot tell when a live email wallet session does not reopen on load", async () => {
+    // E.g. the wallet needs unlocking or a second factor here
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    mocks.openDynamicSession.mockImplementationOnce(async () => null);
+    await renderProvider();
+
+    expect(wallet.identity).toBeNull();
+    expect(wallet.noWalletReason).toBe("unknown");
+  });
+
+  it("cannot tell when the email wallet's restore fails", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    mocks.openDynamicSession.mockRejectedValueOnce(new Error("timeout"));
+    await renderProvider();
+
+    expect(wallet.noWalletReason).toBe("unknown");
+  });
+
+  it("leaves the shared state to the tab that took over the email wallet's key", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    await renderProvider();
+
+    await act(async () => {
+      mocks.dynamicClient.emitLogout("keychain-session-key-mismatch");
+    });
+
+    expect(wallet.identity).toBeNull();
+    expect(wallet.noWalletReason).toBe("other-tab");
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe("dynamic");
+  });
+
+  it("says the session ended when Dynamic signs out at expiry", async () => {
+    window.localStorage.setItem(STORAGE_KEY, "dynamic");
+    mocks.dynamicClient.user = { email: "a@b.co" };
+    await renderProvider();
+
+    await act(async () => {
+      mocks.dynamicClient.emitLogout("token-expired");
+    });
+
+    expect(wallet.noWalletReason).toBe("signed-out");
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
   it("reloads when another tab signs in during a sign-in step", async () => {

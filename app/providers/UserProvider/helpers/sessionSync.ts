@@ -10,16 +10,20 @@
  *   This tab lets its wallet go without touching the shared state and
  *   reloads to pick up the other tab's. Otherwise (found on load, or both
  *   changed at once) the RWA session is logged out.
- * - An RWA session without a wallet is logged out when this tab lost the
- *   wallet: the restore on load could not reopen it (e.g. the email wallet's
- *   session expired) or it went away (e.g. Dynamic signed out).
+ * - An RWA session without a wallet depends on why the wallet is missing
+ *   (NoWalletReason): its session ended (restore found none, Dynamic signed
+ *   out) → logged out; another tab owns the wallet now → kept, and this tab
+ *   reloads to pick it up; the restore could not tell (an error, the wallet
+ *   needs unlocking) → kept as it is. Tokens are shared, so a logout here
+ *   signs out every tab.
  * - A session that another tab signed in while this tab had no wallet is
- *   kept (tokens are shared: logging it out would end the other tab's
- *   sign-in) and this tab reloads to pick up the wallet: Dynamic and Beacon
- *   read their sessions from storage only when they start.
+ *   kept and this tab reloads to pick up the wallet: Dynamic and Beacon read
+ *   their sessions from storage only when they start.
  * - Nothing happens while a wallet is connecting or a sign-in is running:
  *   the wallet appears before login() finishes, and that is not a mismatch.
  */
+import type { NoWalletReason } from "~/providers/WalletProvider/wallet.types";
+
 export type SessionSyncInput = {
   isWeb: boolean;
   isAuthLoading: boolean;
@@ -30,6 +34,8 @@ export type SessionSyncInput = {
   isWalletBusy: boolean;
   accountAddress: string | null;
   authenticatedWalletAddress: string | null;
+  /** Why this tab has no wallet; null while it has one or is restoring */
+  noWalletReason: NoWalletReason | null;
   /**
    * This tab's state at the previous settled check; null before the first
    * one, i.e. right after the restore on load
@@ -71,6 +77,7 @@ export function getSessionSyncAction({
   isWalletBusy,
   accountAddress,
   authenticatedWalletAddress,
+  noWalletReason,
   previous,
 }: SessionSyncInput): SessionSyncAction {
   if (
@@ -87,9 +94,18 @@ export function getSessionSyncAction({
   if (!accountAddress) {
     if (!isAuthenticated) return "none";
 
-    const hadWallet = previous ? Boolean(previous.accountAddress) : null;
+    // Already without a wallet last time: only a session another tab signed
+    // in since then calls for a reload
+    if (previous && !previous.accountAddress) {
+      return previous.authenticatedWalletAddress !== authenticatedWalletAddress
+        ? "reload-tab"
+        : "none";
+    }
 
-    return hadWallet === false ? "reload-tab" : "logout-rwa";
+    // Restored none on load, or lost the wallet since
+    if (noWalletReason === "signed-out") return "logout-rwa";
+    if (noWalletReason === "other-tab") return "reload-tab";
+    return "none";
   }
   if (!isAuthenticated) return "disconnect-wallet";
 
