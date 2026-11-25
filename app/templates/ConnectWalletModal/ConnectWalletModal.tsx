@@ -5,7 +5,10 @@
  * Figma "Sign-in, restore, expired" designs.
  *
  * Email flow: email → code → wallet set-up → RWA sign-in, each step with a
- * recoverable error. "Continue with Google" leaves for Google; on return the
+ * recoverable error. While a step runs its button shows a loader and the
+ * form is locked; once the wallet set-up is known, a new account shows
+ * "Creating Your Account" and then "Your Account Is Ready", an existing one
+ * "Restoring Your Account" until the sign-in is done. "Continue with Google" leaves for Google; on return the
  * modal reopens and finishes the sign-in. A password-protected wallet that
  * comes locked asks for the password ("Unlock Your Account On This Device").
  * An account with an authenticator app (or passkey) confirms the sign-in with
@@ -17,7 +20,6 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
@@ -26,7 +28,8 @@ import {
 
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
+import { RChip } from "~/lib/atoms/RChip/RChip";
+import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -38,6 +41,7 @@ import { isWalletChoiceEnabled } from "~/providers/WalletProvider/dynamic/dynami
 import type { DynamicWalletOption } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 import type { SecondFactor } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
+import type { WalletSetupListener } from "~/providers/WalletProvider/wallet.types";
 
 import {
   describeConnectError,
@@ -53,16 +57,23 @@ import { describeError } from "~/services/direct/guardedInjector";
 
 const RESEND_COOLDOWN_MS = 30_000;
 
-// Height of the last email/code step. The loading step keeps it, so the
-// modal does not shrink and jump while a code is sent or checked. Kept across
-// opens: a modal that opens straight on loading reuses it too.
-let lastFormHeight = 0;
+/** The account an existing-account sign-in is restoring */
+type RestoringAccount = {
+  address: string;
+  email: string | null;
+  lastUsedAt: Date | null;
+};
 
 type Step =
   | { name: "choose" }
   | { name: "email"; error?: string }
   | { name: "code"; error?: string }
-  | { name: "working"; label: string }
+  /** A new account: its wallet is being created and signed in */
+  | { name: "creating" }
+  /** An existing account: its wallet is being opened and signed in */
+  | { name: "restoring"; account: RestoringAccount }
+  /** A new account is signed in: shows its address */
+  | { name: "ready"; address: string }
   | { name: "select-wallet"; wallets: DynamicWalletOption[] }
   | { name: "unlock"; wallet: LockedWallet; error?: string }
   | {
@@ -82,7 +93,18 @@ type Step =
 const hasCodeFactor = (methods: SecondFactorMethods) =>
   methods.hasAuthenticator || !methods.hasPasskey;
 
-/** Steps with a form: the loading step keeps their height */
+/** The action running on the current step: its button shows a loader */
+type BusyAction =
+  | "start"
+  | "email"
+  | "google"
+  | "code"
+  | "password"
+  | "second-factor"
+  | "passkey"
+  | "select";
+
+/** Steps with a field to focus */
 const isFormStep = (name: Step["name"]) =>
   name === "email" ||
   name === "code" ||
@@ -98,7 +120,7 @@ export function ConnectWalletModal({
   isOpen,
   onClose,
 }: ConnectWalletModalProps) {
-  const { dynamic, phase, identity } = useWalletContext();
+  const { dynamic } = useWalletContext();
   const { connect, connectWithWallet } = useUserContext();
   const isMobile = useIsMobileViewport();
   const canChooseWallet = isWalletChoiceEnabled();
@@ -106,6 +128,7 @@ export function ConnectWalletModal({
   const passwordInputId = useId();
 
   const [step, setStep] = useState<Step>({ name: "choose" });
+  const [busy, setBusy] = useState<BusyAction | null>(null);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -124,37 +147,68 @@ export function ConnectWalletModal({
     onClose();
   }, [onClose]);
 
-  /** Connects with `connectStep`, then signs in; closes on success. */
+  /**
+   * Connects with `connectStep`, then signs in. A new account ends on
+   * "Your Account Is Ready"; an existing one closes the modal.
+   */
   const connectAndSignIn = useCallback(
     async ({
       connectStep,
       stage,
-      label,
+      action,
       onError,
     }: {
-      connectStep: () => Promise<unknown>;
+      connectStep: (onSetup: WalletSetupListener) => Promise<unknown>;
       /** Read on failure: a step can move on, e.g. once a code is accepted */
       stage: ConnectStage | (() => ConnectStage);
-      label: string;
+      /** Its button shows the loader until the wallet set-up is known */
+      action: BusyAction;
       onError: (message: string) => Step;
     }) => {
       const run = nextRun();
       let needsEmail = false;
+      // Set once the wallet turns out to be new: the sign-in ends on "ready"
+      let newAddress: string | null = null;
+      let isCreating = false;
 
-      setStep({ name: "working", label });
+      const handleSetup: WalletSetupListener = (setup) => {
+        if (!isCurrent(run)) return;
+
+        if (setup.kind === "creating" || setup.isNew || isCreating) {
+          isCreating = true;
+          if (setup.kind === "opening") newAddress = setup.address;
+          setStep({ name: "creating" });
+          return;
+        }
+
+        setStep({
+          name: "restoring",
+          account: {
+            address: setup.address,
+            email: setup.email,
+            lastUsedAt: setup.lastUsedAt,
+          },
+        });
+      };
+
+      setBusy(action);
 
       try {
         await connectWithWallet(async () => {
-          const connected = await connectStep();
+          const connected = await connectStep(handleSetup);
           needsEmail = connected === "needs-email";
           return !needsEmail;
         });
         if (!isCurrent(run)) return;
 
+        setBusy(null);
         if (needsEmail) setStep({ name: "email" });
+        else if (newAddress) setStep({ name: "ready", address: newAddress });
         else close();
       } catch (error) {
         if (!isCurrent(run)) return;
+
+        setBusy(null);
 
         const view = describeConnectError(
           error,
@@ -181,14 +235,20 @@ export function ConnectWalletModal({
     [close, connectWithWallet]
   );
 
-  /** Uses a live Dynamic session if there is one, otherwise asks for email. */
+  /**
+   * Uses a live Dynamic session if there is one, otherwise asks for email.
+   * Runs on the email step (its button loads) or from "Try again".
+   */
   const startEmail = useCallback(() => {
     if (!dynamic) return;
 
+    setStep((current) =>
+      current.name === "failed" ? current : { name: "email" }
+    );
     void connectAndSignIn({
-      connectStep: () => dynamic.start(),
+      connectStep: (onSetup) => dynamic.start(onSetup),
       stage: "connect",
-      label: "Opening your email wallet…",
+      action: "start",
       onError: (message) => ({ name: "failed", message }),
     });
   }, [connectAndSignIn, dynamic]);
@@ -197,10 +257,11 @@ export function ConnectWalletModal({
   const finishGoogle = useCallback(() => {
     if (!dynamic) return;
 
+    setStep({ name: "email" });
     void connectAndSignIn({
-      connectStep: () => dynamic.finishGoogleSignIn(),
+      connectStep: (onSetup) => dynamic.finishGoogleSignIn(onSetup),
       stage: "connect",
-      label: "Signing you in with Google…",
+      action: "google",
       onError: (message) => ({ name: "email", error: message }),
     });
   }, [connectAndSignIn, dynamic]);
@@ -211,6 +272,7 @@ export function ConnectWalletModal({
 
     setCode("");
     setPassword("");
+    setBusy(null);
     setStep({ name: "choose" });
     if (dynamic?.hasPendingGoogleSignIn()) finishGoogle();
     else if (!canChooseWallet) startEmail();
@@ -218,20 +280,13 @@ export function ConnectWalletModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  useLayoutEffect(() => {
-    if (!isFormStep(step.name)) return;
-
-    const height = contentRef.current?.getBoundingClientRect().height;
-
-    if (height) lastFormHeight = height;
-  });
-
-  // Move focus to the field of the email, code and password steps
+  // Move focus to the field of the email, code and password steps, also
+  // once a step's loader ends (the field was locked meanwhile)
   useEffect(() => {
-    if (isFormStep(step.name)) {
+    if (isFormStep(step.name) && !busy) {
       contentRef.current?.querySelector("input")?.focus();
     }
-  }, [step.name]);
+  }, [step.name, busy]);
 
   // Resend countdown
   useEffect(() => {
@@ -262,7 +317,8 @@ export function ConnectWalletModal({
     }
 
     const run = nextRun();
-    setStep({ name: "working", label: "Sending your code…" });
+    setStep({ name: "email" });
+    setBusy("email");
 
     try {
       const result = await dynamic.sendOtp(email);
@@ -273,6 +329,7 @@ export function ConnectWalletModal({
         return;
       }
 
+      setBusy(null);
       setCode("");
       setResendAvailableAt(Date.now() + RESEND_COOLDOWN_MS);
       setNow(Date.now());
@@ -281,6 +338,7 @@ export function ConnectWalletModal({
       if (!isCurrent(run)) return;
 
       const view = describeConnectError(error, "email");
+      setBusy(null);
       setStep({
         name: "email",
         error: view.kind === "message" ? view.message : undefined,
@@ -298,12 +356,16 @@ export function ConnectWalletModal({
     let codeAccepted = false;
 
     void connectAndSignIn({
-      connectStep: () =>
-        dynamic.verifyOtp(code, () => {
-          codeAccepted = true;
-        }),
+      connectStep: (onSetup) =>
+        dynamic.verifyOtp(
+          code,
+          () => {
+            codeAccepted = true;
+          },
+          onSetup
+        ),
       stage: () => (codeAccepted ? "connect" : "code"),
-      label: "Checking your code…",
+      action: "code",
       onError: (message) =>
         codeAccepted
           ? { name: "failed", message }
@@ -336,7 +398,7 @@ export function ConnectWalletModal({
     if (!dynamic) return;
 
     const run = nextRun();
-    setStep({ name: "working", label: "Opening Google…" });
+    setBusy("google");
 
     try {
       // Leaves the page; the modal finishes the sign-in on return
@@ -345,6 +407,7 @@ export function ConnectWalletModal({
       if (!isCurrent(run)) return;
 
       const view = describeConnectError(error, "connect");
+      setBusy(null);
       setStep({
         name: "email",
         error: view.kind === "message" ? view.message : undefined,
@@ -359,9 +422,10 @@ export function ConnectWalletModal({
     const { wallet } = step;
 
     void connectAndSignIn({
-      connectStep: () => dynamic.unlockWallet(wallet.walletId, password),
+      connectStep: (onSetup) =>
+        dynamic.unlockWallet(wallet.walletId, password, onSetup),
       stage: "unlock",
-      label: "Restoring your account…",
+      action: "password",
       onError: (message) => ({ name: "unlock", wallet, error: message }),
     });
   };
@@ -372,9 +436,9 @@ export function ConnectWalletModal({
     const { methods, isRecoveryCode } = step;
 
     void connectAndSignIn({
-      connectStep: () => dynamic.passSecondFactor(factor),
+      connectStep: (onSetup) => dynamic.passSecondFactor(factor, onSetup),
       stage: "second-factor",
-      label: "Confirming your sign-in…",
+      action: factor.kind === "passkey" ? "passkey" : "second-factor",
       onError: (message) => ({
         name: "second-factor",
         methods,
@@ -420,31 +484,25 @@ export function ConnectWalletModal({
     if (!dynamic) return;
 
     void connectAndSignIn({
-      connectStep: () => dynamic.selectWallet(walletId),
+      connectStep: (onSetup) => dynamic.selectWallet(walletId, onSetup),
       stage: "connect",
-      label: "Opening your wallet…",
+      action: "select",
       onError: (message) => ({ name: "failed", message }),
     });
   };
 
-  const workingLabel =
-    step.name !== "working"
-      ? ""
-      : phase === "connecting"
-        ? "Setting up your wallet…"
-        : identity
-          ? "Signing in to Equiteez…"
-          : step.label;
+  const isBusy = busy !== null;
 
   const resendSeconds = Math.max(
     0,
     Math.ceil((resendAvailableAt - now) / 1000)
   );
 
-  const back =
-    step.name === "code" ||
-    step.name === "unlock" ||
-    step.name === "second-factor"
+  const back = isBusy
+    ? undefined
+    : step.name === "code" ||
+        step.name === "unlock" ||
+        step.name === "second-factor"
       ? handleUseDifferentEmail
       : step.name === "email" && canChooseWallet
         ? () => setStep({ name: "choose" })
@@ -479,15 +537,7 @@ export function ConnectWalletModal({
         </button>
       </div>
 
-      <div
-        className={styles.content}
-        ref={contentRef}
-        style={
-          step.name === "working" && lastFormHeight
-            ? { minHeight: lastFormHeight }
-            : undefined
-        }
-      >
+      <div aria-busy={isBusy} className={styles.content} ref={contentRef}>
         {step.name === "choose" && (
           <>
             <Header
@@ -526,6 +576,7 @@ export function ConnectWalletModal({
                 aria-label="Email"
                 autoComplete="email"
                 className={clsx(styles.input, step.error && styles.inputError)}
+                disabled={isBusy}
                 id={emailInputId}
                 inputMode="email"
                 onChange={(event) => setEmail(event.target.value)}
@@ -538,7 +589,8 @@ export function ConnectWalletModal({
             <div className={styles.buttons}>
               <RButton
                 className={styles.primaryButton}
-                disabled={!email.trim()}
+                disabled={!email.trim() || isBusy}
+                isLoading={busy === "email" || busy === "start"}
                 size="large"
                 tone="black"
                 type="submit"
@@ -549,7 +601,9 @@ export function ConnectWalletModal({
               <Divider />
               <RButton
                 className={styles.primaryButton}
+                disabled={isBusy}
                 iconLeft={<RGoogleIcon />}
+                isLoading={busy === "google"}
                 onClick={continueWithGoogle}
                 size="large"
                 tone="black"
@@ -600,6 +654,7 @@ export function ConnectWalletModal({
                         styles.input,
                         step.error && styles.inputError
                       )}
+                      disabled={isBusy}
                       onChange={(event) =>
                         setSecondFactorCode(event.target.value)
                       }
@@ -610,6 +665,7 @@ export function ConnectWalletModal({
                 ) : (
                   <div className={styles.codeBlock}>
                     <CodeInput
+                      disabled={isBusy}
                       invalid={Boolean(step.error)}
                       onChange={setSecondFactorCode}
                       value={secondFactorCode}
@@ -621,10 +677,12 @@ export function ConnectWalletModal({
                   <RButton
                     className={styles.primaryButton}
                     disabled={
-                      step.isRecoveryCode
+                      isBusy ||
+                      (step.isRecoveryCode
                         ? !secondFactorCode.trim()
-                        : secondFactorCode.length < CODE_LENGTH
+                        : secondFactorCode.length < CODE_LENGTH)
                     }
+                    isLoading={busy === "second-factor"}
                     size="large"
                     tone="black"
                     type="submit"
@@ -632,7 +690,7 @@ export function ConnectWalletModal({
                   >
                     Confirm
                   </RButton>
-                  <TextButton onClick={toggleRecoveryCode}>
+                  <TextButton disabled={isBusy} onClick={toggleRecoveryCode}>
                     {step.isRecoveryCode
                       ? "Use the authenticator app"
                       : "Use a recovery code"}
@@ -645,6 +703,8 @@ export function ConnectWalletModal({
             {step.methods.hasPasskey ? (
               <RButton
                 className={styles.primaryButton}
+                disabled={isBusy}
+                isLoading={busy === "passkey"}
                 onClick={() => passSecondFactor({ kind: "passkey" })}
                 size="large"
                 tone="black"
@@ -677,6 +737,7 @@ export function ConnectWalletModal({
                 aria-invalid={Boolean(step.error)}
                 autoComplete="current-password"
                 className={clsx(styles.input, step.error && styles.inputError)}
+                disabled={isBusy}
                 id={passwordInputId}
                 onChange={(event) => setPassword(event.target.value)}
                 type="password"
@@ -686,7 +747,8 @@ export function ConnectWalletModal({
             </div>
             <RButton
               className={styles.primaryButton}
-              disabled={!password}
+              disabled={!password || isBusy}
+              isLoading={busy === "password"}
               size="large"
               tone="black"
               type="submit"
@@ -696,7 +758,7 @@ export function ConnectWalletModal({
             </RButton>
             <p className={styles.switchAccount}>
               Not your account?{" "}
-              <TextButton onClick={handleUseDifferentEmail}>
+              <TextButton disabled={isBusy} onClick={handleUseDifferentEmail}>
                 Use a different email
               </TextButton>
             </p>
@@ -716,6 +778,7 @@ export function ConnectWalletModal({
             />
             <div className={styles.codeBlock}>
               <CodeInput
+                disabled={isBusy}
                 invalid={Boolean(step.error)}
                 onChange={setCode}
                 value={code}
@@ -725,7 +788,8 @@ export function ConnectWalletModal({
             <div className={styles.actions}>
               <RButton
                 className={styles.primaryButton}
-                disabled={code.length < CODE_LENGTH}
+                disabled={code.length < CODE_LENGTH || isBusy}
+                isLoading={busy === "code"}
                 size="large"
                 tone="black"
                 type="submit"
@@ -734,12 +798,18 @@ export function ConnectWalletModal({
                 Verify
               </RButton>
               <div className={styles.linkRow}>
-                <TextButton disabled={resendSeconds > 0} onClick={resendCode}>
+                <TextButton
+                  disabled={resendSeconds > 0 || isBusy}
+                  onClick={resendCode}
+                >
                   {resendSeconds > 0
                     ? `Resend code in ${formatCountdown(resendSeconds)}`
                     : "Resend code"}
                 </TextButton>
-                <TextButton onClick={() => setStep({ name: "email" })}>
+                <TextButton
+                  disabled={isBusy}
+                  onClick={() => setStep({ name: "email" })}
+                >
                   Use a different email
                 </TextButton>
               </div>
@@ -751,11 +821,82 @@ export function ConnectWalletModal({
           </form>
         )}
 
-        {step.name === "working" && (
-          <div aria-live="polite" className={styles.working}>
-            <RIcon name="loading" size="medium" />
-            <RText size="body-sm">{workingLabel}</RText>
-            <TextButton onClick={close}>Cancel</TextButton>
+        {step.name === "creating" && (
+          <div aria-live="polite" className={styles.form}>
+            <StatusHeader
+              description="Your account is being created. This may take a few moments, so please keep this window open."
+              icon="loading-progress"
+              title="Creating Your Account"
+              tone="yellow"
+            />
+            <CancelButton onClick={close} />
+          </div>
+        )}
+
+        {step.name === "restoring" && (
+          <div aria-live="polite" className={styles.form}>
+            <StatusHeader
+              description={`We found the account for ${
+                step.account.email ?? email.trim()
+              }. Nothing new is created.`}
+              icon="arrow-round"
+              title="Restoring Your Account"
+              tone="neutral"
+            />
+            <AccountCard
+              wallet={{
+                address: step.account.address,
+                email: step.account.email,
+                lastUsedAt: step.account.lastUsedAt,
+              }}
+            />
+            <dl className={styles.details}>
+              <div className={styles.detailRow}>
+                <dt>Email</dt>
+                <dd>{step.account.email ?? email.trim()}</dd>
+              </div>
+              <div className={styles.detailRow}>
+                <dt>Address</dt>
+                <dd>
+                  <HashShortView
+                    firstCharsCount={6}
+                    hash={step.account.address}
+                  />
+                </dd>
+              </div>
+              <div className={styles.detailRow}>
+                <dt>This Device</dt>
+                <dd>
+                  <RChip tone="neutral">Setting Up</RChip>
+                </dd>
+              </div>
+            </dl>
+            <CancelButton onClick={close} />
+            <Note>
+              Sign-in and keys are secured by Dynamic. Equiteez never holds your
+              key.
+            </Note>
+          </div>
+        )}
+
+        {step.name === "ready" && (
+          <div className={styles.form}>
+            <StatusHeader
+              description="This is your Mavryk address, and only you can sign transactions from it."
+              icon="check"
+              title="Your Account Is Ready"
+              tone="green"
+            />
+            <AddressField address={step.address} />
+            <RButton
+              className={styles.primaryButton}
+              onClick={close}
+              size="medium"
+              tone="black"
+              variant="primary"
+            >
+              Continue
+            </RButton>
           </div>
         )}
 
@@ -768,6 +909,7 @@ export function ConnectWalletModal({
             <div className={styles.options}>
               {step.wallets.map((wallet) => (
                 <OptionButton
+                  disabled={isBusy}
                   key={wallet.walletId}
                   onClick={() => selectWallet(wallet.walletId)}
                   title={
@@ -784,6 +926,7 @@ export function ConnectWalletModal({
             <Header title="Couldn't sign in" description={step.message} />
             <RButton
               className={styles.primaryButton}
+              isLoading={busy === "start"}
               onClick={startEmail}
               size="large"
               tone="black"
@@ -792,7 +935,10 @@ export function ConnectWalletModal({
               Try again
             </RButton>
             {canChooseWallet && (
-              <TextButton onClick={() => setStep({ name: "choose" })}>
+              <TextButton
+                disabled={isBusy}
+                onClick={() => setStep({ name: "choose" })}
+              >
                 Use another way
               </TextButton>
             )}
@@ -833,14 +979,21 @@ function Header({
 function OptionButton({
   title,
   description,
+  disabled,
   onClick,
 }: {
   title: ReactNode;
   description?: string;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
-    <button className={styles.option} onClick={onClick} type="button">
+    <button
+      className={styles.option}
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
       <RText size="body-sm" weight="medium">
         {title}
       </RText>
@@ -887,7 +1040,11 @@ function Divider() {
 }
 
 /** The account being restored: its address and when it was last used */
-function AccountCard({ wallet }: { wallet: LockedWallet }) {
+function AccountCard({
+  wallet,
+}: {
+  wallet: Pick<LockedWallet, "address" | "email" | "lastUsedAt">;
+}) {
   const detail = wallet.lastUsedAt
     ? `Last used ${formatDayMonthYear(wallet.lastUsedAt)}`
     : wallet.email;
@@ -904,6 +1061,88 @@ function AccountCard({ wallet }: { wallet: LockedWallet }) {
             {detail}
           </RText>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+type StatusTone = "yellow" | "green" | "neutral";
+
+const STATUS_TONE_CLASS: Record<StatusTone, string> = {
+  yellow: styles.heroIconYellow,
+  green: styles.heroIconGreen,
+  neutral: "",
+};
+
+/** Icon badge over the heading of the account set-up steps */
+function StatusHeader({
+  icon,
+  tone,
+  title,
+  description,
+}: {
+  icon: RIconName;
+  tone: StatusTone;
+  title: string;
+  description: ReactNode;
+}) {
+  return (
+    <div className={styles.heroBlock}>
+      <span className={clsx(styles.heroIcon, STATUS_TONE_CLASS[tone])}>
+        <RIcon aria-hidden name={icon} size="medium" />
+      </span>
+      <Header title={title} description={description} />
+    </div>
+  );
+}
+
+function CancelButton({ onClick }: { onClick: () => void }) {
+  return (
+    <RButton
+      className={styles.primaryButton}
+      onClick={onClick}
+      size="medium"
+      tone="black"
+      variant="secondary"
+    >
+      Cancel
+    </RButton>
+  );
+}
+
+/** The new account's full address with a copy button */
+function AddressField({ address }: { address: string }) {
+  const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isCopied) return;
+
+    const timer = setTimeout(() => setIsCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [isCopied]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setIsCopied(true);
+    } catch (error) {
+      console.error("Failed to copy address:", describeError(error));
+    }
+  };
+
+  return (
+    <div className={styles.field}>
+      <span className={styles.label}>Mavryk address</span>
+      <div className={styles.addressField}>
+        <span className={styles.addressValue}>{address}</span>
+        <button
+          aria-label={isCopied ? "Address copied" : "Copy address"}
+          className={styles.copyButton}
+          onClick={handleCopy}
+          type="button"
+        >
+          <RIcon aria-hidden name={isCopied ? "check" : "copy"} size="small" />
+        </button>
       </div>
     </div>
   );

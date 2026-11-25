@@ -157,9 +157,107 @@ describe("ConnectWalletModal", () => {
 
     expect(mocks.dynamic.verifyOtp).toHaveBeenCalledWith(
       "123456",
+      expect.any(Function),
       expect.any(Function)
     );
     expect(mocks.login).toHaveBeenCalledOnce();
+    expect(mocks.onClose).toHaveBeenCalledOnce();
+  });
+
+  it("locks the code step and loads its button while the code is checked", async () => {
+    mocks.dynamic.verifyOtp.mockReturnValue(new Promise(() => {}));
+    await render("email");
+    await type("Email", "name@example.com");
+    await submit();
+    await type("Verification code", "123456");
+    await submit();
+
+    // No separate loading screen: the code step stays, locked
+    expect(text()).toContain("Enter Your Code");
+    expect(button("Verify").disabled).toBe(true);
+    expect(button("Verify").getAttribute("aria-busy")).toBe("true");
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[aria-label="Verification code"]'
+      )!.disabled
+    ).toBe(true);
+  });
+
+  it("creates a new account, then shows its address until Continue", async () => {
+    const address = "mv1KSqiCzJvtQuWMq8EfXdv1TCbRcYoA9pSX";
+    let finish!: () => void;
+    let report!: (setup: unknown) => void;
+    mocks.dynamic.verifyOtp.mockImplementation(
+      (_code: string, onAccepted: () => void, onSetup: typeof report) => {
+        onAccepted();
+        report = onSetup;
+        return new Promise<void>((resolve) => (finish = resolve));
+      }
+    );
+    await render("email");
+    await type("Email", "new@example.com");
+    await submit();
+    await type("Verification code", "123456");
+    await submit();
+
+    await act(async () => report({ kind: "creating" }));
+    expect(text()).toContain("Creating Your Account");
+
+    await act(async () =>
+      report({
+        kind: "opening",
+        isNew: true,
+        address,
+        email: "new@example.com",
+        lastUsedAt: null,
+      })
+    );
+    expect(text()).toContain("Creating Your Account");
+
+    await act(async () => finish());
+    await flush();
+
+    expect(mocks.login).toHaveBeenCalledOnce();
+    expect(text()).toContain("Your Account Is Ready");
+    expect(text()).toContain(address);
+    expect(mocks.onClose).not.toHaveBeenCalled();
+
+    await click("Continue");
+    expect(mocks.onClose).toHaveBeenCalledOnce();
+  });
+
+  it("shows the account being restored for an existing account, then closes", async () => {
+    let finish!: () => void;
+    mocks.dynamic.verifyOtp.mockImplementation(
+      (
+        _code: string,
+        onAccepted: () => void,
+        onSetup: (setup: unknown) => void
+      ) => {
+        onAccepted();
+        onSetup({
+          kind: "opening",
+          isNew: false,
+          address: "mv1KSqiCzJvtQuWMq8EfXdv1TCbRcYoA9pSX",
+          email: "name@example.com",
+          lastUsedAt: null,
+        });
+        return new Promise<void>((resolve) => (finish = resolve));
+      }
+    );
+    await render("email");
+    await type("Email", "name@example.com");
+    await submit();
+    await type("Verification code", "123456");
+    await submit();
+
+    expect(text()).toContain("Restoring Your Account");
+    expect(text()).toContain("We found the account for name@example.com");
+    expect(text()).toContain("Setting Up");
+
+    await act(async () => finish());
+    await flush();
+
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
 
@@ -257,7 +355,10 @@ describe("ConnectWalletModal", () => {
     await act(async () => options[1].click());
     await flush();
 
-    expect(mocks.dynamic.selectWallet).toHaveBeenCalledWith("w2");
+    expect(mocks.dynamic.selectWallet).toHaveBeenCalledWith(
+      "w2",
+      expect.any(Function)
+    );
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
 
@@ -285,7 +386,11 @@ describe("ConnectWalletModal", () => {
     await render();
     await click("Continue with email");
 
-    await click("Cancel");
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>('[aria-label="Close"]')!
+        .click()
+    );
     expect(mocks.onClose).toHaveBeenCalledOnce();
 
     await act(async () => finish("connected"));
@@ -350,7 +455,10 @@ describe("ConnectWalletModal", () => {
     await click("Continue With Google");
 
     expect(mocks.dynamic.signInWithGoogle).toHaveBeenCalledOnce();
-    expect(text()).toContain("Opening Google…");
+    // The email step stays, with the Google button loading
+    expect(button("Continue With Google").getAttribute("aria-busy")).toBe(
+      "true"
+    );
   });
 
   it("finishes the Google sign-in when the page comes back from Google", async () => {
@@ -414,7 +522,8 @@ describe("ConnectWalletModal", () => {
 
     expect(mocks.dynamic.unlockWallet).toHaveBeenCalledWith(
       "w1",
-      "secret-pass"
+      "secret-pass",
+      expect.any(Function)
     );
     expect(mocks.login).toHaveBeenCalledOnce();
     expect(mocks.onClose).toHaveBeenCalledOnce();
@@ -482,20 +591,20 @@ describe("ConnectWalletModal", () => {
 
     await type("Verification code", "000000");
     await submit();
-    expect(mocks.dynamic.passSecondFactor).toHaveBeenCalledWith({
-      kind: "authenticator",
-      code: "000000",
-    });
+    expect(mocks.dynamic.passSecondFactor).toHaveBeenCalledWith(
+      { kind: "authenticator", code: "000000" },
+      expect.any(Function)
+    );
     expect(text()).toContain("That code didn't work");
 
     await click("Use a recovery code");
     await type("Recovery code", "aaaa-1111");
     await submit();
 
-    expect(mocks.dynamic.passSecondFactor).toHaveBeenLastCalledWith({
-      kind: "recovery-code",
-      code: "aaaa-1111",
-    });
+    expect(mocks.dynamic.passSecondFactor).toHaveBeenLastCalledWith(
+      { kind: "recovery-code", code: "aaaa-1111" },
+      expect.any(Function)
+    );
     expect(mocks.login).toHaveBeenCalledOnce();
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
@@ -513,9 +622,10 @@ describe("ConnectWalletModal", () => {
     expect(container.querySelector("input")).toBeNull();
 
     await click("Use A Passkey");
-    expect(mocks.dynamic.passSecondFactor).toHaveBeenCalledWith({
-      kind: "passkey",
-    });
+    expect(mocks.dynamic.passSecondFactor).toHaveBeenCalledWith(
+      { kind: "passkey" },
+      expect.any(Function)
+    );
   });
   it("still offers the code field when Dynamic names no second factor", async () => {
     mocks.dynamic.start.mockRejectedValueOnce(

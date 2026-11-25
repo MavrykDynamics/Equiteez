@@ -13,10 +13,17 @@ export const CODE_LENGTH = 6;
 type CodeInputProps = {
   value: string;
   invalid?: boolean;
+  /** Locked while the code is checked */
+  disabled?: boolean;
   onChange: (code: string) => void;
 };
 
-export function CodeInput({ value, invalid, onChange }: CodeInputProps) {
+export function CodeInput({
+  value,
+  invalid,
+  disabled,
+  onChange,
+}: CodeInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   // The cell the next digit goes to; the last one once the code is full
   const activeIndex = Math.min(value.length, CODE_LENGTH - 1);
@@ -27,11 +34,8 @@ export function CodeInput({ value, invalid, onChange }: CodeInputProps) {
         aria-invalid={invalid}
         aria-label="Verification code"
         autoComplete="one-time-code"
-        // The code step opens right after the email is sent: put the caret
-        // in the first cell so the code can be typed straight away
-        // eslint-disable-next-line jsx-a11y/no-autofocus
-        autoFocus
         className={styles.codeInput}
+        disabled={disabled}
         inputMode="numeric"
         onBlur={() => setIsFocused(false)}
         onChange={(event) =>
@@ -44,7 +48,7 @@ export function CodeInput({ value, invalid, onChange }: CodeInputProps) {
         value={value}
       />
       {Array.from({ length: CODE_LENGTH }, (_, index) => {
-        const isActive = isFocused && index === activeIndex;
+        const isActive = isFocused && !disabled && index === activeIndex;
 
         return (
           <span

@@ -63,6 +63,22 @@ import { askToConfirmIdentity, type IdentityMethod } from "./identityCheck";
 
 export type { DynamicClient, DynamicWallet };
 
+/**
+ * How a sign-in is setting up the wallet, for the sign-in screens:
+ * - creating: the account has no wallet yet; its first one is being made
+ * - opening: the account's wallet is unlocked and is being opened. `isNew`
+ *   when it was just created by this sign-in.
+ */
+export type DynamicWalletSetup =
+  | { kind: "creating" }
+  | {
+      kind: "opening";
+      isNew: boolean;
+      address: string;
+      email: string | null;
+      lastUsedAt: Date | null;
+    };
+
 /** The selected wallet, frozen: signing checks the live wallet against it. */
 export type DynamicWalletIdentity = MavrykKeys & {
   walletId: string;
@@ -468,9 +484,11 @@ let ensureWalletPromise: Promise<DynamicWallet> | null = null;
  * auto-create applies to Dynamic's widgets), so the app does it, right after
  * sign-up. Single-flight within the page and locked across tabs, and the list
  * is re-read under the lock, so a second key with another mv1 is never made.
+ * `onCreate` runs right before a wallet is created.
  */
 export function ensureDynamicWallet(
-  client: DynamicClient
+  client: DynamicClient,
+  onCreate?: () => void
 ): Promise<DynamicWallet> {
   ensureWalletPromise ??= withCrossTabLock(CREATE_WALLET_LOCK, async () => {
     const existing = await resolveDynamicWallet(client);
@@ -493,6 +511,7 @@ export function ensureDynamicWallet(
       return listed;
     }
 
+    onCreate?.();
     await client.createSolWallet();
 
     // The new wallet arrives through the wallet list; trust that over the

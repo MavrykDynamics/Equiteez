@@ -95,6 +95,7 @@ import type {
   WalletIdentity,
   WalletPhase,
   WalletProviderKind,
+  WalletSetupListener,
 } from "./wallet.types";
 import { readSavedWalletProvider, saveWalletProvider } from "./walletSelection";
 
@@ -286,7 +287,11 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
    * current wallet untouched and usable.
    */
   const establishDynamic = useCallback(
-    async (choice: WalletChoice, client?: DynamicClient) => {
+    async (
+      choice: WalletChoice,
+      client?: DynamicClient,
+      onWalletSetup?: WalletSetupListener
+    ) => {
       const attempt = ++connectSeqRef.current;
       // Assigned on commit; until then the new session's signer is stale
       let sessionEpoch = -1;
@@ -298,6 +303,7 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         store: getBrowserAttemptStore(),
         slot,
         isStale: () => epochRef.current !== sessionEpoch,
+        onWalletSetup,
       });
 
       // Superseded by a newer connect/disconnect, or nothing to restore
@@ -513,7 +519,10 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
     };
     const currentDynamicClient = () => currentDynamicSession().client;
 
-    const establishOrThrow = async (choice: WalletChoice) => {
+    const establishOrThrow = async (
+      choice: WalletChoice,
+      onSetup?: WalletSetupListener
+    ) => {
       const client = await readyClient();
 
       if (identityRef.current?.provider === "mavryk_extension") {
@@ -521,19 +530,19 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
       }
 
       const connected = await connecting(() =>
-        establishDynamic(choice, client)
+        establishDynamic(choice, client, onSetup)
       );
 
       if (!connected) throw new Error("Your email wallet could not be opened.");
     };
 
     return {
-      start: () =>
+      start: (onSetup) =>
         signInStep(async (client) => {
           await refreshStaleKeys(client);
           if (!hasLiveDynamicSession(client)) return "needs-email" as const;
 
-          await establishOrThrow({ mode: "ensure" });
+          await establishOrThrow({ mode: "ensure" }, onSetup);
           return "connected" as const;
         }),
       sendOtp: async (email) => {
@@ -543,15 +552,17 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         return sendEmailOtp(client, email);
       },
       resendOtp: async () => resendEmailOtp(await readyClient()),
-      verifyOtp: (code, onAccepted) =>
+      verifyOtp: (code, onAccepted, onSetup) =>
         signInStep(async (client) => {
           await verifyEmailOtp(client, code);
           onAccepted?.();
           await waitForAuthenticatedUser(client);
-          await establishOrThrow({ mode: "ensure" });
+          await establishOrThrow({ mode: "ensure" }, onSetup);
         }),
-      selectWallet: (walletId) =>
-        signInStep(() => establishOrThrow({ mode: "select", walletId })),
+      selectWallet: (walletId, onSetup) =>
+        signInStep(() =>
+          establishOrThrow({ mode: "select", walletId }, onSetup)
+        ),
       signInWithGoogle: async () => {
         const client = await readyClient();
 
@@ -559,25 +570,25 @@ export const WalletProvider: FC<PropsWithChildren> = ({ children }) => {
         return startGoogleSignIn(client);
       },
       hasPendingGoogleSignIn,
-      finishGoogleSignIn: async () => {
+      finishGoogleSignIn: async (onSetup) => {
         // First: if the SDK fails to load, the note must not keep the tab
         // from restoring sessions and reopening this step on every load
         forgetGoogleSignIn();
         await signInStep(async (client) => {
           await finishGoogleSignIn(client);
           await waitForAuthenticatedUser(client);
-          await establishOrThrow({ mode: "ensure" });
+          await establishOrThrow({ mode: "ensure" }, onSetup);
         });
       },
-      passSecondFactor: (factor) =>
+      passSecondFactor: (factor, onSetup) =>
         signInStep(async (client) => {
           await passDynamicSecondFactor(client, factor);
-          await establishOrThrow({ mode: "ensure" });
+          await establishOrThrow({ mode: "ensure" }, onSetup);
         }),
-      unlockWallet: (walletId, password) =>
+      unlockWallet: (walletId, password, onSetup) =>
         signInStep(async (client) => {
           await unlockDynamicWallet(client, walletId, password);
-          await establishOrThrow({ mode: "select", walletId });
+          await establishOrThrow({ mode: "select", walletId }, onSetup);
         }),
       revealPrivateKey: async (displayContainer, password) => {
         const session = dynamicSessionRef.current;

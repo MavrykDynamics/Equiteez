@@ -11,6 +11,7 @@ import type {
   AuthenticatorSetup,
   DynamicAuthenticator,
   DynamicPasskey,
+  DynamicWalletSetup,
   SecondFactor,
 } from "./dynamic/dynamicClient.client";
 
@@ -55,10 +56,16 @@ export type AuthPayloadSignature = {
 
 export type DynamicConnectResult = "connected" | "needs-email";
 
+/**
+ * Told how the wallet is being set up while a sign-in step opens it, so the
+ * sign-in screens can say whether an account is created or restored
+ */
+export type WalletSetupListener = (setup: DynamicWalletSetup) => void;
+
 /** Steps of the email-wallet sign-in, driven by the connect modal. */
 export type DynamicConnectApi = {
   /** Loads Dynamic; connects at once if a Dynamic session is still alive */
-  start: () => Promise<DynamicConnectResult>;
+  start: (onSetup?: WalletSetupListener) => Promise<DynamicConnectResult>;
   sendOtp: (email: string) => Promise<"sent" | "already-authenticated">;
   resendOtp: () => Promise<void>;
   /**
@@ -66,9 +73,16 @@ export type DynamicConnectApi = {
    * once Dynamic accepts the code: the code is used up from then on, and a
    * later failure is retried with start(), not with the same code.
    */
-  verifyOtp: (code: string, onAccepted?: () => void) => Promise<void>;
+  verifyOtp: (
+    code: string,
+    onAccepted?: () => void,
+    onSetup?: WalletSetupListener
+  ) => Promise<void>;
   /** After MultipleDynamicWalletsError: connect the chosen wallet */
-  selectWallet: (walletId: string) => Promise<void>;
+  selectWallet: (
+    walletId: string,
+    onSetup?: WalletSetupListener
+  ) => Promise<void>;
   /**
    * Sends the browser to Google to sign in. The page reloads on return;
    * finishGoogleSignIn completes it there.
@@ -77,17 +91,24 @@ export type DynamicConnectApi = {
   /** True on the page Google returned to, until finishGoogleSignIn runs */
   hasPendingGoogleSignIn: () => boolean;
   /** Completes the Google sign-in, then restores or creates the wallet */
-  finishGoogleSignIn: () => Promise<void>;
+  finishGoogleSignIn: (onSetup?: WalletSetupListener) => Promise<void>;
   /**
    * After DynamicSecondFactorRequiredError: completes the sign-in with the
    * authenticator app, a recovery code or a passkey, then opens the wallet
    */
-  passSecondFactor: (factor: SecondFactor) => Promise<void>;
+  passSecondFactor: (
+    factor: SecondFactor,
+    onSetup?: WalletSetupListener
+  ) => Promise<void>;
   /**
    * After DynamicWalletLockedError: unlocks the password-protected wallet in
    * this browser and connects it
    */
-  unlockWallet: (walletId: string, password: string) => Promise<void>;
+  unlockWallet: (
+    walletId: string,
+    password: string,
+    onSetup?: WalletSetupListener
+  ) => Promise<void>;
   /**
    * After "Confirm it's you", shows the connected wallet's private key in an
    * isolated frame Dynamic injects into `displayContainer`: the key never

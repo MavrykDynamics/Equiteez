@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import styles from "./RChip.module.css";
 
-export type RChipTone = "glass" | "green" | "white";
+export type RChipTone = "glass" | "green" | "neutral" | "white";
 
 export type RChipProps = HTMLAttributes<HTMLSpanElement> & {
   tone?: RChipTone;

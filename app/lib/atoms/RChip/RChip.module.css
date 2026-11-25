@@ -32,3 +32,10 @@
   color: var(--r-color-neutral-white);
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* Grey status label on white surfaces, e.g. "SETTING UP" */
+.neutral {
+  color: var(--r-color-neutral-700);
+  background: rgba(204, 204, 204, 0.25);
+  text-transform: uppercase;
+}

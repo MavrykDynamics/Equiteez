@@ -26,6 +26,7 @@ import {
   waitForDynamicReady,
   type DynamicClient,
   type DynamicWalletIdentity,
+  type DynamicWalletSetup,
 } from "./dynamicClient.client";
 import { createDynamicToolkit } from "./dynamicToolkit.client";
 
@@ -42,6 +43,8 @@ type SessionContext = {
   slot: ActiveAttemptSlot;
   /** True once the app moved on from this session */
   isStale: () => boolean;
+  /** Told when a wallet is created and when it is being opened */
+  onWalletSetup?: (setup: DynamicWalletSetup) => void;
 };
 
 export type WalletChoice =
@@ -51,12 +54,16 @@ export type WalletChoice =
   | { mode: "ensure" }
   | { mode: "select"; walletId: string };
 
-async function pickWallet(client: DynamicClient, choice: WalletChoice) {
+async function pickWallet(
+  client: DynamicClient,
+  choice: WalletChoice,
+  onCreate: () => void
+) {
   switch (choice.mode) {
     case "restore":
       return resolveDynamicWallet(client);
     case "ensure":
-      return ensureDynamicWallet(client);
+      return ensureDynamicWallet(client, onCreate);
     case "select":
       return selectDynamicWallet(client, choice.walletId);
   }
@@ -88,7 +95,11 @@ export async function openDynamicSession(
     throw error;
   }
 
-  const selected = await pickWallet(client, choice);
+  let isNew = false;
+  const selected = await pickWallet(client, choice, () => {
+    isNew = true;
+    context.onWalletSetup?.({ kind: "creating" });
+  });
 
   if (!selected) return null;
 
@@ -102,6 +113,15 @@ export async function openDynamicSession(
   }
 
   const wallet = toDynamicWalletIdentity(selected);
+
+  context.onWalletSetup?.({
+    kind: "opening",
+    isNew,
+    address: wallet.address,
+    email: client.user.email ?? null,
+    lastUsedAt: selected.lastSelectedAt ?? null,
+  });
+
   const toolkit = await createDynamicToolkit({
     client,
     identity: wallet,

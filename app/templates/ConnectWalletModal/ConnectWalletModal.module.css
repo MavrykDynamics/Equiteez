@@ -128,8 +128,13 @@
   transition: border-color var(--r-transition-duration-fast) ease;
 }
 
-.option:hover {
+.option:hover:not(:disabled) {
   border-color: var(--r-color-neutral-400);
+}
+
+.option:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
 .linkRow {
@@ -151,8 +156,7 @@
   cursor: pointer;
 }
 
-/* "Cancel" and "Use another way" stand alone under their step */
-.working .textButton,
+/* "Use another way" stands alone under its step */
 .form > .textButton {
   align-self: center;
 }
@@ -163,21 +167,6 @@
   font-weight: var(--r-font-weight-regular);
   text-decoration: none;
   cursor: default;
-}
-
-/* Fills the height kept from the email/code step, centred in it. The
-   min-height is the email step's height for a first open with nothing
-   measured yet. */
-.working {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--r-space-3);
-  min-height: 280px;
-  padding: var(--r-space-6) 0;
-  text-align: center;
 }
 
 /* Verification code: six 52×60 cells over one real input */
@@ -334,6 +323,80 @@
   color: var(--r-color-neutral-black);
   background: rgba(204, 204, 204, 0.25);
   border-radius: var(--r-radius-pill);
+}
+
+/* Account set-up steps: the badge takes the step's tone */
+.heroIconYellow {
+  background: rgba(242, 209, 107, 0.25);
+}
+
+.heroIconGreen {
+  color: var(--r-color-green-700);
+  background: rgba(122, 201, 157, 0.25);
+}
+
+/* Restoring: email, address and device status, label left, value right */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  margin: 0;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.detailRow dt {
+  color: var(--r-color-neutral-700);
+}
+
+.detailRow dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--r-color-neutral-black);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ready: the full address in an input-like box with a copy button */
+.addressField {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+}
+
+.addressValue {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyButton {
+  display: flex;
+  flex-shrink: 0;
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 .accountCard {
