@@ -3,7 +3,7 @@ import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import styles from "./styles.module.css";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RWhyInvest } from "./RWhyInvest";
+import { RAssetContentItems } from "./RAssetContentItems";
 import { RAssetLocation } from "./RAssetLocation";
 
 type DetailGroup = {
@@ -13,6 +13,7 @@ type DetailGroup = {
 
 export function AssetOverviewTab({ asset }: { asset: AssetType }) {
   const tagline = asset.profile.tagline?.trim();
+  const redemption = asset.profile.redemption;
   const detailGroups: DetailGroup[] = [
     {
       title: "Features",
@@ -44,7 +45,30 @@ export function AssetOverviewTab({ asset }: { asset: AssetType }) {
         </RText>
       </div>
 
-      <RWhyInvest asset={asset} />
+      <RAssetContentItems
+        title="Why Invest"
+        items={asset.profile.why_invest}
+      />
+
+      <RAssetContentItems
+        title="How it works"
+        items={asset.profile.how_it_works}
+      />
+
+      {redemption ? (
+        <section className={styles.content} aria-label={redemption.title}>
+          <RHeading size="h6" weight="medium">
+            {redemption.title}
+          </RHeading>
+          <RText
+            className={styles.multilineText}
+            color="neutral-700"
+            size="body-sm"
+          >
+            {redemption.description}
+          </RText>
+        </section>
+      ) : null}
 
       {detailGroups.length > 0 && (
         <div className={styles.details}>

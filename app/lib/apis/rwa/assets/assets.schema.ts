@@ -93,24 +93,29 @@ const AssetProfileItemSchema = z.object({
 // instead of rejecting the whole asset.
 const OptionalTextSchema = z.string().optional().catch(undefined);
 
-const AssetWhyInvestItemSchema = z.object({
+const AssetContentItemSchema = z.object({
   title: z.string().trim().min(1),
   description: z.string().trim().min(1),
 });
 
-type AssetWhyInvestItem = z.infer<typeof AssetWhyInvestItemSchema>;
+type AssetContentItem = z.infer<typeof AssetContentItemSchema>;
 
-const AssetWhyInvestSchema = z
+// Keeps valid items in order and skips malformed ones.
+const AssetContentItemsSchema = z
   .array(z.unknown())
   .transform((items) =>
-    items.flatMap((item): AssetWhyInvestItem[] => {
-      const result = AssetWhyInvestItemSchema.safeParse(item);
+    items.flatMap((item): AssetContentItem[] => {
+      const result = AssetContentItemSchema.safeParse(item);
 
       return result.success ? [result.data] : [];
     })
   )
   .optional()
   .catch(undefined);
+
+const AssetRedemptionSchema = AssetContentItemSchema.optional().catch(
+  undefined
+);
 
 const AssetLocationSchema = z
   .object({
@@ -136,7 +141,9 @@ const AssetProfileSchema = z.object({
   gallery: z.array(z.object({ kind: z.string(), url: z.string() })),
   features: z.array(AssetProfileItemSchema).optional(),
   amenities: z.array(AssetProfileItemSchema).optional(),
-  why_invest: AssetWhyInvestSchema,
+  why_invest: AssetContentItemsSchema,
+  how_it_works: AssetContentItemsSchema,
+  redemption: AssetRedemptionSchema,
   location: AssetLocationSchema,
 });
 

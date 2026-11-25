@@ -4,11 +4,13 @@ import { RText } from "~/lib/atoms/RTypography/RText";
 
 import styles from "./styles.module.css";
 
-type WhyInvestItem = NonNullable<AssetType["profile"]["why_invest"]>[number];
+type AssetContentItem = NonNullable<
+  AssetType["profile"]["why_invest"]
+>[number];
 
 const COLUMNS_COUNT = 2;
 
-function getColumns(items: WhyInvestItem[]) {
+function getColumns(items: AssetContentItem[]) {
   const columnSize = Math.ceil(items.length / COLUMNS_COUNT);
 
   return [items.slice(0, columnSize), items.slice(columnSize)].filter(
@@ -16,26 +18,33 @@ function getColumns(items: WhyInvestItem[]) {
   );
 }
 
-export function RWhyInvest({ asset }: { asset: AssetType }) {
-  const whyInvest = asset.profile.why_invest ?? [];
+type RAssetContentItemsProps = {
+  title: string;
+  items: AssetContentItem[] | undefined;
+};
 
-  if (!whyInvest.length) return null;
+/** Titled two-column list of title + description items (Why Invest, How it works). */
+export function RAssetContentItems({ title, items }: RAssetContentItemsProps) {
+  if (!items?.length) return null;
 
-  const columns = getColumns(whyInvest);
+  const columns = getColumns(items);
 
   return (
-    <section className={styles.content} aria-label="Why Invest">
+    <section className={styles.content} aria-label={title}>
       <RHeading size="h6" weight="medium">
-        Why Invest
+        {title}
       </RHeading>
       <div className={styles.investColumns}>
-        {columns.map((items, columnIndex) => (
+        {columns.map((columnItems, columnIndex) => (
           <ul className={styles.investItems} key={columnIndex}>
-            {items.map(({ title, description }, itemIndex) => (
-              <li className={styles.investItem} key={`${itemIndex}-${title}`}>
+            {columnItems.map(({ title: itemTitle, description }, itemIndex) => (
+              <li
+                className={styles.investItem}
+                key={`${itemIndex}-${itemTitle}`}
+              >
                 <div className={styles.investCopy}>
                   <RHeading size="h7" weight="medium">
-                    {title}
+                    {itemTitle}
                   </RHeading>
                   <RText
                     className={styles.multilineText}

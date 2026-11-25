@@ -184,6 +184,8 @@ describe("asset profile content", () => {
 
     expect(parsed.tagline).toBeUndefined();
     expect(parsed.why_invest).toBeUndefined();
+    expect(parsed.how_it_works).toBeUndefined();
+    expect(parsed.redemption).toBeUndefined();
     expect(parsed.location).toBeUndefined();
   });
 
@@ -203,6 +205,39 @@ describe("asset profile content", () => {
       { title: "First", description: "One" },
       { title: "Second", description: "Two" },
     ]);
+  });
+
+  it("parses how it works steps and redemption", () => {
+    const parsed = AssetSchema.shape.profile.parse({
+      ...profile,
+      how_it_works: [
+        { title: "Gold is vaulted", description: "Vaulted in Dubai." },
+        { title: "", description: "Blank title" },
+        { title: "XAUG is minted", description: "One per ounce." },
+      ],
+      redemption: {
+        title: "Physical redemption",
+        description: "Redeem for physical gold.",
+      },
+    });
+
+    expect(parsed.how_it_works).toEqual([
+      { title: "Gold is vaulted", description: "Vaulted in Dubai." },
+      { title: "XAUG is minted", description: "One per ounce." },
+    ]);
+    expect(parsed.redemption).toEqual({
+      title: "Physical redemption",
+      description: "Redeem for physical gold.",
+    });
+  });
+
+  it("drops malformed redemption without rejecting the profile", () => {
+    const parsed = AssetSchema.shape.profile.parse({
+      ...profile,
+      redemption: { title: "Physical redemption" },
+    });
+
+    expect(parsed.redemption).toBeUndefined();
   });
 
   it("drops malformed tagline and location fields without rejecting the profile", () => {
