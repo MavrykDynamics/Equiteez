@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   userAddress: null as string | null,
   provider: undefined as "dynamic" | "mavryk_extension" | undefined,
+  isSigningIn: false,
 }));
 
 vi.mock("~/providers/UserProvider/user.provider", () => ({
@@ -18,6 +19,7 @@ vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
 }));
 vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
   useConnectWallet: () => vi.fn(),
+  useIsSigningIn: () => mocks.isSigningIn,
 }));
 vi.mock("./WalletMenu/MavrykWalletMenu", () => ({
   MavrykWalletMenu: () => <p>Mavryk menu</p>,
@@ -46,12 +48,24 @@ afterEach(() => {
 });
 
 describe("ConnectWallet", () => {
-  it("offers Connect Wallet when signed out", async () => {
+  it("offers Sign In when signed out", async () => {
     mocks.userAddress = null;
     mocks.provider = undefined;
+    mocks.isSigningIn = false;
     await render();
 
-    expect(container.textContent).toContain("Connect Wallet");
+    const visible = container.querySelector('[aria-hidden="false"]');
+    expect(visible?.textContent).toBe("Sign In");
+  });
+
+  it("shows Signing in while the sign-in modal is open", async () => {
+    mocks.userAddress = null;
+    mocks.provider = undefined;
+    mocks.isSigningIn = true;
+    await render();
+
+    const visible = container.querySelector('[aria-hidden="false"]');
+    expect(visible?.textContent).toBe("Signing in");
   });
 
   it("opens the Mavryk Wallet menu for the extension", async () => {

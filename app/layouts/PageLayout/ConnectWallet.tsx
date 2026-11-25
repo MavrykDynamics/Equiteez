@@ -1,7 +1,11 @@
 import { RButton } from "~/lib/atoms/RButton";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
-import { useConnectWallet } from "~/templates/ConnectWalletModal/connectWalletModal.context";
+import { RIcon } from "~/lib/atoms/RIcon";
+import {
+  useConnectWallet,
+  useIsSigningIn,
+} from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
 import styles from "./ConnectWallet.module.css";
@@ -13,6 +17,7 @@ export const ConnectWallet = () => {
   const { isLoading, userAddress } = useUserContext();
   const { identity } = useWalletContext();
   const openConnectWallet = useConnectWallet();
+  const isSigningIn = useIsSigningIn();
   const isEmailWallet = identity?.provider === "dynamic";
 
   // Opens the sign-in modal (or Mavryk Wallet directly without email wallets)
@@ -32,11 +37,31 @@ export const ConnectWallet = () => {
           className={styles.connectWalletBtn}
           size="medium"
           tone="black"
-          variant="primary"
+          variant={isSigningIn ? "secondary" : "primary"}
         >
-          <RText color="neutral-white" size="body-s" weight="medium">
-            Connect Wallet
-          </RText>
+          {/* Both labels share one grid cell, so the pill keeps the width of
+              the wider one and does not jump between the two states */}
+          <span className={styles.signInLabels}>
+            <span
+              aria-hidden={isSigningIn}
+              className={styles.signInLabel}
+              data-hidden={isSigningIn || undefined}
+            >
+              <RText color="neutral-white" size="body-s" weight="medium">
+                Sign In
+              </RText>
+            </span>
+            <span
+              aria-hidden={!isSigningIn}
+              className={styles.signInLabel}
+              data-hidden={!isSigningIn || undefined}
+            >
+              <RIcon aria-hidden name="dots" size="small" />
+              <RText color="neutral-black" size="body-s" weight="medium">
+                Signing in
+              </RText>
+            </span>
+          </span>
         </RButton>
       )}
     </CustomSuspense>

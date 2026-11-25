@@ -22,6 +22,8 @@ import { describeError } from "~/services/direct/guardedInjector";
 type OpenConnectWallet = () => void;
 
 const connectWalletModalContext = createContext<OpenConnectWallet | null>(null);
+// The sign-in modal is open: the user is going through the sign-in
+const isSigningInContext = createContext(false);
 
 export function ConnectWalletModalProvider({
   children,
@@ -57,8 +59,10 @@ export function ConnectWalletModalProvider({
 
   return (
     <connectWalletModalContext.Provider value={value}>
-      {children}
-      {dynamic && <ConnectWalletModal isOpen={isOpen} onClose={close} />}
+      <isSigningInContext.Provider value={isOpen}>
+        {children}
+        {dynamic && <ConnectWalletModal isOpen={isOpen} onClose={close} />}
+      </isSigningInContext.Provider>
     </connectWalletModalContext.Provider>
   );
 }
@@ -73,4 +77,9 @@ export function useConnectWallet(): OpenConnectWallet {
   }
 
   return openConnectWallet;
+}
+
+/** True while the sign-in modal is open (email, code, password and so on) */
+export function useIsSigningIn(): boolean {
+  return useContext(isSigningInContext);
 }
