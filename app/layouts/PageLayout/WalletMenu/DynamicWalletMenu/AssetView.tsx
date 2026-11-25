@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import clsx from "clsx";
 
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
@@ -49,7 +50,7 @@ export function AssetView({
   const isNative = asset.kind === "native";
 
   return (
-    <div className={styles.view}>
+    <div className={clsx(styles.view, styles.sheet)}>
       <PanelHeader onBack={onBack} onClose={onClose} title="Asset" />
 
       <div className={styles.assetHero}>

@@ -1,11 +1,11 @@
 import { Link } from "@remix-run/react";
+import clsx from "clsx";
 
 import { ROUTES } from "~/consts";
 import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
-import { RTooltip } from "~/lib/atoms/RTooltip";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { AssetIcon } from "~/templates/AssetIcon";
@@ -56,34 +56,17 @@ export function HomeView({
   const home: WalletPanelView = { name: "home" };
 
   return (
-    <div className={styles.view}>
-      <div className={styles.statusRow}>
-        <span className={styles.status}>
-          <span aria-hidden="true" className={styles.statusDot} />
-          <RText size="body-s">Signing key active</RText>
-          <RTooltip
-            content="This wallet is registered as your signing key. Anything you confirm on Equiteez is signed with it."
-            maxWidth={248}
-          >
-            <span className={styles.statusInfo}>
-              <RIcon
-                aria-label="About the signing key"
-                name="info-circle"
-                size="small"
-              />
-            </span>
-          </RTooltip>
-        </span>
-        <RText color="neutral-700" size="body-s">
-          {NETWORK_LABEL}
-        </RText>
-      </div>
-
+    <div className={clsx(styles.view, styles.homeView)}>
       <div className={styles.portfolioCard}>
         <div>
-          <RText color="neutral-700" size="body-s">
-            Portfolio value
-          </RText>
+          <div className={styles.portfolioLabelRow}>
+            <RText color="neutral-700" size="body-s">
+              Portfolio value
+            </RText>
+            <RText color="neutral-700" size="body-s">
+              {NETWORK_LABEL}
+            </RText>
+          </div>
           <div className={styles.portfolioValueRow}>
             {isPortfolioLoading ? (
               <RSkeleton className={styles.portfolioValueSkeleton} />
@@ -161,14 +144,16 @@ export function HomeView({
           ) : null}
         </div>
         {isLoading ? (
-          Array.from({ length: SKELETON_ROWS }, (_, index) => (
-            <div className={styles.assetRow} key={index}>
-              <RSkeleton className={styles.assetIcon} radius="pill" />
-              <RSkeleton className={styles.assetRowSkeleton} />
-            </div>
-          ))
+          <div className={styles.assetScroll}>
+            {Array.from({ length: SKELETON_ROWS }, (_, index) => (
+              <div className={styles.assetRow} key={index}>
+                <RSkeleton className={styles.assetIcon} radius="pill" />
+                <RSkeleton className={styles.assetRowSkeleton} />
+              </div>
+            ))}
+          </div>
         ) : assets.length ? (
-          <ul className={styles.assetList}>
+          <ul className={clsx(styles.assetList, styles.assetScroll)}>
             {assets.map((asset) => (
               <li key={asset.tokenSlug}>
                 <AssetRow

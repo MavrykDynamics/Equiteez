@@ -1,5 +1,6 @@
-/* Figma "Header + wallet panel (desktop)", node 8134:522: 384px wide,
-   16px padding and 12px between blocks */
+/* Figma "Wallet" (8134:575): 384px wide, 16px padding and 12px between
+   blocks. 595px tall at least; 769px at most (8136:684), and never past
+   the viewport. Past that only the asset list scrolls. */
 
 .panel {
   position: absolute;
@@ -7,8 +8,11 @@
   right: 0;
   z-index: 50;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: 384px;
-  max-height: calc(100vh - 88px);
+  min-height: min(595px, calc(100vh - 88px));
+  max-height: min(769px, calc(100vh - 88px));
   padding: var(--r-space-4);
   overflow-y: auto;
   color: var(--r-color-neutral-black);
@@ -20,8 +24,25 @@
 
 .view {
   display: flex;
+  flex: 1 0 auto;
   flex-direction: column;
   gap: var(--r-space-3);
+}
+
+/* Home: fills the panel; the asset list takes the room left and scrolls,
+   the card, actions and footer stay put */
+.homeView {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Asset sheet (8136:841): 16px between blocks, actions at the bottom */
+.sheet {
+  gap: var(--r-space-4);
+}
+
+.sheet .viewHeader {
+  margin-bottom: 0;
 }
 
 .iconButton {
@@ -57,32 +78,6 @@
   margin-bottom: var(--r-space-1);
 }
 
-/* Home: status */
-.statusRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--r-space-1);
-}
-
-.statusDot {
-  width: 8px;
-  height: 8px;
-  margin-right: var(--r-space-1);
-  background: var(--r-color-green-500);
-  border-radius: 50%;
-}
-
-.statusInfo {
-  display: inline-flex;
-  color: var(--r-color-neutral-700);
-}
-
 /* Home: portfolio card */
 .portfolioCard {
   display: flex;
@@ -91,6 +86,13 @@
   padding: var(--r-space-4);
   background: var(--r-color-neutral-50);
   border-radius: var(--r-radius-12);
+}
+
+.portfolioLabelRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--r-space-2);
 }
 
 .portfolioValueRow {
@@ -196,7 +198,19 @@
 /* Home: assets */
 .assets {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+  min-height: 0;
+}
+
+.assetScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Vertical only: Money's amounts reach 1px past the right edge (-mr-px),
+     which would add a horizontal scrollbar */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .assetsHeader {
@@ -385,7 +399,7 @@
 }
 
 .sheetActions {
-  margin-top: var(--r-space-6);
+  margin-top: auto;
 }
 
 /* Deposit: the modal's address field at the panel's 12px (Figma), so the
