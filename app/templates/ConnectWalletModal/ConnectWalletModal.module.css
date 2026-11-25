@@ -330,6 +330,10 @@
   background: rgba(242, 209, 107, 0.25);
 }
 
+.heroIconNeutral {
+  color: var(--r-color-neutral-700);
+}
+
 .heroIconGreen {
   color: var(--r-color-green-700);
   background: rgba(122, 201, 157, 0.25);

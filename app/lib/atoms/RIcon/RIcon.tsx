@@ -40,6 +40,7 @@ export type RIconName =
   | "lock-open"
   | "ok"
   | "radio"
+  | "refresh"
   | "refund"
   | "search"
   | "sort"
@@ -60,6 +61,8 @@ export type RIconSortDirection = "ascending" | "descending";
 
 export type RIconProps = Omit<SVGProps<SVGSVGElement>, "name"> & {
   name: RIconName;
+  /** Turns the icon continuously; loading icons always spin */
+  isSpinning?: boolean;
   size?: RIconSize;
   sortDirection?: RIconSortDirection;
   title?: string;
@@ -99,6 +102,13 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M7 17 17 7" />
       <path d="M9 7h8v8" />
     </>
+  ),
+  // Figma "Restore: restoring your wallet" badge icon, 1px stroke
+  refresh: (
+    <path
+      d="M10.2471 15.3333H5.86542V19.5M13.7524 8.66667H18.1341V4.5M5.5 9.50284C5.99135 8.34638 6.814 7.3442 7.87446 6.61019C8.93492 5.87618 10.1918 5.4396 11.5 5.35042C12.8083 5.26125 14.1159 5.52284 15.2756 6.10551C16.4353 6.68819 17.399 7.56878 18.0588 8.64677M18.5 14.4976C18.0087 15.654 17.186 16.6562 16.1255 17.3902C15.0651 18.1242 13.8095 18.5602 12.5013 18.6494C11.193 18.7386 9.88434 18.477 8.72463 17.8944C7.56492 17.3117 6.60051 16.4313 5.94073 15.3533"
+      strokeWidth={1}
+    />
   ),
   "arrow-round": (
     <>
@@ -363,6 +373,7 @@ export function RIcon({
   title,
   className,
   sortDirection,
+  isSpinning = false,
   ...props
 }: RIconProps) {
   const titleId = useId();
@@ -375,7 +386,8 @@ export function RIcon({
       className={clsx(
         styles.icon,
         styles[size],
-        (name === "loading" || name === "loading-progress") && styles.spin,
+        (isSpinning || name === "loading" || name === "loading-progress") &&
+          styles.spin,
         className
       )}
       fill="none"

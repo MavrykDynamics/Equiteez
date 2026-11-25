@@ -839,7 +839,7 @@ export function ConnectWalletModal({
               description={`We found the account for ${
                 step.account.email ?? email.trim()
               }. Nothing new is created.`}
-              icon="arrow-round"
+              icon="refresh"
               title="Restoring Your Account"
               tone="neutral"
             />
@@ -1071,7 +1071,7 @@ type StatusTone = "yellow" | "green" | "neutral";
 const STATUS_TONE_CLASS: Record<StatusTone, string> = {
   yellow: styles.heroIconYellow,
   green: styles.heroIconGreen,
-  neutral: "",
+  neutral: styles.heroIconNeutral,
 };
 
 /** Icon badge over the heading of the account set-up steps */
@@ -1089,7 +1089,12 @@ function StatusHeader({
   return (
     <div className={styles.heroBlock}>
       <span className={clsx(styles.heroIcon, STATUS_TONE_CLASS[tone])}>
-        <RIcon aria-hidden name={icon} size="medium" />
+        <RIcon
+          aria-hidden
+          isSpinning={tone === "neutral"}
+          name={icon}
+          size="medium"
+        />
       </span>
       <Header title={title} description={description} />
     </div>
