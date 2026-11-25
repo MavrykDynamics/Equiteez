@@ -27,6 +27,10 @@ export function CodeInput({ value, invalid, onChange }: CodeInputProps) {
         aria-invalid={invalid}
         aria-label="Verification code"
         autoComplete="one-time-code"
+        // The code step opens right after the email is sent: put the caret
+        // in the first cell so the code can be typed straight away
+        // eslint-disable-next-line jsx-a11y/no-autofocus
+        autoFocus
         className={styles.codeInput}
         inputMode="numeric"
         onBlur={() => setIsFocused(false)}
@@ -39,20 +43,25 @@ export function CodeInput({ value, invalid, onChange }: CodeInputProps) {
         type="text"
         value={value}
       />
-      {Array.from({ length: CODE_LENGTH }, (_, index) => (
-        <span
-          aria-hidden
-          className={clsx(
-            styles.codeCell,
-            invalid
-              ? styles.codeCellError
-              : isFocused && index === activeIndex && styles.codeCellActive
-          )}
-          key={index}
-        >
-          {value[index] ?? ""}
-        </span>
-      ))}
+      {Array.from({ length: CODE_LENGTH }, (_, index) => {
+        const isActive = isFocused && index === activeIndex;
+
+        return (
+          <span
+            aria-hidden
+            className={clsx(
+              styles.codeCell,
+              invalid ? styles.codeCellError : isActive && styles.codeCellActive
+            )}
+            key={index}
+          >
+            {value[index] ?? ""}
+            {/* The real input's caret is hidden, so draw one in the cell
+                the next digit goes to */}
+            {isActive && <span className={styles.codeCaret} />}
+          </span>
+        );
+      })}
     </div>
   );
 }

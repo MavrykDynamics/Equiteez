@@ -236,6 +236,26 @@
   border-color: var(--r-color-neutral-black);
 }
 
+.codeCaret {
+  width: 2px;
+  height: 28px;
+  background: var(--r-color-neutral-black);
+  border-radius: 1px;
+  animation: codeCaretBlink 1s steps(1) infinite;
+}
+
+@keyframes codeCaretBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .codeCaret {
+    animation: none;
+  }
+}
+
 .codeCellError {
   border-color: var(--r-color-red-500);
 }
