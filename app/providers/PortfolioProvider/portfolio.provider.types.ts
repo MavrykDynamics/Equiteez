@@ -12,4 +12,6 @@ export type PortfolioContextType = {
   portfolio?: WalletPortfolioResponseType;
   wallet?: WalletResponseType;
   isLoading: boolean;
+  isWalletLoading: boolean;
+  isPortfolioLoading: boolean;
 };

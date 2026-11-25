@@ -9,6 +9,7 @@ import { formatOrderDate } from "~/routes/trade.$address/components/AssetTabs/Op
 import { AssetIcon } from "~/templates/AssetIcon";
 
 import { DepositDetailsModal } from "./DepositDetailsModal";
+import { getTypeLabel } from "./depositTypeLabel";
 import { RTransferTypeIcon } from "./RTransferTypeIcon";
 import styles from "./styles.module.css";
 import { useAssetMetadata } from "~/lib/metadata";
@@ -17,14 +18,6 @@ import classNames from "clsx";
 type DepositsTableRowProps = {
   deposit: TransferHistoryItemType;
 };
-
-export function getTypeLabel(row: TransferHistoryItemType): string {
-  if (row.type === "deposit" && row.chain_from && row.chain_from !== "mavryk")
-    return "Bridge In";
-  if (row.type === "withdrawal" && row.chain_to && row.chain_to !== "mavryk")
-    return "Bridge Out";
-  return row.type === "deposit" ? "Deposit" : "Withdraw";
-}
 
 export function DepositsTableRow({ deposit }: DepositsTableRowProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);

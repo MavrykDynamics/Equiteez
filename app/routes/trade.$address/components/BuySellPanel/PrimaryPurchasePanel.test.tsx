@@ -34,7 +34,6 @@ vi.mock("~/providers/UserProvider/user.provider", () => ({
 vi.mock("~/lib/metadata", () => ({
   createFallbackTokenMetadata: (value: unknown) => value,
 }));
-vi.mock("~/lib/atoms/Spinner", () => ({ Spinner: () => <div>Loading</div> }));
 vi.mock("~/providers/ToasterProvider/toaster.provider.const", () => ({
   TOASTER_UPDATE_DATA_AFTER_ACTION_DATA: {},
 }));

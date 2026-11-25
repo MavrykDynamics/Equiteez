@@ -1,0 +1,53 @@
+/* Sizes follow the loaded rows: body-sm (21px) / body-s (18px) text lines */
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header {
+  width: 48px;
+  height: 14px;
+}
+
+.date {
+  width: 83px;
+  height: 18px;
+}
+
+.time {
+  width: 36px;
+  height: 15px;
+}
+
+.text {
+  width: 64px;
+  height: 18px;
+}
+
+.asset {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.assetIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.badge {
+  width: 76px;
+  height: 26px;
+}
+
+.progress {
+  width: 96px;
+  height: 5px;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}

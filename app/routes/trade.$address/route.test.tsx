@@ -26,7 +26,10 @@ vi.mock("~/lib/atoms/Container/Container", () => ({
 }));
 vi.mock("~/lib/atoms/RButton", () => ({ RButton: () => null }));
 vi.mock("~/consts", () => ({ ROUTES: { home: "/" } }));
-vi.mock("~/hooks/useWindowDimensions", () => ({ TABLET_MAX_WIDTH: 1180 }));
+vi.mock("~/hooks/useWindowDimensions", () => ({
+  TABLET_MAX_WIDTH: 1180,
+  TABLET_WIDTH: 1000,
+}));
 vi.mock("./components/AssetDetails/AssetDetails", () => ({
   AssetDetails: () => <div>Asset details</div>,
 }));

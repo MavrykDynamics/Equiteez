@@ -8,6 +8,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import BigNumberJs from "bignumber.js";
+import { Link } from "@remix-run/react";
 
 import RealAssetsBannerImage from "~/assets/redesign/banner-optimized/RBannerRealAssets.jpg";
 import TheCoveBannerImage from "~/assets/redesign/banner-optimized/RBannerTheCove.jpg";
@@ -15,11 +16,13 @@ import { RButton } from "~/lib/atoms/RButton";
 import Money from "~/lib/atoms/Money";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RSkeletonReveal } from "~/lib/atoms/RSkeleton";
 
 import styles from "./styles.module.css";
 import { Container } from "~/lib/atoms/Container/Container";
 import { RDepositFundsModal } from "~/routes/_index/components/DepositFunds/RDepositFundsModal";
 import { useAssetsContext } from "~/providers/AssetsProvider/assets.provider";
+import { BannerBlockSkeleton } from "./BannerBlockSkeleton";
 
 const FEATURED_ASSET_ADDRESS = "KT1UHGej1r8j1kdXfAY2L54dk2F2ymahcB1o";
 const AUTO_SCROLL_INTERVAL_MS = 7_000;
@@ -44,7 +47,7 @@ type BannerSlide = {
 };
 
 export function BannerBlock() {
-  const { assets, prices } = useAssetsContext();
+  const { assets, isLoading, prices } = useAssetsContext();
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const featuredAsset = assets.find(
     (asset) => asset.address === FEATURED_ASSET_ADDRESS
@@ -166,109 +169,122 @@ export function BannerBlock() {
 
   return (
     <Container className={styles.wrapper}>
-      <section aria-label="Featured opportunities" className={styles.banner}>
-        <div className={styles.viewport} ref={emblaRef}>
-          <div className={styles.slideContainer}>
-            {bannerSlides.map((slide, index) => (
-              <article className={styles.slide} key={slide.title}>
-                <img
-                  alt={slide.alt}
-                  className={styles.image}
-                  decoding="async"
-                  loading={index === 0 ? "eager" : "lazy"}
-                  src={slide.image}
-                />
-                <div className={styles.overlay} />
+      <RSkeletonReveal
+        isLoading={isLoading && !assets.length}
+        skeleton={<BannerBlockSkeleton />}
+      >
+        <section aria-label="Featured opportunities" className={styles.banner}>
+          <div className={styles.viewport} ref={emblaRef}>
+            <div className={styles.slideContainer}>
+              {bannerSlides.map((slide, index) => {
+                const slideContent = (
+                  <>
+                    <img
+                      alt={slide.alt}
+                      className={styles.image}
+                      decoding="async"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      src={slide.image}
+                    />
+                    <div className={styles.overlay} />
 
-                <div className={styles.content}>
-                  <div className={styles.copy}>
-                    {slide.tag ? (
-                      <RText className={styles.tag} size="body-s">
-                        {slide.tag}
-                      </RText>
-                    ) : null}
-                    {slide.eyebrow ? (
-                      <RText className={styles.eyebrow} size="body-xs">
-                        {slide.eyebrow}
-                      </RText>
-                    ) : null}
-                    <div className={styles.titleGroup}>
-                      <RHeading
-                        as="h2"
-                        className={styles.title}
-                        color="neutral-white"
-                        size="h4"
-                        weight="medium"
-                      >
-                        {slide.title}
-                      </RHeading>
-                      <RText
-                        className={styles.description}
-                        color="neutral-white"
-                        size="body-s"
-                      >
-                        {slide.description}
-                      </RText>
+                    <div className={styles.content}>
+                      <div className={styles.copy}>
+                        {slide.tag ? (
+                          <RText className={styles.tag} size="body-s">
+                            {slide.tag}
+                          </RText>
+                        ) : null}
+                        {slide.eyebrow ? (
+                          <RText className={styles.eyebrow} size="body-xs">
+                            {slide.eyebrow}
+                          </RText>
+                        ) : null}
+                        <div className={styles.titleGroup}>
+                          <RHeading
+                            as="h2"
+                            className={styles.title}
+                            color="neutral-white"
+                            size="h4"
+                            weight="medium"
+                          >
+                            {slide.title}
+                          </RHeading>
+                          <RText
+                            className={styles.description}
+                            color="neutral-white"
+                            size="body-s"
+                          >
+                            {slide.description}
+                          </RText>
+                        </div>
+                      </div>
+
+                      {slide.metrics ? (
+                        <dl className={styles.metrics}>
+                          {slide.metrics
+                            .filter((metric) => metric.rawValue)
+                            .map((metric) => (
+                              <div className={styles.metric} key={metric.label}>
+                                <dt>{metric.label}</dt>
+                                <dd>{metric.value}</dd>
+                              </div>
+                            ))}
+                        </dl>
+                      ) : null}
+
+                      {/* Visual only: the whole slide is the link/button. */}
+                      <RButton as="span" className={styles.button} size="small">
+                        {slide.buttonLabel}
+                      </RButton>
                     </div>
-                  </div>
+                  </>
+                );
 
-                  {slide.metrics ? (
-                    <dl className={styles.metrics}>
-                      {slide.metrics
-                        .filter((metric) => metric.rawValue)
-                        .map((metric) => (
-                          <div className={styles.metric} key={metric.label}>
-                            <dt>{metric.label}</dt>
-                            <dd>{metric.value}</dd>
-                          </div>
-                        ))}
-                    </dl>
-                  ) : null}
+                return slide.buttonTo ? (
+                  <Link
+                    className={styles.slide}
+                    draggable={false}
+                    key={slide.title}
+                    to={slide.buttonTo}
+                  >
+                    {slideContent}
+                  </Link>
+                ) : (
+                  <button
+                    className={styles.slide}
+                    key={slide.title}
+                    onClick={slide.onClick}
+                    type="button"
+                  >
+                    {slideContent}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-                  {slide.onClick ? (
-                    <RButton
-                      className={styles.button}
-                      onClick={slide.onClick}
-                      size="small"
-                    >
-                      {slide.buttonLabel}
-                    </RButton>
-                  ) : (
-                    <RButton
-                      as="link"
-                      className={styles.button}
-                      size="small"
-                      to={slide.buttonTo ?? "/"}
-                    >
-                      {slide.buttonLabel}
-                    </RButton>
-                  )}
-                </div>
-              </article>
+          <div
+            aria-label="Banner slides"
+            className={styles.pagination}
+            role="tablist"
+          >
+            {bannerSlides.map((slide, index) => (
+              <button
+                aria-label={`Show ${slide.title}`}
+                aria-selected={selectedSlide === index}
+                className={styles.paginationButton}
+                key={slide.title}
+                onClick={() => emblaApi?.scrollTo(index)}
+                role="tab"
+                type="button"
+              >
+                <span className={styles.paginationDot} />
+              </button>
             ))}
           </div>
-        </div>
-
-        <div
-          aria-label="Banner slides"
-          className={styles.pagination}
-          role="tablist"
-        >
-          {bannerSlides.map((slide, index) => (
-            <button
-              aria-label={`Show ${slide.title}`}
-              aria-selected={selectedSlide === index}
-              className={styles.paginationButton}
-              key={slide.title}
-              onClick={() => emblaApi?.scrollTo(index)}
-              role="tab"
-              type="button"
-            >
-              <span className={styles.paginationDot} />
-            </button>
-          ))}
-        </div>
-      </section>
+        </section>
+      </RSkeletonReveal>
 
       <RDepositFundsModal
         isOpen={isDepositModalOpen}

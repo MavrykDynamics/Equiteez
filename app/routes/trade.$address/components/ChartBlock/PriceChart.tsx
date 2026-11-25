@@ -23,7 +23,6 @@ import styles from "./styles.module.css";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { RPriceLabelGroup } from "../RPriceLabelGroup/RPriceLabelGroup";
 
-import { RChartStats } from "./RChartStats";
 
 type AssetDetailsProps = {
   asset: AssetType;
@@ -485,7 +484,6 @@ export function PriceChart({
         </section>
         {orderBookContent}
       </div>
-      <RChartStats asset={asset} />
     </>
   );
 }

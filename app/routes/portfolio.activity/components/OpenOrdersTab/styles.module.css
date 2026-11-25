@@ -64,7 +64,7 @@
 .row:last-child .cell {
   border-bottom: 0;
 }
-.rowExpired {
+.rowRefund {
   background: linear-gradient(
       0deg,
       rgba(242, 209, 107, 0.08) 0%,

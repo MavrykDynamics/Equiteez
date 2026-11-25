@@ -54,7 +54,8 @@
   width: var(--r-size-icon-small);
   height: var(--r-size-icon-small);
 }
-.summaryButton[aria-expanded="true"] .arrowIcon {
+/* Chevron points down while collapsed, up while expanded (per Figma) */
+.summaryButton[aria-expanded="false"] .arrowIcon {
   transform: rotate(180deg);
 }
 

@@ -7,6 +7,29 @@ import styles from "./styles.module.css";
 import Money from "~/lib/atoms/Money";
 import { RPriceChange } from "~/lib/molecules/RPriceChange";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
+import { RSkeleton, RSkeletonReveal } from "~/lib/atoms/RSkeleton";
+
+function ValueDetailsSkeleton() {
+  return (
+    <div aria-busy="true" className={styles.valueDetails} role="status">
+      <RSkeleton
+        radius="none"
+        className={styles.skeletonLabel}
+        variant="surface"
+      />
+      <RSkeleton
+        radius="none"
+        className={styles.skeletonValue}
+        variant="surface"
+      />
+      <RSkeleton
+        radius="none"
+        className={styles.skeletonChange}
+        variant="surface"
+      />
+    </div>
+  );
+}
 
 type PortfolioGeneralStatsProps = {
   stats: {
@@ -28,28 +51,25 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
     totalGrowth,
     totalValue,
   } = stats;
-  const isPositivePnl = pnl24h >= 0;
 
-  const { isLoading } = usePortfolioContext();
+  const { isWalletLoading, isPortfolioLoading } = usePortfolioContext();
 
   return (
     <section className={styles.stats} aria-label="Portfolio summary">
       <div className={styles.portfolioValueSection}>
-        <div className={styles.valueDetails}>
+        <RSkeletonReveal
+          className={styles.valueDetails}
+          isLoading={isWalletLoading || isPortfolioLoading}
+          skeleton={<ValueDetailsSkeleton />}
+        >
           <RText color="neutral-700" size="body-s" weight="medium">
             Total Portfolio Value
           </RText>
           <RHeading className={styles.portfolioValue} size="h3" weight="medium">
-            {isLoading ? (
-              "--"
-            ) : (
-              <>
-                $
-                <Money fiat tooltip={false}>
-                  {totalValue}
-                </Money>
-              </>
-            )}
+            $
+            <Money fiat tooltip={false}>
+              {totalValue}
+            </Money>
           </RHeading>
           <RPriceChange
             size="body-sm"
@@ -57,7 +77,7 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
             amount={pnl24h}
             percentage={pnl24hPercentage}
           />
-        </div>
+        </RSkeletonReveal>
 
         <PortfolioValueChart />
       </div>
@@ -93,6 +113,7 @@ export function PortfolioGeneralStats({ stats }: PortfolioGeneralStatsProps) {
           description="Blended across holdings"
           label="Est. Net Yield"
           color="accent-green-500"
+          isLoading={isPortfolioLoading}
           value={
             <>
               <Money fiat tooltip={false}>

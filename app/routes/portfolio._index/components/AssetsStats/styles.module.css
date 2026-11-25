@@ -56,20 +56,58 @@
   overflow-x: auto;
 }
 
-.sectionLoader {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+/* Right-aligned 16px under the table; RPagination renders nothing for a
+   single page, so no empty gap is left */
+.tableSection .pagination {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
+  justify-content: flex-end;
+  margin-top: var(--r-space-4);
 }
 
+.skeletonCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeletonAssetName {
+  width: 65px;
+  height: 18px;
+}
+
+.skeletonAssetSymbol {
+  width: 80px;
+  height: 15px;
+}
+
+.skeletonLine {
+  width: 60px;
+  height: 15px;
+}
+
+.skeletonLineShort {
+  width: 32px;
+  height: 15px;
+}
+
+.skeletonSubLine {
+  width: 36px;
+  height: 13px;
+}
+
+.skeletonLegendItem {
+  width: 183px;
+  max-width: 100%;
+  height: 36px;
+}
+
+/* Fixed layout: column widths come from the header, not from the cell
+   content, so skeleton rows and loaded rows share the same columns and nothing shifts while the portfolio loads. */
 .table {
   width: 100%;
   min-width: 760px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table th,
@@ -94,9 +132,10 @@
   text-transform: uppercase;
 }
 
+/* Asset takes what the value columns leave */
 .table th:first-child,
 .table td:first-child {
-  width: 20.2%;
+  width: auto;
   padding-left: var(--r-space-2);
 }
 
@@ -134,12 +173,20 @@
 }
 
 .tokenIcon {
+  flex: 0 0 30px;
+  overflow: hidden;
   background: var(--r-color-accent-green-500);
   color: var(--r-color-neutral-white);
   font-family: var(--r-font-body);
   font-size: var(--r-font-size-body-s);
 }
 
+.assetText {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.assetSymbol,
 .assetName {
   display: block;
   overflow: hidden;
@@ -152,46 +199,11 @@
   text-transform: capitalize;
 }
 
-.pagination {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--r-space-1);
-  margin-top: var(--r-space-4);
-}
-
-.pagination button {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: 0;
-  border-radius: var(--r-radius-sm);
-  background: transparent;
-  color: var(--r-color-neutral-700);
-  font: var(--r-font-weight-medium) 13px / 1 var(--r-font-body);
-}
-
-.pagination button:not(.currentPage):hover {
-  background: var(--r-color-neutral-50);
-}
-
-.pagination .currentPage {
-  background: var(--r-color-neutral-black);
-  color: var(--r-color-neutral-white);
-}
-
 .chartPanel {
   position: relative;
   min-width: 0;
   padding-left: var(--r-space-6);
   border-left: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-}
-
-.chartSectionLoader {
-  display: flex;
-  min-height: 263px;
-  align-items: center;
-  justify-content: center;
 }
 
 .chartSwitcher {
@@ -240,21 +252,30 @@
   transform: translateX(16px);
 }
 
+/* Shrinks with a column narrower than 263px; the SVG and the centre scale
+   with it */
 .donut {
   position: relative;
   display: grid;
   width: 263px;
-  height: 263px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  height: auto;
   place-items: center;
   border-radius: 50%;
 }
 
+/* The SVG box is padded by the 6px hover growth (see the viewBox) so the
+   slices never draw outside it. With overflow: visible Chrome mis-rasterised
+   slices touching the box edge whenever the SVG got its own GPU layer (e.g.
+   while skeleton crossfades were animating), leaving them shifted. */
 .donutSvg {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+  /* 6 / 263: the padding scales with the donut on small screens */
+  inset: calc(-100% * 6 / 263);
+  width: calc(100% * 275 / 263);
+  height: calc(100% * 275 / 263);
+  overflow: hidden;
 }
 
 .donutTrack {
@@ -272,8 +293,9 @@
 
 .donutCenter {
   display: flex;
-  width: 116px;
-  height: 116px;
+  /* 116 / 263 of the donut */
+  width: calc(100% * 116 / 263);
+  aspect-ratio: 1;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
@@ -283,8 +305,9 @@
 .donutCenterBg {
   content: "";
   position: absolute;
-  width: 185px;
-  height: 185px;
+  /* 185px on a 263px donut: sized against .donutCenter (116px) */
+  width: calc(100% * 185 / 116);
+  aspect-ratio: 1;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   z-index: 0;
@@ -425,10 +448,6 @@
   }
 
   .donut {
-    width: 100%;
-    max-width: 263px;
-    aspect-ratio: 1;
-    height: auto;
     justify-self: center;
   }
 

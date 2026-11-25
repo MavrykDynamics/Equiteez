@@ -1,0 +1,302 @@
+@import "../../../../styles/breakpoints.css";
+
+/* Sizes mirror the loaded components: AssetDetails, ChartBlock, RChartStats,
+   AssetTabs, AssetGallerySlider and the buy/sell panel. */
+
+.details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-2);
+  min-height: 48px;
+  margin: 0 0 var(--r-space-3);
+}
+
+.assetInfoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-1);
+  min-width: 0;
+}
+
+.assetInfo {
+  display: flex;
+  align-items: center;
+  width: 469px;
+  max-width: 100%;
+  height: 48px;
+  padding: 0 var(--r-space-4);
+}
+
+.assetIcon {
+  width: 32px;
+  height: 32px;
+}
+
+/* Badges drop under the asset name on phones only */
+.badges {
+  display: none;
+  width: 179px;
+  height: 26px;
+}
+
+.actions {
+  display: flex;
+  gap: var(--r-space-3);
+}
+
+.chart {
+  width: 100%;
+  height: 514px;
+}
+
+/* RChartStats: 3 × 2 grid (12px padding, two 36px rows, 16px gap) until its
+   .chartStats container reaches 720px, then a single row */
+.stats {
+  width: 100%;
+  height: 112px;
+  margin: var(--r-space-3) 0 var(--r-space-5) 0;
+}
+
+@container (min-width: 720px) {
+  .stats {
+    height: 60px;
+  }
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+  margin-bottom: var(--r-space-18);
+}
+
+.tabSwitcher {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-4);
+  min-width: 0;
+  padding-bottom: var(--r-space-6);
+  overflow: hidden;
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.tabGroup,
+.sideTabs {
+  display: flex;
+  gap: var(--r-space-2);
+  flex-shrink: 0;
+}
+
+.divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 44px;
+  background: var(--r-color-neutral-100);
+}
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-10);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+}
+
+.sectionTitle {
+  width: 220px;
+  max-width: 100%;
+  height: 28px;
+}
+
+/* Five body-sm lines of About text (as in the design) */
+.paragraph {
+  width: 100%;
+  height: 105px;
+}
+
+/* Why Invest: two columns of two items (side by side above phones) */
+.investColumns,
+.investColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.investColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+.investItem {
+  width: 100%;
+  height: 116px;
+}
+
+/* Features and Amenities sit closer together than the other sections */
+.detailGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-8);
+}
+
+.location {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+/* Three body-sm lines */
+.locationText {
+  width: 100%;
+  height: 63px;
+}
+
+.map {
+  width: 100%;
+  height: 453px;
+}
+
+@media not all and (--media-phone-max) {
+  .investColumns {
+    flex-direction: row;
+  }
+}
+
+.detailColumns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--r-space-5) var(--r-space-8);
+}
+
+.detailColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-5);
+}
+
+.detailItem {
+  width: 170px;
+  max-width: 100%;
+  height: 32px;
+}
+
+.gallery {
+  width: 100%;
+  height: 120px;
+}
+
+/* Loaded buy/sell card: 474px panel (Order Summary collapsed) + 16px padding */
+.buySell {
+  width: 100%;
+  height: 506px;
+}
+
+@media (--media-tablet) {
+  .details {
+    min-height: auto;
+  }
+
+  .assetInfo {
+    height: 36px;
+  }
+
+  .assetIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Swipeable slider: the buy/sell card shows first, sized to the 491px
+     chart card behind it */
+  .chart {
+    height: 491px;
+  }
+
+  .stats {
+    margin: var(--r-space-4) 0 var(--r-space-11) 0;
+  }
+
+  .tabs {
+    min-width: 100%;
+    margin-bottom: var(--r-space-11);
+  }
+
+  .divider,
+  .sideTabs,
+  .buySell {
+    display: none;
+  }
+
+  /* Loaded overview up to tablets: 32px between sections, 24px h6 titles,
+     12px between Features items */
+  .overview {
+    gap: var(--r-space-8);
+  }
+
+  .sectionTitle {
+    height: 24px;
+  }
+
+  .detailColumns,
+  .detailColumn {
+    gap: var(--r-space-3) var(--r-space-8);
+  }
+}
+
+@media (--media-phone-max) {
+  .details {
+    position: relative;
+    align-items: flex-start;
+  }
+
+  .assetInfoGroup {
+    width: 100%;
+  }
+
+  .assetInfo {
+    width: 235px;
+  }
+
+  .badges {
+    display: block;
+  }
+
+  .actions {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    gap: var(--r-space-2);
+  }
+
+  .stats {
+    height: 108px;
+    margin: var(--r-space-4) 0 var(--r-space-8) 0;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tabSwitcher {
+    overflow: visible;
+  }
+
+  .tabGroup {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    max-width: 100%;
+  }
+
+  /* Phones: Features in one column, shorter map */
+  .detailColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .map {
+    height: 268px;
+  }
+}

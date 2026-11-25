@@ -18,11 +18,14 @@
   align-items: center;
 }
 
+/* Stable gutter: the scrollbar showing up once the second page loads (or not
+   at all for the skeleton) must not change the rows' width */
 .list {
   position: relative;
   min-height: 220px;
   max-height: 720px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .notification {
@@ -38,7 +41,8 @@
   border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
 }
 
-.notification:last-child {
+/* "of .notification": the reveal overlay briefly follows the last row */
+.notification:nth-last-child(1 of .notification) {
   border-bottom: 0;
 }
 
@@ -92,4 +96,30 @@
   display: grid;
   min-height: 48px;
   place-items: center;
+}
+
+/* Skeleton rows keep the 59px notification height: two 21px text lines,
+   each 17px bar centred in its line (2 + 17 + 4 + 17 + 2 = 42) */
+.skeletonLines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.skeletonTitle {
+  width: 187px;
+  max-width: 100%;
+  height: 17px;
+}
+
+.skeletonDescription {
+  max-width: 100%;
+  height: 17px;
+}
+
+.skeletonDate {
+  width: 106px;
+  height: 17px;
+  margin-bottom: 2px;
 }

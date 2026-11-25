@@ -110,6 +110,22 @@
   display: contents;
 }
 
+/* Desktop: the slider is transparent and the buy/sell slot stays empty */
+.chartSlider,
+.chartSlide {
+  display: contents;
+}
+
+.buySellSlide {
+  display: none;
+}
+
+/* Stats sit below the chart (outside the mobile slider) */
+.chartStats {
+  width: 100%;
+  container-type: inline-size;
+}
+
 @media (--media-tablet-max) {
   .contentBlock {
     flex-direction: column;
@@ -184,9 +200,57 @@
   }
 }
 
+@media (--media-tablet) {
+  /* Swipeable chart / buy-sell cards, bleeding into the container gutter */
+  .chartSlider {
+    --slider-gutter: 32px;
+
+    display: flex;
+    align-items: stretch;
+    gap: var(--r-space-1);
+    width: calc(100% + 2 * var(--slider-gutter));
+    margin-inline: calc(-1 * var(--slider-gutter));
+    padding-inline: var(--slider-gutter);
+    box-sizing: border-box;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--slider-gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .chartSlider::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chartSlide,
+  .buySellSlide {
+    display: flex;
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* The chart card sets the height; the buy/sell card matches it */
+  .buySellSlide {
+    contain: size;
+  }
+
+  .buySellSlide .buySellContainer {
+    display: flex;
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
 @media (--media-phone-max) {
   .tradeContainer.tradeContainer {
     padding-inline: var(--r-space-4);
+  }
+
+  .chartSlider {
+    --slider-gutter: var(--r-space-4);
   }
   .viewOnlyNotice {
     padding: var(--r-space-3) 0;

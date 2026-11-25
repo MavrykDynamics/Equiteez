@@ -1,0 +1,130 @@
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+  background: transparent;
+  color: var(--r-color-neutral-black);
+  cursor: pointer;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  white-space: nowrap;
+}
+
+.trigger:focus-visible,
+.option:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.chevron {
+  flex-shrink: 0;
+  transition: transform var(--r-transition-duration-fast) ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  z-index: 30;
+  top: 100%;
+  display: flex;
+  min-width: max-content;
+  flex-direction: column;
+  /* Keeps the selected and the hovered options from merging into one block */
+  gap: 4px;
+  margin-top: var(--r-space-2);
+  padding: var(--r-space-1);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-color-neutral-white);
+  box-shadow: 0 2px 8px rgba(1, 1, 1, 0.1);
+}
+
+/* Bridges the margin-top gap so the hover is not lost on the way down */
+.menu::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: var(--r-space-2);
+}
+
+.menuLeft {
+  left: 0;
+  transform-origin: top left;
+}
+
+.menuRight {
+  right: 0;
+  transform-origin: top right;
+}
+
+.menuEnter {
+  animation: menuEnter 160ms ease-out;
+}
+
+/* Keep in sync with MENU_EXIT_DURATION_MS in RHoverSwitch.tsx */
+.menuExit {
+  animation: menuExit 120ms ease-in forwards;
+  pointer-events: none;
+}
+
+.option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: var(--r-space-2) var(--r-space-3);
+  border: 0;
+  border-radius: var(--r-radius-sm);
+  background: var(--r-color-neutral-white);
+  color: var(--r-color-neutral-black);
+  cursor: pointer;
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  text-align: left;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.option:hover,
+.optionSelected {
+  background: var(--r-color-neutral-50);
+}
+
+@keyframes menuEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+@keyframes menuExit {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menuEnter,
+  .menuExit {
+    animation-duration: 1ms;
+  }
+
+  .chevron {
+    transition: none;
+  }
+}
