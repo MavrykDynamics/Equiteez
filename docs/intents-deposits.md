@@ -12,7 +12,8 @@ source asset ─1Click─▶ settlement token (USDT0 on Arbitrum One)
 ```
 
 The user signs at most one transaction: paying the 1Click deposit address,
-from a connected EVM wallet or from **any** wallet or exchange. The shared
+from a connected wallet (EVM, Solana, NEAR, Aptos or Bitcoin) or from **any**
+wallet or exchange. The shared
 Mavryk Bridge ETH backend forwards the swapped tokens into the WrapBridge and
 pays that gas, the bridge mints on Mavryk, and the backend confirms the mint.
 
@@ -29,6 +30,10 @@ unchanged by this feature.
 | `INTENTS_API_PROXY_TARGET` | — | Dev only: Vite proxies `/intents-api/*` here (the Gateway CORS allowlist has no localhost). |
 | `INTENTS_ENV` | origin of the API | Scope of persisted operations; override only if two URLs are the same backend. |
 | `INTENTS_API_MODE` | `http` | `mock` uses the in-browser simulator. |
+| `INTENTS_SOLANA_RPC_URL` | `https://api.mainnet-beta.solana.com` | Solana balances, mint lookups and blockhashes. Use a dedicated RPC in production. |
+| `INTENTS_NEAR_RPC_URL` | `https://free.rpc.fastnear.com` | NEAR balances and token storage registration. |
+| `INTENTS_APTOS_API_URL` | `https://api.mainnet.aptoslabs.com/v1` | Aptos balances (view API). |
+| `INTENTS_BITCOIN_API_URL` | `https://mempool.space/api` | Bitcoin balances (Esplora). |
 
 The EVM source chains (`INTENTS_EVM_CHAINS`: Ethereum, Arbitrum One, Base, OP,
 Polygon, BNB, Avalanche, Gnosis) are registered in wagmi on public RPCs so a
@@ -82,12 +87,14 @@ Wallet transfers are disabled in mock mode (the networks are mainnets).
 | Capability + idempotency key generation | `app/lib/intents/intentCapability.ts` |
 | Record model, merge, closure/receipt/mismatch rules | `app/lib/intents/intentOperation.ts` |
 | EVM funding call shape, blockers, error classification | `app/lib/intents/intentFunding.ts` |
-| Wallet funding, "I've sent it", mock simulation | `app/contracts/intentsFunding.contract.ts`, `useIntentsFunding` |
+| Non-EVM wallet adapters (lazy, browser only) | `app/lib/intents/wallets/{solana,near,aptos,bitcoin}/` |
+| Connected non-EVM wallets per network | `app/providers/IntentWalletsProvider/` |
+| Funding runner (EVM and wallet senders), "I've sent it", mock simulation | `app/contracts/intentsFunding.contract.ts`, `useIntentsFunding` |
 | Persisted store, GET tracker, widget mapping, receipts | `app/providers/TransactionsProvider/intent*.ts` |
 | Metadata and preview queries | `app/hooks/useIntentsCatalog.ts`, `useIntentsPreview.ts` |
 | Modal orchestration | `app/hooks/useIntentsDeposit.ts` |
 | Modal shell, step and picker state | `DepositFunds/RDepositFundsModal.tsx` |
-| Views | `DepositFunds/components/Intents{View,WalletsStep,DetailsStep,PickerView,QuoteView,FundingPanel,StatusView}.tsx` |
+| Views | `DepositFunds/components/Intents{View,WalletsStep,DetailsStep,SourceWalletField,PickerView,QuoteView,FundingPanel,StatusView}.tsx` |
 | Network/token grouping for the pickers | `DepositFunds/components/intentPickers.ts` |
 
 ## Screens
@@ -95,9 +102,9 @@ Wallet transfers are disabled in mock mode (the networks are mainnets).
 | Screen | Shows |
 | --- | --- |
 | Wallets (step 1) | Equiteez account (required) and an optional EVM wallet (`REthereumWalletDropdown`). Continue needs only the Equiteez account. |
-| Deposit details (step 2) | From → To, "Token to receive" (display only), Network, amount, refund address, live preview (You receive ≈, Minimum received, fee included, swap time, slippage chips). |
-| Network / token pickers | Networks grouped EVM / other, in table order, with their symbols; tokens of the selected network, with balances for EVM tokens when a wallet is connected. |
-| Review / deposit | Review: fresh preview, accepted minimum, refund address, Confirm. Then "Preparing your deposit address…", then the deposit screen: QR code, network, exact amount (copy), deposit address (copy), memo when required, "Send within" countdown, refund address, exchange-fee warning, operation ID. Actions: Send from wallet (EVM only), I've sent the deposit, Simulate Deposit (mock). |
+| Deposit details (step 2) | From → To, "Token to receive" (display only), Network, "Send from" (non-EVM networks: connect that network's wallet, optional), amount, refund address, live preview (You receive ≈, Minimum received, fee included, swap time, slippage chips). |
+| Network / token / wallet pickers | Networks grouped EVM / other, in table order, with their symbols; tokens of the selected network, with balances from the sending wallet; wallets of the network (detected first, others link to their install page). |
+| Review / deposit | Review: fresh preview, accepted minimum, refund address, Confirm. Then "Preparing your deposit address…", then the deposit screen: QR code, network, exact amount (copy), deposit address (copy), memo when required, "Send within" countdown, refund address, exchange-fee warning, operation ID. Actions: Send from <wallet> (the reviewed wallet, any network), I've sent the deposit, Simulate Deposit (mock). |
 | Status | The four widget steps, alerts for warning/error states, identifiers, explorer link, New deposit or Done. |
 
 ## Access
@@ -118,8 +125,9 @@ Wallet transfers are disabled in mock mode (the networks are mainnets).
 1. **Form.** Asset, amount (raw units, wallet balance when sending from an EVM
    wallet; there are no backend limits), slippage (10/50/100/300 bps, default
    1%), the Equiteez account as the `mv1` recipient, and a **refund address
-   on the source network**: the connected EVM wallet for EVM assets, otherwise
-   a pasted address validated per network (§7) and explicitly confirmed.
+   on the source network**: the sending wallet's account (the wagmi wallet for
+   EVM assets, the network's own wallet otherwise), or a pasted address
+   validated per network (§7) and explicitly confirmed.
 2. **Preview.** `POST /v1/quotes/preview` with exactly seven fields, debounced
    700ms, keyed by the inputs (late answers for old inputs are never shown),
    not retried automatically (≈10 a minute).
@@ -135,11 +143,29 @@ Wallet transfers are disabled in mock mode (the networks are mainnets).
    `bridgeableMinAmountOut ≥ accepted`). `QUOTE_REJECTED` or expiry before
    funding returns to the form; `PAUSED` shows "Do not send". Once published,
    input changes no longer clear the screen (the user may already have paid).
-6. **Fund.**
-   - *EVM wallet:* re-read the operation; same `quoteId`, ≥15s before
-     `fundingExpiresAt`, no memo, same reviewed wallet. `prompted` is saved
-     before the wallet call; then a native transfer or ERC-20 `transfer` goes
-     to `depositAddress` (never `forwarderAddress`).
+6. **Fund.** One runner for every wallet: check the reviewed account, re-read
+   the operation (same `quoteId`, ≥15s before `fundingExpiresAt`, no memo),
+   check the balance, save `prompted`, then ask the wallet. The transfer goes
+   to `depositAddress`, never `forwarderAddress`.
+   - *EVM (wagmi):* native transfer or ERC-20 `transfer`; switches chain;
+     waits for the receipt (repriced replacements kept).
+   - *Solana (Wallet Standard: Phantom, Solflare, Backpack, …):* a
+     SystemProgram transfer, or SPL `transferChecked` into the deposit
+     address's associated token account (created idempotently; classic or
+     Token-2022). SOL must cover the fee and any account rent first.
+   - *Aptos (AIP-62 Wallet Standard: Petra, Nightly, Pontem, …):*
+     `aptos_account::transfer` (APT), `transfer_coins` (coin types) or
+     `primary_fungible_store::transfer` (fungible assets). Mainnet and
+     `signAndSubmitTransaction` 1.1 required.
+   - *Bitcoin (sats-connect: Xverse, Unisat, Fordefi, `btc_providers`):* one
+     `sendTransfer` in satoshis from the payment address; the wallet picks
+     inputs and fee. Mainnet addresses only.
+   - *NEAR (wallet-selector: Meteor, HERE):* a Transfer of NEAR, or
+     `ft_transfer` (1 yocto) with `storage_deposit` first when the deposit
+     account is not registered. Redirect wallets are not offered.
+   - Non-EVM networks have no receipt wait: the deposit stays `broadcast`
+     until 1Click reports it. Wallet adapters load lazily and are not in the
+     PWA precache.
    - *Any other wallet or exchange:* the user pays the address and taps
      "I've sent the deposit" (`fundingState: external`). 1Click detects the
      deposit itself; there is no hash registration.
@@ -149,6 +175,9 @@ Wallet transfers are disabled in mock mode (the networks are mainnets).
 ### Never sending twice
 
 Only `not_started` and `rejected` allow a wallet request or "I've sent it".
+A wallet error counts as `rejected` only for an explicit rejection (code
+4001 / -32000 or rejection wording); anything else after the wallet was asked
+is `unknown`, because it may have been broadcast.
 `prompted`, `broadcast`, `confirmed`, `unknown`, `reverted` and `external`
 never prompt again, and `fundingStatus: OBSERVED` hides the send actions. Only
 an explicit new deposit creates a new operation with a new capability and key.
@@ -210,15 +239,20 @@ guarded by a persisted `announced` marker.
 
 ## Not yet supported
 
-- Connecting Solana, NEAR, Aptos and Bitcoin wallets to send in one click.
-  These networks work today by paying the deposit address from any wallet or
-  exchange; wallet adapters are the next step.
+- Sending memo deposits from a non-EVM wallet (none today: every network is
+  `SIMPLE`); they are paid from the deposit details instead.
+- Redirect-based NEAR wallets (MyNearWallet) and Aptos wallets limited to
+  `signAndSubmitTransaction` 1.0.
+- Restoring non-EVM wallet connections after a reload (the user reconnects;
+  tracking never needs the wallet).
 - A settlement-token selector: the contract allows only the default token.
 
 ## Tests
 
 `npx vitest run app/lib/apis/intents app/lib/intents app/contracts/intentsFunding.contract.test.ts app/hooks app/providers/TransactionsProvider app/routes/_index`
 
-`app/hooks/useIntentsDeposit.integration.test.tsx` runs an EVM wallet deposit
-and a Solana manual deposit against the mock backend and the real tracking
-providers, with wagmi mocked at the action boundary.
+`app/hooks/useIntentsDeposit.integration.test.tsx` runs EVM wallet, Solana
+wallet (fake adapter) and Solana manual deposits against the mock backend and
+the real tracking providers, with wagmi mocked at the action boundary. Each
+adapter in `app/lib/intents/wallets/` is tested against a fake wallet and a
+fake network reader.
