@@ -34,7 +34,7 @@ function BalanceCardSkeleton() {
 // (orderbook config, primary purchase config) is still loading after the page
 // skeleton has already been replaced. Mirrors BuySellContent block by block:
 // Buy/Sell tabs + Market dropdown, two balance cards, the percentage slider,
-// the Order Summary card and the submit button (a view-only hint on mobile).
+// the Order Summary card and the submit button.
 export function BuySellPanelSkeleton() {
   return (
     <div aria-busy="true" className={styles.skeleton} role="status">
@@ -94,7 +94,6 @@ export function BuySellPanelSkeleton() {
       </div>
 
       <RSkeleton className={styles.button} radius="pill" variant="surface" />
-      <RSkeleton className={styles.mobileNotice} variant="surface" />
     </div>
   );
 }

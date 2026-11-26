@@ -458,8 +458,10 @@
     );
   }
 
+  /* The card is the mobile slider's height: tall enough for the buy/sell
+     card next to it (506px with Order Summary collapsed) */
   .wrapper {
-    --chart-height: 356px;
+    --chart-height: 371px;
     width: 100%;
   }
 
