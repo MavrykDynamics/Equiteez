@@ -1,8 +1,8 @@
 /**
- * Authenticator app → Set up / Manage. No Figma for this window yet: it
- * follows the Wallet page modals. Set up: "Confirm it's you", scan the QR
- * code, enter the first code, save the recovery codes. Manage: remove it with
- * a current code from the app.
+ * Authenticator app → Set up / Manage (Figma 8131:518 "Security –
+ * Authenticator App" and "Disable Authenticator App"). Set up: "Confirm it's
+ * you", scan the QR code, enter the first code, save the recovery codes, done.
+ * Manage: confirm turning it off, enter a current code, done.
  */
 import { useEffect, useState, type FormEvent } from "react";
 import QRCode from "react-qr-code";
@@ -10,9 +10,7 @@ import QRCode from "react-qr-code";
 import { CopyButton } from "~/lib/atoms/CopyButton";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   DynamicSessionExpiredError,
   DynamicWrongCodeError,
@@ -27,6 +25,15 @@ import {
 
 import type { useAuthenticator } from "./useAuthenticator";
 import styles from "./WalletModal.module.css";
+import {
+  WalletModal,
+  WalletModalActions,
+  WalletModalCheckbox,
+  WalletModalError,
+  WalletModalHeader,
+  WalletModalSuccess,
+  WalletModalWarning,
+} from "./WalletModalParts";
 
 type AuthenticatorModalProps = Omit<
   ReturnType<typeof useAuthenticator>,
@@ -42,17 +49,14 @@ export function AuthenticatorModal({
   ...props
 }: AuthenticatorModalProps) {
   return (
-    <CustomPopup
-      className={styles.modal}
-      contentLabel="Authenticator app"
-      contentPosition="center"
+    <WalletModal
       isOpen={isOpen}
+      label="Authenticator app"
       onRequestClose={onClose}
-      overlayClassName={styles.overlay}
     >
       {/* Mounted only while open: every opening starts from the beginning */}
       <AuthenticatorContent {...props} onClose={onClose} />
-    </CustomPopup>
+    </WalletModal>
   );
 }
 
@@ -66,9 +70,16 @@ const toMessage = (error: unknown, fallback: string) =>
 type Step =
   | { name: "starting" }
   | { name: "scan"; setup: AuthenticatorSetup }
+  | { name: "verify"; setup: AuthenticatorSetup }
   /** codes: null while loading or after a failed load */
   | { name: "recovery-codes"; codes: string[] | null }
-  | { name: "manage" };
+  | { name: "enabled" }
+  | { name: "disable" }
+  | { name: "disable-code" }
+  | { name: "disabled" };
+
+const CODE_HINT =
+  "The code refreshes every 30 seconds. Make sure you enter the latest code.";
 
 function AuthenticatorContent({
   authenticator,
@@ -80,9 +91,10 @@ function AuthenticatorContent({
   onClose,
 }: Omit<AuthenticatorModalProps, "isOpen">) {
   const [step, setStep] = useState<Step>(() =>
-    authenticator ? { name: "manage" } : { name: "starting" }
+    authenticator ? { name: "disable" } : { name: "starting" }
   );
   const [code, setCode] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
   const [isWorking, setIsWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,6 +126,12 @@ function AuthenticatorContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const goTo = (next: Step) => {
+    setCode("");
+    setError(null);
+    setStep(next);
+  };
+
   const run = async (task: () => Promise<void>, fallback: string) => {
     setIsWorking(true);
     setError(null);
@@ -129,12 +147,11 @@ function AuthenticatorContent({
 
   const handleVerify = (event: FormEvent) => {
     event.preventDefault();
-    if (step.name !== "scan" || code.length < CODE_LENGTH) return;
+    if (step.name !== "verify" || code.length < CODE_LENGTH) return;
 
     void run(async () => {
       await verifySetup(step.setup.deviceId, code);
-      setCode("");
-      setStep({ name: "recovery-codes", codes: null });
+      goTo({ name: "recovery-codes", codes: null });
       await loadRecoveryCodes();
     }, "We couldn't turn on the authenticator app. Try again.");
   };
@@ -151,7 +168,7 @@ function AuthenticatorContent({
 
       if (codes.length) setStep({ name: "recovery-codes", codes });
       // The project has recovery codes off: nothing to save
-      else onClose();
+      else setStep({ name: "enabled" });
     } catch (loadError) {
       setError(
         toMessage(
@@ -165,7 +182,7 @@ function AuthenticatorContent({
   const handleSavedCodes = () =>
     run(async () => {
       await acknowledgeRecoveryCodes();
-      onClose();
+      setStep({ name: "enabled" });
     }, "We couldn't save that. Try again.");
 
   const handleRemove = (event: FormEvent) => {
@@ -174,52 +191,86 @@ function AuthenticatorContent({
 
     void run(async () => {
       await remove(code);
-      onClose();
-    }, "We couldn't remove the authenticator app. Try again.");
+      setStep({ name: "disabled" });
+    }, "We couldn't turn off the authenticator app. Try again.");
   };
 
-  const errorText = error ? (
-    <RText className={styles.error} role="alert" size="body-sm">
-      {error}
-    </RText>
-  ) : null;
+  if (step.name === "enabled") {
+    return (
+      <WalletModalSuccess
+        description="Your account is now protected with two-factor authentication. You'll need a verification code from your authenticator app when signing in."
+        onClose={onClose}
+        title="Authenticator Enabled"
+      />
+    );
+  }
 
-  return (
-    <>
-      <div className={styles.closeRow}>
-        <button
-          aria-label="Close"
-          className={styles.closeButton}
-          disabled={isWorking}
-          onClick={onClose}
-          type="button"
-        >
-          <RIcon name="close" size="medium" />
-        </button>
-      </div>
+  if (step.name === "disabled") {
+    return (
+      <WalletModalSuccess
+        description="Two-factor authentication has been disabled for your account. You no longer need an authenticator code when signing in."
+        onClose={onClose}
+        title="Authenticator Disabled"
+      />
+    );
+  }
 
+  // The cells, then the hint, or the error in its place
+  const codeBlock = (
+    <div className={styles.codeBlock}>
+      <CodeInput invalid={Boolean(error)} onChange={setCode} value={code} />
+      {error ? (
+        <WalletModalError message={error} />
+      ) : (
+        <RText color="neutral-700" size="body-sm">
+          {CODE_HINT}
+        </RText>
+      )}
+    </div>
+  );
+
+  if (step.name === "starting" || step.name === "scan") {
+    return (
       <div className={styles.content}>
-        <header className={styles.header}>
-          <span className={styles.heroIcon}>
-            <RIcon aria-hidden name="lock" size="medium" />
-          </span>
-          <div className={styles.headerText}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              {step.name === "recovery-codes"
-                ? "Save Your Recovery Codes"
-                : "Authenticator App"}
-            </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              {step.name === "manage"
-                ? "We ask for a code from your authenticator app to confirm it's you."
-                : step.name === "recovery-codes"
-                  ? "Each code works once, if you lose access to your authenticator app. We won't show them again."
-                  : "Use an app such as Google Authenticator, 1Password or Authy to confirm it's you."}
-            </RText>
-          </div>
-        </header>
+        <WalletModalHeader
+          description="Scan this QR code using your authenticator app to add your Equiteez account."
+          onClose={onClose}
+          title="Connect Authenticator App"
+        />
 
-        {step.name === "starting" ? (
+        {step.name === "scan" ? (
+          <>
+            <div className={styles.qrBlock}>
+              <QRCode
+                aria-label="QR code for your authenticator app"
+                role="img"
+                size={144}
+                value={step.setup.uri}
+              />
+              <div className={styles.keyBlock}>
+                <RText size="body-sm">
+                  Can&apos;t scan? Enter the key in the app
+                </RText>
+                <CopyButton
+                  aria-label="Copy the set-up key"
+                  className={styles.secret}
+                  mode="reverse"
+                  text={step.setup.secret}
+                  type="block"
+                >
+                  <RText size="body-sm">{step.setup.secret}</RText>
+                  <RIcon aria-hidden name="copy" size="small" />
+                </CopyButton>
+              </div>
+            </div>
+            <WalletModalWarning title="Do not share your setup key or verification codes with anyone." />
+            <WalletModalActions
+              confirmLabel="Continue"
+              onCancel={onClose}
+              onConfirm={() => goTo({ name: "verify", setup: step.setup })}
+            />
+          </>
+        ) : (
           <>
             {error ? null : (
               <RText
@@ -230,86 +281,95 @@ function AuthenticatorContent({
                 Preparing your QR code…
               </RText>
             )}
-            {errorText}
-            <div className={styles.actions}>
-              <RButton
-                className={styles.action}
-                onClick={onClose}
-                size="medium"
-                tone="black"
-                variant="secondary"
-              >
-                Close
-              </RButton>
-            </div>
+            <WalletModalError message={error} />
+            <RButton
+              className={styles.fullAction}
+              onClick={onClose}
+              size="medium"
+              tone="black"
+              variant="secondary"
+            >
+              Close
+            </RButton>
           </>
-        ) : null}
+        )}
+      </div>
+    );
+  }
 
-        {step.name === "scan" ? (
-          <form className={styles.codeForm} onSubmit={handleVerify}>
-            <div className={styles.qrBlock}>
-              <div className={styles.qrCode}>
-                <QRCode
-                  aria-label="QR code for your authenticator app"
-                  role="img"
-                  size={160}
-                  value={step.setup.uri}
-                />
-              </div>
-              <RText color="neutral-700" size="body-s">
-                Can&apos;t scan? Enter this key in the app:
-              </RText>
+  if (step.name === "verify") {
+    return (
+      <form className={styles.content} onSubmit={handleVerify}>
+        <WalletModalHeader
+          description="Enter the 6-digit verification code generated by your authenticator app to finish setup."
+          isDisabled={isWorking}
+          onBack={() => goTo({ name: "scan", setup: step.setup })}
+          onClose={onClose}
+          title="Verify Your Authenticator"
+        />
+        {codeBlock}
+        <WalletModalActions
+          confirmLabel={isWorking ? "Verifying..." : "Verify And Enable"}
+          isConfirmDisabled={code.length < CODE_LENGTH}
+          isSubmit
+          isWorking={isWorking}
+          onCancel={onClose}
+        />
+      </form>
+    );
+  }
+
+  if (step.name === "recovery-codes") {
+    return (
+      <div className={styles.content}>
+        <WalletModalHeader
+          description="Save these codes in a secure place. If you lose access to your authenticator app, you can use one of these codes to sign in to your account."
+          isDisabled={isWorking}
+          onClose={onClose}
+          title="Save Your Recovery Codes"
+        />
+
+        {step.codes ? (
+          <>
+            <WalletModalWarning title="Keep the codes safe">
+              Each code can only be used once. Anyone with access to these codes
+              may be able to access your account.
+            </WalletModalWarning>
+            <div className={styles.recoveryBlock}>
+              <ul className={styles.recoveryCodes}>
+                {step.codes.map((recoveryCode) => (
+                  <li key={recoveryCode}>{recoveryCode}</li>
+                ))}
+              </ul>
               <CopyButton
-                aria-label="Copy the set-up key"
-                className={styles.secret}
+                aria-label="Copy all recovery codes"
+                className={styles.copyLink}
                 mode="reverse"
-                text={step.setup.secret}
+                text={step.codes.join("\n")}
                 type="block"
               >
-                <RText size="body-sm" weight="medium">
-                  {step.setup.secret}
-                </RText>
                 <RIcon aria-hidden name="copy" size="small" />
+                <RText size="body-sm" weight="medium">
+                  Copy Codes
+                </RText>
               </CopyButton>
             </div>
-            <RText color="neutral-700" size="body-sm">
-              Then enter the 6-digit code the app shows.
-            </RText>
-            <div className={styles.codeBlock}>
-              <CodeInput
-                invalid={Boolean(error)}
-                onChange={setCode}
-                value={code}
-              />
-              {errorText}
-            </div>
-            <div className={styles.actions}>
-              <RButton
-                className={styles.action}
-                disabled={isWorking}
-                onClick={onClose}
-                size="medium"
-                tone="black"
-                type="button"
-                variant="secondary"
-              >
-                Cancel
-              </RButton>
-              <RButton
-                className={styles.action}
-                disabled={code.length < CODE_LENGTH || isWorking}
-                isLoading={isWorking}
-                size="medium"
-                tone="black"
-                type="submit"
-              >
-                Turn On
-              </RButton>
-            </div>
-          </form>
-        ) : null}
-
-        {step.name === "recovery-codes" && !step.codes ? (
+            <WalletModalCheckbox checked={isSaved} onChange={setIsSaved}>
+              I have saved my recovery codes in a safe place.
+            </WalletModalCheckbox>
+            <WalletModalError message={error} />
+            <RButton
+              className={styles.fullAction}
+              disabled={!isSaved || isWorking}
+              isLoading={isWorking}
+              onClick={() => void handleSavedCodes()}
+              size="medium"
+              tone="black"
+            >
+              Continue
+            </RButton>
+          </>
+        ) : (
           <>
             {error ? null : (
               <RText
@@ -320,10 +380,10 @@ function AuthenticatorContent({
                 Loading your recovery codes…
               </RText>
             )}
-            {errorText}
+            <WalletModalError message={error} />
             {error ? (
               <RButton
-                className={styles.action}
+                className={styles.fullAction}
                 disabled={isWorking}
                 isLoading={isWorking}
                 onClick={() => void run(loadRecoveryCodes, "Try again.")}
@@ -334,80 +394,49 @@ function AuthenticatorContent({
               </RButton>
             ) : null}
           </>
-        ) : null}
-
-        {step.name === "recovery-codes" && step.codes ? (
-          <>
-            <ul className={styles.recoveryCodes}>
-              {step.codes.map((recoveryCode) => (
-                <li key={recoveryCode}>{recoveryCode}</li>
-              ))}
-            </ul>
-            <CopyButton
-              aria-label="Copy all recovery codes"
-              className={styles.copyAll}
-              mode="reverse"
-              text={step.codes.join("\n")}
-              type="block"
-            >
-              <RIcon aria-hidden name="copy" size="small" />
-              <RText size="body-sm" weight="medium">
-                Copy all codes
-              </RText>
-            </CopyButton>
-            {errorText}
-            <RButton
-              className={styles.action}
-              disabled={isWorking}
-              isLoading={isWorking}
-              onClick={() => void handleSavedCodes()}
-              size="medium"
-              tone="black"
-            >
-              I&apos;ve Saved These Codes
-            </RButton>
-          </>
-        ) : null}
-
-        {step.name === "manage" ? (
-          <form className={styles.codeForm} onSubmit={handleRemove}>
-            <RText color="neutral-700" size="body-sm">
-              To remove it, enter a current 6-digit code from the app.
-            </RText>
-            <div className={styles.codeBlock}>
-              <CodeInput
-                invalid={Boolean(error)}
-                onChange={setCode}
-                value={code}
-              />
-              {errorText}
-            </div>
-            <div className={styles.actions}>
-              <RButton
-                className={styles.action}
-                disabled={isWorking}
-                onClick={onClose}
-                size="medium"
-                tone="black"
-                type="button"
-                variant="secondary"
-              >
-                Close
-              </RButton>
-              <RButton
-                className={styles.action}
-                disabled={code.length < CODE_LENGTH || isWorking}
-                isLoading={isWorking}
-                size="medium"
-                tone="black"
-                type="submit"
-              >
-                Remove
-              </RButton>
-            </div>
-          </form>
-        ) : null}
+        )}
       </div>
-    </>
+    );
+  }
+
+  if (step.name === "disable") {
+    return (
+      <div className={styles.content}>
+        <WalletModalHeader
+          description="Disabling two-factor authentication will remove the additional security layer from your account. You'll no longer need an authenticator code when signing in."
+          onClose={onClose}
+          title="Disable Authenticator?"
+        />
+        <WalletModalWarning title="Your account will be less secure">
+          We recommend keeping two-factor authentication enabled to help protect
+          your account.
+        </WalletModalWarning>
+        <WalletModalActions
+          confirmLabel="Disable"
+          onCancel={onClose}
+          onConfirm={() => goTo({ name: "disable-code" })}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <form className={styles.content} onSubmit={handleRemove}>
+      <WalletModalHeader
+        description="Enter the verification code from your authenticator app to disable two-factor authentication."
+        isDisabled={isWorking}
+        onBack={() => goTo({ name: "disable" })}
+        onClose={onClose}
+        title="Verify Your Identity"
+      />
+      {codeBlock}
+      <WalletModalActions
+        confirmLabel="Confirm And Disable"
+        isConfirmDisabled={code.length < CODE_LENGTH}
+        isSubmit
+        isWorking={isWorking}
+        onCancel={onClose}
+      />
+    </form>
   );
 }

@@ -3,6 +3,13 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// vitest runs without svgr: stand-ins for the ?react icons
+vi.mock("app/icons/checkbox-checked.svg?react", () => ({
+  default: () => null,
+}));
+vi.mock("app/icons/checkbox-unchecked.svg?react", () => ({
+  default: () => null,
+}));
 vi.mock("~/lib/organisms/CustomPopup/CustomPopup", () => ({
   default: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
     isOpen ? <div>{children}</div> : null,
@@ -160,7 +167,7 @@ describe("ConfirmIdentityModal", () => {
     await act(async () => button("Email me a code")!.click());
     expect(email.send).not.toHaveBeenCalled();
 
-    await act(async () => button("Send code")!.click());
+    await act(async () => button("Send Code")!.click());
     expect(email.send).toHaveBeenCalledOnce();
     expect(text()).toContain("We sent a 6-digit code to a@b.co");
   });

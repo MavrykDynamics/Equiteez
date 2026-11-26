@@ -1,18 +1,24 @@
 /**
- * Passkeys → Manage: the email wallet's passkeys with Remove, and Add passkey,
- * which runs the browser's own prompt (Touch ID, Face ID, screen lock). No
- * Figma for this window yet: it follows the Wallet page modals.
+ * Passkeys (Figma 8131:518 "Security – Passkey"): Set Up A Passkey when there
+ * is none, Manage Passkeys otherwise; Remove asks first; adding and removing
+ * end on a success screen. Adding runs the browser's own prompt (Touch ID,
+ * Face ID, screen lock); "Confirm it's you" is ConfirmIdentityModal.
  */
-import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RText } from "~/lib/atoms/RTypography/RText";
-import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
+import { useState } from "react";
 
+import { RButton } from "~/lib/atoms/RButton";
+import { RText } from "~/lib/atoms/RTypography/RText";
 import { formatDayMonthYear } from "~/lib/utils/date";
 
-import type { usePasskeys } from "./usePasskeys";
+import type { DynamicPasskey, usePasskeys } from "./usePasskeys";
 import styles from "./WalletModal.module.css";
+import {
+  WalletModal,
+  WalletModalActions,
+  WalletModalError,
+  WalletModalHeader,
+  WalletModalSuccess,
+} from "./WalletModalParts";
 
 type PasskeysModalProps = ReturnType<typeof usePasskeys> & {
   isOpen: boolean;
@@ -22,113 +28,222 @@ type PasskeysModalProps = ReturnType<typeof usePasskeys> & {
 export function PasskeysModal({
   isOpen,
   onClose,
+  ...props
+}: PasskeysModalProps) {
+  return (
+    <WalletModal isOpen={isOpen} label="Passkeys" onRequestClose={onClose}>
+      {/* Mounted only while open: every opening starts on the list */}
+      <PasskeysContent {...props} onClose={onClose} />
+    </WalletModal>
+  );
+}
+
+type Step =
+  | { name: "list" }
+  | { name: "added" }
+  | { name: "remove"; passkey: DynamicPasskey; back: "list" | "added" }
+  | { name: "removed" };
+
+const newest = (passkeys: DynamicPasskey[]) =>
+  passkeys.reduce<DynamicPasskey | null>(
+    (last, passkey) =>
+      !last || passkey.createdAt > last.createdAt ? passkey : last,
+    null
+  );
+
+function PasskeysContent({
+  onClose,
   passkeys,
   error,
   isAdding,
   removingId,
   add,
   remove,
-}: PasskeysModalProps) {
+}: Omit<PasskeysModalProps, "isOpen">) {
+  const [step, setStep] = useState<Step>({ name: "list" });
   const isBusy = isAdding || removingId !== null;
 
-  return (
-    <CustomPopup
-      className={styles.modal}
-      contentLabel="Passkeys"
-      contentPosition="center"
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      overlayClassName={styles.overlay}
-    >
-      <div className={styles.closeRow}>
-        <button
-          aria-label="Close"
-          className={styles.closeButton}
-          onClick={onClose}
-          type="button"
-        >
-          <RIcon name="close" size="medium" />
-        </button>
-      </div>
+  const handleAdd = async () => {
+    if (await add()) setStep({ name: "added" });
+  };
 
-      <div className={styles.content}>
-        <header className={styles.header}>
-          <div className={styles.headerText}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              Passkeys
-            </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              A passkey confirms it&apos;s you with your device&apos;s Touch ID,
-              Face ID or screen lock.
-            </RText>
-          </div>
-        </header>
+  const handleRemove = async (passkeyId: string) => {
+    if (await remove(passkeyId)) setStep({ name: "removed" });
+  };
 
-        {passkeys === null ? (
-          error ? null : (
-            <RText className={styles.empty} color="neutral-700" size="body-sm">
-              Loading your passkeys…
-            </RText>
-          )
-        ) : passkeys.length ? (
-          <ul className={styles.list}>
-            {passkeys.map((passkey) => (
-              <li className={styles.listItem} key={passkey.id}>
-                <div>
-                  <RText size="body-sm" weight="medium">
-                    {passkey.name ?? "Passkey"}
-                  </RText>
-                  <RText color="neutral-700" size="body-s">
-                    Added {formatDayMonthYear(passkey.createdAt)}
-                  </RText>
-                </div>
-                <RButton
-                  disabled={isBusy}
-                  isLoading={removingId === passkey.id}
-                  onClick={() => void remove(passkey.id)}
-                  size="small"
-                  tone="black"
-                  variant="secondary"
-                >
-                  Remove
-                </RButton>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <RText className={styles.empty} color="neutral-700" size="body-sm">
-            No passkeys yet.
-          </RText>
-        )}
+  const askToRemove = (passkey: DynamicPasskey, back: "list" | "added") =>
+    setStep({ name: "remove", passkey, back });
 
-        {error ? (
-          <RText className={styles.error} role="alert" size="body-sm">
-            {error}
-          </RText>
+  const addAnother = (
+    <div className={styles.actions}>
+      <RButton
+        className={styles.action}
+        disabled={isBusy || passkeys === null}
+        isLoading={isAdding}
+        onClick={() => void handleAdd()}
+        size="medium"
+        tone="black"
+        variant="secondary"
+      >
+        Add Another Passkey
+      </RButton>
+      <RButton
+        className={styles.action}
+        disabled={isAdding}
+        onClick={onClose}
+        size="medium"
+        tone="black"
+      >
+        OK
+      </RButton>
+    </div>
+  );
+
+  if (step.name === "removed") {
+    return (
+      <WalletModalSuccess
+        description="Your passkey has been removed from your account."
+        onClose={onClose}
+        title="Passkey Removed"
+      />
+    );
+  }
+
+  if (step.name === "added") {
+    const added = passkeys ? newest(passkeys) : null;
+
+    return (
+      <WalletModalSuccess
+        actions={
+          <>
+            <WalletModalError message={error} />
+            {addAnother}
+          </>
+        }
+        description="Your passkey has been created. You can now use it to securely sign in to or verify your identity on Equiteez."
+        onClose={onClose}
+        title="Passkey Added"
+      >
+        {added ? (
+          <PasskeyCard
+            onRemove={() => askToRemove(added, "added")}
+            passkey={added}
+          />
         ) : null}
+      </WalletModalSuccess>
+    );
+  }
 
-        <div className={styles.actions}>
-          <RButton
-            className={styles.action}
-            onClick={onClose}
-            size="medium"
-            tone="black"
-            variant="secondary"
-          >
-            Close
-          </RButton>
-          <RButton
-            className={styles.action}
-            disabled={isBusy || passkeys === null}
-            isLoading={isAdding}
-            onClick={() => void add()}
-            size="medium"
-            tone="black"
-          >
-            Add passkey
-          </RButton>
-        </div>
+  if (step.name === "remove") {
+    return (
+      <div className={styles.content}>
+        <WalletModalHeader
+          description="Are you sure you want to remove this passkey? You will no longer be able to use it to sign in."
+          isDisabled={isBusy}
+          onBack={() =>
+            setStep(
+              step.back === "added" ? { name: "added" } : { name: "list" }
+            )
+          }
+          onClose={onClose}
+          title="Remove Passkey?"
+        />
+        <PasskeyCard passkey={step.passkey} />
+        <WalletModalError message={error} />
+        <WalletModalActions
+          confirmLabel="Confirm And Remove"
+          isWorking={removingId === step.passkey.id}
+          onCancel={onClose}
+          onConfirm={() => void handleRemove(step.passkey.id)}
+        />
       </div>
-    </CustomPopup>
+    );
+  }
+
+  // No passkeys yet: set one up
+  if (passkeys?.length === 0) {
+    return (
+      <div className={styles.content}>
+        <WalletModalHeader
+          description="Create a passkey to securely access your account using your device's biometrics, PIN, or screen lock."
+          isDisabled={isAdding}
+          onClose={onClose}
+          title="Set Up A Passkey"
+        />
+        <WalletModalError message={error} />
+        <WalletModalActions
+          confirmLabel="Create Passkey"
+          isWorking={isAdding}
+          onCancel={onClose}
+          onConfirm={() => void handleAdd()}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.content}>
+      <WalletModalHeader
+        description="Review and manage your saved passkeys"
+        onClose={onClose}
+        title="Manage Passkeys"
+      />
+      {passkeys === null ? (
+        error ? null : (
+          <RText className={styles.empty} color="neutral-700" size="body-sm">
+            Loading your passkeys…
+          </RText>
+        )
+      ) : (
+        <ul className={styles.list}>
+          {passkeys.map((passkey) => (
+            <li key={passkey.id}>
+              <PasskeyCard
+                isDisabled={isBusy}
+                onRemove={() => askToRemove(passkey, "list")}
+                passkey={passkey}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      <WalletModalError message={error} />
+      {addAnother}
+    </div>
+  );
+}
+
+function PasskeyCard({
+  passkey,
+  isDisabled = false,
+  onRemove,
+}: {
+  passkey: DynamicPasskey;
+  isDisabled?: boolean;
+  /** Without it the card has no Remove button */
+  onRemove?: () => void;
+}) {
+  return (
+    <div className={styles.passkeyCard}>
+      <div>
+        <RText size="body-sm" weight="medium">
+          {passkey.name ?? "Passkey"}
+        </RText>
+        <RText color="neutral-700" size="body-s">
+          Added {formatDayMonthYear(passkey.createdAt)}
+        </RText>
+      </div>
+      {onRemove ? (
+        <RButton
+          disabled={isDisabled}
+          onClick={onRemove}
+          size="small"
+          tone="black"
+          variant="secondary"
+        >
+          Remove
+        </RButton>
+      ) : null}
+    </div>
   );
 }

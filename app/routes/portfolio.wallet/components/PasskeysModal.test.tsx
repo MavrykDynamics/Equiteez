@@ -20,6 +20,13 @@ const mocks = vi.hoisted(() => ({
 // would reload the list on each render
 const wallet = vi.hoisted(() => ({ dynamic: {} as Record<string, unknown> }));
 
+// vitest runs without svgr: stand-ins for the ?react icons
+vi.mock("app/icons/checkbox-checked.svg?react", () => ({
+  default: () => null,
+}));
+vi.mock("app/icons/checkbox-unchecked.svg?react", () => ({
+  default: () => null,
+}));
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
   useWalletContext: () => wallet,
 }));
@@ -98,21 +105,41 @@ describe("Passkeys", () => {
     expect(text()).toContain("Added 2 Nov 2026");
   });
 
-  it("adds a passkey and reloads the list", async () => {
+  it("adds a passkey and shows the new one on Passkey Added", async () => {
     await render();
-    await click("Add passkey");
+    await click("Add Another Passkey");
 
     expect(mocks.addPasskey).toHaveBeenCalledOnce();
     expect(text()).toContain("2 passkeys, the latest added 10 Nov 2026");
-    expect(buttons("Remove")).toHaveLength(2);
+    expect(text()).toContain("Passkey Added");
+    // Only the new passkey, with its Remove
+    expect(text()).toContain("Added 10 Nov 2026");
+    expect(buttons("Remove")).toHaveLength(1);
   });
 
-  it("removes a passkey", async () => {
+  it("removes a passkey after Remove Passkey?", async () => {
     await render();
     await click("Remove");
 
+    expect(text()).toContain("Remove Passkey?");
+    expect(mocks.removePasskey).not.toHaveBeenCalled();
+
+    await click("Confirm And Remove");
+
     expect(mocks.removePasskey).toHaveBeenCalledWith("pk-1");
     expect(text()).toContain("No passkeys yet");
+    expect(text()).toContain("Passkey Removed");
+  });
+
+  it("offers Set Up A Passkey when there is none", async () => {
+    mocks.passkeys = [];
+    await render();
+
+    expect(text()).toContain("Set Up A Passkey");
+
+    await click("Create Passkey");
+    expect(mocks.addPasskey).toHaveBeenCalledOnce();
+    expect(text()).toContain("Passkey Added");
   });
 
   it("stays quiet when the browser prompt is dismissed", async () => {
@@ -122,7 +149,7 @@ describe("Passkeys", () => {
       })
     );
     await render();
-    await click("Add passkey");
+    await click("Add Another Passkey");
 
     expect(container.querySelector("[role=alert]")).toBeNull();
   });
@@ -131,8 +158,9 @@ describe("Passkeys", () => {
     mocks.addPasskey.mockRejectedValue(new IdentityCheckCancelledError());
     mocks.removePasskey.mockRejectedValue(new IdentityCheckCancelledError());
     await render();
-    await click("Add passkey");
+    await click("Add Another Passkey");
     await click("Remove");
+    await click("Confirm And Remove");
 
     expect(container.querySelector("[role=alert]")).toBeNull();
   });
@@ -142,7 +170,7 @@ describe("Passkeys", () => {
       new Error("Passkey authenticator is not enabled")
     );
     await render();
-    await click("Add passkey");
+    await click("Add Another Passkey");
 
     expect(text()).toContain("Passkeys aren't turned on for Equiteez yet.");
   });

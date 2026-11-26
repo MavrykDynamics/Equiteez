@@ -10,7 +10,6 @@ vi.mock("app/icons/checkbox-checked.svg?react", () => ({
 vi.mock("app/icons/checkbox-unchecked.svg?react", () => ({
   default: () => null,
 }));
-vi.mock("app/icons/export-key.svg?react", () => ({ default: () => null }));
 vi.mock("~/lib/organisms/CustomPopup/CustomPopup", () => ({
   default: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
     isOpen ? <div>{children}</div> : null,
@@ -60,7 +59,7 @@ describe("ExportKeyModal", () => {
   it("shows the key in Dynamic's frame only after the user takes responsibility", async () => {
     await render();
 
-    expect(container.textContent).toContain("Before You Export Your Key");
+    expect(container.textContent).toContain("Export Private Key");
     expect(button("Continue").disabled).toBe(true);
 
     await confirm();
@@ -73,7 +72,7 @@ describe("ExportKeyModal", () => {
     expect(button("Continue")).toBeUndefined();
     expect(onClose).not.toHaveBeenCalled();
 
-    await act(async () => button("Done").click());
+    await act(async () => button("OK").click());
     expect(onClose).toHaveBeenCalledOnce();
   });
 

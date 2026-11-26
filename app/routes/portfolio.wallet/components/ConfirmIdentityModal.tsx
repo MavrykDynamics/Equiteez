@@ -2,16 +2,17 @@
  * "Confirm it's you": Dynamic asks for a fresh check before the private key
  * is shown or a passkey is added or removed, and its JavaScript SDK has no
  * screens. Shows the ways Dynamic accepts for this user (identityCheck.ts),
- * the recommended one first, the others one click away. No Figma for this
- * window yet: it follows the Wallet page modals and the sign-in code step.
+ * the recommended one first, the others one click away. Figma 8568:82275
+ * "Security – Passkey. Verify" (the same window for the private key).
  */
-import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
-import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
-import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   DynamicSessionExpiredError,
   DynamicWrongCodeError,
@@ -29,6 +30,15 @@ import {
 } from "~/templates/ConnectWalletModal/CodeInput";
 
 import styles from "./WalletModal.module.css";
+import {
+  WalletModal,
+  WalletModalActions,
+  WalletModalError,
+  WalletModalHeader,
+} from "./WalletModalParts";
+
+const TITLE = "Verify Your Identity";
+const RESEND_COOLDOWN_SECONDS = 30;
 
 const getServerSnapshot = () => null;
 
@@ -48,15 +58,13 @@ export function ConfirmIdentityModal() {
   const [isBusy, setIsBusy] = useState(false);
 
   return (
-    <CustomPopup
-      className={styles.modal}
-      contentLabel="Confirm it's you"
-      contentPosition="center"
+    <WalletModal
+      isIdentityCheck
       isOpen={Boolean(check)}
+      label="Verify your identity"
       onRequestClose={() => {
         if (!isBusy) check?.cancel();
       }}
-      overlayClassName={styles.overlay}
     >
       {/* Keyed by the request: every check starts on its first way */}
       {check ? (
@@ -67,7 +75,7 @@ export function ConfirmIdentityModal() {
           onBusy={setIsBusy}
         />
       ) : null}
-    </CustomPopup>
+    </WalletModal>
   );
 }
 
@@ -91,69 +99,50 @@ function ConfirmIdentityContent({
     check.methods.find((method) => method.id === activeId) ?? check.methods[0];
   const others = check.methods.filter((method) => method.id !== active?.id);
 
-  return (
-    <>
-      <div className={styles.closeRow}>
+  // The other ways Dynamic accepts, under the buttons
+  const otherWays = others.length ? (
+    <div className={styles.otherWays}>
+      {others.map((method) => (
         <button
-          aria-label="Close"
-          className={styles.closeButton}
+          className={styles.textButton}
           disabled={isBusy}
-          onClick={check.cancel}
+          key={method.id}
+          onClick={() => setActiveId(method.id)}
           type="button"
         >
-          <RIcon name="close" size="medium" />
+          {method.label}
         </button>
-      </div>
+      ))}
+    </div>
+  ) : null;
 
-      <div className={styles.content}>
-        <header className={styles.header}>
-          <div className={styles.headerText}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              Confirm It&apos;s You
-            </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              We ask again before changes that protect your wallet.
-            </RText>
-          </div>
-        </header>
+  if (active?.kind === "code") {
+    return (
+      <CodeMethod
+        key={active.id}
+        method={active}
+        onBusy={onBusy}
+        onCancel={check.cancel}
+        onDone={check.done}
+        otherWays={otherWays}
+      />
+    );
+  }
 
-        {active?.kind === "code" ? (
-          <CodeMethod
-            key={active.id}
-            method={active}
-            onBusy={onBusy}
-            onCancel={check.cancel}
-            onDone={check.done}
-          />
-        ) : null}
-        {active?.kind === "passkey" ? (
-          <PasskeyMethod
-            key={active.id}
-            method={active}
-            onBusy={onBusy}
-            onCancel={check.cancel}
-            onDone={check.done}
-          />
-        ) : null}
+  if (active?.kind === "passkey") {
+    return (
+      <PasskeyMethod
+        key={active.id}
+        method={active}
+        onBusy={onBusy}
+        onCancel={check.cancel}
+        onDone={check.done}
+        otherWays={otherWays}
+      />
+    );
+  }
 
-        {others.length ? (
-          <div className={styles.otherWays}>
-            {others.map((method) => (
-              <button
-                className={styles.textButton}
-                disabled={isBusy}
-                key={method.id}
-                onClick={() => setActiveId(method.id)}
-                type="button"
-              >
-                {method.label}
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </>
-  );
+  return null;
 }
 
 type MethodProps<T extends IdentityMethod["kind"]> = {
@@ -161,15 +150,56 @@ type MethodProps<T extends IdentityMethod["kind"]> = {
   onBusy: (isBusy: boolean) => void;
   onCancel: () => void;
   onDone: () => void;
+  otherWays: ReactNode;
 };
 
-function CodeMethod({ method, onBusy, onCancel, onDone }: MethodProps<"code">) {
+/** Seconds left before the code can be sent again, ticking down */
+function useResendCountdown() {
+  const [availableAt, setAvailableAt] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (availableAt <= now) return;
+
+    const timer = window.setTimeout(() => setNow(Date.now()), 1000);
+    return () => window.clearTimeout(timer);
+  }, [availableAt, now]);
+
+  return {
+    seconds: Math.max(0, Math.ceil((availableAt - now) / 1000)),
+    restart: () => {
+      const start = Date.now();
+      setNow(start);
+      setAvailableAt(start + RESEND_COOLDOWN_SECONDS * 1000);
+    },
+  };
+}
+
+/** 24 → "0:24" */
+const formatCountdown = (totalSeconds: number) =>
+  `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
+
+function CodeMethod({
+  method,
+  onBusy,
+  onCancel,
+  onDone,
+  otherWays,
+}: MethodProps<"code">) {
   const [code, setCode] = useState("");
   // The first way's code is emailed before the dialog opens
   const [sentTo, setSentTo] = useState(method.sentTo);
   const isSent = !method.send || sentTo !== null;
   const [isWorking, setIsWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const resend = useResendCountdown();
+
+  // A code emailed before the dialog opened starts the countdown too
+  useEffect(() => {
+    if (method.send && method.sentTo !== null) resend.restart();
+    // Once per way
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const run = async (task: () => Promise<void>, fallback: string) => {
     setIsWorking(true);
@@ -198,6 +228,7 @@ function CodeMethod({ method, onBusy, onCancel, onDone }: MethodProps<"code">) {
       if (!method.send) return;
       setSentTo(await method.send());
       setCode("");
+      resend.restart();
     }, "We couldn't send the code. Please try again.");
 
   const handleConfirm = () =>
@@ -208,67 +239,78 @@ function CodeMethod({ method, onBusy, onCancel, onDone }: MethodProps<"code">) {
 
   if (!isSent) {
     return (
-      <>
-        <RText color="neutral-700" size="body-sm">
-          We&apos;ll email you a 6-digit code.
-        </RText>
-        {error ? (
-          <RText className={styles.error} role="alert" size="body-sm">
-            {error}
-          </RText>
-        ) : null}
-        <Actions
+      <div className={styles.content}>
+        <WalletModalHeader
+          description="We'll email you a 6-digit code."
+          isDisabled={isWorking}
+          onClose={onCancel}
+          title={TITLE}
+        />
+        <WalletModalError message={error} />
+        <WalletModalActions
+          confirmLabel="Send Code"
           isWorking={isWorking}
           onCancel={onCancel}
           onConfirm={() => void handleSend()}
-          confirmLabel="Send code"
         />
-      </>
+        {otherWays}
+      </div>
     );
   }
 
   return (
     <form
-      className={styles.codeForm}
+      className={styles.content}
       onSubmit={(event) => {
         event.preventDefault();
         if (code.length === CODE_LENGTH) void handleConfirm();
       }}
     >
-      <RText color="neutral-700" size="body-sm">
-        {method.send ? (
-          <>
-            We sent a 6-digit code to <strong>{sentTo}</strong>.
-          </>
-        ) : (
-          "Enter the 6-digit code from your authenticator app."
-        )}
-      </RText>
+      <WalletModalHeader
+        description={
+          method.send ? (
+            <>
+              We sent a 6-digit code to <RText size="body-sm">{sentTo}</RText>
+            </>
+          ) : (
+            "Enter the 6-digit code from your authenticator app."
+          )
+        }
+        isDisabled={isWorking}
+        onBack={onCancel}
+        onClose={onCancel}
+        title={TITLE}
+      />
       <div className={styles.codeBlock}>
         <CodeInput invalid={Boolean(error)} onChange={setCode} value={code} />
-        {error ? (
-          <RText className={styles.error} role="alert" size="body-sm">
-            {error}
-          </RText>
-        ) : null}
-        {method.send ? (
-          <button
-            className={styles.textButton}
-            disabled={isWorking}
-            onClick={() => void handleSend()}
-            type="button"
-          >
-            Resend code
-          </button>
-        ) : null}
+        <WalletModalError message={error} />
       </div>
-      <Actions
+      {method.send ? (
+        <div className={styles.resendRow}>
+          {resend.seconds > 0 ? (
+            <RText color="neutral-700" size="body-sm">
+              Resend code in {formatCountdown(resend.seconds)}
+            </RText>
+          ) : (
+            <button
+              className={styles.textButton}
+              disabled={isWorking}
+              onClick={() => void handleSend()}
+              type="button"
+            >
+              Resend code
+            </button>
+          )}
+        </div>
+      ) : null}
+      <WalletModalActions
         confirmLabel="Confirm"
         isConfirmDisabled={code.length < CODE_LENGTH}
         isSubmit
         isWorking={isWorking}
         onCancel={onCancel}
       />
+      {otherWays}
     </form>
   );
 }
@@ -278,6 +320,7 @@ function PasskeyMethod({
   onBusy,
   onCancel,
   onDone,
+  otherWays,
 }: MethodProps<"passkey">) {
   const [isWorking, setIsWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -301,67 +344,21 @@ function PasskeyMethod({
   };
 
   return (
-    <>
-      <RText color="neutral-700" size="body-sm">
-        Your browser will ask for a passkey saved for this account.
-      </RText>
-      {error ? (
-        <RText className={styles.error} role="alert" size="body-sm">
-          {error}
-        </RText>
-      ) : null}
-      <Actions
+    <div className={styles.content}>
+      <WalletModalHeader
+        description="Your browser will ask for a passkey saved for this account."
+        isDisabled={isWorking}
+        onClose={onCancel}
+        title={TITLE}
+      />
+      <WalletModalError message={error} />
+      <WalletModalActions
         confirmLabel={method.label}
         isWorking={isWorking}
         onCancel={onCancel}
         onConfirm={() => void handleRun()}
       />
-    </>
-  );
-}
-
-type ActionsProps = {
-  confirmLabel: string;
-  isWorking: boolean;
-  isConfirmDisabled?: boolean;
-  /** The confirm button submits the surrounding form */
-  isSubmit?: boolean;
-  onCancel: () => void;
-  onConfirm?: () => void;
-};
-
-function Actions({
-  confirmLabel,
-  isWorking,
-  isConfirmDisabled = false,
-  isSubmit = false,
-  onCancel,
-  onConfirm,
-}: ActionsProps) {
-  return (
-    <div className={styles.actions}>
-      <RButton
-        className={styles.action}
-        disabled={isWorking}
-        onClick={onCancel}
-        size="medium"
-        tone="black"
-        type="button"
-        variant="secondary"
-      >
-        Cancel
-      </RButton>
-      <RButton
-        className={styles.action}
-        disabled={isConfirmDisabled || isWorking}
-        isLoading={isWorking}
-        onClick={onConfirm}
-        size="medium"
-        tone="black"
-        type={isSubmit ? "submit" : "button"}
-      >
-        {confirmLabel}
-      </RButton>
+      {otherWays}
     </div>
   );
 }

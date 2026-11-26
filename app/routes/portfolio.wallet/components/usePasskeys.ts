@@ -59,8 +59,9 @@ export function usePasskeys() {
     void reload();
   }, [reload]);
 
+  /** true once the passkey is added; errors land in `error` */
   const add = useCallback(async () => {
-    if (!dynamic) return;
+    if (!dynamic) return false;
 
     setIsAdding(true);
     setError(null);
@@ -68,18 +69,21 @@ export function usePasskeys() {
     try {
       await dynamic.addPasskey();
       await reload();
+      return true;
     } catch (addError) {
       if (!isCancelled(addError)) {
         setError(toMessage(addError, "We couldn't add the passkey."));
       }
+      return false;
     } finally {
       setIsAdding(false);
     }
   }, [dynamic, reload]);
 
   const remove = useCallback(
+    /** true once the passkey is removed; errors land in `error` */
     async (passkeyId: string) => {
-      if (!dynamic) return;
+      if (!dynamic) return false;
 
       setRemovingId(passkeyId);
       setError(null);
@@ -87,10 +91,12 @@ export function usePasskeys() {
       try {
         await dynamic.removePasskey(passkeyId);
         await reload();
+        return true;
       } catch (removeError) {
         if (!isCancelled(removeError)) {
           setError(toMessage(removeError, "We couldn't remove the passkey."));
         }
+        return false;
       } finally {
         setRemovingId(null);
       }

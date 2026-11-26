@@ -1,16 +1,11 @@
 /**
- * Backup → "Back up to Google Drive". No Figma for this window yet: it follows
- * the Wallet page modals. Explains where the Drive access comes from, asks
- * for the wallet password when the wallet has one, then runs the backup.
+ * Backup → "Back up to Google Drive" (Figma 8574:82442 "Security – Google
+ * Drive"). Asks for the wallet password when the wallet has one, explains
+ * where the Drive access comes from, runs the backup and ends on a success
+ * screen.
  */
-import { useEffect, useId, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
-import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
-import { RInput } from "~/lib/atoms/RInput/RInput";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RText } from "~/lib/atoms/RTypography/RText";
-import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   DynamicSessionExpiredError,
   DynamicWrongPasswordError,
@@ -19,6 +14,15 @@ import { GoogleDriveAccessError } from "~/providers/WalletProvider/dynamic/googl
 
 import type { useGoogleDriveBackup } from "./useGoogleDriveBackup";
 import styles from "./WalletModal.module.css";
+import {
+  PasswordField,
+  WalletModal,
+  WalletModalActions,
+  WalletModalError,
+  WalletModalHeader,
+  WalletModalNotice,
+  WalletModalSuccess,
+} from "./WalletModalParts";
 
 type GoogleDriveBackupModalProps = Pick<
   ReturnType<typeof useGoogleDriveBackup>,
@@ -36,17 +40,14 @@ export function GoogleDriveBackupModal({
   ...props
 }: GoogleDriveBackupModalProps) {
   return (
-    <CustomPopup
-      className={styles.modal}
-      contentLabel="Back up to Google Drive"
-      contentPosition="center"
+    <WalletModal
       isOpen={isOpen}
+      label="Google Drive backup"
       onRequestClose={onClose}
-      overlayClassName={styles.overlay}
     >
       {/* Mounted only while open: every opening checks the access again */}
       <GoogleDriveBackupContent {...props} onClose={onClose} />
-    </CustomPopup>
+    </WalletModal>
   );
 }
 
@@ -65,9 +66,9 @@ function GoogleDriveBackupContent({
   backUp,
   onClose,
 }: Omit<GoogleDriveBackupModalProps, "isOpen">) {
-  const passwordId = useId();
   const [password, setPassword] = useState("");
   const [isBackingUp, setIsBackingUp] = useState(false);
+  const [isDone, setIsDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -90,102 +91,62 @@ function GoogleDriveBackupContent({
     try {
       // Straight from the click: Google's popup opens before anything else
       await backUp({ password: hasPassword ? password : undefined });
-      onClose();
+      setIsDone(true);
     } catch (backupError) {
       setError(toMessage(backupError));
+    } finally {
       setIsBackingUp(false);
     }
   };
 
+  if (isDone) {
+    return (
+      <WalletModalSuccess
+        description="Your Google Account is connected. Your account data can now be backed up to Google Drive."
+        onClose={onClose}
+        title="Backup Enabled"
+      />
+    );
+  }
+
   return (
-    <>
-      <div className={styles.closeRow}>
-        <button
-          aria-label="Close"
-          className={styles.closeButton}
-          disabled={isBackingUp}
-          onClick={onClose}
-          type="button"
-        >
-          <RIcon name="close" size="medium" />
-        </button>
-      </div>
+    <form className={styles.content} noValidate onSubmit={handleSubmit}>
+      <WalletModalHeader
+        description="Back up your account data securely to Google Drive so you can restore access when needed."
+        isDisabled={isBackingUp}
+        onClose={onClose}
+        title="Google Drive Backup"
+      />
 
-      <form className={styles.content} noValidate onSubmit={handleSubmit}>
-        <header className={styles.header}>
-          <span className={styles.heroIcon}>
-            <RIcon aria-hidden name="upload" size="medium" />
-          </span>
-          <div className={styles.headerText}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              Back Up To Google Drive
-            </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              We&apos;ll save an encrypted recovery file to your Google Drive so
-              you can restore access on a new device.
-            </RText>
-          </div>
-        </header>
+      {hasPassword ? (
+        <PasswordField
+          autoComplete="current-password"
+          label="Wallet Password"
+          onChange={setPassword}
+          placeholder="Enter Wallet Password"
+          value={password}
+        />
+      ) : null}
 
-        <div className={styles.notice}>
-          <RIcon aria-hidden name="info-circle" size="small" />
-          <RText size="body-sm">
-            {accessSource === null
-              ? "Checking your Google access…"
-              : !isAvailable
-                ? "Google Drive backup isn't available for email sign-in yet."
-                : accessSource === "stored"
-                  ? "We'll use the Google account you signed in with."
-                  : "Google will open a window. Tick both Google Drive boxes so Equiteez can save one file."}
-          </RText>
-        </div>
+      <WalletModalNotice>
+        {accessSource === null
+          ? "Checking your Google access…"
+          : !isAvailable
+            ? "Google Drive backup isn't available for email sign-in yet."
+            : accessSource === "stored"
+              ? "We'll use the Google account you signed in with."
+              : "Google will open a new window asking you to grant access to Google Drive. Please enable both requested permissions to allow Equiteez to save your backup file."}
+      </WalletModalNotice>
 
-        {hasPassword ? (
-          <div className={styles.field}>
-            <label className={styles.fieldLabel} htmlFor={passwordId}>
-              Wallet Password
-            </label>
-            <RInput
-              autoComplete="current-password"
-              className={styles.fieldInput}
-              id={passwordId}
-              onChange={(event) => setPassword(event.target.value)}
-              type="password"
-              value={password}
-            />
-          </div>
-        ) : null}
+      <WalletModalError message={error} />
 
-        {error ? (
-          <RText className={styles.error} role="alert" size="body-sm">
-            {error}
-          </RText>
-        ) : null}
-
-        <div className={styles.actions}>
-          <RButton
-            className={styles.action}
-            disabled={isBackingUp}
-            onClick={onClose}
-            size="medium"
-            tone="black"
-            type="button"
-            variant="secondary"
-          >
-            Cancel
-          </RButton>
-          <RButton
-            className={styles.action}
-            disabled={!canBackUp}
-            isLoading={isBackingUp}
-            size="medium"
-            tone="black"
-            type="submit"
-          >
-            Back Up
-          </RButton>
-        </div>
-      </form>
-    </>
+      <WalletModalActions
+        confirmLabel="Continue"
+        isConfirmDisabled={!canBackUp}
+        isSubmit
+        isWorking={isBackingUp}
+        onCancel={onClose}
+      />
+    </form>
   );
 }

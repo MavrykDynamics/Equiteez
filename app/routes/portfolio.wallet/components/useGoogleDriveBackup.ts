@@ -11,14 +11,12 @@ import {
   loadGoogleIdentity,
   requestGoogleDriveAccessToken,
 } from "~/providers/WalletProvider/dynamic/googleDriveToken";
-import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 export type DriveAccessSource = "stored" | "popup";
 
 export function useGoogleDriveBackup() {
   const { dynamic } = useWalletContext();
-  const { success } = useToasterContext();
   const [isBackedUp, setIsBackedUp] = useState(
     () => dynamic?.isWalletBackedUp() ?? false
   );
@@ -57,12 +55,8 @@ export function useGoogleDriveBackup() {
 
       await dynamic.backupToGoogleDrive({ googleDriveAccessToken, password });
       setIsBackedUp(true);
-      success(
-        "Backed up to Google Drive",
-        "You can restore access to your wallet on a new device."
-      );
     },
-    [accessSource, dynamic, success]
+    [accessSource, dynamic]
   );
 
   return {

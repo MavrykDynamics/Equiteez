@@ -3,12 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import { formatDayMonthYear } from "~/lib/utils/date";
 import type { DynamicAuthenticator } from "~/providers/WalletProvider/dynamic/dynamicClient.client";
-import { useToasterContext } from "~/providers/ToasterProvider/toaster.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
 export function useAuthenticator() {
   const { dynamic } = useWalletContext();
-  const { success } = useToasterContext();
   /** undefined until known; null when not set up */
   const [authenticator, setAuthenticator] = useState<
     DynamicAuthenticator | null | undefined
@@ -45,12 +43,8 @@ export function useAuthenticator() {
 
       await dynamic.verifyAuthenticatorSetup(deviceId, code);
       await reload();
-      success(
-        "Authenticator app is on",
-        "We'll ask for a code from it to confirm it's you."
-      );
     },
-    [dynamic, reload, success]
+    [dynamic, reload]
   );
 
   /** The recovery codes to save; rejects when they can't be loaded */
@@ -69,9 +63,8 @@ export function useAuthenticator() {
 
       await dynamic.removeAuthenticator(authenticator.id, code);
       setAuthenticator(null);
-      success("Authenticator app removed", "You can set it up again anytime.");
     },
-    [authenticator, dynamic, success]
+    [authenticator, dynamic]
   );
 
   return {

@@ -3,6 +3,12 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("app/icons/checkbox-checked.svg?react", () => ({
+  default: () => <svg data-testid="checked" />,
+}));
+vi.mock("app/icons/checkbox-unchecked.svg?react", () => ({
+  default: () => <svg data-testid="unchecked" />,
+}));
 // The hook module imports the providers, which load Beacon: not needed here
 vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
   useWalletContext: () => ({ dynamic: null }),
@@ -99,32 +105,49 @@ afterEach(() => {
   container.remove();
 });
 
+const tick = () =>
+  act(async () =>
+    container.querySelector<HTMLInputElement>("input[type=checkbox]")!.click()
+  );
+/** QR code → Continue → the code step */
+const openCodeStep = () => act(async () => button("Continue").click());
+
 describe("AuthenticatorModal", () => {
-  it("sets the app up: QR code, first code, then the recovery codes", async () => {
+  it("sets the app up: QR code, first code, recovery codes, then done", async () => {
     await render();
 
     expect(startSetup).toHaveBeenCalledOnce();
     expect(container.querySelector("svg[role=img]")).not.toBeNull();
     expect(text()).toContain(SETUP.secret);
 
+    await openCodeStep();
+    expect(text()).toContain("Verify Your Authenticator");
+
     await typeCode("123456");
-    await act(async () => button("Turn On").click());
+    await act(async () => button("Verify And Enable").click());
 
     expect(verifySetup).toHaveBeenCalledWith("totp-1", "123456");
     expect(text()).toContain("Save Your Recovery Codes");
     expect(text()).toContain("aaaa-1111");
+    // Continue waits for the acknowledgment
+    expect(button("Continue").disabled).toBe(true);
 
-    await act(async () => button("I've Saved These Codes").click());
+    await tick();
+    await act(async () => button("Continue").click());
 
     expect(acknowledgeRecoveryCodes).toHaveBeenCalledOnce();
+    expect(text()).toContain("Authenticator Enabled");
+
+    await act(async () => button("OK").click());
     expect(onClose).toHaveBeenCalledOnce();
   });
 
   it("keeps the step with Try again when the recovery codes can't be loaded", async () => {
     getRecoveryCodes.mockRejectedValueOnce(new Error("network"));
     await render();
+    await openCodeStep();
     await typeCode("123456");
-    await act(async () => button("Turn On").click());
+    await act(async () => button("Verify And Enable").click());
 
     expect(text()).toContain("couldn't load your recovery codes");
     expect(onClose).not.toHaveBeenCalled();
@@ -134,22 +157,29 @@ describe("AuthenticatorModal", () => {
     expect(text()).toContain("aaaa-1111");
   });
 
-  it("closes when the project has no recovery codes", async () => {
+  it("is done at once when the project has no recovery codes", async () => {
     getRecoveryCodes.mockResolvedValueOnce([]);
     await render();
+    await openCodeStep();
     await typeCode("123456");
-    await act(async () => button("Turn On").click());
+    await act(async () => button("Verify And Enable").click());
 
-    expect(onClose).toHaveBeenCalledOnce();
+    expect(text()).toContain("Authenticator Enabled");
   });
 
-  it("keeps the QR code with the reason after a wrong code", async () => {
+  it("keeps the code step with the reason after a wrong code, and Back shows the QR code", async () => {
     verifySetup.mockRejectedValueOnce(new DynamicWrongCodeError());
     await render();
+    await openCodeStep();
     await typeCode("000000");
-    await act(async () => button("Turn On").click());
+    await act(async () => button("Verify And Enable").click());
 
     expect(text()).toContain("That code didn't work");
+    expect(text()).not.toContain("The code refreshes every 30 seconds");
+
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>("[aria-label=Back]")!.click()
+    );
     expect(text()).toContain(SETUP.secret);
   });
 
@@ -160,17 +190,20 @@ describe("AuthenticatorModal", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it("removes a set-up app with a current code", async () => {
+  it("turns a set-up app off: confirm, a current code, then done", async () => {
     await render({ id: "totp-1", addedAt: null });
 
     expect(startSetup).not.toHaveBeenCalled();
-    expect(button("Remove").disabled).toBe(true);
+    expect(text()).toContain("Disable Authenticator?");
+
+    await act(async () => button("Disable").click());
+    expect(button("Confirm And Disable").disabled).toBe(true);
 
     await typeCode("123456");
-    await act(async () => button("Remove").click());
+    await act(async () => button("Confirm And Disable").click());
 
     expect(remove).toHaveBeenCalledWith("123456");
-    expect(onClose).toHaveBeenCalledOnce();
+    expect(text()).toContain("Authenticator Disabled");
   });
 });
 

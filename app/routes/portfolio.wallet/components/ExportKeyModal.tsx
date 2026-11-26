@@ -1,20 +1,13 @@
 /**
- * "Before You Export Your Key" (Figma 8229:76438). Continue, once the user
- * takes responsibility for the key, runs "Confirm it's you" and then shows the
- * private key in an isolated frame Dynamic injects into this modal: Equiteez
- * never sees it.
+ * "Export Private Key" (Figma 8574:82510 "Security – Private Key"). Continue,
+ * once the user takes responsibility for the key, runs "Confirm it's you"
+ * and then shows the private key in an isolated frame Dynamic injects into
+ * this modal ("Your Private Key"): Equiteez never sees it, so the key can't
+ * have our own Copy button.
  */
-import { useId, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-import CheckboxChecked from "app/icons/checkbox-checked.svg?react";
-import CheckboxUnchecked from "app/icons/checkbox-unchecked.svg?react";
-import ExportKeyIcon from "app/icons/export-key.svg?react";
 import { RButton } from "~/lib/atoms/RButton";
-import { RIcon } from "~/lib/atoms/RIcon";
-import { RInput } from "~/lib/atoms/RInput/RInput";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
-import { RText } from "~/lib/atoms/RTypography/RText";
-import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   DynamicSessionExpiredError,
   DynamicWrongPasswordError,
@@ -23,6 +16,15 @@ import {
 } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
 import styles from "./WalletModal.module.css";
+import {
+  PasswordField,
+  WalletModal,
+  WalletModalActions,
+  WalletModalCheckbox,
+  WalletModalError,
+  WalletModalHeader,
+  WalletModalWarning,
+} from "./WalletModalParts";
 
 type ExportKeyModalProps = {
   isOpen: boolean;
@@ -43,13 +45,10 @@ export function ExportKeyModal({
   onContinue,
 }: ExportKeyModalProps) {
   return (
-    <CustomPopup
-      className={styles.modal}
-      contentLabel="Before you export your key"
-      contentPosition="center"
+    <WalletModal
       isOpen={isOpen}
+      label="Export private key"
       onRequestClose={onClose}
-      overlayClassName={styles.overlay}
     >
       {/* Mounted only while open: every opening starts unconfirmed */}
       <ExportKeyContent
@@ -57,7 +56,7 @@ export function ExportKeyModal({
         onClose={onClose}
         onContinue={onContinue}
       />
-    </CustomPopup>
+    </WalletModal>
   );
 }
 
@@ -66,7 +65,6 @@ function ExportKeyContent({
   onClose,
   onContinue,
 }: Omit<ExportKeyModalProps, "isOpen">) {
-  const passwordId = useId();
   const [password, setPassword] = useState("");
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
@@ -107,152 +105,73 @@ function ExportKeyContent({
   };
 
   return (
-    <>
-      <div className={styles.closeRow}>
-        <button
-          aria-label="Close"
-          className={styles.closeButton}
+    <div className={styles.content}>
+      {isKeyShown ? (
+        <>
+          <WalletModalHeader
+            description="Your private key is ready. Copy it and store it somewhere safe. Never share it with anyone."
+            onClose={onClose}
+            title="Your Private Key"
+          />
+          <WalletModalWarning title="Keep your Private Key secure">
+            Anyone with your private key can access and control your wallet.
+            Keep it private and secure.
+          </WalletModalWarning>
+        </>
+      ) : (
+        <>
+          <WalletModalHeader
+            description="Your private key gives full access to your wallet and all its assets. Make sure you understand how to keep it safe before proceeding."
+            isDisabled={isOpening}
+            onClose={onClose}
+            title="Export Private Key"
+          />
+          <WalletModalWarning title="Keep your Private Key secure">
+            Never share your private key with anyone or store it in an unsecured
+            location. Anyone with access to it can fully control your wallet and
+            its funds.
+          </WalletModalWarning>
+          <WalletModalCheckbox checked={isConfirmed} onChange={setIsConfirmed}>
+            I understand the risks and will keep my private key safe.
+          </WalletModalCheckbox>
+          {hasPassword ? (
+            <PasswordField
+              autoComplete="current-password"
+              label="Wallet Password"
+              onChange={setPassword}
+              placeholder="Enter Wallet Password"
+              value={password}
+            />
+          ) : null}
+          <WalletModalError message={error} />
+          <WalletModalActions
+            confirmLabel="Continue"
+            isConfirmDisabled={!isConfirmed || (hasPassword && !password)}
+            isWorking={isOpening}
+            onCancel={onClose}
+            onConfirm={() => void handleContinue()}
+          />
+        </>
+      )}
+
+      {/* Dynamic's frame with the key: mounted from the start so the same
+          node is there when the key arrives */}
+      <div
+        className={isKeyShown ? styles.keyFrame : undefined}
+        hidden={!isKeyShown}
+        ref={keyFrameRef}
+      />
+
+      {isKeyShown ? (
+        <RButton
+          className={styles.fullAction}
           onClick={onClose}
-          type="button"
+          size="medium"
+          tone="black"
         >
-          <RIcon name="close" size="medium" />
-        </button>
-      </div>
-
-      <div className={styles.content}>
-        <header className={styles.header}>
-          <span className={styles.heroIcon}>
-            <ExportKeyIcon aria-hidden="true" />
-          </span>
-          <div className={styles.headerText}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              Before You Export Your Key
-            </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              Your private key is the master copy of this wallet.
-            </RText>
-          </div>
-        </header>
-
-        {isKeyShown ? null : (
-          <>
-            <div className={styles.warning}>
-              <RIcon
-                aria-hidden="true"
-                className={styles.warningIcon}
-                name="warning"
-                size="small"
-              />
-              <div className={styles.warningText}>
-                <RText size="body-sm">
-                  Anyone with this key controls your Mavryk address and
-                  everything in it.
-                </RText>
-                <RText color="neutral-700" size="body-sm">
-                  Equiteez will never ask for it. Anyone who asks is trying to
-                  take your funds.
-                </RText>
-              </div>
-            </div>
-
-            <label className={styles.confirm}>
-              <input
-                checked={isConfirmed}
-                className={styles.confirmInput}
-                onChange={(event) => setIsConfirmed(event.target.checked)}
-                type="checkbox"
-              />
-              {isConfirmed ? (
-                <CheckboxChecked
-                  aria-hidden="true"
-                  className={styles.checkbox}
-                />
-              ) : (
-                <CheckboxUnchecked
-                  aria-hidden="true"
-                  className={styles.checkbox}
-                />
-              )}
-              <RText size="body-sm">
-                I&apos;m responsible for keeping this key safe and private.
-              </RText>
-            </label>
-
-            {hasPassword ? (
-              <div className={styles.field}>
-                <label className={styles.fieldLabel} htmlFor={passwordId}>
-                  Wallet Password
-                </label>
-                <RInput
-                  autoComplete="current-password"
-                  className={styles.fieldInput}
-                  id={passwordId}
-                  onChange={(event) => setPassword(event.target.value)}
-                  type="password"
-                  value={password}
-                />
-              </div>
-            ) : null}
-
-            <RText color="neutral-700" size="body-sm">
-              Next you&apos;ll confirm it&apos;s you. The key then appears here
-              in a secure frame from Dynamic; Equiteez never sees it.
-            </RText>
-
-            {error ? (
-              <RText className={styles.error} role="alert" size="body-sm">
-                {error}
-              </RText>
-            ) : null}
-
-            <div className={styles.actions}>
-              <RButton
-                className={styles.action}
-                onClick={onClose}
-                size="medium"
-                tone="black"
-                variant="secondary"
-              >
-                Cancel
-              </RButton>
-              <RButton
-                className={styles.action}
-                disabled={
-                  !isConfirmed || isOpening || (hasPassword && !password)
-                }
-                onClick={() => void handleContinue()}
-                size="medium"
-                tone="black"
-              >
-                Continue
-              </RButton>
-            </div>
-          </>
-        )}
-
-        <div
-          className={isKeyShown ? styles.keyFrame : undefined}
-          hidden={!isKeyShown}
-          ref={keyFrameRef}
-        />
-
-        {isKeyShown ? (
-          <>
-            <RText color="neutral-700" size="body-sm">
-              This key is in Solana format. Store it somewhere only you can
-              reach, then close this window.
-            </RText>
-            <RButton
-              className={styles.action}
-              onClick={onClose}
-              size="medium"
-              tone="black"
-            >
-              Done
-            </RButton>
-          </>
-        ) : null}
-      </div>
-    </>
+          OK
+        </RButton>
+      ) : null}
+    </div>
   );
 }

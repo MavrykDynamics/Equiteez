@@ -1,3 +1,5 @@
+@import "../../../styles/breakpoints.css";
+
 .overlay {
   display: flex;
   align-items: center;
@@ -6,7 +8,12 @@
   background: rgba(1, 1, 1, 0.6);
 }
 
-/* Wallet page modals (Figma 8229:76438): 588px, 16px radius */
+/* Behind "Verify Your Identity": out of sight, still mounted */
+.overlay.overlayHidden {
+  display: none;
+}
+
+/* Security modals (Figma 8131:518 "Security – …"): 588px, 16px radius */
 .modal {
   width: min(588px, 100%);
   max-height: calc(100vh - var(--r-space-8));
@@ -20,13 +27,41 @@
   outline: none;
 }
 
-.closeRow {
+/* 32px top and bottom, 44px sides; blocks 24px apart */
+.content,
+.successContent {
   display: flex;
-  justify-content: flex-end;
-  padding: var(--r-space-3) var(--r-space-4) var(--r-space-2);
+  flex-direction: column;
+  gap: var(--r-space-6);
+  padding: var(--r-space-8) 44px;
 }
 
-.closeButton {
+/* Back · title · close, the description 12px under it */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+.titleRow {
+  display: grid;
+  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(
+      --r-size-icon-medium
+    );
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.title {
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.description {
+  text-align: center;
+}
+
+.iconButton {
   display: grid;
   width: var(--r-size-icon-medium);
   height: var(--r-size-icon-medium);
@@ -35,68 +70,80 @@
   color: var(--r-color-neutral-black);
   background: transparent;
   border: 0;
+  border-radius: var(--r-radius-xs);
   cursor: pointer;
 }
 
-.closeButton:focus-visible {
+.iconButton:disabled {
+  color: var(--r-color-neutral-500);
+  cursor: default;
+}
+
+.iconButton:focus-visible {
   outline: none;
   box-shadow: var(--r-focus-ring);
-  border-radius: var(--r-radius-xs);
 }
 
-/* 16px top, 44px sides, 32px bottom; blocks 24px apart */
-.content {
+/* Success: close alone at the top right, then the green check */
+.successContent {
+  gap: 0;
+}
+
+.successCloseRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.successBody,
+.successHeader {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);
-  padding: var(--r-space-4) 44px var(--r-space-8);
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
+.successHeader {
   align-items: center;
-  gap: var(--r-space-6);
   text-align: center;
 }
 
-.heroIcon {
+.successIcon {
   display: flex;
   padding: var(--r-space-3);
-  background: rgba(242, 209, 107, 0.25);
+  color: var(--r-color-green-700);
+  background: rgba(122, 201, 157, 0.25);
   border-radius: var(--r-radius-pill);
 }
 
-.heroIcon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.headerText {
+.successText {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-4);
+  gap: var(--r-space-3);
 }
 
-.title {
-  letter-spacing: 0.2px;
-}
-
-.warning {
+/* Yellow and grey boxes: 16px icon 3px down, 8px to the text */
+.warning,
+.notice {
   display: flex;
   align-items: flex-start;
   gap: var(--r-space-2);
   padding: var(--r-space-3);
-  background: var(--r-surface-warning);
   border-radius: var(--r-radius-12);
 }
 
-.warningIcon {
+.warning {
+  background: var(--r-surface-warning);
+}
+
+.notice {
+  background: var(--r-color-neutral-50);
+}
+
+.boxIcon {
   flex-shrink: 0;
   margin-top: 3px;
 }
 
-.warningText {
+.boxText {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-1);
@@ -106,7 +153,7 @@
 .confirm {
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   cursor: pointer;
 }
@@ -145,92 +192,13 @@
   min-width: 0;
 }
 
-/* Passkeys: one row per passkey, divided */
-.list {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.listItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--r-space-4);
-  padding: var(--r-space-3) 0;
-}
-
-.listItem:not(:last-child) {
-  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-}
-
-.listItem > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.listItem button {
-  flex-shrink: 0;
+/* A button alone in a column: full width (RButton is fit-content) */
+.fullAction.fullAction {
+  width: 100%;
 }
 
 .empty {
   text-align: center;
-}
-
-/* Export: Dynamic's frame with the key, injected into this box */
-.keyFrame {
-  min-height: 120px;
-  overflow: hidden;
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-12);
-}
-
-.keyFrame iframe {
-  display: block;
-  width: 100%;
-  border: 0;
-}
-
-/* Confirm it's you: the code step and the other ways under it */
-.codeForm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-6);
-}
-
-.codeBlock {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.otherWays {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--r-space-4);
-}
-
-.textButton {
-  padding: 0;
-  color: var(--r-color-neutral-black);
-  font-family: var(--r-font-body);
-  font-size: var(--r-font-size-body-sm);
-  font-weight: var(--r-font-weight-medium);
-  line-height: var(--r-line-height-body-sm);
-  text-decoration: underline;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-.textButton:disabled {
-  color: var(--r-color-neutral-700);
-  cursor: default;
 }
 
 /* Password fields: label over the input, 16px apart */
@@ -257,61 +225,177 @@
   width: 100%;
 }
 
-/* Grey info line, as on the Wallet page's Backup section */
-.notice {
+/* Code steps: the cells, then the hint or the error under them */
+.codeForm {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--r-space-6);
+}
+
+.codeBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-4);
+  text-align: center;
+}
+
+/* "Resend code in 0:24": left, under the cells */
+.resendRow {
+  display: flex;
+  margin-top: calc(-1 * var(--r-space-2));
+}
+
+.textButton {
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+  text-decoration: underline;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.textButton:disabled {
+  color: var(--r-color-neutral-700);
+  font-weight: var(--r-font-weight-regular);
+  text-decoration: none;
+  cursor: default;
+}
+
+.otherWays {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--r-space-4);
+}
+
+/* "Copy Codes" / "Copy Private Key": icon and a medium label */
+.copyLink {
+  display: inline-flex;
+  align-items: center;
   gap: var(--r-space-2);
-  padding: var(--r-space-3);
-  background: var(--r-color-neutral-50);
-  border-radius: var(--r-radius-12);
+  align-self: center;
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
-.notice > svg {
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-/* Authenticator: QR code with the typed-in key under it */
+/* Authenticator: QR code, then the key to type in */
 .qrBlock {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--r-space-2);
+  gap: var(--r-space-6);
 }
 
-.qrCode {
-  padding: var(--r-space-3);
-  background: var(--r-color-neutral-white);
-  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
-  border-radius: var(--r-radius-12);
+.keyBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-3);
+  width: 100%;
 }
 
-.secret,
-.copyAll {
+.secret {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: var(--r-space-2);
-  max-width: 100%;
-  padding: var(--r-space-2) var(--r-space-3);
+  width: min(372px, 100%);
+  padding: var(--r-space-3);
+  text-align: left;
   overflow-wrap: anywhere;
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-sm);
+}
+
+.secret svg {
+  flex-shrink: 0;
+  color: var(--r-color-neutral-600);
+}
+
+/* Recovery codes: two columns of grey cells, 16px and 12px apart */
+.recoveryBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-4);
+}
+
+.recoveryCodes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--r-space-3) var(--r-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recoveryCodes li {
+  padding: var(--r-space-3);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-sm);
+  line-height: var(--r-line-height-body-sm);
+  text-align: center;
   background: var(--r-color-neutral-50);
   border-radius: var(--r-radius-sm);
 }
 
-/* Recovery codes: two monospace columns */
-.recoveryCodes {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--r-space-2) var(--r-space-4);
+/* Passkeys: one bordered card each, 12px apart */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
   margin: 0;
-  padding: var(--r-space-4);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: var(--r-font-size-body-sm);
-  line-height: var(--r-line-height-body-sm);
-  text-align: center;
+  padding: 0;
   list-style: none;
+}
+
+.passkeyCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-4);
+  padding: var(--r-space-3);
   border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
   border-radius: var(--r-radius-12);
+}
+
+.passkeyCard > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.passkeyCard button {
+  flex-shrink: 0;
+}
+
+/* Export: Dynamic's frame with the key, on the grey box */
+.keyFrame {
+  min-height: 120px;
+  padding: var(--r-space-3);
+  overflow: hidden;
+  background: var(--r-color-neutral-50);
+  border-radius: var(--r-radius-12);
+}
+
+.keyFrame iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+/* Phones: 16px sides */
+@media (--media-phone-max) {
+  .content,
+  .successContent {
+    padding: var(--r-space-6) var(--r-space-4);
+  }
 }
