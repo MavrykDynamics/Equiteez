@@ -22,6 +22,7 @@ import { RAlert } from "~/templates/Alert/RAlert";
 import { AccountAvatar, shortenHash, WalletGlyph } from "./DepositParts";
 import type { IntentsPickerKind } from "./IntentsPickerView";
 import { formatTokenBalance } from "./IntentsPickerView";
+import { IntentsSourceWalletField } from "./IntentsSourceWalletField";
 import styles from "./IntentsView.module.css";
 
 type IntentsDetailsStepProps = {
@@ -57,6 +58,8 @@ export function IntentsDetailsStep({
     network,
     recipient,
     canWalletSend,
+    sourceWallet,
+    sendingWalletName,
     sourceBalance,
     amount,
     setAmount,
@@ -174,8 +177,8 @@ export function IntentsDetailsStep({
           <span className={styles.routePartyCopy}>
             <span className={styles.routeLabel}>From</span>
             <span className={styles.routeValue}>
-              {canWalletSend && ethereumWallet.userAddress
-                ? shortenHash(ethereumWallet.userAddress)
+              {canWalletSend && sourceWallet
+                ? shortenHash(sourceWallet)
                 : `Any ${network.name} wallet`}
             </span>
           </span>
@@ -222,12 +225,18 @@ export function IntentsDetailsStep({
           onClick={() => onOpenPicker("network")}
           subtitle={
             canWalletSend
-              ? "Send from your connected wallet"
+              ? `Send from ${sendingWalletName ?? "your connected wallet"}`
               : "Send from any wallet or exchange"
           }
           title={network.name}
         />
       </div>
+
+      <IntentsSourceWalletField
+        disabled={isBusy}
+        network={network}
+        onChooseWallet={() => onOpenPicker("wallet")}
+      />
 
       <div className={styles.field}>
         <RAmountInput

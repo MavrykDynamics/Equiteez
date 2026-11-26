@@ -86,6 +86,9 @@ export const intentRecordSchema = z.object({
    * with one. Funding refuses another account. Absent for manual deposits.
    */
   sourceWallet: z.string().min(1).optional(),
+  /** Non-EVM wallet (adapter wallet ID and name) the deposit is sent from. */
+  sourceWalletId: z.string().min(1).optional(),
+  sourceWalletName: z.string().min(1).optional(),
   fundingState: intentFundingStateSchema,
   fundingError: z.string().optional(),
   /**
@@ -238,7 +241,10 @@ export function createIntentRecord({
   request: IntentOperationRequest;
   credentials: { capability: string; idempotencyKey: string };
   expectedDestinationAmount?: string;
-  sourceWallet?: string;
+  /** EVM wallet address, or a non-EVM wallet account. */
+  sourceWallet?:
+    | string
+    | { walletId: string; walletName: string; address: string };
   now?: number;
 }): IntentRecord {
   const { asset, network } = option;
@@ -271,7 +277,15 @@ export function createIntentRecord({
     },
     settlementDecimals: settlement.decimals,
     expectedDestinationAmount,
-    sourceWallet: sourceWallet?.toLowerCase(),
+    ...(typeof sourceWallet === "string"
+      ? { sourceWallet: sourceWallet.toLowerCase() }
+      : sourceWallet
+        ? {
+            sourceWallet: sourceWallet.address,
+            sourceWalletId: sourceWallet.walletId,
+            sourceWalletName: sourceWallet.walletName,
+          }
+        : {}),
     fundingState: "not_started",
     sourceHashes: [],
     receipt: "none",

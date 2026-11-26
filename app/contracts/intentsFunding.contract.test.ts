@@ -306,7 +306,7 @@ describe("executeIntentFunding", () => {
       sourceWallet: undefined,
       sequence: current().sequence + 1,
     });
-    await expect(fund()).rejects.toThrow(/Connect an EVM wallet/);
+    await expect(fund()).rejects.toThrow(/Connect a wallet/);
     session = new IntentOperations(fixtureRecipient, "mock", () =>
       memoryStorage()
     );
@@ -326,7 +326,7 @@ describe("executeIntentFunding", () => {
       },
     });
     session.upsert({ ...solana, operationId: fixtureOperationId });
-    await expect(fund()).rejects.toThrow(/Connect an EVM wallet/);
+    await expect(fund()).rejects.toThrow(/Connect a wallet/);
     expect(actions.sendTransaction).not.toHaveBeenCalled();
   });
 

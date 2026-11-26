@@ -71,7 +71,7 @@ export function IntentsWalletsStep({
     ? "Connect your Equiteez wallet to receive the deposit."
     : userAddress
       ? "Ready. Next, choose what to send."
-      : "Optional: connect an EVM wallet to send in one click. You can also pay from any wallet or exchange (Solana, Bitcoin, NEAR, Aptos and EVM networks).";
+      : "Optional: connect an EVM wallet to send in one click. Paying with SOL, BTC, NEAR or APT? Connect that wallet in the next step, or pay from any wallet or exchange.";
 
   return (
     <div className={styles.step}>

@@ -35,6 +35,11 @@ import {
   TransactionWidgetProvider,
   useTransactionWidget,
 } from "~/providers/TransactionsProvider/TransactionWidgetProvider";
+import { createFakeWalletAdapter } from "~/lib/intents/wallets/intentWallet.fixtures";
+import {
+  IntentWalletsProvider,
+  useIntentWalletsContext,
+} from "~/providers/IntentWalletsProvider/IntentWalletsProvider";
 import { useIntentsDeposit } from "./useIntentsDeposit";
 
 const account = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
@@ -47,6 +52,7 @@ const mocks = vi.hoisted(() => ({
   api: null as unknown as IntentsApi,
   fetchDeposits: vi.fn(),
   success: vi.fn(),
+  solana: null as unknown as ReturnType<typeof createFakeWalletAdapter>,
   actions: {
     getAccount: vi.fn(),
     getBalance: vi.fn(),
@@ -74,6 +80,11 @@ vi.mock("wagmi", () => ({
   useSwitchChain: () => ({ switchChainAsync: vi.fn(), isPending: false }),
 }));
 vi.mock("wagmi/actions", () => mocks.actions);
+vi.mock("~/lib/intents/wallets", async (original) => ({
+  ...(await original<typeof import("~/lib/intents/wallets")>()),
+  isIntentWalletFamilySupported: (family: string) => family === "solana",
+  loadIntentWalletAdapter: async () => mocks.solana,
+}));
 vi.mock("~/providers/EthereumProvider/hooks/useIntentSourceBalance", () => ({
   useIntentSourceBalance: () => ({
     balance: new BigNumber(100),
@@ -113,6 +124,7 @@ let queryClient: QueryClient;
 let deposit$!: ReturnType<typeof useIntentsDeposit>;
 let widgets!: ReturnType<typeof useTransactionWidget>;
 let transactions!: ReturnType<typeof useTransactionsContext>;
+let wallets$!: ReturnType<typeof useIntentWalletsContext>;
 const wallet = {
   userAddress: source,
   isConnected: true,
@@ -126,6 +138,7 @@ function Modal() {
   });
   widgets = useTransactionWidget();
   transactions = useTransactionsContext();
+  wallets$ = useIntentWalletsContext();
   return null;
 }
 const render = () =>
@@ -140,7 +153,15 @@ const render = () =>
           createElement(
             TransactionsProvider,
             null,
-            createElement(TransactionWidgetProvider, null, createElement(Modal))
+            createElement(
+              IntentWalletsProvider,
+              null,
+              createElement(
+                TransactionWidgetProvider,
+                null,
+                createElement(Modal)
+              )
+            )
           )
         )
       )
@@ -193,6 +214,10 @@ beforeEach(() => {
     }),
     env: "test",
   };
+  mocks.solana = createFakeWalletAdapter("solana", {
+    address: fixtureSolanaRefund,
+    walletName: "Phantom",
+  });
   queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -389,6 +414,100 @@ describe("1Click deposit inside Equiteez", () => {
     expect(deposit$.trackedModel?.state).toMatchObject({ status: "success" });
     expect(mocks.actions.writeContract).not.toHaveBeenCalled();
     expect(mocks.actions.sendTransaction).not.toHaveBeenCalled();
+  });
+
+  it("sends a Solana deposit from a connected Solana wallet", async () => {
+    await render();
+    await flush();
+    await act(async () => deposit$.selectAsset(fixtureSolanaOption.assetId));
+    await act(async () => {
+      await wallets$.connect("solana", "fake");
+    });
+    await act(async () => deposit$.setAmount(new BigNumber(1)));
+    await flush(1_000);
+    await flush();
+    expect(deposit$.canWalletSend).toBe(true);
+    expect(deposit$.refundAddress).toBe(fixtureSolanaRefund);
+    expect(deposit$.canReview).toBe(true);
+    await act(async () => deposit$.startReview());
+    await act(async () => deposit$.confirmRequest());
+    await flush(6_000);
+    expect(deposit$.operationView).toEqual({ status: "ready" });
+    const record = deposit$.activeRecord!;
+    // The wallet's transfer reaches 1Click, which the mock then observes.
+    mocks.solana.onNextSend(async () => {
+      simulateMockDeposit(mocks.api, record.capability, record.operationId!);
+      return "5solanaSignature";
+    });
+    await act(async () => {
+      void deposit$.fund();
+      void deposit$.fund();
+    });
+    await flush();
+    expect(mocks.solana.sends).toHaveLength(1);
+    expect(mocks.solana.sends[0]).toMatchObject({
+      from: fixtureSolanaRefund,
+      to: record.backend!.fundingInstructions!.depositAddress,
+      amount: 1_000_000_000n,
+      asset: { kind: "native", symbol: "SOL", decimals: 9 },
+    });
+    expect(deposit$.activeRecord).toMatchObject({
+      fundingState: "broadcast",
+      sourceHashes: ["5solanaSignature"],
+    });
+    expect(deposit$.review.phase).toBe("tracking");
+    expect(deposit$.trackedModel?.sourceExplorerUrl).toBe(
+      "https://solscan.io/tx/5solanaSignature"
+    );
+    await flush(40_000);
+    expect(deposit$.trackedModel?.state).toMatchObject({ status: "success" });
+    expect(mocks.actions.sendTransaction).not.toHaveBeenCalled();
+  });
+
+  it("never prompts the Solana wallet again after it declined once", async () => {
+    await render();
+    await flush();
+    await act(async () => deposit$.selectAsset(fixtureSolanaOption.assetId));
+    await act(async () => {
+      await wallets$.connect("solana", "fake");
+    });
+    await act(async () => deposit$.setAmount(new BigNumber(1)));
+    await flush(1_000);
+    await flush();
+    await act(async () => deposit$.startReview());
+    await act(async () => deposit$.confirmRequest());
+    await flush(6_000);
+    mocks.solana.onNextSend(() =>
+      Promise.reject(Object.assign(new Error("User rejected"), { code: 4001 }))
+    );
+    await act(async () => deposit$.fund());
+    expect(deposit$.activeRecord?.fundingState).toBe("rejected");
+    // Declined: nothing was sent, so a new request is allowed.
+    mocks.solana.onNextSend(() => Promise.reject(new Error("Network glitch")));
+    await act(async () => deposit$.fund());
+    expect(deposit$.activeRecord?.fundingState).toBe("unknown");
+    await act(async () => deposit$.fund());
+    expect(mocks.solana.sends).toHaveLength(2);
+  });
+
+  it("refuses to send after the wallet switched accounts", async () => {
+    await render();
+    await flush();
+    await act(async () => deposit$.selectAsset(fixtureSolanaOption.assetId));
+    await act(async () => {
+      await wallets$.connect("solana", "fake");
+    });
+    await act(async () => deposit$.setAmount(new BigNumber(1)));
+    await flush(1_000);
+    await flush();
+    await act(async () => deposit$.startReview());
+    await act(async () => deposit$.confirmRequest());
+    await flush(6_000);
+    mocks.solana.switchAccount("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+    await act(async () => deposit$.fund());
+    expect(mocks.solana.sends).toHaveLength(0);
+    expect(deposit$.fundingError).toMatch(/source wallet changed/);
+    expect(deposit$.activeRecord?.fundingState).toBe("not_started");
   });
 
   it("isolates operations when the Equiteez account changes", async () => {

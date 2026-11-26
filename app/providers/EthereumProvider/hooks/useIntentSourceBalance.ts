@@ -4,7 +4,11 @@ import { BigNumber } from "bignumber.js";
 import { erc20Abi, type Address } from "viem";
 import { usePublicClient } from "wagmi";
 
-import type { IntentSourceOption } from "~/lib/intents/intentCatalog";
+import {
+  getIntentWalletAsset,
+  type IntentSourceOption,
+} from "~/lib/intents/intentCatalog";
+import { useIntentWalletsContext } from "~/providers/IntentWalletsProvider/IntentWalletsProvider";
 
 export type IntentSourceBalanceStatus =
   | "disconnected"
@@ -14,37 +18,56 @@ export type IntentSourceBalanceStatus =
   | "ready";
 
 /**
- * Balance of an EVM source asset in the connected EVM wallet, read through
- * that chain's public client so the wallet does not need to switch networks
- * just to display it. Non-EVM assets report "unsupported": their wallets are
- * not connected here, and the user can pay from any wallet.
+ * Balance of a source asset in the wallet that sends it. EVM assets are read
+ * through that chain's public client (no network switch needed); Solana,
+ * NEAR, Aptos and Bitcoin assets through their wallet adapter's network
+ * reads. `owner` is the sending wallet's address on the asset's network.
  */
 export function useIntentSourceBalance(
   option: IntentSourceOption | undefined,
-  owner: Address | null
+  owner: string | null
 ) {
-  const chainId = option?.network.evmChainId ?? undefined;
+  const family = option?.network.family;
+  const isEvm = family === "evm";
+  const chainId = isEvm ? (option?.network.evmChainId ?? undefined) : undefined;
   const client = usePublicClient({ chainId });
+  const wallets = useIntentWalletsContext();
   const token = option?.evmToken;
-  const isRouteSupported = Boolean(token && chainId);
-  const enabled = Boolean(owner && isRouteSupported && client);
+  const isRouteSupported = option
+    ? isEvm
+      ? Boolean(token && chainId)
+      : wallets.isSupported(option.network.family)
+    : false;
+  const enabled = Boolean(
+    option && owner && isRouteSupported && (!isEvm || client)
+  );
 
   const query = useQuery({
-    queryKey: ["ethereum", "balance", chainId, token, owner],
+    queryKey: ["intents", "balance", option?.assetId, owner],
     enabled,
     refetchInterval: 15_000,
     retry: 1,
     queryFn: async () => {
-      if (!client || !owner || !token)
-        throw new Error("Source wallet is unavailable.");
+      if (!option || !owner) throw new Error("Source wallet is unavailable.");
+      if (!isEvm) {
+        if (!wallets.isSupported(option.network.family))
+          throw new Error("Wallets for this network are not supported.");
+        const adapter = await wallets.getAdapter(option.network.family);
+        const balance = await adapter.getBalance(
+          getIntentWalletAsset(option),
+          owner
+        );
+        return balance.toString();
+      }
+      if (!client || !token) throw new Error("Source wallet is unavailable.");
       const raw =
         token === "native"
-          ? await client.getBalance({ address: owner })
+          ? await client.getBalance({ address: owner as Address })
           : await client.readContract({
               address: token,
               abi: erc20Abi,
               functionName: "balanceOf",
-              args: [owner],
+              args: [owner as Address],
             });
       return raw.toString();
     },

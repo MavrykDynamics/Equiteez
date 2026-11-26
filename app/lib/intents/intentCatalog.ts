@@ -7,6 +7,7 @@ import type {
 } from "~/lib/apis/intents";
 import { mavrykRecipientSchema } from "~/lib/apis/intents/intents.schema";
 import { getIntentNetwork, type IntentNetwork } from "./intentNetworks";
+import type { IntentWalletAsset } from "./wallets/intentWallet.types";
 
 /**
  * Why the flow cannot start, from `GET /v1/metadata` (backend.md §6.1).
@@ -182,6 +183,16 @@ export const intentCatalogStatusCopy: Record<
     "The token you would receive does not match Equiteez token data, so deposits are disabled.",
   no_assets: "No source assets are available right now. Try again later.",
 };
+
+/** The asset as a wallet adapter transfers it (unknown kinds are filtered out). */
+export const getIntentWalletAsset = ({
+  asset,
+}: IntentSourceOption): IntentWalletAsset => ({
+  kind: asset.kind === "native" ? "native" : "token",
+  contractAddress: asset.contractAddress,
+  symbol: asset.symbol,
+  decimals: asset.decimals,
+});
 
 export const getIntentSourceLabel = ({ asset, network }: IntentSourceOption) =>
   `${asset.symbol} on ${network.name}`;

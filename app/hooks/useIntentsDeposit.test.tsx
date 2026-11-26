@@ -24,6 +24,11 @@ import {
 } from "~/lib/intents/intents.fixtures";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
+import {
+  createFakeWalletAdapter,
+  fakeIntentWalletsContext,
+} from "~/lib/intents/wallets/intentWallet.fixtures";
+import type { IntentWalletsContext } from "~/providers/IntentWalletsProvider/IntentWalletsProvider";
 import { useIntentsDeposit } from "./useIntentsDeposit";
 
 const accountA = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
@@ -44,6 +49,7 @@ const mocks = vi.hoisted(() => ({
   result: null as unknown as ReturnType<typeof useIntentsDeposit>,
   fund: vi.fn(),
   previewCalls: 0,
+  intentWallets: null as unknown as IntentWalletsContext,
 }));
 type IntentsMockApi = IntentsApi & {
   simulateDeposit(capability: string, operationId: string): void;
@@ -98,6 +104,9 @@ vi.mock("~/providers/EthereumProvider/hooks/useIntentsFunding", () => ({
 vi.mock("wagmi", () => ({
   useSwitchChain: () => ({ switchChainAsync: vi.fn(), isPending: false }),
   useConfig: () => ({ chains: [{ id: 1 }, { id: 8453 }, { id: 42161 }] }),
+}));
+vi.mock("~/providers/IntentWalletsProvider/IntentWalletsProvider", () => ({
+  useIntentWalletsContext: () => mocks.intentWallets,
 }));
 vi.mock("~/providers/TransactionsProvider/TransactionsProvider", () => ({
   useTransactionsContext: () => mocks.ctx,
@@ -182,6 +191,7 @@ beforeEach(() => {
   clock = Date.now();
   scenario = null;
   mocks.previewCalls = 0;
+  mocks.intentWallets = fakeIntentWalletsContext();
   hasSelected = false;
   mocks.fund.mockReset();
   // A non-mock env: wallet sends are disabled against the "mock" env.
@@ -252,6 +262,45 @@ describe("form and local review", () => {
       mocks.result.setRefundInput(`${fixtureSolanaRefund} `)
     );
     expect(mocks.result.isRefundConfirmed).toBe(false);
+  });
+
+  it("uses a connected Solana wallet as the sending wallet and refund address", async () => {
+    const adapter = createFakeWalletAdapter("solana", {
+      address: fixtureSolanaRefund,
+      walletName: "Phantom",
+    });
+    mocks.intentWallets = fakeIntentWalletsContext(
+      {
+        solana: {
+          walletId: "fake",
+          walletName: "Phantom",
+          address: fixtureSolanaRefund,
+        },
+      },
+      { solana: adapter }
+    );
+    await render();
+    await act(async () =>
+      mocks.result.selectAsset(fixtureSolanaOption.assetId)
+    );
+    expect(mocks.result.canWalletSend).toBe(true);
+    expect(mocks.result.sendingWalletName).toBe("Phantom");
+    expect(mocks.result.isRefundFromWallet).toBe(true);
+    await act(async () => mocks.result.setAmount(new BigNumber(1)));
+    expect(mocks.result.canReview).toBe(true);
+    await act(async () => mocks.result.startReview());
+    expect(reviewOf().request.refundAddress).toBe(fixtureSolanaRefund);
+    expect(reviewOf().sourceWallet).toEqual({
+      walletId: "fake",
+      walletName: "Phantom",
+      address: fixtureSolanaRefund,
+    });
+    await act(async () => mocks.result.confirmRequest());
+    expect(records()[0]).toMatchObject({
+      sourceWallet: fixtureSolanaRefund,
+      sourceWalletId: "fake",
+      sourceWalletName: "Phantom",
+    });
   });
 
   it("asks for a refund address when no EVM wallet is connected", async () => {

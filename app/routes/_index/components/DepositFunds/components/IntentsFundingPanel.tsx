@@ -48,12 +48,17 @@ export function IntentsFundingPanel({
   const depositUrl = instructions
     ? explorer?.address(instructions.depositAddress)
     : undefined;
+  // A wallet reviewed with the deposit sends it, unless it cannot attach the
+  // memo (non-EVM) or the transfer is not a plain EVM one.
   const canWalletSend = Boolean(
     record.sourceWallet &&
       !onSimulate &&
       instructions &&
-      !getEvmFundingBlocker(record.source, instructions)
+      (record.source.family === "evm"
+        ? !getEvmFundingBlocker(record.source, instructions)
+        : Boolean(record.sourceWalletId) && instructions.depositMemo === null)
   );
+  const walletLabel = record.sourceWalletName ?? "wallet";
   const link = (isWarning: boolean): ReactNode =>
     txUrl ? (
       <a href={txUrl} rel="noopener noreferrer" target="_blank">
@@ -106,7 +111,7 @@ export function IntentsFundingPanel({
               size="large"
               tone="black"
             >
-              Send from wallet
+              Send from {walletLabel}
             </RButton>
           )}
           {onSimulate && (

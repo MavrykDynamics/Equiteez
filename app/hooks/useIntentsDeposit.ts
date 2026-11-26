@@ -62,6 +62,8 @@ import {
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { useIntentSourceBalance } from "~/providers/EthereumProvider/hooks/useIntentSourceBalance";
 import { useIntentsFunding } from "~/providers/EthereumProvider/hooks/useIntentsFunding";
+import { useIntentWalletsContext } from "~/providers/IntentWalletsProvider/IntentWalletsProvider";
+import type { IntentWalletAccount } from "~/lib/intents/wallets";
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { toIntentWidget } from "~/providers/TransactionsProvider/intentWidget";
 import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
@@ -82,8 +84,8 @@ type ReviewBase = {
   request: IntentOperationRequest;
   /** The fresh preview the accepted minimum comes from. */
   preview: IntentPreview;
-  /** Connected EVM wallet that will send, when the user has one. */
-  sourceWallet?: string;
+  /** Connected wallet that will send: an EVM address or a network wallet. */
+  sourceWallet?: string | IntentWalletAccount;
   /** Local identity; its record holds the capability and idempotency key. */
   localId: string;
 };
@@ -173,6 +175,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   const [isPreparingReview, setIsPreparingReview] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const { switchChainAsync, isPending: isSwitching } = useSwitchChain();
+  const intentWallets = useIntentWalletsContext();
   const runRef = useRef(0);
   const busyRef = useRef(false);
   const funding = useIntentsFunding();
@@ -207,29 +210,49 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       : null;
   const isCatalogAvailable = catalog?.status === "available";
 
-  // A connected EVM wallet sends EVM assets in one click; any other asset
-  // (or no wallet) is paid from the deposit address with any wallet.
+  // A connected wallet sends in one click: the wagmi wallet for EVM assets,
+  // the network's own wallet (Solana, NEAR, Aptos, Bitcoin) otherwise. Without
+  // one, any wallet or exchange pays the deposit address.
   const walletAddress = ethereumWallet.userAddress;
   const isEvmChainConfigured = Boolean(
     network?.evmChainId &&
       chains.some((chain) => chain.id === network.evmChainId)
   );
-  const canWalletSend = Boolean(
+  const canEvmSend = Boolean(
     selected?.evmToken &&
       isEvmChainConfigured &&
       walletAddress &&
-      ethereumWallet.isConnected &&
-      api.env !== "mock"
+      ethereumWallet.isConnected
   );
-  const sourceWallet = canWalletSend
-    ? (walletAddress ?? undefined)?.toLowerCase()
-    : undefined;
-  const sourceBalance = useIntentSourceBalance(
-    selected,
-    canWalletSend ? walletAddress : null
+  const family = network?.family;
+  const nativeAccount =
+    family && family !== "evm" && intentWallets.isSupported(family)
+      ? intentWallets.accounts[family]
+      : undefined;
+  // The wallet's account must be a valid refund address on the network.
+  const canNativeSend = Boolean(
+    nativeAccount &&
+      network &&
+      !getRefundAddressError(network, nativeAccount.address)
   );
+  const canWalletSend = (canEvmSend || canNativeSend) && api.env !== "mock";
+  const sendingWallet: string | IntentWalletAccount | undefined = !canWalletSend
+    ? undefined
+    : canEvmSend
+      ? walletAddress!.toLowerCase()
+      : nativeAccount;
+  const sourceWallet =
+    typeof sendingWallet === "string" ? sendingWallet : sendingWallet?.address;
+  const sendingWalletName = canEvmSend
+    ? undefined
+    : canWalletSend
+      ? nativeAccount?.walletName
+      : undefined;
+  const sourceBalance = useIntentSourceBalance(selected, sourceWallet ?? null);
   const isWrongNetwork = Boolean(
-    canWalletSend && ethereumWallet.chainId !== network?.evmChainId
+    canWalletSend &&
+      canEvmSend &&
+      ethereumWallet.chainId !== network?.evmChainId
   );
 
   // Refunds go to the sending wallet when there is one; otherwise to an
@@ -479,7 +502,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
           acceptedMinAmountOut: getAcceptedMinAmountOut(fresh),
         },
         preview: fresh,
-        sourceWallet,
+        sourceWallet: sendingWallet,
         localId: newIdempotencyKey(),
       });
     } catch (error) {
@@ -497,7 +520,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     requestKey,
     selected,
     settlement,
-    sourceWallet,
+    sendingWallet,
   ]);
 
   /**
@@ -738,6 +761,8 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     recipient,
     walletAddress,
     canWalletSend,
+    sourceWallet,
+    sendingWalletName,
     sourceBalance,
     amount,
     setAmount,

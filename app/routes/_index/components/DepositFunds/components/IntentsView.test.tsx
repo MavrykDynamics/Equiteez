@@ -11,15 +11,24 @@ import {
   preview,
 } from "~/lib/intents/intents.fixtures";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
+import {
+  createFakeWalletAdapter,
+  fakeIntentWalletsContext,
+} from "~/lib/intents/wallets/intentWallet.fixtures";
 import { IntentsView, type IntentsFormStep } from "./IntentsView";
 
 vi.mock("~/lib/organisms/REthereumWalletDropdown", () => ({
   REthereumWalletDropdown: () => <button>Connect Wallet</button>,
 }));
+const walletsContext = vi.hoisted(() => ({ value: null as unknown }));
+vi.mock("~/providers/IntentWalletsProvider/IntentWalletsProvider", () => ({
+  useIntentWalletsContext: () => walletsContext.value,
+}));
 vi.mock("~/lib/atoms/RTooltip/RTooltip", () => ({
   RTooltip: ({ children }: { children: ReactNode }) => children,
 }));
 
+walletsContext.value = fakeIntentWalletsContext();
 const recipient = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
 const sourceAddress = "0x1111111111111111111111111111111111111111";
 
@@ -187,6 +196,44 @@ describe("IntentsView details step", () => {
     expect(html).toContain("no checksum");
     expect(html).not.toContain("Use maximum");
     expect(html).toMatch(disabledButton("Review deposit"));
+  });
+
+  it("offers to connect the network's wallet, or shows the connected one", () => {
+    const solana = {
+      selected: fixtureSolanaOption,
+      network: fixtureSolanaOption.network,
+      canWalletSend: false,
+      isRefundFromWallet: false,
+    };
+    const adapter = createFakeWalletAdapter("solana", { address: "EKpQ" });
+    walletsContext.value = fakeIntentWalletsContext({}, { solana: adapter });
+    const offer = render({ deposit: controller(solana) });
+    expect(offer).toContain("Send from");
+    expect(offer).toContain("Connect a Solana wallet");
+    expect(offer).toContain("or pay from any wallet or exchange");
+    walletsContext.value = fakeIntentWalletsContext(
+      {
+        solana: {
+          walletId: "fake",
+          walletName: "Phantom",
+          address: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+        },
+      },
+      { solana: adapter }
+    );
+    const connected = render({
+      deposit: controller({
+        ...solana,
+        canWalletSend: true,
+        isRefundFromWallet: true,
+        sendingWalletName: "Phantom",
+        sourceWallet: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+      }),
+    });
+    expect(connected).toContain("Phantom");
+    expect(connected).toContain("Send from Phantom");
+    expect(connected).toContain("Disconnect");
+    walletsContext.value = fakeIntentWalletsContext();
   });
 
   it("shows refund address errors", () => {
