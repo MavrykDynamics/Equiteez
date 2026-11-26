@@ -8,185 +8,231 @@ import {
   isOperationCapability,
 } from "~/lib/intents/intentCapability";
 import {
+  getIntentNetwork,
+  getRefundAddressError,
+  normalizeRefundAddress,
+} from "~/lib/intents/intentNetworks";
+import {
   intentOperationRequestSchema,
   intentOperationSchema,
+  intentPreviewRequestSchema,
 } from "./intents.schema";
 import {
   IntentsApiError,
   type IntentErrorCode,
   type IntentMetadata,
   type IntentOperation,
-  type IntentRoute,
+  type IntentPreview,
+  type IntentPreviewRequest,
   type IntentsApi,
+  type IntentSourceAsset,
 } from "./intents.types";
 
 /**
- * In-browser simulator of the Mavryk Bridge ETH backend (API 0.1.0) for
- * building and testing the UI without the shared environment. Never enabled
- * in production builds (INTENTS_API_MODE=mock).
+ * In-browser simulator of the Mavryk Bridge ETH backend (v0.0.9) for building
+ * and testing the UI without the shared environment. Never enabled in
+ * production builds (INTENTS_API_MODE=mock). Wallet transfers are disabled in
+ * mock mode: "Simulate Deposit" stands in for the user's payment.
  *
  * Force a branch with `?intentsMock=<scenario>`:
- * - `reject`      quote rejected (closure QUOTE_REJECTED)
- * - `expire`      instructions expire 20s after publication
- * - `paused`      funding PAUSED / attention ROUTE_PAUSED
- * - `unavailable` POST fails with 503 DEPENDENCY_UNAVAILABLE
- * - `refund`      provider reports a refund after the deposit
- * - `incomplete`  attention DEPOSIT_INCOMPLETE after the deposit
- * - `review`      attention MANUAL_REVIEW after delivery
- * - `untracked`   WRAPPED with settlement NOT_TRACKED (bridge data only)
- * - `registrationConflict` hash registration fails with
- *                 REHEARSAL_DELIVERY_CONFLICT (no progress, under review)
- *
- * Like Basenet, the USDT route is a fixed 1-token rehearsal with
- * connected-wallet hash registration: the first registration answers
- * REHEARSAL_RECEIPT_PENDING, the next one is accepted and starts the
- * lifecycle. The ETH route needs a quote preview and the Base USDC route has
- * no metadata, so both show as unavailable.
+ * - `reject`          quote rejected (closure QUOTE_REJECTED)
+ * - `expire`          instructions expire 20s after publication
+ * - `paused`          funding PAUSED / attention SETTLEMENT_TOKEN_PAUSED
+ * - `memo`            instructions carry a deposit memo
+ * - `unavailable`     POST /operations fails with 503 DEPENDENCY_UNAVAILABLE
+ * - `previewBusy`     previews fail with 429 PREVIEW_BUSY
+ * - `refund`          provider reports a refund after the deposit
+ * - `incomplete`      attention DEPOSIT_INCOMPLETE after the deposit
+ * - `review`          attention MANUAL_REVIEW after delivery
+ * - `untracked`       WRAPPED with settlement NOT_TRACKED
+ * - `stale`           metadata catalog stale, no assets
+ * - `admissionPaused` metadata admissionPaused
+ * - `noToken`         metadata without a default settlement token
  */
 export const intentsMockScenarios = [
   "reject",
   "expire",
   "paused",
+  "memo",
   "unavailable",
+  "previewBusy",
   "refund",
   "incomplete",
   "review",
   "untracked",
-  "registrationConflict",
+  "stale",
+  "admissionPaused",
+  "noToken",
 ] as const;
 export type IntentsMockScenario = (typeof intentsMockScenarios)[number];
 
-const MOCK_FACTORY = "0x00000000000000000000000000000000000fac70" as const;
+const SETTLEMENT_DECIMALS = 6;
+const DESTINATION = USDT_BRIDGE.destinationToken;
+const MAVRYK_CHAIN_ID = "NetXbasenetMock";
 
-const units = (amount: number, decimals: number) =>
-  new BigNumber(amount).shiftedBy(decimals).toFixed();
+const asset = (
+  value: Omit<IntentSourceAsset, "depositMode"> &
+    Partial<Pick<IntentSourceAsset, "depositMode">>
+): IntentSourceAsset => ({ depositMode: "SIMPLE", ...value });
 
-export const mockIntentRoutes: IntentRoute[] = [
-  {
-    id: "mock-arb-sepolia-usdt",
-    version: 1,
-    enabled: true,
-    sourceChainId: "421614",
-    settlementChainId: String(USDT_BRIDGE.chainId),
-    originAsset: "mock:arb-sepolia:usdt",
-    destinationAsset: "mock:arb-sepolia:usdt",
-    settlementToken: USDT_BRIDGE.sourceToken.address,
-    factoryAddress: MOCK_FACTORY,
-    bridgeAddress: USDT_BRIDGE.address,
-    sourceDecimals: 18,
-    settlementDecimals: USDT_BRIDGE.sourceToken.decimals,
-    // Fixed 1-token rehearsal, like basenet-rehearsal-k8s.
-    minAmountIn: units(1, 18),
-    maxAmountIn: units(1, 18),
-    minAmountOut: units(1, USDT_BRIDGE.sourceToken.decimals),
-    maxSlippageBps: 0,
-  },
-  {
-    id: "mock-sepolia-eth",
-    version: 1,
-    enabled: true,
-    sourceChainId: "11155111",
-    settlementChainId: String(USDT_BRIDGE.chainId),
-    originAsset: "mock:sepolia:eth",
-    destinationAsset: "mock:arb-sepolia:usdt",
-    settlementToken: USDT_BRIDGE.sourceToken.address,
-    factoryAddress: MOCK_FACTORY,
-    bridgeAddress: USDT_BRIDGE.address,
-    sourceDecimals: 18,
-    settlementDecimals: USDT_BRIDGE.sourceToken.decimals,
-    minAmountIn: units(0.001, 18),
-    maxAmountIn: units(5, 18),
-    minAmountOut: units(1, 18),
-    maxSlippageBps: 300,
-  },
-  {
-    // Listed by the backend but not approved in Equiteez product config.
-    id: "mock-base-sepolia-usdc",
-    version: 1,
-    enabled: true,
-    sourceChainId: "84532",
-    settlementChainId: String(USDT_BRIDGE.chainId),
-    originAsset: "mock:base-sepolia:usdc",
-    destinationAsset: "mock:arb-sepolia:usdt",
-    settlementToken: USDT_BRIDGE.sourceToken.address,
-    factoryAddress: MOCK_FACTORY,
-    bridgeAddress: USDT_BRIDGE.address,
-    sourceDecimals: 6,
-    settlementDecimals: USDT_BRIDGE.sourceToken.decimals,
-    minAmountIn: units(1, 6),
-    maxAmountIn: units(10_000, 6),
-    minAmountOut: units(0.5, 18),
-    maxSlippageBps: 300,
-  },
+/** Mainnet-shaped catalog; the unknown "tron" entry must stay hidden. */
+export const mockIntentSourceAssets: IntentSourceAsset[] = [
+  asset({
+    assetId: "nep141:sol.omft.near",
+    network: "sol",
+    family: "solana",
+    evmChainId: null,
+    kind: "native",
+    contractAddress: null,
+    symbol: "SOL",
+    decimals: 9,
+    coingeckoId: "solana",
+  }),
+  asset({
+    assetId: "nep141:btc.omft.near",
+    network: "btc",
+    family: "bitcoin",
+    evmChainId: null,
+    kind: "native",
+    contractAddress: null,
+    symbol: "BTC",
+    decimals: 8,
+    coingeckoId: "bitcoin",
+  }),
+  asset({
+    assetId: "nep141:eth.omft.near",
+    network: "eth",
+    family: "evm",
+    evmChainId: "1",
+    kind: "native",
+    contractAddress: null,
+    symbol: "ETH",
+    decimals: 18,
+    coingeckoId: "ethereum",
+  }),
+  asset({
+    assetId: "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+    network: "base",
+    family: "evm",
+    evmChainId: "8453",
+    kind: "token",
+    contractAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    symbol: "USDC",
+    decimals: 6,
+    coingeckoId: "usd-coin",
+  }),
+  asset({
+    assetId: "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+    network: "arb",
+    family: "evm",
+    evmChainId: "42161",
+    kind: "token",
+    contractAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+    symbol: "USDC",
+    decimals: 6,
+    coingeckoId: "usd-coin",
+  }),
+  asset({
+    assetId: "nep141:wrap.near",
+    network: "near",
+    family: "near",
+    evmChainId: null,
+    kind: "native",
+    contractAddress: null,
+    symbol: "NEAR",
+    decimals: 24,
+    coingeckoId: "near",
+  }),
+  asset({
+    assetId: "nep141:zec.omft.near",
+    network: "near",
+    family: "near",
+    evmChainId: null,
+    kind: "token",
+    contractAddress: "zec.omft.near",
+    symbol: "ZEC",
+    decimals: 8,
+    coingeckoId: "zcash",
+  }),
+  asset({
+    assetId: "nep141:aptos.omft.near",
+    network: "aptos",
+    family: "aptos",
+    evmChainId: null,
+    kind: "native",
+    contractAddress: null,
+    symbol: "APT",
+    decimals: 8,
+    coingeckoId: "aptos",
+  }),
+  asset({
+    assetId: "nep141:tron.omft.near",
+    network: "tron",
+    family: "evm",
+    evmChainId: null,
+    kind: "native",
+    contractAddress: null,
+    symbol: "TRX",
+    decimals: 6,
+    coingeckoId: "tron",
+  }),
 ];
 
-const mockDestinationAsset = {
-  chainId: "NetXbasenetMock",
-  kind: "fa2",
-  contractAddress: USDT_BRIDGE.destinationToken.address,
-  tokenId: USDT_BRIDGE.destinationToken.id,
-  decimals: USDT_BRIDGE.destinationToken.decimals,
+export const mockSettlementToken = {
+  settlementTokenId: "usdt0-arbitrum",
+  settlementTokenVersion: 1,
+  isDefault: true,
+  previewSupported: true,
+  settlementAsset: {
+    assetId: "nep141:arb-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9.omft.near",
+    chainId: "42161",
+    contractAddress: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+    symbol: "USDT0",
+    decimals: SETTLEMENT_DECIMALS,
+  },
+  destinationAsset: {
+    chainId: MAVRYK_CHAIN_ID,
+    kind: "fa2" as const,
+    contractAddress: DESTINATION.address,
+    tokenId: DESTINATION.id,
+    decimals: DESTINATION.decimals,
+  },
 };
-const mockSettlementAsset = {
-  assetId: "mock:arb-sepolia:usdt",
-  chainId: String(USDT_BRIDGE.chainId),
-  kind: "erc20" as const,
-  contractAddress: USDT_BRIDGE.sourceToken.address,
-  symbol: "Mock USDT",
-  decimals: USDT_BRIDGE.sourceToken.decimals,
-};
-const limitsOf = (route: IntentRoute) => ({
-  minAmountIn: route.minAmountIn,
-  maxAmountIn: route.maxAmountIn,
-  minAmountOut: route.minAmountOut,
-  maxSlippageBps: route.maxSlippageBps,
-});
 
-/** `GET /v1/metadata`; the Base USDC route is deliberately not described. */
+/** `GET /v1/metadata` without scenarios. */
 export const mockIntentMetadata: IntentMetadata = {
   admissionPaused: false,
-  routes: [
-    {
-      routeId: mockIntentRoutes[0].id,
-      routeVersion: mockIntentRoutes[0].version,
-      mode: "rehearsal",
-      previewSupported: false,
-      sourceAsset: mockSettlementAsset,
-      settlementAsset: mockSettlementAsset,
-      destinationAsset: mockDestinationAsset,
-      limits: limitsOf(mockIntentRoutes[0]),
-      depositRegistrationSupported: true,
-    },
-    {
-      routeId: mockIntentRoutes[1].id,
-      routeVersion: mockIntentRoutes[1].version,
-      mode: "real",
-      previewSupported: false,
-      sourceAsset: {
-        assetId: "mock:sepolia:eth",
-        chainId: "11155111",
-        kind: "native",
-        contractAddress: null,
-        symbol: "ETH",
-        decimals: 18,
-      },
-      settlementAsset: mockSettlementAsset,
-      destinationAsset: mockDestinationAsset,
-      limits: limitsOf(mockIntentRoutes[1]),
-      depositRegistrationSupported: false,
-    },
-  ],
+  catalog: { fetchedAt: "2026-11-25T10:00:00.000Z", stale: false },
+  defaultSettlementToken: {
+    settlementTokenId: mockSettlementToken.settlementTokenId,
+    settlementTokenVersion: mockSettlementToken.settlementTokenVersion,
+  },
+  settlementTokens: [mockSettlementToken],
+  sourceAssets: mockIntentSourceAssets,
 };
-const isRehearsal = (routeId: string) =>
-  mockIntentMetadata.routes.some(
-    (item) => item.routeId === routeId && item.mode === "rehearsal"
-  );
 
-/** Settlement tokens per source token, before the 0.3% simulated fee. */
-const rates: Record<string, number> = {
-  "mock:arb-sepolia:usdt": 1,
-  "mock:sepolia:eth": 3_000,
-  "mock:base-sepolia:usdc": 1,
+/** USD per whole source token (USDT0 ≈ $1). */
+const prices: Record<string, number> = {
+  SOL: 214.3,
+  BTC: 95_000,
+  ETH: 3_000,
+  USDC: 1,
+  NEAR: 3,
+  ZEC: 45,
+  APT: 8,
+};
+/** 1Click fee, settlement units, already included in amountOut. */
+const WITHDRAW_FEE = "4000";
+const MIN_OUT = new BigNumber(1).shiftedBy(SETTLEMENT_DECIMALS);
+const MAX_OUT = new BigNumber(1_000_000).shiftedBy(SETTLEMENT_DECIMALS);
+
+/** Sample deposit addresses per family (never real 1Click addresses). */
+const depositAddresses: Record<string, () => string> = {
+  evm: () => randomHex(20),
+  solana: () => "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+  near: () => randomHex(32).slice(2),
+  aptos: () => randomHex(32),
+  bitcoin: () => "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
 };
 
 /** Elapsed ms after the simulated deposit for each stage. */
@@ -204,22 +250,23 @@ const storedSchema = z.object({
   quotedAmountOut: z.string().optional(),
   /** Index of the last applied timeline stage. */
   stage: z.number().int().optional(),
-  /** Hash bound by POST /deposit, and attempts seen before acceptance. */
-  registeredHash: z.string().optional(),
-  registrationAttempts: z.number().int().optional(),
   scenario: z.string().optional(),
 });
 type Stored = z.infer<typeof storedSchema>;
 const stateSchema = z.object({ operations: z.array(storedSchema) });
 
-const STORAGE_KEY = "equiteez:intents-mock:v2";
+const STORAGE_KEY = "equiteez:intents-mock:v3";
 
 type MockOptions = {
   storage?: () => Pick<Storage, "getItem" | "setItem">;
   now?: () => number;
   latencyMs?: number;
-  depositAddress: `0x${string}`;
   getScenario?: () => IntentsMockScenario | null;
+};
+
+/** The simulator's extra test hook; not part of the backend contract. */
+type IntentsMockApi = IntentsApi & {
+  simulateDeposit(capability: string, operationId: string): void;
 };
 
 const randomHex = (bytes: number) =>
@@ -229,8 +276,12 @@ const randomHex = (bytes: number) =>
       .padStart(2, "0")
   ).join("")}` as `0x${string}`;
 
-const fail = (code: IntentErrorCode, status: number, message: string) =>
-  new IntentsApiError(code, message, status, uuid());
+const fail = (
+  code: IntentErrorCode,
+  status: number,
+  message: string,
+  retryAfterMs?: number
+) => new IntentsApiError(code, message, status, uuid(), retryAfterMs);
 
 export function getMockScenarioFromLocation(): IntentsMockScenario | null {
   if (typeof window === "undefined") return null;
@@ -242,13 +293,65 @@ export function getMockScenarioFromLocation(): IntentsMockScenario | null {
 
 const iso = (at: number) => new Date(at).toISOString();
 
+/** Simulated deposit for the mock API; a no-op for any other client. */
+export function simulateMockDeposit(
+  api: IntentsApi,
+  capability: string,
+  operationId: string
+) {
+  (api as Partial<IntentsMockApi>).simulateDeposit?.(capability, operationId);
+}
+
+/** Indicative price shared by previews and executable quotes. */
+function price(request: IntentPreviewRequest, at: number): IntentPreview {
+  const source = mockIntentSourceAssets.find(
+    (item) => item.assetId === request.sourceAssetId
+  )!;
+  const amountOut = new BigNumber(request.amountIn)
+    .shiftedBy(-source.decimals)
+    .times(prices[source.symbol] ?? 1)
+    .times(0.997)
+    .shiftedBy(SETTLEMENT_DECIMALS)
+    .integerValue(BigNumber.ROUND_DOWN)
+    .minus(WITHDRAW_FEE);
+  const out = BigNumber.max(amountOut, 0);
+  const minimum = out
+    .times(10_000 - request.slippageBps)
+    .div(10_000)
+    .integerValue(BigNumber.ROUND_DOWN);
+  // Destination FA2 and USDT0 both use six decimals: nothing is rounded.
+  return {
+    kind: "indicative",
+    executable: false,
+    sourceAssetId: request.sourceAssetId,
+    settlementTokenId: request.settlementTokenId,
+    settlementTokenVersion: request.settlementTokenVersion,
+    slippageBps: request.slippageBps,
+    amountIn: request.amountIn,
+    amountOut: out.toFixed(),
+    minAmountOut: minimum.toFixed(),
+    bridgeableAmountOut: out.toFixed(),
+    bridgeableMinAmountOut: minimum.toFixed(),
+    destinationAmountOut: out.toFixed(),
+    destinationMinAmountOut: minimum.toFixed(),
+    destinationAsset: mockSettlementToken.destinationAsset,
+    providerTimestamp: iso(at),
+    quotedAt: iso(at),
+    expiresAt: iso(at + 30_000),
+    providerTimeEstimateSeconds: source.network === "btc" ? 600 : 35,
+    refundFee: new BigNumber(10)
+      .pow(Math.max(0, source.decimals - 4))
+      .toFixed(),
+    withdrawFee: WITHDRAW_FEE,
+  };
+}
+
 export function createIntentsMockApi({
   storage = () => window.sessionStorage,
   now = Date.now,
   latencyMs = 300,
-  depositAddress,
   getScenario = getMockScenarioFromLocation,
-}: MockOptions): IntentsApi {
+}: MockOptions = {}): IntentsMockApi {
   // Memory fallback keeps the simulator usable when storage is blocked.
   let memory: Stored[] = [];
   const read = (): Stored[] => {
@@ -279,12 +382,68 @@ export function createIntentsMockApi({
       });
     });
 
+  const metadata = (): IntentMetadata => {
+    const scenario = getScenario();
+    if (scenario === "stale")
+      return {
+        ...mockIntentMetadata,
+        catalog: { fetchedAt: null, stale: true },
+        sourceAssets: [],
+      };
+    if (scenario === "admissionPaused")
+      return { ...mockIntentMetadata, admissionPaused: true };
+    if (scenario === "noToken")
+      return { ...mockIntentMetadata, defaultSettlementToken: null };
+    return mockIntentMetadata;
+  };
+
+  /** Validation shared by preview and creation (backend.md §6.2, §7, §10). */
+  const validate = (request: IntentPreviewRequest) => {
+    const current = metadata();
+    if (current.catalog.stale)
+      throw fail("CATALOG_STALE", 503, "The asset catalog is stale.");
+    if (current.admissionPaused)
+      throw fail("DEPENDENCY_UNAVAILABLE", 503, "Admission is paused.");
+    const token = current.defaultSettlementToken;
+    if (
+      !token ||
+      token.settlementTokenId !== request.settlementTokenId ||
+      token.settlementTokenVersion !== request.settlementTokenVersion
+    )
+      throw fail(
+        "SETTLEMENT_TOKEN_UNAVAILABLE",
+        409,
+        "The settlement token is unavailable."
+      );
+    const source = current.sourceAssets.find(
+      (item) => item.assetId === request.sourceAssetId
+    );
+    const network = getIntentNetwork(source?.network);
+    if (!source || !network)
+      throw fail(
+        "SOURCE_ASSET_UNAVAILABLE",
+        409,
+        "The source asset is unavailable."
+      );
+    if (getRefundAddressError(network, request.refundAddress))
+      throw fail(
+        "VALIDATION_ERROR",
+        400,
+        "refundAddress is invalid for the source network."
+      );
+    const preview = price(request, now());
+    if (new BigNumber(preview.amountOut).gt(MAX_OUT))
+      throw fail("AMOUNT_TOO_HIGH", 409, "1Click does not quote this amount.");
+    if (new BigNumber(preview.amountOut).lt(MIN_OUT))
+      throw fail("AMOUNT_TOO_LOW", 409, "1Click does not quote this amount.");
+    return { preview, network };
+  };
+
   /** Applies every clock-driven transition that is due, once, persistently. */
   const advance = (stored: Stored): Stored => {
     const at = now();
     let op = stored.operation;
     let { stage } = stored;
-    const route = mockIntentRoutes.find((item) => item.id === op.routeId)!;
     const bump = (patch: Partial<IntentOperation>, when: number) => {
       op = {
         ...op,
@@ -299,54 +458,58 @@ export function createIntentsMockApi({
     if (op.phase === "PREPARING_QUOTE" && op.closure === "OPEN") {
       const quotedAt = stored.createdAt + QUOTE_AFTER_MS;
       if (at >= quotedAt) {
-        const amountOut = new BigNumber(op.amountIn)
-          .shiftedBy(-route.sourceDecimals)
-          .times(rates[route.originAsset] ?? 1)
-          // The rehearsal settles 1:1; provider routes charge a fee.
-          .times(isRehearsal(route.id) ? 1 : 0.997)
-          .shiftedBy(route.settlementDecimals)
-          .integerValue(BigNumber.ROUND_DOWN);
-        const minAmountOut = amountOut
-          .times(10_000 - op.slippageBps)
-          .div(10_000)
-          .integerValue(BigNumber.ROUND_DOWN);
-        const step = new BigNumber(10).pow(
-          route.settlementDecimals - USDT_BRIDGE.destinationToken.decimals
+        const quote = price(op, quotedAt);
+        const source = mockIntentSourceAssets.find(
+          (item) => item.assetId === op.sourceAssetId
         );
-        const floor = (value: BigNumber) =>
-          value.div(step).integerValue(BigNumber.ROUND_DOWN).times(step);
+        const network = getIntentNetwork(source?.network);
         if (
           stored.scenario === "reject" ||
-          floor(minAmountOut).lt(op.acceptedMinAmountOut)
+          !network ||
+          new BigNumber(quote.bridgeableMinAmountOut).lt(
+            op.acceptedMinAmountOut
+          )
         )
           bump({ closure: "QUOTE_REJECTED", retryAfterMs: 5_000 }, quotedAt);
         else {
-          const expiresAt =
-            quotedAt + (stored.scenario === "expire" ? 20_000 : 10 * 60_000);
+          const isBitcoin = network.family === "bitcoin";
+          // Bitcoin: funding closes ~1h before a deadline up to 3h away.
+          const fundingExpiresAt =
+            quotedAt +
+            (stored.scenario === "expire"
+              ? 20_000
+              : isBitcoin
+                ? 2 * 60 * 60_000
+                : 10 * 60_000);
+          const deadline =
+            fundingExpiresAt + (isBitcoin ? 60 * 60_000 : 60_000);
+          const paused = stored.scenario === "paused";
           bump(
             {
               phase: "AWAITING_DEPOSIT",
-              fundingStatus:
-                stored.scenario === "paused" ? "PAUSED" : "AVAILABLE",
-              attention: stored.scenario === "paused" ? "ROUTE_PAUSED" : "NONE",
+              fundingStatus: paused ? "PAUSED" : "AVAILABLE",
+              attention: paused ? "SETTLEMENT_TOKEN_PAUSED" : "NONE",
               providerStatus: "PENDING_DEPOSIT",
-              retryAfterMs: 2_000,
-              fundingInstructions: {
-                quoteId: uuid(),
-                sourceChainId: route.sourceChainId,
-                originAsset: route.originAsset,
-                depositAddress,
-                depositMemo: null,
-                amount: op.amountIn,
-                amountOut: amountOut.toFixed(),
-                minAmountOut: minAmountOut.toFixed(),
-                bridgeableAmountOut: floor(amountOut).toFixed(),
-                bridgeableMinAmountOut: floor(minAmountOut).toFixed(),
-                deadline: iso(expiresAt + 60_000),
-                fundingExpiresAt: iso(expiresAt),
-                forwarderAddress: randomHex(20),
-              },
-              nextCheckAt: iso(quotedAt + 2_000),
+              retryAfterMs: 5_000,
+              fundingInstructions: paused
+                ? null
+                : {
+                    quoteId: uuid(),
+                    sourceNetwork: network.key,
+                    originAsset: op.sourceAssetId,
+                    depositAddress: depositAddresses[network.family](),
+                    depositMemo:
+                      stored.scenario === "memo" ? "1029384756" : null,
+                    amount: op.amountIn,
+                    amountOut: quote.amountOut,
+                    minAmountOut: quote.minAmountOut,
+                    bridgeableAmountOut: quote.bridgeableAmountOut,
+                    bridgeableMinAmountOut: quote.bridgeableMinAmountOut,
+                    deadline: iso(deadline),
+                    fundingExpiresAt: iso(fundingExpiresAt),
+                    forwarderAddress: randomHex(20),
+                  },
+              nextCheckAt: iso(quotedAt + 5_000),
             },
             quotedAt
           );
@@ -404,12 +567,11 @@ export function createIntentsMockApi({
             s === "refund"
               ? {
                   providerStatus: "REFUNDED",
-                  attention: "NONE",
+                  attention: "REFUND_PENDING",
                   refund: {
                     status: "REPORTED",
                     amount: op.amountIn,
-                    asset:
-                      op.fundingInstructions?.originAsset ?? route.originAsset,
+                    asset: op.sourceAssetId,
                     recipient: op.refundAddress,
                   },
                 }
@@ -484,20 +646,14 @@ export function createIntentsMockApi({
           );
         else if (index === 6) {
           const [event] = op.forwarding.bridgeEvents;
-          const minted = new BigNumber(amountOut)
-            .shiftedBy(
-              USDT_BRIDGE.destinationToken.decimals - route.settlementDecimals
-            )
-            .integerValue(BigNumber.ROUND_DOWN)
-            .toFixed();
           bump(
             {
               settlement: {
                 status: "CONFIRMED",
-                confirmedAmount: minted,
-                tokenAddress: USDT_BRIDGE.destinationToken.address,
-                tokenId: USDT_BRIDGE.destinationToken.id,
-                mavrykChainId: "NetXbasenetMock",
+                confirmedAmount: amountOut,
+                tokenAddress: DESTINATION.address,
+                tokenId: DESTINATION.id,
+                mavrykChainId: MAVRYK_CHAIN_ID,
                 mints: [
                   {
                     wrapTransactionHash: event.transactionHash,
@@ -505,7 +661,7 @@ export function createIntentsMockApi({
                     operationHash: `oo${randomHex(24).slice(2)}`,
                     blockHash: `BL${randomHex(24).slice(2)}`,
                     level: 1_000_000,
-                    amount: minted,
+                    amount: amountOut,
                   },
                 ],
               },
@@ -530,20 +686,27 @@ export function createIntentsMockApi({
     const stored = operations.find(
       (item) => item.operation.id === id && item.capability === capability
     );
-    // Unknown and foreign operations look the same (backend.md §2).
+    // Unknown and foreign operations look the same (backend.md §5).
     if (!stored) throw fail("NOT_FOUND", 404, "Operation not found.");
     return { operations, stored };
   };
 
   return {
     env: "mock",
-    async getRoutes(options) {
-      await delay(options?.signal);
-      return mockIntentRoutes;
-    },
     async getMetadata(options) {
       await delay(options?.signal);
-      return mockIntentMetadata;
+      return metadata();
+    },
+    async previewQuote(input, options) {
+      await delay(options?.signal);
+      const parsed = intentPreviewRequestSchema.strict().safeParse(input);
+      if (!parsed.success)
+        throw fail("VALIDATION_ERROR", 400, "Invalid request body.");
+      if (getScenario() === "previewBusy")
+        throw fail("PREVIEW_BUSY", 429, "Preview capacity is busy.", 60_000);
+      if (!metadata().settlementTokens.every((token) => token.previewSupported))
+        throw fail("QUOTE_PREVIEW_DISABLED", 503, "Previews are disabled.");
+      return validate(parsed.data).preview;
     },
     async createOperation({ capability, idempotencyKey }, input, options) {
       await delay(options?.signal);
@@ -551,21 +714,16 @@ export function createIntentsMockApi({
         throw fail("NOT_FOUND", 404, "Operation not found.");
       if (!isIdempotencyKey(idempotencyKey))
         throw fail("VALIDATION_ERROR", 400, "Invalid Idempotency-Key.");
-      const parsed = intentOperationRequestSchema.safeParse(input);
+      const parsed = intentOperationRequestSchema.strict().safeParse(input);
       if (!parsed.success)
         throw fail("VALIDATION_ERROR", 400, "Invalid request body.");
-      const request = parsed.data;
-      const body = JSON.stringify({
-        ...request,
-        sourceAddress: request.sourceAddress.toLowerCase(),
-        refundAddress: request.refundAddress.toLowerCase(),
-      });
       const operations = load();
       const existing = operations.find(
         (item) =>
           item.capability === capability &&
           item.idempotencyKey === idempotencyKey
       );
+      const body = JSON.stringify(parsed.data);
       if (existing) {
         if (existing.request !== body)
           throw fail(
@@ -578,33 +736,15 @@ export function createIntentsMockApi({
       const scenario = getScenario();
       if (scenario === "unavailable")
         throw fail("DEPENDENCY_UNAVAILABLE", 503, "Admission is paused.");
-      const route = mockIntentRoutes.find(
-        (item) => item.id === request.routeId
-      );
-      if (!route?.enabled || route.version !== request.routeVersion)
-        throw fail("ROUTE_UNAVAILABLE", 409, "This route is unavailable.");
-      const amount = new BigNumber(request.amountIn);
-      if (amount.lt(route.minAmountIn) || amount.gt(route.maxAmountIn))
-        throw fail("AMOUNT_OUT_OF_RANGE", 400, "Amount outside route bounds.");
-      if (request.slippageBps > route.maxSlippageBps)
-        throw fail("SLIPPAGE_OUT_OF_RANGE", 400, "Slippage too high.");
-      if (new BigNumber(request.acceptedMinAmountOut).lt(route.minAmountOut))
-        throw fail("MIN_OUTPUT_TOO_LOW", 400, "Accepted output too low.");
-      if (
-        isRehearsal(route.id) &&
-        (request.sourceAddress.toLowerCase() !==
-          request.refundAddress.toLowerCase() ||
-          request.slippageBps !== 0 ||
-          request.acceptedMinAmountOut !== route.minAmountOut)
-      )
-        throw fail(
-          "REHEARSAL_SCOPE_MISMATCH",
-          409,
-          "The rehearsal accepts only its fixed transfer."
-        );
+      const { network } = validate(parsed.data);
       const createdAt = now();
       const operation: IntentOperation = {
-        ...(JSON.parse(body) as typeof request),
+        ...parsed.data,
+        // An EVM refund address is returned lower-cased (backend.md §6.3).
+        refundAddress: normalizeRefundAddress(
+          network,
+          parsed.data.refundAddress
+        ),
         id: uuid(),
         phase: "PREPARING_QUOTE",
         attention: "NONE",
@@ -642,7 +782,7 @@ export function createIntentsMockApi({
         updatedAt: iso(createdAt),
         lastCheckedAt: null,
         nextCheckAt: iso(createdAt + QUOTE_AFTER_MS),
-        retryAfterMs: QUOTE_AFTER_MS,
+        retryAfterMs: 5_000,
       };
       write([
         ...operations,
@@ -661,55 +801,18 @@ export function createIntentsMockApi({
       await delay(options?.signal);
       return find(capability, id).stored.operation;
     },
-    async registerDeposit(capability, id, transactionHash, options) {
-      await delay(options?.signal);
+    simulateDeposit(capability, id) {
       const { operations, stored } = find(capability, id);
-      const hash = transactionHash.toLowerCase();
-      if (!/^0x[0-9a-f]{64}$/.test(hash))
-        throw fail("VALIDATION_ERROR", 400, "Invalid transaction hash.");
-      if (stored.registeredHash) {
-        if (stored.registeredHash !== hash)
-          throw fail(
-            "REHEARSAL_DELIVERY_CONFLICT",
-            409,
-            "The operation is bound to another transaction."
-          );
-        return { replayed: true };
-      }
-      if (stored.scenario === "registrationConflict")
-        throw fail(
-          "REHEARSAL_DELIVERY_CONFLICT",
-          409,
-          "The forwarder already holds a delivery for another operation."
-        );
-      if (stored.operation.fundingStatus !== "AVAILABLE")
-        throw fail(
-          "REHEARSAL_QUOTE_NOT_PUBLISHED",
-          409,
-          "No published funding instructions."
-        );
-      const attempts = (stored.registrationAttempts ?? 0) + 1;
-      if (attempts === 1) {
-        write(
-          operations.map((item) =>
-            item === stored ? { ...item, registrationAttempts: attempts } : item
-          )
-        );
-        throw new IntentsApiError(
-          "REHEARSAL_RECEIPT_PENDING",
-          "Receipt or confirmations pending.",
-          409,
-          uuid(),
-          3_000
-        );
-      }
+      if (
+        stored.depositedAt !== undefined ||
+        stored.operation.fundingStatus !== "AVAILABLE"
+      )
+        return;
       write(
         operations.map((item) =>
           item === stored
             ? advance({
                 ...item,
-                registeredHash: hash,
-                registrationAttempts: attempts,
                 depositedAt: now(),
                 quotedAmountOut:
                   item.operation.fundingInstructions?.bridgeableAmountOut,
@@ -717,7 +820,6 @@ export function createIntentsMockApi({
             : item
         )
       );
-      return { replayed: false };
     },
   };
 }

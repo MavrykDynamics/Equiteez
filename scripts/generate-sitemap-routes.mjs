@@ -10,7 +10,7 @@ const appDirectory = path.join(rootDirectory, "app");
 const outputFile = path.join(appDirectory, "generated", "sitemap-routes.ts");
 
 const EXCLUDED_PATHS = new Set(["/robots.txt", "/sitemap.xml"]);
-const EXCLUDED_PATH_PREFIXES = ["/portfolio", "/universal-send"];
+const EXCLUDED_PATH_PREFIXES = ["/portfolio"];
 
 const routeManifest = flatRoutes(appDirectory);
 const pathnameCache = new Map([["root", "/"]]);
@@ -85,7 +85,9 @@ const sortPathnames = (firstPathname, secondPathname) => {
   return firstPathname.localeCompare(secondPathname);
 };
 
-const staticPathnames = [...new Set(Object.keys(routeManifest).map(getRoutePathname))]
+const staticPathnames = [
+  ...new Set(Object.keys(routeManifest).map(getRoutePathname)),
+]
   .filter(isStaticPathname)
   .filter((pathname) => !isExcludedPathname(pathname))
   .sort(sortPathnames);

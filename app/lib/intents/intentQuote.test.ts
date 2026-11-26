@@ -8,67 +8,40 @@ import {
   newOperationCapability,
 } from "./intentCapability";
 import {
-  estimateAcceptedMinAmountOut,
+  formatCountdown,
+  formatTimeEstimate,
+  getAcceptedMinAmountOut,
   getIntentErrorCopy,
   getIntentRequestKey,
+  isIntentCatalogChangedError,
   isIntentInstructionsExpired,
+  isIntentPreviewExpired,
   isRetryableIntentError,
 } from "./intentQuote";
+import { preview } from "./intents.fixtures";
 
-describe("estimateAcceptedMinAmountOut", () => {
-  const base = {
-    amountIn: "1000000000000000000",
-    sourceDecimals: 18,
-    settlementDecimals: 18,
-    destinationDecimals: 6,
-    slippageBps: 0,
-  };
-
-  it("accepts exactly the amount on a zero-slippage parity route", () => {
-    // basenet-rehearsal-k8s: amountIn = acceptedMinAmountOut = 1e18.
-    expect(estimateAcceptedMinAmountOut(base)).toEqual({
-      expected: "1000000000000000000",
-      minimum: "1000000000000000000",
-    });
-  });
-
-  it("applies slippage, rounded down to FA2 precision", () => {
+describe("preview helpers", () => {
+  it("accepts the displayed bridgeable minimum", () => {
     expect(
-      estimateAcceptedMinAmountOut({
-        ...base,
-        amountIn: "2000000000000000000",
-        slippageBps: 50,
-      })
-    ).toEqual({
-      expected: "2000000000000000000",
-      minimum: "1990000000000000000",
-    });
+      getAcceptedMinAmountOut(
+        preview({ bridgeableMinAmountOut: "123", destinationMinAmountOut: "9" })
+      )
+    ).toBe("123");
   });
 
-  it("rounds sub-FA2 units down so the minimum is representable", () => {
-    const result = estimateAcceptedMinAmountOut({
-      ...base,
-      amountIn: "1000000000000000001",
-    });
-    expect(result?.expected).toBe("1000000000000000001");
-    expect(result?.minimum).toBe("1000000000000000000");
+  it("treats a preview as expired at its expiresAt", () => {
+    const quote = preview({ expiresAt: "2026-11-13T10:00:30.000Z" });
+    const at = Date.parse(quote.expiresAt);
+    expect(isIntentPreviewExpired(quote, at - 1)).toBe(false);
+    expect(isIntentPreviewExpired(quote, at)).toBe(true);
   });
 
-  it("converts between source and settlement decimals", () => {
-    expect(
-      estimateAcceptedMinAmountOut({
-        ...base,
-        amountIn: "1000000", // 1 token with 6 decimals
-        sourceDecimals: 6,
-      })
-    ).toEqual({
-      expected: "1000000000000000000",
-      minimum: "1000000000000000000",
-    });
-  });
-
-  it("returns null when nothing representable remains", () => {
-    expect(estimateAcceptedMinAmountOut({ ...base, amountIn: "1" })).toBeNull();
+  it("formats countdowns and time estimates", () => {
+    expect(formatCountdown(65)).toBe("1:05");
+    expect(formatCountdown(2 * 3600 + 5)).toBe("2:00:05");
+    expect(formatTimeEstimate(35)).toBe("~35 s");
+    expect(formatTimeEstimate(600)).toBe("~10 min");
+    expect(formatTimeEstimate(null)).toBeNull();
   });
 });
 
@@ -76,19 +49,21 @@ describe("request helpers", () => {
   it("changes the request key with any material input", () => {
     const inputs = {
       account: "mv1a",
-      sourceAddress: "0xAbC",
-      routeId: "r",
-      routeVersion: 1,
+      sourceAssetId: "nep141:sol.omft.near",
+      settlementTokenId: "usdt0-arbitrum",
+      settlementTokenVersion: 1,
+      recipient: "mv1a",
+      refundAddress: "EKpQ",
       amountIn: "1",
       slippageBps: 50,
     };
     const key = getIntentRequestKey(inputs);
-    expect(getIntentRequestKey({ ...inputs, sourceAddress: "0xabc" })).toBe(
-      key
-    );
+    expect(getIntentRequestKey({ ...inputs })).toBe(key);
     for (const patch of [
       { account: "mv1b" },
-      { routeVersion: 2 },
+      { sourceAssetId: "nep141:btc.omft.near" },
+      { settlementTokenVersion: 2 },
+      { refundAddress: "EKpR" },
       { amountIn: "2" },
       { slippageBps: 100 },
     ])
@@ -115,20 +90,35 @@ describe("request helpers", () => {
       "RATE_LIMITED",
     ] as const)
       expect(isRetryableIntentError(error(code))).toBe(true);
+    // Any 5xx may have committed the operation (backend.md §5).
+    expect(
+      isRetryableIntentError(new IntentsApiError("CATALOG_STALE", "", 503))
+    ).toBe(true);
     for (const code of [
       "VALIDATION_ERROR",
-      "AMOUNT_OUT_OF_RANGE",
-      "ROUTE_UNAVAILABLE",
+      "AMOUNT_TOO_LOW",
+      "SOURCE_ASSET_UNAVAILABLE",
       "IDEMPOTENCY_CONFLICT",
-      "REHEARSAL_SCOPE_MISMATCH",
+      "ADMISSION_CAPACITY_EXCEEDED",
     ] as const)
       expect(isRetryableIntentError(error(code))).toBe(false);
+  });
+
+  it("refreshes metadata after availability errors", () => {
+    expect(
+      isIntentCatalogChangedError(
+        new IntentsApiError("SETTLEMENT_TOKEN_UNAVAILABLE", "")
+      )
+    ).toBe(true);
+    expect(
+      isIntentCatalogChangedError(new IntentsApiError("AMOUNT_TOO_LOW", ""))
+    ).toBe(false);
   });
 
   it("shows the server request ID for support", () => {
     expect(
       getIntentErrorCopy(
-        new IntentsApiError("ROUTE_UNAVAILABLE", "x", 409, "req-42")
+        new IntentsApiError("PROVIDER_REJECTED", "x", 409, "req-42")
       )
     ).toMatch(/Request ID: req-42/);
   });

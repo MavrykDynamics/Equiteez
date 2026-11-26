@@ -6,7 +6,8 @@ import {
   hasIntentFundsObserved,
   type IntentRecord,
 } from "~/lib/intents/intentOperation";
-import { formatRawAmount, fromRawAmount } from "~/lib/intents/intentRoute";
+import { formatRawAmount, fromRawAmount } from "~/lib/intents/intentCatalog";
+import { getIntentNetwork } from "~/lib/intents/intentNetworks";
 import type { RTransactionWidgetState } from "./components/RTransactionWidget/RTransactionWidget";
 import type { TransactionWidgetModel } from "./transactionWidget.helpers";
 
@@ -34,7 +35,7 @@ export function isIntentWidgetVisible(record: IntentRecord) {
 }
 
 const withChain = (record: IntentRecord, text: string) =>
-  text.replaceAll("{chain}", record.source.chainName);
+  text.replaceAll("{chain}", record.source.networkName);
 
 const support = (record: IntentRecord) =>
   record.operationId
@@ -50,8 +51,10 @@ const reviewAttention = new Set<IntentAttention>([
 /** Extra copy for non-blocking attention overlays (backend.md §6). */
 const attentionCopy: Partial<Record<IntentAttention, string>> = {
   RETRYING: "A step is being retried automatically.",
-  ROUTE_PAUSED:
-    "The route is paused. Your deposit is preserved and continues when it resumes.",
+  SETTLEMENT_TOKEN_PAUSED:
+    "Transfers are paused. Your deposit is preserved and continues when they resume.",
+  SOURCE_PAUSED:
+    "This network is paused. A deposit already made is still tracked.",
   PROVIDER_UNAVAILABLE:
     "1Click is temporarily unavailable. Processing continues when it recovers.",
   REFUND_PENDING: "1Click is preparing a refund to your source wallet.",
@@ -220,20 +223,6 @@ export function getIntentWidgetState(record: IntentRecord): {
     }
   }
 
-  const registration = record.registration;
-  if (
-    registration?.status === "stopped" &&
-    (record.fundingState === "broadcast" || record.fundingState === "confirmed")
-  )
-    return {
-      isTerminal: false,
-      state: {
-        status: "warning",
-        title: "Deposit under review",
-        description: `${registration.error ?? "The deposit service could not accept your transfer automatically."} Do not send another deposit.${support(record)} Transfer: ${registration.hash}.`,
-      },
-    };
-
   switch (record.fundingState) {
     case "prompted":
       return {
@@ -275,7 +264,7 @@ export function getIntentWidgetState(record: IntentRecord): {
             ? {
                 status: "warning",
                 title: "Waiting for 1Click",
-                description: `The quote expired before 1Click saw your transfer. A late deposit is reconciled by the service; do not send it again.${support(record)}`,
+                description: `The deposit window closed before 1Click saw your transfer. Do not send it again; a late deposit is still tracked.${support(record)}`,
               }
             : {
                 status: "progress",
@@ -284,13 +273,11 @@ export function getIntentWidgetState(record: IntentRecord): {
                   record,
                   withChain(
                     record,
-                    registration?.status === "pending"
-                      ? "Confirming your transfer on {chain} with the deposit service…"
-                      : registration?.status === "accepted"
-                        ? "Transfer accepted. Verifying the delivery."
-                        : record.fundingState === "confirmed"
-                          ? "Transfer confirmed on {chain}. Waiting for 1Click to detect it."
-                          : "Waiting for {chain} confirmation."
+                    record.fundingState === "external"
+                      ? "Waiting for 1Click to detect your deposit on {chain}."
+                      : record.fundingState === "confirmed"
+                        ? "Transfer confirmed on {chain}. Waiting for 1Click to detect it."
+                        : "Waiting for {chain} confirmation."
                   )
                 ),
               },
@@ -298,14 +285,20 @@ export function getIntentWidgetState(record: IntentRecord): {
   }
 }
 
+/** Explorer link of the wallet funding transaction, when one was sent here. */
+export const getIntentFundingUrl = (record: IntentRecord) => {
+  const hash = record.sourceHashes.at(-1);
+  return hash
+    ? getIntentNetwork(record.source.network)?.explorer.tx(hash)
+    : undefined;
+};
+
 export function toIntentWidget(
-  record: IntentRecord,
-  explorerUrl?: string
+  record: IntentRecord
 ): TransactionWidgetModel | null {
   if (!isIntentWidgetVisible(record)) return null;
   const { state, isTerminal } = getIntentWidgetState(record);
   const id = getIntentWidgetId(record);
-  const hash = record.sourceHashes.at(-1);
   return {
     kind: "intent",
     operationId: id,
@@ -317,10 +310,7 @@ export function toIntentWidget(
     ).toFixed(),
     symbol: record.source.symbol,
     recipient: record.request.recipient,
-    sourceExplorerUrl:
-      explorerUrl && hash
-        ? `${explorerUrl.replace(/\/$/, "")}/tx/${hash}`
-        : undefined,
+    sourceExplorerUrl: getIntentFundingUrl(record),
     steps: intentWidgetStepLabels,
     state,
     isTerminal,

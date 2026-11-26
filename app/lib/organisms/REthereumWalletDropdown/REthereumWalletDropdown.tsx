@@ -15,8 +15,10 @@ import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provid
 import styles from "./REthereumWalletDropdown.module.css";
 
 export function REthereumWalletDropdown({
+  className,
   triggerClassName,
 }: {
+  className?: string;
   triggerClassName?: string;
 }) {
   const {
@@ -39,7 +41,7 @@ export function REthereumWalletDropdown({
 
   return (
     <RCustomDropdown
-      className={styles.dropdown}
+      className={clsx(styles.dropdown, className)}
       isOpen={isOpen}
       onOpenChange={(isOpened) => (isOpened ? connect() : onClose())}
     >

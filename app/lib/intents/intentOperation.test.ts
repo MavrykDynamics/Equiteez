@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   fixtureOperationId,
+  fixtureSolanaRefund,
   instructions,
   operation,
   record,
@@ -166,20 +167,37 @@ describe("mismatch checks", () => {
 
   it("requires the backend to echo the exact request", () => {
     expect(getOperationMismatch(saved, operation())).toBeNull();
-    // Addresses are normalized to lowercase by the backend.
+    // An EVM refund address is returned lower-cased by the backend.
     expect(
       getOperationMismatch(
         record({
           request: {
             ...saved.request,
-            sourceAddress: "0xAbCdEf0000000000000000000000000000000001",
+            refundAddress: "0x52908400098527886E0F7030069857D2E4169EE7",
           },
         }),
         operation({
-          sourceAddress: "0xabcdef0000000000000000000000000000000001",
+          refundAddress: "0x52908400098527886e0f7030069857d2e4169ee7",
         })
       )
     ).toBeNull();
+    // Other networks' addresses are compared exactly.
+    const solana = record({
+      source: { ...saved.source, network: "sol", family: "solana" },
+      request: { ...saved.request, refundAddress: fixtureSolanaRefund },
+    });
+    expect(
+      getOperationMismatch(
+        solana,
+        operation({ refundAddress: fixtureSolanaRefund.toLowerCase() })
+      )
+    ).toBe("refund");
+    expect(
+      getOperationMismatch(saved, operation({ sourceAssetId: "nep141:x" }))
+    ).toBe("asset");
+    expect(
+      getOperationMismatch(saved, operation({ settlementTokenVersion: 2 }))
+    ).toBe("settlement token");
     expect(
       getOperationMismatch(
         saved,
@@ -202,7 +220,7 @@ describe("mismatch checks", () => {
   it("checks published instructions against the route and accepted minimum", () => {
     expect(getInstructionsMismatch(saved, instructions())).toBeNull();
     expect(
-      getInstructionsMismatch(saved, instructions({ sourceChainId: "1" }))
+      getInstructionsMismatch(saved, instructions({ sourceNetwork: "arb" }))
     ).toBe("network");
     expect(
       getInstructionsMismatch(saved, instructions({ originAsset: "x" }))
@@ -210,9 +228,10 @@ describe("mismatch checks", () => {
     expect(getInstructionsMismatch(saved, instructions({ amount: "1" }))).toBe(
       "amount"
     );
+    // A memo is shown with the address; it no longer blocks the deposit.
     expect(
       getInstructionsMismatch(saved, instructions({ depositMemo: "memo" }))
-    ).toBe("memo");
+    ).toBeNull();
     expect(
       getInstructionsMismatch(
         saved,

@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 /**
- * Mavryk Bridge ETH backend v0.0.6, API schema 0.1.0 (`GET /docs`,
- * `near-intents/backend.md`). Every response is validated here; contract
+ * Mavryk Bridge ETH backend v0.0.9 (`near-intents/backend.md`; Swagger at
+ * `GET /docs` labels it 0.1.0). Every response is validated here; contract
  * changes should only touch this file and `intents.http.ts`.
  *
  * Enumerations accept unknown future values as "UNKNOWN" instead of failing,
  * so an operation is preserved and funding stops when its state cannot be
- * interpreted (backend.md §5).
+ * interpreted.
  */
 const withUnknown = <const T extends readonly [string, ...string[]]>(
   values: T
@@ -32,105 +32,131 @@ export const evmHashSchema = z
   .string()
   .regex(/^0x[0-9a-fA-F]{64}$/)
   .transform((value) => value.toLowerCase() as `0x${string}`);
-export const routeIdSchema = z
+/** Settlement token IDs (`usdt0-arbitrum`). */
+export const settlementTokenIdSchema = z
   .string()
   .regex(/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/);
+const settlementTokenVersionSchema = z.number().int().min(1).max(2147483647);
+/** Opaque 1Click asset identifier: never parsed, never keyed by symbol. */
+export const assetIdSchema = z.string().regex(/^[\x21-\x7e]{1,512}$/);
+/** Any source-network address; the format is checked per network. */
+export const networkAddressSchema = z.string().regex(/^[\x21-\x7e]{1,256}$/);
 export const mavrykRecipientSchema = z
   .string()
   .regex(/^mv1[1-9A-HJ-NP-Za-km-z]{33}$/);
 const chainIdSchema = z.string().regex(/^\d+$/);
 const dateSchema = z.string().datetime({ offset: true });
 const uuidSchema = z.string().uuid();
+const slippageSchema = z.number().int().min(0).max(9999);
 
-export const intentRouteSchema = z.object({
-  id: routeIdSchema,
-  version: z.number().int().min(1).max(2147483647),
-  enabled: z.boolean(),
-  sourceChainId: chainIdSchema,
-  settlementChainId: chainIdSchema,
-  /** Provider asset identifiers; never derived from ticker symbols. */
-  originAsset: z.string().min(1),
-  destinationAsset: z.string().min(1),
-  settlementToken: evmAddressSchema,
-  factoryAddress: evmAddressSchema,
-  bridgeAddress: evmAddressSchema,
-  sourceDecimals: z.number().int().min(0),
-  settlementDecimals: z.number().int().min(0),
-  /** Inclusive source-unit admission bounds. */
-  minAmountIn: positiveAmountSchema,
-  maxAmountIn: positiveAmountSchema,
-  /** Minimum accepted output, settlement ERC-20 units. */
-  minAmountOut: positiveAmountSchema,
-  maxSlippageBps: z.number().int().min(0).max(9999),
-});
-/** Entries are validated one by one so one bad route does not hide the rest. */
-export const intentRoutesEnvelopeSchema = z.object({
-  routes: z.array(z.unknown()),
-});
-
-/**
- * `GET /v1/metadata` (backend.md §4.2a): approved asset identities per route
- * version. The only source of the token the wallet transfers; a route
- * without metadata is never inferred from a ticker.
- */
-export const intentMetadataAssetSchema = z.object({
-  /** Same identifier as the route's `originAsset` / `destinationAsset`. */
-  assetId: z.string().min(1),
-  chainId: chainIdSchema,
-  kind: withUnknown(["erc20", "native"]),
-  contractAddress: evmAddressSchema.nullish(),
-  symbol: z.string().min(1),
+/** What the user receives on Mavryk (backend.md §6.1). */
+export const intentDestinationAssetSchema = z.object({
+  chainId: z.string().min(1),
+  kind: withUnknown(["fa2"]),
+  contractAddress: z.string().min(1),
+  tokenId: amountSchema,
   decimals: z.number().int().min(0).max(36),
 });
-export const intentMetadataRouteSchema = z.object({
-  routeId: routeIdSchema,
-  routeVersion: z.number().int().min(1).max(2147483647),
-  /** "rehearsal" on Basenet; anything else is a provider (1Click) route. */
-  mode: z.string().min(1),
+
+export const intentSettlementTokenSchema = z.object({
+  settlementTokenId: settlementTokenIdSchema,
+  settlementTokenVersion: settlementTokenVersionSchema,
+  isDefault: z.boolean(),
   previewSupported: z.boolean(),
-  sourceAsset: intentMetadataAssetSchema,
-  settlementAsset: intentMetadataAssetSchema,
-  destinationAsset: z.object({
-    chainId: z.string().min(1),
-    kind: z.string().min(1),
+  settlementAsset: z.object({
+    assetId: z.string().min(1),
+    chainId: chainIdSchema,
     contractAddress: z.string().min(1),
-    tokenId: amountSchema,
-    decimals: z.number().int().min(0).max(36),
+    symbol: z.string().min(1),
+    decimals: z.number().int().min(0).max(255),
   }),
-  limits: z.object({
-    minAmountIn: positiveAmountSchema,
-    maxAmountIn: positiveAmountSchema,
-    minAmountOut: positiveAmountSchema,
-    maxSlippageBps: z.number().int().min(0).max(9999),
-  }),
-  /** Connected-wallet hash registration (§4.5): only literal `true` enables it. */
-  depositRegistrationSupported: z
-    .unknown()
-    .transform((value) => value === true),
+  destinationAsset: intentDestinationAssetSchema,
 });
-/** Routes are validated one by one so one bad entry does not hide the rest. */
+
+/** A source asset offered now (backend.md §6.1). */
+export const intentSourceAssetSchema = z.object({
+  assetId: assetIdSchema,
+  /** One of the twelve network keys (§7); unknown keys are hidden. */
+  network: z.string().regex(/^[a-z0-9]{1,32}$/),
+  family: withUnknown(["evm", "solana", "near", "aptos", "bitcoin"]),
+  evmChainId: z
+    .string()
+    .regex(/^[1-9][0-9]{0,77}$/)
+    .nullable(),
+  depositMode: withUnknown(["SIMPLE", "MEMO"]),
+  kind: withUnknown(["native", "token"]),
+  /** Token contract, mint or account; `null` for native assets. */
+  contractAddress: z.string().max(256).nullable(),
+  /** Display text, not unique. */
+  symbol: z.string().min(1).max(64),
+  decimals: z.number().int().min(0).max(255),
+  coingeckoId: z.string().nullable(),
+});
+
+/** Entries are validated one by one so one bad entry does not hide the rest. */
 export const intentMetadataEnvelopeSchema = z.object({
-  schemaVersion: z.number().int(),
+  schemaVersion: z.literal(2),
   admissionPaused: z.boolean(),
-  routes: z.array(z.unknown()),
+  catalog: z.object({
+    fetchedAt: dateSchema.nullable(),
+    stale: z.boolean(),
+  }),
+  defaultSettlementToken: z
+    .object({
+      settlementTokenId: settlementTokenIdSchema,
+      settlementTokenVersion: settlementTokenVersionSchema,
+    })
+    .nullable(),
+  settlementTokens: z.array(z.unknown()),
+  sourceAssets: z.array(z.unknown()),
 });
 
-/** `POST /v1/operations/{id}/deposit` → 200 (also for a replay). */
-export const intentDepositRegistrationSchema = z.object({
-  operationId: uuidSchema,
-  transactionHash: evmHashSchema,
-  replayed: z.boolean(),
-});
-
-export const intentOperationRequestSchema = z.object({
-  routeId: routeIdSchema,
-  routeVersion: z.number().int().min(1).max(2147483647),
-  sourceAddress: evmAddressSchema,
+/** `POST /v1/quotes/preview`: exactly seven fields. */
+export const intentPreviewRequestSchema = z.object({
+  sourceAssetId: assetIdSchema,
+  settlementTokenId: settlementTokenIdSchema,
+  settlementTokenVersion: settlementTokenVersionSchema,
   recipient: mavrykRecipientSchema,
-  refundAddress: evmAddressSchema,
+  /** An address the user controls on the source network. */
+  refundAddress: networkAddressSchema,
+  /** Source-asset base units. */
   amountIn: positiveAmountSchema,
-  slippageBps: z.number().int().min(0).max(9999),
-  /** User-accepted lower bound, settlement ERC-20 units. */
+  slippageBps: slippageSchema,
+});
+
+/** Indicative, non-executable price (backend.md §6.2). */
+export const intentPreviewSchema = z.object({
+  kind: z.literal("indicative"),
+  executable: z.literal(false),
+  sourceAssetId: assetIdSchema,
+  settlementTokenId: settlementTokenIdSchema,
+  settlementTokenVersion: settlementTokenVersionSchema,
+  slippageBps: slippageSchema,
+  amountIn: amountSchema,
+  /** Settlement-token units. */
+  amountOut: amountSchema,
+  minAmountOut: amountSchema,
+  /** Rounded to Mavryk precision, still settlement-token units. */
+  bridgeableAmountOut: amountSchema,
+  bridgeableMinAmountOut: amountSchema,
+  /** FA2 units on Mavryk: what the user receives. */
+  destinationAmountOut: amountSchema,
+  destinationMinAmountOut: amountSchema,
+  destinationAsset: intentDestinationAssetSchema,
+  providerTimestamp: dateSchema,
+  quotedAt: dateSchema,
+  /** Freshness limit (≤ 30s); not a funding deadline. */
+  expiresAt: dateSchema,
+  providerTimeEstimateSeconds: z.number().min(0).nullable(),
+  /** Source units, charged only if a refund happens. */
+  refundFee: amountSchema.nullable(),
+  /** Settlement-token units, already included in amountOut. */
+  withdrawFee: amountSchema.nullable(),
+});
+
+/** `POST /v1/operations`: the seven preview fields plus the accepted minimum. */
+export const intentOperationRequestSchema = intentPreviewRequestSchema.extend({
+  /** User-accepted lower bound, settlement-token units. */
   acceptedMinAmountOut: positiveAmountSchema,
 });
 
@@ -146,11 +172,12 @@ export const intentPhaseSchema = withUnknown([
 export const intentAttentionSchema = withUnknown([
   "NONE",
   "RETRYING",
-  "ROUTE_PAUSED",
-  "MANUAL_REVIEW",
   "PROVIDER_UNAVAILABLE",
+  "SETTLEMENT_TOKEN_PAUSED",
+  "SOURCE_PAUSED",
   "DEPOSIT_INCOMPLETE",
   "REFUND_PENDING",
+  "MANUAL_REVIEW",
   "RECONCILE_REQUIRED",
 ]);
 export const intentClosureSchema = withUnknown(["OPEN", "QUOTE_REJECTED"]);
@@ -173,24 +200,26 @@ export const intentProviderStatusSchema = withUnknown([
 
 export const intentFundingInstructionsSchema = z.object({
   quoteId: uuidSchema,
-  sourceChainId: chainIdSchema,
+  /** Network key of the deposit (§7). */
+  sourceNetwork: z.string().min(1),
+  /** Asset to send: the `sourceAssetId`. */
   originAsset: z.string().min(1),
-  /** Where the wallet sends funds. In real 1Click mode never the forwarder. */
-  depositAddress: evmAddressSchema,
-  /** Null in this release. Anything else blocks funding (no memo support). */
-  depositMemo: z.unknown().transform((value) => value ?? null),
-  /** Exact source base units to fund. */
+  /** Where to send, on `sourceNetwork`. Never the forwarder. */
+  depositAddress: networkAddressSchema,
+  /** When set, the deposit must carry this memo. */
+  depositMemo: z.string().min(1).nullable(),
+  /** Exact source base units to send. */
   amount: positiveAmountSchema,
-  /** Settlement ERC-20 units. */
+  /** Settlement-token units. */
   amountOut: positiveAmountSchema,
   minAmountOut: positiveAmountSchema,
-  /** Rounded down to destination precision, still settlement ERC-20 units. */
+  /** Rounded to destination precision, still settlement-token units. */
   bridgeableAmountOut: positiveAmountSchema,
   bridgeableMinAmountOut: positiveAmountSchema,
   deadline: dateSchema,
-  /** UI funding cut-off; earlier than the provider deadline. */
+  /** Send before this; earlier than the deadline by a safety margin. */
   fundingExpiresAt: dateSchema,
-  /** Settlement-chain recipient of 1Click's output; resolved by the backend. */
+  /** Bridge forwarder on Arbitrum One. Informational only. */
   forwarderAddress: evmAddressSchema,
 });
 
@@ -248,7 +277,7 @@ export const intentSettlementSchema = z.object({
     "CONFIRMED",
     "RECONCILE_REQUIRED",
   ]),
-  /** Destination FA2 base units (six decimals for current pairings). */
+  /** Destination FA2 base units (six decimals). */
   confirmedAmount: amountSchema,
   tokenAddress: z.string().nullable(),
   tokenId: amountSchema.nullable(),
@@ -259,9 +288,11 @@ export const intentSettlementSchema = z.object({
 export const intentRefundSchema = z.object({
   /** Provider report; not independently verified on chain. */
   status: withUnknown(["REPORTED"]),
+  /** Source units. */
   amount: amountSchema,
   asset: z.string(),
-  recipient: evmAddressSchema,
+  /** The refund address, on the source network. */
+  recipient: z.string(),
 });
 
 export const intentOperationSchema = intentOperationRequestSchema.extend({
@@ -286,26 +317,36 @@ export const intentOperationSchema = intentOperationRequestSchema.extend({
   retryAfterMs: z.number().int().min(0),
 });
 
+/** Error codes of backend.md §10. */
 export const intentErrorCodes = [
   "VALIDATION_ERROR",
-  "AMOUNT_OUT_OF_RANGE",
-  "SLIPPAGE_OUT_OF_RANGE",
-  "MIN_OUTPUT_TOO_LOW",
   "NOT_FOUND",
   "OPERATION_NOT_FOUND",
+  "SOURCE_ASSET_UNAVAILABLE",
+  "SETTLEMENT_TOKEN_UNAVAILABLE",
+  "ADMISSION_CHANGED",
+  "DIRECT_WRAP_UNSUPPORTED",
+  "AMOUNT_TOO_LOW",
+  "AMOUNT_TOO_HIGH",
+  "PROVIDER_REJECTED",
+  "PREVIEW_BELOW_MINIMUM",
   "IDEMPOTENCY_CONFLICT",
-  "ROUTE_UNAVAILABLE",
   "PAYLOAD_TOO_LARGE",
   "UNSUPPORTED_MEDIA_TYPE",
   "RATE_LIMITED",
+  "PREVIEW_BUSY",
+  "ADMISSION_CAPACITY_EXCEEDED",
   "INTERNAL_ERROR",
+  "CATALOG_STALE",
+  "METADATA_DISABLED",
+  "QUOTE_PREVIEW_DISABLED",
+  "RECOVERY_MODE",
   "DEPENDENCY_UNAVAILABLE",
-  "REHEARSAL_SCOPE_MISMATCH",
-  "REHEARSAL_QUOTE_NOT_PUBLISHED",
-  "REHEARSAL_RECEIPT_PENDING",
-  "REHEARSAL_DELIVERY_MISMATCH",
-  "REHEARSAL_DELIVERY_CONFLICT",
-  "REHEARSAL_RPC_UNAVAILABLE",
+  "METADATA_UNAVAILABLE",
+  "PROVIDER_UNAVAILABLE",
+  "PROVIDER_AUTH_UNAVAILABLE",
+  "INVALID_QUOTE",
+  "PREVIEW_EXPIRED",
 ] as const;
 
 export const intentErrorBodySchema = z.object({

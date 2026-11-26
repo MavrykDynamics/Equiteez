@@ -8,10 +8,7 @@ import {
 import { arbitrumSepolia } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
 
-import {
-  INTENTS_SOURCE_CHAINS,
-  INTENTS_SOURCE_RPC_URLS,
-} from "~/consts/intents";
+import { INTENTS_EVM_CHAINS } from "~/consts/intents";
 import { USDT_BRIDGE } from "~/consts/usdtBridge";
 
 export const ETHEREUM_CHAIN = arbitrumSepolia;
@@ -47,11 +44,10 @@ export function createEthereumConfig() {
     );
   }
 
-  // The direct bridge chain stays first (default); 1Click source chains follow.
+  // The direct bridge chain stays first (default); the 1Click EVM source
+  // chains follow, on their public RPCs (reads and wallet sends only).
   // Wrong-network checks for the direct bridge still compare to ETHEREUM_CHAIN.
-  const intentChains = INTENTS_SOURCE_CHAINS.filter(
-    (chain) => chain.id !== arbitrumSepolia.id
-  );
+  const intentChains = INTENTS_EVM_CHAINS;
   return createConfig({
     chains: [arbitrumSepolia, ...intentChains],
     connectors,
@@ -63,10 +59,7 @@ export function createEthereumConfig() {
     transports: {
       [arbitrumSepolia.id]: http(ETHEREUM_RPC_URL),
       ...(Object.fromEntries(
-        intentChains.map((chain) => [
-          chain.id,
-          http(INTENTS_SOURCE_RPC_URLS[chain.id]),
-        ])
+        intentChains.map((chain) => [chain.id, http()])
       ) as Record<(typeof intentChains)[number]["id"], Transport>),
     },
   });

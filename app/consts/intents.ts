@@ -1,13 +1,27 @@
-import { arbitrumSepolia, sepolia } from "wagmi/chains";
-
-import { USDT_BRIDGE } from "./usdtBridge";
+import {
+  arbitrum,
+  avalanche,
+  base,
+  bsc,
+  gnosis,
+  mainnet,
+  optimism,
+  polygon,
+} from "wagmi/chains";
 
 /**
  * 1Click (NEAR Intents) sponsored deposits against the shared Mavryk Bridge
- * ETH backend (`near-intents/backend.md`, API schema 0.1.0, prefix `/v1`).
+ * ETH backend (`near-intents/backend.md`, API v0.0.9, prefix `/v1`).
  *
- * The feature is off unless `INTENTS_DEPOSIT_ENABLED=true` is set at build time.
- * `INTENTS_API_MODE=mock` swaps the HTTP client for the in-browser simulator in
+ * The user pays with any source asset the backend lists in `GET
+ * /v1/metadata` (twelve networks: eight EVM chains, Solana, NEAR, Aptos and
+ * Bitcoin). 1Click swaps it into the default settlement token (USDT0 on
+ * Arbitrum One at launch), the backend forwards it into the EVM WrapBridge
+ * and the bridge mints the wrapped token (wUSDT) on Mavryk.
+ *
+ * It is the Deposit Funds "Send From Any Network" flow and is always on;
+ * `INTENTS_API` must be set at build time. `INTENTS_API_MODE=mock` swaps the
+ * HTTP client for the in-browser simulator in
  * `~/lib/apis/intents/intents.mock.ts`; production defaults to `http`.
  */
 // Vite `define`s `process.env`, as for ETHEREUM_RPC_URL in ethereum.config.ts.
@@ -22,8 +36,6 @@ const originOf = (value: string | undefined) => {
   }
 };
 
-export const INTENTS_DEPOSIT_ENABLED =
-  env("INTENTS_DEPOSIT_ENABLED") === "true";
 export const INTENTS_API_MODE: "mock" | "http" =
   env("INTENTS_API_MODE") === "mock" ? "mock" : "http";
 /**
@@ -33,10 +45,6 @@ export const INTENTS_API_MODE: "mock" | "http" =
  */
 export const INTENTS_API_URL = env("INTENTS_API") ?? "";
 export const INTENTS_API_PROXY_TARGET = env("INTENTS_API_PROXY_TARGET");
-/** Address the mock catalog asks the wallet to fund; testnet only. */
-export const INTENTS_MOCK_DEPOSIT_ADDRESS = (env(
-  "INTENTS_MOCK_DEPOSIT_ADDRESS"
-) || "0x000000000000000000000000000000000000dEaD") as `0x${string}`;
 
 /**
  * Backend environment identity. Persisted operations (with their
@@ -53,42 +61,47 @@ export const INTENTS_ENV =
       "unconfigured");
 
 /**
- * Source chains the funding adapters can sign on. A catalog route on any other
- * chain is shown as unsupported. The direct USDT bridge keeps its own chain.
+ * EVM source chains (backend.md §7). They are registered in wagmi so a
+ * connected EVM wallet can read balances and send the deposit; the direct
+ * USDT bridge keeps its own chain (`ETHEREUM_CHAIN`).
  */
-export const INTENTS_SOURCE_CHAINS = [arbitrumSepolia, sepolia] as const;
-export const INTENTS_SOURCE_RPC_URLS: Partial<Record<number, string>> = {
-  [sepolia.id]: env("INTENTS_SEPOLIA_RPC_URL") || undefined,
-};
-
-/**
- * Route modes Equiteez can price without a quote preview. The Basenet
- * rehearsal settles 1:1 with zero slippage, so the accepted minimum is the
- * amount itself. Provider (1Click) routes stay unavailable until
- * `POST /v1/quotes/preview` is integrated.
- */
-export const INTENTS_EXACT_PARITY_MODES: readonly string[] = ["rehearsal"];
-
-/**
- * Settlement-chain ERC-20 → Mavryk FA2 pairs of the existing bridge
- * (`near-intents/updated-bridge-contracts.md`). A route must settle through
- * one of them; the destination token, its decimals and the receipt check all
- * come from here, not from the route catalog.
- */
-export const INTENTS_BRIDGE_PAIRS = [
-  {
-    settlementChainId: String(USDT_BRIDGE.chainId),
-    bridgeAddress: USDT_BRIDGE.address,
-    settlementToken: USDT_BRIDGE.sourceToken.address,
-    settlementDecimals: USDT_BRIDGE.sourceToken.decimals,
-    destination: USDT_BRIDGE.destinationToken,
-  },
+export const INTENTS_EVM_CHAINS = [
+  mainnet,
+  arbitrum,
+  base,
+  optimism,
+  polygon,
+  bsc,
+  avalanche,
+  gnosis,
 ] as const;
-export type IntentBridgePair = (typeof INTENTS_BRIDGE_PAIRS)[number];
 
-/** Slippage choices (bps), limited further by each route's maxSlippageBps. */
-export const INTENTS_SLIPPAGE_OPTIONS_BPS = [10, 50, 100] as const;
-export const INTENTS_DEFAULT_SLIPPAGE_BPS = 50;
+/**
+ * Network reads for non-EVM wallets (balances, Solana blockhashes). Public
+ * endpoints by default; set a dedicated RPC for production traffic.
+ */
+export const INTENTS_SOLANA_RPC_URL =
+  env("INTENTS_SOLANA_RPC_URL") ?? "https://api.mainnet-beta.solana.com";
+/** Aptos fullnode REST API (balances). */
+export const INTENTS_APTOS_API_URL =
+  env("INTENTS_APTOS_API_URL") ?? "https://api.mainnet.aptoslabs.com/v1";
+/** NEAR JSON-RPC (balances and token storage registration). */
+export const INTENTS_NEAR_RPC_URL =
+  env("INTENTS_NEAR_RPC_URL") ?? "https://free.rpc.fastnear.com";
+/** Esplora-compatible Bitcoin API (balances). */
+export const INTENTS_BITCOIN_API_URL =
+  env("INTENTS_BITCOIN_API_URL") ?? "https://mempool.space/api";
+
+/** Slippage choices (bps). The user picks one; the backend accepts 0–9999. */
+export const INTENTS_SLIPPAGE_OPTIONS_BPS = [10, 50, 100, 300] as const;
+export const INTENTS_DEFAULT_SLIPPAGE_BPS = 100;
+
+/** Quote previews (backend.md §6.2, §11): debounce typing, ~10 a minute. */
+export const INTENTS_PREVIEW_DEBOUNCE_MS = 700;
+/** Metadata is cached about a minute and refreshed before confirmation. */
+export const INTENTS_METADATA_STALE_MS = 60_000;
+/** Client timeout per request (backend.md §11). */
+export const INTENTS_REQUEST_TIMEOUT_MS = 15_000;
 
 export const INTENTS_POLL_INTERVALS = {
   /** Used when an operation has no retryAfterMs. */
@@ -99,15 +112,6 @@ export const INTENTS_POLL_INTERVALS = {
   /** Network/5xx backoff starts here and doubles up to maxMs. */
   errorInitialMs: 5_000,
 } as const;
-/**
- * Funding-hash registration retries (backend.md §4.5/§5): a pending receipt,
- * RPC outage, 429 or lost response sends the same hash again after 10–30s,
- * backing off to the cap. There is no attempt limit.
- */
-export const INTENTS_REGISTRATION_RETRY = {
-  initialMs: 15_000,
-  maxMs: 60_000,
-} as const;
 /** Consecutive 404s before an operation is treated as no longer readable. */
 export const INTENTS_NOT_FOUND_LIMIT = 3;
 /**
@@ -115,6 +119,12 @@ export const INTENTS_NOT_FOUND_LIMIT = 3;
  * backend update in case settlement observation starts, then stop.
  */
 export const INTENTS_UNTRACKED_SETTLEMENT_POLL_MS = 2 * 60 * 60_000;
+/**
+ * A deposit can still arrive after the user left the deposit screen (sent
+ * from an exchange). Such operations keep being polled until this long after
+ * their funding window closed (backend.md §9: late deposits are tracked).
+ */
+export const INTENTS_LATE_DEPOSIT_POLL_MS = 30 * 60_000;
 /** No wallet prompt is started this close to fundingExpiresAt. */
 export const INTENTS_FUNDING_SAFETY_MS = 15_000;
 /** Bounded wait for the source funding receipt, like the direct bridge. */

@@ -15,7 +15,7 @@ const record = (localId = "local-1", target = account) =>
   fixtureRecord({ localId, account: target, createdAt: Date.now() });
 
 describe("intent operation store", () => {
-  it("persists synchronously under an account/environment-scoped v2 key", () => {
+  it("persists synchronously under an account/environment-scoped v3 key", () => {
     const storage = memoryStorage();
     const store = new IntentOperations(
       account,
@@ -24,15 +24,15 @@ describe("intent operation store", () => {
     );
     store.upsert({ ...record(), env: "https://a.test" });
     expect(store.key).toBe(
-      `equiteez:intents:v2:${encodeURIComponent("https://a.test")}:${account}`
+      `equiteez:intents:v3:${encodeURIComponent("https://a.test")}:${account}`
     );
     const saved = JSON.parse(storage.data.get(store.key)!);
-    expect(saved.version).toBe(2);
+    expect(saved.version).toBe(3);
     // The capability is persisted with the request before any POST.
     expect(saved.records[0]).toMatchObject({
       capability: fixtureCapability,
       idempotencyKey: "idem-key-1",
-      request: { amountIn: "2000000000000000000" },
+      request: { amountIn: "25000000" },
     });
   });
 

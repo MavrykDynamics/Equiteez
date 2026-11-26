@@ -1,0 +1,120 @@
+.list,
+.sections,
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.list {
+  gap: var(--r-space-5);
+}
+
+.search {
+  min-height: 44px;
+  border-radius: var(--r-radius-12);
+}
+
+.search input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.sections {
+  gap: var(--r-space-3);
+}
+
+.section {
+  gap: var(--r-space-1);
+}
+
+.sectionTitle {
+  padding: 0 var(--r-space-3);
+}
+
+.empty {
+  padding: 0 var(--r-space-3);
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  align-items: center;
+  gap: var(--r-space-3);
+  padding: var(--r-space-2) var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-12);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.row:hover:not(:disabled),
+.row[data-selected] {
+  background: var(--r-color-neutral-50);
+}
+
+.row:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.row:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.rowIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.rowCopy,
+.rowValues {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.rowCopy {
+  flex: 1 1 auto;
+}
+
+.rowValues {
+  flex: 0 0 auto;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.rowTitle,
+.rowSubtitle,
+.rowValue,
+.rowSubValue {
+  overflow: hidden;
+  font-family: var(--r-font-body);
+  letter-spacing: var(--r-letter-spacing-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowTitle {
+  font-size: var(--r-font-size-body-m);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-m);
+}
+
+.rowValue {
+  font-size: var(--r-font-size-body-sm);
+  font-weight: var(--r-font-weight-medium);
+  line-height: var(--r-line-height-body-sm);
+}
+
+.rowSubtitle,
+.rowSubValue {
+  color: var(--r-color-neutral-700);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+}

@@ -23,6 +23,7 @@ import { TransactionsProvider } from "./providers/TransactionsProvider/Transacti
 import { RTransactionWidgetHost } from "./providers/TransactionsProvider/components/RTransactionWidget/RTransactionWidgetHost";
 import { TransactionWidgetProvider } from "./providers/TransactionsProvider/TransactionWidgetProvider";
 import { EthereumProvider } from "./providers/EthereumProvider/ethereum.provider";
+import { IntentWalletsProvider } from "./providers/IntentWalletsProvider/IntentWalletsProvider";
 import { AuthProvider } from "./providers/AuthProvider/auth.provider";
 import { TokensProvider } from "./providers/TokensProvider/tokens.provider";
 import { PopupProvider } from "./providers/PopupProvider/popup.provider";
@@ -156,16 +157,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 <NotificationsProviderListeners />
                                 <TransactionsProvider>
                                   <EthereumProvider>
-                                    <TransactionWidgetProvider>
-                                      <RTransactionWidgetHost />
-                                      <AppGlobalLoader>
-                                        <PopupProvider>
-                                          <PageLayout includeContainer={false}>
-                                            {children}
-                                          </PageLayout>
-                                        </PopupProvider>
-                                      </AppGlobalLoader>
-                                    </TransactionWidgetProvider>
+                                    <IntentWalletsProvider>
+                                      <TransactionWidgetProvider>
+                                        <RTransactionWidgetHost />
+                                        <AppGlobalLoader>
+                                          <PopupProvider>
+                                            <PageLayout
+                                              includeContainer={false}
+                                            >
+                                              {children}
+                                            </PageLayout>
+                                          </PopupProvider>
+                                        </AppGlobalLoader>
+                                      </TransactionWidgetProvider>
+                                    </IntentWalletsProvider>
                                   </EthereumProvider>
                                 </TransactionsProvider>
                               </NotificationsProvider>

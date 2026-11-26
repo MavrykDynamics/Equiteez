@@ -1,460 +1,816 @@
-**Service:** Mavryk Bridge ETH Backend
-**Runtime release:** v0.0.6
-**API schema version:** 0.1.0; URL prefix `/v1`**Protocol:** HTTP REST + JSON; asynchronous processing with client polling
+**Service:** Mavryk Bridge ETH Backend, NEAR Intents (1Click) integration
+**Audience:** Bridge UI and Equiteez frontend developers
+**API version:** `v0.0.9`, the same as the backend release `v0.0.9`**Protocol:** HTTPS, JSON, client polling. URL prefix `/v1`**Updated:** 26 November 2026
+
+This is the frontend contract: what to call, what to show and what to store. Backend internals, deployment and operations are documented separately and are not needed to integrate.
 
 ---
 
 ## Table of contents
 
-1. Overview
-2. Authorization
-3. Common conventions
-4. Endpoints
-   - 4.1 Service and schema
-   - 4.2 Approved routes
-   - 4.2a Asset metadata and quote previews
-   - 4.3 Create an operation
-   - 4.4 Read an operation
-   - 4.5 Register a Basenet funding transaction
-5. Errors
-6. Data structures and state interpretation
-7. Frontend integration recommendations
-   - 7.1 Connected-wallet Basenet walkthrough
-8. Architecture, security and recovery
-9. Deployment, monitoring and production readiness
+1. What the integration does
+2. Quick start
+3. Environments and browser access
+4. Conventions
+5. Capability and idempotency key
+6. Endpoints
+   - 6.1 `GET /v1/metadata`
+   - 6.2 `POST /v1/quotes/preview`
+   - 6.3 `POST /v1/operations`
+   - 6.4 `GET /v1/operations/{id}`
+7. Networks and address formats
+8. The operation object
+9. What to show the user
+10. Errors
+11. Limits and retries
+12. Integration checklist
+13. Code examples (TypeScript)
+14. Changelog since v0.0.6
 
 ---
 
-## Release scope
+## 1. What the integration does
 
-The service coordinates a 1Click swap whose output is delivered to an EVM WrapForwarder, sponsors forwarding into WrapBridge, and independently verifies mint execution on Mavryk. Both Bridge UI and Equiteez use the same API contract. This is a separate backend codebase deployed alongside the corresponding bridge in its existing Helm chart and namespace.
+The user pays with an asset they already hold, for example SOL, BTC or USDC on Base, and receives **wUSDT on Mavryk**.
 
-In v0.0.6, Equiteez and Bridge UI can run a connected-wallet transfer on Arbitrum Sepolia → Mavryk Basenet. The rehearsal adapter supplies the quote and uses the registered transaction hash for provider status. The ERC-20 transfer, sponsored forward, bridge signatures and FA2 mint run on their respective test networks.
+1. The user picks a source asset and an amount. The frontend shows a preview of what they will receive.
+2. The user confirms. The backend prepares an executable quote and a deposit address.
+3. The user sends exactly the quoted amount to that deposit address, from any wallet or exchange.
+4. 1Click swaps the deposit into USDT0 on Arbitrum One and delivers it to the bridge.
+5. The backend forwards it into the bridge and pays that gas. The bridge mints wUSDT to the user's `mv1` address.
+6. The backend confirms the mint on Mavryk, and the frontend shows the transfer as complete.
 
-OpenAPI version `0.1.0` uses the URL prefix `/v1`. Readiness requires PostgreSQL migration `013-connected-basenet` and the required pg-boss queues.
+**The frontend does:** list assets, request previews, create the operation, show the deposit instructions, optionally help the user send the deposit from a connected wallet, and show progress.
 
-## 1. Overview
+**The frontend does not:** call bridge or forwarder contracts, pay bridge gas, sign anything on Mavryk or run a claim step. It never holds provider or backend secrets.
 
-### Responsibilities
+Terms used below:
 
-| Participant                     | Responsibility                                                                                                                                                   |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Frontend / source wallet        | Select a route and amount, retain a random operation capability, create the operation, fund the published source deposit, and display progress.                  |
-| Backend API                     | Validate requests and route policy; atomically save the operation and its first job; return durable instructions and public progress projections.                |
-| Quote / swap worker             | Verify the deterministic forwarder, request and persist an executable quote, poll 1Click, and verify actual EVM token receipts.                                  |
-| Sponsor relayer                 | Persist a transaction/nonce/budget journal, call `WrapForwarderFactory.forward(recipient, token)`, and pay EVM forwarding gas from the dedicated sponsor wallet. |
-| Forwarder factory and forwarder | Deploy the deterministic forwarder if needed and call WrapBridge with the eligible token balance.                                                                |
-| WrapBridge                      | Execute the wrap and emit `ERC20WrapAsked`.                                                                                                                      |
-| Existing Bridge Signers         | Verify bridge events and submit Mavryk mint votes under the bridge protocol.                                                                                     |
-| Mint worker                     | Verify canonical applied Mavryk mint execution and project settlement back into the operation. It holds no Mavryk signing key.                                   |
+| Term              | Meaning                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| Source asset      | What the user pays with, on its own network. Comes from metadata.                                |
+| Settlement token  | The token the bridge wraps: USDT0 on Arbitrum One at launch. The user does not choose it.        |
+| Destination asset | What the user receives on Mavryk: wUSDT, an FA2 token with 6 decimals.                           |
+| Operation         | One transfer. Created by `POST /v1/operations`, read by `GET /v1/operations/{id}`.               |
+| Capability        | A random secret the frontend generates per operation. It is the only key to read that operation. |
 
-The user does not call the factory or pay forwarding gas on the bridge's EVM chain. Receiving the minted tokens requires no frontend claim transaction or additional user gas payment. Source funding and swap economics are separate: the frontend must display the actual wallet transaction and quote, not promise a globally fee-free transfer.
+## 2. Quick start
 
-### Environments
+1. `GET /v1/metadata`. Show `sourceAssets`. Take `defaultSettlementToken`; if it is `null`, the flow is unavailable.
+2. Ask for the amount, the Mavryk `mv1` recipient and a refund address on the source network.
+3. `POST /v1/quotes/preview`. Show the expected and minimum amounts.
+4. On confirmation, generate a capability and an idempotency key, and **save them with the request before sending it**.
+5. `POST /v1/operations` with both headers. Save the returned operation ID.
+6. Poll `GET /v1/operations/{id}` every `retryAfterMs` (5 seconds).
+7. When `fundingStatus` is `AVAILABLE`, show `fundingInstructions`: network, address, exact amount, memo and deadline.
+8. Keep polling. The transfer is complete when `settlement.status` is `CONFIRMED`.
 
-| Environment        | API / behavior                                                                                                                                                                                      |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Basenet deployment | `https://basenet.bridge-api.mavryk.network`; public routes depend on operator activation.                                                                                                           |
-| Local development  | Usually `http://127.0.0.1:8080`; local fixture routes are not live deployment instructions.                                                                                                         |
-| Mainnet            | Requires approved real 1Click assets, verified/pinned deployments, explicit route activation, funded sponsor and production release checks. No mainnet API deployment is asserted by this document. |
+## 3. Environments and browser access
 
-On the connected-wallet route, each operation binds its own EVM sender and Basenet recipient. The worker verifies the deterministic forwarder for that recipient before publishing funding instructions. A single schema-2 installation serves multiple wallets. The older schema-1 rehearsal retains its pre-approved wallets and operator hash registration for existing runs. In real 1Click mode the published funding address is the provider’s source-chain deposit address.
+| Environment                 | Base URL                                    | State                                                                                                                |
+| --------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Test                        | `https://basenet.bridge-api.mavryk.network` | API live. On 26 November 2026 metadata lists no settlement token and no source assets yet, so no transfer can start. |
+| Production (Mavryk mainnet) | Provided before launch                      | Not deployed yet.                                                                                                    |
+| Local                       | `http://127.0.0.1:8080`                     | Development only; local fixture assets are not real.                                                                 |
 
-### Supported integration boundary
+- **Interactive reference.** `GET /docs` serves Swagger UI with the generated OpenAPI schema embedded in the page. There is no separate `/openapi.json`. The Swagger UI of this release labels the schema `0.1.0`; it is the `v0.0.9` contract described here.
+- **CORS.** Allowed origins today: `https://app.equiteez.com`, `https://equiteez-app.pages.dev` and its subdomains. The Bridge UI origin is added once its URL is confirmed; send it to the backend team. Allowed: `GET`, `POST`, `OPTIONS` and the headers `Authorization`, `Content-Type`, `Idempotency-Key`. Exposed: `Location`, `Idempotency-Replayed`, `Retry-After`. No cookies.
+- **HTTPS only** outside local development.
 
-The current public funding contract accepts EVM source/refund addresses and an `mv1` destination. Routes are provisioned server-side. Clients cannot supply arbitrary factories, RPC URLs, token contracts or finality policies. The current settlement policy accepts approved 6- or 18-decimal ERC-20s with six-decimal destination FA2 accounting. It is not a generic interface for every network supported by 1Click.
+## 4. Conventions
 
-Discovery exposes approved route and asset metadata. Real 1Click routes can offer an indicative quote when preview is enabled. Create an executable operation only after the user accepts the terms. Clients track operations individually by polling.
+| Topic          | Rule                                                                                                                                                                                                                                                            |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Amounts        | Decimal **strings** of base units, for example `"5000000"` for 5 USDT0. No JSON numbers, fractions, signs, exponents, spaces or leading zeros. Inputs are positive; outputs can be `"0"`.                                                                       |
+| Arithmetic     | Use `BigInt` or string arithmetic. Never `Number`, `parseFloat` or floating-point multiplication. Section 13 has helpers.                                                                                                                                       |
+| Units          | `amountIn` and the funding `amount` use the source asset's decimals. `amountOut`, `minAmountOut`, delivery and forwarding amounts use the settlement token's decimals (USDT0: 6). `destination*` and settlement amounts use the destination FA2's decimals (6). |
+| Asset identity | `assetId` from metadata. Opaque: never parse it, never key by symbol.                                                                                                                                                                                           |
+| Chain IDs      | Strings, for example `"42161"`.                                                                                                                                                                                                                                 |
+| Slippage       | Integer basis points chosen by the user, 0 to 9999. 100 = 1%.                                                                                                                                                                                                   |
+| Dates          | UTC ISO 8601 strings.                                                                                                                                                                                                                                           |
+| Requests       | `Content-Type: application/json`. Unknown fields and query parameters are rejected. Maximum body 16 KiB.                                                                                                                                                        |
+| Caching        | API responses carry `Cache-Control: no-store`.                                                                                                                                                                                                                  |
 
-## 2. Authorization
+## 5. Capability and idempotency key
 
-### Operation capability
+### Capability
 
-`POST /v1/operations`, `GET /v1/operations/{id}` and the Basenet `POST /v1/operations/{id}/deposit` require:
+Creating and reading an operation need:
 
 ```
-Authorization: Bearer <operation-capability>
+Authorization: Bearer <capability>
 ```
 
-The client generates **32 cryptographically random bytes**, encoded as canonical base64url without `=` padding: 43 characters. This is not a user login JWT, RWA access token, wallet signature, NEAR Partner JWT or 1Click API key.
+The capability is **32 cryptographically random bytes, base64url-encoded without padding: 43 characters**, generated by the frontend for each operation. It is not a user login, a wallet signature or an API key.
 
-```jsx
-function newOperationCapability() {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return btoa(String.fromCharCode(...bytes))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replace(/=+$/, "");
+- Save the capability, the idempotency key and the exact request body **before** the first `POST`.
+- Keep it out of URLs, analytics, logs and error reports.
+- One capability per transfer; never reuse it.
+- It cannot be recovered or rotated. Without it the operation cannot be read through the API; the operation ID alone is not enough. Support can still look an operation up by its ID.
+- A missing or malformed capability, an unknown operation and an operation created with another capability all return the same `404`.
+
+### Idempotency key
+
+Creation also needs:
+
+```
+Idempotency-Key: <8 to 128 printable ASCII characters, no spaces>
+```
+
+`crypto.randomUUID()` works. The key is scoped to the capability.
+
+- **Same capability, key and body:** the original operation is returned with `202` and `Idempotency-Replayed: true`. Nothing new is created.
+- **Same capability and key, different body:** `409 IDEMPOTENCY_CONFLICT`.
+- **Lost response** (timeout, dropped connection, `500`, `503`): the operation may already exist. Retry with the same capability, key and body. Never generate a new key because a response was lost.
+
+## 6. Endpoints
+
+| Method and path           | Capability                  | Purpose                                              |
+| ------------------------- | --------------------------- | ---------------------------------------------------- |
+| `GET /v1/metadata`        | No                          | Settlement tokens and the source assets offered now. |
+| `POST /v1/quotes/preview` | No                          | Indicative price. Creates nothing.                   |
+| `POST /v1/operations`     | Yes, plus `Idempotency-Key` | Create a transfer.                                   |
+| `GET /v1/operations/{id}` | Yes                         | Read a transfer.                                     |
+| `GET /docs`               | No                          | Swagger UI.                                          |
+
+There is no list endpoint: each frontend keeps its own operation IDs and capabilities. A user switching between Bridge UI and Equiteez does not see the other app's history.
+
+### 6.1 `GET /v1/metadata`
+
+No body, parameters or capability. Example:
+
+```json
+{
+  "schemaVersion": 2,
+  "admissionPaused": false,
+  "catalog": { "fetchedAt": "2026-11-25T10:00:00.000Z", "stale": false },
+  "defaultSettlementToken": {
+    "settlementTokenId": "usdt0-arbitrum",
+    "settlementTokenVersion": 1
+  },
+  "settlementTokens": [
+    {
+      "settlementTokenId": "usdt0-arbitrum",
+      "settlementTokenVersion": 1,
+      "isDefault": true,
+      "previewSupported": true,
+      "settlementAsset": {
+        "assetId": "nep141:arb-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9.omft.near",
+        "chainId": "42161",
+        "contractAddress": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+        "symbol": "USDT0",
+        "decimals": 6
+      },
+      "destinationAsset": {
+        "chainId": "<Mavryk chain ID>",
+        "kind": "fa2",
+        "contractAddress": "<wUSDT FA2 contract>",
+        "tokenId": "0",
+        "decimals": 6
+      }
+    }
+  ],
+  "sourceAssets": [
+    {
+      "assetId": "nep141:sol.omft.near",
+      "network": "sol",
+      "family": "solana",
+      "evmChainId": null,
+      "depositMode": "SIMPLE",
+      "kind": "native",
+      "contractAddress": null,
+      "symbol": "SOL",
+      "decimals": 9,
+      "coingeckoId": "solana"
+    },
+    {
+      "assetId": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "network": "base",
+      "family": "evm",
+      "evmChainId": "8453",
+      "depositMode": "SIMPLE",
+      "kind": "token",
+      "contractAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "symbol": "USDC",
+      "decimals": 6,
+      "coingeckoId": "usd-coin"
+    }
+  ]
 }
 ```
 
-Persist the capability, idempotency key and exact request **before** the first POST. Keep the capability in secure application-managed storage, outside URLs, analytics, logs and error-report payloads. Use HTTPS outside local development. A capability authorizes access to its operation scope; it does not authenticate ownership of either wallet. Generate a separate capability for each new transfer intent to limit exposure.
+**Source assets.** `sourceAssets` is everything the user may choose **now**. Unavailable assets and networks are already left out. A new asset can appear without a frontend release.
 
-Only SHA-256 of the decoded capability bytes is stored server-side. There is no capability recovery, rotation or wallet-login recovery endpoint. Losing it loses access to the operation API, even if the wallet address is known. The operation ID alone is not sufficient. Invalid/missing capabilities and operations belonging to another capability return 404 rather than exposing ownership.
+| Field             | Meaning                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| `assetId`         | Send it back as `sourceAssetId`. Opaque.                                                  |
+| `network`         | Network key, one of the twelve in section 7. Hide assets whose key you do not know.       |
+| `family`          | `evm`, `solana`, `near`, `aptos` or `bitcoin`: the wallet adapter and the address format. |
+| `evmChainId`      | Chain ID for an EVM wallet; `null` for other families.                                    |
+| `depositMode`     | `SIMPLE`, or `MEMO` when the deposit needs a memo. Every network is `SIMPLE` today.       |
+| `kind`            | `native` (the network's own currency) or `token`.                                         |
+| `contractAddress` | Token contract, mint or account; `null` for `native`. Use it to build a wallet transfer.  |
+| `symbol`          | Display text. **Not unique**, even within one network.                                    |
+| `decimals`        | Base-unit decimals of the asset.                                                          |
+| `coingeckoId`     | Icon hint; may be `null`.                                                                 |
 
-### Idempotency
+**Names, icons and prices.** Metadata has no logos, full names, network names or prices. Map `coingeckoId` to an icon with a fallback, and keep a static network table keyed by `network`. Amounts shown to the user come from the preview.
 
-Creation also requires:
+**Settlement token.** Use `defaultSettlementToken` and show no selector. Send its ID and version in every preview and operation. `destinationAsset` is what the user receives on Mavryk. If `defaultSettlementToken` is `null`, or its entry is missing from `settlementTokens`, stop offering the flow. **Never fall back to another token.**
 
-```
-Idempotency-Key: <8–128 visible ASCII characters without whitespace>
-```
+**Availability flags:**
 
-`crypto.randomUUID()` is suitable. The uniqueness scope is `(capability hash, Idempotency-Key)`.
+- `catalog.stale: true`: the asset list is empty and nothing new can start. Show temporary unavailability.
+- `admissionPaused: true`: the service is temporarily not accepting new transfers. Previews and creation are refused; existing operations stay readable.
+- `previewSupported: false`: previews are unavailable for that token.
 
-- Same scope and same normalized request: return the existing operation with `202` and `Idempotency-Replayed: true`; no additional create job.
-- Same scope with a changed request: `409 IDEMPOTENCY_CONFLICT`.
-- Same key with a different capability: a separate scope, not recovery of the earlier request.
-- A timeout, dropped connection or `503` can occur after commit. Retry the original capability, key and body; never generate a new key just because the response was lost.
-- Existing admissions remain replayable after route pause. Recovery mode overrides normal creation/replay admission and suppresses funding; use the operation GET while recovery is active.
+Cache metadata for about a minute and refresh it before the user confirms.
 
-The real 1Click worker and the optional real quote-preview service use a server-side provider credential. Connected-wallet Basenet uses its configured Sepolia RPC. Operator commands use separate PostgreSQL credentials.
+### 6.2 `POST /v1/quotes/preview`
 
-## 3. Common conventions
+No capability or idempotency key. Exactly seven fields:
 
-| Convention      | Contract                                                                                                                                                                                      |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Content type    | `application/json` for POST.                                                                                                                                                                  |
-| Amounts         | Canonical base-unit decimal **strings**, bounded by uint256. Inputs are positive; balances and accounting projections can be `"0"`.                                                           |
-| Invalid amounts | JSON numbers, fractional notation, exponent notation, signs, whitespace and leading zeroes are rejected.                                                                                      |
-| Decimals        | `amountIn` and funding `amount` use the source asset's decimals. Quote output, delivery and forwarding use settlement ERC-20 decimals. Settlement/mint amounts use FA2 decimals, currently 6. |
-| Addresses       | Nonzero EVM addresses; mixed-case must have valid checksum, then normalize to lowercase. Recipient must be valid canonical `mv1` Base58Check.                                                 |
-| Chain IDs       | Strings, including `"421614"`; Mavryk chain ID appears separately in settlement.                                                                                                              |
-| Slippage        | Integer basis points; 100 bps = 1%; input 0–9999, further restricted by the route.                                                                                                            |
-| Dates           | UTC ISO/RFC3339 strings. Nullable dates mean no observation/schedule available.                                                                                                               |
-| Unknown input   | Unknown body fields and unexpected query parameters are rejected on typed business endpoints.                                                                                                 |
-| Cache           | API responses use `Cache-Control: no-store`; do not CDN-cache operation responses.                                                                                                            |
-| Body size       | 16 KiB; oversized requests return 413.                                                                                                                                                        |
-| Polling         | Use `retryAfterMs` from the operation, with jitter/backoff on errors. `nextCheckAt` is an internal scheduled check, not an ETA guarantee.                                                     |
-| Revisions       | Version of the stored operation row. Other projected evidence can change independently; do not use `revision` alone to suppress UI updates.                                                   |
-
-**18-decimal precision example:** a verified receipt of `"1000000000000000001"` contains 1 token plus one smallest ERC-20 unit. Its bridgeable amount is `"1000000000000000000"` and its dust amount is `"1"`. The corresponding mint is `"1000000"` six-decimal FA2 units. The backend preserves the complete receipt and never silently lowers the user's accepted minimum to accommodate rounding.
-
-`bridgeableAmountOut` and `bridgeableMinAmountOut` remain ERC-20 base-unit strings even after rounding. They are not already converted to FA2 units. Use bigint/string arithmetic in both frontends; never `Number`, `parseFloat` or floating-point multiplication for transaction amounts.
-
-## 4. Endpoints
-
-### 4.1 Service and schema
-
-| Method and path           | Authorization | Result                                                                                                 | Exposure                           |
-| ------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| `GET /docs`, `GET /docs/` | None          | Interactive Swagger UI, with all assets served from the same API origin.                               | Public.                            |
-| `GET /healthz`            | None          | `200 {"status":"ok"}` for process liveness.                                                            | Internal; no public Gateway route. |
-| `GET /readyz`             | None          | 200 when required migrations, tables and queues are available; otherwise `503 DEPENDENCY_UNAVAILABLE`. | Internal; no public Gateway route. |
-
-Open `/docs` for the interactive reference. Its generated OpenAPI schema is embedded in the page; there is no separate `/openapi.json` endpoint in the new version. The UI does not persist capabilities across reloads, load scripts from a CDN, contact an external validator or execute operations on page load. Use Authorize to supply an operation capability for an explicitly initiated request; no 1Click/Partner token belongs in this UI.
-
-Prometheus uses a separate private listener on port 9090. `/metrics` is not registered on the public API listener. Process readiness is not a guarantee of route activation, a funded sponsor, successful 1Click execution, signer liveness, or destination minting.
-
-### 4.2 Approved routes
-
-```
-GET /v1/routes
+```json
+{
+  "sourceAssetId": "nep141:sol.omft.near",
+  "settlementTokenId": "usdt0-arbitrum",
+  "settlementTokenVersion": 1,
+  "recipient": "mv1SdUcjN7zi2ekSwfeTibi83HkVbUnWC1AM",
+  "refundAddress": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+  "amountIn": "1000000000",
+  "slippageBps": 100
+}
 ```
 
-No capability required. Returns `200 {"routes":[...]}` with enabled route versions. An empty array means no currently exposed approved route; disable new transfer initiation in the UI. It is not a network error. Recovery mode does not remove routes from this list: creation is rejected and GET hides funding instructions. A listed route is not proof that recovery is inactive.
+- `recipient`: the user's Mavryk `mv1` address.
+- `refundAddress`: an address **on the source network** that the user controls. 1Click refunds there when a swap cannot complete. It is validated before any price is requested, so ask for it before the first preview. Prefer the user's own wallet: a refund to an exchange address may never reach them.
+- `amountIn`: source-asset base units. There is no backend minimum or maximum; 1Click accepts the amount or rejects it.
+- `slippageBps`: the user's choice.
 
-| Route field                            | Meaning                                                             |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `id`, `version`, `enabled`             | Immutable route identity/version and current availability.          |
-| `sourceChainId`, `settlementChainId`   | Source EVM chain and EVM chain hosting the bridge.                  |
-| `originAsset`, `destinationAsset`      | Provider asset identifiers; do not derive them from ticker symbols. |
-| `settlementToken`                      | Approved ERC-20 on the settlement chain.                            |
-| `factoryAddress`, `bridgeAddress`      | Approved WrapForwarderFactory and WrapBridge.                       |
-| `sourceDecimals`, `settlementDecimals` | Unit conversion for the approved assets.                            |
-| `minAmountIn`, `maxAmountIn`           | Inclusive source-unit admission bounds.                             |
-| `minAmountOut`                         | Minimum accepted output in settlement ERC-20 units.                 |
-| `maxSlippageBps`                       | Maximum permitted slippage.                                         |
+Example `200`:
 
-Finality policy, internal deployment pins and provider credentials are not returned. Route availability is rechecked at admission/publication: a route can be paused after the list was fetched. The list remains the technical route contract. Use the optional `GET /v1/metadata` for asset identities and `POST /v1/quotes/preview` for an indicative quote. Neither activates a route or creates a payment.
+```json
+{
+  "kind": "indicative",
+  "executable": false,
+  "sourceAssetId": "nep141:sol.omft.near",
+  "settlementTokenId": "usdt0-arbitrum",
+  "settlementTokenVersion": 1,
+  "slippageBps": 100,
+  "amountIn": "1000000000",
+  "amountOut": "214300000",
+  "minAmountOut": "212157000",
+  "bridgeableAmountOut": "214300000",
+  "bridgeableMinAmountOut": "212157000",
+  "destinationAmountOut": "214300000",
+  "destinationMinAmountOut": "212157000",
+  "destinationAsset": {
+    "chainId": "<Mavryk chain ID>",
+    "kind": "fa2",
+    "contractAddress": "<wUSDT FA2 contract>",
+    "tokenId": "0",
+    "decimals": 6
+  },
+  "providerTimestamp": "2026-11-25T10:00:00.000Z",
+  "quotedAt": "2026-11-25T10:00:01.000Z",
+  "expiresAt": "2026-11-25T10:00:30.000Z",
+  "providerTimeEstimateSeconds": 35,
+  "refundFee": "1000",
+  "withdrawFee": "4000"
+}
+```
 
-### 4.2a Asset metadata and quote previews
+| Field                                             | Meaning                                                                                                                         |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `amountOut`, `minAmountOut`                       | Expected and guaranteed minimum output, in settlement-token units.                                                              |
+| `bridgeableAmountOut`, `bridgeableMinAmountOut`   | The same rounded down to what Mavryk can represent, still in settlement-token units. For USDT0 (6 decimals) nothing is rounded. |
+| `destinationAmountOut`, `destinationMinAmountOut` | What the user receives on Mavryk, in FA2 units (6 decimals). Show these.                                                        |
+| `expiresAt`                                       | Freshness limit, at most 30 seconds. Not a funding deadline and not a reserved price.                                           |
+| `providerTimeEstimateSeconds`                     | 1Click's swap time after the deposit is confirmed. Excludes the bridge and the mint. May be `null`.                             |
+| `withdrawFee`                                     | Settlement-token units, already included in `amountOut`. May be `null`.                                                         |
+| `refundFee`                                       | Source units, charged only if a refund happens. May be `null`.                                                                  |
 
-Discovery and indicative quotes are independently configurable, with metadata required for preview. Additional examples are available in the discovery guide.
+- Show `destinationMinAmountOut` prominently: with a volatile source asset it is what the user is protected by.
+- Request a new preview after any input change and before confirmation. Ignore late responses for old inputs.
+- Keep one preview in flight and debounce typing (section 11).
+- A preview creates nothing and exposes no deposit address.
 
-`GET /v1/metadata` has no parameters or capability. It returns `{schemaVersion:1, admissionPaused, routes:[...]}` with enabled route versions, source/settlement asset IDs, chain IDs, kind, contract, symbol and decimals; destination chain/FA2/tokenId/decimals; limits; mode and `previewSupported`. The public metadata envelope uses `schemaVersion: 1`. The internal Basenet installation uses `schemaVersion: 2`. Clients detect connected-wallet support by checking the route’s optional `depositRegistrationSupported` field for literal `true`. A missing flag disables that flow. No metadata means no inferred asset. Basenet rehearsal is explicitly marked and cannot use real 1Click preview.
-
-`POST /v1/quotes/preview` has the same seven input fields as operation creation, excluding `acceptedMinAmountOut`. It requires no capability or idempotency key. The backend fixes `dry:true`, validates the signed response and returns `kind:"indicative", executable:false`, amounts, rounded bridgeable amounts, six-decimal destination amounts, freshness and optional provider fee/time estimates. It does not expose a deposit address or create operations, quotes, jobs or sponsor reservations. Route revisions and recovery are checked again after external work.
-
-After user confirmation, submit a normal operation with an explicit accepted minimum in settlement units (typically the displayed `bridgeableMinAmountOut`). The worker requests a separate `dry:false` quote and independently enforces the accepted minimum after rounding. A preview is not a guaranteed rate, funding deadline or permission to send tokens. The frontend never passes `dry` to any backend route; `/v1/routes?dry=true` is invalid.
-
-### 4.3 Create an operation
+### 6.3 `POST /v1/operations`
 
 ```
 POST /v1/operations
-Authorization: Bearer <saved-capability>
-Idempotency-Key: <saved-key>
+Authorization: Bearer <capability>
+Idempotency-Key: <idempotency key>
 Content-Type: application/json
 ```
 
-Every field is required:
+Exactly eight fields: the seven of the preview plus `acceptedMinAmountOut`, the minimum the user accepted, **in settlement-token units**. Use the displayed `bridgeableMinAmountOut`:
 
 ```json
 {
-  "routeId": "local-fixture",
-  "routeVersion": 1,
-  "sourceAddress": "0x1111111111111111111111111111111111111111",
+  "sourceAssetId": "nep141:sol.omft.near",
+  "settlementTokenId": "usdt0-arbitrum",
+  "settlementTokenVersion": 1,
   "recipient": "mv1SdUcjN7zi2ekSwfeTibi83HkVbUnWC1AM",
-  "refundAddress": "0x2222222222222222222222222222222222222222",
-  "amountIn": "10000000",
-  "slippageBps": 50,
-  "acceptedMinAmountOut": "1000000"
+  "refundAddress": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+  "amountIn": "1000000000",
+  "slippageBps": 100,
+  "acceptedMinAmountOut": "212157000"
 }
 ```
 
-This is a structural local-fixture example, **not** an executable Basenet/mainnet request. Select a live enabled route and the user's actual wallets. Section 7.1 gives the exact request for the connected-wallet Basenet route.
-
-`routeId`: 1–128 characters, first alphanumeric, followed by alphanumeric/underscore/dot/colon/hyphen. `routeVersion`: positive integer up to 2147483647. `sourceAddress` identifies the funding wallet; `refundAddress` is the provider refund destination on the source chain. `acceptedMinAmountOut` is the user's explicitly accepted lower bound in settlement ERC-20 units, subject to route limits and destination precision. It is not automatically a quote or an FA2 amount.
-
-Successful creation or replay returns **202** with the full Operation object, not a job ID wrapper:
+Response **`202`** with the full operation (section 8) and these headers:
 
 ```
-Location: /v1/operations/<operation-uuid>
+Location: /v1/operations/<operation id>
 Idempotency-Replayed: false
-Cache-Control: no-store
 ```
 
-The ordinary initial state is `PREPARING_QUOTE`, `fundingStatus: NOT_READY`, `fundingInstructions: null`. The first response is a fresh projection after commit, so a fast worker or replay may already show a later state. A 202 means the operation is durable; it does not mean a quote exists or funds moved. Save the returned ID and poll GET. The frontend must wait for `fundingStatus: AVAILABLE` and non-null instructions before enabling funding.
+- `202` means the operation is saved, not that a deposit address exists. The first state is normally `phase: PREPARING_QUOTE`, `fundingStatus: NOT_READY`, `fundingInstructions: null`.
+- The backend then requests a new executable quote. Its price can differ from the preview, but it is never accepted below `acceptedMinAmountOut`. If no acceptable quote can be obtained, the operation closes with `closure: QUOTE_REJECTED` and no deposit address is ever shown.
+- The operation keeps the asset and token it was created with. A later pause does not change it.
+- An EVM refund address is returned lower-cased; other addresses exactly as sent.
 
-### 4.4 Read an operation
-
-```
-GET /v1/operations/<operation-uuid>
-Authorization: Bearer <same-saved-capability>
-```
-
-Returns 200 with the Operation object. No idempotency header or query parameters are needed. Unknown/foreign operations return 404. This endpoint is read-only: polling never signs or sends a transaction and does not create a replacement quote.
-
-There is no list-by-wallet endpoint. Each frontend must retain its own operation IDs and capabilities. A user switching between Bridge UI and Equiteez does not automatically share this local history.
-
-### 4.5 Register a Basenet funding transaction
-
-After the source wallet returns a transaction hash, persist it with the operation ID. Use the same operation capability used at creation. This endpoint is enabled for connected-wallet rehearsal outside recovery mode. The request body contains only the hash. Registration is idempotent without an `Idempotency-Key` header.
+### 6.4 `GET /v1/operations/{id}`
 
 ```
-POST /v1/operations/{id}/deposit
-Authorization: Bearer <saved-capability>
-Content-Type: application/json
-
-{"transactionHash":"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+GET /v1/operations/<operation id>
+Authorization: Bearer <the same capability>
 ```
 
-Example first response, HTTP 200:
+Returns `200` with the operation. Read-only: polling never changes anything and never replaces a deposit address. Poll every `retryAfterMs` while the user is waiting; section 9 says when to stop.
+
+Example once the deposit address is published:
 
 ```json
 {
-  "operationId": "e770b30e-23cb-43f5-8174-65dc81ef617e",
-  "transactionHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "replayed": false
+  "id": "00000000-0000-4000-8000-000000000001",
+  "phase": "AWAITING_DEPOSIT",
+  "attention": "NONE",
+  "closure": "OPEN",
+  "fundingStatus": "AVAILABLE",
+  "fundingInstructions": {
+    "quoteId": "00000000-0000-4000-8000-000000000002",
+    "sourceNetwork": "sol",
+    "originAsset": "nep141:sol.omft.near",
+    "depositAddress": "<deposit address on the source network>",
+    "depositMemo": null,
+    "amount": "1000000000",
+    "amountOut": "214300000",
+    "minAmountOut": "212157000",
+    "bridgeableAmountOut": "214300000",
+    "bridgeableMinAmountOut": "212157000",
+    "deadline": "2026-11-25T10:10:00.000Z",
+    "fundingExpiresAt": "2026-11-25T10:09:00.000Z",
+    "forwarderAddress": "<bridge forwarder on Arbitrum One>"
+  },
+  "retryAfterMs": 5000
 }
 ```
 
-The API verifies the successful canonical Sepolia receipt against the published quote, including confirmations, token, sender, forwarder, exact amount and funding window. It stores the normalized hash in PostgreSQL. A repeat for the same operation and hash returns 200 with `replayed: true`, including after a lost response. A conflicting binding returns 409. An accepted registration lets the worker independently verify delivery. Keep polling the operation through settlement.
+Example of a completed transfer (excerpt):
 
-## 5. Errors
+```json
+{
+  "phase": "WRAPPED",
+  "fundingStatus": "OBSERVED",
+  "fundingInstructions": null,
+  "settlement": {
+    "status": "CONFIRMED",
+    "confirmedAmount": "214300000",
+    "tokenAddress": "<wUSDT FA2 contract>",
+    "tokenId": "0",
+    "mavrykChainId": "<Mavryk chain ID>",
+    "mints": [
+      {
+        "wrapTransactionHash": "0x…",
+        "wrapLogIndex": 4,
+        "operationHash": "<Mavryk operation hash>",
+        "blockHash": "<Mavryk block hash>",
+        "level": 123456,
+        "amount": "214300000"
+      }
+    ]
+  }
+}
+```
+
+## 7. Networks and address formats
+
+Twelve networks are supported. Each appears in metadata only after it is enabled. The refund address must match the network's format, or the request is refused with `400 VALIDATION_ERROR`.
+
+| `network` | Network           | `family`  | `evmChainId` | Refund address accepted                                                                                 |
+| --------- | ----------------- | --------- | ------------ | ------------------------------------------------------------------------------------------------------- |
+| `eth`     | Ethereum          | `evm`     | `1`          | `0x` + 40 hex. A mixed-case address must have a valid EIP-55 checksum. Not the zero address.            |
+| `arb`     | Arbitrum One      | `evm`     | `42161`      | As above.                                                                                               |
+| `base`    | Base              | `evm`     | `8453`       | As above.                                                                                               |
+| `op`      | OP Mainnet        | `evm`     | `10`         | As above.                                                                                               |
+| `pol`     | Polygon           | `evm`     | `137`        | As above.                                                                                               |
+| `bsc`     | BNB Smart Chain   | `evm`     | `56`         | As above.                                                                                               |
+| `avax`    | Avalanche C-Chain | `evm`     | `43114`      | As above.                                                                                               |
+| `gnosis`  | Gnosis            | `evm`     | `100`        | As above.                                                                                               |
+| `sol`     | Solana            | `solana`  | `null`       | Base58 public key (32 bytes).                                                                           |
+| `near`    | NEAR              | `near`    | `null`       | Account ID, 2 to 64 characters: a named account (`alice.near`) or a 64-hex implicit account. Lowercase. |
+| `aptos`   | Aptos             | `aptos`   | `null`       | Full `0x` + 64 hex. Short forms are rejected.                                                           |
+| `btc`     | Bitcoin           | `bitcoin` | `null`       | Mainnet `1…`, `3…`, `bc1q…` or `bc1p…`. Not mixed case.                                                 |
+
+- Solana, NEAR and Aptos addresses have no checksum: a typo can still be a valid address. Let the user paste the address and confirm it.
+- The **recipient** is always a Mavryk `mv1` address with a valid checksum. `mv2`, `mv3` and `KT1` addresses are rejected.
+- **Bitcoin is slow.** A Bitcoin deposit has to be mined before the deadline, so its funding window closes about an hour before the quote deadline, and the quote lives up to three hours. Always use `fundingExpiresAt` from the instructions, never your own timer.
+- USDT0 on Arbitrum One, the settlement token itself, is never offered as a source asset.
+
+## 8. The operation object
+
+### Fields
+
+The operation repeats the eight request fields and adds:
+
+| Field                          | Meaning                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `id`                           | Operation UUID.                                                                                     |
+| `phase`                        | How far the transfer has progressed.                                                                |
+| `attention`                    | Why it is waiting or needs care. Shown on top of the phase.                                         |
+| `closure`                      | `OPEN`, or `QUOTE_REJECTED` when it ended before a deposit address was shown.                       |
+| `revision`                     | Version of the stored record. Other fields can change without it; do not use it to skip UI updates. |
+| `fundingStatus`                | Whether the user may send the deposit now.                                                          |
+| `fundingInstructions`          | Deposit instructions, or `null`.                                                                    |
+| `providerStatus`               | 1Click's report, or `null`.                                                                         |
+| `delivery`                     | Arrival of the swapped tokens at the bridge on Arbitrum One.                                        |
+| `forwarding`                   | Entry into the bridge.                                                                              |
+| `settlement`                   | The mint on Mavryk.                                                                                 |
+| `refund`                       | A refund reported by 1Click, or `null`.                                                             |
+| `createdAt`, `updatedAt`       | Timestamps.                                                                                         |
+| `lastCheckedAt`, `nextCheckAt` | When 1Click was last and will next be asked. Not an ETA.                                            |
+| `retryAfterMs`                 | Polling interval: 5000.                                                                             |
+
+### `phase`
+
+| Value                | Meaning                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| `PREPARING_QUOTE`    | Getting an executable quote and a deposit address.                                  |
+| `AWAITING_DEPOSIT`   | Deposit address published; check `fundingStatus`.                                   |
+| `SWAP_IN_PROGRESS`   | Deposit seen; 1Click is swapping.                                                   |
+| `VERIFYING_DELIVERY` | The swapped tokens are being verified on Arbitrum One.                              |
+| `DELIVERY_VERIFIED`  | The swapped tokens arrived at the bridge.                                           |
+| `FORWARDING`         | The tokens are entering the bridge.                                                 |
+| `WRAPPED`            | The bridge accepted the tokens. **Not yet received on Mavryk**: check `settlement`. |
+
+There is no `COMPLETED` phase. The transfer is complete when `settlement.status` is `CONFIRMED`.
+
+### `attention`
+
+| Value                                 | Meaning                                                                                                     |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `NONE`                                | Nothing to report.                                                                                          |
+| `RETRYING`                            | A temporary failure; it retries by itself. Keep polling.                                                    |
+| `PROVIDER_UNAVAILABLE`                | 1Click status is temporarily unavailable. Keep polling.                                                     |
+| `SETTLEMENT_TOKEN_PAUSED`             | Transfers are paused. No deposit address is issued; a published one shows `PAUSED`.                         |
+| `SOURCE_PAUSED`                       | The source asset or its network is paused. No new deposit address; a deposit already made is still tracked. |
+| `DEPOSIT_INCOMPLETE`                  | 1Click received less than the exact amount. Do not ask for a top-up; 1Click refunds at the deadline.        |
+| `REFUND_PENDING`                      | 1Click reports a refund.                                                                                    |
+| `MANUAL_REVIEW`, `RECONCILE_REQUIRED` | The team has to check this transfer. Do not ask the user to pay again.                                      |
+
+### `closure`
+
+`QUOTE_REJECTED` means the backend could not get an acceptable quote: the price fell below the accepted minimum, 1Click declined, preparation took too long (30 minutes), or the asset changed. **No deposit address was ever shown and nothing was sent.** Offer a new transfer with a new capability and key.
+
+### Funding
+
+| `fundingStatus` | Meaning                                          | UI                                                |
+| --------------- | ------------------------------------------------ | ------------------------------------------------- |
+| `NOT_READY`     | No deposit address yet.                          | Wait.                                             |
+| `AVAILABLE`     | `fundingInstructions` is set and valid now.      | Show the deposit screen.                          |
+| `EXPIRED`       | The funding window closed.                       | Disable sending. Do not reuse saved instructions. |
+| `PAUSED`        | Paused, under review or temporarily unavailable. | Disable sending.                                  |
+| `OBSERVED`      | The deposit was seen.                            | Hide the send action for good.                    |
+
+**`fundingInstructions` is not `null` only while `fundingStatus` is `AVAILABLE`.** Keep a local copy of what you showed, for history and support. Never treat that copy as permission to send.
+
+| Field                                           | Meaning                                                                                                  |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `sourceNetwork`                                 | Network of the deposit (section 7).                                                                      |
+| `originAsset`                                   | Asset to send: the `sourceAssetId`.                                                                      |
+| `depositAddress`                                | Where to send, on `sourceNetwork`.                                                                       |
+| `depositMemo`                                   | When not `null`, the deposit must carry this memo. Show it as prominently as the address.                |
+| `amount`                                        | **Exact** amount to send, in source base units.                                                          |
+| `amountOut`, `minAmountOut`                     | Expected and minimum output of the executable quote, in settlement-token units.                          |
+| `bridgeableAmountOut`, `bridgeableMinAmountOut` | The same rounded to Mavryk precision, still in settlement-token units.                                   |
+| `deadline`                                      | 1Click's quote deadline.                                                                                 |
+| `fundingExpiresAt`                              | **Send before this.** Earlier than `deadline` by a safety margin: 60 seconds, about an hour for Bitcoin. |
+| `forwarderAddress`                              | The bridge forwarder on Arbitrum One. Informational. **Never a deposit address.**                        |
+| `quoteId`                                       | ID of the executable quote, for support.                                                                 |
+
+- **The amount must arrive exactly.** The swap is exact-input. An exchange that deducts a withdrawal fee delivers less, and 1Click then refunds instead of swapping. Say so next to the amount.
+- **A wallet is optional.** Show the address, a QR code, the exact amount, the memo, `fundingExpiresAt` and the refund address, so the user can pay from any wallet or exchange.
+- **Instructions never change.** The deposit address of an operation is never replaced. A new transfer needs a new operation.
+
+### `providerStatus`
+
+1Click's report, never proof by itself: `PENDING_DEPOSIT`, `KNOWN_DEPOSIT_TX`, `INCOMPLETE_DEPOSIT`, `PROCESSING`, `SUCCESS`, `REFUNDED`, `FAILED`, or `null`. **`SUCCESS` does not mean the user received anything on Mavryk.** `INCOMPLETE_DEPOSIT` sets `attention: DEPOSIT_INCOMPLETE`, `REFUNDED` sets `REFUND_PENDING`, and `FAILED` sets `MANUAL_REVIEW`. Render `attention`, not `providerStatus`.
+
+### `delivery`
+
+| Field                                | Meaning                                                                       |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `status`                             | `NOT_OBSERVED`, `VERIFYING`, `VERIFIED`, `AMBIGUOUS` or `RECONCILE_REQUIRED`. |
+| `expectedAmount`                     | Expected settlement-token amount, or `null`.                                  |
+| `confirmedAmount`                    | Verified amount that arrived.                                                 |
+| `transferCount`, `transactionHashes` | Arbitrum One transfers credited to this operation.                            |
+
+### `forwarding`
+
+| Field                                               | Meaning                                                                                                  |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `status`                                            | `NOT_READY`, `READY`, `IN_PROGRESS`, `RECONCILE_REQUIRED` or `WRAPPED`.                                  |
+| `transactionHash`                                   | Arbitrum One transaction that entered the bridge, once sent.                                             |
+| `wrappedAmount`                                     | Amount accepted by the bridge.                                                                           |
+| `bridgeableAmount`, `remainingAmount`, `dustAmount` | Amount that can be bridged, amount still waiting, and a sub-unit remainder. Always `"0"` dust for USDT0. |
+| `bridgeEvents`                                      | Bridge events: `transactionHash`, `logIndex`, `amount`.                                                  |
+
+### `settlement`
+
+| Field                                      | Meaning                                                                                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`                                   | `NOT_TRACKED`, `PENDING`, `CONFIRMED` or `RECONCILE_REQUIRED`.                                                                                          |
+| `confirmedAmount`                          | Amount received on Mavryk, FA2 units (6 decimals).                                                                                                      |
+| `tokenAddress`, `tokenId`, `mavrykChainId` | The received token. Check them against `destinationAsset` from metadata.                                                                                |
+| `mints`                                    | Mint evidence on Mavryk: `operationHash`, `blockHash`, `level`, `amount`, and the bridge event it belongs to. Use `operationHash` for an explorer link. |
+
+`NOT_TRACKED` means this deployment does not confirm the mint. The transfer may still have completed; show "bridged, check your Mavryk balance".
+
+### `refund`
+
+`{ "status": "REPORTED", "amount", "asset", "recipient" }`: 1Click reports a refund of `amount` of `asset` (source units) to `recipient`, the refund address. It is 1Click's report, not a verified on-chain refund.
+
+### Under review
+
+While a transfer is under review (`attention: MANUAL_REVIEW` or `RECONCILE_REQUIRED`), the API may report `settlement.status` and `forwarding.status` as `RECONCILE_REQUIRED` and amounts already credited as `"0"` until the check is finished. **That does not mean the funds are lost.** Show "under review" with the operation ID, and never suggest a second deposit.
+
+## 9. What to show the user
+
+Check the rows from the top; the first match wins. Show `attention` notices alongside.
+
+| Condition                                             | Show                                                                                                       | Actions                                 |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `settlement.status` = `CONFIRMED`                     | "Received `confirmedAmount` wUSDT on Mavryk", explorer link from `mints`.                                  | Done. Stop polling.                     |
+| `closure` = `QUOTE_REJECTED`                          | "We couldn't get a price. Nothing was sent."                                                               | Start a new transfer. Stop polling.     |
+| `attention` = `MANUAL_REVIEW` or `RECONCILE_REQUIRED` | "Your transfer is being checked." Operation ID for support.                                                | No send, no retry. Keep polling slowly. |
+| `refund` is not `null`                                | "1Click reports a refund of … to `refundAddress`."                                                         | Keep polling.                           |
+| `attention` = `DEPOSIT_INCOMPLETE`                    | "The amount received did not match. It will be refunded."                                                  | Do not top up.                          |
+| `fundingStatus` = `AVAILABLE`                         | Deposit screen: network, exact amount, address, memo, QR, countdown to `fundingExpiresAt`.                 | Send from a wallet or copy the details. |
+| `fundingStatus` = `NOT_READY`                         | "Preparing your deposit address…"                                                                          | Wait.                                   |
+| `fundingStatus` = `EXPIRED`                           | "The deposit window has closed. Do not send." If the user already sent, show the operation ID for support. | New transfer.                           |
+| `fundingStatus` = `PAUSED` before any deposit         | "Temporarily unavailable. Do not send."                                                                    | Wait or start later.                    |
+| `SWAP_IN_PROGRESS`, `VERIFYING_DELIVERY`              | "Deposit received, swapping."                                                                              | Keep polling.                           |
+| `DELIVERY_VERIFIED`, `FORWARDING`                     | "Bridging to Mavryk."                                                                                      | Keep polling.                           |
+| `WRAPPED` and `settlement.status` = `PENDING`         | "Waiting for Mavryk confirmation."                                                                         | Keep polling.                           |
+| `WRAPPED` and `settlement.status` = `NOT_TRACKED`     | "Bridged. Check your Mavryk balance."                                                                      | Stop polling.                           |
+
+- Show the stages separately: deposit, swap, bridge, received on Mavryk. Never show "received" on `providerStatus: SUCCESS` or `phase: WRAPPED` alone.
+- After the user sends, disable the send button locally right away; the API reports `OBSERVED` a few seconds later.
+- An operation whose funding window expired with no deposit can leave active polling, but keep it in history: a late deposit is still tracked.
+- Refresh the user's Mavryk balance independently once the transfer is confirmed.
+
+## 10. Errors
+
+Every error has the same shape:
 
 ```json
 {
   "error": {
-    "code": "IDEMPOTENCY_CONFLICT",
+    "code": "SOURCE_ASSET_UNAVAILABLE",
     "message": "Human-readable explanation",
-    "requestId": "server-generated-request-uuid"
+    "requestId": "<request uuid>"
   }
 }
 ```
 
-Branch on `code` and HTTP status, not the message text. Keep `requestId` for support. Database/provider exception details and secrets are not part of the response.
+Branch on the HTTP status and `code`, never on `message`. Show or log `requestId` for support. Keep a fallback for unknown codes.
 
-| HTTP / code                                                       | Client action                                                                                                                                        |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400 `VALIDATION_ERROR`                                            | Fix shape, address, key or integer encoding before retrying.                                                                                         |
-| 400 `AMOUNT_OUT_OF_RANGE`                                         | Respect the selected route's source amount bounds.                                                                                                   |
-| 400 `SLIPPAGE_OUT_OF_RANGE`                                       | Respect the route's maximum slippage.                                                                                                                |
-| 400 `MIN_OUTPUT_TOO_LOW`                                          | Accepted output is below route policy; obtain explicit user acceptance of valid parameters.                                                          |
-| 404 `NOT_FOUND` / `OPERATION_NOT_FOUND`                           | Invalid/missing capability, unknown operation or foreign scope. Recover locally saved credentials; do not enumerate wallet addresses.                |
-| 409 `IDEMPOTENCY_CONFLICT`                                        | The key already binds another request. Recover the original operation; a deliberate new intent needs its own capability/key.                         |
-| 409 `ROUTE_UNAVAILABLE`                                           | Refresh routes; do not silently substitute another route. Existing operations remain readable.                                                       |
-| 413 `PAYLOAD_TOO_LARGE`                                           | Reduce the request; maximum body is 16 KiB.                                                                                                          |
-| 415 `UNSUPPORTED_MEDIA_TYPE`                                      | Send JSON with the correct content type.                                                                                                             |
-| 429 `RATE_LIMITED`                                                | Respect `Retry-After` when supplied, add jitter and reduce polling.                                                                                  |
-| 500 `INTERNAL_ERROR`                                              | Retain request ID, back off; creation retries preserve the exact idempotency scope.                                                                  |
-| 503 `DEPENDENCY_UNAVAILABLE`                                      | Database/queue/readiness failure or intentional recovery admission pause. Back off, keep the same scope, and use GET to track an existing operation. |
-| 409 `REHEARSAL_SCOPE_MISMATCH`                                    | Check route ID/version, sender/refund equality, exact amounts and zero slippage. Legacy runs also require their assigned scope.                      |
-| 409 `REHEARSAL_QUOTE_NOT_PUBLISHED`                               | Poll the operation for published funding instructions before prompting the wallet.                                                                   |
-| 409 `REHEARSAL_RECEIPT_PENDING`                                   | Receipt or confirmations pending. Retry registration with the saved hash after 10–30 seconds, with backoff.                                          |
-| 409 `REHEARSAL_DELIVERY_MISMATCH` / `REHEARSAL_DELIVERY_CONFLICT` | Stop registration retries. Preserve the operation ID and hash for investigation.                                                                     |
-| 503 `REHEARSAL_RPC_UNAVAILABLE`                                   | Retry the same registration with backoff. A 429 or lost response also uses the same hash.                                                            |
+| HTTP | Code                                                                                                                       | What the frontend does                                                                                                                                                             |
+| ---- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400  | `VALIDATION_ERROR`                                                                                                         | Fix the input: a field format, an amount encoding, the idempotency key, a recipient that is not `mv1`, or a refund address invalid for the source network. Do not retry unchanged. |
+| 404  | `NOT_FOUND`, `OPERATION_NOT_FOUND`                                                                                         | Wrong or missing capability, or unknown operation. Check the saved capability.                                                                                                     |
+| 409  | `SOURCE_ASSET_UNAVAILABLE`                                                                                                 | The asset or its network is no longer offered. Refresh metadata.                                                                                                                   |
+| 409  | `SETTLEMENT_TOKEN_UNAVAILABLE`                                                                                             | The settlement token is paused or changed. Refresh metadata; stop the flow if there is no default. Never switch tokens.                                                            |
+| 409  | `ADMISSION_CHANGED`                                                                                                        | Availability changed during the preview. Refresh metadata and preview again.                                                                                                       |
+| 409  | `DIRECT_WRAP_UNSUPPORTED`                                                                                                  | The source asset is the settlement token itself. Not supported.                                                                                                                    |
+| 409  | `AMOUNT_TOO_LOW`, `AMOUNT_TOO_HIGH`                                                                                        | 1Click does not quote this amount. Ask for a larger or smaller one. The exact limit is not known to the backend.                                                                   |
+| 409  | `PROVIDER_REJECTED`                                                                                                        | No quote for this input. Change the asset, the amount or the slippage.                                                                                                             |
+| 409  | `PREVIEW_BELOW_MINIMUM`                                                                                                    | The output is below the bridge minimum. Ask for a larger amount.                                                                                                                   |
+| 409  | `IDEMPOTENCY_CONFLICT`                                                                                                     | The key was already used with another body: a frontend bug. Recover the original operation.                                                                                        |
+| 413  | `PAYLOAD_TOO_LARGE`                                                                                                        | Body over 16 KiB.                                                                                                                                                                  |
+| 415  | `UNSUPPORTED_MEDIA_TYPE`                                                                                                   | Send `application/json`.                                                                                                                                                           |
+| 429  | `RATE_LIMITED`                                                                                                             | Too many requests. Wait for `Retry-After` when present, with jitter.                                                                                                               |
+| 429  | `PREVIEW_BUSY`                                                                                                             | Preview capacity is busy. Retry after `Retry-After` (60).                                                                                                                          |
+| 429  | `ADMISSION_CAPACITY_EXCEEDED`                                                                                              | Too many transfers are waiting for a deposit, from this client or overall. Fund or abandon an open one, or retry after `Retry-After` (60).                                         |
+| 500  | `INTERNAL_ERROR`                                                                                                           | Back off. A creation retry uses the same capability, key and body.                                                                                                                 |
+| 503  | `CATALOG_STALE`                                                                                                            | The asset list is out of date; nothing new can start. Try later.                                                                                                                   |
+| 503  | `METADATA_DISABLED`, `QUOTE_PREVIEW_DISABLED`                                                                              | The feature is off on this deployment. Hide it.                                                                                                                                    |
+| 503  | `RECOVERY_MODE`                                                                                                            | Previews are paused. Try later.                                                                                                                                                    |
+| 503  | `DEPENDENCY_UNAVAILABLE`                                                                                                   | Temporary failure, or new transfers are paused. Back off; existing operations stay readable.                                                                                       |
+| 503  | `METADATA_UNAVAILABLE`, `PROVIDER_UNAVAILABLE`, `PROVIDER_AUTH_UNAVAILABLE`, `INVALID_QUOTE`, `PREVIEW_EXPIRED`, any other | Temporary. Back off and retry. Never ask the user to send funds based on an old result.                                                                                            |
 
-Asynchronous quote rejection, provider unavailability, delivery ambiguity and mint incidents generally arrive in the Operation state, not as a synchronous HTTP error. Keep an unknown-code/state fallback that preserves the operation and stops funding when interpretation is uncertain.
+Problems after creation (a rejected quote, a partial deposit, a refund, a review) appear in the operation, not as HTTP errors.
 
-## 6. Data structures and state interpretation
+## 11. Limits and retries
 
-### Operation
+| Limit                     | Value                                                                      | Response                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Requests per client       | 60 a minute                                                                | `429 RATE_LIMITED`. Headers `x-ratelimit-limit`, `x-ratelimit-remaining`, `x-ratelimit-reset`. |
+| Previews                  | About 10 a minute per client, few at a time                                | `429 PREVIEW_BUSY`, `Retry-After: 60`.                                                         |
+| Open transfers per client | 3 waiting for a quote or deposit within 30 minutes; 200 across the service | `429 ADMISSION_CAPACITY_EXCEEDED`, `Retry-After: 60`.                                          |
 
-The object includes all eight immutable request fields plus:
+- A client is an IP address (an IPv6 /64 counts as one). Users behind the same NAT share the limits. A new capability, key or recipient does not reset them.
+- Poll at `retryAfterMs`. Back off exponentially with jitter on errors, up to about a minute.
+- Request a preview only for the selected asset, after typing settles; cancel or ignore older ones.
+- Use a client timeout of about 15 seconds per request.
 
-| Field                          | Type / meaning                                                                                      |
-| ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `id`                           | Operation UUID.                                                                                     |
-| `phase`                        | Last projected EVM workflow phase, listed below.                                                    |
-| `attention`                    | Overlay describing retries, policy pauses or an investigation.                                      |
-| `closure`                      | `OPEN` or `QUOTE_REJECTED`; `OPEN` is not a settlement result.                                      |
-| `revision`                     | Stored operation revision, integer ≥ 1.                                                             |
-| `fundingStatus`                | Whether the original full deposit instructions can still be used.                                   |
-| `fundingInstructions`          | Funding object or null.                                                                             |
-| `providerStatus`               | Provider report or null; never independent chain proof.                                             |
-| `delivery`                     | Verified ERC-20 delivery projection.                                                                |
-| `forwarding`                   | EVM forwarding/wrap projection.                                                                     |
-| `settlement`                   | Destination mint evidence and status.                                                               |
-| `refund`                       | Provider-reported refund or null.                                                                   |
-| `createdAt`, `updatedAt`       | UTC timestamps.                                                                                     |
-| `lastCheckedAt`, `nextCheckAt` | Nullable swap-observation/check timestamps; not universal timestamps for every mint/relayer action. |
-| `retryAfterMs`                 | Suggested interval before the next GET.                                                             |
+## 12. Integration checklist
 
-### Phases and completion
+- [ ] Metadata loaded; assets grouped by `network` with your own names and icons; unknown network keys hidden.
+- [ ] No settlement-token selector; the flow stops when `defaultSettlementToken` is `null`.
+- [ ] Refund address validated by the user's confirmation and by the API; recipient is `mv1`.
+- [ ] Amounts parsed and formatted with `BigInt`; never floats.
+- [ ] Preview shows `destinationMinAmountOut`, fees and the time estimate; refreshed before confirmation.
+- [ ] Capability, idempotency key and request saved **before** the `POST`; retries reuse all three.
+- [ ] Operation ID saved after `202`, and kept in the user's history.
+- [ ] Deposit screen only on `fundingStatus: AVAILABLE`, with the exact amount, memo when present and `fundingExpiresAt`.
+- [ ] Warning that exchanges deducting fees cause a refund.
+- [ ] Send action hidden for good after `OBSERVED`; never shown again for `EXPIRED` or `PAUSED`.
+- [ ] "Received" shown only on `settlement.status: CONFIRMED`.
+- [ ] Review states show the operation ID and never suggest paying again.
+- [ ] Capabilities never in URLs, logs, analytics or error reports.
+- [ ] Every error code in section 10 handled, plus a fallback for unknown ones.
+- [ ] Your production origin sent to the backend team for CORS.
 
-| Phase                | Display interpretation                                                                                     |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `PREPARING_QUOTE`    | Preparing and validating the executable quote.                                                             |
-| `AWAITING_DEPOSIT`   | Quote published; independently check funding availability/expiry.                                          |
-| `SWAP_IN_PROGRESS`   | Funding/provider activity observed.                                                                        |
-| `VERIFYING_DELIVERY` | Checking actual receipt evidence and finality on the EVM bridge chain.                                     |
-| `DELIVERY_VERIFIED`  | Historical receipt attributed to the operation; not proof of current free balance or completed forwarding. |
-| `FORWARDING`         | Sponsored forwarding is in progress.                                                                       |
-| `WRAPPED`            | Verified EVM wrap evidence; **not** Mavryk mint completion.                                                |
+## 13. Code examples (TypeScript)
 
-There is no `COMPLETED` phase. Show confirmed destination receipt when `settlement.status === "CONFIRMED"`, with the verified destination asset and amount. Preserve any concurrent reconciliation/review warning. `WRAPPED` with `PENDING` means “Waiting for Mavryk confirmation”; `WRAPPED` with `NOT_TRACKED` means this service has not established destination settlement. Existing Bridge Signers and mint observation operate asynchronously; the user's tokens appear in their Mavryk/Equiteez balance without a frontend claim step.
+### Capability and amounts
 
-`attention` values: `NONE`, `RETRYING`, `ROUTE_PAUSED`, `MANUAL_REVIEW`, `PROVIDER_UNAVAILABLE`, `DEPOSIT_INCOMPLETE`, `REFUND_PENDING`, `RECONCILE_REQUIRED`. These are overlays, not success/failure finality. `MANUAL_REVIEW` and `RECONCILE_REQUIRED` require investigation; do not encourage a second deposit or automatic resubmission.
+```tsx
+// 32 random bytes, base64url without padding: 43 characters.
+export function newCapability(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
 
-`QUOTE_REJECTED` closes quote preparation before publication. Expiry of an already published quote is different: instructions are hidden, but the same deposit address is never automatically replaced and late funds still require reconciliation.
+// "1.5" with 9 decimals -> "1500000000". Throws on invalid input.
+export function toBaseUnits(input: string, decimals: number): string {
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(input.trim());
+  if (!match) throw new Error("Invalid amount");
+  const [, whole, fraction = ""] = match;
+  if (fraction.length > decimals)
+    throw new Error(`At most ${decimals} decimal places`);
+  const units = BigInt(whole + fraction.padEnd(decimals, "0"));
+  if (units === 0n) throw new Error("Amount must be positive");
+  return units.toString();
+}
 
-### Funding
-
-| Status      | UI action                                                                                                      |
-| ----------- | -------------------------------------------------------------------------------------------------------------- |
-| `NOT_READY` | Wait; no funding action.                                                                                       |
-| `AVAILABLE` | Instructions are currently usable. Verify network, asset, amount, address and expiry before wallet submission. |
-| `EXPIRED`   | Disable funding; do not reuse cached instructions.                                                             |
-| `PAUSED`    | Route/recovery/review safety gate; disable funding.                                                            |
-| `OBSERVED`  | Funding activity already observed; hide the original full-amount send action.                                  |
-
-The nullable `fundingInstructions` object contains:
-
-| Field                                           | Meaning                                                                                                                                      |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `quoteId`                                       | Persisted executable quote UUID.                                                                                                             |
-| `sourceChainId`, `originAsset`                  | Source network and provider asset being deposited.                                                                                           |
-| `depositAddress`, `depositMemo`                 | Actual funding destination; memo is null in this release.                                                                                    |
-| `amount`                                        | Exact source base units to fund.                                                                                                             |
-| `amountOut`, `minAmountOut`                     | Quoted output and minimum in settlement ERC-20 units.                                                                                        |
-| `bridgeableAmountOut`, `bridgeableMinAmountOut` | Values rounded down to destination-representable precision, still in ERC-20 units.                                                           |
-| `deadline`                                      | Provider quote deadline.                                                                                                                     |
-| `fundingExpiresAt`                              | Earlier UI funding cut-off; defaults to deadline minus a 60-second safety margin.                                                            |
-| `forwarderAddress`                              | Predetermined settlement-chain recipient of 1Click's output. The backend verifies it; the frontend needs no separate address-discovery step. |
-
-Once published, instructions are immutable. The response exposes them only while safe. Persisted historical instructions must not be treated as current permission to send. The API does not supply an approval transaction or wallet SDK implementation: the frontend builds the source-asset funding transfer using its supported wallet integration.
-
-### Provider report, delivery and refund
-
-Provider status values are `PENDING_DEPOSIT`, `KNOWN_DEPOSIT_TX`, `INCOMPLETE_DEPOSIT`, `PROCESSING`, `SUCCESS`, `REFUNDED`, and `FAILED`. `SUCCESS` does not prove the delivery receipt or the mint. The worker verifies successful canonical ERC-20 logs, exact token/account attribution and the route's confirmation/finality policy independently.
-
-`delivery` contains `status` (`NOT_OBSERVED`, `VERIFYING`, `VERIFIED`, `AMBIGUOUS`, `RECONCILE_REQUIRED`), nullable `expectedAmount`, `confirmedAmount`, `transferCount`, and `transactionHashes`. Amounts use settlement ERC-20 units. Ambiguous/shared/unmatched inventory is never guessed into a user's operation.
-
-`refund`, when present, is `{status: "REPORTED", amount, asset, recipient}`. It is a provider report, **not independently verified on-chain refund completion**. The service does not execute a refund or provide a refund claim endpoint.
-
-### Forwarding
-
-`forwarding.status`: `NOT_READY`, `READY`, `IN_PROGRESS`, `RECONCILE_REQUIRED`, `WRAPPED`.
-
-| Field              | Meaning                                                                               |
-| ------------------ | ------------------------------------------------------------------------------------- |
-| `transactionHash`  | Nullable associated sponsored transaction hash.                                       |
-| `wrappedAmount`    | Attributed amount already wrapped, in ERC-20 units.                                   |
-| `bridgeableAmount` | Verified delivery representable in destination precision.                             |
-| `remainingAmount`  | Operation-owned units still held at the forwarder.                                    |
-| `dustAmount`       | Sub-FA2-unit delivery remainder; it may remain or contribute to a later pooled sweep. |
-| `bridgeEvents`     | Array of `{transactionHash, logIndex, amount}` for attributed EVM wraps.              |
-
-Forwarders are deterministic/shared for their configured recipient context; an arbitrary balance is not automatically this operation's deposit. Third parties can call the factory. The backend observes resulting movement without double-counting custody or releasing an unresolved signed sponsor transaction prematurely.
-
-### Settlement
-
-`settlement.status`: `NOT_TRACKED`, `PENDING`, `CONFIRMED`, `RECONCILE_REQUIRED`.
-
-| Field                                      | Meaning                                                                           |
-| ------------------------------------------ | --------------------------------------------------------------------------------- |
-| `confirmedAmount`                          | Confirmed destination FA2 base units; six decimals for approved current pairings. |
-| `tokenAddress`, `tokenId`, `mavrykChainId` | Nullable verified destination asset identity. A ticker alone is insufficient.     |
-| `mints`                                    | Evidence array described below; may contain multiple allocations.                 |
-
-Each mint contains `wrapTransactionHash`, `wrapLogIndex`, `operationHash`, `blockHash`, `level`, and `amount`. Verification binds the applied canonical receipt, executed mint request, recipient, asset, amount and pinned minter/token code to the corresponding EVM wrap. An indexer status, one `signMint` vote or a wallet balance change alone is insufficient. The API can remain at `phase: WRAPPED` after settlement becomes confirmed.
-
-## 7. Frontend integration recommendations
-
-1. Load enabled routes and approved display metadata. Check the user's source network and `mv1` recipient. Obtain explicit acceptance of the amount, slippage and minimum output.
-2. Generate and persist one random capability, one idempotency key and the immutable request. POST once; retries reuse all three.
-3. Persist the operation ID and poll GET. Render phases and attention states separately. Follow `retryAfterMs`; back off with jitter on rate limits/network failures.
-4. Enable source funding only with fresh `AVAILABLE` instructions. Re-read before asking the wallet to sign; validate the chain, asset, exact amount and cut-off. In real 1Click mode send to `depositAddress`, not `forwarderAddress`.
-5. After wallet submission, disable duplicate funding locally immediately. Persist the source transaction hash. When the route advertises connected-wallet registration, submit it as described in section 4.5. In real 1Click mode the provider reports swap status. A lost wallet response must be resolved with the wallet/chain before offering a second send.
-6. Continue polling after reload using the saved capability. Once funding is observed, do not show the original full-deposit button, including for incomplete deposits. This release does not publish safe automatic top-up instructions.
-7. Show EVM delivery, sponsored forwarding and Mavryk settlement as separate asynchronous stages. The backend sponsor pays forwarding gas; the frontend submits no bridge-chain factory transaction or Mavryk claim.
-8. Show received tokens only when destination evidence is confirmed; refresh the actual Equiteez/Bridge UI balance source independently. Never equate job completion, 1Click SUCCESS, WRAPPED or a signer vote with final receipt.
-9. For review/reconciliation, preserve the operation and show support context using operation ID/request ID. Exclude capabilities and keys from support logs or analytics.
-10. Prevent accidental new intents after an expired/pending transfer. A deliberately new operation needs a fresh capability/key and valid route; a published old address must not be silently replaced or reused as a new quote.
-
-### 7.1 Connected-wallet Basenet walkthrough
-
-1. Fetch `GET /v1/metadata`. Select enabled route `basenet-rehearsal-k8s` from the current catalog. Require `admissionPaused: false` and `depositRegistrationSupported: true`. This route advertises `mode: "rehearsal"` and `previewSupported: false`. Use the returned source asset for the selector and wallet balance. Its asset ID is `basenet-rehearsal:0x5c05e82be66b19476bacb558e62e7d449b98635f`, on Arbitrum Sepolia (`421614`, 18 decimals). The sender needs 1 mock USDT plus Sepolia ETH for the source transfer.
-2. Generate a fresh capability and idempotency key as described in section 2. Persist them with the exact body. Set both EVM address fields to the connected sender and `recipient` to the selected Basenet account. The following JavaScript constructs the JSON body for `POST /v1/operations` using those wallet values and the route returned by metadata.
-
-```jsx
-const request = {
-  routeId: route.routeId,
-  routeVersion: route.routeVersion,
-  sourceAddress: connectedEvmAddress,
-  refundAddress: connectedEvmAddress,
-  recipient: connectedBasenetAddress,
-  amountIn: "1000000000000000000",
-  slippageBps: 0,
-  acceptedMinAmountOut: "1000000000000000000",
-};
-```
-
-1. Save the ID from the 202 response and poll `GET /v1/operations/{id}` with the saved bearer. Wait for `fundingStatus: AVAILABLE`. Recheck the connected wallet, chain, token, amount and expiry. Submit one ERC-20 `transfer` to `fundingInstructions.depositAddress`, the verified forwarder for this recipient. Funding windows for the same deterministic address cannot overlap.
-2. Save the wallet’s transaction hash immediately and register it using section 4.5. After a reload or timeout, resume with the saved operation and hash. A pending receipt prompts another HTTP request, never another wallet transfer.
-3. Follow delivery verification, sponsored forwarding and Mavryk settlement through the operation GET. Display receipt when `settlement.status: CONFIRMED` and the recipient and asset match. For this route the expected `settlement.confirmedAmount` is `"1000000"`, or 1 wUSDT on Basenet (FA2 `KT1Wewg18Z8D3kjYqJqXZL1fqSGqjWe5MABE`, token ID `"0"`, 6 decimals). Refresh the wallet balance. Receiving requires no signature or gas from the recipient.
-
-### Browser access
-
-The current Gateway allowlist is `https://app.equiteez.com`, `https://equiteez-app.pages.dev`, and subdomains of `equiteez-app.pages.dev`. Bridge UI's final origin still needs adding. GET/POST/OPTIONS and `Authorization`, `Content-Type`, `Idempotency-Key` are allowed; `Location`, `Idempotency-Replayed`, `Retry-After` are exposed. Cookies are not enabled. CORS is a browser policy, not authentication or an anti-abuse boundary.
-
-### Minimal request handling
-
-```jsx
-// savedIntent must already be persisted before this function is called.
-async function createOperation(baseUrl, savedIntent) {
-  const response = await fetch(`${baseUrl}/v1/operations`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${savedIntent.capability}`,
-      "Idempotency-Key": savedIntent.idempotencyKey,
-    },
-    body: JSON.stringify(savedIntent.request),
-    cache: "no-store",
-  });
-  const body = await response.json();
-  if (response.status !== 202) {
-    // Caller interprets status/code; it must retain the saved idempotency scope.
-    throw Object.assign(new Error("Operation request failed"), {
-      status: response.status,
-      code: body.error?.code,
-      requestId: body.error?.requestId,
-    });
-  }
-  return body;
+// "1500000000" with 9 decimals -> "1.5".
+export function fromBaseUnits(value: string, decimals: number): string {
+  const units = BigInt(value);
+  const base = 10n ** BigInt(decimals);
+  const fraction = (units % base)
+    .toString()
+    .padStart(decimals, "0")
+    .replace(/0+$/, "");
+  return fraction ? `${units / base}.${fraction}` : (units / base).toString();
 }
 ```
 
-For type generation, export the generated schema with `app.swagger()` locally; validate actual responses at the client boundary. Wallet transaction construction, secure capability storage and UI error/recovery behavior remain frontend responsibilities. Never embed provider or sponsor secrets in either frontend bundle.
+### Create the operation
+
+```tsx
+export interface SavedIntent {
+  capability: string;
+  idempotencyKey: string;
+  request: Record<string, string | number>; // the eight fields, exactly as sent
+  operationId?: string;
+}
+
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code?: string,
+    readonly requestId?: string
+  ) {
+    super(code ?? `HTTP ${status}`);
+  }
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const backoff = (attempt: number) =>
+  Math.min(60_000, 1000 * 2 ** attempt) + Math.random() * 1000;
+
+// `intent` must already be saved durably. Retries reuse the same capability, key and body.
+export async function createOperation(baseUrl: string, intent: SavedIntent) {
+  for (let attempt = 0; ; attempt++) {
+    let response: Response | undefined;
+    try {
+      response = await fetch(`${baseUrl}/v1/operations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${intent.capability}`,
+          "Idempotency-Key": intent.idempotencyKey,
+        },
+        body: JSON.stringify(intent.request),
+        cache: "no-store",
+        signal: AbortSignal.timeout(15_000),
+      });
+    } catch {
+      // Network error or timeout: the operation may exist. Retry the same intent.
+    }
+    if (response?.status === 202) return response.json(); // save operation.id next
+    if (response && response.status !== 500 && response.status !== 503) {
+      const body = await response.json().catch(() => null);
+      throw new ApiError(
+        response.status,
+        body?.error?.code,
+        body?.error?.requestId
+      );
+    }
+    if (attempt >= 5) throw new ApiError(response?.status ?? 0, "UNAVAILABLE");
+    await sleep(backoff(attempt));
+  }
+}
+```
+
+### Poll the operation
+
+```tsx
+export async function pollOperation(
+  baseUrl: string,
+  intent: SavedIntent,
+  onUpdate: (operation: any) => void,
+  signal: AbortSignal
+) {
+  let failures = 0;
+  while (!signal.aborted) {
+    let delay: number;
+    try {
+      const response = await fetch(
+        `${baseUrl}/v1/operations/${intent.operationId}`,
+        {
+          headers: { Authorization: `Bearer ${intent.capability}` },
+          cache: "no-store",
+          signal,
+        }
+      );
+      if (response.status === 404)
+        throw new ApiError(404, "OPERATION_NOT_FOUND");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const operation = await response.json();
+      onUpdate(operation);
+      if (
+        operation.settlement.status === "CONFIRMED" ||
+        operation.closure === "QUOTE_REJECTED"
+      )
+        return operation;
+      failures = 0;
+      delay = operation.retryAfterMs + Math.random() * 1000;
+    } catch (error) {
+      if (signal.aborted) return; // the screen was closed
+      if (error instanceof ApiError) throw error; // 404: wrong capability or operation ID
+      delay = backoff(failures++);
+    }
+    await sleep(delay);
+  }
+}
+```
+
+## 14. Changelog since v0.0.6
+
+Changes that matter to the frontend, from `v0.0.6` to `v0.0.9`. The request and response shape changed in `v0.0.8`; `v0.0.9` changes nothing in the API. There is no compatibility layer: both frontends switch together.
+
+**Removed**
+
+- `GET /v1/routes` (now 404) and the route model: `routeId`, `routeVersion`, per-route amount limits and the slippage cap.
+- `sourceAddress` in the preview and in the operation.
+- `POST /v1/operations/{id}/deposit`, the connected-wallet deposit registration of the Basenet test.
+- `fundingInstructions.sourceChainId`, replaced by `sourceNetwork`.
+- The attention value `ROUTE_PAUSED`.
+- The error codes `ROUTE_UNAVAILABLE`, `ROUTE_LIMIT_EXCEEDED`, `AMOUNT_OUT_OF_RANGE`, `SLIPPAGE_OUT_OF_RANGE`, `MIN_OUTPUT_TOO_LOW`, `QUOTE_PREVIEW_UNSUPPORTED` and `REHEARSAL_*`.
+
+**Changed**
+
+- `GET /v1/metadata` returns `schemaVersion: 2`: `settlementTokens`, `defaultSettlementToken`, `sourceAssets` and `catalog` (section 6.1).
+- The preview takes seven fields and creation eight, with `sourceAssetId`, `settlementTokenId` and `settlementTokenVersion` (sections 6.2 and 6.3).
+- `refundAddress` is an address of the source network, in any of five formats (section 7), not only EVM.
+- `fundingInstructions.depositAddress` can be a non-EVM address, and `depositMemo` can be a string, which is then required.
+- `fundingExpiresAt` depends on the source network: about an hour before the deadline for Bitcoin.
+- The amount and slippage are no longer limited by the backend; 1Click accepts or rejects the amount, and the user chooses the slippage.
+
+**Added**
+
+- Source assets on twelve networks, from the 1Click catalog. New assets appear without a release.
+- The attention values `SETTLEMENT_TOKEN_PAUSED` and `SOURCE_PAUSED`.
+- The error codes `SOURCE_ASSET_UNAVAILABLE`, `SETTLEMENT_TOKEN_UNAVAILABLE`, `ADMISSION_CHANGED`, `DIRECT_WRAP_UNSUPPORTED`, `AMOUNT_TOO_LOW`, `AMOUNT_TOO_HIGH`, `CATALOG_STALE` and `429 ADMISSION_CAPACITY_EXCEEDED`.
+- A limit of 3 transfers waiting for a deposit per client, and 200 across the service (section 11).
+- `/docs` assets are cached for an hour.

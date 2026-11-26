@@ -6,25 +6,42 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { BigNumber } from "bignumber.js";
-import { useSwitchChain } from "wagmi";
+import type { BigNumber } from "bignumber.js";
+import { useConfig, useSwitchChain } from "wagmi";
 
 import { INTENTS_DEFAULT_SLIPPAGE_BPS } from "~/consts/intents";
-import { useIntentsRoutes } from "~/hooks/useIntentsRoutes";
+import { useIntentsCatalog } from "~/hooks/useIntentsCatalog";
+import { useIntentsPreview } from "~/hooks/useIntentsPreview";
 import {
   getIntentsApi,
   IntentsApiError,
   isIntentsApiError,
   type IntentOperationRequest,
+  type IntentPreview,
+  type IntentPreviewRequest,
 } from "~/lib/apis/intents";
 import {
   canRequestIntentFunding,
+  markIntentSentExternally,
   simulateIntentFunding,
 } from "~/contracts/intentsFunding.contract";
+import {
+  intentCatalogStatusCopy,
+  getIntentAmountError,
+  getIntentSlippageError,
+  isIntentRecipient,
+  toRawAmount,
+  type IntentSettlement,
+  type IntentSourceOption,
+} from "~/lib/intents/intentCatalog";
 import {
   newIdempotencyKey,
   newOperationCapability,
 } from "~/lib/intents/intentCapability";
+import {
+  getRefundAddressError,
+  normalizeRefundAddress,
+} from "~/lib/intents/intentNetworks";
 import {
   createIntentRecord,
   getInstructionsMismatch,
@@ -33,25 +50,20 @@ import {
   type IntentRecord,
 } from "~/lib/intents/intentOperation";
 import {
-  estimateAcceptedMinAmountOut,
+  getAcceptedMinAmountOut,
   getIntentErrorCopy,
   getIntentRequestKey,
+  isIntentCatalogChangedError,
   isIntentInstructionsExpired,
+  isIntentPreviewExpired,
   isRetryableIntentError,
+  toIntentPreviewRequest,
 } from "~/lib/intents/intentQuote";
-import {
-  formatRawAmount,
-  fromRawAmount,
-  getIntentAmountError,
-  getIntentSlippageError,
-  intentRouteAvailabilityCopy,
-  isIntentRecipient,
-  toRawAmount,
-  type IntentRouteOption,
-} from "~/lib/intents/intentRoute";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { useIntentSourceBalance } from "~/providers/EthereumProvider/hooks/useIntentSourceBalance";
 import { useIntentsFunding } from "~/providers/EthereumProvider/hooks/useIntentsFunding";
+import { useIntentWalletsContext } from "~/providers/IntentWalletsProvider/IntentWalletsProvider";
+import type { IntentWalletAccount } from "~/lib/intents/wallets";
 import type { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { toIntentWidget } from "~/providers/TransactionsProvider/intentWidget";
 import { useTransactionsContext } from "~/providers/TransactionsProvider/TransactionsProvider";
@@ -66,11 +78,14 @@ type ReviewBase = {
   /** Inputs the request was built from; a different key invalidates it. */
   key: string;
   session: IntentOperations;
-  option: IntentRouteOption;
+  option: IntentSourceOption;
+  settlement: IntentSettlement;
   /** Exact body for POST /v1/operations. */
   request: IntentOperationRequest;
-  /** Estimated output before slippage (settlement units), display only. */
-  expectedAmountOut: string;
+  /** The fresh preview the accepted minimum comes from. */
+  preview: IntentPreview;
+  /** Connected wallet that will send: an EVM address or a network wallet. */
+  sourceWallet?: string | IntentWalletAccount;
   /** Local identity; its record holds the capability and idempotency key. */
   localId: string;
 };
@@ -102,6 +117,13 @@ const toApiError = (error: unknown) =>
         "UNKNOWN",
         error instanceof Error ? error.message : "Unexpected error."
       );
+
+const errorMessage = (error: unknown) =>
+  isIntentsApiError(error)
+    ? getIntentErrorCopy(error)
+    : error instanceof Error
+      ? error.message
+      : "Something went wrong.";
 
 export function getIntentsOperationView(
   record: IntentRecord | undefined,
@@ -136,16 +158,24 @@ export function getIntentsOperationView(
 
 /** Orchestrates the 1Click deposit inside Deposit Funds. */
 export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
-  const catalog = useIntentsRoutes();
+  const catalogState = useIntentsCatalog();
+  const { catalog } = catalogState;
   const { account, intentSession, refreshIntent } = useTransactionsContext();
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const { chains } = useConfig();
+  const api = getIntentsApi();
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [amount, setAmount] = useState<BigNumber | undefined>();
   const [slippageBps, setSlippageBps] = useState(INTENTS_DEFAULT_SLIPPAGE_BPS);
+  const [refundInput, setRefundInputState] = useState("");
+  const [isRefundConfirmed, setIsRefundConfirmed] = useState(false);
   const [networkError, setNetworkError] = useState<string | null>(null);
   const [review, setReview] = useState<IntentsReview>({ phase: "form" });
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewNotice, setReviewNotice] = useState<string | null>(null);
+  const [isPreparingReview, setIsPreparingReview] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const { switchChainAsync, isPending: isSwitching } = useSwitchChain();
+  const intentWallets = useIntentWalletsContext();
   const runRef = useRef(0);
   const busyRef = useRef(false);
   const funding = useIntentsFunding();
@@ -165,106 +195,157 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       !canRequestIntentFunding(activeRecord.fundingState)
   );
 
+  const options = useMemo(() => catalog?.options ?? [], [catalog]);
+  const settlement = catalog?.settlement;
   const selected = useMemo(
     () =>
-      catalog.options.find((option) => option.route.id === selectedRouteId) ??
-      catalog.options.find((option) => option.availability === "available") ??
-      catalog.options[0],
-    [catalog.options, selectedRouteId]
+      options.find((option) => option.assetId === selectedAssetId) ??
+      options[0],
+    [options, selectedAssetId]
   );
-  const route = selected?.route;
-  const source = selected?.source;
-  const isRouteAvailable = selected?.availability === "available";
-  const sourceAddress = ethereumWallet.userAddress;
-  const sourceBalance = useIntentSourceBalance(
-    source,
-    sourceAddress,
-    isRouteAvailable
-  );
-  const isWrongNetwork = Boolean(
-    source &&
-      ethereumWallet.isConnected &&
-      ethereumWallet.chainId !== source.chainId
-  );
-  const routeError =
-    selected && selected.availability !== "available"
-      ? intentRouteAvailabilityCopy[selected.availability]
+  const network = selected?.network;
+  const catalogError =
+    catalog && catalog.status !== "available"
+      ? intentCatalogStatusCopy[catalog.status]
       : null;
-  // Routes with a single admissible amount or no slippage fix the input.
-  const fixedAmount = useMemo(
-    () =>
-      route && route.minAmountIn === route.maxAmountIn
-        ? fromRawAmount(route.minAmountIn, route.sourceDecimals)
-        : null,
-    [route]
+  const isCatalogAvailable = catalog?.status === "available";
+
+  // A connected wallet sends in one click: the wagmi wallet for EVM assets,
+  // the network's own wallet (Solana, NEAR, Aptos, Bitcoin) otherwise. Without
+  // one, any wallet or exchange pays the deposit address.
+  const walletAddress = ethereumWallet.userAddress;
+  const isEvmChainConfigured = Boolean(
+    network?.evmChainId &&
+      chains.some((chain) => chain.id === network.evmChainId)
   );
-  const isSlippageFixed = route?.maxSlippageBps === 0;
-  useEffect(() => {
-    if (fixedAmount && !amount?.eq(fixedAmount)) setAmount(fixedAmount);
-  }, [amount, fixedAmount]);
-  useEffect(() => {
-    if (route && slippageBps > route.maxSlippageBps)
-      setSlippageBps(
-        route.maxSlippageBps === 0
-          ? 0
-          : Math.min(INTENTS_DEFAULT_SLIPPAGE_BPS, route.maxSlippageBps)
-      );
-  }, [route, slippageBps]);
-  const amountIn =
-    route && amount ? toRawAmount(amount, route.sourceDecimals) : null;
-  const estimate = useMemo(
-    () =>
-      selected?.source && selected.destination && amountIn && amountIn !== "0"
-        ? estimateAcceptedMinAmountOut({
-            amountIn,
-            sourceDecimals: selected.route.sourceDecimals,
-            settlementDecimals: selected.route.settlementDecimals,
-            destinationDecimals: selected.destination.decimals,
-            slippageBps,
-          })
-        : null,
-    [amountIn, selected, slippageBps]
+  const canEvmSend = Boolean(
+    selected?.evmToken &&
+      isEvmChainConfigured &&
+      walletAddress &&
+      ethereumWallet.isConnected
   );
-  const slippageError = selected
-    ? getIntentSlippageError(selected, slippageBps)
-    : null;
+  const family = network?.family;
+  const nativeAccount =
+    family && family !== "evm" && intentWallets.isSupported(family)
+      ? intentWallets.accounts[family]
+      : undefined;
+  // The wallet's account must be a valid refund address on the network.
+  const canNativeSend = Boolean(
+    nativeAccount &&
+      network &&
+      !getRefundAddressError(network, nativeAccount.address)
+  );
+  const canWalletSend = (canEvmSend || canNativeSend) && api.env !== "mock";
+  const sendingWallet: string | IntentWalletAccount | undefined = !canWalletSend
+    ? undefined
+    : canEvmSend
+      ? walletAddress!.toLowerCase()
+      : nativeAccount;
+  const sourceWallet =
+    typeof sendingWallet === "string" ? sendingWallet : sendingWallet?.address;
+  const sendingWalletName = canEvmSend
+    ? undefined
+    : canWalletSend
+      ? nativeAccount?.walletName
+      : undefined;
+  const sourceBalance = useIntentSourceBalance(selected, sourceWallet ?? null);
+  const isWrongNetwork = Boolean(
+    canWalletSend &&
+      canEvmSend &&
+      ethereumWallet.chainId !== network?.evmChainId
+  );
+
+  // Refunds go to the sending wallet when there is one; otherwise to an
+  // address the user pastes and confirms (backend.md §6.2, §7).
+  const isRefundFromWallet = Boolean(sourceWallet);
+  const refundAddress =
+    network && (sourceWallet ?? refundInput.trim())
+      ? normalizeRefundAddress(network, sourceWallet ?? refundInput)
+      : "";
+  const refundError =
+    network && !isRefundFromWallet && refundInput.trim()
+      ? getRefundAddressError(network, refundInput)
+      : null;
+  const isRefundReady = Boolean(
+    network &&
+      refundAddress &&
+      (isRefundFromWallet ||
+        (!getRefundAddressError(network, refundInput) && isRefundConfirmed))
+  );
+
+  const decimals = selected?.asset.decimals ?? 0;
+  const amountIn = selected && amount ? toRawAmount(amount, decimals) : null;
   const amountError = selected
-    ? (getIntentAmountError(selected, amount, sourceBalance.balance) ??
-      (amountIn && route && selected.destination
-        ? !estimate || new BigNumber(estimate.minimum).lt(route.minAmountOut)
-          ? `The minimum you would receive must be at least ${formatRawAmount(
-              route.minAmountOut,
-              route.settlementDecimals
-            )} ${selected.destination.symbol}. Enter a larger amount or lower the slippage.`
-          : null
-        : null))
+    ? getIntentAmountError(
+        selected,
+        amount,
+        canWalletSend ? sourceBalance.balance : undefined
+      )
     : null;
+  const slippageError = getIntentSlippageError(slippageBps);
   // The connected Mavryk wallet must be the authenticated tracking account.
   const sessionError =
     recipient && (!intentSession || account !== recipient)
       ? "Your Equiteez session is not ready. Reconnect your Mavryk wallet to continue."
       : recipient && !isIntentRecipient(recipient)
-        ? "This route can only deliver to mv1 Mavryk accounts. Use Bridge From Ethereum or Receive On Mavryk instead."
+        ? "Cross-chain deposits can only go to mv1 Mavryk accounts. Use Receive On Mavryk instead."
         : null;
-  const canReview = Boolean(
-    route &&
-      isRouteAvailable &&
-      recipient &&
-      sourceAddress &&
-      estimate &&
+
+  // The refund address is validated before any price (backend.md §6.2).
+  const previewRequest = useMemo<IntentPreviewRequest | null>(
+    () =>
+      isCatalogAvailable &&
+      selected &&
+      settlement &&
+      account &&
+      recipient === account &&
+      !sessionError &&
+      amountIn &&
+      amountIn !== "0" &&
       !amountError &&
       !slippageError &&
-      !sessionError &&
-      sourceBalance.status === "ready"
+      network &&
+      refundAddress &&
+      !getRefundAddressError(network, refundAddress)
+        ? {
+            sourceAssetId: selected.assetId,
+            settlementTokenId: settlement.id,
+            settlementTokenVersion: settlement.version,
+            recipient: account,
+            refundAddress,
+            amountIn,
+            slippageBps,
+          }
+        : null,
+    [
+      account,
+      amountError,
+      amountIn,
+      isCatalogAvailable,
+      network,
+      recipient,
+      refundAddress,
+      selected,
+      sessionError,
+      settlement,
+      slippageBps,
+      slippageError,
+    ]
   );
-  const requestKey = getIntentRequestKey({
+  const preview = useIntentsPreview(previewRequest);
+  const previewError = preview.error ? getIntentErrorCopy(preview.error) : null;
+
+  const canReview = Boolean(
+    previewRequest &&
+      preview.status === "ready" &&
+      isRefundReady &&
+      (!canWalletSend || sourceBalance.status === "ready") &&
+      !isPreparingReview
+  );
+  const requestKey = `${getIntentRequestKey({
     account,
-    sourceAddress,
-    routeId: route?.id,
-    routeVersion: route?.version,
-    amountIn,
-    slippageBps,
-  });
+    ...(previewRequest ?? {}),
+  })}|${sourceWallet ?? ""}`;
   const keyRef = useRef(requestKey);
   keyRef.current = requestKey;
   const sessionRef = useRef(intentSession);
@@ -290,6 +371,8 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       if ("localId" in current) abandon(current.session, current.localId);
       setReview({ phase: "form" });
       setReviewError(error);
+      setReviewNotice(null);
+      setIsPreparingReview(false);
     },
     [abandon]
   );
@@ -313,13 +396,24 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     }
     if (review.phase === "tracking") return;
     if (review.key === requestKey || hasFundingStarted) return;
+    // Published instructions stay on screen: the user may already have paid
+    // the address from another wallet. Only an unpublished review is reset.
+    if (review.phase === "operation" && activeRecord?.lastInstructions) return;
     resetReview(
-      "The deposit was cleared because your account, wallet, amount or slippage changed."
+      "The deposit was cleared because your account, wallet, amount, refund address or slippage changed."
     );
-  }, [requestKey, intentSession, review, resetReview, hasFundingStarted]);
+  }, [
+    activeRecord,
+    requestKey,
+    intentSession,
+    review,
+    resetReview,
+    hasFundingStarted,
+  ]);
 
-  // Once the wallet returned (or a reload left the prompt open), or the
-  // backend saw funds, the modal follows the operation instead of the quote.
+  // Once the wallet returned (or a reload left the prompt open), the user
+  // reported sending, or the backend saw funds, the modal follows the
+  // operation instead of the deposit screen.
   const isPrompting = Boolean(funding.busyId);
   useEffect(() => {
     if (review.phase !== "operation" || !activeRecord) return;
@@ -329,6 +423,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       fundingState === "confirmed" ||
       fundingState === "unknown" ||
       fundingState === "reverted" ||
+      fundingState === "external" ||
       (fundingState === "prompted" && !isPrompting) ||
       hasIntentFundsObserved(activeRecord.backend)
     )
@@ -339,14 +434,15 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
       });
   }, [review, activeRecord, isPrompting]);
 
-  // Countdown clock while instructions may be on screen.
-  const isOperationOpen = review.phase === "operation";
+  // Countdown clock while a preview or instructions may be on screen.
+  const isClockNeeded =
+    review.phase === "operation" || review.phase === "review";
   useEffect(() => {
-    if (!isOperationOpen) return;
+    if (!isClockNeeded) return;
     setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(timer);
-  }, [isOperationOpen]);
+  }, [isClockNeeded]);
 
   const operationView = useMemo(
     () =>
@@ -363,89 +459,123 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     if (activeRecord.fundingState !== "not_started") return;
     if (operationView?.status === "rejected")
       resetReview(
-        "No quote met your minimum. Try a higher slippage tolerance or a different amount."
+        "We couldn't get a price that meets your minimum. Nothing was sent. Try a higher slippage tolerance or a different amount."
       );
     else if (operationView?.status === "expired")
       resetReview(
-        "The quote expired before funding. Review again for a new quote."
+        "The deposit window closed. Do not send to that address; review again for a new one."
       );
   }, [activeRecord, operationView, resetReview, review.phase]);
 
-  /** Local review: builds the exact request. Nothing is sent yet. */
-  const startReview = useCallback(() => {
+  /**
+   * Local review: refreshes metadata and the price, then builds the exact
+   * request from the fresh preview (backend.md §6.1–6.3). Nothing is sent.
+   */
+  const startReview = useCallback(async () => {
     if (
       !canReview ||
       !selected ||
-      !route ||
-      !amountIn ||
-      !estimate ||
-      !account ||
-      !sourceAddress ||
+      !settlement ||
+      !previewRequest ||
       !intentSession
     )
       return;
-    runRef.current += 1;
-    const wallet = sourceAddress.toLowerCase() as `0x${string}`;
+    const runId = ++runRef.current;
+    const key = requestKey;
     setReviewError(null);
-    setReview({
-      phase: "review",
-      key: requestKey,
-      session: intentSession,
-      option: selected,
-      request: {
-        routeId: route.id,
-        routeVersion: route.version,
-        sourceAddress: wallet,
-        recipient: account,
-        // 1Click refunds go back to the funding wallet on the source chain.
-        refundAddress: wallet,
-        amountIn,
-        slippageBps,
-        acceptedMinAmountOut: estimate.minimum,
-      },
-      expectedAmountOut: estimate.expected,
-      localId: newIdempotencyKey(),
-    });
+    setReviewNotice(null);
+    setIsPreparingReview(true);
+    try {
+      const metadata = await catalogState.refetch();
+      if (runId !== runRef.current) return;
+      if (metadata.error) throw metadata.error;
+      const fresh = await preview.fetchFresh(previewRequest);
+      if (runId !== runRef.current || keyRef.current !== key) return;
+      setReview({
+        phase: "review",
+        key,
+        session: intentSession,
+        option: selected,
+        settlement,
+        request: {
+          ...previewRequest,
+          acceptedMinAmountOut: getAcceptedMinAmountOut(fresh),
+        },
+        preview: fresh,
+        sourceWallet: sendingWallet,
+        localId: newIdempotencyKey(),
+      });
+    } catch (error) {
+      if (runId !== runRef.current) return;
+      setReviewError(errorMessage(error));
+    } finally {
+      if (runId === runRef.current) setIsPreparingReview(false);
+    }
   }, [
-    account,
-    amountIn,
     canReview,
-    estimate,
+    catalogState,
     intentSession,
+    preview,
+    previewRequest,
     requestKey,
-    route,
     selected,
-    slippageBps,
-    sourceAddress,
+    settlement,
+    sendingWallet,
   ]);
 
   /**
    * Persist capability + idempotency key + exact request, then POST. A lost
    * response is retried with the same three; only a definitive rejection
-   * needs a fresh scope (backend.md §2).
+   * needs a fresh scope (backend.md §5). An expired preview is refreshed
+   * first; a changed minimum is shown for a new confirmation.
    */
   const confirmRequest = useCallback(async () => {
     if (busyRef.current || review.phase !== "review") return;
     busyRef.current = true;
     const runId = ++runRef.current;
-    const current = review;
+    let current = review;
     const { session, localId } = current;
     const isCurrent = () =>
       runId === runRef.current &&
       sessionRef.current === session &&
       keyRef.current === current.key;
     setReviewError(null);
+    setReviewNotice(null);
     try {
       let record = session.get(localId);
       if (!record) {
+        setReview({ ...current, phase: "creating" });
+        if (isIntentPreviewExpired(current.preview)) {
+          // A preview takes exactly seven fields: no accepted minimum.
+          const fresh = await preview.fetchFresh(
+            toIntentPreviewRequest(current.request)
+          );
+          if (!isCurrent()) return;
+          const accepted = getAcceptedMinAmountOut(fresh);
+          if (accepted !== current.request.acceptedMinAmountOut) {
+            setReview({
+              ...current,
+              phase: "review",
+              preview: fresh,
+              request: { ...current.request, acceptedMinAmountOut: accepted },
+            });
+            setReviewNotice(
+              "The price changed. Check the new amounts and confirm again."
+            );
+            return;
+          }
+          current = { ...current, preview: fresh };
+        }
         // Every new transfer intent gets its own random scope.
         record = createIntentRecord({
           localId,
           account: session.account,
           env: session.env,
           option: current.option,
+          settlement: current.settlement,
           request: current.request,
-          expectedAmountOut: current.expectedAmountOut,
+          expectedDestinationAmount: current.preview.destinationAmountOut,
+          sourceWallet: current.sourceWallet,
           credentials: {
             capability: newOperationCapability(),
             idempotencyKey: newIdempotencyKey(),
@@ -491,6 +621,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     } catch (error) {
       if (!isCurrent()) return;
       const apiError = toApiError(error);
+      if (isIntentCatalogChangedError(apiError)) void catalogState.refetch();
       // A definitive rejection created nothing; the next attempt needs a new
       // scope. Lost responses keep it so a retry replays the same operation.
       const isRetryable =
@@ -501,45 +632,51 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
         phase: "review",
         localId: isRetryable ? localId : newIdempotencyKey(),
       });
-      setReviewError(
-        isIntentsApiError(error)
-          ? getIntentErrorCopy(apiError)
-          : (error as Error).message
-      );
+      setReviewError(errorMessage(error));
     } finally {
       busyRef.current = false;
     }
-  }, [abandon, refreshIntent, review]);
+  }, [abandon, catalogState, preview, refreshIntent, review]);
 
-  /** The single user signature: fund the 1Click deposit address. */
+  const isCurrentOperation = useCallback(
+    (session: IntentOperations, localId: string) =>
+      sessionRef.current === session &&
+      "localId" in reviewRef.current &&
+      reviewRef.current.localId === localId,
+    []
+  );
+
+  /** One-click send from the connected EVM wallet. */
   const fund = useCallback(async () => {
     const current = reviewRef.current;
     if (current.phase !== "operation") return;
     const { session, localId } = current;
     const quoteId = session.get(localId)?.backend?.fundingInstructions?.quoteId;
     if (!quoteId) return;
-    await funding.fund(
-      session,
-      localId,
-      quoteId,
-      () =>
-        sessionRef.current === session &&
-        "localId" in reviewRef.current &&
-        reviewRef.current.localId === localId
+    await funding.fund(session, localId, quoteId, () =>
+      isCurrentOperation(session, localId)
     );
-  }, [funding]);
+  }, [funding, isCurrentOperation]);
 
-  const api = getIntentsApi();
+  /** The user paid the address from another wallet or an exchange. */
+  const markSent = useCallback(() => {
+    const current = reviewRef.current;
+    if (current.phase !== "operation") return;
+    if (markIntentSentExternally(current.session, current.localId))
+      refreshIntent?.(current.localId);
+  }, [refreshIntent]);
+
   const simulateFunding = useMemo(
     () =>
       api.env === "mock"
         ? () => {
             const current = reviewRef.current;
-            if (current.phase === "operation")
-              simulateIntentFunding(api, current.session, current.localId);
+            if (current.phase !== "operation") return;
+            simulateIntentFunding(api, current.session, current.localId);
+            refreshIntent?.(current.localId);
           }
         : undefined,
-    [api]
+    [api, refreshIntent]
   );
 
   /**
@@ -571,27 +708,38 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     [activeRecord]
   );
 
-  const selectRoute = useCallback(
-    (routeId: string) => {
+  /** A different asset (and network) clears the amount and refund address. */
+  const selectAsset = useCallback(
+    (assetId: string) => {
       resetReview();
-      setSelectedRouteId(routeId);
+      const next = options.find((option) => option.assetId === assetId);
+      if (next?.network.key !== selected?.network.key) {
+        setRefundInputState("");
+        setIsRefundConfirmed(false);
+      }
+      setSelectedAssetId(assetId);
       setAmount(undefined);
       setNetworkError(null);
     },
-    [resetReview]
+    [options, resetReview, selected]
   );
 
+  const setRefundInput = useCallback((value: string) => {
+    setRefundInputState(value);
+    setIsRefundConfirmed(false);
+  }, []);
+
   const switchToSource = useCallback(async () => {
-    if (!source) return;
+    if (!network?.evmChainId) return;
     setNetworkError(null);
     try {
-      await switchChainAsync({ chainId: source.chainId });
+      await switchChainAsync({ chainId: network.evmChainId });
     } catch {
       setNetworkError(
-        `Unable to switch networks. Select ${source.chainName} in your wallet and try again.`
+        `Unable to switch networks. Select ${network.name} in your wallet and try again.`
       );
     }
-  }, [source, switchChainAsync]);
+  }, [network, switchChainAsync]);
 
   const resetForm = useCallback(() => {
     resetReview();
@@ -600,33 +748,51 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
   }, [resetReview]);
 
   return {
-    catalog,
+    catalog: {
+      status: catalogState.status,
+      error: catalogState.error,
+      refetch: catalogState.refetch,
+      options,
+      settlement,
+    },
+    catalogError,
     selected,
-    route,
-    source,
-    routeError,
+    network,
     recipient,
-    sourceAddress,
+    walletAddress,
+    canWalletSend,
+    sourceWallet,
+    sendingWalletName,
     sourceBalance,
     amount,
     setAmount,
-    isAmountFixed: Boolean(fixedAmount),
     amountError,
     slippageBps,
     setSlippageBps,
-    isSlippageFixed,
     slippageError,
-    estimate,
+    refundAddress,
+    refundInput,
+    setRefundInput,
+    refundError,
+    isRefundFromWallet,
+    isRefundConfirmed,
+    setIsRefundConfirmed,
+    preview: preview.preview,
+    previewStatus: preview.status,
+    previewError,
+    refetchPreview: preview.refetch,
     canReview,
+    isPreparingReview,
     isWrongNetwork,
     isSwitching,
     networkError,
     sessionError,
-    selectRoute,
+    selectAsset,
     switchToSource,
     resetForm,
     review,
     reviewError,
+    reviewNotice,
     now,
     startReview,
     confirmRequest,
@@ -637,6 +803,7 @@ export function useIntentsDeposit({ recipient, ethereumWallet }: Params) {
     hasFundingStarted,
     resumeActive,
     fund,
+    markSent,
     simulateFunding,
     isFunding: Boolean(funding.busyId),
     fundingError: funding.error,

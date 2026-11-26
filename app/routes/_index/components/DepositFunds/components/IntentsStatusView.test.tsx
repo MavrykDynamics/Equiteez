@@ -14,6 +14,9 @@ import { toIntentWidget } from "~/providers/TransactionsProvider/intentWidget";
 import { IntentsStatusView } from "./IntentsStatusView";
 
 vi.mock("~/lib/atoms/RIcon", () => ({ RIcon: () => null }));
+vi.mock("~/lib/atoms/CopyButton", () => ({
+  CopyButton: ({ text }: { text: string }) => <button>{text}</button>,
+}));
 vi.mock("~/lib/molecules/HashChip", () => ({
   HashChip: ({ hash }: { hash: string }) => <span>{hash}</span>,
 }));
@@ -46,7 +49,7 @@ describe("IntentsStatusView", () => {
     const html = render(wrappedOperation("NOT_TRACKED"));
     expect(html).toContain("Bridge To Mavryk");
     expect(html).toContain(fixtureOperationId);
-    expect(html).toContain(`sepolia.arbiscan.io/tx/${funding}`);
+    expect(html).toContain(`basescan.org/tx/${funding}`);
     expect(html).toContain(delivery);
     expect(html).toContain("Sponsored forward");
     expect(html).toContain(`${fixtureWrapHash}:3`);
@@ -56,34 +59,41 @@ describe("IntentsStatusView", () => {
 
   it("shows the confirmed amount and the Mavryk mint", () => {
     const html = render(wrappedOperation("CONFIRMED"));
-    expect(html).toContain("1.994 wUSDT arrived in your Mavryk account.");
+    expect(html).toContain("24.921 wUSDT arrived in your Mavryk account.");
+    expect(html).toContain("Received 24.921 wUSDT");
     expect(html).toContain("Mavryk mint");
     expect(html).toContain("ooMint");
-    expect(html).toContain("Start New Deposit");
+    expect(html).toContain("View on explorer");
+    expect(html).toContain(">Done<");
+    expect(html).not.toContain("New deposit");
   });
 
-  it("offers minimize while the operation is moving", () => {
+  it("offers a new deposit while the operation keeps moving", () => {
     const html = render(
       operation({ phase: "SWAP_IN_PROGRESS", fundingStatus: "OBSERVED" })
     );
-    expect(html).toContain("Minimize And Continue Browsing");
-    expect(html).not.toContain("Start New Deposit");
+    expect(html).toContain("New deposit");
+    expect(html).toContain("your deposit continues");
+    expect(html).toContain('aria-current="step"');
+    expect(html).not.toContain(">Done<");
   });
 
-  it("offers a new deposit once a refund was reported", () => {
+  it("shows a reported refund as an alert and finishes with Done", () => {
     const html = render(
       operation({
         fundingStatus: "OBSERVED",
         providerStatus: "REFUNDED",
         refund: {
           status: "REPORTED",
-          amount: "2000000000000000000",
-          asset: "mock:arb-sepolia:usdt",
+          amount: "25000000",
+          asset:
+            "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
           recipient: "0x1111111111111111111111111111111111111111",
         },
       })
     );
     expect(html).toContain("Refund reported");
-    expect(html).toContain("Start New Deposit");
+    expect(html).toContain('role="alert"');
+    expect(html).toContain(">Done<");
   });
 });

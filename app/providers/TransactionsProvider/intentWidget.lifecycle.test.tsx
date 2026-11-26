@@ -7,12 +7,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IntentsApi } from "~/lib/apis/intents";
 import {
   createIntentsMockApi,
+  simulateMockDeposit,
   type IntentsMockScenario,
 } from "~/lib/apis/intents/intents.mock";
 import {
   newIdempotencyKey,
   newOperationCapability,
 } from "~/lib/intents/intentCapability";
+import { toIntentPreviewRequest } from "~/lib/intents/intentQuote";
 import {
   fixtureRecipient,
   memoryStorage,
@@ -40,7 +42,6 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("~/consts/intents", async (original) => ({
   ...(await original<typeof import("~/consts/intents")>()),
-  INTENTS_DEPOSIT_ENABLED: true,
   INTENTS_ENV: "mock",
 }));
 vi.mock("~/lib/apis/intents", async (original) => ({
@@ -124,22 +125,14 @@ async function seedFundedOperation(account = accountA) {
     capability: newOperationCapability(),
     idempotencyKey: newIdempotencyKey(),
   };
-  // The mock route is the fixed 1-token, zero-slippage rehearsal.
-  const body = request({
-    recipient: account,
-    amountIn: "1000000000000000000",
-    slippageBps: 0,
-    acceptedMinAmountOut: "1000000000000000000",
-  });
+  const input = toIntentPreviewRequest(request({ recipient: account }));
+  const quote = await mocks.api.previewQuote(input);
+  const body = { ...input, acceptedMinAmountOut: quote.bridgeableMinAmountOut };
   const { operation } = await mocks.api.createOperation(credentials, body);
   vi.setSystemTime(Date.now() + 1_500);
   await mocks.api.getOperation(credentials.capability, operation.id);
   const hash = `0x${"a".repeat(64)}` as const;
-  // First answer is REHEARSAL_RECEIPT_PENDING; the retry is accepted.
-  await mocks.api
-    .registerDeposit(credentials.capability, operation.id, hash)
-    .catch(() => {});
-  await mocks.api.registerDeposit(credentials.capability, operation.id, hash);
+  simulateMockDeposit(mocks.api, credentials.capability, operation.id);
   const record = fixtureRecord({
     localId: `local-${account}`,
     account,
@@ -149,18 +142,16 @@ async function seedFundedOperation(account = accountA) {
     operationId: operation.id,
     fundingState: "confirmed",
     sourceHashes: [hash],
-    hasDepositRegistration: true,
-    registration: { status: "accepted", hash },
     isWidgetRequested: true,
     sequence: 3,
   });
   localStorage.setItem(
-    `equiteez:intents:v2:mock:${account}`,
-    JSON.stringify({ version: 2, records: [record] })
+    `equiteez:intents:v3:mock:${account}`,
+    JSON.stringify({ version: 3, records: [record] })
   );
 }
 const storedRecord = (account = accountA) =>
-  JSON.parse(localStorage.getItem(`equiteez:intents:v2:mock:${account}`)!)
+  JSON.parse(localStorage.getItem(`equiteez:intents:v3:mock:${account}`)!)
     .records[0];
 
 beforeEach(() => {
@@ -183,7 +174,6 @@ beforeEach(() => {
   mocks.api = createIntentsMockApi({
     storage: () => memoryStorage(),
     latencyMs: 0,
-    depositAddress: "0x2222222222222222222222222222222222222222",
     getScenario: () => mocks.scenario,
   });
   queryClient = new QueryClient();
@@ -223,12 +213,12 @@ describe("1Click operations in the global widget", () => {
     await act(async () => vi.advanceTimersByTimeAsync(15_000));
     expect(intentModels()[0].state).toEqual({
       status: "success",
-      description: "1 wUSDT arrived in your Mavryk account.",
+      description: "24.921 wUSDT arrived in your Mavryk account.",
     });
     expect(mocks.success).toHaveBeenCalledOnce();
     expect(mocks.success).toHaveBeenCalledWith(
       "Deposit arrived",
-      "1 wUSDT arrived in your Mavryk account."
+      "24.921 wUSDT arrived in your Mavryk account."
     );
     expect(invalidate).toHaveBeenCalled();
     expect(storedRecord()).toMatchObject({ announced: true });

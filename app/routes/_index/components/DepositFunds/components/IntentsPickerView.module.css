@@ -1,0 +1,4 @@
+.screen {
+  composes: screen from "./DepositScreen.module.css";
+  min-height: 420px;
+}

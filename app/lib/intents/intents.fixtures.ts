@@ -1,51 +1,83 @@
-import { arbitrumSepolia, sepolia } from "wagmi/chains";
-
-import { INTENTS_BRIDGE_PAIRS } from "~/consts/intents";
 import type {
   IntentFundingInstructions,
   IntentOperation,
   IntentOperationRequest,
+  IntentPreview,
 } from "~/lib/apis/intents";
-import {
-  mockIntentMetadata,
-  mockIntentRoutes,
-} from "~/lib/apis/intents/intents.mock";
+import { mockIntentMetadata } from "~/lib/apis/intents/intents.mock";
+import { resolveIntentCatalog, type IntentSourceOption } from "./intentCatalog";
 import { createIntentRecord, type IntentRecord } from "./intentOperation";
-import { resolveIntentRoute } from "./intentRoute";
 
 export const fixtureRecipient = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
+/** EVM wallet / refund address (lower-case, as the backend echoes it). */
 export const fixtureSource =
   "0x1111111111111111111111111111111111111111" as const;
 export const fixtureDeposit =
   "0x2222222222222222222222222222222222222222" as const;
+export const fixtureSolanaRefund =
+  "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm";
 export const fixtureCapability = "A".repeat(42) + "E";
 export const fixtureOperationId = "8a1f0c4e-2b6d-4c3a-9f10-0d2e7b5c6a11";
 export const fixtureQuoteId = "5d0c3a9e-7b21-4f6a-8c44-1e9b2d3f4a55";
-export const fixtureRoute = mockIntentRoutes[0];
-export const fixtureNativeRoute = mockIntentRoutes[1];
 export const fixtureWrapHash = `0x${"c".repeat(64)}` as const;
 export const fixtureFundingHash = `0x${"a".repeat(64)}` as const;
 
-export const resolveOption = (route = fixtureRoute) =>
-  resolveIntentRoute(route, {
-    metadata: mockIntentMetadata,
-    bridgePairs: INTENTS_BRIDGE_PAIRS,
-    chains: [arbitrumSepolia, sepolia],
-  });
-export const fixtureOption = resolveOption();
+export const fixtureCatalog = resolveIntentCatalog(mockIntentMetadata);
+export const fixtureSettlement = fixtureCatalog.settlement!;
+const optionOf = (assetId: string) =>
+  fixtureCatalog.options.find((option) => option.assetId === assetId)!;
+/** USDC on Base: an EVM token a connected wallet can send. */
+export const fixtureOption: IntentSourceOption = optionOf(
+  "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near"
+);
+export const fixtureNativeOption = optionOf("nep141:eth.omft.near");
+export const fixtureSolanaOption = optionOf("nep141:sol.omft.near");
 
 export function request(
   overrides: Partial<IntentOperationRequest> = {}
 ): IntentOperationRequest {
   return {
-    routeId: fixtureRoute.id,
-    routeVersion: fixtureRoute.version,
-    sourceAddress: fixtureSource,
+    sourceAssetId: fixtureOption.assetId,
+    settlementTokenId: fixtureSettlement.id,
+    settlementTokenVersion: fixtureSettlement.version,
     recipient: fixtureRecipient,
     refundAddress: fixtureSource,
-    amountIn: "2000000000000000000",
-    slippageBps: 50,
-    acceptedMinAmountOut: "1980050000000000000",
+    amountIn: "25000000",
+    slippageBps: 100,
+    acceptedMinAmountOut: "24600000",
+    ...overrides,
+  };
+}
+
+export function preview(overrides: Partial<IntentPreview> = {}): IntentPreview {
+  const {
+    sourceAssetId,
+    settlementTokenId,
+    settlementTokenVersion,
+    amountIn,
+    slippageBps,
+  } = request();
+  return {
+    kind: "indicative",
+    executable: false,
+    sourceAssetId,
+    settlementTokenId,
+    settlementTokenVersion,
+    amountIn,
+    slippageBps,
+    amountOut: "24921000",
+    minAmountOut: "24600000",
+    bridgeableAmountOut: "24921000",
+    bridgeableMinAmountOut: "24600000",
+    destinationAmountOut: "24921000",
+    destinationMinAmountOut: "24600000",
+    destinationAsset: mockIntentMetadata.settlementTokens[0].destinationAsset,
+    providerTimestamp: "2026-11-13T10:00:00.000Z",
+    quotedAt: "2026-11-13T10:00:00.000Z",
+    expiresAt: "2026-11-13T10:00:30.000Z",
+    providerTimeEstimateSeconds: 35,
+    refundFee: "1000",
+    withdrawFee: "4000",
     ...overrides,
   };
 }
@@ -55,15 +87,15 @@ export function instructions(
 ): IntentFundingInstructions {
   return {
     quoteId: fixtureQuoteId,
-    sourceChainId: fixtureRoute.sourceChainId,
-    originAsset: fixtureRoute.originAsset,
+    sourceNetwork: fixtureOption.network.key,
+    originAsset: fixtureOption.assetId,
     depositAddress: fixtureDeposit,
     depositMemo: null,
-    amount: "2000000000000000000",
-    amountOut: "1994000000000000000",
-    minAmountOut: "1990030000000000000",
-    bridgeableAmountOut: "1994000000000000000",
-    bridgeableMinAmountOut: "1990030000000000000",
+    amount: "25000000",
+    amountOut: "24921000",
+    minAmountOut: "24671000",
+    bridgeableAmountOut: "24921000",
+    bridgeableMinAmountOut: "24671000",
     deadline: "2026-11-13T10:11:00.000Z",
     fundingExpiresAt: "2026-11-13T10:10:00.000Z",
     forwarderAddress: "0x3333333333333333333333333333333333333333",
@@ -133,8 +165,8 @@ export function wrappedOperation(
     providerStatus: "SUCCESS",
     delivery: {
       status: "VERIFIED",
-      expectedAmount: "1994000000000000000",
-      confirmedAmount: "1994000000000000000",
+      expectedAmount: "24921000",
+      confirmedAmount: "24921000",
       transferCount: 1,
       transactionHashes: [`0x${"d".repeat(64)}`],
     },
@@ -142,13 +174,13 @@ export function wrappedOperation(
       ...base.forwarding,
       status: "WRAPPED",
       transactionHash: fixtureWrapHash,
-      wrappedAmount: "1994000000000000000",
-      bridgeableAmount: "1994000000000000000",
+      wrappedAmount: "24921000",
+      bridgeableAmount: "24921000",
       bridgeEvents: [
         {
           transactionHash: fixtureWrapHash,
           logIndex: 3,
-          amount: "1994000000000000000",
+          amount: "24921000",
         },
       ],
     },
@@ -156,9 +188,9 @@ export function wrappedOperation(
       settlement === "CONFIRMED"
         ? {
             status: "CONFIRMED",
-            confirmedAmount: "1994000",
-            tokenAddress: fixtureOption.destination!.tokenAddress,
-            tokenId: fixtureOption.destination!.tokenId,
+            confirmedAmount: "24921000",
+            tokenAddress: fixtureSettlement.destination.tokenAddress,
+            tokenId: fixtureSettlement.destination.tokenId,
             mavrykChainId: "NetXbasenet",
             mints: [
               {
@@ -167,7 +199,7 @@ export function wrappedOperation(
                 operationHash: "ooMint",
                 blockHash: "BLMint",
                 level: 100,
-                amount: "1994000",
+                amount: "24921000",
               },
             ],
           }
@@ -183,7 +215,9 @@ export function record(overrides: Partial<IntentRecord> = {}): IntentRecord {
       account: fixtureRecipient,
       env: "mock",
       option: fixtureOption,
+      settlement: fixtureSettlement,
       request: request(),
+      sourceWallet: fixtureSource,
       credentials: {
         capability: fixtureCapability,
         idempotencyKey: "idem-key-1",
