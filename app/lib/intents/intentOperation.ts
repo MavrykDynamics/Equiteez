@@ -2,7 +2,6 @@ import { BigNumber } from "bignumber.js";
 import { z } from "zod";
 
 import {
-  evmHashSchema,
   intentFundingInstructionsSchema,
   intentOperationRequestSchema,
   intentOperationSchema,
@@ -13,7 +12,8 @@ import type {
   IntentOperationRequest,
   IntentPhase,
 } from "~/lib/apis/intents";
-import type { IntentRouteOption } from "./intentRoute";
+import type { IntentSettlement, IntentSourceOption } from "./intentCatalog";
+import { isSameNetworkAddress } from "./intentNetworks";
 
 /**
  * Frontend record of one 1Click deposit. It is kept apart from the direct
@@ -34,31 +34,15 @@ export const intentFundingStateSchema = z.enum([
   "rejected",
   /** Source transaction mined but reverted. */
   "reverted",
+  /**
+   * The user reported sending the deposit outside Equiteez (another wallet
+   * or an exchange). Never prompts a wallet; tracking waits for 1Click.
+   */
+  "external",
   /** Dropped before funding (inputs/account changed, cancelled or rejected). */
   "abandoned",
 ]);
 export type IntentFundingState = z.infer<typeof intentFundingStateSchema>;
-
-/**
- * Funding-hash registration (`POST /v1/operations/:id/deposit`, backend.md
- * §4.5) on routes that need it. Only ever an HTTP retry with the saved hash:
- * a pending receipt never asks the wallet again.
- */
-export const intentRegistrationSchema = z.object({
-  /**
-   * `pending`: (re)send `hash` until the backend accepts it. `accepted`: the
-   * backend bound it. `stopped`: rejected for good (mismatch/conflict) or
-   * the wallet replaced the transfer; kept for support.
-   */
-  status: z.enum(["pending", "accepted", "stopped"]),
-  /** Newest funding hash; a repriced replacement takes over while pending. */
-  hash: evmHashSchema,
-  /** Why it stopped (user copy), last backend code and request ID. */
-  error: z.string().optional(),
-  code: z.string().optional(),
-  requestId: z.string().optional(),
-});
-export type IntentRegistration = z.infer<typeof intentRegistrationSchema>;
 
 export const intentRecordSchema = z.object({
   kind: z.literal("intent"),
@@ -76,17 +60,15 @@ export const intentRecordSchema = z.object({
   request: intentOperationRequestSchema,
   /** Set once the backend persisted the operation (202). */
   operationId: z.string().uuid().optional(),
+  /** The source asset, as offered by metadata when the user confirmed. */
   source: z.object({
-    chainId: z.number().int().positive(),
-    chainName: z.string().min(1),
-    originAsset: z.string().min(1),
-    token: z.union([
-      z.literal("native"),
-      z
-        .string()
-        .regex(/^0x[0-9a-fA-F]{40}$/)
-        .transform((value) => value as `0x${string}`),
-    ]),
+    assetId: z.string().min(1),
+    network: z.string().min(1),
+    networkName: z.string().min(1),
+    family: z.enum(["evm", "solana", "near", "aptos", "bitcoin"]),
+    evmChainId: z.number().int().positive().nullable(),
+    kind: z.enum(["native", "token"]),
+    contractAddress: z.string().nullable(),
     symbol: z.string().min(1),
     decimals: z.number().int().nonnegative(),
   }),
@@ -97,8 +79,13 @@ export const intentRecordSchema = z.object({
     decimals: z.number().int().nonnegative(),
   }),
   settlementDecimals: z.number().int().nonnegative(),
-  /** Estimated output before slippage, settlement units (display only). */
-  expectedAmountOut: z.string().regex(/^\d+$/).optional(),
+  /** Preview's expected amount on Mavryk, FA2 units (display only). */
+  expectedDestinationAmount: z.string().regex(/^\d+$/).optional(),
+  /**
+   * Connected wallet the deposit will be sent from, when the user reviewed it
+   * with one. Funding refuses another account. Absent for manual deposits.
+   */
+  sourceWallet: z.string().min(1).optional(),
   fundingState: intentFundingStateSchema,
   fundingError: z.string().optional(),
   /**
@@ -106,11 +93,8 @@ export const intentRecordSchema = z.object({
    * hides them. Never permission to send: funding re-reads the operation.
    */
   lastInstructions: intentFundingInstructionsSchema.optional(),
-  /** Funding hash plus wallet replacements, kept locally for support. */
-  sourceHashes: z.array(evmHashSchema),
-  /** The route requires registering the funding hash (metadata flag). */
-  hasDepositRegistration: z.boolean().optional(),
-  registration: intentRegistrationSchema.optional(),
+  /** Wallet funding hash plus replacements, kept locally for support. */
+  sourceHashes: z.array(z.string().min(1).max(256)),
   backend: intentOperationSchema.optional(),
   /** "correlated" only from verified bridge data on a forward identity. */
   receipt: z.enum(["none", "correlated"]),
@@ -203,9 +187,14 @@ export const hasIntentArrived = (record: IntentRecord) =>
 
 /** The wallet was asked (or may have been) to send this operation's funds. */
 export const hasIntentFundingStarted = (record: IntentRecord) =>
-  ["prompted", "broadcast", "confirmed", "unknown", "reverted"].includes(
-    record.fundingState
-  );
+  [
+    "prompted",
+    "broadcast",
+    "confirmed",
+    "unknown",
+    "reverted",
+    "external",
+  ].includes(record.fundingState);
 
 /**
  * No further backend progress is expected: arrival, quote rejection,
@@ -223,7 +212,7 @@ export function isIntentClosed(record: IntentRecord) {
   return (
     backend.fundingStatus === "EXPIRED" &&
     !hasIntentFundsObserved(backend) &&
-    !["prompted", "broadcast", "confirmed", "unknown"].includes(
+    !["prompted", "broadcast", "confirmed", "unknown", "external"].includes(
       record.fundingState
     )
   );
@@ -234,23 +223,27 @@ export function createIntentRecord({
   account,
   env,
   option,
+  settlement,
   request,
   credentials,
-  expectedAmountOut,
+  expectedDestinationAmount,
+  sourceWallet,
   now = Date.now(),
 }: {
   localId: string;
   account: string;
   env: string;
-  option: IntentRouteOption;
+  option: IntentSourceOption;
+  settlement: IntentSettlement;
   request: IntentOperationRequest;
   credentials: { capability: string; idempotencyKey: string };
-  expectedAmountOut?: string;
+  expectedDestinationAmount?: string;
+  sourceWallet?: string;
   now?: number;
 }): IntentRecord {
-  const { source, destination, route, hasDepositRegistration } = option;
-  if (!source || !destination)
-    throw new Error("The route is not configured for Equiteez.");
+  const { asset, network } = option;
+  if (asset.kind === "UNKNOWN" || asset.family === "UNKNOWN")
+    throw new Error("This asset is not supported in Equiteez.");
   return {
     kind: "intent",
     localId,
@@ -260,35 +253,37 @@ export function createIntentRecord({
     idempotencyKey: credentials.idempotencyKey,
     request,
     source: {
-      chainId: source.chainId,
-      chainName: source.chainName,
-      originAsset: source.originAsset,
-      token: source.token,
-      symbol: source.symbol,
-      decimals: route.sourceDecimals,
+      assetId: asset.assetId,
+      network: network.key,
+      networkName: network.name,
+      family: network.family,
+      evmChainId: network.evmChainId,
+      kind: asset.kind,
+      contractAddress: asset.contractAddress,
+      symbol: asset.symbol,
+      decimals: asset.decimals,
     },
     destination: {
-      tokenAddress: destination.tokenAddress,
-      tokenId: destination.tokenId,
-      symbol: destination.symbol,
-      decimals: destination.decimals,
+      tokenAddress: settlement.destination.tokenAddress,
+      tokenId: settlement.destination.tokenId,
+      symbol: settlement.destination.symbol,
+      decimals: settlement.destination.decimals,
     },
-    settlementDecimals: route.settlementDecimals,
-    expectedAmountOut,
+    settlementDecimals: settlement.decimals,
+    expectedDestinationAmount,
+    sourceWallet: sourceWallet?.toLowerCase(),
     fundingState: "not_started",
     sourceHashes: [],
-    hasDepositRegistration,
     receipt: "none",
     createdAt: now,
     sequence: 0,
   };
 }
 
-const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
-
 /**
  * The backend operation must echo the exact request the user confirmed.
- * A mismatch is never funded.
+ * An EVM refund address comes back lower-cased; others exactly as sent
+ * (backend.md §6.3). A mismatch is never funded.
  */
 export function getOperationMismatch(
   record: IntentRecord,
@@ -298,11 +293,21 @@ export function getOperationMismatch(
   if (record.operationId && operation.id !== record.operationId)
     return "operation";
   if (operation.recipient !== request.recipient) return "recipient";
-  if (operation.routeId !== request.routeId) return "route";
-  if (operation.routeVersion !== request.routeVersion) return "route version";
+  if (operation.sourceAssetId !== request.sourceAssetId) return "asset";
+  if (
+    operation.settlementTokenId !== request.settlementTokenId ||
+    operation.settlementTokenVersion !== request.settlementTokenVersion
+  )
+    return "settlement token";
   if (operation.amountIn !== request.amountIn) return "amount";
-  if (!same(operation.sourceAddress, request.sourceAddress)) return "source";
-  if (!same(operation.refundAddress, request.refundAddress)) return "refund";
+  if (
+    !isSameNetworkAddress(
+      record.source,
+      operation.refundAddress,
+      request.refundAddress
+    )
+  )
+    return "refund";
   if (operation.slippageBps !== request.slippageBps) return "slippage";
   if (operation.acceptedMinAmountOut !== request.acceptedMinAmountOut)
     return "minimum output";
@@ -310,19 +315,17 @@ export function getOperationMismatch(
 }
 
 /**
- * Published instructions must match the route the user chose: network,
- * provider asset, exact amount, no memo, and a minimum at or above the
- * accepted one. Anything else is never sent to the wallet.
+ * Published instructions must match the request: network, asset, exact
+ * amount, and a minimum at or above the accepted one. Anything else is never
+ * shown as a deposit address or sent to a wallet.
  */
 export function getInstructionsMismatch(
   record: IntentRecord,
   instructions: IntentFundingInstructions
 ): string | null {
-  if (instructions.sourceChainId !== String(record.source.chainId))
-    return "network";
-  if (instructions.originAsset !== record.source.originAsset) return "asset";
+  if (instructions.sourceNetwork !== record.source.network) return "network";
+  if (instructions.originAsset !== record.request.sourceAssetId) return "asset";
   if (instructions.amount !== record.request.amountIn) return "amount";
-  if (instructions.depositMemo !== null) return "memo";
   if (
     new BigNumber(instructions.bridgeableMinAmountOut).lt(
       record.request.acceptedMinAmountOut
@@ -331,18 +334,6 @@ export function getInstructionsMismatch(
     return "minimum output";
   return null;
 }
-
-/**
- * The saved funding hash still has to be (re)sent to the backend: the route
- * needs registration, it is pending, a transfer exists that did not revert,
- * and the backend has not already seen the funds.
- */
-export const needsIntentRegistration = (record: IntentRecord) =>
-  record.registration?.status === "pending" &&
-  Boolean(record.operationId) &&
-  ["broadcast", "confirmed", "unknown"].includes(record.fundingState) &&
-  !hasIntentFundsObserved(record.backend) &&
-  !isIntentClosed(record);
 
 /** Forward-event identity `hash:logIndex`, the bridge join key. */
 export const getForwardIdentity = (hash: string, logIndex: number) =>

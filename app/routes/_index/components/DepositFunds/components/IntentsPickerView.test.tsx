@@ -3,8 +3,11 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import type { IntentsDepositController } from "~/hooks/useIntentsDeposit";
-import { mockIntentRoutes } from "~/lib/apis/intents/intents.mock";
-import { fixtureOption, resolveOption } from "~/lib/intents/intents.fixtures";
+import {
+  fixtureCatalog,
+  fixtureOption,
+  fixtureSolanaOption,
+} from "~/lib/intents/intents.fixtures";
 import { IntentsPickerView, type IntentsPickerKind } from "./IntentsPickerView";
 
 vi.mock("~/providers/EthereumProvider/hooks/useIntentSourceBalance", () => ({
@@ -14,49 +17,53 @@ vi.mock("~/providers/EthereumProvider/hooks/useIntentSourceBalance", () => ({
   }),
 }));
 
-const eth = resolveOption(mockIntentRoutes[1]);
-const usdc = resolveOption(mockIntentRoutes[2]);
+const controller = (selected = fixtureOption) =>
+  ({
+    catalog: {
+      status: "ready",
+      options: fixtureCatalog.options,
+      refetch: vi.fn(),
+    },
+    selected,
+    walletAddress: "0x1111111111111111111111111111111111111111",
+    selectAsset: vi.fn(),
+  }) as unknown as IntentsDepositController;
 
-const deposit = {
-  catalog: {
-    status: "ready",
-    options: [fixtureOption, eth, usdc],
-    refetch: vi.fn(),
-  },
-  selected: fixtureOption,
-  sourceAddress: "0x1111111111111111111111111111111111111111",
-  selectRoute: vi.fn(),
-} as unknown as IntentsDepositController;
-
-const render = (kind: IntentsPickerKind) =>
+const render = (kind: IntentsPickerKind, selected = fixtureOption) =>
   renderToString(
     <IntentsPickerView
-      deposit={deposit}
+      deposit={controller(selected)}
       kind={kind}
       onClose={vi.fn()}
       onDone={vi.fn()}
-      walletLabel="MetaMask 0x1111…1111"
     />
   ).replace(/<!-- -->/g, "");
 
 describe("IntentsPickerView", () => {
-  it("lists supported networks and explains unavailable ones", () => {
+  it("lists EVM and other networks with their assets", () => {
     const html = render("network");
     expect(html).toContain("Select network");
     expect(html).toContain("Search network");
-    expect(html).toContain("Supported by your wallet · MetaMask 0x1111…1111");
-    expect(html).toContain("Arbitrum Sepolia");
-    expect(html).toContain("Not available");
-    expect(html).toContain("Quotes for this route are not available");
-    expect(html).toMatch(/aria-selected="true"[^>]*>.*Arbitrum Sepolia/s);
+    expect(html).toContain("EVM networks");
+    expect(html).toContain("Other networks");
+    for (const name of [
+      "Ethereum",
+      "Base",
+      "Solana",
+      "NEAR",
+      "Aptos",
+      "Bitcoin",
+    ])
+      expect(html).toContain(name);
+    expect(html).toContain("NEAR, ZEC");
+    expect(html).toMatch(/aria-selected="true"[^>]*>.*Base/s);
   });
 
-  it("lists the selected network's tokens with wallet balances", () => {
-    const html = render("token");
-    expect(html).toContain("Select token");
-    expect(html).toContain("On Arbitrum Sepolia · MetaMask 0x1111…1111");
-    expect(html).toContain(fixtureOption.source!.symbol);
-    expect(html).toContain("125.1234");
-    expect(html).not.toContain("Sepolia ETH");
+  it("shows wallet balances only for EVM tokens", () => {
+    expect(render("token")).toContain("125.1234");
+    const solana = render("token", fixtureSolanaOption);
+    expect(solana).toContain("On Solana");
+    expect(solana).toContain("SOL");
+    expect(solana).not.toContain("125.1234");
   });
 });

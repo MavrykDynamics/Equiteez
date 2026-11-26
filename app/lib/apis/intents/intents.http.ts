@@ -1,27 +1,28 @@
 import axios, { isAxiosError, type AxiosInstance } from "axios";
 import type { z } from "zod";
 
+import { INTENTS_REQUEST_TIMEOUT_MS } from "~/consts/intents";
 import {
-  intentDepositRegistrationSchema,
   intentErrorBodySchema,
   intentErrorCodes,
   intentMetadataEnvelopeSchema,
-  intentMetadataRouteSchema,
   intentOperationSchema,
-  intentRouteSchema,
-  intentRoutesEnvelopeSchema,
+  intentPreviewRequestSchema,
+  intentPreviewSchema,
+  intentSettlementTokenSchema,
+  intentSourceAssetSchema,
 } from "./intents.schema";
 import {
   IntentsApiError,
-  isIntentsApiError,
   type IntentErrorCode,
   type IntentsApi,
 } from "./intents.types";
 
 /**
- * Access adapter for the shared backend (backend.md §2). Equiteez's RWA
- * bearer token is NOT forwarded and no cookies are sent. Routes are public;
- * operation calls carry the per-operation capability as a bearer token.
+ * Access adapter for the shared backend (backend.md §3, §5). Equiteez's RWA
+ * bearer token is NOT forwarded and no cookies are sent. Metadata and
+ * previews are public; operation calls carry the per-operation capability as
+ * a bearer token.
  *
  * Only headers the Gateway allows are sent (Authorization, Content-Type,
  * Idempotency-Key). Anything else would fail the CORS preflight.
@@ -46,10 +47,10 @@ export function parseRetryAfter(
 }
 
 const fallbackCode = (status: number): IntentErrorCode =>
-  status === 404
-    ? "NOT_FOUND"
-    : status === 409
-      ? "IDEMPOTENCY_CONFLICT"
+  status === 400
+    ? "VALIDATION_ERROR"
+    : status === 404
+      ? "NOT_FOUND"
       : status === 413
         ? "PAYLOAD_TOO_LARGE"
         : status === 415
@@ -155,7 +156,7 @@ export function createIntentsHttpApi(
         url: url(config.path),
         data: config.data,
         signal: config.signal,
-        timeout: 20_000,
+        timeout: INTENTS_REQUEST_TIMEOUT_MS,
         withCredentials: false,
         headers: config.headers,
       });
@@ -166,36 +167,51 @@ export function createIntentsHttpApi(
 
   return {
     env,
-    async getRoutes(options) {
+    async getMetadata(options) {
       const response = await send({
         method: "GET",
-        path: "/routes",
+        path: "/metadata",
         ...options,
       });
-      const { routes } = parse(intentRoutesEnvelopeSchema, response.data);
-      return parseEach(intentRouteSchema, routes, "route(s)");
-    },
-    async getMetadata(options) {
-      let response;
-      try {
-        response = await send({ method: "GET", path: "/metadata", ...options });
-      } catch (error) {
-        // Optional endpoint: without it no source asset is inferred.
-        if (isIntentsApiError(error) && error.status === 404) return null;
-        throw error;
-      }
-      const { admissionPaused, routes } = parse(
-        intentMetadataEnvelopeSchema,
-        response.data
-      );
+      const envelope = parse(intentMetadataEnvelopeSchema, response.data);
       return {
-        admissionPaused,
-        routes: parseEach(
-          intentMetadataRouteSchema,
-          routes,
-          "metadata route(s)"
+        admissionPaused: envelope.admissionPaused,
+        catalog: envelope.catalog,
+        defaultSettlementToken: envelope.defaultSettlementToken,
+        settlementTokens: parseEach(
+          intentSettlementTokenSchema,
+          envelope.settlementTokens,
+          "settlement token(s)"
+        ),
+        sourceAssets: parseEach(
+          intentSourceAssetSchema,
+          envelope.sourceAssets,
+          "source asset(s)"
         ),
       };
+    },
+    async previewQuote(request, options) {
+      const response = await send({
+        method: "POST",
+        path: "/quotes/preview",
+        // Exactly the seven fields; unknown fields are rejected.
+        data: intentPreviewRequestSchema.parse(request),
+        headers: { "Content-Type": "application/json" },
+        ...options,
+      });
+      const preview = parse(intentPreviewSchema, response.data);
+      if (
+        preview.sourceAssetId !== request.sourceAssetId ||
+        preview.settlementTokenId !== request.settlementTokenId ||
+        preview.settlementTokenVersion !== request.settlementTokenVersion ||
+        preview.amountIn !== request.amountIn ||
+        preview.slippageBps !== request.slippageBps
+      )
+        throw new IntentsApiError(
+          "INVALID_RESPONSE",
+          "The deposit service returned a price for a different request."
+        );
+      return preview;
     },
     async createOperation({ capability, idempotencyKey }, request, options) {
       const response = await send({
@@ -225,32 +241,6 @@ export function createIntentsHttpApi(
         ...options,
       });
       return parse(intentOperationSchema, response.data);
-    },
-    async registerDeposit(capability, operationId, transactionHash, options) {
-      if (!UUID.test(operationId))
-        throw new IntentsApiError("NOT_FOUND", "Unknown operation.", 404);
-      const hash = transactionHash.toLowerCase();
-      const response = await send({
-        method: "POST",
-        path: `/operations/${operationId}/deposit`,
-        // The body holds only the hash; no Idempotency-Key (backend.md §4.5).
-        data: { transactionHash: hash },
-        headers: {
-          ...capabilityHeaders(capability),
-          "Content-Type": "application/json",
-        },
-        ...options,
-      });
-      const body = parse(intentDepositRegistrationSchema, response.data);
-      if (
-        body.operationId.toLowerCase() !== operationId.toLowerCase() ||
-        body.transactionHash !== hash
-      )
-        throw new IntentsApiError(
-          "INVALID_RESPONSE",
-          "The deposit service registered a different transfer."
-        );
-      return { replayed: body.replayed };
     },
   };
 }

@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
 import type { IntentRecord } from "~/lib/intents/intentOperation";
-import { formatRawAmount } from "~/lib/intents/intentRoute";
+import { formatRawAmount } from "~/lib/intents/intentCatalog";
+import { getEvmFundingBlocker } from "~/lib/intents/intentFunding";
+import { getIntentNetwork } from "~/lib/intents/intentNetworks";
 import { RAlert } from "~/templates/Alert/RAlert";
 
 import { DotsLoader } from "./DepositParts";
@@ -13,39 +15,45 @@ type IntentsFundingPanelProps = {
   isFunding: boolean;
   error: string | null;
   isWrongNetwork: boolean;
-  explorerUrl?: string;
   onFund: () => Promise<void> | void;
+  /** The user paid the deposit address from another wallet or an exchange. */
+  onMarkSent: () => void;
   /** Mock mode only. */
   onSimulate?: () => void;
 };
 
-const explorerLink = (base: string | undefined, path: string) =>
-  base ? `${base.replace(/\/$/, "")}/${path}` : undefined;
-
 /**
- * The only wallet action in the 1Click flow. Once the wallet was asked, this
- * panel never offers to send the same operation again.
+ * Send actions of the deposit screen. A connected EVM wallet can send EVM
+ * deposits in one click; any deposit can be paid from another wallet or an
+ * exchange and confirmed with "I've sent it". Once the wallet was asked or
+ * the user reported sending, this panel never offers to send again.
  */
 export function IntentsFundingPanel({
   record,
   isFunding,
   error,
   isWrongNetwork,
-  explorerUrl,
   onFund,
+  onMarkSent,
   onSimulate,
 }: IntentsFundingPanelProps) {
   if (!record?.operationId) return null;
   const amount = `${formatRawAmount(record.request.amountIn, record.source.decimals)} ${record.source.symbol}`;
+  const explorer = getIntentNetwork(record.source.network)?.explorer;
   const hash = record.sourceHashes.at(-1);
-  const txUrl = hash ? explorerLink(explorerUrl, `tx/${hash}`) : undefined;
+  const txUrl = hash ? explorer?.tx(hash) : undefined;
   // Historical instructions: display/support only, never permission to send.
-  const depositAddress = (
-    record.backend?.fundingInstructions ?? record.lastInstructions
-  )?.depositAddress;
-  const depositUrl = depositAddress
-    ? explorerLink(explorerUrl, `address/${depositAddress}`)
+  const instructions =
+    record.backend?.fundingInstructions ?? record.lastInstructions;
+  const depositUrl = instructions
+    ? explorer?.address(instructions.depositAddress)
     : undefined;
+  const canWalletSend = Boolean(
+    record.sourceWallet &&
+      !onSimulate &&
+      instructions &&
+      !getEvmFundingBlocker(record.source, instructions)
+  );
   const link = (isWarning: boolean): ReactNode =>
     txUrl ? (
       <a href={txUrl} rel="noopener noreferrer" target="_blank">
@@ -89,16 +97,18 @@ export function IntentsFundingPanel({
               {error ?? record.fundingError}
             </RAlert>
           )}
-          <RButton
-            aria-label={`Send ${amount}`}
-            className={styles.action}
-            isLoading={isFunding}
-            onClick={onFund}
-            size="large"
-            tone="black"
-          >
-            Send
-          </RButton>
+          {canWalletSend && (
+            <RButton
+              aria-label={`Send ${amount} from your wallet`}
+              className={styles.action}
+              isLoading={isFunding}
+              onClick={onFund}
+              size="large"
+              tone="black"
+            >
+              Send from wallet
+            </RButton>
+          )}
           {onSimulate && (
             <RButton
               className={styles.action}
@@ -106,19 +116,31 @@ export function IntentsFundingPanel({
               onClick={onSimulate}
               size="large"
               tone="black"
-              variant="secondary"
             >
-              Simulate Funding (mock API)
+              Simulate Deposit (mock API)
             </RButton>
           )}
+          <RButton
+            className={styles.action}
+            disabled={isFunding}
+            onClick={onMarkSent}
+            size="large"
+            tone="black"
+            variant={canWalletSend || onSimulate ? "secondary" : "primary"}
+          >
+            I&apos;ve sent the deposit
+          </RButton>
           <p className={styles.caption}>
-            {isWrongNetwork && (
+            {canWalletSend && isWrongNetwork && (
               <>
-                Your wallet will be asked to switch to {record.source.chainName}
-                .
+                Your wallet will be asked to switch to{" "}
+                {record.source.networkName}.
                 <br />
               </>
             )}
+            {canWalletSend
+              ? "Or send it from any other wallet or exchange."
+              : `Send it from any ${record.source.networkName} wallet or exchange.`}{" "}
             Transfers are irreversible.
             <br />
             Tokens arrive in your Equiteez wallet automatically.
@@ -139,7 +161,7 @@ export function IntentsFundingPanel({
       return waiting(
         "Sending",
         <>
-          Transfer of {amount} sent. Waiting for {record.source.chainName}{" "}
+          Transfer of {amount} sent. Waiting for {record.source.networkName}{" "}
           confirmation. {link(false)}
         </>
       );
@@ -147,7 +169,7 @@ export function IntentsFundingPanel({
       return waiting(
         "Sending",
         <>
-          Transfer of {amount} confirmed on {record.source.chainName}.{" "}
+          Transfer of {amount} confirmed on {record.source.networkName}.{" "}
           {link(false)}
         </>
       );

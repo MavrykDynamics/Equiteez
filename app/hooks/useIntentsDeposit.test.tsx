@@ -8,6 +8,7 @@ import {
   IntentsApiError,
   type IntentCredentials,
   type IntentOperationRequest,
+  type IntentPreviewRequest,
   type IntentsApi,
 } from "~/lib/apis/intents";
 import {
@@ -15,7 +16,12 @@ import {
   type IntentsMockScenario,
 } from "~/lib/apis/intents/intents.mock";
 import { isOperationCapability } from "~/lib/intents/intentCapability";
-import { fixtureOption, memoryStorage } from "~/lib/intents/intents.fixtures";
+import {
+  fixtureOption,
+  fixtureSolanaOption,
+  fixtureSolanaRefund,
+  memoryStorage,
+} from "~/lib/intents/intents.fixtures";
 import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.provider.types";
 import { IntentOperations } from "~/providers/TransactionsProvider/intentOperations";
 import { useIntentsDeposit } from "./useIntentsDeposit";
@@ -24,10 +30,11 @@ const accountA = "mv19MAVgCDwzuNMWprbHrUZhznoH8n9NWGWt";
 const accountB = `mv1${"2".repeat(33)}`;
 const sourceA = "0x1111111111111111111111111111111111111111" as const;
 const sourceB = "0x4444444444444444444444444444444444444444" as const;
-const ONE = "1000000000000000000";
+/** 25 USDC on Base (6 decimals). */
+const AMOUNT = "25000000";
 
 const mocks = vi.hoisted(() => ({
-  api: null as unknown as IntentsApi,
+  api: null as unknown as IntentsMockApi,
   ctx: {
     account: null as string | null,
     intentSession: null as unknown,
@@ -36,19 +43,40 @@ const mocks = vi.hoisted(() => ({
   wallet: null as unknown as EthereumContext,
   result: null as unknown as ReturnType<typeof useIntentsDeposit>,
   fund: vi.fn(),
+  previewCalls: 0,
 }));
+type IntentsMockApi = IntentsApi & {
+  simulateDeposit(capability: string, operationId: string): void;
+};
 
 vi.mock("~/lib/apis/intents", async (original) => ({
   ...(await original<typeof import("~/lib/apis/intents")>()),
   getIntentsApi: () => mocks.api,
 }));
-vi.mock("~/hooks/useIntentsRoutes", async () => {
+vi.mock("~/hooks/useIntentsCatalog", async () => {
   const fixtures = await import("~/lib/intents/intents.fixtures");
   return {
-    useIntentsRoutes: () => ({
+    useIntentsCatalog: () => ({
+      catalog: fixtures.fixtureCatalog,
       status: "ready",
-      options: [fixtures.fixtureOption],
-      refetch: () => {},
+      error: null,
+      refetch: async () => ({ error: null }),
+    }),
+  };
+});
+// The live preview is the fixture; the review refreshes it from the mock API.
+vi.mock("~/hooks/useIntentsPreview", async () => {
+  const fixtures = await import("~/lib/intents/intents.fixtures");
+  return {
+    useIntentsPreview: (request: IntentPreviewRequest | null) => ({
+      preview: request ? fixtures.preview() : undefined,
+      status: request ? "ready" : "idle",
+      error: null,
+      refetch: vi.fn(),
+      fetchFresh: (input: IntentPreviewRequest) => {
+        mocks.previewCalls += 1;
+        return mocks.api.previewQuote(input);
+      },
     }),
   };
 });
@@ -69,6 +97,7 @@ vi.mock("~/providers/EthereumProvider/hooks/useIntentsFunding", () => ({
 }));
 vi.mock("wagmi", () => ({
   useSwitchChain: () => ({ switchChainAsync: vi.fn(), isPending: false }),
+  useConfig: () => ({ chains: [{ id: 1 }, { id: 8453 }, { id: 42161 }] }),
 }));
 vi.mock("~/providers/TransactionsProvider/TransactionsProvider", () => ({
   useTransactionsContext: () => mocks.ctx,
@@ -85,7 +114,14 @@ function Harness() {
 let root: Root;
 let clock = 0;
 let scenario: IntentsMockScenario | null = null;
-const render = () => act(async () => root.render(<Harness />));
+let hasSelected = false;
+/** Renders; the first render of a test selects USDC on Base (EVM token). */
+const render = async () => {
+  await act(async () => root.render(<Harness />));
+  if (hasSelected) return;
+  hasSelected = true;
+  await act(async () => mocks.result.selectAsset(fixtureOption.assetId));
+};
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((res) => (resolve = res));
@@ -93,7 +129,7 @@ const deferred = <T,>() => {
 };
 type Created = Awaited<ReturnType<IntentsApi["createOperation"]>>;
 
-function signIn(account: string, source: `0x${string}` = sourceA) {
+function signIn(account: string, source: `0x${string}` | null = sourceA) {
   mocks.ctx = {
     account,
     intentSession: new IntentOperations(account, "mock", () => memoryStorage()),
@@ -101,14 +137,14 @@ function signIn(account: string, source: `0x${string}` = sourceA) {
   };
   mocks.wallet = {
     userAddress: source,
-    isConnected: true,
-    chainId: 421614,
+    isConnected: Boolean(source),
+    chainId: 8453,
   } as unknown as EthereumContext;
 }
 const store = () => mocks.ctx.intentSession as IntentOperations;
 const records = () => [...store().getSnapshot().records.values()];
 
-async function reachReview(amount = 1) {
+async function reachReview(amount = 25) {
   await act(async () => mocks.result.setAmount(new BigNumber(amount)));
   await act(async () => mocks.result.startReview());
   expect(mocks.result.review.phase).toBe("review");
@@ -135,19 +171,29 @@ async function reachReady() {
   expect(mocks.result.operationView).toEqual({ status: "ready" });
   return record;
 }
+const reviewOf = () =>
+  mocks.result.review as Extract<
+    typeof mocks.result.review,
+    { phase: "review" | "creating" | "operation" }
+  >;
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   clock = Date.now();
   scenario = null;
+  mocks.previewCalls = 0;
+  hasSelected = false;
   mocks.fund.mockReset();
-  mocks.api = createIntentsMockApi({
-    storage: () => memoryStorage(),
-    now: () => clock,
-    latencyMs: 0,
-    depositAddress: "0x2222222222222222222222222222222222222222",
-    getScenario: () => scenario,
-  });
+  // A non-mock env: wallet sends are disabled against the "mock" env.
+  mocks.api = {
+    ...createIntentsMockApi({
+      storage: () => memoryStorage(),
+      now: () => clock,
+      latencyMs: 0,
+      getScenario: () => scenario,
+    }),
+    env: "test",
+  };
   signIn(accountA);
   root = createRoot(document.createElement("div"));
 });
@@ -157,38 +203,70 @@ afterEach(async () => {
 });
 
 describe("form and local review", () => {
-  it("prefills the fixed amount and clamps slippage to the route maximum", async () => {
+  it("builds the exact request from a fresh preview with the wallet as refund address", async () => {
     await render();
-    // basenet-rehearsal-style route: exactly 1 token, 0 slippage.
-    expect(mocks.result.isAmountFixed).toBe(true);
-    expect(mocks.result.isSlippageFixed).toBe(true);
-    expect(mocks.result.amount?.toFixed()).toBe("1");
-    expect(mocks.result.slippageBps).toBe(0);
-    expect(mocks.result.estimate).toEqual({ expected: ONE, minimum: ONE });
-    expect(mocks.result.canReview).toBe(true);
-    await act(async () => mocks.result.setAmount(new BigNumber(2)));
-    expect(mocks.result.amount?.toFixed()).toBe("1");
-  });
-
-  it("builds the exact request with an accepted minimum and the source wallet as refund address", async () => {
-    await render();
-    await act(async () => mocks.result.startReview());
-    const review = mocks.result.review as Extract<
-      typeof mocks.result.review,
-      { phase: "review" | "creating" }
-    >;
+    expect(mocks.result.canWalletSend).toBe(true);
+    expect(mocks.result.isRefundFromWallet).toBe(true);
+    await reachReview();
+    expect(mocks.previewCalls).toBe(1);
+    const review = reviewOf();
     expect(review.request).toEqual({
-      routeId: fixtureOption.route.id,
-      routeVersion: 1,
-      sourceAddress: sourceA,
+      sourceAssetId: fixtureOption.assetId,
+      settlementTokenId: "usdt0-arbitrum",
+      settlementTokenVersion: 1,
       recipient: accountA,
       refundAddress: sourceA,
-      amountIn: ONE,
-      slippageBps: 0,
-      acceptedMinAmountOut: ONE,
+      amountIn: AMOUNT,
+      slippageBps: 100,
+      acceptedMinAmountOut: review.preview.bridgeableMinAmountOut,
     });
+    expect(review.sourceWallet).toBe(sourceA);
     // Nothing was persisted or sent yet.
     expect(records()).toHaveLength(0);
+  });
+
+  it("needs a confirmed, valid refund address for non-EVM assets", async () => {
+    await render();
+    await act(async () =>
+      mocks.result.selectAsset(fixtureSolanaOption.assetId)
+    );
+    await act(async () => mocks.result.setAmount(new BigNumber(1)));
+    expect(mocks.result.canWalletSend).toBe(false);
+    expect(mocks.result.canReview).toBe(false);
+    await act(async () => mocks.result.setRefundInput(sourceA));
+    expect(mocks.result.refundError).toMatch(/not a valid Solana address/);
+    await act(async () => mocks.result.setRefundInput(fixtureSolanaRefund));
+    expect(mocks.result.refundError).toBeNull();
+    expect(mocks.result.canReview).toBe(false);
+    await act(async () => mocks.result.setIsRefundConfirmed(true));
+    expect(mocks.result.canReview).toBe(true);
+    await act(async () => mocks.result.startReview());
+    expect(reviewOf().request).toMatchObject({
+      sourceAssetId: fixtureSolanaOption.assetId,
+      refundAddress: fixtureSolanaRefund,
+      amountIn: "1000000000",
+    });
+    expect(reviewOf().sourceWallet).toBeUndefined();
+    // Editing the address needs a new confirmation.
+    await act(async () =>
+      mocks.result.setRefundInput(`${fixtureSolanaRefund} `)
+    );
+    expect(mocks.result.isRefundConfirmed).toBe(false);
+  });
+
+  it("asks for a refund address when no EVM wallet is connected", async () => {
+    signIn(accountA, null);
+    await render();
+    expect(mocks.result.canWalletSend).toBe(false);
+    expect(mocks.result.isRefundFromWallet).toBe(false);
+    await act(async () => mocks.result.setAmount(new BigNumber(25)));
+    expect(mocks.result.canReview).toBe(false);
+  });
+
+  it("never sends from a wallet against the mock API", async () => {
+    mocks.api = { ...mocks.api, env: "mock" };
+    await render();
+    expect(mocks.result.canWalletSend).toBe(false);
   });
 
   it("clears the review when the source wallet changes", async () => {
@@ -206,7 +284,7 @@ describe("form and local review", () => {
     await render();
     await act(async () => mocks.result.setAmount(new BigNumber(2)));
     expect(mocks.result.canReview).toBe(false);
-    expect(mocks.result.sessionError).toMatch(/only deliver to mv1/);
+    expect(mocks.result.sessionError).toMatch(/only go to mv1/);
   });
 
   it("blocks review without an authenticated tracking session", async () => {
@@ -216,6 +294,29 @@ describe("form and local review", () => {
     );
     expect(mocks.result.canReview).toBe(false);
     expect(mocks.result.sessionError).toMatch(/session is not ready/);
+  });
+
+  it("re-prices an expired preview on confirm and asks again when the minimum changed", async () => {
+    // Previews from the mock clock are already past their 30s freshness.
+    clock = Date.now() - 60_000;
+    const preview = mocks.api.previewQuote.bind(mocks.api);
+    let calls = 0;
+    mocks.api.previewQuote = async (input, options) => {
+      const quote = await preview(input, options);
+      calls += 1;
+      return calls === 1
+        ? quote
+        : { ...quote, bridgeableMinAmountOut: "24000000" };
+    };
+    await render();
+    await reachReview();
+    await act(async () => mocks.result.confirmRequest());
+    expect(mocks.result.review.phase).toBe("review");
+    expect(mocks.result.reviewError).toBeNull();
+    expect(mocks.result.reviewNotice).toMatch(/price changed/);
+    expect(reviewOf().request.acceptedMinAmountOut).toBe("24000000");
+    // Nothing was persisted for the outdated price.
+    expect(records()).toHaveLength(0);
   });
 });
 
@@ -238,7 +339,8 @@ describe("persisted operation", () => {
     const [local] = records();
     expect(isOperationCapability(local.capability)).toBe(true);
     expect(local.idempotencyKey).toMatch(/^[!-~]{8,128}$/);
-    expect(local.request.amountIn).toBe(ONE);
+    expect(local.request.amountIn).toBe(AMOUNT);
+    expect(local.sourceWallet).toBe(sourceA);
     expect(local.operationId).toBeUndefined();
     await act(async () => {
       pending.resolve(await created);
@@ -249,8 +351,8 @@ describe("persisted operation", () => {
     expect(mocks.ctx.refreshIntent).toHaveBeenCalledWith(local.localId);
     const ready = await publishQuote();
     expect(mocks.result.operationView).toEqual({ status: "ready" });
-    expect(ready.backend?.fundingInstructions?.depositAddress).toBe(
-      "0x2222222222222222222222222222222222222222"
+    expect(ready.backend?.fundingInstructions?.depositAddress).toMatch(
+      /^0x[0-9a-f]{40}$/
     );
   });
 
@@ -286,13 +388,18 @@ describe("persisted operation", () => {
     mocks.api.createOperation = async (credentials, body) => {
       scopes.push(credentials);
       if (scopes.length === 1)
-        throw new IntentsApiError("ROUTE_UNAVAILABLE", "paused", 409, "req-9");
+        throw new IntentsApiError(
+          "PROVIDER_REJECTED",
+          "no quote",
+          409,
+          "req-9"
+        );
       return create(credentials, body);
     };
     await render();
     await reachReview();
     await act(async () => mocks.result.confirmRequest());
-    expect(mocks.result.reviewError).toMatch(/route is unavailable.*req-9/);
+    expect(mocks.result.reviewError).toMatch(/No price is available.*req-9/);
     expect(records()[0].fundingState).toBe("abandoned");
     await act(async () => mocks.result.confirmRequest());
     expect(scopes[1].capability).not.toBe(scopes[0].capability);
@@ -351,7 +458,7 @@ describe("persisted operation", () => {
     await act(async () => mocks.result.confirmRequest());
     await publishQuote();
     expect(mocks.result.review.phase).toBe("form");
-    expect(mocks.result.reviewError).toMatch(/No quote met your minimum/);
+    expect(mocks.result.reviewError).toMatch(/couldn't get a price/);
   });
 
   it("returns to the form when instructions expire before funding", async () => {
@@ -359,7 +466,7 @@ describe("persisted operation", () => {
     await reachReady();
     await publishQuote(21_000);
     expect(mocks.result.review.phase).toBe("form");
-    expect(mocks.result.reviewError).toMatch(/expired before funding/);
+    expect(mocks.result.reviewError).toMatch(/deposit window closed/);
   });
 
   it("shows paused funding without a send action", async () => {
@@ -435,21 +542,32 @@ describe("funding hand-off", () => {
 
   it("follows the operation when the backend saw funds", async () => {
     const record = await reachReady();
-    const hash = `0x${"a".repeat(64)}` as const;
-    // The mock answers REHEARSAL_RECEIPT_PENDING once, then accepts.
-    await expect(
-      mocks.api.registerDeposit(record.capability, record.operationId!, hash)
-    ).rejects.toMatchObject({ code: "REHEARSAL_RECEIPT_PENDING" });
-    await mocks.api.registerDeposit(
-      record.capability,
-      record.operationId!,
-      hash
-    );
+    mocks.api.simulateDeposit(record.capability, record.operationId!);
     await publishQuote(0);
     expect(mocks.result.review).toMatchObject({
       phase: "tracking",
       localId: record.localId,
     });
+  });
+});
+
+describe("manual deposit", () => {
+  it("follows the operation once the user reports sending from another wallet", async () => {
+    const record = await reachReady();
+    await act(async () => mocks.result.markSent());
+    expect(store().get(record.localId)?.fundingState).toBe("external");
+    expect(mocks.ctx.refreshIntent).toHaveBeenCalledWith(record.localId);
+    expect(mocks.result.review).toMatchObject({
+      phase: "tracking",
+      localId: record.localId,
+    });
+    expect(mocks.fund).not.toHaveBeenCalled();
+  });
+
+  it("keeps a published address on screen when the inputs change", async () => {
+    await reachReady();
+    await act(async () => mocks.result.setAmount(new BigNumber(30)));
+    expect(mocks.result.review.phase).toBe("operation");
   });
 });
 

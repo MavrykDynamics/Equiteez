@@ -36,3 +36,20 @@
 .caption {
   composes: caption from "./DepositScreen.module.css";
 }
+
+/* Deposit address QR: fixed size so the screen does not jump. */
+.qr {
+  display: flex;
+  align-self: center;
+  justify-content: center;
+  width: 162px;
+  height: 162px;
+  padding: var(--r-space-2);
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+}
+
+.memo {
+  font-weight: var(--r-font-weight-medium);
+}

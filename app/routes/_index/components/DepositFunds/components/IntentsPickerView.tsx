@@ -9,19 +9,18 @@ import {
 } from "~/lib/organisms/RSelectList";
 import type { IntentsDepositController } from "~/hooks/useIntentsDeposit";
 import {
-  getIntentChainIcon,
+  getIntentNetworkIcon,
   getIntentTokenIcon,
 } from "~/lib/intents/intentAssetIcon";
-import type { IntentRouteOption } from "~/lib/intents/intentRoute";
+import type { IntentSourceOption } from "~/lib/intents/intentCatalog";
 import { useIntentSourceBalance } from "~/providers/EthereumProvider/hooks/useIntentSourceBalance";
 
 import { DepositModalHeader } from "./DepositParts";
 import {
-  getIntentNetworkName,
-  getIntentTokenReason,
+  getIntentTokenSubtitle,
   getIntentTokenTitle,
-  getNetworkDefaultOption,
   groupIntentNetworks,
+  type IntentNetworkGroup,
 } from "./intentPickers";
 import styles from "./IntentsPickerView.module.css";
 
@@ -30,8 +29,6 @@ export type IntentsPickerKind = "network" | "token";
 type IntentsPickerViewProps = {
   kind: IntentsPickerKind;
   deposit: IntentsDepositController;
-  /** e.g. "MetaMask 0x1234…abcd"; names the wallet the list applies to. */
-  walletLabel: string;
   onDone: () => void;
   onClose: () => void;
 };
@@ -39,19 +36,15 @@ type IntentsPickerViewProps = {
 export const formatTokenBalance = (balance: BigNumber) =>
   balance.decimalPlaces(4, BigNumber.ROUND_DOWN).toFormat();
 
-/** Balance of one route's source token; per row, cached by React Query. */
+/** Balance in the connected EVM wallet; per row, cached by React Query. */
 function TokenBalance({
   option,
   owner,
 }: {
-  option: IntentRouteOption;
+  option: IntentSourceOption;
   owner: Address | null;
 }) {
-  const { balance, status } = useIntentSourceBalance(
-    option.source,
-    owner,
-    option.availability === "available"
-  );
+  const { balance, status } = useIntentSourceBalance(option, owner);
   return (
     <>
       {status === "ready" && balance
@@ -67,110 +60,92 @@ function TokenBalance({
 export function IntentsPickerView({
   kind,
   deposit,
-  walletLabel,
   onDone,
   onClose,
 }: IntentsPickerViewProps) {
-  const { catalog, selected, sourceAddress, selectRoute } = deposit;
-  const networks = useMemo(
+  const { catalog, selected, walletAddress, selectAsset } = deposit;
+  const groups = useMemo(
     () => groupIntentNetworks(catalog.options),
     [catalog.options]
   );
-  const selectedChainId = selected?.route.sourceChainId;
+  const selectedNetwork = selected?.network.key;
 
   const sections = useMemo<RSelectListSection[]>(() => {
     if (kind === "network") {
-      const toItem = (network: (typeof networks)[number]) => ({
-        id: network.chainId,
+      const toItem = ({ network, symbols }: IntentNetworkGroup) => ({
+        id: network.key,
         icon: (
           <RTokenIcon
             label={network.name}
             size="large"
-            src={getIntentChainIcon(network.chainId)}
+            src={getIntentNetworkIcon(network.key)}
           />
         ),
         title: network.name,
-        subtitle: network.isAvailable
-          ? network.symbols.join(", ")
-          : network.unavailableReason,
-        keywords: network.symbols,
-        disabled: !network.isAvailable,
-        isSelected: network.chainId === selectedChainId,
+        subtitle: symbols.join(", "),
+        keywords: [...symbols, network.key],
+        isSelected: network.key === selectedNetwork,
       });
       return [
         {
-          id: "available",
-          title: `Supported by your wallet · ${walletLabel}`,
-          items: networks.filter((item) => item.isAvailable).map(toItem),
+          id: "evm",
+          title: "EVM networks · send from a connected wallet or any wallet",
+          items: groups
+            .filter((group) => group.network.family === "evm")
+            .map(toItem),
         },
         {
-          id: "unavailable",
-          title: "Not available",
-          items: networks.filter((item) => !item.isAvailable).map(toItem),
+          id: "other",
+          title: "Other networks · send from any wallet or exchange",
+          items: groups
+            .filter((group) => group.network.family !== "evm")
+            .map(toItem),
         },
       ];
     }
 
     const options = catalog.options.filter(
-      (option) => option.route.sourceChainId === selectedChainId
+      (option) => option.network.key === selectedNetwork
     );
-    const toItem = (option: IntentRouteOption) => {
-      const isAvailable = option.availability === "available";
-      const title = getIntentTokenTitle(option);
-      return {
-        id: option.route.id,
-        icon: (
-          <RTokenIcon
-            label={title}
-            size="large"
-            src={getIntentTokenIcon(option.source?.symbol)}
-          />
-        ),
-        title,
-        subtitle: isAvailable
-          ? getIntentNetworkName(option)
-          : getIntentTokenReason(option),
-        value: isAvailable ? (
-          <TokenBalance option={option} owner={sourceAddress} />
-        ) : undefined,
-        disabled: !isAvailable,
-        isSelected: option.route.id === selected?.route.id,
-      };
-    };
-    const networkName = selected ? getIntentNetworkName(selected) : "";
+    const owner = selected?.network.family === "evm" ? walletAddress : null;
     return [
       {
-        id: "available",
-        title: `On ${networkName} · ${walletLabel}`,
-        items: options
-          .filter((option) => option.availability === "available")
-          .map(toItem),
-      },
-      {
-        id: "unavailable",
-        title: "Not available for this deposit",
-        items: options
-          .filter((option) => option.availability !== "available")
-          .map(toItem),
+        id: "tokens",
+        title: selected ? `On ${selected.network.name}` : undefined,
+        items: options.map((option) => {
+          const title = getIntentTokenTitle(option, options);
+          return {
+            id: option.assetId,
+            icon: (
+              <RTokenIcon
+                label={option.asset.symbol}
+                size="large"
+                src={getIntentTokenIcon(
+                  option.asset.symbol,
+                  option.asset.coingeckoId
+                )}
+              />
+            ),
+            title,
+            subtitle: getIntentTokenSubtitle(option),
+            keywords: [option.asset.symbol, option.asset.contractAddress ?? ""],
+            value:
+              owner && option.evmToken ? (
+                <TokenBalance option={option} owner={owner} />
+              ) : undefined,
+            isSelected: option.assetId === selected?.assetId,
+          };
+        }),
       },
     ];
-  }, [
-    catalog.options,
-    kind,
-    networks,
-    selected,
-    selectedChainId,
-    sourceAddress,
-    walletLabel,
-  ]);
+  }, [catalog.options, groups, kind, selected, selectedNetwork, walletAddress]);
 
   const handleSelect = (id: string) => {
     if (kind === "network") {
-      const network = networks.find((item) => item.chainId === id);
-      const option = network && getNetworkDefaultOption(network);
-      if (option && option.route.sourceChainId !== selectedChainId)
-        selectRoute(option.route.id);
-    } else if (id !== selected?.route.id) selectRoute(id);
+      const group = groups.find((item) => item.network.key === id);
+      const option = group?.options[0];
+      if (option && id !== selectedNetwork) selectAsset(option.assetId);
+    } else if (id !== selected?.assetId) selectAsset(id);
     onDone();
   };
 

@@ -51,7 +51,11 @@ const walletIcon = (
   </span>
 );
 
-/** Step 1: the external wallet to send from and the Equiteez account. */
+/**
+ * Step 1: the Equiteez account (required) and, optionally, an EVM wallet to
+ * send from in one click. Any other wallet or exchange can pay the deposit
+ * address instead.
+ */
 export function IntentsWalletsStep({
   ethereumWallet,
   walletName,
@@ -62,21 +66,19 @@ export function IntentsWalletsStep({
 }: IntentsWalletsStepProps) {
   const { userAddress, isConnecting, isReconnecting, signOut } = ethereumWallet;
   const isWalletBusy = isConnecting || isReconnecting;
-  const isReady = Boolean(userAddress && recipient);
-  const hint = isReady
-    ? "Both wallets are ready. Next, choose what to send and receive."
-    : recipient
-      ? "Your Equiteez wallet is already connected. Connect the external wallet you'll send from."
-      : userAddress
-        ? "Connect your Equiteez wallet to receive the deposit."
-        : "Connect the external wallet you'll send from and your Equiteez wallet.";
+  const isReady = Boolean(recipient);
+  const hint = !recipient
+    ? "Connect your Equiteez wallet to receive the deposit."
+    : userAddress
+      ? "Ready. Next, choose what to send."
+      : "Optional: connect an EVM wallet to send in one click. You can also pay from any wallet or exchange (Solana, Bitcoin, NEAR, Aptos and EVM networks).";
 
   return (
     <div className={styles.step}>
       <section aria-label="Send from" className={styles.walletSection}>
         <div className={styles.sectionHeader}>
           <span className={styles.sectionTitle}>Send from</span>
-          <span className={styles.sectionHint}>External wallet</span>
+          <span className={styles.sectionHint}>Optional · EVM wallet</span>
         </div>
         {userAddress ? (
           <WalletCard
@@ -108,7 +110,7 @@ export function IntentsWalletsStep({
               />
             }
             icon={walletIcon}
-            subtitle="Any EVM wallet"
+            subtitle="Or pay from any wallet later"
             title={isWalletBusy ? "Connecting…" : "Not connected"}
           />
         )}

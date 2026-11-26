@@ -2,7 +2,6 @@ import {
   INTENTS_API_MODE,
   INTENTS_API_URL,
   INTENTS_ENV,
-  INTENTS_MOCK_DEPOSIT_ADDRESS,
 } from "~/consts/intents";
 import { createIntentsHttpApi } from "./intents.http";
 import { createIntentsMockApi } from "./intents.mock";
@@ -16,7 +15,7 @@ let api: IntentsApi | null = null;
 export function getIntentsApi(): IntentsApi {
   api ??=
     INTENTS_API_MODE === "mock"
-      ? createIntentsMockApi({ depositAddress: INTENTS_MOCK_DEPOSIT_ADDRESS })
+      ? createIntentsMockApi()
       : createIntentsHttpApi(INTENTS_API_URL, INTENTS_ENV);
   return api;
 }

@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useTransactionsContext } from "./TransactionsProvider";
 import { WidgetRemovals } from "./widgetRemovals";
-import { INTENTS_SOURCE_CHAINS } from "~/consts/intents";
 import { toIntentWidget } from "./intentWidget";
 import { isIntentOwnedBridgeRecord } from "./intentReceipts";
 
@@ -84,12 +83,7 @@ function useWidgetState() {
       // 1Click operations share the stack, holds and removals under a
       // composite `intent:<localId>` identity.
       ...intents.flatMap((record) => {
-        const model = toIntentWidget(
-          record,
-          INTENTS_SOURCE_CHAINS.find(
-            (chain) => chain.id === record.source.chainId
-          )?.blockExplorers?.default.url
-        );
+        const model = toIntentWidget(record);
         if (!model) return [];
         if (removalState.entries.get(model.backendId!) != null)
           return [

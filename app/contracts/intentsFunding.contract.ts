@@ -23,8 +23,10 @@ import {
 import {
   buildIntentFundingCall,
   classifyIntentFundingError,
+  getEvmFundingBlocker,
   getIntentFundingErrorMessage,
 } from "~/lib/intents/intentFunding";
+import { simulateMockDeposit } from "~/lib/apis/intents/intents.mock";
 import {
   getInstructionsMismatch,
   getOperationMismatch,
@@ -94,7 +96,7 @@ async function readFundableInstructions(
       operation.fundingStatus === "EXPIRED"
         ? "The quote expired before funding. Start a new deposit."
         : operation.fundingStatus === "PAUSED"
-          ? "Funding is paused for this route. Nothing was sent; try again later."
+          ? "Funding is paused right now. Nothing was sent; try again later."
           : operation.fundingStatus === "OBSERVED"
             ? "A deposit was already observed for this operation. It will not be requested again."
             : "The quote is not ready for funding yet."
@@ -108,6 +110,8 @@ async function readFundableInstructions(
     throw new IntentFundingBlockedError(
       `The funding instructions do not match your request (${mismatch}). Nothing was sent.`
     );
+  const blocker = getEvmFundingBlocker(record.source, instructions);
+  if (blocker) throw new IntentFundingBlockedError(blocker);
   if (
     isIntentInstructionsExpired(
       instructions.fundingExpiresAt,
@@ -122,13 +126,11 @@ async function readFundableInstructions(
 }
 
 /**
- * Funds the 1Click source deposit address with the connected source wallet.
+ * Funds the 1Click source deposit address with the connected EVM wallet.
  * This is the only user signature in the flow; it is distinct from the direct
  * bridge's approve/wrapToken path. Persisted before the wallet call so a
  * reload, modal close or late response can never prompt a second transfer.
- * Routes with connected-wallet registration (backend.md §4.5) get the hash
- * queued as `registration: pending` in the same write that saves it; the
- * tracker sends it to the backend and retries without the wallet.
+ * The backend detects the deposit itself; the hash is kept for support.
  */
 export async function executeIntentFunding({
   config,
@@ -163,15 +165,21 @@ export async function executeIntentFunding({
       "This deposit was already sent to your wallet. It will not be requested again."
     );
 
+  const sourceWallet = record.sourceWallet;
+  const chainId = record.source.evmChainId;
   let instructions: IntentFundingInstructions;
   try {
     assertCurrent();
+    if (api.env === "mock")
+      throw new IntentFundingBlockedError(
+        "Wallet transfers are disabled with the mock deposit service. Use Simulate Deposit."
+      );
+    if (!sourceWallet || !chainId)
+      throw new IntentFundingBlockedError(
+        "Connect an EVM wallet to send from it, or send to the deposit address from any wallet."
+      );
     const wallet = getAccount(config);
-    if (
-      !wallet.isConnected ||
-      wallet.address?.toLowerCase() !==
-        record.request.sourceAddress.toLowerCase()
-    )
+    if (!wallet.isConnected || wallet.address?.toLowerCase() !== sourceWallet)
       throw new IntentFundingBlockedError(
         "Your source wallet changed. Reconnect the wallet you reviewed the deposit with."
       );
@@ -183,14 +191,13 @@ export async function executeIntentFunding({
       now()
     );
     assertCurrent();
-    const { chainId } = record.source;
     if (wallet.chainId !== chainId) await switchChain(config, { chainId });
     const amount = BigInt(instructions.amount);
     const balance =
-      record.source.token === "native"
+      record.source.kind === "native"
         ? (await getBalance(config, { address: wallet.address, chainId })).value
         : await readContract(config, {
-            address: record.source.token,
+            address: record.source.contractAddress as `0x${string}`,
             abi: erc20Abi,
             functionName: "balanceOf",
             args: [wallet.address],
@@ -198,17 +205,16 @@ export async function executeIntentFunding({
           });
     if (balance < amount)
       throw new IntentFundingBlockedError(
-        `Insufficient ${record.source.symbol} balance on ${record.source.chainName}.`
+        `Insufficient ${record.source.symbol} balance on ${record.source.networkName}.`
       );
     assertCurrent();
     const after = getAccount(config);
     if (
-      after.address?.toLowerCase() !==
-        record.request.sourceAddress.toLowerCase() ||
+      after.address?.toLowerCase() !== sourceWallet ||
       after.chainId !== chainId
     )
       throw new IntentFundingBlockedError(
-        `Keep your wallet connected to ${record.source.chainName} with the same account.`
+        `Keep your wallet connected to ${record.source.networkName} with the same account.`
       );
     if (
       isIntentInstructionsExpired(
@@ -237,7 +243,7 @@ export async function executeIntentFunding({
     lastInstructions: instructions,
   });
   const call = buildIntentFundingCall(record.source, instructions);
-  const account = record.request.sourceAddress;
+  const account = sourceWallet as `0x${string}`;
   let hash: Hash;
   try {
     hash =
@@ -281,60 +287,40 @@ export async function executeIntentFunding({
     fundingState: "broadcast",
     sourceHashes: [...read().sourceHashes, sentHash],
     isWidgetRequested: true,
-    registration: record.hasDepositRegistration
-      ? { status: "pending", hash: sentHash }
-      : undefined,
   });
-  const pendingRegistration = () => {
-    const current = read().registration;
-    return current?.status === "pending" ? current : undefined;
-  };
 
   // Only a repriced replacement is the same transfer; a cancel or a different
   // transaction leaves the funding outcome unknown.
   let replacementReason: string | undefined;
   try {
     const receipt = await waitForTransactionReceipt(config, {
-      chainId: record.source.chainId,
+      chainId,
       hash,
       confirmations: INTENTS_FUNDING_CONFIRMATIONS,
       timeout: INTENTS_FUNDING_TIMEOUT_MS,
       onReplaced: (replacement) => {
         replacementReason = replacement.reason;
         if (replacement.reason !== "repriced") return;
-        const replacementHash =
-          replacement.transaction.hash.toLowerCase() as `0x${string}`;
-        const registration = pendingRegistration();
         write({
-          sourceHashes: [...read().sourceHashes, replacementHash],
-          // Only the mined transaction can be registered.
-          ...(registration && {
-            registration: { ...registration, hash: replacementHash },
-          }),
+          sourceHashes: [
+            ...read().sourceHashes,
+            replacement.transaction.hash.toLowerCase(),
+          ],
         });
       },
     });
-    const registration = pendingRegistration();
     write(
       replacementReason && replacementReason !== "repriced"
         ? {
             fundingState: "unknown",
             fundingError:
               "The transfer was replaced or cancelled in your wallet. Check it before sending anything else.",
-            // The saved hash will never be mined; nothing to register.
-            ...(registration && {
-              registration: {
-                ...registration,
-                status: "stopped" as const,
-                error: "The transfer was replaced or cancelled in the wallet.",
-              },
-            }),
           }
         : receipt.status === "success"
           ? { fundingState: "confirmed" }
           : {
               fundingState: "reverted",
-              fundingError: `The transfer failed on ${record.source.chainName}. Start a new deposit to try again.`,
+              fundingError: `The transfer failed on ${record.source.networkName}. Start a new deposit to try again.`,
             }
     );
   } catch (error) {
@@ -347,9 +333,35 @@ export async function executeIntentFunding({
 }
 
 /**
- * Mock mode only: records a fake funding hash without a wallet request so the
- * UI can be exercised without testnet funds. The tracker registers it like a
- * real one. Never available with the HTTP API.
+ * The user sent (or will send) the deposit from another wallet or an
+ * exchange. Recorded so the operation joins the widget and is never offered
+ * to a connected wallet; 1Click detects the deposit itself. Only allowed
+ * while the instructions are published and nothing was sent from here.
+ */
+export function markIntentSentExternally(
+  session: IntentOperations,
+  localId: string
+) {
+  const record = session.get(localId);
+  if (
+    !record?.operationId ||
+    !canRequestIntentFunding(record.fundingState) ||
+    record.backend?.fundingStatus !== "AVAILABLE"
+  )
+    return false;
+  return session.upsert({
+    ...record,
+    fundingState: "external",
+    fundingError: undefined,
+    lastInstructions: record.backend.fundingInstructions ?? undefined,
+    isWidgetRequested: true,
+    sequence: record.sequence + 1,
+  });
+}
+
+/**
+ * Mock mode only: tells the simulator a deposit arrived, without a wallet,
+ * so the UI can be exercised end to end. Never available with the HTTP API.
  */
 export function simulateIntentFunding(
   api: IntentsApi,
@@ -359,25 +371,7 @@ export function simulateIntentFunding(
   if (api.env !== "mock")
     throw new Error("Simulation is only available in mock mode.");
   const record = session.get(localId);
-  if (
-    !record?.operationId ||
-    !canRequestIntentFunding(record.fundingState) ||
-    record.backend?.fundingStatus !== "AVAILABLE"
-  )
+  if (!record?.operationId || !markIntentSentExternally(session, localId))
     return;
-  const hash = `0x${Array.from({ length: 64 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join("")}` as `0x${string}`;
-  session.upsert({
-    ...record,
-    fundingState: "confirmed",
-    fundingError: undefined,
-    lastInstructions: record.backend.fundingInstructions ?? undefined,
-    sourceHashes: [...record.sourceHashes, hash],
-    registration: record.hasDepositRegistration
-      ? { status: "pending", hash }
-      : undefined,
-    isWidgetRequested: true,
-    sequence: record.sequence + 1,
-  });
+  simulateMockDeposit(api, record.capability, record.operationId);
 }

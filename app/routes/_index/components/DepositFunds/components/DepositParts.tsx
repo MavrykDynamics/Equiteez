@@ -77,19 +77,21 @@ export function ConnectedStatus() {
   );
 }
 
-/** Copyable full address shown shortened. */
+/** Copyable value, shown shortened unless `isFull` (amounts, memos). */
 export function CopyableAddress({
   address,
   label,
   className,
+  isFull = false,
 }: {
   address: string;
   label: string;
   className?: string;
+  isFull?: boolean;
 }) {
   return (
     <span className={clsx(styles.copyable, className)}>
-      <span>{shortenHash(address)}</span>
+      <span>{isFull ? address : shortenHash(address)}</span>
       <CopyButton
         aria-label={`Copy ${label} ${address}`}
         className={styles.copyButton}

@@ -49,7 +49,7 @@ describe("IntentsStatusView", () => {
     const html = render(wrappedOperation("NOT_TRACKED"));
     expect(html).toContain("Bridge To Mavryk");
     expect(html).toContain(fixtureOperationId);
-    expect(html).toContain(`sepolia.arbiscan.io/tx/${funding}`);
+    expect(html).toContain(`basescan.org/tx/${funding}`);
     expect(html).toContain(delivery);
     expect(html).toContain("Sponsored forward");
     expect(html).toContain(`${fixtureWrapHash}:3`);
@@ -59,8 +59,8 @@ describe("IntentsStatusView", () => {
 
   it("shows the confirmed amount and the Mavryk mint", () => {
     const html = render(wrappedOperation("CONFIRMED"));
-    expect(html).toContain("1.994 wUSDT arrived in your Mavryk account.");
-    expect(html).toContain("Received 1.994 wUSDT");
+    expect(html).toContain("24.921 wUSDT arrived in your Mavryk account.");
+    expect(html).toContain("Received 24.921 wUSDT");
     expect(html).toContain("Mavryk mint");
     expect(html).toContain("ooMint");
     expect(html).toContain("View on explorer");
@@ -85,8 +85,9 @@ describe("IntentsStatusView", () => {
         providerStatus: "REFUNDED",
         refund: {
           status: "REPORTED",
-          amount: "2000000000000000000",
-          asset: "mock:arb-sepolia:usdt",
+          amount: "25000000",
+          asset:
+            "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
           recipient: "0x1111111111111111111111111111111111111111",
         },
       })

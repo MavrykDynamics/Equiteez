@@ -26,7 +26,7 @@ import {
   hasIntentArrived,
   type IntentRecord,
 } from "~/lib/intents/intentOperation";
-import { formatRawAmount } from "~/lib/intents/intentRoute";
+import { formatRawAmount } from "~/lib/intents/intentCatalog";
 import { getIntentsApi } from "~/lib/apis/intents";
 import { IntentOperations, type IntentSnapshot } from "./intentOperations";
 import { IntentOperationsTracker } from "./intentOperationsTracker";

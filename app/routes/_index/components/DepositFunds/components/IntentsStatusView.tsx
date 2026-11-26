@@ -1,11 +1,11 @@
-import { INTENTS_SOURCE_CHAINS } from "~/consts/intents";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RTokenIcon } from "~/lib/atoms/RTokenIcon";
 import { HashChip } from "~/lib/molecules/HashChip";
 import { getIntentTokenIcon } from "~/lib/intents/intentAssetIcon";
 import type { IntentRecord } from "~/lib/intents/intentOperation";
-import { formatRawAmount } from "~/lib/intents/intentRoute";
+import { formatRawAmount } from "~/lib/intents/intentCatalog";
+import { getIntentFundingUrl } from "~/providers/TransactionsProvider/intentWidget";
 import { RAlert } from "~/templates/Alert/RAlert";
 import type { TransactionWidgetModel } from "~/providers/TransactionsProvider/transactionWidget.helpers";
 
@@ -85,24 +85,19 @@ export function IntentsStatusView({
   onClose,
   onStartNew,
 }: IntentsStatusViewProps) {
-  const explorer = INTENTS_SOURCE_CHAINS.find(
-    (chain) => chain.id === record.source.chainId
-  )?.blockExplorers?.default.url;
-  const txUrl = (hash: string) =>
-    explorer ? `${explorer.replace(/\/$/, "")}/tx/${hash}` : undefined;
   const steps = model ? getDepositSteps(model, "Pending") : [];
   const state = model?.state;
   const backend = record.backend;
   const isFinished = !model || model.isTerminal;
   const fundingHash = record.sourceHashes.at(-1);
-  const fundingUrl = fundingHash ? txUrl(fundingHash) : undefined;
+  const fundingUrl = getIntentFundingUrl(record);
   const { destination } = record;
   const confirmedAmount = backend?.settlement.confirmedAmount;
   const recipientCaption =
     confirmedAmount && confirmedAmount !== "0"
       ? `Received ${formatRawAmount(confirmedAmount, destination.decimals)} ${destination.symbol}`
-      : record.expectedAmountOut
-        ? `Your Equiteez wallet · ≈ ${formatRawAmount(record.expectedAmountOut, record.settlementDecimals)} ${destination.symbol}`
+      : record.expectedDestinationAmount
+        ? `Your Equiteez wallet · ≈ ${formatRawAmount(record.expectedDestinationAmount, destination.decimals)} ${destination.symbol}`
         : "Your Equiteez wallet";
   const alert =
     state && (state.status === "warning" || state.status === "error")
@@ -128,7 +123,7 @@ export function IntentsStatusView({
       <section className={styles.card}>
         <TransferSummary
           amount={`${formatRawAmount(record.request.amountIn, record.source.decimals)} ${record.source.symbol}`}
-          amountCaption={`on ${record.source.chainName}`}
+          amountCaption={`on ${record.source.networkName}`}
           recipient={record.request.recipient}
           recipientCaption={recipientCaption}
           tokenIcon={
@@ -190,7 +185,7 @@ export function IntentsStatusView({
               <Identity
                 hash={fundingHash}
                 href={fundingUrl}
-                label={`${record.source.chainName} funding`}
+                label={`${record.source.networkName} funding`}
               />
             )}
             {backend?.delivery.transactionHashes.map((hash) => (

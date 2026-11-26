@@ -1,66 +1,56 @@
-import { BigNumber } from "bignumber.js";
-
-import type { IntentErrorCode, IntentsApiError } from "~/lib/apis/intents";
+import type {
+  IntentErrorCode,
+  IntentOperationRequest,
+  IntentPreview,
+  IntentPreviewRequest,
+  IntentsApiError,
+} from "~/lib/apis/intents";
 
 /**
- * Inputs an operation request depends on. Any change (account, source
- * wallet, route, which also fixes network and token, amount or slippage)
- * invalidates an unfunded review/quote.
+ * Inputs a preview and the operation request depend on. Any change (account,
+ * asset, settlement token, refund address, amount or slippage) invalidates
+ * an unfunded review.
  */
-export function getIntentRequestKey(inputs: {
-  account: string | null;
-  sourceAddress: string | null;
-  routeId: string | undefined;
-  routeVersion: number | undefined;
-  amountIn: string | null;
-  slippageBps: number;
-}) {
-  return [
-    inputs.account ?? "",
-    inputs.sourceAddress?.toLowerCase() ?? "",
-    inputs.routeId ?? "",
-    inputs.routeVersion ?? "",
-    inputs.amountIn ?? "",
-    inputs.slippageBps,
+export const getIntentRequestKey = (
+  request: Partial<IntentPreviewRequest> & { account?: string | null }
+) =>
+  [
+    request.account ?? "",
+    request.sourceAssetId ?? "",
+    request.settlementTokenId ?? "",
+    request.settlementTokenVersion ?? "",
+    request.recipient ?? "",
+    request.refundAddress ?? "",
+    request.amountIn ?? "",
+    request.slippageBps ?? "",
   ].join("|");
-}
+
+/** The seven preview fields of an operation request (no accepted minimum). */
+export const toIntentPreviewRequest = (
+  request: IntentOperationRequest
+): IntentPreviewRequest => ({
+  sourceAssetId: request.sourceAssetId,
+  settlementTokenId: request.settlementTokenId,
+  settlementTokenVersion: request.settlementTokenVersion,
+  recipient: request.recipient,
+  refundAddress: request.refundAddress,
+  amountIn: request.amountIn,
+  slippageBps: request.slippageBps,
+});
+
+/** The preview is older than its `expiresAt` (≤ 30s, backend.md §6.2). */
+export const isIntentPreviewExpired = (
+  preview: Pick<IntentPreview, "expiresAt">,
+  now = Date.now()
+) => Date.parse(preview.expiresAt) <= now;
 
 /**
- * Minimum output the user explicitly accepts, in settlement ERC-20 units.
- * Only exact-parity routes (the Basenet rehearsal) are priced without a
- * quote preview: the amount is converted 1:1 to settlement units, reduced by
- * the chosen slippage, then rounded DOWN to a value the six-decimal FA2 can
- * represent. The backend never lowers it; a quote below it is rejected
- * (closure QUOTE_REJECTED) before any funding is possible.
+ * Minimum the user accepts when creating the operation, in settlement-token
+ * units: the displayed `bridgeableMinAmountOut` (backend.md §6.3). The
+ * backend never accepts an executable quote below it.
  */
-export function estimateAcceptedMinAmountOut({
-  amountIn,
-  sourceDecimals,
-  settlementDecimals,
-  destinationDecimals,
-  slippageBps,
-}: {
-  amountIn: string;
-  sourceDecimals: number;
-  settlementDecimals: number;
-  destinationDecimals: number;
-  slippageBps: number;
-}): { expected: string; minimum: string } | null {
-  const expected = new BigNumber(amountIn)
-    .shiftedBy(settlementDecimals - sourceDecimals)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const step = new BigNumber(10).pow(
-    Math.max(0, settlementDecimals - destinationDecimals)
-  );
-  const minimum = expected
-    .times(10_000 - slippageBps)
-    .div(10_000)
-    .div(step)
-    .integerValue(BigNumber.ROUND_DOWN)
-    .times(step);
-  if (!expected.isFinite() || minimum.lte(0)) return null;
-  return { expected: expected.toFixed(), minimum: minimum.toFixed() };
-}
+export const getAcceptedMinAmountOut = (preview: IntentPreview) =>
+  preview.bridgeableMinAmountOut;
 
 export const isIntentInstructionsExpired = (
   fundingExpiresAt: string,
@@ -71,40 +61,67 @@ export const isIntentInstructionsExpired = (
 export const secondsUntil = (at: string, now = Date.now()) =>
   Math.max(0, Math.ceil((Date.parse(at) - now) / 1000));
 
+/** `1:05` or `1:02:05` for Bitcoin's longer windows. */
+export const formatCountdown = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const rest = String(seconds % 60).padStart(2, "0");
+  return hours
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${rest}`
+    : `${minutes}:${rest}`;
+};
+
+/** `~35 s` / `~4 min`; null when 1Click gave no estimate. */
+export const formatTimeEstimate = (seconds: number | null | undefined) =>
+  seconds === null || seconds === undefined
+    ? null
+    : seconds < 90
+      ? `~${Math.max(1, Math.round(seconds))} s`
+      : `~${Math.round(seconds / 60)} min`;
+
 const errorCopy: Record<IntentErrorCode, string> = {
   VALIDATION_ERROR:
-    "The deposit service rejected the request. Check the amount and wallets, then try again.",
-  AMOUNT_OUT_OF_RANGE:
-    "This amount is outside the route's limits. Enter a different amount.",
-  SLIPPAGE_OUT_OF_RANGE:
-    "This slippage tolerance is not allowed for the route. Choose a lower one.",
-  MIN_OUTPUT_TOO_LOW:
-    "The minimum you would receive is below the route's limit. Enter a larger amount or lower the slippage.",
+    "The deposit service rejected the request. Check the amount and the refund address, then try again.",
   NOT_FOUND: "This deposit operation can no longer be read.",
   OPERATION_NOT_FOUND: "This deposit operation can no longer be read.",
+  SOURCE_ASSET_UNAVAILABLE:
+    "This asset is no longer offered. Choose another asset or network.",
+  SETTLEMENT_TOKEN_UNAVAILABLE:
+    "Deposits are paused right now. Try again later.",
+  ADMISSION_CHANGED:
+    "Availability changed while getting a price. Review the deposit again.",
+  DIRECT_WRAP_UNSUPPORTED: "This asset cannot be deposited this way.",
+  AMOUNT_TOO_LOW: "This amount is too low to swap. Enter a larger amount.",
+  AMOUNT_TOO_HIGH: "This amount is too high to swap. Enter a smaller amount.",
+  PROVIDER_REJECTED:
+    "No price is available for this deposit. Change the asset, the amount or the slippage.",
+  PREVIEW_BELOW_MINIMUM:
+    "You would receive less than the bridge minimum. Enter a larger amount.",
   IDEMPOTENCY_CONFLICT:
     "This deposit request conflicts with an earlier one. Start a new deposit.",
-  ROUTE_UNAVAILABLE:
-    "This route is unavailable right now. Refresh the routes or try again later.",
   PAYLOAD_TOO_LARGE: "The deposit request was too large.",
   UNSUPPORTED_MEDIA_TYPE: "The deposit request was not accepted.",
   RATE_LIMITED: "Too many requests. Wait a moment and try again.",
+  PREVIEW_BUSY: "Prices are in high demand. Wait a minute and try again.",
+  ADMISSION_CAPACITY_EXCEEDED:
+    "Too many deposits are waiting to be funded. Fund or abandon an open one, or try again in a minute.",
   INTERNAL_ERROR:
     "The deposit service had a problem. Try again: your request is kept and will not be duplicated.",
+  CATALOG_STALE:
+    "The list of supported assets is being updated. Try again in a few minutes.",
+  METADATA_DISABLED: "Cross-chain deposits are turned off on this deployment.",
+  QUOTE_PREVIEW_DISABLED:
+    "Prices are turned off on this deployment, so deposits cannot start.",
+  RECOVERY_MODE: "Prices are paused right now. Try again later.",
   DEPENDENCY_UNAVAILABLE:
     "The deposit service is temporarily unavailable. Try again: your request is kept and will not be duplicated.",
-  REHEARSAL_SCOPE_MISMATCH:
-    "This test route only accepts its fixed transfer: the exact amount, zero slippage and the same wallet as sender and refund address.",
-  REHEARSAL_QUOTE_NOT_PUBLISHED:
-    "The quote is not published yet. Wait for the funding instructions.",
-  REHEARSAL_RECEIPT_PENDING:
-    "Your transfer is still being confirmed. It is checked again automatically.",
-  REHEARSAL_DELIVERY_MISMATCH:
-    "Your transfer does not match the quote, so it was not accepted automatically.",
-  REHEARSAL_DELIVERY_CONFLICT:
-    "This operation is already bound to a different transfer.",
-  REHEARSAL_RPC_UNAVAILABLE:
-    "The deposit service cannot reach the source network right now. It is checked again automatically.",
+  METADATA_UNAVAILABLE:
+    "The deposit service is temporarily unavailable. Try again shortly.",
+  PROVIDER_UNAVAILABLE: "1Click is temporarily unavailable. Try again shortly.",
+  PROVIDER_AUTH_UNAVAILABLE:
+    "1Click is temporarily unavailable. Try again shortly.",
+  INVALID_QUOTE: "The price could not be confirmed. Try again shortly.",
+  PREVIEW_EXPIRED: "The price expired. Getting a new one…",
   NETWORK:
     "The deposit service is unreachable. Try again: your request is kept and will not be duplicated.",
   INVALID_RESPONSE: "The deposit service returned an unexpected response.",
@@ -120,7 +137,7 @@ export const getIntentErrorCopy = (error: IntentsApiError) =>
 /**
  * Failures after which a POST may already have been committed: retry with the
  * SAME capability, key and body; never generate a new key just because the
- * response was lost (backend.md §2).
+ * response was lost (backend.md §5).
  */
 export const isRetryableIntentError = (error: IntentsApiError) =>
   [
@@ -130,4 +147,14 @@ export const isRetryableIntentError = (error: IntentsApiError) =>
     "DEPENDENCY_UNAVAILABLE",
     "RATE_LIMITED",
     "UNKNOWN",
+  ].includes(error.code) ||
+  (error.status !== undefined && error.status >= 500);
+
+/** Metadata changed under the user: refresh it before trying again. */
+export const isIntentCatalogChangedError = (error: IntentsApiError) =>
+  [
+    "SOURCE_ASSET_UNAVAILABLE",
+    "SETTLEMENT_TOKEN_UNAVAILABLE",
+    "ADMISSION_CHANGED",
+    "CATALOG_STALE",
   ].includes(error.code);

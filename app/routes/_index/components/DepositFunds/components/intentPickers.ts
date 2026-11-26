@@ -1,69 +1,61 @@
+import type { IntentSourceOption } from "~/lib/intents/intentCatalog";
 import {
-  intentRouteAvailabilityCopy,
-  type IntentRouteOption,
-} from "~/lib/intents/intentRoute";
+  INTENT_NETWORKS,
+  type IntentNetwork,
+} from "~/lib/intents/intentNetworks";
 
-/** A source network in the picker: every route that starts on its chain. */
-export type IntentNetwork = {
-  chainId: string;
-  name: string;
-  /** Source token symbols of the available routes, in catalog order. */
+/** A source network in the picker with the assets offered on it now. */
+export type IntentNetworkGroup = {
+  network: IntentNetwork;
+  /** Asset symbols in metadata order, without duplicates. */
   symbols: string[];
-  options: IntentRouteOption[];
-  isAvailable: boolean;
-  /** Why no route on this network can be used. */
-  unavailableReason?: string;
+  options: IntentSourceOption[];
 };
 
-const reasonOf = (option: IntentRouteOption) =>
-  option.availability === "available"
-    ? undefined
-    : intentRouteAvailabilityCopy[option.availability];
-
-export const getIntentNetworkName = (option: IntentRouteOption) =>
-  option.source?.chainName ?? `Chain ${option.route.sourceChainId}`;
-
-/** Groups the flat route catalog by source chain, keeping catalog order. */
+/**
+ * Groups the source assets by network. Networks follow the static table
+ * order (EVM first); assets keep metadata order. Networks without assets are
+ * left out: metadata already drops everything unavailable.
+ */
 export function groupIntentNetworks(
-  options: readonly IntentRouteOption[]
-): IntentNetwork[] {
-  const networks = new Map<string, IntentNetwork>();
+  options: readonly IntentSourceOption[]
+): IntentNetworkGroup[] {
+  const groups = new Map<string, IntentNetworkGroup>();
   for (const option of options) {
-    const chainId = option.route.sourceChainId;
-    const network = networks.get(chainId) ?? {
-      chainId,
-      name: getIntentNetworkName(option),
+    const group = groups.get(option.network.key) ?? {
+      network: option.network,
       symbols: [],
       options: [],
-      isAvailable: false,
     };
-    // A route without metadata has no chain name; a later one may supply it.
-    if (option.source && !network.options.some((item) => item.source))
-      network.name = option.source.chainName;
-    network.options.push(option);
-    const symbol = option.source?.symbol;
-    if (
-      option.availability === "available" &&
-      symbol &&
-      !network.symbols.includes(symbol)
-    )
-      network.symbols.push(symbol);
-    network.isAvailable ||= option.availability === "available";
-    networks.set(chainId, network);
+    group.options.push(option);
+    if (!group.symbols.includes(option.asset.symbol))
+      group.symbols.push(option.asset.symbol);
+    groups.set(option.network.key, group);
   }
-  return [...networks.values()].map((network) =>
-    network.isAvailable
-      ? network
-      : { ...network, unavailableReason: reasonOf(network.options[0]) }
-  );
+  return INTENT_NETWORKS.flatMap((network) => groups.get(network.key) ?? []);
 }
 
-/** First usable route of a network, used when the user picks the network. */
-export const getNetworkDefaultOption = (network: IntentNetwork) =>
-  network.options.find((option) => option.availability === "available") ??
-  network.options[0];
+/**
+ * Symbols are not unique, even on one network: a duplicate shows its
+ * contract so the user can tell them apart.
+ */
+export function getIntentTokenTitle(
+  option: IntentSourceOption,
+  options: readonly IntentSourceOption[]
+) {
+  const { symbol, contractAddress } = option.asset;
+  const isDuplicate = options.some(
+    (item) =>
+      item !== option &&
+      item.network.key === option.network.key &&
+      item.asset.symbol === symbol
+  );
+  return isDuplicate && contractAddress
+    ? `${symbol} (${contractAddress.slice(0, 6)}…${contractAddress.slice(-4)})`
+    : symbol;
+}
 
-export const getIntentTokenTitle = (option: IntentRouteOption) =>
-  option.source?.symbol ?? `Route ${option.route.id}`;
-
-export const getIntentTokenReason = reasonOf;
+export const getIntentTokenSubtitle = (option: IntentSourceOption) =>
+  option.asset.kind === "native"
+    ? `${option.network.name} · native`
+    : option.network.name;

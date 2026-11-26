@@ -55,15 +55,15 @@ describe("intent widget model", () => {
   });
 
   it("uses a composite identity, the source amount and its own steps", () => {
-    const model = toIntentWidget(record("broadcast"), "https://arbiscan.test/");
+    const model = toIntentWidget(record("broadcast"));
     expect(model).toMatchObject({
       kind: "intent",
       operationId: getIntentWidgetId({ localId: "local-1" }),
       backendId: "intent:local-1",
-      amount: "2",
-      symbol: "Mock USDT",
+      amount: "25",
+      symbol: "USDC",
       recipient: fixtureRecipient,
-      sourceExplorerUrl: `https://arbiscan.test/tx/${hash}`,
+      sourceExplorerUrl: `https://basescan.org/tx/${hash}`,
       steps: intentWidgetStepLabels,
     });
   });
@@ -108,7 +108,7 @@ describe("intent widget model", () => {
     expect(getIntentWidgetState(done)).toEqual({
       state: {
         status: "success",
-        description: "1.994 wUSDT arrived in your Mavryk account.",
+        description: "24.921 wUSDT arrived in your Mavryk account.",
       },
       isTerminal: true,
     });
@@ -182,15 +182,16 @@ describe("intent widget model", () => {
       providerStatus: "REFUNDED",
       refund: {
         status: "REPORTED",
-        amount: "2000000000000000000",
-        asset: "mock:arb-sepolia:usdt",
+        amount: "25000000",
+        asset:
+          "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
         recipient: "0x1111111111111111111111111111111111111111",
       },
     });
     expect(state(item)).toMatchObject({
       status: "warning",
       title: "Refund reported",
-      description: expect.stringMatching(/2 Mock USDT.*provider's report/),
+      description: expect.stringMatching(/25 USDC.*provider's report/),
     });
     expect(getIntentWidgetState(item).isTerminal).toBe(true);
   });
@@ -241,8 +242,32 @@ describe("intent widget model", () => {
       )
     ).toMatchObject({
       status: "warning",
-      description: expect.stringMatching(/do not send it again/),
+      description: expect.stringMatching(/Do not send it again/),
     });
+  });
+
+  it("waits for 1Click after a deposit sent from another wallet", () => {
+    const item = record("external", {}, { sourceHashes: [] });
+    expect(toIntentWidget(item)).not.toBeNull();
+    expect(state(item)).toMatchObject({
+      status: "progress",
+      step: 1,
+      description: expect.stringMatching(/detect your deposit on Base/),
+    });
+    expect(toIntentWidget(item)?.sourceExplorerUrl).toBeUndefined();
+  });
+
+  it("explains paused settlement tokens and sources", () => {
+    expect(
+      state(
+        record("confirmed", {
+          fundingStatus: "OBSERVED",
+          fundingInstructions: null,
+          phase: "SWAP_IN_PROGRESS",
+          attention: "SOURCE_PAUSED",
+        })
+      )
+    ).toMatchObject({ description: expect.stringMatching(/still tracked/) });
   });
 
   it("explains lost access and stays dismissible", () => {

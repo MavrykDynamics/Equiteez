@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAccount, useConfig } from "wagmi";
+import { useAccount } from "wagmi";
 
 import { useIntentsDeposit } from "~/hooks/useIntentsDeposit";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
@@ -8,7 +8,7 @@ import { useEthereumContext } from "~/providers/EthereumProvider/ethereum.provid
 import { useTransactionWidget } from "~/providers/TransactionsProvider/TransactionWidgetProvider";
 import { getIntentWidgetId } from "~/providers/TransactionsProvider/intentWidget";
 
-import { DepositModalHeader, shortenHash } from "./components/DepositParts";
+import { DepositModalHeader } from "./components/DepositParts";
 import { IntentsFundingPanel } from "./components/IntentsFundingPanel";
 import {
   IntentsPickerView,
@@ -47,7 +47,6 @@ export function RDepositFundsModal({
     ethereumWallet,
   });
   const { holdDeposit } = useTransactionWidget();
-  const { chains } = useConfig();
   const mavrykAddress = userAddress ?? "";
 
   const closeWalletSelection = ethereumWallet.walletSelection.onClose;
@@ -96,12 +95,6 @@ export function RDepositFundsModal({
     setActiveTab(tab);
     setPicker(null);
   };
-  const walletLabel = [
-    connector?.name,
-    ethereumWallet.userAddress && shortenHash(ethereumWallet.userAddress),
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   const handleClose = () => {
     resetModal();
@@ -132,6 +125,7 @@ export function RDepositFundsModal({
           operationView={intents.operationView}
           now={intents.now}
           error={intents.reviewError}
+          notice={intents.reviewNotice}
           onConfirm={intents.confirmRequest}
           onBack={() => intents.cancelReview()}
           onClose={handleClose}
@@ -142,12 +136,8 @@ export function RDepositFundsModal({
               isFunding={intents.isFunding}
               error={intents.fundingError}
               isWrongNetwork={intents.isWrongNetwork}
-              explorerUrl={
-                chains.find(
-                  (chain) => chain.id === intents.activeRecord?.source.chainId
-                )?.blockExplorers?.default.url
-              }
               onFund={intents.fund}
+              onMarkSent={intents.markSent}
               onSimulate={intents.simulateFunding}
             />
           }
@@ -158,7 +148,6 @@ export function RDepositFundsModal({
           kind={picker}
           onClose={handleClose}
           onDone={() => setPicker(null)}
-          walletLabel={walletLabel}
         />
       ) : (
         <div className={styles.content}>

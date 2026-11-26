@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import QRCode from "react-qr-code";
 
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -9,12 +10,20 @@ import type {
   IntentsReview,
 } from "~/hooks/useIntentsDeposit";
 import {
-  getIntentChainIcon,
+  getIntentNetworkIcon,
   getIntentTokenIcon,
 } from "~/lib/intents/intentAssetIcon";
+import {
+  formatBps,
+  formatRawAmount,
+  fromRawAmount,
+} from "~/lib/intents/intentCatalog";
 import type { IntentRecord } from "~/lib/intents/intentOperation";
-import { secondsUntil } from "~/lib/intents/intentQuote";
-import { formatBps, formatRawAmount } from "~/lib/intents/intentRoute";
+import {
+  formatCountdown,
+  formatTimeEstimate,
+  secondsUntil,
+} from "~/lib/intents/intentQuote";
 import { RAlert } from "~/templates/Alert/RAlert";
 
 import {
@@ -40,24 +49,24 @@ type IntentsQuoteViewProps = {
   operationView: IntentsOperationView | null;
   now: number;
   error: string | null;
+  notice?: string | null;
   onConfirm: () => Promise<void> | void;
   onBack: () => void;
   onClose: () => void;
   isBackDisabled?: boolean;
-  /** Funding action (EQ-FE-03); shown once instructions are available. */
+  /** Send actions; shown once the deposit address is published. */
   fundingSlot?: ReactNode;
 };
 
-const formatCountdown = (seconds: number) =>
-  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-
-const feeExplanation = (chainName: string) =>
-  `Your wallet pays the ${chainName} network fee. Forwarding to the bridge is sponsored.`;
+const feeExplanation =
+  "1Click's fee is included in the amount you receive. You pay the source network fee; forwarding to the bridge is sponsored.";
 
 /**
- * Review of a 1Click request, then of the executable quote. Every phase of
- * the existing flow renders here: local review → creating → preparing the
- * quote → funding instructions, with paused/mismatch notices.
+ * Review of a 1Click request, then the deposit screen (backend.md §8, §9):
+ * network, exact amount, deposit address with QR code, memo, countdown to
+ * `fundingExpiresAt` and the refund address, so the user can pay from any
+ * wallet or exchange. Every phase renders here: local review → creating →
+ * preparing the quote → deposit instructions, with paused/mismatch notices.
  */
 export function IntentsQuoteView({
   review,
@@ -65,22 +74,22 @@ export function IntentsQuoteView({
   operationView,
   now,
   error,
+  notice,
   onConfirm,
   onBack,
   onClose,
   isBackDisabled = false,
   fundingSlot,
 }: IntentsQuoteViewProps) {
-  const { option, request } = review;
-  const { route, source, destination } = option;
-  const sourceSymbol = source?.symbol ?? "";
-  const destinationSymbol = destination?.symbol ?? "";
-  const chainName = source?.chainName ?? `chain ${route.sourceChainId}`;
+  const { option, settlement, request, preview } = review;
+  const { asset, network } = option;
+  const destination = settlement.destination;
   const sourceAmount = (raw: string) =>
-    `${formatRawAmount(raw, route.sourceDecimals)} ${sourceSymbol}`.trim();
-  // Settlement ERC-20 units shown as the destination token (1:1 bridge pair).
-  const outAmount = (raw: string) =>
-    `${formatRawAmount(raw, route.settlementDecimals)} ${destinationSymbol}`.trim();
+    `${formatRawAmount(raw, asset.decimals)} ${asset.symbol}`;
+  const settlementAmount = (raw: string) =>
+    `${formatRawAmount(raw, settlement.decimals)} ${destination.symbol}`;
+  const destinationAmount = (raw: string) =>
+    `${formatRawAmount(raw, destination.decimals)} ${destination.symbol}`;
   const instructions =
     operationView?.status === "ready"
       ? record?.backend?.fundingInstructions
@@ -88,31 +97,34 @@ export function IntentsQuoteView({
   const isCreating = review.phase === "creating";
   const sourceIcon = (size: "small" | "xlarge") => (
     <RTokenIcon
-      label={sourceSymbol || "?"}
+      label={asset.symbol}
       size={size}
-      src={getIntentTokenIcon(sourceSymbol)}
+      src={getIntentTokenIcon(asset.symbol, asset.coingeckoId)}
     />
   );
   const destinationIcon = (
     <RTokenIcon
-      label={destinationSymbol || "?"}
+      label={destination.symbol}
       size="small"
-      src={getIntentTokenIcon(destinationSymbol)}
+      src={getIntentTokenIcon(destination.symbol)}
     />
   );
   const amountIn = instructions?.amount ?? request.amountIn;
-  const expected =
-    instructions?.bridgeableAmountOut ?? review.expectedAmountOut;
-  const minimum =
-    instructions?.bridgeableMinAmountOut ?? request.acceptedMinAmountOut;
+  const expected = instructions
+    ? settlementAmount(instructions.bridgeableAmountOut)
+    : destinationAmount(preview.destinationAmountOut);
+  const minimum = instructions
+    ? settlementAmount(instructions.bridgeableMinAmountOut)
+    : destinationAmount(preview.destinationMinAmountOut);
+  const timeEstimate = formatTimeEstimate(preview.providerTimeEstimateSeconds);
 
   const warning =
     review.phase !== "operation"
       ? null
       : operationView?.status === "paused"
-        ? "Funding is paused for this route right now. Nothing was sent. Go back and try again later."
+        ? "Deposits are temporarily unavailable. Do not send anything. Go back and try again later."
         : operationView?.status === "mismatch"
-          ? `The deposit service returned instructions that do not match your request (${operationView.detail}). Nothing will be sent.`
+          ? `The deposit service returned instructions that do not match your request (${operationView.detail}). Do not send anything.`
           : null;
 
   return (
@@ -121,51 +133,81 @@ export function IntentsQuoteView({
         isBackDisabled={isCreating || isBackDisabled}
         onBack={onBack}
         onClose={onClose}
-        title="Review deposit"
+        title={instructions ? "Send your deposit" : "Review deposit"}
       />
 
       <TransferSummary
         amount={sourceAmount(amountIn)}
-        amountCaption={`on ${chainName}`}
+        amountCaption={`on ${network.name}`}
         recipient={request.recipient}
         recipientCaption="Your Equiteez wallet on Mavryk"
         tokenIcon={sourceIcon("xlarge")}
       />
 
+      {instructions && (
+        <>
+          <div className={styles.qr}>
+            <QRCode
+              aria-label={`QR code for the ${network.name} deposit address`}
+              role="img"
+              size={146}
+              value={instructions.depositAddress}
+            />
+          </div>
+          <RAlert header={`Send exactly ${sourceAmount(instructions.amount)}`}>
+            Send it on {network.name} before the timer runs out. An exchange
+            that deducts a withdrawal fee delivers less, and 1Click then refunds
+            instead of swapping.
+            {instructions.depositMemo &&
+              " Include the memo below, or the deposit cannot be credited."}
+          </RAlert>
+        </>
+      )}
+
       <hr className={styles.divider} />
 
       <dl aria-label="Deposit route" className={styles.rows}>
-        <DetailRow label="From">{shortenHash(request.refundAddress)}</DetailRow>
         <DetailRow label="Network">
           <ValueWithIcon
             icon={
               <RTokenIcon
-                label={chainName}
+                label={network.name}
                 size="small"
-                src={getIntentChainIcon(route.sourceChainId)}
+                src={getIntentNetworkIcon(network.key)}
               />
             }
           >
-            {chainName}
+            {network.name}
           </ValueWithIcon>
-        </DetailRow>
-        <DetailRow label="To">
-          {`${shortenHash(request.recipient)} (Equiteez)`}
-        </DetailRow>
-        <DetailRow label="Refunds go to">
-          <CopyableAddress
-            address={request.refundAddress}
-            label="refund address"
-          />
         </DetailRow>
         {instructions && (
           <>
-            <DetailRow label="1Click deposit address">
+            <DetailRow label="Amount to send">
+              <CopyableAddress
+                address={fromRawAmount(
+                  instructions.amount,
+                  asset.decimals
+                ).toFixed()}
+                isFull
+                label="exact amount"
+              />
+            </DetailRow>
+            <DetailRow label="Deposit address">
               <CopyableAddress
                 address={instructions.depositAddress}
                 label="deposit address"
               />
             </DetailRow>
+            {instructions.depositMemo && (
+              <DetailRow label="Memo (required)">
+                <CopyableAddress
+                  address={instructions.depositMemo}
+                  className={styles.memo}
+                  isFull
+                  label="memo"
+                />
+              </DetailRow>
+            )}
             <DetailRow label="Send within">
               <span aria-live="off">
                 {formatCountdown(
@@ -175,6 +217,15 @@ export function IntentsQuoteView({
             </DetailRow>
           </>
         )}
+        <DetailRow label="To">
+          {`${shortenHash(request.recipient)} (Equiteez)`}
+        </DetailRow>
+        <DetailRow label="Refunds go to">
+          <CopyableAddress
+            address={request.refundAddress}
+            label="refund address"
+          />
+        </DetailRow>
       </dl>
 
       <hr className={styles.divider} />
@@ -189,28 +240,34 @@ export function IntentsQuoteView({
           </ValueWithIcon>
         </DetailRow>
         <DetailRow label="You receive">
-          <ValueWithIcon icon={destinationIcon}>
-            ≈ {outAmount(expected)}
-          </ValueWithIcon>
+          <ValueWithIcon icon={destinationIcon}>≈ {expected}</ValueWithIcon>
         </DetailRow>
         <DetailRow label="Minimum received">
-          <ValueWithIcon icon={destinationIcon}>
-            {outAmount(minimum)}
-          </ValueWithIcon>
+          <ValueWithIcon icon={destinationIcon}>{minimum}</ValueWithIcon>
         </DetailRow>
         <DetailRow label="Fee">
-          <RTooltip content={feeExplanation(chainName)}>
+          <RTooltip content={feeExplanation}>
             <span
-              aria-label={`Network fee only. ${feeExplanation(chainName)}`}
+              aria-label={`Fee. ${feeExplanation}`}
               className={styles.fee}
               // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
               tabIndex={0}
             >
-              Network fee only
+              {preview.withdrawFee && preview.withdrawFee !== "0"
+                ? `${formatRawAmount(preview.withdrawFee, settlement.decimals)} ${settlement.symbol} included`
+                : "Included"}
               <RIcon name="info" size="small" />
             </span>
           </RTooltip>
         </DetailRow>
+        {preview.refundFee && preview.refundFee !== "0" && (
+          <DetailRow label="Refund fee (only if refunded)">
+            {sourceAmount(preview.refundFee)}
+          </DetailRow>
+        )}
+        {timeEstimate && (
+          <DetailRow label="Swap time">{timeEstimate}</DetailRow>
+        )}
         <DetailRow label="Max slippage">
           {formatBps(request.slippageBps)}
         </DetailRow>
@@ -224,6 +281,11 @@ export function IntentsQuoteView({
         )}
       </dl>
 
+      {notice && (
+        <RAlert header="Price updated" role="status">
+          {notice}
+        </RAlert>
+      )}
       {warning && (
         <RAlert header="Nothing was sent" role="alert">
           {warning}
@@ -248,8 +310,8 @@ export function IntentsQuoteView({
               Confirm deposit
             </RButton>
             <p className={styles.caption}>
-              Nothing is sent until the exact quote is ready. A quote below your
-              minimum is rejected.
+              Nothing is sent yet. Next you get a deposit address with the exact
+              amount; a price below your minimum is rejected.
             </p>
           </>
         ) : operationView?.status === "preparing" ? (
@@ -261,7 +323,7 @@ export function IntentsQuoteView({
             size="large"
             tone="black"
           >
-            Preparing your quote…
+            Preparing your deposit address…
           </RButton>
         ) : (
           instructions && fundingSlot

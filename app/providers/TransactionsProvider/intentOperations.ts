@@ -9,11 +9,12 @@ import {
 } from "~/lib/intents/intentOperation";
 
 /**
- * v2: real backend contract (capability, idempotency key, exact request).
- * v1 records came from the draft contract and are not migrated.
+ * v3: backend v0.0.9 (source asset + settlement token request). v2 records
+ * (route-based Basenet rehearsal) and v1 (draft contract) are not migrated:
+ * they live under other keys and are never read.
  */
 const recoverySchema = z.object({
-  version: z.literal(2),
+  version: z.literal(3),
   records: z.array(intentRecordSchema),
 });
 
@@ -26,10 +27,12 @@ type StorageAccess = () => Pick<Storage, "getItem" | "setItem">;
 /** Records older than this, once settled, are dropped on save. */
 const RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 
-const unionHashes = (a: readonly string[], b: readonly string[]) =>
-  [
-    ...new Set([...a, ...b].map((hash) => hash.toLowerCase())),
-  ] as `0x${string}`[];
+/** EVM hashes are case-insensitive; other networks' IDs are kept as sent. */
+const normalizeHash = (hash: string) =>
+  /^0x[0-9a-fA-F]+$/.test(hash) ? hash.toLowerCase() : hash;
+const unionHashes = (a: readonly string[], b: readonly string[]) => [
+  ...new Set([...a, ...b].map(normalizeHash)),
+];
 
 /**
  * One Equiteez account + 1Click backend environment. Kept separate from the
@@ -56,7 +59,7 @@ export class IntentOperations {
   ) {}
 
   get key() {
-    return `equiteez:intents:v2:${encodeURIComponent(this.env)}:${encodeURIComponent(this.account)}`;
+    return `equiteez:intents:v3:${encodeURIComponent(this.env)}:${encodeURIComponent(this.account)}`;
   }
 
   getSnapshot = () => this.snapshot;
@@ -130,7 +133,7 @@ export class IntentOperations {
       this.snapshot = { ...this.snapshot, records };
       this.storage().setItem(
         this.key,
-        JSON.stringify({ version: 2, records: [...records.values()] })
+        JSON.stringify({ version: 3, records: [...records.values()] })
       );
       this.snapshot = { ...this.snapshot, storageError: null };
     } catch {
@@ -200,7 +203,6 @@ export class IntentOperations {
         | "isWidgetRequested"
         | "notFoundCount"
         | "access"
-        | "registration"
       >
     >
   ) {
@@ -240,13 +242,5 @@ function merge(previous: IntentRecord, next: IntentRecord): IntentRecord {
     receipt: previous.receipt === "correlated" ? "correlated" : next.receipt,
     announced: previous.announced || next.announced,
     access: previous.access === "lost" ? "lost" : next.access,
-    // A settled registration of the same hash never goes back to pending.
-    registration:
-      previous.registration &&
-      previous.registration.status !== "pending" &&
-      next.registration?.status === "pending" &&
-      next.registration.hash === previous.registration.hash
-        ? previous.registration
-        : next.registration,
   };
 }
