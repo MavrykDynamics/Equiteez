@@ -85,6 +85,9 @@ export const INTENTS_SOLANA_RPC_URL =
 /** Aptos fullnode REST API (balances). */
 export const INTENTS_APTOS_API_URL =
   env("INTENTS_APTOS_API_URL") ?? "https://api.mainnet.aptoslabs.com/v1";
+/** NEAR JSON-RPC (balances and token storage registration). */
+export const INTENTS_NEAR_RPC_URL =
+  env("INTENTS_NEAR_RPC_URL") ?? "https://free.rpc.fastnear.com";
 /** Esplora-compatible Bitcoin API (balances). */
 export const INTENTS_BITCOIN_API_URL =
   env("INTENTS_BITCOIN_API_URL") ?? "https://mempool.space/api";

@@ -24,6 +24,10 @@ const loaders: Partial<
     import("./bitcoin/bitcoinWallet.adapter").then((module) =>
       module.createBitcoinWalletAdapter()
     ),
+  near: () =>
+    import("./near/nearWallet.adapter").then((module) =>
+      module.createNearWalletAdapter()
+    ),
 };
 
 const cache = new Map<IntentWalletFamily, Promise<IntentWalletAdapter>>();
