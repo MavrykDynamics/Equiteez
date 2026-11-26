@@ -16,6 +16,10 @@ const loaders: Partial<
     import("./solana/solanaWallet.adapter").then((module) =>
       module.createSolanaWalletAdapter()
     ),
+  aptos: () =>
+    import("./aptos/aptosWallet.adapter").then((module) =>
+      module.createAptosWalletAdapter()
+    ),
 };
 
 const cache = new Map<IntentWalletFamily, Promise<IntentWalletAdapter>>();

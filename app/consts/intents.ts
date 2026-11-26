@@ -82,6 +82,9 @@ export const INTENTS_EVM_CHAINS = [
  */
 export const INTENTS_SOLANA_RPC_URL =
   env("INTENTS_SOLANA_RPC_URL") ?? "https://api.mainnet-beta.solana.com";
+/** Aptos fullnode REST API (balances). */
+export const INTENTS_APTOS_API_URL =
+  env("INTENTS_APTOS_API_URL") ?? "https://api.mainnet.aptoslabs.com/v1";
 
 /** Slippage choices (bps). The user picks one; the backend accepts 0–9999. */
 export const INTENTS_SLIPPAGE_OPTIONS_BPS = [10, 50, 100, 300] as const;
