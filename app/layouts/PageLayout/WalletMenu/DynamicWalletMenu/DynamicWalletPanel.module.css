@@ -242,6 +242,20 @@
   overscroll-behavior: contain;
 }
 
+/* Phones: the asset list (and the full-screen panel) still scroll, without
+   a scrollbar over the amounts */
+@media (--media-phone-max) {
+  .panel,
+  .assetScroll {
+    scrollbar-width: none;
+  }
+
+  .panel::-webkit-scrollbar,
+  .assetScroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .assetsHeader {
   display: flex;
   align-items: baseline;
