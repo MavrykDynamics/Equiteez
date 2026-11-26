@@ -298,8 +298,9 @@ describe("1Click deposit inside Equiteez", () => {
     expect(deposit$.review).toMatchObject({ phase: "tracking", localId });
     expect(deposit$.trackedModel?.state).toMatchObject({ status: "progress" });
 
-    // WRAPPED with settlement PENDING: neutral, not success.
-    await flush(16_000);
+    // WRAPPED (deposit +22s) with settlement PENDING: neutral, not success.
+    // Polls are 5s ± 10%, so one lands in 22–27.5s, before CONFIRMED at 32s.
+    await flush(20_000);
     expect(deposit$.trackedModel?.state).toMatchObject({
       status: "progress",
       step: 4,
