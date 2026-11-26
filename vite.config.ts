@@ -36,6 +36,8 @@ export default defineConfig({
       ],
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        // Non-EVM wallet SDKs load only when a user picks that network.
+        globIgnores: ["**/*Wallet.adapter-*.js"],
       },
       manifest: {
         name: "Equiteez",
