@@ -147,6 +147,22 @@ export function base58ByteLength(value: string): number | null {
   return length;
 }
 
+/** Base58 (Bitcoin alphabet) of raw bytes, e.g. a Solana signature. */
+export function base58Encode(bytes: Uint8Array): string {
+  let number = 0n;
+  for (const byte of bytes) number = (number << 8n) + BigInt(byte);
+  let encoded = "";
+  while (number > 0n) {
+    encoded = BASE58[Number(number % 58n)] + encoded;
+    number /= 58n;
+  }
+  for (const byte of bytes) {
+    if (byte !== 0) break;
+    encoded = "1" + encoded;
+  }
+  return encoded;
+}
+
 const NEAR_NAMED = /^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$/;
 const NEAR_IMPLICIT = /^[0-9a-f]{64}$/;
 const BTC_LEGACY = /^[13][1-9A-HJ-NP-Za-km-z]{25,34}$/;

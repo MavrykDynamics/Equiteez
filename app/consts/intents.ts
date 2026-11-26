@@ -76,6 +76,13 @@ export const INTENTS_EVM_CHAINS = [
   gnosis,
 ] as const;
 
+/**
+ * Network reads for non-EVM wallets (balances, Solana blockhashes). Public
+ * endpoints by default; set a dedicated RPC for production traffic.
+ */
+export const INTENTS_SOLANA_RPC_URL =
+  env("INTENTS_SOLANA_RPC_URL") ?? "https://api.mainnet-beta.solana.com";
+
 /** Slippage choices (bps). The user picks one; the backend accepts 0–9999. */
 export const INTENTS_SLIPPAGE_OPTIONS_BPS = [10, 50, 100, 300] as const;
 export const INTENTS_DEFAULT_SLIPPAGE_BPS = 100;

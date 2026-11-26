@@ -11,7 +11,12 @@ export * from "./intentWallet.types";
  */
 const loaders: Partial<
   Record<IntentWalletFamily, () => Promise<IntentWalletAdapter>>
-> = {};
+> = {
+  solana: () =>
+    import("./solana/solanaWallet.adapter").then((module) =>
+      module.createSolanaWalletAdapter()
+    ),
+};
 
 const cache = new Map<IntentWalletFamily, Promise<IntentWalletAdapter>>();
 
