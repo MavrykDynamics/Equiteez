@@ -57,6 +57,20 @@ export function HomeView({
 
   return (
     <div className={clsx(styles.view, styles.homeView)}>
+      {/* Phones only (CSS): the full-screen panel has no outside to tap */}
+      <div className={clsx(styles.viewHeader, styles.homeHeader)}>
+        <RText size="body-m" weight="medium">
+          Wallet
+        </RText>
+        <button
+          aria-label="Close wallet"
+          className={styles.iconButton}
+          onClick={onClose}
+          type="button"
+        >
+          <RIcon name="close" size="medium" />
+        </button>
+      </div>
       <div className={styles.portfolioCard}>
         <div>
           <div className={styles.portfolioLabelRow}>
