@@ -607,3 +607,10 @@
   margin-top: 0;
   margin-bottom: var(--r-space-2);
 }
+
+/* Touch screens: 16px, or iOS zooms the page in when the field takes focus */
+@media (pointer: coarse) {
+  .input {
+    font-size: 16px;
+  }
+}
