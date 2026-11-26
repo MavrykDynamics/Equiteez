@@ -20,6 +20,10 @@ const loaders: Partial<
     import("./aptos/aptosWallet.adapter").then((module) =>
       module.createAptosWalletAdapter()
     ),
+  bitcoin: () =>
+    import("./bitcoin/bitcoinWallet.adapter").then((module) =>
+      module.createBitcoinWalletAdapter()
+    ),
 };
 
 const cache = new Map<IntentWalletFamily, Promise<IntentWalletAdapter>>();
